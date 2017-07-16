@@ -1,0 +1,147 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.platform.power_monitor.sysfs_power_monitor</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.<a href="telemetry.internal.platform.html"><font color="#ffffff">platform</font></a>.<a href="telemetry.internal.platform.power_monitor.html"><font color="#ffffff">power_monitor</font></a>.sysfs_power_monitor</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/platform/power_monitor/sysfs_power_monitor.py">telemetry/internal/platform/power_monitor/sysfs_power_monitor.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2014&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="collections.html">collections</a><br>
+<a href="telemetry.decorators.html">telemetry.decorators</a><br>
+</td><td width="25%" valign=top><a href="logging.html">logging</a><br>
+<a href="os.html">os</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.platform.power_monitor.html">telemetry.internal.platform.power_monitor</a><br>
+<a href="re.html">re</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.platform.power_monitor.html#PowerMonitor">telemetry.internal.platform.power_monitor.PowerMonitor</a>(<a href="__builtin__.html#object">__builtin__.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.platform.power_monitor.sysfs_power_monitor.html#SysfsPowerMonitor">SysfsPowerMonitor</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SysfsPowerMonitor">class <strong>SysfsPowerMonitor</strong></a>(<a href="telemetry.internal.platform.power_monitor.html#PowerMonitor">telemetry.internal.platform.power_monitor.PowerMonitor</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="telemetry.internal.platform.power_monitor.html#PowerMonitor">PowerMonitor</a>&nbsp;that&nbsp;relies&nbsp;on&nbsp;sysfs&nbsp;to&nbsp;monitor&nbsp;CPU&nbsp;statistics&nbsp;on&nbsp;several<br>
+different&nbsp;platforms.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.internal.platform.power_monitor.sysfs_power_monitor.html#SysfsPowerMonitor">SysfsPowerMonitor</a></dd>
+<dd><a href="telemetry.internal.platform.power_monitor.html#PowerMonitor">telemetry.internal.platform.power_monitor.PowerMonitor</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="SysfsPowerMonitor-CanMonitorPower"><strong>CanMonitorPower</strong></a>(*args, **kwargs)</dt></dl>
+
+<dl><dt><a name="SysfsPowerMonitor-GetCpuFreq"><strong>GetCpuFreq</strong></a>(self)</dt><dd><tt>Retrieve&nbsp;CPU&nbsp;frequency&nbsp;times&nbsp;from&nbsp;the&nbsp;device.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Dictionary&nbsp;containing&nbsp;frequency&nbsp;times&nbsp;for&nbsp;each&nbsp;CPU.</tt></dd></dl>
+
+<dl><dt><a name="SysfsPowerMonitor-GetCpuState"><strong>GetCpuState</strong></a>(self)</dt><dd><tt>Retrieve&nbsp;CPU&nbsp;c-state&nbsp;residency&nbsp;times&nbsp;from&nbsp;the&nbsp;device.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Dictionary&nbsp;containing&nbsp;c-state&nbsp;residency&nbsp;times&nbsp;for&nbsp;each&nbsp;CPU.</tt></dd></dl>
+
+<dl><dt><a name="SysfsPowerMonitor-StartMonitoringPower"><strong>StartMonitoringPower</strong></a>(self, _browser)</dt></dl>
+
+<dl><dt><a name="SysfsPowerMonitor-StopMonitoringPower"><strong>StopMonitoringPower</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="SysfsPowerMonitor-__init__"><strong>__init__</strong></a>(self, linux_based_platform_backend, standalone<font color="#909090">=False</font>)</dt><dd><tt>Constructor.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;linux_based_platform_backend:&nbsp;A&nbsp;LinuxBasedPlatformBackend&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;standalone:&nbsp;If&nbsp;it&nbsp;is&nbsp;not&nbsp;wrapping&nbsp;another&nbsp;monitor,&nbsp;set&nbsp;to&nbsp;True.<br>
+&nbsp;<br>
+Attributes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_cpus:&nbsp;A&nbsp;list&nbsp;of&nbsp;the&nbsp;CPUs&nbsp;on&nbsp;the&nbsp;target&nbsp;device.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_end_time:&nbsp;The&nbsp;time&nbsp;the&nbsp;test&nbsp;stopped&nbsp;monitoring&nbsp;power.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_final_cstate:&nbsp;The&nbsp;c-state&nbsp;residency&nbsp;times&nbsp;after&nbsp;the&nbsp;test.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_final_freq:&nbsp;The&nbsp;CPU&nbsp;frequency&nbsp;times&nbsp;after&nbsp;the&nbsp;test.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_initial_cstate:&nbsp;The&nbsp;c-state&nbsp;residency&nbsp;times&nbsp;before&nbsp;the&nbsp;test.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_initial_freq:&nbsp;The&nbsp;CPU&nbsp;frequency&nbsp;times&nbsp;before&nbsp;the&nbsp;test.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_platform:&nbsp;A&nbsp;LinuxBasedPlatformBackend&nbsp;object&nbsp;associated&nbsp;with&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;target&nbsp;platform.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_start_time:&nbsp;The&nbsp;time&nbsp;the&nbsp;test&nbsp;started&nbsp;monitoring&nbsp;power.</tt></dd></dl>
+
+<hr>
+Static methods defined here:<br>
+<dl><dt><a name="SysfsPowerMonitor-CombineResults"><strong>CombineResults</strong></a>(cpu_stats, power_stats)</dt><dd><tt>Add&nbsp;frequency&nbsp;and&nbsp;c-state&nbsp;residency&nbsp;data&nbsp;to&nbsp;the&nbsp;power&nbsp;data.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;cpu_stats:&nbsp;Dictionary&nbsp;containing&nbsp;CPU&nbsp;statistics.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;power_stats:&nbsp;Dictionary&nbsp;containing&nbsp;power&nbsp;statistics.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Dictionary&nbsp;in&nbsp;the&nbsp;format&nbsp;returned&nbsp;by&nbsp;StopMonitoringPower.</tt></dd></dl>
+
+<dl><dt><a name="SysfsPowerMonitor-ComputeCpuStats"><strong>ComputeCpuStats</strong></a>(initial, final)</dt><dd><tt>Parse&nbsp;the&nbsp;CPU&nbsp;c-state&nbsp;and&nbsp;frequency&nbsp;values&nbsp;saved&nbsp;during&nbsp;monitoring.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;initial:&nbsp;The&nbsp;parsed&nbsp;dictionary&nbsp;of&nbsp;initial&nbsp;statistics&nbsp;to&nbsp;be&nbsp;converted<br>
+&nbsp;&nbsp;&nbsp;&nbsp;into&nbsp;percentages.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;final:&nbsp;The&nbsp;parsed&nbsp;dictionary&nbsp;of&nbsp;final&nbsp;statistics&nbsp;to&nbsp;be&nbsp;converted<br>
+&nbsp;&nbsp;&nbsp;&nbsp;into&nbsp;percentages.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Dictionary&nbsp;containing&nbsp;percentages&nbsp;for&nbsp;each&nbsp;CPU&nbsp;as&nbsp;well&nbsp;as&nbsp;an&nbsp;average<br>
+&nbsp;&nbsp;&nbsp;&nbsp;across&nbsp;all&nbsp;CPUs.</tt></dd></dl>
+
+<dl><dt><a name="SysfsPowerMonitor-ParseFreqSample"><strong>ParseFreqSample</strong></a>(sample)</dt><dd><tt>Parse&nbsp;a&nbsp;single&nbsp;frequency&nbsp;sample.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;sample:&nbsp;The&nbsp;single&nbsp;sample&nbsp;of&nbsp;frequency&nbsp;data&nbsp;to&nbsp;be&nbsp;parsed.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dictionary&nbsp;associating&nbsp;a&nbsp;frequency&nbsp;with&nbsp;a&nbsp;time.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="telemetry.internal.platform.power_monitor.html#PowerMonitor">telemetry.internal.platform.power_monitor.PowerMonitor</a>:<br>
+<dl><dt><a name="SysfsPowerMonitor-CanMeasurePerApplicationPower"><strong>CanMeasurePerApplicationPower</strong></a>(self)</dt><dd><tt>Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;power&nbsp;monitor&nbsp;can&nbsp;measure&nbsp;power&nbsp;for&nbsp;the&nbsp;target<br>
+application&nbsp;in&nbsp;isolation.&nbsp;False&nbsp;if&nbsp;power&nbsp;measurement&nbsp;is&nbsp;for&nbsp;full&nbsp;system<br>
+energy&nbsp;consumption.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.internal.platform.power_monitor.html#PowerMonitor">telemetry.internal.platform.power_monitor.PowerMonitor</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>CPU_PATH</strong> = '/sys/devices/system/cpu/'</td></tr></table>
+</body></html>

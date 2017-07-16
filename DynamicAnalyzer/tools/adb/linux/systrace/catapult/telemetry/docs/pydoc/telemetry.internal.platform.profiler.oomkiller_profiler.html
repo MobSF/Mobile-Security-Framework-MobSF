@@ -1,0 +1,151 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.platform.profiler.oomkiller_profiler</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.<a href="telemetry.internal.platform.html"><font color="#ffffff">platform</font></a>.<a href="telemetry.internal.platform.profiler.html"><font color="#ffffff">profiler</font></a>.oomkiller_profiler</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/platform/profiler/oomkiller_profiler.py">telemetry/internal/platform/profiler/oomkiller_profiler.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2013&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.internal.backends.chrome.android_browser_finder.html">telemetry.internal.backends.chrome.android_browser_finder</a><br>
+<a href="telemetry.internal.util.binary_manager.html">telemetry.internal.util.binary_manager</a><br>
+</td><td width="25%" valign=top><a href="devil.android.sdk.intent.html">devil.android.sdk.intent</a><br>
+<a href="os.html">os</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.platform.profiler.html">telemetry.internal.platform.profiler</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="exceptions.html#Exception">exceptions.Exception</a>(<a href="exceptions.html#BaseException">exceptions.BaseException</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.platform.profiler.oomkiller_profiler.html#UnableToFindApplicationException">UnableToFindApplicationException</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.platform.profiler.html#Profiler">telemetry.internal.platform.profiler.Profiler</a>(<a href="__builtin__.html#object">__builtin__.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.platform.profiler.oomkiller_profiler.html#OOMKillerProfiler">OOMKillerProfiler</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="OOMKillerProfiler">class <strong>OOMKillerProfiler</strong></a>(<a href="telemetry.internal.platform.profiler.html#Profiler">telemetry.internal.platform.profiler.Profiler</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Android-specific,&nbsp;Launch&nbsp;the&nbsp;music&nbsp;application&nbsp;and&nbsp;check&nbsp;it&nbsp;is&nbsp;still&nbsp;alive<br>
+at&nbsp;the&nbsp;end&nbsp;of&nbsp;the&nbsp;run.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.internal.platform.profiler.oomkiller_profiler.html#OOMKillerProfiler">OOMKillerProfiler</a></dd>
+<dd><a href="telemetry.internal.platform.profiler.html#Profiler">telemetry.internal.platform.profiler.Profiler</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="OOMKillerProfiler-CollectProfile"><strong>CollectProfile</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="OOMKillerProfiler-__init__"><strong>__init__</strong></a>(self, browser_backend, platform_backend, output_path, state)</dt></dl>
+
+<hr>
+Class methods defined here:<br>
+<dl><dt><a name="OOMKillerProfiler-WillCloseBrowser"><strong>WillCloseBrowser</strong></a>(cls, browser_backend, platform_backend)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="OOMKillerProfiler-is_supported"><strong>is_supported</strong></a>(cls, browser_type)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="OOMKillerProfiler-name"><strong>name</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<hr>
+Class methods inherited from <a href="telemetry.internal.platform.profiler.html#Profiler">telemetry.internal.platform.profiler.Profiler</a>:<br>
+<dl><dt><a name="OOMKillerProfiler-CustomizeBrowserOptions"><strong>CustomizeBrowserOptions</strong></a>(cls, browser_type, options)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Override&nbsp;to&nbsp;customize&nbsp;the&nbsp;Browser's&nbsp;options&nbsp;before&nbsp;it&nbsp;is&nbsp;created.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.internal.platform.profiler.html#Profiler">telemetry.internal.platform.profiler.Profiler</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="UnableToFindApplicationException">class <strong>UnableToFindApplicationException</strong></a>(<a href="exceptions.html#Exception">exceptions.Exception</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="exceptions.html#Exception">Exception</a>&nbsp;when&nbsp;unable&nbsp;to&nbsp;find&nbsp;a&nbsp;launched&nbsp;application<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.internal.platform.profiler.oomkiller_profiler.html#UnableToFindApplicationException">UnableToFindApplicationException</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="UnableToFindApplicationException-__init__"><strong>__init__</strong></a>(self, application)</dt></dl>
+
+<dl><dt><a name="UnableToFindApplicationException-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#UnableToFindApplicationException-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;object&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="UnableToFindApplicationException-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#UnableToFindApplicationException-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="UnableToFindApplicationException-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#UnableToFindApplicationException-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="UnableToFindApplicationException-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#UnableToFindApplicationException-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="UnableToFindApplicationException-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#UnableToFindApplicationException-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="UnableToFindApplicationException-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="UnableToFindApplicationException-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#UnableToFindApplicationException-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="UnableToFindApplicationException-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#UnableToFindApplicationException-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="UnableToFindApplicationException-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="UnableToFindApplicationException-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

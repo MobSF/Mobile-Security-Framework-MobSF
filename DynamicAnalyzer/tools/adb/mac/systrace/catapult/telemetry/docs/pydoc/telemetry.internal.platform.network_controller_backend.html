@@ -1,0 +1,225 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.platform.network_controller_backend</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.<a href="telemetry.internal.platform.html"><font color="#ffffff">platform</font></a>.network_controller_backend</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/platform/network_controller_backend.py">telemetry/internal/platform/network_controller_backend.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2014&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.internal.forwarders.html">telemetry.internal.forwarders</a><br>
+</td><td width="25%" valign=top><a href="os.html">os</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.util.webpagereplay.html">telemetry.internal.util.webpagereplay</a><br>
+</td><td width="25%" valign=top><a href="telemetry.util.wpr_modes.html">telemetry.util.wpr_modes</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.platform.network_controller_backend.html#NetworkControllerBackend">NetworkControllerBackend</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="exceptions.html#Exception">exceptions.Exception</a>(<a href="exceptions.html#BaseException">exceptions.BaseException</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.platform.network_controller_backend.html#ArchiveDoesNotExistError">ArchiveDoesNotExistError</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.internal.platform.network_controller_backend.html#ReplayAndBrowserPortsError">ReplayAndBrowserPortsError</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="ArchiveDoesNotExistError">class <strong>ArchiveDoesNotExistError</strong></a>(<a href="exceptions.html#Exception">exceptions.Exception</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Raised&nbsp;when&nbsp;the&nbsp;archive&nbsp;path&nbsp;does&nbsp;not&nbsp;exist&nbsp;for&nbsp;replay&nbsp;mode.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.internal.platform.network_controller_backend.html#ArchiveDoesNotExistError">ArchiveDoesNotExistError</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><a name="ArchiveDoesNotExistError-__init__"><strong>__init__</strong></a>(...)</dt><dd><tt>x.<a href="#ArchiveDoesNotExistError-__init__">__init__</a>(...)&nbsp;initializes&nbsp;x;&nbsp;see&nbsp;help(type(x))&nbsp;for&nbsp;signature</tt></dd></dl>
+
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#ArchiveDoesNotExistError-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="ArchiveDoesNotExistError-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#ArchiveDoesNotExistError-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="ArchiveDoesNotExistError-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#ArchiveDoesNotExistError-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="ArchiveDoesNotExistError-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#ArchiveDoesNotExistError-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="ArchiveDoesNotExistError-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#ArchiveDoesNotExistError-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="ArchiveDoesNotExistError-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="ArchiveDoesNotExistError-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#ArchiveDoesNotExistError-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="ArchiveDoesNotExistError-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#ArchiveDoesNotExistError-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="ArchiveDoesNotExistError-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="ArchiveDoesNotExistError-__str__"><strong>__str__</strong></a>(...)</dt><dd><tt>x.<a href="#ArchiveDoesNotExistError-__str__">__str__</a>()&nbsp;&lt;==&gt;&nbsp;str(x)</tt></dd></dl>
+
+<dl><dt><a name="ArchiveDoesNotExistError-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="NetworkControllerBackend">class <strong>NetworkControllerBackend</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Control&nbsp;network&nbsp;settings&nbsp;and&nbsp;servers&nbsp;to&nbsp;simulate&nbsp;the&nbsp;Web.<br>
+&nbsp;<br>
+Network&nbsp;changes&nbsp;include&nbsp;forwarding&nbsp;device&nbsp;ports&nbsp;to&nbsp;host&nbsp;platform&nbsp;ports.<br>
+Web&nbsp;Page&nbsp;Replay&nbsp;is&nbsp;used&nbsp;to&nbsp;record&nbsp;and&nbsp;replay&nbsp;HTTP/HTTPS&nbsp;responses.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="NetworkControllerBackend-SetReplayArgs"><strong>SetReplayArgs</strong></a>(self, archive_path, wpr_mode, netsim, extra_wpr_args, make_javascript_deterministic<font color="#909090">=False</font>)</dt><dd><tt>Save&nbsp;the&nbsp;arguments&nbsp;needed&nbsp;for&nbsp;replay.<br>
+&nbsp;<br>
+To&nbsp;make&nbsp;the&nbsp;settings&nbsp;effective,&nbsp;this&nbsp;call&nbsp;must&nbsp;be&nbsp;followed&nbsp;by&nbsp;a&nbsp;call<br>
+to&nbsp;UpdateReplay.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;archive_path:&nbsp;a&nbsp;path&nbsp;to&nbsp;a&nbsp;specific&nbsp;WPR&nbsp;archive.<br>
+&nbsp;&nbsp;wpr_mode:&nbsp;one&nbsp;of&nbsp;wpr_modes.WPR_OFF,&nbsp;wpr_modes.WPR_APPEND,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wpr_modes.WPR_REPLAY,&nbsp;or&nbsp;wpr_modes.WPR_RECORD.<br>
+&nbsp;&nbsp;netsim:&nbsp;a&nbsp;net_config&nbsp;string&nbsp;('dialup',&nbsp;'3g',&nbsp;'dsl',&nbsp;'cable',&nbsp;or&nbsp;'fios').<br>
+&nbsp;&nbsp;extra_wpr_args:&nbsp;a&nbsp;list&nbsp;of&nbsp;addtional&nbsp;replay&nbsp;args&nbsp;(or&nbsp;an&nbsp;empty&nbsp;list).<br>
+&nbsp;&nbsp;make_javascript_deterministic:&nbsp;True&nbsp;if&nbsp;replay&nbsp;should&nbsp;inject&nbsp;a&nbsp;script<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;make&nbsp;JavaScript&nbsp;behave&nbsp;deterministically&nbsp;(e.g.,&nbsp;override&nbsp;Date()).</tt></dd></dl>
+
+<dl><dt><a name="NetworkControllerBackend-StopReplay"><strong>StopReplay</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="NetworkControllerBackend-UpdateReplay"><strong>UpdateReplay</strong></a>(self, browser_backend<font color="#909090">=None</font>)</dt><dd><tt>Start&nbsp;or&nbsp;reuse&nbsp;Web&nbsp;Page&nbsp;Replay.<br>
+&nbsp;<br>
+UpdateReplay&nbsp;must&nbsp;be&nbsp;called&nbsp;after&nbsp;every&nbsp;call&nbsp;to&nbsp;SetReplayArgs.<br>
+&nbsp;<br>
+TODO(slamm):&nbsp;Update&nbsp;replay&nbsp;in&nbsp;SetReplayArgs&nbsp;once&nbsp;the&nbsp;browser_backend<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dependencies&nbsp;move&nbsp;to&nbsp;platform.&nbsp;https://crbug.com/423962<br>
+&nbsp;&nbsp;&nbsp;&nbsp;browser_backend&nbsp;properties&nbsp;used:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Input:&nbsp;wpr_port_pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Output:&nbsp;wpr_port_pairs&nbsp;(browser&nbsp;uses&nbsp;for&nbsp;--testing-fixed-*&nbsp;flags).<br>
+Args:<br>
+&nbsp;&nbsp;browser_backend:&nbsp;instance&nbsp;of&nbsp;telemetry.core.backends.browser_backend</tt></dd></dl>
+
+<dl><dt><a name="NetworkControllerBackend-__init__"><strong>__init__</strong></a>(self, platform_backend)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>wpr_http_device_port</strong></dt>
+</dl>
+<dl><dt><strong>wpr_https_device_port</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="ReplayAndBrowserPortsError">class <strong>ReplayAndBrowserPortsError</strong></a>(<a href="exceptions.html#Exception">exceptions.Exception</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Raised&nbsp;an&nbsp;existing&nbsp;browser&nbsp;would&nbsp;get&nbsp;different&nbsp;remote&nbsp;replay&nbsp;ports.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.internal.platform.network_controller_backend.html#ReplayAndBrowserPortsError">ReplayAndBrowserPortsError</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><a name="ReplayAndBrowserPortsError-__init__"><strong>__init__</strong></a>(...)</dt><dd><tt>x.<a href="#ReplayAndBrowserPortsError-__init__">__init__</a>(...)&nbsp;initializes&nbsp;x;&nbsp;see&nbsp;help(type(x))&nbsp;for&nbsp;signature</tt></dd></dl>
+
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#ReplayAndBrowserPortsError-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="ReplayAndBrowserPortsError-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#ReplayAndBrowserPortsError-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="ReplayAndBrowserPortsError-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#ReplayAndBrowserPortsError-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="ReplayAndBrowserPortsError-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#ReplayAndBrowserPortsError-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="ReplayAndBrowserPortsError-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#ReplayAndBrowserPortsError-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="ReplayAndBrowserPortsError-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="ReplayAndBrowserPortsError-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#ReplayAndBrowserPortsError-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="ReplayAndBrowserPortsError-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#ReplayAndBrowserPortsError-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="ReplayAndBrowserPortsError-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="ReplayAndBrowserPortsError-__str__"><strong>__str__</strong></a>(...)</dt><dd><tt>x.<a href="#ReplayAndBrowserPortsError-__str__">__str__</a>()&nbsp;&lt;==&gt;&nbsp;str(x)</tt></dd></dl>
+
+<dl><dt><a name="ReplayAndBrowserPortsError-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

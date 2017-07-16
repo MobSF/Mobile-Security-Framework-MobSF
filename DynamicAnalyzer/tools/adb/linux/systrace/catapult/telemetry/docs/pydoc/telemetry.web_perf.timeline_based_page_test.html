@@ -1,0 +1,136 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.web_perf.timeline_based_page_test</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.web_perf.html"><font color="#ffffff">web_perf</font></a>.timeline_based_page_test</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/web_perf/timeline_based_page_test.py">telemetry/web_perf/timeline_based_page_test.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;(c)&nbsp;2015&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.page.page_test.html">telemetry.page.page_test</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="telemetry.page.page_test.html#PageTest">telemetry.page.page_test.PageTest</a>(<a href="__builtin__.html#object">__builtin__.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.web_perf.timeline_based_page_test.html#TimelineBasedPageTest">TimelineBasedPageTest</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="TimelineBasedPageTest">class <strong>TimelineBasedPageTest</strong></a>(<a href="telemetry.page.page_test.html#PageTest">telemetry.page.page_test.PageTest</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Page&nbsp;test&nbsp;that&nbsp;collects&nbsp;metrics&nbsp;with&nbsp;TimelineBasedMeasurement.<br>
+&nbsp;<br>
+WillRunStory(),&nbsp;Measure()&nbsp;and&nbsp;DidRunStory()&nbsp;are&nbsp;all&nbsp;done&nbsp;in&nbsp;story_runner<br>
+explicitly.&nbsp;We&nbsp;still&nbsp;need&nbsp;this&nbsp;wrapper&nbsp;around&nbsp;<a href="telemetry.page.page_test.html#PageTest">PageTest</a>&nbsp;because&nbsp;it&nbsp;executes<br>
+some&nbsp;browser&nbsp;related&nbsp;functions&nbsp;in&nbsp;the&nbsp;parent&nbsp;class,&nbsp;which&nbsp;is&nbsp;needed&nbsp;by<br>
+Timeline&nbsp;Based&nbsp;Measurement&nbsp;benchmarks.&nbsp;This&nbsp;class&nbsp;will&nbsp;be&nbsp;removed&nbsp;after<br>
+page_test's&nbsp;hooks&nbsp;are&nbsp;fully&nbsp;removed.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.web_perf.timeline_based_page_test.html#TimelineBasedPageTest">TimelineBasedPageTest</a></dd>
+<dd><a href="telemetry.page.page_test.html#PageTest">telemetry.page.page_test.PageTest</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="TimelineBasedPageTest-ValidateAndMeasurePage"><strong>ValidateAndMeasurePage</strong></a>(self, page, tab, results)</dt><dd><tt>Collect&nbsp;all&nbsp;possible&nbsp;metrics&nbsp;and&nbsp;added&nbsp;them&nbsp;to&nbsp;results.</tt></dd></dl>
+
+<dl><dt><a name="TimelineBasedPageTest-__init__"><strong>__init__</strong></a>(self, tbm)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>measurement</strong></dt>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.page.page_test.html#PageTest">telemetry.page.page_test.PageTest</a>:<br>
+<dl><dt><a name="TimelineBasedPageTest-CustomizeBrowserOptions"><strong>CustomizeBrowserOptions</strong></a>(self, options)</dt><dd><tt>Override&nbsp;to&nbsp;add&nbsp;test-specific&nbsp;options&nbsp;to&nbsp;the&nbsp;BrowserOptions&nbsp;object</tt></dd></dl>
+
+<dl><dt><a name="TimelineBasedPageTest-DidNavigateToPage"><strong>DidNavigateToPage</strong></a>(self, page, tab)</dt><dd><tt>Override&nbsp;to&nbsp;do&nbsp;operations&nbsp;right&nbsp;after&nbsp;the&nbsp;page&nbsp;is&nbsp;navigated&nbsp;and&nbsp;after<br>
+all&nbsp;waiting&nbsp;for&nbsp;completion&nbsp;has&nbsp;occurred.</tt></dd></dl>
+
+<dl><dt><a name="TimelineBasedPageTest-DidRunPage"><strong>DidRunPage</strong></a>(self, platform)</dt><dd><tt>Called&nbsp;after&nbsp;the&nbsp;test&nbsp;run&nbsp;method&nbsp;was&nbsp;run,&nbsp;even&nbsp;if&nbsp;it&nbsp;failed.</tt></dd></dl>
+
+<dl><dt><a name="TimelineBasedPageTest-DidStartBrowser"><strong>DidStartBrowser</strong></a>(self, browser)</dt><dd><tt>Override&nbsp;to&nbsp;customize&nbsp;the&nbsp;browser&nbsp;right&nbsp;after&nbsp;it&nbsp;has&nbsp;launched.</tt></dd></dl>
+
+<dl><dt><a name="TimelineBasedPageTest-RestartBrowserBeforeEachPage"><strong>RestartBrowserBeforeEachPage</strong></a>(self)</dt><dd><tt>Should&nbsp;the&nbsp;browser&nbsp;be&nbsp;restarted&nbsp;for&nbsp;the&nbsp;page?<br>
+&nbsp;<br>
+This&nbsp;returns&nbsp;true&nbsp;if&nbsp;the&nbsp;test&nbsp;needs&nbsp;to&nbsp;unconditionally&nbsp;restart&nbsp;the<br>
+browser&nbsp;for&nbsp;each&nbsp;page.&nbsp;It&nbsp;may&nbsp;be&nbsp;called&nbsp;before&nbsp;the&nbsp;browser&nbsp;is&nbsp;started.</tt></dd></dl>
+
+<dl><dt><a name="TimelineBasedPageTest-RunNavigateSteps"><strong>RunNavigateSteps</strong></a>(self, page, tab)</dt><dd><tt>Navigates&nbsp;the&nbsp;tab&nbsp;to&nbsp;the&nbsp;page&nbsp;URL&nbsp;attribute.<br>
+&nbsp;<br>
+Runs&nbsp;the&nbsp;'navigate_steps'&nbsp;page&nbsp;attribute&nbsp;as&nbsp;a&nbsp;compound&nbsp;action.</tt></dd></dl>
+
+<dl><dt><a name="TimelineBasedPageTest-SetOptions"><strong>SetOptions</strong></a>(self, options)</dt><dd><tt>Sets&nbsp;the&nbsp;BrowserFinderOptions&nbsp;instance&nbsp;to&nbsp;use.</tt></dd></dl>
+
+<dl><dt><a name="TimelineBasedPageTest-StopBrowserAfterPage"><strong>StopBrowserAfterPage</strong></a>(self, browser, page)</dt><dd><tt>Should&nbsp;the&nbsp;browser&nbsp;be&nbsp;stopped&nbsp;after&nbsp;the&nbsp;page&nbsp;is&nbsp;run?<br>
+&nbsp;<br>
+This&nbsp;is&nbsp;called&nbsp;after&nbsp;a&nbsp;page&nbsp;is&nbsp;run&nbsp;to&nbsp;decide&nbsp;whether&nbsp;the&nbsp;browser&nbsp;needs&nbsp;to<br>
+be&nbsp;stopped&nbsp;to&nbsp;clean&nbsp;up&nbsp;its&nbsp;state.&nbsp;If&nbsp;it&nbsp;is&nbsp;stopped,&nbsp;then&nbsp;it&nbsp;will&nbsp;be<br>
+restarted&nbsp;to&nbsp;run&nbsp;the&nbsp;next&nbsp;page.<br>
+&nbsp;<br>
+A&nbsp;test&nbsp;that&nbsp;overrides&nbsp;this&nbsp;can&nbsp;look&nbsp;at&nbsp;both&nbsp;the&nbsp;page&nbsp;and&nbsp;the&nbsp;browser&nbsp;to<br>
+decide&nbsp;whether&nbsp;it&nbsp;needs&nbsp;to&nbsp;stop&nbsp;the&nbsp;browser.</tt></dd></dl>
+
+<dl><dt><a name="TimelineBasedPageTest-TabForPage"><strong>TabForPage</strong></a>(self, page, browser)</dt><dd><tt>Override&nbsp;to&nbsp;select&nbsp;a&nbsp;different&nbsp;tab&nbsp;for&nbsp;the&nbsp;page.&nbsp;&nbsp;For&nbsp;instance,&nbsp;to<br>
+create&nbsp;a&nbsp;new&nbsp;tab&nbsp;for&nbsp;every&nbsp;page,&nbsp;return&nbsp;browser.tabs.New().</tt></dd></dl>
+
+<dl><dt><a name="TimelineBasedPageTest-WillNavigateToPage"><strong>WillNavigateToPage</strong></a>(self, page, tab)</dt><dd><tt>Override&nbsp;to&nbsp;do&nbsp;operations&nbsp;before&nbsp;the&nbsp;page&nbsp;is&nbsp;navigated,&nbsp;notably&nbsp;Telemetry<br>
+will&nbsp;already&nbsp;have&nbsp;performed&nbsp;the&nbsp;following&nbsp;operations&nbsp;on&nbsp;the&nbsp;browser&nbsp;before<br>
+calling&nbsp;this&nbsp;function:<br>
+*&nbsp;Ensure&nbsp;only&nbsp;one&nbsp;tab&nbsp;is&nbsp;open.<br>
+*&nbsp;Call&nbsp;WaitForDocumentReadyStateToComplete&nbsp;on&nbsp;the&nbsp;tab.</tt></dd></dl>
+
+<dl><dt><a name="TimelineBasedPageTest-WillStartBrowser"><strong>WillStartBrowser</strong></a>(self, platform)</dt><dd><tt>Override&nbsp;to&nbsp;manipulate&nbsp;the&nbsp;browser&nbsp;environment&nbsp;before&nbsp;it&nbsp;launches.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.page.page_test.html#PageTest">telemetry.page.page_test.PageTest</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>clear_cache_before_each_run</strong></dt>
+<dd><tt>When&nbsp;set&nbsp;to&nbsp;True,&nbsp;the&nbsp;browser's&nbsp;disk&nbsp;and&nbsp;memory&nbsp;cache&nbsp;will&nbsp;be&nbsp;cleared<br>
+before&nbsp;each&nbsp;run.</tt></dd>
+</dl>
+<dl><dt><strong>close_tabs_before_run</strong></dt>
+<dd><tt>When&nbsp;set&nbsp;to&nbsp;True,&nbsp;all&nbsp;tabs&nbsp;are&nbsp;closed&nbsp;before&nbsp;running&nbsp;the&nbsp;test&nbsp;for&nbsp;the<br>
+first&nbsp;time.</tt></dd>
+</dl>
+<dl><dt><strong>is_multi_tab_test</strong></dt>
+<dd><tt>Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;test&nbsp;opens&nbsp;multiple&nbsp;tabs.<br>
+&nbsp;<br>
+If&nbsp;the&nbsp;test&nbsp;overrides&nbsp;TabForPage,&nbsp;it&nbsp;is&nbsp;deemed&nbsp;a&nbsp;multi-tab&nbsp;test.<br>
+Multi-tab&nbsp;tests&nbsp;do&nbsp;not&nbsp;retry&nbsp;after&nbsp;tab&nbsp;or&nbsp;browser&nbsp;crashes,&nbsp;whereas,<br>
+single-tab&nbsp;tests&nbsp;too.&nbsp;That&nbsp;is&nbsp;because&nbsp;the&nbsp;state&nbsp;of&nbsp;multi-tab&nbsp;tests<br>
+(e.g.,&nbsp;how&nbsp;many&nbsp;tabs&nbsp;are&nbsp;open,&nbsp;etc.)&nbsp;is&nbsp;unknown&nbsp;after&nbsp;crashes.</tt></dd>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

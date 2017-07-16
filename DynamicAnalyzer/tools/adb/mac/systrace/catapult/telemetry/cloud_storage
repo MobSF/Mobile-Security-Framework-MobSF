@@ -1,0 +1,200 @@
+#!/usr/bin/env python
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import argparse
+import logging
+import os
+import subprocess
+import sys
+
+from telemetry.core import util
+from telemetry.internal.util import command_line
+
+sys.path.insert(1, os.path.abspath(os.path.join(
+    util.GetCatapultDir(), 'common', 'py_utils')))
+from py_utils import cloud_storage
+
+
+BUCKETS = {bucket: easy_bucket_name for easy_bucket_name, bucket
+           in cloud_storage.BUCKET_ALIASES.iteritems()}
+
+
+def _GetPaths(path):
+  root, ext = os.path.splitext(path)
+  if ext == '.sha1':
+    file_path = root
+    hash_path = path
+  else:
+    file_path = path
+    hash_path = path + '.sha1'
+  return file_path, hash_path
+
+
+def _FindFilesInCloudStorage(files):
+  """Returns a dict of all files and which buckets they're in."""
+  # Preprocessing: get the contents of all buckets.
+  bucket_contents = {}
+  for bucket in BUCKETS:
+    try:
+      bucket_contents[bucket] = cloud_storage.List(bucket)
+    except (cloud_storage.PermissionError, cloud_storage.CredentialsError):
+      pass
+
+  # Check if each file is in the bucket contents.
+  file_buckets = {}
+  for path in files:
+    file_path, hash_path = _GetPaths(path)
+
+    if file_path in file_buckets:
+      # Ignore duplicates, if both data and sha1 file were in the file list.
+      continue
+    if not os.path.exists(hash_path):
+      # Probably got some non-Cloud Storage files in the file list. Ignore.
+      continue
+
+    file_hash = cloud_storage.ReadHash(hash_path)
+    file_buckets[file_path] = []
+    for bucket in BUCKETS:
+      if bucket in bucket_contents and file_hash in bucket_contents[bucket]:
+        file_buckets[file_path].append(bucket)
+
+  return file_buckets
+
+
+class Ls(command_line.Command):
+  """List which bucket each file is in."""
+
+  @classmethod
+  def AddCommandLineArgs(cls, parser):
+    parser.add_argument('-r', '--recursive', action='store_true')
+    parser.add_argument('paths', nargs='+')
+
+  @classmethod
+  def ProcessCommandLineArgs(cls, parser, args):
+    for path in args.paths:
+      if not os.path.exists(path):
+        parser.error('Path not found: %s' % path)
+
+  def Run(self, args):
+    def GetFilesInPaths(paths, recursive):
+      """If path is a dir, yields all files in path, otherwise just yields path.
+      If recursive is true, walks subdirectories recursively."""
+      for path in paths:
+        if not os.path.isdir(path):
+          yield path
+          continue
+
+        if recursive:
+          for root, _, filenames in os.walk(path):
+            for filename in filenames:
+              yield os.path.join(root, filename)
+        else:
+          for filename in os.listdir(path):
+            yield os.path.join(path, filename)
+
+    files = _FindFilesInCloudStorage(GetFilesInPaths(args.paths, args.recursive))
+
+    if not files:
+      print 'No files in Cloud Storage.'
+      return
+
+    for file_path, buckets in sorted(files.iteritems()):
+      if buckets:
+        buckets = [BUCKETS[bucket] for bucket in buckets]
+        print '%-11s  %s' % (','.join(buckets), file_path)
+      else:
+        print '%-11s  %s' % ('not found', file_path)
+
+
+class Mv(command_line.Command):
+  """Move files to the given bucket."""
+
+  @classmethod
+  def AddCommandLineArgs(cls, parser):
+    parser.add_argument('files', nargs='+')
+    parser.add_argument('bucket', choices=cloud_storage.BUCKET_ALIASES)
+
+  @classmethod
+  def ProcessCommandLineArgs(cls, parser, args):
+    args.bucket = cloud_storage.BUCKET_ALIASES[args.bucket]
+
+  def Run(self, args):
+    files = _FindFilesInCloudStorage(args.files)
+
+    for file_path, buckets in sorted(files.iteritems()):
+      if not buckets:
+        raise IOError('%s not found in Cloud Storage.' % file_path)
+
+    for file_path, buckets in sorted(files.iteritems()):
+      if args.bucket in buckets:
+        buckets.remove(args.bucket)
+      if not buckets:
+        logging.info('Skipping %s, no action needed.' % file_path)
+        continue
+
+      # Move to the target bucket.
+      file_hash = cloud_storage.ReadHash(file_path + '.sha1')
+      cloud_storage.Move(buckets.pop(), args.bucket, file_hash)
+
+      # Delete all additional copies.
+      for bucket in buckets:
+        cloud_storage.Delete(bucket, file_hash)
+
+
+class Rm(command_line.Command):
+  """Remove files from Cloud Storage."""
+
+  @classmethod
+  def AddCommandLineArgs(cls, parser):
+    parser.add_argument('files', nargs='+')
+
+  def Run(self, args):
+    files = _FindFilesInCloudStorage(args.files)
+    for file_path, buckets in sorted(files.iteritems()):
+      file_hash = cloud_storage.ReadHash(file_path + '.sha1')
+      for bucket in buckets:
+        cloud_storage.Delete(bucket, file_hash)
+
+
+class Upload(command_line.Command):
+  """Upload files to Cloud Storage."""
+
+  @classmethod
+  def AddCommandLineArgs(cls, parser):
+    parser.add_argument('files', nargs='+')
+    parser.add_argument('bucket', choices=cloud_storage.BUCKET_ALIASES)
+
+  @classmethod
+  def ProcessCommandLineArgs(cls, parser, args):
+    args.bucket = cloud_storage.BUCKET_ALIASES[args.bucket]
+
+    for path in args.files:
+      if not os.path.exists(path):
+        parser.error('File not found: %s' % path)
+
+  def Run(self, args):
+    for file_path in args.files:
+      file_hash = cloud_storage.CalculateHash(file_path)
+
+      # Create or update the hash file.
+      hash_path = file_path + '.sha1'
+      with open(hash_path, 'wb') as f:
+        f.write(file_hash)
+        f.flush()
+
+      # Add the data to Cloud Storage.
+      cloud_storage.Insert(args.bucket, file_hash, file_path)
+
+      # Add the hash file to the branch, for convenience. :)
+      subprocess.call(['git', 'add', hash_path])
+
+
+class CloudStorageCommand(command_line.SubcommandCommand):
+  commands = (Ls, Mv, Rm, Upload)
+
+
+if __name__ == '__main__':
+  logging.getLogger().setLevel(logging.INFO)
+  sys.exit(CloudStorageCommand.main())

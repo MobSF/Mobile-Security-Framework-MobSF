@@ -1,0 +1,82 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: package telemetry.internal.app</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.app</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/app/__init__.py">telemetry/internal/app/__init__.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2012&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Package Contents</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.internal.app.android_app.html">android_app</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.app.android_app_unittest.html">android_app_unittest</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.app.android_process.html">android_process</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.app.possible_app.html">possible_app</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.app.html#App">App</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="App">class <strong>App</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>A&nbsp;running&nbsp;application&nbsp;instance&nbsp;that&nbsp;can&nbsp;be&nbsp;controlled&nbsp;in&nbsp;a&nbsp;limited&nbsp;way.<br>
+&nbsp;<br>
+Be&nbsp;sure&nbsp;to&nbsp;clean&nbsp;up&nbsp;after&nbsp;yourself&nbsp;by&nbsp;calling&nbsp;<a href="#App-Close">Close</a>()&nbsp;when&nbsp;you&nbsp;are&nbsp;done&nbsp;with<br>
+the&nbsp;app.&nbsp;Or&nbsp;better&nbsp;yet:<br>
+&nbsp;&nbsp;with&nbsp;possible_app.Create(options)&nbsp;as&nbsp;app:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;...&nbsp;do&nbsp;all&nbsp;your&nbsp;operations&nbsp;on&nbsp;app&nbsp;here<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="App-Close"><strong>Close</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="App-GetStackTrace"><strong>GetStackTrace</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="App-GetStandardOutput"><strong>GetStandardOutput</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="App-__enter__"><strong>__enter__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="App-__exit__"><strong>__exit__</strong></a>(self, *args)</dt></dl>
+
+<dl><dt><a name="App-__init__"><strong>__init__</strong></a>(self, app_backend, platform_backend)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>app_type</strong></dt>
+</dl>
+<dl><dt><strong>platform</strong></dt>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

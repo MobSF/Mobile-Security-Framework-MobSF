@@ -1,0 +1,275 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.core.android_platform</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.core.html"><font color="#ffffff">core</font></a>.android_platform</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/core/android_platform.py">telemetry/core/android_platform.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2014&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.core.android_action_runner.html">telemetry.core.android_action_runner</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.app.android_app.html">telemetry.internal.app.android_app</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.backends.android_app_backend.html">telemetry.internal.backends.android_app_backend</a><br>
+</td><td width="25%" valign=top><a href="telemetry.core.platform.html">telemetry.core.platform</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="telemetry.core.platform.html#Platform">telemetry.core.platform.Platform</a>(<a href="__builtin__.html#object">__builtin__.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.core.android_platform.html#AndroidPlatform">AndroidPlatform</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="AndroidPlatform">class <strong>AndroidPlatform</strong></a>(<a href="telemetry.core.platform.html#Platform">telemetry.core.platform.Platform</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.core.android_platform.html#AndroidPlatform">AndroidPlatform</a></dd>
+<dd><a href="telemetry.core.platform.html#Platform">telemetry.core.platform.Platform</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="AndroidPlatform-LaunchAndroidApplication"><strong>LaunchAndroidApplication</strong></a>(self, start_intent, is_app_ready_predicate<font color="#909090">=None</font>, app_has_webviews<font color="#909090">=True</font>)</dt><dd><tt>Launches&nbsp;an&nbsp;Android&nbsp;application&nbsp;given&nbsp;the&nbsp;intent.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;start_intent:&nbsp;The&nbsp;intent&nbsp;to&nbsp;use&nbsp;to&nbsp;start&nbsp;the&nbsp;app.<br>
+&nbsp;&nbsp;is_app_ready_predicate:&nbsp;A&nbsp;predicate&nbsp;function&nbsp;to&nbsp;determine<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;whether&nbsp;the&nbsp;app&nbsp;is&nbsp;ready.&nbsp;This&nbsp;is&nbsp;a&nbsp;function&nbsp;that&nbsp;takes&nbsp;an<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AndroidApp&nbsp;instance&nbsp;and&nbsp;return&nbsp;a&nbsp;boolean.&nbsp;When&nbsp;it&nbsp;is&nbsp;not&nbsp;passed&nbsp;in,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;app&nbsp;is&nbsp;ready&nbsp;when&nbsp;the&nbsp;intent&nbsp;to&nbsp;launch&nbsp;it&nbsp;is&nbsp;completed.<br>
+&nbsp;&nbsp;app_has_webviews:&nbsp;A&nbsp;boolean&nbsp;indicating&nbsp;whether&nbsp;the&nbsp;app&nbsp;is&nbsp;expected&nbsp;to<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;contain&nbsp;any&nbsp;WebViews.&nbsp;If&nbsp;True,&nbsp;the&nbsp;app&nbsp;will&nbsp;be&nbsp;launched&nbsp;with<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;appropriate&nbsp;webview&nbsp;flags,&nbsp;and&nbsp;the&nbsp;GetWebViews&nbsp;method&nbsp;of&nbsp;the&nbsp;returned<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;object&nbsp;may&nbsp;be&nbsp;used&nbsp;to&nbsp;access&nbsp;them.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;A&nbsp;reference&nbsp;to&nbsp;the&nbsp;android_app&nbsp;launched.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-__init__"><strong>__init__</strong></a>(self, platform_backend)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>android_action_runner</strong></dt>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.core.platform.html#Platform">telemetry.core.platform.Platform</a>:<br>
+<dl><dt><a name="AndroidPlatform-CanCaptureVideo"><strong>CanCaptureVideo</strong></a>(self)</dt><dd><tt>Returns&nbsp;a&nbsp;bool&nbsp;indicating&nbsp;whether&nbsp;the&nbsp;platform&nbsp;supports&nbsp;video&nbsp;capture.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-CanFlushIndividualFilesFromSystemCache"><strong>CanFlushIndividualFilesFromSystemCache</strong></a>(self)</dt><dd><tt>Returns&nbsp;true&nbsp;if&nbsp;the&nbsp;disk&nbsp;cache&nbsp;can&nbsp;be&nbsp;flushed&nbsp;for&nbsp;specific&nbsp;files.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-CanLaunchApplication"><strong>CanLaunchApplication</strong></a>(self, application)</dt><dd><tt>Returns&nbsp;whether&nbsp;the&nbsp;platform&nbsp;can&nbsp;launch&nbsp;the&nbsp;given&nbsp;application.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-CanMeasurePerApplicationPower"><strong>CanMeasurePerApplicationPower</strong></a>(self)</dt><dd><tt>Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;power&nbsp;monitor&nbsp;can&nbsp;measure&nbsp;power&nbsp;for&nbsp;the&nbsp;target<br>
+application&nbsp;in&nbsp;isolation.&nbsp;False&nbsp;if&nbsp;power&nbsp;measurement&nbsp;is&nbsp;for&nbsp;full&nbsp;system<br>
+energy&nbsp;consumption.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-CanMonitorNetworkData"><strong>CanMonitorNetworkData</strong></a>(self)</dt><dd><tt>Returns&nbsp;true&nbsp;if&nbsp;network&nbsp;data&nbsp;can&nbsp;be&nbsp;retrieved,&nbsp;false&nbsp;otherwise.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-CanMonitorPower"><strong>CanMonitorPower</strong></a>(self)</dt><dd><tt>Returns&nbsp;True&nbsp;iff&nbsp;power&nbsp;can&nbsp;be&nbsp;monitored&nbsp;asynchronously&nbsp;via<br>
+<a href="#AndroidPlatform-StartMonitoringPower">StartMonitoringPower</a>()&nbsp;and&nbsp;<a href="#AndroidPlatform-StopMonitoringPower">StopMonitoringPower</a>().</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-CanMonitorThermalThrottling"><strong>CanMonitorThermalThrottling</strong></a>(self)</dt><dd><tt>Platforms&nbsp;may&nbsp;be&nbsp;able&nbsp;to&nbsp;detect&nbsp;thermal&nbsp;throttling.<br>
+&nbsp;<br>
+Some&nbsp;fan-less&nbsp;computers&nbsp;go&nbsp;into&nbsp;a&nbsp;reduced&nbsp;performance&nbsp;mode&nbsp;when&nbsp;their&nbsp;heat<br>
+exceeds&nbsp;a&nbsp;certain&nbsp;threshold.&nbsp;Performance&nbsp;tests&nbsp;in&nbsp;particular&nbsp;should&nbsp;use&nbsp;this<br>
+API&nbsp;to&nbsp;detect&nbsp;if&nbsp;this&nbsp;has&nbsp;happened&nbsp;and&nbsp;interpret&nbsp;results&nbsp;accordingly.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-CanTakeScreenshot"><strong>CanTakeScreenshot</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidPlatform-CooperativelyShutdown"><strong>CooperativelyShutdown</strong></a>(self, proc, app_name)</dt><dd><tt>Cooperatively&nbsp;shut&nbsp;down&nbsp;the&nbsp;given&nbsp;process&nbsp;from&nbsp;subprocess.Popen.<br>
+&nbsp;<br>
+Currently&nbsp;this&nbsp;is&nbsp;only&nbsp;implemented&nbsp;on&nbsp;Windows.&nbsp;See<br>
+crbug.com/424024&nbsp;for&nbsp;background&nbsp;on&nbsp;why&nbsp;it&nbsp;was&nbsp;added.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;proc:&nbsp;a&nbsp;process&nbsp;object&nbsp;returned&nbsp;from&nbsp;subprocess.Popen.<br>
+&nbsp;&nbsp;app_name:&nbsp;on&nbsp;Windows,&nbsp;is&nbsp;the&nbsp;prefix&nbsp;of&nbsp;the&nbsp;application's&nbsp;window<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;name&nbsp;that&nbsp;should&nbsp;be&nbsp;searched&nbsp;for.&nbsp;This&nbsp;helps&nbsp;ensure<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;that&nbsp;only&nbsp;the&nbsp;application's&nbsp;windows&nbsp;are&nbsp;closed.<br>
+&nbsp;<br>
+Returns&nbsp;True&nbsp;if&nbsp;it&nbsp;is&nbsp;believed&nbsp;the&nbsp;attempt&nbsp;succeeded.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-FlushDnsCache"><strong>FlushDnsCache</strong></a>(self)</dt><dd><tt>Flushes&nbsp;the&nbsp;OS's&nbsp;DNS&nbsp;cache&nbsp;completely.<br>
+&nbsp;<br>
+This&nbsp;function&nbsp;may&nbsp;require&nbsp;root&nbsp;or&nbsp;administrator&nbsp;access.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-FlushEntireSystemCache"><strong>FlushEntireSystemCache</strong></a>(self)</dt><dd><tt>Flushes&nbsp;the&nbsp;OS's&nbsp;file&nbsp;cache&nbsp;completely.<br>
+&nbsp;<br>
+This&nbsp;function&nbsp;may&nbsp;require&nbsp;root&nbsp;or&nbsp;administrator&nbsp;access.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-FlushSystemCacheForDirectory"><strong>FlushSystemCacheForDirectory</strong></a>(self, directory)</dt><dd><tt>Flushes&nbsp;the&nbsp;OS's&nbsp;file&nbsp;cache&nbsp;for&nbsp;the&nbsp;specified&nbsp;directory.<br>
+&nbsp;<br>
+This&nbsp;function&nbsp;does&nbsp;not&nbsp;require&nbsp;root&nbsp;or&nbsp;administrator&nbsp;access.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-GetArchName"><strong>GetArchName</strong></a>(self)</dt><dd><tt>Returns&nbsp;a&nbsp;string&nbsp;description&nbsp;of&nbsp;the&nbsp;<a href="telemetry.core.platform.html#Platform">Platform</a>&nbsp;architecture.<br>
+&nbsp;<br>
+Examples:&nbsp;x86_64&nbsp;(posix),&nbsp;AMD64&nbsp;(win),&nbsp;armeabi-v7a,&nbsp;x86</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-GetDeviceTypeName"><strong>GetDeviceTypeName</strong></a>(self)</dt><dd><tt>Returns&nbsp;a&nbsp;string&nbsp;description&nbsp;of&nbsp;the&nbsp;<a href="telemetry.core.platform.html#Platform">Platform</a>&nbsp;device,&nbsp;or&nbsp;None.<br>
+&nbsp;<br>
+Examples:&nbsp;Nexus&nbsp;7,&nbsp;Nexus&nbsp;6,&nbsp;Desktop</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-GetNetworkData"><strong>GetNetworkData</strong></a>(self, browser)</dt><dd><tt>Get&nbsp;current&nbsp;network&nbsp;data.<br>
+Returns:<br>
+&nbsp;&nbsp;Tuple&nbsp;of&nbsp;(sent_data,&nbsp;received_data)&nbsp;in&nbsp;kb&nbsp;if&nbsp;data&nbsp;can&nbsp;be&nbsp;found,<br>
+&nbsp;&nbsp;None&nbsp;otherwise.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-GetOSName"><strong>GetOSName</strong></a>(self)</dt><dd><tt>Returns&nbsp;a&nbsp;string&nbsp;description&nbsp;of&nbsp;the&nbsp;<a href="telemetry.core.platform.html#Platform">Platform</a>&nbsp;OS.<br>
+&nbsp;<br>
+Examples:&nbsp;WIN,&nbsp;MAC,&nbsp;LINUX,&nbsp;CHROMEOS</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-GetOSVersionName"><strong>GetOSVersionName</strong></a>(self)</dt><dd><tt>Returns&nbsp;a&nbsp;logically&nbsp;sortable,&nbsp;string-like&nbsp;description&nbsp;of&nbsp;the&nbsp;<a href="telemetry.core.platform.html#Platform">Platform</a>&nbsp;OS<br>
+version.<br>
+&nbsp;<br>
+Examples:&nbsp;VISTA,&nbsp;WIN7,&nbsp;LION,&nbsp;MOUNTAINLION</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-GetOSVersionNumber"><strong>GetOSVersionNumber</strong></a>(self)</dt><dd><tt>Returns&nbsp;an&nbsp;integer&nbsp;description&nbsp;of&nbsp;the&nbsp;<a href="telemetry.core.platform.html#Platform">Platform</a>&nbsp;OS&nbsp;major&nbsp;version.<br>
+&nbsp;<br>
+Examples:&nbsp;On&nbsp;Mac,&nbsp;13&nbsp;for&nbsp;Mavericks,&nbsp;14&nbsp;for&nbsp;Yosemite.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-HasBeenThermallyThrottled"><strong>HasBeenThermallyThrottled</strong></a>(self)</dt><dd><tt>Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;device&nbsp;has&nbsp;been&nbsp;thermally&nbsp;throttled.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-InstallApplication"><strong>InstallApplication</strong></a>(self, application)</dt><dd><tt>Installs&nbsp;the&nbsp;given&nbsp;application.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-IsApplicationRunning"><strong>IsApplicationRunning</strong></a>(self, application)</dt><dd><tt>Returns&nbsp;whether&nbsp;an&nbsp;application&nbsp;is&nbsp;currently&nbsp;running.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-IsCooperativeShutdownSupported"><strong>IsCooperativeShutdownSupported</strong></a>(self)</dt><dd><tt>Indicates&nbsp;whether&nbsp;CooperativelyShutdown,&nbsp;below,&nbsp;is&nbsp;supported.<br>
+It&nbsp;is&nbsp;not&nbsp;necessary&nbsp;to&nbsp;implement&nbsp;it&nbsp;on&nbsp;all&nbsp;platforms.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-IsMonitoringPower"><strong>IsMonitoringPower</strong></a>(self)</dt><dd><tt>Returns&nbsp;true&nbsp;if&nbsp;power&nbsp;is&nbsp;currently&nbsp;being&nbsp;monitored,&nbsp;false&nbsp;otherwise.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-IsThermallyThrottled"><strong>IsThermallyThrottled</strong></a>(self)</dt><dd><tt>Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;device&nbsp;is&nbsp;currently&nbsp;thermally&nbsp;throttled.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-LaunchApplication"><strong>LaunchApplication</strong></a>(self, application, parameters<font color="#909090">=None</font>, elevate_privilege<font color="#909090">=False</font>)</dt><dd><tt>"Launches&nbsp;the&nbsp;given&nbsp;|application|&nbsp;with&nbsp;a&nbsp;list&nbsp;of&nbsp;|parameters|&nbsp;on&nbsp;the&nbsp;OS.<br>
+&nbsp;<br>
+Set&nbsp;|elevate_privilege|&nbsp;to&nbsp;launch&nbsp;the&nbsp;application&nbsp;with&nbsp;root&nbsp;or&nbsp;admin&nbsp;rights.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;A&nbsp;popen&nbsp;style&nbsp;process&nbsp;handle&nbsp;for&nbsp;host&nbsp;platforms.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-SetHTTPServerDirectories"><strong>SetHTTPServerDirectories</strong></a>(self, paths)</dt><dd><tt>Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;HTTP&nbsp;server&nbsp;was&nbsp;started,&nbsp;False&nbsp;otherwise.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-StartLocalServer"><strong>StartLocalServer</strong></a>(self, server)</dt><dd><tt>Starts&nbsp;a&nbsp;LocalServer&nbsp;and&nbsp;associates&nbsp;it&nbsp;with&nbsp;this&nbsp;platform.<br>
+|server.Close()|&nbsp;should&nbsp;be&nbsp;called&nbsp;manually&nbsp;to&nbsp;close&nbsp;the&nbsp;started&nbsp;server.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-StartMonitoringPower"><strong>StartMonitoringPower</strong></a>(self, browser)</dt><dd><tt>Starts&nbsp;monitoring&nbsp;power&nbsp;utilization&nbsp;statistics.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;browser:&nbsp;The&nbsp;browser&nbsp;to&nbsp;monitor.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-StartVideoCapture"><strong>StartVideoCapture</strong></a>(self, min_bitrate_mbps)</dt><dd><tt>Starts&nbsp;capturing&nbsp;video.<br>
+&nbsp;<br>
+Outer&nbsp;framing&nbsp;may&nbsp;be&nbsp;included&nbsp;(from&nbsp;the&nbsp;OS,&nbsp;browser&nbsp;window,&nbsp;and&nbsp;webcam).<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;min_bitrate_mbps:&nbsp;The&nbsp;minimum&nbsp;capture&nbsp;bitrate&nbsp;in&nbsp;MegaBits&nbsp;Per&nbsp;Second.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;platform&nbsp;is&nbsp;free&nbsp;to&nbsp;deliver&nbsp;a&nbsp;higher&nbsp;bitrate&nbsp;if&nbsp;it&nbsp;can&nbsp;do&nbsp;so<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;without&nbsp;increasing&nbsp;overhead.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;ValueError&nbsp;if&nbsp;the&nbsp;required&nbsp;|min_bitrate_mbps|&nbsp;can't&nbsp;be&nbsp;achieved.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-StopAllLocalServers"><strong>StopAllLocalServers</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidPlatform-StopMonitoringPower"><strong>StopMonitoringPower</strong></a>(self)</dt><dd><tt>Stops&nbsp;monitoring&nbsp;power&nbsp;utilization&nbsp;and&nbsp;returns&nbsp;stats<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;None&nbsp;if&nbsp;power&nbsp;measurement&nbsp;failed&nbsp;for&nbsp;some&nbsp;reason,&nbsp;otherwise&nbsp;a&nbsp;dict&nbsp;of<br>
+&nbsp;&nbsp;power&nbsp;utilization&nbsp;statistics&nbsp;containing:&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;An&nbsp;identifier&nbsp;for&nbsp;the&nbsp;data&nbsp;provider.&nbsp;Allows&nbsp;to&nbsp;evaluate&nbsp;the&nbsp;precision<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;of&nbsp;the&nbsp;data.&nbsp;Example&nbsp;values:&nbsp;monsoon,&nbsp;powermetrics,&nbsp;ds2784<br>
+&nbsp;&nbsp;&nbsp;&nbsp;'identifier':&nbsp;identifier,<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;The&nbsp;instantaneous&nbsp;power&nbsp;(voltage&nbsp;*&nbsp;current)&nbsp;reading&nbsp;in&nbsp;milliwatts&nbsp;at<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;each&nbsp;sample.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;'power_samples_mw':&nbsp;&nbsp;[mw0,&nbsp;mw1,&nbsp;...,&nbsp;mwN],<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;The&nbsp;full&nbsp;system&nbsp;energy&nbsp;consumption&nbsp;during&nbsp;the&nbsp;sampling&nbsp;period&nbsp;in<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;milliwatt&nbsp;hours.&nbsp;May&nbsp;be&nbsp;estimated&nbsp;by&nbsp;integrating&nbsp;power&nbsp;samples&nbsp;or&nbsp;may<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;be&nbsp;exact&nbsp;on&nbsp;supported&nbsp;hardware.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;'energy_consumption_mwh':&nbsp;mwh,<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;The&nbsp;target&nbsp;application's&nbsp;energy&nbsp;consumption&nbsp;during&nbsp;the&nbsp;sampling&nbsp;period<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;in&nbsp;milliwatt&nbsp;hours.&nbsp;Should&nbsp;be&nbsp;returned&nbsp;iff<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;<a href="#AndroidPlatform-CanMeasurePerApplicationPower">CanMeasurePerApplicationPower</a>()&nbsp;return&nbsp;true.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;'application_energy_consumption_mwh':&nbsp;mwh,<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;A&nbsp;platform-specific&nbsp;dictionary&nbsp;of&nbsp;additional&nbsp;details&nbsp;about&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;utilization&nbsp;of&nbsp;individual&nbsp;hardware&nbsp;components.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;component_utilization:&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;<a href="telemetry.core.platform.html#Platform">Platform</a>-specific&nbsp;data&nbsp;not&nbsp;attributed&nbsp;to&nbsp;any&nbsp;particular&nbsp;hardware<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;component.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;platform_info:&nbsp;{<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;Device-specific&nbsp;onboard&nbsp;temperature&nbsp;sensor.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'average_temperature_c':&nbsp;c,<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;<br>
+&nbsp;&nbsp;}</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-StopVideoCapture"><strong>StopVideoCapture</strong></a>(self)</dt><dd><tt>Stops&nbsp;capturing&nbsp;video.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;A&nbsp;telemetry.core.video.Video&nbsp;object.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatform-TakeScreenshot"><strong>TakeScreenshot</strong></a>(self, file_path)</dt><dd><tt>Takes&nbsp;a&nbsp;screenshot&nbsp;of&nbsp;the&nbsp;platform&nbsp;and&nbsp;save&nbsp;to&nbsp;|file_path|.<br>
+&nbsp;<br>
+Note&nbsp;that&nbsp;this&nbsp;method&nbsp;may&nbsp;not&nbsp;be&nbsp;supported&nbsp;on&nbsp;all&nbsp;platform,&nbsp;so&nbsp;check&nbsp;with<br>
+CanTakeScreenshot&nbsp;before&nbsp;calling&nbsp;this.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;file_path:&nbsp;Where&nbsp;to&nbsp;save&nbsp;the&nbsp;screenshot&nbsp;to.&nbsp;If&nbsp;the&nbsp;platform&nbsp;is&nbsp;remote,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;|file_path|&nbsp;is&nbsp;the&nbsp;path&nbsp;on&nbsp;the&nbsp;host&nbsp;platform.<br>
+&nbsp;<br>
+Returns&nbsp;True&nbsp;if&nbsp;it&nbsp;is&nbsp;believed&nbsp;the&nbsp;attempt&nbsp;succeeded.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.core.platform.html#Platform">telemetry.core.platform.Platform</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>http_server</strong></dt>
+</dl>
+<dl><dt><strong>is_host_platform</strong></dt>
+</dl>
+<dl><dt><strong>local_servers</strong></dt>
+<dd><tt>Returns&nbsp;the&nbsp;currently&nbsp;running&nbsp;local&nbsp;servers.</tt></dd>
+</dl>
+<dl><dt><strong>network_controller</strong></dt>
+<dd><tt>Control&nbsp;network&nbsp;settings&nbsp;and&nbsp;servers&nbsp;to&nbsp;simulate&nbsp;the&nbsp;Web.</tt></dd>
+</dl>
+<dl><dt><strong>tracing_controller</strong></dt>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

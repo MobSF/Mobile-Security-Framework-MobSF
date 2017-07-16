@@ -1,0 +1,98 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.web_perf.metrics.webrtc_rendering_stats</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.web_perf.html"><font color="#ffffff">web_perf</font></a>.<a href="telemetry.web_perf.metrics.html"><font color="#ffffff">metrics</font></a>.webrtc_rendering_stats</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/web_perf/metrics/webrtc_rendering_stats.py">telemetry/web_perf/metrics/webrtc_rendering_stats.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2015&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="logging.html">logging</a><br>
+</td><td width="25%" valign=top><a href="telemetry.util.statistics.html">telemetry.util.statistics</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.web_perf.metrics.webrtc_rendering_stats.html#TimeStats">TimeStats</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.web_perf.metrics.webrtc_rendering_stats.html#WebMediaPlayerMsRenderingStats">WebMediaPlayerMsRenderingStats</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="TimeStats">class <strong>TimeStats</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Stats&nbsp;container&nbsp;for&nbsp;webrtc&nbsp;rendering&nbsp;metrics.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="TimeStats-__init__"><strong>__init__</strong></a>(self, drift_time<font color="#909090">=None</font>, mean_drift_time<font color="#909090">=None</font>, std_dev_drift_time<font color="#909090">=None</font>, percent_badly_out_of_sync<font color="#909090">=None</font>, percent_out_of_sync<font color="#909090">=None</font>, smoothness_score<font color="#909090">=None</font>, freezing_score<font color="#909090">=None</font>, rendering_length_error<font color="#909090">=None</font>, fps<font color="#909090">=None</font>, frame_distribution<font color="#909090">=None</font>)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="WebMediaPlayerMsRenderingStats">class <strong>WebMediaPlayerMsRenderingStats</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Analyzes&nbsp;events&nbsp;of&nbsp;WebMediaPlayerMs&nbsp;type.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="WebMediaPlayerMsRenderingStats-GetTimeStats"><strong>GetTimeStats</strong></a>(self)</dt><dd><tt>Calculate&nbsp;time&nbsp;stamp&nbsp;stats&nbsp;for&nbsp;all&nbsp;remote&nbsp;stream&nbsp;events.</tt></dd></dl>
+
+<dl><dt><a name="WebMediaPlayerMsRenderingStats-__init__"><strong>__init__</strong></a>(self, events)</dt><dd><tt>Save&nbsp;relevant&nbsp;events&nbsp;according&nbsp;to&nbsp;their&nbsp;stream.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>ACTUAL_RENDER_BEGIN</strong> = 'Actual Render Begin'<br>
+<strong>ACTUAL_RENDER_END</strong> = 'Actual Render End'<br>
+<strong>DISPLAY_HERTZ</strong> = 60.0<br>
+<strong>FROZEN_THRESHOLD</strong> = 6<br>
+<strong>IDEAL_RENDER_INSTANT</strong> = 'Ideal Render Instant'<br>
+<strong>SERIAL</strong> = 'Serial'<br>
+<strong>SEVERITY</strong> = 3<br>
+<strong>VSYNC_DURATION</strong> = 16666.666666666668</td></tr></table>
+</body></html>

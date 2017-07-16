@@ -1,0 +1,107 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.web_perf.metrics.trace_event_stats</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.web_perf.html"><font color="#ffffff">web_perf</font></a>.<a href="telemetry.web_perf.metrics.html"><font color="#ffffff">metrics</font></a>.trace_event_stats</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/web_perf/metrics/trace_event_stats.py">telemetry/web_perf/metrics/trace_event_stats.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2015&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="collections.html">collections</a><br>
+</td><td width="25%" valign=top><a href="telemetry.value.list_of_scalar_values.html">telemetry.value.list_of_scalar_values</a><br>
+</td><td width="25%" valign=top><a href="telemetry.value.scalar.html">telemetry.value.scalar</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.web_perf.metrics.trace_event_stats.html#TraceEventStats">TraceEventStats</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.web_perf.metrics.trace_event_stats.html#TraceEventStatsInput">TraceEventStatsInput</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="TraceEventStats">class <strong>TraceEventStats</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Reports&nbsp;durations&nbsp;and&nbsp;counts&nbsp;of&nbsp;given&nbsp;trace&nbsp;events.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="TraceEventStats-AddInput"><strong>AddInput</strong></a>(self, trace_event_aggregator_input)</dt></dl>
+
+<dl><dt><a name="TraceEventStats-AddResults"><strong>AddResults</strong></a>(self, model, renderer_process, interactions, results)</dt></dl>
+
+<dl><dt><a name="TraceEventStats-__init__"><strong>__init__</strong></a>(self, trace_event_aggregator_inputs<font color="#909090">=None</font>)</dt></dl>
+
+<hr>
+Static methods defined here:<br>
+<dl><dt><a name="TraceEventStats-ThreadDurationIfPresent"><strong>ThreadDurationIfPresent</strong></a>(event)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="TraceEventStatsInput">class <strong>TraceEventStatsInput</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Input&nbsp;for&nbsp;the&nbsp;<a href="#TraceEventStats">TraceEventStats</a>.<br>
+Using&nbsp;this&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;<a href="#TraceEventStats">TraceEventStats</a>&nbsp;will&nbsp;include&nbsp;two&nbsp;metrics,&nbsp;one&nbsp;with&nbsp;a<br>
+list&nbsp;of&nbsp;times&nbsp;of&nbsp;the&nbsp;given&nbsp;event,&nbsp;and&nbsp;one&nbsp;for&nbsp;the&nbsp;count&nbsp;of&nbsp;the&nbsp;events,&nbsp;named<br>
+`metric_name&nbsp;+&nbsp;'-count'`.<br>
+Args:<br>
+&nbsp;&nbsp;event_category:&nbsp;The&nbsp;category&nbsp;of&nbsp;the&nbsp;event&nbsp;to&nbsp;track.<br>
+&nbsp;&nbsp;event_name:&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;event&nbsp;to&nbsp;track.<br>
+&nbsp;&nbsp;metric_name:&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;metric&nbsp;name,&nbsp;which&nbsp;accumulates&nbsp;all&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;times&nbsp;of&nbsp;the&nbsp;events.<br>
+&nbsp;&nbsp;metric_description:&nbsp;Description&nbsp;of&nbsp;the&nbsp;metric.<br>
+&nbsp;&nbsp;units:&nbsp;Units&nbsp;for&nbsp;the&nbsp;metric.<br>
+&nbsp;&nbsp;process_name:&nbsp;(optional)&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;process&nbsp;to&nbsp;inspect&nbsp;for&nbsp;the&nbsp;trace<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;events.&nbsp;Defaults&nbsp;to&nbsp;'Renderer'.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="TraceEventStatsInput-__init__"><strong>__init__</strong></a>(self, event_category, event_name, metric_name, metric_description, units, process_name<font color="#909090">='Renderer'</font>)</dt></dl>
+
+<hr>
+Static methods defined here:<br>
+<dl><dt><a name="TraceEventStatsInput-GetEventId"><strong>GetEventId</strong></a>(event_category, event_name)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

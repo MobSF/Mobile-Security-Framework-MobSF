@@ -1,0 +1,317 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.web_perf.timeline_interaction_record</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.web_perf.html"><font color="#ffffff">web_perf</font></a>.timeline_interaction_record</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/web_perf/timeline_interaction_record.py">telemetry/web_perf/timeline_interaction_record.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2014&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.decorators.html">telemetry.decorators</a><br>
+</td><td width="25%" valign=top><a href="re.html">re</a><br>
+</td><td width="25%" valign=top><a href="telemetry.timeline.bounds.html">telemetry.timeline.bounds</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.web_perf.timeline_interaction_record.html#TimelineInteractionRecord">TimelineInteractionRecord</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="exceptions.html#Exception">exceptions.Exception</a>(<a href="exceptions.html#BaseException">exceptions.BaseException</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.web_perf.timeline_interaction_record.html#ThreadTimeRangeOverlappedException">ThreadTimeRangeOverlappedException</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.web_perf.timeline_interaction_record.html#NoThreadTimeDataException">NoThreadTimeDataException</a>
+</font></dt></dl>
+</dd>
+</dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="NoThreadTimeDataException">class <strong>NoThreadTimeDataException</strong></a>(<a href="telemetry.web_perf.timeline_interaction_record.html#ThreadTimeRangeOverlappedException">ThreadTimeRangeOverlappedException</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="exceptions.html#Exception">Exception</a>&nbsp;that&nbsp;can&nbsp;be&nbsp;thrown&nbsp;if&nbsp;there&nbsp;is&nbsp;not&nbsp;sufficient&nbsp;thread&nbsp;time&nbsp;data<br>
+to&nbsp;compute&nbsp;the&nbsp;overlapped&nbsp;thread&nbsp;time&nbsp;range.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.web_perf.timeline_interaction_record.html#NoThreadTimeDataException">NoThreadTimeDataException</a></dd>
+<dd><a href="telemetry.web_perf.timeline_interaction_record.html#ThreadTimeRangeOverlappedException">ThreadTimeRangeOverlappedException</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Data descriptors inherited from <a href="telemetry.web_perf.timeline_interaction_record.html#ThreadTimeRangeOverlappedException">ThreadTimeRangeOverlappedException</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><a name="NoThreadTimeDataException-__init__"><strong>__init__</strong></a>(...)</dt><dd><tt>x.<a href="#NoThreadTimeDataException-__init__">__init__</a>(...)&nbsp;initializes&nbsp;x;&nbsp;see&nbsp;help(type(x))&nbsp;for&nbsp;signature</tt></dd></dl>
+
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#NoThreadTimeDataException-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="NoThreadTimeDataException-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#NoThreadTimeDataException-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="NoThreadTimeDataException-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#NoThreadTimeDataException-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="NoThreadTimeDataException-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#NoThreadTimeDataException-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="NoThreadTimeDataException-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#NoThreadTimeDataException-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="NoThreadTimeDataException-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="NoThreadTimeDataException-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#NoThreadTimeDataException-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="NoThreadTimeDataException-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#NoThreadTimeDataException-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="NoThreadTimeDataException-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="NoThreadTimeDataException-__str__"><strong>__str__</strong></a>(...)</dt><dd><tt>x.<a href="#NoThreadTimeDataException-__str__">__str__</a>()&nbsp;&lt;==&gt;&nbsp;str(x)</tt></dd></dl>
+
+<dl><dt><a name="NoThreadTimeDataException-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="ThreadTimeRangeOverlappedException">class <strong>ThreadTimeRangeOverlappedException</strong></a>(<a href="exceptions.html#Exception">exceptions.Exception</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="exceptions.html#Exception">Exception</a>&nbsp;that&nbsp;can&nbsp;be&nbsp;thrown&nbsp;when&nbsp;computing&nbsp;overlapped&nbsp;thread&nbsp;time&nbsp;range<br>
+with&nbsp;other&nbsp;events.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.web_perf.timeline_interaction_record.html#ThreadTimeRangeOverlappedException">ThreadTimeRangeOverlappedException</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><a name="ThreadTimeRangeOverlappedException-__init__"><strong>__init__</strong></a>(...)</dt><dd><tt>x.<a href="#ThreadTimeRangeOverlappedException-__init__">__init__</a>(...)&nbsp;initializes&nbsp;x;&nbsp;see&nbsp;help(type(x))&nbsp;for&nbsp;signature</tt></dd></dl>
+
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#ThreadTimeRangeOverlappedException-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="ThreadTimeRangeOverlappedException-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#ThreadTimeRangeOverlappedException-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="ThreadTimeRangeOverlappedException-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#ThreadTimeRangeOverlappedException-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="ThreadTimeRangeOverlappedException-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#ThreadTimeRangeOverlappedException-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="ThreadTimeRangeOverlappedException-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#ThreadTimeRangeOverlappedException-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="ThreadTimeRangeOverlappedException-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="ThreadTimeRangeOverlappedException-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#ThreadTimeRangeOverlappedException-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="ThreadTimeRangeOverlappedException-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#ThreadTimeRangeOverlappedException-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="ThreadTimeRangeOverlappedException-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="ThreadTimeRangeOverlappedException-__str__"><strong>__str__</strong></a>(...)</dt><dd><tt>x.<a href="#ThreadTimeRangeOverlappedException-__str__">__str__</a>()&nbsp;&lt;==&gt;&nbsp;str(x)</tt></dd></dl>
+
+<dl><dt><a name="ThreadTimeRangeOverlappedException-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="TimelineInteractionRecord">class <strong>TimelineInteractionRecord</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Represents&nbsp;an&nbsp;interaction&nbsp;that&nbsp;took&nbsp;place&nbsp;during&nbsp;a&nbsp;timeline&nbsp;recording.<br>
+&nbsp;<br>
+As&nbsp;a&nbsp;page&nbsp;runs,&nbsp;typically&nbsp;a&nbsp;number&nbsp;of&nbsp;different&nbsp;(simulated)&nbsp;user&nbsp;interactions<br>
+take&nbsp;place.&nbsp;For&nbsp;instance,&nbsp;a&nbsp;user&nbsp;might&nbsp;click&nbsp;a&nbsp;button&nbsp;in&nbsp;a&nbsp;mail&nbsp;app&nbsp;causing&nbsp;a<br>
+popup&nbsp;to&nbsp;animate&nbsp;in.&nbsp;Then&nbsp;they&nbsp;might&nbsp;press&nbsp;another&nbsp;button&nbsp;that&nbsp;sends&nbsp;data&nbsp;to&nbsp;a<br>
+server&nbsp;and&nbsp;simultaneously&nbsp;closes&nbsp;the&nbsp;popup&nbsp;without&nbsp;an&nbsp;animation.&nbsp;These&nbsp;are&nbsp;two<br>
+interactions.<br>
+&nbsp;<br>
+From&nbsp;the&nbsp;point&nbsp;of&nbsp;view&nbsp;of&nbsp;the&nbsp;page,&nbsp;each&nbsp;interaction&nbsp;might&nbsp;have&nbsp;a&nbsp;different<br>
+label:&nbsp;ClickComposeButton&nbsp;and&nbsp;SendEmail,&nbsp;for&nbsp;instance.&nbsp;From&nbsp;the&nbsp;point<br>
+of&nbsp;view&nbsp;of&nbsp;the&nbsp;benchmarking&nbsp;harness,&nbsp;the&nbsp;labels&nbsp;aren't&nbsp;so&nbsp;interesting&nbsp;as&nbsp;what<br>
+the&nbsp;performance&nbsp;expectations&nbsp;are&nbsp;for&nbsp;that&nbsp;interaction:&nbsp;was&nbsp;it&nbsp;loading<br>
+resources&nbsp;from&nbsp;the&nbsp;network?&nbsp;was&nbsp;there&nbsp;an&nbsp;animation?<br>
+&nbsp;<br>
+Determining&nbsp;these&nbsp;things&nbsp;is&nbsp;hard&nbsp;to&nbsp;do,&nbsp;simply&nbsp;by&nbsp;observing&nbsp;the&nbsp;state&nbsp;given&nbsp;to<br>
+a&nbsp;page&nbsp;from&nbsp;javascript.&nbsp;There&nbsp;are&nbsp;hints,&nbsp;for&nbsp;instance&nbsp;if&nbsp;network&nbsp;requests&nbsp;are<br>
+sent,&nbsp;or&nbsp;if&nbsp;a&nbsp;CSS&nbsp;animation&nbsp;is&nbsp;pending.&nbsp;But&nbsp;this&nbsp;is&nbsp;by&nbsp;no&nbsp;means&nbsp;a&nbsp;complete<br>
+story.<br>
+&nbsp;<br>
+Instead,&nbsp;we&nbsp;expect&nbsp;pages&nbsp;to&nbsp;mark&nbsp;up&nbsp;the&nbsp;timeline&nbsp;what&nbsp;they&nbsp;are&nbsp;doing,&nbsp;with<br>
+label&nbsp;and&nbsp;flags&nbsp;indicating&nbsp;the&nbsp;semantics&nbsp;of&nbsp;that&nbsp;interaction.&nbsp;This<br>
+is&nbsp;currently&nbsp;done&nbsp;by&nbsp;pushing&nbsp;markers&nbsp;into&nbsp;the&nbsp;console.time/timeEnd&nbsp;API:&nbsp;this<br>
+for&nbsp;instance&nbsp;can&nbsp;be&nbsp;issued&nbsp;in&nbsp;JS:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;var&nbsp;str&nbsp;=&nbsp;'Interaction.SendEmail';<br>
+&nbsp;&nbsp;&nbsp;console.time(str);<br>
+&nbsp;&nbsp;&nbsp;setTimeout(function()&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;console.timeEnd(str);<br>
+&nbsp;&nbsp;&nbsp;},&nbsp;1000);<br>
+&nbsp;<br>
+When&nbsp;run&nbsp;with&nbsp;perf.measurements.timeline_based_measurement&nbsp;running,&nbsp;this&nbsp;will<br>
+then&nbsp;cause&nbsp;a&nbsp;<a href="#TimelineInteractionRecord">TimelineInteractionRecord</a>&nbsp;to&nbsp;be&nbsp;created&nbsp;for&nbsp;this&nbsp;range&nbsp;with<br>
+all&nbsp;metrics&nbsp;reported&nbsp;for&nbsp;the&nbsp;marked&nbsp;up&nbsp;1000ms&nbsp;time-range.<br>
+&nbsp;<br>
+The&nbsp;valid&nbsp;interaction&nbsp;flags&nbsp;are:<br>
+&nbsp;&nbsp;&nbsp;*&nbsp;repeatable:&nbsp;Allows&nbsp;other&nbsp;interactions&nbsp;to&nbsp;use&nbsp;the&nbsp;same&nbsp;label<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="TimelineInteractionRecord-GetBounds"><strong>GetBounds</strong></a>(*args, **kwargs)</dt></dl>
+
+<dl><dt><a name="TimelineInteractionRecord-GetOverlappedThreadTimeForSlice"><strong>GetOverlappedThreadTimeForSlice</strong></a>(self, timeline_slice)</dt><dd><tt>Get&nbsp;the&nbsp;thread&nbsp;duration&nbsp;of&nbsp;timeline_slice&nbsp;that&nbsp;overlaps&nbsp;with&nbsp;this&nbsp;record.<br>
+&nbsp;<br>
+There&nbsp;are&nbsp;two&nbsp;cases&nbsp;:<br>
+&nbsp;<br>
+Case&nbsp;1:&nbsp;timeline_slice&nbsp;runs&nbsp;in&nbsp;the&nbsp;same&nbsp;thread&nbsp;as&nbsp;the&nbsp;record.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;timeline_slice&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]<br>
+&nbsp;&nbsp;THREAD&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;record&nbsp;starts&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;record&nbsp;ends<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(relative&nbsp;order&nbsp;in&nbsp;thread&nbsp;time)<br>
+&nbsp;<br>
+&nbsp;&nbsp;As&nbsp;the&nbsp;thread&nbsp;timestamps&nbsp;in&nbsp;timeline_slice&nbsp;and&nbsp;record&nbsp;are&nbsp;consistent,&nbsp;we<br>
+&nbsp;&nbsp;simply&nbsp;use&nbsp;them&nbsp;to&nbsp;compute&nbsp;the&nbsp;overlap.<br>
+&nbsp;<br>
+Case&nbsp;2:&nbsp;timeline_slice&nbsp;runs&nbsp;in&nbsp;a&nbsp;different&nbsp;thread&nbsp;from&nbsp;the&nbsp;record's.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+&nbsp;&nbsp;THREAD&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;timeline_slice&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+&nbsp;&nbsp;THREAD&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;record&nbsp;starts&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;record&nbsp;ends<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(relative&nbsp;order&nbsp;in&nbsp;wall-time)<br>
+&nbsp;<br>
+&nbsp;&nbsp;Unlike&nbsp;case&nbsp;1,&nbsp;thread&nbsp;timestamps&nbsp;of&nbsp;a&nbsp;thread&nbsp;are&nbsp;measured&nbsp;by&nbsp;its<br>
+&nbsp;&nbsp;thread-specific&nbsp;clock,&nbsp;which&nbsp;is&nbsp;inconsistent&nbsp;with&nbsp;that&nbsp;of&nbsp;the&nbsp;other<br>
+&nbsp;&nbsp;thread,&nbsp;and&nbsp;thus&nbsp;can't&nbsp;be&nbsp;used&nbsp;to&nbsp;compute&nbsp;the&nbsp;overlapped&nbsp;thread&nbsp;duration.<br>
+&nbsp;&nbsp;Hence,&nbsp;we&nbsp;use&nbsp;a&nbsp;heuristic&nbsp;to&nbsp;compute&nbsp;the&nbsp;overlap&nbsp;(see<br>
+&nbsp;&nbsp;_GetOverlappedThreadTimeForSliceInDifferentThread&nbsp;for&nbsp;more&nbsp;details)<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;timeline_slice:&nbsp;An&nbsp;instance&nbsp;of&nbsp;telemetry.timeline.slice.Slice</tt></dd></dl>
+
+<dl><dt><a name="TimelineInteractionRecord-__init__"><strong>__init__</strong></a>(self, label, start, end, async_event<font color="#909090">=None</font>, flags<font color="#909090">=None</font>)</dt></dl>
+
+<dl><dt><a name="TimelineInteractionRecord-__repr__"><strong>__repr__</strong></a>(self)</dt></dl>
+
+<hr>
+Class methods defined here:<br>
+<dl><dt><a name="TimelineInteractionRecord-FromAsyncEvent"><strong>FromAsyncEvent</strong></a>(cls, async_event)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Construct&nbsp;an&nbsp;timeline_interaction_record&nbsp;from&nbsp;an&nbsp;async&nbsp;event.<br>
+Args:<br>
+&nbsp;&nbsp;async_event:&nbsp;An&nbsp;instance&nbsp;of<br>
+&nbsp;&nbsp;&nbsp;&nbsp;telemetry.timeline.async_slices.AsyncSlice</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>end</strong></dt>
+</dl>
+<dl><dt><strong>label</strong></dt>
+</dl>
+<dl><dt><strong>repeatable</strong></dt>
+</dl>
+<dl><dt><strong>start</strong></dt>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-GetJavaScriptMarker"><strong>GetJavaScriptMarker</strong></a>(label, flags)</dt><dd><tt>Computes&nbsp;the&nbsp;marker&nbsp;string&nbsp;of&nbsp;an&nbsp;interaction&nbsp;record.<br>
+&nbsp;<br>
+This&nbsp;marker&nbsp;string&nbsp;can&nbsp;be&nbsp;used&nbsp;with&nbsp;JavaScript&nbsp;API&nbsp;console.time()<br>
+and&nbsp;console.timeEnd()&nbsp;to&nbsp;mark&nbsp;the&nbsp;beginning&nbsp;and&nbsp;end&nbsp;of&nbsp;the<br>
+interaction&nbsp;record..<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;label:&nbsp;The&nbsp;label&nbsp;used&nbsp;to&nbsp;identify&nbsp;the&nbsp;interaction&nbsp;record.<br>
+&nbsp;&nbsp;flags:&nbsp;the&nbsp;flags&nbsp;for&nbsp;the&nbsp;interaction&nbsp;record&nbsp;see&nbsp;FLAGS&nbsp;above.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;The&nbsp;interaction&nbsp;record&nbsp;marker&nbsp;string&nbsp;(e.g.,&nbsp;Interaction.Label/flag1,flag2).<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;AssertionError:&nbsp;If&nbsp;one&nbsp;or&nbsp;more&nbsp;of&nbsp;the&nbsp;flags&nbsp;is&nbsp;unrecognized.</tt></dd></dl>
+ <dl><dt><a name="-IsTimelineInteractionRecord"><strong>IsTimelineInteractionRecord</strong></a>(event_name)</dt></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>FLAGS</strong> = ['repeatable']<br>
+<strong>REPEATABLE</strong> = 'repeatable'</td></tr></table>
+</body></html>

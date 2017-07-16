@@ -1,0 +1,232 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.timeline.trace_data</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.timeline.html"><font color="#ffffff">timeline</font></a>.trace_data</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/timeline/trace_data.py">telemetry/timeline/trace_data.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2014&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="json.html">json</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.timeline.trace_data.html#TraceData">TraceData</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.timeline.trace_data.html#TraceDataBuilder">TraceDataBuilder</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.timeline.trace_data.html#TraceDataPart">TraceDataPart</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="exceptions.html#Exception">exceptions.Exception</a>(<a href="exceptions.html#BaseException">exceptions.BaseException</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.timeline.trace_data.html#NonSerializableTraceData">NonSerializableTraceData</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="NonSerializableTraceData">class <strong>NonSerializableTraceData</strong></a>(<a href="exceptions.html#Exception">exceptions.Exception</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Raised&nbsp;when&nbsp;raw&nbsp;trace&nbsp;data&nbsp;cannot&nbsp;be&nbsp;serialized&nbsp;to&nbsp;<a href="#TraceData">TraceData</a>.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.timeline.trace_data.html#NonSerializableTraceData">NonSerializableTraceData</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><a name="NonSerializableTraceData-__init__"><strong>__init__</strong></a>(...)</dt><dd><tt>x.<a href="#NonSerializableTraceData-__init__">__init__</a>(...)&nbsp;initializes&nbsp;x;&nbsp;see&nbsp;help(type(x))&nbsp;for&nbsp;signature</tt></dd></dl>
+
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#NonSerializableTraceData-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="NonSerializableTraceData-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#NonSerializableTraceData-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="NonSerializableTraceData-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#NonSerializableTraceData-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="NonSerializableTraceData-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#NonSerializableTraceData-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="NonSerializableTraceData-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#NonSerializableTraceData-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="NonSerializableTraceData-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="NonSerializableTraceData-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#NonSerializableTraceData-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="NonSerializableTraceData-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#NonSerializableTraceData-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="NonSerializableTraceData-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="NonSerializableTraceData-__str__"><strong>__str__</strong></a>(...)</dt><dd><tt>x.<a href="#NonSerializableTraceData-__str__">__str__</a>()&nbsp;&lt;==&gt;&nbsp;str(x)</tt></dd></dl>
+
+<dl><dt><a name="NonSerializableTraceData-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="TraceData">class <strong>TraceData</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Validates,&nbsp;parses,&nbsp;and&nbsp;serializes&nbsp;raw&nbsp;data.<br>
+&nbsp;<br>
+NOTE:&nbsp;raw&nbsp;data&nbsp;must&nbsp;only&nbsp;include&nbsp;primitive&nbsp;objects!<br>
+By&nbsp;design,&nbsp;<a href="#TraceData">TraceData</a>&nbsp;must&nbsp;contain&nbsp;only&nbsp;data&nbsp;that&nbsp;is&nbsp;BOTH&nbsp;json-serializable<br>
+to&nbsp;a&nbsp;file,&nbsp;AND&nbsp;restorable&nbsp;once&nbsp;again&nbsp;from&nbsp;that&nbsp;file&nbsp;into&nbsp;<a href="#TraceData">TraceData</a>&nbsp;without<br>
+assistance&nbsp;from&nbsp;other&nbsp;classes.<br>
+&nbsp;<br>
+Raw&nbsp;data&nbsp;can&nbsp;be&nbsp;one&nbsp;of&nbsp;three&nbsp;standard&nbsp;trace_event&nbsp;formats:<br>
+1.&nbsp;Trace&nbsp;container&nbsp;format:&nbsp;a&nbsp;json-parseable&nbsp;dict.<br>
+2.&nbsp;A&nbsp;json-parseable&nbsp;array:&nbsp;assumed&nbsp;to&nbsp;be&nbsp;chrome&nbsp;trace&nbsp;data.<br>
+3.&nbsp;A&nbsp;json-parseable&nbsp;array&nbsp;missing&nbsp;the&nbsp;final&nbsp;']':&nbsp;assumed&nbsp;to&nbsp;be&nbsp;chrome&nbsp;trace<br>
+&nbsp;&nbsp;&nbsp;data.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="TraceData-GetEventsFor"><strong>GetEventsFor</strong></a>(self, part)</dt></dl>
+
+<dl><dt><a name="TraceData-HasEventsFor"><strong>HasEventsFor</strong></a>(self, part)</dt></dl>
+
+<dl><dt><a name="TraceData-Serialize"><strong>Serialize</strong></a>(self, f, gzip_result<font color="#909090">=False</font>)</dt><dd><tt>Serializes&nbsp;the&nbsp;trace&nbsp;result&nbsp;to&nbsp;a&nbsp;file-like&nbsp;<a href="__builtin__.html#object">object</a>.<br>
+&nbsp;<br>
+Always&nbsp;writes&nbsp;in&nbsp;the&nbsp;trace&nbsp;container&nbsp;format.</tt></dd></dl>
+
+<dl><dt><a name="TraceData-__init__"><strong>__init__</strong></a>(self, raw_data<font color="#909090">=None</font>)</dt><dd><tt>Creates&nbsp;<a href="#TraceData">TraceData</a>&nbsp;from&nbsp;the&nbsp;given&nbsp;data.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>active_parts</strong></dt>
+</dl>
+<dl><dt><strong>events_are_safely_mutable</strong></dt>
+<dd><tt>Returns&nbsp;true&nbsp;if&nbsp;the&nbsp;events&nbsp;in&nbsp;this&nbsp;value&nbsp;are&nbsp;completely&nbsp;sealed.<br>
+&nbsp;<br>
+Some&nbsp;importers&nbsp;want&nbsp;to&nbsp;take&nbsp;complex&nbsp;fields&nbsp;out&nbsp;of&nbsp;the&nbsp;TraceData&nbsp;and&nbsp;add<br>
+them&nbsp;to&nbsp;the&nbsp;model,&nbsp;changing&nbsp;them&nbsp;subtly&nbsp;as&nbsp;they&nbsp;do&nbsp;so.&nbsp;If&nbsp;the&nbsp;TraceData<br>
+was&nbsp;constructed&nbsp;with&nbsp;data&nbsp;that&nbsp;is&nbsp;shared&nbsp;with&nbsp;something&nbsp;outside&nbsp;the&nbsp;trace<br>
+data,&nbsp;for&nbsp;instance&nbsp;a&nbsp;test&nbsp;harness,&nbsp;then&nbsp;this&nbsp;mutation&nbsp;is&nbsp;unexpected.&nbsp;But,<br>
+if&nbsp;the&nbsp;values&nbsp;are&nbsp;sealed,&nbsp;then&nbsp;mutating&nbsp;the&nbsp;events&nbsp;is&nbsp;a&nbsp;lot&nbsp;faster.<br>
+&nbsp;<br>
+We&nbsp;know&nbsp;if&nbsp;events&nbsp;are&nbsp;sealed&nbsp;if&nbsp;the&nbsp;value&nbsp;came&nbsp;from&nbsp;a&nbsp;string,&nbsp;or&nbsp;if&nbsp;the<br>
+value&nbsp;came&nbsp;from&nbsp;a&nbsp;TraceDataBuilder.</tt></dd>
+</dl>
+<dl><dt><strong>metadata_records</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="TraceDataBuilder">class <strong>TraceDataBuilder</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#TraceDataBuilder">TraceDataBuilder</a>&nbsp;helps&nbsp;build&nbsp;up&nbsp;a&nbsp;trace&nbsp;from&nbsp;multiple&nbsp;trace&nbsp;agents.<br>
+&nbsp;<br>
+<a href="#TraceData">TraceData</a>&nbsp;is&nbsp;supposed&nbsp;to&nbsp;be&nbsp;immutable,&nbsp;but&nbsp;it&nbsp;is&nbsp;useful&nbsp;during&nbsp;recording&nbsp;to<br>
+have&nbsp;a&nbsp;mutable&nbsp;version.&nbsp;That&nbsp;is&nbsp;<a href="#TraceDataBuilder">TraceDataBuilder</a>.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="TraceDataBuilder-AddEventsTo"><strong>AddEventsTo</strong></a>(self, part, events)</dt><dd><tt>Note:&nbsp;this&nbsp;won't&nbsp;work&nbsp;when&nbsp;called&nbsp;from&nbsp;multiple&nbsp;browsers.<br>
+&nbsp;<br>
+Each&nbsp;browser's&nbsp;trace_event_impl&nbsp;zeros&nbsp;its&nbsp;timestamps&nbsp;when&nbsp;it&nbsp;writes&nbsp;them<br>
+out&nbsp;and&nbsp;doesn't&nbsp;write&nbsp;a&nbsp;timebase&nbsp;that&nbsp;can&nbsp;be&nbsp;used&nbsp;to&nbsp;re-sync&nbsp;them.</tt></dd></dl>
+
+<dl><dt><a name="TraceDataBuilder-AsData"><strong>AsData</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="TraceDataBuilder-HasEventsFor"><strong>HasEventsFor</strong></a>(self, part)</dt></dl>
+
+<dl><dt><a name="TraceDataBuilder-__init__"><strong>__init__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="TraceDataPart">class <strong>TraceDataPart</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#TraceData">TraceData</a>&nbsp;can&nbsp;have&nbsp;a&nbsp;variety&nbsp;of&nbsp;events.<br>
+&nbsp;<br>
+These&nbsp;are&nbsp;called&nbsp;"parts"&nbsp;and&nbsp;are&nbsp;accessed&nbsp;by&nbsp;the&nbsp;following&nbsp;fixed&nbsp;field&nbsp;names.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="TraceDataPart-__init__"><strong>__init__</strong></a>(self, raw_field_name)</dt></dl>
+
+<dl><dt><a name="TraceDataPart-__repr__"><strong>__repr__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>raw_field_name</strong></dt>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>ALL_TRACE_PARTS</strong> = set([TraceDataPart("traceEvents"), TraceDataPart("inspectorTimelineEvents"), TraceDataPart("surfaceFlinger"), TraceDataPart("tabIds")])<br>
+<strong>CHROME_TRACE_PART</strong> = TraceDataPart("traceEvents")<br>
+<strong>INSPECTOR_TRACE_PART</strong> = TraceDataPart("inspectorTimelineEvents")<br>
+<strong>SURFACE_FLINGER_PART</strong> = TraceDataPart("surfaceFlinger")<br>
+<strong>TAB_ID_PART</strong> = TraceDataPart("tabIds")</td></tr></table>
+</body></html>

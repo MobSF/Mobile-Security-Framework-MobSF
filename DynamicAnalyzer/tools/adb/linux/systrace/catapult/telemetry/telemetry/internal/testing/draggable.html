@@ -1,0 +1,52 @@
+<html>
+  <head>
+    <style>
+      body { margin: 0; }
+      #drag_div {
+        width: 100%;
+        height: 100%;
+        background: blue;
+        position: relative;
+      }
+    </style>
+    <script>
+    offsetX = 0;
+    offsetY = 0;
+
+    function drag(event) {
+      d = document.getElementById('drag_div');
+      offsetX = event.clientX - d.offsetLeft;
+      offsetY = event.clientY - d.offsetTop;
+    }
+
+    function drop(event) {
+      d = document.getElementById('drag_div');
+      d.style.left = event.clientX - offsetX;
+      d.style.top = event.clientY - offsetY;
+    }
+
+    function touchStart(event) {
+      d = document.getElementById('drag_div');
+      offsetX = event.touches[0].clientX - d.offsetLeft;
+      offsetY = event.touches[0].clientY - d.offsetTop;
+    }
+
+    function touchEnd(event) {
+      d = document.getElementById('drag_div');
+      d.style.left = event.changedTouches[0].clientX - offsetX;
+      d.style.top = event.changedTouches[0].clientY - offsetY;
+    }
+
+    </script>
+  </head>
+
+  <body id ="body">
+    <div id="drag_div"> </div>
+  </body>
+  <script>
+  document.getElementById('body').addEventListener('mouseup', drop);
+  document.getElementById('body').addEventListener('touchend', touchEnd);
+  document.getElementById('drag_div').addEventListener('mousedown', drag);
+  document.getElementById('drag_div').addEventListener('touchstart', touchStart);
+  </script>
+</html>

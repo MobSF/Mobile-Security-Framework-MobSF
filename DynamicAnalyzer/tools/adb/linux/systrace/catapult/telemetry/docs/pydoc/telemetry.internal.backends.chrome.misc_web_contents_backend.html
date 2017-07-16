@@ -1,0 +1,139 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.backends.chrome.misc_web_contents_backend</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.<a href="telemetry.internal.backends.html"><font color="#ffffff">backends</font></a>.<a href="telemetry.internal.backends.chrome.html"><font color="#ffffff">chrome</font></a>.misc_web_contents_backend</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/backends/chrome/misc_web_contents_backend.py">telemetry/internal/backends/chrome/misc_web_contents_backend.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2013&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.core.exceptions.html">telemetry.core.exceptions</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.backends.chrome_inspector.inspector_backend_list.html">telemetry.internal.backends.chrome_inspector.inspector_backend_list</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.backends.chrome.oobe.html">telemetry.internal.backends.chrome.oobe</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.backends.chrome_inspector.inspector_backend_list.html#InspectorBackendList">telemetry.internal.backends.chrome_inspector.inspector_backend_list.InspectorBackendList</a>(<a href="_abcoll.html#Sequence">_abcoll.Sequence</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.backends.chrome.misc_web_contents_backend.html#MiscWebContentsBackend">MiscWebContentsBackend</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="MiscWebContentsBackend">class <strong>MiscWebContentsBackend</strong></a>(<a href="telemetry.internal.backends.chrome_inspector.inspector_backend_list.html#InspectorBackendList">telemetry.internal.backends.chrome_inspector.inspector_backend_list.InspectorBackendList</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>A&nbsp;dynamic&nbsp;sequence&nbsp;of&nbsp;web&nbsp;contents&nbsp;not&nbsp;related&nbsp;to&nbsp;tabs&nbsp;and&nbsp;extensions.<br>
+&nbsp;<br>
+Provides&nbsp;acccess&nbsp;to&nbsp;chrome://oobe/login&nbsp;page.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.internal.backends.chrome.misc_web_contents_backend.html#MiscWebContentsBackend">MiscWebContentsBackend</a></dd>
+<dd><a href="telemetry.internal.backends.chrome_inspector.inspector_backend_list.html#InspectorBackendList">telemetry.internal.backends.chrome_inspector.inspector_backend_list.InspectorBackendList</a></dd>
+<dd><a href="_abcoll.html#Sequence">_abcoll.Sequence</a></dd>
+<dd><a href="_abcoll.html#Sized">_abcoll.Sized</a></dd>
+<dd><a href="_abcoll.html#Iterable">_abcoll.Iterable</a></dd>
+<dd><a href="_abcoll.html#Container">_abcoll.Container</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="MiscWebContentsBackend-CreateWrapper"><strong>CreateWrapper</strong></a>(self, inspector_backend)</dt></dl>
+
+<dl><dt><a name="MiscWebContentsBackend-GetOobe"><strong>GetOobe</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="MiscWebContentsBackend-ShouldIncludeContext"><strong>ShouldIncludeContext</strong></a>(self, context)</dt></dl>
+
+<dl><dt><a name="MiscWebContentsBackend-__init__"><strong>__init__</strong></a>(self, browser_backend)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>oobe_exists</strong></dt>
+<dd><tt>Lightweight&nbsp;property&nbsp;to&nbsp;determine&nbsp;if&nbsp;the&nbsp;oobe&nbsp;webui&nbsp;is&nbsp;visible.</tt></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>__abstractmethods__</strong> = frozenset([])</dl>
+
+<hr>
+Methods inherited from <a href="telemetry.internal.backends.chrome_inspector.inspector_backend_list.html#InspectorBackendList">telemetry.internal.backends.chrome_inspector.inspector_backend_list.InspectorBackendList</a>:<br>
+<dl><dt><a name="MiscWebContentsBackend-GetBackendFromContextId"><strong>GetBackendFromContextId</strong></a>(self, context_id)</dt></dl>
+
+<dl><dt><a name="MiscWebContentsBackend-GetContextInfo"><strong>GetContextInfo</strong></a>(self, context_id)</dt></dl>
+
+<dl><dt><a name="MiscWebContentsBackend-GetTabById"><strong>GetTabById</strong></a>(self, identifier)</dt></dl>
+
+<dl><dt><a name="MiscWebContentsBackend-IterContextIds"><strong>IterContextIds</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="MiscWebContentsBackend-__getitem__"><strong>__getitem__</strong></a>(self, index)</dt><dd><tt>#&nbsp;TODO(nednguyen):&nbsp;Remove&nbsp;this&nbsp;method&nbsp;and&nbsp;turn&nbsp;inspector_backend_list&nbsp;API&nbsp;to<br>
+#&nbsp;dictionary-like&nbsp;API&nbsp;(crbug.com/398467)</tt></dd></dl>
+
+<dl><dt><a name="MiscWebContentsBackend-__iter__"><strong>__iter__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="MiscWebContentsBackend-__len__"><strong>__len__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.internal.backends.chrome_inspector.inspector_backend_list.html#InspectorBackendList">telemetry.internal.backends.chrome_inspector.inspector_backend_list.InspectorBackendList</a>:<br>
+<dl><dt><strong>app</strong></dt>
+</dl>
+<hr>
+Methods inherited from <a href="_abcoll.html#Sequence">_abcoll.Sequence</a>:<br>
+<dl><dt><a name="MiscWebContentsBackend-__contains__"><strong>__contains__</strong></a>(self, value)</dt></dl>
+
+<dl><dt><a name="MiscWebContentsBackend-__reversed__"><strong>__reversed__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="MiscWebContentsBackend-count"><strong>count</strong></a>(self, value)</dt><dd><tt>S.<a href="#MiscWebContentsBackend-count">count</a>(value)&nbsp;-&gt;&nbsp;integer&nbsp;--&nbsp;return&nbsp;number&nbsp;of&nbsp;occurrences&nbsp;of&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="MiscWebContentsBackend-index"><strong>index</strong></a>(self, value)</dt><dd><tt>S.<a href="#MiscWebContentsBackend-index">index</a>(value)&nbsp;-&gt;&nbsp;integer&nbsp;--&nbsp;return&nbsp;first&nbsp;index&nbsp;of&nbsp;value.<br>
+Raises&nbsp;ValueError&nbsp;if&nbsp;the&nbsp;value&nbsp;is&nbsp;not&nbsp;present.</tt></dd></dl>
+
+<hr>
+Class methods inherited from <a href="_abcoll.html#Sized">_abcoll.Sized</a>:<br>
+<dl><dt><a name="MiscWebContentsBackend-__subclasshook__"><strong>__subclasshook__</strong></a>(cls, C)<font color="#909090"><font face="helvetica, arial"> from <a href="abc.html#ABCMeta">abc.ABCMeta</a></font></font></dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="_abcoll.html#Sized">_abcoll.Sized</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="_abcoll.html#Sized">_abcoll.Sized</a>:<br>
+<dl><dt><strong>__metaclass__</strong> = &lt;class 'abc.ABCMeta'&gt;<dd><tt>Metaclass&nbsp;for&nbsp;defining&nbsp;Abstract&nbsp;Base&nbsp;Classes&nbsp;(ABCs).<br>
+&nbsp;<br>
+Use&nbsp;this&nbsp;metaclass&nbsp;to&nbsp;create&nbsp;an&nbsp;ABC.&nbsp;&nbsp;An&nbsp;ABC&nbsp;can&nbsp;be&nbsp;subclassed<br>
+directly,&nbsp;and&nbsp;then&nbsp;acts&nbsp;as&nbsp;a&nbsp;mix-in&nbsp;class.&nbsp;&nbsp;You&nbsp;can&nbsp;also&nbsp;register<br>
+unrelated&nbsp;concrete&nbsp;classes&nbsp;(even&nbsp;built-in&nbsp;classes)&nbsp;and&nbsp;unrelated<br>
+ABCs&nbsp;as&nbsp;'virtual&nbsp;subclasses'&nbsp;--&nbsp;these&nbsp;and&nbsp;their&nbsp;descendants&nbsp;will<br>
+be&nbsp;considered&nbsp;subclasses&nbsp;of&nbsp;the&nbsp;registering&nbsp;ABC&nbsp;by&nbsp;the&nbsp;built-in<br>
+issubclass()&nbsp;function,&nbsp;but&nbsp;the&nbsp;registering&nbsp;ABC&nbsp;won't&nbsp;show&nbsp;up&nbsp;in<br>
+their&nbsp;MRO&nbsp;(Method&nbsp;Resolution&nbsp;Order)&nbsp;nor&nbsp;will&nbsp;method<br>
+implementations&nbsp;defined&nbsp;by&nbsp;the&nbsp;registering&nbsp;ABC&nbsp;be&nbsp;callable&nbsp;(not<br>
+even&nbsp;via&nbsp;super()).</tt></dl>
+
+</td></tr></table></td></tr></table>
+</body></html>

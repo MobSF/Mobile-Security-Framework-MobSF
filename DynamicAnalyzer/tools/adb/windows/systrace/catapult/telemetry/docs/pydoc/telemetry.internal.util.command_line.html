@@ -1,0 +1,243 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.util.command_line</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.<a href="telemetry.internal.util.html"><font color="#ffffff">util</font></a>.command_line</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/util/command_line.py">telemetry/internal/util/command_line.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2014&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="argparse.html">argparse</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.util.camel_case.html">telemetry.internal.util.camel_case</a><br>
+</td><td width="25%" valign=top><a href="difflib.html">difflib</a><br>
+</td><td width="25%" valign=top><a href="optparse.html">optparse</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.util.command_line.html#ArgumentHandlerMixIn">ArgumentHandlerMixIn</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.util.command_line.html#Command">Command</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.util.command_line.html#OptparseCommand">OptparseCommand</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.internal.util.command_line.html#SubcommandCommand">SubcommandCommand</a>
+</font></dt></dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="ArgumentHandlerMixIn">class <strong>ArgumentHandlerMixIn</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>A&nbsp;structured&nbsp;way&nbsp;to&nbsp;handle&nbsp;command-line&nbsp;arguments.<br>
+&nbsp;<br>
+In&nbsp;AddCommandLineArgs,&nbsp;add&nbsp;command-line&nbsp;arguments.<br>
+In&nbsp;ProcessCommandLineArgs,&nbsp;validate&nbsp;them&nbsp;and&nbsp;store&nbsp;them&nbsp;in&nbsp;a&nbsp;private&nbsp;class<br>
+variable.&nbsp;This&nbsp;way,&nbsp;each&nbsp;class&nbsp;encapsulates&nbsp;its&nbsp;own&nbsp;arguments,&nbsp;without&nbsp;needing<br>
+to&nbsp;pass&nbsp;an&nbsp;arguments&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;around&nbsp;everywhere.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Class methods defined here:<br>
+<dl><dt><a name="ArgumentHandlerMixIn-AddCommandLineArgs"><strong>AddCommandLineArgs</strong></a>(cls, parser)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Override&nbsp;to&nbsp;accept&nbsp;custom&nbsp;command-line&nbsp;arguments.</tt></dd></dl>
+
+<dl><dt><a name="ArgumentHandlerMixIn-ProcessCommandLineArgs"><strong>ProcessCommandLineArgs</strong></a>(cls, parser, args)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Override&nbsp;to&nbsp;process&nbsp;command-line&nbsp;arguments.<br>
+&nbsp;<br>
+We&nbsp;pass&nbsp;in&nbsp;parser&nbsp;so&nbsp;we&nbsp;can&nbsp;call&nbsp;parser.error().</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Command">class <strong>Command</strong></a>(<a href="telemetry.internal.util.command_line.html#ArgumentHandlerMixIn">ArgumentHandlerMixIn</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>An&nbsp;abstraction&nbsp;for&nbsp;things&nbsp;that&nbsp;run&nbsp;from&nbsp;the&nbsp;command-line.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.internal.util.command_line.html#Command">Command</a></dd>
+<dd><a href="telemetry.internal.util.command_line.html#ArgumentHandlerMixIn">ArgumentHandlerMixIn</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="Command-Run"><strong>Run</strong></a>(self, args)</dt></dl>
+
+<hr>
+Class methods defined here:<br>
+<dl><dt><a name="Command-Description"><strong>Description</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="Command-Name"><strong>Name</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="Command-main"><strong>main</strong></a>(cls, args<font color="#909090">=None</font>)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Main&nbsp;method&nbsp;to&nbsp;run&nbsp;this&nbsp;command&nbsp;as&nbsp;a&nbsp;standalone&nbsp;script.</tt></dd></dl>
+
+<hr>
+Class methods inherited from <a href="telemetry.internal.util.command_line.html#ArgumentHandlerMixIn">ArgumentHandlerMixIn</a>:<br>
+<dl><dt><a name="Command-AddCommandLineArgs"><strong>AddCommandLineArgs</strong></a>(cls, parser)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Override&nbsp;to&nbsp;accept&nbsp;custom&nbsp;command-line&nbsp;arguments.</tt></dd></dl>
+
+<dl><dt><a name="Command-ProcessCommandLineArgs"><strong>ProcessCommandLineArgs</strong></a>(cls, parser, args)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Override&nbsp;to&nbsp;process&nbsp;command-line&nbsp;arguments.<br>
+&nbsp;<br>
+We&nbsp;pass&nbsp;in&nbsp;parser&nbsp;so&nbsp;we&nbsp;can&nbsp;call&nbsp;parser.error().</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.internal.util.command_line.html#ArgumentHandlerMixIn">ArgumentHandlerMixIn</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="OptparseCommand">class <strong>OptparseCommand</strong></a>(<a href="telemetry.internal.util.command_line.html#Command">Command</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>#&nbsp;TODO:&nbsp;Convert&nbsp;everything&nbsp;to&nbsp;argparse.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.internal.util.command_line.html#OptparseCommand">OptparseCommand</a></dd>
+<dd><a href="telemetry.internal.util.command_line.html#Command">Command</a></dd>
+<dd><a href="telemetry.internal.util.command_line.html#ArgumentHandlerMixIn">ArgumentHandlerMixIn</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="OptparseCommand-Run"><strong>Run</strong></a>(self, args)</dt></dl>
+
+<hr>
+Class methods defined here:<br>
+<dl><dt><a name="OptparseCommand-AddCommandLineArgs"><strong>AddCommandLineArgs</strong></a>(cls, parser, environment)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="OptparseCommand-CreateParser"><strong>CreateParser</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="OptparseCommand-ProcessCommandLineArgs"><strong>ProcessCommandLineArgs</strong></a>(cls, parser, args, environment)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="OptparseCommand-main"><strong>main</strong></a>(cls, args<font color="#909090">=None</font>)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Main&nbsp;method&nbsp;to&nbsp;run&nbsp;this&nbsp;command&nbsp;as&nbsp;a&nbsp;standalone&nbsp;script.</tt></dd></dl>
+
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>usage</strong> = ''</dl>
+
+<hr>
+Class methods inherited from <a href="telemetry.internal.util.command_line.html#Command">Command</a>:<br>
+<dl><dt><a name="OptparseCommand-Description"><strong>Description</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="OptparseCommand-Name"><strong>Name</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.internal.util.command_line.html#ArgumentHandlerMixIn">ArgumentHandlerMixIn</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SubcommandCommand">class <strong>SubcommandCommand</strong></a>(<a href="telemetry.internal.util.command_line.html#Command">Command</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Combines&nbsp;Commands&nbsp;into&nbsp;one&nbsp;big&nbsp;command&nbsp;with&nbsp;sub-commands.<br>
+&nbsp;<br>
+E.g.&nbsp;"svn&nbsp;checkout",&nbsp;"svn&nbsp;update",&nbsp;and&nbsp;"svn&nbsp;commit"&nbsp;are&nbsp;separate&nbsp;sub-commands.<br>
+&nbsp;<br>
+Example&nbsp;usage:<br>
+&nbsp;&nbsp;class&nbsp;MyCommand(command_line.<a href="#SubcommandCommand">SubcommandCommand</a>):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;commands&nbsp;=&nbsp;(Help,&nbsp;List,&nbsp;Run)<br>
+&nbsp;<br>
+&nbsp;&nbsp;if&nbsp;__name__&nbsp;==&nbsp;'__main__':<br>
+&nbsp;&nbsp;&nbsp;&nbsp;sys.exit(MyCommand.<a href="#SubcommandCommand-main">main</a>())<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.internal.util.command_line.html#SubcommandCommand">SubcommandCommand</a></dd>
+<dd><a href="telemetry.internal.util.command_line.html#Command">Command</a></dd>
+<dd><a href="telemetry.internal.util.command_line.html#ArgumentHandlerMixIn">ArgumentHandlerMixIn</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="SubcommandCommand-Run"><strong>Run</strong></a>(self, args)</dt></dl>
+
+<hr>
+Class methods defined here:<br>
+<dl><dt><a name="SubcommandCommand-AddCommandLineArgs"><strong>AddCommandLineArgs</strong></a>(cls, parser)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="SubcommandCommand-ProcessCommandLineArgs"><strong>ProcessCommandLineArgs</strong></a>(cls, parser, args)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>commands</strong> = ()</dl>
+
+<hr>
+Class methods inherited from <a href="telemetry.internal.util.command_line.html#Command">Command</a>:<br>
+<dl><dt><a name="SubcommandCommand-Description"><strong>Description</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="SubcommandCommand-Name"><strong>Name</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="SubcommandCommand-main"><strong>main</strong></a>(cls, args<font color="#909090">=None</font>)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Main&nbsp;method&nbsp;to&nbsp;run&nbsp;this&nbsp;command&nbsp;as&nbsp;a&nbsp;standalone&nbsp;script.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.internal.util.command_line.html#ArgumentHandlerMixIn">ArgumentHandlerMixIn</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-GetMostLikelyMatchedObject"><strong>GetMostLikelyMatchedObject</strong></a>(objects, target_name, name_func<font color="#909090">=&lt;function &lt;lambda&gt;&gt;</font>, matched_score_threshold<font color="#909090">=0.4</font>)</dt><dd><tt>Matches&nbsp;objects&nbsp;whose&nbsp;names&nbsp;are&nbsp;most&nbsp;likely&nbsp;matched&nbsp;with&nbsp;target.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;objects:&nbsp;list&nbsp;of&nbsp;objects&nbsp;to&nbsp;match.<br>
+&nbsp;&nbsp;target_name:&nbsp;name&nbsp;to&nbsp;match.<br>
+&nbsp;&nbsp;name_func:&nbsp;function&nbsp;to&nbsp;get&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;name&nbsp;to&nbsp;match.&nbsp;Default&nbsp;bypass.<br>
+&nbsp;&nbsp;matched_score_threshold:&nbsp;threshold&nbsp;of&nbsp;likelihood&nbsp;to&nbsp;match.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;A&nbsp;list&nbsp;of&nbsp;objects&nbsp;whose&nbsp;names&nbsp;are&nbsp;likely&nbsp;target_name.</tt></dd></dl>
+</td></tr></table>
+</body></html>

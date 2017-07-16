@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+# Copyright (c) 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Runs all Python unit tests in dependency_manager/."""
+
+import os
+import sys
+
+_CATAPULT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+sys.path.append(os.path.join(_CATAPULT, 'third_party', 'mock'))
+
+
+def main():
+  sys.path.append(_CATAPULT)
+
+  from hooks import install
+  if '--no-install-hooks' in sys.argv:
+    sys.argv.remove('--no-install-hooks')
+  else:
+    install.InstallHooks()
+
+  from catapult_build import run_with_typ
+  return run_with_typ.Run(
+      os.path.join(_CATAPULT, 'dependency_manager'), path=[_CATAPULT])
+
+
+if __name__ == '__main__':
+  sys.exit(main())

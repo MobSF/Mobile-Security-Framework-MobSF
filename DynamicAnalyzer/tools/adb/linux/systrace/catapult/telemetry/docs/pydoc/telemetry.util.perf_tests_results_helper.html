@@ -1,0 +1,68 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.util.perf_tests_results_helper</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.util.html"><font color="#ffffff">util</font></a>.perf_tests_results_helper</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/util/perf_tests_results_helper.py">telemetry/util/perf_tests_results_helper.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2013&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="json.html">json</a><br>
+<a href="math.html">math</a><br>
+</td><td width="25%" valign=top><a href="telemetry.util.perf_result_data_type.html">telemetry.util.perf_result_data_type</a><br>
+<a href="re.html">re</a><br>
+</td><td width="25%" valign=top><a href="sys.html">sys</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-FlattenList"><strong>FlattenList</strong></a>(values)</dt><dd><tt>Returns&nbsp;a&nbsp;simple&nbsp;list&nbsp;without&nbsp;sub-lists.</tt></dd></dl>
+ <dl><dt><a name="-GeomMeanAndStdDevFromHistogram"><strong>GeomMeanAndStdDevFromHistogram</strong></a>(histogram_json)</dt></dl>
+ <dl><dt><a name="-PrintPages"><strong>PrintPages</strong></a>(page_list)</dt><dd><tt>Prints&nbsp;list&nbsp;of&nbsp;pages&nbsp;to&nbsp;stdout&nbsp;in&nbsp;the&nbsp;format&nbsp;required&nbsp;by&nbsp;perf&nbsp;tests.</tt></dd></dl>
+ <dl><dt><a name="-PrintPerfResult"><strong>PrintPerfResult</strong></a>(measurement, trace, values, units, result_type<font color="#909090">='default'</font>, print_to_stdout<font color="#909090">=True</font>)</dt><dd><tt>Prints&nbsp;numerical&nbsp;data&nbsp;to&nbsp;stdout&nbsp;in&nbsp;the&nbsp;format&nbsp;required&nbsp;by&nbsp;perf&nbsp;tests.<br>
+&nbsp;<br>
+The&nbsp;string&nbsp;args&nbsp;may&nbsp;be&nbsp;empty&nbsp;but&nbsp;they&nbsp;must&nbsp;not&nbsp;contain&nbsp;any&nbsp;colons&nbsp;(:)&nbsp;or<br>
+equals&nbsp;signs&nbsp;(=).<br>
+This&nbsp;is&nbsp;parsed&nbsp;by&nbsp;the&nbsp;buildbot&nbsp;using:<br>
+<a href="http://src.chromium.org/viewvc/chrome/trunk/tools/build/scripts/slave/process_log_utils.py">http://src.chromium.org/viewvc/chrome/trunk/tools/build/scripts/slave/process_log_utils.py</a><br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;measurement:&nbsp;A&nbsp;description&nbsp;of&nbsp;the&nbsp;quantity&nbsp;being&nbsp;measured,&nbsp;e.g.&nbsp;"vm_peak".<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;On&nbsp;the&nbsp;dashboard,&nbsp;this&nbsp;maps&nbsp;to&nbsp;a&nbsp;particular&nbsp;graph.&nbsp;Mandatory.<br>
+&nbsp;&nbsp;trace:&nbsp;A&nbsp;description&nbsp;of&nbsp;the&nbsp;particular&nbsp;data&nbsp;point,&nbsp;e.g.&nbsp;"reference".<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;On&nbsp;the&nbsp;dashboard,&nbsp;this&nbsp;maps&nbsp;to&nbsp;a&nbsp;particular&nbsp;"line"&nbsp;in&nbsp;the&nbsp;graph.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Mandatory.<br>
+&nbsp;&nbsp;values:&nbsp;A&nbsp;list&nbsp;of&nbsp;numeric&nbsp;measured&nbsp;values.&nbsp;An&nbsp;N-dimensional&nbsp;list&nbsp;will&nbsp;be<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;flattened&nbsp;and&nbsp;treated&nbsp;as&nbsp;a&nbsp;simple&nbsp;list.<br>
+&nbsp;&nbsp;units:&nbsp;A&nbsp;description&nbsp;of&nbsp;the&nbsp;units&nbsp;of&nbsp;measure,&nbsp;e.g.&nbsp;"bytes".<br>
+&nbsp;&nbsp;result_type:&nbsp;Accepts&nbsp;values&nbsp;of&nbsp;perf_result_data_type.ALL_TYPES.<br>
+&nbsp;&nbsp;print_to_stdout:&nbsp;If&nbsp;True,&nbsp;prints&nbsp;the&nbsp;output&nbsp;in&nbsp;stdout&nbsp;instead&nbsp;of&nbsp;returning<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;output&nbsp;to&nbsp;caller.<br>
+&nbsp;<br>
+&nbsp;&nbsp;Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;String&nbsp;of&nbsp;the&nbsp;formated&nbsp;perf&nbsp;result.</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>RESULT_TYPES</strong> = {'default': '*RESULT ', 'histogram': '*HISTOGRAM ', 'informational': '', 'unimportant': 'RESULT ', 'unimportant-histogram': 'HISTOGRAM '}</td></tr></table>
+</body></html>

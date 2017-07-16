@@ -1,0 +1,84 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.actions.drag</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.<a href="telemetry.internal.actions.html"><font color="#ffffff">actions</font></a>.drag</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/actions/drag.py">telemetry/internal/actions/drag.py</a></font></td></tr></table>
+    <p><tt>A&nbsp;Telemetry&nbsp;page_action&nbsp;that&nbsp;performs&nbsp;the&nbsp;"drag"&nbsp;action&nbsp;on&nbsp;pages.<br>
+&nbsp;<br>
+Action&nbsp;parameters&nbsp;are:<br>
+-&nbsp;selector:&nbsp;If&nbsp;no&nbsp;selector&nbsp;is&nbsp;defined&nbsp;then&nbsp;the&nbsp;action&nbsp;attempts&nbsp;to&nbsp;drag&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document&nbsp;element&nbsp;on&nbsp;the&nbsp;page.<br>
+-&nbsp;element_function:&nbsp;CSS&nbsp;selector&nbsp;used&nbsp;to&nbsp;evaluate&nbsp;callback&nbsp;when&nbsp;test&nbsp;completes<br>
+-&nbsp;text:&nbsp;The&nbsp;element&nbsp;with&nbsp;exact&nbsp;text&nbsp;is&nbsp;selected.<br>
+-&nbsp;left_start_ratio:&nbsp;ratio&nbsp;of&nbsp;start&nbsp;point's&nbsp;left&nbsp;coordinate&nbsp;to&nbsp;the&nbsp;element<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;width.<br>
+-&nbsp;top_start_ratio:&nbsp;ratio&nbsp;of&nbsp;start&nbsp;point's&nbsp;top&nbsp;coordinate&nbsp;to&nbsp;the&nbsp;element&nbsp;height.<br>
+-&nbsp;left_end_ratio:&nbsp;ratio&nbsp;of&nbsp;end&nbsp;point's&nbsp;left&nbsp;coordinate&nbsp;to&nbsp;the&nbsp;element&nbsp;width.<br>
+-&nbsp;left_end_ratio:&nbsp;ratio&nbsp;of&nbsp;end&nbsp;point's&nbsp;top&nbsp;coordinate&nbsp;to&nbsp;the&nbsp;element&nbsp;height.<br>
+-&nbsp;speed_in_pixels_per_second:&nbsp;speed&nbsp;of&nbsp;the&nbsp;drag&nbsp;gesture&nbsp;in&nbsp;pixels&nbsp;per&nbsp;second.<br>
+-&nbsp;use_touch:&nbsp;boolean&nbsp;value&nbsp;to&nbsp;specify&nbsp;if&nbsp;gesture&nbsp;should&nbsp;use&nbsp;touch&nbsp;input&nbsp;or&nbsp;not.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="os.html">os</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.actions.page_action.html">telemetry.internal.actions.page_action</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.actions.page_action.html#PageAction">telemetry.internal.actions.page_action.PageAction</a>(<a href="__builtin__.html#object">__builtin__.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.actions.drag.html#DragAction">DragAction</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="DragAction">class <strong>DragAction</strong></a>(<a href="telemetry.internal.actions.page_action.html#PageAction">telemetry.internal.actions.page_action.PageAction</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.internal.actions.drag.html#DragAction">DragAction</a></dd>
+<dd><a href="telemetry.internal.actions.page_action.html#PageAction">telemetry.internal.actions.page_action.PageAction</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="DragAction-RunAction"><strong>RunAction</strong></a>(self, tab)</dt></dl>
+
+<dl><dt><a name="DragAction-WillRunAction"><strong>WillRunAction</strong></a>(self, tab)</dt></dl>
+
+<dl><dt><a name="DragAction-__init__"><strong>__init__</strong></a>(self, selector<font color="#909090">=None</font>, text<font color="#909090">=None</font>, element_function<font color="#909090">=None</font>, left_start_ratio<font color="#909090">=None</font>, top_start_ratio<font color="#909090">=None</font>, left_end_ratio<font color="#909090">=None</font>, top_end_ratio<font color="#909090">=None</font>, speed_in_pixels_per_second<font color="#909090">=800</font>, use_touch<font color="#909090">=False</font>, synthetic_gesture_source<font color="#909090">='DEFAULT'</font>)</dt></dl>
+
+<hr>
+Methods inherited from <a href="telemetry.internal.actions.page_action.html#PageAction">telemetry.internal.actions.page_action.PageAction</a>:<br>
+<dl><dt><a name="DragAction-CleanUp"><strong>CleanUp</strong></a>(self, tab)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.internal.actions.page_action.html#PageAction">telemetry.internal.actions.page_action.PageAction</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

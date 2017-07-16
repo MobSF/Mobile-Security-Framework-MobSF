@@ -1,0 +1,240 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.backends.chrome_inspector.devtools_http</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.<a href="telemetry.internal.backends.html"><font color="#ffffff">backends</font></a>.<a href="telemetry.internal.backends.chrome_inspector.html"><font color="#ffffff">chrome_inspector</font></a>.devtools_http</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/backends/chrome_inspector/devtools_http.py">telemetry/internal/backends/chrome_inspector/devtools_http.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2014&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="errno.html">errno</a><br>
+<a href="telemetry.core.exceptions.html">telemetry.core.exceptions</a><br>
+</td><td width="25%" valign=top><a href="httplib.html">httplib</a><br>
+<a href="json.html">json</a><br>
+</td><td width="25%" valign=top><a href="socket.html">socket</a><br>
+<a href="sys.html">sys</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.backends.chrome_inspector.devtools_http.html#DevToolsHttp">DevToolsHttp</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="telemetry.core.exceptions.html#Error">telemetry.core.exceptions.Error</a>(<a href="exceptions.html#Exception">exceptions.Exception</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.backends.chrome_inspector.devtools_http.html#DevToolsClientConnectionError">DevToolsClientConnectionError</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.backends.chrome_inspector.devtools_http.html#DevToolsClientUrlError">DevToolsClientUrlError</a>
+</font></dt></dl>
+</dd>
+</dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="DevToolsClientConnectionError">class <strong>DevToolsClientConnectionError</strong></a>(<a href="telemetry.core.exceptions.html#Error">telemetry.core.exceptions.Error</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.internal.backends.chrome_inspector.devtools_http.html#DevToolsClientConnectionError">DevToolsClientConnectionError</a></dd>
+<dd><a href="telemetry.core.exceptions.html#Error">telemetry.core.exceptions.Error</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.core.exceptions.html#Error">telemetry.core.exceptions.Error</a>:<br>
+<dl><dt><a name="DevToolsClientConnectionError-AddDebuggingMessage"><strong>AddDebuggingMessage</strong></a>(self, msg)</dt><dd><tt>Adds&nbsp;a&nbsp;message&nbsp;to&nbsp;the&nbsp;description&nbsp;of&nbsp;the&nbsp;exception.<br>
+&nbsp;<br>
+Many&nbsp;Telemetry&nbsp;exceptions&nbsp;arise&nbsp;from&nbsp;failures&nbsp;in&nbsp;another&nbsp;application.&nbsp;These<br>
+failures&nbsp;are&nbsp;difficult&nbsp;to&nbsp;pinpoint.&nbsp;This&nbsp;method&nbsp;allows&nbsp;Telemetry&nbsp;classes&nbsp;to<br>
+append&nbsp;useful&nbsp;debugging&nbsp;information&nbsp;to&nbsp;the&nbsp;exception.&nbsp;This&nbsp;method&nbsp;also&nbsp;logs<br>
+information&nbsp;about&nbsp;the&nbsp;location&nbsp;from&nbsp;where&nbsp;it&nbsp;was&nbsp;called.</tt></dd></dl>
+
+<dl><dt><a name="DevToolsClientConnectionError-__init__"><strong>__init__</strong></a>(self, msg<font color="#909090">=''</font>)</dt></dl>
+
+<dl><dt><a name="DevToolsClientConnectionError-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.core.exceptions.html#Error">telemetry.core.exceptions.Error</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#DevToolsClientConnectionError-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="DevToolsClientConnectionError-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#DevToolsClientConnectionError-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="DevToolsClientConnectionError-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#DevToolsClientConnectionError-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="DevToolsClientConnectionError-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#DevToolsClientConnectionError-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="DevToolsClientConnectionError-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#DevToolsClientConnectionError-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="DevToolsClientConnectionError-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="DevToolsClientConnectionError-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#DevToolsClientConnectionError-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="DevToolsClientConnectionError-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#DevToolsClientConnectionError-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="DevToolsClientConnectionError-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="DevToolsClientConnectionError-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="DevToolsClientUrlError">class <strong>DevToolsClientUrlError</strong></a>(<a href="telemetry.internal.backends.chrome_inspector.devtools_http.html#DevToolsClientConnectionError">DevToolsClientConnectionError</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.internal.backends.chrome_inspector.devtools_http.html#DevToolsClientUrlError">DevToolsClientUrlError</a></dd>
+<dd><a href="telemetry.internal.backends.chrome_inspector.devtools_http.html#DevToolsClientConnectionError">DevToolsClientConnectionError</a></dd>
+<dd><a href="telemetry.core.exceptions.html#Error">telemetry.core.exceptions.Error</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.core.exceptions.html#Error">telemetry.core.exceptions.Error</a>:<br>
+<dl><dt><a name="DevToolsClientUrlError-AddDebuggingMessage"><strong>AddDebuggingMessage</strong></a>(self, msg)</dt><dd><tt>Adds&nbsp;a&nbsp;message&nbsp;to&nbsp;the&nbsp;description&nbsp;of&nbsp;the&nbsp;exception.<br>
+&nbsp;<br>
+Many&nbsp;Telemetry&nbsp;exceptions&nbsp;arise&nbsp;from&nbsp;failures&nbsp;in&nbsp;another&nbsp;application.&nbsp;These<br>
+failures&nbsp;are&nbsp;difficult&nbsp;to&nbsp;pinpoint.&nbsp;This&nbsp;method&nbsp;allows&nbsp;Telemetry&nbsp;classes&nbsp;to<br>
+append&nbsp;useful&nbsp;debugging&nbsp;information&nbsp;to&nbsp;the&nbsp;exception.&nbsp;This&nbsp;method&nbsp;also&nbsp;logs<br>
+information&nbsp;about&nbsp;the&nbsp;location&nbsp;from&nbsp;where&nbsp;it&nbsp;was&nbsp;called.</tt></dd></dl>
+
+<dl><dt><a name="DevToolsClientUrlError-__init__"><strong>__init__</strong></a>(self, msg<font color="#909090">=''</font>)</dt></dl>
+
+<dl><dt><a name="DevToolsClientUrlError-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.core.exceptions.html#Error">telemetry.core.exceptions.Error</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#DevToolsClientUrlError-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="DevToolsClientUrlError-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#DevToolsClientUrlError-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="DevToolsClientUrlError-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#DevToolsClientUrlError-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="DevToolsClientUrlError-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#DevToolsClientUrlError-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="DevToolsClientUrlError-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#DevToolsClientUrlError-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="DevToolsClientUrlError-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="DevToolsClientUrlError-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#DevToolsClientUrlError-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="DevToolsClientUrlError-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#DevToolsClientUrlError-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="DevToolsClientUrlError-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="DevToolsClientUrlError-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="DevToolsHttp">class <strong>DevToolsHttp</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>A&nbsp;helper&nbsp;class&nbsp;to&nbsp;send&nbsp;and&nbsp;parse&nbsp;DevTools&nbsp;HTTP&nbsp;requests.<br>
+&nbsp;<br>
+This&nbsp;class&nbsp;maintains&nbsp;a&nbsp;persistent&nbsp;http&nbsp;connection&nbsp;to&nbsp;Chrome&nbsp;devtools.<br>
+Ideally,&nbsp;owners&nbsp;of&nbsp;instances&nbsp;of&nbsp;this&nbsp;class&nbsp;should&nbsp;call&nbsp;<a href="#DevToolsHttp-Disconnect">Disconnect</a>()&nbsp;before<br>
+disposing&nbsp;of&nbsp;the&nbsp;instance.&nbsp;Otherwise,&nbsp;the&nbsp;connection&nbsp;will&nbsp;not&nbsp;be&nbsp;closed&nbsp;until<br>
+the&nbsp;instance&nbsp;is&nbsp;garbage&nbsp;collected.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="DevToolsHttp-Disconnect"><strong>Disconnect</strong></a>(self)</dt><dd><tt>Closes&nbsp;the&nbsp;HTTP&nbsp;connection.</tt></dd></dl>
+
+<dl><dt><a name="DevToolsHttp-Request"><strong>Request</strong></a>(self, path, timeout<font color="#909090">=30</font>)</dt><dd><tt>Sends&nbsp;a&nbsp;request&nbsp;to&nbsp;Chrome&nbsp;devtools.<br>
+&nbsp;<br>
+This&nbsp;method&nbsp;lazily&nbsp;creates&nbsp;an&nbsp;HTTP&nbsp;connection,&nbsp;if&nbsp;one&nbsp;does&nbsp;not&nbsp;already<br>
+exist.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;path:&nbsp;The&nbsp;DevTools&nbsp;URL&nbsp;path,&nbsp;without&nbsp;the&nbsp;/json/&nbsp;prefix.<br>
+&nbsp;&nbsp;timeout:&nbsp;Timeout&nbsp;defaults&nbsp;to&nbsp;30&nbsp;seconds.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;<a href="#DevToolsClientConnectionError">DevToolsClientConnectionError</a>:&nbsp;If&nbsp;the&nbsp;connection&nbsp;fails.</tt></dd></dl>
+
+<dl><dt><a name="DevToolsHttp-RequestJson"><strong>RequestJson</strong></a>(self, path, timeout<font color="#909090">=30</font>)</dt><dd><tt>Sends&nbsp;a&nbsp;request&nbsp;and&nbsp;parse&nbsp;the&nbsp;response&nbsp;as&nbsp;JSON.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;path:&nbsp;The&nbsp;DevTools&nbsp;URL&nbsp;path,&nbsp;without&nbsp;the&nbsp;/json/&nbsp;prefix.<br>
+&nbsp;&nbsp;timeout:&nbsp;Timeout&nbsp;defaults&nbsp;to&nbsp;30&nbsp;seconds.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;<a href="#DevToolsClientConnectionError">DevToolsClientConnectionError</a>:&nbsp;If&nbsp;the&nbsp;connection&nbsp;fails.<br>
+&nbsp;&nbsp;ValueError:&nbsp;If&nbsp;the&nbsp;response&nbsp;is&nbsp;not&nbsp;a&nbsp;valid&nbsp;JSON.</tt></dd></dl>
+
+<dl><dt><a name="DevToolsHttp-__del__"><strong>__del__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="DevToolsHttp-__init__"><strong>__init__</strong></a>(self, devtools_port)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

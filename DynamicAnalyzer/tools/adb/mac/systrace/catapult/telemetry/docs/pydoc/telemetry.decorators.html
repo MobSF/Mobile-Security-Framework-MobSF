@@ -1,0 +1,117 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.decorators</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.decorators</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/decorators.py">telemetry/decorators.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2014&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.<br>
+#&nbsp;pylint:&nbsp;disable=W0212</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="datetime.html">datetime</a><br>
+<a href="functools.html">functools</a><br>
+</td><td width="25%" valign=top><a href="inspect.html">inspect</a><br>
+<a href="os.html">os</a><br>
+</td><td width="25%" valign=top><a href="types.html">types</a><br>
+<a href="warnings.html">warnings</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.decorators.html#Deprecated">Deprecated</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Deprecated">class <strong>Deprecated</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Deprecated-__call__"><strong>__call__</strong></a>(self, target)</dt></dl>
+
+<dl><dt><a name="Deprecated-__init__"><strong>__init__</strong></a>(self, year, month, day, extra_guidance<font color="#909090">=''</font>)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-Cache"><strong>Cache</strong></a>(obj)</dt><dd><tt>Decorator&nbsp;for&nbsp;caching&nbsp;read-only&nbsp;properties.<br>
+&nbsp;<br>
+Example&nbsp;usage&nbsp;(always&nbsp;returns&nbsp;the&nbsp;same&nbsp;Foo&nbsp;instance):<br>
+&nbsp;&nbsp;@Cache<br>
+&nbsp;&nbsp;def&nbsp;CreateFoo():<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;Foo()<br>
+&nbsp;<br>
+If&nbsp;CreateFoo()&nbsp;accepts&nbsp;parameters,&nbsp;a&nbsp;separate&nbsp;cached&nbsp;value&nbsp;is&nbsp;maintained<br>
+for&nbsp;each&nbsp;unique&nbsp;parameter&nbsp;combination.<br>
+&nbsp;<br>
+Cached&nbsp;methods&nbsp;maintain&nbsp;their&nbsp;cache&nbsp;for&nbsp;the&nbsp;lifetime&nbsp;of&nbsp;the&nbsp;/instance/,&nbsp;while<br>
+cached&nbsp;functions&nbsp;maintain&nbsp;their&nbsp;cache&nbsp;for&nbsp;the&nbsp;lifetime&nbsp;of&nbsp;the&nbsp;/module/.</tt></dd></dl>
+ <dl><dt><a name="-Disabled"><strong>Disabled</strong></a>(*args)</dt><dd><tt>Decorator&nbsp;for&nbsp;disabling&nbsp;tests/benchmarks.<br>
+&nbsp;<br>
+&nbsp;<br>
+If&nbsp;args&nbsp;are&nbsp;given,&nbsp;the&nbsp;test&nbsp;will&nbsp;be&nbsp;disabled&nbsp;if&nbsp;ANY&nbsp;of&nbsp;the&nbsp;args&nbsp;match&nbsp;the<br>
+browser&nbsp;type,&nbsp;OS&nbsp;name&nbsp;or&nbsp;OS&nbsp;version:<br>
+&nbsp;&nbsp;@<a href="#-Disabled">Disabled</a>('canary')&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;Disabled&nbsp;for&nbsp;canary&nbsp;browsers<br>
+&nbsp;&nbsp;@<a href="#-Disabled">Disabled</a>('win')&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;Disabled&nbsp;on&nbsp;Windows.<br>
+&nbsp;&nbsp;@<a href="#-Disabled">Disabled</a>('win',&nbsp;'linux')&nbsp;&nbsp;#&nbsp;Disabled&nbsp;on&nbsp;both&nbsp;Windows&nbsp;and&nbsp;Linux.<br>
+&nbsp;&nbsp;@<a href="#-Disabled">Disabled</a>('mavericks')&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;Disabled&nbsp;on&nbsp;Mac&nbsp;Mavericks&nbsp;(10.9)&nbsp;only.<br>
+&nbsp;&nbsp;@<a href="#-Disabled">Disabled</a>('all')&nbsp;&nbsp;#&nbsp;Unconditionally&nbsp;disabled.</tt></dd></dl>
+ <dl><dt><a name="-Enabled"><strong>Enabled</strong></a>(*args)</dt><dd><tt>Decorator&nbsp;for&nbsp;enabling&nbsp;tests/benchmarks.<br>
+&nbsp;<br>
+The&nbsp;test&nbsp;will&nbsp;be&nbsp;enabled&nbsp;if&nbsp;ANY&nbsp;of&nbsp;the&nbsp;args&nbsp;match&nbsp;the&nbsp;browser&nbsp;type,&nbsp;OS&nbsp;name<br>
+or&nbsp;OS&nbsp;version:<br>
+&nbsp;&nbsp;@<a href="#-Enabled">Enabled</a>('canary')&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;Enabled&nbsp;only&nbsp;for&nbsp;canary&nbsp;browsers<br>
+&nbsp;&nbsp;@<a href="#-Enabled">Enabled</a>('win')&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;Enabled&nbsp;only&nbsp;on&nbsp;Windows.<br>
+&nbsp;&nbsp;@<a href="#-Enabled">Enabled</a>('win',&nbsp;'linux')&nbsp;&nbsp;#&nbsp;Enabled&nbsp;only&nbsp;on&nbsp;Windows&nbsp;or&nbsp;Linux.<br>
+&nbsp;&nbsp;@<a href="#-Enabled">Enabled</a>('mavericks')&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;Enabled&nbsp;only&nbsp;on&nbsp;Mac&nbsp;Mavericks&nbsp;(10.9).</tt></dd></dl>
+ <dl><dt><a name="-IsEnabled"><strong>IsEnabled</strong></a>(test, possible_browser)</dt><dd><tt>Returns&nbsp;True&nbsp;iff&nbsp;|test|&nbsp;is&nbsp;enabled&nbsp;given&nbsp;the&nbsp;|possible_browser|.<br>
+&nbsp;<br>
+Use&nbsp;to&nbsp;respect&nbsp;the&nbsp;@Enabled&nbsp;/&nbsp;@Disabled&nbsp;decorators.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;test:&nbsp;A&nbsp;function&nbsp;or&nbsp;class&nbsp;that&nbsp;may&nbsp;contain&nbsp;_disabled_strings&nbsp;and/or<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_enabled_strings&nbsp;attributes.<br>
+&nbsp;&nbsp;possible_browser:&nbsp;A&nbsp;PossibleBrowser&nbsp;to&nbsp;check&nbsp;whether&nbsp;|test|&nbsp;may&nbsp;run&nbsp;against.</tt></dd></dl>
+ <dl><dt><a name="-Isolated"><strong>Isolated</strong></a>(*args)</dt><dd><tt>Decorator&nbsp;for&nbsp;noting&nbsp;that&nbsp;tests&nbsp;must&nbsp;be&nbsp;run&nbsp;in&nbsp;isolation.<br>
+&nbsp;<br>
+The&nbsp;test&nbsp;will&nbsp;be&nbsp;run&nbsp;by&nbsp;itself&nbsp;(not&nbsp;concurrently&nbsp;with&nbsp;any&nbsp;other&nbsp;tests)<br>
+if&nbsp;ANY&nbsp;of&nbsp;the&nbsp;args&nbsp;match&nbsp;the&nbsp;browser&nbsp;type,&nbsp;OS&nbsp;name,&nbsp;or&nbsp;OS&nbsp;version.</tt></dd></dl>
+ <dl><dt><a name="-ShouldBeIsolated"><strong>ShouldBeIsolated</strong></a>(test, possible_browser)</dt></dl>
+ <dl><dt><a name="-ShouldSkip"><strong>ShouldSkip</strong></a>(test, possible_browser)</dt><dd><tt>Returns&nbsp;whether&nbsp;the&nbsp;test&nbsp;should&nbsp;be&nbsp;skipped&nbsp;and&nbsp;the&nbsp;reason&nbsp;for&nbsp;it.</tt></dd></dl>
+</td></tr></table>
+</body></html>

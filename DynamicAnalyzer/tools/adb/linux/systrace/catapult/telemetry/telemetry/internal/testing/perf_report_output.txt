@@ -1,0 +1,2497 @@
+# ========
+# captured on: Thu Aug 15 09:40:36 2013
+# hostname : tonyg-linux.mtv.corp.google.com
+# os release : 3.2.5-gg1236
+# perf version : 3.2.5
+# arch : x86_64
+# nrcpus online : 32
+# nrcpus avail : 32
+# cpudesc : Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz
+# cpuid : GenuineIntel,6,45,7
+# total memory : 65904780 kB
+# cmdline : /usr/bin/perf_3.2.5-gg1236 record --call-graph --pid 20916 --output /tmp/tmprt1Qz7/http___www_techcrunch_com__001.renderer0 
+# event : name = cycles, type = 0, config = 0x0, config1 = 0x0, config2 = 0x0, excl_usr = 0, excl_kern = 0, id = { 40116, 40117, 40118, 40119, 40120, 40121, 40122, 40123, 40124 }
+# HEADER_CPU_TOPOLOGY info available, use -I to display
+# HEADER_NUMA_TOPOLOGY info available, use -I to display
+# ========
+#
+# Events: 825  cycles
+#
+# Overhead^Period^Command^Shared Object^Symbol
+3.22^96878864^HTMLParserThrea^chrome               ^[.] void v8::internal::RelocInfo::Visit<v8::internal::MarkCompactMarkingVisitor>(v8::internal::Heap*)
+            |
+            --- void v8::internal::RelocInfo::Visit<v8::internal::MarkCompactMarkingVisitor>(v8::internal::Heap*)
+
+2.11^63615201^HTMLParserThrea^chrome               ^[.] v8::internal::StaticMarkingVisitor<v8::internal::MarkCompactMarkingVisitor>::MarkMapContents(v8::internal::Heap*, v8::internal::Map*)
+            |
+            --- v8::internal::StaticMarkingVisitor<v8::internal::MarkCompactMarkingVisitor>::MarkMapContents(v8::internal::Heap*, v8::internal::Map*)
+
+1.60^48240439^HTMLParserThrea^chrome               ^[.] WebCore::HTMLTokenizer::nextToken(WebCore::SegmentedString&, WebCore::HTMLToken&)
+            |
+            --- WebCore::HTMLTokenizer::nextToken(WebCore::SegmentedString&, WebCore::HTMLToken&)
+               |          
+                --100.00%-- 0x3b2abdf74074
+
+1.53^46054550^HTMLParserThrea^chrome               ^[.] v8::internal::Scanner::ScanIdentifierOrKeyword()
+            |
+            --- v8::internal::Scanner::ScanIdentifierOrKeyword()
+               |          
+               |--33.87%-- 0x3b2abe3e3700
+               |          
+               |--33.85%-- 0x3b2abdf52240
+               |          
+                --32.28%-- 0x3b2abd766000
+
+1.50^45121317^HTMLParserThrea^chrome               ^[.] sk_memset32_SSE2(unsigned int*, unsigned int, int)
+            |
+            --- sk_memset32_SSE2(unsigned int*, unsigned int, int)
+
+1.43^42913933^HTMLParserThrea^chrome               ^[.] v8::internal::LiveRange::CreateAssignedOperand(v8::internal::Zone*)
+            |
+            --- v8::internal::LiveRange::CreateAssignedOperand(v8::internal::Zone*)
+
+1.43^42913933^HTMLParserThrea^chrome               ^[.] v8::internal::LAllocator::MeetConstraintsBetween(v8::internal::LInstruction*, v8::internal::LInstruction*, int)
+            |
+            --- v8::internal::LAllocator::MeetConstraintsBetween(v8::internal::LInstruction*, v8::internal::LInstruction*, int)
+
+1.32^39786862^HTMLParserThrea^chrome               ^[.] v8::internal::HeapObject::Size()
+            |
+            --- v8::internal::HeapObject::Size()
+               |          
+                --100.00%-- 0x1d00000015
+
+1.27^38271931^HTMLParserThrea^chrome               ^[.] v8::internal::RelocIterator::next()
+            |
+            --- v8::internal::RelocIterator::next()
+               |          
+               |--85.80%-- 0x228100000001
+               |          
+                --14.20%-- 0x7fff30e90200
+
+1.06^31909537^HTMLParserThrea^chrome               ^[.] v8::internal::FlexibleBodyVisitor<v8::internal::MarkCompactMarkingVisitor, v8::internal::FixedArray::BodyDescriptor, void>::Visit(v8::internal::Map*, v8::internal::HeapObject*)
+            |
+            --- v8::internal::FlexibleBodyVisitor<v8::internal::MarkCompactMarkingVisitor, v8::internal::FixedArray::BodyDescriptor, void>::Visit(v8::internal::Map*, v8::internal::HeapObject*)
+
+0.98^29461075^HTMLParserThrea^chrome               ^[.] operator new(unsigned long)
+            |
+            --- operator new(unsigned long)
+
+0.88^26612604^HTMLParserThrea^chrome               ^[.] v8::internal::InnerPointerToCodeCache::GcSafeFindCodeForInnerPointer(unsigned char*)
+            |
+            --- v8::internal::InnerPointerToCodeCache::GcSafeFindCodeForInnerPointer(unsigned char*)
+
+0.83^25019326^HTMLParserThrea^chrome               ^[.] v8::internal::Scanner::Scan()
+            |
+            --- v8::internal::Scanner::Scan()
+               |          
+               |--31.35%-- 0x7fff30e9065000
+               |          
+               |--25.38%-- 0x7fff30e915a000
+               |          
+               |--22.29%-- 0x7fff30e9081000
+               |          
+                --20.99%-- 0x7fff30e91900
+                          0x900000001
+
+0.80^24225440^HTMLParserThrea^chrome               ^[.] WebCore::TokenPreloadScanner::scan(WebCore::CompactHTMLToken const&, WebCore::SegmentedString const&, WTF::Vector<WTF::OwnPtr<WebCore::PreloadRequest>, 0ul>&)
+            |
+            --- WebCore::TokenPreloadScanner::scan(WebCore::CompactHTMLToken const&, WebCore::SegmentedString const&, WTF::Vector<WTF::OwnPtr<WebCore::PreloadRequest>, 0ul>&)
+
+0.73^22115352^HTMLParserThrea^chrome               ^[.] v8::internal::DescriptorArray::Append(v8::internal::Descriptor*)
+            |
+            --- v8::internal::DescriptorArray::Append(v8::internal::Descriptor*)
+
+0.73^21947849^HTMLParserThrea^chrome               ^[.] v8::internal::HRepresentationChangesPhase::InsertRepresentationChangesForValue(v8::internal::HValue*)
+            |
+            --- v8::internal::HRepresentationChangesPhase::InsertRepresentationChangesForValue(v8::internal::HValue*)
+
+0.72^21805774^HTMLParserThrea^chrome               ^[.] SkBlitLCD16OpaqueRow_SSE2(unsigned int*, unsigned short const*, unsigned int, int, unsigned int)
+            |
+            --- SkBlitLCD16OpaqueRow_SSE2(unsigned int*, unsigned short const*, unsigned int, int, unsigned int)
+
+0.71^21252690^HTMLParserThrea^chrome               ^[.] int v8::internal::Search<(v8::internal::SearchMode)1, v8::internal::DescriptorArray>(v8::internal::DescriptorArray*, v8::internal::Name*, int)
+            |
+            --- int v8::internal::Search<(v8::internal::SearchMode)1, v8::internal::DescriptorArray>(v8::internal::DescriptorArray*, v8::internal::Name*, int)
+
+0.63^18864914^HTMLParserThrea^chrome               ^[.] v8::internal::HashTable<v8::internal::StringTableShape, v8::internal::HashTableKey*>::FindEntry(v8::internal::Isolate*, v8::internal::HashTableKey*)
+            |
+            --- v8::internal::HashTable<v8::internal::StringTableShape, v8::internal::HashTableKey*>::FindEntry(v8::internal::Isolate*, v8::internal::HashTableKey*)
+               |          
+                --100.00%-- 0x3b2abdff2b80
+
+0.56^16917055^HTMLParserThrea^chrome               ^[.] WebCore::LayoutUnit::LayoutUnit(int)
+            |
+            --- WebCore::LayoutUnit::LayoutUnit(int)
+               |          
+                --100.00%-- (nil)
+
+0.54^16308133^HTMLParserThrea^chrome               ^[.] event_base_loop
+            |
+            --- event_base_loop
+                0x7f7a0b959fc0
+                epoll_init
+                0x7265727265666572
+
+0.51^15412114^HTMLParserThrea^chrome               ^[.] tc_malloc
+            |
+            --- tc_malloc
+
+0.51^15239999^HTMLParserThrea^chrome               ^[.] v8::internal::Scanner::Next()
+            |
+            --- v8::internal::Scanner::Next()
+               |          
+               |--23.51%-- 0x7fff30e9054a
+               |          
+               |--23.51%-- 0x7fff30e906ca
+               |          
+               |--23.38%-- (nil)
+               |          
+               |--15.20%-- 0x7fff30e9081000
+               |          
+                --14.39%-- 0x7fff30e9048c
+
+0.47^14231099^HTMLParserThrea^chrome               ^[.] v8::internal::Heap::DoScavenge(v8::internal::ObjectVisitor*, unsigned char*)
+            |
+            --- v8::internal::Heap::DoScavenge(v8::internal::ObjectVisitor*, unsigned char*)
+
+0.47^14229607^HTMLParserThrea^chrome               ^[.] bool WebCore::SelectorChecker::checkOne<WebCore::DOMSiblingTraversalStrategy>(WebCore::SelectorChecker::SelectorCheckingContext const&, WebCore::DOMSiblingTraversalStrategy const&) const
+            |
+            --- bool WebCore::SelectorChecker::checkOne<WebCore::DOMSiblingTraversalStrategy>(WebCore::SelectorChecker::SelectorCheckingContext const&, WebCore::DOMSiblingTraversalStrategy const&) const
+               |          
+               |--25.11%-- 0x1e83176cd048
+               |          
+               |--25.08%-- 0x7f7a0b9980e000
+               |          
+               |--24.93%-- 0x7f7a00000000
+               |          
+                --24.88%-- 0x7f7a0b997c9000
+
+0.46^13955450^HTMLParserThrea^chrome               ^[.] tc_realloc
+            |
+            --- tc_realloc
+
+0.46^13941187^HTMLParserThrea^chrome               ^[.] WebCore::minimumValueForLength(WebCore::Length const&, WebCore::LayoutUnit, WebCore::RenderView*, bool)
+            |
+            --- WebCore::minimumValueForLength(WebCore::Length const&, WebCore::LayoutUnit, WebCore::RenderView*, bool)
+
+0.46^13834654^HTMLParserThrea^chrome               ^[.] v8::internal::JSReceiver::LocalLookup(v8::internal::Name*, v8::internal::LookupResult*, bool)
+            |
+            --- v8::internal::JSReceiver::LocalLookup(v8::internal::Name*, v8::internal::LookupResult*, bool)
+               |          
+               |--33.05%-- 0x7fff30e91860
+               |          
+               |--26.80%-- (nil)
+               |          
+               |--20.72%-- 0x7fff30e91a10
+               |          
+                --19.43%-- 0x7fff30e90860
+
+0.44^13202625^HTMLParserThrea^chrome               ^[.] v8::internal::Expression::Expression(v8::internal::Isolate*)
+            |
+            --- v8::internal::Expression::Expression(v8::internal::Isolate*)
+               |          
+               |--35.68%-- 0x7fff30e9198000
+               |          
+               |--32.51%-- 0x7f7a00000000
+               |          
+                --31.81%-- (nil)
+
+0.44^13149418^HTMLParserThrea^chrome               ^[.] v8::internal::String::IsOneByteEqualTo(v8::internal::Vector<unsigned char const>)
+            |
+            --- v8::internal::String::IsOneByteEqualTo(v8::internal::Vector<unsigned char const>)
+
+0.43^13061272^HTMLParserThrea^chrome               ^[.] event_active
+            |
+            --- event_active
+                0x40
+
+0.43^12899765^HTMLParserThrea^chrome               ^[.] v8::internal::JSObject::LocalLookupRealNamedProperty(v8::internal::Name*, v8::internal::LookupResult*)
+            |
+            --- v8::internal::JSObject::LocalLookupRealNamedProperty(v8::internal::Name*, v8::internal::LookupResult*)
+               |          
+               |--79.39%-- (nil)
+               |          
+                --20.61%-- 0x7fff30e90ab0
+
+0.42^12696531^HTMLParserThrea^chrome               ^[.] v8::internal::IsIdentifier(v8::internal::UnicodeCache*, v8::internal::Name*)
+            |
+            --- v8::internal::IsIdentifier(v8::internal::UnicodeCache*, v8::internal::Name*)
+
+0.41^12442842^HTMLParserThrea^chrome               ^[.] v8::internal::PointersUpdatingVisitor::VisitPointers(v8::internal::Object**, v8::internal::Object**)
+            |
+            --- v8::internal::PointersUpdatingVisitor::VisitPointers(v8::internal::Object**, v8::internal::Object**)
+
+0.41^12212739^HTMLParserThrea^chrome               ^[.] v8::internal::StubCompiler::CheckPrototypes(v8::internal::Handle<v8::internal::JSObject>, v8::internal::Register, v8::internal::Handle<v8::internal::JSObject>, v8::internal::Register, v8::internal::Register, v8::internal::Register, v8::internal::Handle<v8::internal::Name>, int, v8::internal::Label*, v8::internal::PrototypeCheckType)
+            |
+            --- v8::internal::StubCompiler::CheckPrototypes(v8::internal::Handle<v8::internal::JSObject>, v8::internal::Register, v8::internal::Handle<v8::internal::JSObject>, v8::internal::Register, v8::internal::Register, v8::internal::Register, v8::internal::Handle<v8::internal::Name>, int, v8::internal::Label*, v8::internal::PrototypeCheckType)
+               |          
+                --100.00%-- 0x29f988404121
+
+0.40^11929902^HTMLParserThrea^chrome               ^[.] _ZN2v88internal12BinarySearchILNS0_10SearchModeE1ENS0_15DescriptorArrayEEEiPT0_PNS0_4NameEiii.constprop.530
+            |
+            --- _ZN2v88internal12BinarySearchILNS0_10SearchModeE1ENS0_15DescriptorArrayEEEiPT0_PNS0_4NameEiii.constprop.530
+
+0.36^10844486^HTMLParserThrea^chrome               ^[.] content::VideoCaptureMessageFilter::OnMessageReceived(IPC::Message const&)
+            |
+            --- content::VideoCaptureMessageFilter::OnMessageReceived(IPC::Message const&)
+                0xfffffffc0000000e
+                IPC::ChannelProxy::Context::OnChannelConnected(int)
+                0x6c894cfb8948d824
+
+0.36^10745270^HTMLParserThrea^chrome               ^[.] v8::internal::StaticMarkingVisitor<v8::internal::MarkCompactMarkingVisitor>::VisitJSFunctionStrongCode(v8::internal::Heap*, v8::internal::HeapObject*)
+            |
+            --- v8::internal::StaticMarkingVisitor<v8::internal::MarkCompactMarkingVisitor>::VisitJSFunctionStrongCode(v8::internal::Heap*, v8::internal::HeapObject*)
+
+0.36^10717680^HTMLParserThrea^chrome               ^[.] v8::internal::TemplateHashMapImpl<v8::internal::ZoneAllocationPolicy>::Lookup(void*, unsigned int, bool, v8::internal::ZoneAllocationPolicy)
+            |
+            --- v8::internal::TemplateHashMapImpl<v8::internal::ZoneAllocationPolicy>::Lookup(void*, unsigned int, bool, v8::internal::ZoneAllocationPolicy)
+
+0.36^10710349^HTMLParserThrea^chrome               ^[.] v8::internal::Code::CopyFrom(v8::internal::CodeDesc const&)
+            |
+            --- v8::internal::Code::CopyFrom(v8::internal::CodeDesc const&)
+
+0.35^10674297^HTMLParserThrea^chrome               ^[.] v8::internal::Parser::ParseBinaryExpression(int, bool, bool*)
+            |
+            --- v8::internal::Parser::ParseBinaryExpression(int, bool, bool*)
+               |          
+               |--66.59%-- (nil)
+               |          
+                --33.41%-- 0x7f7a0b98e010
+
+0.35^10650066^HTMLParserThrea^chrome               ^[.] WebCore::SelectorFilter::pushParentStackFrame(WebCore::Element*)
+            |
+            --- WebCore::SelectorFilter::pushParentStackFrame(WebCore::Element*)
+
+0.35^10614251^HTMLParserThrea^libc-2.15.so         ^[.] __memcpy_ssse3_back
+            |
+            --- __memcpy_ssse3_back
+
+0.35^10611142^HTMLParserThrea^chrome               ^[.] v8::internal::GlobalHandles::ComputeObjectGroupsAndImplicitReferences()
+            |
+            --- v8::internal::GlobalHandles::ComputeObjectGroupsAndImplicitReferences()
+
+0.35^10527946^HTMLParserThrea^chrome               ^[.] tcmalloc::FL_PopRange(void**, int, void**, void**)
+            |
+            --- tcmalloc::FL_PopRange(void**, int, void**, void**)
+
+0.35^10514181^HTMLParserThrea^libpthread-2.15.so   ^[.] pthread_getspecific
+            |
+            --- pthread_getspecific
+
+0.35^10497704^HTMLParserThrea^chrome               ^[.] v8::internal::IC::PostPatching(unsigned char*, v8::internal::Code*, v8::internal::Code*)
+            |
+            --- v8::internal::IC::PostPatching(unsigned char*, v8::internal::Code*, v8::internal::Code*)
+
+0.35^10452932^HTMLParserThrea^chrome               ^[.] _ZN2v88internal12StringHasher13AddCharactersIhEEvPKT_i.constprop.518
+            |
+            --- _ZN2v88internal12StringHasher13AddCharactersIhEEvPKT_i.constprop.518
+
+0.35^10426463^HTMLParserThrea^chrome               ^[.] _ZN2v88internalL13LookupForReadENS0_6HandleINS0_6ObjectEEENS1_INS0_6StringEEEPNS0_12LookupResultE.constprop.171
+            |
+            --- _ZN2v88internalL13LookupForReadENS0_6HandleINS0_6ObjectEEENS1_INS0_6StringEEEPNS0_12LookupResultE.constprop.171
+               |          
+               |--65.70%-- (nil)
+               |          
+                --34.30%-- 0x7fff30e91e38
+
+0.34^10228287^HTMLParserThrea^chrome               ^[.] WTF::Unicode::convertLatin1ToUTF8(unsigned char const**, unsigned char const*, char**, char*)
+            |
+            --- WTF::Unicode::convertLatin1ToUTF8(unsigned char const**, unsigned char const*, char**, char*)
+               |          
+               |--34.63%-- 0x3b2abdeedb48
+               |          
+               |--32.97%-- webkit_glue::(anonymous namespace)::HeaderFlattener::visitHeader(WebKit::WebString const&, WebKit::WebString const&)
+               |          0x3b2abdfe9230
+               |          
+                --32.40%-- void WTF::StringBuilder::reallocateBuffer<unsigned char>(unsigned int)
+
+0.34^10139628^HTMLParserThrea^chrome               ^[.] base::subtle::RefCountedThreadSafeBase::Release() const
+            |
+            --- base::subtle::RefCountedThreadSafeBase::Release() const
+               |          
+               |--63.45%-- base::internal::Invoker<1, base::internal::BindState<base::internal::RunnableAdapter<void (base::BaseTimerTaskInternal::*)()>, void ()(base::BaseTimerTaskInternal*), void ()(base::internal::OwnedWrapper<base::BaseTimerTaskInternal>)>, void ()(base::BaseTimerTaskInternal*)>::Run(base::internal::BindStateBase*)
+               |          
+                --36.55%-- 0x7f7a0b8ff200
+
+0.33^9932889^HTMLParserThrea^chrome               ^[.] void WebCore::StyleResolver::applyProperties<(WebCore::StyleResolver::StyleApplicationPass)1>(WebCore::StyleResolverState&, WebCore::StylePropertySet const*, WebCore::StyleRule*, bool, bool, WebCore::PropertyWhitelistType)
+            |
+            --- void WebCore::StyleResolver::applyProperties<(WebCore::StyleResolver::StyleApplicationPass)1>(WebCore::StyleResolverState&, WebCore::StylePropertySet const*, WebCore::StyleRule*, bool, bool, WebCore::PropertyWhitelistType)
+
+0.33^9928749^HTMLParserThrea^chrome               ^[.] v8::internal::CodeStub::GetCode(v8::internal::Isolate*)
+            |
+            --- v8::internal::CodeStub::GetCode(v8::internal::Isolate*)
+
+0.33^9868335^HTMLParserThrea^chrome               ^[.] v8::internal::Heap::AllocateSharedFunctionInfo(v8::internal::Object*)
+            |
+            --- v8::internal::Heap::AllocateSharedFunctionInfo(v8::internal::Object*)
+
+0.33^9807337^HTMLParserThrea^chrome               ^[.] v8::internal::Zone::New(int)
+            |
+            --- v8::internal::Zone::New(int)
+               |          
+                --100.00%-- 0x7fff30e91d48
+
+0.32^9579492^HTMLParserThrea^chrome               ^[.] v8::internal::Object::GetProperty(v8::internal::Object*, v8::internal::LookupResult*, v8::internal::Name*, PropertyAttributes*)
+            |
+            --- v8::internal::Object::GetProperty(v8::internal::Object*, v8::internal::LookupResult*, v8::internal::Name*, PropertyAttributes*)
+               |          
+               |--58.83%-- 0x2281c1418f41
+               |          
+                --41.17%-- (nil)
+
+0.32^9578890^HTMLParserThrea^chrome               ^[.] _ZN2v88internal15DescriptorArray3SetEiPNS0_10DescriptorERKNS1_16WhitenessWitnessE.isra.252
+            |
+            --- _ZN2v88internal15DescriptorArray3SetEiPNS0_10DescriptorERKNS1_16WhitenessWitnessE.isra.252
+
+0.31^9412432^HTMLParserThrea^chrome               ^[.] WebCore::ScrollView::unscaledVisibleContentSize(WebCore::ScrollableArea::VisibleContentRectIncludesScrollbars) const
+            |
+            --- WebCore::ScrollView::unscaledVisibleContentSize(WebCore::ScrollableArea::VisibleContentRectIncludesScrollbars) const
+
+0.31^9384389^HTMLParserThrea^chrome               ^[.] v8::internal::CallICBase::ReceiverToObjectIfRequired(v8::internal::Handle<v8::internal::Object>, v8::internal::Handle<v8::internal::Object>)
+            |
+            --- v8::internal::CallICBase::ReceiverToObjectIfRequired(v8::internal::Handle<v8::internal::Object>, v8::internal::Handle<v8::internal::Object>)
+               |          
+               |--37.40%-- 0x2281c141ab41
+               |          
+               |--35.85%-- 0x2281c1419541
+               |          
+                --26.75%-- 0x2281c141a941
+
+0.31^9309826^HTMLParserThrea^chrome               ^[.] v8::internal::Factory::NewFunctionFromSharedFunctionInfo(v8::internal::Handle<v8::internal::SharedFunctionInfo>, v8::internal::Handle<v8::internal::Context>, v8::internal::PretenureFlag)
+            |
+            --- v8::internal::Factory::NewFunctionFromSharedFunctionInfo(v8::internal::Handle<v8::internal::SharedFunctionInfo>, v8::internal::Handle<v8::internal::Context>, v8::internal::PretenureFlag)
+
+0.31^9238181^HTMLParserThrea^chrome               ^[.] v8::internal::Parser::ParseAssignmentExpression(bool, bool*)
+            |
+            --- v8::internal::Parser::ParseAssignmentExpression(bool, bool*)
+               |          
+               |--73.43%-- (nil)
+               |          
+                --26.57%-- 0x7fff30e9136000
+
+0.30^9076438^HTMLParserThrea^chrome               ^[.] WebCore::RenderObject* WebCore::bidiNextShared<WebCore::BidiResolver<WebCore::InlineIterator, WebCore::BidiRun> >(WebCore::RenderObject*, WebCore::RenderObject*, WebCore::BidiResolver<WebCore::InlineIterator, WebCore::BidiRun>*, WebCore::EmptyInlineBehavior, bool*)
+            |
+            --- WebCore::RenderObject* WebCore::bidiNextShared<WebCore::BidiResolver<WebCore::InlineIterator, WebCore::BidiRun> >(WebCore::RenderObject*, WebCore::RenderObject*, WebCore::BidiResolver<WebCore::InlineIterator, WebCore::BidiRun>*, WebCore::EmptyInlineBehavior, bool*)
+               |          
+                --100.00%-- 0x3b2abd841928
+
+0.30^8941888^HTMLParserThrea^chrome               ^[.] v8::internal::Heap::AllocateStruct(v8::internal::InstanceType)
+            |
+            --- v8::internal::Heap::AllocateStruct(v8::internal::InstanceType)
+
+0.29^8602723^HTMLParserThrea^chrome               ^[.] v8::internal::LoadIC::ComputeLoadHandler(v8::internal::LookupResult*, v8::internal::Handle<v8::internal::JSObject>, v8::internal::Handle<v8::internal::String>)
+            |
+            --- v8::internal::LoadIC::ComputeLoadHandler(v8::internal::LookupResult*, v8::internal::Handle<v8::internal::JSObject>, v8::internal::Handle<v8::internal::String>)
+               |          
+                --100.00%-- 0x7fff30e90648
+
+0.28^8470525^HTMLParserThrea^chrome               ^[.] void v8::internal::String::WriteToFlat<unsigned char>(v8::internal::String*, unsigned char*, int, int)
+            |
+            --- void v8::internal::String::WriteToFlat<unsigned char>(v8::internal::String*, unsigned char*, int, int)
+
+0.28^8366209^HTMLParserThrea^chrome               ^[.] WTF::StringImpl::hashSlowCase() const
+            |
+            --- WTF::StringImpl::hashSlowCase() const
+               |          
+               |--36.45%-- 0x7f7a11ebab98
+               |          0x7f7a0b9bd000
+               |          
+               |--33.90%-- 0xfffe02a2
+               |          0x1e83176903e8
+               |          
+                --29.65%-- 0x3b2abd1fa100
+
+0.27^8156738^HTMLParserThrea^chrome               ^[.] v8::internal::Runtime_ParallelRecompile(int, v8::internal::Object**, v8::internal::Isolate*)
+            |
+            --- v8::internal::Runtime_ParallelRecompile(int, v8::internal::Object**, v8::internal::Isolate*)
+                0x2281c142b871
+                0x2281c1f35545
+                0x2281c1f31dba
+                0x2281c140e854
+                0x2281c142b65e
+                0x2281c1417d97
+                v8::internal::Invoke(bool, v8::internal::Handle<v8::internal::JSFunction>, v8::internal::Handle<v8::internal::Object>, int, v8::internal::Handle<v8::internal::Object>*, bool*)
+
+0.27^8131676^HTMLParserThrea^chrome               ^[.] v8::internal::FixedArray::set(int, v8::internal::Object*)
+            |
+            --- v8::internal::FixedArray::set(int, v8::internal::Object*)
+
+0.27^8075110^HTMLParserThrea^chrome               ^[.] v8::internal::Heap::AllocateRaw(int, v8::internal::AllocationSpace, v8::internal::AllocationSpace)
+            |
+            --- v8::internal::Heap::AllocateRaw(int, v8::internal::AllocationSpace, v8::internal::AllocationSpace)
+
+0.26^7972021^HTMLParserThrea^chrome               ^[.] WebCore::MarkupAccumulator::appendCharactersReplacingEntities(WTF::StringBuilder&, WTF::String const&, unsigned int, unsigned int, WebCore::EntityMask)
+            |
+            --- WebCore::MarkupAccumulator::appendCharactersReplacingEntities(WTF::StringBuilder&, WTF::String const&, unsigned int, unsigned int, WebCore::EntityMask)
+
+0.25^7610316^HTMLParserThrea^chrome               ^[.] _ZN12_GLOBAL__N_121do_free_with_callbackEPvPFvS0_E.constprop.42
+            |
+            --- _ZN12_GLOBAL__N_121do_free_with_callbackEPvPFvS0_E.constprop.42
+
+0.25^7488722^HTMLParserThrea^chrome               ^[.] WebCore::NodeListV8Internal::indexedPropertyGetterCallback(unsigned int, v8::PropertyCallbackInfo<v8::Value> const&)
+            |
+            --- WebCore::NodeListV8Internal::indexedPropertyGetterCallback(unsigned int, v8::PropertyCallbackInfo<v8::Value> const&)
+                0x7f7a0b900000
+               |          
+                --100.00%-- 0x7f7a0b900000
+
+0.25^7420533^HTMLParserThrea^chrome               ^[.] webkit_glue::WebThreadBase::TaskObserverAdapter::DidProcessTask(base::PendingTask const&)
+            |
+            --- webkit_glue::WebThreadBase::TaskObserverAdapter::DidProcessTask(base::PendingTask const&)
+                0x7f7a0b8ff200
+
+0.24^7201464^HTMLParserThrea^chrome               ^[.] WebCore::RenderBox::computeRectForRepaint(WebCore::RenderLayerModelObject const*, WebCore::LayoutRect&, bool) const
+            |
+            --- WebCore::RenderBox::computeRectForRepaint(WebCore::RenderLayerModelObject const*, WebCore::LayoutRect&, bool) const
+               |          
+               |--50.28%-- 0x124000002bc0
+               |          
+                --49.72%-- 0x194000003e80
+
+0.24^7186236^HTMLParserThrea^chrome               ^[.] v8::internal::StoreBuffer::IteratePointersInStoreBuffer(void (*)(v8::internal::HeapObject**, v8::internal::HeapObject*), bool)
+            |
+            --- v8::internal::StoreBuffer::IteratePointersInStoreBuffer(void (*)(v8::internal::HeapObject**, v8::internal::HeapObject*), bool)
+
+0.24^7180913^HTMLParserThrea^chrome               ^[.] v8::internal::StaticMarkingVisitor<v8::internal::MarkCompactMarkingVisitor>::VisitJSFunction(v8::internal::Map*, v8::internal::HeapObject*)
+            |
+            --- v8::internal::StaticMarkingVisitor<v8::internal::MarkCompactMarkingVisitor>::VisitJSFunction(v8::internal::Map*, v8::internal::HeapObject*)
+
+0.24^7180572^HTMLParserThrea^chrome               ^[.] v8::internal::MarkCompactCollector::ClearNonLivePrototypeTransitions(v8::internal::Map*)
+            |
+            --- v8::internal::MarkCompactCollector::ClearNonLivePrototypeTransitions(v8::internal::Map*)
+
+0.24^7178618^HTMLParserThrea^chrome               ^[.] v8::internal::MarkCompactCollector::SweepSpace(v8::internal::PagedSpace*, v8::internal::MarkCompactCollector::SweeperType)
+            |
+            --- v8::internal::MarkCompactCollector::SweepSpace(v8::internal::PagedSpace*, v8::internal::MarkCompactCollector::SweeperType)
+
+0.24^7154254^HTMLParserThrea^chrome               ^[.] WTF::HashTableConstIterator<WebCore::RenderObject const*, WebCore::RenderObject const*, WTF::IdentityExtractor, WTF::PtrHash<WebCore::RenderObject const*>, WTF::HashTraits<WebCore::RenderObject const*>, WTF::HashTraits<WebCore::RenderObject const*> > WTF::HashTable<WebCore::RenderObject const*, WebCore::RenderObject const*, WTF::IdentityExtractor, WTF::PtrHash<WebCore::RenderObject const*>, WTF::HashTraits<WebCore::RenderObject const*>, WTF::HashTraits
+            |
+            --- WTF::HashTableConstIterator<WebCore::RenderObject const*, WebCore::RenderObject const*, WTF::IdentityExtractor, WTF::PtrHash<WebCore::RenderObject const*>, WTF::HashTraits<WebCore::RenderObject const*>, WTF::HashTraits<WebCore::RenderObject const*> > WTF::HashTable<WebCore::RenderObject const*, WebCore::RenderObject const*, WTF::IdentityExtractor, WTF::PtrHash<WebCore::RenderObject const*>, WTF::HashTraits<WebCore::RenderObject const*>, WTF::HashTraits<WebCore::RenderObject const*> >::find<WTF::IdentityHashTranslator<WTF::PtrHash<WebCore::RenderObject const*> >, WebCore::RenderObject const*>(WebCore::RenderObject const* const&) const
+
+0.24^7150261^HTMLParserThrea^chrome               ^[.] void url_parse::(anonymous namespace)::DoParseAuthority<char>(char const*, url_parse::Component const&, url_parse::Component*, url_parse::Component*, url_parse::Component*, url_parse::Component*)
+            |
+            --- void url_parse::(anonymous namespace)::DoParseAuthority<char>(char const*, url_parse::Component const&, url_parse::Component*, url_parse::Component*, url_parse::Component*, url_parse::Component*)
+               |          
+                --100.00%-- 0xffffffff00000000
+
+0.24^7147589^HTMLParserThrea^chrome               ^[.] v8::internal::Heap::AllocateFixedArray(int)
+            |
+            --- v8::internal::Heap::AllocateFixedArray(int)
+
+0.24^7145279^HTMLParserThrea^chrome               ^[.] v8::internal::Scope::MustAllocate(v8::internal::Variable*)
+            |
+            --- v8::internal::Scope::MustAllocate(v8::internal::Variable*)
+
+0.24^7140300^HTMLParserThrea^chrome               ^[.] WebCore::RenderBox::fillAvailableMeasure(WebCore::LayoutUnit, WebCore::LayoutUnit&, WebCore::LayoutUnit&) const
+            |
+            --- WebCore::RenderBox::fillAvailableMeasure(WebCore::LayoutUnit, WebCore::LayoutUnit&, WebCore::LayoutUnit&) const
+
+0.24^7139300^HTMLParserThrea^chrome               ^[.] WebCore::RenderBlock::computeInlinePreferredLogicalWidths(WebCore::LayoutUnit&, WebCore::LayoutUnit&)
+            |
+            --- WebCore::RenderBlock::computeInlinePreferredLogicalWidths(WebCore::LayoutUnit&, WebCore::LayoutUnit&)
+
+0.24^7134579^HTMLParserThrea^chrome               ^[.] v8::internal::Scanner::ScanString()
+            |
+            --- v8::internal::Scanner::ScanString()
+
+0.24^7132161^HTMLParserThrea^chrome               ^[.] WebCore::ElementRuleCollector::collectRuleIfMatches(WebCore::RuleData const&, WebCore::MatchRequest const&, WebCore::RuleRange&)
+            |
+            --- WebCore::ElementRuleCollector::collectRuleIfMatches(WebCore::RuleData const&, WebCore::MatchRequest const&, WebCore::RuleRange&)
+
+0.24^7127556^HTMLParserThrea^chrome               ^[.] v8::internal::TemplateHashMapImpl<v8::internal::FreeStoreAllocationPolicy>::Lookup(void*, unsigned int, bool, v8::internal::FreeStoreAllocationPolicy)
+            |
+            --- v8::internal::TemplateHashMapImpl<v8::internal::FreeStoreAllocationPolicy>::Lookup(void*, unsigned int, bool, v8::internal::FreeStoreAllocationPolicy)
+
+0.24^7124874^HTMLParserThrea^chrome               ^[.] url_canon::RemoveURLWhitespace(char const*, int, url_canon::CanonOutputT<char>*, int*)
+            |
+            --- url_canon::RemoveURLWhitespace(char const*, int, url_canon::CanonOutputT<char>*, int*)
+
+0.24^7120126^HTMLParserThrea^chrome               ^[.] v8::internal::RelocInfoWriter::Write(v8::internal::RelocInfo const*)
+            |
+            --- v8::internal::RelocInfoWriter::Write(v8::internal::RelocInfo const*)
+
+0.24^7115866^HTMLParserThrea^chrome               ^[.] v8::internal::Parser::ParseMemberWithNewPrefixesExpression(v8::internal::PositionStack*, bool*)
+            |
+            --- v8::internal::Parser::ParseMemberWithNewPrefixesExpression(v8::internal::PositionStack*, bool*)
+               |          
+               |--50.15%-- 0x7fff30e9065000
+               |          
+                --49.85%-- 0x7fff30e914d000
+
+0.24^7113138^HTMLParserThrea^chrome               ^[.] v8::internal::JSObject::AddFastPropertyUsingMap(v8::internal::Map*, v8::internal::Name*, v8::internal::Object*, int, v8::internal::Representation)
+            |
+            --- v8::internal::JSObject::AddFastPropertyUsingMap(v8::internal::Map*, v8::internal::Name*, v8::internal::Object*, int, v8::internal::Representation)
+
+0.24^7106943^HTMLParserThrea^chrome               ^[.] v8::internal::StoreBuffer::Compact()
+            |
+            --- v8::internal::StoreBuffer::Compact()
+
+0.24^7104154^HTMLParserThrea^chrome               ^[.] WebCore::VisitedLinkState::determineLinkStateSlowCase(WebCore::Element*)
+            |
+            --- WebCore::VisitedLinkState::determineLinkStateSlowCase(WebCore::Element*)
+
+0.24^7089266^HTMLParserThrea^chrome               ^[.] WebCore::selectorIdentifierHash(WebCore::CSSSelector const*)
+            |
+            --- WebCore::selectorIdentifierHash(WebCore::CSSSelector const*)
+
+0.24^7086923^HTMLParserThrea^chrome               ^[.] v8::internal::InnerPointerToCodeCache::GetCacheEntry(unsigned char*)
+            |
+            --- v8::internal::InnerPointerToCodeCache::GetCacheEntry(unsigned char*)
+               |          
+                --100.00%-- 0x7fff30e912c0
+                          0xc6a3430a8a9
+
+0.24^7081815^HTMLParserThrea^chrome               ^[.] v8::internal::Parser::ParseUnaryExpression(bool*)
+            |
+            --- v8::internal::Parser::ParseUnaryExpression(bool*)
+                (nil)
+
+0.24^7079188^HTMLParserThrea^chrome               ^[.] WebCore::SelectorFilter::fastRejectSelector(WebCore::CSSSelector const*) const
+            |
+            --- WebCore::SelectorFilter::fastRejectSelector(WebCore::CSSSelector const*) const
+
+0.24^7077714^HTMLParserThrea^chrome               ^[.] v8::internal::CallICBase::LoadFunction(v8::internal::InlineCacheState, int, v8::internal::Handle<v8::internal::Object>, v8::internal::Handle<v8::internal::String>)
+            |
+            --- v8::internal::CallICBase::LoadFunction(v8::internal::InlineCacheState, int, v8::internal::Handle<v8::internal::Object>, v8::internal::Handle<v8::internal::String>)
+               |          
+               |--50.54%-- 0x7fff30e90d30
+               |          
+                --49.46%-- 0x7fff30e90270
+
+0.23^7065769^HTMLParserThrea^chrome               ^[.] WebCore::RenderBoxModelObject::computedCSSPadding(WebCore::Length) const
+            |
+            --- WebCore::RenderBoxModelObject::computedCSSPadding(WebCore::Length) const
+
+0.23^7059576^HTMLParserThrea^chrome               ^[.] v8::internal::Deserializer::ReadChunk(v8::internal::Object**, v8::internal::Object**, int, unsigned char*)
+            |
+            --- v8::internal::Deserializer::ReadChunk(v8::internal::Object**, v8::internal::Object**, int, unsigned char*)
+                0x7f7a0b900000
+
+0.23^7058229^HTMLParserThrea^chrome               ^[.] visitedlink::VisitedLinkCommon::IsVisited(unsigned long) const
+            |
+            --- visitedlink::VisitedLinkCommon::IsVisited(unsigned long) const
+
+0.23^7051436^HTMLParserThrea^chrome               ^[.] v8::internal::AllocateFixedArrayWithFiller(v8::internal::Heap*, int, v8::internal::PretenureFlag, v8::internal::Object*)
+            |
+            --- v8::internal::AllocateFixedArrayWithFiller(v8::internal::Heap*, int, v8::internal::PretenureFlag, v8::internal::Object*)
+
+0.23^7043481^HTMLParserThrea^chrome               ^[.] v8::internal::FuncNameInferrer::PushLiteralName(v8::internal::Handle<v8::internal::String>)
+            |
+            --- v8::internal::FuncNameInferrer::PushLiteralName(v8::internal::Handle<v8::internal::String>)
+
+0.23^7023232^HTMLParserThrea^chrome               ^[.] v8::internal::VariableProxy::VariableProxy(v8::internal::Isolate*, v8::internal::Handle<v8::internal::String>, bool, v8::internal::Interface*, int)
+            |
+            --- v8::internal::VariableProxy::VariableProxy(v8::internal::Isolate*, v8::internal::Handle<v8::internal::String>, bool, v8::internal::Interface*, int)
+               |          
+                --100.00%-- 0x7fff30e90ed8
+
+0.23^7022335^HTMLParserThrea^chrome               ^[.] WebCore::V8CSSStyleDeclaration::createWrapper(WTF::PassRefPtr<WebCore::CSSStyleDeclaration>, v8::Handle<v8::Object>, v8::Isolate*)
+            |
+            --- WebCore::V8CSSStyleDeclaration::createWrapper(WTF::PassRefPtr<WebCore::CSSStyleDeclaration>, v8::Handle<v8::Object>, v8::Isolate*)
+                0x7f7a0b93a3c0
+
+0.23^7015773^HTMLParserThrea^chrome               ^[.] WebCore::RenderBlock::LineBreaker::nextSegmentBreak(WebCore::BidiResolver<WebCore::InlineIterator, WebCore::BidiRun>&, WebCore::LineInfo&, WebCore::RenderBlock::RenderTextInfo&, WebCore::RenderBlock::FloatingObject*, unsigned int, WTF::Vector<WebCore::WordMeasurement, 64ul>&)
+            |
+            --- WebCore::RenderBlock::LineBreaker::nextSegmentBreak(WebCore::BidiResolver<WebCore::InlineIterator, WebCore::BidiRun>&, WebCore::LineInfo&, WebCore::RenderBlock::RenderTextInfo&, WebCore::RenderBlock::FloatingObject*, unsigned int, WTF::Vector<WebCore::WordMeasurement, 64ul>&)
+
+0.23^7009841^HTMLParserThrea^chrome               ^[.] v8::internal::CodeCache::LookupDefaultCache(v8::internal::Name*, unsigned int)
+            |
+            --- v8::internal::CodeCache::LookupDefaultCache(v8::internal::Name*, unsigned int)
+
+0.23^6940000^HTMLParserThrea^chrome               ^[.] v8::internal::PositionsRecorder::RecordPosition(int)
+            |
+            --- v8::internal::PositionsRecorder::RecordPosition(int)
+
+0.23^6866416^HTMLParserThrea^chrome               ^[.] _ZN2v88internal6Parser25ParseVariableDeclarationsENS1_26VariableDeclarationContextEPNS1_29VariableDeclarationPropertiesEPNS0_8ZoneListINS0_6HandleINS0_6StringEEEEEPS8_Pb.constprop.454
+            |
+            --- _ZN2v88internal6Parser25ParseVariableDeclarationsENS1_26VariableDeclarationContextEPNS1_29VariableDeclarationPropertiesEPNS0_8ZoneListINS0_6HandleINS0_6StringEEEEEPS8_Pb.constprop.454
+
+0.23^6858851^HTMLParserThrea^chrome               ^[.] S32A_Opaque_BlitRow32_SSE2(unsigned int*, unsigned int const*, int, unsigned int)
+            |
+            --- S32A_Opaque_BlitRow32_SSE2(unsigned int*, unsigned int const*, int, unsigned int)
+
+0.23^6846415^HTMLParserThrea^chrome               ^[.] v8::internal::String::SlowEquals(v8::internal::String*)
+            |
+            --- v8::internal::String::SlowEquals(v8::internal::String*)
+
+0.22^6771375^HTMLParserThrea^chrome               ^[.] v8::internal::Parser::Expect(v8::internal::Token::Value, bool*)
+            |
+            --- v8::internal::Parser::Expect(v8::internal::Token::Value, bool*)
+               |          
+               |--52.15%-- 0x7fff30e905d002
+               |          
+                --47.85%-- (nil)
+
+0.22^6645010^HTMLParserThrea^chrome               ^[.] v8::internal::DeoptimizerData::FindDeoptimizingCode(unsigned char*)
+            |
+            --- v8::internal::DeoptimizerData::FindDeoptimizingCode(unsigned char*)
+
+0.22^6627879^HTMLParserThrea^chrome               ^[.] v8::internal::StoreIC::Store(v8::internal::InlineCacheState, v8::internal::StrictModeFlag, v8::internal::Handle<v8::internal::Object>, v8::internal::Handle<v8::internal::String>, v8::internal::Handle<v8::internal::Object>, v8::internal::JSReceiver::StoreFromKeyed)
+            |
+            --- v8::internal::StoreIC::Store(v8::internal::InlineCacheState, v8::internal::StrictModeFlag, v8::internal::Handle<v8::internal::Object>, v8::internal::Handle<v8::internal::String>, v8::internal::Handle<v8::internal::Object>, v8::internal::JSReceiver::StoreFromKeyed)
+               |          
+               |--53.63%-- 0xc6a34268609
+               |          
+                --46.37%-- 0xc6a34ea2a81
+
+0.22^6600293^HTMLParserThrea^chrome               ^[.] WTF::HashTableAddResult<WTF::HashTableIterator<WTF::AtomicString, WTF::AtomicString, WTF::IdentityExtractor, WTF::AtomicStringHash, WTF::HashTraits<WTF::AtomicString>, WTF::HashTraits<WTF::AtomicString> > > WTF::HashTable<WTF::AtomicString, WTF::AtomicString, WTF::IdentityExtractor, WTF::AtomicStringHash, WTF::HashTraits<WTF::AtomicString>, WTF::HashTraits<WTF::AtomicString> >::add<WTF::IdentityHashTranslator<WTF::AtomicStringHash>, WTF::AtomicString, 
+            |
+            --- WTF::HashTableAddResult<WTF::HashTableIterator<WTF::AtomicString, WTF::AtomicString, WTF::IdentityExtractor, WTF::AtomicStringHash, WTF::HashTraits<WTF::AtomicString>, WTF::HashTraits<WTF::AtomicString> > > WTF::HashTable<WTF::AtomicString, WTF::AtomicString, WTF::IdentityExtractor, WTF::AtomicStringHash, WTF::HashTraits<WTF::AtomicString>, WTF::HashTraits<WTF::AtomicString> >::add<WTF::IdentityHashTranslator<WTF::AtomicStringHash>, WTF::AtomicString, WTF::AtomicString>(WTF::AtomicString const&, WTF::AtomicString const&)
+
+0.22^6596875^HTMLParserThrea^chrome               ^[.] v8::internal::Assembler::bind(v8::internal::Label*)
+            |
+            --- v8::internal::Assembler::bind(v8::internal::Label*)
+
+0.22^6594480^HTMLParserThrea^chrome               ^[.] WebCore::InspectorInstrumentation::instrumentingAgentsForPage(WebCore::Page*)
+            |
+            --- WebCore::InspectorInstrumentation::instrumentingAgentsForPage(WebCore::Page*)
+
+0.22^6579973^HTMLParserThrea^chrome               ^[.] v8::internal::IC::PatchCache(v8::internal::InlineCacheState, v8::internal::StrictModeFlag, v8::internal::Handle<v8::internal::JSObject>, v8::internal::Handle<v8::internal::String>, v8::internal::Handle<v8::internal::Code>)
+            |
+            --- v8::internal::IC::PatchCache(v8::internal::InlineCacheState, v8::internal::StrictModeFlag, v8::internal::Handle<v8::internal::JSObject>, v8::internal::Handle<v8::internal::String>, v8::internal::Handle<v8::internal::Code>)
+               |          
+               |--54.27%-- 0x29f988404121
+               |          
+                --45.73%-- 0xc6a3487f2f1
+
+0.22^6576754^HTMLParserThrea^chrome               ^[.] v8::internal::Assembler::movq(v8::internal::Register, v8::internal::Handle<v8::internal::Object>, v8::internal::RelocInfo::Mode)
+            |
+            --- v8::internal::Assembler::movq(v8::internal::Register, v8::internal::Handle<v8::internal::Object>, v8::internal::RelocInfo::Mode)
+
+0.22^6564875^HTMLParserThrea^libpthread-2.15.so   ^[.] pthread_mutex_lock
+            |
+            --- pthread_mutex_lock
+
+0.22^6559671^HTMLParserThrea^chrome               ^[.] v8::internal::VariableProxy::node_type() const
+            |
+            --- v8::internal::VariableProxy::node_type() const
+
+0.22^6543901^HTMLParserThrea^chrome               ^[.] v8::internal::Runtime_NewClosure(int, v8::internal::Object**, v8::internal::Isolate*)
+            |
+            --- v8::internal::Runtime_NewClosure(int, v8::internal::Object**, v8::internal::Isolate*)
+               |          
+                --100.00%-- 0x2281c1ab1279
+                          0x2281c142b664
+                          0x2281c1417d97
+                          v8::internal::Invoke(bool, v8::internal::Handle<v8::internal::JSFunction>, v8::internal::Handle<v8::internal::Object>, int, v8::internal::Handle<v8::internal::Object>*, bool*)
+
+0.22^6487316^HTMLParserThrea^chrome               ^[.] v8::internal::Heap::AllocateConsString(v8::internal::String*, v8::internal::String*)
+            |
+            --- v8::internal::Heap::AllocateConsString(v8::internal::String*, v8::internal::String*)
+
+0.21^6470256^HTMLParserThrea^chrome               ^[.] v8::internal::StringTable::LookupOneByteString(v8::internal::Vector<unsigned char const>, v8::internal::Object**)
+            |
+            --- v8::internal::StringTable::LookupOneByteString(v8::internal::Vector<unsigned char const>, v8::internal::Object**)
+
+0.21^6461476^HTMLParserThrea^chrome               ^[.] v8::internal::JSObject::SetLocalPropertyIgnoreAttributes(v8::internal::Name*, v8::internal::Object*, PropertyAttributes, v8::internal::Object::ValueType)
+            |
+            --- v8::internal::JSObject::SetLocalPropertyIgnoreAttributes(v8::internal::Name*, v8::internal::Object*, PropertyAttributes, v8::internal::Object::ValueType)
+
+0.21^6410633^HTMLParserThrea^chrome               ^[.] v8::internal::BaseLoadStoreStubCompiler::CompilePolymorphicIC(v8::internal::List<v8::internal::Handle<v8::internal::Map>, v8::internal::FreeStoreAllocationPolicy>*, v8::internal::List<v8::internal::Handle<v8::internal::Code>, v8::internal::FreeStoreAllocationPolicy>*, v8::internal::Handle<v8::internal::Name>, v8::internal::Code::StubType, v8::internal::IcCheckType)
+            |
+            --- v8::internal::BaseLoadStoreStubCompiler::CompilePolymorphicIC(v8::internal::List<v8::internal::Handle<v8::internal::Map>, v8::internal::FreeStoreAllocationPolicy>*, v8::internal::List<v8::internal::Handle<v8::internal::Code>, v8::internal::FreeStoreAllocationPolicy>*, v8::internal::Handle<v8::internal::Name>, v8::internal::Code::StubType, v8::internal::IcCheckType)
+                0x7f7a0b900000
+
+0.21^6354296^HTMLParserThrea^chrome               ^[.] v8::internal::Parser::ParseExpressionOrLabelledStatement(v8::internal::ZoneList<v8::internal::Handle<v8::internal::String> >*, bool*)
+            |
+            --- v8::internal::Parser::ParseExpressionOrLabelledStatement(v8::internal::ZoneList<v8::internal::Handle<v8::internal::String> >*, bool*)
+               |          
+               |--55.30%-- 0x7fff30e9145000
+               |          
+                --44.70%-- 0x7fff30e906e000
+
+0.21^6319435^HTMLParserThrea^chrome               ^[.] _ZN2v88internal14NameDictionary9FindEntryEPNS0_4NameE.part.385
+            |
+            --- _ZN2v88internal14NameDictionary9FindEntryEPNS0_4NameE.part.385
+               |          
+                --100.00%-- (nil)
+
+0.21^6243685^HTMLParserThrea^chrome               ^[.] WebCore::Font::glyphDataAndPageForCharacter(int, bool, WebCore::FontDataVariant) const
+            |
+            --- WebCore::Font::glyphDataAndPageForCharacter(int, bool, WebCore::FontDataVariant) const
+                0x7fff30e8f0e0
+
+0.20^6145083^HTMLParserThrea^chrome               ^[.] v8::internal::FullCodeGenerator::AccumulatorValueContext::Plug(v8::internal::Register) const
+            |
+            --- v8::internal::FullCodeGenerator::AccumulatorValueContext::Plug(v8::internal::Register) const
+
+0.20^6137312^HTMLParserThrea^chrome               ^[.] v8::internal::JSObject::SetPropertyForResult(v8::internal::LookupResult*, v8::internal::Name*, v8::internal::Object*, PropertyAttributes, v8::internal::StrictModeFlag, v8::internal::JSReceiver::StoreFromKeyed)
+            |
+            --- v8::internal::JSObject::SetPropertyForResult(v8::internal::LookupResult*, v8::internal::Name*, v8::internal::Object*, PropertyAttributes, v8::internal::StrictModeFlag, v8::internal::JSReceiver::StoreFromKeyed)
+
+0.20^6135468^HTMLParserThrea^chrome               ^[.] v8::internal::Factory::NewNumber(double, v8::internal::PretenureFlag)
+            |
+            --- v8::internal::Factory::NewNumber(double, v8::internal::PretenureFlag)
+               |          
+                --100.00%-- 0x7fff30e9160000
+
+0.20^6051127^HTMLParserThrea^chrome               ^[.] WebCore::WidthIterator::glyphDataForCharacter(int, bool, int, unsigned int&)
+            |
+            --- WebCore::WidthIterator::glyphDataForCharacter(int, bool, int, unsigned int&)
+               |          
+               |--58.44%-- 0x7fff30e8cfa0
+               |          
+                --41.56%-- 0x7fff30e8f550
+
+0.20^6000454^HTMLParserThrea^chrome               ^[.] v8::internal::CodeCache::UpdateDefaultCache(v8::internal::Name*, v8::internal::Code*)
+            |
+            --- v8::internal::CodeCache::UpdateDefaultCache(v8::internal::Name*, v8::internal::Code*)
+               |          
+                --100.00%-- 0xc6a355788f1
+
+0.20^5976974^HTMLParserThrea^chrome               ^[.] WebCore::RenderObject::containingBlock() const
+            |
+            --- WebCore::RenderObject::containingBlock() const
+
+0.20^5926952^HTMLParserThrea^chrome               ^[.] v8::internal::GlobalHandles::Create(v8::internal::Object*)
+            |
+            --- v8::internal::GlobalHandles::Create(v8::internal::Object*)
+
+0.20^5880116^HTMLParserThrea^chrome               ^[.] v8::internal::Parser::ParseLeftHandSideExpression(bool*)
+            |
+            --- v8::internal::Parser::ParseLeftHandSideExpression(bool*)
+               |          
+                --100.00%-- 0x7fff30e9151000
+
+0.19^5834557^HTMLParserThrea^chrome               ^[.] WebCore::CachedRawResource::willSendRequest(WebCore::ResourceRequest&, WebCore::ResourceResponse const&)
+            |
+            --- WebCore::CachedRawResource::willSendRequest(WebCore::ResourceRequest&, WebCore::ResourceResponse const&)
+
+0.18^5527800^HTMLParserThrea^chrome               ^[.] WebCore::RenderBlock::paint(WebCore::PaintInfo&, WebCore::LayoutPoint const&)
+            |
+            --- WebCore::RenderBlock::paint(WebCore::PaintInfo&, WebCore::LayoutPoint const&)
+
+0.18^5461500^HTMLParserThrea^chrome               ^[.] WebCore::Document::updateStyleIfNeeded()
+            |
+            --- WebCore::Document::updateStyleIfNeeded()
+
+0.18^5428693^HTMLParserThrea^libc-2.15.so         ^[.] __memset_sse2
+            |
+            --- __memset_sse2
+
+0.18^5423805^HTMLParserThrea^chrome               ^[.] WebCore::FrameView::paintContents(WebCore::GraphicsContext*, WebCore::IntRect const&)
+            |
+            --- WebCore::FrameView::paintContents(WebCore::GraphicsContext*, WebCore::IntRect const&)
+               |          
+               |--61.15%-- 0x5a000002d8
+               |          
+                --38.85%-- 0x2e00000092
+
+0.18^5363793^HTMLParserThrea^chrome               ^[.] WebCore::HTTPHeaderMap::get(WTF::AtomicString const&) const
+            |
+            --- WebCore::HTTPHeaderMap::get(WTF::AtomicString const&) const
+
+0.18^5306454^HTMLParserThrea^chrome               ^[.] v8::internal::Scope::Scope(v8::internal::Scope*, v8::internal::ScopeType, v8::internal::Zone*)
+            |
+            --- v8::internal::Scope::Scope(v8::internal::Scope*, v8::internal::ScopeType, v8::internal::Zone*)
+
+0.18^5274362^HTMLParserThrea^chrome               ^[.] v8::internal::Assembler::bind_to(v8::internal::Label*, int)
+            |
+            --- v8::internal::Assembler::bind_to(v8::internal::Label*, int)
+               |          
+                --100.00%-- 0x3b2abd7c3000
+
+0.18^5270432^HTMLParserThrea^chrome               ^[.] SkDraw::drawPosText(char const*, unsigned long, float const*, float, int, SkPaint const&) const
+            |
+            --- SkDraw::drawPosText(char const*, unsigned long, float const*, float, int, SkPaint const&) const
+                (nil)
+               |          
+               |--55.20%-- 0x4f005200260003
+               |          
+                --44.80%-- 0x52004a00440003
+
+0.17^5196475^HTMLParserThrea^chrome               ^[.] WTF::equalNonNull(WTF::StringImpl const*, WTF::StringImpl const*)
+            |
+            --- WTF::equalNonNull(WTF::StringImpl const*, WTF::StringImpl const*)
+                0x7f7a0b975100
+
+0.17^5103842^HTMLParserThrea^chrome               ^[.] WebCore::RenderLayer::convertToLayerCoords(WebCore::RenderLayer const*, WebCore::LayoutPoint&) const
+            |
+            --- WebCore::RenderLayer::convertToLayerCoords(WebCore::RenderLayer const*, WebCore::LayoutPoint&) const
+
+0.17^4967343^HTMLParserThrea^chrome               ^[.] _ZN2v88internal4ListINS0_16FuncNameInferrer4NameENS0_20ZoneAllocationPolicyEE3AddERKS3_S4_.constprop.51
+            |
+            --- _ZN2v88internal4ListINS0_16FuncNameInferrer4NameENS0_20ZoneAllocationPolicyEE3AddERKS3_S4_.constprop.51
+
+0.16^4900762^HTMLParserThrea^libc-2.15.so         ^[.] __memcmp_sse4_1
+            |
+            --- __memcmp_sse4_1
+               |          
+                --100.00%-- 0x7f7a0b975100
+
+0.15^4610114^HTMLParserThrea^chrome               ^[.] v8::internal::JSObject::GetPropertyWithCallback(v8::internal::Object*, v8::internal::Object*, v8::internal::Name*)
+            |
+            --- v8::internal::JSObject::GetPropertyWithCallback(v8::internal::Object*, v8::internal::Object*, v8::internal::Name*)
+
+0.15^4535632^HTMLParserThrea^chrome               ^[.] v8::HandleScope::HandleScope()
+            |
+            --- v8::HandleScope::HandleScope()
+
+0.15^4419717^HTMLParserThrea^chrome               ^[.] WebCore::MarkupAccumulator::appendStartTag(WebCore::Node*, WTF::HashMap<WTF::AtomicStringImpl*, WTF::AtomicStringImpl*, WTF::PtrHash<WTF::AtomicStringImpl*>, WTF::HashTraits<WTF::AtomicStringImpl*>, WTF::HashTraits<WTF::AtomicStringImpl*> >*)
+            |
+            --- WebCore::MarkupAccumulator::appendStartTag(WebCore::Node*, WTF::HashMap<WTF::AtomicStringImpl*, WTF::AtomicStringImpl*, WTF::PtrHash<WTF::AtomicStringImpl*>, WTF::HashTraits<WTF::AtomicStringImpl*>, WTF::HashTraits<WTF::AtomicStringImpl*> >*)
+
+0.14^4269939^HTMLParserThrea^chrome               ^[.] cssyyparse(WebCore::CSSParser*)
+            |
+            --- cssyyparse(WebCore::CSSParser*)
+               |          
+               |--56.10%-- content::PepperGraphics2DHost::Paint(SkCanvas*, gfx::Rect const&, gfx::Rect const&)
+               |          
+                --43.90%-- 0x1b800000b600
+
+0.14^4189741^HTMLParserThrea^chrome               ^[.] v8::internal::HandleScope::Extend(v8::internal::Isolate*)
+            |
+            --- v8::internal::HandleScope::Extend(v8::internal::Isolate*)
+
+0.13^3989323^HTMLParserThrea^chrome               ^[.] WebCore::RenderBox::overflowRectForPaintRejection() const
+            |
+            --- WebCore::RenderBox::overflowRectForPaintRejection() const
+
+0.12^3691476^HTMLParserThrea^libstdc++.so.6.0.16  ^[.] std::_Rb_tree_increment(std::_Rb_tree_node_base*)
+            |
+            --- std::_Rb_tree_increment(std::_Rb_tree_node_base*)
+
+0.12^3619871^HTMLParserThrea^chrome               ^[.] WebCore::ChildNodeInsertionNotifier::notifyDescendantInsertedIntoTree(WebCore::ContainerNode*)
+            |
+            --- WebCore::ChildNodeInsertionNotifier::notifyDescendantInsertedIntoTree(WebCore::ContainerNode*)
+                (nil)
+
+0.12^3610233^HTMLParserThrea^chrome               ^[.] WebCore::RenderBox::addLayoutOverflow(WebCore::LayoutRect const&)
+            |
+            --- WebCore::RenderBox::addLayoutOverflow(WebCore::LayoutRect const&)
+
+0.12^3602214^HTMLParserThrea^chrome               ^[.] v8::internal::RelocIterator::RelocIterator(v8::internal::Code*, int)
+            |
+            --- v8::internal::RelocIterator::RelocIterator(v8::internal::Code*, int)
+
+0.12^3592533^HTMLParserThrea^chrome               ^[.] v8::internal::MarkCompactCollector::MigrateObject(unsigned char*, unsigned char*, int, v8::internal::AllocationSpace)
+            |
+            --- v8::internal::MarkCompactCollector::MigrateObject(unsigned char*, unsigned char*, int, v8::internal::AllocationSpace)
+
+0.12^3591487^HTMLParserThrea^chrome               ^[.] v8::internal::StringTableCleaner::VisitPointers(v8::internal::Object**, v8::internal::Object**)
+            |
+            --- v8::internal::StringTableCleaner::VisitPointers(v8::internal::Object**, v8::internal::Object**)
+
+0.12^3590966^HTMLParserThrea^chrome               ^[.] v8::internal::MarkCompactCollector::DiscoverAndPromoteBlackObjectsOnPage(v8::internal::NewSpace*, v8::internal::NewSpacePage*)
+            |
+            --- v8::internal::MarkCompactCollector::DiscoverAndPromoteBlackObjectsOnPage(v8::internal::NewSpace*, v8::internal::NewSpacePage*)
+
+0.12^3590884^HTMLParserThrea^chrome               ^[.] v8::internal::MarkCompactCollector::ClearNonLiveReferences()
+            |
+            --- v8::internal::MarkCompactCollector::ClearNonLiveReferences()
+
+0.12^3590478^HTMLParserThrea^chrome               ^[.] void std::__introsort_loop<v8::internal::ObjectGroupConnection*, long>(v8::internal::ObjectGroupConnection*, v8::internal::ObjectGroupConnection*, long)
+            |
+            --- void std::__introsort_loop<v8::internal::ObjectGroupConnection*, long>(v8::internal::ObjectGroupConnection*, v8::internal::ObjectGroupConnection*, long)
+
+0.12^3590200^HTMLParserThrea^chrome               ^[.] v8::internal::StaticMarkingVisitor<v8::internal::MarkCompactMarkingVisitor>::VisitPropertyCell(v8::internal::Map*, v8::internal::HeapObject*)
+            |
+            --- v8::internal::StaticMarkingVisitor<v8::internal::MarkCompactMarkingVisitor>::VisitPropertyCell(v8::internal::Map*, v8::internal::HeapObject*)
+
+0.12^3589094^HTMLParserThrea^chrome               ^[.] long v8::internal::MarkCompactCollector::SweepConservatively<(v8::internal::MarkCompactCollector::SweepingParallelism)0>(v8::internal::PagedSpace*, v8::internal::FreeList*, v8::internal::Page*)
+            |
+            --- long v8::internal::MarkCompactCollector::SweepConservatively<(v8::internal::MarkCompactCollector::SweepingParallelism)0>(v8::internal::PagedSpace*, v8::internal::FreeList*, v8::internal::Page*)
+
+0.12^3589023^HTMLParserThrea^chrome               ^[.] WebCore::RenderStyle::~RenderStyle()
+            |
+            --- WebCore::RenderStyle::~RenderStyle()
+
+0.12^3588259^HTMLParserThrea^chrome               ^[.] v8::internal::FlexibleBodyVisitor<v8::internal::MarkCompactMarkingVisitor, v8::internal::JSObject::BodyDescriptor, void>::Visit(v8::internal::Map*, v8::internal::HeapObject*)
+            |
+            --- v8::internal::FlexibleBodyVisitor<v8::internal::MarkCompactMarkingVisitor, v8::internal::JSObject::BodyDescriptor, void>::Visit(v8::internal::Map*, v8::internal::HeapObject*)
+
+0.12^3588121^HTMLParserThrea^chrome               ^[.] v8::internal::GlobalHandles::IterateWeakRoots(v8::internal::ObjectVisitor*)
+            |
+            --- v8::internal::GlobalHandles::IterateWeakRoots(v8::internal::ObjectVisitor*)
+
+0.12^3587651^HTMLParserThrea^chrome               ^[.] v8::internal::StaticMarkingVisitor<v8::internal::MarkCompactMarkingVisitor>::MarkTransitionArray(v8::internal::Heap*, v8::internal::TransitionArray*)
+            |
+            --- v8::internal::StaticMarkingVisitor<v8::internal::MarkCompactMarkingVisitor>::MarkTransitionArray(v8::internal::Heap*, v8::internal::TransitionArray*)
+
+0.12^3585248^HTMLParserThrea^chrome               ^[.] v8::internal::SequentialStringKey<unsigned char>::Hash()
+            |
+            --- v8::internal::SequentialStringKey<unsigned char>::Hash()
+
+0.12^3584278^HTMLParserThrea^chrome               ^[.] v8::internal::ChoiceNode::Emit(v8::internal::RegExpCompiler*, v8::internal::Trace*)
+            |
+            --- v8::internal::ChoiceNode::Emit(v8::internal::RegExpCompiler*, v8::internal::Trace*)
+                0x3b2abd5271d8
+
+0.12^3583348^HTMLParserThrea^chrome               ^[.] v8::internal::LoadIC::UpdateMonomorphicIC(v8::internal::Handle<v8::internal::JSObject>, v8::internal::Handle<v8::internal::Code>, v8::internal::Handle<v8::internal::String>, v8::internal::StrictModeFlag)
+            |
+            --- v8::internal::LoadIC::UpdateMonomorphicIC(v8::internal::Handle<v8::internal::JSObject>, v8::internal::Handle<v8::internal::Code>, v8::internal::Handle<v8::internal::String>, v8::internal::StrictModeFlag)
+                0xc6a34dd2791
+
+0.12^3582808^HTMLParserThrea^chrome               ^[.] v8::internal::Parser::ParseIfStatement(v8::internal::ZoneList<v8::internal::Handle<v8::internal::String> >*, bool*)
+            |
+            --- v8::internal::Parser::ParseIfStatement(v8::internal::ZoneList<v8::internal::Handle<v8::internal::String> >*, bool*)
+                0x3b2abdf3f010
+
+0.12^3582142^HTMLParserThrea^chrome               ^[.] WebCore::RenderBlock::addOverflowFromInlineChildren()
+            |
+            --- WebCore::RenderBlock::addOverflowFromInlineChildren()
+
+0.12^3581759^HTMLParserThrea^chrome               ^[.] _ZN7WebCore10RenderText29computePreferredLogicalWidthsEfRN3WTF7HashSetIPKNS_14SimpleFontDataENS1_7PtrHashIS5_EENS1_10HashTraitsIS5_EEEERNS_13GlyphOverflowE.part.184
+            |
+            --- _ZN7WebCore10RenderText29computePreferredLogicalWidthsEfRN3WTF7HashSetIPKNS_14SimpleFontDataENS1_7PtrHashIS5_EENS1_10HashTraitsIS5_EEEERNS_13GlyphOverflowE.part.184
+
+0.12^3581038^HTMLParserThrea^chrome               ^[.] WTF::String WebCore::v8StringToWebCoreString<WTF::String>(v8::Handle<v8::String>, WebCore::ExternalMode)
+            |
+            --- WTF::String WebCore::v8StringToWebCoreString<WTF::String>(v8::Handle<v8::String>, WebCore::ExternalMode)
+                0xc6a34d43fe9
+
+0.12^3581023^HTMLParserThrea^chrome               ^[.] WebCore::RenderInline::marginLeft() const
+            |
+            --- WebCore::RenderInline::marginLeft() const
+
+0.12^3580522^HTMLParserThrea^chrome               ^[.] WTF::Vector<WebCore::GraphicsContext::DeferredSaveState, 0ul>::expandCapacity(unsigned long)
+            |
+            --- WTF::Vector<WebCore::GraphicsContext::DeferredSaveState, 0ul>::expandCapacity(unsigned long)
+                0x100017718028
+
+0.12^3580338^HTMLParserThrea^chrome               ^[.] v8::internal::Runtime_MaterializeRegExpLiteral(int, v8::internal::Object**, v8::internal::Isolate*)
+            |
+            --- v8::internal::Runtime_MaterializeRegExpLiteral(int, v8::internal::Object**, v8::internal::Isolate*)
+
+0.12^3579940^HTMLParserThrea^chrome               ^[.] v8::internal::FunctionLiteral::AllowsLazyCompilation()
+            |
+            --- v8::internal::FunctionLiteral::AllowsLazyCompilation()
+
+0.12^3579555^HTMLParserThrea^chrome               ^[.] WebCore::XMLHttpRequest::isAllowedHTTPMethod(WTF::String const&)
+            |
+            --- WebCore::XMLHttpRequest::isAllowedHTTPMethod(WTF::String const&)
+                0x7f7a0b900000
+
+0.12^3579477^HTMLParserThrea^chrome               ^[.] ppapi::PpapiGlobals::Get()
+            |
+            --- ppapi::PpapiGlobals::Get()
+
+0.12^3579477^HTMLParserThrea^chrome               ^[.] v8::internal::StaticVisitorBase::GetVisitorId(int, int)
+            |
+            --- v8::internal::StaticVisitorBase::GetVisitorId(int, int)
+
+0.12^3578703^HTMLParserThrea^chrome               ^[.] v8::internal::LoadIC::ComputePolymorphicIC(v8::internal::List<v8::internal::Handle<v8::internal::Map>, v8::internal::FreeStoreAllocationPolicy>*, v8::internal::List<v8::internal::Handle<v8::internal::Code>, v8::internal::FreeStoreAllocationPolicy>*, int, v8::internal::Handle<v8::internal::Name>, v8::internal::StrictModeFlag)
+            |
+            --- v8::internal::LoadIC::ComputePolymorphicIC(v8::internal::List<v8::internal::Handle<v8::internal::Map>, v8::internal::FreeStoreAllocationPolicy>*, v8::internal::List<v8::internal::Handle<v8::internal::Code>, v8::internal::FreeStoreAllocationPolicy>*, int, v8::internal::Handle<v8::internal::Name>, v8::internal::StrictModeFlag)
+                0xc6a354cfa21
+
+0.12^3578592^HTMLParserThrea^chrome               ^[.] v8::internal::Parser::BuildObjectLiteralConstantProperties(v8::internal::ZoneList<v8::internal::ObjectLiteralProperty*>*, v8::internal::Handle<v8::internal::FixedArray>, bool*, bool*, int*, bool*)
+            |
+            --- v8::internal::Parser::BuildObjectLiteralConstantProperties(v8::internal::ZoneList<v8::internal::ObjectLiteralProperty*>*, v8::internal::Handle<v8::internal::FixedArray>, bool*, bool*, int*, bool*)
+
+0.12^3578004^HTMLParserThrea^chrome               ^[.] v8::internal::StubCache::ComputePolymorphicLoadIC(v8::internal::List<v8::internal::Handle<v8::internal::Map>, v8::internal::FreeStoreAllocationPolicy>*, v8::internal::List<v8::internal::Handle<v8::internal::Code>, v8::internal::FreeStoreAllocationPolicy>*, int, v8::internal::Handle<v8::internal::Name>)
+            |
+            --- v8::internal::StubCache::ComputePolymorphicLoadIC(v8::internal::List<v8::internal::Handle<v8::internal::Map>, v8::internal::FreeStoreAllocationPolicy>*, v8::internal::List<v8::internal::Handle<v8::internal::Code>, v8::internal::FreeStoreAllocationPolicy>*, int, v8::internal::Handle<v8::internal::Name>)
+                0xc6a3444c2a9
+
+0.12^3577719^HTMLParserThrea^chrome               ^[.] v8::internal::BoyerMooreLookahead::FindBestInterval(int, int, int*, int*)
+            |
+            --- v8::internal::BoyerMooreLookahead::FindBestInterval(int, int, int*, int*)
+
+0.12^3577405^HTMLParserThrea^chrome               ^[.] WebCore::RenderBoxModelObject::continuation() const
+            |
+            --- WebCore::RenderBoxModelObject::continuation() const
+
+0.12^3576942^HTMLParserThrea^chrome               ^[.] WebCore::RenderBlock::hasPercentHeightDescendant(WebCore::RenderBox*)
+            |
+            --- WebCore::RenderBlock::hasPercentHeightDescendant(WebCore::RenderBox*)
+
+0.12^3575468^HTMLParserThrea^chrome               ^[.] v8::internal::VariableProxy* v8::internal::Scope::NewUnresolved<v8::internal::AstConstructionVisitor>(v8::internal::AstNodeFactory<v8::internal::AstConstructionVisitor>*, v8::internal::Handle<v8::internal::String>, v8::internal::Interface*, int)
+            |
+            --- v8::internal::VariableProxy* v8::internal::Scope::NewUnresolved<v8::internal::AstConstructionVisitor>(v8::internal::AstNodeFactory<v8::internal::AstConstructionVisitor>*, v8::internal::Handle<v8::internal::String>, v8::internal::Interface*, int)
+                0x7fff30e91928
+
+0.12^3575428^HTMLParserThrea^chrome               ^[.] WebCore::BidiResolver<WebCore::InlineIterator, WebCore::BidiRun>::createBidiRunsForLine(WebCore::InlineIterator const&, WebCore::VisualDirectionOverride, bool)
+            |
+            --- WebCore::BidiResolver<WebCore::InlineIterator, WebCore::BidiRun>::createBidiRunsForLine(WebCore::InlineIterator const&, WebCore::VisualDirectionOverride, bool)
+                0x3b2abd843120
+
+0.12^3574896^HTMLParserThrea^chrome               ^[.] v8::internal::FixedArray::set(int, v8::internal::Object*, v8::internal::WriteBarrierMode)
+            |
+            --- v8::internal::FixedArray::set(int, v8::internal::Object*, v8::internal::WriteBarrierMode)
+
+0.12^3574498^HTMLParserThrea^chrome               ^[.] v8::internal::String::Equals(v8::internal::String*)
+            |
+            --- v8::internal::String::Equals(v8::internal::String*)
+
+0.12^3574405^HTMLParserThrea^chrome               ^[.] v8::internal::FullCodeGenerator::ExpressionContext::IsTest() const
+            |
+            --- v8::internal::FullCodeGenerator::ExpressionContext::IsTest() const
+
+0.12^3574327^HTMLParserThrea^chrome               ^[.] v8::internal::Scope::ResolveVariable(v8::internal::CompilationInfo*, v8::internal::VariableProxy*, v8::internal::AstNodeFactory<v8::internal::AstNullVisitor>*)
+            |
+            --- v8::internal::Scope::ResolveVariable(v8::internal::CompilationInfo*, v8::internal::VariableProxy*, v8::internal::AstNodeFactory<v8::internal::AstNullVisitor>*)
+
+0.12^3573789^HTMLParserThrea^chrome               ^[.] v8::internal::Heap::AllocateMap(v8::internal::InstanceType, int, v8::internal::ElementsKind)
+            |
+            --- v8::internal::Heap::AllocateMap(v8::internal::InstanceType, int, v8::internal::ElementsKind)
+
+0.12^3573631^HTMLParserThrea^chrome               ^[.] v8::internal::Runtime::CreateArrayLiteralBoilerplate(v8::internal::Isolate*, v8::internal::Handle<v8::internal::FixedArray>, v8::internal::Handle<v8::internal::FixedArray>)
+            |
+            --- v8::internal::Runtime::CreateArrayLiteralBoilerplate(v8::internal::Isolate*, v8::internal::Handle<v8::internal::FixedArray>, v8::internal::Handle<v8::internal::FixedArray>)
+
+0.12^3573214^HTMLParserThrea^chrome               ^[.] WTF::HashTableIterator<WebCore::CachedResource*, WTF::KeyValuePair<WebCore::CachedResource*, WTF::RefPtr<WebCore::ResourceTimingInfo> >, WTF::KeyValuePairKeyExtractor<WTF::KeyValuePair<WebCore::CachedResource*, WTF::RefPtr<WebCore::ResourceTimingInfo> > >, WTF::PtrHash<WebCore::CachedResource*>, WTF::HashMapValueTraits<WTF::HashTraits<WebCore::CachedResource*>, WTF::HashTraits<WTF::RefPtr<WebCore::ResourceTimingInfo> > >, WTF::HashTraits<WebCore::Cache
+            |
+            --- WTF::HashTableIterator<WebCore::CachedResource*, WTF::KeyValuePair<WebCore::CachedResource*, WTF::RefPtr<WebCore::ResourceTimingInfo> >, WTF::KeyValuePairKeyExtractor<WTF::KeyValuePair<WebCore::CachedResource*, WTF::RefPtr<WebCore::ResourceTimingInfo> > >, WTF::PtrHash<WebCore::CachedResource*>, WTF::HashMapValueTraits<WTF::HashTraits<WebCore::CachedResource*>, WTF::HashTraits<WTF::RefPtr<WebCore::ResourceTimingInfo> > >, WTF::HashTraits<WebCore::CachedResource*> > WTF::HashTable<WebCore::CachedResource*, WTF::KeyValuePair<WebCore::CachedResource*, WTF::RefPtr<WebCore::ResourceTimingInfo> >, WTF::KeyValuePairKeyExtractor<WTF::KeyValuePair<WebCore::CachedResource*, WTF::RefPtr<WebCore::ResourceTimingInfo> > >, WTF::PtrHash<WebCore::CachedResource*>, WTF::HashMapValueTraits<WTF::HashTraits<WebCore::CachedResource*>, WTF::HashTraits<WTF::RefPtr<WebCore::ResourceTimingInfo> > >, WTF::HashTraits<WebCore::CachedResource*> >::find<WTF::IdentityHashTranslator<WTF::PtrHash<WebCore::CachedResource*> >, WebCore::CachedResource*>(WebCore::CachedResource* const&)
+
+0.12^3573010^HTMLParserThrea^chrome               ^[.] Pickle::Resize(unsigned long)
+            |
+            --- Pickle::Resize(unsigned long)
+
+0.12^3572646^HTMLParserThrea^chrome               ^[.] WebCore::RenderBlock::floatingObjects() const
+            |
+            --- WebCore::RenderBlock::floatingObjects() const
+
+0.12^3572547^HTMLParserThrea^chrome               ^[.] WebCore::LiveNodeListBase::item(unsigned int) const
+            |
+            --- WebCore::LiveNodeListBase::item(unsigned int) const
+
+0.12^3572456^HTMLParserThrea^chrome               ^[.] WebCore::RenderBox::computeLogicalHeight(WebCore::LayoutUnit, WebCore::LayoutUnit, WebCore::RenderBox::LogicalExtentComputedValues&) const
+            |
+            --- WebCore::RenderBox::computeLogicalHeight(WebCore::LayoutUnit, WebCore::LayoutUnit, WebCore::RenderBox::LogicalExtentComputedValues&) const
+                (nil)
+
+0.12^3572406^HTMLParserThrea^chrome               ^[.] WebCore::ScriptController::callFunction(v8::Handle<v8::Function>, v8::Handle<v8::Object>, int, v8::Handle<v8::Value>*)
+            |
+            --- WebCore::ScriptController::callFunction(v8::Handle<v8::Function>, v8::Handle<v8::Object>, int, v8::Handle<v8::Value>*)
+
+0.12^3571839^HTMLParserThrea^chrome               ^[.] WTF::HashTableAddResult<WTF::HashTableIterator<WTF::AtomicStringImpl*, WTF::KeyValuePair<WTF::AtomicStringImpl*, WTF::OwnPtr<WTF::LinkedStack<WebCore::RuleData> > >, WTF::KeyValuePairKeyExtractor<WTF::KeyValuePair<WTF::AtomicStringImpl*, WTF::OwnPtr<WTF::LinkedStack<WebCore::RuleData> > > >, WTF::PtrHash<WTF::AtomicStringImpl*>, WTF::HashMapValueTraits<WTF::HashTraits<WTF::AtomicStringImpl*>, WTF::HashTraits<WTF::OwnPtr<WTF::LinkedStack<WebCore::RuleDa
+            |
+            --- WTF::HashTableAddResult<WTF::HashTableIterator<WTF::AtomicStringImpl*, WTF::KeyValuePair<WTF::AtomicStringImpl*, WTF::OwnPtr<WTF::LinkedStack<WebCore::RuleData> > >, WTF::KeyValuePairKeyExtractor<WTF::KeyValuePair<WTF::AtomicStringImpl*, WTF::OwnPtr<WTF::LinkedStack<WebCore::RuleData> > > >, WTF::PtrHash<WTF::AtomicStringImpl*>, WTF::HashMapValueTraits<WTF::HashTraits<WTF::AtomicStringImpl*>, WTF::HashTraits<WTF::OwnPtr<WTF::LinkedStack<WebCore::RuleData> > > >, WTF::HashTraits<WTF::AtomicStringImpl*> > > WTF::HashTable<WTF::AtomicStringImpl*, WTF::KeyValuePair<WTF::AtomicStringImpl*, WTF::OwnPtr<WTF::LinkedStack<WebCore::RuleData> > >, WTF::KeyValuePairKeyExtractor<WTF::KeyValuePair<WTF::AtomicStringImpl*, WTF::OwnPtr<WTF::LinkedStack<WebCore::RuleData> > > >, WTF::PtrHash<WTF::AtomicStringImpl*>, WTF::HashMapValueTraits<WTF::HashTraits<WTF::AtomicStringImpl*>, WTF::HashTraits<WTF::OwnPtr<WTF::LinkedStack<WebCore::RuleData> > > >, WTF::HashTraits<WTF::AtomicStringImpl*> >::add<WTF::HashMapTranslator<WTF::HashMapValueTraits<WTF::HashTraits<WTF::AtomicStringImpl*>, WTF::HashTraits<WTF::OwnPtr<WTF::LinkedStack<WebCore::RuleData> > > >, WTF::PtrHash<WTF::AtomicStringImpl*> >, WTF::AtomicStringImpl*, WTF::PassOwnPtr<WTF::LinkedStack<WebCore::RuleData> > >(WTF::AtomicStringImpl* const&, WTF::PassOwnPtr<WTF::LinkedStack<WebCore::RuleData> > const&)
+
+0.12^3571626^HTMLParserThrea^chrome               ^[.] v8::internal::Factory::ObjectLiteralMapFromCache(v8::internal::Handle<v8::internal::Context>, v8::internal::Handle<v8::internal::FixedArray>)
+            |
+            --- v8::internal::Factory::ObjectLiteralMapFromCache(v8::internal::Handle<v8::internal::Context>, v8::internal::Handle<v8::internal::FixedArray>)
+
+0.12^3571455^HTMLParserThrea^chrome               ^[.] WebCore::RenderView::intervalArena()
+            |
+            --- WebCore::RenderView::intervalArena()
+
+0.12^3571267^HTMLParserThrea^chrome               ^[.] v8::internal::VarAndOrder::Compare(v8::internal::VarAndOrder const*, v8::internal::VarAndOrder const*)
+            |
+            --- v8::internal::VarAndOrder::Compare(v8::internal::VarAndOrder const*, v8::internal::VarAndOrder const*)
+
+0.12^3570914^HTMLParserThrea^chrome               ^[.] bool WebCore::shouldInvalidateNodeListCachesForAttr<2u>(unsigned int const*, WebCore::QualifiedName const&)
+            |
+            --- bool WebCore::shouldInvalidateNodeListCachesForAttr<2u>(unsigned int const*, WebCore::QualifiedName const&)
+
+0.12^3570523^HTMLParserThrea^chrome               ^[.] v8::internal::CodeCacheHashTableKey::IsMatch(v8::internal::Object*)
+            |
+            --- v8::internal::CodeCacheHashTableKey::IsMatch(v8::internal::Object*)
+
+0.12^3570308^HTMLParserThrea^chrome               ^[.] WebCore::RenderBox::hasRelativeDimensions() const
+            |
+            --- WebCore::RenderBox::hasRelativeDimensions() const
+
+0.12^3570109^HTMLParserThrea^chrome               ^[.] WTF::HashMap<WTF::AtomicStringImpl*, WTF::OwnPtr<WebCore::RuleData>, WTF::PtrHash<WTF::AtomicStringImpl*>, WTF::HashTraits<WTF::AtomicStringImpl*>, WTF::HashTraits<WTF::OwnPtr<WebCore::RuleData> > >::get(WTF::AtomicStringImpl* const&) const
+            |
+            --- WTF::HashMap<WTF::AtomicStringImpl*, WTF::OwnPtr<WebCore::RuleData>, WTF::PtrHash<WTF::AtomicStringImpl*>, WTF::HashTraits<WTF::AtomicStringImpl*>, WTF::HashTraits<WTF::OwnPtr<WebCore::RuleData> > >::get(WTF::AtomicStringImpl* const&) const
+                void WTF::Vector<WebCore::StyleRule*, 64ul>::appendSlowCase<WebCore::StyleRule*>(WebCore::StyleRule* const&)
+
+0.12^3569976^HTMLParserThrea^chrome               ^[.] v8::internal::IC::address() const
+            |
+            --- v8::internal::IC::address() const
+
+0.12^3569735^HTMLParserThrea^chrome               ^[.] v8::internal::StringTable::LookupUtf8String(v8::internal::Vector<char const>, v8::internal::Object**)
+            |
+            --- v8::internal::StringTable::LookupUtf8String(v8::internal::Vector<char const>, v8::internal::Object**)
+
+0.12^3569690^HTMLParserThrea^chrome               ^[.] WebCore::RenderBlock::updateLogicalWidthForAlignment(WebCore::ETextAlign const&, WebCore::BidiRun*, float&, float&, float&, int)
+            |
+            --- WebCore::RenderBlock::updateLogicalWidthForAlignment(WebCore::ETextAlign const&, WebCore::BidiRun*, float&, float&, float&, int)
+
+0.12^3569632^HTMLParserThrea^chrome               ^[.] content::GetContentClient()
+            |
+            --- content::GetContentClient()
+                WebCore::Node::invalidateNodeListCachesInAncestors(WebCore::QualifiedName const*, WebCore::Element*)
+
+0.12^3569389^HTMLParserThrea^chrome               ^[.] v8::internal::Scanner::SkipSingleLineComment()
+            |
+            --- v8::internal::Scanner::SkipSingleLineComment()
+
+0.12^3568302^HTMLParserThrea^chrome               ^[.] v8::internal::PagedSpace::AllocateRaw(int)
+            |
+            --- v8::internal::PagedSpace::AllocateRaw(int)
+                0x5d00001000
+
+0.12^3567675^HTMLParserThrea^chrome               ^[.] v8::internal::HashTable<v8::internal::NameDictionaryShape, v8::internal::Name*>::FindEntry(v8::internal::Isolate*, v8::internal::Name*)
+            |
+            --- v8::internal::HashTable<v8::internal::NameDictionaryShape, v8::internal::Name*>::FindEntry(v8::internal::Isolate*, v8::internal::Name*)
+
+0.12^3567487^HTMLParserThrea^chrome               ^[.] WebCore::ImageLoader::updateFromElement()
+            |
+            --- WebCore::ImageLoader::updateFromElement()
+
+0.12^3567473^HTMLParserThrea^chrome               ^[.] WebCore::RenderObject::localToContainerQuad(WebCore::FloatQuad const&, WebCore::RenderLayerModelObject const*, unsigned int, bool*) const
+            |
+            --- WebCore::RenderObject::localToContainerQuad(WebCore::FloatQuad const&, WebCore::RenderLayerModelObject const*, unsigned int, bool*) const
+
+0.12^3567274^HTMLParserThrea^chrome               ^[.] webCoreInitializeScriptWrappableForInterface(WebCore::DocumentFragment*)
+            |
+            --- webCoreInitializeScriptWrappableForInterface(WebCore::DocumentFragment*)
+
+0.12^3567005^HTMLParserThrea^chrome               ^[.] WebCore::Frame::settings() const
+            |
+            --- WebCore::Frame::settings() const
+
+0.12^3566636^HTMLParserThrea^chrome               ^[.] v8::internal::Parser::ParseIdentifier(bool*)
+            |
+            --- v8::internal::Parser::ParseIdentifier(bool*)
+                0x7fff30e90bf000
+
+0.12^3566359^HTMLParserThrea^chrome               ^[.] WebCore::CachedImage::didAddClient(WebCore::CachedResourceClient*)
+            |
+            --- WebCore::CachedImage::didAddClient(WebCore::CachedResourceClient*)
+
+0.12^3566119^HTMLParserThrea^chrome               ^[.] WebCore::RenderStyle::diff(WebCore::RenderStyle const*, unsigned int&) const
+            |
+            --- WebCore::RenderStyle::diff(WebCore::RenderStyle const*, unsigned int&) const
+
+0.12^3565713^HTMLParserThrea^chrome               ^[.] WebCore::LiveNodeListBase::invalidateCache() const
+            |
+            --- WebCore::LiveNodeListBase::invalidateCache() const
+
+0.12^3565698^HTMLParserThrea^chrome               ^[.] WebCore::SelectorChecker::SelectorChecker(WebCore::Document*, WebCore::SelectorChecker::Mode)
+            |
+            --- WebCore::SelectorChecker::SelectorChecker(WebCore::Document*, WebCore::SelectorChecker::Mode)
+
+0.12^3565455^HTMLParserThrea^chrome               ^[.] WebCore::HTMLTreeBuilder::processEndTag(WebCore::AtomicHTMLToken*)
+            |
+            --- WebCore::HTMLTreeBuilder::processEndTag(WebCore::AtomicHTMLToken*)
+                0x7f7a11e52eb0
+
+0.12^3565182^HTMLParserThrea^chrome               ^[.] v8::internal::Assembler::arithmetic_op_32(unsigned char, v8::internal::Register, v8::internal::Register)
+            |
+            --- v8::internal::Assembler::arithmetic_op_32(unsigned char, v8::internal::Register, v8::internal::Register)
+
+0.12^3565074^HTMLParserThrea^chrome               ^[.] v8::internal::TranslationBuffer::Add(int, v8::internal::Zone*)
+            |
+            --- v8::internal::TranslationBuffer::Add(int, v8::internal::Zone*)
+
+0.12^3565037^HTMLParserThrea^chrome               ^[.] WebCore::Node::parentOrShadowHostElement() const
+            |
+            --- WebCore::Node::parentOrShadowHostElement() const
+
+0.12^3564789^HTMLParserThrea^chrome               ^[.] void v8::internal::FlexibleBodyVisitor<v8::internal::MarkCompactMarkingVisitor, v8::internal::StructBodyDescriptor, void>::VisitSpecialized<56>(v8::internal::Map*, v8::internal::HeapObject*)
+            |
+            --- void v8::internal::FlexibleBodyVisitor<v8::internal::MarkCompactMarkingVisitor, v8::internal::StructBodyDescriptor, void>::VisitSpecialized<56>(v8::internal::Map*, v8::internal::HeapObject*)
+
+0.12^3564677^HTMLParserThrea^chrome               ^[.] v8::internal::Map::RawCopy(int)
+            |
+            --- v8::internal::Map::RawCopy(int)
+
+0.12^3563819^HTMLParserThrea^chrome               ^[.] _ZN2v88internal8LCodeGen16WriteTranslationEPNS0_12LEnvironmentEPNS0_11TranslationE.constprop.384
+            |
+            --- _ZN2v88internal8LCodeGen16WriteTranslationEPNS0_12LEnvironmentEPNS0_11TranslationE.constprop.384
+
+0.12^3563122^HTMLParserThrea^chrome               ^[.] WebCore::MatchedProperties::~MatchedProperties()
+            |
+            --- WebCore::MatchedProperties::~MatchedProperties()
+                0x3b2abdb056b8
+                0x1e83176feba8
+
+0.12^3562575^HTMLParserThrea^chrome               ^[.] v8::internal::FullCodeGenerator::MakeCode(v8::internal::CompilationInfo*)
+            |
+            --- v8::internal::FullCodeGenerator::MakeCode(v8::internal::CompilationInfo*)
+
+0.12^3561995^HTMLParserThrea^chrome               ^[.] v8::internal::BaseLoadStoreStubCompiler::GetICCode(v8::internal::Code::Kind, v8::internal::Code::StubType, v8::internal::Handle<v8::internal::Name>, v8::internal::InlineCacheState)
+            |
+            --- v8::internal::BaseLoadStoreStubCompiler::GetICCode(v8::internal::Code::Kind, v8::internal::Code::StubType, v8::internal::Handle<v8::internal::Name>, v8::internal::InlineCacheState)
+                0x9d2ae798179
+
+0.12^3561893^HTMLParserThrea^chrome               ^[.] int v8::internal::FlexibleBodyVisitor<v8::internal::NewSpaceScavenger, v8::internal::JSObject::BodyDescriptor, int>::VisitSpecialized<24>(v8::internal::Map*, v8::internal::HeapObject*)
+            |
+            --- int v8::internal::FlexibleBodyVisitor<v8::internal::NewSpaceScavenger, v8::internal::JSObject::BodyDescriptor, int>::VisitSpecialized<24>(v8::internal::Map*, v8::internal::HeapObject*)
+
+0.12^3561621^HTMLParserThrea^chrome               ^[.] WTF::AtomicString::addSlowCase(WTF::StringImpl*)
+            |
+            --- WTF::AtomicString::addSlowCase(WTF::StringImpl*)
+
+0.12^3561375^HTMLParserThrea^chrome               ^[.] WebCore::StyleResolver::styleForElement(WebCore::Element*, WebCore::RenderStyle*, WebCore::StyleSharingBehavior, WebCore::RuleMatchingBehavior, WebCore::RenderRegion*)
+            |
+            --- WebCore::StyleResolver::styleForElement(WebCore::Element*, WebCore::RenderStyle*, WebCore::StyleSharingBehavior, WebCore::RuleMatchingBehavior, WebCore::RenderRegion*)
+
+0.12^3561200^HTMLParserThrea^chrome               ^[.] v8::internal::Builtins::LoadIC_PreMonomorphic()
+            |
+            --- v8::internal::Builtins::LoadIC_PreMonomorphic()
+                0x29f9884600a9
+
+0.12^3561181^HTMLParserThrea^chrome               ^[.] WebCore::FloatPoint::FloatPoint(WebCore::LayoutPoint const&)
+            |
+            --- WebCore::FloatPoint::FloatPoint(WebCore::LayoutPoint const&)
+                WebCore::RenderBox::clippedOverflowRectForRepaint(WebCore::RenderLayerModelObject const*) const
+                WebCore::RenderBox::contentWidth() const
+
+0.12^3561117^HTMLParserThrea^chrome               ^[.] v8::internal::LoadStubCompiler::registers()
+            |
+            --- v8::internal::LoadStubCompiler::registers()
+                0xc6a34d0ef91
+
+0.12^3561066^HTMLParserThrea^chrome               ^[.] WebCore::BorderData::BorderData()
+            |
+            --- WebCore::BorderData::BorderData()
+
+0.12^3560598^HTMLParserThrea^chrome               ^[.] WebCore::HTMLElement::parseAttribute(WebCore::QualifiedName const&, WTF::AtomicString const&)
+            |
+            --- WebCore::HTMLElement::parseAttribute(WebCore::QualifiedName const&, WTF::AtomicString const&)
+
+0.12^3560313^HTMLParserThrea^chrome               ^[.] WebCore::RenderBlock::createLineBoxesFromBidiRuns(WebCore::BidiRunList<WebCore::BidiRun>&, WebCore::InlineIterator const&, WebCore::LineInfo&, WebCore::VerticalPositionCache&, WebCore::BidiRun*, WTF::Vector<WebCore::WordMeasurement, 64ul>&)
+            |
+            --- WebCore::RenderBlock::createLineBoxesFromBidiRuns(WebCore::BidiRunList<WebCore::BidiRun>&, WebCore::InlineIterator const&, WebCore::LineInfo&, WebCore::VerticalPositionCache&, WebCore::BidiRun*, WTF::Vector<WebCore::WordMeasurement, 64ul>&)
+                0x3b2abd54deb0
+
+0.12^3560066^HTMLParserThrea^chrome               ^[.] void WebCore::StringCache::setReturnValueFromString<v8::PropertyCallbackInfo<v8::Value> >(v8::PropertyCallbackInfo<v8::Value> const&, WTF::StringImpl*, v8::Isolate*)
+            |
+            --- void WebCore::StringCache::setReturnValueFromString<v8::PropertyCallbackInfo<v8::Value> >(v8::PropertyCallbackInfo<v8::Value> const&, WTF::StringImpl*, v8::Isolate*)
+                0xc6a35a2a0c9
+                v8::internal::JSReceiver::LocalLookup(v8::internal::Name*, v8::internal::LookupResult*, bool)
+
+0.12^3560037^HTMLParserThrea^chrome               ^[.] v8::internal::StaticMarkingVisitor<v8::internal::MarkCompactMarkingVisitor>::VisitSharedFunctionInfo(v8::internal::Map*, v8::internal::HeapObject*)
+            |
+            --- v8::internal::StaticMarkingVisitor<v8::internal::MarkCompactMarkingVisitor>::VisitSharedFunctionInfo(v8::internal::Map*, v8::internal::HeapObject*)
+
+0.12^3559792^HTMLParserThrea^chrome               ^[.] WebCore::ComposedShadowTreeWalker::traverseParent(WebCore::Node const*, WebCore::NodeRenderingTraversal::ParentDetails*) const
+            |
+            --- WebCore::ComposedShadowTreeWalker::traverseParent(WebCore::Node const*, WebCore::NodeRenderingTraversal::ParentDetails*) const
+
+0.12^3559628^HTMLParserThrea^chrome               ^[.] WebCore::Element::rebuildPresentationAttributeStyle()
+            |
+            --- WebCore::Element::rebuildPresentationAttributeStyle()
+                0x1e83176beb48
+
+0.12^3558753^HTMLParserThrea^chrome               ^[.] v8::internal::LoadStubCompiler::JitEvent(v8::internal::Handle<v8::internal::Name>, v8::internal::Handle<v8::internal::Code>)
+            |
+            --- v8::internal::LoadStubCompiler::JitEvent(v8::internal::Handle<v8::internal::Name>, v8::internal::Handle<v8::internal::Code>)
+                0xc6a354902f1
+
+0.12^3557965^HTMLParserThrea^chrome               ^[.] v8::internal::Assembler::lea(v8::internal::Register, v8::internal::Operand const&)
+            |
+            --- v8::internal::Assembler::lea(v8::internal::Register, v8::internal::Operand const&)
+
+0.12^3557486^HTMLParserThrea^chrome               ^[.] WebCore::RenderBlock::updateShapeInsideInfoAfterStyleChange(WebCore::ShapeValue const*, WebCore::ShapeValue const*)
+            |
+            --- WebCore::RenderBlock::updateShapeInsideInfoAfterStyleChange(WebCore::ShapeValue const*, WebCore::ShapeValue const*)
+
+0.12^3556781^HTMLParserThrea^libc-2.15.so         ^[.] __strlen_sse2_pminub
+            |
+            --- __strlen_sse2_pminub
+
+0.12^3556662^HTMLParserThrea^chrome               ^[.] WebCore::ElementRuleCollector::collectMatchingRulesForList(WebCore::RuleData const*, WebCore::MatchRequest const&, WebCore::RuleRange&)
+            |
+            --- WebCore::ElementRuleCollector::collectMatchingRulesForList(WebCore::RuleData const*, WebCore::MatchRequest const&, WebCore::RuleRange&)
+
+0.12^3556305^HTMLParserThrea^chrome               ^[.] v8::internal::Heap::Scavenge()
+            |
+            --- v8::internal::Heap::Scavenge()
+
+0.12^3556183^HTMLParserThrea^chrome               ^[.] WebCore::RenderBlock::linkToEndLineIfNeeded(WebCore::LineLayoutState&)
+            |
+            --- WebCore::RenderBlock::linkToEndLineIfNeeded(WebCore::LineLayoutState&)
+
+0.12^3555975^HTMLParserThrea^chrome               ^[.] WebCore::SharedStyleFinder::locateCousinList(WebCore::Element*, unsigned int&) const
+            |
+            --- WebCore::SharedStyleFinder::locateCousinList(WebCore::Element*, unsigned int&) const
+                0x176da48800000000
+
+0.12^3555563^HTMLParserThrea^chrome               ^[.] v8::internal::FullCodeGenerator::PrepareForBailoutForId(v8::internal::BailoutId, v8::internal::FullCodeGenerator::State)
+            |
+            --- v8::internal::FullCodeGenerator::PrepareForBailoutForId(v8::internal::BailoutId, v8::internal::FullCodeGenerator::State)
+
+0.12^3555363^HTMLParserThrea^chrome               ^[.] v8::internal::PropertyCallbackArguments::Call(v8::Handle<v8::Value> (*)(v8::Local<v8::String>, v8::AccessorInfo const&), v8::Local<v8::String>)
+            |
+            --- v8::internal::PropertyCallbackArguments::Call(v8::Handle<v8::Value> (*)(v8::Local<v8::String>, v8::AccessorInfo const&), v8::Local<v8::String>)
+                0x7f7a0b900000
+
+0.12^3554978^HTMLParserThrea^chrome               ^[.] v8::internal::Object::Lookup(v8::internal::Name*, v8::internal::LookupResult*)
+            |
+            --- v8::internal::Object::Lookup(v8::internal::Name*, v8::internal::LookupResult*)
+
+0.12^3554874^HTMLParserThrea^chrome               ^[.] v8::internal::Heap::AllocateRawOneByteString(int, v8::internal::PretenureFlag)
+            |
+            --- v8::internal::Heap::AllocateRawOneByteString(int, v8::internal::PretenureFlag)
+
+0.12^3554475^HTMLParserThrea^chrome               ^[.] WebCore::RenderBlock::styleWillChange(WebCore::StyleDifference, WebCore::RenderStyle const*)
+            |
+            --- WebCore::RenderBlock::styleWillChange(WebCore::StyleDifference, WebCore::RenderStyle const*)
+
+0.12^3553383^HTMLParserThrea^chrome               ^[.] base::Time::Now()
+            |
+            --- base::Time::Now()
+
+0.12^3553107^HTMLParserThrea^chrome               ^[.] WebCore::ElementRuleCollector::~ElementRuleCollector()
+            |
+            --- WebCore::ElementRuleCollector::~ElementRuleCollector()
+
+0.12^3550744^HTMLParserThrea^chrome               ^[.] net::HttpResponseHeaders::FindHeader(unsigned long, base::BasicStringPiece<std::string> const&) const
+            |
+            --- net::HttpResponseHeaders::FindHeader(unsigned long, base::BasicStringPiece<std::string> const&) const
+
+0.12^3550703^HTMLParserThrea^chrome               ^[.] WebCore::NodeRenderingContext::createRendererForElementIfNeeded()
+            |
+            --- WebCore::NodeRenderingContext::createRendererForElementIfNeeded()
+
+0.12^3550144^HTMLParserThrea^chrome               ^[.] v8::internal::Heap::ScavengeObject(v8::internal::HeapObject**, v8::internal::HeapObject*)
+            |
+            --- v8::internal::Heap::ScavengeObject(v8::internal::HeapObject**, v8::internal::HeapObject*)
+
+0.12^3550090^HTMLParserThrea^chrome               ^[.] WebCore::RenderLayerModelObject::styleDidChange(WebCore::StyleDifference, WebCore::RenderStyle const*)
+            |
+            --- WebCore::RenderLayerModelObject::styleDidChange(WebCore::StyleDifference, WebCore::RenderStyle const*)
+
+0.12^3549513^HTMLParserThrea^chrome               ^[.] std::_Rb_tree<extensions::ChromeV8Context*, extensions::ChromeV8Context*, std::_Identity<extensions::ChromeV8Context*>, std::less<extensions::ChromeV8Context*>, std::allocator<extensions::ChromeV8Context*> >::_M_insert_unique(extensions::ChromeV8Context* const&)
+            |
+            --- std::_Rb_tree<extensions::ChromeV8Context*, extensions::ChromeV8Context*, std::_Identity<extensions::ChromeV8Context*>, std::less<extensions::ChromeV8Context*>, std::allocator<extensions::ChromeV8Context*> >::_M_insert_unique(extensions::ChromeV8Context* const&)
+
+0.12^3549422^HTMLParserThrea^chrome               ^[.] WebCore::RenderBlock::clearFloats()
+            |
+            --- WebCore::RenderBlock::clearFloats()
+
+0.12^3548487^HTMLParserThrea^chrome               ^[.] WebCore::RenderReplaced::computeAspectRatioInformationForRenderBox(WebCore::RenderBox*, WebCore::FloatSize&, double&, bool&) const
+            |
+            --- WebCore::RenderReplaced::computeAspectRatioInformationForRenderBox(WebCore::RenderBox*, WebCore::FloatSize&, double&, bool&) const
+                0x3b2abdce1ed8
+
+0.12^3545724^HTMLParserThrea^chrome               ^[.] WebCore::SVGRenderSupport::styleChanged(WebCore::RenderObject*)
+            |
+            --- WebCore::SVGRenderSupport::styleChanged(WebCore::RenderObject*)
+
+0.12^3545370^HTMLParserThrea^chrome               ^[.] v8::internal::Scope::AllocateNonParameterLocals()
+            |
+            --- v8::internal::Scope::AllocateNonParameterLocals()
+                0x700000007
+
+0.12^3545160^HTMLParserThrea^chrome               ^[.] WebCore::Element::hasFlagsSetDuringStylingOfChildren() const
+            |
+            --- WebCore::Element::hasFlagsSetDuringStylingOfChildren() const
+
+0.12^3543621^HTMLParserThrea^chrome               ^[.] WebCore::RenderBox::visualOverflowRectForPropagation(WebCore::RenderStyle*) const
+            |
+            --- WebCore::RenderBox::visualOverflowRectForPropagation(WebCore::RenderStyle*) const
+
+0.12^3542672^HTMLParserThrea^libm-2.15.so         ^[.] __ceilf_sse41
+            |
+            --- __ceilf_sse41
+
+0.12^3542332^HTMLParserThrea^chrome               ^[.] v8::internal::CallStubCompiler::CompileHandlerFrontend(v8::internal::Handle<v8::internal::Object>, v8::internal::Handle<v8::internal::JSObject>, v8::internal::Handle<v8::internal::Name>, v8::internal::CheckType, v8::internal::Label*)
+            |
+            --- v8::internal::CallStubCompiler::CompileHandlerFrontend(v8::internal::Handle<v8::internal::Object>, v8::internal::Handle<v8::internal::JSObject>, v8::internal::Handle<v8::internal::Name>, v8::internal::CheckType, v8::internal::Label*)
+                0x7f7a11d17f90
+
+0.12^3542050^HTMLParserThrea^chrome               ^[.] v8::internal::MarkCompactCollector::RecordRelocSlot(v8::internal::RelocInfo*, v8::internal::Object*)
+            |
+            --- v8::internal::MarkCompactCollector::RecordRelocSlot(v8::internal::RelocInfo*, v8::internal::Object*)
+
+0.12^3540984^HTMLParserThrea^chrome               ^[.] v8::internal::RegExpMacroAssemblerX64::CheckSpecialCharacterClass(unsigned short, v8::internal::Label*)
+            |
+            --- v8::internal::RegExpMacroAssemblerX64::CheckSpecialCharacterClass(unsigned short, v8::internal::Label*)
+
+0.12^3537796^HTMLParserThrea^chrome               ^[.] SkBitmapProcState::chooseProcs(SkMatrix const&, SkPaint const&)
+            |
+            --- SkBitmapProcState::chooseProcs(SkMatrix const&, SkPaint const&)
+                0x3f80000041400000
+
+0.12^3537246^HTMLParserThrea^chrome               ^[.] v8::internal::Heap::CreateCode(v8::internal::CodeDesc const&, unsigned int, v8::internal::Handle<v8::internal::Object>, bool, bool)
+            |
+            --- v8::internal::Heap::CreateCode(v8::internal::CodeDesc const&, unsigned int, v8::internal::Handle<v8::internal::Object>, bool, bool)
+                0x8f00001000
+
+0.12^3535475^HTMLParserThrea^chrome               ^[.] WebCore::Element::getAttribute(WebCore::QualifiedName const&) const
+            |
+            --- WebCore::Element::getAttribute(WebCore::QualifiedName const&) const
+
+0.12^3534788^HTMLParserThrea^chrome               ^[.] v8::internal::ToBooleanIC_Miss(int, v8::internal::Object**, v8::internal::Isolate*)
+            |
+            --- v8::internal::ToBooleanIC_Miss(int, v8::internal::Object**, v8::internal::Isolate*)
+
+0.12^3534268^HTMLParserThrea^chrome               ^[.] WebCore::FormElementKey::deref() const
+            |
+            --- WebCore::FormElementKey::deref() const
+
+0.12^3533584^HTMLParserThrea^chrome               ^[.] std::basic_string<unsigned short, base::string16_char_traits, std::allocator<unsigned short> >::assign(std::basic_string<unsigned short, base::string16_char_traits, std::allocator<unsigned short> > const&)
+            |
+            --- std::basic_string<unsigned short, base::string16_char_traits, std::allocator<unsigned short> >::assign(std::basic_string<unsigned short, base::string16_char_traits, std::allocator<unsigned short> > const&)
+                0x33d2a411c441
+
+0.12^3533503^HTMLParserThrea^chrome               ^[.] void v8::internal::ScavengingVisitor<(v8::internal::MarksHandling)1, (v8::internal::LoggingAndProfiling)1>::EvacuateObject<(v8::internal::ScavengingVisitor<(v8::internal::MarksHandling)1, (v8::internal::LoggingAndProfiling)1>::ObjectContents)1, (v8::internal::ScavengingVisitor<(v8::internal::MarksHandling)1, (v8::internal::LoggingAndProfiling)1>::SizeRestriction)0, 8>(v8::internal::Map*, v8::internal::HeapObject**, v8::internal::HeapObject*, int)
+            |
+            --- void v8::internal::ScavengingVisitor<(v8::internal::MarksHandling)1, (v8::internal::LoggingAndProfiling)1>::EvacuateObject<(v8::internal::ScavengingVisitor<(v8::internal::MarksHandling)1, (v8::internal::LoggingAndProfiling)1>::ObjectContents)1, (v8::internal::ScavengingVisitor<(v8::internal::MarksHandling)1, (v8::internal::LoggingAndProfiling)1>::SizeRestriction)0, 8>(v8::internal::Map*, v8::internal::HeapObject**, v8::internal::HeapObject*, int)
+
+0.12^3532801^HTMLParserThrea^chrome               ^[.] WebCore::HTMLConstructionSite::indexOfFirstUnopenFormattingElement(unsigned int&) const
+            |
+            --- WebCore::HTMLConstructionSite::indexOfFirstUnopenFormattingElement(unsigned int&) const
+
+0.12^3531175^HTMLParserThrea^chrome               ^[.] v8::internal::StubCache::ComputeLoadNonexistent(v8::internal::Handle<v8::internal::Name>, v8::internal::Handle<v8::internal::JSObject>)
+            |
+            --- v8::internal::StubCache::ComputeLoadNonexistent(v8::internal::Handle<v8::internal::Name>, v8::internal::Handle<v8::internal::JSObject>)
+
+0.12^3529077^HTMLParserThrea^chrome               ^[.] WTF::currentTime()
+            |
+            --- WTF::currentTime()
+
+0.12^3527952^HTMLParserThrea^chrome               ^[.] void WebCore::SelectorDataList::execute<false>(WebCore::Node*, WTF::Vector<WTF::RefPtr<WebCore::Node>, 0ul>&) const
+            |
+            --- void WebCore::SelectorDataList::execute<false>(WebCore::Node*, WTF::Vector<WTF::RefPtr<WebCore::Node>, 0ul>&) const
+
+0.12^3527820^HTMLParserThrea^chrome               ^[.] v8::preparser::PreParser::ParseStatement(bool*)
+            |
+            --- v8::preparser::PreParser::ParseStatement(bool*)
+                0x3b2abd78300000
+
+0.12^3526909^HTMLParserThrea^chrome               ^[.] v8::internal::MacroAssembler::LoadSmiConstant(v8::internal::Register, v8::internal::Smi*)
+            |
+            --- v8::internal::MacroAssembler::LoadSmiConstant(v8::internal::Register, v8::internal::Smi*)
+
+0.12^3526173^HTMLParserThrea^chrome               ^[.] v8::internal::MacroAssembler::CheckMap(v8::internal::Register, v8::internal::Handle<v8::internal::Map>, v8::internal::Label*, v8::internal::SmiCheckType)
+            |
+            --- v8::internal::MacroAssembler::CheckMap(v8::internal::Register, v8::internal::Handle<v8::internal::Map>, v8::internal::Label*, v8::internal::SmiCheckType)
+
+0.12^3525548^HTMLParserThrea^chrome               ^[.] v8::internal::String::SlowTryFlatten(v8::internal::PretenureFlag)
+            |
+            --- v8::internal::String::SlowTryFlatten(v8::internal::PretenureFlag)
+
+0.12^3525251^HTMLParserThrea^chrome               ^[.] WebCore::RuleSet::addChildRules(WTF::Vector<WTF::RefPtr<WebCore::StyleRuleBase>, 0ul> const&, WebCore::MediaQueryEvaluator const&, WebCore::StyleResolver*, WebCore::ContainerNode const*, bool, WebCore::AddRuleFlags)
+            |
+            --- WebCore::RuleSet::addChildRules(WTF::Vector<WTF::RefPtr<WebCore::StyleRuleBase>, 0ul> const&, WebCore::MediaQueryEvaluator const&, WebCore::StyleResolver*, WebCore::ContainerNode const*, bool, WebCore::AddRuleFlags)
+
+0.12^3524914^HTMLParserThrea^chrome               ^[.] v8::internal::PositionsRecorder::WriteRecordedPositions()
+            |
+            --- v8::internal::PositionsRecorder::WriteRecordedPositions()
+
+0.12^3524273^HTMLParserThrea^chrome               ^[.] WebCore::FrameLoader::checkLoadComplete()
+            |
+            --- WebCore::FrameLoader::checkLoadComplete()
+
+0.12^3523358^HTMLParserThrea^chrome               ^[.] v8::internal::ScavengingVisitor<(v8::internal::MarksHandling)1, (v8::internal::LoggingAndProfiling)1>::EvacuateFixedArray(v8::internal::Map*, v8::internal::HeapObject**, v8::internal::HeapObject*)
+            |
+            --- v8::internal::ScavengingVisitor<(v8::internal::MarksHandling)1, (v8::internal::LoggingAndProfiling)1>::EvacuateFixedArray(v8::internal::Map*, v8::internal::HeapObject**, v8::internal::HeapObject*)
+
+0.12^3522817^HTMLParserThrea^chrome               ^[.] WebCore::HTMLFrameElementBase::attach(WebCore::Node::AttachContext const&)
+            |
+            --- WebCore::HTMLFrameElementBase::attach(WebCore::Node::AttachContext const&)
+
+0.12^3522399^HTMLParserThrea^chrome               ^[.] v8::internal::Runtime::SetObjectProperty(v8::internal::Isolate*, v8::internal::Handle<v8::internal::Object>, v8::internal::Handle<v8::internal::Object>, v8::internal::Handle<v8::internal::Object>, PropertyAttributes, v8::internal::StrictModeFlag)
+            |
+            --- v8::internal::Runtime::SetObjectProperty(v8::internal::Isolate*, v8::internal::Handle<v8::internal::Object>, v8::internal::Handle<v8::internal::Object>, v8::internal::Handle<v8::internal::Object>, PropertyAttributes, v8::internal::StrictModeFlag)
+                0x2281c143442a
+                0x2281c143180c
+                0x2281c14310e9
+                0x2281c140e854
+                0x2281c14317b0
+                0x2281c14310e9
+                0x2281c140e854
+                0x2281c14317b0
+                0x2281c14310e9
+                0x2281c140e854
+                0x2281c142b65e
+                0x2281c1417d97
+                v8::internal::Invoke(bool, v8::internal::Handle<v8::internal::JSFunction>, v8::internal::Handle<v8::internal::Object>, int, v8::internal::Handle<v8::internal::Object>*, bool*)
+
+0.12^3521835^HTMLParserThrea^chrome               ^[.] v8::Object::SetAlignedPointerInInternalField(int, void*)
+            |
+            --- v8::Object::SetAlignedPointerInInternalField(int, void*)
+
+0.12^3519670^HTMLParserThrea^chrome               ^[.] v8::internal::HDeadCodeEliminationPhase::RemoveDeadInstructions()
+            |
+            --- v8::internal::HDeadCodeEliminationPhase::RemoveDeadInstructions()
+                0x7fff30e8edb0
+
+0.12^3518719^HTMLParserThrea^chrome               ^[.] v8::internal::LCodeGen::Comment(char const*, ...)
+            |
+            --- v8::internal::LCodeGen::Comment(char const*, ...)
+
+0.12^3518131^HTMLParserThrea^chrome               ^[.] v8::internal::JSObject::HasRealNamedProperty(v8::internal::Isolate*, v8::internal::Name*)
+            |
+            --- v8::internal::JSObject::HasRealNamedProperty(v8::internal::Isolate*, v8::internal::Name*)
+
+0.12^3516705^HTMLParserThrea^chrome               ^[.] v8::internal::Runtime_GetTemplateField(int, v8::internal::Object**, v8::internal::Isolate*)
+            |
+            --- v8::internal::Runtime_GetTemplateField(int, v8::internal::Object**, v8::internal::Isolate*)
+                0x2281c1431084
+                0x2281c140e854
+                0x2281c142b65e
+                0x2281c1417d97
+                v8::internal::Invoke(bool, v8::internal::Handle<v8::internal::JSFunction>, v8::internal::Handle<v8::internal::Object>, int, v8::internal::Handle<v8::internal::Object>*, bool*)
+
+0.12^3515242^HTMLParserThrea^chrome               ^[.] void WebCore::StyleResolver::applyProperties<(WebCore::StyleResolver::StyleApplicationPass)0>(WebCore::StyleResolverState&, WebCore::StylePropertySet const*, WebCore::StyleRule*, bool, bool, WebCore::PropertyWhitelistType)
+            |
+            --- void WebCore::StyleResolver::applyProperties<(WebCore::StyleResolver::StyleApplicationPass)0>(WebCore::StyleResolverState&, WebCore::StylePropertySet const*, WebCore::StyleRule*, bool, bool, WebCore::PropertyWhitelistType)
+
+0.12^3514809^HTMLParserThrea^chrome               ^[.] url_util::LowerCaseEqualsASCII(char const*, char const*, char const*)
+            |
+            --- url_util::LowerCaseEqualsASCII(char const*, char const*, char const*)
+
+0.12^3514002^HTMLParserThrea^chrome               ^[.] v8::internal::ScavengeVisitor::VisitPointer(v8::internal::Object**)
+            |
+            --- v8::internal::ScavengeVisitor::VisitPointer(v8::internal::Object**)
+
+0.12^3513688^HTMLParserThrea^chrome               ^[.] _ZN2v88internal15DescriptorArray6AppendEPNS0_10DescriptorERKNS1_16WhitenessWitnessE.constprop.537
+            |
+            --- _ZN2v88internal15DescriptorArray6AppendEPNS0_10DescriptorERKNS1_16WhitenessWitnessE.constprop.537
+
+0.12^3512883^HTMLParserThrea^chrome               ^[.] v8::internal::LoadIC_Miss(int, v8::internal::Object**, v8::internal::Isolate*)
+            |
+            --- v8::internal::LoadIC_Miss(int, v8::internal::Object**, v8::internal::Isolate*)
+                0x7fff30e92040
+
+0.12^3511238^HTMLParserThrea^chrome               ^[.] WebCore::V8ScriptRunner::precompileScript(v8::Handle<v8::String>, WebCore::CachedScript*)
+            |
+            --- WebCore::V8ScriptRunner::precompileScript(v8::Handle<v8::String>, WebCore::CachedScript*)
+
+0.12^3506824^HTMLParserThrea^chrome               ^[.] v8::internal::Factory::NewAllocationSite()
+            |
+            --- v8::internal::Factory::NewAllocationSite()
+
+0.12^3504680^HTMLParserThrea^chrome               ^[.] WebCore::InputTypeNames::text()
+            |
+            --- WebCore::InputTypeNames::text()
+
+0.12^3503829^HTMLParserThrea^chrome               ^[.] v8::internal::FastElementsAccessor<v8::internal::FastPackedObjectElementsAccessor, v8::internal::ElementsKindTraits<(v8::internal::ElementsKind)2>, 8>::SetLengthWithoutNormalize(v8::internal::FixedArrayBase*, v8::internal::JSArray*, v8::internal::Object*, unsigned int)
+            |
+            --- v8::internal::FastElementsAccessor<v8::internal::FastPackedObjectElementsAccessor, v8::internal::ElementsKindTraits<(v8::internal::ElementsKind)2>, 8>::SetLengthWithoutNormalize(v8::internal::FixedArrayBase*, v8::internal::JSArray*, v8::internal::Object*, unsigned int)
+
+0.12^3500368^HTMLParserThrea^chrome               ^[.] WTF::Vector<WTF::String, 0ul>::expandCapacity(unsigned long)
+            |
+            --- WTF::Vector<WTF::String, 0ul>::expandCapacity(unsigned long)
+                0x1000
+
+0.12^3497657^HTMLParserThrea^chrome               ^[.] WebCore::RenderObject::adjustStyleDifference(WebCore::StyleDifference, unsigned int) const
+            |
+            --- WebCore::RenderObject::adjustStyleDifference(WebCore::StyleDifference, unsigned int) const
+
+0.12^3494287^HTMLParserThrea^chrome               ^[.] v8::internal::IC::Clear(unsigned char*)
+            |
+            --- v8::internal::IC::Clear(unsigned char*)
+
+0.12^3492300^HTMLParserThrea^chrome               ^[.] ppapi::proxy::InterfaceProxy::Send(IPC::Message*)
+            |
+            --- ppapi::proxy::InterfaceProxy::Send(IPC::Message*)
+
+0.12^3492214^HTMLParserThrea^chrome               ^[.] v8::internal::Assembler::Assembler(v8::internal::Isolate*, void*, int)
+            |
+            --- v8::internal::Assembler::Assembler(v8::internal::Isolate*, void*, int)
+                0xc6a346f4711
+
+0.12^3489812^HTMLParserThrea^chrome               ^[.] WebCore::SelectorCheckerFastPath::matchesRightmostSelector(WebCore::SelectorChecker::VisitedMatchType) const
+            |
+            --- WebCore::SelectorCheckerFastPath::matchesRightmostSelector(WebCore::SelectorChecker::VisitedMatchType) const
+
+0.12^3488486^HTMLParserThrea^chrome               ^[.] tc_free
+            |
+            --- tc_free
+                0x100000000
+                0x29f988404121
+
+0.12^3488229^HTMLParserThrea^chrome               ^[.] WebCore::RenderObject::updateFillImages(WebCore::FillLayer const*, WebCore::FillLayer const*)
+            |
+            --- WebCore::RenderObject::updateFillImages(WebCore::FillLayer const*, WebCore::FillLayer const*)
+
+0.12^3486534^HTMLParserThrea^chrome               ^[.] v8::internal::Parser::ParsePostfixExpression(bool*)
+            |
+            --- v8::internal::Parser::ParsePostfixExpression(bool*)
+                0x7fff30e905d002
+
+0.12^3484804^HTMLParserThrea^chrome               ^[.] v8::internal::SharedStoreIC_ExtendStorage(int, v8::internal::Object**, v8::internal::Isolate*)
+            |
+            --- v8::internal::SharedStoreIC_ExtendStorage(int, v8::internal::Object**, v8::internal::Isolate*)
+
+0.12^3484146^HTMLParserThrea^chrome               ^[.] WebCore::RenderCounter::rendererSubtreeAttached(WebCore::RenderObject*)
+            |
+            --- WebCore::RenderCounter::rendererSubtreeAttached(WebCore::RenderObject*)
+
+0.12^3483547^HTMLParserThrea^chrome               ^[.] WebCore::LiveNodeListBase::itemBeforeOrAfterCachedItem(unsigned int, WebCore::ContainerNode*) const
+            |
+            --- WebCore::LiveNodeListBase::itemBeforeOrAfterCachedItem(unsigned int, WebCore::ContainerNode*) const
+
+0.12^3482072^HTMLParserThrea^chrome               ^[.] v8::internal::CPU::FlushICache(void*, unsigned long)
+            |
+            --- v8::internal::CPU::FlushICache(void*, unsigned long)
+
+0.12^3481935^HTMLParserThrea^chrome               ^[.] WebCore::StyleResolver::matchAuthorRules(WebCore::Element*, WebCore::ElementRuleCollector&, bool)
+            |
+            --- WebCore::StyleResolver::matchAuthorRules(WebCore::Element*, WebCore::ElementRuleCollector&, bool)
+                0x1e83176abb08
+
+0.12^3481470^HTMLParserThrea^chrome               ^[.] v8::internal::StackFrame::GetCallerState(v8::internal::StackFrame::State*) const
+            |
+            --- v8::internal::StackFrame::GetCallerState(v8::internal::StackFrame::State*) const
+                0x7fff30e8f698
+                0x9d2ae7aa1e1
+
+0.12^3479937^HTMLParserThrea^chrome               ^[.] WTF::AtomicString::add(unsigned char const*)
+            |
+            --- WTF::AtomicString::add(unsigned char const*)
+
+0.12^3476115^HTMLParserThrea^chrome               ^[.] WebCore::StyleAdjuster::adjustRenderStyle(WebCore::RenderStyle*, WebCore::RenderStyle*, WebCore::Element*)
+            |
+            --- WebCore::StyleAdjuster::adjustRenderStyle(WebCore::RenderStyle*, WebCore::RenderStyle*, WebCore::Element*)
+
+0.12^3474363^HTMLParserThrea^chrome               ^[.] WebCore::CSSValue::deref()
+            |
+            --- WebCore::CSSValue::deref()
+
+0.12^3473710^HTMLParserThrea^chrome               ^[.] v8::internal::Assembler::movq(v8::internal::Register, long, v8::internal::RelocInfo::Mode)
+            |
+            --- v8::internal::Assembler::movq(v8::internal::Register, long, v8::internal::RelocInfo::Mode)
+
+0.12^3471996^HTMLParserThrea^chrome               ^[.] v8::internal::RegExpEngine::Compile(v8::internal::RegExpCompileData*, bool, bool, bool, v8::internal::Handle<v8::internal::String>, v8::internal::Handle<v8::internal::String>, bool, v8::internal::Zone*)
+            |
+            --- v8::internal::RegExpEngine::Compile(v8::internal::RegExpCompileData*, bool, bool, bool, v8::internal::Handle<v8::internal::String>, v8::internal::Handle<v8::internal::String>, bool, v8::internal::Zone*)
+                0xc6a3439fca1
+
+0.12^3468177^HTMLParserThrea^chrome               ^[.] v8::internal::Context::global_proxy()
+            |
+            --- v8::internal::Context::global_proxy()
+
+0.12^3467384^HTMLParserThrea^chrome               ^[.] WTF::Vector<std::pair<void (*)(WebCore::Node*), WTF::RefPtr<WebCore::Node> >, 0ul>::shrinkCapacity(unsigned long)
+            |
+            --- WTF::Vector<std::pair<void (*)(WebCore::Node*), WTF::RefPtr<WebCore::Node> >, 0ul>::shrinkCapacity(unsigned long)
+
+0.12^3466196^HTMLParserThrea^chrome               ^[.] v8::internal::Parser::GetSymbol()
+            |
+            --- v8::internal::Parser::GetSymbol()
+                0x7fff30e9182000
+
+0.12^3462208^HTMLParserThrea^chrome               ^[.] v8::internal::JSReceiver::SetProperty(v8::internal::Name*, v8::internal::Object*, PropertyAttributes, v8::internal::StrictModeFlag, v8::internal::JSReceiver::StoreFromKeyed)
+            |
+            --- v8::internal::JSReceiver::SetProperty(v8::internal::Name*, v8::internal::Object*, PropertyAttributes, v8::internal::StrictModeFlag, v8::internal::JSReceiver::StoreFromKeyed)
+                0x7fff30e91950
+
+0.12^3461655^HTMLParserThrea^chrome               ^[.] WebCore::RenderLayer::shouldBeNormalFlowOnlyIgnoringCompositedScrolling() const
+            |
+            --- WebCore::RenderLayer::shouldBeNormalFlowOnlyIgnoringCompositedScrolling() const
+
+0.11^3453572^HTMLParserThrea^chrome               ^[.] v8::internal::HBasicBlock::HBasicBlock(v8::internal::HGraph*)
+            |
+            --- v8::internal::HBasicBlock::HBasicBlock(v8::internal::HGraph*)
+
+0.11^3450775^HTMLParserThrea^chrome               ^[.] WebCore::RenderObject::invalidateContainerPreferredLogicalWidths()
+            |
+            --- WebCore::RenderObject::invalidateContainerPreferredLogicalWidths()
+
+0.11^3446446^HTMLParserThrea^chrome               ^[.] WebCore::LayoutUnit::round() const
+            |
+            --- WebCore::LayoutUnit::round() const
+
+0.11^3445539^HTMLParserThrea^chrome               ^[.] v8::internal::Runtime_RegExpExec(int, v8::internal::Object**, v8::internal::Isolate*)
+            |
+            --- v8::internal::Runtime_RegExpExec(int, v8::internal::Object**, v8::internal::Isolate*)
+                0xc6a3540bd09
+
+0.11^3445347^HTMLParserThrea^chrome               ^[.] v8::internal::BaseLoadStubCompiler::GenerateLoadCallback(v8::internal::Register, v8::internal::Handle<v8::internal::ExecutableAccessorInfo>)
+            |
+            --- v8::internal::BaseLoadStubCompiler::GenerateLoadCallback(v8::internal::Register, v8::internal::Handle<v8::internal::ExecutableAccessorInfo>)
+
+0.11^3444801^HTMLParserThrea^chrome               ^[.] v8::internal::BufferedUtf16CharacterStream::ReadBlock()
+            |
+            --- v8::internal::BufferedUtf16CharacterStream::ReadBlock()
+                0x7fff30e91798
+
+0.11^3436515^HTMLParserThrea^chrome               ^[.] WTF::Vector<unsigned short, 256ul>::shrinkCapacity(unsigned long)
+            |
+            --- WTF::Vector<unsigned short, 256ul>::shrinkCapacity(unsigned long)
+
+0.11^3435352^HTMLParserThrea^chrome               ^[.] v8::internal::Parser::ParseFunctionLiteral(v8::internal::Handle<v8::internal::String>, bool, bool, int, v8::internal::FunctionLiteral::FunctionType, bool*)
+            |
+            --- v8::internal::Parser::ParseFunctionLiteral(v8::internal::Handle<v8::internal::String>, bool, bool, int, v8::internal::FunctionLiteral::FunctionType, bool*)
+                0x7fff30e903a000
+
+0.11^3434720^HTMLParserThrea^chrome               ^[.] WebCore::ImageSource::setData(WebCore::SharedBuffer*, bool)
+            |
+            --- WebCore::ImageSource::setData(WebCore::SharedBuffer*, bool)
+
+0.11^3432682^HTMLParserThrea^chrome               ^[.] v8::internal::StandardFrame::ComputeCallerState(v8::internal::StackFrame::State*) const
+            |
+            --- v8::internal::StandardFrame::ComputeCallerState(v8::internal::StackFrame::State*) const
+                0x7fff30e90df8
+                0xc6a346b4fe9
+
+0.11^3432008^HTMLParserThrea^chrome               ^[.] v8::internal::VariableProxy::Accept(v8::internal::AstVisitor*)
+            |
+            --- v8::internal::VariableProxy::Accept(v8::internal::AstVisitor*)
+
+0.11^3420656^HTMLParserThrea^chrome               ^[.] SkBlitter::Choose(SkBitmap const&, SkMatrix const&, SkPaint const&, void*, unsigned long)
+            |
+            --- SkBlitter::Choose(SkBitmap const&, SkMatrix const&, SkPaint const&, void*, unsigned long)
+
+0.11^3420637^HTMLParserThrea^chrome               ^[.] v8::internal::Map::UpdateCodeCache(v8::internal::Name*, v8::internal::Code*)
+            |
+            --- v8::internal::Map::UpdateCodeCache(v8::internal::Name*, v8::internal::Code*)
+
+0.11^3419913^HTMLParserThrea^chrome               ^[.] WebCore::Element::childrenChanged(bool, WebCore::Node*, WebCore::Node*, int)
+            |
+            --- WebCore::Element::childrenChanged(bool, WebCore::Node*, WebCore::Node*, int)
+
+0.11^3413310^HTMLParserThrea^chrome               ^[.] v8::internal::Scope::ResolveVariablesRecursively(v8::internal::CompilationInfo*, v8::internal::AstNodeFactory<v8::internal::AstNullVisitor>*)
+            |
+            --- v8::internal::Scope::ResolveVariablesRecursively(v8::internal::CompilationInfo*, v8::internal::AstNodeFactory<v8::internal::AstNullVisitor>*)
+
+0.11^3413062^HTMLParserThrea^chrome               ^[.] void WTF::Vector<WebCore::MatchedProperties, 0ul>::append<WebCore::MatchedProperties>(WebCore::MatchedProperties const*, unsigned long)
+            |
+            --- void WTF::Vector<WebCore::MatchedProperties, 0ul>::append<WebCore::MatchedProperties>(WebCore::MatchedProperties const*, unsigned long)
+
+0.11^3409803^HTMLParserThrea^chrome               ^[.] v8::internal::Assembler::movq(v8::internal::Register, v8::internal::Operand const&)
+            |
+            --- v8::internal::Assembler::movq(v8::internal::Register, v8::internal::Operand const&)
+
+0.11^3406785^HTMLParserThrea^chrome               ^[.] v8::internal::HashTable<v8::internal::MapCacheShape, v8::internal::HashTableKey*>::FindEntry(v8::internal::Isolate*, v8::internal::HashTableKey*)
+            |
+            --- v8::internal::HashTable<v8::internal::MapCacheShape, v8::internal::HashTableKey*>::FindEntry(v8::internal::Isolate*, v8::internal::HashTableKey*)
+
+0.11^3404799^HTMLParserThrea^chrome               ^[.] WebCore::RenderLineBoxList::removeLineBox(WebCore::InlineFlowBox*)
+            |
+            --- WebCore::RenderLineBoxList::removeLineBox(WebCore::InlineFlowBox*)
+
+0.11^3398149^HTMLParserThrea^chrome               ^[.] WebCore::RenderLayer::clippingRootForPainting() const
+            |
+            --- WebCore::RenderLayer::clippingRootForPainting() const
+                0x2bc00000a000
+
+0.11^3390095^HTMLParserThrea^chrome               ^[.] v8::internal::FullCodeGenerator::VarOperand(v8::internal::Variable*, v8::internal::Register)
+            |
+            --- v8::internal::FullCodeGenerator::VarOperand(v8::internal::Variable*, v8::internal::Register)
+                0x7fff30e91980
+
+0.11^3388424^HTMLParserThrea^chrome               ^[.] WebCore::DOMTimer::fired()
+            |
+            --- WebCore::DOMTimer::fired()
+
+0.11^3378612^HTMLParserThrea^chrome               ^[.] v8::internal::JSObject::SetFastElementsCapacityAndLength(int, int, v8::internal::JSObject::SetFastElementsCapacitySmiMode)
+            |
+            --- v8::internal::JSObject::SetFastElementsCapacityAndLength(int, int, v8::internal::JSObject::SetFastElementsCapacitySmiMode)
+
+0.11^3374619^HTMLParserThrea^chrome               ^[.] v8::internal::Code::MakeCodeAgeSequenceYoung(unsigned char*)
+            |
+            --- v8::internal::Code::MakeCodeAgeSequenceYoung(unsigned char*)
+                0x2281c140e854
+                0x2281c1e636e1
+                0x2281c1e52c8f
+                0x2281c142b664
+                0x2281c1417d97
+                v8::internal::Invoke(bool, v8::internal::Handle<v8::internal::JSFunction>, v8::internal::Handle<v8::internal::Object>, int, v8::internal::Handle<v8::internal::Object>*, bool*)
+
+0.11^3373628^HTMLParserThrea^chrome               ^[.] ucase_fold_46
+            |
+            --- ucase_fold_46
+
+0.11^3372159^HTMLParserThrea^chrome               ^[.] WebCore::LayoutState::LayoutState(WebCore::LayoutState*, WebCore::RenderBox*, WebCore::LayoutSize const&, WebCore::LayoutUnit, bool, WebCore::ColumnInfo*)
+            |
+            --- WebCore::LayoutState::LayoutState(WebCore::LayoutState*, WebCore::RenderBox*, WebCore::LayoutSize const&, WebCore::LayoutUnit, bool, WebCore::ColumnInfo*)
+
+0.11^3365891^HTMLParserThrea^chrome               ^[.] v8::internal::HOptimizedGraphBuilder::BuildGraph()
+            |
+            --- v8::internal::HOptimizedGraphBuilder::BuildGraph()
+
+0.11^3359190^HTMLParserThrea^chrome               ^[.] v8::internal::Scope::Initialize()
+            |
+            --- v8::internal::Scope::Initialize()
+
+0.11^3356725^HTMLParserThrea^chrome               ^[.] WebCore::RenderLayer::updateScrollbarsAfterLayout()
+            |
+            --- WebCore::RenderLayer::updateScrollbarsAfterLayout()
+
+0.11^3356459^HTMLParserThrea^chrome               ^[.] _ZN7WebCoreplEiRKNS_10LayoutUnitE.constprop.860
+            |
+            --- _ZN7WebCoreplEiRKNS_10LayoutUnitE.constprop.860
+
+0.11^3355399^HTMLParserThrea^chrome               ^[.] v8::internal::ExitFrame::GetCallerStackPointer() const
+            |
+            --- v8::internal::ExitFrame::GetCallerStackPointer() const
+                (nil)
+
+0.11^3351779^HTMLParserThrea^chrome               ^[.] WebCore::RenderBlock::layoutRunsAndFloatsInRange(WebCore::LineLayoutState&, WebCore::BidiResolver<WebCore::InlineIterator, WebCore::BidiRun>&, WebCore::InlineIterator const&, WebCore::BidiStatus const&, unsigned int)
+            |
+            --- WebCore::RenderBlock::layoutRunsAndFloatsInRange(WebCore::LineLayoutState&, WebCore::BidiResolver<WebCore::InlineIterator, WebCore::BidiRun>&, WebCore::InlineIterator const&, WebCore::BidiStatus const&, unsigned int)
+                0x3b2abd866648
+
+0.11^3344999^HTMLParserThrea^chrome               ^[.] v8::internal::CompilationCacheRegExp::Lookup(v8::internal::Handle<v8::internal::String>, v8::internal::JSRegExp::Flags)
+            |
+            --- v8::internal::CompilationCacheRegExp::Lookup(v8::internal::Handle<v8::internal::String>, v8::internal::JSRegExp::Flags)
+
+0.11^3344476^HTMLParserThrea^chrome               ^[.] tracked_objects::DeathData::RecordDeath(int, int, int)
+            |
+            --- tracked_objects::DeathData::RecordDeath(int, int, int)
+
+0.11^3343357^HTMLParserThrea^chrome               ^[.] void WTF::Vector<WebCore::SelectorFilter::ParentStackFrame, 0ul>::appendSlowCase<WebCore::SelectorFilter::ParentStackFrame>(WebCore::SelectorFilter::ParentStackFrame const&)
+            |
+            --- void WTF::Vector<WebCore::SelectorFilter::ParentStackFrame, 0ul>::appendSlowCase<WebCore::SelectorFilter::ParentStackFrame>(WebCore::SelectorFilter::ParentStackFrame const&)
+
+0.11^3341336^HTMLParserThrea^chrome               ^[.] v8::internal::FullCodeGenerator::VisitObjectLiteral(v8::internal::ObjectLiteral*)
+            |
+            --- v8::internal::FullCodeGenerator::VisitObjectLiteral(v8::internal::ObjectLiteral*)
+
+0.11^3340676^HTMLParserThrea^chrome               ^[.] v8::internal::Assignment::Accept(v8::internal::AstVisitor*)
+            |
+            --- v8::internal::Assignment::Accept(v8::internal::AstVisitor*)
+
+0.11^3336841^HTMLParserThrea^chrome               ^[.] v8::internal::MacroAssembler::Set(v8::internal::Register, long)
+            |
+            --- v8::internal::MacroAssembler::Set(v8::internal::Register, long)
+                0x3b2abd624000
+
+0.11^3335871^HTMLParserThrea^chrome               ^[.] v8::internal::Scanner::ScanRegExpPattern(bool)
+            |
+            --- v8::internal::Scanner::ScanRegExpPattern(bool)
+                0x10e8a1901
+
+0.11^3313926^HTMLParserThrea^chrome               ^[.] v8::internal::ToBooleanStub::Types::UpdateStatus(v8::internal::Handle<v8::internal::Object>)
+            |
+            --- v8::internal::ToBooleanStub::Types::UpdateStatus(v8::internal::Handle<v8::internal::Object>)
+                0x2281c14140c1
+
+0.11^3300775^HTMLParserThrea^chrome               ^[.] WebCore::SVGRenderSupport::setRendererHasSVGShadow(WebCore::RenderObject*, bool)
+            |
+            --- WebCore::SVGRenderSupport::setRendererHasSVGShadow(WebCore::RenderObject*, bool)
+
+0.11^3292871^HTMLParserThrea^chrome               ^[.] base::debug::TraceLog::GetInstance()
+            |
+            --- base::debug::TraceLog::GetInstance()
+
+0.11^3289620^HTMLParserThrea^chrome               ^[.] WebCore::FrameView::pagination() const
+            |
+            --- WebCore::FrameView::pagination() const
+                (nil)
+                0x3b2abdc16c30
+
+0.11^3274771^HTMLParserThrea^chrome               ^[.] v8::internal::Factory::NewMap(v8::internal::InstanceType, int, v8::internal::ElementsKind)
+            |
+            --- v8::internal::Factory::NewMap(v8::internal::InstanceType, int, v8::internal::ElementsKind)
+
+0.11^3268228^HTMLParserThrea^chrome               ^[.] WebCore::RenderBlock::updateBlockChildDirtyBitsBeforeLayout(bool, WebCore::RenderBox*)
+            |
+            --- WebCore::RenderBlock::updateBlockChildDirtyBitsBeforeLayout(bool, WebCore::RenderBox*)
+
+0.11^3264333^HTMLParserThrea^chrome               ^[.] v8::internal::CreateObjectLiteralBoilerplate(v8::internal::Isolate*, v8::internal::Handle<v8::internal::FixedArray>, v8::internal::Handle<v8::internal::FixedArray>, bool, bool)
+            |
+            --- v8::internal::CreateObjectLiteralBoilerplate(v8::internal::Isolate*, v8::internal::Handle<v8::internal::FixedArray>, v8::internal::Handle<v8::internal::FixedArray>, bool, bool)
+
+0.11^3263293^HTMLParserThrea^chrome               ^[.] content::RenderViewObserver::DidClearWindowObject(WebKit::WebFrame*)
+            |
+            --- content::RenderViewObserver::DidClearWindowObject(WebKit::WebFrame*)
+
+0.11^3263262^HTMLParserThrea^chrome               ^[.] WebCore::V8HiddenPropertyName::sleepFunction()
+            |
+            --- WebCore::V8HiddenPropertyName::sleepFunction()
+                0x5bf5d67bd1
+
+0.11^3253742^HTMLParserThrea^chrome               ^[.] WebCore::RenderLayer::boundingBox(WebCore::RenderLayer const*, unsigned int, WebCore::LayoutPoint const*) const
+            |
+            --- WebCore::RenderLayer::boundingBox(WebCore::RenderLayer const*, unsigned int, WebCore::LayoutPoint const*) const
+                (nil)
+
+0.11^3250656^HTMLParserThrea^chrome               ^[.] v8::internal::Runtime_StringCharCodeAt(int, v8::internal::Object**, v8::internal::Isolate*)
+            |
+            --- v8::internal::Runtime_StringCharCodeAt(int, v8::internal::Object**, v8::internal::Isolate*)
+                0x2281c1449ea3
+                0x2281c14497a7
+                0x2281c1425b83
+                0x2281c141b848
+                0x2281c1443ab6
+                0x2281c14480ae
+                0x2281c144938f
+                0x2281c142b664
+                0x2281c1417d97
+                v8::internal::Invoke(bool, v8::internal::Handle<v8::internal::JSFunction>, v8::internal::Handle<v8::internal::Object>, int, v8::internal::Handle<v8::internal::Object>*, bool*)
+
+0.11^3240988^HTMLParserThrea^chrome               ^[.] WTF::equalIgnoringCaseNonNull(WTF::StringImpl const*, WTF::StringImpl const*)
+            |
+            --- WTF::equalIgnoringCaseNonNull(WTF::StringImpl const*, WTF::StringImpl const*)
+
+0.11^3237736^HTMLParserThrea^chrome               ^[.] v8::internal::Assembler::call(v8::internal::Handle<v8::internal::Code>, v8::internal::RelocInfo::Mode, v8::internal::TypeFeedbackId)
+            |
+            --- v8::internal::Assembler::call(v8::internal::Handle<v8::internal::Code>, v8::internal::RelocInfo::Mode, v8::internal::TypeFeedbackId)
+
+0.11^3228754^HTMLParserThrea^libpthread-2.15.so   ^[.] pthread_mutex_unlock
+            |
+            --- pthread_mutex_unlock
+
+0.11^3225835^HTMLParserThrea^chrome               ^[.] WebCore::RenderObject::repaintUsingContainer(WebCore::RenderLayerModelObject const*, WebCore::IntRect const&) const
+            |
+            --- WebCore::RenderObject::repaintUsingContainer(WebCore::RenderLayerModelObject const*, WebCore::IntRect const&) const
+
+0.11^3219559^HTMLParserThrea^chrome               ^[.] icu_46::RuleBasedBreakIterator::handleNext(icu_46::RBBIStateTable const*)
+            |
+            --- icu_46::RuleBasedBreakIterator::handleNext(icu_46::RBBIStateTable const*)
+
+0.11^3215902^HTMLParserThrea^chrome               ^[.] v8::internal::Scanner::Scanner(v8::internal::UnicodeCache*)
+            |
+            --- v8::internal::Scanner::Scanner(v8::internal::UnicodeCache*)
+                0x7f7a0b900000
+
+0.11^3202188^HTMLParserThrea^chrome               ^[.] v8::Object::FindInstanceInPrototypeChain(v8::Handle<v8::FunctionTemplate>)
+            |
+            --- v8::Object::FindInstanceInPrototypeChain(v8::Handle<v8::FunctionTemplate>)
+
+0.11^3202083^HTMLParserThrea^chrome               ^[.] WebCore::Element::attach(WebCore::Node::AttachContext const&)
+            |
+            --- WebCore::Element::attach(WebCore::Node::AttachContext const&)
+
+0.11^3200673^HTMLParserThrea^chrome               ^[.] v8::internal::CompareIC::NewInputState(v8::internal::CompareIC::State, v8::internal::Handle<v8::internal::Object>)
+            |
+            --- v8::internal::CompareIC::NewInputState(v8::internal::CompareIC::State, v8::internal::Handle<v8::internal::Object>)
+
+0.11^3176018^HTMLParserThrea^chrome               ^[.] WebCore::Element::recalcStyle(WebCore::Node::StyleChange)
+            |
+            --- WebCore::Element::recalcStyle(WebCore::Node::StyleChange)
+
+0.11^3170916^HTMLParserThrea^chrome               ^[.] WebCore::MajorGCWrapperVisitor::VisitPersistentHandle(v8::Persistent<v8::Value>*, unsigned short)
+            |
+            --- WebCore::MajorGCWrapperVisitor::VisitPersistentHandle(v8::Persistent<v8::Value>*, unsigned short)
+                0x80e894c5308
+
+0.10^3137671^HTMLParserThrea^chrome               ^[.] v8::internal::DependentCode::DeoptimizeDependentCodeGroup(v8::internal::Isolate*, v8::internal::DependentCode::DependencyGroup)
+            |
+            --- v8::internal::DependentCode::DeoptimizeDependentCodeGroup(v8::internal::Isolate*, v8::internal::DependentCode::DependencyGroup)
+
+0.10^3136480^HTMLParserThrea^chrome               ^[.] WebCore::DOMWindow::document() const
+            |
+            --- WebCore::DOMWindow::document() const
+
+0.10^3136403^HTMLParserThrea^chrome               ^[.] _ZNK3WTF7HashMapIPN7WebCore12RenderObjectENS_6RefPtrINS1_18CompositeAnimationEEENS_7PtrHashIS3_EENS_10HashTraitsIS3_EENS9_IS6_EEE3getERKS3_.isra.185
+            |
+            --- _ZNK3WTF7HashMapIPN7WebCore12RenderObjectENS_6RefPtrINS1_18CompositeAnimationEEENS_7PtrHashIS3_EENS_10HashTraitsIS3_EENS9_IS6_EEE3getERKS3_.isra.185
+
+0.10^3126165^HTMLParserThrea^chrome               ^[.] v8::internal::VariableProxy::BindTo(v8::internal::Variable*)
+            |
+            --- v8::internal::VariableProxy::BindTo(v8::internal::Variable*)
+                0x3b2abdf3f010
+
+0.10^3124159^HTMLParserThrea^chrome               ^[.] WebCore::InlineTextBox::logicalOverflowRect() const
+            |
+            --- WebCore::InlineTextBox::logicalOverflowRect() const
+                0xaf00000000
+                0x3b2abdda8680
+
+0.10^3121836^HTMLParserThrea^chrome               ^[.] v8::internal::JSObject::SetPropertyViaPrototypes(v8::internal::Name*, v8::internal::Object*, PropertyAttributes, v8::internal::StrictModeFlag, bool*)
+            |
+            --- v8::internal::JSObject::SetPropertyViaPrototypes(v8::internal::Name*, v8::internal::Object*, PropertyAttributes, v8::internal::StrictModeFlag, bool*)
+
+0.10^3107295^HTMLParserThrea^chrome               ^[.] WebCore::ElementStyleResources::ElementStyleResources()
+            |
+            --- WebCore::ElementStyleResources::ElementStyleResources()
+
+0.10^3103474^HTMLParserThrea^chrome               ^[.] void WTF::deleteAllValues<true, WebCore::RenderBlock::FloatingObject*, WTF::HashTable<WTF::ListHashSetNode<WebCore::RenderBlock::FloatingObject*, 4ul>*, WTF::ListHashSetNode<WebCore::RenderBlock::FloatingObject*, 4ul>*, WTF::IdentityExtractor, WTF::ListHashSetNodeHashFunctions<WebCore::RenderBlock::FloatingObjectHashFunctions>, WTF::HashTraits<WTF::ListHashSetNode<WebCore::RenderBlock::FloatingObject*, 4ul>*>, WTF::HashTraits<WTF::ListHashSetNode<WebCo
+            |
+            --- void WTF::deleteAllValues<true, WebCore::RenderBlock::FloatingObject*, WTF::HashTable<WTF::ListHashSetNode<WebCore::RenderBlock::FloatingObject*, 4ul>*, WTF::ListHashSetNode<WebCore::RenderBlock::FloatingObject*, 4ul>*, WTF::IdentityExtractor, WTF::ListHashSetNodeHashFunctions<WebCore::RenderBlock::FloatingObjectHashFunctions>, WTF::HashTraits<WTF::ListHashSetNode<WebCore::RenderBlock::FloatingObject*, 4ul>*>, WTF::HashTraits<WTF::ListHashSetNode<WebCore::RenderBlock::FloatingObject*, 4ul>*> > const>(WTF::HashTable<WTF::ListHashSetNode<WebCore::RenderBlock::FloatingObject*, 4ul>*, WTF::ListHashSetNode<WebCore::RenderBlock::FloatingObject*, 4ul>*, WTF::IdentityExtractor, WTF::ListHashSetNodeHashFunctions<WebCore::RenderBlock::FloatingObjectHashFunctions>, WTF::HashTraits<WTF::ListHashSetNode<WebCore::RenderBlock::FloatingObject*, 4ul>*>, WTF::HashTraits<WTF::ListHashSetNode<WebCore::RenderBlock::FloatingObject*, 4ul>*> > const&)
+
+0.10^3103474^HTMLParserThrea^chrome               ^[.] base::subtle::RefCountedBase::Release() const
+            |
+            --- base::subtle::RefCountedBase::Release() const
+
+0.10^3092884^HTMLParserThrea^chrome               ^[.] WebCore::RenderView::usesCompositing() const
+            |
+            --- WebCore::RenderView::usesCompositing() const
+
+0.10^3090079^HTMLParserThrea^chrome               ^[.] webCoreInitializeScriptWrappableForInterface(WebCore::Element*)
+            |
+            --- webCoreInitializeScriptWrappableForInterface(WebCore::Element*)
+
+0.10^3084985^HTMLParserThrea^chrome               ^[.] WebCore::ScopedStyleTree::pushStyleCache(WebCore::ContainerNode const*, WebCore::ContainerNode const*)
+            |
+            --- WebCore::ScopedStyleTree::pushStyleCache(WebCore::ContainerNode const*, WebCore::ContainerNode const*)
+
+0.10^3075629^HTMLParserThrea^chrome               ^[.] v8::internal::HydrogenCodeStub::MinorKey()
+            |
+            --- v8::internal::HydrogenCodeStub::MinorKey()
+
+0.10^3075535^HTMLParserThrea^librt-2.15.so        ^[.] clock_gettime
+            |
+            --- clock_gettime
+
+0.10^3066941^HTMLParserThrea^chrome               ^[.] v8::internal::Assembler::jmp(v8::internal::Handle<v8::internal::Code>, v8::internal::RelocInfo::Mode)
+            |
+            --- v8::internal::Assembler::jmp(v8::internal::Handle<v8::internal::Code>, v8::internal::RelocInfo::Mode)
+
+0.10^3064555^HTMLParserThrea^chrome               ^[.] WebCore::RenderStyle::getRoundedBorderFor(WebCore::LayoutRect const&, WebCore::RenderView*, bool, bool) const
+            |
+            --- WebCore::RenderStyle::getRoundedBorderFor(WebCore::LayoutRect const&, WebCore::RenderView*, bool, bool) const
+
+0.10^3056872^HTMLParserThrea^chrome               ^[.] WebCore::LayoutRect::intersect(WebCore::LayoutRect const&)
+            |
+            --- WebCore::LayoutRect::intersect(WebCore::LayoutRect const&)
+                (nil)
+
+0.10^3056623^HTMLParserThrea^chrome               ^[.] v8::internal::CodeCacheHashTable::Put(v8::internal::Name*, v8::internal::Code*)
+            |
+            --- v8::internal::CodeCacheHashTable::Put(v8::internal::Name*, v8::internal::Code*)
+
+0.10^3054623^HTMLParserThrea^chrome               ^[.] v8::internal::ActionNode::GetQuickCheckDetails(v8::internal::QuickCheckDetails*, v8::internal::RegExpCompiler*, int, bool)
+            |
+            --- v8::internal::ActionNode::GetQuickCheckDetails(v8::internal::QuickCheckDetails*, v8::internal::RegExpCompiler*, int, bool)
+                0x3b2a00000002
+
+0.10^3051571^HTMLParserThrea^chrome               ^[.] _ZN2v88internal12PropertyCell17SetValueInferTypeEPNS0_6ObjectENS0_16WriteBarrierModeE.part.326
+            |
+            --- _ZN2v88internal12PropertyCell17SetValueInferTypeEPNS0_6ObjectENS0_16WriteBarrierModeE.part.326
+
+0.10^3047011^HTMLParserThrea^chrome               ^[.] WebCore::RenderBoxModelObject::paintFillLayerExtended(WebCore::PaintInfo const&, WebCore::Color const&, WebCore::FillLayer const*, WebCore::LayoutRect const&, WebCore::BackgroundBleedAvoidance, WebCore::InlineFlowBox*, WebCore::LayoutSize const&, WebCore::CompositeOperator, WebCore::RenderObject*)
+            |
+            --- WebCore::RenderBoxModelObject::paintFillLayerExtended(WebCore::PaintInfo const&, WebCore::Color const&, WebCore::FillLayer const*, WebCore::LayoutRect const&, WebCore::BackgroundBleedAvoidance, WebCore::InlineFlowBox*, WebCore::LayoutSize const&, WebCore::CompositeOperator, WebCore::RenderObject*)
+
+0.10^3047011^HTMLParserThrea^chrome               ^[.] WebCore::Timer<WebCore::EventSender<WebCore::ImageLoader> >::fired()
+            |
+            --- WebCore::Timer<WebCore::EventSender<WebCore::ImageLoader> >::fired()
+
+0.10^3042405^HTMLParserThrea^chrome               ^[.] SkGlyphCache::getGlyphIDMetrics(unsigned short)
+            |
+            --- SkGlyphCache::getGlyphIDMetrics(unsigned short)
+
+0.10^3034275^HTMLParserThrea^chrome               ^[.] WebCore::StyleBuilder::applyProperty(WebCore::CSSPropertyID, WebCore::StyleResolver*, WebCore::StyleResolverState&, WebCore::CSSValue*, bool, bool)
+            |
+            --- WebCore::StyleBuilder::applyProperty(WebCore::CSSPropertyID, WebCore::StyleResolver*, WebCore::StyleResolverState&, WebCore::CSSValue*, bool, bool)
+                0x1e83176a8568
+
+0.10^3027837^HTMLParserThrea^chrome               ^[.] v8::preparser::PreParser::ParseBinaryExpression(int, bool, bool*)
+            |
+            --- v8::preparser::PreParser::ParseBinaryExpression(int, bool, bool*)
+                0x7f7a0b96214000
+
+0.10^3027190^HTMLParserThrea^chrome               ^[.] v8::internal::CallOptimization::GetPrototypeDepthOfExpectedType(v8::internal::Handle<v8::internal::JSObject>, v8::internal::Handle<v8::internal::JSObject>) const
+            |
+            --- v8::internal::CallOptimization::GetPrototypeDepthOfExpectedType(v8::internal::Handle<v8::internal::JSObject>, v8::internal::Handle<v8::internal::JSObject>) const
+
+0.10^3025376^HTMLParserThrea^chrome               ^[.] v8::Function::Call(v8::Handle<v8::Object>, int, v8::Handle<v8::Value>*)
+            |
+            --- v8::Function::Call(v8::Handle<v8::Object>, int, v8::Handle<v8::Value>*)
+
+0.10^3019937^HTMLParserThrea^chrome               ^[.] net::HttpResponseHeaders::EnumerateHeader(void**, base::BasicStringPiece<std::string> const&, std::string*) const
+            |
+            --- net::HttpResponseHeaders::EnumerateHeader(void**, base::BasicStringPiece<std::string> const&, std::string*) const
+                0x7fff30e91800
+
+0.10^3017488^HTMLParserThrea^chrome               ^[.] v8::internal::Parser::ParseLazy()
+            |
+            --- v8::internal::Parser::ParseLazy()
+
+0.10^3014944^HTMLParserThrea^chrome               ^[.] WebCore::MarkupAccumulator::appendAttribute(WTF::StringBuilder&, WebCore::Element*, WebCore::Attribute const&, WTF::HashMap<WTF::AtomicStringImpl*, WTF::AtomicStringImpl*, WTF::PtrHash<WTF::AtomicStringImpl*>, WTF::HashTraits<WTF::AtomicStringImpl*>, WTF::HashTraits<WTF::AtomicStringImpl*> >*)
+            |
+            --- WebCore::MarkupAccumulator::appendAttribute(WTF::StringBuilder&, WebCore::Element*, WebCore::Attribute const&, WTF::HashMap<WTF::AtomicStringImpl*, WTF::AtomicStringImpl*, WTF::PtrHash<WTF::AtomicStringImpl*>, WTF::HashTraits<WTF::AtomicStringImpl*>, WTF::HashTraits<WTF::AtomicStringImpl*> >*)
+
+0.10^3005563^HTMLParserThrea^chrome               ^[.] tcmalloc::PageHeap::Carve(tcmalloc::Span*, unsigned long)
+            |
+            --- tcmalloc::PageHeap::Carve(tcmalloc::Span*, unsigned long)
+
+0.10^3002471^HTMLParserThrea^chrome               ^[.] WebCore::RenderLayer::paintOutlineForFragments(WTF::Vector<WebCore::LayerFragment, 1ul> const&, WebCore::GraphicsContext*, WebCore::RenderLayer::LayerPaintingInfo const&, unsigned int, WebCore::RenderObject*)
+            |
+            --- WebCore::RenderLayer::paintOutlineForFragments(WTF::Vector<WebCore::LayerFragment, 1ul> const&, WebCore::GraphicsContext*, WebCore::RenderLayer::LayerPaintingInfo const&, unsigned int, WebCore::RenderObject*)
+
+0.10^2988466^HTMLParserThrea^chrome               ^[.] v8::internal::CompareIC::TargetState(v8::internal::CompareIC::State, v8::internal::CompareIC::State, v8::internal::CompareIC::State, bool, v8::internal::Handle<v8::internal::Object>, v8::internal::Handle<v8::internal::Object>)
+            |
+            --- v8::internal::CompareIC::TargetState(v8::internal::CompareIC::State, v8::internal::CompareIC::State, v8::internal::CompareIC::State, bool, v8::internal::Handle<v8::internal::Object>, v8::internal::Handle<v8::internal::Object>)
+
+0.10^2985776^HTMLParserThrea^chrome               ^[.] v8::internal::CodeStub::UseSpecialCache()
+            |
+            --- v8::internal::CodeStub::UseSpecialCache()
+
+0.10^2983793^HTMLParserThrea^chrome               ^[.] v8::internal::Genesis::TransferNamedProperties(v8::internal::Handle<v8::internal::JSObject>, v8::internal::Handle<v8::internal::JSObject>)
+            |
+            --- v8::internal::Genesis::TransferNamedProperties(v8::internal::Handle<v8::internal::JSObject>, v8::internal::Handle<v8::internal::JSObject>)
+
+0.10^2978233^HTMLParserThrea^chrome               ^[.] v8::internal::ReturnStatement::Accept(v8::internal::AstVisitor*)
+            |
+            --- v8::internal::ReturnStatement::Accept(v8::internal::AstVisitor*)
+
+0.10^2961361^HTMLParserThrea^chrome               ^[.] WebCore::HTMLInputElement::parseAttribute(WebCore::QualifiedName const&, WTF::AtomicString const&)
+            |
+            --- WebCore::HTMLInputElement::parseAttribute(WebCore::QualifiedName const&, WTF::AtomicString const&)
+                WebCore::V8PerIsolateData::hasInstance(WebCore::WrapperTypeInfo*, v8::Handle<v8::Value>, WebCore::WrapperWorldType)
+
+0.10^2950771^HTMLParserThrea^chrome               ^[.] webkit::ppapi::PluginInstance::Paint(SkCanvas*, gfx::Rect const&, gfx::Rect const&)
+            |
+            --- webkit::ppapi::PluginInstance::Paint(SkCanvas*, gfx::Rect const&, gfx::Rect const&)
+
+0.10^2941407^HTMLParserThrea^chrome               ^[.] WebCore::DocumentStyleSheetCollection::combineCSSFeatureFlags(WebCore::RuleFeatureSet const&)
+            |
+            --- WebCore::DocumentStyleSheetCollection::combineCSSFeatureFlags(WebCore::RuleFeatureSet const&)
+
+0.10^2927492^HTMLParserThrea^chrome               ^[.] SkCanvas::~SkCanvas()
+            |
+            --- SkCanvas::~SkCanvas()
+
+0.10^2924222^HTMLParserThrea^chrome               ^[.] WTF::HashTableAddResult<WTF::HashTableIterator<unsigned long, WTF::KeyValuePair<unsigned long, WTF::OwnPtr<WebCore::ProgressItem> >, WTF::KeyValuePairKeyExtractor<WTF::KeyValuePair<unsigned long, WTF::OwnPtr<WebCore::ProgressItem> > >, WTF::IntHash<unsigned long>, WTF::HashMapValueTraits<WTF::HashTraits<unsigned long>, WTF::HashTraits<WTF::OwnPtr<WebCore::ProgressItem> > >, WTF::HashTraits<unsigned long> > > WTF::HashTable<unsigned long, WTF::KeyValueP
+            |
+            --- WTF::HashTableAddResult<WTF::HashTableIterator<unsigned long, WTF::KeyValuePair<unsigned long, WTF::OwnPtr<WebCore::ProgressItem> >, WTF::KeyValuePairKeyExtractor<WTF::KeyValuePair<unsigned long, WTF::OwnPtr<WebCore::ProgressItem> > >, WTF::IntHash<unsigned long>, WTF::HashMapValueTraits<WTF::HashTraits<unsigned long>, WTF::HashTraits<WTF::OwnPtr<WebCore::ProgressItem> > >, WTF::HashTraits<unsigned long> > > WTF::HashTable<unsigned long, WTF::KeyValuePair<unsigned long, WTF::OwnPtr<WebCore::ProgressItem> >, WTF::KeyValuePairKeyExtractor<WTF::KeyValuePair<unsigned long, WTF::OwnPtr<WebCore::ProgressItem> > >, WTF::IntHash<unsigned long>, WTF::HashMapValueTraits<WTF::HashTraits<unsigned long>, WTF::HashTraits<WTF::OwnPtr<WebCore::ProgressItem> > >, WTF::HashTraits<unsigned long> >::add<WTF::HashMapTranslator<WTF::HashMapValueTraits<WTF::HashTraits<unsigned long>, WTF::HashTraits<WTF::OwnPtr<WebCore::ProgressItem> > >, WTF::IntHash<unsigned long> >, unsigned long, WTF::PassOwnPtr<WebCore::ProgressItem> >(unsigned long const&, WTF::PassOwnPtr<WebCore::ProgressItem> const&)
+
+0.10^2912173^HTMLParserThrea^chrome               ^[.] v8::internal::Genesis::CreateNewGlobals(v8::Handle<v8::ObjectTemplate>, v8::internal::Handle<v8::internal::Object>, v8::internal::Handle<v8::internal::GlobalObject>*)
+            |
+            --- v8::internal::Genesis::CreateNewGlobals(v8::Handle<v8::ObjectTemplate>, v8::internal::Handle<v8::internal::Object>, v8::internal::Handle<v8::internal::GlobalObject>*)
+
+0.10^2898436^HTMLParserThrea^chrome               ^[.] v8::internal::Runtime_FunctionSetName(int, v8::internal::Object**, v8::internal::Isolate*)
+            |
+            --- v8::internal::Runtime_FunctionSetName(int, v8::internal::Object**, v8::internal::Isolate*)
+                0x2281c14315f1
+                0x2281c14310e9
+                0x2281c1434402
+                0x2281c142b664
+                0x2281c1417d97
+                v8::internal::Invoke(bool, v8::internal::Handle<v8::internal::JSFunction>, v8::internal::Handle<v8::internal::Object>, int, v8::internal::Handle<v8::internal::Object>*, bool*)
+
+0.10^2892794^HTMLParserThrea^chrome               ^[.] v8::internal::Heap::AllocateUninitializedFixedArray(int)
+            |
+            --- v8::internal::Heap::AllocateUninitializedFixedArray(int)
+
+0.10^2891663^HTMLParserThrea^chrome               ^[.] content::RenderViewImpl::didCommitProvisionalLoad(WebKit::WebFrame*, bool)
+            |
+            --- content::RenderViewImpl::didCommitProvisionalLoad(WebKit::WebFrame*, bool)
+
+0.10^2867709^HTMLParserThrea^chrome               ^[.] v8::internal::Object::GetPropertyWithReceiver(v8::internal::Object*, v8::internal::Name*, PropertyAttributes*)
+            |
+            --- v8::internal::Object::GetPropertyWithReceiver(v8::internal::Object*, v8::internal::Name*, PropertyAttributes*)
+
+0.09^2852873^HTMLParserThrea^chrome               ^[.] WebCore::RenderLineBoxList::deleteLineBoxes(WebCore::RenderArena*)
+            |
+            --- WebCore::RenderLineBoxList::deleteLineBoxes(WebCore::RenderArena*)
+
+0.09^2848135^HTMLParserThrea^chrome               ^[.] base::internal::IncomingTaskQueue::PostPendingTask(base::PendingTask*)
+            |
+            --- base::internal::IncomingTaskQueue::PostPendingTask(base::PendingTask*)
+
+0.09^2845960^HTMLParserThrea^chrome               ^[.] WebCore::V8HTMLEmbedElement::namedPropertyGetterCustom(v8::Local<v8::String>, v8::PropertyCallbackInfo<v8::Value> const&)
+            |
+            --- WebCore::V8HTMLEmbedElement::namedPropertyGetterCustom(v8::Local<v8::String>, v8::PropertyCallbackInfo<v8::Value> const&)
+                0x7f7a0b900000
+
+0.09^2831855^HTMLParserThrea^chrome               ^[.] WebCore::RenderLayer::paintLayerContents(WebCore::GraphicsContext*, WebCore::RenderLayer::LayerPaintingInfo const&, unsigned int)
+            |
+            --- WebCore::RenderLayer::paintLayerContents(WebCore::GraphicsContext*, WebCore::RenderLayer::LayerPaintingInfo const&, unsigned int)
+                (nil)
+
+0.09^2830116^HTMLParserThrea^chrome               ^[.] v8::internal::RegExpParser::Advance()
+            |
+            --- v8::internal::RegExpParser::Advance()
+                0x3b2abdce1010
+
+0.09^2802116^HTMLParserThrea^chrome               ^[.] WebCore::RenderBlock::logicalLeftFloatOffsetForLine(WebCore::LayoutUnit, WebCore::LayoutUnit, WebCore::LayoutUnit*, WebCore::LayoutUnit, WebCore::RenderBlock::ShapeOutsideFloatOffsetMode) const
+            |
+            --- WebCore::RenderBlock::logicalLeftFloatOffsetForLine(WebCore::LayoutUnit, WebCore::LayoutUnit, WebCore::LayoutUnit*, WebCore::LayoutUnit, WebCore::RenderBlock::ShapeOutsideFloatOffsetMode) const
+
+0.09^2792893^HTMLParserThrea^chrome               ^[.] v8::internal::HashTable<v8::internal::UnseededNumberDictionaryShape, unsigned int>::FindEntry(v8::internal::Isolate*, unsigned int)
+            |
+            --- v8::internal::HashTable<v8::internal::UnseededNumberDictionaryShape, unsigned int>::FindEntry(v8::internal::Isolate*, unsigned int)
+
+0.09^2758347^HTMLParserThrea^chrome               ^[.] v8::internal::ElementsAccessorBase<v8::internal::DictionaryElementsAccessor, v8::internal::ElementsKindTraits<(v8::internal::ElementsKind)6> >::Get(v8::internal::Object*, v8::internal::JSObject*, unsigned int, v8::internal::FixedArrayBase*)
+            |
+            --- v8::internal::ElementsAccessorBase<v8::internal::DictionaryElementsAccessor, v8::internal::ElementsKindTraits<(v8::internal::ElementsKind)6> >::Get(v8::internal::Object*, v8::internal::JSObject*, unsigned int, v8::internal::FixedArrayBase*)
+
+0.09^2738185^HTMLParserThrea^chrome               ^[.] v8::internal::LoadFieldStub::MajorKey()
+            |
+            --- v8::internal::LoadFieldStub::MajorKey()
+
+0.09^2719813^HTMLParserThrea^chrome               ^[.] _ZN2v88internal9Execution4CallENS0_6HandleINS0_6ObjectEEES4_iPS4_Pbb.constprop.84
+            |
+            --- _ZN2v88internal9Execution4CallENS0_6HandleINS0_6ObjectEEES4_iPS4_Pbb.constprop.84
+
+0.09^2709340^HTMLParserThrea^chrome               ^[.] operator delete(void*)
+            |
+            --- operator delete(void*)
+
+0.09^2697911^HTMLParserThrea^chrome               ^[.] v8::internal::Scope::AllocateVariablesRecursively()
+            |
+            --- v8::internal::Scope::AllocateVariablesRecursively()
+
+0.09^2685980^HTMLParserThrea^chrome               ^[.] IPC::SyncChannel::SendWithTimeout(IPC::Message*, int)
+            |
+            --- IPC::SyncChannel::SendWithTimeout(IPC::Message*, int)
+
+0.09^2673092^HTMLParserThrea^chrome               ^[.] v8::internal::StubCache::ComputeCallPreMonomorphic(int, v8::internal::Code::Kind, int)
+            |
+            --- v8::internal::StubCache::ComputeCallPreMonomorphic(int, v8::internal::Code::Kind, int)
+
+0.09^2660139^HTMLParserThrea^chrome               ^[.] v8::internal::HashTable<v8::internal::CodeCacheHashTableShape, v8::internal::HashTableKey*>::FindEntry(v8::internal::HashTableKey*)
+            |
+            --- v8::internal::HashTable<v8::internal::CodeCacheHashTableShape, v8::internal::HashTableKey*>::FindEntry(v8::internal::HashTableKey*)
+
+0.09^2639411^HTMLParserThrea^chrome               ^[.] base::subtle::RefCountedThreadSafeBase::HasOneRef() const
+            |
+            --- base::subtle::RefCountedThreadSafeBase::HasOneRef() const
+                0x3b2abd1f8b20
+
+0.09^2639411^HTMLParserThrea^chrome               ^[.] PickleIterator::ReadLong(long*)
+            |
+            --- PickleIterator::ReadLong(long*)
+                0x2e40c81e951be0
+
+0.09^2632999^HTMLParserThrea^chrome               ^[.] IPC::SyncChannel::SyncContext::DispatchMessages()
+            |
+            --- IPC::SyncChannel::SyncContext::DispatchMessages()
+
+0.09^2600329^HTMLParserThrea^chrome               ^[.] v8::internal::Operand::Operand(v8::internal::Register, int)
+            |
+            --- v8::internal::Operand::Operand(v8::internal::Register, int)
+                0x3b2abd628000
+
+0.09^2577224^HTMLParserThrea^chrome               ^[.] v8::internal::CompareIC::ComputeCondition(v8::internal::Token::Value)
+            |
+            --- v8::internal::CompareIC::ComputeCondition(v8::internal::Token::Value)
+
+0.09^2566312^HTMLParserThrea^chrome               ^[.] v8::internal::Rewriter::Rewrite(v8::internal::CompilationInfo*)
+            |
+            --- v8::internal::Rewriter::Rewrite(v8::internal::CompilationInfo*)
+                0x7f7a0b900000
+
+0.08^2546113^HTMLParserThrea^chrome               ^[.] WebCore::RenderBoxModelObject::borderLeft() const
+            |
+            --- WebCore::RenderBoxModelObject::borderLeft() const
+
+0.08^2538991^HTMLParserThrea^chrome               ^[.] v8::internal::Handle<v8::internal::String> v8::internal::URIEscape::Escape<unsigned char>(v8::internal::Isolate*, v8::internal::Handle<v8::internal::String>)
+            |
+            --- v8::internal::Handle<v8::internal::String> v8::internal::URIEscape::Escape<unsigned char>(v8::internal::Isolate*, v8::internal::Handle<v8::internal::String>)
+
+0.08^2527291^HTMLParserThrea^chrome               ^[.] WTF::HashTableAddResult<WTF::HashTableIterator<WTF::StringImpl*, WTF::StringImpl*, WTF::IdentityExtractor, WTF::StringHash, WTF::HashTraits<WTF::StringImpl*>, WTF::HashTraits<WTF::StringImpl*> > > WTF::HashTable<WTF::StringImpl*, WTF::StringImpl*, WTF::IdentityExtractor, WTF::StringHash, WTF::HashTraits<WTF::StringImpl*>, WTF::HashTraits<WTF::StringImpl*> >::add<WTF::IdentityHashTranslator<WTF::StringHash>, WTF::StringImpl*, WTF::StringImpl*>(WTF::Stri
+            |
+            --- WTF::HashTableAddResult<WTF::HashTableIterator<WTF::StringImpl*, WTF::StringImpl*, WTF::IdentityExtractor, WTF::StringHash, WTF::HashTraits<WTF::StringImpl*>, WTF::HashTraits<WTF::StringImpl*> > > WTF::HashTable<WTF::StringImpl*, WTF::StringImpl*, WTF::IdentityExtractor, WTF::StringHash, WTF::HashTraits<WTF::StringImpl*>, WTF::HashTraits<WTF::StringImpl*> >::add<WTF::IdentityHashTranslator<WTF::StringHash>, WTF::StringImpl*, WTF::StringImpl*>(WTF::StringImpl* const&, WTF::StringImpl* const&)
+                0x7fff30e91098
+
+0.08^2505118^HTMLParserThrea^chrome               ^[.] v8::internal::AssertionNode::Emit(v8::internal::RegExpCompiler*, v8::internal::Trace*)
+            |
+            --- v8::internal::AssertionNode::Emit(v8::internal::RegExpCompiler*, v8::internal::Trace*)
+                0xa
+
+0.08^2499686^HTMLParserThrea^chrome               ^[.] base::SampleVector::GetBucketIndex(int) const
+            |
+            --- base::SampleVector::GetBucketIndex(int) const
+
+0.08^2493442^HTMLParserThrea^chrome               ^[.] v8::internal::RegExpImpl::SetLastMatchInfo(v8::internal::Handle<v8::internal::JSArray>, v8::internal::Handle<v8::internal::String>, int, int*)
+            |
+            --- v8::internal::RegExpImpl::SetLastMatchInfo(v8::internal::Handle<v8::internal::JSArray>, v8::internal::Handle<v8::internal::String>, int, int*)
+
+0.08^2449547^HTMLParserThrea^chrome               ^[.] content::(anonymous namespace)::RendererMessageLoopObserver::DidProcessTask(base::PendingTask const&)
+            |
+            --- content::(anonymous namespace)::RendererMessageLoopObserver::DidProcessTask(base::PendingTask const&)
+                0x7f7a0b8ff200
+
+0.08^2382741^HTMLParserThrea^chrome               ^[.] WTF::HashTableAddResult<WTF::HashTableIterator<WebCore::CachedResource*, WTF::KeyValuePair<WebCore::CachedResource*, WTF::RefPtr<WebCore::ResourceTimingInfo> >, WTF::KeyValuePairKeyExtractor<WTF::KeyValuePair<WebCore::CachedResource*, WTF::RefPtr<WebCore::ResourceTimingInfo> > >, WTF::PtrHash<WebCore::CachedResource*>, WTF::HashMapValueTraits<WTF::HashTraits<WebCore::CachedResource*>, WTF::HashTraits<WTF::RefPtr<WebCore::ResourceTimingInfo> > >, WTF::H
+            |
+            --- WTF::HashTableAddResult<WTF::HashTableIterator<WebCore::CachedResource*, WTF::KeyValuePair<WebCore::CachedResource*, WTF::RefPtr<WebCore::ResourceTimingInfo> >, WTF::KeyValuePairKeyExtractor<WTF::KeyValuePair<WebCore::CachedResource*, WTF::RefPtr<WebCore::ResourceTimingInfo> > >, WTF::PtrHash<WebCore::CachedResource*>, WTF::HashMapValueTraits<WTF::HashTraits<WebCore::CachedResource*>, WTF::HashTraits<WTF::RefPtr<WebCore::ResourceTimingInfo> > >, WTF::HashTraits<WebCore::CachedResource*> > > WTF::HashTable<WebCore::CachedResource*, WTF::KeyValuePair<WebCore::CachedResource*, WTF::RefPtr<WebCore::ResourceTimingInfo> >, WTF::KeyValuePairKeyExtractor<WTF::KeyValuePair<WebCore::CachedResource*, WTF::RefPtr<WebCore::ResourceTimingInfo> > >, WTF::PtrHash<WebCore::CachedResource*>, WTF::HashMapValueTraits<WTF::HashTraits<WebCore::CachedResource*>, WTF::HashTraits<WTF::RefPtr<WebCore::ResourceTimingInfo> > >, WTF::HashTraits<WebCore::CachedResource*> >::add<WTF::HashMapTranslator<WTF::HashMapValueTraits<WTF::HashTraits<WebCore::CachedResource*>, WTF::HashTraits<WTF::RefPtr<WebCore::ResourceTimingInfo> > >, WTF::PtrHash<WebCore::CachedResource*> >, WebCore::CachedResource*, WTF::PassRefPtr<WebCore::ResourceTimingInfo> >(WebCore::CachedResource* const&, WTF::PassRefPtr<WebCore::ResourceTimingInfo> const&)
+
+0.08^2347799^HTMLParserThrea^chrome               ^[.] v8::internal::Isolate::MayNamedAccess(v8::internal::JSObject*, v8::internal::Object*, v8::AccessType)
+            |
+            --- v8::internal::Isolate::MayNamedAccess(v8::internal::JSObject*, v8::internal::Object*, v8::AccessType)
+
+0.08^2337746^HTMLParserThrea^chrome               ^[.] v8::internal::Heap::NumberFromDouble(double, v8::internal::PretenureFlag)
+            |
+            --- v8::internal::Heap::NumberFromDouble(double, v8::internal::PretenureFlag)
+
+0.08^2334937^HTMLParserThrea^chrome               ^[.] WebCore::LayoutRect::intersects(WebCore::LayoutRect const&) const
+            |
+            --- WebCore::LayoutRect::intersects(WebCore::LayoutRect const&) const
+
+0.08^2315633^HTMLParserThrea^chrome               ^[.] _ZN7content14RenderViewImpl15willSendRequestEPN6WebKit8WebFrameEjRNS1_13WebURLRequestERKNS1_14WebURLResponseE.part.953
+            |
+            --- _ZN7content14RenderViewImpl15willSendRequestEPN6WebKit8WebFrameEjRNS1_13WebURLRequestERKNS1_14WebURLResponseE.part.953
+                0x7f7a11c1f320
+                0x7fff30e90fd0
+
+0.08^2309876^HTMLParserThrea^libstdc++.so.6.0.16  ^[.] std::string::find_first_not_of(char const*, unsigned long, unsigned long) const
+            |
+            --- std::string::find_first_not_of(char const*, unsigned long, unsigned long) const
+                (nil)
+
+0.08^2271635^HTMLParserThrea^chrome               ^[.] base::TaskQueue::Swap(base::TaskQueue*)
+            |
+            --- base::TaskQueue::Swap(base::TaskQueue*)
+
+0.08^2270859^HTMLParserThrea^chrome               ^[.] v8::internal::Map::ShareDescriptor(v8::internal::DescriptorArray*, v8::internal::Descriptor*)
+            |
+            --- v8::internal::Map::ShareDescriptor(v8::internal::DescriptorArray*, v8::internal::Descriptor*)
+
+0.08^2267153^HTMLParserThrea^chrome               ^[.] v8::internal::Map::EnsureDescriptorSlack(v8::internal::Handle<v8::internal::Map>, int)
+            |
+            --- v8::internal::Map::EnsureDescriptorSlack(v8::internal::Handle<v8::internal::Map>, int)
+
+0.07^2254719^HTMLParserThrea^chrome               ^[.] v8::internal::Map::IndexInCodeCache(v8::internal::Object*, v8::internal::Code*)
+            |
+            --- v8::internal::Map::IndexInCodeCache(v8::internal::Object*, v8::internal::Code*)
+
+0.07^2218397^HTMLParserThrea^chrome               ^[.] WebCore::RenderBlock::paintContents(WebCore::PaintInfo&, WebCore::LayoutPoint const&)
+            |
+            --- WebCore::RenderBlock::paintContents(WebCore::PaintInfo&, WebCore::LayoutPoint const&)
+
+0.07^2215989^HTMLParserThrea^chrome               ^[.] SkRegion::freeRuns()
+            |
+            --- SkRegion::freeRuns()
+
+0.07^2213591^HTMLParserThrea^libpthread-2.15.so   ^[.] pthread_cond_destroy@@GLIBC_2.3.2
+            |
+            --- pthread_cond_destroy@@GLIBC_2.3.2
+
+0.07^2185498^HTMLParserThrea^chrome               ^[.] WebCore::RenderLayer::paintForegroundForFragmentsWithPhase(WebCore::PaintPhase, WTF::Vector<WebCore::LayerFragment, 1ul> const&, WebCore::GraphicsContext*, WebCore::RenderLayer::LayerPaintingInfo const&, unsigned int, WebCore::RenderObject*)
+            |
+            --- WebCore::RenderLayer::paintForegroundForFragmentsWithPhase(WebCore::PaintPhase, WTF::Vector<WebCore::LayerFragment, 1ul> const&, WebCore::GraphicsContext*, WebCore::RenderLayer::LayerPaintingInfo const&, unsigned int, WebCore::RenderObject*)
+                (nil)
+
+0.07^2181719^HTMLParserThrea^chrome               ^[.] v8::internal::JSFunction::CompileLazy(v8::internal::Handle<v8::internal::JSFunction>, v8::internal::ClearExceptionFlag)
+            |
+            --- v8::internal::JSFunction::CompileLazy(v8::internal::Handle<v8::internal::JSFunction>, v8::internal::ClearExceptionFlag)
+
+0.07^2181709^HTMLParserThrea^chrome               ^[.] base::subtle::RefCountedThreadSafeBase::AddRef() const
+            |
+            --- base::subtle::RefCountedThreadSafeBase::AddRef() const
+
+0.07^2162161^HTMLParserThrea^chrome               ^[.] v8::internal::LChunk::MarkEmptyBlocks()
+            |
+            --- v8::internal::LChunk::MarkEmptyBlocks()
+
+0.07^2154798^HTMLParserThrea^chrome               ^[.] v8::preparser::PreParser::ParsePostfixExpression(bool*)
+            |
+            --- v8::preparser::PreParser::ParsePostfixExpression(bool*)
+
+0.07^2153747^HTMLParserThrea^chrome               ^[.] WebCore::deviceScaleFactor(WebCore::Frame*)
+            |
+            --- WebCore::deviceScaleFactor(WebCore::Frame*)
+                (nil)
+
+0.07^2111797^HTMLParserThrea^chrome               ^[.] v8::preparser::PreParser::ParseConditionalExpression(bool, bool*)
+            |
+            --- v8::preparser::PreParser::ParseConditionalExpression(bool, bool*)
+                0x3b2abe08368000
+
+0.07^2107366^HTMLParserThrea^chrome               ^[.] ppapi::thunk::subtle::EnterBase::EnterBase(int)
+            |
+            --- ppapi::thunk::subtle::EnterBase::EnterBase(int)
+
+0.07^2061079^HTMLParserThrea^chrome               ^[.] v8::internal::FullCodeGenerator::EmitBackEdgeTable()
+            |
+            --- v8::internal::FullCodeGenerator::EmitBackEdgeTable()
+
+0.07^2055678^HTMLParserThrea^chrome               ^[.] WebCore::MarkupAccumulator::appendStartMarkup(WTF::StringBuilder&, WebCore::Node const*, WTF::HashMap<WTF::AtomicStringImpl*, WTF::AtomicStringImpl*, WTF::PtrHash<WTF::AtomicStringImpl*>, WTF::HashTraits<WTF::AtomicStringImpl*>, WTF::HashTraits<WTF::AtomicStringImpl*> >*)
+            |
+            --- WebCore::MarkupAccumulator::appendStartMarkup(WTF::StringBuilder&, WebCore::Node const*, WTF::HashMap<WTF::AtomicStringImpl*, WTF::AtomicStringImpl*, WTF::PtrHash<WTF::AtomicStringImpl*>, WTF::HashTraits<WTF::AtomicStringImpl*>, WTF::HashTraits<WTF::AtomicStringImpl*> >*)
+                (nil)
+
+0.07^2053845^HTMLParserThrea^chrome               ^[.] WebCore::RenderBox::flipForWritingMode(WebCore::LayoutRect&) const
+            |
+            --- WebCore::RenderBox::flipForWritingMode(WebCore::LayoutRect&) const
+
+0.07^2043240^HTMLParserThrea^chrome               ^[.] net::HttpUtil::HeadersIterator::GetNext()
+            |
+            --- net::HttpUtil::HeadersIterator::GetNext()
+                0x7f7a0689c4d8
+
+0.07^2038325^HTMLParserThrea^chrome               ^[.] WTF::HashTable<WTF::AtomicString, WTF::KeyValuePair<WTF::AtomicString, WTF::AtomicString>, WTF::KeyValuePairKeyExtractor<WTF::KeyValuePair<WTF::AtomicString, WTF::AtomicString> >, WTF::CaseFoldingHash, WTF::HashMapValueTraits<WTF::HashTraits<WTF::AtomicString>, WTF::HashTraits<WTF::AtomicString> >, WTF::HashTraits<WTF::AtomicString> >::rehash(int)
+            |
+            --- WTF::HashTable<WTF::AtomicString, WTF::KeyValuePair<WTF::AtomicString, WTF::AtomicString>, WTF::KeyValuePairKeyExtractor<WTF::KeyValuePair<WTF::AtomicString, WTF::AtomicString> >, WTF::CaseFoldingHash, WTF::HashMapValueTraits<WTF::HashTraits<WTF::AtomicString>, WTF::HashTraits<WTF::AtomicString> >, WTF::HashTraits<WTF::AtomicString> >::rehash(int)
+
+0.07^2038325^HTMLParserThrea^chrome               ^[.] WebCore::KURL::isValid() const
+            |
+            --- WebCore::KURL::isValid() const
+
+0.07^2030555^HTMLParserThrea^chrome               ^[.] v8::internal::Scope::LocalLookup(v8::internal::Handle<v8::internal::String>)
+            |
+            --- v8::internal::Scope::LocalLookup(v8::internal::Handle<v8::internal::String>)
+
+0.07^2017287^HTMLParserThrea^chrome               ^[.] WebKit::WebFrameImpl::document() const
+            |
+            --- WebKit::WebFrameImpl::document() const
+
+0.07^1991309^HTMLParserThrea^chrome               ^[.] v8::internal::Assembler::int3()
+            |
+            --- v8::internal::Assembler::int3()
+
+0.07^1989976^HTMLParserThrea^chrome               ^[.] __gnu_cxx::hashtable<std::pair<int const, std::pair<ppapi::Resource*, int> >, int, __gnu_cxx::hash<int>, std::_Select1st<std::pair<int const, std::pair<ppapi::Resource*, int> > >, std::equal_to<int>, std::allocator<std::pair<ppapi::Resource*, int> > >::find_or_insert(std::pair<int const, std::pair<ppapi::Resource*, int> > const&)
+            |
+            --- __gnu_cxx::hashtable<std::pair<int const, std::pair<ppapi::Resource*, int> >, int, __gnu_cxx::hash<int>, std::_Select1st<std::pair<int const, std::pair<ppapi::Resource*, int> > >, std::equal_to<int>, std::allocator<std::pair<ppapi::Resource*, int> > >::find_or_insert(std::pair<int const, std::pair<ppapi::Resource*, int> > const&)
+                (nil)
+
+0.07^1989976^HTMLParserThrea^chrome               ^[.] content::PaintAggregator::InvalidateRect(gfx::Rect const&)
+            |
+            --- content::PaintAggregator::InvalidateRect(gfx::Rect const&)
+
+0.07^1983969^HTMLParserThrea^chrome               ^[.] tracked_objects::ThreadData::TallyADeath(tracked_objects::Births const&, int, int)
+            |
+            --- tracked_objects::ThreadData::TallyADeath(tracked_objects::Births const&, int, int)
+
+0.07^1983969^HTMLParserThrea^chrome               ^[.] WebCore::HTMLDocumentParser::pumpTokenizer(WebCore::HTMLDocumentParser::SynchronousMode)
+            |
+            --- WebCore::HTMLDocumentParser::pumpTokenizer(WebCore::HTMLDocumentParser::SynchronousMode)
+
+0.07^1964943^HTMLParserThrea^chrome               ^[.] v8::internal::NormalizedMapCache::Get(v8::internal::JSObject*, v8::internal::PropertyNormalizationMode)
+            |
+            --- v8::internal::NormalizedMapCache::Get(v8::internal::JSObject*, v8::internal::PropertyNormalizationMode)
+
+0.07^1960139^HTMLParserThrea^chrome               ^[.] WebCore::RenderBox::visualOverflowRect() const
+            |
+            --- WebCore::RenderBox::visualOverflowRect() const
+
+0.06^1953892^HTMLParserThrea^chrome               ^[.] base::MessagePumpDefault::ScheduleWork()
+            |
+            --- base::MessagePumpDefault::ScheduleWork()
+
+0.06^1922033^HTMLParserThrea^chrome               ^[.] v8::preparser::PreParser::ParseIdentifier(bool*)
+            |
+            --- v8::preparser::PreParser::ParseIdentifier(bool*)
+                0x3b2abe08368000
+
+0.06^1902957^HTMLParserThrea^chrome               ^[.] base::MessageLoop::ScheduleWork(bool)
+            |
+            --- base::MessageLoop::ScheduleWork(bool)
+
+0.06^1857157^HTMLParserThrea^chrome               ^[.] v8::internal::FullCodeGenerator::DoTest(v8::internal::Expression*, v8::internal::Label*, v8::internal::Label*, v8::internal::Label*)
+            |
+            --- v8::internal::FullCodeGenerator::DoTest(v8::internal::Expression*, v8::internal::Label*, v8::internal::Label*, v8::internal::Label*)
+                0x7fff30e91bc0
+
+0.06^1758928^HTMLParserThrea^chrome               ^[.] WebCore::RenderLayer::ancestorStackingContainer() const
+            |
+            --- WebCore::RenderLayer::ancestorStackingContainer() const
+
+0.06^1708834^HTMLParserThrea^libcairo.so.2.11000.2^[.] _cairo_matrix_is_identity
+            |
+            --- _cairo_matrix_is_identity
+
+0.06^1707254^HTMLParserThrea^chrome               ^[.] WebCore::RenderLineBoxList::anyLineIntersectsRect(WebCore::RenderBoxModelObject*, WebCore::LayoutRect const&, WebCore::LayoutPoint const&, WebCore::LayoutUnit) const
+            |
+            --- WebCore::RenderLineBoxList::anyLineIntersectsRect(WebCore::RenderBoxModelObject*, WebCore::LayoutRect const&, WebCore::LayoutPoint const&, WebCore::LayoutUnit) const
+
+0.06^1695178^HTMLParserThrea^chrome               ^[.] base::internal::CallbackBase::CallbackBase(base::internal::BindStateBase*)
+            |
+            --- base::internal::CallbackBase::CallbackBase(base::internal::BindStateBase*)
+
+0.06^1682330^HTMLParserThrea^chrome               ^[.] WebCore::RenderBox::clippedOverflowRectForRepaint(WebCore::RenderLayerModelObject const*) const
+            |
+            --- WebCore::RenderBox::clippedOverflowRectForRepaint(WebCore::RenderLayerModelObject const*) const
+
+0.06^1665533^HTMLParserThrea^chrome               ^[.] v8::internal::Zone::DeleteAll()
+            |
+            --- v8::internal::Zone::DeleteAll()
+
+0.05^1641632^HTMLParserThrea^chrome               ^[.] WebCore::Color::blend(WebCore::Color const&) const
+            |
+            --- WebCore::Color::blend(WebCore::Color const&) const
+
+0.05^1611521^HTMLParserThrea^chrome               ^[.] WebKit::currentTimeFunction()
+            |
+            --- WebKit::currentTimeFunction()
+
+0.05^1539536^HTMLParserThrea^chrome               ^[.] WebCore::RenderLayer::collectFragments(WTF::Vector<WebCore::LayerFragment, 1ul>&, WebCore::RenderLayer const*, WebCore::RenderRegion*, WebCore::LayoutRect const&, WebCore::ClipRectsType, WebCore::OverlayScrollbarSizeRelevancy, WebCore::ShouldRespectOverflowClip, WebCore::LayoutPoint const*, WebCore::LayoutRect const*)
+            |
+            --- WebCore::RenderLayer::collectFragments(WTF::Vector<WebCore::LayerFragment, 1ul>&, WebCore::RenderLayer const*, WebCore::RenderRegion*, WebCore::LayoutRect const&, WebCore::ClipRectsType, WebCore::OverlayScrollbarSizeRelevancy, WebCore::ShouldRespectOverflowClip, WebCore::LayoutPoint const*, WebCore::LayoutRect const*)
+
+0.05^1523423^HTMLParserThrea^chrome               ^[.] v8::internal::StubCache::ComputeLoadNormal(v8::internal::Handle<v8::internal::Name>, v8::internal::Handle<v8::internal::JSObject>)
+            |
+            --- v8::internal::StubCache::ComputeLoadNormal(v8::internal::Handle<v8::internal::Name>, v8::internal::Handle<v8::internal::JSObject>)
+                (nil)
+
+0.05^1521966^HTMLParserThrea^chrome               ^[.] void url_canon::(anonymous namespace)::DoHost<char, unsigned char>(char const*, url_parse::Component const&, url_canon::CanonOutputT<char>*, url_canon::CanonHostInfo*)
+            |
+            --- void url_canon::(anonymous namespace)::DoHost<char, unsigned char>(char const*, url_parse::Component const&, url_canon::CanonOutputT<char>*, url_canon::CanonHostInfo*)
+                0xffffffff00000000
+
+0.05^1443413^HTMLParserThrea^chrome               ^[.] WTF::HashTableAddResult<WTF::HashTableIterator<WTF::ListHashSetNode<WebCore::CachedResource*, 256ul>*, WTF::ListHashSetNode<WebCore::CachedResource*, 256ul>*, WTF::IdentityExtractor, WTF::ListHashSetNodeHashFunctions<WTF::PtrHash<WebCore::CachedResource*> >, WTF::HashTraits<WTF::ListHashSetNode<WebCore::CachedResource*, 256ul>*>, WTF::HashTraits<WTF::ListHashSetNode<WebCore::CachedResource*, 256ul>*> > > WTF::HashTable<WTF::ListHashSetNode<WebCore::Cac
+            |
+            --- WTF::HashTableAddResult<WTF::HashTableIterator<WTF::ListHashSetNode<WebCore::CachedResource*, 256ul>*, WTF::ListHashSetNode<WebCore::CachedResource*, 256ul>*, WTF::IdentityExtractor, WTF::ListHashSetNodeHashFunctions<WTF::PtrHash<WebCore::CachedResource*> >, WTF::HashTraits<WTF::ListHashSetNode<WebCore::CachedResource*, 256ul>*>, WTF::HashTraits<WTF::ListHashSetNode<WebCore::CachedResource*, 256ul>*> > > WTF::HashTable<WTF::ListHashSetNode<WebCore::CachedResource*, 256ul>*, WTF::ListHashSetNode<WebCore::CachedResource*, 256ul>*, WTF::IdentityExtractor, WTF::ListHashSetNodeHashFunctions<WTF::PtrHash<WebCore::CachedResource*> >, WTF::HashTraits<WTF::ListHashSetNode<WebCore::CachedResource*, 256ul>*>, WTF::HashTraits<WTF::ListHashSetNode<WebCore::CachedResource*, 256ul>*> >::add<WTF::ListHashSetTranslator<WTF::PtrHash<WebCore::CachedResource*> >, WebCore::CachedResource*, WTF::ListHashSetNodeAllocator<WebCore::CachedResource*, 256ul>*>(WebCore::CachedResource* const&, WTF::ListHashSetNodeAllocator<WebCore::CachedResource*, 256ul>* const&)
+                (nil)
+
+0.05^1380694^HTMLParserThrea^chrome               ^[.] v8::internal::HBasicBlock::Finish(v8::internal::HControlInstruction*)
+            |
+            --- v8::internal::HBasicBlock::Finish(v8::internal::HControlInstruction*)
+
+0.04^1244009^HTMLParserThrea^chrome               ^[.] WebCore::Node::isWebVTTElement() const
+            |
+            --- WebCore::Node::isWebVTTElement() const
+                0x7fff30e91700
+
+
+
+#
+# (For a higher level overview, try: perf report --sort comm,dso)
+#

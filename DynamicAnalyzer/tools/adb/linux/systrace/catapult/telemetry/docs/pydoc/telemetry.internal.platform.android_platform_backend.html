@@ -1,0 +1,381 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.platform.android_platform_backend</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.<a href="telemetry.internal.platform.html"><font color="#ffffff">platform</font></a>.android_platform_backend</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/platform/android_platform_backend.py">telemetry/internal/platform/android_platform_backend.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2013&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="adb_install_cert.html">adb_install_cert</a><br>
+<a href="telemetry.internal.platform.android_device.html">telemetry.internal.platform.android_device</a><br>
+<a href="telemetry.internal.platform.power_monitor.android_dumpsys_power_monitor.html">telemetry.internal.platform.power_monitor.android_dumpsys_power_monitor</a><br>
+<a href="telemetry.internal.forwarders.android_forwarder.html">telemetry.internal.forwarders.android_forwarder</a><br>
+<a href="telemetry.internal.platform.power_monitor.android_fuelgauge_power_monitor.html">telemetry.internal.platform.power_monitor.android_fuelgauge_power_monitor</a><br>
+<a href="telemetry.core.android_platform.html">telemetry.core.android_platform</a><br>
+<a href="telemetry.internal.platform.profiler.android_prebuilt_profiler_helper.html">telemetry.internal.platform.profiler.android_prebuilt_profiler_helper</a><br>
+<a href="telemetry.internal.platform.power_monitor.android_temperature_monitor.html">telemetry.internal.platform.power_monitor.android_temperature_monitor</a><br>
+<a href="devil.android.battery_utils.html">devil.android.battery_utils</a><br>
+<a href="telemetry.internal.util.binary_manager.html">telemetry.internal.util.binary_manager</a><br>
+</td><td width="25%" valign=top><a href="devil.android.perf.cache_control.html">devil.android.perf.cache_control</a><br>
+<a href="certutils.html">certutils</a><br>
+<a href="pylib.constants.html">pylib.constants</a><br>
+<a href="telemetry.decorators.html">telemetry.decorators</a><br>
+<a href="devil.android.device_errors.html">devil.android.device_errors</a><br>
+<a href="devil.android.device_utils.html">devil.android.device_utils</a><br>
+<a href="telemetry.internal.util.exception_formatter.html">telemetry.internal.util.exception_formatter</a><br>
+<a href="telemetry.core.exceptions.html">telemetry.core.exceptions</a><br>
+<a href="telemetry.internal.util.external_modules.html">telemetry.internal.util.external_modules</a><br>
+<a href="telemetry.internal.platform.linux_based_platform_backend.html">telemetry.internal.platform.linux_based_platform_backend</a><br>
+</td><td width="25%" valign=top><a href="logging.html">logging</a><br>
+<a href="telemetry.internal.platform.power_monitor.monsoon_power_monitor.html">telemetry.internal.platform.power_monitor.monsoon_power_monitor</a><br>
+<a href="os.html">os</a><br>
+<a href="devil.android.perf.perf_control.html">devil.android.perf.perf_control</a><br>
+<a href="telemetry.core.platform.html">telemetry.core.platform</a><br>
+<a href="platformsettings.html">platformsettings</a><br>
+<a href="telemetry.internal.platform.power_monitor.power_monitor_controller.html">telemetry.internal.platform.power_monitor.power_monitor_controller</a><br>
+<a href="psutil.html">psutil</a><br>
+<a href="re.html">re</a><br>
+<a href="pylib.screenshot.html">pylib.screenshot</a><br>
+</td><td width="25%" valign=top><a href="shutil.html">shutil</a><br>
+<a href="stat.html">stat</a><br>
+<a href="subprocess.html">subprocess</a><br>
+<a href="devil.android.perf.surface_stats_collector.html">devil.android.perf.surface_stats_collector</a><br>
+<a href="telemetry.internal.platform.power_monitor.sysfs_power_monitor.html">telemetry.internal.platform.power_monitor.sysfs_power_monitor</a><br>
+<a href="tempfile.html">tempfile</a><br>
+<a href="devil.android.perf.thermal_throttle.html">devil.android.perf.thermal_throttle</a><br>
+<a href="telemetry.core.util.html">telemetry.core.util</a><br>
+<a href="devil.android.sdk.version_codes.html">devil.android.sdk.version_codes</a><br>
+<a href="telemetry.internal.image_processing.video.html">telemetry.internal.image_processing.video</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.platform.linux_based_platform_backend.html#LinuxBasedPlatformBackend">telemetry.internal.platform.linux_based_platform_backend.LinuxBasedPlatformBackend</a>(<a href="telemetry.internal.platform.platform_backend.html#PlatformBackend">telemetry.internal.platform.platform_backend.PlatformBackend</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.platform.android_platform_backend.html#AndroidPlatformBackend">AndroidPlatformBackend</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="AndroidPlatformBackend">class <strong>AndroidPlatformBackend</strong></a>(<a href="telemetry.internal.platform.linux_based_platform_backend.html#LinuxBasedPlatformBackend">telemetry.internal.platform.linux_based_platform_backend.LinuxBasedPlatformBackend</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.internal.platform.android_platform_backend.html#AndroidPlatformBackend">AndroidPlatformBackend</a></dd>
+<dd><a href="telemetry.internal.platform.linux_based_platform_backend.html#LinuxBasedPlatformBackend">telemetry.internal.platform.linux_based_platform_backend.LinuxBasedPlatformBackend</a></dd>
+<dd><a href="telemetry.internal.platform.platform_backend.html#PlatformBackend">telemetry.internal.platform.platform_backend.PlatformBackend</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="AndroidPlatformBackend-CanCaptureVideo"><strong>CanCaptureVideo</strong></a>(*args, **kwargs)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-CanFlushIndividualFilesFromSystemCache"><strong>CanFlushIndividualFilesFromSystemCache</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-CanLaunchApplication"><strong>CanLaunchApplication</strong></a>(self, application)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-CanMonitorNetworkData"><strong>CanMonitorNetworkData</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-CanMonitorPower"><strong>CanMonitorPower</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-CanMonitorThermalThrottling"><strong>CanMonitorThermalThrottling</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-CanTakeScreenshot"><strong>CanTakeScreenshot</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-DismissCrashDialogIfNeeded"><strong>DismissCrashDialogIfNeeded</strong></a>(self)</dt><dd><tt>Dismiss&nbsp;any&nbsp;error&nbsp;dialogs.<br>
+&nbsp;<br>
+Limit&nbsp;the&nbsp;number&nbsp;in&nbsp;case&nbsp;we&nbsp;have&nbsp;an&nbsp;error&nbsp;loop&nbsp;or&nbsp;we&nbsp;are&nbsp;failing&nbsp;to&nbsp;dismiss.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-FlushDnsCache"><strong>FlushDnsCache</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-FlushEntireSystemCache"><strong>FlushEntireSystemCache</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-FlushSystemCacheForDirectory"><strong>FlushSystemCacheForDirectory</strong></a>(self, directory)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-ForwardHostToDevice"><strong>ForwardHostToDevice</strong></a>(self, host_port, device_port)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-GetArchName"><strong>GetArchName</strong></a>(*args, **kwargs)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-GetChildPids"><strong>GetChildPids</strong></a>(self, pid)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-GetCommandLine"><strong>GetCommandLine</strong></a>(*args, **kwargs)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-GetCpuStats"><strong>GetCpuStats</strong></a>(self, pid)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-GetCpuTimestamp"><strong>GetCpuTimestamp</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-GetDeviceTypeName"><strong>GetDeviceTypeName</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-GetFileContents"><strong>GetFileContents</strong></a>(self, fname)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-GetMemoryStats"><strong>GetMemoryStats</strong></a>(self, pid)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-GetNetworkData"><strong>GetNetworkData</strong></a>(self, browser)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-GetOSName"><strong>GetOSName</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-GetOSVersionName"><strong>GetOSVersionName</strong></a>(*args, **kwargs)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-GetPsOutput"><strong>GetPsOutput</strong></a>(self, columns, pid<font color="#909090">=None</font>)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-GetStackTrace"><strong>GetStackTrace</strong></a>(self, target_arch)</dt><dd><tt>Returns&nbsp;stack&nbsp;trace.<br>
+&nbsp;<br>
+The&nbsp;stack&nbsp;trace&nbsp;consists&nbsp;of&nbsp;raw&nbsp;logcat&nbsp;dump,&nbsp;logcat&nbsp;dump&nbsp;with&nbsp;symbols,<br>
+and&nbsp;stack&nbsp;info&nbsp;from&nbsp;tomstone&nbsp;files.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;target_arch:&nbsp;String&nbsp;specifying&nbsp;device&nbsp;architecture&nbsp;(eg.&nbsp;arm,&nbsp;arm64,&nbsp;mips,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;x86,&nbsp;x86_64)</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-GetStandardOutput"><strong>GetStandardOutput</strong></a>(self, number_of_lines<font color="#909090">=500</font>)</dt><dd><tt>Returns&nbsp;most&nbsp;recent&nbsp;lines&nbsp;of&nbsp;logcat&nbsp;dump.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;number_of_lines:&nbsp;Number&nbsp;of&nbsp;lines&nbsp;of&nbsp;log&nbsp;to&nbsp;return.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-HasBeenThermallyThrottled"><strong>HasBeenThermallyThrottled</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-InstallApplication"><strong>InstallApplication</strong></a>(self, application)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-InstallTestCa"><strong>InstallTestCa</strong></a>(self)</dt><dd><tt>Install&nbsp;a&nbsp;randomly&nbsp;generated&nbsp;root&nbsp;CA&nbsp;on&nbsp;the&nbsp;android&nbsp;device.<br>
+&nbsp;<br>
+This&nbsp;allows&nbsp;transparent&nbsp;HTTPS&nbsp;testing&nbsp;with&nbsp;WPR&nbsp;server&nbsp;without&nbsp;need<br>
+to&nbsp;tweak&nbsp;application&nbsp;network&nbsp;stack.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-IsAppRunning"><strong>IsAppRunning</strong></a>(self, process_name)</dt><dd><tt>Determine&nbsp;if&nbsp;the&nbsp;given&nbsp;process&nbsp;is&nbsp;running.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;process_name:&nbsp;The&nbsp;full&nbsp;package&nbsp;name&nbsp;string&nbsp;of&nbsp;the&nbsp;process.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-IsApplicationRunning"><strong>IsApplicationRunning</strong></a>(self, application)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-IsDisplayTracingSupported"><strong>IsDisplayTracingSupported</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-IsScreenLocked"><strong>IsScreenLocked</strong></a>(self)</dt><dd><tt>Determines&nbsp;if&nbsp;device&nbsp;screen&nbsp;is&nbsp;locked.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-IsScreenOn"><strong>IsScreenOn</strong></a>(self)</dt><dd><tt>Determines&nbsp;if&nbsp;device&nbsp;screen&nbsp;is&nbsp;on.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-IsThermallyThrottled"><strong>IsThermallyThrottled</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-KillApplication"><strong>KillApplication</strong></a>(self, application)</dt><dd><tt>Kill&nbsp;the&nbsp;given&nbsp;|application|.<br>
+&nbsp;<br>
+Might&nbsp;be&nbsp;used&nbsp;instead&nbsp;of&nbsp;ForceStop&nbsp;for&nbsp;efficiency&nbsp;reasons.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;application:&nbsp;The&nbsp;full&nbsp;package&nbsp;name&nbsp;string&nbsp;of&nbsp;the&nbsp;application&nbsp;to&nbsp;kill.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-LaunchApplication"><strong>LaunchApplication</strong></a>(self, application, parameters<font color="#909090">=None</font>, elevate_privilege<font color="#909090">=False</font>)</dt><dd><tt>Launches&nbsp;the&nbsp;given&nbsp;|application|&nbsp;with&nbsp;a&nbsp;list&nbsp;of&nbsp;|parameters|&nbsp;on&nbsp;the&nbsp;OS.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;application:&nbsp;The&nbsp;full&nbsp;package&nbsp;name&nbsp;string&nbsp;of&nbsp;the&nbsp;application&nbsp;to&nbsp;launch.<br>
+&nbsp;&nbsp;parameters:&nbsp;A&nbsp;list&nbsp;of&nbsp;parameters&nbsp;to&nbsp;be&nbsp;passed&nbsp;to&nbsp;the&nbsp;ActivityManager.<br>
+&nbsp;&nbsp;elevate_privilege:&nbsp;Currently&nbsp;unimplemented&nbsp;on&nbsp;Android.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-PathExists"><strong>PathExists</strong></a>(self, device_path, timeout<font color="#909090">=None</font>, retries<font color="#909090">=None</font>)</dt><dd><tt>Return&nbsp;whether&nbsp;the&nbsp;given&nbsp;path&nbsp;exists&nbsp;on&nbsp;the&nbsp;device.<br>
+This&nbsp;method&nbsp;is&nbsp;the&nbsp;same&nbsp;as<br>
+devil.android.device_utils.DeviceUtils.PathExists.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-PullProfile"><strong>PullProfile</strong></a>(self, package, output_profile_path)</dt><dd><tt>Copy&nbsp;application&nbsp;profile&nbsp;from&nbsp;device&nbsp;to&nbsp;host&nbsp;machine.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;package:&nbsp;The&nbsp;full&nbsp;package&nbsp;name&nbsp;string&nbsp;of&nbsp;the&nbsp;application&nbsp;for&nbsp;which&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;profile&nbsp;is&nbsp;to&nbsp;be&nbsp;copied.<br>
+&nbsp;&nbsp;output_profile_dir:&nbsp;Location&nbsp;where&nbsp;profile&nbsp;to&nbsp;be&nbsp;stored&nbsp;on&nbsp;host&nbsp;machine.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-PurgeUnpinnedMemory"><strong>PurgeUnpinnedMemory</strong></a>(self)</dt><dd><tt>Purges&nbsp;the&nbsp;unpinned&nbsp;ashmem&nbsp;memory&nbsp;for&nbsp;the&nbsp;whole&nbsp;system.<br>
+&nbsp;<br>
+This&nbsp;can&nbsp;be&nbsp;used&nbsp;to&nbsp;make&nbsp;memory&nbsp;measurements&nbsp;more&nbsp;stable.&nbsp;Requires&nbsp;root.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-PushProfile"><strong>PushProfile</strong></a>(self, package, new_profile_dir)</dt><dd><tt>Replace&nbsp;application&nbsp;profile&nbsp;with&nbsp;files&nbsp;found&nbsp;on&nbsp;host&nbsp;machine.<br>
+&nbsp;<br>
+Pushing&nbsp;the&nbsp;profile&nbsp;is&nbsp;slow,&nbsp;so&nbsp;we&nbsp;don't&nbsp;want&nbsp;to&nbsp;do&nbsp;it&nbsp;every&nbsp;time.<br>
+Avoid&nbsp;this&nbsp;by&nbsp;pushing&nbsp;to&nbsp;a&nbsp;safe&nbsp;location&nbsp;using&nbsp;PushChangedFiles,&nbsp;and<br>
+then&nbsp;copying&nbsp;into&nbsp;the&nbsp;correct&nbsp;location&nbsp;on&nbsp;each&nbsp;test&nbsp;run.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;package:&nbsp;The&nbsp;full&nbsp;package&nbsp;name&nbsp;string&nbsp;of&nbsp;the&nbsp;application&nbsp;for&nbsp;which&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;profile&nbsp;is&nbsp;to&nbsp;be&nbsp;updated.<br>
+&nbsp;&nbsp;new_profile_dir:&nbsp;Location&nbsp;where&nbsp;profile&nbsp;to&nbsp;be&nbsp;pushed&nbsp;is&nbsp;stored&nbsp;on&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;host&nbsp;machine.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-RemoveProfile"><strong>RemoveProfile</strong></a>(self, package, ignore_list)</dt><dd><tt>Delete&nbsp;application&nbsp;profile&nbsp;on&nbsp;device.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;package:&nbsp;The&nbsp;full&nbsp;package&nbsp;name&nbsp;string&nbsp;of&nbsp;the&nbsp;application&nbsp;for&nbsp;which&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;profile&nbsp;is&nbsp;to&nbsp;be&nbsp;deleted.<br>
+&nbsp;&nbsp;ignore_list:&nbsp;List&nbsp;of&nbsp;files&nbsp;to&nbsp;keep.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-RemoveTestCa"><strong>RemoveTestCa</strong></a>(self)</dt><dd><tt>Remove&nbsp;root&nbsp;CA&nbsp;generated&nbsp;by&nbsp;previous&nbsp;call&nbsp;to&nbsp;<a href="#AndroidPlatformBackend-InstallTestCa">InstallTestCa</a>().<br>
+&nbsp;<br>
+Removes&nbsp;the&nbsp;test&nbsp;root&nbsp;certificate&nbsp;from&nbsp;both&nbsp;the&nbsp;device&nbsp;and&nbsp;host&nbsp;machine.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-RunCommand"><strong>RunCommand</strong></a>(self, command)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-SetDebugApp"><strong>SetDebugApp</strong></a>(self, package)</dt><dd><tt>Set&nbsp;application&nbsp;to&nbsp;debugging.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;package:&nbsp;The&nbsp;full&nbsp;package&nbsp;name&nbsp;string&nbsp;of&nbsp;the&nbsp;application.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-SetFullPerformanceModeEnabled"><strong>SetFullPerformanceModeEnabled</strong></a>(self, enabled)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-SetGraphicsMemoryTrackingEnabled"><strong>SetGraphicsMemoryTrackingEnabled</strong></a>(self, enabled)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-SetRelaxSslCheck"><strong>SetRelaxSslCheck</strong></a>(self, value)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-StartDisplayTracing"><strong>StartDisplayTracing</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-StartMonitoringPower"><strong>StartMonitoringPower</strong></a>(self, browser)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-StartVideoCapture"><strong>StartVideoCapture</strong></a>(self, min_bitrate_mbps)</dt><dd><tt>Starts&nbsp;the&nbsp;video&nbsp;capture&nbsp;at&nbsp;specified&nbsp;bitrate.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-StopApplication"><strong>StopApplication</strong></a>(self, application)</dt><dd><tt>Stop&nbsp;the&nbsp;given&nbsp;|application|.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;application:&nbsp;The&nbsp;full&nbsp;package&nbsp;name&nbsp;string&nbsp;of&nbsp;the&nbsp;application&nbsp;to&nbsp;stop.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-StopDisplayTracing"><strong>StopDisplayTracing</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-StopForwardingHost"><strong>StopForwardingHost</strong></a>(self, host_port)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-StopMonitoringPower"><strong>StopMonitoringPower</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-StopVideoCapture"><strong>StopVideoCapture</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-TakeScreenshot"><strong>TakeScreenshot</strong></a>(self, file_path)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-__init__"><strong>__init__</strong></a>(self, device, finder_options)</dt></dl>
+
+<hr>
+Class methods defined here:<br>
+<dl><dt><a name="AndroidPlatformBackend-CreatePlatformForDevice"><strong>CreatePlatformForDevice</strong></a>(cls, device, finder_options)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-SupportsDevice"><strong>SupportsDevice</strong></a>(cls, device)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<hr>
+Static methods defined here:<br>
+<dl><dt><a name="AndroidPlatformBackend-ParseCStateSample"><strong>ParseCStateSample</strong></a>(sample)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>device</strong></dt>
+</dl>
+<dl><dt><strong>forwarder_factory</strong></dt>
+</dl>
+<dl><dt><strong>is_test_ca_installed</strong></dt>
+</dl>
+<dl><dt><strong>is_video_capture_running</strong></dt>
+</dl>
+<dl><dt><strong>log_file_path</strong></dt>
+</dl>
+<dl><dt><strong>use_rndis_forwarder</strong></dt>
+</dl>
+<dl><dt><strong>wpr_ca_cert_path</strong></dt>
+<dd><tt>Path&nbsp;to&nbsp;root&nbsp;certificate&nbsp;installed&nbsp;on&nbsp;browser&nbsp;(or&nbsp;None).<br>
+&nbsp;<br>
+If&nbsp;this&nbsp;is&nbsp;set,&nbsp;web&nbsp;page&nbsp;replay&nbsp;will&nbsp;use&nbsp;it&nbsp;to&nbsp;sign&nbsp;HTTPS&nbsp;responses.</tt></dd>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.internal.platform.linux_based_platform_backend.html#LinuxBasedPlatformBackend">telemetry.internal.platform.linux_based_platform_backend.LinuxBasedPlatformBackend</a>:<br>
+<dl><dt><a name="AndroidPlatformBackend-GetClockTicks"><strong>GetClockTicks</strong></a>(*args, **kwargs)</dt><dd><tt>Returns&nbsp;the&nbsp;number&nbsp;of&nbsp;clock&nbsp;ticks&nbsp;per&nbsp;second.<br>
+&nbsp;<br>
+The&nbsp;proper&nbsp;way&nbsp;is&nbsp;to&nbsp;call&nbsp;os.sysconf('SC_CLK_TCK')&nbsp;but&nbsp;that&nbsp;is&nbsp;not&nbsp;easy&nbsp;to<br>
+do&nbsp;on&nbsp;Android/CrOS.&nbsp;In&nbsp;practice,&nbsp;nearly&nbsp;all&nbsp;Linux&nbsp;machines&nbsp;have&nbsp;a&nbsp;USER_HZ<br>
+of&nbsp;100,&nbsp;so&nbsp;just&nbsp;return&nbsp;that.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-GetSystemCommitCharge"><strong>GetSystemCommitCharge</strong></a>(self)</dt><dd><tt>#&nbsp;Get&nbsp;the&nbsp;commit&nbsp;charge&nbsp;in&nbsp;kB.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-GetSystemTotalPhysicalMemory"><strong>GetSystemTotalPhysicalMemory</strong></a>(*args, **kwargs)</dt></dl>
+
+<hr>
+Methods inherited from <a href="telemetry.internal.platform.platform_backend.html#PlatformBackend">telemetry.internal.platform.platform_backend.PlatformBackend</a>:<br>
+<dl><dt><a name="AndroidPlatformBackend-CanMeasurePerApplicationPower"><strong>CanMeasurePerApplicationPower</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-CooperativelyShutdown"><strong>CooperativelyShutdown</strong></a>(self, proc, app_name)</dt><dd><tt>Cooperatively&nbsp;shut&nbsp;down&nbsp;the&nbsp;given&nbsp;process&nbsp;from&nbsp;subprocess.Popen.<br>
+&nbsp;<br>
+Currently&nbsp;this&nbsp;is&nbsp;only&nbsp;implemented&nbsp;on&nbsp;Windows.&nbsp;See<br>
+crbug.com/424024&nbsp;for&nbsp;background&nbsp;on&nbsp;why&nbsp;it&nbsp;was&nbsp;added.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;proc:&nbsp;a&nbsp;process&nbsp;object&nbsp;returned&nbsp;from&nbsp;subprocess.Popen.<br>
+&nbsp;&nbsp;app_name:&nbsp;on&nbsp;Windows,&nbsp;is&nbsp;the&nbsp;prefix&nbsp;of&nbsp;the&nbsp;application's&nbsp;window<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;name&nbsp;that&nbsp;should&nbsp;be&nbsp;searched&nbsp;for.&nbsp;This&nbsp;helps&nbsp;ensure<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;that&nbsp;only&nbsp;the&nbsp;application's&nbsp;windows&nbsp;are&nbsp;closed.<br>
+&nbsp;<br>
+Returns&nbsp;True&nbsp;if&nbsp;it&nbsp;is&nbsp;believed&nbsp;the&nbsp;attempt&nbsp;succeeded.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-DidCreateBrowser"><strong>DidCreateBrowser</strong></a>(self, browser, browser_backend)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-DidStartBrowser"><strong>DidStartBrowser</strong></a>(self, browser, browser_backend)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-GetRemotePort"><strong>GetRemotePort</strong></a>(self, port)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-InitPlatformBackend"><strong>InitPlatformBackend</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-IsCooperativeShutdownSupported"><strong>IsCooperativeShutdownSupported</strong></a>(self)</dt><dd><tt>Indicates&nbsp;whether&nbsp;CooperativelyShutdown,&nbsp;below,&nbsp;is&nbsp;supported.<br>
+It&nbsp;is&nbsp;not&nbsp;necessary&nbsp;to&nbsp;implement&nbsp;it&nbsp;on&nbsp;all&nbsp;platforms.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-ReadMsr"><strong>ReadMsr</strong></a>(self, msr_number, start<font color="#909090">=0</font>, length<font color="#909090">=64</font>)</dt><dd><tt>Read&nbsp;a&nbsp;CPU&nbsp;model-specific&nbsp;register&nbsp;(MSR).<br>
+&nbsp;<br>
+Which&nbsp;MSRs&nbsp;are&nbsp;available&nbsp;depends&nbsp;on&nbsp;the&nbsp;CPU&nbsp;model.<br>
+On&nbsp;systems&nbsp;with&nbsp;multiple&nbsp;CPUs,&nbsp;this&nbsp;function&nbsp;may&nbsp;run&nbsp;on&nbsp;any&nbsp;CPU.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;msr_number:&nbsp;The&nbsp;number&nbsp;of&nbsp;the&nbsp;register&nbsp;to&nbsp;read.<br>
+&nbsp;&nbsp;start:&nbsp;The&nbsp;least&nbsp;significant&nbsp;bit&nbsp;to&nbsp;read,&nbsp;zero-indexed.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Said&nbsp;another&nbsp;way,&nbsp;the&nbsp;number&nbsp;of&nbsp;bits&nbsp;to&nbsp;right-shift&nbsp;the&nbsp;MSR&nbsp;value.)<br>
+&nbsp;&nbsp;length:&nbsp;The&nbsp;number&nbsp;of&nbsp;bits&nbsp;to&nbsp;read.&nbsp;MSRs&nbsp;are&nbsp;64&nbsp;bits,&nbsp;even&nbsp;on&nbsp;32-bit&nbsp;CPUs.</tt></dd></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-SetPlatform"><strong>SetPlatform</strong></a>(self, platform)</dt></dl>
+
+<dl><dt><a name="AndroidPlatformBackend-WillCloseBrowser"><strong>WillCloseBrowser</strong></a>(self, browser, browser_backend)</dt></dl>
+
+<hr>
+Class methods inherited from <a href="telemetry.internal.platform.platform_backend.html#PlatformBackend">telemetry.internal.platform.platform_backend.PlatformBackend</a>:<br>
+<dl><dt><a name="AndroidPlatformBackend-IsPlatformBackendForHost"><strong>IsPlatformBackendForHost</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Returns&nbsp;whether&nbsp;this&nbsp;platform&nbsp;backend&nbsp;is&nbsp;the&nbsp;platform&nbsp;backend&nbsp;to&nbsp;be&nbsp;used<br>
+for&nbsp;the&nbsp;host&nbsp;device&nbsp;which&nbsp;telemetry&nbsp;is&nbsp;running&nbsp;on.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.internal.platform.platform_backend.html#PlatformBackend">telemetry.internal.platform.platform_backend.PlatformBackend</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>is_host_platform</strong></dt>
+</dl>
+<dl><dt><strong>network_controller_backend</strong></dt>
+</dl>
+<dl><dt><strong>platform</strong></dt>
+</dl>
+<dl><dt><strong>running_browser_backends</strong></dt>
+</dl>
+<dl><dt><strong>tracing_controller_backend</strong></dt>
+</dl>
+<dl><dt><strong>wpr_http_device_port</strong></dt>
+</dl>
+<dl><dt><strong>wpr_https_device_port</strong></dt>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

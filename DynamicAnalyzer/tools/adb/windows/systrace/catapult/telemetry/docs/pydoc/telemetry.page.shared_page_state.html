@@ -1,0 +1,385 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.page.shared_page_state</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.page.html"><font color="#ffffff">page</font></a>.shared_page_state</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/page/shared_page_state.py">telemetry/page/shared_page_state.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2014&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.internal.browser.browser_finder.html">telemetry.internal.browser.browser_finder</a><br>
+<a href="telemetry.internal.browser.browser_finder_exceptions.html">telemetry.internal.browser.browser_finder_exceptions</a><br>
+<a href="telemetry.internal.browser.browser_info.html">telemetry.internal.browser.browser_info</a><br>
+<a href="catapult_base.cloud_storage.html">catapult_base.cloud_storage</a><br>
+<a href="telemetry.decorators.html">telemetry.decorators</a><br>
+<a href="telemetry.internal.util.exception_formatter.html">telemetry.internal.util.exception_formatter</a><br>
+</td><td width="25%" valign=top><a href="telemetry.core.exceptions.html">telemetry.core.exceptions</a><br>
+<a href="telemetry.internal.util.file_handle.html">telemetry.internal.util.file_handle</a><br>
+<a href="telemetry.util.image_util.html">telemetry.util.image_util</a><br>
+<a href="logging.html">logging</a><br>
+<a href="os.html">os</a><br>
+<a href="telemetry.page.page_test.html">telemetry.page.page_test</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.platform.profiler.profiler_finder.html">telemetry.internal.platform.profiler.profiler_finder</a><br>
+<a href="shutil.html">shutil</a><br>
+<a href="telemetry.story.html">telemetry.story</a><br>
+<a href="sys.html">sys</a><br>
+<a href="tempfile.html">tempfile</a><br>
+<a href="telemetry.web_perf.timeline_based_measurement.html">telemetry.web_perf.timeline_based_measurement</a><br>
+</td><td width="25%" valign=top><a href="telemetry.core.util.html">telemetry.core.util</a><br>
+<a href="telemetry.util.wpr_modes.html">telemetry.util.wpr_modes</a><br>
+<a href="zipfile.html">zipfile</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="telemetry.story.shared_state.html#SharedState">telemetry.story.shared_state.SharedState</a>(<a href="__builtin__.html#object">__builtin__.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.page.shared_page_state.html#SharedPageState">SharedPageState</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.page.shared_page_state.html#Shared10InchTabletPageState">Shared10InchTabletPageState</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.page.shared_page_state.html#SharedDesktopPageState">SharedDesktopPageState</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.page.shared_page_state.html#SharedMobilePageState">SharedMobilePageState</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.page.shared_page_state.html#SharedTabletPageState">SharedTabletPageState</a>
+</font></dt></dl>
+</dd>
+</dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Shared10InchTabletPageState">class <strong>Shared10InchTabletPageState</strong></a>(<a href="telemetry.page.shared_page_state.html#SharedPageState">SharedPageState</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.page.shared_page_state.html#Shared10InchTabletPageState">Shared10InchTabletPageState</a></dd>
+<dd><a href="telemetry.page.shared_page_state.html#SharedPageState">SharedPageState</a></dd>
+<dd><a href="telemetry.story.shared_state.html#SharedState">telemetry.story.shared_state.SharedState</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.page.shared_page_state.html#SharedPageState">SharedPageState</a>:<br>
+<dl><dt><a name="Shared10InchTabletPageState-CanRunOnBrowser"><strong>CanRunOnBrowser</strong></a>(self, browser_info, page)</dt><dd><tt>Override&nbsp;this&nbsp;to&nbsp;return&nbsp;whether&nbsp;the&nbsp;browser&nbsp;brought&nbsp;up&nbsp;by&nbsp;this&nbsp;state<br>
+instance&nbsp;is&nbsp;suitable&nbsp;for&nbsp;running&nbsp;the&nbsp;given&nbsp;page.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;browser_info:&nbsp;an&nbsp;instance&nbsp;of&nbsp;telemetry.core.browser_info.BrowserInfo<br>
+&nbsp;&nbsp;page:&nbsp;an&nbsp;instance&nbsp;of&nbsp;telemetry.page.Page</tt></dd></dl>
+
+<dl><dt><a name="Shared10InchTabletPageState-CanRunStory"><strong>CanRunStory</strong></a>(self, page)</dt></dl>
+
+<dl><dt><a name="Shared10InchTabletPageState-DidRunStory"><strong>DidRunStory</strong></a>(self, results)</dt></dl>
+
+<dl><dt><a name="Shared10InchTabletPageState-GetPregeneratedProfileArchiveDir"><strong>GetPregeneratedProfileArchiveDir</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Shared10InchTabletPageState-RunStory"><strong>RunStory</strong></a>(self, results)</dt></dl>
+
+<dl><dt><a name="Shared10InchTabletPageState-SetPregeneratedProfileArchiveDir"><strong>SetPregeneratedProfileArchiveDir</strong></a>(self, archive_path)</dt><dd><tt>Benchmarks&nbsp;can&nbsp;set&nbsp;a&nbsp;pre-generated&nbsp;profile&nbsp;archive&nbsp;to&nbsp;indicate&nbsp;that&nbsp;when<br>
+Chrome&nbsp;is&nbsp;launched,&nbsp;it&nbsp;should&nbsp;have&nbsp;a&nbsp;--user-data-dir&nbsp;set&nbsp;to&nbsp;the<br>
+pregenerated&nbsp;profile,&nbsp;rather&nbsp;than&nbsp;to&nbsp;an&nbsp;empty&nbsp;profile.<br>
+&nbsp;<br>
+If&nbsp;the&nbsp;benchmark&nbsp;is&nbsp;invoked&nbsp;with&nbsp;the&nbsp;option&nbsp;--profile-dir=&lt;dir&gt;,&nbsp;that<br>
+option&nbsp;overrides&nbsp;this&nbsp;value.</tt></dd></dl>
+
+<dl><dt><a name="Shared10InchTabletPageState-TearDownState"><strong>TearDownState</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Shared10InchTabletPageState-WillRunStory"><strong>WillRunStory</strong></a>(self, page)</dt></dl>
+
+<dl><dt><a name="Shared10InchTabletPageState-__init__"><strong>__init__</strong></a>(self, test, finder_options, story_set)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.page.shared_page_state.html#SharedPageState">SharedPageState</a>:<br>
+<dl><dt><strong>browser</strong></dt>
+</dl>
+<dl><dt><strong>current_page</strong></dt>
+</dl>
+<dl><dt><strong>current_tab</strong></dt>
+</dl>
+<dl><dt><strong>page_test</strong></dt>
+</dl>
+<dl><dt><strong>platform</strong></dt>
+</dl>
+<hr>
+Data descriptors inherited from <a href="telemetry.story.shared_state.html#SharedState">telemetry.story.shared_state.SharedState</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SharedDesktopPageState">class <strong>SharedDesktopPageState</strong></a>(<a href="telemetry.page.shared_page_state.html#SharedPageState">SharedPageState</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.page.shared_page_state.html#SharedDesktopPageState">SharedDesktopPageState</a></dd>
+<dd><a href="telemetry.page.shared_page_state.html#SharedPageState">SharedPageState</a></dd>
+<dd><a href="telemetry.story.shared_state.html#SharedState">telemetry.story.shared_state.SharedState</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.page.shared_page_state.html#SharedPageState">SharedPageState</a>:<br>
+<dl><dt><a name="SharedDesktopPageState-CanRunOnBrowser"><strong>CanRunOnBrowser</strong></a>(self, browser_info, page)</dt><dd><tt>Override&nbsp;this&nbsp;to&nbsp;return&nbsp;whether&nbsp;the&nbsp;browser&nbsp;brought&nbsp;up&nbsp;by&nbsp;this&nbsp;state<br>
+instance&nbsp;is&nbsp;suitable&nbsp;for&nbsp;running&nbsp;the&nbsp;given&nbsp;page.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;browser_info:&nbsp;an&nbsp;instance&nbsp;of&nbsp;telemetry.core.browser_info.BrowserInfo<br>
+&nbsp;&nbsp;page:&nbsp;an&nbsp;instance&nbsp;of&nbsp;telemetry.page.Page</tt></dd></dl>
+
+<dl><dt><a name="SharedDesktopPageState-CanRunStory"><strong>CanRunStory</strong></a>(self, page)</dt></dl>
+
+<dl><dt><a name="SharedDesktopPageState-DidRunStory"><strong>DidRunStory</strong></a>(self, results)</dt></dl>
+
+<dl><dt><a name="SharedDesktopPageState-GetPregeneratedProfileArchiveDir"><strong>GetPregeneratedProfileArchiveDir</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="SharedDesktopPageState-RunStory"><strong>RunStory</strong></a>(self, results)</dt></dl>
+
+<dl><dt><a name="SharedDesktopPageState-SetPregeneratedProfileArchiveDir"><strong>SetPregeneratedProfileArchiveDir</strong></a>(self, archive_path)</dt><dd><tt>Benchmarks&nbsp;can&nbsp;set&nbsp;a&nbsp;pre-generated&nbsp;profile&nbsp;archive&nbsp;to&nbsp;indicate&nbsp;that&nbsp;when<br>
+Chrome&nbsp;is&nbsp;launched,&nbsp;it&nbsp;should&nbsp;have&nbsp;a&nbsp;--user-data-dir&nbsp;set&nbsp;to&nbsp;the<br>
+pregenerated&nbsp;profile,&nbsp;rather&nbsp;than&nbsp;to&nbsp;an&nbsp;empty&nbsp;profile.<br>
+&nbsp;<br>
+If&nbsp;the&nbsp;benchmark&nbsp;is&nbsp;invoked&nbsp;with&nbsp;the&nbsp;option&nbsp;--profile-dir=&lt;dir&gt;,&nbsp;that<br>
+option&nbsp;overrides&nbsp;this&nbsp;value.</tt></dd></dl>
+
+<dl><dt><a name="SharedDesktopPageState-TearDownState"><strong>TearDownState</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="SharedDesktopPageState-WillRunStory"><strong>WillRunStory</strong></a>(self, page)</dt></dl>
+
+<dl><dt><a name="SharedDesktopPageState-__init__"><strong>__init__</strong></a>(self, test, finder_options, story_set)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.page.shared_page_state.html#SharedPageState">SharedPageState</a>:<br>
+<dl><dt><strong>browser</strong></dt>
+</dl>
+<dl><dt><strong>current_page</strong></dt>
+</dl>
+<dl><dt><strong>current_tab</strong></dt>
+</dl>
+<dl><dt><strong>page_test</strong></dt>
+</dl>
+<dl><dt><strong>platform</strong></dt>
+</dl>
+<hr>
+Data descriptors inherited from <a href="telemetry.story.shared_state.html#SharedState">telemetry.story.shared_state.SharedState</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SharedMobilePageState">class <strong>SharedMobilePageState</strong></a>(<a href="telemetry.page.shared_page_state.html#SharedPageState">SharedPageState</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.page.shared_page_state.html#SharedMobilePageState">SharedMobilePageState</a></dd>
+<dd><a href="telemetry.page.shared_page_state.html#SharedPageState">SharedPageState</a></dd>
+<dd><a href="telemetry.story.shared_state.html#SharedState">telemetry.story.shared_state.SharedState</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.page.shared_page_state.html#SharedPageState">SharedPageState</a>:<br>
+<dl><dt><a name="SharedMobilePageState-CanRunOnBrowser"><strong>CanRunOnBrowser</strong></a>(self, browser_info, page)</dt><dd><tt>Override&nbsp;this&nbsp;to&nbsp;return&nbsp;whether&nbsp;the&nbsp;browser&nbsp;brought&nbsp;up&nbsp;by&nbsp;this&nbsp;state<br>
+instance&nbsp;is&nbsp;suitable&nbsp;for&nbsp;running&nbsp;the&nbsp;given&nbsp;page.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;browser_info:&nbsp;an&nbsp;instance&nbsp;of&nbsp;telemetry.core.browser_info.BrowserInfo<br>
+&nbsp;&nbsp;page:&nbsp;an&nbsp;instance&nbsp;of&nbsp;telemetry.page.Page</tt></dd></dl>
+
+<dl><dt><a name="SharedMobilePageState-CanRunStory"><strong>CanRunStory</strong></a>(self, page)</dt></dl>
+
+<dl><dt><a name="SharedMobilePageState-DidRunStory"><strong>DidRunStory</strong></a>(self, results)</dt></dl>
+
+<dl><dt><a name="SharedMobilePageState-GetPregeneratedProfileArchiveDir"><strong>GetPregeneratedProfileArchiveDir</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="SharedMobilePageState-RunStory"><strong>RunStory</strong></a>(self, results)</dt></dl>
+
+<dl><dt><a name="SharedMobilePageState-SetPregeneratedProfileArchiveDir"><strong>SetPregeneratedProfileArchiveDir</strong></a>(self, archive_path)</dt><dd><tt>Benchmarks&nbsp;can&nbsp;set&nbsp;a&nbsp;pre-generated&nbsp;profile&nbsp;archive&nbsp;to&nbsp;indicate&nbsp;that&nbsp;when<br>
+Chrome&nbsp;is&nbsp;launched,&nbsp;it&nbsp;should&nbsp;have&nbsp;a&nbsp;--user-data-dir&nbsp;set&nbsp;to&nbsp;the<br>
+pregenerated&nbsp;profile,&nbsp;rather&nbsp;than&nbsp;to&nbsp;an&nbsp;empty&nbsp;profile.<br>
+&nbsp;<br>
+If&nbsp;the&nbsp;benchmark&nbsp;is&nbsp;invoked&nbsp;with&nbsp;the&nbsp;option&nbsp;--profile-dir=&lt;dir&gt;,&nbsp;that<br>
+option&nbsp;overrides&nbsp;this&nbsp;value.</tt></dd></dl>
+
+<dl><dt><a name="SharedMobilePageState-TearDownState"><strong>TearDownState</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="SharedMobilePageState-WillRunStory"><strong>WillRunStory</strong></a>(self, page)</dt></dl>
+
+<dl><dt><a name="SharedMobilePageState-__init__"><strong>__init__</strong></a>(self, test, finder_options, story_set)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.page.shared_page_state.html#SharedPageState">SharedPageState</a>:<br>
+<dl><dt><strong>browser</strong></dt>
+</dl>
+<dl><dt><strong>current_page</strong></dt>
+</dl>
+<dl><dt><strong>current_tab</strong></dt>
+</dl>
+<dl><dt><strong>page_test</strong></dt>
+</dl>
+<dl><dt><strong>platform</strong></dt>
+</dl>
+<hr>
+Data descriptors inherited from <a href="telemetry.story.shared_state.html#SharedState">telemetry.story.shared_state.SharedState</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SharedPageState">class <strong>SharedPageState</strong></a>(<a href="telemetry.story.shared_state.html#SharedState">telemetry.story.shared_state.SharedState</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>This&nbsp;class&nbsp;contains&nbsp;all&nbsp;specific&nbsp;logic&nbsp;necessary&nbsp;to&nbsp;run&nbsp;a&nbsp;Chrome&nbsp;browser<br>
+benchmark.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.page.shared_page_state.html#SharedPageState">SharedPageState</a></dd>
+<dd><a href="telemetry.story.shared_state.html#SharedState">telemetry.story.shared_state.SharedState</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="SharedPageState-CanRunOnBrowser"><strong>CanRunOnBrowser</strong></a>(self, browser_info, page)</dt><dd><tt>Override&nbsp;this&nbsp;to&nbsp;return&nbsp;whether&nbsp;the&nbsp;browser&nbsp;brought&nbsp;up&nbsp;by&nbsp;this&nbsp;state<br>
+instance&nbsp;is&nbsp;suitable&nbsp;for&nbsp;running&nbsp;the&nbsp;given&nbsp;page.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;browser_info:&nbsp;an&nbsp;instance&nbsp;of&nbsp;telemetry.core.browser_info.BrowserInfo<br>
+&nbsp;&nbsp;page:&nbsp;an&nbsp;instance&nbsp;of&nbsp;telemetry.page.Page</tt></dd></dl>
+
+<dl><dt><a name="SharedPageState-CanRunStory"><strong>CanRunStory</strong></a>(self, page)</dt></dl>
+
+<dl><dt><a name="SharedPageState-DidRunStory"><strong>DidRunStory</strong></a>(self, results)</dt></dl>
+
+<dl><dt><a name="SharedPageState-GetPregeneratedProfileArchiveDir"><strong>GetPregeneratedProfileArchiveDir</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="SharedPageState-RunStory"><strong>RunStory</strong></a>(self, results)</dt></dl>
+
+<dl><dt><a name="SharedPageState-SetPregeneratedProfileArchiveDir"><strong>SetPregeneratedProfileArchiveDir</strong></a>(self, archive_path)</dt><dd><tt>Benchmarks&nbsp;can&nbsp;set&nbsp;a&nbsp;pre-generated&nbsp;profile&nbsp;archive&nbsp;to&nbsp;indicate&nbsp;that&nbsp;when<br>
+Chrome&nbsp;is&nbsp;launched,&nbsp;it&nbsp;should&nbsp;have&nbsp;a&nbsp;--user-data-dir&nbsp;set&nbsp;to&nbsp;the<br>
+pregenerated&nbsp;profile,&nbsp;rather&nbsp;than&nbsp;to&nbsp;an&nbsp;empty&nbsp;profile.<br>
+&nbsp;<br>
+If&nbsp;the&nbsp;benchmark&nbsp;is&nbsp;invoked&nbsp;with&nbsp;the&nbsp;option&nbsp;--profile-dir=&lt;dir&gt;,&nbsp;that<br>
+option&nbsp;overrides&nbsp;this&nbsp;value.</tt></dd></dl>
+
+<dl><dt><a name="SharedPageState-TearDownState"><strong>TearDownState</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="SharedPageState-WillRunStory"><strong>WillRunStory</strong></a>(self, page)</dt></dl>
+
+<dl><dt><a name="SharedPageState-__init__"><strong>__init__</strong></a>(self, test, finder_options, story_set)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>browser</strong></dt>
+</dl>
+<dl><dt><strong>current_page</strong></dt>
+</dl>
+<dl><dt><strong>current_tab</strong></dt>
+</dl>
+<dl><dt><strong>page_test</strong></dt>
+</dl>
+<dl><dt><strong>platform</strong></dt>
+</dl>
+<hr>
+Data descriptors inherited from <a href="telemetry.story.shared_state.html#SharedState">telemetry.story.shared_state.SharedState</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SharedTabletPageState">class <strong>SharedTabletPageState</strong></a>(<a href="telemetry.page.shared_page_state.html#SharedPageState">SharedPageState</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.page.shared_page_state.html#SharedTabletPageState">SharedTabletPageState</a></dd>
+<dd><a href="telemetry.page.shared_page_state.html#SharedPageState">SharedPageState</a></dd>
+<dd><a href="telemetry.story.shared_state.html#SharedState">telemetry.story.shared_state.SharedState</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.page.shared_page_state.html#SharedPageState">SharedPageState</a>:<br>
+<dl><dt><a name="SharedTabletPageState-CanRunOnBrowser"><strong>CanRunOnBrowser</strong></a>(self, browser_info, page)</dt><dd><tt>Override&nbsp;this&nbsp;to&nbsp;return&nbsp;whether&nbsp;the&nbsp;browser&nbsp;brought&nbsp;up&nbsp;by&nbsp;this&nbsp;state<br>
+instance&nbsp;is&nbsp;suitable&nbsp;for&nbsp;running&nbsp;the&nbsp;given&nbsp;page.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;browser_info:&nbsp;an&nbsp;instance&nbsp;of&nbsp;telemetry.core.browser_info.BrowserInfo<br>
+&nbsp;&nbsp;page:&nbsp;an&nbsp;instance&nbsp;of&nbsp;telemetry.page.Page</tt></dd></dl>
+
+<dl><dt><a name="SharedTabletPageState-CanRunStory"><strong>CanRunStory</strong></a>(self, page)</dt></dl>
+
+<dl><dt><a name="SharedTabletPageState-DidRunStory"><strong>DidRunStory</strong></a>(self, results)</dt></dl>
+
+<dl><dt><a name="SharedTabletPageState-GetPregeneratedProfileArchiveDir"><strong>GetPregeneratedProfileArchiveDir</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="SharedTabletPageState-RunStory"><strong>RunStory</strong></a>(self, results)</dt></dl>
+
+<dl><dt><a name="SharedTabletPageState-SetPregeneratedProfileArchiveDir"><strong>SetPregeneratedProfileArchiveDir</strong></a>(self, archive_path)</dt><dd><tt>Benchmarks&nbsp;can&nbsp;set&nbsp;a&nbsp;pre-generated&nbsp;profile&nbsp;archive&nbsp;to&nbsp;indicate&nbsp;that&nbsp;when<br>
+Chrome&nbsp;is&nbsp;launched,&nbsp;it&nbsp;should&nbsp;have&nbsp;a&nbsp;--user-data-dir&nbsp;set&nbsp;to&nbsp;the<br>
+pregenerated&nbsp;profile,&nbsp;rather&nbsp;than&nbsp;to&nbsp;an&nbsp;empty&nbsp;profile.<br>
+&nbsp;<br>
+If&nbsp;the&nbsp;benchmark&nbsp;is&nbsp;invoked&nbsp;with&nbsp;the&nbsp;option&nbsp;--profile-dir=&lt;dir&gt;,&nbsp;that<br>
+option&nbsp;overrides&nbsp;this&nbsp;value.</tt></dd></dl>
+
+<dl><dt><a name="SharedTabletPageState-TearDownState"><strong>TearDownState</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="SharedTabletPageState-WillRunStory"><strong>WillRunStory</strong></a>(self, page)</dt></dl>
+
+<dl><dt><a name="SharedTabletPageState-__init__"><strong>__init__</strong></a>(self, test, finder_options, story_set)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.page.shared_page_state.html#SharedPageState">SharedPageState</a>:<br>
+<dl><dt><strong>browser</strong></dt>
+</dl>
+<dl><dt><strong>current_page</strong></dt>
+</dl>
+<dl><dt><strong>current_tab</strong></dt>
+</dl>
+<dl><dt><strong>page_test</strong></dt>
+</dl>
+<dl><dt><strong>platform</strong></dt>
+</dl>
+<hr>
+Data descriptors inherited from <a href="telemetry.story.shared_state.html#SharedState">telemetry.story.shared_state.SharedState</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

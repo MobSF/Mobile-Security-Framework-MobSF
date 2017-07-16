@@ -1,0 +1,79 @@
+; version section
+[Version]
+Signature  = "$Windows NT$"
+Class      = NetService
+ClassGUID  = {4D36E974-E325-11CE-BFC1-08002BE10318}
+Provider   = %Unipi%
+DriverVer  = 26/02/2010,3.0.0.2
+
+; manufacturer section
+[Manufacturer]
+%Unipi% = UNIPI,NTx86
+
+; control flags section
+; optional, unused in netipfw.inf inf, used in netipfw_m.inf
+[ControlFlags]
+
+; models section
+[UNIPI] ; Win2k
+%Desc% = Ipfw.ndi, unipi_ipfw
+[UNIPI.NTx86] ;For WinXP and later
+%Desc% = Ipfw.ndi, unipi_ipfw
+
+; ddinstall section
+[Ipfw.ndi]
+AddReg          = Ipfw.ndi.AddReg, Ipfw.AddReg
+Characteristics = 0x4410 ;  NCF_FILTER | NCF_NDIS_PROTOCOL !--Filter Specific--!!
+CopyFiles       = Ipfw.Files.Sys
+CopyInf         = netipfw_m.inf
+
+; remove section
+[Ipfw.ndi.Remove]
+DelFiles = Ipfw.Files.Sys
+
+;ddinstall.services section
+[Ipfw.ndi.Services]
+AddService = Ipfw,,Ipfw.AddService
+
+[Ipfw.AddService]
+DisplayName    = %ServiceDesc%
+ServiceType    = 1 ;SERVICE_KERNEL_DRIVER
+StartType      = 3 ;SERVICE_DEMAND_START
+ErrorControl   = 1 ;SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\ipfw.sys
+AddReg         = Ipfw.AddService.AddReg
+
+[Ipfw.AddService.AddReg]
+
+;file copy related sections
+[SourceDisksNames]
+1=%DiskDescription%,"",,
+
+[SourceDisksFiles]
+ipfw.sys=1
+
+[DestinationDirs]
+DefaultDestDir = 12
+Ipfw.Files.Sys   = 12   ; %windir%\System32\drivers
+
+; ddinstall->copyfiles points here
+[Ipfw.Files.Sys]
+ipfw.sys,,,2
+
+; ddinstall->addreg points here
+[Ipfw.ndi.AddReg]
+HKR, Ndi,            HelpText,            , %HELP% ; this is displayed at the bottom of the General page of the Connection Properties dialog box
+HKR, Ndi,            FilterClass,         , failover
+HKR, Ndi,            FilterDeviceInfId,   , unipi_ipfwmp
+HKR, Ndi,            Service,             , Ipfw
+HKR, Ndi\Interfaces, UpperRange,          , noupper
+HKR, Ndi\Interfaces, LowerRange,          , nolower
+HKR, Ndi\Interfaces, FilterMediaTypes,    , "ethernet, tokenring, fddi, wan"
+
+;strings section
+[Strings]
+Unipi = "Unipi"
+DiskDescription = "Ipfw Driver Disk"
+Desc = "ipfw+dummynet"
+HELP = "This is ipfw and dummynet network emulator, developed by unipi.it"
+ServiceDesc = "ipfw service"

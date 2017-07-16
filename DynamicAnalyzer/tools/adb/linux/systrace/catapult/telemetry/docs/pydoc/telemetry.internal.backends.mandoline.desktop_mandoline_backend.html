@@ -1,0 +1,180 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.backends.mandoline.desktop_mandoline_backend</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.<a href="telemetry.internal.backends.html"><font color="#ffffff">backends</font></a>.<a href="telemetry.internal.backends.mandoline.html"><font color="#ffffff">mandoline</font></a>.desktop_mandoline_backend</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/backends/mandoline/desktop_mandoline_backend.py">telemetry/internal/backends/mandoline/desktop_mandoline_backend.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2015&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.core.exceptions.html">telemetry.core.exceptions</a><br>
+<a href="logging.html">logging</a><br>
+<a href="telemetry.internal.backends.mandoline.mandoline_browser_backend.html">telemetry.internal.backends.mandoline.mandoline_browser_backend</a><br>
+</td><td width="25%" valign=top><a href="os.html">os</a><br>
+<a href="shutil.html">shutil</a><br>
+<a href="subprocess.html">subprocess</a><br>
+</td><td width="25%" valign=top><a href="sys.html">sys</a><br>
+<a href="tempfile.html">tempfile</a><br>
+<a href="telemetry.core.util.html">telemetry.core.util</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.backends.mandoline.mandoline_browser_backend.html#MandolineBrowserBackend">telemetry.internal.backends.mandoline.mandoline_browser_backend.MandolineBrowserBackend</a>(<a href="telemetry.internal.backends.browser_backend.html#BrowserBackend">telemetry.internal.backends.browser_backend.BrowserBackend</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.backends.mandoline.desktop_mandoline_backend.html#DesktopMandolineBackend">DesktopMandolineBackend</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="DesktopMandolineBackend">class <strong>DesktopMandolineBackend</strong></a>(<a href="telemetry.internal.backends.mandoline.mandoline_browser_backend.html#MandolineBrowserBackend">telemetry.internal.backends.mandoline.mandoline_browser_backend.MandolineBrowserBackend</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>The&nbsp;backend&nbsp;for&nbsp;controlling&nbsp;a&nbsp;locally-executed&nbsp;browser&nbsp;instance,&nbsp;on&nbsp;Linux<br>
+or&nbsp;Windows.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.internal.backends.mandoline.desktop_mandoline_backend.html#DesktopMandolineBackend">DesktopMandolineBackend</a></dd>
+<dd><a href="telemetry.internal.backends.mandoline.mandoline_browser_backend.html#MandolineBrowserBackend">telemetry.internal.backends.mandoline.mandoline_browser_backend.MandolineBrowserBackend</a></dd>
+<dd><a href="telemetry.internal.backends.browser_backend.html#BrowserBackend">telemetry.internal.backends.browser_backend.BrowserBackend</a></dd>
+<dd><a href="telemetry.internal.backends.app_backend.html#AppBackend">telemetry.internal.backends.app_backend.AppBackend</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="DesktopMandolineBackend-Close"><strong>Close</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="DesktopMandolineBackend-GetBrowserStartupArgs"><strong>GetBrowserStartupArgs</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="DesktopMandolineBackend-GetStackTrace"><strong>GetStackTrace</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="DesktopMandolineBackend-GetStandardOutput"><strong>GetStandardOutput</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="DesktopMandolineBackend-HasBrowserFinishedLaunching"><strong>HasBrowserFinishedLaunching</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="DesktopMandolineBackend-IsBrowserRunning"><strong>IsBrowserRunning</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="DesktopMandolineBackend-Start"><strong>Start</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="DesktopMandolineBackend-__del__"><strong>__del__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="DesktopMandolineBackend-__init__"><strong>__init__</strong></a>(self, desktop_platform_backend, browser_options, executable, browser_directory)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>browser_directory</strong></dt>
+</dl>
+<dl><dt><strong>pid</strong></dt>
+</dl>
+<dl><dt><strong>profile_directory</strong></dt>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.internal.backends.mandoline.mandoline_browser_backend.html#MandolineBrowserBackend">telemetry.internal.backends.mandoline.mandoline_browser_backend.MandolineBrowserBackend</a>:<br>
+<dl><dt><a name="DesktopMandolineBackend-GetProcessName"><strong>GetProcessName</strong></a>(self, cmd_line)</dt><dd><tt>Returns&nbsp;a&nbsp;user-friendly&nbsp;name&nbsp;for&nbsp;the&nbsp;process&nbsp;of&nbsp;the&nbsp;given&nbsp;|cmd_line|.</tt></dd></dl>
+
+<dl><dt><a name="DesktopMandolineBackend-GetReplayBrowserStartupArgs"><strong>GetReplayBrowserStartupArgs</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.internal.backends.mandoline.mandoline_browser_backend.html#MandolineBrowserBackend">telemetry.internal.backends.mandoline.mandoline_browser_backend.MandolineBrowserBackend</a>:<br>
+<dl><dt><strong>devtools_client</strong></dt>
+</dl>
+<dl><dt><strong>supports_cpu_metrics</strong></dt>
+</dl>
+<dl><dt><strong>supports_memory_metrics</strong></dt>
+</dl>
+<dl><dt><strong>supports_power_metrics</strong></dt>
+</dl>
+<dl><dt><strong>supports_system_info</strong></dt>
+</dl>
+<dl><dt><strong>supports_tab_control</strong></dt>
+</dl>
+<dl><dt><strong>supports_tracing</strong></dt>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.internal.backends.browser_backend.html#BrowserBackend">telemetry.internal.backends.browser_backend.BrowserBackend</a>:<br>
+<dl><dt><a name="DesktopMandolineBackend-DumpMemory"><strong>DumpMemory</strong></a>(self, timeout<font color="#909090">=90</font>)</dt></dl>
+
+<dl><dt><a name="DesktopMandolineBackend-GetSystemInfo"><strong>GetSystemInfo</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="DesktopMandolineBackend-IsAppRunning"><strong>IsAppRunning</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="DesktopMandolineBackend-SetBrowser"><strong>SetBrowser</strong></a>(self, browser)</dt></dl>
+
+<dl><dt><a name="DesktopMandolineBackend-SetMemoryPressureNotificationsSuppressed"><strong>SetMemoryPressureNotificationsSuppressed</strong></a>(self, suppressed, timeout<font color="#909090">=90</font>)</dt></dl>
+
+<dl><dt><a name="DesktopMandolineBackend-SimulateMemoryPressureNotification"><strong>SimulateMemoryPressureNotification</strong></a>(self, pressure_level, timeout<font color="#909090">=90</font>)</dt></dl>
+
+<dl><dt><a name="DesktopMandolineBackend-StartTracing"><strong>StartTracing</strong></a>(self, trace_options, custom_categories<font color="#909090">=None</font>, timeout<font color="#909090">=90</font>)</dt></dl>
+
+<dl><dt><a name="DesktopMandolineBackend-StopTracing"><strong>StopTracing</strong></a>(self, trace_data_builder)</dt></dl>
+
+<dl><dt><a name="DesktopMandolineBackend-UploadLogsToCloudStorage"><strong>UploadLogsToCloudStorage</strong></a>(self)</dt><dd><tt>Uploading&nbsp;log&nbsp;files&nbsp;produce&nbsp;by&nbsp;this&nbsp;browser&nbsp;instance&nbsp;to&nbsp;cloud&nbsp;storage.<br>
+&nbsp;<br>
+Check&nbsp;supports_uploading_logs&nbsp;before&nbsp;calling&nbsp;this&nbsp;method.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.internal.backends.browser_backend.html#BrowserBackend">telemetry.internal.backends.browser_backend.BrowserBackend</a>:<br>
+<dl><dt><strong>browser</strong></dt>
+</dl>
+<dl><dt><strong>browser_type</strong></dt>
+</dl>
+<dl><dt><strong>log_file_path</strong></dt>
+</dl>
+<dl><dt><strong>profiling_controller_backend</strong></dt>
+</dl>
+<dl><dt><strong>should_ignore_certificate_errors</strong></dt>
+</dl>
+<dl><dt><strong>supports_extensions</strong></dt>
+<dd><tt>True&nbsp;if&nbsp;this&nbsp;browser&nbsp;backend&nbsp;supports&nbsp;extensions.</tt></dd>
+</dl>
+<dl><dt><strong>supports_memory_dumping</strong></dt>
+</dl>
+<dl><dt><strong>supports_overriding_memory_pressure_notifications</strong></dt>
+</dl>
+<dl><dt><strong>supports_uploading_logs</strong></dt>
+</dl>
+<dl><dt><strong>tab_list_backend</strong></dt>
+</dl>
+<dl><dt><strong>wpr_mode</strong></dt>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.internal.backends.app_backend.html#AppBackend">telemetry.internal.backends.app_backend.AppBackend</a>:<br>
+<dl><dt><a name="DesktopMandolineBackend-SetApp"><strong>SetApp</strong></a>(self, app)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.internal.backends.app_backend.html#AppBackend">telemetry.internal.backends.app_backend.AppBackend</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>app</strong></dt>
+</dl>
+<dl><dt><strong>app_type</strong></dt>
+</dl>
+<dl><dt><strong>platform_backend</strong></dt>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

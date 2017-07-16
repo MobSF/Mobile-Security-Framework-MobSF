@@ -1,0 +1,70 @@
+#!/usr/bin/env python
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import argparse
+import sys
+
+
+def _ExtractQueuedTestName(line):
+  _, test_name, _ = line.split(' ')
+  return test_name
+
+
+def _ExtractPassedTestNameAndTime(line):
+  _, test_name, _, test_time_string = line.split(' ')
+  if test_time_string.endswith(':'):
+    test_time = float(test_time_string[:-2])
+  else:
+    test_time = float(test_time_string[:-1])
+  return test_name, test_time
+
+
+def _IsQueued(line):
+  return line.endswith(' queued')
+
+
+def _IsPassed(line):
+  return 'passed' in line.split(' ')
+
+
+def _ProcessLogFile(file_path):
+  passed_unittests = []
+  queued_unittests = []
+  with open(file_path, 'r') as f:
+    for line in f:
+      line = line.strip()
+      if not line.startswith('['):
+        continue
+      if _IsQueued(line):
+        queued_unittests.append(_ExtractQueuedTestName(line))
+      elif _IsPassed(line):
+        passed_unittests.append(_ExtractPassedTestNameAndTime(line))
+  queued_unittests.sort()
+  passed_unittests.sort(key=lambda v: -v[1])
+  return queued_unittests, passed_unittests
+
+
+def main(args):
+  parser = argparse.ArgumentParser(
+      description=('Process telemetry unittests log to print out passed '
+                   'or queued tests.'))
+  parser.add_argument(
+      'filepath', help='path to log file of telemetry unittest')
+  parser.add_argument(
+      '-q', '--list-queued-tests', action='store_true',
+      help='Also list all the queued telemetry unittests')
+  options = parser.parse_args(args)
+  queued_unittests, passed_unittests = _ProcessLogFile(options.filepath)
+  print 'All passed telemetry unittests:\n'
+  for test, time in passed_unittests:
+      print test, time
+  if options.list_queued_tests:
+    print 'All queued telemetry unittests:\n'
+    print '\n'.join(queued_unittests)
+  return 0
+
+
+if __name__ == '__main__':
+  sys.exit(main(sys.argv[1:]))

@@ -1,0 +1,67 @@
+[MESSAGES CONTROL]
+
+# Disable the message, report, category or checker with the given id(s).
+# TODO: Shrink this list to as small as possible.
+disable=
+  design,
+  similarities,
+
+  abstract-class-not-used,
+  bad-builtin,
+  bad-continuation,
+  eval-used,
+  fixme,
+  invalid-name,
+  locally-disabled,
+  missing-docstring,
+  protected-access,
+  star-args,
+
+
+[REPORTS]
+
+# Don't write out full reports, just messages.
+reports=no
+
+
+[BASIC]
+
+# Regular expression which should only match correct function names.
+function-rgx=^(?:(?P<exempt>setUp|tearDown|setUpModule|tearDownModule)|(?P<camel_case>_?[A-Z][a-zA-Z0-9]*))$
+
+# Regular expression which should only match correct method names.
+method-rgx=^(?:(?P<exempt>_[a-z0-9_]+__|get|post|runTest|setUp|tearDown|setUpTestCase|tearDownTestCase|setupSelf|tearDownClass|setUpClass)|(?P<camel_case>(_{0,2}|test|assert)[A-Z][a-zA-Z0-9_]*))$
+
+# Regular expression which should only match correct argument names.
+argument-rgx=^[a-z][a-z0-9_]*$
+
+# Regular expression which should only match correct variable names.
+variable-rgx=^[a-z][a-z0-9_]*$
+
+# Good variable names which should always be accepted, separated by a comma.
+good-names=main,_
+
+# List of builtins function names that should not be used, separated by a comma.
+bad-functions=apply,input,reduce
+
+
+[VARIABLES]
+
+# Tells wether we should check for unused import in __init__ files.
+init-import=no
+
+# A regular expression matching names used for dummy variables (i.e. not used).
+dummy-variables-rgx=^\*{0,2}(_$|unused_)
+
+
+[TYPECHECK]
+
+# Tells wether missing members accessed in mixin class should be ignored. A
+# mixin class is detected if its name ends with "mixin" (case insensitive).
+ignore-mixin-members=yes
+
+
+[FORMAT]
+
+# We use two spaces for indents, instead of the usual four spaces or tab.
+indent-string='  '

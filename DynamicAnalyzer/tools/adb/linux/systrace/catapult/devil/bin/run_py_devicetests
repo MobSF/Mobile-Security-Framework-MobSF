@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import os
+import sys
+
+_CATAPULT_PATH = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..'))
+_DEVIL_PATH = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..'))
+_TYP_PATH = os.path.abspath(os.path.join(_CATAPULT_PATH, 'third_party', 'typ'))
+
+sys.path.append(_TYP_PATH)
+import typ
+
+sys.path.append(_DEVIL_PATH)
+from devil.android import device_test_case
+
+
+def main():
+  runner = typ.Runner()
+  runner.setup_fn = device_test_case.PrepareDevices
+  return runner.main(
+      coverage_source=[_DEVIL_PATH],
+      jobs=1,
+      suffixes=['*_devicetest.py'],
+      top_level_dir=_DEVIL_PATH)
+
+if __name__ == '__main__':
+  sys.exit(main())

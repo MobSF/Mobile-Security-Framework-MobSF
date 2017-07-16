@@ -1,0 +1,160 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.util.rgba_color</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.util.html"><font color="#ffffff">util</font></a>.rgba_color</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/util/rgba_color.py">telemetry/util/rgba_color.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2014&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="collections.html">collections</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial">RgbaColor(<a href="__builtin__.html#tuple">__builtin__.tuple</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.util.rgba_color.html#RgbaColor">RgbaColor</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="RgbaColor">class <strong>RgbaColor</strong></a>(RgbaColor)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Encapsulates&nbsp;an&nbsp;RGBA&nbsp;color&nbsp;retrieved&nbsp;from&nbsp;an&nbsp;image.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.util.rgba_color.html#RgbaColor">RgbaColor</a></dd>
+<dd>RgbaColor</dd>
+<dd><a href="__builtin__.html#tuple">__builtin__.tuple</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="RgbaColor-AssertIsRGB"><strong>AssertIsRGB</strong></a>(self, r, g, b, tolerance<font color="#909090">=0</font>)</dt></dl>
+
+<dl><dt><a name="RgbaColor-AssertIsRGBA"><strong>AssertIsRGBA</strong></a>(self, r, g, b, a, tolerance<font color="#909090">=0</font>)</dt></dl>
+
+<dl><dt><a name="RgbaColor-IsEqual"><strong>IsEqual</strong></a>(self, expected_color, tolerance<font color="#909090">=0</font>)</dt><dd><tt>Verifies&nbsp;that&nbsp;the&nbsp;color&nbsp;is&nbsp;within&nbsp;a&nbsp;given&nbsp;tolerance&nbsp;of<br>
+the&nbsp;expected&nbsp;color.</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-__int__"><strong>__int__</strong></a>(self)</dt></dl>
+
+<hr>
+Static methods defined here:<br>
+<dl><dt><a name="RgbaColor-__new__"><strong>__new__</strong></a>(cls, r, g, b, a<font color="#909090">=255</font>)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Methods inherited from RgbaColor:<br>
+<dl><dt><a name="RgbaColor-__getnewargs__"><strong>__getnewargs__</strong></a>(self)</dt><dd><tt>Return&nbsp;self&nbsp;as&nbsp;a&nbsp;plain&nbsp;tuple.&nbsp;&nbsp;Used&nbsp;by&nbsp;copy&nbsp;and&nbsp;pickle.</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-__getstate__"><strong>__getstate__</strong></a>(self)</dt><dd><tt>Exclude&nbsp;the&nbsp;OrderedDict&nbsp;from&nbsp;pickling</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-__repr__"><strong>__repr__</strong></a>(self)</dt><dd><tt>Return&nbsp;a&nbsp;nicely&nbsp;formatted&nbsp;representation&nbsp;string</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-_asdict"><strong>_asdict</strong></a>(self)</dt><dd><tt>Return&nbsp;a&nbsp;new&nbsp;OrderedDict&nbsp;which&nbsp;maps&nbsp;field&nbsp;names&nbsp;to&nbsp;their&nbsp;values</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-_replace"><strong>_replace</strong></a>(_self, **kwds)</dt><dd><tt>Return&nbsp;a&nbsp;new&nbsp;<a href="#RgbaColor">RgbaColor</a>&nbsp;object&nbsp;replacing&nbsp;specified&nbsp;fields&nbsp;with&nbsp;new&nbsp;values</tt></dd></dl>
+
+<hr>
+Class methods inherited from RgbaColor:<br>
+<dl><dt><a name="RgbaColor-_make"><strong>_make</strong></a>(cls, iterable, new<font color="#909090">=&lt;built-in method __new__ of type object&gt;</font>, len<font color="#909090">=&lt;built-in function len&gt;</font>)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Make&nbsp;a&nbsp;new&nbsp;<a href="#RgbaColor">RgbaColor</a>&nbsp;object&nbsp;from&nbsp;a&nbsp;sequence&nbsp;or&nbsp;iterable</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from RgbaColor:<br>
+<dl><dt><strong>a</strong></dt>
+<dd><tt>Alias&nbsp;for&nbsp;field&nbsp;number&nbsp;3</tt></dd>
+</dl>
+<dl><dt><strong>b</strong></dt>
+<dd><tt>Alias&nbsp;for&nbsp;field&nbsp;number&nbsp;2</tt></dd>
+</dl>
+<dl><dt><strong>g</strong></dt>
+<dd><tt>Alias&nbsp;for&nbsp;field&nbsp;number&nbsp;1</tt></dd>
+</dl>
+<dl><dt><strong>r</strong></dt>
+<dd><tt>Alias&nbsp;for&nbsp;field&nbsp;number&nbsp;0</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from RgbaColor:<br>
+<dl><dt><strong>_fields</strong> = ('r', 'g', 'b', 'a')</dl>
+
+<hr>
+Methods inherited from <a href="__builtin__.html#tuple">__builtin__.tuple</a>:<br>
+<dl><dt><a name="RgbaColor-__add__"><strong>__add__</strong></a>(...)</dt><dd><tt>x.<a href="#RgbaColor-__add__">__add__</a>(y)&nbsp;&lt;==&gt;&nbsp;x+y</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-__contains__"><strong>__contains__</strong></a>(...)</dt><dd><tt>x.<a href="#RgbaColor-__contains__">__contains__</a>(y)&nbsp;&lt;==&gt;&nbsp;y&nbsp;in&nbsp;x</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-__eq__"><strong>__eq__</strong></a>(...)</dt><dd><tt>x.<a href="#RgbaColor-__eq__">__eq__</a>(y)&nbsp;&lt;==&gt;&nbsp;x==y</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-__ge__"><strong>__ge__</strong></a>(...)</dt><dd><tt>x.<a href="#RgbaColor-__ge__">__ge__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&gt;=y</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#RgbaColor-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#RgbaColor-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#RgbaColor-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-__gt__"><strong>__gt__</strong></a>(...)</dt><dd><tt>x.<a href="#RgbaColor-__gt__">__gt__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&gt;y</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-__hash__"><strong>__hash__</strong></a>(...)</dt><dd><tt>x.<a href="#RgbaColor-__hash__">__hash__</a>()&nbsp;&lt;==&gt;&nbsp;hash(x)</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-__iter__"><strong>__iter__</strong></a>(...)</dt><dd><tt>x.<a href="#RgbaColor-__iter__">__iter__</a>()&nbsp;&lt;==&gt;&nbsp;iter(x)</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-__le__"><strong>__le__</strong></a>(...)</dt><dd><tt>x.<a href="#RgbaColor-__le__">__le__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&lt;=y</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-__len__"><strong>__len__</strong></a>(...)</dt><dd><tt>x.<a href="#RgbaColor-__len__">__len__</a>()&nbsp;&lt;==&gt;&nbsp;len(x)</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-__lt__"><strong>__lt__</strong></a>(...)</dt><dd><tt>x.<a href="#RgbaColor-__lt__">__lt__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&lt;y</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-__mul__"><strong>__mul__</strong></a>(...)</dt><dd><tt>x.<a href="#RgbaColor-__mul__">__mul__</a>(n)&nbsp;&lt;==&gt;&nbsp;x*n</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-__ne__"><strong>__ne__</strong></a>(...)</dt><dd><tt>x.<a href="#RgbaColor-__ne__">__ne__</a>(y)&nbsp;&lt;==&gt;&nbsp;x!=y</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-__rmul__"><strong>__rmul__</strong></a>(...)</dt><dd><tt>x.<a href="#RgbaColor-__rmul__">__rmul__</a>(n)&nbsp;&lt;==&gt;&nbsp;n*x</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-__sizeof__"><strong>__sizeof__</strong></a>(...)</dt><dd><tt>T.<a href="#RgbaColor-__sizeof__">__sizeof__</a>()&nbsp;--&nbsp;size&nbsp;of&nbsp;T&nbsp;in&nbsp;memory,&nbsp;in&nbsp;bytes</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-count"><strong>count</strong></a>(...)</dt><dd><tt>T.<a href="#RgbaColor-count">count</a>(value)&nbsp;-&gt;&nbsp;integer&nbsp;--&nbsp;return&nbsp;number&nbsp;of&nbsp;occurrences&nbsp;of&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="RgbaColor-index"><strong>index</strong></a>(...)</dt><dd><tt>T.<a href="#RgbaColor-index">index</a>(value,&nbsp;[start,&nbsp;[stop]])&nbsp;-&gt;&nbsp;integer&nbsp;--&nbsp;return&nbsp;first&nbsp;index&nbsp;of&nbsp;value.<br>
+Raises&nbsp;ValueError&nbsp;if&nbsp;the&nbsp;value&nbsp;is&nbsp;not&nbsp;present.</tt></dd></dl>
+
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>WEB_PAGE_TEST_ORANGE</strong> = RgbaColor(r=222, g=100, b=13, a=255)<br>
+<strong>WHITE</strong> = RgbaColor(r=255, g=255, b=255, a=255)</td></tr></table>
+</body></html>

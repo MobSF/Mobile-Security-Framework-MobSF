@@ -1,0 +1,43 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.backends.chrome.crx_id</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.<a href="telemetry.internal.backends.html"><font color="#ffffff">backends</font></a>.<a href="telemetry.internal.backends.chrome.html"><font color="#ffffff">chrome</font></a>.crx_id</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/backends/chrome/crx_id.py">telemetry/internal/backends/chrome/crx_id.py</a></font></td></tr></table>
+    <p><tt>Read&nbsp;a&nbsp;CRX&nbsp;file&nbsp;and&nbsp;write&nbsp;out&nbsp;the&nbsp;App&nbsp;ID&nbsp;and&nbsp;the&nbsp;Full&nbsp;Hash&nbsp;of&nbsp;the&nbsp;ID.<br>
+See:&nbsp;<a href="http://code.google.com/chrome/extensions/crx.html">http://code.google.com/chrome/extensions/crx.html</a><br>
+and&nbsp;'<a href="http://stackoverflow.com/questions/">http://stackoverflow.com/questions/</a>'<br>
+&nbsp;&nbsp;+&nbsp;'1882981/google-chrome-alphanumeric-hashes-to-identify-extensions'<br>
+for&nbsp;docs&nbsp;on&nbsp;the&nbsp;format.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="base64.html">base64</a><br>
+</td><td width="25%" valign=top><a href="hashlib.html">hashlib</a><br>
+</td><td width="25%" valign=top><a href="json.html">json</a><br>
+</td><td width="25%" valign=top><a href="os.html">os</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-GetCRXAppID"><strong>GetCRXAppID</strong></a>(filename, from_file_path<font color="#909090">=False</font>, is_win_path<font color="#909090">=False</font>)</dt></dl>
+ <dl><dt><a name="-GetCRXHash"><strong>GetCRXHash</strong></a>(filename, from_file_path<font color="#909090">=False</font>, is_win_path<font color="#909090">=False</font>)</dt></dl>
+ <dl><dt><a name="-GetPublicKey"><strong>GetPublicKey</strong></a>(filename, from_file_path, is_win_path<font color="#909090">=False</font>)</dt></dl>
+ <dl><dt><a name="-GetPublicKeyFromPath"><strong>GetPublicKeyFromPath</strong></a>(filepath, is_win_path<font color="#909090">=False</font>)</dt></dl>
+ <dl><dt><a name="-GetPublicKeyPacked"><strong>GetPublicKeyPacked</strong></a>(f)</dt></dl>
+ <dl><dt><a name="-GetPublicKeyUnpacked"><strong>GetPublicKeyUnpacked</strong></a>(f, filepath)</dt></dl>
+ <dl><dt><a name="-HasPublicKey"><strong>HasPublicKey</strong></a>(filename)</dt></dl>
+ <dl><dt><a name="-HexTo256"><strong>HexTo256</strong></a>(hex_chars)</dt><dd><tt>Convert&nbsp;bytes&nbsp;to&nbsp;pairs&nbsp;of&nbsp;hex&nbsp;digits.&nbsp;E.g.,&nbsp;

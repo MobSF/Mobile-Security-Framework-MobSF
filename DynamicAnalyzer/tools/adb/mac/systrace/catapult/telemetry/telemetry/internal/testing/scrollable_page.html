@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+  <head>
+    <style type="text/css">
+      body { height: 200vh; }
+    </style>
+  </head>
+  <body>
+    <!--
+    Below info are used in smoothness unittest only. use URL below to get the 
+    diagnostic info which is used when this page failed in test due to the 
+    scroll bar didn't show up.
+    scrollable_page.html?show_scroll_diagnosis_info
+    -->
+    <div id="info"></div>
+    <script>
+      var txt = "<h3>Screen info (Used for diagnosis):</h3>"
+                + "<p>Total width/height: " + screen.width + "*" + screen.height
+                + "</p><p>Available width/height: " + screen.availWidth + "*" 
+                + screen.availHeight + "</p><p>Color depth: "
+                + screen.colorDepth + "</p><p>Color resolution: "
+                + screen.pixelDepth + "</p><p>Body scrollable height: "
+                + document.body.scrollHeight + "</p><p>Body offset height: "
+                + document.body.offsetHeight + "</p><p>Body client height: "
+                + document.body.clientHeight + "</p><p>Window inner height: "
+                + window.innerHeight + "</p><p>Window device Pixel Ratio: "
+                + window.devicePixelRatio + "</p>";
+      if (window.location.search.substr(1) == "show_scroll_diagnosis_info") {
+          document.getElementById("info").innerHTML = txt;
+      }
+    </script>
+  </body>
+</html>

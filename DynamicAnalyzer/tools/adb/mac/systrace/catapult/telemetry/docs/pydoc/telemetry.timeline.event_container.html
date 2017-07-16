@@ -1,0 +1,118 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.timeline.event_container</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.timeline.html"><font color="#ffffff">timeline</font></a>.event_container</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/timeline/event_container.py">telemetry/timeline/event_container.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2014&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.timeline.async_slice.html">telemetry.timeline.async_slice</a><br>
+</td><td width="25%" valign=top><a href="telemetry.timeline.flow_event.html">telemetry.timeline.flow_event</a><br>
+</td><td width="25%" valign=top><a href="telemetry.timeline.slice.html">telemetry.timeline.slice</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.timeline.event_container.html#TimelineEventContainer">TimelineEventContainer</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="TimelineEventContainer">class <strong>TimelineEventContainer</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Represents&nbsp;a&nbsp;container&nbsp;for&nbsp;events.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="TimelineEventContainer-GetAllEvents"><strong>GetAllEvents</strong></a>(self, recursive<font color="#909090">=True</font>)</dt><dd><tt>#&nbsp;List&nbsp;versions.&nbsp;These&nbsp;should&nbsp;always&nbsp;be&nbsp;simple&nbsp;expressions&nbsp;that&nbsp;list()&nbsp;on<br>
+#&nbsp;an&nbsp;underlying&nbsp;iter&nbsp;method.</tt></dd></dl>
+
+<dl><dt><a name="TimelineEventContainer-GetAllEventsOfName"><strong>GetAllEventsOfName</strong></a>(self, name, recursive<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="TimelineEventContainer-GetAllToplevelSlicesOfName"><strong>GetAllToplevelSlicesOfName</strong></a>(self, name, recursive<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="TimelineEventContainer-IterAllAsyncSlicesOfName"><strong>IterAllAsyncSlicesOfName</strong></a>(self, name, recursive<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="TimelineEventContainer-IterAllAsyncSlicesStartsWithName"><strong>IterAllAsyncSlicesStartsWithName</strong></a>(self, name, recursive<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="TimelineEventContainer-IterAllEvents"><strong>IterAllEvents</strong></a>(self, recursive<font color="#909090">=True</font>, event_type_predicate<font color="#909090">=&lt;function &lt;lambda&gt;&gt;</font>, event_predicate<font color="#909090">=&lt;function &lt;lambda&gt;&gt;</font>)</dt><dd><tt>Iterates&nbsp;all&nbsp;events&nbsp;in&nbsp;this&nbsp;container,&nbsp;pre-filtered&nbsp;by&nbsp;two&nbsp;predicates.<br>
+&nbsp;<br>
+Only&nbsp;events&nbsp;with&nbsp;a&nbsp;type&nbsp;matching&nbsp;event_type_predicate&nbsp;AND&nbsp;matching&nbsp;event<br>
+event_predicate&nbsp;will&nbsp;be&nbsp;yielded.<br>
+&nbsp;<br>
+event_type_predicate&nbsp;is&nbsp;given&nbsp;an&nbsp;actual&nbsp;type&nbsp;<a href="__builtin__.html#object">object</a>,&nbsp;e.g.:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;event_type_predicate(slice_module.Slice)<br>
+&nbsp;<br>
+event_predicate&nbsp;is&nbsp;given&nbsp;actual&nbsp;events:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;event_predicate(thread.slices[7])</tt></dd></dl>
+
+<dl><dt><a name="TimelineEventContainer-IterAllEventsOfName"><strong>IterAllEventsOfName</strong></a>(self, name, recursive<font color="#909090">=True</font>)</dt><dd><tt>#&nbsp;Helper&nbsp;functions&nbsp;for&nbsp;finding&nbsp;common&nbsp;kinds&nbsp;of&nbsp;events.&nbsp;Must&nbsp;always&nbsp;take&nbsp;an<br>
+#&nbsp;optinal&nbsp;recurisve&nbsp;parameter&nbsp;and&nbsp;be&nbsp;implemented&nbsp;in&nbsp;terms&nbsp;fo&nbsp;IterAllEvents.</tt></dd></dl>
+
+<dl><dt><a name="TimelineEventContainer-IterAllFlowEvents"><strong>IterAllFlowEvents</strong></a>(self, recursive<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="TimelineEventContainer-IterAllSlices"><strong>IterAllSlices</strong></a>(self, recursive<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="TimelineEventContainer-IterAllSlicesInRange"><strong>IterAllSlicesInRange</strong></a>(self, start, end, recursive<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="TimelineEventContainer-IterAllSlicesOfName"><strong>IterAllSlicesOfName</strong></a>(self, name, recursive<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="TimelineEventContainer-IterAllToplevelSlicesOfName"><strong>IterAllToplevelSlicesOfName</strong></a>(self, name, recursive<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="TimelineEventContainer-IterChildContainers"><strong>IterChildContainers</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="TimelineEventContainer-IterEventsInThisContainer"><strong>IterEventsInThisContainer</strong></a>(self, event_type_predicate, event_predicate)</dt><dd><tt>Iterates&nbsp;all&nbsp;the&nbsp;TimelineEvents&nbsp;in&nbsp;this&nbsp;container.<br>
+&nbsp;<br>
+Only&nbsp;events&nbsp;with&nbsp;a&nbsp;type&nbsp;matching&nbsp;event_type_predicate&nbsp;AND&nbsp;matching&nbsp;event<br>
+event_predicate&nbsp;will&nbsp;be&nbsp;yielded.<br>
+&nbsp;<br>
+event_type_predicate&nbsp;is&nbsp;given&nbsp;an&nbsp;actual&nbsp;type&nbsp;<a href="__builtin__.html#object">object</a>,&nbsp;e.g.:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;event_type_predicate(slice_module.Slice)<br>
+&nbsp;<br>
+event_predicate&nbsp;is&nbsp;given&nbsp;actual&nbsp;events:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;event_predicate(thread.slices[7])<br>
+&nbsp;<br>
+DO&nbsp;NOT&nbsp;ASSUME&nbsp;that&nbsp;the&nbsp;event_type_predicate&nbsp;will&nbsp;be&nbsp;called&nbsp;for&nbsp;every&nbsp;event<br>
+found.&nbsp;The&nbsp;relative&nbsp;calling&nbsp;order&nbsp;of&nbsp;the&nbsp;two&nbsp;is&nbsp;left&nbsp;up&nbsp;to&nbsp;the&nbsp;implementer<br>
+of&nbsp;the&nbsp;method.</tt></dd></dl>
+
+<dl><dt><a name="TimelineEventContainer-__init__"><strong>__init__</strong></a>(self, name, parent)</dt></dl>
+
+<hr>
+Static methods defined here:<br>
+<dl><dt><a name="TimelineEventContainer-IsAsyncSlice"><strong>IsAsyncSlice</strong></a>(t)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

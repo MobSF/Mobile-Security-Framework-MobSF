@@ -1,0 +1,37 @@
+#! /usr/bin/env python
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import argparse
+import os
+import sys
+
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from dependency_manager import base_config
+
+
+def UpdateDependency(dependency, platform, path, config):
+  c = base_config.BaseConfig(config, writable=True)
+  c.AddCloudStorageDependencyUpdateJob(
+      dependency, platform, path, version=None, execute_job=True)
+
+
+def main(raw_args):
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--config', required=True, type=os.path.realpath,
+                      help='Path to the dependency configuration file.')
+  parser.add_argument('--dependency', required=True,
+                      help='Dependency name.')
+  parser.add_argument('--path', required=True, type=os.path.realpath,
+                      help='Path to the new dependency.')
+  parser.add_argument('--platform', required=True,
+                      help='Platform to update.')
+  args = parser.parse_args(raw_args)
+  UpdateDependency(args.dependency, args.platform, args.path, args.config)
+  return 0
+
+
+if __name__ == '__main__':
+  sys.exit(main(sys.argv[1:]))

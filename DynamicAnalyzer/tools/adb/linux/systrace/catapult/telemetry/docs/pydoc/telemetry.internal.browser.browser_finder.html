@@ -1,0 +1,80 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.browser.browser_finder</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.<a href="telemetry.internal.browser.html"><font color="#ffffff">browser</font></a>.browser_finder</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/browser/browser_finder.py">telemetry/internal/browser/browser_finder.py</a></font></td></tr></table>
+    <p><tt>Finds&nbsp;browsers&nbsp;that&nbsp;can&nbsp;be&nbsp;controlled&nbsp;by&nbsp;telemetry.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.internal.backends.chrome.android_browser_finder.html">telemetry.internal.backends.chrome.android_browser_finder</a><br>
+<a href="telemetry.internal.backends.mandoline.android_mandoline_finder.html">telemetry.internal.backends.mandoline.android_mandoline_finder</a><br>
+<a href="telemetry.internal.browser.browser_finder_exceptions.html">telemetry.internal.browser.browser_finder_exceptions</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.backends.chrome.cros_browser_finder.html">telemetry.internal.backends.chrome.cros_browser_finder</a><br>
+<a href="telemetry.decorators.html">telemetry.decorators</a><br>
+<a href="telemetry.internal.backends.chrome.desktop_browser_finder.html">telemetry.internal.backends.chrome.desktop_browser_finder</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.backends.mandoline.desktop_mandoline_finder.html">telemetry.internal.backends.mandoline.desktop_mandoline_finder</a><br>
+<a href="telemetry.internal.platform.device_finder.html">telemetry.internal.platform.device_finder</a><br>
+<a href="telemetry.internal.backends.chrome.ios_browser_finder.html">telemetry.internal.backends.chrome.ios_browser_finder</a><br>
+</td><td width="25%" valign=top><a href="logging.html">logging</a><br>
+<a href="operator.html">operator</a><br>
+<a href="telemetry.internal.backends.remote.trybot_browser_finder.html">telemetry.internal.backends.remote.trybot_browser_finder</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-FindAllBrowserTypes"><strong>FindAllBrowserTypes</strong></a>(options)</dt></dl>
+ <dl><dt><a name="-FindBrowser"><strong>FindBrowser</strong></a>(*args, **kwargs)</dt><dd><tt>Finds&nbsp;the&nbsp;best&nbsp;PossibleBrowser&nbsp;object&nbsp;given&nbsp;a&nbsp;BrowserOptions&nbsp;object.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;A&nbsp;BrowserOptions&nbsp;object.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;A&nbsp;PossibleBrowser&nbsp;object.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;BrowserFinderException:&nbsp;Options&nbsp;improperly&nbsp;set,&nbsp;or&nbsp;an&nbsp;error&nbsp;occurred.</tt></dd></dl>
+ <dl><dt><a name="-GetAllAvailableBrowserTypes"><strong>GetAllAvailableBrowserTypes</strong></a>(*args, **kwargs)</dt><dd><tt>Returns&nbsp;a&nbsp;list&nbsp;of&nbsp;available&nbsp;browser&nbsp;types.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;options:&nbsp;A&nbsp;BrowserOptions&nbsp;object.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;A&nbsp;list&nbsp;of&nbsp;browser&nbsp;type&nbsp;strings.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;BrowserFinderException:&nbsp;Options&nbsp;are&nbsp;improperly&nbsp;set,&nbsp;or&nbsp;an&nbsp;error&nbsp;occurred.</tt></dd></dl>
+ <dl><dt><a name="-GetAllAvailableBrowsers"><strong>GetAllAvailableBrowsers</strong></a>(*args, **kwargs)</dt><dd><tt>Returns&nbsp;a&nbsp;list&nbsp;of&nbsp;available&nbsp;browsers&nbsp;on&nbsp;the&nbsp;device.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;options:&nbsp;A&nbsp;BrowserOptions&nbsp;object.<br>
+&nbsp;&nbsp;device:&nbsp;The&nbsp;target&nbsp;device,&nbsp;which&nbsp;can&nbsp;be&nbsp;None.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;A&nbsp;list&nbsp;of&nbsp;browser&nbsp;instances.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;BrowserFinderException:&nbsp;Options&nbsp;are&nbsp;improperly&nbsp;set,&nbsp;or&nbsp;an&nbsp;error&nbsp;occurred.</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>BROWSER_FINDERS</strong> = [&lt;module 'telemetry.internal.backends.chrome.desk...rnal/backends/chrome/desktop_browser_finder.pyc'&gt;, &lt;module 'telemetry.internal.backends.chrome.andr...rnal/backends/chrome/android_browser_finder.pyc'&gt;, &lt;module 'telemetry.internal.backends.chrome.cros...nternal/backends/chrome/cros_browser_finder.pyc'&gt;, &lt;module 'telemetry.internal.backends.chrome.ios_...internal/backends/chrome/ios_browser_finder.pyc'&gt;, &lt;module 'telemetry.internal.backends.remote.tryb...ernal/backends/remote/trybot_browser_finder.pyc'&gt;, &lt;module 'telemetry.internal.backends.mandoline.d...backends/mandoline/desktop_mandoline_finder.pyc'&gt;, &lt;module 'telemetry.internal.backends.mandoline.a...backends/mandoline/android_mandoline_finder.pyc'&gt;]</td></tr></table>
+</body></html>

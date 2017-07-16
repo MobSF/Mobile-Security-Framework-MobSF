@@ -1,0 +1,168 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.image_processing.screen_finder</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.<a href="telemetry.internal.image_processing.html"><font color="#ffffff">image_processing</font></a>.screen_finder</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/image_processing/screen_finder.py">telemetry/internal/image_processing/screen_finder.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2014&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.<br>
+#<br>
+#&nbsp;This&nbsp;script&nbsp;attempts&nbsp;to&nbsp;detect&nbsp;the&nbsp;region&nbsp;of&nbsp;a&nbsp;camera's&nbsp;field&nbsp;of&nbsp;view&nbsp;that<br>
+#&nbsp;contains&nbsp;the&nbsp;screen&nbsp;of&nbsp;the&nbsp;device&nbsp;we&nbsp;are&nbsp;testing.<br>
+#<br>
+#&nbsp;Usage:&nbsp;./screen_finder.py&nbsp;path_to_video&nbsp;0&nbsp;0&nbsp;--verbose</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="copy.html">copy</a><br>
+<a href="cv2.html">cv2</a><br>
+<a href="telemetry.internal.image_processing.cv_util.html">telemetry.internal.image_processing.cv_util</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.util.external_modules.html">telemetry.internal.util.external_modules</a><br>
+<a href="telemetry.internal.image_processing.frame_generator.html">telemetry.internal.image_processing.frame_generator</a><br>
+<a href="logging.html">logging</a><br>
+</td><td width="25%" valign=top><a href="numpy.html">numpy</a><br>
+<a href="os.html">os</a><br>
+<a href="sys.html">sys</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.image_processing.video_file_frame_generator.html">telemetry.internal.image_processing.video_file_frame_generator</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.image_processing.screen_finder.html#ScreenFinder">ScreenFinder</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="ScreenFinder">class <strong>ScreenFinder</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Finds&nbsp;and&nbsp;extracts&nbsp;device&nbsp;screens&nbsp;from&nbsp;video.<br>
+&nbsp;<br>
+Sample&nbsp;Usage:<br>
+&nbsp;&nbsp;sf&nbsp;=&nbsp;<a href="#ScreenFinder">ScreenFinder</a>(sys.argv[1])<br>
+&nbsp;&nbsp;while&nbsp;sf.<a href="#ScreenFinder-HasNext">HasNext</a>():<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ret,&nbsp;screen&nbsp;=&nbsp;sf.<a href="#ScreenFinder-GetNext">GetNext</a>()<br>
+&nbsp;<br>
+Attributes:<br>
+&nbsp;&nbsp;_lost_corners:&nbsp;Each&nbsp;index&nbsp;represents&nbsp;whether&nbsp;or&nbsp;not&nbsp;we&nbsp;lost&nbsp;track&nbsp;of&nbsp;that<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;corner&nbsp;on&nbsp;the&nbsp;previous&nbsp;frame.&nbsp;Ordered&nbsp;by&nbsp;[top-right,&nbsp;top-left,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bottom-left,&nbsp;bottom-right]<br>
+&nbsp;&nbsp;_frame:&nbsp;An&nbsp;unmodified&nbsp;copy&nbsp;of&nbsp;the&nbsp;frame&nbsp;we're&nbsp;currently&nbsp;processing.<br>
+&nbsp;&nbsp;_frame_debug:&nbsp;A&nbsp;copy&nbsp;of&nbsp;the&nbsp;frame&nbsp;we're&nbsp;currently&nbsp;processing,&nbsp;may&nbsp;be<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;modified&nbsp;at&nbsp;any&nbsp;time,&nbsp;used&nbsp;for&nbsp;debugging.<br>
+&nbsp;&nbsp;_frame_grey:&nbsp;A&nbsp;greyscale&nbsp;copy&nbsp;of&nbsp;the&nbsp;frame&nbsp;we're&nbsp;currently&nbsp;processing.<br>
+&nbsp;&nbsp;_frame_edges:&nbsp;A&nbsp;Canny&nbsp;Edge&nbsp;detected&nbsp;copy&nbsp;of&nbsp;the&nbsp;frame&nbsp;we're&nbsp;currently<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;processing.<br>
+&nbsp;&nbsp;_screen_size:&nbsp;The&nbsp;size&nbsp;of&nbsp;device&nbsp;screen&nbsp;in&nbsp;the&nbsp;video&nbsp;when&nbsp;first&nbsp;detected.<br>
+&nbsp;&nbsp;_avg_corners:&nbsp;Exponentially&nbsp;weighted&nbsp;average&nbsp;of&nbsp;the&nbsp;previous&nbsp;corner<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;locations.<br>
+&nbsp;&nbsp;_prev_corners:&nbsp;The&nbsp;location&nbsp;of&nbsp;the&nbsp;corners&nbsp;in&nbsp;the&nbsp;previous&nbsp;frame.<br>
+&nbsp;&nbsp;_lost_corner_frames:&nbsp;A&nbsp;counter&nbsp;of&nbsp;the&nbsp;number&nbsp;of&nbsp;successive&nbsp;frames&nbsp;in&nbsp;which<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;we've&nbsp;lost&nbsp;a&nbsp;corner&nbsp;location.<br>
+&nbsp;&nbsp;_border:&nbsp;See&nbsp;|border|&nbsp;above.<br>
+&nbsp;&nbsp;_min_line_length:&nbsp;The&nbsp;minimum&nbsp;length&nbsp;a&nbsp;line&nbsp;must&nbsp;be&nbsp;before&nbsp;we&nbsp;consider&nbsp;it<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a&nbsp;possible&nbsp;screen&nbsp;edge.<br>
+&nbsp;&nbsp;_frame_generator:&nbsp;See&nbsp;|frame_generator|&nbsp;above.<br>
+&nbsp;&nbsp;_width,&nbsp;_height:&nbsp;The&nbsp;width&nbsp;and&nbsp;height&nbsp;of&nbsp;the&nbsp;frame.<br>
+&nbsp;&nbsp;_anglesp5,&nbsp;_anglesm5:&nbsp;The&nbsp;angles&nbsp;for&nbsp;each&nbsp;point&nbsp;we&nbsp;look&nbsp;at&nbsp;in&nbsp;the&nbsp;grid<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;computing&nbsp;brightness,&nbsp;constant&nbsp;across&nbsp;frames.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="ScreenFinder-GetNext"><strong>GetNext</strong></a>(self)</dt><dd><tt>Gets&nbsp;the&nbsp;next&nbsp;screen&nbsp;image.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;A&nbsp;numpy&nbsp;matrix&nbsp;containing&nbsp;the&nbsp;screen&nbsp;surrounded&nbsp;by&nbsp;the&nbsp;number&nbsp;of&nbsp;border<br>
+&nbsp;&nbsp;pixels&nbsp;specified&nbsp;in&nbsp;initialization,&nbsp;and&nbsp;the&nbsp;location&nbsp;of&nbsp;the&nbsp;detected<br>
+&nbsp;&nbsp;screen&nbsp;corners&nbsp;in&nbsp;the&nbsp;current&nbsp;frame,&nbsp;if&nbsp;a&nbsp;screen&nbsp;is&nbsp;found.&nbsp;The&nbsp;returned<br>
+&nbsp;&nbsp;screen&nbsp;is&nbsp;guaranteed&nbsp;to&nbsp;be&nbsp;the&nbsp;same&nbsp;size&nbsp;at&nbsp;each&nbsp;frame.<br>
+&nbsp;&nbsp;'None'&nbsp;and&nbsp;'None'&nbsp;if&nbsp;no&nbsp;screen&nbsp;was&nbsp;found&nbsp;on&nbsp;the&nbsp;current&nbsp;frame.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;FrameReadError:&nbsp;An&nbsp;error&nbsp;occurred&nbsp;in&nbsp;the&nbsp;FrameGenerator.<br>
+&nbsp;&nbsp;RuntimeError:&nbsp;This&nbsp;method&nbsp;was&nbsp;called&nbsp;when&nbsp;no&nbsp;frames&nbsp;were&nbsp;available.</tt></dd></dl>
+
+<dl><dt><a name="ScreenFinder-HasNext"><strong>HasNext</strong></a>(self)</dt><dd><tt>True&nbsp;if&nbsp;there&nbsp;are&nbsp;more&nbsp;frames&nbsp;available&nbsp;to&nbsp;process.</tt></dd></dl>
+
+<dl><dt><a name="ScreenFinder-__init__"><strong>__init__</strong></a>(self, frame_generator, border<font color="#909090">=5</font>)</dt><dd><tt>Initializes&nbsp;the&nbsp;<a href="#ScreenFinder">ScreenFinder</a>&nbsp;<a href="__builtin__.html#object">object</a>.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;frame_generator:&nbsp;FrameGenerator,&nbsp;An&nbsp;initialized&nbsp;Video&nbsp;Frame&nbsp;Generator.<br>
+&nbsp;&nbsp;border:&nbsp;int,&nbsp;number&nbsp;of&nbsp;pixels&nbsp;of&nbsp;border&nbsp;to&nbsp;be&nbsp;kept&nbsp;when&nbsp;cropping&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;detected&nbsp;screen.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;FrameReadError:&nbsp;The&nbsp;frame&nbsp;generator&nbsp;may&nbsp;output&nbsp;a&nbsp;read&nbsp;error&nbsp;during<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;initialization.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>CANNY_HYSTERESIS_THRESH_HIGH</strong> = 500</dl>
+
+<dl><dt><strong>CANNY_HYSTERESIS_THRESH_LOW</strong> = 300</dl>
+
+<dl><dt><strong>CORNER_AVERAGE_WEIGHT</strong> = 0.5</dl>
+
+<dl><dt><strong>CornerData</strong> = &lt;class 'telemetry.internal.image_processing.screen_finder.CornerData'&gt;</dl>
+
+<dl><dt><strong>DEBUG</strong> = False</dl>
+
+<dl><dt><strong>MAX_INTERFRAME_MOTION</strong> = 25</dl>
+
+<dl><dt><strong>MIN_CORNER_ABSOLUTE_BRIGHTNESS</strong> = 60</dl>
+
+<dl><dt><strong>MIN_RELATIVE_BRIGHTNESS_FACTOR</strong> = 1.5</dl>
+
+<dl><dt><strong>MIN_SCREEN_WIDTH</strong> = 40</dl>
+
+<dl><dt><strong>RESET_AFTER_N_BAD_FRAMES</strong> = 2</dl>
+
+<dl><dt><strong>SMALL_ANGLE</strong> = 0.08726646259971647</dl>
+
+<dl><dt><strong>ScreenNotFoundError</strong> = &lt;class 'telemetry.internal.image_processing.screen_finder.ScreenNotFoundError'&gt;</dl>
+
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-main"><strong>main</strong></a>()</dt></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>division</strong> = _Feature((2, 2, 0, 'alpha', 2), (3, 0, 0, 'alpha', 0), 8192)</td></tr></table>
+</body></html>

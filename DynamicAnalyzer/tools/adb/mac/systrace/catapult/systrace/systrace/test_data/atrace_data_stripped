@@ -1,0 +1,127 @@
+# tracer: nop
+#
+# entries-in-buffer/entries-written: 116/116   #P:1
+#
+#                              _-----=> irqs-off
+#                             / _----=> need-resched
+#                            | / _---=> hardirq/softirq
+#                            || / _--=> preempt-depth
+#                            ||| /     delay
+#           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION
+#              | |       |   ||||       |         |
+          atrace-14446 [000] ...2  1212.465062: sched_switch: prev_comm=atrace prev_pid=14446 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1212.465074: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.465082: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1212.465092: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1212.465102: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.465126: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1212.465132: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1212.465139: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.465145: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1212.465227: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d.h5  1212.465297: sched_wakeup: comm=adbd pid=212 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.465306: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=adbd next_pid=212 next_prio=120
+            adbd-212   [000] d..4  1212.465329: sched_wakeup: comm=adbd pid=209 prio=120 success=1 target_cpu=000
+            adbd-212   [000] ...2  1212.465348: sched_switch: prev_comm=adbd prev_pid=212 prev_prio=120 prev_state=S ==> next_comm=adbd next_pid=209 next_prio=120
+            adbd-209   [000] d..4  1212.465395: sched_wakeup: comm=adbd pid=211 prio=120 success=1 target_cpu=000
+            adbd-209   [000] ...2  1212.465441: sched_switch: prev_comm=adbd prev_pid=209 prev_prio=120 prev_state=S ==> next_comm=adbd next_pid=211 next_prio=120
+            adbd-211   [000] ...2  1212.465448: sched_switch: prev_comm=adbd prev_pid=211 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d.h5  1212.574554: sched_wakeup: comm=sensors.qcom pid=292 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.574566: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=sensors.qcom next_pid=292 next_prio=120
+    sensors.qcom-292   [000] ...2  1212.574665: sched_switch: prev_comm=sensors.qcom prev_pid=292 prev_prio=120 prev_state=S ==> next_comm=sensors.qcom next_pid=14447 next_prio=120
+    sensors.qcom-14447 [000] d..4  1212.574797: sched_wakeup: comm=sensors.qcom pid=1593 prio=120 success=1 target_cpu=000
+    sensors.qcom-14447 [000] ...2  1212.574802: sched_switch: prev_comm=sensors.qcom prev_pid=14447 prev_prio=120 prev_state=R+ ==> next_comm=sensors.qcom next_pid=1593 next_prio=120
+    sensors.qcom-1593  [000] ...2  1212.574819: sched_switch: prev_comm=sensors.qcom prev_pid=1593 prev_prio=120 prev_state=D ==> next_comm=sensors.qcom next_pid=14447 next_prio=120
+    sensors.qcom-14447 [000] d..3  1212.574823: sched_wakeup: comm=sensors.qcom pid=1593 prio=120 success=1 target_cpu=000
+    sensors.qcom-14447 [000] ...2  1212.574827: sched_switch: prev_comm=sensors.qcom prev_pid=14447 prev_prio=120 prev_state=R+ ==> next_comm=sensors.qcom next_pid=1593 next_prio=120
+    sensors.qcom-1593  [000] d..4  1212.574865: sched_wakeup: comm=sensors.qcom pid=760 prio=120 success=1 target_cpu=000
+    sensors.qcom-1593  [000] ...2  1212.574876: sched_switch: prev_comm=sensors.qcom prev_pid=1593 prev_prio=120 prev_state=S ==> next_comm=sensors.qcom next_pid=760 next_prio=120
+    sensors.qcom-760   [000] d..4  1212.574905: sched_wakeup: comm=system_server pid=782 prio=118 success=1 target_cpu=000
+    sensors.qcom-760   [000] ...2  1212.574917: sched_switch: prev_comm=sensors.qcom prev_pid=760 prev_prio=120 prev_state=S ==> next_comm=system_server next_pid=782 next_prio=118
+   system_server-782   [000] d..4  1212.574981: sched_wakeup: comm=system_server pid=785 prio=118 success=1 target_cpu=000
+   system_server-782   [000] ...2  1212.575009: sched_switch: prev_comm=system_server prev_pid=782 prev_prio=118 prev_state=S ==> next_comm=system_server next_pid=785 next_prio=118
+   system_server-785   [000] ...2  1212.575045: sched_switch: prev_comm=system_server prev_pid=785 prev_prio=118 prev_state=S ==> next_comm=sensors.qcom next_pid=14447 next_prio=120
+    sensors.qcom-14447 [000] ...3  1212.575143: sched_switch: prev_comm=sensors.qcom prev_pid=14447 prev_prio=120 prev_state=x ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1212.575153: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.575159: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1212.575167: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1212.575175: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.575181: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1212.575188: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1212.575195: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.575201: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1212.575211: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d.h4  1212.649601: sched_wakeup: comm=MMHandlerThread pid=7231 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.649614: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=MMHandlerThread next_pid=7231 next_prio=120
+ MMHandlerThread-7231  [000] ...2  1212.649630: sched_switch: prev_comm=MMHandlerThread prev_pid=7231 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d.h6  1212.729539: sched_wakeup: comm=kworker/u:1 pid=21 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] dNs6  1212.729550: sched_wakeup: comm=kworker/0:2H pid=557 prio=100 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.729563: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=kworker/u:1 next_pid=21 next_prio=120
+     kworker/u:1-21    [000] d..5  1212.729571: sched_wakeup: comm=mpdecision pid=2046 prio=113 success=1 target_cpu=000
+     kworker/u:1-21    [000] ...2  1212.729578: sched_switch: prev_comm=kworker/u:1 prev_pid=21 prev_prio=120 prev_state=S ==> next_comm=kworker/0:2H next_pid=557 next_prio=100
+    kworker/0:2H-557   [000] d..4  1212.729597: sched_wakeup: comm=kworker/0:1H pid=17 prio=100 success=1 target_cpu=000
+    kworker/0:2H-557   [000] ...2  1212.729600: sched_switch: prev_comm=kworker/0:2H prev_pid=557 prev_prio=100 prev_state=D ==> next_comm=mpdecision next_pid=2046 next_prio=113
+      mpdecision-2046  [000] ...2  1212.729801: sched_switch: prev_comm=mpdecision prev_pid=2046 prev_prio=113 prev_state=S ==> next_comm=kworker/0:1H next_pid=17 next_prio=100
+    kworker/0:1H-17    [000] ...2  1212.730104: sched_switch: prev_comm=kworker/0:1H prev_pid=17 prev_prio=100 prev_state=D ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1212.730134: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.730154: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1212.730176: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1212.730201: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.730220: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1212.730241: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1212.730262: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.730280: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1212.730303: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d.h6  1212.730638: sched_wakeup: comm=kworker/u:0H pid=7 prio=100 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.730669: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=kworker/u:0H next_pid=7 next_prio=100
+    kworker/u:0H-7     [000] d..6  1212.730707: sched_wakeup: comm=kworker/0:1H pid=17 prio=100 success=1 target_cpu=000
+    kworker/u:0H-7     [000] ...2  1212.730728: sched_switch: prev_comm=kworker/u:0H prev_pid=7 prev_prio=100 prev_state=D ==> next_comm=kworker/0:1H next_pid=17 next_prio=100
+    kworker/0:1H-17    [000] ...2  1212.730916: sched_switch: prev_comm=kworker/0:1H prev_pid=17 prev_prio=100 prev_state=D ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d.h6  1212.731632: sched_wakeup: comm=kworker/u:0H pid=7 prio=100 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.731661: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=kworker/u:0H next_pid=7 next_prio=100
+    kworker/u:0H-7     [000] d..6  1212.731702: sched_wakeup: comm=kworker/0:1H pid=17 prio=100 success=1 target_cpu=000
+    kworker/u:0H-7     [000] ...2  1212.731722: sched_switch: prev_comm=kworker/u:0H prev_pid=7 prev_prio=100 prev_state=D ==> next_comm=kworker/0:1H next_pid=17 next_prio=100
+    kworker/0:1H-17    [000] ...2  1212.731832: sched_switch: prev_comm=kworker/0:1H prev_pid=17 prev_prio=100 prev_state=D ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d.h6  1212.732685: sched_wakeup: comm=kworker/u:0H pid=7 prio=100 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.732714: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=kworker/u:0H next_pid=7 next_prio=100
+    kworker/u:0H-7     [000] d..6  1212.732747: sched_wakeup: comm=kworker/0:1H pid=17 prio=100 success=1 target_cpu=000
+    kworker/u:0H-7     [000] ...2  1212.732767: sched_switch: prev_comm=kworker/u:0H prev_pid=7 prev_prio=100 prev_state=D ==> next_comm=kworker/0:1H next_pid=17 next_prio=100
+    kworker/0:1H-17    [000] d..4  1212.732810: sched_wakeup: comm=kworker/0:2H pid=557 prio=100 success=1 target_cpu=000
+    kworker/0:1H-17    [000] ...2  1212.732829: sched_switch: prev_comm=kworker/0:1H prev_pid=17 prev_prio=100 prev_state=S ==> next_comm=kworker/0:2H next_pid=557 next_prio=100
+    kworker/0:2H-557   [000] ...2  1212.732854: sched_switch: prev_comm=kworker/0:2H prev_pid=557 prev_prio=100 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d.h4  1212.876266: sched_wakeup: comm=RILSender0 pid=1365 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] dNh4  1212.876284: sched_wakeup: comm=MMHandlerThread pid=7231 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.876316: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=RILSender0 next_pid=1365 next_prio=120
+      RILSender0-1365  [000] ...2  1212.876415: sched_switch: prev_comm=RILSender0 prev_pid=1365 prev_prio=120 prev_state=S ==> next_comm=MMHandlerThread next_pid=7231 next_prio=120
+ MMHandlerThread-7231  [000] ...2  1212.876454: sched_switch: prev_comm=MMHandlerThread prev_pid=7231 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d.h4  1213.089569: sched_wakeup: comm=Thread-625 pid=5750 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] dNh4  1213.089587: sched_wakeup: comm=MMHandlerThread pid=7231 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1213.089622: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=Thread-625 next_pid=5750 next_prio=120
+      Thread-625-5750  [000] ...2  1213.089842: sched_switch: prev_comm=Thread-625 prev_pid=5750 prev_prio=120 prev_state=S ==> next_comm=MMHandlerThread next_pid=7231 next_prio=120
+ MMHandlerThread-7231  [000] ...2  1213.089879: sched_switch: prev_comm=MMHandlerThread prev_pid=7231 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d.h4  1213.327439: sched_wakeup: comm=pandora.android pid=5395 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] dNh4  1213.327455: sched_wakeup: comm=MMHandlerThread pid=7231 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1213.327487: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=MMHandlerThread next_pid=7231 next_prio=120
+ MMHandlerThread-7231  [000] ...2  1213.327518: sched_switch: prev_comm=MMHandlerThread prev_pid=7231 prev_prio=120 prev_state=S ==> next_comm=pandora.android next_pid=5395 next_prio=120
+ pandora.android-5395  [000] d..4  1213.327718: sched_wakeup: comm=Binder_1 pid=780 prio=120 success=1 target_cpu=000
+ pandora.android-5395  [000] ...2  1213.327739: sched_switch: prev_comm=pandora.android prev_pid=5395 prev_prio=120 prev_state=R+ ==> next_comm=Binder_1 next_pid=780 next_prio=120
+        Binder_1-780   [000] ...2  1213.327763: sched_switch: prev_comm=Binder_1 prev_pid=780 prev_prio=120 prev_state=D ==> next_comm=pandora.android next_pid=5395 next_prio=120
+ pandora.android-5395  [000] d..3  1213.327781: sched_wakeup: comm=Binder_1 pid=780 prio=120 success=1 target_cpu=000
+ pandora.android-5395  [000] ...2  1213.327795: sched_switch: prev_comm=pandora.android prev_pid=5395 prev_prio=120 prev_state=R+ ==> next_comm=Binder_1 next_pid=780 next_prio=120
+        Binder_1-780   [000] d..4  1213.328056: sched_wakeup: comm=Binder_1 pid=878 prio=120 success=1 target_cpu=000
+        Binder_1-780   [000] ...2  1213.328095: sched_switch: prev_comm=Binder_1 prev_pid=780 prev_prio=120 prev_state=S ==> next_comm=Binder_1 next_pid=878 next_prio=120
+        Binder_1-878   [000] d..4  1213.328263: sched_wakeup: comm=Binder_1 pid=780 prio=120 success=1 target_cpu=000
+        Binder_1-878   [000] ...2  1213.328345: sched_switch: prev_comm=Binder_1 prev_pid=878 prev_prio=120 prev_state=S ==> next_comm=Binder_1 next_pid=780 next_prio=120
+        Binder_1-780   [000] ...2  1213.328558: sched_switch: prev_comm=Binder_1 prev_pid=780 prev_prio=120 prev_state=S ==> next_comm=pandora.android next_pid=5395 next_prio=120
+ pandora.android-5395  [000] ...2  1213.328743: sched_switch: prev_comm=pandora.android prev_pid=5395 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1213.328773: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1213.328793: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1213.328821: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1213.328846: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1213.328866: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1213.328891: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1213.328913: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1213.328931: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1213.328964: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d.h4  1213.465138: sched_wakeup: comm=atrace pid=14446 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1213.465171: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=atrace next_pid=14446 next_prio=120

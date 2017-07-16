@@ -1,0 +1,202 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.forwarders.android_forwarder</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.<a href="telemetry.internal.forwarders.html"><font color="#ffffff">forwarders</font></a>.android_forwarder</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/forwarders/android_forwarder.py">telemetry/internal/forwarders/android_forwarder.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2014&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.internal.platform.android_device.html">telemetry.internal.platform.android_device</a><br>
+<a href="atexit.html">atexit</a><br>
+<a href="telemetry.internal.util.binary_manager.html">telemetry.internal.util.binary_manager</a><br>
+<a href="devil.android.device_errors.html">devil.android.device_errors</a><br>
+</td><td width="25%" valign=top><a href="devil.android.device_utils.html">devil.android.device_utils</a><br>
+<a href="pylib.forwarder.html">pylib.forwarder</a><br>
+<a href="telemetry.internal.forwarders.html">telemetry.internal.forwarders</a><br>
+<a href="logging.html">logging</a><br>
+</td><td width="25%" valign=top><a href="os.html">os</a><br>
+<a href="telemetry.core.platform.html">telemetry.core.platform</a><br>
+<a href="re.html">re</a><br>
+<a href="socket.html">socket</a><br>
+</td><td width="25%" valign=top><a href="struct.html">struct</a><br>
+<a href="subprocess.html">subprocess</a><br>
+<a href="telemetry.core.util.html">telemetry.core.util</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.forwarders.android_forwarder.html#AndroidRndisConfigurator">AndroidRndisConfigurator</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.forwarders.html#Forwarder">telemetry.internal.forwarders.Forwarder</a>(<a href="__builtin__.html#object">__builtin__.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.forwarders.android_forwarder.html#AndroidForwarder">AndroidForwarder</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.internal.forwarders.android_forwarder.html#AndroidRndisForwarder">AndroidRndisForwarder</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.forwarders.html#ForwarderFactory">telemetry.internal.forwarders.ForwarderFactory</a>(<a href="__builtin__.html#object">__builtin__.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.forwarders.android_forwarder.html#AndroidForwarderFactory">AndroidForwarderFactory</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="AndroidForwarder">class <strong>AndroidForwarder</strong></a>(<a href="telemetry.internal.forwarders.html#Forwarder">telemetry.internal.forwarders.Forwarder</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.internal.forwarders.android_forwarder.html#AndroidForwarder">AndroidForwarder</a></dd>
+<dd><a href="telemetry.internal.forwarders.html#Forwarder">telemetry.internal.forwarders.Forwarder</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="AndroidForwarder-Close"><strong>Close</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidForwarder-__init__"><strong>__init__</strong></a>(self, device, port_pairs)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.internal.forwarders.html#Forwarder">telemetry.internal.forwarders.Forwarder</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>host_ip</strong></dt>
+</dl>
+<dl><dt><strong>host_port</strong></dt>
+</dl>
+<dl><dt><strong>port_pairs</strong></dt>
+</dl>
+<dl><dt><strong>url</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="AndroidForwarderFactory">class <strong>AndroidForwarderFactory</strong></a>(<a href="telemetry.internal.forwarders.html#ForwarderFactory">telemetry.internal.forwarders.ForwarderFactory</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.internal.forwarders.android_forwarder.html#AndroidForwarderFactory">AndroidForwarderFactory</a></dd>
+<dd><a href="telemetry.internal.forwarders.html#ForwarderFactory">telemetry.internal.forwarders.ForwarderFactory</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="AndroidForwarderFactory-Create"><strong>Create</strong></a>(self, port_pairs)</dt></dl>
+
+<dl><dt><a name="AndroidForwarderFactory-__init__"><strong>__init__</strong></a>(self, device, use_rndis)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>does_forwarder_override_dns</strong></dt>
+</dl>
+<dl><dt><strong>host_ip</strong></dt>
+</dl>
+<hr>
+Data descriptors inherited from <a href="telemetry.internal.forwarders.html#ForwarderFactory">telemetry.internal.forwarders.ForwarderFactory</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="AndroidRndisConfigurator">class <strong>AndroidRndisConfigurator</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Configures&nbsp;a&nbsp;linux&nbsp;host&nbsp;to&nbsp;connect&nbsp;to&nbsp;an&nbsp;android&nbsp;device&nbsp;via&nbsp;RNDIS.<br>
+&nbsp;<br>
+Note&nbsp;that&nbsp;we&nbsp;intentionally&nbsp;leave&nbsp;RNDIS&nbsp;running&nbsp;on&nbsp;the&nbsp;device.&nbsp;This&nbsp;is<br>
+because&nbsp;the&nbsp;setup&nbsp;is&nbsp;slow&nbsp;and&nbsp;potentially&nbsp;flaky&nbsp;and&nbsp;leaving&nbsp;it&nbsp;running<br>
+doesn't&nbsp;seem&nbsp;to&nbsp;interfere&nbsp;with&nbsp;any&nbsp;other&nbsp;developer&nbsp;or&nbsp;bot&nbsp;use-cases.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="AndroidRndisConfigurator-OverrideRoutingPolicy"><strong>OverrideRoutingPolicy</strong></a>(self)</dt><dd><tt>Override&nbsp;any&nbsp;routing&nbsp;policy&nbsp;that&nbsp;could&nbsp;prevent<br>
+packets&nbsp;from&nbsp;reaching&nbsp;the&nbsp;rndis&nbsp;interface</tt></dd></dl>
+
+<dl><dt><a name="AndroidRndisConfigurator-RestoreRoutingPolicy"><strong>RestoreRoutingPolicy</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidRndisConfigurator-__init__"><strong>__init__</strong></a>(self, device)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>host_ip</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="AndroidRndisForwarder">class <strong>AndroidRndisForwarder</strong></a>(<a href="telemetry.internal.forwarders.html#Forwarder">telemetry.internal.forwarders.Forwarder</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Forwards&nbsp;traffic&nbsp;using&nbsp;RNDIS.&nbsp;Assumes&nbsp;the&nbsp;device&nbsp;has&nbsp;root&nbsp;access.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.internal.forwarders.android_forwarder.html#AndroidRndisForwarder">AndroidRndisForwarder</a></dd>
+<dd><a href="telemetry.internal.forwarders.html#Forwarder">telemetry.internal.forwarders.Forwarder</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="AndroidRndisForwarder-Close"><strong>Close</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidRndisForwarder-__init__"><strong>__init__</strong></a>(self, device, rndis_configurator, port_pairs)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>host_ip</strong></dt>
+</dl>
+<hr>
+Data descriptors inherited from <a href="telemetry.internal.forwarders.html#Forwarder">telemetry.internal.forwarders.Forwarder</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>host_port</strong></dt>
+</dl>
+<dl><dt><strong>port_pairs</strong></dt>
+</dl>
+<dl><dt><strong>url</strong></dt>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

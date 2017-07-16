@@ -1,0 +1,11 @@
+#!/usr/bin/env python
+# Copyright 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+import os
+import sys
+
+from build import update_docs
+
+if __name__ == '__main__':
+  sys.exit(update_docs.Main(sys.argv[1:]))

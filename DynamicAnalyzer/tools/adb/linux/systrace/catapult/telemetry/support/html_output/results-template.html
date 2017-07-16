@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Telemetry Performance Test Results</title>
+<style type="text/css">
+
+section {
+    background: white;
+    padding: 10px;
+    position: relative;
+}
+
+.collapsed:before {
+    color: #ccc;
+    content: '\25B8\00A0';
+}
+
+.expanded:before {
+    color: #eee;
+    content: '\25BE\00A0';
+}
+
+.line-plots {
+    padding-left: 25px;
+}
+
+.line-plots > div {
+    display: inline-block;
+    width: 90px;
+    height: 40px;
+    margin-right: 10px;
+}
+
+.lage-line-plots {
+    padding-left: 25px;
+}
+
+.large-line-plots > div, .histogram-plots > div {
+    display: inline-block;
+    width: 400px;
+    height: 200px;
+    margin-right: 10px;
+}
+
+.large-line-plot-labels > div, .histogram-plot-labels > div {
+    display: inline-block;
+    width: 400px;
+    height: 11px;
+    margin-right: 10px;
+    color: #545454;
+    text-align: center;
+    font-size: 11px;
+}
+
+.closeButton {
+    display: inline-block;
+    background: #eee;
+    background: linear-gradient(rgb(220, 220, 220), rgb(255, 255, 255));
+    border: inset 1px #ddd;
+    border-radius: 4px;
+    float: right;
+    font-size: small;
+    -webkit-user-select: none;
+    font-weight: bold;
+    padding: 1px 4px;
+}
+
+.closeButton:hover {
+    background: #F09C9C;
+}
+
+.label {
+    cursor: text;
+}
+
+.label:hover {
+    background: #ffcc66;
+}
+
+section h1 {
+    text-align: center;
+    font-size: 1em;
+}
+
+section .tooltip {
+    position: absolute;
+    text-align: center;
+    background: #ffcc66;
+    border-radius: 5px;
+    padding: 0px 5px;
+}
+
+body {
+    padding: 0px;
+    margin: 0px;
+    font-family: sans-serif;
+}
+
+table {
+    background: white;
+    width: 100%;
+}
+
+table, td, th {
+    border-collapse: collapse;
+    padding: 5px;
+    white-space: nowrap;
+}
+
+.highlight:hover {
+   color: #202020;
+   background: #e0e0e0;
+}
+
+.nestedRow {
+    background: #f8f8f8;
+}
+
+.importantNestedRow {
+    background: #e0e0e0;
+    font-weight: bold;
+}
+
+table td {
+    position: relative;
+}
+
+th, td {
+    cursor: pointer;
+    cursor: hand;
+}
+
+th {
+    background: #e6eeee;
+    background: linear-gradient(rgb(244, 244, 244), rgb(217, 217, 217));
+    border: 1px solid #ccc;
+}
+
+th.sortUp:after {
+    content: ' \25BE';
+}
+
+th.sortDown:after {
+    content: ' \25B4';
+}
+
+td.comparison, td.result {
+    text-align: right;
+}
+
+td.better {
+    color: #6c6;
+}
+
+td.fadeOut {
+    opacity: 0.5;
+}
+
+td.unknown {
+    color: #ccc;
+}
+
+td.worse {
+    color: #c66;
+}
+
+td.reference {
+    font-style: italic;
+    font-weight: bold;
+    color: #444;
+}
+
+td.missing {
+    color: #ccc;
+    text-align: center;
+}
+
+td.missingReference {
+    color: #ccc;
+    text-align: center;
+    font-style: italic;
+}
+
+.checkbox {
+    display: inline-block;
+    background: #eee;
+    background: linear-gradient(rgb(220, 220, 220), rgb(200, 200, 200));
+    border: inset 1px #ddd;
+    border-radius: 5px;
+    margin: 10px;
+    font-size: small;
+    cursor: pointer;
+    cursor: hand;
+    -webkit-user-select: none;
+    font-weight: bold;
+}
+
+.checkbox span {
+    display: inline-block;
+    line-height: 100%;
+    padding: 5px 8px;
+    border: outset 1px transparent;
+}
+
+.checkbox .checked {
+    background: #e6eeee;
+    background: linear-gradient(rgb(255, 255, 255), rgb(235, 235, 235));
+    border: outset 1px #eee;
+    border-radius: 5px;
+}
+
+.openAllButton {
+    display: inline-block;
+    colour: #6c6
+    background: #eee;
+    background: linear-gradient(rgb(220, 220, 220), rgb(255, 255, 255));
+    border: inset 1px #ddd;
+    border-radius: 5px;
+    float: left;
+    font-size: small;
+    -webkit-user-select: none;
+    font-weight: bold;
+    padding: 1px 4px;
+}
+
+.openAllButton:hover {
+    background: #60f060;
+}
+
+.closeAllButton {
+    display: inline-block;
+    colour: #c66
+    background: #eee;
+    background: linear-gradient(rgb(220, 220, 220),rgb(255, 255, 255));
+    border: inset 1px #ddd;
+    border-radius: 5px;
+    float: left;
+    font-size: small;
+    -webkit-user-select: none;
+    font-weight: bold;
+    padding: 1px 4px;
+}
+
+.closeAllButton:hover {
+    background: #f04040;
+}
+
+</style>
+</head>
+<body onload="init()">
+<div style="padding: 0 10px; white-space: nowrap;">
+Result <span id="time-memory" class="checkbox"></span>
+Reference <span id="reference" class="checkbox"></span>
+Style <span id="scatter-line" class="checkbox"><span class="checked">Scatter</span><span>Line</span></span>
+<span class="checkbox"><span class="checked" id="undelete">Undelete</span></span><br>
+Run your test with --reset-results to clear all runs
+</div>
+<table id="container"></table>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+<script>
+%plugins%
+</script>
+<script>
+
+var EXPANDED = true;
+var COLLAPSED = false;
+var SMALLEST_PERCENT_DISPLAYED = 0.01;
+var INVISIBLE = false;
+var VISIBLE = true;
+var COMPARISON_SUFFIX = '_compare';
+var SORT_DOWN_CLASS = 'sortDown';
+var SORT_UP_CLASS = 'sortUp';
+var BETTER_CLASS = 'better';
+var WORSE_CLASS = 'worse';
+var UNKNOWN_CLASS = 'unknown'
+// px Indentation for graphs
+var GRAPH_INDENT = 64;
+var PADDING_UNDER_GRAPH = 5;
+// px Indentation for nested children left-margins
+var INDENTATION = 40;
+
+function TestResult(metric, values, associatedRun, std, degreesOfFreedom) {
+    if (values) {
+        if (values[0] instanceof Array) {
+            var flattenedValues = [];
+            for (var i = 0; i < values.length; i++)
+                flattenedValues = flattenedValues.concat(values[i]);
+            values = flattenedValues;
+        }
+
+        if (jQuery.type(values[0]) === 'string') {
+            try {
+                var current = JSON.parse(values[0]);
+                if (current.params.type === 'HISTOGRAM') {
+                    this.histogramValues = current;
+                    // Histogram results have no values (per se). Instead we calculate
+                    // the values from the histogram bins.
+                    var values = [];
+                    var buckets = current.buckets
+                    for (var i = 0; i < buckets.length; i++) {
+                        var bucket = buckets[i];
+                        var bucket_mean = (bucket.high + bucket.low) / 2;
+                        for (var b = 0; b < bucket.count; b++) {
+                            values.push(bucket_mean);
+                        }
+                    }
+                }
+            }
+            catch (e) {
+                console.error(e, e.stack);
+            }
+        }
+    } else {
+        values = [];
+    }
+
+    this.test = function() { return metric; }
+    this.values = function() { return values.map(function(value) { return metric.scalingFactor() * value; }); }
+    this.unscaledMean = function() { return Statistics.sum(values) / values.length; }
+    this.mean = function() { return metric.scalingFactor() * this.unscaledMean(); }
+    this.min = function() { return metric.scalingFactor() * Statistics.min(values); }
+    this.max = function() { return metric.scalingFactor() * Statistics.max(values); }
+    this.confidenceIntervalDelta = function() {
+        if (std !== undefined) {
+            return metric.scalingFactor() * Statistics.confidenceIntervalDeltaFromStd(0.95, values.length,
+                std, degreesOfFreedom);
+        }
+        return metric.scalingFactor() * Statistics.confidenceIntervalDelta(0.95, values.length,
+            Statistics.sum(values), Statistics.squareSum(values));
+    }
+    this.confidenceIntervalDeltaRatio = function() { return this.confidenceIntervalDelta() / this.mean(); }
+    this.percentDifference = function(other) {
+        if (other === undefined) {
+            return undefined;
+        }
+        return (other.unscaledMean() - this.unscaledMean()) / this.unscaledMean();
+    }
+    this.isStatisticallySignificant = function(other) {
+        if (other === undefined) {
+            return false;
+        }
+        var diff = Math.abs(other.mean() - this.mean());
+        return diff > this.confidenceIntervalDelta() && diff > other.confidenceIntervalDelta();
+    }
+    this.run = function() { return associatedRun; }
+}
+
+function TestRun(entry) {
+    this.id = function() { return entry['buildTime'].replace(/[:.-]/g,''); }
+    this.label = function() {
+        if (labelKey in localStorage)
+            return localStorage[labelKey];
+        return entry['label'];
+    }
+    this.setLabel = function(label) { localStorage[labelKey] = label; }
+    this.isHidden = function() { return localStorage[hiddenKey]; }
+    this.hide = function() { localStorage[hiddenKey] = true; }
+    this.show = function() { localStorage.removeItem(hiddenKey); }
+    this.description = function() {
+        return new Date(entry['buildTime']).toLocaleString() + '\n' + entry['platform'] + ' ' + this.label();
+    }
+
+    var labelKey = 'telemetry_label_' + this.id();
+    var hiddenKey = 'telemetry_hide_' + this.id();
+}
+
+function PerfTestMetric(name, metric, unit, isImportant) {
+    var testResults = [];
+    var cachedUnit = null;
+    var cachedScalingFactor = null;
+
+    // We can't do this in TestResult because all results for each test need to share the same unit and the same scaling factor.
+    function computeScalingFactorIfNeeded() {
+        // FIXME: We shouldn't be adjusting units on every test result.
+        // We can only do this on the first test.
+        if (!testResults.length || cachedUnit)
+            return;
+
+        var mean = testResults[0].unscaledMean(); // FIXME: We should look at all values.
+        var kilo = unit == 'bytes' ? 1024 : 1000;
+        if (mean > 10 * kilo * kilo && unit != 'ms') {
+            cachedScalingFactor = 1 / kilo / kilo;
+            cachedUnit = 'M ' + unit;
+        } else if (mean > 10 * kilo) {
+            cachedScalingFactor = 1 / kilo;
+            cachedUnit = unit == 'ms' ? 's' : ('K ' + unit);
+        } else {
+            cachedScalingFactor = 1;
+            cachedUnit = unit;
+        }
+    }
+
+    this.name = function() { return name + ':' + metric; }
+    this.isImportant = isImportant;
+    this.isMemoryTest = function() {
+        return (unit == 'kb' ||
+                unit == 'KB' ||
+                unit == 'MB' ||
+                unit == 'bytes' ||
+                unit == 'count' ||
+                !metric.indexOf('V8.'));
+    }
+    this.addResult = function(newResult) {
+        testResults.push(newResult);
+        cachedUnit = null;
+        cachedScalingFactor = null;
+    }
+    this.results = function() { return testResults; }
+    this.scalingFactor = function() {
+        computeScalingFactorIfNeeded();
+        return cachedScalingFactor;
+    }
+    this.unit = function() {
+        computeScalingFactorIfNeeded();
+        return cachedUnit;
+    }
+    this.biggerIsBetter = function() {
+        if (window.unitToBiggerIsBetter == undefined) {
+            window.unitToBiggerIsBetter = {};
+            var units = JSON.parse(document.getElementById('units-json').textContent);
+            for (var u in units) {
+                if (units[u].improvement_direction == 'up') {
+                    window.unitToBiggerIsBetter[u] = true;
+                }
+            }
+        }
+        return window.unitToBiggerIsBetter[unit];
+    }
+}
+
+function UndeleteManager() {
+    var key = 'telemetry_undeleteIds'
+    var undeleteIds = localStorage[key];
+    if (undeleteIds) {
+        undeleteIds = JSON.parse(undeleteIds);
+    } else {
+        undeleteIds = [];
+    }
+
+    this.ondelete = function(id) {
+        undeleteIds.push(id);
+        localStorage[key] = JSON.stringify(undeleteIds);
+    }
+    this.undeleteMostRecent = function() {
+        if (!this.mostRecentlyDeletedId())
+            return;
+        undeleteIds.pop();
+        localStorage[key] = JSON.stringify(undeleteIds);
+    }
+    this.mostRecentlyDeletedId = function() {
+        if (!undeleteIds.length)
+            return undefined;
+        return undeleteIds[undeleteIds.length-1];
+    }
+}
+var undeleteManager = new UndeleteManager();
+
+var plotColor = 'rgb(230,50,50)';
+var subpointsPlotOptions = {
+    lines: {show:true, lineWidth: 0},
+    color: plotColor,
+    points: {show: true, radius: 1},
+    bars: {show: false}};
+
+var mainPlotOptions = {
+    xaxis: {
+        min: -0.5,
+        tickSize: 1,
+    },
+    crosshair: { mode: 'y' },
+    series: { shadowSize: 0 },
+    bars: {show: true, align: 'center', barWidth: 0.5},
+    lines: { show: false },
+    points: { show: true },
+    grid: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        backgroundColor: '#fff',
+        hoverable: true,
+        autoHighlight: false,
+    }
+};
+
+var linePlotOptions = {
+    yaxis: { show: false },
+    xaxis: { show: false },
+    lines: { show: true },
+    grid: { borderWidth: 1, borderColor: '#ccc' },
+    colors: [ plotColor ]
+};
+
+var largeLinePlotOptions = {
+    xaxis: {
+        show: true,
+        tickDecimals: 0,
+    },
+    lines: { show: true },
+    grid: { borderWidth: 1, borderColor: '#ccc' },
+    colors: [ plotColor ]
+};
+
+var histogramPlotOptions = {
+    bars: {show: true, fill: 1}
+};
+
+function createPlot(container, test, useLargeLinePlots) {
+    if (test.results()[0].histogramValues) {
+        var section = $('<section><div class="histogram-plots"></div>'
+            + '<div class="histogram-plot-labels"></div>'
+            + '<span class="tooltip"></span></section>');
+        $(container).append(section);
+        attachHistogramPlots(test, section.children('.histogram-plots'));
+    }
+    else if (useLargeLinePlots) {
+        var section = $('<section><div class="large-line-plots"></div>'
+            + '<div class="large-line-plot-labels"></div>'
+            + '<span class="tooltip"></span></section>');
+        $(container).append(section);
+        attachLinePlots(test, section.children('.large-line-plots'), useLargeLinePlots);
+        attachLinePlotLabels(test, section.children('.large-line-plot-labels'));
+    } else {
+        var section = $('<section><div class="plot"></div><div class="line-plots"></div>'
+            + '<span class="tooltip"></span></section>');
+        section.children('.plot').css({'width': (100 * test.results().length + 25) + 'px', 'height': '300px'});
+        $(container).append(section);
+
+        var plotContainer = section.children('.plot');
+        var minIsZero = true;
+        attachPlot(test, plotContainer, minIsZero);
+
+        attachLinePlots(test, section.children('.line-plots'), useLargeLinePlots);
+
+        var tooltip = section.children('.tooltip');
+        plotContainer.bind('plothover', function(event, position, item) {
+            if (item) {
+                var postfix = item.series.id ? ' (' + item.series.id + ')' : '';
+                tooltip.html(item.datapoint[1].toPrecision(4) + postfix);
+                var sectionOffset = $(section).offset();
+                tooltip.css({left: item.pageX - sectionOffset.left - tooltip.outerWidth() / 2, top: item.pageY - sectionOffset.top + 10});
+                tooltip.fadeIn(200);
+            } else
+                tooltip.hide();
+        });
+        plotContainer.mouseout(function() {
+            tooltip.hide();
+        });
+        plotContainer.click(function(event) {
+            event.preventDefault();
+            minIsZero = !minIsZero;
+            attachPlot(test, plotContainer, minIsZero);
+        });
+    }
+    return section;
+}
+
+function attachLinePlots(test, container, useLargeLinePlots) {
+    var results = test.results();
+    var attachedPlot = false;
+
+    if (useLargeLinePlots) {
+        var maximum = 0;
+        for (var i = 0; i < results.length; i++) {
+            var values = results[i].values();
+            if (!values)
+                continue;
+            var local_max = Math.max.apply(Math, values);
+            if (local_max > maximum)
+                maximum = local_max;
+        }
+    }
+
+    for (var i = 0; i < results.length; i++) {
+        container.append('<div></div>');
+        var values = results[i].values();
+        if (!values)
+            continue;
+        attachedPlot = true;
+
+        if (useLargeLinePlots) {
+            var options = $.extend(true, {}, largeLinePlotOptions,
+                               {yaxis: {min: 0.0, max: maximum},
+                                xaxis: {min: 0.0, max: values.length - 1},
+                                points: {show: (values.length < 2) ? true : false}});
+        } else {
+            var options = $.extend(true, {}, linePlotOptions,
+                               {yaxis: {min: Math.min.apply(Math, values) * 0.9, max: Math.max.apply(Math, values) * 1.1},
+                                xaxis: {min: -0.5, max: values.length - 0.5},
+                                points: {show: (values.length < 2) ? true : false}});
+        }
+        $.plot(container.children().last(), [values.map(function(value, index) { return [index, value]; })], options);
+    }
+    if (!attachedPlot)
+        container.children().remove();
+}
+
+function attachHistogramPlots(test, container) {
+    var results = test.results();
+    var attachedPlot = false;
+
+    for (var i = 0; i < results.length; i++) {
+        container.append('<div></div>');
+        var histogram = results[i].histogramValues
+        if (!histogram)
+            continue;
+        attachedPlot = true;
+
+        var buckets = histogram.buckets
+        var bucket;
+        var max_count = 0;
+        for (var j = 0; j < buckets.length; j++) {
+            bucket = buckets[j];
+            max_count = Math.max(max_count, bucket.count);
+        }
+        var xmax = bucket.high * 1.1;
+        var ymax = max_count * 1.1;
+
+        var options = $.extend(true, {}, histogramPlotOptions,
+                           {yaxis: {min: 0.0, max: ymax},
+                            xaxis: {min: histogram.params.min, max: xmax}});
+        var plot = $.plot(container.children().last(), [[]], options);
+        // Flot only supports fixed with bars and our histogram's buckets are
+        // variable width, so we need to do our own bar drawing.
+        var ctx = plot.getCanvas().getContext("2d");
+        ctx.lineWidth="1";
+        ctx.fillStyle = "rgba(255, 0, 0, 0.2)";
+        ctx.strokeStyle="red";
+        for (var j = 0; j < buckets.length; j++) {
+            bucket = buckets[j];
+            var bl = plot.pointOffset({ x: bucket.low, y: 0});
+            var tr = plot.pointOffset({ x: bucket.high, y: bucket.count});
+            ctx.fillRect(bl.left, bl.top, tr.left - bl.left, tr.top - bl.top);
+            ctx.strokeRect(bl.left, bl.top, tr.left - bl.left, tr.top - bl.top);
+        }
+    }
+    if (!attachedPlot)
+        container.children().remove();
+}
+
+function attachLinePlotLabels(test, container) {
+    var results = test.results();
+    var attachedPlot = false;
+    for (var i = 0; i < results.length; i++) {
+        container.append('<div>' + results[i].run().label() + '</div>');
+    }
+}
+
+function attachPlot(test, plotContainer, minIsZero) {
+    var results = test.results();
+
+    var values = results.reduce(function(values, result, index) {
+        var newValues = result.values();
+        return newValues ? values.concat(newValues.map(function(value) { return [index, value]; })) : values;
+    }, []);
+
+    var plotData = [$.extend(true, {}, subpointsPlotOptions, {data: values})];
+    plotData.push({id: '&mu;', data: results.map(function(result, index) { return [index, result.mean()]; }), color: plotColor});
+
+    var overallMax = Statistics.max(results.map(function(result, index) { return result.max(); }));
+    var overallMin = Statistics.min(results.map(function(result, index) { return result.min(); }));
+    var margin = (overallMax - overallMin) * 0.1;
+    var currentPlotOptions = $.extend(true, {}, mainPlotOptions, {yaxis: {
+        min: minIsZero ? 0 : overallMin - margin,
+        max: minIsZero ? overallMax * 1.1 : overallMax + margin}});
+
+    currentPlotOptions.xaxis.max = results.length - 0.5;
+    currentPlotOptions.xaxis.ticks = results.map(function(result, index) { return [index, result.run().label()]; });
+
+    $.plot(plotContainer, plotData, currentPlotOptions);
+}
+
+function toFixedWidthPrecision(value) {
+    var decimal = value.toFixed(2);
+    return decimal;
+}
+
+function formatPercentage(fraction) {
+    var percentage = fraction * 100;
+    return (fraction * 100).toFixed(2) + '%';
+}
+
+function setUpSortClicks(runs)
+{
+    $('#nameColumn').click(sortByName);
+
+    $('#unitColumn').click(sortByUnit);
+
+    runs.forEach(function(run) {
+        $('#' + run.id()).click(sortByResult);
+        $('#' + run.id() + COMPARISON_SUFFIX).click(sortByReference);
+     });
+}
+
+function TestTypeSelector(tests) {
+    this.recognizers = {
+        'Time': function(test) { return !test.isMemoryTest(); },
+        'Memory': function(test) { return test.isMemoryTest(); }
+    };
+    this.testTypeNames = this.generateUsedTestTypeNames(tests);
+    // Default to selecting the first test-type name in the list.
+    this.testTypeName = this.testTypeNames[0];
+}
+
+TestTypeSelector.prototype = {
+    set testTypeName(testTypeName) {
+        this._testTypeName = testTypeName;
+        this.shouldShowTest = this.recognizers[testTypeName];
+    },
+
+    generateUsedTestTypeNames: function(allTests) {
+        var testTypeNames = [];
+
+        for (var recognizedTestName in this.recognizers) {
+            var recognizes = this.recognizers[recognizedTestName];
+            for (var testName in allTests) {
+                var test = allTests[testName];
+                if (recognizes(test)) {
+                    testTypeNames.push(recognizedTestName);
+                    break;
+                }
+            }
+        }
+
+        if (testTypeNames.length === 0) {
+            // No test types we recognize, add 'No Results' with a dummy recognizer.
+            var noResults = 'No Results';
+            this.recognizers[noResults] = function() { return false; };
+            testTypeNames.push(noResults);
+        } else if (testTypeNames.length > 1) {
+            // We have more than one test type, so add 'All' with a recognizer that always succeeds.
+            var allResults = 'All';
+            this.recognizers[allResults] = function() { return true; };
+            testTypeNames.push(allResults);
+        }
+
+        return testTypeNames;
+    },
+
+    buildButtonHTMLForUsedTestTypes: function() {
+        var selectedTestTypeName = this._testTypeName;
+        // Build spans for all recognised test names with the selected test highlighted.
+        return this.testTypeNames.map(function(testTypeName) {
+            var classAttribute = testTypeName === selectedTestTypeName ? ' class=checked' : '';
+            return '<span' + classAttribute + '>' + testTypeName + '</span>';
+        }).join('');
+    }
+};
+
+var topLevelRows;
+var allTableRows;
+
+function displayTable(tests, runs, testTypeSelector, referenceIndex, useLargeLinePlots) {
+    var resultHeaders = runs.map(function(run, index) {
+         var header = '<th id="' + run.id() + '" ' +
+                          'colspan=2 ' +
+                          'title="' + run.description() + '">' +
+                      '<span class="label" ' +
+                          'title="Edit run label">' +
+                          run.label() +
+                      '</span>' +
+                      '<div class="closeButton" ' +
+                          'title="Delete run">' +
+                          '&times;' +
+                      '</div>' +
+                  '</th>';
+                if (index !== referenceIndex) {
+                  header += '<th id="' + run.id() + COMPARISON_SUFFIX + '" ' +
+                                'title="Sort by better/worse">' +
+                                '&Delta;' +
+                                '</th>';
+                }
+         return header;
+    });
+
+    resultHeaders = resultHeaders.join('');
+
+    htmlString = '<thead>' +
+                     '<tr>' +
+                         '<th id="nameColumn">' +
+                             '<div class="openAllButton" ' +
+                                  'title="Open all rows or graphs">' +
+                                 'Open All' +
+                              '</div>' +
+                              '<div class="closeAllButton" ' +
+                                   'title="Close all rows">' +
+                                  'Close All' +
+                              '</div>' +
+                              'Test' +
+                          '</th>' +
+                          '<th id="unitColumn">' +
+                              'Unit' +
+                          '</th>' +
+                          resultHeaders +
+                     '</tr>' +
+                 '</head>' +
+                 '<tbody>' +
+                 '</tbody>';
+
+    $('#container').html(htmlString);
+
+    var testNames = [];
+    for (testName in tests)
+        testNames.push(testName);
+
+    allTableRows = [];
+    testNames.forEach(function(testName) {
+        var test = tests[testName];
+        if (testTypeSelector.shouldShowTest(test)) {
+            allTableRows.push(new TableRow(runs, test, referenceIndex, useLargeLinePlots));
+        }
+    });
+
+    // Build a list of top level rows with attached children
+    topLevelRows = [];
+    allTableRows.forEach(function(row) {
+        // Add us to top level if we are a top-level row...
+        if (row.hasNoURL) {
+            topLevelRows.push(row);
+            // Add a duplicate child row that holds the graph for the parent
+            var graphHolder = new TableRow(runs, row.test, referenceIndex, useLargeLinePlots);
+            graphHolder.isImportant = true;
+            graphHolder.URL = 'Summary';
+            graphHolder.hideRowData();
+            allTableRows.push(graphHolder);
+            row.addNestedChild(graphHolder);
+            return;
+        }
+
+        // ...or add us to our parent if we have one ...
+        for (var i = 0; i < allTableRows.length; i++) {
+            if (allTableRows[i].isParentOf(row)) {
+                allTableRows[i].addNestedChild(row);
+                return;
+            }
+        }
+
+        // ...otherwise this result is orphaned, display it at top level with a graph
+        row.hasGraph = true;
+        topLevelRows.push(row);
+    });
+
+    buildTable(topLevelRows);
+
+    $('.closeButton').click(function(event) {
+        for (var i = 0; i < runs.length; i++) {
+            if (runs[i].id() == event.target.parentNode.id) {
+                runs[i].hide();
+                undeleteManager.ondelete(runs[i].id());
+                location.reload();
+                break;
+            }
+        }
+        event.stopPropagation();
+    });
+
+    $('.closeAllButton').click(function(event) {
+        for (var i = 0; i < allTableRows.length; i++) {
+            allTableRows[i].closeRow();
+        }
+        event.stopPropagation();
+    });
+
+    $('.openAllButton').click(function(event) {
+        for (var i = 0; i < topLevelRows.length; i++) {
+            topLevelRows[i].openRow();
+        }
+        event.stopPropagation();
+    });
+
+    setUpSortClicks(runs);
+
+    $('.label').click(function(event) {
+        for (var i = 0; i < runs.length; i++) {
+            if (runs[i].id() == event.target.parentNode.id) {
+                $(event.target).replaceWith('<input id="labelEditor" type="text" value="' + runs[i].label()  + '">');
+                $('#labelEditor').focusout(function() {
+                    runs[i].setLabel(this.value);
+                    location.reload();
+                });
+                $('#labelEditor').keypress(function(event) {
+                    if (event.which == 13) {
+                        runs[i].setLabel(this.value);
+                        location.reload();
+                    }
+                });
+                $('#labelEditor').click(function(event) {
+                    event.stopPropagation();
+                });
+                $('#labelEditor').mousedown(function(event) {
+                    event.stopPropagation();
+                });
+                $('#labelEditor').select();
+                break;
+            }
+        }
+        event.stopPropagation();
+    });
+}
+
+function validForSorting(row) {
+    return ($.type(row.sortValue) === 'string') || !isNaN(row.sortValue);
+}
+
+var sortDirection = 1;
+
+function sortRows(rows) {
+    rows.sort(
+        function(rowA,rowB) {
+            if (validForSorting(rowA) !== validForSorting(rowB)) {
+                // Sort valid values upwards when compared to invalid
+                if (validForSorting(rowA)) {
+                    return -1;
+                }
+                if (validForSorting(rowB)) {
+                    return 1;
+                }
+            }
+
+            // Some rows always sort to the top
+            if (rowA.isImportant) {
+                return -1;
+            }
+            if (rowB.isImportant) {
+                return 1;
+            }
+
+            if (rowA.sortValue === rowB.sortValue) {
+                // Sort identical values by name to keep the sort stable,
+                // always keep name alphabetical (even if a & b sort values
+                // are invalid)
+                return rowA.test.name() > rowB.test.name() ? 1 : -1;
+            }
+
+            return rowA.sortValue > rowB.sortValue ? sortDirection : -sortDirection;
+         } );
+
+    // Sort the rows' children
+    rows.forEach(function(row) {
+        sortRows(row.children);
+    });
+}
+
+function buildTable(rows) {
+   rows.forEach(function(row) {
+     row.removeFromPage();
+   });
+
+   sortRows(rows);
+
+   rows.forEach(function(row) {
+     row.addToPage();
+   });
+}
+
+var activeSortHeaderElement = undefined;
+var columnSortDirection = {};
+
+function determineColumnSortDirection(element) {
+  columnDirection = columnSortDirection[element.id];
+
+  if (columnDirection === undefined) {
+    // First time we've sorted this row, default to down
+    columnSortDirection[element.id] = SORT_DOWN_CLASS;
+  } else if (element === activeSortHeaderElement) {
+    // Clicking on same header again, swap direction
+    columnSortDirection[element.id] = (columnDirection === SORT_UP_CLASS) ? SORT_DOWN_CLASS : SORT_UP_CLASS;
+  }
+}
+
+function updateSortDirection(element) {
+    // Remove old header's sort arrow
+    if (activeSortHeaderElement !== undefined) {
+        activeSortHeaderElement.classList.remove(columnSortDirection[activeSortHeaderElement.id]);
+    }
+
+    determineColumnSortDirection(element);
+
+    sortDirection = (columnSortDirection[element.id] === SORT_UP_CLASS) ? 1 : -1;
+
+    // Add new header's sort arrow
+    element.classList.add(columnSortDirection[element.id]);
+    activeSortHeaderElement = element;
+}
+
+function sortByName(event) {
+    updateSortDirection(event.toElement);
+
+    allTableRows.forEach(function(row) {
+       row.prepareToSortByName();
+    });
+
+    buildTable(topLevelRows);
+}
+
+function sortByUnit(event) {
+    updateSortDirection(event.toElement);
+
+    allTableRows.forEach(function(row) {
+        row.prepareToSortByUnit();
+    });
+
+    buildTable(topLevelRows);
+}
+
+function sortByResult(event) {
+    updateSortDirection(event.toElement);
+
+    var runId = event.target.id;
+
+    allTableRows.forEach(function(row) {
+        row.prepareToSortByTestResults(runId);
+    });
+
+    buildTable(topLevelRows);
+}
+
+function sortByReference(event) {
+    updateSortDirection(event.toElement);
+
+    // The element ID has _compare appended to allow us to set up a click event
+    // remove the _compare to return a useful Id
+    var runIdWithCompare = event.target.id;
+    var runId = runIdWithCompare.split('_')[0];
+
+    allTableRows.forEach(function(row) {
+        row.prepareToSortRelativeToReference(runId);
+    });
+
+    buildTable(topLevelRows);
+}
+
+function linearRegression(points) {
+    // Implement http://www.easycalculation.com/statistics/learn-correlation.php.
+    // x = magnitude
+    // y = iterations
+    var sumX = 0;
+    var sumY = 0;
+    var sumXSquared = 0;
+    var sumYSquared = 0;
+    var sumXTimesY = 0;
+
+    for (var i = 0; i < points.length; i++) {
+        var x = i;
+        var y = points[i];
+        sumX += x;
+        sumY += y;
+        sumXSquared += x * x;
+        sumYSquared += y * y;
+        sumXTimesY += x * y;
+    }
+
+    var r = (points.length * sumXTimesY - sumX * sumY) /
+        Math.sqrt((points.length * sumXSquared - sumX * sumX) *
+                  (points.length * sumYSquared - sumY * sumY));
+
+    if (isNaN(r) || r == Math.Infinity)
+        r = 0;
+
+    var slope = (points.length * sumXTimesY - sumX * sumY) / (points.length * sumXSquared - sumX * sumX);
+    var intercept = sumY / points.length - slope * sumX / points.length;
+    return {slope: slope, intercept: intercept, rSquared: r * r};
+}
+
+var warningSign = '<svg viewBox="0 0 100 100" style="width: 18px; height: 18px; vertical-align: bottom;" version="1.1">'
+    + '<polygon fill="red" points="50,10 90,80 10,80 50,10" stroke="red" stroke-width="10" stroke-linejoin="round" />'
+    + '<polygon fill="white" points="47,30 48,29, 50, 28.7, 52,29 53,30 50,60" stroke="white" stroke-width="10" stroke-linejoin="round" />'
+    + '<circle cx="50" cy="73" r="6" fill="white" />'
+    + '</svg>';
+
+function TableRow(runs, test, referenceIndex, useLargeLinePlots) {
+    this.runs = runs;
+    this.test = test;
+    this.referenceIndex = referenceIndex;
+    this.useLargeLinePlots = useLargeLinePlots;
+    this.children = [];
+
+    this.tableRow = $('<tr class="highlight">' +
+                            '<td class="test collapsed" >' +
+                                this.test.name() +
+                            '</td>' +
+                            '<td class="unit">' +
+                                this.test.unit() +
+                            '</td>' +
+                      '</tr>');
+
+    var runIndex = 0;
+    var results = this.test.results();
+    var referenceResult = undefined;
+
+    this.resultIndexMap = {};
+    for (var i = 0; i < results.length; i++) {
+        while (this.runs[runIndex] !== results[i].run())
+            runIndex++;
+        if (runIndex === this.referenceIndex)
+            referenceResult = results[i];
+        this.resultIndexMap[runIndex] = i;
+    }
+    for (var i = 0; i < this.runs.length; i++) {
+        var resultIndex = this.resultIndexMap[i];
+        if (resultIndex === undefined)
+            this.tableRow.append(this.markupForMissingRun(i == this.referenceIndex));
+        else
+            this.tableRow.append(this.markupForRun(results[resultIndex], referenceResult));
+    }
+
+    // Use the test name (without URL) to bind parents and their children
+    var nameAndURL = this.test.name().split('.');
+    var benchmarkName = nameAndURL.shift();
+    this.testName = nameAndURL.shift();
+    this.hasNoURL = (nameAndURL.length === 0);
+
+    if (!this.hasNoURL) {
+        // Re-join the URL
+        this.URL = nameAndURL.join('.');
+    }
+
+    this.isImportant = false;
+    this.hasGraph = false;
+    this.currentIndentationClass = ''
+    this.indentLevel = 0;
+    this.setRowNestedState(COLLAPSED);
+    this.setVisibility(VISIBLE);
+    this.prepareToSortByName();
+}
+
+TableRow.prototype.hideRowData = function() {
+    data = this.tableRow.children('td');
+
+    for (index in data) {
+        if (index > 0) {
+            // Blank out everything except the test name
+            data[index].innerHTML = '';
+        }
+    }
+}
+
+TableRow.prototype.prepareToSortByTestResults = function(runId) {
+    var testResults = this.test.results();
+    // Find the column in this row that matches the runId and prepare to
+    // sort by the mean of that test.
+    for (index in testResults) {
+        sourceId = testResults[index].run().id();
+        if (runId === sourceId) {
+            this.sortValue = testResults[index].mean();
+            return;
+        }
+    }
+    // This row doesn't have any results for the passed runId
+    this.sortValue = undefined;
+}
+
+TableRow.prototype.prepareToSortRelativeToReference = function(runId) {
+    var testResults = this.test.results();
+
+    // Get index of test results that correspond to the reference column.
+    var remappedReferenceIndex = this.resultIndexMap[this.referenceIndex];
+
+    if (remappedReferenceIndex === undefined) {
+        // This test has no results in the reference run.
+        this.sortValue = undefined;
+        return;
+    }
+
+    otherResults = testResults[remappedReferenceIndex];
+
+    // Find the column in this row that matches the runId and prepare to
+    // sort by the difference from the reference.
+    for (index in testResults) {
+        sourceId = testResults[index].run().id();
+        if (runId === sourceId) {
+            this.sortValue = testResults[index].percentDifference(otherResults);
+            if (this.test.biggerIsBetter()) {
+                // For this test bigger is not better
+                this.sortValue = -this.sortValue;
+            }
+            return;
+        }
+    }
+    // This row doesn't have any results for the passed runId
+    this.sortValue = undefined;
+}
+
+TableRow.prototype.prepareToSortByUnit = function() {
+    this.sortValue = this.test.unit().toLowerCase();
+}
+
+TableRow.prototype.prepareToSortByName = function() {
+    this.sortValue = this.test.name().toLowerCase();
+}
+
+TableRow.prototype.isParentOf = function(row) {
+    return this.hasNoURL && (this.testName === row.testName);
+}
+
+TableRow.prototype.addNestedChild = function(child) {
+    this.children.push(child);
+
+    // Indent child one step in from parent
+    child.indentLevel = this.indentLevel + INDENTATION;
+    child.hasGraph = true;
+    // Start child off as hidden (i.e. collapsed inside parent)
+    child.setVisibility(INVISIBLE);
+    child.updateIndentation();
+    // Show URL in the title column
+    child.tableRow.children()[0].innerHTML = child.URL;
+    // Set up class to change background colour of nested rows
+    if (child.isImportant) {
+        child.tableRow.addClass('importantNestedRow');
+    } else {
+        child.tableRow.addClass('nestedRow');
+    }
+}
+
+TableRow.prototype.setVisibility = function(visibility) {
+     this.visibility = visibility;
+     this.tableRow[0].style.display = (visibility === INVISIBLE) ? 'none' : '';
+}
+
+TableRow.prototype.setRowNestedState = function(newState) {
+    this.rowState = newState;
+    this.updateIndentation();
+}
+
+TableRow.prototype.updateIndentation = function() {
+    var element = this.tableRow.children('td').first();
+
+    element.removeClass(this.currentIndentationClass);
+
+    this.currentIndentationClass = (this.rowState === COLLAPSED) ? 'collapsed' : 'expanded';
+
+    element[0].style.marginLeft = this.indentLevel.toString() + 'px';
+    element[0].style.float = 'left';
+
+    element.addClass(this.currentIndentationClass);
+}
+
+TableRow.prototype.addToPage = function() {
+    $('#container').children('tbody').last().append(this.tableRow);
+
+    // Set up click callback
+    var owningObject = this;
+    this.tableRow.click(function(event) {
+        event.preventDefault();
+        owningObject.toggle();
+    });
+
+    // Add children to the page too
+    this.children.forEach(function(child) {
+        child.addToPage();
+    });
+}
+
+TableRow.prototype.removeFromPage = function() {
+    // Remove children
+    this.children.forEach(function(child) {
+        child.removeFromPage();
+    });
+    // Remove us
+    this.tableRow.remove();
+}
+
+
+TableRow.prototype.markupForRun = function(result, referenceResult) {
+    var comparisonCell = '';
+    var shouldCompare = result !== referenceResult;
+    if (shouldCompare) {
+        var comparisonText = '';
+        var className = '';
+
+        if (referenceResult) {
+            var percentDifference = referenceResult.percentDifference(result);
+            if (isNaN(percentDifference)) {
+                comparisonText = 'Unknown';
+                className = UNKNOWN_CLASS;
+            } else if (Math.abs(percentDifference) < SMALLEST_PERCENT_DISPLAYED) {
+                comparisonText = 'Equal';
+                // Show equal values in green
+                className = BETTER_CLASS;
+            } else {
+                var better = this.test.biggerIsBetter() ? percentDifference > 0 : percentDifference < 0;
+                comparisonText = formatPercentage(Math.abs(percentDifference)) + (better ? ' Better' : ' Worse');
+                className = better ? BETTER_CLASS : WORSE_CLASS;
+            }
+
+            if (!referenceResult.isStatisticallySignificant(result)) {
+                // Put result in brackets and fade if not statistically significant
+                className += ' fadeOut';
+                comparisonText = '(' + comparisonText + ')';
+            }
+        }
+        comparisonCell = '<td class="comparison ' + className + '">' + comparisonText + '</td>';
+    }
+
+    var values = result.values();
+    var warning = '';
+    var regressionAnalysis = '';
+    if (result.histogramValues) {
+        // Don't calculate regression result for histograms.
+    } else if (values && values.length > 3) {
+        regressionResult = linearRegression(values);
+        regressionAnalysis = 'slope=' + toFixedWidthPrecision(regressionResult.slope)
+            + ', R^2=' + toFixedWidthPrecision(regressionResult.rSquared);
+        if (regressionResult.rSquared > 0.6 && Math.abs(regressionResult.slope) > 0.01) {
+            warning = ' <span class="regression-warning" title="Detected a time dependency with ' + regressionAnalysis + '">' + warningSign + ' </span>';
+        }
+    }
+
+    var referenceClass = shouldCompare ? '' : 'reference';
+
+    var statistics = '&sigma;=' + toFixedWidthPrecision(result.confidenceIntervalDelta()) + ', min=' + toFixedWidthPrecision(result.min())
+     + ', max=' + toFixedWidthPrecision(result.max()) + '\n' + regressionAnalysis;
+
+    var confidence;
+    if (isNaN(result.confidenceIntervalDeltaRatio())) {
+        // Don't bother showing +- Nan as it is meaningless
+        confidence = '';
+    } else {
+        confidence = '&plusmn; ' + formatPercentage(result.confidenceIntervalDeltaRatio());
+    }
+
+    return '<td class="result ' + referenceClass + '" title="' + statistics + '">' + toFixedWidthPrecision(result.mean())
+        + '</td><td class="confidenceIntervalDelta ' + referenceClass + '" title="' + statistics + '">' + confidence + warning + '</td>' + comparisonCell;
+}
+
+TableRow.prototype.markupForMissingRun = function(isReference) {
+    if (isReference) {
+        return '<td colspan=2 class="missingReference">Missing</td>';
+    }
+    return '<td colspan=3 class="missing">Missing</td>';
+}
+
+TableRow.prototype.openRow = function() {
+    if (this.rowState === EXPANDED) {
+        // If we're already expanded, open our children instead
+        this.children.forEach(function(child) {
+            child.openRow();
+        });
+        return;
+    }
+
+    this.setRowNestedState(EXPANDED);
+
+    if (this.hasGraph) {
+        var firstCell = this.tableRow.children('td').first();
+        var plot = createPlot(firstCell, this.test, this.useLargeLinePlots);
+        plot.css({'position': 'absolute', 'z-index': 2});
+        var offset = this.tableRow.offset();
+        offset.left += GRAPH_INDENT;
+        offset.top += this.tableRow.outerHeight();
+        plot.offset(offset);
+        this.tableRow.children('td').css({'padding-bottom': plot.outerHeight() + PADDING_UNDER_GRAPH});
+    }
+
+    this.children.forEach(function(child) {
+        child.setVisibility(VISIBLE);
+    });
+
+    if (this.children.length === 1) {
+        // If we only have a single child...
+        var child = this.children[0];
+        if (child.isImportant) {
+          // ... and it is important (i.e. the summary row) just open it when
+          // parent is opened to save needless clicking
+          child.openRow();
+        }
+    }
+}
+
+TableRow.prototype.closeRow = function() {
+    if (this.rowState === COLLAPSED) {
+        return;
+    }
+
+    this.setRowNestedState(COLLAPSED);
+
+    if (this.hasGraph) {
+        var firstCell = this.tableRow.children('td').first();
+        firstCell.children('section').remove();
+        this.tableRow.children('td').css({'padding-bottom': ''});
+    }
+
+    this.children.forEach(function(child) {
+        // Make children invisible, but leave their collapsed status alone
+        child.setVisibility(INVISIBLE);
+    });
+}
+
+TableRow.prototype.toggle = function() {
+    if (this.rowState === EXPANDED) {
+        this.closeRow();
+    } else {
+        this.openRow();
+    }
+    return false;
+}
+
+function init() {
+    var runs = [];
+    var metrics = {};
+    var deletedRunsById = {};
+    $.each(JSON.parse(document.getElementById('results-json').textContent), function(index, entry) {
+        var run = new TestRun(entry);
+        if (run.isHidden()) {
+            deletedRunsById[run.id()] = run;
+            return;
+        }
+
+        runs.push(run);
+
+        function addTests(tests) {
+            for (var testName in tests) {
+                var rawMetrics = tests[testName].metrics;
+
+                for (var metricName in rawMetrics) {
+                    var fullMetricName = testName + ':' + metricName;
+                    var metric = metrics[fullMetricName];
+                    if (!metric) {
+                        metric = new PerfTestMetric(testName, metricName, rawMetrics[metricName].units, rawMetrics[metricName].important);
+                        metrics[fullMetricName] = metric;
+                    }
+                    // std & degrees_of_freedom could be undefined
+                    metric.addResult(
+                        new TestResult(metric, rawMetrics[metricName].current,
+                            run, rawMetrics[metricName]['std'], rawMetrics[metricName]['degrees_of_freedom']));
+                }
+            }
+        }
+
+        addTests(entry.tests);
+    });
+
+    var useLargeLinePlots = false;
+    var referenceIndex = 0;
+
+    var testTypeSelector = new TestTypeSelector(metrics);
+    var buttonHTML = testTypeSelector.buildButtonHTMLForUsedTestTypes();
+    $('#time-memory').append(buttonHTML);
+
+    $('#scatter-line').bind('change', function(event, checkedElement) {
+        useLargeLinePlots = checkedElement.textContent == 'Line';
+        displayTable(metrics, runs, testTypeSelector, referenceIndex, useLargeLinePlots);
+    });
+
+    runs.map(function(run, index) {
+        $('#reference').append('<span value="' + index + '"' + (index == referenceIndex ? ' class="checked"' : '') + ' title="' + run.description() + '">' + run.label() + '</span>');
+    })
+
+    $('#time-memory').bind('change', function(event, checkedElement) {
+        testTypeSelector.testTypeName = checkedElement.textContent;
+        displayTable(metrics, runs, testTypeSelector, referenceIndex, useLargeLinePlots);
+    });
+
+    $('#reference').bind('change', function(event, checkedElement) {
+        referenceIndex = parseInt(checkedElement.getAttribute('value'));
+        displayTable(metrics, runs, testTypeSelector, referenceIndex, useLargeLinePlots);
+    });
+
+    displayTable(metrics, runs, testTypeSelector, referenceIndex, useLargeLinePlots);
+
+    $('.checkbox').each(function(index, checkbox) {
+        $(checkbox).children('span').click(function(event) {
+            if ($(this).hasClass('checked'))
+                return;
+            $(checkbox).children('span').removeClass('checked');
+            $(this).addClass('checked');
+            $(checkbox).trigger('change', $(this));
+        });
+    });
+
+    runToUndelete = deletedRunsById[undeleteManager.mostRecentlyDeletedId()];
+
+    if (runToUndelete) {
+        $('#undelete').html('Undelete ' + runToUndelete.label());
+        $('#undelete').attr('title', runToUndelete.description());
+        $('#undelete').click(function(event) {
+            runToUndelete.show();
+            undeleteManager.undeleteMostRecent();
+            location.reload();
+        });
+    } else {
+        $('#undelete').hide();
+    }
+}
+
+</script>
+<script id="results-json" type="application/json">%json_results%</script>
+<script id="units-json" type="application/json">%json_units%</script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.util.bootstrap</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.<a href="telemetry.internal.util.html"><font color="#ffffff">util</font></a>.bootstrap</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/util/bootstrap.py">telemetry/internal/util/bootstrap.py</a></font></td></tr></table>
+    <p><tt>Bootstrap&nbsp;Chrome&nbsp;Telemetry&nbsp;by&nbsp;downloading&nbsp;all&nbsp;its&nbsp;files&nbsp;from&nbsp;SVN&nbsp;servers.<br>
+&nbsp;<br>
+Requires&nbsp;a&nbsp;DEPS&nbsp;file&nbsp;to&nbsp;specify&nbsp;which&nbsp;directories&nbsp;on&nbsp;which&nbsp;SVN&nbsp;servers<br>
+are&nbsp;required&nbsp;to&nbsp;run&nbsp;Telemetry.&nbsp;Format&nbsp;of&nbsp;that&nbsp;DEPS&nbsp;file&nbsp;is&nbsp;a&nbsp;subset&nbsp;of&nbsp;the<br>
+normal&nbsp;DEPS&nbsp;file&nbsp;format[1];&nbsp;currently&nbsp;only&nbsp;only&nbsp;the&nbsp;"deps"&nbsp;dictionary&nbsp;is<br>
+supported&nbsp;and&nbsp;nothing&nbsp;else.<br>
+&nbsp;<br>
+Fetches&nbsp;all&nbsp;files&nbsp;in&nbsp;the&nbsp;specified&nbsp;directories&nbsp;using&nbsp;WebDAV&nbsp;(SVN&nbsp;is&nbsp;WebDAV&nbsp;under<br>
+the&nbsp;hood).<br>
+&nbsp;<br>
+[1]&nbsp;<a href="http://dev.chromium.org/developers/how-tos/depottools#TOC-DEPS-file">http://dev.chromium.org/developers/how-tos/depottools#TOC-DEPS-file</a></tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="imp.html">imp</a><br>
+<a href="logging.html">logging</a><br>
+</td><td width="25%" valign=top><a href="os.html">os</a><br>
+<a href="urllib.html">urllib</a><br>
+</td><td width="25%" valign=top><a href="urlparse.html">urlparse</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.util.bootstrap.html#DAVClientWrapper">DAVClientWrapper</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="DAVClientWrapper">class <strong>DAVClientWrapper</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Knows&nbsp;how&nbsp;to&nbsp;retrieve&nbsp;subdirectories&nbsp;and&nbsp;files&nbsp;from&nbsp;WebDAV/SVN&nbsp;servers.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="DAVClientWrapper-GetDirList"><strong>GetDirList</strong></a>(self, path)</dt><dd><tt>Returns&nbsp;string&nbsp;names&nbsp;of&nbsp;all&nbsp;files&nbsp;and&nbsp;subdirs&nbsp;of&nbsp;path&nbsp;on&nbsp;the&nbsp;server.</tt></dd></dl>
+
+<dl><dt><a name="DAVClientWrapper-IsFile"><strong>IsFile</strong></a>(self, path)</dt><dd><tt>Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;path&nbsp;is&nbsp;a&nbsp;file&nbsp;on&nbsp;the&nbsp;server,&nbsp;False&nbsp;if&nbsp;directory.</tt></dd></dl>
+
+<dl><dt><a name="DAVClientWrapper-Traverse"><strong>Traverse</strong></a>(self, src_path, dst_path)</dt><dd><tt>Walks&nbsp;the&nbsp;directory&nbsp;hierarchy&nbsp;pointed&nbsp;to&nbsp;by&nbsp;src_path&nbsp;download&nbsp;all&nbsp;files.<br>
+&nbsp;<br>
+Recursively&nbsp;walks&nbsp;src_path&nbsp;and&nbsp;saves&nbsp;all&nbsp;files&nbsp;and&nbsp;subfolders&nbsp;into<br>
+dst_path.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;src_path:&nbsp;string&nbsp;path&nbsp;on&nbsp;SVN&nbsp;server&nbsp;to&nbsp;save&nbsp;(absolute&nbsp;path&nbsp;on&nbsp;server).<br>
+&nbsp;&nbsp;dest_path:&nbsp;string&nbsp;local&nbsp;path&nbsp;(relative&nbsp;or&nbsp;absolute)&nbsp;to&nbsp;save&nbsp;to.</tt></dd></dl>
+
+<dl><dt><a name="DAVClientWrapper-__init__"><strong>__init__</strong></a>(self, root_url)</dt><dd><tt>Initialize&nbsp;SVN&nbsp;server&nbsp;root_url,&nbsp;save&nbsp;files&nbsp;to&nbsp;local&nbsp;dest_dir.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;root_url:&nbsp;string&nbsp;url&nbsp;of&nbsp;SVN/WebDAV&nbsp;server</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-DownloadDeps"><strong>DownloadDeps</strong></a>(destination_dir, url)</dt><dd><tt>Saves&nbsp;all&nbsp;the&nbsp;dependencies&nbsp;in&nbsp;deps_path.<br>
+&nbsp;<br>
+Opens&nbsp;and&nbsp;reads&nbsp;url,&nbsp;assuming&nbsp;the&nbsp;contents&nbsp;are&nbsp;in&nbsp;the&nbsp;simple&nbsp;DEPS-like&nbsp;file<br>
+format&nbsp;specified&nbsp;in&nbsp;the&nbsp;header&nbsp;of&nbsp;this&nbsp;file,&nbsp;then&nbsp;download&nbsp;all<br>
+files/directories&nbsp;listed&nbsp;to&nbsp;the&nbsp;destination_dir.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;destination_dir:&nbsp;String&nbsp;path&nbsp;to&nbsp;directory&nbsp;to&nbsp;download&nbsp;files&nbsp;into.<br>
+&nbsp;&nbsp;url:&nbsp;URL&nbsp;containing&nbsp;deps&nbsp;information&nbsp;to&nbsp;be&nbsp;evaluated.</tt></dd></dl>
+ <dl><dt><a name="-ListAllDepsPaths"><strong>ListAllDepsPaths</strong></a>(deps_file)</dt><dd><tt>Recursively&nbsp;returns&nbsp;a&nbsp;list&nbsp;of&nbsp;all&nbsp;paths&nbsp;indicated&nbsp;in&nbsp;this&nbsp;deps&nbsp;file.<br>
+&nbsp;<br>
+Note&nbsp;that&nbsp;this&nbsp;discards&nbsp;information&nbsp;about&nbsp;where&nbsp;path&nbsp;dependencies&nbsp;come&nbsp;from,<br>
+so&nbsp;this&nbsp;is&nbsp;only&nbsp;useful&nbsp;in&nbsp;the&nbsp;context&nbsp;of&nbsp;a&nbsp;Chromium&nbsp;source&nbsp;checkout&nbsp;that&nbsp;has<br>
+already&nbsp;fetched&nbsp;all&nbsp;dependencies.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;deps_file:&nbsp;File&nbsp;containing&nbsp;deps&nbsp;information&nbsp;to&nbsp;be&nbsp;evaluated,&nbsp;in&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;format&nbsp;given&nbsp;in&nbsp;the&nbsp;header&nbsp;of&nbsp;this&nbsp;file.<br>
+Returns:<br>
+&nbsp;&nbsp;A&nbsp;list&nbsp;of&nbsp;string&nbsp;paths&nbsp;starting&nbsp;under&nbsp;src&nbsp;that&nbsp;are&nbsp;required&nbsp;by&nbsp;the<br>
+&nbsp;&nbsp;given&nbsp;deps&nbsp;file,&nbsp;and&nbsp;all&nbsp;of&nbsp;its&nbsp;sub-dependencies.&nbsp;This&nbsp;amounts&nbsp;to<br>
+&nbsp;&nbsp;the&nbsp;keys&nbsp;of&nbsp;the&nbsp;'deps'&nbsp;dictionary.</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>davclient</strong> = None</td></tr></table>
+</body></html>

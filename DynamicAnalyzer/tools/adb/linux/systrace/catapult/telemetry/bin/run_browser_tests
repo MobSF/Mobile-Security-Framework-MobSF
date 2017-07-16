@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import os
+import sys
+
+TELEMETRY_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+sys.path.append(TELEMETRY_DIR)
+from telemetry import project_config
+from telemetry.testing import browser_test_runner
+
+
+def main():
+  config = project_config.ProjectConfig(
+      top_level_dir=os.path.join(TELEMETRY_DIR, 'examples'),
+      benchmark_dirs=[os.path.join(TELEMETRY_DIR, 'examples', 'browser_tests')])
+  return browser_test_runner.Run(config, sys.argv[1:])
+
+
+if __name__ == '__main__':
+  sys.exit(main())

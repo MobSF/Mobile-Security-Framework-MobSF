@@ -1,0 +1,1241 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.core.exceptions</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.core.html"><font color="#ffffff">core</font></a>.exceptions</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/core/exceptions.py">telemetry/core/exceptions.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2013&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="sys.html">sys</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="exceptions.html#Exception">exceptions.Exception</a>(<a href="exceptions.html#BaseException">exceptions.BaseException</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.core.exceptions.html#Error">Error</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.core.exceptions.html#AndroidDeviceParsingError">AndroidDeviceParsingError</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.core.exceptions.html#AppCrashException">AppCrashException</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.core.exceptions.html#BrowserGoneException">BrowserGoneException</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.core.exceptions.html#BrowserConnectionGoneException">BrowserConnectionGoneException</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="telemetry.core.exceptions.html#DevtoolsTargetCrashException">DevtoolsTargetCrashException</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="telemetry.core.exceptions.html#EvaluateException">EvaluateException</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.core.exceptions.html#InitializationError">InitializationError</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.core.exceptions.html#IntentionalException">IntentionalException</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.core.exceptions.html#LoginException">LoginException</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.core.exceptions.html#PackageDetectionError">PackageDetectionError</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.core.exceptions.html#PathMissingError">PathMissingError</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.core.exceptions.html#PlatformError">PlatformError</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.core.exceptions.html#ProcessGoneException">ProcessGoneException</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.core.exceptions.html#ProfilingException">ProfilingException</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.core.exceptions.html#TimeoutException">TimeoutException</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.core.exceptions.html#UnknownPackageError">UnknownPackageError</a>
+</font></dt></dl>
+</dd>
+</dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="AndroidDeviceParsingError">class <strong>AndroidDeviceParsingError</strong></a>(<a href="telemetry.core.exceptions.html#Error">Error</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Represents&nbsp;an&nbsp;error&nbsp;when&nbsp;parsing&nbsp;output&nbsp;from&nbsp;an&nbsp;android&nbsp;device<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.core.exceptions.html#AndroidDeviceParsingError">AndroidDeviceParsingError</a></dd>
+<dd><a href="telemetry.core.exceptions.html#Error">Error</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><a name="AndroidDeviceParsingError-AddDebuggingMessage"><strong>AddDebuggingMessage</strong></a>(self, msg)</dt><dd><tt>Adds&nbsp;a&nbsp;message&nbsp;to&nbsp;the&nbsp;description&nbsp;of&nbsp;the&nbsp;exception.<br>
+&nbsp;<br>
+Many&nbsp;Telemetry&nbsp;exceptions&nbsp;arise&nbsp;from&nbsp;failures&nbsp;in&nbsp;another&nbsp;application.&nbsp;These<br>
+failures&nbsp;are&nbsp;difficult&nbsp;to&nbsp;pinpoint.&nbsp;This&nbsp;method&nbsp;allows&nbsp;Telemetry&nbsp;classes&nbsp;to<br>
+append&nbsp;useful&nbsp;debugging&nbsp;information&nbsp;to&nbsp;the&nbsp;exception.&nbsp;This&nbsp;method&nbsp;also&nbsp;logs<br>
+information&nbsp;about&nbsp;the&nbsp;location&nbsp;from&nbsp;where&nbsp;it&nbsp;was&nbsp;called.</tt></dd></dl>
+
+<dl><dt><a name="AndroidDeviceParsingError-__init__"><strong>__init__</strong></a>(self, msg<font color="#909090">=''</font>)</dt></dl>
+
+<dl><dt><a name="AndroidDeviceParsingError-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#AndroidDeviceParsingError-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;object&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="AndroidDeviceParsingError-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#AndroidDeviceParsingError-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="AndroidDeviceParsingError-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#AndroidDeviceParsingError-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="AndroidDeviceParsingError-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#AndroidDeviceParsingError-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="AndroidDeviceParsingError-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#AndroidDeviceParsingError-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="AndroidDeviceParsingError-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="AndroidDeviceParsingError-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#AndroidDeviceParsingError-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="AndroidDeviceParsingError-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#AndroidDeviceParsingError-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="AndroidDeviceParsingError-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="AndroidDeviceParsingError-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="AppCrashException">class <strong>AppCrashException</strong></a>(<a href="telemetry.core.exceptions.html#Error">Error</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.core.exceptions.html#AppCrashException">AppCrashException</a></dd>
+<dd><a href="telemetry.core.exceptions.html#Error">Error</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="AppCrashException-__init__"><strong>__init__</strong></a>(self, app<font color="#909090">=None</font>, msg<font color="#909090">=''</font>)</dt></dl>
+
+<dl><dt><a name="AppCrashException-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Methods inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><a name="AppCrashException-AddDebuggingMessage"><strong>AddDebuggingMessage</strong></a>(self, msg)</dt><dd><tt>Adds&nbsp;a&nbsp;message&nbsp;to&nbsp;the&nbsp;description&nbsp;of&nbsp;the&nbsp;exception.<br>
+&nbsp;<br>
+Many&nbsp;Telemetry&nbsp;exceptions&nbsp;arise&nbsp;from&nbsp;failures&nbsp;in&nbsp;another&nbsp;application.&nbsp;These<br>
+failures&nbsp;are&nbsp;difficult&nbsp;to&nbsp;pinpoint.&nbsp;This&nbsp;method&nbsp;allows&nbsp;Telemetry&nbsp;classes&nbsp;to<br>
+append&nbsp;useful&nbsp;debugging&nbsp;information&nbsp;to&nbsp;the&nbsp;exception.&nbsp;This&nbsp;method&nbsp;also&nbsp;logs<br>
+information&nbsp;about&nbsp;the&nbsp;location&nbsp;from&nbsp;where&nbsp;it&nbsp;was&nbsp;called.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#AppCrashException-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;object&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="AppCrashException-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#AppCrashException-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="AppCrashException-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#AppCrashException-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="AppCrashException-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#AppCrashException-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="AppCrashException-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#AppCrashException-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="AppCrashException-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="AppCrashException-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#AppCrashException-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="AppCrashException-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#AppCrashException-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="AppCrashException-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="AppCrashException-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="BrowserConnectionGoneException">class <strong>BrowserConnectionGoneException</strong></a>(<a href="telemetry.core.exceptions.html#BrowserGoneException">BrowserGoneException</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Represents&nbsp;a&nbsp;browser&nbsp;that&nbsp;still&nbsp;exists&nbsp;but&nbsp;cannot&nbsp;be&nbsp;reached.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.core.exceptions.html#BrowserConnectionGoneException">BrowserConnectionGoneException</a></dd>
+<dd><a href="telemetry.core.exceptions.html#BrowserGoneException">BrowserGoneException</a></dd>
+<dd><a href="telemetry.core.exceptions.html#AppCrashException">AppCrashException</a></dd>
+<dd><a href="telemetry.core.exceptions.html#Error">Error</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="BrowserConnectionGoneException-__init__"><strong>__init__</strong></a>(self, app, msg<font color="#909090">='Browser exists but the connection is gone'</font>)</dt></dl>
+
+<hr>
+Methods inherited from <a href="telemetry.core.exceptions.html#AppCrashException">AppCrashException</a>:<br>
+<dl><dt><a name="BrowserConnectionGoneException-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Methods inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><a name="BrowserConnectionGoneException-AddDebuggingMessage"><strong>AddDebuggingMessage</strong></a>(self, msg)</dt><dd><tt>Adds&nbsp;a&nbsp;message&nbsp;to&nbsp;the&nbsp;description&nbsp;of&nbsp;the&nbsp;exception.<br>
+&nbsp;<br>
+Many&nbsp;Telemetry&nbsp;exceptions&nbsp;arise&nbsp;from&nbsp;failures&nbsp;in&nbsp;another&nbsp;application.&nbsp;These<br>
+failures&nbsp;are&nbsp;difficult&nbsp;to&nbsp;pinpoint.&nbsp;This&nbsp;method&nbsp;allows&nbsp;Telemetry&nbsp;classes&nbsp;to<br>
+append&nbsp;useful&nbsp;debugging&nbsp;information&nbsp;to&nbsp;the&nbsp;exception.&nbsp;This&nbsp;method&nbsp;also&nbsp;logs<br>
+information&nbsp;about&nbsp;the&nbsp;location&nbsp;from&nbsp;where&nbsp;it&nbsp;was&nbsp;called.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#BrowserConnectionGoneException-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;object&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="BrowserConnectionGoneException-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#BrowserConnectionGoneException-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="BrowserConnectionGoneException-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#BrowserConnectionGoneException-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="BrowserConnectionGoneException-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#BrowserConnectionGoneException-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="BrowserConnectionGoneException-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#BrowserConnectionGoneException-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="BrowserConnectionGoneException-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="BrowserConnectionGoneException-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#BrowserConnectionGoneException-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="BrowserConnectionGoneException-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#BrowserConnectionGoneException-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="BrowserConnectionGoneException-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="BrowserConnectionGoneException-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="BrowserGoneException">class <strong>BrowserGoneException</strong></a>(<a href="telemetry.core.exceptions.html#AppCrashException">AppCrashException</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Represents&nbsp;a&nbsp;crash&nbsp;of&nbsp;the&nbsp;entire&nbsp;browser.<br>
+&nbsp;<br>
+In&nbsp;this&nbsp;state,&nbsp;all&nbsp;bets&nbsp;are&nbsp;pretty&nbsp;much&nbsp;off.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.core.exceptions.html#BrowserGoneException">BrowserGoneException</a></dd>
+<dd><a href="telemetry.core.exceptions.html#AppCrashException">AppCrashException</a></dd>
+<dd><a href="telemetry.core.exceptions.html#Error">Error</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="BrowserGoneException-__init__"><strong>__init__</strong></a>(self, app, msg<font color="#909090">='Browser crashed'</font>)</dt></dl>
+
+<hr>
+Methods inherited from <a href="telemetry.core.exceptions.html#AppCrashException">AppCrashException</a>:<br>
+<dl><dt><a name="BrowserGoneException-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Methods inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><a name="BrowserGoneException-AddDebuggingMessage"><strong>AddDebuggingMessage</strong></a>(self, msg)</dt><dd><tt>Adds&nbsp;a&nbsp;message&nbsp;to&nbsp;the&nbsp;description&nbsp;of&nbsp;the&nbsp;exception.<br>
+&nbsp;<br>
+Many&nbsp;Telemetry&nbsp;exceptions&nbsp;arise&nbsp;from&nbsp;failures&nbsp;in&nbsp;another&nbsp;application.&nbsp;These<br>
+failures&nbsp;are&nbsp;difficult&nbsp;to&nbsp;pinpoint.&nbsp;This&nbsp;method&nbsp;allows&nbsp;Telemetry&nbsp;classes&nbsp;to<br>
+append&nbsp;useful&nbsp;debugging&nbsp;information&nbsp;to&nbsp;the&nbsp;exception.&nbsp;This&nbsp;method&nbsp;also&nbsp;logs<br>
+information&nbsp;about&nbsp;the&nbsp;location&nbsp;from&nbsp;where&nbsp;it&nbsp;was&nbsp;called.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#BrowserGoneException-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;object&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="BrowserGoneException-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#BrowserGoneException-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="BrowserGoneException-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#BrowserGoneException-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="BrowserGoneException-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#BrowserGoneException-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="BrowserGoneException-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#BrowserGoneException-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="BrowserGoneException-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="BrowserGoneException-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#BrowserGoneException-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="BrowserGoneException-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#BrowserGoneException-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="BrowserGoneException-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="BrowserGoneException-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="DevtoolsTargetCrashException">class <strong>DevtoolsTargetCrashException</strong></a>(<a href="telemetry.core.exceptions.html#AppCrashException">AppCrashException</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Represents&nbsp;a&nbsp;crash&nbsp;of&nbsp;the&nbsp;current&nbsp;devtools&nbsp;target&nbsp;but&nbsp;not&nbsp;the&nbsp;overall&nbsp;app.<br>
+&nbsp;<br>
+This&nbsp;can&nbsp;be&nbsp;a&nbsp;tab&nbsp;or&nbsp;a&nbsp;WebView.&nbsp;In&nbsp;this&nbsp;state,&nbsp;the&nbsp;tab/WebView&nbsp;is<br>
+gone,&nbsp;but&nbsp;the&nbsp;underlying&nbsp;browser&nbsp;is&nbsp;still&nbsp;alive.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.core.exceptions.html#DevtoolsTargetCrashException">DevtoolsTargetCrashException</a></dd>
+<dd><a href="telemetry.core.exceptions.html#AppCrashException">AppCrashException</a></dd>
+<dd><a href="telemetry.core.exceptions.html#Error">Error</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="DevtoolsTargetCrashException-__init__"><strong>__init__</strong></a>(self, app, msg<font color="#909090">='Devtools target crashed'</font>)</dt></dl>
+
+<hr>
+Methods inherited from <a href="telemetry.core.exceptions.html#AppCrashException">AppCrashException</a>:<br>
+<dl><dt><a name="DevtoolsTargetCrashException-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Methods inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><a name="DevtoolsTargetCrashException-AddDebuggingMessage"><strong>AddDebuggingMessage</strong></a>(self, msg)</dt><dd><tt>Adds&nbsp;a&nbsp;message&nbsp;to&nbsp;the&nbsp;description&nbsp;of&nbsp;the&nbsp;exception.<br>
+&nbsp;<br>
+Many&nbsp;Telemetry&nbsp;exceptions&nbsp;arise&nbsp;from&nbsp;failures&nbsp;in&nbsp;another&nbsp;application.&nbsp;These<br>
+failures&nbsp;are&nbsp;difficult&nbsp;to&nbsp;pinpoint.&nbsp;This&nbsp;method&nbsp;allows&nbsp;Telemetry&nbsp;classes&nbsp;to<br>
+append&nbsp;useful&nbsp;debugging&nbsp;information&nbsp;to&nbsp;the&nbsp;exception.&nbsp;This&nbsp;method&nbsp;also&nbsp;logs<br>
+information&nbsp;about&nbsp;the&nbsp;location&nbsp;from&nbsp;where&nbsp;it&nbsp;was&nbsp;called.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#DevtoolsTargetCrashException-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;object&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="DevtoolsTargetCrashException-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#DevtoolsTargetCrashException-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="DevtoolsTargetCrashException-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#DevtoolsTargetCrashException-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="DevtoolsTargetCrashException-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#DevtoolsTargetCrashException-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="DevtoolsTargetCrashException-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#DevtoolsTargetCrashException-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="DevtoolsTargetCrashException-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="DevtoolsTargetCrashException-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#DevtoolsTargetCrashException-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="DevtoolsTargetCrashException-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#DevtoolsTargetCrashException-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="DevtoolsTargetCrashException-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="DevtoolsTargetCrashException-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Error">class <strong>Error</strong></a>(<a href="exceptions.html#Exception">exceptions.Exception</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Base&nbsp;class&nbsp;for&nbsp;Telemetry&nbsp;exceptions.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.core.exceptions.html#Error">Error</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="Error-AddDebuggingMessage"><strong>AddDebuggingMessage</strong></a>(self, msg)</dt><dd><tt>Adds&nbsp;a&nbsp;message&nbsp;to&nbsp;the&nbsp;description&nbsp;of&nbsp;the&nbsp;exception.<br>
+&nbsp;<br>
+Many&nbsp;Telemetry&nbsp;exceptions&nbsp;arise&nbsp;from&nbsp;failures&nbsp;in&nbsp;another&nbsp;application.&nbsp;These<br>
+failures&nbsp;are&nbsp;difficult&nbsp;to&nbsp;pinpoint.&nbsp;This&nbsp;method&nbsp;allows&nbsp;Telemetry&nbsp;classes&nbsp;to<br>
+append&nbsp;useful&nbsp;debugging&nbsp;information&nbsp;to&nbsp;the&nbsp;exception.&nbsp;This&nbsp;method&nbsp;also&nbsp;logs<br>
+information&nbsp;about&nbsp;the&nbsp;location&nbsp;from&nbsp;where&nbsp;it&nbsp;was&nbsp;called.</tt></dd></dl>
+
+<dl><dt><a name="Error-__init__"><strong>__init__</strong></a>(self, msg<font color="#909090">=''</font>)</dt></dl>
+
+<dl><dt><a name="Error-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#Error-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;object&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="Error-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#Error-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="Error-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#Error-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="Error-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#Error-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="Error-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#Error-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="Error-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="Error-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#Error-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="Error-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#Error-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="Error-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="Error-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="EvaluateException">class <strong>EvaluateException</strong></a>(<a href="telemetry.core.exceptions.html#Error">Error</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.core.exceptions.html#EvaluateException">EvaluateException</a></dd>
+<dd><a href="telemetry.core.exceptions.html#Error">Error</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><a name="EvaluateException-AddDebuggingMessage"><strong>AddDebuggingMessage</strong></a>(self, msg)</dt><dd><tt>Adds&nbsp;a&nbsp;message&nbsp;to&nbsp;the&nbsp;description&nbsp;of&nbsp;the&nbsp;exception.<br>
+&nbsp;<br>
+Many&nbsp;Telemetry&nbsp;exceptions&nbsp;arise&nbsp;from&nbsp;failures&nbsp;in&nbsp;another&nbsp;application.&nbsp;These<br>
+failures&nbsp;are&nbsp;difficult&nbsp;to&nbsp;pinpoint.&nbsp;This&nbsp;method&nbsp;allows&nbsp;Telemetry&nbsp;classes&nbsp;to<br>
+append&nbsp;useful&nbsp;debugging&nbsp;information&nbsp;to&nbsp;the&nbsp;exception.&nbsp;This&nbsp;method&nbsp;also&nbsp;logs<br>
+information&nbsp;about&nbsp;the&nbsp;location&nbsp;from&nbsp;where&nbsp;it&nbsp;was&nbsp;called.</tt></dd></dl>
+
+<dl><dt><a name="EvaluateException-__init__"><strong>__init__</strong></a>(self, msg<font color="#909090">=''</font>)</dt></dl>
+
+<dl><dt><a name="EvaluateException-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#EvaluateException-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;object&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="EvaluateException-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#EvaluateException-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="EvaluateException-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#EvaluateException-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="EvaluateException-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#EvaluateException-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="EvaluateException-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#EvaluateException-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="EvaluateException-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="EvaluateException-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#EvaluateException-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="EvaluateException-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#EvaluateException-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="EvaluateException-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="EvaluateException-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="InitializationError">class <strong>InitializationError</strong></a>(<a href="telemetry.core.exceptions.html#Error">Error</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.core.exceptions.html#InitializationError">InitializationError</a></dd>
+<dd><a href="telemetry.core.exceptions.html#Error">Error</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="InitializationError-__init__"><strong>__init__</strong></a>(self, string)</dt></dl>
+
+<hr>
+Methods inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><a name="InitializationError-AddDebuggingMessage"><strong>AddDebuggingMessage</strong></a>(self, msg)</dt><dd><tt>Adds&nbsp;a&nbsp;message&nbsp;to&nbsp;the&nbsp;description&nbsp;of&nbsp;the&nbsp;exception.<br>
+&nbsp;<br>
+Many&nbsp;Telemetry&nbsp;exceptions&nbsp;arise&nbsp;from&nbsp;failures&nbsp;in&nbsp;another&nbsp;application.&nbsp;These<br>
+failures&nbsp;are&nbsp;difficult&nbsp;to&nbsp;pinpoint.&nbsp;This&nbsp;method&nbsp;allows&nbsp;Telemetry&nbsp;classes&nbsp;to<br>
+append&nbsp;useful&nbsp;debugging&nbsp;information&nbsp;to&nbsp;the&nbsp;exception.&nbsp;This&nbsp;method&nbsp;also&nbsp;logs<br>
+information&nbsp;about&nbsp;the&nbsp;location&nbsp;from&nbsp;where&nbsp;it&nbsp;was&nbsp;called.</tt></dd></dl>
+
+<dl><dt><a name="InitializationError-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#InitializationError-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;object&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="InitializationError-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#InitializationError-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="InitializationError-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#InitializationError-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="InitializationError-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#InitializationError-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="InitializationError-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#InitializationError-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="InitializationError-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="InitializationError-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#InitializationError-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="InitializationError-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#InitializationError-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="InitializationError-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="InitializationError-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="IntentionalException">class <strong>IntentionalException</strong></a>(<a href="telemetry.core.exceptions.html#Error">Error</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Represent&nbsp;an&nbsp;exception&nbsp;raised&nbsp;by&nbsp;a&nbsp;unittest&nbsp;which&nbsp;is&nbsp;not&nbsp;printed.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.core.exceptions.html#IntentionalException">IntentionalException</a></dd>
+<dd><a href="telemetry.core.exceptions.html#Error">Error</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><a name="IntentionalException-AddDebuggingMessage"><strong>AddDebuggingMessage</strong></a>(self, msg)</dt><dd><tt>Adds&nbsp;a&nbsp;message&nbsp;to&nbsp;the&nbsp;description&nbsp;of&nbsp;the&nbsp;exception.<br>
+&nbsp;<br>
+Many&nbsp;Telemetry&nbsp;exceptions&nbsp;arise&nbsp;from&nbsp;failures&nbsp;in&nbsp;another&nbsp;application.&nbsp;These<br>
+failures&nbsp;are&nbsp;difficult&nbsp;to&nbsp;pinpoint.&nbsp;This&nbsp;method&nbsp;allows&nbsp;Telemetry&nbsp;classes&nbsp;to<br>
+append&nbsp;useful&nbsp;debugging&nbsp;information&nbsp;to&nbsp;the&nbsp;exception.&nbsp;This&nbsp;method&nbsp;also&nbsp;logs<br>
+information&nbsp;about&nbsp;the&nbsp;location&nbsp;from&nbsp;where&nbsp;it&nbsp;was&nbsp;called.</tt></dd></dl>
+
+<dl><dt><a name="IntentionalException-__init__"><strong>__init__</strong></a>(self, msg<font color="#909090">=''</font>)</dt></dl>
+
+<dl><dt><a name="IntentionalException-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#IntentionalException-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;object&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="IntentionalException-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#IntentionalException-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="IntentionalException-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#IntentionalException-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="IntentionalException-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#IntentionalException-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="IntentionalException-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#IntentionalException-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="IntentionalException-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="IntentionalException-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#IntentionalException-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="IntentionalException-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#IntentionalException-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="IntentionalException-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="IntentionalException-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="LoginException">class <strong>LoginException</strong></a>(<a href="telemetry.core.exceptions.html#Error">Error</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.core.exceptions.html#LoginException">LoginException</a></dd>
+<dd><a href="telemetry.core.exceptions.html#Error">Error</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><a name="LoginException-AddDebuggingMessage"><strong>AddDebuggingMessage</strong></a>(self, msg)</dt><dd><tt>Adds&nbsp;a&nbsp;message&nbsp;to&nbsp;the&nbsp;description&nbsp;of&nbsp;the&nbsp;exception.<br>
+&nbsp;<br>
+Many&nbsp;Telemetry&nbsp;exceptions&nbsp;arise&nbsp;from&nbsp;failures&nbsp;in&nbsp;another&nbsp;application.&nbsp;These<br>
+failures&nbsp;are&nbsp;difficult&nbsp;to&nbsp;pinpoint.&nbsp;This&nbsp;method&nbsp;allows&nbsp;Telemetry&nbsp;classes&nbsp;to<br>
+append&nbsp;useful&nbsp;debugging&nbsp;information&nbsp;to&nbsp;the&nbsp;exception.&nbsp;This&nbsp;method&nbsp;also&nbsp;logs<br>
+information&nbsp;about&nbsp;the&nbsp;location&nbsp;from&nbsp;where&nbsp;it&nbsp;was&nbsp;called.</tt></dd></dl>
+
+<dl><dt><a name="LoginException-__init__"><strong>__init__</strong></a>(self, msg<font color="#909090">=''</font>)</dt></dl>
+
+<dl><dt><a name="LoginException-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#LoginException-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;object&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="LoginException-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#LoginException-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="LoginException-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#LoginException-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="LoginException-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#LoginException-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="LoginException-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#LoginException-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="LoginException-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="LoginException-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#LoginException-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="LoginException-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#LoginException-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="LoginException-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="LoginException-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="PackageDetectionError">class <strong>PackageDetectionError</strong></a>(<a href="telemetry.core.exceptions.html#Error">Error</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Represents&nbsp;an&nbsp;error&nbsp;when&nbsp;parsing&nbsp;an&nbsp;Android&nbsp;APK's&nbsp;package.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.core.exceptions.html#PackageDetectionError">PackageDetectionError</a></dd>
+<dd><a href="telemetry.core.exceptions.html#Error">Error</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><a name="PackageDetectionError-AddDebuggingMessage"><strong>AddDebuggingMessage</strong></a>(self, msg)</dt><dd><tt>Adds&nbsp;a&nbsp;message&nbsp;to&nbsp;the&nbsp;description&nbsp;of&nbsp;the&nbsp;exception.<br>
+&nbsp;<br>
+Many&nbsp;Telemetry&nbsp;exceptions&nbsp;arise&nbsp;from&nbsp;failures&nbsp;in&nbsp;another&nbsp;application.&nbsp;These<br>
+failures&nbsp;are&nbsp;difficult&nbsp;to&nbsp;pinpoint.&nbsp;This&nbsp;method&nbsp;allows&nbsp;Telemetry&nbsp;classes&nbsp;to<br>
+append&nbsp;useful&nbsp;debugging&nbsp;information&nbsp;to&nbsp;the&nbsp;exception.&nbsp;This&nbsp;method&nbsp;also&nbsp;logs<br>
+information&nbsp;about&nbsp;the&nbsp;location&nbsp;from&nbsp;where&nbsp;it&nbsp;was&nbsp;called.</tt></dd></dl>
+
+<dl><dt><a name="PackageDetectionError-__init__"><strong>__init__</strong></a>(self, msg<font color="#909090">=''</font>)</dt></dl>
+
+<dl><dt><a name="PackageDetectionError-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#PackageDetectionError-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;object&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="PackageDetectionError-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#PackageDetectionError-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="PackageDetectionError-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#PackageDetectionError-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="PackageDetectionError-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#PackageDetectionError-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="PackageDetectionError-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#PackageDetectionError-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="PackageDetectionError-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="PackageDetectionError-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#PackageDetectionError-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="PackageDetectionError-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#PackageDetectionError-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="PackageDetectionError-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="PackageDetectionError-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="PathMissingError">class <strong>PathMissingError</strong></a>(<a href="telemetry.core.exceptions.html#Error">Error</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Represents&nbsp;an&nbsp;exception&nbsp;thrown&nbsp;when&nbsp;an&nbsp;expected&nbsp;path&nbsp;doesn't&nbsp;exist.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.core.exceptions.html#PathMissingError">PathMissingError</a></dd>
+<dd><a href="telemetry.core.exceptions.html#Error">Error</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><a name="PathMissingError-AddDebuggingMessage"><strong>AddDebuggingMessage</strong></a>(self, msg)</dt><dd><tt>Adds&nbsp;a&nbsp;message&nbsp;to&nbsp;the&nbsp;description&nbsp;of&nbsp;the&nbsp;exception.<br>
+&nbsp;<br>
+Many&nbsp;Telemetry&nbsp;exceptions&nbsp;arise&nbsp;from&nbsp;failures&nbsp;in&nbsp;another&nbsp;application.&nbsp;These<br>
+failures&nbsp;are&nbsp;difficult&nbsp;to&nbsp;pinpoint.&nbsp;This&nbsp;method&nbsp;allows&nbsp;Telemetry&nbsp;classes&nbsp;to<br>
+append&nbsp;useful&nbsp;debugging&nbsp;information&nbsp;to&nbsp;the&nbsp;exception.&nbsp;This&nbsp;method&nbsp;also&nbsp;logs<br>
+information&nbsp;about&nbsp;the&nbsp;location&nbsp;from&nbsp;where&nbsp;it&nbsp;was&nbsp;called.</tt></dd></dl>
+
+<dl><dt><a name="PathMissingError-__init__"><strong>__init__</strong></a>(self, msg<font color="#909090">=''</font>)</dt></dl>
+
+<dl><dt><a name="PathMissingError-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#PathMissingError-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;object&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="PathMissingError-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#PathMissingError-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="PathMissingError-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#PathMissingError-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="PathMissingError-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#PathMissingError-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="PathMissingError-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#PathMissingError-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="PathMissingError-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="PathMissingError-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#PathMissingError-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="PathMissingError-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#PathMissingError-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="PathMissingError-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="PathMissingError-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="PlatformError">class <strong>PlatformError</strong></a>(<a href="telemetry.core.exceptions.html#Error">Error</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Represents&nbsp;an&nbsp;exception&nbsp;thrown&nbsp;when&nbsp;constructing&nbsp;platform.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.core.exceptions.html#PlatformError">PlatformError</a></dd>
+<dd><a href="telemetry.core.exceptions.html#Error">Error</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><a name="PlatformError-AddDebuggingMessage"><strong>AddDebuggingMessage</strong></a>(self, msg)</dt><dd><tt>Adds&nbsp;a&nbsp;message&nbsp;to&nbsp;the&nbsp;description&nbsp;of&nbsp;the&nbsp;exception.<br>
+&nbsp;<br>
+Many&nbsp;Telemetry&nbsp;exceptions&nbsp;arise&nbsp;from&nbsp;failures&nbsp;in&nbsp;another&nbsp;application.&nbsp;These<br>
+failures&nbsp;are&nbsp;difficult&nbsp;to&nbsp;pinpoint.&nbsp;This&nbsp;method&nbsp;allows&nbsp;Telemetry&nbsp;classes&nbsp;to<br>
+append&nbsp;useful&nbsp;debugging&nbsp;information&nbsp;to&nbsp;the&nbsp;exception.&nbsp;This&nbsp;method&nbsp;also&nbsp;logs<br>
+information&nbsp;about&nbsp;the&nbsp;location&nbsp;from&nbsp;where&nbsp;it&nbsp;was&nbsp;called.</tt></dd></dl>
+
+<dl><dt><a name="PlatformError-__init__"><strong>__init__</strong></a>(self, msg<font color="#909090">=''</font>)</dt></dl>
+
+<dl><dt><a name="PlatformError-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#PlatformError-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;object&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="PlatformError-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#PlatformError-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="PlatformError-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#PlatformError-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="PlatformError-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#PlatformError-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="PlatformError-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#PlatformError-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="PlatformError-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="PlatformError-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#PlatformError-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="PlatformError-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#PlatformError-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="PlatformError-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="PlatformError-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="ProcessGoneException">class <strong>ProcessGoneException</strong></a>(<a href="telemetry.core.exceptions.html#Error">Error</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Represents&nbsp;a&nbsp;process&nbsp;that&nbsp;no&nbsp;longer&nbsp;exists&nbsp;for&nbsp;an&nbsp;unknown&nbsp;reason.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.core.exceptions.html#ProcessGoneException">ProcessGoneException</a></dd>
+<dd><a href="telemetry.core.exceptions.html#Error">Error</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><a name="ProcessGoneException-AddDebuggingMessage"><strong>AddDebuggingMessage</strong></a>(self, msg)</dt><dd><tt>Adds&nbsp;a&nbsp;message&nbsp;to&nbsp;the&nbsp;description&nbsp;of&nbsp;the&nbsp;exception.<br>
+&nbsp;<br>
+Many&nbsp;Telemetry&nbsp;exceptions&nbsp;arise&nbsp;from&nbsp;failures&nbsp;in&nbsp;another&nbsp;application.&nbsp;These<br>
+failures&nbsp;are&nbsp;difficult&nbsp;to&nbsp;pinpoint.&nbsp;This&nbsp;method&nbsp;allows&nbsp;Telemetry&nbsp;classes&nbsp;to<br>
+append&nbsp;useful&nbsp;debugging&nbsp;information&nbsp;to&nbsp;the&nbsp;exception.&nbsp;This&nbsp;method&nbsp;also&nbsp;logs<br>
+information&nbsp;about&nbsp;the&nbsp;location&nbsp;from&nbsp;where&nbsp;it&nbsp;was&nbsp;called.</tt></dd></dl>
+
+<dl><dt><a name="ProcessGoneException-__init__"><strong>__init__</strong></a>(self, msg<font color="#909090">=''</font>)</dt></dl>
+
+<dl><dt><a name="ProcessGoneException-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#ProcessGoneException-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;object&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="ProcessGoneException-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#ProcessGoneException-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="ProcessGoneException-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#ProcessGoneException-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="ProcessGoneException-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#ProcessGoneException-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="ProcessGoneException-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#ProcessGoneException-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="ProcessGoneException-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="ProcessGoneException-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#ProcessGoneException-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="ProcessGoneException-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#ProcessGoneException-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="ProcessGoneException-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="ProcessGoneException-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="ProfilingException">class <strong>ProfilingException</strong></a>(<a href="telemetry.core.exceptions.html#Error">Error</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.core.exceptions.html#ProfilingException">ProfilingException</a></dd>
+<dd><a href="telemetry.core.exceptions.html#Error">Error</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><a name="ProfilingException-AddDebuggingMessage"><strong>AddDebuggingMessage</strong></a>(self, msg)</dt><dd><tt>Adds&nbsp;a&nbsp;message&nbsp;to&nbsp;the&nbsp;description&nbsp;of&nbsp;the&nbsp;exception.<br>
+&nbsp;<br>
+Many&nbsp;Telemetry&nbsp;exceptions&nbsp;arise&nbsp;from&nbsp;failures&nbsp;in&nbsp;another&nbsp;application.&nbsp;These<br>
+failures&nbsp;are&nbsp;difficult&nbsp;to&nbsp;pinpoint.&nbsp;This&nbsp;method&nbsp;allows&nbsp;Telemetry&nbsp;classes&nbsp;to<br>
+append&nbsp;useful&nbsp;debugging&nbsp;information&nbsp;to&nbsp;the&nbsp;exception.&nbsp;This&nbsp;method&nbsp;also&nbsp;logs<br>
+information&nbsp;about&nbsp;the&nbsp;location&nbsp;from&nbsp;where&nbsp;it&nbsp;was&nbsp;called.</tt></dd></dl>
+
+<dl><dt><a name="ProfilingException-__init__"><strong>__init__</strong></a>(self, msg<font color="#909090">=''</font>)</dt></dl>
+
+<dl><dt><a name="ProfilingException-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#ProfilingException-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;object&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="ProfilingException-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#ProfilingException-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="ProfilingException-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#ProfilingException-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="ProfilingException-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#ProfilingException-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="ProfilingException-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#ProfilingException-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="ProfilingException-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="ProfilingException-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#ProfilingException-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="ProfilingException-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#ProfilingException-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="ProfilingException-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="ProfilingException-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="TimeoutException">class <strong>TimeoutException</strong></a>(<a href="telemetry.core.exceptions.html#Error">Error</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>The&nbsp;operation&nbsp;failed&nbsp;to&nbsp;complete&nbsp;because&nbsp;of&nbsp;a&nbsp;timeout.<br>
+&nbsp;<br>
+It&nbsp;is&nbsp;possible&nbsp;that&nbsp;waiting&nbsp;for&nbsp;a&nbsp;longer&nbsp;period&nbsp;of&nbsp;time&nbsp;would&nbsp;result&nbsp;in&nbsp;a<br>
+successful&nbsp;operation.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.core.exceptions.html#TimeoutException">TimeoutException</a></dd>
+<dd><a href="telemetry.core.exceptions.html#Error">Error</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><a name="TimeoutException-AddDebuggingMessage"><strong>AddDebuggingMessage</strong></a>(self, msg)</dt><dd><tt>Adds&nbsp;a&nbsp;message&nbsp;to&nbsp;the&nbsp;description&nbsp;of&nbsp;the&nbsp;exception.<br>
+&nbsp;<br>
+Many&nbsp;Telemetry&nbsp;exceptions&nbsp;arise&nbsp;from&nbsp;failures&nbsp;in&nbsp;another&nbsp;application.&nbsp;These<br>
+failures&nbsp;are&nbsp;difficult&nbsp;to&nbsp;pinpoint.&nbsp;This&nbsp;method&nbsp;allows&nbsp;Telemetry&nbsp;classes&nbsp;to<br>
+append&nbsp;useful&nbsp;debugging&nbsp;information&nbsp;to&nbsp;the&nbsp;exception.&nbsp;This&nbsp;method&nbsp;also&nbsp;logs<br>
+information&nbsp;about&nbsp;the&nbsp;location&nbsp;from&nbsp;where&nbsp;it&nbsp;was&nbsp;called.</tt></dd></dl>
+
+<dl><dt><a name="TimeoutException-__init__"><strong>__init__</strong></a>(self, msg<font color="#909090">=''</font>)</dt></dl>
+
+<dl><dt><a name="TimeoutException-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#TimeoutException-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;object&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="TimeoutException-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#TimeoutException-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="TimeoutException-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#TimeoutException-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="TimeoutException-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#TimeoutException-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="TimeoutException-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#TimeoutException-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="TimeoutException-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="TimeoutException-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#TimeoutException-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="TimeoutException-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#TimeoutException-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="TimeoutException-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="TimeoutException-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="UnknownPackageError">class <strong>UnknownPackageError</strong></a>(<a href="telemetry.core.exceptions.html#Error">Error</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Represents&nbsp;an&nbsp;exception&nbsp;when&nbsp;encountering&nbsp;an&nbsp;unsupported&nbsp;Android&nbsp;APK.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.core.exceptions.html#UnknownPackageError">UnknownPackageError</a></dd>
+<dd><a href="telemetry.core.exceptions.html#Error">Error</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><a name="UnknownPackageError-AddDebuggingMessage"><strong>AddDebuggingMessage</strong></a>(self, msg)</dt><dd><tt>Adds&nbsp;a&nbsp;message&nbsp;to&nbsp;the&nbsp;description&nbsp;of&nbsp;the&nbsp;exception.<br>
+&nbsp;<br>
+Many&nbsp;Telemetry&nbsp;exceptions&nbsp;arise&nbsp;from&nbsp;failures&nbsp;in&nbsp;another&nbsp;application.&nbsp;These<br>
+failures&nbsp;are&nbsp;difficult&nbsp;to&nbsp;pinpoint.&nbsp;This&nbsp;method&nbsp;allows&nbsp;Telemetry&nbsp;classes&nbsp;to<br>
+append&nbsp;useful&nbsp;debugging&nbsp;information&nbsp;to&nbsp;the&nbsp;exception.&nbsp;This&nbsp;method&nbsp;also&nbsp;logs<br>
+information&nbsp;about&nbsp;the&nbsp;location&nbsp;from&nbsp;where&nbsp;it&nbsp;was&nbsp;called.</tt></dd></dl>
+
+<dl><dt><a name="UnknownPackageError-__init__"><strong>__init__</strong></a>(self, msg<font color="#909090">=''</font>)</dt></dl>
+
+<dl><dt><a name="UnknownPackageError-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.core.exceptions.html#Error">Error</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#UnknownPackageError-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;object&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="UnknownPackageError-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#UnknownPackageError-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="UnknownPackageError-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#UnknownPackageError-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="UnknownPackageError-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#UnknownPackageError-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="UnknownPackageError-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#UnknownPackageError-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="UnknownPackageError-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="UnknownPackageError-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#UnknownPackageError-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="UnknownPackageError-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#UnknownPackageError-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="UnknownPackageError-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="UnknownPackageError-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

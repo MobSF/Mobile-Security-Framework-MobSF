@@ -1,0 +1,299 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.benchmark</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.benchmark</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/benchmark.py">telemetry/benchmark.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2014&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.internal.util.command_line.html">telemetry.internal.util.command_line</a><br>
+<a href="telemetry.decorators.html">telemetry.decorators</a><br>
+</td><td width="25%" valign=top><a href="optparse.html">optparse</a><br>
+<a href="telemetry.page.page_test.html">telemetry.page.page_test</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.story_runner.html">telemetry.internal.story_runner</a><br>
+<a href="telemetry.web_perf.timeline_based_measurement.html">telemetry.web_perf.timeline_based_measurement</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.benchmark.html#BenchmarkMetadata">BenchmarkMetadata</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="exceptions.html#Exception">exceptions.Exception</a>(<a href="exceptions.html#BaseException">exceptions.BaseException</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.benchmark.html#InvalidOptionsError">InvalidOptionsError</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.util.command_line.html#Command">telemetry.internal.util.command_line.Command</a>(<a href="telemetry.internal.util.command_line.html#ArgumentHandlerMixIn">telemetry.internal.util.command_line.ArgumentHandlerMixIn</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.benchmark.html#Benchmark">Benchmark</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Benchmark">class <strong>Benchmark</strong></a>(<a href="telemetry.internal.util.command_line.html#Command">telemetry.internal.util.command_line.Command</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Base&nbsp;class&nbsp;for&nbsp;a&nbsp;Telemetry&nbsp;benchmark.<br>
+&nbsp;<br>
+A&nbsp;benchmark&nbsp;packages&nbsp;a&nbsp;measurement&nbsp;and&nbsp;a&nbsp;PageSet&nbsp;together.<br>
+Benchmarks&nbsp;default&nbsp;to&nbsp;using&nbsp;TBM&nbsp;unless&nbsp;you&nbsp;override&nbsp;the&nbsp;value&nbsp;of<br>
+<a href="#Benchmark">Benchmark</a>.test,&nbsp;or&nbsp;override&nbsp;the&nbsp;CreatePageTest&nbsp;method.<br>
+&nbsp;<br>
+New&nbsp;benchmarks&nbsp;should&nbsp;override&nbsp;CreateStorySet.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.benchmark.html#Benchmark">Benchmark</a></dd>
+<dd><a href="telemetry.internal.util.command_line.html#Command">telemetry.internal.util.command_line.Command</a></dd>
+<dd><a href="telemetry.internal.util.command_line.html#ArgumentHandlerMixIn">telemetry.internal.util.command_line.ArgumentHandlerMixIn</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="Benchmark-CreatePageTest"><strong>CreatePageTest</strong></a>(self, options)</dt><dd><tt>Return&nbsp;the&nbsp;PageTest&nbsp;for&nbsp;this&nbsp;<a href="#Benchmark">Benchmark</a>.<br>
+&nbsp;<br>
+Override&nbsp;this&nbsp;method&nbsp;for&nbsp;PageTest&nbsp;tests.<br>
+Override,&nbsp;override&nbsp;CreateTimelineBasedMeasurementOptions&nbsp;to&nbsp;configure<br>
+TimelineBasedMeasurement&nbsp;tests.&nbsp;Do&nbsp;not&nbsp;override&nbsp;both&nbsp;methods.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;options:&nbsp;a&nbsp;browser_options.BrowserFinderOptions&nbsp;instance<br>
+Returns:<br>
+&nbsp;&nbsp;|<a href="#Benchmark-test">test</a>()|&nbsp;if&nbsp;|test|&nbsp;is&nbsp;a&nbsp;PageTest&nbsp;class.<br>
+&nbsp;&nbsp;Otherwise,&nbsp;a&nbsp;TimelineBasedMeasurement&nbsp;instance.</tt></dd></dl>
+
+<dl><dt><a name="Benchmark-CreateStorySet"><strong>CreateStorySet</strong></a>(self, options)</dt><dd><tt>Creates&nbsp;the&nbsp;instance&nbsp;of&nbsp;StorySet&nbsp;used&nbsp;to&nbsp;run&nbsp;the&nbsp;benchmark.<br>
+&nbsp;<br>
+Can&nbsp;be&nbsp;overridden&nbsp;by&nbsp;subclasses.</tt></dd></dl>
+
+<dl><dt><a name="Benchmark-CreateTimelineBasedMeasurementOptions"><strong>CreateTimelineBasedMeasurementOptions</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;TimelineBasedMeasurementOptions&nbsp;for&nbsp;this&nbsp;<a href="#Benchmark">Benchmark</a>.<br>
+&nbsp;<br>
+Override&nbsp;this&nbsp;method&nbsp;to&nbsp;configure&nbsp;a&nbsp;TimelineBasedMeasurement&nbsp;benchmark.<br>
+Otherwise,&nbsp;override&nbsp;CreatePageTest&nbsp;for&nbsp;PageTest&nbsp;tests.&nbsp;Do&nbsp;not&nbsp;override<br>
+both&nbsp;methods.</tt></dd></dl>
+
+<dl><dt><a name="Benchmark-CustomizeBrowserOptions"><strong>CustomizeBrowserOptions</strong></a>(self, options)</dt><dd><tt>Add&nbsp;browser&nbsp;options&nbsp;that&nbsp;are&nbsp;required&nbsp;by&nbsp;this&nbsp;benchmark.</tt></dd></dl>
+
+<dl><dt><a name="Benchmark-GetMetadata"><strong>GetMetadata</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Benchmark-GetTraceRerunCommands"><strong>GetTraceRerunCommands</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Benchmark-Run"><strong>Run</strong></a>(self, finder_options)</dt><dd><tt>Do&nbsp;not&nbsp;override&nbsp;this&nbsp;method.</tt></dd></dl>
+
+<dl><dt><a name="Benchmark-SetupBenchmarkDebugTraceRerunOptions"><strong>SetupBenchmarkDebugTraceRerunOptions</strong></a>(self, tbm_options)</dt><dd><tt>Setup&nbsp;tracing&nbsp;categories&nbsp;associated&nbsp;with&nbsp;debug&nbsp;trace&nbsp;option.</tt></dd></dl>
+
+<dl><dt><a name="Benchmark-SetupBenchmarkDefaultTraceRerunOptions"><strong>SetupBenchmarkDefaultTraceRerunOptions</strong></a>(self, tbm_options)</dt><dd><tt>Setup&nbsp;tracing&nbsp;categories&nbsp;associated&nbsp;with&nbsp;default&nbsp;trace&nbsp;option.</tt></dd></dl>
+
+<dl><dt><a name="Benchmark-SetupTraceRerunOptions"><strong>SetupTraceRerunOptions</strong></a>(self, browser_options, tbm_options)</dt></dl>
+
+<dl><dt><a name="Benchmark-__init__"><strong>__init__</strong></a>(self, max_failures<font color="#909090">=None</font>)</dt><dd><tt>Creates&nbsp;a&nbsp;new&nbsp;<a href="#Benchmark">Benchmark</a>.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;max_failures:&nbsp;The&nbsp;number&nbsp;of&nbsp;story&nbsp;run's&nbsp;failures&nbsp;before&nbsp;bailing<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;from&nbsp;executing&nbsp;subsequent&nbsp;page&nbsp;runs.&nbsp;If&nbsp;None,&nbsp;we&nbsp;never&nbsp;bail.</tt></dd></dl>
+
+<hr>
+Class methods defined here:<br>
+<dl><dt><a name="Benchmark-AddCommandLineArgs"><strong>AddCommandLineArgs</strong></a>(cls, parser)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="Benchmark-HasTraceRerunDebugOption"><strong>HasTraceRerunDebugOption</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="Benchmark-Name"><strong>Name</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="Benchmark-ProcessCommandLineArgs"><strong>ProcessCommandLineArgs</strong></a>(cls, parser, args)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="Benchmark-SetArgumentDefaults"><strong>SetArgumentDefaults</strong></a>(cls, parser)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="Benchmark-ShouldDisable"><strong>ShouldDisable</strong></a>(cls, possible_browser)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Override&nbsp;this&nbsp;method&nbsp;to&nbsp;disable&nbsp;a&nbsp;benchmark&nbsp;under&nbsp;specific&nbsp;conditions.<br>
+&nbsp;<br>
+Supports&nbsp;logic&nbsp;too&nbsp;complex&nbsp;for&nbsp;simple&nbsp;Enabled&nbsp;and&nbsp;Disabled&nbsp;decorators.<br>
+Decorators&nbsp;are&nbsp;still&nbsp;respected&nbsp;in&nbsp;cases&nbsp;where&nbsp;this&nbsp;function&nbsp;returns&nbsp;False.</tt></dd></dl>
+
+<dl><dt><a name="Benchmark-ValueCanBeAddedPredicate"><strong>ValueCanBeAddedPredicate</strong></a>(cls, value, is_first_result)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Returns&nbsp;whether&nbsp;|value|&nbsp;can&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;test&nbsp;results.<br>
+&nbsp;<br>
+Override&nbsp;this&nbsp;method&nbsp;to&nbsp;customize&nbsp;the&nbsp;logic&nbsp;of&nbsp;adding&nbsp;values&nbsp;to&nbsp;test<br>
+results.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;value:&nbsp;a&nbsp;value.Value&nbsp;instance&nbsp;(except&nbsp;failure.FailureValue,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;skip.SkipValue&nbsp;or&nbsp;trace.TraceValue&nbsp;which&nbsp;will&nbsp;always&nbsp;be&nbsp;added).<br>
+&nbsp;&nbsp;is_first_result:&nbsp;True&nbsp;if&nbsp;|value|&nbsp;is&nbsp;the&nbsp;first&nbsp;result&nbsp;for&nbsp;its<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;corresponding&nbsp;story.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;True&nbsp;if&nbsp;|value|&nbsp;should&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;test&nbsp;results.<br>
+&nbsp;&nbsp;Otherwise,&nbsp;it&nbsp;returns&nbsp;False.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>max_failures</strong></dt>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>options</strong> = {}</dl>
+
+<dl><dt><strong>test</strong> = &lt;class 'telemetry.web_perf.timeline_based_measurement.TimelineBasedMeasurement'&gt;<dd><tt>Collects&nbsp;multiple&nbsp;metrics&nbsp;based&nbsp;on&nbsp;their&nbsp;interaction&nbsp;records.<br>
+&nbsp;<br>
+A&nbsp;timeline&nbsp;based&nbsp;measurement&nbsp;shifts&nbsp;the&nbsp;burden&nbsp;of&nbsp;what&nbsp;metrics&nbsp;to&nbsp;collect&nbsp;onto<br>
+the&nbsp;story&nbsp;under&nbsp;test.&nbsp;Instead&nbsp;of&nbsp;the&nbsp;measurement<br>
+having&nbsp;a&nbsp;fixed&nbsp;set&nbsp;of&nbsp;values&nbsp;it&nbsp;collects,&nbsp;the&nbsp;story&nbsp;being&nbsp;tested<br>
+issues&nbsp;(via&nbsp;javascript)&nbsp;an&nbsp;Interaction&nbsp;record&nbsp;into&nbsp;the&nbsp;user&nbsp;timing&nbsp;API&nbsp;that<br>
+describing&nbsp;what&nbsp;is&nbsp;happening&nbsp;at&nbsp;that&nbsp;time,&nbsp;as&nbsp;well&nbsp;as&nbsp;a&nbsp;standardized&nbsp;set<br>
+of&nbsp;flags&nbsp;describing&nbsp;the&nbsp;semantics&nbsp;of&nbsp;the&nbsp;work&nbsp;being&nbsp;done.&nbsp;The<br>
+TimelineBasedMeasurement&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;collects&nbsp;a&nbsp;trace&nbsp;that&nbsp;includes&nbsp;both&nbsp;these<br>
+interaction&nbsp;records,&nbsp;and&nbsp;a&nbsp;user-chosen&nbsp;amount&nbsp;of&nbsp;performance&nbsp;data&nbsp;using<br>
+Telemetry's&nbsp;various&nbsp;timeline-producing&nbsp;APIs,&nbsp;tracing&nbsp;especially.<br>
+&nbsp;<br>
+It&nbsp;then&nbsp;passes&nbsp;the&nbsp;recorded&nbsp;timeline&nbsp;to&nbsp;different&nbsp;TimelineBasedMetrics&nbsp;based<br>
+on&nbsp;those&nbsp;flags.&nbsp;As&nbsp;an&nbsp;example,&nbsp;this&nbsp;allows&nbsp;a&nbsp;single&nbsp;story&nbsp;run&nbsp;to&nbsp;produce<br>
+load&nbsp;timing&nbsp;data,&nbsp;smoothness&nbsp;data,&nbsp;critical&nbsp;jank&nbsp;information&nbsp;and&nbsp;overall&nbsp;cpu<br>
+usage&nbsp;information.<br>
+&nbsp;<br>
+For&nbsp;information&nbsp;on&nbsp;how&nbsp;to&nbsp;mark&nbsp;up&nbsp;a&nbsp;page&nbsp;to&nbsp;work&nbsp;with<br>
+TimelineBasedMeasurement,&nbsp;refer&nbsp;to&nbsp;the<br>
+perf.metrics.timeline_interaction_record&nbsp;module.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;options:&nbsp;an&nbsp;instance&nbsp;of&nbsp;timeline_based_measurement.Options.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;results_wrapper:&nbsp;A&nbsp;class&nbsp;that&nbsp;has&nbsp;the&nbsp;__init__&nbsp;method&nbsp;takes&nbsp;in<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;page_test_results&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;and&nbsp;the&nbsp;interaction&nbsp;record&nbsp;label.&nbsp;This<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;follows&nbsp;the&nbsp;ResultsWrapperInterface.&nbsp;Note:&nbsp;this&nbsp;class&nbsp;is&nbsp;not<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;supported&nbsp;long&nbsp;term&nbsp;and&nbsp;to&nbsp;be&nbsp;removed&nbsp;when&nbsp;crbug.com/453109&nbsp;is&nbsp;resolved.</tt></dl>
+
+<hr>
+Class methods inherited from <a href="telemetry.internal.util.command_line.html#Command">telemetry.internal.util.command_line.Command</a>:<br>
+<dl><dt><a name="Benchmark-Description"><strong>Description</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="Benchmark-main"><strong>main</strong></a>(cls, args<font color="#909090">=None</font>)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Main&nbsp;method&nbsp;to&nbsp;run&nbsp;this&nbsp;command&nbsp;as&nbsp;a&nbsp;standalone&nbsp;script.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.internal.util.command_line.html#ArgumentHandlerMixIn">telemetry.internal.util.command_line.ArgumentHandlerMixIn</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="BenchmarkMetadata">class <strong>BenchmarkMetadata</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="BenchmarkMetadata-AsDict"><strong>AsDict</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="BenchmarkMetadata-__init__"><strong>__init__</strong></a>(self, name, description<font color="#909090">=''</font>, rerun_options<font color="#909090">=None</font>)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>description</strong></dt>
+</dl>
+<dl><dt><strong>name</strong></dt>
+</dl>
+<dl><dt><strong>rerun_options</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="InvalidOptionsError">class <strong>InvalidOptionsError</strong></a>(<a href="exceptions.html#Exception">exceptions.Exception</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Raised&nbsp;for&nbsp;invalid&nbsp;benchmark&nbsp;options.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.benchmark.html#InvalidOptionsError">InvalidOptionsError</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><a name="InvalidOptionsError-__init__"><strong>__init__</strong></a>(...)</dt><dd><tt>x.<a href="#InvalidOptionsError-__init__">__init__</a>(...)&nbsp;initializes&nbsp;x;&nbsp;see&nbsp;help(type(x))&nbsp;for&nbsp;signature</tt></dd></dl>
+
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#InvalidOptionsError-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="InvalidOptionsError-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#InvalidOptionsError-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="InvalidOptionsError-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#InvalidOptionsError-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="InvalidOptionsError-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#InvalidOptionsError-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="InvalidOptionsError-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#InvalidOptionsError-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="InvalidOptionsError-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="InvalidOptionsError-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#InvalidOptionsError-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="InvalidOptionsError-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#InvalidOptionsError-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="InvalidOptionsError-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="InvalidOptionsError-__str__"><strong>__str__</strong></a>(...)</dt><dd><tt>x.<a href="#InvalidOptionsError-__str__">__str__</a>()&nbsp;&lt;==&gt;&nbsp;str(x)</tt></dd></dl>
+
+<dl><dt><a name="InvalidOptionsError-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-AddCommandLineArgs"><strong>AddCommandLineArgs</strong></a>(parser)</dt></dl>
+ <dl><dt><a name="-ProcessCommandLineArgs"><strong>ProcessCommandLineArgs</strong></a>(parser, args)</dt></dl>
+</td></tr></table>
+</body></html>

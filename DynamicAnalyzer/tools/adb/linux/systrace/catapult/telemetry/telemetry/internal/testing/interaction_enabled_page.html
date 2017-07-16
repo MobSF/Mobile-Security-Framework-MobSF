@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="user-scalable:no">
+    <style type="text/css">
+      body { height: 1500px; }
+      #center {
+         position: fixed;
+         left: 40%;;
+         width: 50%;
+         height: 250px;
+         top: 25%;
+         background-color: grey;
+         -webkit-transform: scale(0.25, 0.25);
+         -webkit-transition: -webkit-transform 1s;
+      }
+
+      #drawer {
+         position: fixed;
+         top: 0;
+         left: 0;
+         height: 100%;
+         width: 120px;
+         background-color: red;
+         -webkit-transform: translate3d(-1000px, 0, 0);
+         -webkit-transition: -webkit-transform 1s;
+      }
+
+    </style>
+    <script>
+    'use strict';
+    window.animationDone = false;
+    function makeAnimation() {
+      var centerEl = document.querySelector('#center');
+      centerEl.style.webkitTransform = 'scale(1.0, 1.0)';
+      console.time('Interaction.CenterAnimation');
+      centerEl.addEventListener('transitionend', function() {
+        console.timeEnd('Interaction.CenterAnimation');
+        var drawerEl = document.querySelector('#drawer');
+        drawerEl.style.webkitTransform = 'translate3D(0, 0, 0)';
+        console.time('Interaction.DrawerAnimation');
+        drawerEl.addEventListener('transitionend', function() {
+          console.timeEnd('Interaction.DrawerAnimation');
+          window.animationDone = true;
+        });
+      });
+    }
+    </script>
+
+    <script>
+    'use strict';
+    var jankMs = 100;
+    var slowMs = 200;
+    window.jankScriptDone = false;
+    window.slowScriptDone = false;
+    function waitMs(ms) {
+      var startTime = window.performance.now();
+      var currTime = startTime;
+      while (currTime - startTime < ms) {
+        var currTime = window.performance.now();
+      }
+    }
+    function makeJank() {
+      console.time('Interaction.JankThreadJSRun');
+      waitMs(jankMs);
+      console.timeEnd('Interaction.JankThreadJSRun');
+      window.jankScriptDone = true;
+    }
+    function makeSlow() {
+      console.time('Interaction.SlowThreadJsRun');
+      waitMs(slowMs);
+      console.timeEnd('Interaction.SlowThreadJsRun');
+      window.slowScriptDone = true;
+    }
+    </script>
+
+  </head>
+  <body>
+    <div id="center">
+      This is something in the middle.
+    </div>
+    <div id="drawer">
+      This is a drawer.
+    </div>
+    <button type="button" id="animating-button" onclick="makeAnimation()">
+      Click or tap this to trigger an animation.
+    </div>
+    <button type="button" id="jank-button" onclick="makeJank()">
+      Click or tap this to make jank of 100ms (approximately).
+    </div>
+    <button type="button" id="slow-button" onclick="makeSlow()">
+      Click or tap this to make wait 200ms (approximately).
+    </div>
+
+  </body>
+</html>

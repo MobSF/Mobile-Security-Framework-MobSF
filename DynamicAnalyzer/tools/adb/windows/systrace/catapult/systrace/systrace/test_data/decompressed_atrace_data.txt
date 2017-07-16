@@ -1,0 +1,1053 @@
+# tracer: nop
+#
+# entries-in-buffer/entries-written: 1042/1042   #P:6
+#
+#                                      _-----=> irqs-off
+#                                     / _----=> need-resched
+#                                    | / _---=> hardirq/softirq
+#                                    || / _--=> preempt-depth
+#                                    ||| /     delay
+#           TASK-PID    TGID   CPU#  ||||    TIMESTAMP  FUNCTION
+#              | |        |      |   ||||       |         |
+           <...>-19161 (-----) [001] ...1 683201.354908: tracing_mark_write: trace_event_clock_sync: parent_ts=683201.375000
+           <...>-19161 (-----) [001] ...1 683201.354926: tracing_mark_write: trace_event_clock_sync: realtime_ts=3720325137
+ ndroid.systemui-13580 (13580) [001] ...1 683202.104223: tracing_mark_write: S|13580|deliverInputEvent|263
+           <...>-18926 (-----) [000] ...1 683202.104223: tracing_mark_write: S|18926|deliverInputEvent|1024
+ ndroid.systemui-13580 (13580) [001] ...1 683202.104606: tracing_mark_write: F|13580|deliverInputEvent|263
+ ndroid.systemui-13580 (13580) [001] ...1 683202.104846: tracing_mark_write: S|13580|deliverInputEvent|267
+ ndroid.systemui-13580 (13580) [001] ...1 683202.105046: tracing_mark_write: F|13580|deliverInputEvent|267
+           <...>-18926 (-----) [000] ...1 683202.107286: tracing_mark_write: F|18926|deliverInputEvent|1024
+           <...>-18926 (-----) [005] ...1 683202.115809: tracing_mark_write: B|18926|Choreographer#doFrame
+           <...>-18926 (-----) [005] ...1 683202.115860: tracing_mark_write: B|18926|input
+           <...>-18926 (-----) [005] ...1 683202.115972: tracing_mark_write: S|18926|deliverInputEvent|1041
+           <...>-18926 (-----) [005] ...1 683202.116506: tracing_mark_write: F|18926|deliverInputEvent|1041
+           <...>-18926 (-----) [005] ...1 683202.116849: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.116883: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.131660: tracing_mark_write: B|18926|Choreographer#doFrame
+           <...>-18926 (-----) [004] ...1 683202.131710: tracing_mark_write: B|18926|input
+           <...>-18926 (-----) [004] ...1 683202.131833: tracing_mark_write: S|18926|deliverInputEvent|1056
+           <...>-18926 (-----) [004] ...1 683202.132351: tracing_mark_write: F|18926|deliverInputEvent|1056
+           <...>-18926 (-----) [004] ...1 683202.132442: tracing_mark_write: S|18926|deliverInputEvent|1071
+           <...>-18926 (-----) [004] ...1 683202.133158: tracing_mark_write: S|18926|animator:opacity|23751452
+           <...>-18964 (-----) [002] ...1 683202.133760: tracing_mark_write: B|18926|notifyFramePending
+           <...>-18964 (-----) [002] ...1 683202.133771: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.133780: tracing_mark_write: F|18926|deliverInputEvent|1071
+           <...>-18926 (-----) [004] ...1 683202.133853: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.133879: tracing_mark_write: B|18926|animation
+           <...>-18926 (-----) [004] ...1 683202.133993: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.134018: tracing_mark_write: B|18926|traversal
+           <...>-18926 (-----) [004] ...1 683202.134075: tracing_mark_write: B|18926|draw
+           <...>-18926 (-----) [004] ...1 683202.134114: tracing_mark_write: B|18926|Record View#draw()
+           <...>-18926 (-----) [004] ...1 683202.134466: tracing_mark_write: E
+           <...>-18964 (-----) [002] ...1 683202.134734: tracing_mark_write: B|18926|DrawFrame
+           <...>-18964 (-----) [002] ...1 683202.134743: tracing_mark_write: B|18926|syncFrameState
+           <...>-18964 (-----) [002] ...1 683202.134797: tracing_mark_write: B|18926|prepareTree
+           <...>-18964 (-----) [002] ...1 683202.135205: tracing_mark_write: E
+           <...>-18964 (-----) [002] ...1 683202.135213: tracing_mark_write: E
+           <...>-18964 (-----) [002] ...1 683202.135308: tracing_mark_write: B|18926|computeOrdering
+           <...>-18964 (-----) [002] ...1 683202.135376: tracing_mark_write: E
+           <...>-18964 (-----) [002] ...1 683202.135819: tracing_mark_write: B|18926|flush drawing commands
+           <...>-18989 (-----) [003] ...1 683202.136120: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18989 (-----) [003] ...1 683202.136133: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18989 (-----) [003] ...1 683202.136151: tracing_mark_write: E
+           <...>-18988 (-----) [002] ...1 683202.136156: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18989 (-----) [003] ...1 683202.136165: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [002] ...1 683202.136165: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18989 (-----) [003] ...1 683202.136170: tracing_mark_write: E
+           <...>-18989 (-----) [003] ...1 683202.136177: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18988 (-----) [002] ...1 683202.136177: tracing_mark_write: E
+           <...>-18988 (-----) [002] ...1 683202.136186: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [002] ...1 683202.136204: tracing_mark_write: E
+           <...>-18988 (-----) [002] ...1 683202.136210: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18989 (-----) [003] ...1 683202.136220: tracing_mark_write: E
+           <...>-18989 (-----) [003] ...1 683202.136228: tracing_mark_write: E
+           <...>-18988 (-----) [002] ...1 683202.136234: tracing_mark_write: E
+           <...>-18988 (-----) [002] ...1 683202.136243: tracing_mark_write: E
+           <...>-18988 (-----) [002] ...1 683202.136250: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [002] ...1 683202.136257: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18988 (-----) [002] ...1 683202.136264: tracing_mark_write: E
+           <...>-18988 (-----) [002] ...1 683202.136273: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [002] ...1 683202.136281: tracing_mark_write: E
+           <...>-18988 (-----) [002] ...1 683202.136288: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18988 (-----) [002] ...1 683202.136311: tracing_mark_write: E
+           <...>-18988 (-----) [002] ...1 683202.136318: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.136377: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.136393: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.136441: tracing_mark_write: C|18926|jitterNanos|6767359
+           <...>-18926 (-----) [004] ...1 683202.136470: tracing_mark_write: B|18926|commit
+           <...>-18926 (-----) [004] ...1 683202.136500: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.136531: tracing_mark_write: E
+           <...>-18964 (-----) [002] ...1 683202.137447: tracing_mark_write: E
+           <...>-18964 (-----) [001] ...1 683202.139502: tracing_mark_write: C|18926|hwui_Texture|1858380
+           <...>-18964 (-----) [001] ...1 683202.139532: tracing_mark_write: C|18926|hwui_Texture_count|157
+           <...>-18964 (-----) [001] ...1 683202.139542: tracing_mark_write: C|18926|hwui_OffscreenBuffer|0
+           <...>-18964 (-----) [001] ...1 683202.139552: tracing_mark_write: C|18926|hwui_OffscreenBuffer_count|0
+           <...>-18964 (-----) [001] ...1 683202.139562: tracing_mark_write: C|18926|hwui_Layer|0
+           <...>-18964 (-----) [001] ...1 683202.139571: tracing_mark_write: C|18926|hwui_Layer_count|0
+           <...>-18964 (-----) [001] ...1 683202.139771: tracing_mark_write: E
+           <...>-18964 (-----) [001] ...1 683202.139787: tracing_mark_write: B|18926|notifyFramePending
+           <...>-18964 (-----) [001] ...1 683202.139793: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.149085: tracing_mark_write: B|18926|Choreographer#doFrame
+           <...>-18926 (-----) [004] ...1 683202.149136: tracing_mark_write: B|18926|input
+           <...>-18926 (-----) [004] ...1 683202.149185: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.149204: tracing_mark_write: B|18926|animation
+           <...>-18926 (-----) [004] ...1 683202.149511: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.149537: tracing_mark_write: B|18926|traversal
+           <...>-18926 (-----) [004] ...1 683202.149595: tracing_mark_write: B|18926|measure
+           <...>-18926 (-----) [004] ...1 683202.149738: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.149762: tracing_mark_write: B|18926|layout
+           <...>-18926 (-----) [004] ...1 683202.157004: tracing_mark_write: S|18926|animator:bottom|177885989
+           <...>-18926 (-----) [004] ...1 683202.161620: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.161704: tracing_mark_write: B|18926|draw
+           <...>-18926 (-----) [004] ...1 683202.161755: tracing_mark_write: B|18926|Record View#draw()
+           <...>-18926 (-----) [004] ...1 683202.165418: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.165542: tracing_mark_write: B|18926|DrawFrame
+           <...>-18964 (-----) [005] ...1 683202.165553: tracing_mark_write: B|18926|syncFrameState
+           <...>-18964 (-----) [005] ...1 683202.165586: tracing_mark_write: B|18926|prepareTree
+           <...>-18964 (-----) [005] ...1 683202.165981: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.165989: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.166060: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.166072: tracing_mark_write: B|18926|computeOrdering
+           <...>-18926 (-----) [004] ...1 683202.166074: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.166116: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.166125: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.166296: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [001] ...1 683202.166312: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18926 (-----) [004] ...1 683202.166314: tracing_mark_write: B|18926|Choreographer#doFrame
+           <...>-18988 (-----) [001] ...1 683202.166330: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.166342: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [001] ...1 683202.166361: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.166363: tracing_mark_write: B|18926|animation
+           <...>-18988 (-----) [001] ...1 683202.166369: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18988 (-----) [001] ...1 683202.166408: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.166416: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.167058: tracing_mark_write: S|18926|animator|46267553
+           <...>-18926 (-----) [004] ...1 683202.167297: tracing_mark_write: S|18926|animator|219664070
+           <...>-18988 (-----) [001] ...1 683202.167362: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [001] ...1 683202.167377: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18988 (-----) [001] ...1 683202.167386: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.167394: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [001] ...1 683202.167402: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.167408: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18988 (-----) [001] ...1 683202.167429: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.167434: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.167467: tracing_mark_write: E
+           <...>-18989 (-----) [001] ...1 683202.167469: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18989 (-----) [001] ...1 683202.167477: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18989 (-----) [001] ...1 683202.167487: tracing_mark_write: E
+           <...>-18989 (-----) [001] ...1 683202.167494: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18926 (-----) [004] ...1 683202.167501: tracing_mark_write: B|18926|traversal
+           <...>-18964 (-----) [005] ...1 683202.167508: tracing_mark_write: B|18926|flush drawing commands
+           <...>-18989 (-----) [001] ...1 683202.167529: tracing_mark_write: E
+           <...>-18989 (-----) [001] ...1 683202.167536: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18989 (-----) [001] ...1 683202.167556: tracing_mark_write: E
+           <...>-18989 (-----) [001] ...1 683202.167561: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.167580: tracing_mark_write: B|18926|draw
+           <...>-18926 (-----) [004] ...1 683202.167626: tracing_mark_write: B|18926|Record View#draw()
+           <...>-18964 (-----) [005] ...1 683202.168483: tracing_mark_write: B|18926|Upload 63x63 Texture
+           <...>-18964 (-----) [005] ...1 683202.168780: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.168970: tracing_mark_write: B|18926|Upload 63x63 Texture
+           <...>-18926 (-----) [004] ...1 683202.168978: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.169188: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.169313: tracing_mark_write: B|18926|Upload 63x63 Texture
+           <...>-18964 (-----) [005] ...1 683202.169537: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.170878: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.171711: tracing_mark_write: C|18926|hwui_Texture|1906008
+           <...>-18964 (-----) [005] ...1 683202.171721: tracing_mark_write: C|18926|hwui_Texture_count|160
+           <...>-18964 (-----) [005] ...1 683202.171728: tracing_mark_write: C|18926|hwui_OffscreenBuffer|0
+           <...>-18964 (-----) [005] ...1 683202.171735: tracing_mark_write: C|18926|hwui_OffscreenBuffer_count|0
+           <...>-18964 (-----) [005] ...1 683202.171742: tracing_mark_write: C|18926|hwui_Layer|0
+           <...>-18964 (-----) [005] ...1 683202.171748: tracing_mark_write: C|18926|hwui_Layer_count|0
+           <...>-18964 (-----) [005] ...1 683202.171872: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.171882: tracing_mark_write: B|18926|notifyFramePending
+           <...>-18964 (-----) [005] ...1 683202.171886: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.171893: tracing_mark_write: B|18926|notifyFramePending
+           <...>-18964 (-----) [005] ...1 683202.171896: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.171903: tracing_mark_write: B|18926|DrawFrame
+           <...>-18964 (-----) [005] ...1 683202.171909: tracing_mark_write: B|18926|syncFrameState
+           <...>-18964 (-----) [005] ...1 683202.171933: tracing_mark_write: B|18926|prepareTree
+           <...>-18964 (-----) [005] ...1 683202.172095: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.172101: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.172156: tracing_mark_write: B|18926|computeOrdering
+           <...>-18964 (-----) [005] ...1 683202.172196: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.172318: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [001] ...1 683202.172326: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18988 (-----) [001] ...1 683202.172335: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.172343: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [001] ...1 683202.172354: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.172360: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18988 (-----) [001] ...1 683202.172380: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.172386: tracing_mark_write: E
+           <...>-18926 (-----) [000] ...1 683202.172480: tracing_mark_write: E
+           <...>-18926 (-----) [000] ...1 683202.172495: tracing_mark_write: E
+           <...>-18926 (-----) [000] ...1 683202.172539: tracing_mark_write: C|18926|jitterNanos|10113151
+           <...>-18926 (-----) [000] ...1 683202.172566: tracing_mark_write: B|18926|commit
+           <...>-18988 (-----) [001] ...1 683202.172593: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [001] ...1 683202.172600: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18926 (-----) [000] ...1 683202.172603: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.172607: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.172615: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18964 (-----) [005] ...1 683202.172618: tracing_mark_write: B|18926|flush drawing commands
+           <...>-18988 (-----) [001] ...1 683202.172619: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.172626: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18926 (-----) [000] ...1 683202.172642: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.172646: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.172652: tracing_mark_write: E
+           <...>-18989 (-----) [001] ...1 683202.172681: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18989 (-----) [001] ...1 683202.172687: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18989 (-----) [001] ...1 683202.172695: tracing_mark_write: E
+           <...>-18989 (-----) [001] ...1 683202.172702: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18989 (-----) [001] ...1 683202.172710: tracing_mark_write: E
+           <...>-18989 (-----) [001] ...1 683202.172716: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18989 (-----) [001] ...1 683202.172741: tracing_mark_write: E
+           <...>-18989 (-----) [001] ...1 683202.172746: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.173451: tracing_mark_write: B|18926|tessellatePath
+           <...>-18964 (-----) [005] ...1 683202.173460: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [005] ...1 683202.173489: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.173506: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.174384: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.179559: tracing_mark_write: B|18926|Choreographer#doFrame
+           <...>-18926 (-----) [005] ...1 683202.179602: tracing_mark_write: B|18926|input
+           <...>-18926 (-----) [005] ...1 683202.179643: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.179663: tracing_mark_write: B|18926|animation
+           <...>-18926 (-----) [005] ...1 683202.180146: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.180178: tracing_mark_write: B|18926|traversal
+           <...>-18926 (-----) [005] ...1 683202.180238: tracing_mark_write: B|18926|draw
+           <...>-18926 (-----) [005] ...1 683202.180274: tracing_mark_write: B|18926|Record View#draw()
+           <...>-18926 (-----) [005] ...1 683202.181062: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.181975: tracing_mark_write: C|18926|hwui_Texture|1906008
+           <...>-18964 (-----) [005] ...1 683202.181986: tracing_mark_write: C|18926|hwui_Texture_count|160
+           <...>-18964 (-----) [005] ...1 683202.181993: tracing_mark_write: C|18926|hwui_OffscreenBuffer|0
+           <...>-18964 (-----) [005] ...1 683202.182000: tracing_mark_write: C|18926|hwui_OffscreenBuffer_count|0
+           <...>-18964 (-----) [005] ...1 683202.182006: tracing_mark_write: C|18926|hwui_Layer|0
+           <...>-18964 (-----) [005] ...1 683202.182012: tracing_mark_write: C|18926|hwui_Layer_count|0
+           <...>-18964 (-----) [005] ...1 683202.182117: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.182133: tracing_mark_write: B|18926|notifyFramePending
+           <...>-18964 (-----) [005] ...1 683202.182138: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.182146: tracing_mark_write: B|18926|DrawFrame
+           <...>-18964 (-----) [005] ...1 683202.182152: tracing_mark_write: B|18926|syncFrameState
+           <...>-18964 (-----) [005] ...1 683202.182184: tracing_mark_write: B|18926|prepareTree
+           <...>-18964 (-----) [005] ...1 683202.182379: tracing_mark_write: B|18926|Allocate 896x128 HW Layer
+           <...>-18964 (-----) [005] ...1 683202.182455: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.182548: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.182554: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.182809: tracing_mark_write: B|18926|Optimize HW Layer DisplayList Button 849x126
+           <...>-18964 (-----) [005] ...1 683202.182898: tracing_mark_write: B|18926|computeOrdering
+           <...>-18964 (-----) [005] ...1 683202.182956: tracing_mark_write: E
+           <...>-18926 (-----) [001] ...1 683202.183195: tracing_mark_write: E
+           <...>-18926 (-----) [001] ...1 683202.183223: tracing_mark_write: E
+           <...>-18926 (-----) [001] ...1 683202.183332: tracing_mark_write: C|18926|jitterNanos|4175322
+           <...>-18926 (-----) [001] ...1 683202.183361: tracing_mark_write: B|18926|commit
+           <...>-18926 (-----) [001] ...1 683202.183393: tracing_mark_write: E
+           <...>-18926 (-----) [001] ...1 683202.183428: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.184160: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.184173: tracing_mark_write: B|18926|computeOrdering
+           <...>-18964 (-----) [005] ...1 683202.184248: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.184400: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [003] ...1 683202.184411: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18988 (-----) [003] ...1 683202.184451: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.184463: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [003] ...1 683202.184478: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.184485: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18964 (-----) [005] ...1 683202.184607: tracing_mark_write: B|18926|Button alpha caused saveLayer 849x126
+           <...>-18964 (-----) [005] ...1 683202.184612: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.184829: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.184871: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.184884: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [003] ...1 683202.184891: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18988 (-----) [003] ...1 683202.184898: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.184907: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [003] ...1 683202.184910: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.184916: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18989 (-----) [000] ...1 683202.184921: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18989 (-----) [000] ...1 683202.184930: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18989 (-----) [000] ...1 683202.184941: tracing_mark_write: E
+           <...>-18989 (-----) [000] ...1 683202.184949: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18989 (-----) [000] ...1 683202.184961: tracing_mark_write: E
+           <...>-18989 (-----) [000] ...1 683202.184968: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18989 (-----) [000] ...1 683202.184989: tracing_mark_write: E
+           <...>-18989 (-----) [000] ...1 683202.185017: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.185064: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.185072: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.187274: tracing_mark_write: B|18926|Issue HW Layer DisplayList Button 849x126
+           <...>-18964 (-----) [005] ...1 683202.187506: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.187645: tracing_mark_write: B|18926|flush drawing commands
+           <...>-18964 (-----) [005] ...1 683202.188279: tracing_mark_write: B|18926|tessellatePath
+           <...>-18964 (-----) [005] ...1 683202.188289: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [005] ...1 683202.188318: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.188332: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.188578: tracing_mark_write: B|18926|Build GL Shader
+           <...>-18964 (-----) [005] ...1 683202.188959: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.188972: tracing_mark_write: B|18926|Build GL Shader
+           <...>-18964 (-----) [005] ...1 683202.192088: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.192173: tracing_mark_write: B|18926|linkProgram
+           <...>-18926 (-----) [004] ...1 683202.196237: tracing_mark_write: B|18926|Choreographer#doFrame
+           <...>-18926 (-----) [004] ...1 683202.196276: tracing_mark_write: B|18926|input
+           <...>-18926 (-----) [004] ...1 683202.196304: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.196320: tracing_mark_write: B|18926|animation
+           <...>-18926 (-----) [004] ...1 683202.196702: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.196732: tracing_mark_write: B|18926|traversal
+           <...>-18926 (-----) [004] ...1 683202.196791: tracing_mark_write: B|18926|draw
+           <...>-18926 (-----) [004] ...1 683202.196824: tracing_mark_write: B|18926|Record View#draw()
+           <...>-18926 (-----) [004] ...1 683202.197263: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.206362: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.207218: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.208128: tracing_mark_write: C|18926|hwui_Texture|2364760
+           <...>-18964 (-----) [005] ...1 683202.208138: tracing_mark_write: C|18926|hwui_Texture_count|161
+           <...>-18964 (-----) [005] ...1 683202.208144: tracing_mark_write: C|18926|hwui_OffscreenBuffer|0
+           <...>-18964 (-----) [005] ...1 683202.208150: tracing_mark_write: C|18926|hwui_OffscreenBuffer_count|1
+           <...>-18964 (-----) [005] ...1 683202.208156: tracing_mark_write: C|18926|hwui_Layer|0
+           <...>-18964 (-----) [005] ...1 683202.208162: tracing_mark_write: C|18926|hwui_Layer_count|0
+           <...>-18964 (-----) [005] ...1 683202.208236: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.208244: tracing_mark_write: B|18926|notifyFramePending
+           <...>-18964 (-----) [005] ...1 683202.208248: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.208254: tracing_mark_write: B|18926|DrawFrame
+           <...>-18964 (-----) [005] ...1 683202.208260: tracing_mark_write: B|18926|syncFrameState
+           <...>-18964 (-----) [005] ...1 683202.208281: tracing_mark_write: B|18926|prepareTree
+           <...>-18964 (-----) [005] ...1 683202.208469: tracing_mark_write: B|18926|Allocate 1088x192 HW Layer
+           <...>-18964 (-----) [005] ...1 683202.208515: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.208545: tracing_mark_write: B|18926|Allocate 1088x192 HW Layer
+           <...>-18964 (-----) [005] ...1 683202.208559: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.208574: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.208580: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.208631: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.208632: tracing_mark_write: B|18926|Optimize HW Layer DisplayList LinearLayout 1080x189
+           <...>-18964 (-----) [005] ...1 683202.208637: tracing_mark_write: B|18926|computeOrdering
+           <...>-18926 (-----) [004] ...1 683202.208642: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.208644: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.208672: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.208694: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.208705: tracing_mark_write: B|18926|Optimize HW Layer DisplayList LinearLayout 1080x189
+           <...>-18964 (-----) [005] ...1 683202.208710: tracing_mark_write: B|18926|computeOrdering
+           <...>-18964 (-----) [005] ...1 683202.208716: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.208741: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.208749: tracing_mark_write: B|18926|computeOrdering
+           <...>-18964 (-----) [005] ...1 683202.208798: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.208892: tracing_mark_write: F|18926|animator:opacity|23751452
+           <...>-18988 (-----) [003] ...1 683202.208930: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [003] ...1 683202.208942: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18988 (-----) [003] ...1 683202.208956: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.208967: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18964 (-----) [005] ...1 683202.208971: tracing_mark_write: B|18926|Button alpha caused saveLayer 849x126
+           <...>-18964 (-----) [005] ...1 683202.208975: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.208989: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.208995: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18988 (-----) [003] ...1 683202.209027: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.209034: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.209124: tracing_mark_write: B|18926|LinearLayout alpha caused saveLayer 1080x189
+           <...>-18964 (-----) [005] ...1 683202.209127: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.209137: tracing_mark_write: B|18926|LinearLayout alpha caused saveLayer 1080x189
+           <...>-18964 (-----) [005] ...1 683202.209140: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.209199: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [003] ...1 683202.209205: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18988 (-----) [003] ...1 683202.209212: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.209220: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [003] ...1 683202.209223: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.209228: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18988 (-----) [003] ...1 683202.209251: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.209257: tracing_mark_write: E
+           <...>-18989 (-----) [003] ...1 683202.209347: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18989 (-----) [003] ...1 683202.209357: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18989 (-----) [003] ...1 683202.209367: tracing_mark_write: E
+           <...>-18989 (-----) [003] ...1 683202.209421: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18989 (-----) [003] ...1 683202.209476: tracing_mark_write: E
+           <...>-18989 (-----) [003] ...1 683202.209484: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18989 (-----) [003] ...1 683202.209506: tracing_mark_write: E
+           <...>-18989 (-----) [003] ...1 683202.209511: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.210303: tracing_mark_write: B|18926|Issue HW Layer DisplayList LinearLayout 1080x189
+           <...>-18964 (-----) [005] ...1 683202.210644: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.211769: tracing_mark_write: B|18926|Issue HW Layer DisplayList LinearLayout 1080x189
+           <...>-18964 (-----) [005] ...1 683202.212040: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.212151: tracing_mark_write: B|18926|flush drawing commands
+           <...>-18964 (-----) [005] ...1 683202.212697: tracing_mark_write: B|18926|tessellatePath
+           <...>-18964 (-----) [005] ...1 683202.212705: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [005] ...1 683202.212733: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.212747: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.212810: tracing_mark_write: B|18926|Choreographer#doFrame
+           <...>-18926 (-----) [004] ...1 683202.212843: tracing_mark_write: B|18926|input
+           <...>-18926 (-----) [004] ...1 683202.212878: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.212895: tracing_mark_write: B|18926|animation
+           <...>-18926 (-----) [004] ...1 683202.213187: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.213221: tracing_mark_write: B|18926|traversal
+           <...>-18926 (-----) [004] ...1 683202.213321: tracing_mark_write: B|18926|draw
+           <...>-18926 (-----) [004] ...1 683202.213360: tracing_mark_write: B|18926|Record View#draw()
+           <...>-18964 (-----) [005] ...1 683202.214038: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.214843: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.215111: tracing_mark_write: C|18926|hwui_Texture|4035928
+           <...>-18964 (-----) [005] ...1 683202.215118: tracing_mark_write: C|18926|hwui_Texture_count|163
+           <...>-18964 (-----) [005] ...1 683202.215122: tracing_mark_write: C|18926|hwui_OffscreenBuffer|0
+           <...>-18964 (-----) [005] ...1 683202.215127: tracing_mark_write: C|18926|hwui_OffscreenBuffer_count|3
+           <...>-18964 (-----) [005] ...1 683202.215131: tracing_mark_write: C|18926|hwui_Layer|0
+           <...>-18964 (-----) [005] ...1 683202.215135: tracing_mark_write: C|18926|hwui_Layer_count|0
+           <...>-18964 (-----) [005] ...1 683202.215203: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.215210: tracing_mark_write: B|18926|notifyFramePending
+           <...>-18964 (-----) [005] ...1 683202.215212: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.215219: tracing_mark_write: B|18926|DrawFrame
+           <...>-18964 (-----) [005] ...1 683202.215223: tracing_mark_write: B|18926|syncFrameState
+           <...>-18964 (-----) [005] ...1 683202.215242: tracing_mark_write: B|18926|prepareTree
+           <...>-18964 (-----) [005] ...1 683202.215444: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.215452: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.215496: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.215504: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.215506: tracing_mark_write: B|18926|computeOrdering
+           <...>-18926 (-----) [004] ...1 683202.215527: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.215546: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.215665: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [003] ...1 683202.215676: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18988 (-----) [003] ...1 683202.215691: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.215699: tracing_mark_write: B|18926|Button alpha caused saveLayer 849x126
+           <...>-18988 (-----) [003] ...1 683202.215702: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18964 (-----) [005] ...1 683202.215703: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.215718: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.215725: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18988 (-----) [003] ...1 683202.215758: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.215765: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.215840: tracing_mark_write: B|18926|LinearLayout alpha caused saveLayer 1080x189
+           <...>-18964 (-----) [005] ...1 683202.215843: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.215852: tracing_mark_write: B|18926|LinearLayout alpha caused saveLayer 1080x189
+           <...>-18964 (-----) [005] ...1 683202.215854: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.215907: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [003] ...1 683202.215914: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [005] ...1 683202.215916: tracing_mark_write: B|18926|flush drawing commands
+           <...>-18988 (-----) [003] ...1 683202.215922: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.215930: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [003] ...1 683202.215933: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.215939: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18988 (-----) [003] ...1 683202.215959: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.215964: tracing_mark_write: E
+           <...>-18989 (-----) [003] ...1 683202.215995: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18989 (-----) [003] ...1 683202.216002: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18989 (-----) [003] ...1 683202.216010: tracing_mark_write: E
+           <...>-18989 (-----) [003] ...1 683202.216016: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18989 (-----) [003] ...1 683202.216028: tracing_mark_write: E
+           <...>-18989 (-----) [003] ...1 683202.216034: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18989 (-----) [003] ...1 683202.216054: tracing_mark_write: E
+           <...>-18989 (-----) [003] ...1 683202.216059: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.216381: tracing_mark_write: B|18926|tessellatePath
+           <...>-18964 (-----) [005] ...1 683202.216388: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [005] ...1 683202.216407: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.216416: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.217126: tracing_mark_write: E
+           <...>-18964 (-----) [001] ...1 683202.222253: tracing_mark_write: C|18926|hwui_Texture|4035928
+           <...>-18964 (-----) [001] ...1 683202.222264: tracing_mark_write: C|18926|hwui_Texture_count|163
+           <...>-18964 (-----) [001] ...1 683202.222271: tracing_mark_write: C|18926|hwui_OffscreenBuffer|0
+           <...>-18964 (-----) [001] ...1 683202.222279: tracing_mark_write: C|18926|hwui_OffscreenBuffer_count|3
+           <...>-18964 (-----) [001] ...1 683202.222287: tracing_mark_write: C|18926|hwui_Layer|0
+           <...>-18964 (-----) [001] ...1 683202.222295: tracing_mark_write: C|18926|hwui_Layer_count|0
+           <...>-18964 (-----) [001] ...1 683202.222397: tracing_mark_write: E
+           <...>-18964 (-----) [001] ...1 683202.222406: tracing_mark_write: B|18926|drainDisplayEventQueue
+           <...>-18964 (-----) [001] ...1 683202.222421: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.229007: tracing_mark_write: B|18926|drainDisplayEventQueue
+           <...>-18964 (-----) [004] ...1 683202.229029: tracing_mark_write: B|18926|queue mFrameCallbackTask
+           <...>-18964 (-----) [004] ...1 683202.229037: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.229039: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.230451: tracing_mark_write: B|18926|Choreographer#doFrame
+           <...>-18926 (-----) [004] ...1 683202.230484: tracing_mark_write: B|18926|input
+           <...>-18926 (-----) [004] ...1 683202.230507: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.230518: tracing_mark_write: B|18926|animation
+           <...>-18926 (-----) [004] ...1 683202.230755: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.230773: tracing_mark_write: B|18926|traversal
+           <...>-18926 (-----) [004] ...1 683202.230818: tracing_mark_write: B|18926|draw
+           <...>-18926 (-----) [004] ...1 683202.230848: tracing_mark_write: B|18926|Record View#draw()
+           <...>-18926 (-----) [004] ...1 683202.231162: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.231162: tracing_mark_write: B|18926|notifyFramePending
+           <...>-18964 (-----) [005] ...1 683202.231169: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.231178: tracing_mark_write: B|18926|DrawFrame
+           <...>-18964 (-----) [005] ...1 683202.231182: tracing_mark_write: B|18926|syncFrameState
+           <...>-18964 (-----) [005] ...1 683202.231203: tracing_mark_write: B|18926|prepareTree
+           <...>-18964 (-----) [005] ...1 683202.231342: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.231347: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.231381: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.231388: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.231392: tracing_mark_write: B|18926|computeOrdering
+           <...>-18926 (-----) [004] ...1 683202.231408: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.231424: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.231572: tracing_mark_write: B|18926|Button alpha caused saveLayer 849x126
+           <...>-18964 (-----) [005] ...1 683202.231576: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.231706: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18964 (-----) [005] ...1 683202.231715: tracing_mark_write: B|18926|LinearLayout alpha caused saveLayer 1080x189
+           <...>-18964 (-----) [005] ...1 683202.231718: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.231719: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [005] ...1 683202.231728: tracing_mark_write: B|18926|LinearLayout alpha caused saveLayer 1080x189
+           <...>-18964 (-----) [005] ...1 683202.231730: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.231735: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.231746: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [003] ...1 683202.231771: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.231774: tracing_mark_write: B|18926|flush drawing commands
+           <...>-18988 (-----) [003] ...1 683202.231779: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18988 (-----) [003] ...1 683202.231811: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.231818: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.231832: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [003] ...1 683202.231837: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18988 (-----) [003] ...1 683202.231844: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.231851: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [003] ...1 683202.231854: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.231859: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18988 (-----) [003] ...1 683202.231883: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.231889: tracing_mark_write: E
+           <...>-18989 (-----) [000] ...1 683202.232044: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18989 (-----) [000] ...1 683202.232053: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18989 (-----) [000] ...1 683202.232063: tracing_mark_write: E
+           <...>-18989 (-----) [000] ...1 683202.232071: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18989 (-----) [000] ...1 683202.232080: tracing_mark_write: E
+           <...>-18989 (-----) [000] ...1 683202.232085: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18989 (-----) [000] ...1 683202.232107: tracing_mark_write: E
+           <...>-18989 (-----) [000] ...1 683202.232113: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.232269: tracing_mark_write: B|18926|tessellatePath
+           <...>-18964 (-----) [005] ...1 683202.232275: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [005] ...1 683202.232293: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.232303: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.232352: tracing_mark_write: B|18926|tessellatePath
+           <...>-18964 (-----) [005] ...1 683202.232356: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [005] ...1 683202.232363: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.232367: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.232939: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.233604: tracing_mark_write: C|18926|hwui_Texture|4035928
+           <...>-18964 (-----) [005] ...1 683202.233612: tracing_mark_write: C|18926|hwui_Texture_count|163
+           <...>-18964 (-----) [005] ...1 683202.233616: tracing_mark_write: C|18926|hwui_OffscreenBuffer|0
+           <...>-18964 (-----) [005] ...1 683202.233621: tracing_mark_write: C|18926|hwui_OffscreenBuffer_count|3
+           <...>-18964 (-----) [005] ...1 683202.233626: tracing_mark_write: C|18926|hwui_Layer|0
+           <...>-18964 (-----) [005] ...1 683202.233630: tracing_mark_write: C|18926|hwui_Layer_count|0
+           <...>-18964 (-----) [005] ...1 683202.233688: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.233694: tracing_mark_write: B|18926|dispatchFrameCallbacks
+           <...>-18964 (-----) [005] ...1 683202.233696: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.233700: tracing_mark_write: B|18926|drainDisplayEventQueue
+           <...>-18964 (-----) [005] ...1 683202.233710: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.245778: tracing_mark_write: B|18926|drainDisplayEventQueue
+           <...>-18964 (-----) [005] ...1 683202.245799: tracing_mark_write: B|18926|queue mFrameCallbackTask
+           <...>-18964 (-----) [005] ...1 683202.245805: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.245807: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.246567: tracing_mark_write: B|18926|Choreographer#doFrame
+           <...>-18926 (-----) [005] ...1 683202.246598: tracing_mark_write: B|18926|input
+           <...>-18926 (-----) [005] ...1 683202.246649: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.246661: tracing_mark_write: B|18926|animation
+           <...>-18926 (-----) [005] ...1 683202.246881: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.246894: tracing_mark_write: B|18926|traversal
+           <...>-18926 (-----) [005] ...1 683202.246927: tracing_mark_write: B|18926|draw
+           <...>-18926 (-----) [005] ...1 683202.246948: tracing_mark_write: B|18926|Record View#draw()
+           <...>-18964 (-----) [004] ...1 683202.247070: tracing_mark_write: B|18926|notifyFramePending
+           <...>-18964 (-----) [004] ...1 683202.247077: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.247196: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.247236: tracing_mark_write: B|18926|DrawFrame
+           <...>-18964 (-----) [004] ...1 683202.247240: tracing_mark_write: B|18926|syncFrameState
+           <...>-18964 (-----) [004] ...1 683202.247263: tracing_mark_write: B|18926|prepareTree
+           <...>-18964 (-----) [004] ...1 683202.247407: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.247412: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.247443: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.247450: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.247457: tracing_mark_write: B|18926|computeOrdering
+           <...>-18926 (-----) [005] ...1 683202.247465: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.247487: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.247631: tracing_mark_write: B|18926|Button alpha caused saveLayer 849x126
+           <...>-18964 (-----) [004] ...1 683202.247634: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.247744: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18964 (-----) [004] ...1 683202.247756: tracing_mark_write: B|18926|LinearLayout alpha caused saveLayer 1080x189
+           <...>-18988 (-----) [003] ...1 683202.247756: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [004] ...1 683202.247759: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.247768: tracing_mark_write: B|18926|LinearLayout alpha caused saveLayer 1080x189
+           <...>-18964 (-----) [004] ...1 683202.247772: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.247772: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.247783: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [003] ...1 683202.247805: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.247812: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18964 (-----) [004] ...1 683202.247819: tracing_mark_write: B|18926|flush drawing commands
+           <...>-18988 (-----) [003] ...1 683202.247847: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.247854: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.247864: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [003] ...1 683202.247870: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18988 (-----) [003] ...1 683202.247876: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.247883: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [003] ...1 683202.247886: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.247891: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18988 (-----) [003] ...1 683202.247912: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.247917: tracing_mark_write: E
+           <...>-18989 (-----) [003] ...1 683202.247948: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18989 (-----) [003] ...1 683202.247955: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18989 (-----) [003] ...1 683202.247963: tracing_mark_write: E
+           <...>-18989 (-----) [003] ...1 683202.247970: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18989 (-----) [003] ...1 683202.247981: tracing_mark_write: E
+           <...>-18989 (-----) [003] ...1 683202.247986: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18989 (-----) [003] ...1 683202.248006: tracing_mark_write: E
+           <...>-18989 (-----) [003] ...1 683202.248011: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.248259: tracing_mark_write: B|18926|tessellatePath
+           <...>-18964 (-----) [004] ...1 683202.248265: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [004] ...1 683202.248282: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.248292: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.248345: tracing_mark_write: B|18926|tessellatePath
+           <...>-18964 (-----) [004] ...1 683202.248349: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [004] ...1 683202.248358: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.248365: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.248952: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.249556: tracing_mark_write: C|18926|hwui_Texture|4035928
+           <...>-18964 (-----) [004] ...1 683202.249562: tracing_mark_write: C|18926|hwui_Texture_count|163
+           <...>-18964 (-----) [004] ...1 683202.249567: tracing_mark_write: C|18926|hwui_OffscreenBuffer|0
+           <...>-18964 (-----) [004] ...1 683202.249572: tracing_mark_write: C|18926|hwui_OffscreenBuffer_count|3
+           <...>-18964 (-----) [004] ...1 683202.249576: tracing_mark_write: C|18926|hwui_Layer|0
+           <...>-18964 (-----) [004] ...1 683202.249580: tracing_mark_write: C|18926|hwui_Layer_count|0
+           <...>-18964 (-----) [004] ...1 683202.249663: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.249669: tracing_mark_write: B|18926|dispatchFrameCallbacks
+           <...>-18964 (-----) [004] ...1 683202.249671: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.249676: tracing_mark_write: B|18926|drainDisplayEventQueue
+           <...>-18964 (-----) [004] ...1 683202.249684: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.262890: tracing_mark_write: B|18926|drainDisplayEventQueue
+           <...>-18964 (-----) [004] ...1 683202.262909: tracing_mark_write: B|18926|queue mFrameCallbackTask
+           <...>-18964 (-----) [004] ...1 683202.262917: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.262919: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.263007: tracing_mark_write: B|18926|Choreographer#doFrame
+           <...>-18926 (-----) [005] ...1 683202.263032: tracing_mark_write: B|18926|input
+           <...>-18926 (-----) [005] ...1 683202.263055: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.263064: tracing_mark_write: B|18926|animation
+           <...>-18926 (-----) [005] ...1 683202.263309: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.263323: tracing_mark_write: B|18926|traversal
+           <...>-18926 (-----) [005] ...1 683202.263356: tracing_mark_write: B|18926|draw
+           <...>-18926 (-----) [005] ...1 683202.263379: tracing_mark_write: B|18926|Record View#draw()
+           <...>-18964 (-----) [004] ...1 683202.263518: tracing_mark_write: B|18926|notifyFramePending
+           <...>-18964 (-----) [004] ...1 683202.263523: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.263649: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.263700: tracing_mark_write: B|18926|DrawFrame
+           <...>-18964 (-----) [004] ...1 683202.263704: tracing_mark_write: B|18926|syncFrameState
+           <...>-18964 (-----) [004] ...1 683202.263729: tracing_mark_write: B|18926|prepareTree
+           <...>-18964 (-----) [004] ...1 683202.263882: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.263888: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.263946: tracing_mark_write: B|18926|computeOrdering
+           <...>-18964 (-----) [004] ...1 683202.263978: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.264105: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.264116: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.264139: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.264149: tracing_mark_write: B|18926|Button alpha caused saveLayer 849x126
+           <...>-18964 (-----) [004] ...1 683202.264153: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.264271: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [003] ...1 683202.264282: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [004] ...1 683202.264291: tracing_mark_write: B|18926|LinearLayout alpha caused saveLayer 1080x189
+           <...>-18964 (-----) [004] ...1 683202.264294: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.264297: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.264304: tracing_mark_write: B|18926|LinearLayout alpha caused saveLayer 1080x189
+           <...>-18964 (-----) [004] ...1 683202.264307: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.264309: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [003] ...1 683202.264323: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.264329: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18964 (-----) [004] ...1 683202.264355: tracing_mark_write: B|18926|flush drawing commands
+           <...>-18988 (-----) [003] ...1 683202.264370: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.264377: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.264389: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [003] ...1 683202.264395: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18988 (-----) [003] ...1 683202.264401: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.264408: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [003] ...1 683202.264411: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.264416: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18988 (-----) [003] ...1 683202.264439: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.264444: tracing_mark_write: E
+           <...>-18989 (-----) [003] ...1 683202.264476: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18989 (-----) [003] ...1 683202.264483: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18989 (-----) [003] ...1 683202.264491: tracing_mark_write: E
+           <...>-18989 (-----) [003] ...1 683202.264498: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18989 (-----) [003] ...1 683202.264507: tracing_mark_write: E
+           <...>-18989 (-----) [003] ...1 683202.264513: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18989 (-----) [003] ...1 683202.264532: tracing_mark_write: E
+           <...>-18989 (-----) [003] ...1 683202.264538: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.264793: tracing_mark_write: B|18926|tessellatePath
+           <...>-18964 (-----) [004] ...1 683202.264799: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [004] ...1 683202.264818: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.264828: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.264877: tracing_mark_write: B|18926|tessellatePath
+           <...>-18964 (-----) [004] ...1 683202.264881: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [004] ...1 683202.264890: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.264896: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.265471: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.266007: tracing_mark_write: C|18926|hwui_Texture|4035928
+           <...>-18964 (-----) [004] ...1 683202.266013: tracing_mark_write: C|18926|hwui_Texture_count|163
+           <...>-18964 (-----) [004] ...1 683202.266018: tracing_mark_write: C|18926|hwui_OffscreenBuffer|0
+           <...>-18964 (-----) [004] ...1 683202.266023: tracing_mark_write: C|18926|hwui_OffscreenBuffer_count|3
+           <...>-18964 (-----) [004] ...1 683202.266027: tracing_mark_write: C|18926|hwui_Layer|0
+           <...>-18964 (-----) [004] ...1 683202.266031: tracing_mark_write: C|18926|hwui_Layer_count|0
+           <...>-18964 (-----) [004] ...1 683202.266086: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.266092: tracing_mark_write: B|18926|dispatchFrameCallbacks
+           <...>-18964 (-----) [004] ...1 683202.266095: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.266099: tracing_mark_write: B|18926|drainDisplayEventQueue
+           <...>-18964 (-----) [004] ...1 683202.266107: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.279197: tracing_mark_write: B|18926|drainDisplayEventQueue
+           <...>-18964 (-----) [005] ...1 683202.279278: tracing_mark_write: B|18926|queue mFrameCallbackTask
+           <...>-18964 (-----) [005] ...1 683202.279290: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.279292: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.280270: tracing_mark_write: B|18926|Choreographer#doFrame
+           <...>-18926 (-----) [005] ...1 683202.280317: tracing_mark_write: B|18926|input
+           <...>-18926 (-----) [005] ...1 683202.280361: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.280373: tracing_mark_write: B|18926|animation
+           <...>-18926 (-----) [005] ...1 683202.280645: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.280659: tracing_mark_write: B|18926|traversal
+           <...>-18926 (-----) [005] ...1 683202.280703: tracing_mark_write: B|18926|draw
+           <...>-18926 (-----) [005] ...1 683202.280735: tracing_mark_write: B|18926|Record View#draw()
+           <...>-18964 (-----) [004] ...1 683202.281109: tracing_mark_write: B|18926|notifyFramePending
+           <...>-18926 (-----) [005] ...1 683202.281109: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.281118: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.281131: tracing_mark_write: B|18926|DrawFrame
+           <...>-18964 (-----) [004] ...1 683202.281135: tracing_mark_write: B|18926|syncFrameState
+           <...>-18964 (-----) [004] ...1 683202.281160: tracing_mark_write: B|18926|prepareTree
+           <...>-18964 (-----) [004] ...1 683202.281328: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.281334: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.281376: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.281383: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.281387: tracing_mark_write: B|18926|computeOrdering
+           <...>-18926 (-----) [005] ...1 683202.281405: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.281422: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.281607: tracing_mark_write: B|18926|Button alpha caused saveLayer 849x126
+           <...>-18964 (-----) [004] ...1 683202.281612: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.281740: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18964 (-----) [004] ...1 683202.281751: tracing_mark_write: B|18926|LinearLayout alpha caused saveLayer 1080x189
+           <...>-18988 (-----) [003] ...1 683202.281754: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [004] ...1 683202.281755: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.281764: tracing_mark_write: B|18926|LinearLayout alpha caused saveLayer 1080x189
+           <...>-18964 (-----) [004] ...1 683202.281766: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.281771: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.281783: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [003] ...1 683202.281808: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.281815: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18964 (-----) [004] ...1 683202.281816: tracing_mark_write: B|18926|flush drawing commands
+           <...>-18988 (-----) [003] ...1 683202.281854: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.281861: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.281872: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [003] ...1 683202.281878: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18988 (-----) [003] ...1 683202.281885: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.281891: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [003] ...1 683202.281895: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.281900: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18988 (-----) [003] ...1 683202.281919: tracing_mark_write: E
+           <...>-18988 (-----) [003] ...1 683202.281924: tracing_mark_write: E
+           <...>-18989 (-----) [003] ...1 683202.281958: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18989 (-----) [003] ...1 683202.281965: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18989 (-----) [003] ...1 683202.281975: tracing_mark_write: E
+           <...>-18989 (-----) [003] ...1 683202.281982: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18989 (-----) [003] ...1 683202.281993: tracing_mark_write: E
+           <...>-18989 (-----) [003] ...1 683202.281999: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18989 (-----) [003] ...1 683202.282018: tracing_mark_write: E
+           <...>-18989 (-----) [003] ...1 683202.282024: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.282331: tracing_mark_write: B|18926|tessellatePath
+           <...>-18964 (-----) [004] ...1 683202.282338: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [004] ...1 683202.282357: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.282367: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.282425: tracing_mark_write: B|18926|tessellatePath
+           <...>-18964 (-----) [004] ...1 683202.282429: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [004] ...1 683202.282438: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.282444: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.283093: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.283996: tracing_mark_write: C|18926|hwui_Texture|4035928
+           <...>-18964 (-----) [004] ...1 683202.284005: tracing_mark_write: C|18926|hwui_Texture_count|163
+           <...>-18964 (-----) [004] ...1 683202.284011: tracing_mark_write: C|18926|hwui_OffscreenBuffer|0
+           <...>-18964 (-----) [004] ...1 683202.284016: tracing_mark_write: C|18926|hwui_OffscreenBuffer_count|3
+           <...>-18964 (-----) [004] ...1 683202.284020: tracing_mark_write: C|18926|hwui_Layer|0
+           <...>-18964 (-----) [004] ...1 683202.284025: tracing_mark_write: C|18926|hwui_Layer_count|0
+           <...>-18964 (-----) [004] ...1 683202.284112: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.284119: tracing_mark_write: B|18926|dispatchFrameCallbacks
+           <...>-18964 (-----) [004] ...1 683202.284121: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.284125: tracing_mark_write: B|18926|drainDisplayEventQueue
+           <...>-18964 (-----) [004] ...1 683202.284135: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.295969: tracing_mark_write: B|18926|drainDisplayEventQueue
+           <...>-18964 (-----) [004] ...1 683202.296010: tracing_mark_write: B|18926|queue mFrameCallbackTask
+           <...>-18964 (-----) [004] ...1 683202.296019: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.296021: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.297071: tracing_mark_write: B|18926|Choreographer#doFrame
+           <...>-18926 (-----) [004] ...1 683202.297129: tracing_mark_write: B|18926|input
+           <...>-18926 (-----) [004] ...1 683202.297210: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.297224: tracing_mark_write: B|18926|animation
+           <...>-18926 (-----) [004] ...1 683202.297739: tracing_mark_write: S|18926|animator|122130055
+           <...>-18926 (-----) [004] ...1 683202.297847: tracing_mark_write: S|18926|animator|172949940
+           <...>-18926 (-----) [004] ...1 683202.297932: tracing_mark_write: S|18926|animator|190890461
+           <...>-18926 (-----) [004] ...1 683202.298010: tracing_mark_write: S|18926|animator|20058450
+           <...>-18926 (-----) [004] ...1 683202.298087: tracing_mark_write: S|18926|animator|184847395
+           <...>-18926 (-----) [004] ...1 683202.298200: tracing_mark_write: S|18926|animator|162825504
+           <...>-18926 (-----) [004] ...1 683202.298288: tracing_mark_write: S|18926|animator|153919193
+           <...>-18926 (-----) [004] ...1 683202.298327: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.298340: tracing_mark_write: B|18926|traversal
+           <...>-18926 (-----) [004] ...1 683202.298377: tracing_mark_write: B|18926|draw
+           <...>-18926 (-----) [004] ...1 683202.298402: tracing_mark_write: B|18926|Record View#draw()
+           <...>-18964 (-----) [005] ...1 683202.298521: tracing_mark_write: B|18926|dispatchFrameCallbacks
+           <...>-18964 (-----) [005] ...1 683202.298566: tracing_mark_write: B|18926|prepareAndDraw
+           <...>-18964 (-----) [005] ...1 683202.298580: tracing_mark_write: B|18926|prepareTree
+           <...>-18926 (-----) [004] ...1 683202.298754: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.298770: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.298832: tracing_mark_write: B|18926|computeOrdering
+           <...>-18964 (-----) [005] ...1 683202.298903: tracing_mark_write: E
+           <...>-18988 (-----) [000] ...1 683202.299039: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [000] ...1 683202.299052: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18988 (-----) [000] ...1 683202.299068: tracing_mark_write: E
+           <...>-18988 (-----) [000] ...1 683202.299079: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18964 (-----) [005] ...1 683202.299087: tracing_mark_write: B|18926|LinearLayout alpha caused saveLayer 1080x189
+           <...>-18964 (-----) [005] ...1 683202.299090: tracing_mark_write: E
+           <...>-18988 (-----) [000] ...1 683202.299099: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.299100: tracing_mark_write: B|18926|LinearLayout alpha caused saveLayer 1080x189
+           <...>-18964 (-----) [005] ...1 683202.299103: tracing_mark_write: E
+           <...>-18988 (-----) [000] ...1 683202.299108: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18964 (-----) [005] ...1 683202.299153: tracing_mark_write: B|18926|flush drawing commands
+           <...>-18988 (-----) [000] ...1 683202.299155: tracing_mark_write: E
+           <...>-18988 (-----) [000] ...1 683202.299162: tracing_mark_write: E
+           <...>-18988 (-----) [000] ...1 683202.299178: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [000] ...1 683202.299184: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18988 (-----) [000] ...1 683202.299191: tracing_mark_write: E
+           <...>-18988 (-----) [000] ...1 683202.299198: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [000] ...1 683202.299201: tracing_mark_write: E
+           <...>-18988 (-----) [000] ...1 683202.299207: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18988 (-----) [000] ...1 683202.299227: tracing_mark_write: E
+           <...>-18988 (-----) [000] ...1 683202.299233: tracing_mark_write: E
+           <...>-18989 (-----) [000] ...1 683202.299267: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18989 (-----) [000] ...1 683202.299274: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18989 (-----) [000] ...1 683202.299284: tracing_mark_write: E
+           <...>-18989 (-----) [000] ...1 683202.299291: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18989 (-----) [000] ...1 683202.299307: tracing_mark_write: E
+           <...>-18989 (-----) [000] ...1 683202.299313: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18989 (-----) [000] ...1 683202.299334: tracing_mark_write: E
+           <...>-18989 (-----) [000] ...1 683202.299339: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.299552: tracing_mark_write: B|18926|tessellatePath
+           <...>-18964 (-----) [005] ...1 683202.299559: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [005] ...1 683202.299576: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.299587: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.299659: tracing_mark_write: B|18926|tessellatePath
+           <...>-18964 (-----) [005] ...1 683202.299663: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [005] ...1 683202.299672: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.299678: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.299902: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.301062: tracing_mark_write: C|18926|hwui_Texture|4035928
+           <...>-18964 (-----) [005] ...1 683202.301075: tracing_mark_write: C|18926|hwui_Texture_count|163
+           <...>-18964 (-----) [005] ...1 683202.301084: tracing_mark_write: C|18926|hwui_OffscreenBuffer|0
+           <...>-18964 (-----) [005] ...1 683202.301094: tracing_mark_write: C|18926|hwui_OffscreenBuffer_count|3
+           <...>-18964 (-----) [005] ...1 683202.301103: tracing_mark_write: C|18926|hwui_Layer|0
+           <...>-18964 (-----) [005] ...1 683202.301112: tracing_mark_write: C|18926|hwui_Layer_count|0
+           <...>-18964 (-----) [005] ...1 683202.301214: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.301220: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.301231: tracing_mark_write: B|18926|notifyFramePending
+           <...>-18964 (-----) [005] ...1 683202.301236: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.301247: tracing_mark_write: B|18926|DrawFrame
+           <...>-18964 (-----) [005] ...1 683202.301254: tracing_mark_write: B|18926|syncFrameState
+           <...>-18964 (-----) [005] ...1 683202.301281: tracing_mark_write: B|18926|prepareTree
+           <...>-18964 (-----) [005] ...1 683202.301489: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.301497: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.301520: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.301537: tracing_mark_write: B|18926|drainDisplayEventQueue
+           <...>-18964 (-----) [005] ...1 683202.301557: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.301798: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.301813: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.301858: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.312850: tracing_mark_write: B|18926|drainDisplayEventQueue
+           <...>-18964 (-----) [005] ...1 683202.312883: tracing_mark_write: B|18926|queue mFrameCallbackTask
+           <...>-18964 (-----) [005] ...1 683202.312896: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.312900: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.313023: tracing_mark_write: B|18926|Choreographer#doFrame
+           <...>-18926 (-----) [004] ...1 683202.313069: tracing_mark_write: B|18926|input
+           <...>-18926 (-----) [004] ...1 683202.313105: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.313125: tracing_mark_write: B|18926|animation
+           <...>-18926 (-----) [004] ...1 683202.313914: tracing_mark_write: F|18926|animator|46267553
+           <...>-18926 (-----) [004] ...1 683202.314201: tracing_mark_write: F|18926|animator|219664070
+           <...>-18926 (-----) [004] ...1 683202.314488: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.314515: tracing_mark_write: B|18926|traversal
+           <...>-18926 (-----) [004] ...1 683202.314638: tracing_mark_write: B|18926|draw
+           <...>-18926 (-----) [004] ...1 683202.314704: tracing_mark_write: B|18926|Record View#draw()
+           <...>-18964 (-----) [005] ...1 683202.314999: tracing_mark_write: B|18926|notifyFramePending
+           <...>-18964 (-----) [005] ...1 683202.315016: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.315048: tracing_mark_write: B|18926|dispatchFrameCallbacks
+           <...>-18964 (-----) [005] ...1 683202.315053: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.315061: tracing_mark_write: B|18926|drainDisplayEventQueue
+           <...>-18964 (-----) [005] ...1 683202.315072: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.315243: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.315872: tracing_mark_write: B|18926|DrawFrame
+           <...>-18964 (-----) [005] ...1 683202.315882: tracing_mark_write: B|18926|syncFrameState
+           <...>-18964 (-----) [005] ...1 683202.315916: tracing_mark_write: B|18926|prepareTree
+           <...>-18964 (-----) [005] ...1 683202.316177: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.316188: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.316281: tracing_mark_write: B|18926|computeOrdering
+           <...>-18964 (-----) [005] ...1 683202.316338: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.316502: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [001] ...1 683202.316515: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18988 (-----) [001] ...1 683202.316532: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.316543: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [001] ...1 683202.316560: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.316568: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18926 (-----) [004] ...1 683202.316571: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.316575: tracing_mark_write: B|18926|Button alpha caused saveLayer 849x126
+           <...>-18964 (-----) [005] ...1 683202.316581: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.316585: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.316608: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.316673: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.316834: tracing_mark_write: C|18926|jitterNanos|5552900
+           <...>-18926 (-----) [004] ...1 683202.316973: tracing_mark_write: B|18926|commit
+           <...>-18989 (-----) [001] ...1 683202.316982: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18964 (-----) [005] ...1 683202.316984: tracing_mark_write: B|18926|flush drawing commands
+           <...>-18989 (-----) [001] ...1 683202.316992: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18989 (-----) [001] ...1 683202.317003: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.317010: tracing_mark_write: E
+           <...>-18989 (-----) [001] ...1 683202.317013: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18989 (-----) [001] ...1 683202.317026: tracing_mark_write: E
+           <...>-18989 (-----) [001] ...1 683202.317032: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18926 (-----) [004] ...1 683202.317040: tracing_mark_write: E
+           <...>-18989 (-----) [001] ...1 683202.317054: tracing_mark_write: E
+           <...>-18989 (-----) [001] ...1 683202.317060: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.317090: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [001] ...1 683202.317096: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18988 (-----) [001] ...1 683202.317103: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.317111: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [001] ...1 683202.317115: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.317120: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18988 (-----) [001] ...1 683202.317141: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.317146: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.317779: tracing_mark_write: B|18926|tessellatePath
+           <...>-18964 (-----) [005] ...1 683202.317790: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [005] ...1 683202.317823: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.317844: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.317935: tracing_mark_write: B|18926|tessellatePath
+           <...>-18964 (-----) [005] ...1 683202.317944: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [005] ...1 683202.317964: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.317977: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.319029: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.319801: tracing_mark_write: C|18926|hwui_Texture|4035928
+           <...>-18964 (-----) [005] ...1 683202.319813: tracing_mark_write: C|18926|hwui_Texture_count|163
+           <...>-18964 (-----) [005] ...1 683202.319822: tracing_mark_write: C|18926|hwui_OffscreenBuffer|0
+           <...>-18964 (-----) [005] ...1 683202.319832: tracing_mark_write: C|18926|hwui_OffscreenBuffer_count|3
+           <...>-18964 (-----) [005] ...1 683202.319841: tracing_mark_write: C|18926|hwui_Layer|0
+           <...>-18964 (-----) [005] ...1 683202.319850: tracing_mark_write: C|18926|hwui_Layer_count|0
+           <...>-18964 (-----) [005] ...1 683202.319939: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.320015: tracing_mark_write: B|18926|drainDisplayEventQueue
+           <...>-18964 (-----) [005] ...1 683202.320033: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.329503: tracing_mark_write: B|18926|drainDisplayEventQueue
+           <...>-18964 (-----) [005] ...1 683202.329538: tracing_mark_write: B|18926|queue mFrameCallbackTask
+           <...>-18964 (-----) [005] ...1 683202.329557: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.329562: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.329759: tracing_mark_write: B|18926|Choreographer#doFrame
+           <...>-18926 (-----) [004] ...1 683202.329819: tracing_mark_write: B|18926|input
+           <...>-18926 (-----) [004] ...1 683202.329857: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.329877: tracing_mark_write: B|18926|animation
+           <...>-18926 (-----) [004] ...1 683202.330409: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.330434: tracing_mark_write: B|18926|traversal
+           <...>-18926 (-----) [004] ...1 683202.330505: tracing_mark_write: B|18926|draw
+           <...>-18926 (-----) [004] ...1 683202.330553: tracing_mark_write: B|18926|Record View#draw()
+           <...>-18926 (-----) [004] ...1 683202.331128: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.331212: tracing_mark_write: B|18926|notifyFramePending
+           <...>-18964 (-----) [004] ...1 683202.331227: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.331237: tracing_mark_write: B|18926|DrawFrame
+           <...>-18964 (-----) [004] ...1 683202.331245: tracing_mark_write: B|18926|syncFrameState
+           <...>-18964 (-----) [004] ...1 683202.331281: tracing_mark_write: B|18926|prepareTree
+           <...>-18964 (-----) [004] ...1 683202.331518: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.331539: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.331639: tracing_mark_write: B|18926|computeOrdering
+           <...>-18964 (-----) [004] ...1 683202.331700: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.331876: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.331892: tracing_mark_write: E
+           <...>-18926 (-----) [005] ...1 683202.331933: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.331988: tracing_mark_write: B|18926|Button alpha caused saveLayer 849x126
+           <...>-18964 (-----) [004] ...1 683202.331994: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.332075: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [001] ...1 683202.332088: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18988 (-----) [001] ...1 683202.332107: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.332119: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [001] ...1 683202.332136: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.332143: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18988 (-----) [001] ...1 683202.332189: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.332195: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.332319: tracing_mark_write: B|18926|flush drawing commands
+           <...>-18989 (-----) [001] ...1 683202.332349: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18989 (-----) [001] ...1 683202.332357: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18989 (-----) [001] ...1 683202.332368: tracing_mark_write: E
+           <...>-18989 (-----) [001] ...1 683202.332376: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18989 (-----) [001] ...1 683202.332385: tracing_mark_write: E
+           <...>-18989 (-----) [001] ...1 683202.332391: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18989 (-----) [001] ...1 683202.332412: tracing_mark_write: E
+           <...>-18989 (-----) [001] ...1 683202.332417: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.332446: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [001] ...1 683202.332453: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18988 (-----) [001] ...1 683202.332459: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.332466: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [001] ...1 683202.332469: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.332475: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18988 (-----) [001] ...1 683202.332499: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.332504: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.333108: tracing_mark_write: B|18926|tessellatePath
+           <...>-18964 (-----) [004] ...1 683202.333119: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [004] ...1 683202.333156: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.333176: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.333267: tracing_mark_write: B|18926|tessellatePath
+           <...>-18964 (-----) [004] ...1 683202.333362: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [004] ...1 683202.333387: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.333405: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.334671: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.335531: tracing_mark_write: C|18926|hwui_Texture|4035928
+           <...>-18964 (-----) [004] ...1 683202.335544: tracing_mark_write: C|18926|hwui_Texture_count|163
+           <...>-18964 (-----) [004] ...1 683202.335554: tracing_mark_write: C|18926|hwui_OffscreenBuffer|0
+           <...>-18964 (-----) [004] ...1 683202.335563: tracing_mark_write: C|18926|hwui_OffscreenBuffer_count|3
+           <...>-18964 (-----) [004] ...1 683202.335572: tracing_mark_write: C|18926|hwui_Layer|0
+           <...>-18964 (-----) [004] ...1 683202.335582: tracing_mark_write: C|18926|hwui_Layer_count|0
+           <...>-18964 (-----) [004] ...1 683202.335733: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.335745: tracing_mark_write: B|18926|dispatchFrameCallbacks
+           <...>-18964 (-----) [004] ...1 683202.335749: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.335757: tracing_mark_write: B|18926|drainDisplayEventQueue
+           <...>-18964 (-----) [004] ...1 683202.335773: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.344870: tracing_mark_write: B|18926|drainDisplayEventQueue
+           <...>-18964 (-----) [004] ...1 683202.344923: tracing_mark_write: B|18926|queue mFrameCallbackTask
+           <...>-18964 (-----) [004] ...1 683202.344939: tracing_mark_write: E
+           <...>-18964 (-----) [004] ...1 683202.344943: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.346588: tracing_mark_write: B|18926|Choreographer#doFrame
+           <...>-18926 (-----) [004] ...1 683202.346695: tracing_mark_write: B|18926|input
+           <...>-18926 (-----) [004] ...1 683202.346761: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.346782: tracing_mark_write: B|18926|animation
+           <...>-18926 (-----) [004] ...1 683202.347462: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.347492: tracing_mark_write: B|18926|traversal
+           <...>-18926 (-----) [004] ...1 683202.347562: tracing_mark_write: B|18926|draw
+           <...>-18926 (-----) [004] ...1 683202.347603: tracing_mark_write: B|18926|Record View#draw()
+           <...>-18964 (-----) [005] ...1 683202.348107: tracing_mark_write: B|18926|notifyFramePending
+           <...>-18964 (-----) [005] ...1 683202.348120: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.348131: tracing_mark_write: B|18926|dispatchFrameCallbacks
+           <...>-18964 (-----) [005] ...1 683202.348135: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.348143: tracing_mark_write: B|18926|drainDisplayEventQueue
+           <...>-18964 (-----) [005] ...1 683202.348155: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.348158: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.348226: tracing_mark_write: B|18926|DrawFrame
+           <...>-18964 (-----) [005] ...1 683202.348235: tracing_mark_write: B|18926|syncFrameState
+           <...>-18964 (-----) [005] ...1 683202.348270: tracing_mark_write: B|18926|prepareTree
+           <...>-18964 (-----) [005] ...1 683202.348510: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.348519: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.348615: tracing_mark_write: B|18926|computeOrdering
+           <...>-18964 (-----) [005] ...1 683202.348675: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.348863: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.348877: tracing_mark_write: E
+           <...>-18926 (-----) [004] ...1 683202.348910: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.348946: tracing_mark_write: B|18926|Button alpha caused saveLayer 849x126
+           <...>-18964 (-----) [005] ...1 683202.348953: tracing_mark_write: E
+           <...>-18988 (-----) [000] ...1 683202.348986: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [000] ...1 683202.348999: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18988 (-----) [000] ...1 683202.349018: tracing_mark_write: E
+           <...>-18988 (-----) [000] ...1 683202.349030: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [000] ...1 683202.349049: tracing_mark_write: E
+           <...>-18988 (-----) [000] ...1 683202.349056: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18988 (-----) [000] ...1 683202.349096: tracing_mark_write: E
+           <...>-18988 (-----) [000] ...1 683202.349103: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.349254: tracing_mark_write: B|18926|flush drawing commands
+           <...>-18989 (-----) [001] ...1 683202.349316: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18989 (-----) [001] ...1 683202.349326: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18989 (-----) [001] ...1 683202.349338: tracing_mark_write: E
+           <...>-18989 (-----) [001] ...1 683202.349346: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18989 (-----) [001] ...1 683202.349359: tracing_mark_write: E
+           <...>-18989 (-----) [001] ...1 683202.349365: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18989 (-----) [001] ...1 683202.349386: tracing_mark_write: E
+           <...>-18989 (-----) [001] ...1 683202.349392: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.349424: tracing_mark_write: B|18926|shadow tessellation
+           <...>-18988 (-----) [001] ...1 683202.349430: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18988 (-----) [001] ...1 683202.349438: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.349445: tracing_mark_write: B|18926|tessellateAmbientShadow
+           <...>-18988 (-----) [001] ...1 683202.349448: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.349454: tracing_mark_write: B|18926|tessellateSpotShadow
+           <...>-18988 (-----) [001] ...1 683202.349473: tracing_mark_write: E
+           <...>-18988 (-----) [001] ...1 683202.349479: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.350099: tracing_mark_write: B|18926|tessellatePath
+           <...>-18964 (-----) [005] ...1 683202.350115: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [005] ...1 683202.350172: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.350197: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.350339: tracing_mark_write: B|18926|tessellatePath
+           <...>-18964 (-----) [005] ...1 683202.350349: tracing_mark_write: B|18926|approximatePathOutlineVertices
+           <...>-18964 (-----) [005] ...1 683202.350368: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.350381: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.351526: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.352548: tracing_mark_write: C|18926|hwui_Texture|4035928
+           <...>-18964 (-----) [005] ...1 683202.352562: tracing_mark_write: C|18926|hwui_Texture_count|163
+           <...>-18964 (-----) [005] ...1 683202.352571: tracing_mark_write: C|18926|hwui_OffscreenBuffer|0
+           <...>-18964 (-----) [005] ...1 683202.352580: tracing_mark_write: C|18926|hwui_OffscreenBuffer_count|3
+           <...>-18964 (-----) [005] ...1 683202.352589: tracing_mark_write: C|18926|hwui_Layer|0
+           <...>-18964 (-----) [005] ...1 683202.352599: tracing_mark_write: C|18926|hwui_Layer_count|0
+           <...>-18964 (-----) [005] ...1 683202.352734: tracing_mark_write: E
+           <...>-18964 (-----) [005] ...1 683202.352745: tracing_mark_write: B|18926|drainDisplayEventQueue
+           <...>-18964 (-----) [005] ...1 683202.352760: tracing_mark_write: E

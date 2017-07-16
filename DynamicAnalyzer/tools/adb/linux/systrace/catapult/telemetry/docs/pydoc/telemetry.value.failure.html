@@ -1,0 +1,151 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.value.failure</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.value.html"><font color="#ffffff">value</font></a>.failure</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/value/failure.py">telemetry/value/failure.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2014&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="sys.html">sys</a><br>
+</td><td width="25%" valign=top><a href="traceback.html">traceback</a><br>
+</td><td width="25%" valign=top><a href="telemetry.value.html">telemetry.value</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="telemetry.value.html#Value">telemetry.value.Value</a>(<a href="__builtin__.html#object">__builtin__.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.value.failure.html#FailureValue">FailureValue</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="FailureValue">class <strong>FailureValue</strong></a>(<a href="telemetry.value.html#Value">telemetry.value.Value</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.value.failure.html#FailureValue">FailureValue</a></dd>
+<dd><a href="telemetry.value.html#Value">telemetry.value.Value</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="FailureValue-AsDict"><strong>AsDict</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="FailureValue-GetBuildbotDataType"><strong>GetBuildbotDataType</strong></a>(self, output_context)</dt></dl>
+
+<dl><dt><a name="FailureValue-GetBuildbotValue"><strong>GetBuildbotValue</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="FailureValue-GetChartAndTraceNameForPerPageResult"><strong>GetChartAndTraceNameForPerPageResult</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="FailureValue-GetRepresentativeNumber"><strong>GetRepresentativeNumber</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="FailureValue-GetRepresentativeString"><strong>GetRepresentativeString</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="FailureValue-__init__"><strong>__init__</strong></a>(self, page, exc_info, description<font color="#909090">=None</font>, tir_label<font color="#909090">=None</font>)</dt><dd><tt>A&nbsp;value&nbsp;representing&nbsp;a&nbsp;failure&nbsp;when&nbsp;running&nbsp;the&nbsp;page.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;page:&nbsp;The&nbsp;page&nbsp;where&nbsp;this&nbsp;failure&nbsp;occurs.<br>
+&nbsp;&nbsp;exc_info:&nbsp;The&nbsp;exception&nbsp;info&nbsp;(sys.<a href="#FailureValue-exc_info">exc_info</a>())&nbsp;corresponding&nbsp;to<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;this&nbsp;failure.</tt></dd></dl>
+
+<dl><dt><a name="FailureValue-__repr__"><strong>__repr__</strong></a>(self)</dt></dl>
+
+<hr>
+Class methods defined here:<br>
+<dl><dt><a name="FailureValue-FromMessage"><strong>FromMessage</strong></a>(cls, page, message)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Creates&nbsp;a&nbsp;failure&nbsp;value&nbsp;for&nbsp;a&nbsp;given&nbsp;string&nbsp;message.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;page:&nbsp;The&nbsp;page&nbsp;where&nbsp;this&nbsp;failure&nbsp;occurs.<br>
+&nbsp;&nbsp;message:&nbsp;A&nbsp;string&nbsp;message&nbsp;describing&nbsp;the&nbsp;failure.</tt></dd></dl>
+
+<dl><dt><a name="FailureValue-MergeLikeValuesFromDifferentPages"><strong>MergeLikeValuesFromDifferentPages</strong></a>(cls, values)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="FailureValue-MergeLikeValuesFromSamePage"><strong>MergeLikeValuesFromSamePage</strong></a>(cls, values)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<hr>
+Static methods defined here:<br>
+<dl><dt><a name="FailureValue-FromDict"><strong>FromDict</strong></a>(value_dict, page_dict)</dt></dl>
+
+<dl><dt><a name="FailureValue-GetJSONTypeName"><strong>GetJSONTypeName</strong></a>()</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>exc_info</strong></dt>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.value.html#Value">telemetry.value.Value</a>:<br>
+<dl><dt><a name="FailureValue-AsDictWithoutBaseClassEntries"><strong>AsDictWithoutBaseClassEntries</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="FailureValue-GetChartAndTraceNameForComputedSummaryResult"><strong>GetChartAndTraceNameForComputedSummaryResult</strong></a>(self, trace_tag)</dt></dl>
+
+<dl><dt><a name="FailureValue-IsMergableWith"><strong>IsMergableWith</strong></a>(self, that)</dt></dl>
+
+<dl><dt><a name="FailureValue-__eq__"><strong>__eq__</strong></a>(self, other)</dt></dl>
+
+<dl><dt><a name="FailureValue-__hash__"><strong>__hash__</strong></a>(self)</dt></dl>
+
+<hr>
+Static methods inherited from <a href="telemetry.value.html#Value">telemetry.value.Value</a>:<br>
+<dl><dt><a name="FailureValue-GetConstructorKwArgs"><strong>GetConstructorKwArgs</strong></a>(value_dict, page_dict)</dt><dd><tt>Produces&nbsp;constructor&nbsp;arguments&nbsp;from&nbsp;a&nbsp;value&nbsp;dict&nbsp;and&nbsp;a&nbsp;page&nbsp;dict.<br>
+&nbsp;<br>
+Takes&nbsp;a&nbsp;dict&nbsp;parsed&nbsp;from&nbsp;JSON&nbsp;and&nbsp;an&nbsp;index&nbsp;of&nbsp;pages&nbsp;and&nbsp;recovers&nbsp;the<br>
+keyword&nbsp;arguments&nbsp;to&nbsp;be&nbsp;passed&nbsp;to&nbsp;the&nbsp;constructor&nbsp;for&nbsp;deserializing&nbsp;the<br>
+dict.<br>
+&nbsp;<br>
+value_dict:&nbsp;a&nbsp;dictionary&nbsp;produced&nbsp;by&nbsp;<a href="#FailureValue-AsDict">AsDict</a>()&nbsp;on&nbsp;a&nbsp;value&nbsp;subclass.<br>
+page_dict:&nbsp;a&nbsp;dictionary&nbsp;mapping&nbsp;IDs&nbsp;to&nbsp;page&nbsp;objects.</tt></dd></dl>
+
+<dl><dt><a name="FailureValue-ListOfValuesFromListOfDicts"><strong>ListOfValuesFromListOfDicts</strong></a>(value_dicts, page_dict)</dt><dd><tt>Takes&nbsp;a&nbsp;list&nbsp;of&nbsp;value&nbsp;dicts&nbsp;to&nbsp;values.<br>
+&nbsp;<br>
+Given&nbsp;a&nbsp;list&nbsp;of&nbsp;value&nbsp;dicts&nbsp;produced&nbsp;by&nbsp;AsDict,&nbsp;this&nbsp;method<br>
+deserializes&nbsp;the&nbsp;dicts&nbsp;given&nbsp;a&nbsp;dict&nbsp;mapping&nbsp;page&nbsp;IDs&nbsp;to&nbsp;pages.<br>
+This&nbsp;method&nbsp;performs&nbsp;memoization&nbsp;for&nbsp;deserializing&nbsp;a&nbsp;list&nbsp;of&nbsp;values<br>
+efficiently,&nbsp;where&nbsp;FromDict&nbsp;is&nbsp;meant&nbsp;to&nbsp;handle&nbsp;one-offs.<br>
+&nbsp;<br>
+values:&nbsp;a&nbsp;list&nbsp;of&nbsp;value&nbsp;dicts&nbsp;produced&nbsp;by&nbsp;<a href="#FailureValue-AsDict">AsDict</a>()&nbsp;on&nbsp;a&nbsp;value&nbsp;subclass.<br>
+page_dict:&nbsp;a&nbsp;dictionary&nbsp;mapping&nbsp;IDs&nbsp;to&nbsp;page&nbsp;objects.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.value.html#Value">telemetry.value.Value</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>name_suffix</strong></dt>
+<dd><tt>Returns&nbsp;the&nbsp;string&nbsp;after&nbsp;a&nbsp;.&nbsp;in&nbsp;the&nbsp;name,&nbsp;or&nbsp;the&nbsp;full&nbsp;name&nbsp;otherwise.</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-GetStringFromExcInfo"><strong>GetStringFromExcInfo</strong></a>(exc_info)</dt></dl>
+</td></tr></table>
+</body></html>

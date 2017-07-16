@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<script>
+var maxObjects = 100000;
+
+var TestRunner = function() {
+  this.isDone = false;
+};
+
+var testRunner = null;
+window.onload = function () {
+  testRunner = new TestRunner();
+
+  // Create a lot of objects can trigger a Blink GC.
+  for (var i = 0; i < maxObjects; i++) {
+    new TextDecoder();
+  }
+
+  testRunner.isDone = true;
+}
+</script>

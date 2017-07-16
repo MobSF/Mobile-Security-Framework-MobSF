@@ -1,0 +1,46 @@
+#!/usr/bin/env python2.7
+
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Runs the unit test suite for systrace."""
+
+import optparse
+import os
+import sys
+import unittest
+
+_SYSTRACE_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), os.path.pardir))
+sys.path.insert(0, _SYSTRACE_DIR)
+from systrace import decorators
+
+
+def main():
+  parser = optparse.OptionParser()
+  parser.add_option("-d", "--device", dest="device",
+                    help="device the test runs on", metavar="DEVICE")
+  options, _args = parser.parse_args()  # pylint: disable=unused-variable
+  unfiltered_suite = unittest.TestLoader().discover(
+      _SYSTRACE_DIR,
+      pattern = '*_unittest.py',
+      top_level_dir=_SYSTRACE_DIR)
+  suite = unittest.TestSuite()
+
+  for test_group in unfiltered_suite._tests:
+    for inner_group in test_group:
+      for test in inner_group:
+        method = getattr(
+          test, test._testMethodName)  # pylint: disable=protected-access
+        if not decorators.ShouldSkip(method, options.device):
+          suite.addTest(test)
+
+  result = unittest.TextTestRunner(verbosity=2).run(suite)
+  if result.wasSuccessful():
+    sys.exit(0)
+  else:
+    sys.exit(1)
+
+if __name__ == '__main__':
+  main()

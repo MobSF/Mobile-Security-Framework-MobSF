@@ -1,0 +1,97 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.image_processing._bitmap</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.<a href="telemetry.internal.image_processing.html"><font color="#ffffff">image_processing</font></a>._bitmap</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/image_processing/_bitmap.py">telemetry/internal/image_processing/_bitmap.py</a></font></td></tr></table>
+    <p><tt><a href="#Bitmap">Bitmap</a>&nbsp;is&nbsp;a&nbsp;basic&nbsp;wrapper&nbsp;for&nbsp;image&nbsp;pixels.&nbsp;It&nbsp;includes&nbsp;some&nbsp;basic&nbsp;processing<br>
+tools:&nbsp;crop,&nbsp;find&nbsp;bounding&nbsp;box&nbsp;of&nbsp;a&nbsp;color&nbsp;and&nbsp;compute&nbsp;histogram&nbsp;of&nbsp;color&nbsp;values.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="array.html">array</a><br>
+<a href="telemetry.internal.util.binary_manager.html">telemetry.internal.util.binary_manager</a><br>
+<a href="cStringIO.html">cStringIO</a><br>
+</td><td width="25%" valign=top><a href="telemetry.util.color_histogram.html">telemetry.util.color_histogram</a><br>
+<a href="telemetry.core.platform.html">telemetry.core.platform</a><br>
+<a href="png.html">png</a><br>
+</td><td width="25%" valign=top><a href="telemetry.util.rgba_color.html">telemetry.util.rgba_color</a><br>
+<a href="struct.html">struct</a><br>
+<a href="subprocess.html">subprocess</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.image_processing._bitmap.html#Bitmap">Bitmap</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Bitmap">class <strong>Bitmap</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Utilities&nbsp;for&nbsp;parsing&nbsp;and&nbsp;inspecting&nbsp;a&nbsp;bitmap.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Bitmap-ColorHistogram"><strong>ColorHistogram</strong></a>(self, ignore_color<font color="#909090">=None</font>, tolerance<font color="#909090">=0</font>)</dt></dl>
+
+<dl><dt><a name="Bitmap-Crop"><strong>Crop</strong></a>(self, left, top, width, height)</dt></dl>
+
+<dl><dt><a name="Bitmap-Diff"><strong>Diff</strong></a>(self, other)</dt></dl>
+
+<dl><dt><a name="Bitmap-GetBoundingBox"><strong>GetBoundingBox</strong></a>(self, color, tolerance<font color="#909090">=0</font>)</dt></dl>
+
+<dl><dt><a name="Bitmap-GetPixelColor"><strong>GetPixelColor</strong></a>(self, x, y)</dt></dl>
+
+<dl><dt><a name="Bitmap-IsEqual"><strong>IsEqual</strong></a>(self, other, tolerance<font color="#909090">=0</font>)</dt></dl>
+
+<dl><dt><a name="Bitmap-WritePngFile"><strong>WritePngFile</strong></a>(self, path)</dt></dl>
+
+<dl><dt><a name="Bitmap-__init__"><strong>__init__</strong></a>(self, bpp, width, height, pixels, metadata<font color="#909090">=None</font>)</dt></dl>
+
+<hr>
+Static methods defined here:<br>
+<dl><dt><a name="Bitmap-FromPng"><strong>FromPng</strong></a>(png_data)</dt></dl>
+
+<dl><dt><a name="Bitmap-FromPngFile"><strong>FromPngFile</strong></a>(path)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>bpp</strong></dt>
+</dl>
+<dl><dt><strong>height</strong></dt>
+</dl>
+<dl><dt><strong>metadata</strong></dt>
+</dl>
+<dl><dt><strong>pixels</strong></dt>
+</dl>
+<dl><dt><strong>width</strong></dt>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

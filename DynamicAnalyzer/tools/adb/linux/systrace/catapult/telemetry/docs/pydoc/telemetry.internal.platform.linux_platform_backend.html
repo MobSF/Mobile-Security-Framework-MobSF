@@ -1,0 +1,280 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.platform.linux_platform_backend</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.<a href="telemetry.internal.platform.html"><font color="#ffffff">platform</font></a>.linux_platform_backend</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/platform/linux_platform_backend.py">telemetry/internal/platform/linux_platform_backend.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2013&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.internal.util.binary_manager.html">telemetry.internal.util.binary_manager</a><br>
+<a href="catapult_base.cloud_storage.html">catapult_base.cloud_storage</a><br>
+<a href="telemetry.decorators.html">telemetry.decorators</a><br>
+<a href="telemetry.internal.platform.linux_based_platform_backend.html">telemetry.internal.platform.linux_based_platform_backend</a><br>
+</td><td width="25%" valign=top><a href="logging.html">logging</a><br>
+<a href="telemetry.internal.platform.power_monitor.msr_power_monitor.html">telemetry.internal.platform.power_monitor.msr_power_monitor</a><br>
+<a href="os.html">os</a><br>
+<a href="telemetry.core.os_version.html">telemetry.core.os_version</a><br>
+</td><td width="25%" valign=top><a href="platform.html">platform</a><br>
+<a href="telemetry.internal.platform.posix_platform_backend.html">telemetry.internal.platform.posix_platform_backend</a><br>
+<a href="subprocess.html">subprocess</a><br>
+<a href="sys.html">sys</a><br>
+</td><td width="25%" valign=top><a href="telemetry.core.util.html">telemetry.core.util</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.platform.linux_based_platform_backend.html#LinuxBasedPlatformBackend">telemetry.internal.platform.linux_based_platform_backend.LinuxBasedPlatformBackend</a>(<a href="telemetry.internal.platform.platform_backend.html#PlatformBackend">telemetry.internal.platform.platform_backend.PlatformBackend</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.platform.linux_platform_backend.html#LinuxPlatformBackend">LinuxPlatformBackend</a>(<a href="telemetry.internal.platform.posix_platform_backend.html#PosixPlatformBackend">telemetry.internal.platform.posix_platform_backend.PosixPlatformBackend</a>, <a href="telemetry.internal.platform.linux_based_platform_backend.html#LinuxBasedPlatformBackend">telemetry.internal.platform.linux_based_platform_backend.LinuxBasedPlatformBackend</a>)
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.platform.posix_platform_backend.html#PosixPlatformBackend">telemetry.internal.platform.posix_platform_backend.PosixPlatformBackend</a>(<a href="telemetry.internal.platform.desktop_platform_backend.html#DesktopPlatformBackend">telemetry.internal.platform.desktop_platform_backend.DesktopPlatformBackend</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.platform.linux_platform_backend.html#LinuxPlatformBackend">LinuxPlatformBackend</a>(<a href="telemetry.internal.platform.posix_platform_backend.html#PosixPlatformBackend">telemetry.internal.platform.posix_platform_backend.PosixPlatformBackend</a>, <a href="telemetry.internal.platform.linux_based_platform_backend.html#LinuxBasedPlatformBackend">telemetry.internal.platform.linux_based_platform_backend.LinuxBasedPlatformBackend</a>)
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="LinuxPlatformBackend">class <strong>LinuxPlatformBackend</strong></a>(<a href="telemetry.internal.platform.posix_platform_backend.html#PosixPlatformBackend">telemetry.internal.platform.posix_platform_backend.PosixPlatformBackend</a>, <a href="telemetry.internal.platform.linux_based_platform_backend.html#LinuxBasedPlatformBackend">telemetry.internal.platform.linux_based_platform_backend.LinuxBasedPlatformBackend</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.internal.platform.linux_platform_backend.html#LinuxPlatformBackend">LinuxPlatformBackend</a></dd>
+<dd><a href="telemetry.internal.platform.posix_platform_backend.html#PosixPlatformBackend">telemetry.internal.platform.posix_platform_backend.PosixPlatformBackend</a></dd>
+<dd><a href="telemetry.internal.platform.desktop_platform_backend.html#DesktopPlatformBackend">telemetry.internal.platform.desktop_platform_backend.DesktopPlatformBackend</a></dd>
+<dd><a href="telemetry.internal.platform.linux_based_platform_backend.html#LinuxBasedPlatformBackend">telemetry.internal.platform.linux_based_platform_backend.LinuxBasedPlatformBackend</a></dd>
+<dd><a href="telemetry.internal.platform.platform_backend.html#PlatformBackend">telemetry.internal.platform.platform_backend.PlatformBackend</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="LinuxPlatformBackend-CanFlushIndividualFilesFromSystemCache"><strong>CanFlushIndividualFilesFromSystemCache</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-CanLaunchApplication"><strong>CanLaunchApplication</strong></a>(self, application)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-CanMeasurePerApplicationPower"><strong>CanMeasurePerApplicationPower</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-CanMonitorPower"><strong>CanMonitorPower</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-FlushEntireSystemCache"><strong>FlushEntireSystemCache</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-GetArchName"><strong>GetArchName</strong></a>(*args, **kwargs)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-GetOSName"><strong>GetOSName</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-GetOSVersionName"><strong>GetOSVersionName</strong></a>(*args, **kwargs)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-HasBeenThermallyThrottled"><strong>HasBeenThermallyThrottled</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-InstallApplication"><strong>InstallApplication</strong></a>(self, application)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-IsThermallyThrottled"><strong>IsThermallyThrottled</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-ReadMsr"><strong>ReadMsr</strong></a>(self, msr_number, start<font color="#909090">=0</font>, length<font color="#909090">=64</font>)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-StartMonitoringPower"><strong>StartMonitoringPower</strong></a>(self, browser)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-StopMonitoringPower"><strong>StopMonitoringPower</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-__init__"><strong>__init__</strong></a>(self)</dt></dl>
+
+<hr>
+Class methods defined here:<br>
+<dl><dt><a name="LinuxPlatformBackend-IsPlatformBackendForHost"><strong>IsPlatformBackendForHost</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<hr>
+Methods inherited from <a href="telemetry.internal.platform.posix_platform_backend.html#PosixPlatformBackend">telemetry.internal.platform.posix_platform_backend.PosixPlatformBackend</a>:<br>
+<dl><dt><a name="LinuxPlatformBackend-GetChildPids"><strong>GetChildPids</strong></a>(self, pid)</dt><dd><tt>Returns&nbsp;a&nbsp;list&nbsp;of&nbsp;child&nbsp;pids&nbsp;of&nbsp;|pid|.</tt></dd></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-GetCommandLine"><strong>GetCommandLine</strong></a>(self, pid)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-GetFileContents"><strong>GetFileContents</strong></a>(self, path)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-GetPsOutput"><strong>GetPsOutput</strong></a>(self, columns, pid<font color="#909090">=None</font>)</dt><dd><tt>Returns&nbsp;output&nbsp;of&nbsp;the&nbsp;'ps'&nbsp;command&nbsp;as&nbsp;a&nbsp;list&nbsp;of&nbsp;lines.<br>
+Subclass&nbsp;should&nbsp;override&nbsp;this&nbsp;function.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;columns:&nbsp;A&nbsp;list&nbsp;of&nbsp;require&nbsp;columns,&nbsp;e.g.,&nbsp;['pid',&nbsp;'pss'].<br>
+&nbsp;&nbsp;pid:&nbsp;If&nbsp;not&nbsp;None,&nbsp;returns&nbsp;only&nbsp;the&nbsp;information&nbsp;of&nbsp;the&nbsp;process<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;with&nbsp;the&nbsp;pid.</tt></dd></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-IsApplicationRunning"><strong>IsApplicationRunning</strong></a>(self, application)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-LaunchApplication"><strong>LaunchApplication</strong></a>(self, application, parameters<font color="#909090">=None</font>, elevate_privilege<font color="#909090">=False</font>)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-RunCommand"><strong>RunCommand</strong></a>(self, args)</dt></dl>
+
+<hr>
+Methods inherited from <a href="telemetry.internal.platform.desktop_platform_backend.html#DesktopPlatformBackend">telemetry.internal.platform.desktop_platform_backend.DesktopPlatformBackend</a>:<br>
+<dl><dt><a name="LinuxPlatformBackend-FlushSystemCacheForDirectory"><strong>FlushSystemCacheForDirectory</strong></a>(self, directory)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-GetDeviceTypeName"><strong>GetDeviceTypeName</strong></a>(self)</dt></dl>
+
+<hr>
+Methods inherited from <a href="telemetry.internal.platform.linux_based_platform_backend.html#LinuxBasedPlatformBackend">telemetry.internal.platform.linux_based_platform_backend.LinuxBasedPlatformBackend</a>:<br>
+<dl><dt><a name="LinuxPlatformBackend-GetClockTicks"><strong>GetClockTicks</strong></a>(*args, **kwargs)</dt><dd><tt>Returns&nbsp;the&nbsp;number&nbsp;of&nbsp;clock&nbsp;ticks&nbsp;per&nbsp;second.<br>
+&nbsp;<br>
+The&nbsp;proper&nbsp;way&nbsp;is&nbsp;to&nbsp;call&nbsp;os.sysconf('SC_CLK_TCK')&nbsp;but&nbsp;that&nbsp;is&nbsp;not&nbsp;easy&nbsp;to<br>
+do&nbsp;on&nbsp;Android/CrOS.&nbsp;In&nbsp;practice,&nbsp;nearly&nbsp;all&nbsp;Linux&nbsp;machines&nbsp;have&nbsp;a&nbsp;USER_HZ<br>
+of&nbsp;100,&nbsp;so&nbsp;just&nbsp;return&nbsp;that.</tt></dd></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-GetCpuStats"><strong>GetCpuStats</strong></a>(self, pid)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-GetCpuTimestamp"><strong>GetCpuTimestamp</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-GetMemoryStats"><strong>GetMemoryStats</strong></a>(self, pid)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-GetSystemCommitCharge"><strong>GetSystemCommitCharge</strong></a>(self)</dt><dd><tt>#&nbsp;Get&nbsp;the&nbsp;commit&nbsp;charge&nbsp;in&nbsp;kB.</tt></dd></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-GetSystemTotalPhysicalMemory"><strong>GetSystemTotalPhysicalMemory</strong></a>(*args, **kwargs)</dt></dl>
+
+<hr>
+Static methods inherited from <a href="telemetry.internal.platform.linux_based_platform_backend.html#LinuxBasedPlatformBackend">telemetry.internal.platform.linux_based_platform_backend.LinuxBasedPlatformBackend</a>:<br>
+<dl><dt><a name="LinuxPlatformBackend-ParseCStateSample"><strong>ParseCStateSample</strong></a>(sample)</dt><dd><tt>Parse&nbsp;a&nbsp;single&nbsp;c-state&nbsp;residency&nbsp;sample.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sample:&nbsp;A&nbsp;sample&nbsp;of&nbsp;c-state&nbsp;residency&nbsp;times&nbsp;to&nbsp;be&nbsp;parsed.&nbsp;Organized&nbsp;as<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a&nbsp;dictionary&nbsp;mapping&nbsp;CPU&nbsp;name&nbsp;to&nbsp;a&nbsp;string&nbsp;containing&nbsp;all&nbsp;c-state<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;names,&nbsp;the&nbsp;times&nbsp;in&nbsp;each&nbsp;state,&nbsp;the&nbsp;latency&nbsp;of&nbsp;each&nbsp;state,&nbsp;and&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;time&nbsp;at&nbsp;which&nbsp;the&nbsp;sample&nbsp;was&nbsp;taken&nbsp;all&nbsp;separated&nbsp;by&nbsp;newlines.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ex:&nbsp;{'cpu0':&nbsp;'C0<br>
+C1<br>
+5000<br>
+2000<br>
+20<br>
+30<br>
+1406673171'}<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Dictionary&nbsp;associating&nbsp;a&nbsp;c-state&nbsp;with&nbsp;a&nbsp;time.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="telemetry.internal.platform.platform_backend.html#PlatformBackend">telemetry.internal.platform.platform_backend.PlatformBackend</a>:<br>
+<dl><dt><a name="LinuxPlatformBackend-CanCaptureVideo"><strong>CanCaptureVideo</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-CanMonitorNetworkData"><strong>CanMonitorNetworkData</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-CanMonitorThermalThrottling"><strong>CanMonitorThermalThrottling</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-CanTakeScreenshot"><strong>CanTakeScreenshot</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-CooperativelyShutdown"><strong>CooperativelyShutdown</strong></a>(self, proc, app_name)</dt><dd><tt>Cooperatively&nbsp;shut&nbsp;down&nbsp;the&nbsp;given&nbsp;process&nbsp;from&nbsp;subprocess.Popen.<br>
+&nbsp;<br>
+Currently&nbsp;this&nbsp;is&nbsp;only&nbsp;implemented&nbsp;on&nbsp;Windows.&nbsp;See<br>
+crbug.com/424024&nbsp;for&nbsp;background&nbsp;on&nbsp;why&nbsp;it&nbsp;was&nbsp;added.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;proc:&nbsp;a&nbsp;process&nbsp;object&nbsp;returned&nbsp;from&nbsp;subprocess.Popen.<br>
+&nbsp;&nbsp;app_name:&nbsp;on&nbsp;Windows,&nbsp;is&nbsp;the&nbsp;prefix&nbsp;of&nbsp;the&nbsp;application's&nbsp;window<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;name&nbsp;that&nbsp;should&nbsp;be&nbsp;searched&nbsp;for.&nbsp;This&nbsp;helps&nbsp;ensure<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;that&nbsp;only&nbsp;the&nbsp;application's&nbsp;windows&nbsp;are&nbsp;closed.<br>
+&nbsp;<br>
+Returns&nbsp;True&nbsp;if&nbsp;it&nbsp;is&nbsp;believed&nbsp;the&nbsp;attempt&nbsp;succeeded.</tt></dd></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-DidCreateBrowser"><strong>DidCreateBrowser</strong></a>(self, browser, browser_backend)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-DidStartBrowser"><strong>DidStartBrowser</strong></a>(self, browser, browser_backend)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-FlushDnsCache"><strong>FlushDnsCache</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-GetNetworkData"><strong>GetNetworkData</strong></a>(self, browser)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-GetRemotePort"><strong>GetRemotePort</strong></a>(self, port)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-InitPlatformBackend"><strong>InitPlatformBackend</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-IsCooperativeShutdownSupported"><strong>IsCooperativeShutdownSupported</strong></a>(self)</dt><dd><tt>Indicates&nbsp;whether&nbsp;CooperativelyShutdown,&nbsp;below,&nbsp;is&nbsp;supported.<br>
+It&nbsp;is&nbsp;not&nbsp;necessary&nbsp;to&nbsp;implement&nbsp;it&nbsp;on&nbsp;all&nbsp;platforms.</tt></dd></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-IsDisplayTracingSupported"><strong>IsDisplayTracingSupported</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-PathExists"><strong>PathExists</strong></a>(self, path, timeout<font color="#909090">=None</font>, retries<font color="#909090">=None</font>)</dt><dd><tt>Tests&nbsp;whether&nbsp;the&nbsp;given&nbsp;path&nbsp;exists&nbsp;on&nbsp;the&nbsp;target&nbsp;platform.<br>
+Args:<br>
+&nbsp;&nbsp;path:&nbsp;path&nbsp;in&nbsp;request.<br>
+&nbsp;&nbsp;timeout:&nbsp;timeout.<br>
+&nbsp;&nbsp;retries:&nbsp;num&nbsp;of&nbsp;retries.<br>
+Return:<br>
+&nbsp;&nbsp;Whether&nbsp;the&nbsp;path&nbsp;exists&nbsp;on&nbsp;the&nbsp;target&nbsp;platform.</tt></dd></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-PurgeUnpinnedMemory"><strong>PurgeUnpinnedMemory</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-SetFullPerformanceModeEnabled"><strong>SetFullPerformanceModeEnabled</strong></a>(self, enabled)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-SetPlatform"><strong>SetPlatform</strong></a>(self, platform)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-StartDisplayTracing"><strong>StartDisplayTracing</strong></a>(self)</dt><dd><tt>Start&nbsp;gathering&nbsp;a&nbsp;trace&nbsp;with&nbsp;frame&nbsp;timestamps&nbsp;close&nbsp;to&nbsp;physical<br>
+display.</tt></dd></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-StartVideoCapture"><strong>StartVideoCapture</strong></a>(self, min_bitrate_mbps)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-StopDisplayTracing"><strong>StopDisplayTracing</strong></a>(self)</dt><dd><tt>Stop&nbsp;gathering&nbsp;a&nbsp;trace&nbsp;with&nbsp;frame&nbsp;timestamps&nbsp;close&nbsp;to&nbsp;physical&nbsp;display.<br>
+&nbsp;<br>
+Returns&nbsp;a&nbsp;raw&nbsp;tracing&nbsp;events&nbsp;that&nbsp;contains&nbsp;the&nbsp;timestamps&nbsp;of&nbsp;physical<br>
+display.</tt></dd></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-StopVideoCapture"><strong>StopVideoCapture</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-TakeScreenshot"><strong>TakeScreenshot</strong></a>(self, file_path)</dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-WillCloseBrowser"><strong>WillCloseBrowser</strong></a>(self, browser, browser_backend)</dt></dl>
+
+<hr>
+Class methods inherited from <a href="telemetry.internal.platform.platform_backend.html#PlatformBackend">telemetry.internal.platform.platform_backend.PlatformBackend</a>:<br>
+<dl><dt><a name="LinuxPlatformBackend-CreatePlatformForDevice"><strong>CreatePlatformForDevice</strong></a>(cls, device, finder_options)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="LinuxPlatformBackend-SupportsDevice"><strong>SupportsDevice</strong></a>(cls, device)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Returns&nbsp;whether&nbsp;this&nbsp;platform&nbsp;backend&nbsp;supports&nbsp;intialization&nbsp;from&nbsp;the<br>
+device.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.internal.platform.platform_backend.html#PlatformBackend">telemetry.internal.platform.platform_backend.PlatformBackend</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>forwarder_factory</strong></dt>
+</dl>
+<dl><dt><strong>is_host_platform</strong></dt>
+</dl>
+<dl><dt><strong>is_video_capture_running</strong></dt>
+</dl>
+<dl><dt><strong>network_controller_backend</strong></dt>
+</dl>
+<dl><dt><strong>platform</strong></dt>
+</dl>
+<dl><dt><strong>running_browser_backends</strong></dt>
+</dl>
+<dl><dt><strong>tracing_controller_backend</strong></dt>
+</dl>
+<dl><dt><strong>wpr_ca_cert_path</strong></dt>
+</dl>
+<dl><dt><strong>wpr_http_device_port</strong></dt>
+</dl>
+<dl><dt><strong>wpr_https_device_port</strong></dt>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

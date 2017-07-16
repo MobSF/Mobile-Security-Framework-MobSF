@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import os
+import sys
+
+TELEMETRY_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+sys.path.append(TELEMETRY_DIR)
+from telemetry import project_config
+from telemetry.testing import unittest_runner
+
+
+def main():
+  config = project_config.ProjectConfig(
+      top_level_dir=TELEMETRY_DIR,
+      client_configs=[
+          os.path.join(TELEMETRY_DIR,
+                       'telemetry', 'telemetry_unittest_deps.json')])
+  return unittest_runner.Run(config, disable_cloud_storage_io_during_test=True)
+
+if __name__ == '__main__':
+  sys.exit(main())

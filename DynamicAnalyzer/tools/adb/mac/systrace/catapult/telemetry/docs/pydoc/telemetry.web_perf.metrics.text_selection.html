@@ -1,0 +1,92 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.web_perf.metrics.text_selection</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.web_perf.html"><font color="#ffffff">web_perf</font></a>.<a href="telemetry.web_perf.metrics.html"><font color="#ffffff">metrics</font></a>.text_selection</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/web_perf/metrics/text_selection.py">telemetry/web_perf/metrics/text_selection.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2014&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.web_perf.metrics.single_event.html">telemetry.web_perf.metrics.single_event</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="telemetry.web_perf.metrics.single_event.html#_SingleEventMetric">telemetry.web_perf.metrics.single_event._SingleEventMetric</a>(<a href="telemetry.web_perf.metrics.timeline_based_metric.html#TimelineBasedMetric">telemetry.web_perf.metrics.timeline_based_metric.TimelineBasedMetric</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.web_perf.metrics.text_selection.html#TextSelectionMetric">TextSelectionMetric</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="TextSelectionMetric">class <strong>TextSelectionMetric</strong></a>(<a href="telemetry.web_perf.metrics.single_event.html#_SingleEventMetric">telemetry.web_perf.metrics.single_event._SingleEventMetric</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Reports&nbsp;directly&nbsp;durations&nbsp;of&nbsp;WebLocalFrameImpl::moveRangeSelectionExtent<br>
+events&nbsp;associated&nbsp;with&nbsp;moving&nbsp;a&nbsp;selection&nbsp;extent.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.web_perf.metrics.text_selection.html#TextSelectionMetric">TextSelectionMetric</a></dd>
+<dd><a href="telemetry.web_perf.metrics.single_event.html#_SingleEventMetric">telemetry.web_perf.metrics.single_event._SingleEventMetric</a></dd>
+<dd><a href="telemetry.web_perf.metrics.timeline_based_metric.html#TimelineBasedMetric">telemetry.web_perf.metrics.timeline_based_metric.TimelineBasedMetric</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="TextSelectionMetric-__init__"><strong>__init__</strong></a>(self)</dt></dl>
+
+<hr>
+Methods inherited from <a href="telemetry.web_perf.metrics.single_event.html#_SingleEventMetric">telemetry.web_perf.metrics.single_event._SingleEventMetric</a>:<br>
+<dl><dt><a name="TextSelectionMetric-AddResults"><strong>AddResults</strong></a>(self, _model, renderer_thread, interactions, results)</dt></dl>
+
+<hr>
+Methods inherited from <a href="telemetry.web_perf.metrics.timeline_based_metric.html#TimelineBasedMetric">telemetry.web_perf.metrics.timeline_based_metric.TimelineBasedMetric</a>:<br>
+<dl><dt><a name="TextSelectionMetric-AddWholeTraceResults"><strong>AddWholeTraceResults</strong></a>(self, model, results)</dt><dd><tt>Computes&nbsp;and&nbsp;adds&nbsp;metrics&nbsp;corresponding&nbsp;to&nbsp;the&nbsp;entire&nbsp;trace.<br>
+&nbsp;<br>
+Override&nbsp;this&nbsp;method&nbsp;to&nbsp;compute&nbsp;results&nbsp;that&nbsp;correspond&nbsp;to&nbsp;the&nbsp;whole&nbsp;trace.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;model:&nbsp;An&nbsp;instance&nbsp;of&nbsp;telemetry.timeline.model.TimelineModel.<br>
+&nbsp;&nbsp;results:&nbsp;An&nbsp;instance&nbsp;of&nbsp;page.PageTestResults.</tt></dd></dl>
+
+<dl><dt><a name="TextSelectionMetric-VerifyNonOverlappedRecords"><strong>VerifyNonOverlappedRecords</strong></a>(self, interaction_records)</dt><dd><tt>This&nbsp;raises&nbsp;exceptions&nbsp;if&nbsp;interaction_records&nbsp;contain&nbsp;overlapped&nbsp;ranges.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.web_perf.metrics.timeline_based_metric.html#TimelineBasedMetric">telemetry.web_perf.metrics.timeline_based_metric.TimelineBasedMetric</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>EVENT_NAME</strong> = 'WebLocalFrameImpl::moveRangeSelectionExtent'<br>
+<strong>METRIC_NAME</strong> = 'text-selection'</td></tr></table>
+</body></html>

@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import os
+import sys
+
+_DEVIL_PATH = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..'))
+_DEVIL_URL = (
+    'https://github.com/catapult-project/catapult/blob/master/devil/')
+
+sys.path.append(_DEVIL_PATH)
+from devil.utils import cmd_helper
+
+_FILES_TO_DOC = {
+  'devil/android/sdk/adb_wrapper.py': 'docs/adb_wrapper.md',
+  'devil/android/device_utils.py': 'docs/device_utils.md',
+  'devil/utils/markdown.py': 'docs/markdown.md',
+}
+
+_MARKDOWN_SCRIPT = os.path.join(_DEVIL_PATH, 'devil', 'utils', 'markdown.py')
+
+def main():
+  failed = False
+  for k, v in _FILES_TO_DOC.iteritems():
+    module_path = os.path.join(_DEVIL_PATH, k)
+    module_link = _DEVIL_URL + k
+    doc_path = os.path.join(_DEVIL_PATH, v)
+
+    status, stdout = cmd_helper.GetCmdStatusAndOutput(
+        [sys.executable, _MARKDOWN_SCRIPT, module_path,
+         '--module-link', module_link])
+    if status:
+      logging.error('Failed to update doc for %s' % module_path)
+      failed = True
+    else:
+      with open(doc_path, 'w') as doc_file:
+        doc_file.write(stdout)
+
+  return 1 if failed else 0
+
+if __name__ == '__main__':
+  sys.exit(main())

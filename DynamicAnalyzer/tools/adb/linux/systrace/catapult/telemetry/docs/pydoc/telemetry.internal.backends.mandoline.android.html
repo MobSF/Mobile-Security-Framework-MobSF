@@ -1,0 +1,94 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.backends.mandoline.android</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.<a href="telemetry.internal.backends.html"><font color="#ffffff">backends</font></a>.<a href="telemetry.internal.backends.mandoline.html"><font color="#ffffff">mandoline</font></a>.android</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/backends/mandoline/android.py">telemetry/internal/backends/mandoline/android.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2014&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="devil.android.apk_helper.html">devil.android.apk_helper</a><br>
+<a href="atexit.html">atexit</a><br>
+<a href="devil.base_error.html">devil.base_error</a><br>
+<a href="pylib.constants.html">pylib.constants</a><br>
+</td><td width="25%" valign=top><a href="devil.android.device_errors.html">devil.android.device_errors</a><br>
+<a href="devil.android.device_utils.html">devil.android.device_utils</a><br>
+<a href="logging.html">logging</a><br>
+<a href="os.html">os</a><br>
+</td><td width="25%" valign=top><a href="signal.html">signal</a><br>
+<a href="subprocess.html">subprocess</a><br>
+<a href="sys.html">sys</a><br>
+<a href="threading.html">threading</a><br>
+</td><td width="25%" valign=top><a href="time.html">time</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.backends.mandoline.android.html#AndroidShell">AndroidShell</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="AndroidShell">class <strong>AndroidShell</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Used&nbsp;to&nbsp;set&nbsp;up&nbsp;and&nbsp;run&nbsp;a&nbsp;given&nbsp;mojo&nbsp;shell&nbsp;binary&nbsp;on&nbsp;an&nbsp;Android&nbsp;device.<br>
+|config|&nbsp;is&nbsp;the&nbsp;mopy.config.Config&nbsp;for&nbsp;the&nbsp;build.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="AndroidShell-InitShell"><strong>InitShell</strong></a>(self, device<font color="#909090">=None</font>)</dt><dd><tt>Runs&nbsp;adb&nbsp;as&nbsp;root,&nbsp;and&nbsp;installs&nbsp;the&nbsp;apk&nbsp;as&nbsp;needed.&nbsp;&nbsp;|device|&nbsp;is&nbsp;the&nbsp;target<br>
+device&nbsp;to&nbsp;run&nbsp;on,&nbsp;if&nbsp;multiple&nbsp;devices&nbsp;are&nbsp;connected.&nbsp;Returns&nbsp;0&nbsp;on&nbsp;success&nbsp;or<br>
+a&nbsp;non-zero&nbsp;exit&nbsp;code&nbsp;on&nbsp;a&nbsp;terminal&nbsp;failure.</tt></dd></dl>
+
+<dl><dt><a name="AndroidShell-ShowLogs"><strong>ShowLogs</strong></a>(self, stdout<font color="#909090">=&lt;open file '&lt;stdout&gt;', mode 'w'&gt;</font>)</dt><dd><tt>Displays&nbsp;the&nbsp;mojo&nbsp;shell&nbsp;logs&nbsp;and&nbsp;returns&nbsp;the&nbsp;process&nbsp;reading&nbsp;the&nbsp;logs.</tt></dd></dl>
+
+<dl><dt><a name="AndroidShell-StartActivity"><strong>StartActivity</strong></a>(self, activity_name, arguments, stdout, on_fifo_closed, temp_gdb_dir<font color="#909090">=None</font>)</dt><dd><tt>Starts&nbsp;the&nbsp;shell&nbsp;with&nbsp;the&nbsp;given&nbsp;|arguments|,&nbsp;directing&nbsp;output&nbsp;to&nbsp;|stdout|.<br>
+|on_fifo_closed|&nbsp;will&nbsp;be&nbsp;run&nbsp;if&nbsp;the&nbsp;FIFO&nbsp;can't&nbsp;be&nbsp;found&nbsp;or&nbsp;when&nbsp;it's&nbsp;closed.<br>
+|temp_gdb_dir|&nbsp;is&nbsp;set&nbsp;to&nbsp;a&nbsp;location&nbsp;with&nbsp;appropriate&nbsp;symlinks&nbsp;for&nbsp;gdb&nbsp;to<br>
+find&nbsp;when&nbsp;attached&nbsp;to&nbsp;the&nbsp;device's&nbsp;remote&nbsp;process&nbsp;on&nbsp;startup.</tt></dd></dl>
+
+<dl><dt><a name="AndroidShell-__init__"><strong>__init__</strong></a>(self, config, chrome_root)</dt></dl>
+
+<dl><dt><a name="AndroidShell-kill"><strong>kill</strong></a>(self)</dt><dd><tt>Stops&nbsp;the&nbsp;mojo&nbsp;shell;&nbsp;matches&nbsp;the&nbsp;Popen.kill&nbsp;method&nbsp;signature.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>LOGCAT_TAGS</strong> = ['AndroidHandler', 'MojoFileHelper', 'MojoMain', 'MojoShellActivity', 'MojoShellApplication', 'chromium']<br>
+<strong>MAPPING_PREFIX</strong> = '--map-origin='</td></tr></table>
+</body></html>

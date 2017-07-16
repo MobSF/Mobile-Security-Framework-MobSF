@@ -1,0 +1,54 @@
+; version section
+[Version]
+Signature  = "$Windows NT$"
+Class      = Net
+ClassGUID  = {4D36E972-E325-11CE-BFC1-08002BE10318}
+Provider   = %Unipi%
+DriverVer  = 26/02/2010,3.0.0.2
+
+; control flags section
+; optional, unused in netipfw.inf inf, used in netipfw_m.inf
+[ControlFlags]
+ExcludeFromSelect = unipi_ipfwmp
+
+; destinationdirs section, optional
+[DestinationDirs]
+DefaultDestDir=12
+; No files to copy 
+
+; manufacturer section
+[Manufacturer]
+%Unipi% = UNIPI,NTx86
+
+; models section
+[UNIPI] ; Win2k
+%Desc% = IpfwMP.ndi, unipi_ipfwmp
+[UNIPI.NTx86] ;For WinXP and later
+%Desc% = IpfwMP.ndi, unipi_ipfwmp
+
+; ddinstall section
+[IpfwMP.ndi]
+AddReg  = IpfwMP.ndi.AddReg
+Characteristics = 0x29 ;NCF_NOT_USER_REMOVABLE | NCF_VIRTUAL | NCF_HIDDEN
+
+; ddinstall->addreg points here
+[IpfwMP.ndi.AddReg]
+HKR, Ndi, Service,  0,  IpfwMP
+
+;ddinstall.services section
+[IpfwMP.ndi.Services]
+AddService = IpfwMP,0x2, IpfwMP.AddService
+
+[IpfwMP.AddService]
+ServiceType    = 1 ;SERVICE_KERNEL_DRIVER
+StartType      = 3 ;SERVICE_DEMAND_START
+ErrorControl   = 1 ;SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\ipfw.sys
+AddReg         = IpfwMP.AddService.AddReg
+
+[IpfwMP.AddService.AddReg]
+; None
+
+[Strings]
+Unipi = "Unipi"
+Desc = "Ipfw Miniport"

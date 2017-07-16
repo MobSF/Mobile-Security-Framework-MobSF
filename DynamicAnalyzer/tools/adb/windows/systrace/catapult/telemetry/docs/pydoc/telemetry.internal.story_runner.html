@@ -1,0 +1,178 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.story_runner</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.story_runner</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/story_runner.py">telemetry/internal/story_runner.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;&nbsp;Copyright&nbsp;2014&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.internal.browser.browser_finder.html">telemetry.internal.browser.browser_finder</a><br>
+<a href="catapult_base.cloud_storage.html">catapult_base.cloud_storage</a><br>
+<a href="telemetry.internal.util.exception_formatter.html">telemetry.internal.util.exception_formatter</a><br>
+<a href="telemetry.core.exceptions.html">telemetry.core.exceptions</a><br>
+<a href="telemetry.value.failure.html">telemetry.value.failure</a><br>
+</td><td width="25%" valign=top><a href="logging.html">logging</a><br>
+<a href="optparse.html">optparse</a><br>
+<a href="os.html">os</a><br>
+<a href="telemetry.page.html">telemetry.page</a><br>
+<a href="telemetry.internal.actions.page_action.html">telemetry.internal.actions.page_action</a><br>
+</td><td width="25%" valign=top><a href="telemetry.page.page_test.html">telemetry.page.page_test</a><br>
+<a href="telemetry.internal.results.results_options.html">telemetry.internal.results.results_options</a><br>
+<a href="telemetry.value.skip.html">telemetry.value.skip</a><br>
+<a href="telemetry.story.html">telemetry.story</a><br>
+<a href="telemetry.web_perf.story_test.html">telemetry.web_perf.story_test</a><br>
+</td><td width="25%" valign=top><a href="sys.html">sys</a><br>
+<a href="time.html">time</a><br>
+<a href="telemetry.util.wpr_modes.html">telemetry.util.wpr_modes</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.story_runner.html#StoryGroup">StoryGroup</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="exceptions.html#Exception">exceptions.Exception</a>(<a href="exceptions.html#BaseException">exceptions.BaseException</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.story_runner.html#ArchiveError">ArchiveError</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="ArchiveError">class <strong>ArchiveError</strong></a>(<a href="exceptions.html#Exception">exceptions.Exception</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.internal.story_runner.html#ArchiveError">ArchiveError</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><a name="ArchiveError-__init__"><strong>__init__</strong></a>(...)</dt><dd><tt>x.<a href="#ArchiveError-__init__">__init__</a>(...)&nbsp;initializes&nbsp;x;&nbsp;see&nbsp;help(type(x))&nbsp;for&nbsp;signature</tt></dd></dl>
+
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#ArchiveError-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="ArchiveError-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#ArchiveError-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="ArchiveError-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#ArchiveError-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="ArchiveError-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#ArchiveError-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="ArchiveError-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#ArchiveError-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="ArchiveError-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="ArchiveError-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#ArchiveError-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="ArchiveError-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#ArchiveError-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="ArchiveError-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="ArchiveError-__str__"><strong>__str__</strong></a>(...)</dt><dd><tt>x.<a href="#ArchiveError-__str__">__str__</a>()&nbsp;&lt;==&gt;&nbsp;str(x)</tt></dd></dl>
+
+<dl><dt><a name="ArchiveError-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="StoryGroup">class <strong>StoryGroup</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="StoryGroup-AddStory"><strong>AddStory</strong></a>(self, story)</dt></dl>
+
+<dl><dt><a name="StoryGroup-__init__"><strong>__init__</strong></a>(self, shared_state_class)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>shared_state_class</strong></dt>
+</dl>
+<dl><dt><strong>stories</strong></dt>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-AddCommandLineArgs"><strong>AddCommandLineArgs</strong></a>(parser)</dt></dl>
+ <dl><dt><a name="-ProcessCommandLineArgs"><strong>ProcessCommandLineArgs</strong></a>(parser, args)</dt></dl>
+ <dl><dt><a name="-Run"><strong>Run</strong></a>(test, story_set, finder_options, results, max_failures<font color="#909090">=None</font>)</dt><dd><tt>Runs&nbsp;a&nbsp;given&nbsp;test&nbsp;against&nbsp;a&nbsp;given&nbsp;page_set&nbsp;with&nbsp;the&nbsp;given&nbsp;options.<br>
+&nbsp;<br>
+Stop&nbsp;execution&nbsp;for&nbsp;unexpected&nbsp;exceptions&nbsp;such&nbsp;as&nbsp;KeyboardInterrupt.<br>
+We&nbsp;"white&nbsp;list"&nbsp;certain&nbsp;exceptions&nbsp;for&nbsp;which&nbsp;the&nbsp;story&nbsp;runner<br>
+can&nbsp;continue&nbsp;running&nbsp;the&nbsp;remaining&nbsp;stories.</tt></dd></dl>
+ <dl><dt><a name="-RunBenchmark"><strong>RunBenchmark</strong></a>(benchmark, finder_options)</dt><dd><tt>Run&nbsp;this&nbsp;test&nbsp;with&nbsp;the&nbsp;given&nbsp;options.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;The&nbsp;number&nbsp;of&nbsp;failure&nbsp;values&nbsp;(up&nbsp;to&nbsp;254)&nbsp;or&nbsp;255&nbsp;if&nbsp;there&nbsp;is&nbsp;an&nbsp;uncaught<br>
+&nbsp;&nbsp;exception.</tt></dd></dl>
+ <dl><dt><a name="-StoriesGroupedByStateClass"><strong>StoriesGroupedByStateClass</strong></a>(story_set, allow_multiple_groups)</dt><dd><tt>Returns&nbsp;a&nbsp;list&nbsp;of&nbsp;story&nbsp;groups&nbsp;which&nbsp;each&nbsp;contains&nbsp;stories&nbsp;with<br>
+the&nbsp;same&nbsp;shared_state_class.<br>
+&nbsp;<br>
+Example:<br>
+&nbsp;&nbsp;Assume&nbsp;A1,&nbsp;A2,&nbsp;A3&nbsp;are&nbsp;stories&nbsp;with&nbsp;same&nbsp;shared&nbsp;story&nbsp;class,&nbsp;and<br>
+&nbsp;&nbsp;similar&nbsp;for&nbsp;B1,&nbsp;B2.<br>
+&nbsp;&nbsp;If&nbsp;their&nbsp;orders&nbsp;in&nbsp;story&nbsp;set&nbsp;is&nbsp;A1&nbsp;A2&nbsp;B1&nbsp;B2&nbsp;A3,&nbsp;then&nbsp;the&nbsp;grouping&nbsp;will<br>
+&nbsp;&nbsp;be&nbsp;[A1&nbsp;A2]&nbsp;[B1&nbsp;B2]&nbsp;[A3].<br>
+&nbsp;<br>
+It's&nbsp;purposefully&nbsp;done&nbsp;this&nbsp;way&nbsp;to&nbsp;make&nbsp;sure&nbsp;that&nbsp;order&nbsp;of<br>
+stories&nbsp;are&nbsp;the&nbsp;same&nbsp;of&nbsp;that&nbsp;defined&nbsp;in&nbsp;story_set.&nbsp;It's&nbsp;recommended&nbsp;that<br>
+stories&nbsp;with&nbsp;the&nbsp;same&nbsp;states&nbsp;should&nbsp;be&nbsp;arranged&nbsp;next&nbsp;to&nbsp;each&nbsp;others&nbsp;in<br>
+story&nbsp;sets&nbsp;to&nbsp;reduce&nbsp;the&nbsp;overhead&nbsp;of&nbsp;setting&nbsp;up&nbsp;&amp;&nbsp;tearing&nbsp;down&nbsp;the<br>
+shared&nbsp;story&nbsp;state.</tt></dd></dl>
+</td></tr></table>
+</body></html>

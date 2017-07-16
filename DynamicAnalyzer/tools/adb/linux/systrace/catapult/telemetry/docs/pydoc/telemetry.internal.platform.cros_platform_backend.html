@@ -1,0 +1,246 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.platform.cros_platform_backend</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.<a href="telemetry.internal.platform.html"><font color="#ffffff">platform</font></a>.cros_platform_backend</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/platform/cros_platform_backend.py">telemetry/internal/platform/cros_platform_backend.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2013&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.internal.platform.cros_device.html">telemetry.internal.platform.cros_device</a><br>
+<a href="telemetry.internal.forwarders.cros_forwarder.html">telemetry.internal.forwarders.cros_forwarder</a><br>
+<a href="telemetry.core.cros_interface.html">telemetry.core.cros_interface</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.platform.power_monitor.cros_power_monitor.html">telemetry.internal.platform.power_monitor.cros_power_monitor</a><br>
+<a href="telemetry.internal.platform.linux_based_platform_backend.html">telemetry.internal.platform.linux_based_platform_backend</a><br>
+<a href="logging.html">logging</a><br>
+</td><td width="25%" valign=top><a href="telemetry.core.platform.html">telemetry.core.platform</a><br>
+<a href="telemetry.internal.util.ps_util.html">telemetry.internal.util.ps_util</a><br>
+<a href="telemetry.core.util.html">telemetry.core.util</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.platform.linux_based_platform_backend.html#LinuxBasedPlatformBackend">telemetry.internal.platform.linux_based_platform_backend.LinuxBasedPlatformBackend</a>(<a href="telemetry.internal.platform.platform_backend.html#PlatformBackend">telemetry.internal.platform.platform_backend.PlatformBackend</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.platform.cros_platform_backend.html#CrosPlatformBackend">CrosPlatformBackend</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="CrosPlatformBackend">class <strong>CrosPlatformBackend</strong></a>(<a href="telemetry.internal.platform.linux_based_platform_backend.html#LinuxBasedPlatformBackend">telemetry.internal.platform.linux_based_platform_backend.LinuxBasedPlatformBackend</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.internal.platform.cros_platform_backend.html#CrosPlatformBackend">CrosPlatformBackend</a></dd>
+<dd><a href="telemetry.internal.platform.linux_based_platform_backend.html#LinuxBasedPlatformBackend">telemetry.internal.platform.linux_based_platform_backend.LinuxBasedPlatformBackend</a></dd>
+<dd><a href="telemetry.internal.platform.platform_backend.html#PlatformBackend">telemetry.internal.platform.platform_backend.PlatformBackend</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="CrosPlatformBackend-CanFlushIndividualFilesFromSystemCache"><strong>CanFlushIndividualFilesFromSystemCache</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-CanMonitorPower"><strong>CanMonitorPower</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-FlushEntireSystemCache"><strong>FlushEntireSystemCache</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-FlushSystemCacheForDirectory"><strong>FlushSystemCacheForDirectory</strong></a>(self, directory)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-GetChildPids"><strong>GetChildPids</strong></a>(self, pid)</dt><dd><tt>Returns&nbsp;a&nbsp;list&nbsp;of&nbsp;child&nbsp;pids&nbsp;of&nbsp;|pid|.</tt></dd></dl>
+
+<dl><dt><a name="CrosPlatformBackend-GetCommandLine"><strong>GetCommandLine</strong></a>(self, pid)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-GetFileContents"><strong>GetFileContents</strong></a>(self, filename)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-GetOSName"><strong>GetOSName</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-GetOSVersionName"><strong>GetOSVersionName</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-GetPsOutput"><strong>GetPsOutput</strong></a>(self, columns, pid<font color="#909090">=None</font>)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-GetRemotePort"><strong>GetRemotePort</strong></a>(self, port)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-HasBeenThermallyThrottled"><strong>HasBeenThermallyThrottled</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-IsThermallyThrottled"><strong>IsThermallyThrottled</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-PathExists"><strong>PathExists</strong></a>(self, path, timeout<font color="#909090">=None</font>, retries<font color="#909090">=None</font>)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-RunCommand"><strong>RunCommand</strong></a>(self, args)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-StartMonitoringPower"><strong>StartMonitoringPower</strong></a>(self, browser)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-StopMonitoringPower"><strong>StopMonitoringPower</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-__init__"><strong>__init__</strong></a>(self, device<font color="#909090">=None</font>)</dt></dl>
+
+<hr>
+Class methods defined here:<br>
+<dl><dt><a name="CrosPlatformBackend-CreatePlatformForDevice"><strong>CreatePlatformForDevice</strong></a>(cls, device, finder_options)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-IsPlatformBackendForHost"><strong>IsPlatformBackendForHost</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-SupportsDevice"><strong>SupportsDevice</strong></a>(cls, device)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<hr>
+Static methods defined here:<br>
+<dl><dt><a name="CrosPlatformBackend-ParseCStateSample"><strong>ParseCStateSample</strong></a>(sample)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>cri</strong></dt>
+</dl>
+<dl><dt><strong>forwarder_factory</strong></dt>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.internal.platform.linux_based_platform_backend.html#LinuxBasedPlatformBackend">telemetry.internal.platform.linux_based_platform_backend.LinuxBasedPlatformBackend</a>:<br>
+<dl><dt><a name="CrosPlatformBackend-GetClockTicks"><strong>GetClockTicks</strong></a>(*args, **kwargs)</dt><dd><tt>Returns&nbsp;the&nbsp;number&nbsp;of&nbsp;clock&nbsp;ticks&nbsp;per&nbsp;second.<br>
+&nbsp;<br>
+The&nbsp;proper&nbsp;way&nbsp;is&nbsp;to&nbsp;call&nbsp;os.sysconf('SC_CLK_TCK')&nbsp;but&nbsp;that&nbsp;is&nbsp;not&nbsp;easy&nbsp;to<br>
+do&nbsp;on&nbsp;Android/CrOS.&nbsp;In&nbsp;practice,&nbsp;nearly&nbsp;all&nbsp;Linux&nbsp;machines&nbsp;have&nbsp;a&nbsp;USER_HZ<br>
+of&nbsp;100,&nbsp;so&nbsp;just&nbsp;return&nbsp;that.</tt></dd></dl>
+
+<dl><dt><a name="CrosPlatformBackend-GetCpuStats"><strong>GetCpuStats</strong></a>(self, pid)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-GetCpuTimestamp"><strong>GetCpuTimestamp</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-GetMemoryStats"><strong>GetMemoryStats</strong></a>(self, pid)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-GetSystemCommitCharge"><strong>GetSystemCommitCharge</strong></a>(self)</dt><dd><tt>#&nbsp;Get&nbsp;the&nbsp;commit&nbsp;charge&nbsp;in&nbsp;kB.</tt></dd></dl>
+
+<dl><dt><a name="CrosPlatformBackend-GetSystemTotalPhysicalMemory"><strong>GetSystemTotalPhysicalMemory</strong></a>(*args, **kwargs)</dt></dl>
+
+<hr>
+Methods inherited from <a href="telemetry.internal.platform.platform_backend.html#PlatformBackend">telemetry.internal.platform.platform_backend.PlatformBackend</a>:<br>
+<dl><dt><a name="CrosPlatformBackend-CanCaptureVideo"><strong>CanCaptureVideo</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-CanLaunchApplication"><strong>CanLaunchApplication</strong></a>(self, application)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-CanMeasurePerApplicationPower"><strong>CanMeasurePerApplicationPower</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-CanMonitorNetworkData"><strong>CanMonitorNetworkData</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-CanMonitorThermalThrottling"><strong>CanMonitorThermalThrottling</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-CanTakeScreenshot"><strong>CanTakeScreenshot</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-CooperativelyShutdown"><strong>CooperativelyShutdown</strong></a>(self, proc, app_name)</dt><dd><tt>Cooperatively&nbsp;shut&nbsp;down&nbsp;the&nbsp;given&nbsp;process&nbsp;from&nbsp;subprocess.Popen.<br>
+&nbsp;<br>
+Currently&nbsp;this&nbsp;is&nbsp;only&nbsp;implemented&nbsp;on&nbsp;Windows.&nbsp;See<br>
+crbug.com/424024&nbsp;for&nbsp;background&nbsp;on&nbsp;why&nbsp;it&nbsp;was&nbsp;added.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;proc:&nbsp;a&nbsp;process&nbsp;object&nbsp;returned&nbsp;from&nbsp;subprocess.Popen.<br>
+&nbsp;&nbsp;app_name:&nbsp;on&nbsp;Windows,&nbsp;is&nbsp;the&nbsp;prefix&nbsp;of&nbsp;the&nbsp;application's&nbsp;window<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;name&nbsp;that&nbsp;should&nbsp;be&nbsp;searched&nbsp;for.&nbsp;This&nbsp;helps&nbsp;ensure<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;that&nbsp;only&nbsp;the&nbsp;application's&nbsp;windows&nbsp;are&nbsp;closed.<br>
+&nbsp;<br>
+Returns&nbsp;True&nbsp;if&nbsp;it&nbsp;is&nbsp;believed&nbsp;the&nbsp;attempt&nbsp;succeeded.</tt></dd></dl>
+
+<dl><dt><a name="CrosPlatformBackend-DidCreateBrowser"><strong>DidCreateBrowser</strong></a>(self, browser, browser_backend)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-DidStartBrowser"><strong>DidStartBrowser</strong></a>(self, browser, browser_backend)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-FlushDnsCache"><strong>FlushDnsCache</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-GetArchName"><strong>GetArchName</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-GetDeviceTypeName"><strong>GetDeviceTypeName</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-GetNetworkData"><strong>GetNetworkData</strong></a>(self, browser)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-InitPlatformBackend"><strong>InitPlatformBackend</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-InstallApplication"><strong>InstallApplication</strong></a>(self, application)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-IsApplicationRunning"><strong>IsApplicationRunning</strong></a>(self, application)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-IsCooperativeShutdownSupported"><strong>IsCooperativeShutdownSupported</strong></a>(self)</dt><dd><tt>Indicates&nbsp;whether&nbsp;CooperativelyShutdown,&nbsp;below,&nbsp;is&nbsp;supported.<br>
+It&nbsp;is&nbsp;not&nbsp;necessary&nbsp;to&nbsp;implement&nbsp;it&nbsp;on&nbsp;all&nbsp;platforms.</tt></dd></dl>
+
+<dl><dt><a name="CrosPlatformBackend-IsDisplayTracingSupported"><strong>IsDisplayTracingSupported</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-LaunchApplication"><strong>LaunchApplication</strong></a>(self, application, parameters<font color="#909090">=None</font>, elevate_privilege<font color="#909090">=False</font>)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-PurgeUnpinnedMemory"><strong>PurgeUnpinnedMemory</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-ReadMsr"><strong>ReadMsr</strong></a>(self, msr_number, start<font color="#909090">=0</font>, length<font color="#909090">=64</font>)</dt><dd><tt>Read&nbsp;a&nbsp;CPU&nbsp;model-specific&nbsp;register&nbsp;(MSR).<br>
+&nbsp;<br>
+Which&nbsp;MSRs&nbsp;are&nbsp;available&nbsp;depends&nbsp;on&nbsp;the&nbsp;CPU&nbsp;model.<br>
+On&nbsp;systems&nbsp;with&nbsp;multiple&nbsp;CPUs,&nbsp;this&nbsp;function&nbsp;may&nbsp;run&nbsp;on&nbsp;any&nbsp;CPU.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;msr_number:&nbsp;The&nbsp;number&nbsp;of&nbsp;the&nbsp;register&nbsp;to&nbsp;read.<br>
+&nbsp;&nbsp;start:&nbsp;The&nbsp;least&nbsp;significant&nbsp;bit&nbsp;to&nbsp;read,&nbsp;zero-indexed.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Said&nbsp;another&nbsp;way,&nbsp;the&nbsp;number&nbsp;of&nbsp;bits&nbsp;to&nbsp;right-shift&nbsp;the&nbsp;MSR&nbsp;value.)<br>
+&nbsp;&nbsp;length:&nbsp;The&nbsp;number&nbsp;of&nbsp;bits&nbsp;to&nbsp;read.&nbsp;MSRs&nbsp;are&nbsp;64&nbsp;bits,&nbsp;even&nbsp;on&nbsp;32-bit&nbsp;CPUs.</tt></dd></dl>
+
+<dl><dt><a name="CrosPlatformBackend-SetFullPerformanceModeEnabled"><strong>SetFullPerformanceModeEnabled</strong></a>(self, enabled)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-SetPlatform"><strong>SetPlatform</strong></a>(self, platform)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-StartDisplayTracing"><strong>StartDisplayTracing</strong></a>(self)</dt><dd><tt>Start&nbsp;gathering&nbsp;a&nbsp;trace&nbsp;with&nbsp;frame&nbsp;timestamps&nbsp;close&nbsp;to&nbsp;physical<br>
+display.</tt></dd></dl>
+
+<dl><dt><a name="CrosPlatformBackend-StartVideoCapture"><strong>StartVideoCapture</strong></a>(self, min_bitrate_mbps)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-StopDisplayTracing"><strong>StopDisplayTracing</strong></a>(self)</dt><dd><tt>Stop&nbsp;gathering&nbsp;a&nbsp;trace&nbsp;with&nbsp;frame&nbsp;timestamps&nbsp;close&nbsp;to&nbsp;physical&nbsp;display.<br>
+&nbsp;<br>
+Returns&nbsp;a&nbsp;raw&nbsp;tracing&nbsp;events&nbsp;that&nbsp;contains&nbsp;the&nbsp;timestamps&nbsp;of&nbsp;physical<br>
+display.</tt></dd></dl>
+
+<dl><dt><a name="CrosPlatformBackend-StopVideoCapture"><strong>StopVideoCapture</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-TakeScreenshot"><strong>TakeScreenshot</strong></a>(self, file_path)</dt></dl>
+
+<dl><dt><a name="CrosPlatformBackend-WillCloseBrowser"><strong>WillCloseBrowser</strong></a>(self, browser, browser_backend)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.internal.platform.platform_backend.html#PlatformBackend">telemetry.internal.platform.platform_backend.PlatformBackend</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>is_host_platform</strong></dt>
+</dl>
+<dl><dt><strong>is_video_capture_running</strong></dt>
+</dl>
+<dl><dt><strong>network_controller_backend</strong></dt>
+</dl>
+<dl><dt><strong>platform</strong></dt>
+</dl>
+<dl><dt><strong>running_browser_backends</strong></dt>
+</dl>
+<dl><dt><strong>tracing_controller_backend</strong></dt>
+</dl>
+<dl><dt><strong>wpr_ca_cert_path</strong></dt>
+</dl>
+<dl><dt><strong>wpr_http_device_port</strong></dt>
+</dl>
+<dl><dt><strong>wpr_https_device_port</strong></dt>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

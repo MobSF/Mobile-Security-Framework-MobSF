@@ -1,0 +1,23 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Media Router Dialog Test</title>
+    <script type="text/javascript">
+      'use strict';
+      var startSessionPromise = null;
+      var presentationUrl = 'http://www.google.com/#__testprovider__=true';
+      var startSessionRequest = new PresentationRequest(presentationUrl);
+      window.navigator.presentation.defaultRequest = startSessionRequest;
+
+      function startSession() {
+        startSessionPromise = startSessionRequest.start();
+        console.log('start session');
+      }
+    </script>
+  </head>
+  <body>
+    <button id="start_session_button" onclick="startSession()">
+      Start session
+    </button>
+  </body>
+</html>

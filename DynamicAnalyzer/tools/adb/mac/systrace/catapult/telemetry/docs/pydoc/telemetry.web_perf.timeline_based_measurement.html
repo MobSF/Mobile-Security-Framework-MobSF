@@ -1,0 +1,269 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.web_perf.timeline_based_measurement</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.web_perf.html"><font color="#ffffff">web_perf</font></a>.timeline_based_measurement</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/web_perf/timeline_based_measurement.py">telemetry/web_perf/timeline_based_measurement.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2014&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.web_perf.metrics.blob_timeline.html">telemetry.web_perf.metrics.blob_timeline</a><br>
+<a href="collections.html">collections</a><br>
+<a href="telemetry.web_perf.metrics.gpu_timeline.html">telemetry.web_perf.metrics.gpu_timeline</a><br>
+<a href="telemetry.web_perf.metrics.indexeddb_timeline.html">telemetry.web_perf.metrics.indexeddb_timeline</a><br>
+<a href="telemetry.web_perf.metrics.layout.html">telemetry.web_perf.metrics.layout</a><br>
+</td><td width="25%" valign=top><a href="logging.html">logging</a><br>
+<a href="telemetry.web_perf.metrics.memory_timeline.html">telemetry.web_perf.metrics.memory_timeline</a><br>
+<a href="telemetry.timeline.model.html">telemetry.timeline.model</a><br>
+<a href="telemetry.web_perf.metrics.responsiveness_metric.html">telemetry.web_perf.metrics.responsiveness_metric</a><br>
+<a href="telemetry.web_perf.smooth_gesture_util.html">telemetry.web_perf.smooth_gesture_util</a><br>
+</td><td width="25%" valign=top><a href="telemetry.web_perf.metrics.smoothness.html">telemetry.web_perf.metrics.smoothness</a><br>
+<a href="telemetry.web_perf.story_test.html">telemetry.web_perf.story_test</a><br>
+<a href="telemetry.web_perf.metrics.text_selection.html">telemetry.web_perf.metrics.text_selection</a><br>
+<a href="telemetry.web_perf.metrics.timeline_based_metric.html">telemetry.web_perf.metrics.timeline_based_metric</a><br>
+<a href="telemetry.web_perf.timeline_interaction_record.html">telemetry.web_perf.timeline_interaction_record</a><br>
+</td><td width="25%" valign=top><a href="telemetry.value.trace.html">telemetry.value.trace</a><br>
+<a href="telemetry.timeline.tracing_category_filter.html">telemetry.timeline.tracing_category_filter</a><br>
+<a href="telemetry.timeline.tracing_options.html">telemetry.timeline.tracing_options</a><br>
+<a href="telemetry.web_perf.metrics.webrtc_rendering_timeline.html">telemetry.web_perf.metrics.webrtc_rendering_timeline</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.web_perf.timeline_based_measurement.html#Options">Options</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.web_perf.timeline_based_measurement.html#ResultsWrapperInterface">ResultsWrapperInterface</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="exceptions.html#Exception">exceptions.Exception</a>(<a href="exceptions.html#BaseException">exceptions.BaseException</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.web_perf.timeline_based_measurement.html#InvalidInteractions">InvalidInteractions</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="telemetry.web_perf.story_test.html#StoryTest">telemetry.web_perf.story_test.StoryTest</a>(<a href="__builtin__.html#object">__builtin__.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.web_perf.timeline_based_measurement.html#TimelineBasedMeasurement">TimelineBasedMeasurement</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="InvalidInteractions">class <strong>InvalidInteractions</strong></a>(<a href="exceptions.html#Exception">exceptions.Exception</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.web_perf.timeline_based_measurement.html#InvalidInteractions">InvalidInteractions</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><a name="InvalidInteractions-__init__"><strong>__init__</strong></a>(...)</dt><dd><tt>x.<a href="#InvalidInteractions-__init__">__init__</a>(...)&nbsp;initializes&nbsp;x;&nbsp;see&nbsp;help(type(x))&nbsp;for&nbsp;signature</tt></dd></dl>
+
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#InvalidInteractions-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="InvalidInteractions-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#InvalidInteractions-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="InvalidInteractions-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#InvalidInteractions-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="InvalidInteractions-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#InvalidInteractions-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="InvalidInteractions-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#InvalidInteractions-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="InvalidInteractions-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="InvalidInteractions-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#InvalidInteractions-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="InvalidInteractions-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#InvalidInteractions-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="InvalidInteractions-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="InvalidInteractions-__str__"><strong>__str__</strong></a>(...)</dt><dd><tt>x.<a href="#InvalidInteractions-__str__">__str__</a>()&nbsp;&lt;==&gt;&nbsp;str(x)</tt></dd></dl>
+
+<dl><dt><a name="InvalidInteractions-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Options">class <strong>Options</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>A&nbsp;class&nbsp;to&nbsp;be&nbsp;used&nbsp;to&nbsp;configure&nbsp;<a href="#TimelineBasedMeasurement">TimelineBasedMeasurement</a>.<br>
+&nbsp;<br>
+This&nbsp;is&nbsp;created&nbsp;and&nbsp;returned&nbsp;by<br>
+Benchmark.CreateTimelineBasedMeasurementOptions.<br>
+&nbsp;<br>
+By&nbsp;default,&nbsp;all&nbsp;the&nbsp;timeline&nbsp;based&nbsp;metrics&nbsp;in&nbsp;telemetry/web_perf/metrics&nbsp;are<br>
+used&nbsp;(see&nbsp;_GetAllTimelineBasedMetrics&nbsp;above).<br>
+To&nbsp;customize&nbsp;your&nbsp;metric&nbsp;needs,&nbsp;use&nbsp;<a href="#Options-SetTimelineBasedMetrics">SetTimelineBasedMetrics</a>().<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Options-ExtendTraceCategoryFilter"><strong>ExtendTraceCategoryFilter</strong></a>(self, filters)</dt></dl>
+
+<dl><dt><a name="Options-GetTimelineBasedMetrics"><strong>GetTimelineBasedMetrics</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Options-SetTimelineBasedMetrics"><strong>SetTimelineBasedMetrics</strong></a>(self, metrics)</dt></dl>
+
+<dl><dt><a name="Options-__init__"><strong>__init__</strong></a>(self, overhead_level<font color="#909090">='no-overhead'</font>)</dt><dd><tt>As&nbsp;the&nbsp;amount&nbsp;of&nbsp;instrumentation&nbsp;increases,&nbsp;so&nbsp;does&nbsp;the&nbsp;overhead.<br>
+The&nbsp;user&nbsp;of&nbsp;the&nbsp;measurement&nbsp;chooses&nbsp;the&nbsp;overhead&nbsp;level&nbsp;that&nbsp;is&nbsp;appropriate,<br>
+and&nbsp;the&nbsp;tracing&nbsp;is&nbsp;filtered&nbsp;accordingly.<br>
+&nbsp;<br>
+overhead_level:&nbsp;Can&nbsp;either&nbsp;be&nbsp;a&nbsp;custom&nbsp;TracingCategoryFilter&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;or<br>
+&nbsp;&nbsp;&nbsp;&nbsp;one&nbsp;of&nbsp;NO_OVERHEAD_LEVEL,&nbsp;MINIMAL_OVERHEAD_LEVEL&nbsp;or<br>
+&nbsp;&nbsp;&nbsp;&nbsp;DEBUG_OVERHEAD_LEVEL.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>category_filter</strong></dt>
+</dl>
+<dl><dt><strong>tracing_options</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="ResultsWrapperInterface">class <strong>ResultsWrapperInterface</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>#&nbsp;TODO(nednguyen):&nbsp;Get&nbsp;rid&nbsp;of&nbsp;this&nbsp;results&nbsp;wrapper&nbsp;hack&nbsp;after&nbsp;we&nbsp;add&nbsp;interaction<br>
+#&nbsp;record&nbsp;to&nbsp;telemetry&nbsp;value&nbsp;system&nbsp;(crbug.com/453109)<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="ResultsWrapperInterface-AddValue"><strong>AddValue</strong></a>(self, value)</dt></dl>
+
+<dl><dt><a name="ResultsWrapperInterface-SetResults"><strong>SetResults</strong></a>(self, results)</dt></dl>
+
+<dl><dt><a name="ResultsWrapperInterface-SetTirLabel"><strong>SetTirLabel</strong></a>(self, tir_label)</dt></dl>
+
+<dl><dt><a name="ResultsWrapperInterface-__init__"><strong>__init__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>current_page</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="TimelineBasedMeasurement">class <strong>TimelineBasedMeasurement</strong></a>(<a href="telemetry.web_perf.story_test.html#StoryTest">telemetry.web_perf.story_test.StoryTest</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Collects&nbsp;multiple&nbsp;metrics&nbsp;based&nbsp;on&nbsp;their&nbsp;interaction&nbsp;records.<br>
+&nbsp;<br>
+A&nbsp;timeline&nbsp;based&nbsp;measurement&nbsp;shifts&nbsp;the&nbsp;burden&nbsp;of&nbsp;what&nbsp;metrics&nbsp;to&nbsp;collect&nbsp;onto<br>
+the&nbsp;story&nbsp;under&nbsp;test.&nbsp;Instead&nbsp;of&nbsp;the&nbsp;measurement<br>
+having&nbsp;a&nbsp;fixed&nbsp;set&nbsp;of&nbsp;values&nbsp;it&nbsp;collects,&nbsp;the&nbsp;story&nbsp;being&nbsp;tested<br>
+issues&nbsp;(via&nbsp;javascript)&nbsp;an&nbsp;Interaction&nbsp;record&nbsp;into&nbsp;the&nbsp;user&nbsp;timing&nbsp;API&nbsp;that<br>
+describing&nbsp;what&nbsp;is&nbsp;happening&nbsp;at&nbsp;that&nbsp;time,&nbsp;as&nbsp;well&nbsp;as&nbsp;a&nbsp;standardized&nbsp;set<br>
+of&nbsp;flags&nbsp;describing&nbsp;the&nbsp;semantics&nbsp;of&nbsp;the&nbsp;work&nbsp;being&nbsp;done.&nbsp;The<br>
+<a href="#TimelineBasedMeasurement">TimelineBasedMeasurement</a>&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;collects&nbsp;a&nbsp;trace&nbsp;that&nbsp;includes&nbsp;both&nbsp;these<br>
+interaction&nbsp;records,&nbsp;and&nbsp;a&nbsp;user-chosen&nbsp;amount&nbsp;of&nbsp;performance&nbsp;data&nbsp;using<br>
+Telemetry's&nbsp;various&nbsp;timeline-producing&nbsp;APIs,&nbsp;tracing&nbsp;especially.<br>
+&nbsp;<br>
+It&nbsp;then&nbsp;passes&nbsp;the&nbsp;recorded&nbsp;timeline&nbsp;to&nbsp;different&nbsp;TimelineBasedMetrics&nbsp;based<br>
+on&nbsp;those&nbsp;flags.&nbsp;As&nbsp;an&nbsp;example,&nbsp;this&nbsp;allows&nbsp;a&nbsp;single&nbsp;story&nbsp;run&nbsp;to&nbsp;produce<br>
+load&nbsp;timing&nbsp;data,&nbsp;smoothness&nbsp;data,&nbsp;critical&nbsp;jank&nbsp;information&nbsp;and&nbsp;overall&nbsp;cpu<br>
+usage&nbsp;information.<br>
+&nbsp;<br>
+For&nbsp;information&nbsp;on&nbsp;how&nbsp;to&nbsp;mark&nbsp;up&nbsp;a&nbsp;page&nbsp;to&nbsp;work&nbsp;with<br>
+<a href="#TimelineBasedMeasurement">TimelineBasedMeasurement</a>,&nbsp;refer&nbsp;to&nbsp;the<br>
+perf.metrics.timeline_interaction_record&nbsp;module.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;options:&nbsp;an&nbsp;instance&nbsp;of&nbsp;timeline_based_measurement.<a href="#Options">Options</a>.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;results_wrapper:&nbsp;A&nbsp;class&nbsp;that&nbsp;has&nbsp;the&nbsp;__init__&nbsp;method&nbsp;takes&nbsp;in<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;page_test_results&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;and&nbsp;the&nbsp;interaction&nbsp;record&nbsp;label.&nbsp;This<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;follows&nbsp;the&nbsp;<a href="#ResultsWrapperInterface">ResultsWrapperInterface</a>.&nbsp;Note:&nbsp;this&nbsp;class&nbsp;is&nbsp;not<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;supported&nbsp;long&nbsp;term&nbsp;and&nbsp;to&nbsp;be&nbsp;removed&nbsp;when&nbsp;crbug.com/453109&nbsp;is&nbsp;resolved.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.web_perf.timeline_based_measurement.html#TimelineBasedMeasurement">TimelineBasedMeasurement</a></dd>
+<dd><a href="telemetry.web_perf.story_test.html#StoryTest">telemetry.web_perf.story_test.StoryTest</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="TimelineBasedMeasurement-DidRunStory"><strong>DidRunStory</strong></a>(self, platform)</dt><dd><tt>Clean&nbsp;up&nbsp;after&nbsp;running&nbsp;the&nbsp;story.</tt></dd></dl>
+
+<dl><dt><a name="TimelineBasedMeasurement-Measure"><strong>Measure</strong></a>(self, platform, results)</dt><dd><tt>Collect&nbsp;all&nbsp;possible&nbsp;metrics&nbsp;and&nbsp;added&nbsp;them&nbsp;to&nbsp;results.</tt></dd></dl>
+
+<dl><dt><a name="TimelineBasedMeasurement-WillRunStory"><strong>WillRunStory</strong></a>(self, platform)</dt><dd><tt>Configure&nbsp;and&nbsp;start&nbsp;tracing.</tt></dd></dl>
+
+<dl><dt><a name="TimelineBasedMeasurement-__init__"><strong>__init__</strong></a>(self, options, results_wrapper<font color="#909090">=None</font>)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.web_perf.story_test.html#StoryTest">telemetry.web_perf.story_test.StoryTest</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>ALL_OVERHEAD_LEVELS</strong> = ['no-overhead', 'minimal-overhead', 'debug-overhead']<br>
+<strong>DEBUG_OVERHEAD_LEVEL</strong> = 'debug-overhead'<br>
+<strong>MINIMAL_OVERHEAD_LEVEL</strong> = 'minimal-overhead'<br>
+<strong>NO_OVERHEAD_LEVEL</strong> = 'no-overhead'</td></tr></table>
+</body></html>

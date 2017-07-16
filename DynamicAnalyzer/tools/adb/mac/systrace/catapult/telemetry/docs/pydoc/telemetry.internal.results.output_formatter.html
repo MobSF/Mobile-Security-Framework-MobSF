@@ -1,0 +1,72 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.results.output_formatter</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.<a href="telemetry.internal.results.html"><font color="#ffffff">results</font></a>.output_formatter</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/results/output_formatter.py">telemetry/internal/results/output_formatter.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2014&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.results.output_formatter.html#OutputFormatter">OutputFormatter</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="OutputFormatter">class <strong>OutputFormatter</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>A&nbsp;formatter&nbsp;for&nbsp;PageTestResults.<br>
+&nbsp;<br>
+An&nbsp;<a href="#OutputFormatter">OutputFormatter</a>&nbsp;takes&nbsp;PageTestResults,&nbsp;formats&nbsp;the&nbsp;results<br>
+(telemetry.value.Value&nbsp;instances),&nbsp;and&nbsp;output&nbsp;the&nbsp;formatted&nbsp;results<br>
+in&nbsp;the&nbsp;given&nbsp;output&nbsp;stream.<br>
+&nbsp;<br>
+Examples&nbsp;of&nbsp;output&nbsp;formatter:&nbsp;CsvOutputFormatter&nbsp;produces&nbsp;results&nbsp;in<br>
+CSV&nbsp;format.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="OutputFormatter-Format"><strong>Format</strong></a>(self, page_test_results)</dt><dd><tt>Formats&nbsp;the&nbsp;given&nbsp;PageTestResults&nbsp;into&nbsp;the&nbsp;output&nbsp;stream.<br>
+&nbsp;<br>
+This&nbsp;will&nbsp;be&nbsp;called&nbsp;once&nbsp;at&nbsp;the&nbsp;end&nbsp;of&nbsp;a&nbsp;benchmark.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;page_test_results:&nbsp;A&nbsp;PageTestResults&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;containing&nbsp;all&nbsp;results<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;from&nbsp;the&nbsp;current&nbsp;benchmark&nbsp;run.</tt></dd></dl>
+
+<dl><dt><a name="OutputFormatter-__init__"><strong>__init__</strong></a>(self, output_stream)</dt><dd><tt>Constructs&nbsp;a&nbsp;new&nbsp;formatter&nbsp;that&nbsp;writes&nbsp;to&nbsp;the&nbsp;output_stream.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;output_stream:&nbsp;The&nbsp;stream&nbsp;to&nbsp;write&nbsp;the&nbsp;formatted&nbsp;output&nbsp;to.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>output_stream</strong></dt>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

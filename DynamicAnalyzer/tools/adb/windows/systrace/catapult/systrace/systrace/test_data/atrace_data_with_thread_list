@@ -1,0 +1,1660 @@
+
+# tracer: nop
+#
+# entries-in-buffer/entries-written: 116/116   #P:1
+#
+#                              _-----=> irqs-off
+#                             / _----=> need-resched
+#                            | / _---=> hardirq/softirq
+#                            || / _--=> preempt-depth
+#                            ||| /     delay
+#           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION
+#              | |       |   ||||       |         |
+          atrace-14446 [000] ...2  1212.465062: sched_switch: prev_comm=atrace prev_pid=14446 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1212.465074: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.465082: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1212.465092: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1212.465102: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.465126: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1212.465132: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1212.465139: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.465145: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1212.465227: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d.h5  1212.465297: sched_wakeup: comm=adbd pid=212 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.465306: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=adbd next_pid=212 next_prio=120
+            adbd-212   [000] d..4  1212.465329: sched_wakeup: comm=adbd pid=209 prio=120 success=1 target_cpu=000
+            adbd-212   [000] ...2  1212.465348: sched_switch: prev_comm=adbd prev_pid=212 prev_prio=120 prev_state=S ==> next_comm=adbd next_pid=209 next_prio=120
+            adbd-209   [000] d..4  1212.465395: sched_wakeup: comm=adbd pid=211 prio=120 success=1 target_cpu=000
+            adbd-209   [000] ...2  1212.465441: sched_switch: prev_comm=adbd prev_pid=209 prev_prio=120 prev_state=S ==> next_comm=adbd next_pid=211 next_prio=120
+            adbd-211   [000] ...2  1212.465448: sched_switch: prev_comm=adbd prev_pid=211 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d.h5  1212.574554: sched_wakeup: comm=sensors.qcom pid=292 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.574566: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=sensors.qcom next_pid=292 next_prio=120
+    sensors.qcom-292   [000] ...2  1212.574665: sched_switch: prev_comm=sensors.qcom prev_pid=292 prev_prio=120 prev_state=S ==> next_comm=sensors.qcom next_pid=14447 next_prio=120
+    sensors.qcom-14447 [000] d..4  1212.574797: sched_wakeup: comm=sensors.qcom pid=1593 prio=120 success=1 target_cpu=000
+    sensors.qcom-14447 [000] ...2  1212.574802: sched_switch: prev_comm=sensors.qcom prev_pid=14447 prev_prio=120 prev_state=R+ ==> next_comm=sensors.qcom next_pid=1593 next_prio=120
+    sensors.qcom-1593  [000] ...2  1212.574819: sched_switch: prev_comm=sensors.qcom prev_pid=1593 prev_prio=120 prev_state=D ==> next_comm=sensors.qcom next_pid=14447 next_prio=120
+    sensors.qcom-14447 [000] d..3  1212.574823: sched_wakeup: comm=sensors.qcom pid=1593 prio=120 success=1 target_cpu=000
+    sensors.qcom-14447 [000] ...2  1212.574827: sched_switch: prev_comm=sensors.qcom prev_pid=14447 prev_prio=120 prev_state=R+ ==> next_comm=sensors.qcom next_pid=1593 next_prio=120
+    sensors.qcom-1593  [000] d..4  1212.574865: sched_wakeup: comm=sensors.qcom pid=760 prio=120 success=1 target_cpu=000
+    sensors.qcom-1593  [000] ...2  1212.574876: sched_switch: prev_comm=sensors.qcom prev_pid=1593 prev_prio=120 prev_state=S ==> next_comm=sensors.qcom next_pid=760 next_prio=120
+    sensors.qcom-760   [000] d..4  1212.574905: sched_wakeup: comm=system_server pid=782 prio=118 success=1 target_cpu=000
+    sensors.qcom-760   [000] ...2  1212.574917: sched_switch: prev_comm=sensors.qcom prev_pid=760 prev_prio=120 prev_state=S ==> next_comm=system_server next_pid=782 next_prio=118
+   system_server-782   [000] d..4  1212.574981: sched_wakeup: comm=system_server pid=785 prio=118 success=1 target_cpu=000
+   system_server-782   [000] ...2  1212.575009: sched_switch: prev_comm=system_server prev_pid=782 prev_prio=118 prev_state=S ==> next_comm=system_server next_pid=785 next_prio=118
+   system_server-785   [000] ...2  1212.575045: sched_switch: prev_comm=system_server prev_pid=785 prev_prio=118 prev_state=S ==> next_comm=sensors.qcom next_pid=14447 next_prio=120
+    sensors.qcom-14447 [000] ...3  1212.575143: sched_switch: prev_comm=sensors.qcom prev_pid=14447 prev_prio=120 prev_state=x ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1212.575153: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.575159: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1212.575167: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1212.575175: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.575181: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1212.575188: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1212.575195: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.575201: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1212.575211: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d.h4  1212.649601: sched_wakeup: comm=MMHandlerThread pid=7231 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.649614: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=MMHandlerThread next_pid=7231 next_prio=120
+ MMHandlerThread-7231  [000] ...2  1212.649630: sched_switch: prev_comm=MMHandlerThread prev_pid=7231 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d.h6  1212.729539: sched_wakeup: comm=kworker/u:1 pid=21 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] dNs6  1212.729550: sched_wakeup: comm=kworker/0:2H pid=557 prio=100 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.729563: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=kworker/u:1 next_pid=21 next_prio=120
+     kworker/u:1-21    [000] d..5  1212.729571: sched_wakeup: comm=mpdecision pid=2046 prio=113 success=1 target_cpu=000
+     kworker/u:1-21    [000] ...2  1212.729578: sched_switch: prev_comm=kworker/u:1 prev_pid=21 prev_prio=120 prev_state=S ==> next_comm=kworker/0:2H next_pid=557 next_prio=100
+    kworker/0:2H-557   [000] d..4  1212.729597: sched_wakeup: comm=kworker/0:1H pid=17 prio=100 success=1 target_cpu=000
+    kworker/0:2H-557   [000] ...2  1212.729600: sched_switch: prev_comm=kworker/0:2H prev_pid=557 prev_prio=100 prev_state=D ==> next_comm=mpdecision next_pid=2046 next_prio=113
+      mpdecision-2046  [000] ...2  1212.729801: sched_switch: prev_comm=mpdecision prev_pid=2046 prev_prio=113 prev_state=S ==> next_comm=kworker/0:1H next_pid=17 next_prio=100
+    kworker/0:1H-17    [000] ...2  1212.730104: sched_switch: prev_comm=kworker/0:1H prev_pid=17 prev_prio=100 prev_state=D ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1212.730134: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.730154: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1212.730176: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1212.730201: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.730220: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1212.730241: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1212.730262: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.730280: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1212.730303: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d.h6  1212.730638: sched_wakeup: comm=kworker/u:0H pid=7 prio=100 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.730669: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=kworker/u:0H next_pid=7 next_prio=100
+    kworker/u:0H-7     [000] d..6  1212.730707: sched_wakeup: comm=kworker/0:1H pid=17 prio=100 success=1 target_cpu=000
+    kworker/u:0H-7     [000] ...2  1212.730728: sched_switch: prev_comm=kworker/u:0H prev_pid=7 prev_prio=100 prev_state=D ==> next_comm=kworker/0:1H next_pid=17 next_prio=100
+    kworker/0:1H-17    [000] ...2  1212.730916: sched_switch: prev_comm=kworker/0:1H prev_pid=17 prev_prio=100 prev_state=D ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d.h6  1212.731632: sched_wakeup: comm=kworker/u:0H pid=7 prio=100 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.731661: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=kworker/u:0H next_pid=7 next_prio=100
+    kworker/u:0H-7     [000] d..6  1212.731702: sched_wakeup: comm=kworker/0:1H pid=17 prio=100 success=1 target_cpu=000
+    kworker/u:0H-7     [000] ...2  1212.731722: sched_switch: prev_comm=kworker/u:0H prev_pid=7 prev_prio=100 prev_state=D ==> next_comm=kworker/0:1H next_pid=17 next_prio=100
+    kworker/0:1H-17    [000] ...2  1212.731832: sched_switch: prev_comm=kworker/0:1H prev_pid=17 prev_prio=100 prev_state=D ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d.h6  1212.732685: sched_wakeup: comm=kworker/u:0H pid=7 prio=100 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.732714: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=kworker/u:0H next_pid=7 next_prio=100
+    kworker/u:0H-7     [000] d..6  1212.732747: sched_wakeup: comm=kworker/0:1H pid=17 prio=100 success=1 target_cpu=000
+    kworker/u:0H-7     [000] ...2  1212.732767: sched_switch: prev_comm=kworker/u:0H prev_pid=7 prev_prio=100 prev_state=D ==> next_comm=kworker/0:1H next_pid=17 next_prio=100
+    kworker/0:1H-17    [000] d..4  1212.732810: sched_wakeup: comm=kworker/0:2H pid=557 prio=100 success=1 target_cpu=000
+    kworker/0:1H-17    [000] ...2  1212.732829: sched_switch: prev_comm=kworker/0:1H prev_pid=17 prev_prio=100 prev_state=S ==> next_comm=kworker/0:2H next_pid=557 next_prio=100
+    kworker/0:2H-557   [000] ...2  1212.732854: sched_switch: prev_comm=kworker/0:2H prev_pid=557 prev_prio=100 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d.h4  1212.876266: sched_wakeup: comm=RILSender0 pid=1365 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] dNh4  1212.876284: sched_wakeup: comm=MMHandlerThread pid=7231 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1212.876316: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=RILSender0 next_pid=1365 next_prio=120
+      RILSender0-1365  [000] ...2  1212.876415: sched_switch: prev_comm=RILSender0 prev_pid=1365 prev_prio=120 prev_state=S ==> next_comm=MMHandlerThread next_pid=7231 next_prio=120
+ MMHandlerThread-7231  [000] ...2  1212.876454: sched_switch: prev_comm=MMHandlerThread prev_pid=7231 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d.h4  1213.089569: sched_wakeup: comm=Thread-625 pid=5750 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] dNh4  1213.089587: sched_wakeup: comm=MMHandlerThread pid=7231 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1213.089622: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=Thread-625 next_pid=5750 next_prio=120
+      Thread-625-5750  [000] ...2  1213.089842: sched_switch: prev_comm=Thread-625 prev_pid=5750 prev_prio=120 prev_state=S ==> next_comm=MMHandlerThread next_pid=7231 next_prio=120
+ MMHandlerThread-7231  [000] ...2  1213.089879: sched_switch: prev_comm=MMHandlerThread prev_pid=7231 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d.h4  1213.327439: sched_wakeup: comm=pandora.android pid=5395 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] dNh4  1213.327455: sched_wakeup: comm=MMHandlerThread pid=7231 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1213.327487: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=MMHandlerThread next_pid=7231 next_prio=120
+ MMHandlerThread-7231  [000] ...2  1213.327518: sched_switch: prev_comm=MMHandlerThread prev_pid=7231 prev_prio=120 prev_state=S ==> next_comm=pandora.android next_pid=5395 next_prio=120
+ pandora.android-5395  [000] d..4  1213.327718: sched_wakeup: comm=Binder_1 pid=780 prio=120 success=1 target_cpu=000
+ pandora.android-5395  [000] ...2  1213.327739: sched_switch: prev_comm=pandora.android prev_pid=5395 prev_prio=120 prev_state=R+ ==> next_comm=Binder_1 next_pid=780 next_prio=120
+        Binder_1-780   [000] ...2  1213.327763: sched_switch: prev_comm=Binder_1 prev_pid=780 prev_prio=120 prev_state=D ==> next_comm=pandora.android next_pid=5395 next_prio=120
+ pandora.android-5395  [000] d..3  1213.327781: sched_wakeup: comm=Binder_1 pid=780 prio=120 success=1 target_cpu=000
+ pandora.android-5395  [000] ...2  1213.327795: sched_switch: prev_comm=pandora.android prev_pid=5395 prev_prio=120 prev_state=R+ ==> next_comm=Binder_1 next_pid=780 next_prio=120
+        Binder_1-780   [000] d..4  1213.328056: sched_wakeup: comm=Binder_1 pid=878 prio=120 success=1 target_cpu=000
+        Binder_1-780   [000] ...2  1213.328095: sched_switch: prev_comm=Binder_1 prev_pid=780 prev_prio=120 prev_state=S ==> next_comm=Binder_1 next_pid=878 next_prio=120
+        Binder_1-878   [000] d..4  1213.328263: sched_wakeup: comm=Binder_1 pid=780 prio=120 success=1 target_cpu=000
+        Binder_1-878   [000] ...2  1213.328345: sched_switch: prev_comm=Binder_1 prev_pid=878 prev_prio=120 prev_state=S ==> next_comm=Binder_1 next_pid=780 next_prio=120
+        Binder_1-780   [000] ...2  1213.328558: sched_switch: prev_comm=Binder_1 prev_pid=780 prev_prio=120 prev_state=S ==> next_comm=pandora.android next_pid=5395 next_prio=120
+ pandora.android-5395  [000] ...2  1213.328743: sched_switch: prev_comm=pandora.android prev_pid=5395 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1213.328773: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1213.328793: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1213.328821: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1213.328846: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1213.328866: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1213.328891: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d..4  1213.328913: sched_wakeup: comm=ksoftirqd/0 pid=3 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1213.328931: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/0 next_pid=3 next_prio=120
+     ksoftirqd/0-3     [000] ...2  1213.328964: sched_switch: prev_comm=ksoftirqd/0 prev_pid=3 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0     [000] d.h4  1213.465138: sched_wakeup: comm=atrace pid=14446 prio=120 success=1 target_cpu=000
+          <idle>-0     [000] ...2  1213.465171: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=atrace next_pid=14446 next_prio=120
+USER     PID   PPID  VSIZE  RSS     WCHAN    PC        NAME
+root      1     0     8784   712   ffffffff 00000000 S /init
+root      2     0     0      0     ffffffff 00000000 S kthreadd
+root      3     2     0      0     ffffffff 00000000 S ksoftirqd/0
+root      7     2     0      0     ffffffff 00000000 D kworker/u:0H
+root      8     2     0      0     ffffffff 00000000 S migration/0
+root      13    2     0      0     ffffffff 00000000 S khelper
+root      14    2     0      0     ffffffff 00000000 S netns
+root      17    2     0      0     ffffffff 00000000 S kworker/0:1H
+root      18    2     0      0     ffffffff 00000000 S modem_notifier
+root      19    2     0      0     ffffffff 00000000 S smd_channel_clo
+root      20    2     0      0     ffffffff 00000000 S smsm_cb_wq
+root      21    2     0      0     ffffffff 00000000 S kworker/u:1
+root      22    2     0      0     ffffffff 00000000 S rpm-smd
+root      23    2     0      0     ffffffff 00000000 S kworker/u:1H
+root      24    2     0      0     ffffffff 00000000 S irq/317-earjack
+root      25    2     0      0     ffffffff 00000000 S sync_supers
+root      26    2     0      0     ffffffff 00000000 S bdi-default
+root      27    2     0      0     ffffffff 00000000 S kblockd
+root      28    2     0      0     ffffffff 00000000 S vmalloc
+root      29    2     0      0     ffffffff 00000000 S khubd
+root      30    2     0      0     ffffffff 00000000 S irq/102-msm_iom
+root      31    2     0      0     ffffffff 00000000 S irq/102-msm_iom
+root      32    2     0      0     ffffffff 00000000 S irq/102-msm_iom
+root      33    2     0      0     ffffffff 00000000 S irq/79-msm_iomm
+root      34    2     0      0     ffffffff 00000000 S irq/78-msm_iomm
+root      35    2     0      0     ffffffff 00000000 S irq/78-msm_iomm
+root      36    2     0      0     ffffffff 00000000 S irq/74-msm_iomm
+root      37    2     0      0     ffffffff 00000000 S irq/75-msm_iomm
+root      38    2     0      0     ffffffff 00000000 S irq/75-msm_iomm
+root      39    2     0      0     ffffffff 00000000 S irq/75-msm_iomm
+root      40    2     0      0     ffffffff 00000000 S irq/75-msm_iomm
+root      41    2     0      0     ffffffff 00000000 S irq/273-msm_iom
+root      42    2     0      0     ffffffff 00000000 S irq/273-msm_iom
+root      43    2     0      0     ffffffff 00000000 S irq/97-msm_iomm
+root      44    2     0      0     ffffffff 00000000 S irq/97-msm_iomm
+root      45    2     0      0     ffffffff 00000000 S irq/97-msm_iomm
+root      46    2     0      0     ffffffff 00000000 S l2cap
+root      47    2     0      0     ffffffff 00000000 S a2mp
+root      48    2     0      0     ffffffff 00000000 S cfg80211
+root      49    2     0      0     ffffffff 00000000 S qmi
+root      50    2     0      0     ffffffff 00000000 S nmea
+root      51    2     0      0     ffffffff 00000000 S msm_ipc_router
+root      52    2     0      0     ffffffff 00000000 S apr_driver
+root      54    2     0      0     ffffffff 00000000 S kswapd0
+root      55    2     0      0     ffffffff 00000000 S fsnotify_mark
+root      56    2     0      0     ffffffff 00000000 S cifsiod
+root      57    2     0      0     ffffffff 00000000 S crypto
+root      75    2     0      0     ffffffff 00000000 S ad_calc_wq
+root      76    2     0      0     ffffffff 00000000 S hdmi_tx_workq
+root      77    2     0      0     ffffffff 00000000 S anx7808_work
+root      78    2     0      0     ffffffff 00000000 S k_hsuart
+root      79    2     0      0     ffffffff 00000000 S diag_wq
+root      80    2     0      0     ffffffff 00000000 S diag_cntl_wq
+root      81    2     0      0     ffffffff 00000000 S diag_dci_wq
+root      82    2     0      0     ffffffff 00000000 S kgsl-3d0
+root      84    2     0      0     ffffffff 00000000 S f9966000.spi
+root      88    2     0      0     ffffffff 00000000 S usbnet
+root      89    2     0      0     ffffffff 00000000 S irq/329-anx7808
+root      90    2     0      0     ffffffff 00000000 S k_rmnet_mux_wor
+root      91    2     0      0     ffffffff 00000000 S f_mtp
+root      92    2     0      0     ffffffff 00000000 S file-storage
+root      93    2     0      0     ffffffff 00000000 S uether
+root      94    2     0      0     ffffffff 00000000 S synaptics_wq
+root      95    2     0      0     ffffffff 00000000 S irq/362-s3350
+root      96    2     0      0     ffffffff 00000000 S kworker/0:2
+root      97    2     0      0     ffffffff 00000000 S msm_vidc_worker
+root      98    2     0      0     ffffffff 00000000 S msm_vidc_worker
+root      99    2     0      0     ffffffff 00000000 S msm_cpp_workque
+root      100   2     0      0     ffffffff 00000000 S irq/350-bq51013
+root      102   2     0      0     ffffffff 00000000 S dm_bufio_cache
+root      103   2     0      0     ffffffff 00000000 D dbs_sync/0
+root      104   2     0      0     ffffffff 00000000 D dbs_sync/1
+root      105   2     0      0     ffffffff 00000000 D dbs_sync/2
+root      106   2     0      0     ffffffff 00000000 D dbs_sync/3
+root      107   2     0      0     ffffffff 00000000 S cfinteractive
+root      108   2     0      0     ffffffff 00000000 S irq/170-msm_sdc
+root      109   2     0      0     ffffffff 00000000 S binder
+root      110   2     0      0     ffffffff 00000000 S usb_bam_wq
+root      111   2     0      0     ffffffff 00000000 S krfcommd
+root      112   2     0      0     ffffffff 00000000 S bam_dmux_rx
+root      113   2     0      0     ffffffff 00000000 S bam_dmux_tx
+root      114   2     0      0     ffffffff 00000000 S rq_stats
+root      115   2     0      0     ffffffff 00000000 S deferwq
+root      117   2     0      0     ffffffff 00000000 S irq/361-MAX1704
+root      119   2     0      0     ffffffff 00000000 S mmcqd/1
+root      120   2     0      0     ffffffff 00000000 S mmcqd/1rpmb
+root      121   2     0      0     ffffffff 00000000 S wl_event_handle
+root      122   2     0      0     ffffffff 00000000 S dhd_watchdog_th
+root      123   2     0      0     ffffffff 00000000 S dhd_dpc
+root      124   2     0      0     ffffffff 00000000 S dhd_rxf
+root      125   2     0      0     ffffffff 00000000 S dhd_sysioc
+root      126   2     0      0     ffffffff 00000000 S vibrator
+root      127   2     0      0     ffffffff 00000000 S max1462x
+root      128   2     0      0     ffffffff 00000000 S irq/310-maxim_m
+root      129   2     0      0     ffffffff 00000000 S irq/311-maxim_m
+root      130   1     8780   576   ffffffff 00000000 S /sbin/ueventd
+root      132   2     0      0     ffffffff 00000000 S jbd2/mmcblk0p25
+root      133   2     0      0     ffffffff 00000000 S ext4-dio-unwrit
+root      136   2     0      0     ffffffff 00000000 S flush-179:0
+root      138   2     0      0     ffffffff 00000000 S jbd2/mmcblk0p28
+root      139   2     0      0     ffffffff 00000000 S ext4-dio-unwrit
+root      143   2     0      0     ffffffff 00000000 S jbd2/mmcblk0p27
+root      144   2     0      0     ffffffff 00000000 S ext4-dio-unwrit
+root      145   2     0      0     ffffffff 00000000 S jbd2/mmcblk0p16
+root      146   2     0      0     ffffffff 00000000 S ext4-dio-unwrit
+logd      169   1     18632  2740  ffffffff 00000000 S /system/bin/logd
+logd      216   169   18632  2740  ffffffff 00000000 S logd.reader
+logd      217   169   18632  2740  ffffffff 00000000 S logd.writer
+logd      218   169   18632  2740  ffffffff 00000000 S logd
+logd      244   169   18632  2740  ffffffff 00000000 S logd.auditd
+root      170   1     9832   304   ffffffff 00000000 S /sbin/healthd
+root      171   1     10620  1240  ffffffff 00000000 S /system/bin/lmkd
+system    172   1     9452   676   ffffffff 00000000 S /system/bin/servicemanager
+root      173   1     18028  1652  ffffffff 00000000 S /system/bin/vold
+root      223   173   18028  1652  ffffffff 00000000 S vold
+root      226   173   18028  1652  ffffffff 00000000 S vold
+root      174   2     0      0     ffffffff 00000000 S IPCRTR
+root      175   2     0      0     ffffffff 00000000 S sb-1
+root      177   2     0      0     ffffffff 00000000 S ipc_rtr_q6_ipcr
+root      179   2     0      0     ffffffff 00000000 S ngd_msm_ctrl_ng
+system    180   1     146792 9724  ffffffff 00000000 S /system/bin/surfaceflinger
+system    240   180   146792 9724  ffffffff 00000000 S Binder_1
+system    242   180   146792 9724  ffffffff 00000000 S DispSync
+system    243   180   146792 9724  ffffffff 00000000 S Binder_2
+system    361   180   146792 9724  ffffffff 00000000 S hwcUeventThread
+system    362   180   146792 9724  ffffffff 00000000 S hwcVsyncThread
+system    396   180   146792 9724  ffffffff 00000000 S GL updater
+system    397   180   146792 9724  ffffffff 00000000 S surfaceflinger
+system    398   180   146792 9724  ffffffff 00000000 S EventThread
+system    399   180   146792 9724  ffffffff 00000000 S surfaceflinger
+system    400   180   146792 9724  ffffffff 00000000 S EventThread
+system    401   180   146792 9724  ffffffff 00000000 S EventControl
+system    575   180   146792 9724  ffffffff 00000000 S Binder_3
+system    1501  180   146792 9724  ffffffff 00000000 S Binder_4
+system    5633  180   146792 9724  ffffffff 00000000 S Binder_5
+nobody    181   1     19792  1112  ffffffff 00000000 S /system/bin/rmt_storage
+nobody    571   181   19792  1112  ffffffff 00000000 S rmt_storage
+nobody    572   181   19792  1112  ffffffff 00000000 S rmt_storage
+nobody    573   181   19792  1112  ffffffff 00000000 S rmt_storage
+nobody    574   181   19792  1112  ffffffff 00000000 S rmt_storage
+system    182   1     11100  992   ffffffff 00000000 S /system/bin/qseecomd
+root      183   2     0      0     ffffffff 00000000 S msm_slim_qmi_cl
+root      184   2     0      0     ffffffff 00000000 S msm_qmi_rtx_q
+shell     185   1     9316   716   c047451c b6f58da8 S /system/bin/sh
+root      187   1     9200   368   ffffffff 00000000 S /system/bin/subsystem_ramdump
+root      188   1     22828  1404  ffffffff 00000000 S /system/bin/netd
+root      548   188   22828  1404  ffffffff 00000000 S netd
+root      549   188   22828  1404  ffffffff 00000000 S netd
+root      550   188   22828  1404  ffffffff 00000000 S netd
+root      551   188   22828  1404  ffffffff 00000000 S netd
+root      552   188   22828  1404  ffffffff 00000000 S netd
+root      553   188   22828  1404  ffffffff 00000000 S netd
+root      554   188   22828  1404  ffffffff 00000000 S netd
+root      555   188   22828  1404  ffffffff 00000000 S netd
+root      189   1     10048  848   ffffffff 00000000 S /system/bin/debuggerd
+radio     191   1     35988  4712  ffffffff 00000000 S /system/bin/rild
+radio     335   191   35988  4712  ffffffff 00000000 S rild
+radio     343   191   35988  4712  ffffffff 00000000 S rild
+radio     346   191   35988  4712  ffffffff 00000000 S rild
+radio     584   191   35988  4712  ffffffff 00000000 S rild
+radio     585   191   35988  4712  ffffffff 00000000 S rild
+radio     587   191   35988  4712  ffffffff 00000000 S rild
+radio     588   191   35988  4712  ffffffff 00000000 S rild
+radio     589   191   35988  4712  ffffffff 00000000 S rild
+radio     591   191   35988  4712  ffffffff 00000000 S rild
+radio     592   191   35988  4712  ffffffff 00000000 S rild
+radio     593   191   35988  4712  ffffffff 00000000 S rild
+radio     594   191   35988  4712  ffffffff 00000000 S rild
+drm       192   1     26084  3832  ffffffff 00000000 S /system/bin/drmserver
+drm       419   192   26084  3832  ffffffff 00000000 S Binder_1
+media     194   1     106516 8584  ffffffff 00000000 S /system/bin/mediaserver
+media     755   194   106516 8584  ffffffff 00000000 S ApmTone
+media     756   194   106516 8584  ffffffff 00000000 S ApmAudio
+media     757   194   106516 8584  ffffffff 00000000 S ApmOutput
+media     758   194   106516 8584  ffffffff 00000000 S mediaserver
+media     759   194   106516 8584  ffffffff 00000000 S FastMixer
+media     871   194   106516 8584  ffffffff 00000000 S AudioOut_2
+media     872   194   106516 8584  ffffffff 00000000 S AudioOut_4
+media     873   194   106516 8584  ffffffff 00000000 S FastMixer
+media     874   194   106516 8584  ffffffff 00000000 S AudioOut_6
+media     878   194   106516 8584  ffffffff 00000000 S Binder_1
+media     879   194   106516 8584  ffffffff 00000000 S Binder_2
+media     1133  194   106516 8584  ffffffff 00000000 S Binder_3
+install   195   1     9408   704   ffffffff 00000000 S /system/bin/installd
+keystore  197   1     12536  1848  ffffffff 00000000 S /system/bin/keystore
+radio     198   1     18856  636   ffffffff 00000000 S /system/bin/bridgemgrd
+radio     288   198   18856  636   ffffffff 00000000 S bridgemgrd
+radio     602   198   18856  636   ffffffff 00000000 S bridgemgrd
+radio     603   198   18856  636   ffffffff 00000000 S bridgemgrd
+radio     841   198   18856  636   ffffffff 00000000 S bridgemgrd
+radio     199   1     24060  732   ffffffff 00000000 S /system/bin/qmuxd
+radio     293   199   24060  732   ffffffff 00000000 S qmuxd
+radio     576   199   24060  732   ffffffff 00000000 S qmuxd
+radio     577   199   24060  732   ffffffff 00000000 S qmuxd
+radio     578   199   24060  732   ffffffff 00000000 S qmuxd
+radio     579   199   24060  732   ffffffff 00000000 S qmuxd
+radio     580   199   24060  732   ffffffff 00000000 S qmuxd
+radio     581   199   24060  732   ffffffff 00000000 S qmuxd
+radio     582   199   24060  732   ffffffff 00000000 S qmuxd
+radio     583   199   24060  732   ffffffff 00000000 S qmuxd
+radio     200   1     20036  996   ffffffff 00000000 S /system/bin/netmgrd
+radio     289   200   20036  996   ffffffff 00000000 S netmgrd
+radio     736   200   20036  996   ffffffff 00000000 S netmgrd
+radio     746   200   20036  996   ffffffff 00000000 S netmgrd
+radio     747   200   20036  996   ffffffff 00000000 S netmgrd
+radio     748   200   20036  996   ffffffff 00000000 S netmgrd
+nobody    201   1     59912  1748  ffffffff 00000000 S /system/bin/sensors.qcom
+nobody    290   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    292   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    560   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    563   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    564   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    605   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    614   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    621   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    622   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    623   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    624   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    625   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    626   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    627   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    628   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    629   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    633   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    643   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    650   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    651   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    760   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    763   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    784   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    790   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    792   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    794   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    796   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    798   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    800   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    802   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    804   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    806   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    808   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    810   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    812   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    814   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    816   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    818   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    820   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    822   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    824   201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    1593  201   59912  1748  ffffffff 00000000 S sensors.qcom
+nobody    1600  201   59912  1748  ffffffff 00000000 S sensors.qcom
+root      204   1     58772  1524  ffffffff 00000000 S /system/bin/thermal-engine-hh
+root      247   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      250   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      252   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      253   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      254   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      255   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      257   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      258   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      259   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      260   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      261   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      262   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      263   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      264   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      265   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      266   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      267   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      268   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      269   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      270   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      272   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      273   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      275   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      276   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      277   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      278   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      280   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      281   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      282   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      283   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      284   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      286   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      287   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      295   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      297   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      299   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      300   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      301   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      559   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      596   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      600   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      601   204   58772  1524  ffffffff 00000000 S thermal-engine-
+root      205   1     1482684 53160 ffffffff 00000000 S zygote
+root      14357 205   1482684 53160 ffffffff 00000000 S ReferenceQueueD
+root      14358 205   1482684 53160 ffffffff 00000000 S FinalizerDaemon
+root      14359 205   1482684 53160 ffffffff 00000000 S FinalizerWatchd
+root      14360 205   1482684 53160 ffffffff 00000000 S HeapTrimmerDaem
+root      14361 205   1482684 53160 ffffffff 00000000 S GCDaemon
+media_rw  206   1     15400  5240  ffffffff 00000000 S /system/bin/sdcard
+media_rw  227   206   15400  5240  ffffffff 00000000 S sdcard
+media_rw  228   206   15400  5240  ffffffff 00000000 S sdcard
+camera    207   1     16300  4440  ffffffff 00000000 S /system/bin/mm-qcamera-daemon
+system    208   1     20500  1236  ffffffff 00000000 S /system/bin/time_daemon
+system    308   208   20500  1236  ffffffff 00000000 S time_daemon
+system    561   208   20500  1236  ffffffff 00000000 S time_daemon
+system    597   208   20500  1236  ffffffff 00000000 S time_daemon
+system    598   208   20500  1236  ffffffff 00000000 S time_daemon
+system    599   208   20500  1236  ffffffff 00000000 S time_daemon
+shell     209   1     16984  312   ffffffff 00000000 S /sbin/adbd
+shell     210   209   16984  312   ffffffff 00000000 S adbd
+shell     211   209   16984  312   ffffffff 00000000 S adbd
+shell     212   209   16984  308   ffffffff 00000000 S adbd
+shell     14445 209   16984  308   ffffffff 00000000 S adbd
+root      214   2     0      0     ffffffff 00000000 S irq/288-wcd9xxx
+root      219   2     0      0     ffffffff 00000000 S kauditd
+root      311   2     0      0     ffffffff 00000000 D msm_thermal:hot
+root      312   2     0      0     ffffffff 00000000 D msm_thermal:fre
+system    348   182   15288  564   ffffffff 00000000 S /system/bin/qseecomd
+system    349   348   15288  564   ffffffff 00000000 S qseecomd
+system    351   348   15288  564   ffffffff 00000000 S qseecomd
+system    386   348   15288  564   ffffffff 00000000 S qseecomd
+system    387   348   15288  564   ffffffff 00000000 S qseecomd
+root      360   2     0      0     ffffffff 00000000 D mdss_fb0
+root      557   2     0      0     ffffffff 00000000 S kworker/0:2H
+root      558   2     0      0     ffffffff 00000000 S IPCRTR
+root      562   2     0      0     ffffffff 00000000 S ipc_rtr_smd_ipc
+system    764   205   1701620 103200 ffffffff 00000000 S system_server
+system    767   764   1701620 103200 ffffffff 00000000 S Heap thread poo
+system    768   764   1701620 103200 ffffffff 00000000 S Heap thread poo
+system    770   764   1701620 103200 ffffffff 00000000 S Heap thread poo
+system    773   764   1701620 103200 ffffffff 00000000 S Signal Catcher
+system    774   764   1701620 103200 ffffffff 00000000 S JDWP
+system    775   764   1701620 103200 ffffffff 00000000 S ReferenceQueueD
+system    776   764   1701620 103200 ffffffff 00000000 S FinalizerDaemon
+system    777   764   1701620 103200 ffffffff 00000000 S FinalizerWatchd
+system    778   764   1701620 103200 ffffffff 00000000 S HeapTrimmerDaem
+system    779   764   1701620 103200 ffffffff 00000000 S GCDaemon
+system    780   764   1701620 103200 ffffffff 00000000 S Binder_1
+system    781   764   1701620 103200 ffffffff 00000000 S Binder_2
+system    782   764   1701620 103200 ffffffff 00000000 S system_server
+system    783   764   1701620 103200 ffffffff 00000000 S system_server
+system    785   764   1701620 103200 ffffffff 00000000 S system_server
+system    786   764   1701620 103200 ffffffff 00000000 S system_server
+system    788   764   1701620 103200 ffffffff 00000000 S system_server
+system    789   764   1701620 103200 ffffffff 00000000 S system_server
+system    791   764   1701620 103200 ffffffff 00000000 S system_server
+system    793   764   1701620 103200 ffffffff 00000000 S system_server
+system    795   764   1701620 103200 ffffffff 00000000 S system_server
+system    797   764   1701620 103200 ffffffff 00000000 S system_server
+system    799   764   1701620 103200 ffffffff 00000000 S system_server
+system    801   764   1701620 103200 ffffffff 00000000 S system_server
+system    803   764   1701620 103200 ffffffff 00000000 S system_server
+system    805   764   1701620 103200 ffffffff 00000000 S system_server
+system    807   764   1701620 103200 ffffffff 00000000 S system_server
+system    809   764   1701620 103200 ffffffff 00000000 S system_server
+system    811   764   1701620 103200 ffffffff 00000000 S system_server
+system    813   764   1701620 103200 ffffffff 00000000 S system_server
+system    815   764   1701620 103200 ffffffff 00000000 S system_server
+system    817   764   1701620 103200 ffffffff 00000000 S system_server
+system    819   764   1701620 103200 ffffffff 00000000 S system_server
+system    821   764   1701620 103200 ffffffff 00000000 S system_server
+system    823   764   1701620 103200 ffffffff 00000000 S system_server
+system    826   764   1701620 103200 ffffffff 00000000 S SensorEventAckR
+system    827   764   1701620 103200 ffffffff 00000000 S SensorService
+system    828   764   1701620 103200 ffffffff 00000000 S android.bg
+system    829   764   1701620 103200 ffffffff 00000000 S ActivityManager
+system    830   764   1701620 103200 ffffffff 00000000 S FileObserver
+system    831   764   1701620 103200 ffffffff 00000000 S android.fg
+system    832   764   1701620 103200 ffffffff 00000000 S android.ui
+system    833   764   1701620 103200 ffffffff 00000000 S android.io
+system    834   764   1701620 103200 ffffffff 00000000 S android.display
+system    835   764   1701620 103200 ffffffff 00000000 S CpuTracker
+system    836   764   1701620 103200 ffffffff 00000000 S PowerManagerSer
+system    837   764   1701620 103200 ffffffff 00000000 S system_server
+system    838   764   1701620 103200 ffffffff 00000000 S system_server
+system    839   764   1701620 103200 ffffffff 00000000 S BatteryStats_wa
+system    840   764   1701620 103200 ffffffff 00000000 S PackageManager
+system    842   764   1701620 103200 ffffffff 00000000 S PackageInstalle
+system    844   764   1701620 103200 ffffffff 00000000 S AlarmManager
+system    845   764   1701620 103200 ffffffff 00000000 S UEventObserver
+system    853   764   1701620 103200 ffffffff 00000000 S InputDispatcher
+system    854   764   1701620 103200 ffffffff 00000000 S InputReader
+system    857   764   1701620 103200 ffffffff 00000000 S MountService
+system    858   764   1701620 103200 ffffffff 00000000 S VoldConnector
+system    860   764   1701620 103200 ffffffff 00000000 S NetdConnector
+system    861   764   1701620 103200 ffffffff 00000000 S NetworkStats
+system    862   764   1701620 103200 ffffffff 00000000 S NetworkPolicy
+system    863   764   1701620 103200 ffffffff 00000000 S WifiP2pService
+system    864   764   1701620 103200 ffffffff 00000000 S WifiStateMachin
+system    865   764   1701620 103200 ffffffff 00000000 S WifiService
+system    866   764   1701620 103200 ffffffff 00000000 S ConnectivitySer
+system    867   764   1701620 103200 ffffffff 00000000 S NsdService
+system    868   764   1701620 103200 ffffffff 00000000 S mDnsConnector
+system    869   764   1701620 103200 ffffffff 00000000 S ranker
+system    870   764   1701620 103200 ffffffff 00000000 S AudioService
+system    882   764   1701620 103200 ffffffff 00000000 S WifiWatchdogSta
+system    883   764   1701620 103200 ffffffff 00000000 S WifiManager
+system    884   764   1701620 103200 ffffffff 00000000 S WifiScanningSer
+system    885   764   1701620 103200 ffffffff 00000000 S WifiRttService
+system    886   764   1701620 103200 ffffffff 00000000 S EthernetService
+system    887   764   1701620 103200 ffffffff 00000000 S backup
+system    889   764   1701620 103200 ffffffff 00000000 S Thread-69
+system    892   764   1701620 103200 ffffffff 00000000 S LazyTaskWriterT
+system    893   764   1701620 103200 ffffffff 00000000 S UsbService host
+system    894   764   1701620 103200 ffffffff 00000000 S Thread-73
+system    942   764   1701620 103200 ffffffff 00000000 S Binder_3
+system    1079  764   1701620 103200 ffffffff 00000000 S watchdog
+system    1094  764   1701620 103200 ffffffff 00000000 S SoundPool
+system    1095  764   1701620 103200 ffffffff 00000000 S SoundPoolThread
+system    1108  764   1701620 103200 ffffffff 00000000 S Binder_4
+system    1109  764   1701620 103200 ffffffff 00000000 S Binder_5
+system    1186  764   1701620 103200 ffffffff 00000000 S FLP Service Cal
+system    1188  764   1701620 103200 ffffffff 00000000 S FLP Service Cal
+system    1191  764   1701620 103200 ffffffff 00000000 S NetworkTimeUpda
+system    1192  764   1701620 103200 ffffffff 00000000 S FLP Service Cal
+system    1226  764   1701620 103200 ffffffff 00000000 S Binder_6
+system    1233  764   1701620 103200 ffffffff 00000000 S Binder_7
+system    1247  764   1701620 103200 ffffffff 00000000 S FLP Service Cal
+system    1256  764   1701620 103200 ffffffff 00000000 S Binder_8
+system    1260  764   1701620 103200 ffffffff 00000000 S WifiMonitor
+system    1271  764   1701620 103200 ffffffff 00000000 S Binder_9
+system    1288  764   1701620 103200 ffffffff 00000000 S FLP Service Cal
+system    1289  764   1701620 103200 ffffffff 00000000 S FLP Service Cal
+system    1319  764   1701620 103200 ffffffff 00000000 S FLP Service Cal
+system    1320  764   1701620 103200 ffffffff 00000000 S FLP Service Cal
+system    1367  764   1701620 103200 ffffffff 00000000 S Thread-89
+system    1391  764   1701620 103200 ffffffff 00000000 S AsyncQueryWorke
+system    1654  764   1701620 103200 ffffffff 00000000 S Binder_A
+system    1693  764   1701620 103200 ffffffff 00000000 S NetworkMonitorN
+system    1695  764   1701620 103200 ffffffff 00000000 S DhcpStateMachin
+system    1781  764   1701620 103200 ffffffff 00000000 S AsyncTask #1
+system    1782  764   1701620 103200 ffffffff 00000000 S AsyncTask #2
+system    2097  764   1701620 103200 ffffffff 00000000 S AsyncTask #3
+system    2124  764   1701620 103200 ffffffff 00000000 S SyncHandler-0
+system    2905  764   1701620 103200 ffffffff 00000000 S PowerManagerSer
+system    4226  764   1701620 103200 ffffffff 00000000 S AsyncTask #4
+system    4265  764   1701620 103200 ffffffff 00000000 S UsbDebuggingMan
+system    5717  764   1701620 103200 ffffffff 00000000 S GL updater
+system    6709  764   1701620 103200 ffffffff 00000000 S Binder_B
+wifi      888   1     12568  2672  ffffffff 00000000 S /system/bin/wpa_supplicant
+u0_a20    915   205   1616624 108684 ffffffff 00000000 S com.android.systemui
+u0_a20    919   915   1616624 108684 ffffffff 00000000 S Heap thread poo
+u0_a20    920   915   1616624 108684 ffffffff 00000000 S Heap thread poo
+u0_a20    921   915   1616624 108684 ffffffff 00000000 S Heap thread poo
+u0_a20    925   915   1616624 108684 ffffffff 00000000 S Signal Catcher
+u0_a20    926   915   1616624 108684 ffffffff 00000000 S JDWP
+u0_a20    927   915   1616624 108684 ffffffff 00000000 S ReferenceQueueD
+u0_a20    928   915   1616624 108684 ffffffff 00000000 S FinalizerDaemon
+u0_a20    929   915   1616624 108684 ffffffff 00000000 S FinalizerWatchd
+u0_a20    930   915   1616624 108684 ffffffff 00000000 S HeapTrimmerDaem
+u0_a20    931   915   1616624 108684 ffffffff 00000000 S GCDaemon
+u0_a20    933   915   1616624 108684 ffffffff 00000000 S Binder_1
+u0_a20    934   915   1616624 108684 ffffffff 00000000 S Binder_2
+u0_a20    964   915   1616624 108684 ffffffff 00000000 S SoundPool
+u0_a20    965   915   1616624 108684 ffffffff 00000000 S SoundPoolThread
+u0_a20    970   915   1616624 108684 ffffffff 00000000 S Recents-TaskRes
+u0_a20    1078  915   1616624 108684 ffffffff 00000000 S SystemUI Storag
+u0_a20    1378  915   1616624 108684 ffffffff 00000000 S PhoneStatusBar
+u0_a20    1381  915   1616624 108684 ffffffff 00000000 S WifiManager
+u0_a20    1416  915   1616624 108684 ffffffff 00000000 S ConnectivityMan
+u0_a20    1428  915   1616624 108684 ffffffff 00000000 S Binder_3
+u0_a20    1431  915   1616624 108684 ffffffff 00000000 S FlashlightContr
+u0_a20    1434  915   1616624 108684 ffffffff 00000000 S AsyncTask #1
+u0_a20    1435  915   1616624 108684 ffffffff 00000000 S QSTileHost
+u0_a20    1438  915   1616624 108684 ffffffff 00000000 S AsyncTask #2
+u0_a20    1441  915   1616624 108684 ffffffff 00000000 S RenderThread
+u0_a20    1442  915   1616624 108684 ffffffff 00000000 S AsyncTask #3
+u0_a20    1565  915   1616624 108684 ffffffff 00000000 S hwuiTask1
+u0_a20    1566  915   1616624 108684 ffffffff 00000000 S hwuiTask2
+u0_a20    1637  915   1616624 108684 ffffffff 00000000 S AsyncTask #4
+u0_a20    1692  915   1616624 108684 ffffffff 00000000 S GL updater
+u0_a20    1807  915   1616624 108684 ffffffff 00000000 S RenderThread
+u0_a20    4480  915   1616624 108684 ffffffff 00000000 S Binder_4
+u0_a6     936   205   1506908 56892 ffffffff 00000000 S android.process.media
+u0_a6     943   936   1506908 56892 ffffffff 00000000 S Heap thread poo
+u0_a6     944   936   1506908 56892 ffffffff 00000000 S Heap thread poo
+u0_a6     945   936   1506908 56892 ffffffff 00000000 S Heap thread poo
+u0_a6     947   936   1506908 56892 ffffffff 00000000 S Signal Catcher
+u0_a6     949   936   1506908 56892 ffffffff 00000000 S JDWP
+u0_a6     950   936   1506908 56892 ffffffff 00000000 S ReferenceQueueD
+u0_a6     951   936   1506908 56892 ffffffff 00000000 S FinalizerDaemon
+u0_a6     952   936   1506908 56892 ffffffff 00000000 S FinalizerWatchd
+u0_a6     953   936   1506908 56892 ffffffff 00000000 S HeapTrimmerDaem
+u0_a6     954   936   1506908 56892 ffffffff 00000000 S GCDaemon
+u0_a6     956   936   1506908 56892 ffffffff 00000000 S Binder_1
+u0_a6     957   936   1506908 56892 ffffffff 00000000 S Binder_2
+u0_a6     1007  936   1506908 56892 ffffffff 00000000 S thumbs thread
+u0_a6     1020  936   1506908 56892 ffffffff 00000000 S MtpServer
+u0_a6     2810  936   1506908 56892 ffffffff 00000000 S DownloadReceive
+u0_a6     4917  936   1506908 56892 ffffffff 00000000 S Binder_3
+u0_a6     5816  936   1506908 56892 ffffffff 00000000 S Binder_4
+u0_a6     8575  936   1506908 56892 ffffffff 00000000 S Binder_5
+u0_a22    1111  205   1526156 42532 ffffffff 00000000 S com.google.android.googlequicksearchbox:interactor
+u0_a22    1113  1111  1526156 42532 ffffffff 00000000 S Heap thread poo
+u0_a22    1114  1111  1526156 42532 ffffffff 00000000 S Heap thread poo
+u0_a22    1116  1111  1526156 42532 ffffffff 00000000 S Heap thread poo
+u0_a22    1121  1111  1526156 42532 ffffffff 00000000 S Signal Catcher
+u0_a22    1124  1111  1526156 42532 ffffffff 00000000 S JDWP
+u0_a22    1125  1111  1526156 42532 ffffffff 00000000 S ReferenceQueueD
+u0_a22    1126  1111  1526156 42532 ffffffff 00000000 S FinalizerDaemon
+u0_a22    1127  1111  1526156 42532 ffffffff 00000000 S FinalizerWatchd
+u0_a22    1128  1111  1526156 42532 ffffffff 00000000 S HeapTrimmerDaem
+u0_a22    1129  1111  1526156 42532 ffffffff 00000000 S GCDaemon
+u0_a22    1131  1111  1526156 42532 ffffffff 00000000 S Binder_1
+u0_a22    1132  1111  1526156 42532 ffffffff 00000000 S Binder_2
+u0_a22    1561  1111  1526156 42532 ffffffff 00000000 S AsyncTask #1
+u0_a51    1136  205   1515064 46788 ffffffff 00000000 S com.google.android.inputmethod.pinyin
+u0_a51    1142  1136  1515064 46788 ffffffff 00000000 S Heap thread poo
+u0_a51    1143  1136  1515064 46788 ffffffff 00000000 S Heap thread poo
+u0_a51    1144  1136  1515064 46788 ffffffff 00000000 S Heap thread poo
+u0_a51    1145  1136  1515064 46788 ffffffff 00000000 S Signal Catcher
+u0_a51    1146  1136  1515064 46788 ffffffff 00000000 S JDWP
+u0_a51    1147  1136  1515064 46788 ffffffff 00000000 S ReferenceQueueD
+u0_a51    1148  1136  1515064 46788 ffffffff 00000000 S FinalizerDaemon
+u0_a51    1149  1136  1515064 46788 ffffffff 00000000 S FinalizerWatchd
+u0_a51    1151  1136  1515064 46788 ffffffff 00000000 S HeapTrimmerDaem
+u0_a51    1152  1136  1515064 46788 ffffffff 00000000 S GCDaemon
+u0_a51    1153  1136  1515064 46788 ffffffff 00000000 S Binder_1
+u0_a51    1154  1136  1515064 46788 ffffffff 00000000 S Binder_2
+u0_a51    1330  1136  1515064 46788 ffffffff 00000000 S GAThread
+u0_a51    1331  1136  1515064 46788 ffffffff 00000000 S measurement-1
+u0_a51    1336  1136  1515064 46788 ffffffff 00000000 S pool-1-thread-1
+u0_a51    1503  1136  1515064 46788 ffffffff 00000000 S AsyncTask #1
+u0_a51    1622  1136  1515064 46788 ffffffff 00000000 S AsyncTask #2
+nfc       1199  205   1511808 46336 ffffffff 00000000 S com.android.nfc
+nfc       1208  1199  1511808 46336 ffffffff 00000000 S Heap thread poo
+nfc       1209  1199  1511808 46336 ffffffff 00000000 S Heap thread poo
+nfc       1210  1199  1511808 46336 ffffffff 00000000 S Heap thread poo
+nfc       1211  1199  1511808 46336 ffffffff 00000000 S Signal Catcher
+nfc       1212  1199  1511808 46336 ffffffff 00000000 S JDWP
+nfc       1213  1199  1511808 46336 ffffffff 00000000 S ReferenceQueueD
+nfc       1214  1199  1511808 46336 ffffffff 00000000 S FinalizerDaemon
+nfc       1215  1199  1511808 46336 ffffffff 00000000 S FinalizerWatchd
+nfc       1216  1199  1511808 46336 ffffffff 00000000 S HeapTrimmerDaem
+nfc       1219  1199  1511808 46336 ffffffff 00000000 S GCDaemon
+nfc       1220  1199  1511808 46336 ffffffff 00000000 S Binder_1
+nfc       1221  1199  1511808 46336 ffffffff 00000000 S Binder_2
+nfc       1385  1199  1511808 46336 ffffffff 00000000 S AsyncTask #1
+nfc       1388  1199  1511808 46336 ffffffff 00000000 S AsyncTask #1
+nfc       1393  1199  1511808 46336 ffffffff 00000000 S AsyncTask #1
+nfc       1408  1199  1511808 46336 ffffffff 00000000 S AsyncTask #1
+nfc       1409  1199  1511808 46336 ffffffff 00000000 S AsyncTask #1
+nfc       1425  1199  1511808 46336 ffffffff 00000000 S AsyncTask #1
+nfc       1573  1199  1511808 46336 ffffffff 00000000 S Thread-55
+nfc       1574  1199  1511808 46336 ffffffff 00000000 S Thread-56
+nfc       1575  1199  1511808 46336 ffffffff 00000000 S Thread-57
+nfc       1577  1199  1511808 46336 ffffffff 00000000 S SoundPool
+nfc       1578  1199  1511808 46336 ffffffff 00000000 S SoundPoolThread
+nfc       2906  1199  1511808 46336 ffffffff 00000000 S AsyncTask #2
+nfc       2915  1199  1511808 46336 ffffffff 00000000 S AsyncTask #3
+nfc       5610  1199  1511808 46336 ffffffff 00000000 S AsyncTask #4
+nfc       5719  1199  1511808 46336 ffffffff 00000000 S AsyncTask #5
+radio     1234  205   1493064 38832 ffffffff 00000000 S com.redbend.vdmc
+radio     1236  1234  1493064 38832 ffffffff 00000000 S Heap thread poo
+radio     1237  1234  1493064 38832 ffffffff 00000000 S Heap thread poo
+radio     1238  1234  1493064 38832 ffffffff 00000000 S Heap thread poo
+radio     1244  1234  1493064 38832 ffffffff 00000000 S Signal Catcher
+radio     1245  1234  1493064 38832 ffffffff 00000000 S JDWP
+radio     1246  1234  1493064 38832 ffffffff 00000000 S ReferenceQueueD
+radio     1248  1234  1493064 38832 ffffffff 00000000 S FinalizerDaemon
+radio     1249  1234  1493064 38832 ffffffff 00000000 S FinalizerWatchd
+radio     1250  1234  1493064 38832 ffffffff 00000000 S HeapTrimmerDaem
+radio     1251  1234  1493064 38832 ffffffff 00000000 S GCDaemon
+radio     1252  1234  1493064 38832 ffffffff 00000000 S Binder_1
+radio     1257  1234  1493064 38832 ffffffff 00000000 S Binder_2
+radio     1274  205   1525408 58916 ffffffff 00000000 S com.android.phone
+radio     1282  1274  1525408 58916 ffffffff 00000000 S Heap thread poo
+radio     1283  1274  1525408 58916 ffffffff 00000000 S Heap thread poo
+radio     1284  1274  1525408 58916 ffffffff 00000000 S Heap thread poo
+radio     1285  1274  1525408 58916 ffffffff 00000000 S Signal Catcher
+radio     1286  1274  1525408 58916 ffffffff 00000000 S JDWP
+radio     1287  1274  1525408 58916 ffffffff 00000000 S ReferenceQueueD
+radio     1290  1274  1525408 58916 ffffffff 00000000 S FinalizerDaemon
+radio     1291  1274  1525408 58916 ffffffff 00000000 S FinalizerWatchd
+radio     1292  1274  1525408 58916 ffffffff 00000000 S HeapTrimmerDaem
+radio     1293  1274  1525408 58916 ffffffff 00000000 S GCDaemon
+radio     1299  1274  1525408 58916 ffffffff 00000000 S Binder_1
+radio     1315  1274  1525408 58916 ffffffff 00000000 S Binder_2
+radio     1365  1274  1525408 58916 ffffffff 00000000 S RILSender0
+radio     1366  1274  1525408 58916 ffffffff 00000000 S RILReceiver0
+radio     1380  1274  1525408 58916 ffffffff 00000000 S DcHandlerThread
+radio     1392  1274  1525408 58916 ffffffff 00000000 S GsmCellBroadcas
+radio     1394  1274  1525408 58916 ffffffff 00000000 S GsmInboundSmsHa
+radio     1397  1274  1525408 58916 ffffffff 00000000 S CellBroadcastHa
+radio     1417  1274  1525408 58916 ffffffff 00000000 S CdmaInboundSmsH
+radio     1418  1274  1525408 58916 ffffffff 00000000 S CdmaServiceCate
+radio     1427  1274  1525408 58916 ffffffff 00000000 S DcSwitchStateMa
+radio     1429  1274  1525408 58916 ffffffff 00000000 S SyncHandler-0
+radio     1443  1274  1525408 58916 ffffffff 00000000 S AsyncTask #1
+radio     1473  1274  1525408 58916 ffffffff 00000000 S Binder_3
+radio     1517  1274  1525408 58916 ffffffff 00000000 S ervice.Executor
+radio     1518  1274  1525408 58916 ffffffff 00000000 S WifiManager
+radio     1563  1274  1525408 58916 ffffffff 00000000 S Cat Telephony s
+radio     1564  1274  1525408 58916 ffffffff 00000000 S RilMessageDecod
+radio     1567  1274  1525408 58916 ffffffff 00000000 S Cat Icon Loader
+radio     1690  1274  1525408 58916 ffffffff 00000000 S Binder_4
+radio     4571  1274  1525408 58916 ffffffff 00000000 S Stk App Service
+u0_a22    1305  205   1674592 127012 ffffffff 00000000 S com.google.android.googlequicksearchbox
+u0_a22    1306  1305  1674592 127012 ffffffff 00000000 S Heap thread poo
+u0_a22    1307  1305  1674592 127012 ffffffff 00000000 S Heap thread poo
+u0_a22    1308  1305  1674592 127012 ffffffff 00000000 S Heap thread poo
+u0_a22    1317  1305  1674592 127012 ffffffff 00000000 S Signal Catcher
+u0_a22    1318  1305  1674592 127012 ffffffff 00000000 S JDWP
+u0_a22    1322  1305  1674592 127012 ffffffff 00000000 S ReferenceQueueD
+u0_a22    1323  1305  1674592 127012 ffffffff 00000000 S FinalizerDaemon
+u0_a22    1324  1305  1674592 127012 ffffffff 00000000 S FinalizerWatchd
+u0_a22    1332  1305  1674592 127012 ffffffff 00000000 S HeapTrimmerDaem
+u0_a22    1333  1305  1674592 127012 ffffffff 00000000 S GCDaemon
+u0_a22    1334  1305  1674592 127012 ffffffff 00000000 S Binder_1
+u0_a22    1335  1305  1674592 127012 ffffffff 00000000 S Binder_2
+u0_a22    1386  1305  1674592 127012 ffffffff 00000000 S launcher-loader
+u0_a22    1395  1305  1674592 127012 ffffffff 00000000 S AsyncTask #1
+u0_a22    1432  1305  1674592 127012 ffffffff 00000000 S AsyncTask #2
+u0_a22    1484  1305  1674592 127012 ffffffff 00000000 S GELServices-0
+u0_a22    1514  1305  1674592 127012 ffffffff 00000000 S RenderThread
+u0_a22    1540  1305  1674592 127012 ffffffff 00000000 S AsyncTask #3
+u0_a22    1618  1305  1674592 127012 ffffffff 00000000 S GELServices-1
+u0_a22    1621  1305  1674592 127012 ffffffff 00000000 S GELServices-2
+u0_a22    1629  1305  1674592 127012 ffffffff 00000000 S GELServices-3
+u0_a22    1632  1305  1674592 127012 ffffffff 00000000 S AsyncTask #4
+u0_a22    1633  1305  1674592 127012 ffffffff 00000000 S AsyncTask #5
+u0_a22    1636  1305  1674592 127012 ffffffff 00000000 S GELServices-4
+u0_a22    1644  1305  1674592 127012 ffffffff 00000000 S GL updater
+u0_a22    1647  1305  1674592 127012 ffffffff 00000000 S GELServices-5
+u0_a22    1664  1305  1674592 127012 ffffffff 00000000 S GELServices-6
+u0_a22    1764  1305  1674592 127012 ffffffff 00000000 S Binder_3
+u0_a22    1766  1305  1674592 127012 ffffffff 00000000 S GELServices-7
+u0_a22    1772  1305  1674592 127012 ffffffff 00000000 S RenderThread
+u0_a22    1773  1305  1674592 127012 ffffffff 00000000 S RenderThread
+u0_a22    1774  1305  1674592 127012 ffffffff 00000000 S RenderThread
+u0_a22    1775  1305  1674592 127012 ffffffff 00000000 S RenderThread
+u0_a22    1998  1305  1674592 127012 ffffffff 00000000 S GELServices-8
+u0_a22    2320  1305  1674592 127012 ffffffff 00000000 S RemoteViewsCach
+u0_a22    2321  1305  1674592 127012 ffffffff 00000000 S RemoteViewsAdap
+u0_a22    2902  1305  1674592 127012 ffffffff 00000000 S GELServices-9
+u0_a22    1451  205   1584512 87716 ffffffff 00000000 S com.google.android.googlequicksearchbox:search
+u0_a22    1457  1451  1584512 87716 ffffffff 00000000 S Heap thread poo
+u0_a22    1458  1451  1584512 87716 ffffffff 00000000 S Heap thread poo
+u0_a22    1459  1451  1584512 87716 ffffffff 00000000 S Heap thread poo
+u0_a22    1460  1451  1584512 87716 ffffffff 00000000 S Signal Catcher
+u0_a22    1461  1451  1584512 87716 ffffffff 00000000 S JDWP
+u0_a22    1462  1451  1584512 87716 ffffffff 00000000 S ReferenceQueueD
+u0_a22    1463  1451  1584512 87716 ffffffff 00000000 S FinalizerDaemon
+u0_a22    1464  1451  1584512 87716 ffffffff 00000000 S FinalizerWatchd
+u0_a22    1466  1451  1584512 87716 ffffffff 00000000 S HeapTrimmerDaem
+u0_a22    1468  1451  1584512 87716 ffffffff 00000000 S GCDaemon
+u0_a22    1474  1451  1584512 87716 ffffffff 00000000 S Binder_1
+u0_a22    1475  1451  1584512 87716 ffffffff 00000000 S Binder_2
+u0_a22    1515  1451  1584512 87716 ffffffff 00000000 S User-Facing Non
+u0_a22    1516  1451  1584512 87716 ffffffff 00000000 S User-Facing Non
+u0_a22    1535  1451  1584512 87716 ffffffff 00000000 S User-Facing Non
+u0_a22    1538  1451  1584512 87716 ffffffff 00000000 S User-Facing Non
+u0_a22    1553  1451  1584512 87716 ffffffff 00000000 S User-Facing Non
+u0_a22    1560  1451  1584512 87716 ffffffff 00000000 S IcingConnection
+u0_a22    1580  1451  1584512 87716 ffffffff 00000000 S AudioRouter-0
+u0_a22    1626  1451  1584512 87716 ffffffff 00000000 S AsyncFileStorag
+u0_a22    1635  1451  1584512 87716 ffffffff 00000000 S WifiManager
+u0_a22    1643  1451  1584512 87716 ffffffff 00000000 S LocationOracleI
+u0_a22    1646  1451  1584512 87716 ffffffff 00000000 S GoogleApiClient
+u0_a22    1769  1451  1584512 87716 ffffffff 00000000 S Binder_3
+u0_a22    1770  1451  1584512 87716 ffffffff 00000000 S Gservices
+u0_a22    1810  1451  1584512 87716 ffffffff 00000000 S ChromiumNet
+u0_a22    1811  1451  1584512 87716 ffffffff 00000000 S DnsConfigServic
+u0_a22    1812  1451  1584512 87716 ffffffff 00000000 S inotify_reader
+u0_a22    1815  1451  1584512 87716 ffffffff 00000000 S Network File Th
+u0_a22    1816  1451  1584512 87716 ffffffff 00000000 S SimpleCacheWork
+u0_a22    1817  1451  1584512 87716 ffffffff 00000000 S SimpleCacheWork
+u0_a22    1823  1451  1584512 87716 ffffffff 00000000 S Binder_4
+u0_a22    1824  1451  1584512 87716 ffffffff 00000000 S Binder_5
+u0_a22    12193 1451  1584512 87716 ffffffff 00000000 S Background Bloc
+u0_a22    12207 1451  1584512 87716 ffffffff 00000000 S User-Facing Blo
+u0_a22    12211 1451  1584512 87716 ffffffff 00000000 S WorkerPool/1221
+u0_a22    12232 1451  1584512 87716 ffffffff 00000000 S Background Non-
+u0_a22    12235 1451  1584512 87716 ffffffff 00000000 S Background Bloc
+u0_a22    12236 1451  1584512 87716 ffffffff 00000000 S Background Bloc
+u0_a22    12237 1451  1584512 87716 ffffffff 00000000 S Background Non-
+u0_a8     1478  205   1613496 72932 ffffffff 00000000 S com.google.process.gapps
+u0_a8     1485  1478  1613496 72932 ffffffff 00000000 S Heap thread poo
+u0_a8     1486  1478  1613496 72932 ffffffff 00000000 S Heap thread poo
+u0_a8     1487  1478  1613496 72932 ffffffff 00000000 S Heap thread poo
+u0_a8     1488  1478  1613496 72932 ffffffff 00000000 S Signal Catcher
+u0_a8     1489  1478  1613496 72932 ffffffff 00000000 S JDWP
+u0_a8     1490  1478  1613496 72932 ffffffff 00000000 S ReferenceQueueD
+u0_a8     1491  1478  1613496 72932 ffffffff 00000000 S FinalizerDaemon
+u0_a8     1492  1478  1613496 72932 ffffffff 00000000 S FinalizerWatchd
+u0_a8     1493  1478  1613496 72932 ffffffff 00000000 S HeapTrimmerDaem
+u0_a8     1494  1478  1613496 72932 ffffffff 00000000 S GCDaemon
+u0_a8     1495  1478  1613496 72932 ffffffff 00000000 S Binder_1
+u0_a8     1496  1478  1613496 72932 ffffffff 00000000 S Binder_2
+u0_a8     1497  1478  1613496 72932 ffffffff 00000000 S Binder_3
+u0_a8     1613  1478  1613496 72932 ffffffff 00000000 S Gservices
+u0_a8     1614  1478  1613496 72932 ffffffff 00000000 S RefQueueWorker@
+u0_a8     1615  1478  1613496 72932 ffffffff 00000000 S Gservices
+u0_a8     1616  1478  1613496 72932 ffffffff 00000000 S RefQueueWorker@
+u0_a8     1620  1478  1613496 72932 ffffffff 00000000 S Gservices
+u0_a8     1996  1478  1613496 72932 ffffffff 00000000 S Binder_4
+u0_a8     1997  1478  1613496 72932 ffffffff 00000000 S Binder_5
+u0_a8     2510  1478  1613496 72932 ffffffff 00000000 S GCMWriter
+u0_a8     2512  1478  1613496 72932 ffffffff 00000000 S AsyncTask #1
+u0_a8     2536  1478  1613496 72932 ffffffff 00000000 S GCMReader
+u0_a8     2547  1478  1613496 72932 ffffffff 00000000 S pool-2-thread-1
+u0_a8     3680  1478  1613496 72932 ffffffff 00000000 S WifiManager
+u0_a8     4135  1478  1613496 72932 ffffffff 00000000 S AsyncTask #2
+u0_a8     4159  1478  1613496 72932 ffffffff 00000000 S AsyncTask #3
+u0_a8     4184  1478  1613496 72932 ffffffff 00000000 S AsyncTask #4
+u0_a8     4210  1478  1613496 72932 ffffffff 00000000 S AsyncTask #5
+u0_a8     4541  1478  1613496 72932 ffffffff 00000000 S RefQueueWorker@
+u0_a8     4735  1478  1613496 72932 ffffffff 00000000 S pool-8-thread-1
+u0_a8     4770  1478  1613496 72932 ffffffff 00000000 S Binder_6
+u0_a8     12448 1478  1613496 72932 ffffffff 00000000 S OkHttp Connecti
+u0_a8     14401 1478  1613496 72932 ffffffff 00000000 S Thread-233
+u0_a8     14409 1478  1613496 72932 ffffffff 00000000 S OkHttp Connecti
+dhcp      1700  1     9344   756   ffffffff 00000000 S /system/bin/dhcpcd
+u0_a8     1873  205   1756828 84724 ffffffff 00000000 S com.google.android.gms
+u0_a8     1878  1873  1756828 84724 ffffffff 00000000 S Heap thread poo
+u0_a8     1880  1873  1756828 84724 ffffffff 00000000 S Heap thread poo
+u0_a8     1881  1873  1756828 84724 ffffffff 00000000 S Heap thread poo
+u0_a8     1882  1873  1756828 84724 ffffffff 00000000 S Signal Catcher
+u0_a8     1883  1873  1756828 84724 ffffffff 00000000 S JDWP
+u0_a8     1884  1873  1756828 84724 ffffffff 00000000 S ReferenceQueueD
+u0_a8     1885  1873  1756828 84724 ffffffff 00000000 S FinalizerDaemon
+u0_a8     1886  1873  1756828 84724 ffffffff 00000000 S FinalizerWatchd
+u0_a8     1887  1873  1756828 84724 ffffffff 00000000 S HeapTrimmerDaem
+u0_a8     1888  1873  1756828 84724 ffffffff 00000000 S GCDaemon
+u0_a8     1889  1873  1756828 84724 ffffffff 00000000 S Binder_1
+u0_a8     1890  1873  1756828 84724 ffffffff 00000000 S Binder_2
+u0_a8     1895  1873  1756828 84724 ffffffff 00000000 S Gservices
+u0_a8     1898  1873  1756828 84724 ffffffff 00000000 S measurement-1
+u0_a8     1900  1873  1756828 84724 ffffffff 00000000 S AsyncTask #1
+u0_a8     1904  1873  1756828 84724 ffffffff 00000000 S AsyncTask #2
+u0_a8     2001  1873  1756828 84724 ffffffff 00000000 S Binder_3
+u0_a8     2497  1873  1756828 84724 ffffffff 00000000 S WifiManager
+u0_a8     2509  1873  1756828 84724 ffffffff 00000000 S picasa-uploads-
+u0_a8     2946  1873  1756828 84724 ffffffff 00000000 S pool-7-thread-1
+u0_a8     4390  1873  1756828 84724 ffffffff 00000000 S pool-13-thread-
+u0_a8     4391  1873  1756828 84724 ffffffff 00000000 S pool-18-thread-
+u0_a8     4392  1873  1756828 84724 ffffffff 00000000 S pool-11-thread-
+u0_a8     4394  1873  1756828 84724 ffffffff 00000000 S pool-25-thread-
+u0_a8     4395  1873  1756828 84724 ffffffff 00000000 S pool-25-thread-
+u0_a8     4396  1873  1756828 84724 ffffffff 00000000 S pool-25-thread-
+u0_a8     4397  1873  1756828 84724 ffffffff 00000000 S pool-25-thread-
+u0_a8     4398  1873  1756828 84724 ffffffff 00000000 S pool-14-thread-
+u0_a8     4521  1873  1756828 84724 ffffffff 00000000 S MediaTracker bu
+u0_a8     4766  1873  1756828 84724 ffffffff 00000000 S Icing-Pool-0
+u0_a8     4771  1873  1756828 84724 ffffffff 00000000 S Icing-Worker-0
+u0_a8     4796  1873  1756828 84724 ffffffff 00000000 S Thread-200
+u0_a8     4797  1873  1756828 84724 ffffffff 00000000 S Thread-201
+u0_a8     4798  1873  1756828 84724 ffffffff 00000000 S Thread-202
+u0_a8     4799  1873  1756828 84724 ffffffff 00000000 S Thread-203
+u0_a8     4800  1873  1756828 84724 ffffffff 00000000 S Thread-204
+u0_a8     5793  1873  1756828 84724 ffffffff 00000000 S Binder_4
+u0_a8     6257  1873  1756828 84724 ffffffff 00000000 S Icing-Pool-1
+u0_a8     6258  1873  1756828 84724 ffffffff 00000000 S Icing-Pool-2
+u0_a8     6259  1873  1756828 84724 ffffffff 00000000 S Icing-Pool-3
+u0_a8     6673  1873  1756828 84724 ffffffff 00000000 S pool-22-thread-
+u0_a8     8581  1873  1756828 84724 ffffffff 00000000 S Binder_5
+u0_a8     9001  1873  1756828 84724 ffffffff 00000000 S Gservices
+u0_a8     9024  1873  1756828 84724 ffffffff 00000000 S GamesProviderWo
+u0_a8     11865 1873  1756828 84724 ffffffff 00000000 S pool-37-thread-
+u0_a8     1949  205   1614008 81544 ffffffff 00000000 S com.google.android.gms.persistent
+u0_a8     1954  1949  1614008 81544 ffffffff 00000000 S Heap thread poo
+u0_a8     1955  1949  1614008 81544 ffffffff 00000000 S Heap thread poo
+u0_a8     1956  1949  1614008 81544 ffffffff 00000000 S Heap thread poo
+u0_a8     1959  1949  1614008 81544 ffffffff 00000000 S Signal Catcher
+u0_a8     1960  1949  1614008 81544 ffffffff 00000000 S JDWP
+u0_a8     1961  1949  1614008 81544 ffffffff 00000000 S ReferenceQueueD
+u0_a8     1962  1949  1614008 81544 ffffffff 00000000 S FinalizerDaemon
+u0_a8     1963  1949  1614008 81544 ffffffff 00000000 S FinalizerWatchd
+u0_a8     1964  1949  1614008 81544 ffffffff 00000000 S HeapTrimmerDaem
+u0_a8     1965  1949  1614008 81544 ffffffff 00000000 S GCDaemon
+u0_a8     1966  1949  1614008 81544 ffffffff 00000000 S Binder_1
+u0_a8     1967  1949  1614008 81544 ffffffff 00000000 S Binder_2
+u0_a8     1968  1949  1614008 81544 ffffffff 00000000 S Gservices
+u0_a8     1973  1949  1614008 81544 ffffffff 00000000 S IntentService[G
+u0_a8     1976  1949  1614008 81544 ffffffff 00000000 S FlpThread
+u0_a8     1977  1949  1614008 81544 ffffffff 00000000 S Binder_3
+u0_a8     1978  1949  1614008 81544 ffffffff 00000000 S WifiManager
+u0_a8     1979  1949  1614008 81544 ffffffff 00000000 S GeofencerStateM
+u0_a8     1980  1949  1614008 81544 ffffffff 00000000 S LocationService
+u0_a8     1984  1949  1614008 81544 ffffffff 00000000 S Binder_4
+u0_a8     1986  1949  1614008 81544 ffffffff 00000000 S Binder_5
+u0_a8     1990  1949  1614008 81544 ffffffff 00000000 S pool-4-thread-1
+u0_a8     1992  1949  1614008 81544 ffffffff 00000000 S GmsCoreStatsSer
+u0_a8     1995  1949  1614008 81544 ffffffff 00000000 S GoogleLocationS
+u0_a8     2004  1949  1614008 81544 ffffffff 00000000 S Thread-139
+u0_a8     2005  1949  1614008 81544 ffffffff 00000000 S Thread-140
+u0_a8     2006  1949  1614008 81544 ffffffff 00000000 S Thread-141
+u0_a8     2007  1949  1614008 81544 ffffffff 00000000 S Thread-142
+u0_a8     2021  1949  1614008 81544 ffffffff 00000000 S NetworkLocation
+u0_a8     2029  1949  1614008 81544 ffffffff 00000000 S UlrDispatchingS
+u0_a8     2030  1949  1614008 81544 ffffffff 00000000 S nlp-async-worke
+u0_a8     2521  1949  1614008 81544 ffffffff 00000000 S FitnessServiceF
+u0_a8     2522  1949  1614008 81544 ffffffff 00000000 S FitRecordingBro
+u0_a8     2526  1949  1614008 81544 ffffffff 00000000 S AsyncTask #1
+u0_a8     2530  1949  1614008 81544 ffffffff 00000000 S NearbyMessagesB
+u0_a8     4180  1949  1614008 81544 ffffffff 00000000 S AsyncTask #2
+u0_a8     4221  1949  1614008 81544 ffffffff 00000000 S AsyncTask #3
+u0_a8     4223  1949  1614008 81544 ffffffff 00000000 S AsyncTask #4
+u0_a8     4749  1949  1614008 81544 ffffffff 00000000 S CopresenceEvent
+u0_a8     6326  1949  1614008 81544 ffffffff 00000000 S AsyncTask #5
+u0_a8     6917  1949  1614008 81544 ffffffff 00000000 S Binder_6
+u0_a8     7196  1949  1614008 81544 ffffffff 00000000 S UlrDispatchingS
+u0_a8     7260  1949  1614008 81544 ffffffff 00000000 S Thread-174
+u0_a8     7261  1949  1614008 81544 ffffffff 00000000 S Thread-175
+u0_a8     7262  1949  1614008 81544 ffffffff 00000000 S Thread-176
+u0_a8     7263  1949  1614008 81544 ffffffff 00000000 S Thread-177
+u0_a8     7264  1949  1614008 81544 ffffffff 00000000 S Thread-178
+u0_a8     12449 1949  1614008 81544 ffffffff 00000000 S OkHttp Connecti
+root      2031  1     20256  880   ffffffff 00000000 S /system/bin/mpdecision
+root      2032  2031  20256  880   ffffffff 00000000 S mpdecision
+root      2033  2031  20256  880   ffffffff 00000000 S mpdecision
+root      2034  2031  20256  880   ffffffff 00000000 S mpdecision
+root      2035  2031  20256  880   ffffffff 00000000 S mpdecision
+root      2036  2031  20256  880   ffffffff 00000000 S mpdecision
+root      2046  2031  20256  880   ffffffff 00000000 S mpdecision
+u0_a193   2647  205   1541760 60840 ffffffff 00000000 S com.qiyi.video.market
+u0_a193   2653  2647  1541760 60840 ffffffff 00000000 S Heap thread poo
+u0_a193   2654  2647  1541760 60840 ffffffff 00000000 S Heap thread poo
+u0_a193   2655  2647  1541760 60840 ffffffff 00000000 S Heap thread poo
+u0_a193   2656  2647  1541760 60840 ffffffff 00000000 S Signal Catcher
+u0_a193   2657  2647  1541760 60840 ffffffff 00000000 S JDWP
+u0_a193   2658  2647  1541760 60840 ffffffff 00000000 S ReferenceQueueD
+u0_a193   2659  2647  1541760 60840 ffffffff 00000000 S FinalizerDaemon
+u0_a193   2660  2647  1541760 60840 ffffffff 00000000 S FinalizerWatchd
+u0_a193   2661  2647  1541760 60840 ffffffff 00000000 S HeapTrimmerDaem
+u0_a193   2662  2647  1541760 60840 ffffffff 00000000 S GCDaemon
+u0_a193   2663  2647  1541760 60840 ffffffff 00000000 S Binder_1
+u0_a193   2664  2647  1541760 60840 ffffffff 00000000 S Binder_2
+u0_a193   2671  2647  1541760 60840 ffffffff 00000000 S RefQueueWorker@
+u0_a193   2673  2647  1541760 60840 ffffffff 00000000 S .ProcessManager
+u0_a193   2675  2647  1541760 60840 ffffffff 00000000 S Binder_3
+u0_a193   2677  2647  1541760 60840 ffffffff 00000000 S Thread-208
+u0_a193   2679  2647  1541760 60840 ffffffff 00000000 S pool-2-thread-1
+u0_a193   2680  2647  1541760 60840 ffffffff 00000000 S WifiManager
+u0_a193   2682  2647  1541760 60840 ffffffff 00000000 S Timer-0
+u0_a193   2683  2647  1541760 60840 ffffffff 00000000 S Timer-1
+u0_a193   2710  2647  1541760 60840 ffffffff 00000000 S AsyncTask #1
+u0_a193   2718  2647  1541760 60840 ffffffff 00000000 S pool-3-thread-1
+u0_a193   3103  2647  1541760 60840 ffffffff 00000000 S pool-4-thread-1
+u0_a193   6672  2647  1541760 60840 ffffffff 00000000 S AsyncTask #2
+u0_a193   6752  2647  1541760 60840 ffffffff 00000000 S AsyncTask #3
+u0_a193   12484 2647  1541760 60840 ffffffff 00000000 S AsyncTask #4
+u0_a193   12576 2647  1541760 60840 ffffffff 00000000 S AsyncTask #5
+u0_a193   3104  205   1523132 46892 ffffffff 00000000 S com.qiyi.video.market:pluginDownloadService
+u0_a193   3110  3104  1523132 46892 ffffffff 00000000 S Heap thread poo
+u0_a193   3111  3104  1523132 46892 ffffffff 00000000 S Heap thread poo
+u0_a193   3112  3104  1523132 46892 ffffffff 00000000 S Heap thread poo
+u0_a193   3113  3104  1523132 46892 ffffffff 00000000 S Signal Catcher
+u0_a193   3114  3104  1523132 46892 ffffffff 00000000 S JDWP
+u0_a193   3115  3104  1523132 46892 ffffffff 00000000 S ReferenceQueueD
+u0_a193   3116  3104  1523132 46892 ffffffff 00000000 S FinalizerDaemon
+u0_a193   3117  3104  1523132 46892 ffffffff 00000000 S FinalizerWatchd
+u0_a193   3118  3104  1523132 46892 ffffffff 00000000 S HeapTrimmerDaem
+u0_a193   3119  3104  1523132 46892 ffffffff 00000000 S GCDaemon
+u0_a193   3120  3104  1523132 46892 ffffffff 00000000 S Binder_1
+u0_a193   3121  3104  1523132 46892 ffffffff 00000000 S Binder_2
+u0_a193   3141  3104  1523132 46892 ffffffff 00000000 S RefQueueWorker@
+u0_a193   3257  3104  1523132 46892 ffffffff 00000000 S pool-3-thread-1
+u0_a193   7173  3104  1523132 46892 ffffffff 00000000 S Binder_3
+u0_a193   3122  205   1538224 61140 ffffffff 00000000 S com.qiyi.video.market:bdservice_v1
+u0_a193   3128  3122  1538224 61140 ffffffff 00000000 S Heap thread poo
+u0_a193   3129  3122  1538224 61140 ffffffff 00000000 S Heap thread poo
+u0_a193   3130  3122  1538224 61140 ffffffff 00000000 S Heap thread poo
+u0_a193   3131  3122  1538224 61140 ffffffff 00000000 S Signal Catcher
+u0_a193   3132  3122  1538224 61140 ffffffff 00000000 S JDWP
+u0_a193   3133  3122  1538224 61140 ffffffff 00000000 S ReferenceQueueD
+u0_a193   3134  3122  1538224 61140 ffffffff 00000000 S FinalizerDaemon
+u0_a193   3135  3122  1538224 61140 ffffffff 00000000 S FinalizerWatchd
+u0_a193   3136  3122  1538224 61140 ffffffff 00000000 S HeapTrimmerDaem
+u0_a193   3137  3122  1538224 61140 ffffffff 00000000 S GCDaemon
+u0_a193   3138  3122  1538224 61140 ffffffff 00000000 S Binder_1
+u0_a193   3139  3122  1538224 61140 ffffffff 00000000 S Binder_2
+u0_a193   3145  3122  1538224 61140 ffffffff 00000000 S RefQueueWorker@
+u0_a193   3206  3122  1538224 61140 ffffffff 00000000 S WifiManager
+u0_a193   3208  3122  1538224 61140 ffffffff 00000000 S NanoHttpd Main 
+u0_a193   7586  3122  1538224 61140 ffffffff 00000000 S pool-4-thread-1
+u0_a193   10584 3122  1538224 61140 ffffffff 00000000 S pool-2-thread-1
+u0_a193   3154  205   1522116 53536 ffffffff 00000000 S com.qiyi.video.market:baiduLocation
+u0_a193   3163  3154  1522116 53536 ffffffff 00000000 S Heap thread poo
+u0_a193   3164  3154  1522116 53536 ffffffff 00000000 S Heap thread poo
+u0_a193   3165  3154  1522116 53536 ffffffff 00000000 S Heap thread poo
+u0_a193   3166  3154  1522116 53536 ffffffff 00000000 S Signal Catcher
+u0_a193   3167  3154  1522116 53536 ffffffff 00000000 S JDWP
+u0_a193   3168  3154  1522116 53536 ffffffff 00000000 S ReferenceQueueD
+u0_a193   3169  3154  1522116 53536 ffffffff 00000000 S FinalizerDaemon
+u0_a193   3170  3154  1522116 53536 ffffffff 00000000 S FinalizerWatchd
+u0_a193   3171  3154  1522116 53536 ffffffff 00000000 S HeapTrimmerDaem
+u0_a193   3172  3154  1522116 53536 ffffffff 00000000 S GCDaemon
+u0_a193   3173  3154  1522116 53536 ffffffff 00000000 S Binder_1
+u0_a193   3174  3154  1522116 53536 ffffffff 00000000 S Binder_2
+u0_a193   3177  3154  1522116 53536 ffffffff 00000000 S RefQueueWorker@
+u0_a193   3199  3154  1522116 53536 ffffffff 00000000 S WifiManager
+u0_a86    3179  205   1561816 58376 ffffffff 00000000 S com.tencent.mm:push
+u0_a86    3183  3179  1561816 58376 ffffffff 00000000 S Heap thread poo
+u0_a86    3184  3179  1561816 58376 ffffffff 00000000 S Heap thread poo
+u0_a86    3185  3179  1561816 58376 ffffffff 00000000 S Heap thread poo
+u0_a86    3187  3179  1561816 58376 ffffffff 00000000 S Signal Catcher
+u0_a86    3189  3179  1561816 58376 ffffffff 00000000 S JDWP
+u0_a86    3190  3179  1561816 58376 ffffffff 00000000 S ReferenceQueueD
+u0_a86    3191  3179  1561816 58376 ffffffff 00000000 S FinalizerDaemon
+u0_a86    3192  3179  1561816 58376 ffffffff 00000000 S FinalizerWatchd
+u0_a86    3193  3179  1561816 58376 ffffffff 00000000 S HeapTrimmerDaem
+u0_a86    3194  3179  1561816 58376 ffffffff 00000000 S GCDaemon
+u0_a86    3195  3179  1561816 58376 ffffffff 00000000 S Binder_1
+u0_a86    3196  3179  1561816 58376 ffffffff 00000000 S Binder_2
+u0_a86    3210  3179  1561816 58376 ffffffff 00000000 S THREAD_POOL_HAN
+u0_a86    3212  3179  1561816 58376 ffffffff 00000000 S tencent.mm:push
+u0_a86    3216  3179  1561816 58376 ffffffff 00000000 S FileObserver
+u0_a86    3238  3179  1561816 58376 ffffffff 00000000 S tencent.mm:push
+u0_a86    3239  3179  1561816 58376 ffffffff 00000000 S default
+u0_a86    3240  3179  1561816 58376 ffffffff 00000000 S WifiManager
+u0_a86    5627  3179  1561816 58376 ffffffff 00000000 S Binder_3
+u0_a86    7150  3179  1561816 58376 ffffffff 00000000 S default
+u0_a170   3217  205   1531688 52204 ffffffff 00000000 S com.baidu.searchbox:bdservice_v1
+u0_a170   3220  3217  1531688 52204 ffffffff 00000000 S Heap thread poo
+u0_a170   3221  3217  1531688 52204 ffffffff 00000000 S Heap thread poo
+u0_a170   3223  3217  1531688 52204 ffffffff 00000000 S Heap thread poo
+u0_a170   3226  3217  1531688 52204 ffffffff 00000000 S Signal Catcher
+u0_a170   3228  3217  1531688 52204 ffffffff 00000000 S JDWP
+u0_a170   3229  3217  1531688 52204 ffffffff 00000000 S ReferenceQueueD
+u0_a170   3230  3217  1531688 52204 ffffffff 00000000 S FinalizerDaemon
+u0_a170   3231  3217  1531688 52204 ffffffff 00000000 S FinalizerWatchd
+u0_a170   3233  3217  1531688 52204 ffffffff 00000000 S HeapTrimmerDaem
+u0_a170   3234  3217  1531688 52204 ffffffff 00000000 S GCDaemon
+u0_a170   3235  3217  1531688 52204 ffffffff 00000000 S Binder_1
+u0_a170   3236  3217  1531688 52204 ffffffff 00000000 S Binder_2
+u0_a170   3303  3217  1531688 52204 ffffffff 00000000 S AsyncTask #1
+u0_a170   3304  3217  1531688 52204 ffffffff 00000000 S AsyncTask #2
+u0_a170   3518  3217  1531688 52204 ffffffff 00000000 S PushService-Pus
+u0_a170   3519  3217  1531688 52204 ffffffff 00000000 S PushService-Pus
+u0_a170   6201  3217  1531688 52204 ffffffff 00000000 S pool-1-thread-1
+u0_a170   10591 3217  1531688 52204 ffffffff 00000000 S RefQueueWorker@
+u0_a170   3260  205   1533384 53212 ffffffff 00000000 S com.baidu.searchbox:bdmoservice
+u0_a170   3264  3260  1533384 53212 ffffffff 00000000 S Heap thread poo
+u0_a170   3265  3260  1533384 53212 ffffffff 00000000 S Heap thread poo
+u0_a170   3266  3260  1533384 53212 ffffffff 00000000 S Heap thread poo
+u0_a170   3269  3260  1533384 53212 ffffffff 00000000 S Signal Catcher
+u0_a170   3270  3260  1533384 53212 ffffffff 00000000 S JDWP
+u0_a170   3271  3260  1533384 53212 ffffffff 00000000 S ReferenceQueueD
+u0_a170   3272  3260  1533384 53212 ffffffff 00000000 S FinalizerDaemon
+u0_a170   3273  3260  1533384 53212 ffffffff 00000000 S FinalizerWatchd
+u0_a170   3274  3260  1533384 53212 ffffffff 00000000 S HeapTrimmerDaem
+u0_a170   3275  3260  1533384 53212 ffffffff 00000000 S GCDaemon
+u0_a170   3276  3260  1533384 53212 ffffffff 00000000 S Binder_1
+u0_a170   3277  3260  1533384 53212 ffffffff 00000000 S Binder_2
+u0_a170   3738  3260  1533384 53212 ffffffff 00000000 S NanoHttpd Main 
+u0_a170   5783  3260  1533384 53212 ffffffff 00000000 S WifiManager
+u0_a126   3633  205   1515740 46080 ffffffff 00000000 S com.tencent.portfolio:push
+u0_a126   3636  3633  1515740 46080 ffffffff 00000000 S Heap thread poo
+u0_a126   3638  3633  1515740 46080 ffffffff 00000000 S Heap thread poo
+u0_a126   3639  3633  1515740 46080 ffffffff 00000000 S Heap thread poo
+u0_a126   3642  3633  1515740 46080 ffffffff 00000000 S Signal Catcher
+u0_a126   3643  3633  1515740 46080 ffffffff 00000000 S JDWP
+u0_a126   3645  3633  1515740 46080 ffffffff 00000000 S ReferenceQueueD
+u0_a126   3646  3633  1515740 46080 ffffffff 00000000 S FinalizerDaemon
+u0_a126   3647  3633  1515740 46080 ffffffff 00000000 S FinalizerWatchd
+u0_a126   3648  3633  1515740 46080 ffffffff 00000000 S HeapTrimmerDaem
+u0_a126   3649  3633  1515740 46080 ffffffff 00000000 S GCDaemon
+u0_a126   3650  3633  1515740 46080 ffffffff 00000000 S Binder_1
+u0_a126   3651  3633  1515740 46080 ffffffff 00000000 S Binder_2
+u0_a126   3661  3633  1515740 46080 ffffffff 00000000 S TPPluginCenter 
+u0_a126   3663  3633  1515740 46080 ffffffff 00000000 S pool-1-thread-1
+u0_a126   3665  3633  1515740 46080 ffffffff 00000000 S MidService
+u0_a126   3667  3633  1515740 46080 ffffffff 00000000 S pool-2-thread-1
+u0_a126   3668  3633  1515740 46080 ffffffff 00000000 S push core threa
+u0_a126   3670  3633  1515740 46080 ffffffff 00000000 S .ProcessManager
+u0_a126   3672  3633  1515740 46080 ffffffff 00000000 S Binder_3
+u0_a126   3674  3633  1515740 46080 ffffffff 00000000 S pool-4-thread-1
+u0_a126   3675  3633  1515740 46080 ffffffff 00000000 S pool-3-thread-1
+u0_a126   5638  3633  1515740 46080 ffffffff 00000000 S Timer-0
+bluetooth 4227  205   1527652 48088 ffffffff 00000000 S com.android.bluetooth
+bluetooth 4231  4227  1527652 48088 ffffffff 00000000 S Heap thread poo
+bluetooth 4233  4227  1527652 48088 ffffffff 00000000 S Heap thread poo
+bluetooth 4235  4227  1527652 48088 ffffffff 00000000 S Heap thread poo
+bluetooth 4236  4227  1527652 48088 ffffffff 00000000 S Signal Catcher
+bluetooth 4237  4227  1527652 48088 ffffffff 00000000 S JDWP
+bluetooth 4238  4227  1527652 48088 ffffffff 00000000 S ReferenceQueueD
+bluetooth 4239  4227  1527652 48088 ffffffff 00000000 S FinalizerDaemon
+bluetooth 4240  4227  1527652 48088 ffffffff 00000000 S FinalizerWatchd
+bluetooth 4241  4227  1527652 48088 ffffffff 00000000 S HeapTrimmerDaem
+bluetooth 4242  4227  1527652 48088 ffffffff 00000000 S GCDaemon
+bluetooth 4243  4227  1527652 48088 ffffffff 00000000 S Binder_1
+bluetooth 4244  4227  1527652 48088 ffffffff 00000000 S Binder_2
+bluetooth 4308  4227  1527652 48088 ffffffff 00000000 S BluetoothAdapte
+bluetooth 4309  4227  1527652 48088 ffffffff 00000000 S droid.bluetooth
+bluetooth 4311  4227  1527652 48088 ffffffff 00000000 S bluedroid wake/
+bluetooth 4312  4227  1527652 48088 ffffffff 00000000 S BT Service Call
+bluetooth 4315  4227  1527652 48088 ffffffff 00000000 S BondStateMachin
+bluetooth 4316  4227  1527652 48088 ffffffff 00000000 S Binder_3
+bluetooth 4317  4227  1527652 48088 ffffffff 00000000 S Binder_4
+bluetooth 4318  4227  1527652 48088 ffffffff 00000000 S HeadsetStateMac
+bluetooth 4320  4227  1527652 48088 ffffffff 00000000 S BluetoothAvrcpH
+bluetooth 4321  4227  1527652 48088 ffffffff 00000000 S A2dpStateMachin
+bluetooth 4322  4227  1527652 48088 ffffffff 00000000 S A2DP-MEDIA
+bluetooth 4323  4227  1527652 48088 ffffffff 00000000 S uipc-main
+bluetooth 4324  4227  1527652 48088 ffffffff 00000000 S BluetoothHdpHan
+bluetooth 4325  4227  1527652 48088 ffffffff 00000000 S droid.bluetooth
+bluetooth 4326  4227  1527652 48088 ffffffff 00000000 S BluetoothAdvert
+bluetooth 4327  4227  1527652 48088 ffffffff 00000000 S BluetoothScanMa
+bluetooth 4331  4227  1527652 48088 ffffffff 00000000 S bluedroid wake/
+bluetooth 4333  4227  1527652 48088 ffffffff 00000000 S bt_hc_worker
+bluetooth 4338  4227  1527652 48088 ffffffff 00000000 S userial_read
+bluetooth 4478  4227  1527652 48088 ffffffff 00000000 S BT Service Call
+bluetooth 4479  4227  1527652 48088 ffffffff 00000000 S bt_hc_worker
+bluetooth 4481  4227  1527652 48088 ffffffff 00000000 S bt_hc_worker
+bluetooth 4482  4227  1527652 48088 ffffffff 00000000 S BluetoothMapAcc
+bluetooth 6459  4227  1527652 48088 ffffffff 00000000 S BluetoothPbapAc
+bluetooth 6473  4227  1527652 48088 ffffffff 00000000 S pool-1-thread-1
+bluetooth 6477  4227  1527652 48088 ffffffff 00000000 S BtOppRfcommList
+radio     4597  205   1493160 37460 ffffffff 00000000 S com.qualcomm.qcrilmsgtunnel
+radio     4603  4597  1493160 37460 ffffffff 00000000 S Heap thread poo
+radio     4604  4597  1493160 37460 ffffffff 00000000 S Heap thread poo
+radio     4605  4597  1493160 37460 ffffffff 00000000 S Heap thread poo
+radio     4606  4597  1493160 37460 ffffffff 00000000 S Signal Catcher
+radio     4607  4597  1493160 37460 ffffffff 00000000 S JDWP
+radio     4608  4597  1493160 37460 ffffffff 00000000 S ReferenceQueueD
+radio     4609  4597  1493160 37460 ffffffff 00000000 S FinalizerDaemon
+radio     4610  4597  1493160 37460 ffffffff 00000000 S FinalizerWatchd
+radio     4611  4597  1493160 37460 ffffffff 00000000 S HeapTrimmerDaem
+radio     4612  4597  1493160 37460 ffffffff 00000000 S GCDaemon
+radio     4613  4597  1493160 37460 ffffffff 00000000 S Binder_1
+radio     4614  4597  1493160 37460 ffffffff 00000000 S Binder_2
+radio     4615  4597  1493160 37460 ffffffff 00000000 S QcRilReceiver
+radio     4616  4597  1493160 37460 ffffffff 00000000 S QcRilSender
+u0_a193   5239  205   1528424 47860 ffffffff 00000000 S .iqiyipushserviceGlobal
+u0_a193   5242  5239  1528424 47860 ffffffff 00000000 S Heap thread poo
+u0_a193   5244  5239  1528424 47860 ffffffff 00000000 S Heap thread poo
+u0_a193   5245  5239  1528424 47860 ffffffff 00000000 S Heap thread poo
+u0_a193   5248  5239  1528424 47860 ffffffff 00000000 S Signal Catcher
+u0_a193   5249  5239  1528424 47860 ffffffff 00000000 S JDWP
+u0_a193   5250  5239  1528424 47860 ffffffff 00000000 S ReferenceQueueD
+u0_a193   5251  5239  1528424 47860 ffffffff 00000000 S FinalizerDaemon
+u0_a193   5252  5239  1528424 47860 ffffffff 00000000 S FinalizerWatchd
+u0_a193   5253  5239  1528424 47860 ffffffff 00000000 S HeapTrimmerDaem
+u0_a193   5254  5239  1528424 47860 ffffffff 00000000 S GCDaemon
+u0_a193   5255  5239  1528424 47860 ffffffff 00000000 S Binder_1
+u0_a193   5257  5239  1528424 47860 ffffffff 00000000 S Binder_2
+u0_a193   5280  5239  1528424 47860 ffffffff 00000000 S RefQueueWorker@
+u0_a193   5281  5239  1528424 47860 ffffffff 00000000 S Binder_3
+u0_a193   5361  5239  1528424 47860 ffffffff 00000000 S Micro Client Co
+u0_a193   5362  5239  1528424 47860 ffffffff 00000000 S Micro Client Co
+u0_a193   5363  5239  1528424 47860 ffffffff 00000000 S Micro Client Ca
+u0_a193   6740  5239  1528424 47860 ffffffff 00000000 S Binder_4
+u0_a193   7091  5239  1528424 47860 ffffffff 00000000 S Binder_5
+u0_a193   7557  5239  1528424 47860 ffffffff 00000000 S Binder_6
+u0_a193   5285  5239  1521088 34196 ffffffff 00000000 S .iqiyipushserviceGlobal
+u0_a90    5323  205   1557268 59988 ffffffff 00000000 S com.strava
+u0_a90    5327  5323  1557268 59988 ffffffff 00000000 S Heap thread poo
+u0_a90    5328  5323  1557268 59988 ffffffff 00000000 S Heap thread poo
+u0_a90    5329  5323  1557268 59988 ffffffff 00000000 S Heap thread poo
+u0_a90    5332  5323  1557268 59988 ffffffff 00000000 S Signal Catcher
+u0_a90    5333  5323  1557268 59988 ffffffff 00000000 S JDWP
+u0_a90    5334  5323  1557268 59988 ffffffff 00000000 S ReferenceQueueD
+u0_a90    5335  5323  1557268 59988 ffffffff 00000000 S FinalizerDaemon
+u0_a90    5336  5323  1557268 59988 ffffffff 00000000 S FinalizerWatchd
+u0_a90    5337  5323  1557268 59988 ffffffff 00000000 S HeapTrimmerDaem
+u0_a90    5338  5323  1557268 59988 ffffffff 00000000 S GCDaemon
+u0_a90    5339  5323  1557268 59988 ffffffff 00000000 S Binder_1
+u0_a90    5340  5323  1557268 59988 ffffffff 00000000 S Binder_2
+u0_a90    5345  5323  1557268 59988 ffffffff 00000000 S Queue
+u0_a90    5346  5323  1557268 59988 ffffffff 00000000 S Queue
+u0_a90    5347  5323  1557268 59988 ffffffff 00000000 S Queue
+u0_a90    5348  5323  1557268 59988 ffffffff 00000000 S Queue
+u0_a90    5349  5323  1557268 59988 ffffffff 00000000 S Queue
+u0_a90    5352  5323  1557268 59988 ffffffff 00000000 S Crashlytics Exc
+u0_a90    5354  5323  1557268 59988 ffffffff 00000000 S pool-3-thread-1
+u0_a90    5364  5323  1557268 59988 ffffffff 00000000 S Thread-584
+u0_a90    5365  5323  1557268 59988 ffffffff 00000000 S Thread-585
+u0_a90    5366  5323  1557268 59988 ffffffff 00000000 S Thread-586
+u0_a90    5367  5323  1557268 59988 ffffffff 00000000 S pool-4-thread-1
+u0_a90    5369  5323  1557268 59988 ffffffff 00000000 S Crashlytics Tra
+u0_a90    5372  5323  1557268 59988 ffffffff 00000000 S Thread-593
+u0_a90    5373  5323  1557268 59988 ffffffff 00000000 S Thread-594
+u0_a90    5374  5323  1557268 59988 ffffffff 00000000 S Thread-595
+u0_a90    5375  5323  1557268 59988 ffffffff 00000000 S Thread-596
+u0_a90    5376  5323  1557268 59988 ffffffff 00000000 S pool-6-thread-1
+u0_a90    5377  5323  1557268 59988 ffffffff 00000000 S Thread-598
+u0_a90    5378  5323  1557268 59988 ffffffff 00000000 S Thread-599
+u0_a90    5379  5323  1557268 59988 ffffffff 00000000 S Thread-600
+u0_a90    5381  5323  1557268 59988 ffffffff 00000000 S Thread-602
+u0_a90    5383  5323  1557268 59988 ffffffff 00000000 S Thread #1
+u0_a90    5384  5323  1557268 59988 ffffffff 00000000 S AsyncTask #1
+u0_a90    5387  5323  1557268 59988 ffffffff 00000000 S Thread-605
+u0_a90    5388  5323  1557268 59988 ffffffff 00000000 S Thread-606
+u0_a90    5389  5323  1557268 59988 ffffffff 00000000 S Thread-607
+u0_a90    5390  5323  1557268 59988 ffffffff 00000000 S Thread-608
+u0_a90    5391  5323  1557268 59988 ffffffff 00000000 S Thread-609
+u0_a90    5393  5323  1557268 59988 ffffffff 00000000 S eNowAuthService
+u0_a90    5394  5323  1557268 59988 ffffffff 00000000 S Thread #2
+u0_a90    5468  5323  1557268 59988 ffffffff 00000000 S Okio Watchdog
+u0_a90    5498  5323  1557268 59988 ffffffff 00000000 S Thread #3
+u0_a109   5395  205   1524968 53976 ffffffff 00000000 S com.pandora.android
+u0_a109   5397  5395  1524968 53976 ffffffff 00000000 S Heap thread poo
+u0_a109   5398  5395  1524968 53976 ffffffff 00000000 S Heap thread poo
+u0_a109   5399  5395  1524968 53976 ffffffff 00000000 S Heap thread poo
+u0_a109   5401  5395  1524968 53976 ffffffff 00000000 S Signal Catcher
+u0_a109   5403  5395  1524968 53976 ffffffff 00000000 S JDWP
+u0_a109   5407  5395  1524968 53976 ffffffff 00000000 S ReferenceQueueD
+u0_a109   5408  5395  1524968 53976 ffffffff 00000000 S FinalizerDaemon
+u0_a109   5409  5395  1524968 53976 ffffffff 00000000 S FinalizerWatchd
+u0_a109   5410  5395  1524968 53976 ffffffff 00000000 S HeapTrimmerDaem
+u0_a109   5411  5395  1524968 53976 ffffffff 00000000 S GCDaemon
+u0_a109   5414  5395  1524968 53976 ffffffff 00000000 S Binder_1
+u0_a109   5416  5395  1524968 53976 ffffffff 00000000 S Binder_2
+u0_a109   5422  5395  1524968 53976 ffffffff 00000000 S Crashlytics Exc
+u0_a109   5429  5395  1524968 53976 ffffffff 00000000 S pool-2-thread-1
+u0_a109   5430  5395  1524968 53976 ffffffff 00000000 S AsyncTask #1
+u0_a109   5437  5395  1524968 53976 ffffffff 00000000 S Crashlytics Tra
+u0_a109   5439  5395  1524968 53976 ffffffff 00000000 S AsyncTask #2
+u0_a109   5440  5395  1524968 53976 ffffffff 00000000 S pool-4-thread-1
+u0_a109   5443  5395  1524968 53976 ffffffff 00000000 S PurchasingManag
+u0_a109   5444  5395  1524968 53976 ffffffff 00000000 S BluetoothServer
+u0_a109   5445  5395  1524968 53976 ffffffff 00000000 S AsyncTask #3
+u0_a109   5446  5395  1524968 53976 ffffffff 00000000 S AsyncTask #4
+u0_a109   5590  5395  1524968 53976 ffffffff 00000000 S Binder_3
+u0_a109   6481  5395  1524968 53976 ffffffff 00000000 S AsyncTask #5
+u0_a110   5474  205   1525556 49828 ffffffff 00000000 S tunein.player
+u0_a110   5479  5474  1525556 49828 ffffffff 00000000 S Heap thread poo
+u0_a110   5480  5474  1525556 49828 ffffffff 00000000 S Heap thread poo
+u0_a110   5481  5474  1525556 49828 ffffffff 00000000 S Heap thread poo
+u0_a110   5483  5474  1525556 49828 ffffffff 00000000 S Signal Catcher
+u0_a110   5484  5474  1525556 49828 ffffffff 00000000 S JDWP
+u0_a110   5485  5474  1525556 49828 ffffffff 00000000 S ReferenceQueueD
+u0_a110   5486  5474  1525556 49828 ffffffff 00000000 S FinalizerDaemon
+u0_a110   5487  5474  1525556 49828 ffffffff 00000000 S FinalizerWatchd
+u0_a110   5488  5474  1525556 49828 ffffffff 00000000 S HeapTrimmerDaem
+u0_a110   5489  5474  1525556 49828 ffffffff 00000000 S GCDaemon
+u0_a110   5490  5474  1525556 49828 ffffffff 00000000 S Binder_1
+u0_a110   5492  5474  1525556 49828 ffffffff 00000000 S Binder_2
+u0_a110   5503  5474  1525556 49828 ffffffff 00000000 S geHandlerThread
+u0_a110   5504  5474  1525556 49828 ffffffff 00000000 S GAThread
+u0_a110   5507  5474  1525556 49828 ffffffff 00000000 S Crashlytics Exc
+u0_a110   5510  5474  1525556 49828 ffffffff 00000000 S AsyncTask #1
+u0_a110   5515  5474  1525556 49828 ffffffff 00000000 S Crashlytics Tra
+u0_a110   5518  5474  1525556 49828 ffffffff 00000000 S AsyncTask #2
+u0_a110   5587  5474  1525556 49828 ffffffff 00000000 S AcceptThreadSec
+u0_a88    5519  205   1556696 65876 ffffffff 00000000 S com.dropbox.android
+u0_a88    5525  5519  1556696 65876 ffffffff 00000000 S Heap thread poo
+u0_a88    5526  5519  1556696 65876 ffffffff 00000000 S Heap thread poo
+u0_a88    5527  5519  1556696 65876 ffffffff 00000000 S Heap thread poo
+u0_a88    5528  5519  1556696 65876 ffffffff 00000000 S Signal Catcher
+u0_a88    5529  5519  1556696 65876 ffffffff 00000000 S JDWP
+u0_a88    5530  5519  1556696 65876 ffffffff 00000000 S ReferenceQueueD
+u0_a88    5531  5519  1556696 65876 ffffffff 00000000 S FinalizerDaemon
+u0_a88    5532  5519  1556696 65876 ffffffff 00000000 S FinalizerWatchd
+u0_a88    5533  5519  1556696 65876 ffffffff 00000000 S HeapTrimmerDaem
+u0_a88    5534  5519  1556696 65876 ffffffff 00000000 S GCDaemon
+u0_a88    5535  5519  1556696 65876 ffffffff 00000000 S Binder_1
+u0_a88    5536  5519  1556696 65876 ffffffff 00000000 S Binder_2
+u0_a88    5562  5519  1556696 65876 ffffffff 00000000 S Dropbox log upl
+u0_a88    5563  5519  1556696 65876 ffffffff 00000000 S gandalf updater
+u0_a88    5568  5519  1556696 65876 ffffffff 00000000 S pool-10-thread-
+u0_a88    5569  5519  1556696 65876 ffffffff 00000000 S DbxFileObserver
+u0_a88    5570  5519  1556696 65876 ffffffff 00000000 S LocalThumbManag
+u0_a88    5574  5519  1556696 65876 ffffffff 00000000 S local AsyncTask
+u0_a88    5575  5519  1556696 65876 ffffffff 00000000 S remote AsyncTas
+u0_a88    5576  5519  1556696 65876 ffffffff 00000000 S local AsyncTask
+u0_a88    5577  5519  1556696 65876 ffffffff 00000000 S remote AsyncTas
+u0_a88    5578  5519  1556696 65876 ffffffff 00000000 S Dropbox notif o
+u0_a88    5579  5519  1556696 65876 ffffffff 00000000 S Dropbox notif s
+u0_a88    5580  5519  1556696 65876 ffffffff 00000000 S Picasso-Stats
+u0_a88    5581  5519  1556696 65876 ffffffff 00000000 S Picasso-Dispatc
+u0_a88    5582  5519  1556696 65876 ffffffff 00000000 S Picasso-refQueu
+u0_a88    5583  5519  1556696 65876 ffffffff 00000000 S gandalf updater
+u0_a88    5592  5519  1556696 65876 ffffffff 00000000 S DbxFileObserver
+u0_a88    5593  5519  1556696 65876 ffffffff 00000000 S dbxpool-34:r-th
+u0_a88    5594  5519  1556696 65876 ffffffff 00000000 S dbxpool-32:au-t
+u0_a88    5595  5519  1556696 65876 ffffffff 00000000 S dbxpool-38:a-th
+u0_a88    5596  5519  1556696 65876 ffffffff 00000000 S Timer-0
+u0_a88    5597  5519  1556696 65876 ffffffff 00000000 S dbxpool-6:a-thr
+u0_a88    5599  5519  1556696 65876 ffffffff 00000000 S Timer-1
+u0_a88    5718  5519  1556696 65876 ffffffff 00000000 S RefQueueWorker@
+u0_a88    5750  5519  1556696 65876 ffffffff 00000000 S Thread-625
+u0_a88    5818  5519  1556696 65876 ffffffff 00000000 S Binder_3
+u0_a88    8569  5519  1556696 65876 ffffffff 00000000 S Binder_4
+u0_a88    8572  5519  1556696 65876 ffffffff 00000000 S Binder_5
+u0_a88    8580  5519  1556696 65876 ffffffff 00000000 S Binder_6
+u0_a93    5688  205   1496212 39724 ffffffff 00000000 S com.devuni.flashlight:remote
+u0_a93    5693  5688  1496212 39724 ffffffff 00000000 S Heap thread poo
+u0_a93    5694  5688  1496212 39724 ffffffff 00000000 S Heap thread poo
+u0_a93    5695  5688  1496212 39724 ffffffff 00000000 S Heap thread poo
+u0_a93    5697  5688  1496212 39724 ffffffff 00000000 S Signal Catcher
+u0_a93    5698  5688  1496212 39724 ffffffff 00000000 S JDWP
+u0_a93    5699  5688  1496212 39724 ffffffff 00000000 S ReferenceQueueD
+u0_a93    5700  5688  1496212 39724 ffffffff 00000000 S FinalizerDaemon
+u0_a93    5701  5688  1496212 39724 ffffffff 00000000 S FinalizerWatchd
+u0_a93    5702  5688  1496212 39724 ffffffff 00000000 S HeapTrimmerDaem
+u0_a93    5703  5688  1496212 39724 ffffffff 00000000 S GCDaemon
+u0_a93    5704  5688  1496212 39724 ffffffff 00000000 S Binder_1
+u0_a93    5705  5688  1496212 39724 ffffffff 00000000 S Binder_2
+u0_a93    12039 5688  1496212 39724 ffffffff 00000000 S pool-1-thread-1
+u0_a86    6202  205   1809096 86876 ffffffff 00000000 S com.tencent.mm
+u0_a86    6206  6202  1809096 86876 ffffffff 00000000 S Heap thread poo
+u0_a86    6207  6202  1809096 86876 ffffffff 00000000 S Heap thread poo
+u0_a86    6208  6202  1809096 86876 ffffffff 00000000 S Heap thread poo
+u0_a86    6211  6202  1809096 86876 ffffffff 00000000 S Signal Catcher
+u0_a86    6212  6202  1809096 86876 ffffffff 00000000 S JDWP
+u0_a86    6213  6202  1809096 86876 ffffffff 00000000 S ReferenceQueueD
+u0_a86    6214  6202  1809096 86876 ffffffff 00000000 S FinalizerDaemon
+u0_a86    6215  6202  1809096 86876 ffffffff 00000000 S FinalizerWatchd
+u0_a86    6217  6202  1809096 86876 ffffffff 00000000 S HeapTrimmerDaem
+u0_a86    6218  6202  1809096 86876 ffffffff 00000000 S GCDaemon
+u0_a86    6220  6202  1809096 86876 ffffffff 00000000 S Binder_1
+u0_a86    6221  6202  1809096 86876 ffffffff 00000000 S Binder_2
+u0_a86    6236  6202  1809096 86876 ffffffff 00000000 S THREAD_POOL_HAN
+u0_a86    6237  6202  1809096 86876 ffffffff 00000000 S com.tencent.mm
+u0_a86    6239  6202  1809096 86876 ffffffff 00000000 S com.tencent.mm
+u0_a86    6240  6202  1809096 86876 ffffffff 00000000 S MonitorHandlerT
+u0_a86    6241  6202  1809096 86876 ffffffff 00000000 S .ProcessManager
+u0_a86    6243  6202  1809096 86876 ffffffff 00000000 S Binder_3
+u0_a86    6245  6202  1809096 86876 ffffffff 00000000 S default
+u0_a86    6246  6202  1809096 86876 ffffffff 00000000 S com.tencent.mm
+u0_a86    6247  6202  1809096 86876 ffffffff 00000000 S MMHandlerThread
+u0_a86    6269  6202  1809096 86876 ffffffff 00000000 S MM_Thread_Pool_
+u0_a86    6270  6202  1809096 86876 ffffffff 00000000 S MM_Thread_Pool_
+u0_a86    6271  6202  1809096 86876 ffffffff 00000000 S MM_Thread_Pool_
+u0_a86    6272  6202  1809096 86876 ffffffff 00000000 S MM_Thread_Pool_
+u0_a86    6273  6202  1809096 86876 ffffffff 00000000 S MM_Thread_Pool_
+u0_a86    6274  6202  1809096 86876 ffffffff 00000000 S MM_Thread_Pool_
+u0_a86    6276  6202  1809096 86876 ffffffff 00000000 S ExdeviceHandler
+u0_a86    6277  6202  1809096 86876 ffffffff 00000000 S MM_Thread_Pool_
+u0_a86    6279  6202  1809096 86876 ffffffff 00000000 S RWCache_timeout
+u0_a86    6280  6202  1809096 86876 ffffffff 00000000 S RWCache_timeout
+u0_a86    6282  6202  1809096 86876 ffffffff 00000000 S MM_Thread_Pool_
+u0_a86    6284  6202  1809096 86876 ffffffff 00000000 S downloadStateCh
+u0_a86    6288  6202  1809096 86876 ffffffff 00000000 S WifiManager
+u0_a86    6289  6202  1809096 86876 ffffffff 00000000 S refresh Notific
+u0_a86    6292  6202  1809096 86876 ffffffff 00000000 S MM_Thread_Pool_
+u0_a86    6293  6202  1809096 86876 ffffffff 00000000 S MM_Thread_Pool_
+u0_a86    6294  6202  1809096 86876 ffffffff 00000000 S MM_Thread_Pool_
+u0_a86    6295  6202  1809096 86876 ffffffff 00000000 S SearchDaemon
+u0_a86    6303  6202  1809096 86876 ffffffff 00000000 S Binder_4
+u0_a86    6313  6202  1809096 86876 ffffffff 00000000 S pool-2-thread-1
+u0_a86    6373  6202  1809096 86876 ffffffff 00000000 S RWCache_timeout
+u0_a86    6408  6202  1809096 86876 ffffffff 00000000 S h
+u0_a86    7230  6202  1809096 86876 ffffffff 00000000 S default
+u0_a86    7231  6202  1809096 86876 ffffffff 00000000 S MMHandlerThread
+u0_a191   8839  205   1510312 57352 ffffffff 00000000 S com.ushaqi.zhuishushenqi:pushservice
+u0_a191   8845  8839  1510312 57352 ffffffff 00000000 S Heap thread poo
+u0_a191   8846  8839  1510312 57352 ffffffff 00000000 S Heap thread poo
+u0_a191   8847  8839  1510312 57352 ffffffff 00000000 S Heap thread poo
+u0_a191   8849  8839  1510312 57352 ffffffff 00000000 S Signal Catcher
+u0_a191   8850  8839  1510312 57352 ffffffff 00000000 S JDWP
+u0_a191   8851  8839  1510312 57352 ffffffff 00000000 S ReferenceQueueD
+u0_a191   8852  8839  1510312 57352 ffffffff 00000000 S FinalizerDaemon
+u0_a191   8853  8839  1510312 57352 ffffffff 00000000 S FinalizerWatchd
+u0_a191   8854  8839  1510312 57352 ffffffff 00000000 S HeapTrimmerDaem
+u0_a191   8855  8839  1510312 57352 ffffffff 00000000 S GCDaemon
+u0_a191   8856  8839  1510312 57352 ffffffff 00000000 S Binder_1
+u0_a191   8857  8839  1510312 57352 ffffffff 00000000 S Binder_2
+u0_a191   8867  8839  1510312 57352 ffffffff 00000000 S local_job_dispa
+u0_a191   8869  8839  1510312 57352 ffffffff 00000000 S remote_job_disp
+u0_a191   8887  8839  1510312 57352 ffffffff 00000000 S Upload Http Rec
+u0_a191   8890  8839  1510312 57352 ffffffff 00000000 S Connection Cont
+u0_a191   8963  8839  1510312 57352 ffffffff 00000000 S Smack Packet Re
+root      11634 2     0      0     ffffffff 00000000 S kworker/u:0
+root      11779 2     0      0     ffffffff 00000000 S kworker/0:3H
+root      11928 2     0      0     ffffffff 00000000 S kworker/0:1
+root      12431 2     0      0     ffffffff 00000000 S kworker/u:2
+u0_a85    12971 205   1595348 59000 ffffffff 00000000 S com.life360.android.safetymapd:service
+u0_a85    12977 12971 1595348 59000 ffffffff 00000000 S Heap thread poo
+u0_a85    12978 12971 1595348 59000 ffffffff 00000000 S Heap thread poo
+u0_a85    12979 12971 1595348 59000 ffffffff 00000000 S Heap thread poo
+u0_a85    12980 12971 1595348 59000 ffffffff 00000000 S Signal Catcher
+u0_a85    12981 12971 1595348 59000 ffffffff 00000000 S JDWP
+u0_a85    12982 12971 1595348 59000 ffffffff 00000000 S ReferenceQueueD
+u0_a85    12983 12971 1595348 59000 ffffffff 00000000 S FinalizerDaemon
+u0_a85    12984 12971 1595348 59000 ffffffff 00000000 S FinalizerWatchd
+u0_a85    12985 12971 1595348 59000 ffffffff 00000000 S HeapTrimmerDaem
+u0_a85    12986 12971 1595348 59000 ffffffff 00000000 S GCDaemon
+u0_a85    12987 12971 1595348 59000 ffffffff 00000000 S Binder_1
+u0_a85    12988 12971 1595348 59000 ffffffff 00000000 S Binder_2
+u0_a85    13099 12971 1595348 59000 ffffffff 00000000 S WifiManager
+u0_a106   13071 205   1523392 47680 ffffffff 00000000 S com.xianguo.tingguo
+u0_a106   13075 13071 1523392 47680 ffffffff 00000000 S Heap thread poo
+u0_a106   13076 13071 1523392 47680 ffffffff 00000000 S Heap thread poo
+u0_a106   13077 13071 1523392 47680 ffffffff 00000000 S Heap thread poo
+u0_a106   13080 13071 1523392 47680 ffffffff 00000000 S Signal Catcher
+u0_a106   13081 13071 1523392 47680 ffffffff 00000000 S JDWP
+u0_a106   13082 13071 1523392 47680 ffffffff 00000000 S ReferenceQueueD
+u0_a106   13083 13071 1523392 47680 ffffffff 00000000 S FinalizerDaemon
+u0_a106   13084 13071 1523392 47680 ffffffff 00000000 S FinalizerWatchd
+u0_a106   13085 13071 1523392 47680 ffffffff 00000000 S HeapTrimmerDaem
+u0_a106   13086 13071 1523392 47680 ffffffff 00000000 S GCDaemon
+u0_a106   13087 13071 1523392 47680 ffffffff 00000000 S Binder_1
+u0_a106   13088 13071 1523392 47680 ffffffff 00000000 S Binder_2
+u0_a106   13090 13071 1523392 47680 ffffffff 00000000 S SoundPool
+u0_a106   13091 13071 1523392 47680 ffffffff 00000000 S SoundPoolThread
+u0_a106   13276 13071 1523392 47680 ffffffff 00000000 S WifiManager
+u0_a65    13345 205   1526244 52680 ffffffff 00000000 S com.google.android.apps.photos
+u0_a65    13351 13345 1526244 52680 ffffffff 00000000 S Heap thread poo
+u0_a65    13352 13345 1526244 52680 ffffffff 00000000 S Heap thread poo
+u0_a65    13353 13345 1526244 52680 ffffffff 00000000 S Heap thread poo
+u0_a65    13354 13345 1526244 52680 ffffffff 00000000 S Signal Catcher
+u0_a65    13355 13345 1526244 52680 ffffffff 00000000 S JDWP
+u0_a65    13356 13345 1526244 52680 ffffffff 00000000 S ReferenceQueueD
+u0_a65    13357 13345 1526244 52680 ffffffff 00000000 S FinalizerDaemon
+u0_a65    13358 13345 1526244 52680 ffffffff 00000000 S FinalizerWatchd
+u0_a65    13359 13345 1526244 52680 ffffffff 00000000 S HeapTrimmerDaem
+u0_a65    13360 13345 1526244 52680 ffffffff 00000000 S GCDaemon
+u0_a65    13361 13345 1526244 52680 ffffffff 00000000 S Binder_1
+u0_a65    13362 13345 1526244 52680 ffffffff 00000000 S Binder_2
+u0_a65    13783 13345 1526244 52680 ffffffff 00000000 S pool-1-thread-1
+u0_a65    13796 13345 1526244 52680 ffffffff 00000000 S rotating_file-t
+u0_a65    13904 13345 1526244 52680 ffffffff 00000000 S Binder_3
+u0_a67    13491 205   1567688 56576 ffffffff 00000000 S com.google.android.apps.plus
+u0_a67    13493 13491 1567688 56576 ffffffff 00000000 S Heap thread poo
+u0_a67    13494 13491 1567688 56576 ffffffff 00000000 S Heap thread poo
+u0_a67    13495 13491 1567688 56576 ffffffff 00000000 S Heap thread poo
+u0_a67    13497 13491 1567688 56576 ffffffff 00000000 S Signal Catcher
+u0_a67    13499 13491 1567688 56576 ffffffff 00000000 S JDWP
+u0_a67    13502 13491 1567688 56576 ffffffff 00000000 S ReferenceQueueD
+u0_a67    13503 13491 1567688 56576 ffffffff 00000000 S FinalizerDaemon
+u0_a67    13504 13491 1567688 56576 ffffffff 00000000 S FinalizerWatchd
+u0_a67    13505 13491 1567688 56576 ffffffff 00000000 S HeapTrimmerDaem
+u0_a67    13506 13491 1567688 56576 ffffffff 00000000 S GCDaemon
+u0_a67    13507 13491 1567688 56576 ffffffff 00000000 S Binder_1
+u0_a67    13508 13491 1567688 56576 ffffffff 00000000 S Binder_2
+u0_a67    13512 13491 1567688 56576 ffffffff 00000000 S picasa-photo-pr
+u0_a67    13528 13491 1567688 56576 ffffffff 00000000 S iu-sync-manager
+u0_a67    13538 13491 1567688 56576 ffffffff 00000000 S pool-2-thread-1
+u0_a67    13881 13491 1567688 56576 ffffffff 00000000 S Gservices
+u0_a4     13516 205   1503264 48612 ffffffff 00000000 S android.process.acore
+u0_a4     13520 13516 1503264 48612 ffffffff 00000000 S Heap thread poo
+u0_a4     13521 13516 1503264 48612 ffffffff 00000000 S Heap thread poo
+u0_a4     13522 13516 1503264 48612 ffffffff 00000000 S Heap thread poo
+u0_a4     13525 13516 1503264 48612 ffffffff 00000000 S Signal Catcher
+u0_a4     13526 13516 1503264 48612 ffffffff 00000000 S JDWP
+u0_a4     13527 13516 1503264 48612 ffffffff 00000000 S ReferenceQueueD
+u0_a4     13529 13516 1503264 48612 ffffffff 00000000 S FinalizerDaemon
+u0_a4     13530 13516 1503264 48612 ffffffff 00000000 S FinalizerWatchd
+u0_a4     13531 13516 1503264 48612 ffffffff 00000000 S HeapTrimmerDaem
+u0_a4     13532 13516 1503264 48612 ffffffff 00000000 S GCDaemon
+u0_a4     13533 13516 1503264 48612 ffffffff 00000000 S Binder_1
+u0_a4     13534 13516 1503264 48612 ffffffff 00000000 S Binder_2
+u0_a4     13536 13516 1503264 48612 ffffffff 00000000 S ContactsProvide
+u0_a4     13537 13516 1503264 48612 ffffffff 00000000 S CallLogProvider
+u0_a102   13613 205   1521420 45204 ffffffff 00000000 S com.sohu.inputmethod.sogou:classic
+u0_a102   13616 13613 1521420 45204 ffffffff 00000000 S Heap thread poo
+u0_a102   13617 13613 1521420 45204 ffffffff 00000000 S Heap thread poo
+u0_a102   13618 13613 1521420 45204 ffffffff 00000000 S Heap thread poo
+u0_a102   13620 13613 1521420 45204 ffffffff 00000000 S Signal Catcher
+u0_a102   13623 13613 1521420 45204 ffffffff 00000000 S JDWP
+u0_a102   13624 13613 1521420 45204 ffffffff 00000000 S ReferenceQueueD
+u0_a102   13625 13613 1521420 45204 ffffffff 00000000 S FinalizerDaemon
+u0_a102   13626 13613 1521420 45204 ffffffff 00000000 S FinalizerWatchd
+u0_a102   13627 13613 1521420 45204 ffffffff 00000000 S HeapTrimmerDaem
+u0_a102   13628 13613 1521420 45204 ffffffff 00000000 S GCDaemon
+u0_a102   13629 13613 1521420 45204 ffffffff 00000000 S Binder_1
+u0_a102   13630 13613 1521420 45204 ffffffff 00000000 S Binder_2
+u0_a102   13635 13613 1521420 45204 ffffffff 00000000 S Thread-1443
+u0_a102   13636 13613 1521420 45204 ffffffff 00000000 S Thread-1444
+u0_a102   13637 13613 1521420 45204 ffffffff 00000000 S Thread-1445
+u0_a102   13638 13613 1521420 45204 ffffffff 00000000 S Thread-1446
+u0_a102   13639 13613 1521420 45204 ffffffff 00000000 S Thread-1447
+u0_a102   13641 13613 1521420 45204 ffffffff 00000000 S WifiManager
+u0_a102   13905 13613 1521420 45204 ffffffff 00000000 S Binder_3
+u0_a102   13647 205   1514052 44264 ffffffff 00000000 S com.sohu.inputmethod.sogou
+u0_a102   13651 13647 1514052 44264 ffffffff 00000000 S Heap thread poo
+u0_a102   13652 13647 1514052 44264 ffffffff 00000000 S Heap thread poo
+u0_a102   13653 13647 1514052 44264 ffffffff 00000000 S Heap thread poo
+u0_a102   13656 13647 1514052 44264 ffffffff 00000000 S Signal Catcher
+u0_a102   13657 13647 1514052 44264 ffffffff 00000000 S JDWP
+u0_a102   13658 13647 1514052 44264 ffffffff 00000000 S ReferenceQueueD
+u0_a102   13659 13647 1514052 44264 ffffffff 00000000 S FinalizerDaemon
+u0_a102   13660 13647 1514052 44264 ffffffff 00000000 S FinalizerWatchd
+u0_a102   13661 13647 1514052 44264 ffffffff 00000000 S HeapTrimmerDaem
+u0_a102   13662 13647 1514052 44264 ffffffff 00000000 S GCDaemon
+u0_a102   13663 13647 1514052 44264 ffffffff 00000000 S Binder_1
+u0_a102   13664 13647 1514052 44264 ffffffff 00000000 S Binder_2
+u0_a102   13671 205   1519416 43248 ffffffff 00000000 S sogou.mobile.explorer.hotwords
+u0_a102   13677 13671 1519416 43248 ffffffff 00000000 S Heap thread poo
+u0_a102   13678 13671 1519416 43248 ffffffff 00000000 S Heap thread poo
+u0_a102   13679 13671 1519416 43248 ffffffff 00000000 S Heap thread poo
+u0_a102   13680 13671 1519416 43248 ffffffff 00000000 S Signal Catcher
+u0_a102   13681 13671 1519416 43248 ffffffff 00000000 S JDWP
+u0_a102   13682 13671 1519416 43248 ffffffff 00000000 S ReferenceQueueD
+u0_a102   13683 13671 1519416 43248 ffffffff 00000000 S FinalizerDaemon
+u0_a102   13684 13671 1519416 43248 ffffffff 00000000 S FinalizerWatchd
+u0_a102   13685 13671 1519416 43248 ffffffff 00000000 S HeapTrimmerDaem
+u0_a102   13686 13671 1519416 43248 ffffffff 00000000 S GCDaemon
+u0_a102   13687 13671 1519416 43248 ffffffff 00000000 S Binder_1
+u0_a102   13688 13671 1519416 43248 ffffffff 00000000 S Binder_2
+u0_a102   13690 13671 1519416 43248 ffffffff 00000000 S pool-1-thread-1
+u0_a102   13691 13671 1519416 43248 ffffffff 00000000 S pool-1-thread-2
+u0_a102   13692 13671 1519416 43248 ffffffff 00000000 S pool-1-thread-3
+u0_a102   13694 13671 1519416 43248 ffffffff 00000000 S Timer-0
+u0_a198   13695 205   1506040 40332 ffffffff 00000000 S org.chromium.chrome.shell
+u0_a198   13701 13695 1506040 40332 ffffffff 00000000 S Heap thread poo
+u0_a198   13702 13695 1506040 40332 ffffffff 00000000 S Heap thread poo
+u0_a198   13703 13695 1506040 40332 ffffffff 00000000 S Heap thread poo
+u0_a198   13704 13695 1506040 40332 ffffffff 00000000 S Signal Catcher
+u0_a198   13705 13695 1506040 40332 ffffffff 00000000 S JDWP
+u0_a198   13706 13695 1506040 40332 ffffffff 00000000 S ReferenceQueueD
+u0_a198   13707 13695 1506040 40332 ffffffff 00000000 S FinalizerDaemon
+u0_a198   13708 13695 1506040 40332 ffffffff 00000000 S FinalizerWatchd
+u0_a198   13709 13695 1506040 40332 ffffffff 00000000 S HeapTrimmerDaem
+u0_a198   13710 13695 1506040 40332 ffffffff 00000000 S GCDaemon
+u0_a198   13711 13695 1506040 40332 ffffffff 00000000 S Binder_1
+u0_a198   13712 13695 1506040 40332 ffffffff 00000000 S Binder_2
+u0_a198   13713 13695 1506040 40332 ffffffff 00000000 S Binder_3
+u0_a200   13715 205   1511344 38748 ffffffff 00000000 S com.rolocule.motiontennis
+u0_a200   13721 13715 1511344 38748 ffffffff 00000000 S Heap thread poo
+u0_a200   13722 13715 1511344 38748 ffffffff 00000000 S Heap thread poo
+u0_a200   13723 13715 1511344 38748 ffffffff 00000000 S Heap thread poo
+u0_a200   13724 13715 1511344 38748 ffffffff 00000000 S Signal Catcher
+u0_a200   13725 13715 1511344 38748 ffffffff 00000000 S JDWP
+u0_a200   13731 13715 1511344 38748 ffffffff 00000000 S ReferenceQueueD
+u0_a200   13732 13715 1511344 38748 ffffffff 00000000 S FinalizerDaemon
+u0_a200   13733 13715 1511344 38748 ffffffff 00000000 S FinalizerWatchd
+u0_a200   13734 13715 1511344 38748 ffffffff 00000000 S HeapTrimmerDaem
+u0_a200   13735 13715 1511344 38748 ffffffff 00000000 S GCDaemon
+u0_a200   13736 13715 1511344 38748 ffffffff 00000000 S Binder_1
+u0_a200   13737 13715 1511344 38748 ffffffff 00000000 S Binder_2
+u0_a175   13747 205   1510096 43460 ffffffff 00000000 S com.google.android.apps.chrome
+u0_a175   13751 13747 1510096 43460 ffffffff 00000000 S Heap thread poo
+u0_a175   13752 13747 1510096 43460 ffffffff 00000000 S Heap thread poo
+u0_a175   13754 13747 1510096 43460 ffffffff 00000000 S Heap thread poo
+u0_a175   13756 13747 1510096 43460 ffffffff 00000000 S Signal Catcher
+u0_a175   13757 13747 1510096 43460 ffffffff 00000000 S JDWP
+u0_a175   13758 13747 1510096 43460 ffffffff 00000000 S ReferenceQueueD
+u0_a175   13759 13747 1510096 43460 ffffffff 00000000 S FinalizerDaemon
+u0_a175   13760 13747 1510096 43460 ffffffff 00000000 S FinalizerWatchd
+u0_a175   13761 13747 1510096 43460 ffffffff 00000000 S HeapTrimmerDaem
+u0_a175   13762 13747 1510096 43460 ffffffff 00000000 S GCDaemon
+u0_a175   13763 13747 1510096 43460 ffffffff 00000000 S Binder_1
+u0_a175   13764 13747 1510096 43460 ffffffff 00000000 S Binder_2
+u0_a85    13774 205   1594212 50972 ffffffff 00000000 S com.life360.android.safetymapd
+u0_a85    13780 13774 1594212 50972 ffffffff 00000000 S Heap thread poo
+u0_a85    13781 13774 1594212 50972 ffffffff 00000000 S Heap thread poo
+u0_a85    13782 13774 1594212 50972 ffffffff 00000000 S Heap thread poo
+u0_a85    13784 13774 1594212 50972 ffffffff 00000000 S Signal Catcher
+u0_a85    13785 13774 1594212 50972 ffffffff 00000000 S JDWP
+u0_a85    13786 13774 1594212 50972 ffffffff 00000000 S ReferenceQueueD
+u0_a85    13787 13774 1594212 50972 ffffffff 00000000 S FinalizerDaemon
+u0_a85    13788 13774 1594212 50972 ffffffff 00000000 S FinalizerWatchd
+u0_a85    13789 13774 1594212 50972 ffffffff 00000000 S HeapTrimmerDaem
+u0_a85    13790 13774 1594212 50972 ffffffff 00000000 S GCDaemon
+u0_a85    13791 13774 1594212 50972 ffffffff 00000000 S Binder_1
+u0_a85    13792 13774 1594212 50972 ffffffff 00000000 S Binder_2
+u0_a16    13801 205   1538004 50644 ffffffff 00000000 S com.android.vending
+u0_a16    13807 13801 1538004 50644 ffffffff 00000000 S Heap thread poo
+u0_a16    13808 13801 1538004 50644 ffffffff 00000000 S Heap thread poo
+u0_a16    13809 13801 1538004 50644 ffffffff 00000000 S Heap thread poo
+u0_a16    13811 13801 1538004 50644 ffffffff 00000000 S Signal Catcher
+u0_a16    13812 13801 1538004 50644 ffffffff 00000000 S JDWP
+u0_a16    13813 13801 1538004 50644 ffffffff 00000000 S ReferenceQueueD
+u0_a16    13814 13801 1538004 50644 ffffffff 00000000 S FinalizerDaemon
+u0_a16    13815 13801 1538004 50644 ffffffff 00000000 S FinalizerWatchd
+u0_a16    13816 13801 1538004 50644 ffffffff 00000000 S HeapTrimmerDaem
+u0_a16    13817 13801 1538004 50644 ffffffff 00000000 S GCDaemon
+u0_a16    13818 13801 1538004 50644 ffffffff 00000000 S Binder_1
+u0_a16    13819 13801 1538004 50644 ffffffff 00000000 S Binder_2
+u0_a16    13828 13801 1538004 50644 ffffffff 00000000 S Gservices
+u0_a16    13833 13801 1538004 50644 ffffffff 00000000 S pool-1-thread-1
+u0_a16    13834 13801 1538004 50644 ffffffff 00000000 S RefQueueWorker@
+u0_a16    13837 13801 1538004 50644 ffffffff 00000000 S RefQueueWorker@
+u0_a16    13838 13801 1538004 50644 ffffffff 00000000 S Thread-1482
+u0_a16    13839 13801 1538004 50644 ffffffff 00000000 S Thread-1483
+u0_a16    13840 13801 1538004 50644 ffffffff 00000000 S Thread-1484
+u0_a16    13843 13801 1538004 50644 ffffffff 00000000 S download-manage
+u0_a16    13844 13801 1538004 50644 ffffffff 00000000 S NetworkQualityQ
+u0_a16    13845 13801 1538004 50644 ffffffff 00000000 S RefQueueWorker@
+u0_a16    13846 13801 1538004 50644 ffffffff 00000000 S Thread-1489
+u0_a16    13847 13801 1538004 50644 ffffffff 00000000 S Thread-1490
+u0_a16    13848 13801 1538004 50644 ffffffff 00000000 S Thread-1491
+u0_a16    13849 13801 1538004 50644 ffffffff 00000000 S Thread-1492
+u0_a16    13850 13801 1538004 50644 ffffffff 00000000 S Thread-1493
+u0_a16    13851 13801 1538004 50644 ffffffff 00000000 S PlayEventLogger
+u0_a16    13852 13801 1538004 50644 ffffffff 00000000 S tentative-gc-ru
+u0_a16    13862 13801 1538004 50644 ffffffff 00000000 S libraries-threa
+u0_a16    13872 13801 1538004 50644 ffffffff 00000000 S AsyncTask #1
+u0_a16    13876 13801 1538004 50644 ffffffff 00000000 S AsyncTask #2
+u0_a16    13877 13801 1538004 50644 ffffffff 00000000 S AsyncTask #3
+u0_a16    13878 13801 1538004 50644 ffffffff 00000000 S PlayEventLogger
+u0_a16    13880 13801 1538004 50644 ffffffff 00000000 S Thread-1501
+u0_a16    14407 13801 1538004 50644 ffffffff 00000000 S Binder_3
+u0_a8     13853 205   1573700 51720 ffffffff 00000000 S com.google.android.gms:car
+u0_a8     13856 13853 1573700 51720 ffffffff 00000000 S Heap thread poo
+u0_a8     13857 13853 1573700 51720 ffffffff 00000000 S Heap thread poo
+u0_a8     13858 13853 1573700 51720 ffffffff 00000000 S Heap thread poo
+u0_a8     13863 13853 1573700 51720 ffffffff 00000000 S Signal Catcher
+u0_a8     13864 13853 1573700 51720 ffffffff 00000000 S JDWP
+u0_a8     13865 13853 1573700 51720 ffffffff 00000000 S ReferenceQueueD
+u0_a8     13866 13853 1573700 51720 ffffffff 00000000 S FinalizerDaemon
+u0_a8     13867 13853 1573700 51720 ffffffff 00000000 S FinalizerWatchd
+u0_a8     13868 13853 1573700 51720 ffffffff 00000000 S HeapTrimmerDaem
+u0_a8     13869 13853 1573700 51720 ffffffff 00000000 S GCDaemon
+u0_a8     13870 13853 1573700 51720 ffffffff 00000000 S Binder_1
+u0_a8     13871 13853 1573700 51720 ffffffff 00000000 S Binder_2
+u0_a8     13873 13853 1573700 51720 ffffffff 00000000 S Gservices
+u0_a8     13913 13853 1573700 51720 ffffffff 00000000 S Binder_3
+u0_a8     13885 205   1572668 47460 ffffffff 00000000 S com.google.android.gms.wearable
+u0_a8     13890 13885 1572668 47460 ffffffff 00000000 S Heap thread poo
+u0_a8     13891 13885 1572668 47460 ffffffff 00000000 S Heap thread poo
+u0_a8     13892 13885 1572668 47460 ffffffff 00000000 S Heap thread poo
+u0_a8     13894 13885 1572668 47460 ffffffff 00000000 S Signal Catcher
+u0_a8     13895 13885 1572668 47460 ffffffff 00000000 S JDWP
+u0_a8     13896 13885 1572668 47460 ffffffff 00000000 S ReferenceQueueD
+u0_a8     13897 13885 1572668 47460 ffffffff 00000000 S FinalizerDaemon
+u0_a8     13898 13885 1572668 47460 ffffffff 00000000 S FinalizerWatchd
+u0_a8     13899 13885 1572668 47460 ffffffff 00000000 S HeapTrimmerDaem
+u0_a8     13900 13885 1572668 47460 ffffffff 00000000 S GCDaemon
+u0_a8     13901 13885 1572668 47460 ffffffff 00000000 S Binder_1
+u0_a8     13902 13885 1572668 47460 ffffffff 00000000 S Binder_2
+u0_a8     13903 13885 1572668 47460 ffffffff 00000000 S Gservices
+root      14061 2     0      0     ffffffff 00000000 S kworker/u:3
+root      14136 2     0      0     ffffffff 00000000 S kworker/0:0H
+u0_a101   14356 205   1503136 44308 ffffffff 00000000 S com.google.android.apps.gcs
+u0_a101   14362 14356 1503136 44308 ffffffff 00000000 S Heap thread poo
+u0_a101   14363 14356 1503136 44308 ffffffff 00000000 S Heap thread poo
+u0_a101   14364 14356 1503136 44308 ffffffff 00000000 S Heap thread poo
+u0_a101   14365 14356 1503136 44308 ffffffff 00000000 S Signal Catcher
+u0_a101   14366 14356 1503136 44308 ffffffff 00000000 S JDWP
+u0_a101   14367 14356 1503136 44308 ffffffff 00000000 S ReferenceQueueD
+u0_a101   14368 14356 1503136 44308 ffffffff 00000000 S FinalizerDaemon
+u0_a101   14369 14356 1503136 44308 ffffffff 00000000 S FinalizerWatchd
+u0_a101   14370 14356 1503136 44308 ffffffff 00000000 S HeapTrimmerDaem
+u0_a101   14371 14356 1503136 44308 ffffffff 00000000 S GCDaemon
+u0_a101   14372 14356 1503136 44308 ffffffff 00000000 S Binder_1
+u0_a101   14373 14356 1503136 44308 ffffffff 00000000 S Binder_2
+u0_a101   14375 14356 1503136 44308 ffffffff 00000000 S Gservices
+u0_a101   14376 14356 1503136 44308 ffffffff 00000000 S RefQueueWorker@
+u0_a101   14377 14356 1503136 44308 ffffffff 00000000 S Thread-1495
+u0_a101   14378 14356 1503136 44308 ffffffff 00000000 S Thread-1496
+u0_a101   14379 14356 1503136 44308 ffffffff 00000000 S Thread-1497
+u0_a101   14380 14356 1503136 44308 ffffffff 00000000 S Thread-1498
+u0_a101   14381 14356 1503136 44308 ffffffff 00000000 S Thread-1499
+shell     14444 209   9316   612   c01a863c b6eeee44 S /system/bin/sh
+shell     14448 14444 10672  768   00000000 b6ef0da8 R ps

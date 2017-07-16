@@ -1,0 +1,536 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.page.action_runner</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.page.html"><font color="#ffffff">page</font></a>.action_runner</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/page/action_runner.py">telemetry/page/action_runner.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2014&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="logging.html">logging</a><br>
+</td><td width="25%" valign=top><a href="time.html">time</a><br>
+</td><td width="25%" valign=top><a href="telemetry.web_perf.timeline_interaction_record.html">telemetry.web_perf.timeline_interaction_record</a><br>
+</td><td width="25%" valign=top><a href="urlparse.html">urlparse</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.page.action_runner.html#ActionRunner">ActionRunner</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.page.action_runner.html#Interaction">Interaction</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="ActionRunner">class <strong>ActionRunner</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="ActionRunner-ClickElement"><strong>ClickElement</strong></a>(self, selector<font color="#909090">=None</font>, text<font color="#909090">=None</font>, element_function<font color="#909090">=None</font>)</dt><dd><tt>Click&nbsp;an&nbsp;element.<br>
+&nbsp;<br>
+The&nbsp;element&nbsp;may&nbsp;be&nbsp;selected&nbsp;via&nbsp;selector,&nbsp;text,&nbsp;or&nbsp;element_function.<br>
+Only&nbsp;one&nbsp;of&nbsp;these&nbsp;arguments&nbsp;must&nbsp;be&nbsp;specified.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;selector:&nbsp;A&nbsp;CSS&nbsp;selector&nbsp;describing&nbsp;the&nbsp;element.<br>
+&nbsp;&nbsp;text:&nbsp;The&nbsp;element&nbsp;must&nbsp;contains&nbsp;this&nbsp;exact&nbsp;text.<br>
+&nbsp;&nbsp;element_function:&nbsp;A&nbsp;JavaScript&nbsp;function&nbsp;(as&nbsp;string)&nbsp;that&nbsp;is&nbsp;used<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;retrieve&nbsp;the&nbsp;element.&nbsp;For&nbsp;example:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'(function()&nbsp;{&nbsp;return&nbsp;foo.element;&nbsp;})()'.</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-CreateGestureInteraction"><strong>CreateGestureInteraction</strong></a>(self, label, repeatable<font color="#909090">=False</font>)</dt><dd><tt>Create&nbsp;an&nbsp;action.<a href="#Interaction">Interaction</a>&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;that&nbsp;issues&nbsp;gesture-based<br>
+interaction&nbsp;record.<br>
+&nbsp;<br>
+This&nbsp;is&nbsp;similar&nbsp;to&nbsp;normal&nbsp;interaction&nbsp;record,&nbsp;but&nbsp;it&nbsp;will<br>
+auto-narrow&nbsp;the&nbsp;interaction&nbsp;time&nbsp;period&nbsp;to&nbsp;only&nbsp;include&nbsp;the<br>
+synthetic&nbsp;gesture&nbsp;event&nbsp;output&nbsp;by&nbsp;Chrome.&nbsp;This&nbsp;is&nbsp;typically&nbsp;use&nbsp;to<br>
+reduce&nbsp;noise&nbsp;in&nbsp;gesture-based&nbsp;analysis&nbsp;(e.g.,&nbsp;analysis&nbsp;for&nbsp;a<br>
+swipe/scroll).<br>
+&nbsp;<br>
+The&nbsp;interaction&nbsp;record&nbsp;label&nbsp;will&nbsp;be&nbsp;prepended&nbsp;with&nbsp;'Gesture_'.<br>
+&nbsp;<br>
+e.g:<br>
+&nbsp;&nbsp;with&nbsp;action_runner.<a href="#ActionRunner-CreateGestureInteraction">CreateGestureInteraction</a>('Scroll-1'):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;action_runner.<a href="#ActionRunner-ScrollPage">ScrollPage</a>()<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;label:&nbsp;A&nbsp;label&nbsp;for&nbsp;this&nbsp;particular&nbsp;interaction.&nbsp;This&nbsp;can&nbsp;be&nbsp;any<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;user-defined&nbsp;string,&nbsp;but&nbsp;must&nbsp;not&nbsp;contain&nbsp;'/'.<br>
+&nbsp;&nbsp;repeatable:&nbsp;Whether&nbsp;other&nbsp;interactions&nbsp;may&nbsp;use&nbsp;the&nbsp;same&nbsp;logical&nbsp;name<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;as&nbsp;this&nbsp;interaction.&nbsp;All&nbsp;interactions&nbsp;with&nbsp;the&nbsp;same&nbsp;logical&nbsp;name&nbsp;must<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;have&nbsp;the&nbsp;same&nbsp;flags.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;An&nbsp;instance&nbsp;of&nbsp;action_runner.<a href="#Interaction">Interaction</a></tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-CreateInteraction"><strong>CreateInteraction</strong></a>(self, label, repeatable<font color="#909090">=False</font>)</dt><dd><tt>Create&nbsp;an&nbsp;action.<a href="#Interaction">Interaction</a>&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;that&nbsp;issues&nbsp;interaction&nbsp;record.<br>
+&nbsp;<br>
+An&nbsp;interaction&nbsp;record&nbsp;is&nbsp;a&nbsp;labeled&nbsp;time&nbsp;period&nbsp;containing<br>
+interaction&nbsp;that&nbsp;developers&nbsp;care&nbsp;about.&nbsp;Each&nbsp;set&nbsp;of&nbsp;metrics<br>
+specified&nbsp;in&nbsp;flags&nbsp;will&nbsp;be&nbsp;calculated&nbsp;for&nbsp;this&nbsp;time&nbsp;period.<br>
+&nbsp;<br>
+To&nbsp;mark&nbsp;the&nbsp;start&nbsp;of&nbsp;interaction&nbsp;record,&nbsp;call&nbsp;Begin()&nbsp;method&nbsp;on&nbsp;the&nbsp;returned<br>
+<a href="__builtin__.html#object">object</a>.&nbsp;To&nbsp;mark&nbsp;the&nbsp;finish&nbsp;of&nbsp;interaction&nbsp;record,&nbsp;call&nbsp;End()&nbsp;method&nbsp;on<br>
+it.&nbsp;Or&nbsp;better&nbsp;yet,&nbsp;use&nbsp;the&nbsp;with&nbsp;statement&nbsp;to&nbsp;create&nbsp;an<br>
+interaction&nbsp;record&nbsp;that&nbsp;covers&nbsp;the&nbsp;actions&nbsp;in&nbsp;the&nbsp;with&nbsp;block.<br>
+&nbsp;<br>
+e.g:<br>
+&nbsp;&nbsp;with&nbsp;action_runner.<a href="#ActionRunner-CreateInteraction">CreateInteraction</a>('Animation-1'):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;action_runner.<a href="#ActionRunner-TapElement">TapElement</a>(...)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;action_runner.<a href="#ActionRunner-WaitForJavaScriptCondition">WaitForJavaScriptCondition</a>(...)<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;label:&nbsp;A&nbsp;label&nbsp;for&nbsp;this&nbsp;particular&nbsp;interaction.&nbsp;This&nbsp;can&nbsp;be&nbsp;any<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;user-defined&nbsp;string,&nbsp;but&nbsp;must&nbsp;not&nbsp;contain&nbsp;'/'.<br>
+&nbsp;&nbsp;repeatable:&nbsp;Whether&nbsp;other&nbsp;interactions&nbsp;may&nbsp;use&nbsp;the&nbsp;same&nbsp;logical&nbsp;name<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;as&nbsp;this&nbsp;interaction.&nbsp;All&nbsp;interactions&nbsp;with&nbsp;the&nbsp;same&nbsp;logical&nbsp;name&nbsp;must<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;have&nbsp;the&nbsp;same&nbsp;flags.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;An&nbsp;instance&nbsp;of&nbsp;action_runner.<a href="#Interaction">Interaction</a></tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-DragPage"><strong>DragPage</strong></a>(self, left_start_ratio, top_start_ratio, left_end_ratio, top_end_ratio, speed_in_pixels_per_second<font color="#909090">=800</font>, use_touch<font color="#909090">=False</font>, selector<font color="#909090">=None</font>, text<font color="#909090">=None</font>, element_function<font color="#909090">=None</font>)</dt><dd><tt>Perform&nbsp;a&nbsp;drag&nbsp;gesture&nbsp;on&nbsp;the&nbsp;page.<br>
+&nbsp;<br>
+You&nbsp;should&nbsp;specify&nbsp;a&nbsp;start&nbsp;and&nbsp;an&nbsp;end&nbsp;point&nbsp;in&nbsp;ratios&nbsp;of&nbsp;page&nbsp;width&nbsp;and<br>
+height&nbsp;(see&nbsp;drag.js&nbsp;for&nbsp;full&nbsp;implementation).<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;left_start_ratio:&nbsp;The&nbsp;horizontal&nbsp;starting&nbsp;coordinate&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gesture,&nbsp;as&nbsp;a&nbsp;ratio&nbsp;of&nbsp;the&nbsp;visible&nbsp;bounding&nbsp;rectangle&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document.body.<br>
+&nbsp;&nbsp;top_start_ratio:&nbsp;The&nbsp;vertical&nbsp;starting&nbsp;coordinate&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gesture,&nbsp;as&nbsp;a&nbsp;ratio&nbsp;of&nbsp;the&nbsp;visible&nbsp;bounding&nbsp;rectangle&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document.body.<br>
+&nbsp;&nbsp;left_end_ratio:&nbsp;The&nbsp;horizontal&nbsp;ending&nbsp;coordinate&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gesture,&nbsp;as&nbsp;a&nbsp;ratio&nbsp;of&nbsp;the&nbsp;visible&nbsp;bounding&nbsp;rectangle&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document.body.<br>
+&nbsp;&nbsp;top_end_ratio:&nbsp;The&nbsp;vertical&nbsp;ending&nbsp;coordinate&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gesture,&nbsp;as&nbsp;a&nbsp;ratio&nbsp;of&nbsp;the&nbsp;visible&nbsp;bounding&nbsp;rectangle&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document.body.<br>
+&nbsp;&nbsp;speed_in_pixels_per_second:&nbsp;The&nbsp;speed&nbsp;of&nbsp;the&nbsp;gesture&nbsp;(in&nbsp;pixels/s).<br>
+&nbsp;&nbsp;use_touch:&nbsp;Whether&nbsp;dragging&nbsp;should&nbsp;be&nbsp;done&nbsp;with&nbsp;touch&nbsp;input.</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-EvaluateJavaScript"><strong>EvaluateJavaScript</strong></a>(self, expression)</dt><dd><tt>Returns&nbsp;the&nbsp;evaluation&nbsp;result&nbsp;of&nbsp;the&nbsp;given&nbsp;JavaScript&nbsp;expression.<br>
+&nbsp;<br>
+The&nbsp;evaluation&nbsp;results&nbsp;must&nbsp;be&nbsp;convertible&nbsp;to&nbsp;JSON.&nbsp;If&nbsp;the&nbsp;result<br>
+is&nbsp;not&nbsp;needed,&nbsp;use&nbsp;ExecuteJavaScript&nbsp;instead.<br>
+&nbsp;<br>
+Example:&nbsp;num&nbsp;=&nbsp;runner.<a href="#ActionRunner-EvaluateJavaScript">EvaluateJavaScript</a>('document.location.href')<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;expression:&nbsp;The&nbsp;expression&nbsp;to&nbsp;evaluate&nbsp;(provided&nbsp;as&nbsp;string).<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;EvaluationException:&nbsp;The&nbsp;statement&nbsp;expression&nbsp;failed&nbsp;to&nbsp;execute<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or&nbsp;the&nbsp;evaluation&nbsp;result&nbsp;can&nbsp;not&nbsp;be&nbsp;JSON-ized.</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-ExecuteJavaScript"><strong>ExecuteJavaScript</strong></a>(self, statement)</dt><dd><tt>Executes&nbsp;a&nbsp;given&nbsp;JavaScript&nbsp;expression.&nbsp;Does&nbsp;not&nbsp;return&nbsp;the&nbsp;result.<br>
+&nbsp;<br>
+Example:&nbsp;runner.<a href="#ActionRunner-ExecuteJavaScript">ExecuteJavaScript</a>('var&nbsp;foo&nbsp;=&nbsp;1;');<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;statement:&nbsp;The&nbsp;statement&nbsp;to&nbsp;execute&nbsp;(provided&nbsp;as&nbsp;string).<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;EvaluationException:&nbsp;The&nbsp;statement&nbsp;failed&nbsp;to&nbsp;execute.</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-ForceGarbageCollection"><strong>ForceGarbageCollection</strong></a>(self)</dt><dd><tt>Forces&nbsp;JavaScript&nbsp;garbage&nbsp;collection&nbsp;on&nbsp;the&nbsp;page.</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-LoadMedia"><strong>LoadMedia</strong></a>(self, selector<font color="#909090">=None</font>, event_timeout_in_seconds<font color="#909090">=0</font>, event_to_await<font color="#909090">='canplaythrough'</font>)</dt><dd><tt>Invokes&nbsp;load()&nbsp;on&nbsp;media&nbsp;elements&nbsp;and&nbsp;awaits&nbsp;an&nbsp;event.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;selector:&nbsp;A&nbsp;CSS&nbsp;selector&nbsp;describing&nbsp;the&nbsp;element.&nbsp;If&nbsp;none&nbsp;is<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;specified,&nbsp;play&nbsp;the&nbsp;first&nbsp;media&nbsp;element&nbsp;on&nbsp;the&nbsp;page.&nbsp;If&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;selector&nbsp;matches&nbsp;more&nbsp;than&nbsp;1&nbsp;media&nbsp;element,&nbsp;all&nbsp;of&nbsp;them&nbsp;will<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;be&nbsp;played.<br>
+&nbsp;&nbsp;event_timeout_in_seconds:&nbsp;Maximum&nbsp;waiting&nbsp;time&nbsp;for&nbsp;the&nbsp;event&nbsp;to&nbsp;be&nbsp;fired.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;means&nbsp;do&nbsp;not&nbsp;wait.<br>
+&nbsp;&nbsp;event_to_await:&nbsp;Which&nbsp;event&nbsp;to&nbsp;await.&nbsp;For&nbsp;example:&nbsp;'canplaythrough'&nbsp;or<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'loadedmetadata'.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;TimeoutException:&nbsp;If&nbsp;the&nbsp;maximum&nbsp;waiting&nbsp;time&nbsp;is&nbsp;exceeded.</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-LoopMedia"><strong>LoopMedia</strong></a>(self, loop_count, selector<font color="#909090">=None</font>, timeout_in_seconds<font color="#909090">=None</font>)</dt><dd><tt>Loops&nbsp;a&nbsp;media&nbsp;playback.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;loop_count:&nbsp;The&nbsp;number&nbsp;of&nbsp;times&nbsp;to&nbsp;loop&nbsp;the&nbsp;playback.<br>
+&nbsp;&nbsp;selector:&nbsp;A&nbsp;CSS&nbsp;selector&nbsp;describing&nbsp;the&nbsp;element.&nbsp;If&nbsp;none&nbsp;is<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;specified,&nbsp;loop&nbsp;the&nbsp;first&nbsp;media&nbsp;element&nbsp;on&nbsp;the&nbsp;page.&nbsp;If&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;selector&nbsp;matches&nbsp;more&nbsp;than&nbsp;1&nbsp;media&nbsp;element,&nbsp;all&nbsp;of&nbsp;them&nbsp;will<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;be&nbsp;looped.<br>
+&nbsp;&nbsp;timeout_in_seconds:&nbsp;Maximum&nbsp;waiting&nbsp;time&nbsp;for&nbsp;the&nbsp;looped&nbsp;playback&nbsp;to<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;complete.&nbsp;0&nbsp;means&nbsp;do&nbsp;not&nbsp;wait.&nbsp;None&nbsp;(the&nbsp;default)&nbsp;means&nbsp;to<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;loop_count&nbsp;*&nbsp;60&nbsp;seconds.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;TimeoutException:&nbsp;If&nbsp;the&nbsp;maximum&nbsp;waiting&nbsp;time&nbsp;is&nbsp;exceeded.</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-MouseClick"><strong>MouseClick</strong></a>(self, selector<font color="#909090">=None</font>)</dt><dd><tt>Mouse&nbsp;click&nbsp;the&nbsp;given&nbsp;element.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;selector:&nbsp;A&nbsp;CSS&nbsp;selector&nbsp;describing&nbsp;the&nbsp;element.</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-Navigate"><strong>Navigate</strong></a>(self, url, script_to_evaluate_on_commit<font color="#909090">=None</font>, timeout_in_seconds<font color="#909090">=60</font>)</dt><dd><tt>Navigates&nbsp;to&nbsp;url.<br>
+&nbsp;<br>
+If&nbsp;|script_to_evaluate_on_commit|&nbsp;is&nbsp;given,&nbsp;the&nbsp;script&nbsp;source&nbsp;string&nbsp;will&nbsp;be<br>
+evaluated&nbsp;when&nbsp;the&nbsp;navigation&nbsp;is&nbsp;committed.&nbsp;This&nbsp;is&nbsp;after&nbsp;the&nbsp;context&nbsp;of<br>
+the&nbsp;page&nbsp;exists,&nbsp;but&nbsp;before&nbsp;any&nbsp;script&nbsp;on&nbsp;the&nbsp;page&nbsp;itself&nbsp;has&nbsp;executed.</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-PauseInteractive"><strong>PauseInteractive</strong></a>(self)</dt><dd><tt>Pause&nbsp;the&nbsp;page&nbsp;execution&nbsp;and&nbsp;wait&nbsp;for&nbsp;terminal&nbsp;interaction.<br>
+&nbsp;<br>
+This&nbsp;is&nbsp;typically&nbsp;used&nbsp;for&nbsp;debugging.&nbsp;You&nbsp;can&nbsp;use&nbsp;this&nbsp;to&nbsp;pause<br>
+the&nbsp;page&nbsp;execution&nbsp;and&nbsp;inspect&nbsp;the&nbsp;browser&nbsp;state&nbsp;before<br>
+continuing.</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-PinchElement"><strong>PinchElement</strong></a>(self, selector<font color="#909090">=None</font>, text<font color="#909090">=None</font>, element_function<font color="#909090">=None</font>, left_anchor_ratio<font color="#909090">=0.5</font>, top_anchor_ratio<font color="#909090">=0.5</font>, scale_factor<font color="#909090">=None</font>, speed_in_pixels_per_second<font color="#909090">=800</font>)</dt><dd><tt>Perform&nbsp;the&nbsp;pinch&nbsp;gesture&nbsp;on&nbsp;an&nbsp;element.<br>
+&nbsp;<br>
+It&nbsp;computes&nbsp;the&nbsp;pinch&nbsp;gesture&nbsp;automatically&nbsp;based&nbsp;on&nbsp;the&nbsp;anchor<br>
+coordinate&nbsp;and&nbsp;the&nbsp;scale&nbsp;factor.&nbsp;The&nbsp;scale&nbsp;factor&nbsp;is&nbsp;the&nbsp;ratio&nbsp;of<br>
+of&nbsp;the&nbsp;final&nbsp;span&nbsp;and&nbsp;the&nbsp;initial&nbsp;span&nbsp;of&nbsp;the&nbsp;gesture.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;selector:&nbsp;A&nbsp;CSS&nbsp;selector&nbsp;describing&nbsp;the&nbsp;element.<br>
+&nbsp;&nbsp;text:&nbsp;The&nbsp;element&nbsp;must&nbsp;contains&nbsp;this&nbsp;exact&nbsp;text.<br>
+&nbsp;&nbsp;element_function:&nbsp;A&nbsp;JavaScript&nbsp;function&nbsp;(as&nbsp;string)&nbsp;that&nbsp;is&nbsp;used<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;retrieve&nbsp;the&nbsp;element.&nbsp;For&nbsp;example:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'function()&nbsp;{&nbsp;return&nbsp;foo.element;&nbsp;}'.<br>
+&nbsp;&nbsp;left_anchor_ratio:&nbsp;The&nbsp;horizontal&nbsp;pinch&nbsp;anchor&nbsp;coordinate&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gesture,&nbsp;as&nbsp;a&nbsp;ratio&nbsp;of&nbsp;the&nbsp;visible&nbsp;bounding&nbsp;rectangle&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;element.<br>
+&nbsp;&nbsp;top_anchor_ratio:&nbsp;The&nbsp;vertical&nbsp;pinch&nbsp;anchor&nbsp;coordinate&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gesture,&nbsp;as&nbsp;a&nbsp;ratio&nbsp;of&nbsp;the&nbsp;visible&nbsp;bounding&nbsp;rectangle&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;element.<br>
+&nbsp;&nbsp;scale_factor:&nbsp;The&nbsp;ratio&nbsp;of&nbsp;the&nbsp;final&nbsp;span&nbsp;to&nbsp;the&nbsp;initial&nbsp;span.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;default&nbsp;scale&nbsp;factor&nbsp;is<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.0&nbsp;/&nbsp;(window.outerWidth/window.innerWidth).<br>
+&nbsp;&nbsp;speed_in_pixels_per_second:&nbsp;The&nbsp;speed&nbsp;of&nbsp;the&nbsp;gesture&nbsp;(in&nbsp;pixels/s).</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-PinchPage"><strong>PinchPage</strong></a>(self, left_anchor_ratio<font color="#909090">=0.5</font>, top_anchor_ratio<font color="#909090">=0.5</font>, scale_factor<font color="#909090">=None</font>, speed_in_pixels_per_second<font color="#909090">=800</font>)</dt><dd><tt>Perform&nbsp;the&nbsp;pinch&nbsp;gesture&nbsp;on&nbsp;the&nbsp;page.<br>
+&nbsp;<br>
+It&nbsp;computes&nbsp;the&nbsp;pinch&nbsp;gesture&nbsp;automatically&nbsp;based&nbsp;on&nbsp;the&nbsp;anchor<br>
+coordinate&nbsp;and&nbsp;the&nbsp;scale&nbsp;factor.&nbsp;The&nbsp;scale&nbsp;factor&nbsp;is&nbsp;the&nbsp;ratio&nbsp;of<br>
+of&nbsp;the&nbsp;final&nbsp;span&nbsp;and&nbsp;the&nbsp;initial&nbsp;span&nbsp;of&nbsp;the&nbsp;gesture.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;left_anchor_ratio:&nbsp;The&nbsp;horizontal&nbsp;pinch&nbsp;anchor&nbsp;coordinate&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gesture,&nbsp;as&nbsp;a&nbsp;ratio&nbsp;of&nbsp;the&nbsp;visible&nbsp;bounding&nbsp;rectangle&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document.body.<br>
+&nbsp;&nbsp;top_anchor_ratio:&nbsp;The&nbsp;vertical&nbsp;pinch&nbsp;anchor&nbsp;coordinate&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gesture,&nbsp;as&nbsp;a&nbsp;ratio&nbsp;of&nbsp;the&nbsp;visible&nbsp;bounding&nbsp;rectangle&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document.body.<br>
+&nbsp;&nbsp;scale_factor:&nbsp;The&nbsp;ratio&nbsp;of&nbsp;the&nbsp;final&nbsp;span&nbsp;to&nbsp;the&nbsp;initial&nbsp;span.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;default&nbsp;scale&nbsp;factor&nbsp;is<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.0&nbsp;/&nbsp;(window.outerWidth/window.innerWidth).<br>
+&nbsp;&nbsp;speed_in_pixels_per_second:&nbsp;The&nbsp;speed&nbsp;of&nbsp;the&nbsp;gesture&nbsp;(in&nbsp;pixels/s).</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-PlayMedia"><strong>PlayMedia</strong></a>(self, selector<font color="#909090">=None</font>, playing_event_timeout_in_seconds<font color="#909090">=0</font>, ended_event_timeout_in_seconds<font color="#909090">=0</font>)</dt><dd><tt>Invokes&nbsp;the&nbsp;"play"&nbsp;action&nbsp;on&nbsp;media&nbsp;elements&nbsp;(such&nbsp;as&nbsp;video).<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;selector:&nbsp;A&nbsp;CSS&nbsp;selector&nbsp;describing&nbsp;the&nbsp;element.&nbsp;If&nbsp;none&nbsp;is<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;specified,&nbsp;play&nbsp;the&nbsp;first&nbsp;media&nbsp;element&nbsp;on&nbsp;the&nbsp;page.&nbsp;If&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;selector&nbsp;matches&nbsp;more&nbsp;than&nbsp;1&nbsp;media&nbsp;element,&nbsp;all&nbsp;of&nbsp;them&nbsp;will<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;be&nbsp;played.<br>
+&nbsp;&nbsp;playing_event_timeout_in_seconds:&nbsp;Maximum&nbsp;waiting&nbsp;time&nbsp;for&nbsp;the&nbsp;"playing"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;event&nbsp;(dispatched&nbsp;when&nbsp;the&nbsp;media&nbsp;begins&nbsp;to&nbsp;play)&nbsp;to&nbsp;be&nbsp;fired.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;means&nbsp;do&nbsp;not&nbsp;wait.<br>
+&nbsp;&nbsp;ended_event_timeout_in_seconds:&nbsp;Maximum&nbsp;waiting&nbsp;time&nbsp;for&nbsp;the&nbsp;"ended"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;event&nbsp;(dispatched&nbsp;when&nbsp;playback&nbsp;completes)&nbsp;to&nbsp;be&nbsp;fired.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;means&nbsp;do&nbsp;not&nbsp;wait.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;TimeoutException:&nbsp;If&nbsp;the&nbsp;maximum&nbsp;waiting&nbsp;time&nbsp;is&nbsp;exceeded.</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-ReloadPage"><strong>ReloadPage</strong></a>(self)</dt><dd><tt>Reloads&nbsp;the&nbsp;page.</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-RepaintContinuously"><strong>RepaintContinuously</strong></a>(self, seconds)</dt><dd><tt>Continuously&nbsp;repaints&nbsp;the&nbsp;visible&nbsp;content.<br>
+&nbsp;<br>
+It&nbsp;does&nbsp;this&nbsp;by&nbsp;requesting&nbsp;animation&nbsp;frames&nbsp;until&nbsp;the&nbsp;given&nbsp;number<br>
+of&nbsp;seconds&nbsp;have&nbsp;elapsed&nbsp;AND&nbsp;at&nbsp;least&nbsp;three&nbsp;RAFs&nbsp;have&nbsp;been<br>
+fired.&nbsp;Times&nbsp;out&nbsp;after&nbsp;max(60,&nbsp;self.<strong>seconds</strong>),&nbsp;if&nbsp;less&nbsp;than&nbsp;three<br>
+RAFs&nbsp;were&nbsp;fired.</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-RepeatableBrowserDrivenScroll"><strong>RepeatableBrowserDrivenScroll</strong></a>(self, x_scroll_distance_ratio<font color="#909090">=0.0</font>, y_scroll_distance_ratio<font color="#909090">=0.5</font>, repeat_count<font color="#909090">=0</font>, repeat_delay_ms<font color="#909090">=250</font>)</dt><dd><tt>Perform&nbsp;a&nbsp;browser&nbsp;driven&nbsp;repeatable&nbsp;scroll&nbsp;gesture.<br>
+&nbsp;<br>
+The&nbsp;scroll&nbsp;gesture&nbsp;is&nbsp;driven&nbsp;from&nbsp;the&nbsp;browser,&nbsp;this&nbsp;is&nbsp;useful&nbsp;because&nbsp;the<br>
+main&nbsp;thread&nbsp;often&nbsp;isn't&nbsp;resposive&nbsp;but&nbsp;the&nbsp;browser&nbsp;process&nbsp;usually&nbsp;is,&nbsp;so&nbsp;the<br>
+delay&nbsp;between&nbsp;the&nbsp;scroll&nbsp;gestures&nbsp;should&nbsp;be&nbsp;consistent.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;x_scroll_distance_ratio:&nbsp;The&nbsp;horizontal&nbsp;lenght&nbsp;of&nbsp;the&nbsp;scroll&nbsp;as&nbsp;a&nbsp;fraction<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;of&nbsp;the&nbsp;screen&nbsp;width.<br>
+&nbsp;&nbsp;y_scroll_distance_ratio:&nbsp;The&nbsp;vertical&nbsp;lenght&nbsp;of&nbsp;the&nbsp;scroll&nbsp;as&nbsp;a&nbsp;fraction<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;of&nbsp;the&nbsp;screen&nbsp;height.<br>
+&nbsp;&nbsp;repeat_count:&nbsp;The&nbsp;number&nbsp;of&nbsp;additional&nbsp;times&nbsp;to&nbsp;repeat&nbsp;the&nbsp;gesture.<br>
+&nbsp;&nbsp;repeat_delay_ms:&nbsp;The&nbsp;delay&nbsp;in&nbsp;milliseconds&nbsp;between&nbsp;each&nbsp;scroll&nbsp;gesture.</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-ScrollBounceElement"><strong>ScrollBounceElement</strong></a>(self, selector<font color="#909090">=None</font>, text<font color="#909090">=None</font>, element_function<font color="#909090">=None</font>, left_start_ratio<font color="#909090">=0.5</font>, top_start_ratio<font color="#909090">=0.5</font>, direction<font color="#909090">='down'</font>, distance<font color="#909090">=100</font>, overscroll<font color="#909090">=10</font>, repeat_count<font color="#909090">=10</font>, speed_in_pixels_per_second<font color="#909090">=400</font>)</dt><dd><tt>Perform&nbsp;scroll&nbsp;bounce&nbsp;gesture&nbsp;on&nbsp;the&nbsp;element.<br>
+&nbsp;<br>
+This&nbsp;gesture&nbsp;scrolls&nbsp;on&nbsp;the&nbsp;element&nbsp;by&nbsp;the&nbsp;number&nbsp;of&nbsp;pixels&nbsp;specified&nbsp;in<br>
+distance,&nbsp;in&nbsp;the&nbsp;given&nbsp;direction,&nbsp;followed&nbsp;by&nbsp;a&nbsp;scroll&nbsp;by<br>
+(distance&nbsp;+&nbsp;overscroll)&nbsp;pixels&nbsp;in&nbsp;the&nbsp;opposite&nbsp;direction.<br>
+The&nbsp;above&nbsp;gesture&nbsp;is&nbsp;repeated&nbsp;repeat_count&nbsp;times.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;selector:&nbsp;A&nbsp;CSS&nbsp;selector&nbsp;describing&nbsp;the&nbsp;element.<br>
+&nbsp;&nbsp;text:&nbsp;The&nbsp;element&nbsp;must&nbsp;contains&nbsp;this&nbsp;exact&nbsp;text.<br>
+&nbsp;&nbsp;element_function:&nbsp;A&nbsp;JavaScript&nbsp;function&nbsp;(as&nbsp;string)&nbsp;that&nbsp;is&nbsp;used<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;retrieve&nbsp;the&nbsp;element.&nbsp;For&nbsp;example:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'function()&nbsp;{&nbsp;return&nbsp;foo.element;&nbsp;}'.<br>
+&nbsp;&nbsp;left_start_ratio:&nbsp;The&nbsp;horizontal&nbsp;starting&nbsp;coordinate&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gesture,&nbsp;as&nbsp;a&nbsp;ratio&nbsp;of&nbsp;the&nbsp;visible&nbsp;bounding&nbsp;rectangle&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document.body.<br>
+&nbsp;&nbsp;top_start_ratio:&nbsp;The&nbsp;vertical&nbsp;starting&nbsp;coordinate&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gesture,&nbsp;as&nbsp;a&nbsp;ratio&nbsp;of&nbsp;the&nbsp;visible&nbsp;bounding&nbsp;rectangle&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document.body.<br>
+&nbsp;&nbsp;direction:&nbsp;The&nbsp;direction&nbsp;of&nbsp;scroll,&nbsp;either&nbsp;'left',&nbsp;'right',<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'up',&nbsp;'down',&nbsp;'upleft',&nbsp;'upright',&nbsp;'downleft',&nbsp;or&nbsp;'downright'<br>
+&nbsp;&nbsp;distance:&nbsp;The&nbsp;distance&nbsp;to&nbsp;scroll&nbsp;(in&nbsp;pixel).<br>
+&nbsp;&nbsp;overscroll:&nbsp;The&nbsp;number&nbsp;of&nbsp;additional&nbsp;pixels&nbsp;to&nbsp;scroll&nbsp;back,&nbsp;in<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addition&nbsp;to&nbsp;the&nbsp;givendistance.<br>
+&nbsp;&nbsp;repeat_count:&nbsp;How&nbsp;often&nbsp;we&nbsp;want&nbsp;to&nbsp;repeat&nbsp;the&nbsp;full&nbsp;gesture.<br>
+&nbsp;&nbsp;speed_in_pixels_per_second:&nbsp;The&nbsp;speed&nbsp;of&nbsp;the&nbsp;gesture&nbsp;(in&nbsp;pixels/s).</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-ScrollBouncePage"><strong>ScrollBouncePage</strong></a>(self, left_start_ratio<font color="#909090">=0.5</font>, top_start_ratio<font color="#909090">=0.5</font>, direction<font color="#909090">='down'</font>, distance<font color="#909090">=100</font>, overscroll<font color="#909090">=10</font>, repeat_count<font color="#909090">=10</font>, speed_in_pixels_per_second<font color="#909090">=400</font>)</dt><dd><tt>Perform&nbsp;scroll&nbsp;bounce&nbsp;gesture&nbsp;on&nbsp;the&nbsp;page.<br>
+&nbsp;<br>
+This&nbsp;gesture&nbsp;scrolls&nbsp;the&nbsp;page&nbsp;by&nbsp;the&nbsp;number&nbsp;of&nbsp;pixels&nbsp;specified&nbsp;in<br>
+distance,&nbsp;in&nbsp;the&nbsp;given&nbsp;direction,&nbsp;followed&nbsp;by&nbsp;a&nbsp;scroll&nbsp;by<br>
+(distance&nbsp;+&nbsp;overscroll)&nbsp;pixels&nbsp;in&nbsp;the&nbsp;opposite&nbsp;direction.<br>
+The&nbsp;above&nbsp;gesture&nbsp;is&nbsp;repeated&nbsp;repeat_count&nbsp;times.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;left_start_ratio:&nbsp;The&nbsp;horizontal&nbsp;starting&nbsp;coordinate&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gesture,&nbsp;as&nbsp;a&nbsp;ratio&nbsp;of&nbsp;the&nbsp;visible&nbsp;bounding&nbsp;rectangle&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document.body.<br>
+&nbsp;&nbsp;top_start_ratio:&nbsp;The&nbsp;vertical&nbsp;starting&nbsp;coordinate&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gesture,&nbsp;as&nbsp;a&nbsp;ratio&nbsp;of&nbsp;the&nbsp;visible&nbsp;bounding&nbsp;rectangle&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document.body.<br>
+&nbsp;&nbsp;direction:&nbsp;The&nbsp;direction&nbsp;of&nbsp;scroll,&nbsp;either&nbsp;'left',&nbsp;'right',<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'up',&nbsp;'down',&nbsp;'upleft',&nbsp;'upright',&nbsp;'downleft',&nbsp;or&nbsp;'downright'<br>
+&nbsp;&nbsp;distance:&nbsp;The&nbsp;distance&nbsp;to&nbsp;scroll&nbsp;(in&nbsp;pixel).<br>
+&nbsp;&nbsp;overscroll:&nbsp;The&nbsp;number&nbsp;of&nbsp;additional&nbsp;pixels&nbsp;to&nbsp;scroll&nbsp;back,&nbsp;in<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addition&nbsp;to&nbsp;the&nbsp;givendistance.<br>
+&nbsp;&nbsp;repeat_count:&nbsp;How&nbsp;often&nbsp;we&nbsp;want&nbsp;to&nbsp;repeat&nbsp;the&nbsp;full&nbsp;gesture.<br>
+&nbsp;&nbsp;speed_in_pixels_per_second:&nbsp;The&nbsp;speed&nbsp;of&nbsp;the&nbsp;gesture&nbsp;(in&nbsp;pixels/s).</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-ScrollElement"><strong>ScrollElement</strong></a>(self, selector<font color="#909090">=None</font>, text<font color="#909090">=None</font>, element_function<font color="#909090">=None</font>, left_start_ratio<font color="#909090">=0.5</font>, top_start_ratio<font color="#909090">=0.5</font>, direction<font color="#909090">='down'</font>, distance<font color="#909090">=None</font>, distance_expr<font color="#909090">=None</font>, speed_in_pixels_per_second<font color="#909090">=800</font>, use_touch<font color="#909090">=False</font>, synthetic_gesture_source<font color="#909090">='DEFAULT'</font>)</dt><dd><tt>Perform&nbsp;scroll&nbsp;gesture&nbsp;on&nbsp;the&nbsp;element.<br>
+&nbsp;<br>
+The&nbsp;element&nbsp;may&nbsp;be&nbsp;selected&nbsp;via&nbsp;selector,&nbsp;text,&nbsp;or&nbsp;element_function.<br>
+Only&nbsp;one&nbsp;of&nbsp;these&nbsp;arguments&nbsp;must&nbsp;be&nbsp;specified.<br>
+&nbsp;<br>
+You&nbsp;may&nbsp;specify&nbsp;distance&nbsp;or&nbsp;distance_expr,&nbsp;but&nbsp;not&nbsp;both.&nbsp;If<br>
+neither&nbsp;is&nbsp;specified,&nbsp;the&nbsp;default&nbsp;scroll&nbsp;distance&nbsp;is&nbsp;variable<br>
+depending&nbsp;on&nbsp;direction&nbsp;(see&nbsp;scroll.js&nbsp;for&nbsp;full&nbsp;implementation).<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;selector:&nbsp;A&nbsp;CSS&nbsp;selector&nbsp;describing&nbsp;the&nbsp;element.<br>
+&nbsp;&nbsp;text:&nbsp;The&nbsp;element&nbsp;must&nbsp;contains&nbsp;this&nbsp;exact&nbsp;text.<br>
+&nbsp;&nbsp;element_function:&nbsp;A&nbsp;JavaScript&nbsp;function&nbsp;(as&nbsp;string)&nbsp;that&nbsp;is&nbsp;used<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;retrieve&nbsp;the&nbsp;element.&nbsp;For&nbsp;example:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'function()&nbsp;{&nbsp;return&nbsp;foo.element;&nbsp;}'.<br>
+&nbsp;&nbsp;left_start_ratio:&nbsp;The&nbsp;horizontal&nbsp;starting&nbsp;coordinate&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gesture,&nbsp;as&nbsp;a&nbsp;ratio&nbsp;of&nbsp;the&nbsp;visible&nbsp;bounding&nbsp;rectangle&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;element.<br>
+&nbsp;&nbsp;top_start_ratio:&nbsp;The&nbsp;vertical&nbsp;starting&nbsp;coordinate&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gesture,&nbsp;as&nbsp;a&nbsp;ratio&nbsp;of&nbsp;the&nbsp;visible&nbsp;bounding&nbsp;rectangle&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;element.<br>
+&nbsp;&nbsp;direction:&nbsp;The&nbsp;direction&nbsp;of&nbsp;scroll,&nbsp;either&nbsp;'left',&nbsp;'right',<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'up',&nbsp;'down',&nbsp;'upleft',&nbsp;'upright',&nbsp;'downleft',&nbsp;or&nbsp;'downright'<br>
+&nbsp;&nbsp;distance:&nbsp;The&nbsp;distance&nbsp;to&nbsp;scroll&nbsp;(in&nbsp;pixel).<br>
+&nbsp;&nbsp;distance_expr:&nbsp;A&nbsp;JavaScript&nbsp;expression&nbsp;(as&nbsp;string)&nbsp;that&nbsp;can&nbsp;be<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;evaluated&nbsp;to&nbsp;compute&nbsp;scroll&nbsp;distance.&nbsp;Example:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'window.scrollTop'&nbsp;or&nbsp;'(function()&nbsp;{&nbsp;return&nbsp;crazyMath();&nbsp;})()'.<br>
+&nbsp;&nbsp;speed_in_pixels_per_second:&nbsp;The&nbsp;speed&nbsp;of&nbsp;the&nbsp;gesture&nbsp;(in&nbsp;pixels/s).<br>
+&nbsp;&nbsp;use_touch:&nbsp;Whether&nbsp;scrolling&nbsp;should&nbsp;be&nbsp;done&nbsp;with&nbsp;touch&nbsp;input.<br>
+&nbsp;&nbsp;synthetic_gesture_source:&nbsp;the&nbsp;source&nbsp;input&nbsp;device&nbsp;type&nbsp;for&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;synthetic&nbsp;gesture:&nbsp;'DEFAULT',&nbsp;'TOUCH'&nbsp;or&nbsp;'MOUSE'.</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-ScrollPage"><strong>ScrollPage</strong></a>(self, left_start_ratio<font color="#909090">=0.5</font>, top_start_ratio<font color="#909090">=0.5</font>, direction<font color="#909090">='down'</font>, distance<font color="#909090">=None</font>, distance_expr<font color="#909090">=None</font>, speed_in_pixels_per_second<font color="#909090">=800</font>, use_touch<font color="#909090">=False</font>, synthetic_gesture_source<font color="#909090">='DEFAULT'</font>)</dt><dd><tt>Perform&nbsp;scroll&nbsp;gesture&nbsp;on&nbsp;the&nbsp;page.<br>
+&nbsp;<br>
+You&nbsp;may&nbsp;specify&nbsp;distance&nbsp;or&nbsp;distance_expr,&nbsp;but&nbsp;not&nbsp;both.&nbsp;If<br>
+neither&nbsp;is&nbsp;specified,&nbsp;the&nbsp;default&nbsp;scroll&nbsp;distance&nbsp;is&nbsp;variable<br>
+depending&nbsp;on&nbsp;direction&nbsp;(see&nbsp;scroll.js&nbsp;for&nbsp;full&nbsp;implementation).<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;left_start_ratio:&nbsp;The&nbsp;horizontal&nbsp;starting&nbsp;coordinate&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gesture,&nbsp;as&nbsp;a&nbsp;ratio&nbsp;of&nbsp;the&nbsp;visible&nbsp;bounding&nbsp;rectangle&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document.body.<br>
+&nbsp;&nbsp;top_start_ratio:&nbsp;The&nbsp;vertical&nbsp;starting&nbsp;coordinate&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gesture,&nbsp;as&nbsp;a&nbsp;ratio&nbsp;of&nbsp;the&nbsp;visible&nbsp;bounding&nbsp;rectangle&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document.body.<br>
+&nbsp;&nbsp;direction:&nbsp;The&nbsp;direction&nbsp;of&nbsp;scroll,&nbsp;either&nbsp;'left',&nbsp;'right',<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'up',&nbsp;'down',&nbsp;'upleft',&nbsp;'upright',&nbsp;'downleft',&nbsp;or&nbsp;'downright'<br>
+&nbsp;&nbsp;distance:&nbsp;The&nbsp;distance&nbsp;to&nbsp;scroll&nbsp;(in&nbsp;pixel).<br>
+&nbsp;&nbsp;distance_expr:&nbsp;A&nbsp;JavaScript&nbsp;expression&nbsp;(as&nbsp;string)&nbsp;that&nbsp;can&nbsp;be<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;evaluated&nbsp;to&nbsp;compute&nbsp;scroll&nbsp;distance.&nbsp;Example:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'window.scrollTop'&nbsp;or&nbsp;'(function()&nbsp;{&nbsp;return&nbsp;crazyMath();&nbsp;})()'.<br>
+&nbsp;&nbsp;speed_in_pixels_per_second:&nbsp;The&nbsp;speed&nbsp;of&nbsp;the&nbsp;gesture&nbsp;(in&nbsp;pixels/s).<br>
+&nbsp;&nbsp;use_touch:&nbsp;Whether&nbsp;scrolling&nbsp;should&nbsp;be&nbsp;done&nbsp;with&nbsp;touch&nbsp;input.<br>
+&nbsp;&nbsp;synthetic_gesture_source:&nbsp;the&nbsp;source&nbsp;input&nbsp;device&nbsp;type&nbsp;for&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;synthetic&nbsp;gesture:&nbsp;'DEFAULT',&nbsp;'TOUCH'&nbsp;or&nbsp;'MOUSE'.</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-SeekMedia"><strong>SeekMedia</strong></a>(self, seconds, selector<font color="#909090">=None</font>, timeout_in_seconds<font color="#909090">=0</font>, log_time<font color="#909090">=True</font>, label<font color="#909090">=''</font>)</dt><dd><tt>Performs&nbsp;a&nbsp;seek&nbsp;action&nbsp;on&nbsp;media&nbsp;elements&nbsp;(such&nbsp;as&nbsp;video).<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;seconds:&nbsp;The&nbsp;media&nbsp;time&nbsp;to&nbsp;seek&nbsp;to.<br>
+&nbsp;&nbsp;selector:&nbsp;A&nbsp;CSS&nbsp;selector&nbsp;describing&nbsp;the&nbsp;element.&nbsp;If&nbsp;none&nbsp;is<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;specified,&nbsp;seek&nbsp;the&nbsp;first&nbsp;media&nbsp;element&nbsp;on&nbsp;the&nbsp;page.&nbsp;If&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;selector&nbsp;matches&nbsp;more&nbsp;than&nbsp;1&nbsp;media&nbsp;element,&nbsp;all&nbsp;of&nbsp;them&nbsp;will<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;be&nbsp;seeked.<br>
+&nbsp;&nbsp;timeout_in_seconds:&nbsp;Maximum&nbsp;waiting&nbsp;time&nbsp;for&nbsp;the&nbsp;"seeked"&nbsp;event<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(dispatched&nbsp;when&nbsp;the&nbsp;seeked&nbsp;operation&nbsp;completes)&nbsp;to&nbsp;be<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fired.&nbsp;&nbsp;0&nbsp;means&nbsp;do&nbsp;not&nbsp;wait.<br>
+&nbsp;&nbsp;log_time:&nbsp;Whether&nbsp;to&nbsp;log&nbsp;the&nbsp;seek&nbsp;time&nbsp;for&nbsp;the&nbsp;perf<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;measurement.&nbsp;Useful&nbsp;when&nbsp;performing&nbsp;multiple&nbsp;seek.<br>
+&nbsp;&nbsp;label:&nbsp;A&nbsp;suffix&nbsp;string&nbsp;to&nbsp;name&nbsp;the&nbsp;seek&nbsp;perf&nbsp;measurement.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;TimeoutException:&nbsp;If&nbsp;the&nbsp;maximum&nbsp;waiting&nbsp;time&nbsp;is&nbsp;exceeded.</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-SwipeElement"><strong>SwipeElement</strong></a>(self, selector<font color="#909090">=None</font>, text<font color="#909090">=None</font>, element_function<font color="#909090">=None</font>, left_start_ratio<font color="#909090">=0.5</font>, top_start_ratio<font color="#909090">=0.5</font>, direction<font color="#909090">='left'</font>, distance<font color="#909090">=100</font>, speed_in_pixels_per_second<font color="#909090">=800</font>)</dt><dd><tt>Perform&nbsp;swipe&nbsp;gesture&nbsp;on&nbsp;the&nbsp;element.<br>
+&nbsp;<br>
+The&nbsp;element&nbsp;may&nbsp;be&nbsp;selected&nbsp;via&nbsp;selector,&nbsp;text,&nbsp;or&nbsp;element_function.<br>
+Only&nbsp;one&nbsp;of&nbsp;these&nbsp;arguments&nbsp;must&nbsp;be&nbsp;specified.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;selector:&nbsp;A&nbsp;CSS&nbsp;selector&nbsp;describing&nbsp;the&nbsp;element.<br>
+&nbsp;&nbsp;text:&nbsp;The&nbsp;element&nbsp;must&nbsp;contains&nbsp;this&nbsp;exact&nbsp;text.<br>
+&nbsp;&nbsp;element_function:&nbsp;A&nbsp;JavaScript&nbsp;function&nbsp;(as&nbsp;string)&nbsp;that&nbsp;is&nbsp;used<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;retrieve&nbsp;the&nbsp;element.&nbsp;For&nbsp;example:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'function()&nbsp;{&nbsp;return&nbsp;foo.element;&nbsp;}'.<br>
+&nbsp;&nbsp;left_start_ratio:&nbsp;The&nbsp;horizontal&nbsp;starting&nbsp;coordinate&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gesture,&nbsp;as&nbsp;a&nbsp;ratio&nbsp;of&nbsp;the&nbsp;visible&nbsp;bounding&nbsp;rectangle&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;element.<br>
+&nbsp;&nbsp;top_start_ratio:&nbsp;The&nbsp;vertical&nbsp;starting&nbsp;coordinate&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gesture,&nbsp;as&nbsp;a&nbsp;ratio&nbsp;of&nbsp;the&nbsp;visible&nbsp;bounding&nbsp;rectangle&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;element.<br>
+&nbsp;&nbsp;direction:&nbsp;The&nbsp;direction&nbsp;of&nbsp;swipe,&nbsp;either&nbsp;'left',&nbsp;'right',<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'up',&nbsp;or&nbsp;'down'<br>
+&nbsp;&nbsp;distance:&nbsp;The&nbsp;distance&nbsp;to&nbsp;swipe&nbsp;(in&nbsp;pixel).<br>
+&nbsp;&nbsp;speed_in_pixels_per_second:&nbsp;The&nbsp;speed&nbsp;of&nbsp;the&nbsp;gesture&nbsp;(in&nbsp;pixels/s).</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-SwipePage"><strong>SwipePage</strong></a>(self, left_start_ratio<font color="#909090">=0.5</font>, top_start_ratio<font color="#909090">=0.5</font>, direction<font color="#909090">='left'</font>, distance<font color="#909090">=100</font>, speed_in_pixels_per_second<font color="#909090">=800</font>)</dt><dd><tt>Perform&nbsp;swipe&nbsp;gesture&nbsp;on&nbsp;the&nbsp;page.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;left_start_ratio:&nbsp;The&nbsp;horizontal&nbsp;starting&nbsp;coordinate&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gesture,&nbsp;as&nbsp;a&nbsp;ratio&nbsp;of&nbsp;the&nbsp;visible&nbsp;bounding&nbsp;rectangle&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document.body.<br>
+&nbsp;&nbsp;top_start_ratio:&nbsp;The&nbsp;vertical&nbsp;starting&nbsp;coordinate&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gesture,&nbsp;as&nbsp;a&nbsp;ratio&nbsp;of&nbsp;the&nbsp;visible&nbsp;bounding&nbsp;rectangle&nbsp;for<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document.body.<br>
+&nbsp;&nbsp;direction:&nbsp;The&nbsp;direction&nbsp;of&nbsp;swipe,&nbsp;either&nbsp;'left',&nbsp;'right',<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'up',&nbsp;or&nbsp;'down'<br>
+&nbsp;&nbsp;distance:&nbsp;The&nbsp;distance&nbsp;to&nbsp;swipe&nbsp;(in&nbsp;pixel).<br>
+&nbsp;&nbsp;speed_in_pixels_per_second:&nbsp;The&nbsp;speed&nbsp;of&nbsp;the&nbsp;gesture&nbsp;(in&nbsp;pixels/s).</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-TapElement"><strong>TapElement</strong></a>(self, selector<font color="#909090">=None</font>, text<font color="#909090">=None</font>, element_function<font color="#909090">=None</font>)</dt><dd><tt>Tap&nbsp;an&nbsp;element.<br>
+&nbsp;<br>
+The&nbsp;element&nbsp;may&nbsp;be&nbsp;selected&nbsp;via&nbsp;selector,&nbsp;text,&nbsp;or&nbsp;element_function.<br>
+Only&nbsp;one&nbsp;of&nbsp;these&nbsp;arguments&nbsp;must&nbsp;be&nbsp;specified.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;selector:&nbsp;A&nbsp;CSS&nbsp;selector&nbsp;describing&nbsp;the&nbsp;element.<br>
+&nbsp;&nbsp;text:&nbsp;The&nbsp;element&nbsp;must&nbsp;contains&nbsp;this&nbsp;exact&nbsp;text.<br>
+&nbsp;&nbsp;element_function:&nbsp;A&nbsp;JavaScript&nbsp;function&nbsp;(as&nbsp;string)&nbsp;that&nbsp;is&nbsp;used<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;retrieve&nbsp;the&nbsp;element.&nbsp;For&nbsp;example:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'(function()&nbsp;{&nbsp;return&nbsp;foo.element;&nbsp;})()'.</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-Wait"><strong>Wait</strong></a>(self, seconds)</dt><dd><tt>Wait&nbsp;for&nbsp;the&nbsp;number&nbsp;of&nbsp;seconds&nbsp;specified.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;seconds:&nbsp;The&nbsp;number&nbsp;of&nbsp;seconds&nbsp;to&nbsp;wait.</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-WaitForElement"><strong>WaitForElement</strong></a>(self, selector<font color="#909090">=None</font>, text<font color="#909090">=None</font>, element_function<font color="#909090">=None</font>, timeout_in_seconds<font color="#909090">=60</font>)</dt><dd><tt>Wait&nbsp;for&nbsp;an&nbsp;element&nbsp;to&nbsp;appear&nbsp;in&nbsp;the&nbsp;document.<br>
+&nbsp;<br>
+The&nbsp;element&nbsp;may&nbsp;be&nbsp;selected&nbsp;via&nbsp;selector,&nbsp;text,&nbsp;or&nbsp;element_function.<br>
+Only&nbsp;one&nbsp;of&nbsp;these&nbsp;arguments&nbsp;must&nbsp;be&nbsp;specified.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;selector:&nbsp;A&nbsp;CSS&nbsp;selector&nbsp;describing&nbsp;the&nbsp;element.<br>
+&nbsp;&nbsp;text:&nbsp;The&nbsp;element&nbsp;must&nbsp;contains&nbsp;this&nbsp;exact&nbsp;text.<br>
+&nbsp;&nbsp;element_function:&nbsp;A&nbsp;JavaScript&nbsp;function&nbsp;(as&nbsp;string)&nbsp;that&nbsp;is&nbsp;used<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;retrieve&nbsp;the&nbsp;element.&nbsp;For&nbsp;example:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'(function()&nbsp;{&nbsp;return&nbsp;foo.element;&nbsp;})()'.<br>
+&nbsp;&nbsp;timeout_in_seconds:&nbsp;The&nbsp;timeout&nbsp;in&nbsp;seconds&nbsp;(default&nbsp;to&nbsp;60).</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-WaitForJavaScriptCondition"><strong>WaitForJavaScriptCondition</strong></a>(self, condition, timeout_in_seconds<font color="#909090">=60</font>)</dt><dd><tt>Wait&nbsp;for&nbsp;a&nbsp;JavaScript&nbsp;condition&nbsp;to&nbsp;become&nbsp;true.<br>
+&nbsp;<br>
+Example:&nbsp;runner.<a href="#ActionRunner-WaitForJavaScriptCondition">WaitForJavaScriptCondition</a>('window.foo&nbsp;==&nbsp;10');<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;condition:&nbsp;The&nbsp;JavaScript&nbsp;condition&nbsp;(as&nbsp;string).<br>
+&nbsp;&nbsp;timeout_in_seconds:&nbsp;The&nbsp;timeout&nbsp;in&nbsp;seconds&nbsp;(default&nbsp;to&nbsp;60).</tt></dd></dl>
+
+<dl><dt><a name="ActionRunner-WaitForNavigate"><strong>WaitForNavigate</strong></a>(self, timeout_in_seconds_seconds<font color="#909090">=60</font>)</dt></dl>
+
+<dl><dt><a name="ActionRunner-__init__"><strong>__init__</strong></a>(self, tab, skip_waits<font color="#909090">=False</font>)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>tab</strong></dt>
+<dd><tt>Returns&nbsp;the&nbsp;tab&nbsp;on&nbsp;which&nbsp;actions&nbsp;are&nbsp;performed.</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Interaction">class <strong>Interaction</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Interaction-Begin"><strong>Begin</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Interaction-End"><strong>End</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Interaction-__enter__"><strong>__enter__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Interaction-__exit__"><strong>__exit__</strong></a>(self, exc_type, exc_value, traceback)</dt></dl>
+
+<dl><dt><a name="Interaction-__init__"><strong>__init__</strong></a>(self, action_runner, label, flags)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>GESTURE_SOURCE_DEFAULT</strong> = 'DEFAULT'<br>
+<strong>SUPPORTED_GESTURE_SOURCES</strong> = ('DEFAULT', 'MOUSE', 'TOUCH')</td></tr></table>
+</body></html>

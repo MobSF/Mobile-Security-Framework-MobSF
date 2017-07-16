@@ -1,0 +1,84 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.actions.media_action</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.<a href="telemetry.internal.actions.html"><font color="#ffffff">actions</font></a>.media_action</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/actions/media_action.py">telemetry/internal/actions/media_action.py</a></font></td></tr></table>
+    <p><tt>Common&nbsp;media&nbsp;action&nbsp;functions.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="logging.html">logging</a><br>
+</td><td width="25%" valign=top><a href="os.html">os</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.actions.page_action.html">telemetry.internal.actions.page_action</a><br>
+</td><td width="25%" valign=top><a href="telemetry.core.util.html">telemetry.core.util</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.actions.page_action.html#PageAction">telemetry.internal.actions.page_action.PageAction</a>(<a href="__builtin__.html#object">__builtin__.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.actions.media_action.html#MediaAction">MediaAction</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="MediaAction">class <strong>MediaAction</strong></a>(<a href="telemetry.internal.actions.page_action.html#PageAction">telemetry.internal.actions.page_action.PageAction</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.internal.actions.media_action.html#MediaAction">MediaAction</a></dd>
+<dd><a href="telemetry.internal.actions.page_action.html#PageAction">telemetry.internal.actions.page_action.PageAction</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="MediaAction-HasEventCompletedOrError"><strong>HasEventCompletedOrError</strong></a>(self, tab, selector, event_name)</dt></dl>
+
+<dl><dt><a name="MediaAction-LoadJS"><strong>LoadJS</strong></a>(self, tab, js_file_name)</dt><dd><tt>Loads&nbsp;and&nbsp;executes&nbsp;a&nbsp;JS&nbsp;file&nbsp;in&nbsp;the&nbsp;tab.</tt></dd></dl>
+
+<dl><dt><a name="MediaAction-RunAction"><strong>RunAction</strong></a>(self, tab)</dt></dl>
+
+<dl><dt><a name="MediaAction-WaitForEvent"><strong>WaitForEvent</strong></a>(self, tab, selector, event_name, timeout_in_seconds)</dt><dd><tt>Halts&nbsp;media&nbsp;action&nbsp;until&nbsp;the&nbsp;selector's&nbsp;event&nbsp;is&nbsp;fired.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;tab:&nbsp;The&nbsp;tab&nbsp;to&nbsp;check&nbsp;for&nbsp;event&nbsp;on.<br>
+&nbsp;&nbsp;selector:&nbsp;Media&nbsp;element&nbsp;selector.<br>
+&nbsp;&nbsp;event_name:&nbsp;Name&nbsp;of&nbsp;the&nbsp;event&nbsp;to&nbsp;check&nbsp;if&nbsp;fired&nbsp;or&nbsp;not.<br>
+&nbsp;&nbsp;timeout_in_seconds:&nbsp;Timeout&nbsp;to&nbsp;check&nbsp;for&nbsp;event,&nbsp;throws&nbsp;an&nbsp;exception&nbsp;if<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not&nbsp;fired.</tt></dd></dl>
+
+<dl><dt><a name="MediaAction-WillRunAction"><strong>WillRunAction</strong></a>(self, tab)</dt><dd><tt>Loads&nbsp;the&nbsp;common&nbsp;media&nbsp;action&nbsp;JS&nbsp;code&nbsp;prior&nbsp;to&nbsp;running&nbsp;the&nbsp;action.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="telemetry.internal.actions.page_action.html#PageAction">telemetry.internal.actions.page_action.PageAction</a>:<br>
+<dl><dt><a name="MediaAction-CleanUp"><strong>CleanUp</strong></a>(self, tab)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.internal.actions.page_action.html#PageAction">telemetry.internal.actions.page_action.PageAction</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

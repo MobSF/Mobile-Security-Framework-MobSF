@@ -1,0 +1,60 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.value.histogram_util</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.value.html"><font color="#ffffff">value</font></a>.histogram_util</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/value/histogram_util.py">telemetry/value/histogram_util.py</a></font></td></tr></table>
+    <p><tt>This&nbsp;is&nbsp;a&nbsp;helper&nbsp;module&nbsp;to&nbsp;get&nbsp;and&nbsp;manipulate&nbsp;histogram&nbsp;data.<br>
+&nbsp;<br>
+The&nbsp;histogram&nbsp;data&nbsp;is&nbsp;the&nbsp;same&nbsp;data&nbsp;as&nbsp;is&nbsp;visible&nbsp;from&nbsp;"chrome://histograms".<br>
+More&nbsp;information&nbsp;can&nbsp;be&nbsp;found&nbsp;at:&nbsp;chromium/src/base/metrics/histogram.h</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="collections.html">collections</a><br>
+</td><td width="25%" valign=top><a href="telemetry.core.exceptions.html">telemetry.core.exceptions</a><br>
+</td><td width="25%" valign=top><a href="json.html">json</a><br>
+</td><td width="25%" valign=top><a href="logging.html">logging</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-AddHistograms"><strong>AddHistograms</strong></a>(histogram_jsons)</dt><dd><tt>Adds&nbsp;histograms&nbsp;together.&nbsp;Used&nbsp;for&nbsp;aggregating&nbsp;data.<br>
+&nbsp;<br>
+The&nbsp;parameter&nbsp;is&nbsp;a&nbsp;list&nbsp;of&nbsp;json&nbsp;serializations&nbsp;and&nbsp;the&nbsp;returned&nbsp;result&nbsp;is&nbsp;a<br>
+json&nbsp;serialization&nbsp;too.<br>
+&nbsp;<br>
+Note&nbsp;that&nbsp;the&nbsp;histograms&nbsp;to&nbsp;be&nbsp;added&nbsp;together&nbsp;are&nbsp;typically&nbsp;from&nbsp;different<br>
+processes.</tt></dd></dl>
+ <dl><dt><a name="-CustomizeBrowserOptions"><strong>CustomizeBrowserOptions</strong></a>(options)</dt><dd><tt>Allows&nbsp;histogram&nbsp;collection.</tt></dd></dl>
+ <dl><dt><a name="-GetHistogram"><strong>GetHistogram</strong></a>(histogram_type, histogram_name, tab)</dt><dd><tt>Get&nbsp;a&nbsp;json&nbsp;serialization&nbsp;of&nbsp;a&nbsp;histogram.</tt></dd></dl>
+ <dl><dt><a name="-GetHistogramBucketsFromJson"><strong>GetHistogramBucketsFromJson</strong></a>(histogram_json)</dt></dl>
+ <dl><dt><a name="-GetHistogramBucketsFromRawValue"><strong>GetHistogramBucketsFromRawValue</strong></a>(raw_value)</dt></dl>
+ <dl><dt><a name="-GetHistogramCount"><strong>GetHistogramCount</strong></a>(histogram_type, histogram_name, tab)</dt><dd><tt>Get&nbsp;the&nbsp;count&nbsp;of&nbsp;events&nbsp;for&nbsp;the&nbsp;given&nbsp;histograms.</tt></dd></dl>
+ <dl><dt><a name="-GetHistogramSum"><strong>GetHistogramSum</strong></a>(histogram_type, histogram_name, tab)</dt><dd><tt>Get&nbsp;the&nbsp;sum&nbsp;of&nbsp;events&nbsp;for&nbsp;the&nbsp;given&nbsp;histograms.</tt></dd></dl>
+ <dl><dt><a name="-SubtractHistogram"><strong>SubtractHistogram</strong></a>(histogram_json, start_histogram_json)</dt><dd><tt>Subtracts&nbsp;a&nbsp;previous&nbsp;histogram&nbsp;from&nbsp;a&nbsp;histogram.<br>
+&nbsp;<br>
+Both&nbsp;parameters&nbsp;and&nbsp;the&nbsp;returned&nbsp;result&nbsp;are&nbsp;json&nbsp;serializations.</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>BROWSER_HISTOGRAM</strong> = 'browser_histogram'<br>
+<strong>RENDERER_HISTOGRAM</strong> = 'renderer_histogram'</td></tr></table>
+</body></html>

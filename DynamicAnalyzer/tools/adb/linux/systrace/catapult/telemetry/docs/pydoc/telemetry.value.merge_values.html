@@ -1,0 +1,90 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.value.merge_values</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.value.html"><font color="#ffffff">value</font></a>.merge_values</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/value/merge_values.py">telemetry/value/merge_values.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2013&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.value.failure.html">telemetry.value.failure</a><br>
+</td><td width="25%" valign=top><a href="telemetry.value.skip.html">telemetry.value.skip</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-DefaultKeyFunc"><strong>DefaultKeyFunc</strong></a>(value)</dt><dd><tt>Keys&nbsp;values&nbsp;in&nbsp;a&nbsp;standard&nbsp;way&nbsp;for&nbsp;grouping&nbsp;in&nbsp;merging&nbsp;and&nbsp;summary.<br>
+&nbsp;<br>
+Merging&nbsp;and&nbsp;summarization&nbsp;can&nbsp;be&nbsp;parameterized&nbsp;by&nbsp;a&nbsp;function&nbsp;that&nbsp;groups<br>
+values&nbsp;into&nbsp;equivalence&nbsp;classes.&nbsp;Any&nbsp;function&nbsp;that&nbsp;returns&nbsp;a&nbsp;comparable<br>
+object&nbsp;can&nbsp;be&nbsp;used&nbsp;as&nbsp;a&nbsp;key_func,&nbsp;but&nbsp;merge_values&nbsp;and&nbsp;summary&nbsp;both&nbsp;use&nbsp;this<br>
+function&nbsp;by&nbsp;default,&nbsp;to&nbsp;allow&nbsp;the&nbsp;default&nbsp;grouping&nbsp;to&nbsp;change&nbsp;as&nbsp;Telemtry&nbsp;does.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;value:&nbsp;A&nbsp;Telemetry&nbsp;Value&nbsp;instance<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;A&nbsp;comparable&nbsp;object&nbsp;used&nbsp;to&nbsp;group&nbsp;values.</tt></dd></dl>
+ <dl><dt><a name="-GroupStably"><strong>GroupStably</strong></a>(all_values, key_func)</dt><dd><tt>Groups&nbsp;an&nbsp;array&nbsp;by&nbsp;key_func,&nbsp;with&nbsp;the&nbsp;groups&nbsp;returned&nbsp;in&nbsp;a&nbsp;stable&nbsp;order.<br>
+&nbsp;<br>
+Returns&nbsp;a&nbsp;list&nbsp;of&nbsp;groups.</tt></dd></dl>
+ <dl><dt><a name="-MergeLikeValuesFromDifferentPages"><strong>MergeLikeValuesFromDifferentPages</strong></a>(all_values, key_func<font color="#909090">=&lt;function DefaultKeyFunc&gt;</font>)</dt><dd><tt>Merges&nbsp;values&nbsp;that&nbsp;measure&nbsp;the&nbsp;same&nbsp;thing&nbsp;on&nbsp;different&nbsp;pages.<br>
+&nbsp;<br>
+After&nbsp;using&nbsp;MergeLikeValuesFromSamePage,&nbsp;one&nbsp;still&nbsp;ends&nbsp;up&nbsp;with&nbsp;values&nbsp;from<br>
+different&nbsp;pages:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ScalarValue(page1,&nbsp;'x',&nbsp;1,&nbsp;'foo')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ScalarValue(page1,&nbsp;'y',&nbsp;30,&nbsp;'bar')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ScalarValue(page2,&nbsp;'x',&nbsp;2,&nbsp;'foo')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ScalarValue(page2,&nbsp;'y',&nbsp;40,&nbsp;'baz')<br>
+&nbsp;<br>
+This&nbsp;function&nbsp;will&nbsp;group&nbsp;values&nbsp;with&nbsp;the&nbsp;same&nbsp;name&nbsp;and&nbsp;tir_label&nbsp;together:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ListOfScalarValues(None,&nbsp;'x',&nbsp;[1,&nbsp;2],&nbsp;'foo')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ListOfScalarValues(None,&nbsp;'y',&nbsp;[30],&nbsp;'bar')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ListOfScalarValues(None,&nbsp;'y',&nbsp;[40],&nbsp;'baz')<br>
+&nbsp;<br>
+The&nbsp;workhorse&nbsp;of&nbsp;this&nbsp;code&nbsp;is&nbsp;Value.MergeLikeValuesFromDifferentPages.<br>
+&nbsp;<br>
+Not&nbsp;all&nbsp;values&nbsp;that&nbsp;go&nbsp;into&nbsp;this&nbsp;function&nbsp;will&nbsp;come&nbsp;out:&nbsp;not&nbsp;every&nbsp;value&nbsp;can<br>
+be&nbsp;merged&nbsp;across&nbsp;pages.&nbsp;Values&nbsp;whose&nbsp;MergeLikeValuesFromDifferentPages&nbsp;returns<br>
+None&nbsp;will&nbsp;be&nbsp;omitted&nbsp;from&nbsp;the&nbsp;results.<br>
+&nbsp;<br>
+This&nbsp;requires&nbsp;(but&nbsp;assumes)&nbsp;that&nbsp;the&nbsp;values&nbsp;passed&nbsp;in&nbsp;with&nbsp;the&nbsp;same&nbsp;name&nbsp;pass<br>
+the&nbsp;Value.IsMergableWith&nbsp;test.&nbsp;If&nbsp;this&nbsp;is&nbsp;not&nbsp;obeyed,&nbsp;the&nbsp;results<br>
+will&nbsp;be&nbsp;undefined.</tt></dd></dl>
+ <dl><dt><a name="-MergeLikeValuesFromSamePage"><strong>MergeLikeValuesFromSamePage</strong></a>(all_values, key_func<font color="#909090">=&lt;function DefaultKeyFunc&gt;</font>)</dt><dd><tt>Merges&nbsp;values&nbsp;that&nbsp;measure&nbsp;the&nbsp;same&nbsp;thing&nbsp;on&nbsp;the&nbsp;same&nbsp;page.<br>
+&nbsp;<br>
+A&nbsp;page&nbsp;may&nbsp;end&nbsp;up&nbsp;being&nbsp;measured&nbsp;multiple&nbsp;times,&nbsp;meaning&nbsp;that&nbsp;we&nbsp;may&nbsp;end&nbsp;up<br>
+with&nbsp;something&nbsp;like&nbsp;this:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ScalarValue(page1,&nbsp;'x',&nbsp;1,&nbsp;'foo')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ScalarValue(page2,&nbsp;'x',&nbsp;4,&nbsp;'bar')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ScalarValue(page1,&nbsp;'x',&nbsp;2,&nbsp;'foo')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ScalarValue(page2,&nbsp;'x',&nbsp;5,&nbsp;'baz')<br>
+&nbsp;<br>
+This&nbsp;function&nbsp;will&nbsp;produce:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ListOfScalarValues(page1,&nbsp;'x',&nbsp;[1,&nbsp;2],&nbsp;'foo')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ListOfScalarValues(page2,&nbsp;'x',&nbsp;[4],&nbsp;'bar')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ListOfScalarValues(page2,&nbsp;'x',&nbsp;[5],&nbsp;'baz')<br>
+&nbsp;<br>
+The&nbsp;workhorse&nbsp;of&nbsp;this&nbsp;code&nbsp;is&nbsp;Value.MergeLikeValuesFromSamePage.<br>
+&nbsp;<br>
+This&nbsp;requires&nbsp;(but&nbsp;assumes)&nbsp;that&nbsp;the&nbsp;values&nbsp;passed&nbsp;in&nbsp;with&nbsp;the&nbsp;same&nbsp;grouping<br>
+key&nbsp;pass&nbsp;the&nbsp;Value.IsMergableWith&nbsp;test.&nbsp;If&nbsp;this&nbsp;is&nbsp;not&nbsp;obeyed,&nbsp;the<br>
+results&nbsp;will&nbsp;be&nbsp;undefined.</tt></dd></dl>
+</td></tr></table>
+</body></html>

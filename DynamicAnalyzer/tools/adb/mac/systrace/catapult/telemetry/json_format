@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+import argparse
+import json
+import os
+import sys
+
+
+def GetFormattedJSONString(file_path):
+ with open(file_path, 'r') as f:
+    json_obj = json.load(f)
+    file_content = f.read()
+ return json.dumps(
+     json_obj, indent=2, sort_keys=True, separators=(',', ': '))
+
+
+def ValidateJSONFormat(file_path):
+ with open(file_path, 'r') as f:
+    file_content = f.read()
+ if file_content != GetFormattedJSONString(file_path):
+   raise Exception(
+       'Reformat your JSON file by running: %s --format %s' %
+       (__file__, file_path))
+ print >> sys.stdout, ('%s passes the JSON format validation' % file_path)
+
+
+def Format(file_path):
+  formatted_JSON_string = GetFormattedJSONString(file_path)
+  with open(file_path, 'w') as f:
+    f.write(formatted_JSON_string)
+
+
+def Main(args):
+  description = """A JSON formatting tool.
+
+  This is a tool that validate and reformats JSON file so that it complies with
+  a certain style. The JSON style imposed by this tool is:
+    * JSON array elements and object members are indented with 2 spaces.
+    * Dictionaries objects are sorted by key.
+    * Items are sperated by ', ' and ': '.
+  """
+  parser = argparse.ArgumentParser(
+      description=description, formatter_class=argparse.RawTextHelpFormatter)
+  parser.add_argument('file_path', type=str, help='The path to JSON file.')
+  parser.add_argument('--format', action='store_true', default=False,
+                      help='Format the JSON file.')
+  options = parser.parse_args(args)
+  if options.format:
+    Format(options.file_path)
+    return 0
+  ValidateJSONFormat(options.file_path)
+  return 0
+
+
+if __name__ == '__main__':
+  sys.exit(Main(sys.argv[1:]))

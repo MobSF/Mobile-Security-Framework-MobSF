@@ -1,0 +1,104 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.core.util</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.core.html"><font color="#ffffff">core</font></a>.util</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/core/util.py">telemetry/core/util.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2012&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.core.exceptions.html">telemetry.core.exceptions</a><br>
+<a href="glob.html">glob</a><br>
+<a href="imp.html">imp</a><br>
+</td><td width="25%" valign=top><a href="inspect.html">inspect</a><br>
+<a href="logging.html">logging</a><br>
+<a href="os.html">os</a><br>
+</td><td width="25%" valign=top><a href="socket.html">socket</a><br>
+<a href="sys.html">sys</a><br>
+<a href="time.html">time</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.core.util.html#PortKeeper">PortKeeper</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="PortKeeper">class <strong>PortKeeper</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Port&nbsp;keeper&nbsp;hold&nbsp;an&nbsp;available&nbsp;port&nbsp;on&nbsp;the&nbsp;system.<br>
+&nbsp;<br>
+Before&nbsp;actually&nbsp;use&nbsp;the&nbsp;port,&nbsp;you&nbsp;must&nbsp;call&nbsp;<a href="#PortKeeper-Release">Release</a>().<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="PortKeeper-Release"><strong>Release</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="PortKeeper-__init__"><strong>__init__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>port</strong></dt>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-GetBaseDir"><strong>GetBaseDir</strong></a>()</dt></dl>
+ <dl><dt><a name="-GetBuildDirectories"><strong>GetBuildDirectories</strong></a>()</dt><dd><tt>Yields&nbsp;all&nbsp;combination&nbsp;of&nbsp;Chromium&nbsp;build&nbsp;output&nbsp;directories.</tt></dd></dl>
+ <dl><dt><a name="-GetChromiumSrcDir"><strong>GetChromiumSrcDir</strong></a>()</dt></dl>
+ <dl><dt><a name="-GetPythonPageSetModule"><strong>GetPythonPageSetModule</strong></a>(file_path)</dt></dl>
+ <dl><dt><a name="-GetSequentialFileName"><strong>GetSequentialFileName</strong></a>(base_name)</dt><dd><tt>Returns&nbsp;the&nbsp;next&nbsp;sequential&nbsp;file&nbsp;name&nbsp;based&nbsp;on&nbsp;|base_name|&nbsp;and&nbsp;the<br>
+existing&nbsp;files.&nbsp;base_name&nbsp;should&nbsp;not&nbsp;contain&nbsp;extension.<br>
+e.g:&nbsp;if&nbsp;base_name&nbsp;is&nbsp;/tmp/test,&nbsp;and&nbsp;/tmp/test_000.json,<br>
+/tmp/test_001.mp3&nbsp;exist,&nbsp;this&nbsp;returns&nbsp;/tmp/test_002.&nbsp;In&nbsp;case&nbsp;no<br>
+other&nbsp;sequential&nbsp;file&nbsp;name&nbsp;exist,&nbsp;this&nbsp;will&nbsp;return&nbsp;/tmp/test_000</tt></dd></dl>
+ <dl><dt><a name="-GetTelemetryDir"><strong>GetTelemetryDir</strong></a>()</dt></dl>
+ <dl><dt><a name="-GetTelemetryThirdPartyDir"><strong>GetTelemetryThirdPartyDir</strong></a>()</dt></dl>
+ <dl><dt><a name="-GetUnittestDataDir"><strong>GetUnittestDataDir</strong></a>()</dt></dl>
+ <dl><dt><a name="-GetUnreservedAvailableLocalPort"><strong>GetUnreservedAvailableLocalPort</strong></a>()</dt><dd><tt>Returns&nbsp;an&nbsp;available&nbsp;port&nbsp;on&nbsp;the&nbsp;system.<br>
+&nbsp;<br>
+WARNING:&nbsp;This&nbsp;method&nbsp;does&nbsp;not&nbsp;reserve&nbsp;the&nbsp;port&nbsp;it&nbsp;returns,&nbsp;so&nbsp;it&nbsp;may&nbsp;be&nbsp;used<br>
+by&nbsp;something&nbsp;else&nbsp;before&nbsp;you&nbsp;get&nbsp;to&nbsp;use&nbsp;it.&nbsp;This&nbsp;can&nbsp;lead&nbsp;to&nbsp;flake.</tt></dd></dl>
+ <dl><dt><a name="-IsRunningOnCrosDevice"><strong>IsRunningOnCrosDevice</strong></a>()</dt><dd><tt>Returns&nbsp;True&nbsp;if&nbsp;we're&nbsp;on&nbsp;a&nbsp;ChromeOS&nbsp;device.</tt></dd></dl>
+ <dl><dt><a name="-WaitFor"><strong>WaitFor</strong></a>(condition, timeout)</dt><dd><tt>Waits&nbsp;for&nbsp;up&nbsp;to&nbsp;|timeout|&nbsp;secs&nbsp;for&nbsp;the&nbsp;function&nbsp;|condition|&nbsp;to&nbsp;return&nbsp;True.<br>
+&nbsp;<br>
+Polling&nbsp;frequency&nbsp;is&nbsp;(elapsed_time&nbsp;/&nbsp;10),&nbsp;with&nbsp;a&nbsp;min&nbsp;of&nbsp;.1s&nbsp;and&nbsp;max&nbsp;of&nbsp;5s.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;Result&nbsp;of&nbsp;|condition|&nbsp;function&nbsp;(if&nbsp;present).</tt></dd></dl>
+</td></tr></table>
+</body></html>

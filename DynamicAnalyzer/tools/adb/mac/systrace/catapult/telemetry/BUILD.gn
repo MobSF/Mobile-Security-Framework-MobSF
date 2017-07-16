@@ -1,0 +1,23 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+group("telemetry_test_support") {
+  # Generic telemetry deps. For now, just include the whole catapult directory.
+  # TODO(nednguyen, aiolos): only include what telemetry needs.
+  # https://github.com/catapult-project/catapult/issues/1953
+  data = [
+    "../",
+  ]
+}
+
+executable("bitmaptools") {
+  sources = [
+    "telemetry/internal/image_processing/bitmaptools.cc",
+  ]
+
+  deps = [
+    "//build/config/sanitizers:deps",
+    "//build/win:default_exe_manifest",
+  ]
+}

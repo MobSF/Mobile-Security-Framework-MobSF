@@ -1,0 +1,177 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.backends.chrome_inspector.inspector_backend</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.<a href="telemetry.internal.backends.html"><font color="#ffffff">backends</font></a>.<a href="telemetry.internal.backends.chrome_inspector.html"><font color="#ffffff">chrome_inspector</font></a>.inspector_backend</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/backends/chrome_inspector/inspector_backend.py">telemetry/internal/backends/chrome_inspector/inspector_backend.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2013&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.decorators.html">telemetry.decorators</a><br>
+<a href="telemetry.internal.backends.chrome_inspector.devtools_http.html">telemetry.internal.backends.chrome_inspector.devtools_http</a><br>
+<a href="telemetry.core.exceptions.html">telemetry.core.exceptions</a><br>
+<a href="functools.html">functools</a><br>
+<a href="telemetry.internal.backends.chrome_inspector.inspector_console.html">telemetry.internal.backends.chrome_inspector.inspector_console</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.backends.chrome_inspector.inspector_memory.html">telemetry.internal.backends.chrome_inspector.inspector_memory</a><br>
+<a href="telemetry.internal.backends.chrome_inspector.inspector_network.html">telemetry.internal.backends.chrome_inspector.inspector_network</a><br>
+<a href="telemetry.internal.backends.chrome_inspector.inspector_page.html">telemetry.internal.backends.chrome_inspector.inspector_page</a><br>
+<a href="telemetry.internal.backends.chrome_inspector.inspector_runtime.html">telemetry.internal.backends.chrome_inspector.inspector_runtime</a><br>
+<a href="telemetry.internal.backends.chrome_inspector.inspector_websocket.html">telemetry.internal.backends.chrome_inspector.inspector_websocket</a><br>
+</td><td width="25%" valign=top><a href="logging.html">logging</a><br>
+<a href="os.html">os</a><br>
+<a href="socket.html">socket</a><br>
+<a href="sys.html">sys</a><br>
+<a href="telemetry.timeline.model.html">telemetry.timeline.model</a><br>
+</td><td width="25%" valign=top><a href="telemetry.timeline.trace_data.html">telemetry.timeline.trace_data</a><br>
+<a href="telemetry.internal.backends.chrome_inspector.websocket.html">telemetry.internal.backends.chrome_inspector.websocket</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.backends.chrome_inspector.inspector_backend.html#InspectorBackend">InspectorBackend</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="InspectorBackend">class <strong>InspectorBackend</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Class&nbsp;for&nbsp;communicating&nbsp;with&nbsp;a&nbsp;devtools&nbsp;client.<br>
+&nbsp;<br>
+The&nbsp;owner&nbsp;of&nbsp;an&nbsp;instance&nbsp;of&nbsp;this&nbsp;class&nbsp;is&nbsp;responsible&nbsp;for&nbsp;calling<br>
+<a href="#InspectorBackend-Disconnect">Disconnect</a>()&nbsp;before&nbsp;disposing&nbsp;of&nbsp;the&nbsp;instance.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="InspectorBackend-ClearCache"><strong>ClearCache</strong></a>(inspector_backend, *args, **kwargs)</dt></dl>
+
+<dl><dt><a name="InspectorBackend-CollectGarbage"><strong>CollectGarbage</strong></a>(inspector_backend, *args, **kwargs)</dt></dl>
+
+<dl><dt><a name="InspectorBackend-Disconnect"><strong>Disconnect</strong></a>(self)</dt><dd><tt>Disconnects&nbsp;the&nbsp;inspector&nbsp;websocket.<br>
+&nbsp;<br>
+This&nbsp;method&nbsp;intentionally&nbsp;leaves&nbsp;the&nbsp;self.<strong>_websocket</strong>&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;around,&nbsp;so&nbsp;that<br>
+future&nbsp;calls&nbsp;it&nbsp;to&nbsp;it&nbsp;will&nbsp;fail&nbsp;with&nbsp;a&nbsp;relevant&nbsp;error.</tt></dd></dl>
+
+<dl><dt><a name="InspectorBackend-EnableAllContexts"><strong>EnableAllContexts</strong></a>(inspector_backend, *args, **kwargs)</dt><dd><tt>Allows&nbsp;access&nbsp;to&nbsp;iframes.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;exceptions.WebSocketDisconnected<br>
+&nbsp;&nbsp;exceptions.TimeoutException<br>
+&nbsp;&nbsp;exceptions.DevtoolsTargetCrashException</tt></dd></dl>
+
+<dl><dt><a name="InspectorBackend-EvaluateJavaScript"><strong>EvaluateJavaScript</strong></a>(inspector_backend, *args, **kwargs)</dt><dd><tt>Evaluates&nbsp;a&nbsp;javascript&nbsp;expression&nbsp;and&nbsp;returns&nbsp;the&nbsp;result.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;exceptions.EvaluateException<br>
+&nbsp;&nbsp;exceptions.WebSocketDisconnected<br>
+&nbsp;&nbsp;exceptions.TimeoutException<br>
+&nbsp;&nbsp;exceptions.DevtoolsTargetCrashException</tt></dd></dl>
+
+<dl><dt><a name="InspectorBackend-ExecuteJavaScript"><strong>ExecuteJavaScript</strong></a>(inspector_backend, *args, **kwargs)</dt><dd><tt>Executes&nbsp;a&nbsp;javascript&nbsp;expression&nbsp;without&nbsp;returning&nbsp;the&nbsp;result.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;exceptions.EvaluateException<br>
+&nbsp;&nbsp;exceptions.WebSocketDisconnected<br>
+&nbsp;&nbsp;exceptions.TimeoutException<br>
+&nbsp;&nbsp;exceptions.DevtoolsTargetCrashException</tt></dd></dl>
+
+<dl><dt><a name="InspectorBackend-GetCookieByName"><strong>GetCookieByName</strong></a>(inspector_backend, *args, **kwargs)</dt></dl>
+
+<dl><dt><a name="InspectorBackend-GetDOMStats"><strong>GetDOMStats</strong></a>(inspector_backend, *args, **kwargs)</dt><dd><tt>Gets&nbsp;memory&nbsp;stats&nbsp;from&nbsp;the&nbsp;DOM.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;inspector_memory.InspectorMemoryException<br>
+&nbsp;&nbsp;exceptions.TimeoutException<br>
+&nbsp;&nbsp;exceptions.DevtoolsTargetCrashException</tt></dd></dl>
+
+<dl><dt><a name="InspectorBackend-GetWebviewInspectorBackends"><strong>GetWebviewInspectorBackends</strong></a>(self)</dt><dd><tt>Returns&nbsp;a&nbsp;list&nbsp;of&nbsp;<a href="#InspectorBackend">InspectorBackend</a>&nbsp;instances&nbsp;associated&nbsp;with&nbsp;webviews.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;devtools_http.DevToolsClientConnectionError</tt></dd></dl>
+
+<dl><dt><a name="InspectorBackend-IsInspectable"><strong>IsInspectable</strong></a>(self)</dt><dd><tt>Whether&nbsp;the&nbsp;tab&nbsp;is&nbsp;inspectable,&nbsp;as&nbsp;reported&nbsp;by&nbsp;devtools.</tt></dd></dl>
+
+<dl><dt><a name="InspectorBackend-Navigate"><strong>Navigate</strong></a>(inspector_backend, *args, **kwargs)</dt></dl>
+
+<dl><dt><a name="InspectorBackend-Screenshot"><strong>Screenshot</strong></a>(inspector_backend, *args, **kwargs)</dt></dl>
+
+<dl><dt><a name="InspectorBackend-StartTimelineRecording"><strong>StartTimelineRecording</strong></a>(inspector_backend, *args, **kwargs)</dt></dl>
+
+<dl><dt><a name="InspectorBackend-StopTimelineRecording"><strong>StopTimelineRecording</strong></a>(inspector_backend, *args, **kwargs)</dt></dl>
+
+<dl><dt><a name="InspectorBackend-SynthesizeScrollGesture"><strong>SynthesizeScrollGesture</strong></a>(inspector_backend, *args, **kwargs)</dt><dd><tt>Runs&nbsp;an&nbsp;inspector&nbsp;command&nbsp;that&nbsp;causes&nbsp;a&nbsp;repeatable&nbsp;browser&nbsp;driven&nbsp;scroll.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;x:&nbsp;X&nbsp;coordinate&nbsp;of&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;gesture&nbsp;in&nbsp;CSS&nbsp;pixels.<br>
+&nbsp;&nbsp;y:&nbsp;Y&nbsp;coordinate&nbsp;of&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;gesture&nbsp;in&nbsp;CSS&nbsp;pixels.<br>
+&nbsp;&nbsp;xDistance:&nbsp;Distance&nbsp;to&nbsp;scroll&nbsp;along&nbsp;the&nbsp;X&nbsp;axis&nbsp;(positive&nbsp;to&nbsp;scroll&nbsp;left).<br>
+&nbsp;&nbsp;yDistance:&nbsp;Distance&nbsp;to&nbsp;scroll&nbsp;along&nbsp;the&nbsp;Y&nbsp;axis&nbsp;(positive&nbsp;to&nbsp;scroll&nbsp;up).<br>
+&nbsp;&nbsp;xOverscroll:&nbsp;Number&nbsp;of&nbsp;additional&nbsp;pixels&nbsp;to&nbsp;scroll&nbsp;back&nbsp;along&nbsp;the&nbsp;X&nbsp;axis.<br>
+&nbsp;&nbsp;xOverscroll:&nbsp;Number&nbsp;of&nbsp;additional&nbsp;pixels&nbsp;to&nbsp;scroll&nbsp;back&nbsp;along&nbsp;the&nbsp;Y&nbsp;axis.<br>
+&nbsp;&nbsp;preventFling:&nbsp;Prevents&nbsp;a&nbsp;fling&nbsp;gesture.<br>
+&nbsp;&nbsp;speed:&nbsp;Swipe&nbsp;speed&nbsp;in&nbsp;pixels&nbsp;per&nbsp;second.<br>
+&nbsp;&nbsp;gestureSourceType:&nbsp;Which&nbsp;type&nbsp;of&nbsp;input&nbsp;events&nbsp;to&nbsp;be&nbsp;generated.<br>
+&nbsp;&nbsp;repeatCount:&nbsp;Number&nbsp;of&nbsp;additional&nbsp;repeats&nbsp;beyond&nbsp;the&nbsp;first&nbsp;scroll.<br>
+&nbsp;&nbsp;repeatDelayMs:&nbsp;Number&nbsp;of&nbsp;milliseconds&nbsp;delay&nbsp;between&nbsp;each&nbsp;repeat.<br>
+&nbsp;&nbsp;interactionMarkerName:&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;interaction&nbsp;markers&nbsp;to&nbsp;generate.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;exceptions.TimeoutException<br>
+&nbsp;&nbsp;exceptions.DevtoolsTargetCrashException</tt></dd></dl>
+
+<dl><dt><a name="InspectorBackend-WaitForNavigate"><strong>WaitForNavigate</strong></a>(inspector_backend, *args, **kwargs)</dt></dl>
+
+<dl><dt><a name="InspectorBackend-__del__"><strong>__del__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="InspectorBackend-__init__"><strong>__init__</strong></a>(self, app, devtools_client, context, timeout<font color="#909090">=60</font>)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>app</strong></dt>
+</dl>
+<dl><dt><strong>debugger_url</strong></dt>
+</dl>
+<dl><dt><strong>id</strong></dt>
+</dl>
+<dl><dt><strong>message_output_stream</strong></dt>
+</dl>
+<dl><dt><strong>screenshot_supported</strong></dt>
+</dl>
+<dl><dt><strong>timeline_model</strong></dt>
+</dl>
+<dl><dt><strong>url</strong></dt>
+<dd><tt>Returns&nbsp;the&nbsp;URL&nbsp;of&nbsp;the&nbsp;tab,&nbsp;as&nbsp;reported&nbsp;by&nbsp;devtools.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;devtools_http.DevToolsClientConnectionError</tt></dd>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

@@ -1,0 +1,223 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.benchmark_runner</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.benchmark_runner</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/benchmark_runner.py">telemetry/benchmark_runner.py</a></font></td></tr></table>
+    <p><tt>Parses&nbsp;the&nbsp;command&nbsp;line,&nbsp;discovers&nbsp;the&nbsp;appropriate&nbsp;benchmarks,&nbsp;and&nbsp;runs&nbsp;them.<br>
+&nbsp;<br>
+Handles&nbsp;benchmark&nbsp;configuration,&nbsp;but&nbsp;all&nbsp;the&nbsp;logic&nbsp;for<br>
+actually&nbsp;running&nbsp;the&nbsp;benchmark&nbsp;is&nbsp;in&nbsp;Benchmark&nbsp;and&nbsp;PageRunner.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.benchmark.html">telemetry.benchmark</a><br>
+<a href="telemetry.internal.util.binary_manager.html">telemetry.internal.util.binary_manager</a><br>
+<a href="telemetry.internal.browser.browser_finder.html">telemetry.internal.browser.browser_finder</a><br>
+<a href="telemetry.internal.browser.browser_options.html">telemetry.internal.browser.browser_options</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.util.command_line.html">telemetry.internal.util.command_line</a><br>
+<a href="telemetry.decorators.html">telemetry.decorators</a><br>
+<a href="telemetry.core.discover.html">telemetry.core.discover</a><br>
+<a href="hashlib.html">hashlib</a><br>
+</td><td width="25%" valign=top><a href="inspect.html">inspect</a><br>
+<a href="json.html">json</a><br>
+<a href="logging.html">logging</a><br>
+<a href="os.html">os</a><br>
+</td><td width="25%" valign=top><a href="telemetry.project_config.html">telemetry.project_config</a><br>
+<a href="telemetry.internal.util.ps_util.html">telemetry.internal.util.ps_util</a><br>
+<a href="sys.html">sys</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.util.command_line.html#OptparseCommand">telemetry.internal.util.command_line.OptparseCommand</a>(<a href="telemetry.internal.util.command_line.html#Command">telemetry.internal.util.command_line.Command</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.benchmark_runner.html#Help">Help</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.benchmark_runner.html#List">List</a>
+</font></dt><dt><font face="helvetica, arial"><a href="telemetry.benchmark_runner.html#Run">Run</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Help">class <strong>Help</strong></a>(<a href="telemetry.internal.util.command_line.html#OptparseCommand">telemetry.internal.util.command_line.OptparseCommand</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Display&nbsp;help&nbsp;information&nbsp;about&nbsp;a&nbsp;command<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.benchmark_runner.html#Help">Help</a></dd>
+<dd><a href="telemetry.internal.util.command_line.html#OptparseCommand">telemetry.internal.util.command_line.OptparseCommand</a></dd>
+<dd><a href="telemetry.internal.util.command_line.html#Command">telemetry.internal.util.command_line.Command</a></dd>
+<dd><a href="telemetry.internal.util.command_line.html#ArgumentHandlerMixIn">telemetry.internal.util.command_line.ArgumentHandlerMixIn</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="Help-Run"><strong>Run</strong></a>(self, args)</dt></dl>
+
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>usage</strong> = '[command]'</dl>
+
+<hr>
+Class methods inherited from <a href="telemetry.internal.util.command_line.html#OptparseCommand">telemetry.internal.util.command_line.OptparseCommand</a>:<br>
+<dl><dt><a name="Help-AddCommandLineArgs"><strong>AddCommandLineArgs</strong></a>(cls, parser, environment)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="Help-CreateParser"><strong>CreateParser</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="Help-ProcessCommandLineArgs"><strong>ProcessCommandLineArgs</strong></a>(cls, parser, args, environment)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="Help-main"><strong>main</strong></a>(cls, args<font color="#909090">=None</font>)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Main&nbsp;method&nbsp;to&nbsp;run&nbsp;this&nbsp;command&nbsp;as&nbsp;a&nbsp;standalone&nbsp;script.</tt></dd></dl>
+
+<hr>
+Class methods inherited from <a href="telemetry.internal.util.command_line.html#Command">telemetry.internal.util.command_line.Command</a>:<br>
+<dl><dt><a name="Help-Description"><strong>Description</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="Help-Name"><strong>Name</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.internal.util.command_line.html#ArgumentHandlerMixIn">telemetry.internal.util.command_line.ArgumentHandlerMixIn</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="List">class <strong>List</strong></a>(<a href="telemetry.internal.util.command_line.html#OptparseCommand">telemetry.internal.util.command_line.OptparseCommand</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Lists&nbsp;the&nbsp;available&nbsp;benchmarks<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.benchmark_runner.html#List">List</a></dd>
+<dd><a href="telemetry.internal.util.command_line.html#OptparseCommand">telemetry.internal.util.command_line.OptparseCommand</a></dd>
+<dd><a href="telemetry.internal.util.command_line.html#Command">telemetry.internal.util.command_line.Command</a></dd>
+<dd><a href="telemetry.internal.util.command_line.html#ArgumentHandlerMixIn">telemetry.internal.util.command_line.ArgumentHandlerMixIn</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="List-Run"><strong>Run</strong></a>(self, args)</dt></dl>
+
+<hr>
+Class methods defined here:<br>
+<dl><dt><a name="List-AddCommandLineArgs"><strong>AddCommandLineArgs</strong></a>(cls, parser, _)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="List-CreateParser"><strong>CreateParser</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="List-ProcessCommandLineArgs"><strong>ProcessCommandLineArgs</strong></a>(cls, parser, args, environment)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>usage</strong> = '[benchmark_name] [&lt;options&gt;]'</dl>
+
+<hr>
+Class methods inherited from <a href="telemetry.internal.util.command_line.html#OptparseCommand">telemetry.internal.util.command_line.OptparseCommand</a>:<br>
+<dl><dt><a name="List-main"><strong>main</strong></a>(cls, args<font color="#909090">=None</font>)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Main&nbsp;method&nbsp;to&nbsp;run&nbsp;this&nbsp;command&nbsp;as&nbsp;a&nbsp;standalone&nbsp;script.</tt></dd></dl>
+
+<hr>
+Class methods inherited from <a href="telemetry.internal.util.command_line.html#Command">telemetry.internal.util.command_line.Command</a>:<br>
+<dl><dt><a name="List-Description"><strong>Description</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="List-Name"><strong>Name</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.internal.util.command_line.html#ArgumentHandlerMixIn">telemetry.internal.util.command_line.ArgumentHandlerMixIn</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Run">class <strong>Run</strong></a>(<a href="telemetry.internal.util.command_line.html#OptparseCommand">telemetry.internal.util.command_line.OptparseCommand</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#Run">Run</a>&nbsp;one&nbsp;or&nbsp;more&nbsp;benchmarks&nbsp;(default)<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.benchmark_runner.html#Run">Run</a></dd>
+<dd><a href="telemetry.internal.util.command_line.html#OptparseCommand">telemetry.internal.util.command_line.OptparseCommand</a></dd>
+<dd><a href="telemetry.internal.util.command_line.html#Command">telemetry.internal.util.command_line.Command</a></dd>
+<dd><a href="telemetry.internal.util.command_line.html#ArgumentHandlerMixIn">telemetry.internal.util.command_line.ArgumentHandlerMixIn</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="Run-Run"><strong>Run</strong></a>(self, args)</dt></dl>
+
+<hr>
+Class methods defined here:<br>
+<dl><dt><a name="Run-AddCommandLineArgs"><strong>AddCommandLineArgs</strong></a>(cls, parser, environment)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="Run-CreateParser"><strong>CreateParser</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="Run-ProcessCommandLineArgs"><strong>ProcessCommandLineArgs</strong></a>(cls, parser, args, environment)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>usage</strong> = 'benchmark_name [page_set] [&lt;options&gt;]'</dl>
+
+<hr>
+Class methods inherited from <a href="telemetry.internal.util.command_line.html#OptparseCommand">telemetry.internal.util.command_line.OptparseCommand</a>:<br>
+<dl><dt><a name="Run-main"><strong>main</strong></a>(cls, args<font color="#909090">=None</font>)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Main&nbsp;method&nbsp;to&nbsp;run&nbsp;this&nbsp;command&nbsp;as&nbsp;a&nbsp;standalone&nbsp;script.</tt></dd></dl>
+
+<hr>
+Class methods inherited from <a href="telemetry.internal.util.command_line.html#Command">telemetry.internal.util.command_line.Command</a>:<br>
+<dl><dt><a name="Run-Description"><strong>Description</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<dl><dt><a name="Run-Name"><strong>Name</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.internal.util.command_line.html#ArgumentHandlerMixIn">telemetry.internal.util.command_line.ArgumentHandlerMixIn</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-GetBenchmarkByName"><strong>GetBenchmarkByName</strong></a>(name, environment)</dt></dl>
+ <dl><dt><a name="-PrintBenchmarkList"><strong>PrintBenchmarkList</strong></a>(benchmarks, possible_browser, output_pipe<font color="#909090">=&lt;open file '&lt;stdout&gt;', mode 'w'&gt;</font>)</dt><dd><tt>Print&nbsp;benchmarks&nbsp;that&nbsp;are&nbsp;not&nbsp;filtered&nbsp;in&nbsp;the&nbsp;same&nbsp;order&nbsp;of&nbsp;benchmarks&nbsp;in<br>
+the&nbsp;|benchmarks|&nbsp;list.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;benchmarks:&nbsp;the&nbsp;list&nbsp;of&nbsp;benchmarks&nbsp;to&nbsp;be&nbsp;printed&nbsp;(in&nbsp;the&nbsp;same&nbsp;order&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;list).<br>
+&nbsp;&nbsp;possible_browser:&nbsp;the&nbsp;possible_browser&nbsp;instance&nbsp;that's&nbsp;used&nbsp;for&nbsp;checking<br>
+&nbsp;&nbsp;&nbsp;&nbsp;which&nbsp;benchmarks&nbsp;are&nbsp;enabled.<br>
+&nbsp;&nbsp;output_pipe:&nbsp;the&nbsp;stream&nbsp;in&nbsp;which&nbsp;benchmarks&nbsp;are&nbsp;printed&nbsp;on.</tt></dd></dl>
+ <dl><dt><a name="-main"><strong>main</strong></a>(environment)</dt></dl>
+</td></tr></table>
+</body></html>

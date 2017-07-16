@@ -1,0 +1,90 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.util.image_util</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.util.html"><font color="#ffffff">util</font></a>.image_util</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/util/image_util.py">telemetry/util/image_util.py</a></font></td></tr></table>
+    <p><tt>Provides&nbsp;implementations&nbsp;of&nbsp;basic&nbsp;image&nbsp;processing&nbsp;functions.<br>
+&nbsp;<br>
+Implements&nbsp;basic&nbsp;image&nbsp;processing&nbsp;functions,&nbsp;such&nbsp;as&nbsp;reading/writing&nbsp;images,<br>
+cropping,&nbsp;finding&nbsp;the&nbsp;bounding&nbsp;box&nbsp;of&nbsp;a&nbsp;color&nbsp;and&nbsp;diffing&nbsp;images.<br>
+&nbsp;<br>
+When&nbsp;numpy&nbsp;is&nbsp;present,&nbsp;image_util_numpy_impl&nbsp;is&nbsp;used&nbsp;for&nbsp;the&nbsp;implementation&nbsp;of<br>
+this&nbsp;interface.&nbsp;The&nbsp;old&nbsp;bitmap&nbsp;implementation&nbsp;(image_util_bitmap_impl)&nbsp;is&nbsp;used<br>
+as&nbsp;a&nbsp;fallback&nbsp;when&nbsp;numpy&nbsp;is&nbsp;not&nbsp;present.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="base64.html">base64</a><br>
+<a href="telemetry.internal.util.external_modules.html">telemetry.internal.util.external_modules</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.image_processing.image_util_numpy_impl.html">telemetry.internal.image_processing.image_util_numpy_impl</a><br>
+<a href="telemetry.internal.image_processing.image_util_numpy_impl.html">telemetry.internal.image_processing.image_util_numpy_impl</a><br>
+</td><td width="25%" valign=top><a href="numpy.html">numpy</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-AreEqual"><strong>AreEqual</strong></a>(image1, image2, tolerance<font color="#909090">=0</font>, likely_equal<font color="#909090">=True</font>)</dt><dd><tt>Determines&nbsp;whether&nbsp;two&nbsp;images&nbsp;are&nbsp;identical&nbsp;within&nbsp;a&nbsp;given&nbsp;tolerance.<br>
+Setting&nbsp;likely_equal&nbsp;to&nbsp;False&nbsp;enables&nbsp;short-circuit&nbsp;equality&nbsp;testing,&nbsp;which<br>
+is&nbsp;about&nbsp;2-3x&nbsp;slower&nbsp;for&nbsp;equal&nbsp;images,&nbsp;but&nbsp;can&nbsp;be&nbsp;image&nbsp;height&nbsp;times&nbsp;faster<br>
+if&nbsp;the&nbsp;images&nbsp;are&nbsp;not&nbsp;equal.</tt></dd></dl>
+ <dl><dt><a name="-Channels"><strong>Channels</strong></a>(image)</dt><dd><tt>Number&nbsp;of&nbsp;color&nbsp;channels&nbsp;in&nbsp;the&nbsp;image.</tt></dd></dl>
+ <dl><dt><a name="-Crop"><strong>Crop</strong></a>(image, left, top, width, height)</dt><dd><tt>Crops&nbsp;the&nbsp;current&nbsp;image&nbsp;down&nbsp;to&nbsp;the&nbsp;specified&nbsp;box.</tt></dd></dl>
+ <dl><dt><a name="-Diff"><strong>Diff</strong></a>(image1, image2)</dt><dd><tt>Returns&nbsp;a&nbsp;new&nbsp;image&nbsp;that&nbsp;represents&nbsp;the&nbsp;difference&nbsp;between&nbsp;this&nbsp;image<br>
+and&nbsp;another&nbsp;image.</tt></dd></dl>
+ <dl><dt><a name="-FromBase64Png"><strong>FromBase64Png</strong></a>(base64_png)</dt><dd><tt>Create&nbsp;an&nbsp;image&nbsp;from&nbsp;raw&nbsp;PNG&nbsp;data&nbsp;encoded&nbsp;in&nbsp;base64.</tt></dd></dl>
+ <dl><dt><a name="-FromPng"><strong>FromPng</strong></a>(png_data)</dt><dd><tt>Create&nbsp;an&nbsp;image&nbsp;from&nbsp;raw&nbsp;PNG&nbsp;data.</tt></dd></dl>
+ <dl><dt><a name="-FromPngFile"><strong>FromPngFile</strong></a>(path)</dt><dd><tt>Create&nbsp;an&nbsp;image&nbsp;from&nbsp;a&nbsp;PNG&nbsp;file.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;path:&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;PNG&nbsp;file.</tt></dd></dl>
+ <dl><dt><a name="-FromRGBPixels"><strong>FromRGBPixels</strong></a>(width, height, pixels, bpp<font color="#909090">=3</font>)</dt><dd><tt>Create&nbsp;an&nbsp;image&nbsp;from&nbsp;an&nbsp;array&nbsp;of&nbsp;rgb&nbsp;pixels.<br>
+&nbsp;<br>
+Ignores&nbsp;alpha&nbsp;channel&nbsp;if&nbsp;present.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;width,&nbsp;height:&nbsp;int,&nbsp;the&nbsp;width&nbsp;and&nbsp;height&nbsp;of&nbsp;the&nbsp;image.<br>
+&nbsp;&nbsp;pixels:&nbsp;The&nbsp;flat&nbsp;array&nbsp;of&nbsp;pixels&nbsp;in&nbsp;the&nbsp;form&nbsp;of&nbsp;[r,g,b[,a],r,g,b[,a],...]<br>
+&nbsp;&nbsp;bpp:&nbsp;3&nbsp;for&nbsp;RGB,&nbsp;4&nbsp;for&nbsp;RGBA.</tt></dd></dl>
+ <dl><dt><a name="-GetBoundingBox"><strong>GetBoundingBox</strong></a>(image, color, tolerance<font color="#909090">=0</font>)</dt><dd><tt>Finds&nbsp;the&nbsp;minimum&nbsp;box&nbsp;surrounding&nbsp;all&nbsp;occurrences&nbsp;of&nbsp;bgr&nbsp;|color|.<br>
+&nbsp;<br>
+Ignores&nbsp;the&nbsp;alpha&nbsp;channel.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;color:&nbsp;RbgaColor,&nbsp;bounding&nbsp;box&nbsp;color.<br>
+&nbsp;&nbsp;tolerance:&nbsp;int,&nbsp;per-channel&nbsp;tolerance&nbsp;for&nbsp;the&nbsp;bounding&nbsp;box&nbsp;color.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;(top,&nbsp;left,&nbsp;width,&nbsp;height),&nbsp;match_count</tt></dd></dl>
+ <dl><dt><a name="-GetColorHistogram"><strong>GetColorHistogram</strong></a>(image, ignore_color<font color="#909090">=None</font>, tolerance<font color="#909090">=0</font>)</dt><dd><tt>Computes&nbsp;a&nbsp;histogram&nbsp;of&nbsp;the&nbsp;pixel&nbsp;colors&nbsp;in&nbsp;this&nbsp;image.<br>
+Args:<br>
+&nbsp;&nbsp;ignore_color:&nbsp;An&nbsp;RgbaColor&nbsp;to&nbsp;exclude&nbsp;from&nbsp;the&nbsp;bucket&nbsp;counts.<br>
+&nbsp;&nbsp;tolerance:&nbsp;A&nbsp;tolerance&nbsp;for&nbsp;the&nbsp;ignore_color.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;A&nbsp;ColorHistogram&nbsp;namedtuple&nbsp;with&nbsp;256&nbsp;integers&nbsp;in&nbsp;each&nbsp;field:&nbsp;r,&nbsp;g,&nbsp;and&nbsp;b.</tt></dd></dl>
+ <dl><dt><a name="-GetPixelColor"><strong>GetPixelColor</strong></a>(image, x, y)</dt><dd><tt>Returns&nbsp;a&nbsp;RgbaColor&nbsp;for&nbsp;the&nbsp;pixel&nbsp;at&nbsp;(x,&nbsp;y).</tt></dd></dl>
+ <dl><dt><a name="-Height"><strong>Height</strong></a>(image)</dt><dd><tt>Height&nbsp;of&nbsp;the&nbsp;image.</tt></dd></dl>
+ <dl><dt><a name="-Pixels"><strong>Pixels</strong></a>(image)</dt><dd><tt>Flat&nbsp;RGB&nbsp;pixel&nbsp;array&nbsp;of&nbsp;the&nbsp;image.</tt></dd></dl>
+ <dl><dt><a name="-Width"><strong>Width</strong></a>(image)</dt><dd><tt>Width&nbsp;of&nbsp;the&nbsp;image.</tt></dd></dl>
+ <dl><dt><a name="-WritePngFile"><strong>WritePngFile</strong></a>(image, path)</dt><dd><tt>Write&nbsp;an&nbsp;image&nbsp;to&nbsp;a&nbsp;PNG&nbsp;file.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;image:&nbsp;an&nbsp;image&nbsp;object.<br>
+&nbsp;&nbsp;path:&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;PNG&nbsp;file.&nbsp;Must&nbsp;end&nbsp;in&nbsp;'png'&nbsp;or&nbsp;an<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AssertionError&nbsp;will&nbsp;be&nbsp;raised.</tt></dd></dl>
+</td></tr></table>
+</body></html>

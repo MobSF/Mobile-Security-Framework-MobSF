@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+import argparse
+import json
+import os
+import sys
+
+from telemetry.core import util
+
+sys.path.insert(1, os.path.abspath(os.path.join(
+    util.GetCatapultDir(), 'common', 'py_utils')))
+sys.path.insert(1, os.path.abspath(os.path.join(
+    util.GetCatapultDir(), 'dependency_manager')))
+from py_utils import cloud_storage
+import dependency_manager
+
+
+def ValidateCloudStorageDependencies(file_path):
+  base_config = dependency_manager.BaseConfig(file_path)
+  cloud_storage_deps_not_exist = []
+  for dep_info in base_config.IterDependencyInfo():
+    if dep_info.has_cloud_storage_info:
+      if not dep_info.cloud_storage_info.DependencyExistsInCloudStorage():
+        print >> sys.stderr, (
+          '%s does not exist in cloud storage' % dep_info.cloud_storage_info)
+        cloud_storage_deps_not_exist = True
+      else:
+        print >> sys.stdout, (
+          '%s passes cloud storage validation' % dep_info.dependency)
+
+  if cloud_storage_deps_not_exist:
+    raise Exception(
+        "Some dependencies specify cloud storage locations that don't exist.")
+
+
+def Main(args):
+  parser = argparse.ArgumentParser(
+      description='Validate the dependencies in a binary dependency json file')
+  parser.add_argument('file_path', type=str,
+                      help='The path to binary dependency json file')
+  options = parser.parse_args(args)
+  ValidateCloudStorageDependencies(options.file_path)
+  return 0
+
+
+if __name__ == '__main__':
+  sys.exit(Main(sys.argv[1:]))

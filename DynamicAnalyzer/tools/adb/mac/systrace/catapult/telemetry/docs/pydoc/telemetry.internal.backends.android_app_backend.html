@@ -1,0 +1,111 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module telemetry.internal.backends.android_app_backend</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="telemetry.html"><font color="#ffffff">telemetry</font></a>.<a href="telemetry.internal.html"><font color="#ffffff">internal</font></a>.<a href="telemetry.internal.backends.html"><font color="#ffffff">backends</font></a>.android_app_backend</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="../telemetry/internal/backends/android_app_backend.py">telemetry/internal/backends/android_app_backend.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;2012&nbsp;The&nbsp;Chromium&nbsp;Authors.&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#&nbsp;Use&nbsp;of&nbsp;this&nbsp;source&nbsp;code&nbsp;is&nbsp;governed&nbsp;by&nbsp;a&nbsp;BSD-style&nbsp;license&nbsp;that&nbsp;can&nbsp;be<br>
+#&nbsp;found&nbsp;in&nbsp;the&nbsp;LICENSE&nbsp;file.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="telemetry.internal.backends.android_browser_backend_settings.html">telemetry.internal.backends.android_browser_backend_settings</a><br>
+<a href="telemetry.internal.backends.android_command_line_backend.html">telemetry.internal.backends.android_command_line_backend</a><br>
+</td><td width="25%" valign=top><a href="telemetry.internal.app.android_process.html">telemetry.internal.app.android_process</a><br>
+<a href="telemetry.internal.backends.app_backend.html">telemetry.internal.backends.app_backend</a><br>
+</td><td width="25%" valign=top><a href="re.html">re</a><br>
+<a href="telemetry.core.util.html">telemetry.core.util</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.backends.app_backend.html#AppBackend">telemetry.internal.backends.app_backend.AppBackend</a>(<a href="__builtin__.html#object">__builtin__.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="telemetry.internal.backends.android_app_backend.html#AndroidAppBackend">AndroidAppBackend</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="AndroidAppBackend">class <strong>AndroidAppBackend</strong></a>(<a href="telemetry.internal.backends.app_backend.html#AppBackend">telemetry.internal.backends.app_backend.AppBackend</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="telemetry.internal.backends.android_app_backend.html#AndroidAppBackend">AndroidAppBackend</a></dd>
+<dd><a href="telemetry.internal.backends.app_backend.html#AppBackend">telemetry.internal.backends.app_backend.AppBackend</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="AndroidAppBackend-Close"><strong>Close</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidAppBackend-GetProcess"><strong>GetProcess</strong></a>(self, subprocess_name)</dt></dl>
+
+<dl><dt><a name="AndroidAppBackend-GetProcesses"><strong>GetProcesses</strong></a>(self, process_filter<font color="#909090">=None</font>)</dt></dl>
+
+<dl><dt><a name="AndroidAppBackend-GetStackTrace"><strong>GetStackTrace</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidAppBackend-GetStandardOutput"><strong>GetStandardOutput</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidAppBackend-GetWebViews"><strong>GetWebViews</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidAppBackend-GetWebviewStartupArgs"><strong>GetWebviewStartupArgs</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidAppBackend-IsAppRunning"><strong>IsAppRunning</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AndroidAppBackend-Start"><strong>Start</strong></a>(self)</dt><dd><tt>Start&nbsp;an&nbsp;Android&nbsp;app&nbsp;and&nbsp;wait&nbsp;for&nbsp;it&nbsp;to&nbsp;finish&nbsp;launching.<br>
+&nbsp;<br>
+If&nbsp;the&nbsp;app&nbsp;has&nbsp;webviews,&nbsp;the&nbsp;app&nbsp;is&nbsp;launched&nbsp;with&nbsp;the&nbsp;suitable<br>
+command&nbsp;line&nbsp;arguments.<br>
+&nbsp;<br>
+AppStory&nbsp;derivations&nbsp;can&nbsp;customize&nbsp;the&nbsp;wait-for-ready-state&nbsp;to&nbsp;wait<br>
+for&nbsp;a&nbsp;more&nbsp;specific&nbsp;event&nbsp;if&nbsp;needed.</tt></dd></dl>
+
+<dl><dt><a name="AndroidAppBackend-__init__"><strong>__init__</strong></a>(self, android_platform_backend, start_intent, is_app_ready_predicate<font color="#909090">=None</font>, app_has_webviews<font color="#909090">=True</font>)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>device</strong></dt>
+</dl>
+<hr>
+Methods inherited from <a href="telemetry.internal.backends.app_backend.html#AppBackend">telemetry.internal.backends.app_backend.AppBackend</a>:<br>
+<dl><dt><a name="AndroidAppBackend-SetApp"><strong>SetApp</strong></a>(self, app)</dt></dl>
+
+<dl><dt><a name="AndroidAppBackend-__del__"><strong>__del__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="telemetry.internal.backends.app_backend.html#AppBackend">telemetry.internal.backends.app_backend.AppBackend</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>app</strong></dt>
+</dl>
+<dl><dt><strong>app_type</strong></dt>
+</dl>
+<dl><dt><strong>pid</strong></dt>
+</dl>
+<dl><dt><strong>platform_backend</strong></dt>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>
