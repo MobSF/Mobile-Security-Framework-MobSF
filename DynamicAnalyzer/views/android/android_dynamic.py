@@ -41,7 +41,7 @@ from DynamicAnalyzer.views.android.android_dyn_shared import (
     wait,
 )
 from MobSF.utils import PrintException, is_number, python_list, isBase64, getADB
-from MalwareAnalyzer.views import MalwareCheck
+from MalwareAnalyzer.views import malware_check
 
 #===========================================
 # Dynamic Analyzer Related Views for Android
@@ -1128,7 +1128,7 @@ def run_analysis(apk_dir, md5_hash, package):
     urllist = re.findall(url_pattern, traffic.lower())
     # Domain Extraction and Malware Check
     print "[INFO] Performing Malware Check on extracted Domains"
-    domains = MalwareCheck(urllist)
+    domains = malware_check(urllist)
     for url in urllist:
         if url not in urls:
             urls.append(url)

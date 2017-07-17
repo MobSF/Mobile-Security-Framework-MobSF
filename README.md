@@ -20,11 +20,12 @@ Made with <img src="https://cloud.githubusercontent.com/assets/4301109/16754758/
 
 MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-release) and [BlackArch](https://blackarch.org/mobile.html)
 
-**Your generous donations will keep us motivated.** 
+## Donations
+**Your generous donations will keep us motivated.**
 
-**Donate**
 [<img alt="Donate Bitcoin" src="https://user-images.githubusercontent.com/4301109/27862054-08f80b3a-61a1-11e7-8e07-e9b953c48bab.png" height="20" width="88">](https://mobsf.github.io/Mobile-Security-Framework-MobSF/donate.html)
 
+[<img alt="Support via Gratipay" src="https://user-images.githubusercontent.com/4301109/28208477-6fa272ce-68ab-11e7-819c-45b1f50832c3.png" height="30" width="155">](https://gratipay.com/Mobile-Security-Framework/)
 
 ## Documentation
 * https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/1.-Documentation

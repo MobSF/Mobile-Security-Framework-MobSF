@@ -1,3 +1,6 @@
+<!-- ## IMPORTANT -->
+<!-- Issues are ONLY for reporting bugs and feature requests. For support, questions, queries and discussions use our slack channel. Slack Channel: https://mobsf.slack.com/ , Get Invitation: https://goo.gl/6cYU5a
+-->
 ## EXPLANATION OF THE ISSUE
 
 <!-- What happens, under which versions, under what conditions, when, and what were you expecting instead. -->
