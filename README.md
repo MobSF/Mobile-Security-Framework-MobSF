@@ -23,9 +23,11 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 ## Donations
 **Your generous donations will keep us motivated.**
 
-[<img alt="Donate Bitcoin" src="https://user-images.githubusercontent.com/4301109/27862054-08f80b3a-61a1-11e7-8e07-e9b953c48bab.png" height="20" width="88">](https://mobsf.github.io/Mobile-Security-Framework-MobSF/donate.html)
+*Paypal:* [<img alt="Donate via Paypal" src="https://user-images.githubusercontent.com/4301109/28491754-14774f54-6f14-11e7-9975-8a5faeda7e30.gif" height="40" width="120">](https://mobsf.github.io/Mobile-Security-Framework-MobSF/paypal.html)
 
-[<img alt="Support via Gratipay" src="https://user-images.githubusercontent.com/4301109/28208477-6fa272ce-68ab-11e7-819c-45b1f50832c3.png" height="30" width="155">](https://gratipay.com/Mobile-Security-Framework/)
+*Bitcoin:* [<img alt="Donate Bitcoin" src="https://user-images.githubusercontent.com/4301109/27862054-08f80b3a-61a1-11e7-8e07-e9b953c48bab.png" height="20" width="88">](https://mobsf.github.io/Mobile-Security-Framework-MobSF/donate.html)
+
+*Gratipay:* [<img alt="Support via Gratipay" src="https://user-images.githubusercontent.com/4301109/28208477-6fa272ce-68ab-11e7-819c-45b1f50832c3.png" height="30" width="165">](https://gratipay.com/Mobile-Security-Framework/)
 
 ## Documentation
 * https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/1.-Documentation
