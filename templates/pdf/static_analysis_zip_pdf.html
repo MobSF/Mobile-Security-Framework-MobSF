@@ -62,7 +62,6 @@ body {
                                      <span class="label label-primary"><b>Min SDK: </b></span>
                                     {{ minsdk }}
                                   </p><p>
-                                    
                                      <span class="label label-primary"><b>Max SDK: </b></span>
                                     {{ maxsdk }}
                                     </p><p>
@@ -77,41 +76,6 @@ body {
                             </div>
                         </div>
                     </div>
-                    <hr>
-                      <div class="col-lg-3">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-eye-close"></span> CODE NATURE</h3><hr>
-                            </div>
-                            <div class="panel-body">
-                                <div class="list-group">
-                                    <p>                                     
-                                    <span class="label label-primary"><b>Native: </b></span>
-                                    {{ native }}
-                                    </p>
-                                    <p>
-                                    <span class="label label-primary"><b>Dynamic: </b></span>
-                                    
-                                    {{ dynamic }}
-                                    </p>
-                                    <p>
-                                    <span class="label label-primary"><b>Reflection: </b></span> 
-                                    {{ reflection }}
-                                    </p>
-                                    <p>
-                                    <span class="label label-primary"><b>Crypto: </b></span> 
-                                    {{ crypto }}
-                                    </p>
-                                    <p>
-                                    <span class="label label-primary"><b>Obfuscation: </b></span> 
-                                    {{ obfus }}
-                                    </p>
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div>
-
                     <hr>
                     <div class="col-lg-12">
                         <div class="panel panel-default">
@@ -282,7 +246,30 @@ body {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                        {{ dang | safe}}
+              {% for issue, details in findings.items %}
+                  <tr>
+                  <td>
+                  {{ issue }}
+                  </td>
+                  <td>
+                    {% if details|key:"level" == "high" %}
+                      <span class="label label-danger">high</span>
+                      {% elif details|key:"level" == "good" %}
+                      <span class="label label-success">secure</span>
+                      {% elif details|key:"level" == "warning" %}
+                      <span class="label label-warning">warning</span>
+                      {% elif details|key:"level" == "info" %}
+                      <span class="label label-info">info</span>
+                      {% endif %}
+                  </td>
+                  <td>
+                  {% for path in details|key:"path" %}
+                   <a href="../ViewSource/?file={{ path }}&md5={{ md5 }}&type={{zipped}}"> {{ path }}</a>
+                  </br>
+                  {% endfor %}
+                  </td>
+                </tr>    
+              {% endfor %} 
                                         </tbody>
                                         </table>
                                 
@@ -308,7 +295,19 @@ body {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                        {{ api | safe}}
+             {% for desc, details in api.items %}
+                  <tr>
+                  <td>
+                  {{ desc }}
+                  </td>
+                  <td>
+                  {% for path in details|key:"path" %}
+                   <a href="../ViewSource/?file={{ path }}&md5={{ md5 }}&type={{zipped}}"> {{ path }}</a>
+                  </br>
+                  {% endfor %}
+                  </td>
+                </tr>    
+              {% endfor %} 
                                         </tbody>
                                         </table>
                                 
@@ -324,7 +323,7 @@ body {
                             <div class="panel-body">
                                   <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
-                                        {% if urls|length > 1 %} 
+                                        {% if urls %} 
                   <thead>
                   <tr>
                      <th>URL</th>
@@ -334,7 +333,20 @@ body {
                     {% endif %}
                                         <tbody>
                                 
-                                    {{ urls | safe}} 
+                                    {% for urldict in urls %}
+                    <tr>
+                       <td>
+                       {% for u in urldict|key:"urls" %}
+                         {{ u }}
+                       {% endfor %}
+                        </td>
+
+                       <td>
+                          <a href="../ViewSource/?file={{urldict|key:"path"}}&md5={{ md5}}&type={{zipped}}">{{urldict|key:"path"}}</a>
+                          
+                       </td>
+                    </tr>
+                  {% endfor %} 
                                         </tbody>
                                         </table>
                                 
@@ -351,7 +363,7 @@ body {
                             <div class="panel-body">
                                   <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
-                                        {% if urls|length > 1 %} 
+                                        {% if urls %} 
                   <thead>
                   <tr>
                      <th>Domain</th>
@@ -395,7 +407,7 @@ body {
                             <div class="panel-body">
                                   <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
-                                        {% if emails|length > 1 %} 
+                                        {% if emails %} 
                   <thead>
                   <tr>
                      <th>Email</th>
@@ -405,7 +417,20 @@ body {
                  {% endif %}
                                         <tbody>
                                 
-                                    {{ emails | safe}} 
+                   {% for email_dict in emails %}
+                    <tr>
+                       <td>
+                       {% for e in email_dict|key:"emails" %}
+                         {{ e }}
+                       {% endfor %}
+                        </td>
+
+                       <td>
+                          <a href="../ViewSource/?file={{email_dict|key:"path"}}&md5={{ md5}}&type=apk">{{email_dict|key:"path"}}</a>
+                          
+                       </td>
+                    </tr>
+                  {% endfor %}
                                         </tbody>
                                         </table>
                                 

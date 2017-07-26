@@ -10,7 +10,7 @@
           <ul class="nav sidebar-menu">
             <li class="header">Static Analysis</li>
             <li class="active"><a href="#information"><i class="glyphicon glyphicon-info-sign"></i> Information</a></li>
-            <li><a href="#nature"><i class="glyphicon glyphicon-tasks"></i> Code Nature</a></li>
+            <li><a href="#options"><i class="glyphicon glyphicon-tasks"></i> Scan Options</a></li>
             <li><a href="#permissions"><i class="fa fa-align-justify"></i> Permissions</a></li>
             <li><a href="#android-api"><i class="fa fa-dot-circle-o"></i> Android API</a></li>
            <li><a href="#browsable"><i class="fa fa-clone"></i> Browsable Activities</a></li>
@@ -266,48 +266,16 @@
 
 <!-- ============================================================= -->
 
-<section id="nature">
+<section id="options">
   <h2 class="page-header"></h2>
   <div class="row">
-    <div class="col-sm-4">
-      <div class="box box-primary">
-        <div class="box-header with-border">
-          <h3 class="box-title">Code Nature</h3>
-          <span class="label label-primary pull-right"><i class="glyphicon glyphicon-tasks"></i></span>
-        </div><!-- /.box-header -->
-        <div class="box-body">
-         <div class="list-group">
-                 <p>               
-                  <span class="label label-primary">Native</span>
-                  <a href="#" data-toggle="tooltip" title="Native is true if the application load native code via JNI bridge.">{{ native }}</a>    
-                  </p>
-                  <p>
-                  <span class="label label-primary">Dynamic</span>
-                  <a href="#" data-toggle="tooltip" title="Dynamic is true if the application load dynamic code at runtime.">{{ dynamic }}</a>
-                  </p>
-                  <p>
-                  <span class="label label-primary">Reflection</span> 
-                  <a href="#" data-toggle="tooltip" title="Reflection is true if the application uses any Java Reflection API.">{{ reflection }}</a>
-                  </p>
-                  <p>
-                  <span class="label label-primary">Crypto</span> 
-                  <a href="#" data-toggle="tooltip" title="Crypto is true if the application uses any Java Crypto API.">{{ crypto }}</a>
-                  </p>
-                  <p>
-                  <span class="label label-primary">Obfuscation</span> 
-                  <a href="#" data-toggle="tooltip" title="Obfuscation is true if the application uses any Java Obfuscation API.">{{ obfus }}</a>
-                  </p>
-            </div>
-          </div><!-- /.box-body -->
-      </div><!-- /.box -->
-    </div><!-- /.col -->
-    <div class="col-sm-8">
+    <div class="col-sm-12">
       <div class="box box-danger">
         <div class="box-header with-border">
-          <h3 class="box-title">Options</h3>
+          <h3 class="box-title">Scan Options</h3>
           <span class="label label-danger pull-right"><i class="fa fa-flash"></i></span>
         </div><!-- /.box-header -->
-        <div class="box-body">
+        <div align="center" class="box-body">
           
             <a target="_blank" href="{{mani}}" role="button" class="btn btn-info"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
            <a href="../StaticAnalyzer/?checksum={{ md5 }}&amp;name={{ name }}&amp;type=zip&amp;rescan=1" class="btn btn-info" role="button"><i class="glyphicon glyphicon-refresh"></i> Rescan</a>
@@ -402,7 +370,19 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                    {{ api | safe}}
+                       {% for desc, details in api.items %}
+                  <tr>
+                  <td>
+                  {{ desc }}
+                  </td>
+                  <td>
+                  {% for path in details|key:"path" %}
+                   <a href="../ViewSource/?file={{ path }}&md5={{ md5 }}&type={{zipped}}"> {{ path }}</a>
+                  </br>
+                  {% endfor %}
+                  </td>
+                </tr>    
+              {% endfor %} 
                     </tbody>
                     </table>
                                 
@@ -572,7 +552,30 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                    {{ dang | safe}}
+          {% for issue, details in findings.items %}
+                  <tr>
+                  <td>
+                  {{ issue }}
+                  </td>
+                  <td>
+                    {% if details|key:"level" == "high" %}
+                      <span class="label label-danger">high</span>
+                      {% elif details|key:"level" == "good" %}
+                      <span class="label label-success">secure</span>
+                      {% elif details|key:"level" == "warning" %}
+                      <span class="label label-warning">warning</span>
+                      {% elif details|key:"level" == "info" %}
+                      <span class="label label-info">info</span>
+                      {% endif %}
+                  </td>
+                  <td>
+                  {% for path in details|key:"path" %}
+                   <a href="../ViewSource/?file={{ path }}&md5={{ md5 }}&type={{zipped}}"> {{ path }}</a>
+                  </br>
+                  {% endfor %}
+                  </td>
+                </tr>    
+              {% endfor %} 
                     </tbody>
                     </table>
                                 
@@ -632,7 +635,7 @@
             <div class="box-body no-padding">
               <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
-                  {% if urls|length > 1 %} 
+                  {% if urls %} 
                   <thead>
                   <tr>
                      <th>URL</th>
@@ -642,7 +645,20 @@
                     {% endif %}
                                         <tbody>
                 
-                  {{ urls | safe}} 
+                   {% for urldict in urls %}
+                    <tr>
+                       <td>
+                       {% for u in urldict|key:"urls" %}
+                         {{ u }}
+                       {% endfor %}
+                        </td>
+
+                       <td>
+                          <a href="../ViewSource/?file={{urldict|key:"path"}}&md5={{ md5}}&type={{zipped}}">{{urldict|key:"path"}}</a>
+                          
+                       </td>
+                    </tr>
+                  {% endfor %}
                     </tbody>
                     </table>
                                 
@@ -669,7 +685,7 @@
             <div class="box-body no-padding">
               <div class="table-responsive">
                 <table class="table table-bordered table-hover table-striped">
-                  {% if urls|length > 1 %} 
+                  {% if urls %} 
                   <thead>
                   <tr>
                      <th>Domain</th>
@@ -722,7 +738,7 @@
             <div class="box-body no-padding">
               <div class="table-responsive">
                   <table class="table table-bordered table-hover table-striped">
-                  {% if emails|length > 1 %} 
+                  {% if emails %} 
                   <thead>
                   <tr>
                      <th>Email</th>
@@ -732,7 +748,20 @@
                  {% endif %}
                                         <tbody>
                 
-                  {{ emails | safe}} 
+                  {% for email_dict in emails %}
+                    <tr>
+                       <td>
+                       {% for e in email_dict|key:"emails" %}
+                         {{ e }}
+                       {% endfor %}
+                        </td>
+
+                       <td>
+                          <a href="../ViewSource/?file={{email_dict|key:"path"}}&md5={{ md5}}&type={{zipped}}">{{email_dict|key:"path"}}</a>
+                          
+                       </td>
+                    </tr>
+                  {% endfor %} 
                     </tbody>
                     </table>
                                 
