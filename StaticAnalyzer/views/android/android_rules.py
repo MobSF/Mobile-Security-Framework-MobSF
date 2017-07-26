@@ -47,6 +47,22 @@ RULES = [
         'input_case': 'lower'
     },
     {
+        'desc': 'IP Address disclosure',
+        'type': 'regex',
+        'regex1': r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}',
+        'level': 'high',
+        'match': 'single_regex',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'Hidden elements in view can be used to hide data from user. But this data can be leaked',
+        'type': 'regex',
+        'regex1': r'setVisibility\(View\.GONE\)|setVisibility\(View\.INVISIBLE\)',
+        'level': 'high',
+        'match': 'single_regex',
+        'input_case': 'exact'
+    },
+    {
         'desc': 'The App uses ECB mode in Cryptographic encryption algorithm. ECB mode is known to be weak as it results in the same ciphertext for identical blocks of plaintext.',
         'type': 'regex',
         'regex1': r'Cipher\.getInstance\(\s*"\s*AES\/ECB',
@@ -66,7 +82,7 @@ RULES = [
         'desc': 'Insecure Implementation of SSL. Trusting all the certificates or accepting self signed certificates is a critical Security Hole. This application is vulnerable to MITM attacks',
         'type': 'regex',
         'regex1': r'javax\.net\.ssl',
-        'regex2': r'TrustAllSSLSocket-Factory|AllTrustSSLSocketFactory|NonValidatingSSLSocketFactory|ALLOW_ALL_HOSTNAME_VERIFIER|\.setDefaultHostnameVerifier\(|NullHostnameVerifier\(',
+        'regex2': r'TrustAllSSLSocket-Factory|AllTrustSSLSocketFactory|NonValidatingSSLSocketFactory|net\.SSLCertificateSocketFactory|ALLOW_ALL_HOSTNAME_VERIFIER|\.setDefaultHostnameVerifier\(|NullHostnameVerifier\(',
         'level': 'high',
         'match': 'regex_and',
         'input_case': 'exact'
@@ -93,6 +109,30 @@ RULES = [
         'desc': 'The file is World Readable and Writable. Any App can read/write to the file',
         'type': 'regex',
         'regex1': r'openFileOutput\(\s*".+"\s*,\s*3\s*\)',
+        'level': 'high',
+        'match': 'single_regex',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'Weak Hash algorithm used',
+        'type': 'regex',
+        'regex1': r'getInstance(\"md4\")|getInstance(\"rc2\")|getInstance(\"rc4\")|getInstance(\"RC4\")|getInstance(\"RC2\")|getInstance(\"MD4\")',
+        'level': 'high',
+        'match': 'single_regex',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'MD5 is a weak hash known to have hash collisions.',
+        'type': 'regex',
+        'regex1': r'MessageDigest\.getInstance\(\"*MD5\"*\)|MessageDigest\.getInstance\(\"*md5\"*\)|DigestUtils\.md5\(',
+        'level': 'high',
+        'match': 'single_regex',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'SHA-1 is a weak hash known to have hash collisions.',
+        'type': 'regex',
+        'regex1': r'MessageDigest\.getInstance\(\"*SHA-1\"*\)|MessageDigest\.getInstance\(\"*sha-1\"*\)|DigestUtils\.sha\(',
         'level': 'high',
         'match': 'single_regex',
         'input_case': 'exact'
