@@ -231,6 +231,15 @@ RULES = [
         'input_case': 'exact'
     },
     {
+        'desc': 'This App download files using Android Download Manager',
+        'type': 'string',
+        'string1': 'android.app.DownloadManager',
+        'string2': 'getSystemService(DOWNLOAD_SERVICE)',
+        'level': 'high',
+        'match': 'string_and',
+        'input_case': 'exact'
+    },
+    {
         'desc': 'The App may use weak IVs like "0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00" or "0x01,0x02,0x03,0x04,0x05,0x06,0x07". Not using a random IV makes the resulting ciphertext much more predictable and susceptible to a dictionary attack.',
         'type': 'string',
         'string1': '0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00',
