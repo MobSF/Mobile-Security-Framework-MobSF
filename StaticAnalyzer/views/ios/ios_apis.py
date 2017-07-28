@@ -89,4 +89,13 @@ CODE_APIS = [
         'string2': 'sharedHTTPCookieStorage',
         'input_case': 'exact'
     },
+    {
+        'desc': 'Set or Read Clipboard',
+        'type': 'string',
+        'match': 'string_and',
+        'string1': 'UIPasteboard',
+        'string2': 'generalPasteboard',
+        'input_case': 'exact'
+    },
+     
 ]

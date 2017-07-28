@@ -258,6 +258,24 @@ RULES = [
         'input_case': 'exact'
     },
     {
+        'desc': 'This app listens to Clipboard changes. Some malwares also listen to Clipboard changes.',
+        'type': 'string',
+        'string1': 'content.ClipboardManager',
+        'string2': 'OnPrimaryClipChangedListener',
+        'level': 'warning',
+        'match': 'string_and',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'This App copies data to clipboard. Sensitive data should not be copied to clipboard as other applications can access it.',
+        'type': 'string',
+        'string1': 'content.ClipboardManager',
+        'string2': 'setPrimaryClip(',
+        'level': 'info',
+        'match': 'string_and',
+        'input_case': 'exact'
+    },
+    {
         'desc': 'Insecure WebView Implementation. WebView ignores SSL Certificate errors and accept any SSL Certificate. This application is vulnerable to MITM attacks',
         'type': 'string',
         'string1': 'onReceivedSslError(WebView',

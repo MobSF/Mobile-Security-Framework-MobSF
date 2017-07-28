@@ -84,10 +84,18 @@ CODE_RULES = [
     },
     {
         'desc': 'The App logs information. Sensitive information should never be logged.',
-        'type': 'string',
-        'string1': 'NSLog',
+        'type': 'regex',
+        'regex1': r'NSLog|NSAssert|fprintf|fprintf|Logging',
         'level': 'info',
-        'match': 'single_string',
+        'match': 'single_regex',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'This app listens to Clipboard changes. Some malwares also listen to Clipboard changes.',
+        'type': 'regex',
+        'regex1': r'UIPasteboardChangedNotification|generalPasteboard\]\.string',
+        'level': 'warning',
+        'match': 'single_regex',
         'input_case': 'exact'
     },
     {
@@ -163,6 +171,35 @@ CODE_RULES = [
         'input_case': 'exact'
     },
     {
+        'desc': 'The App has ant-debugger code using ptrace() ',
+        'type': 'string',
+        'string1': 'ptrace_ptr',
+        'string2': 'PT_DENY_ATTACH',
+        'level': 'info',
+        'match': 'string_and',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'This App has anti-debugger code using Mach Exception Ports.',
+        'type': 'string',
+        'string1': 'mach/mach_init.h',
+        'string_or1': 'MACH_PORT_VALID',
+        'string_or2': 'mach_task_self()',
+        'level': 'info',
+        'match': 'string_and_or',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'This App copies data to clipboard. Sensitive data should not be copied to clipboard as other applications can access it.',
+        'type': 'string',
+        'string1': 'UITextField',
+        'string_or1': '@select(cut:)',
+        'string_or2': '@select(copy:)',
+        'level': 'info',
+        'match': 'string_and_or',
+        'input_case': 'exact'
+    },
+    {
         'desc': 'This App may have Jailbreak detection capabilities.',
         'type': 'string',
         'string1': '/Applications/Cydia.app',
@@ -170,6 +207,17 @@ CODE_RULES = [
         'string3': '/usr/sbin/sshd',
         'string4': '/etc/apt',
         'string5': 'cydia://',
+        'string6': '/var/lib/cydia',
+        'string7': '/Applications/FakeCarrier.app',
+        'string8': '/Applications/Icy.app',
+        'string9': '/Applications/IntelliScreen.app',
+        'string10': '/Applications/SBSettings.app',
+        'string11': '/Library/MobileSubstrate/DynamicLibraries/LiveClock.plist',
+        'string12': '/System/Library/LaunchDaemons/com.ikey.bbot.plist',
+        'string13': '/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist',
+        'string14': '/etc/ssh/sshd_config',
+        'string15': '/private/var/tmp/cydia.log',
+        'string16': '/usr/libexec/ssh-keysign',
         'level': 'good',
         'match': 'string_or',
         'input_case': 'exact'
