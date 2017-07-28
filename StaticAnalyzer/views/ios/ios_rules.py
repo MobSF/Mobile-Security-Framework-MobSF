@@ -50,6 +50,7 @@ CODE_RULES = [
                   r'kCFStreamSSLAllowsExpiredCertificates|' +
                   r'kCFStreamSSLAllowsAnyRoot|' +
                   r'kCFStreamSSLAllowsExpiredRoots|' +
+                  r'validatesSecureCertificate\s*=\s*(no|NO)|' +
                   r'allowInvalidCertificates\s*=\s*(YES|yes)',
         'level': 'high',
         'match': 'single_regex',
@@ -62,6 +63,22 @@ CODE_RULES = [
                   r'allowsAnyHTTPSCertificateForHost|' +
                   r'loadingUnvalidatedHTTPSPage\s*=\s*(YES|yes)',
         'level': 'high',
+        'match': 'single_regex',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'Files may contain hardcoded sensitive informations like usernames, passwords, keys etc.',
+        'type': 'regex',
+        'regex1': r'''(password\s*=\s*@*\s*['|"].+['|"]\s{0,5})|(pass\s*=\s*@*\s*['|"].+['|"]\s{0,5})|(username\s*=\s*@*\s*['|"].+['|"]\s{0,5})|(secret\s*=\s*@*\s*['|"].+['|"]\s{0,5})|(key\s*=\s*@*\s*['|"].+['|"]\s{0,5})''',
+        'level': 'high',
+        'match': 'single_regex',
+        'input_case': 'lower'
+    },
+    {
+        'desc': 'IP Address disclosure',
+        'type': 'regex',
+        'regex1': r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}',
+        'level': 'warning',
         'match': 'single_regex',
         'input_case': 'exact'
     },
@@ -89,4 +106,72 @@ CODE_RULES = [
         'match': 'single_string',
         'input_case': 'exact'
     },
+    {
+        'desc': 'User input in "loadHTMLString" will result in JavaScript Injection.',
+        'type': 'string',
+        'string1': 'loadHTMLString',
+        'string2': 'webView',
+        'level': 'warning',
+        'match': 'string_and',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'SFAntiPiracy Jailbreak checks found',
+        'type': 'string',
+        'string1': 'SFAntiPiracy.h',
+        'string2': 'SFAntiPiracy',
+        'string3': 'isJailbroken',
+        'level': 'good',
+        'match': 'string_and',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'SFAntiPiracy Piracy checks found',
+        'type': 'string',
+        'string1': 'SFAntiPiracy.h',
+        'string2': 'SFAntiPiracy',
+        'string3': 'isPirated',
+        'level': 'good',
+        'match': 'string_and',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'MD5 is a weak hash known to have hash collisions.',
+        'type': 'string',
+        'string1': 'CommonDigest.h',
+        'string2': 'CC_MD5',
+        'level': 'high',
+        'match': 'string_and',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'SHA1 is a weak hash known to have hash collisions.',
+        'type': 'string',
+        'string1': 'CommonDigest.h',
+        'string2': 'CC_SHA1',
+        'level': 'high',
+        'match': 'string_and',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'The App uses ECB mode in Cryptographic encryption algorithm. ECB mode is known to be weak as it results in the same ciphertext for identical blocks of plaintext.',
+        'type': 'string',
+        'string1': 'kCCOptionECBMode',
+        'string2': 'kCCAlgorithmAES',
+        'level': 'high',
+        'match': 'string_and',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'This App may have Jailbreak detection capabilities.',
+        'type': 'string',
+        'string1': '/Applications/Cydia.app',
+        'string2': '/Library/MobileSubstrate/MobileSubstrate.dylib',
+        'string3': '/usr/sbin/sshd',
+        'string4': '/etc/apt',
+        'string5': 'cydia://',
+        'level': 'good',
+        'match': 'string_or',
+        'input_case': 'exact'
+    }
 ]

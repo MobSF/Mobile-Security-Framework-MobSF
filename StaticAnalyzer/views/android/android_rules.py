@@ -50,7 +50,7 @@ RULES = [
         'desc': 'IP Address disclosure',
         'type': 'regex',
         'regex1': r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}',
-        'level': 'high',
+        'level': 'warning',
         'match': 'single_regex',
         'input_case': 'exact'
     },
