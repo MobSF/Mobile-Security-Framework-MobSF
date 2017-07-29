@@ -48,7 +48,54 @@ CODE_APIS = [
         'desc': 'WebView Component',
         'type': 'regex',
         'match': 'single_regex',
-        'regex1': r'WebView|UIWebView',
+        'regex1': r'UIWebView',
         'input_case': 'exact'
     },
+    {
+        'desc': 'Encryption API',
+        'type': 'regex',
+        'match': 'single_regex',
+        'regex1': r'RNEncryptor|RNDecryptor|AESCrypt',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'Keychain Access',
+        'type': 'string',
+        'match': 'single_string',
+        'string1': 'PDKeychainBindings',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'WebView Load Request',
+        'type': 'string',
+        'match': 'string_and',
+        'string1': 'loadRequest',
+        'string2': 'webView',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'WebView Load HTML String',
+        'type': 'string',
+        'match': 'string_and',
+        'string1': 'loadHTMLString',
+        'string2': 'webView',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'Cookie Storage',
+        'type': 'string',
+        'match': 'string_and',
+        'string1': 'NSHTTPCookieStorage',
+        'string2': 'sharedHTTPCookieStorage',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'Set or Read Clipboard',
+        'type': 'string',
+        'match': 'string_and',
+        'string1': 'UIPasteboard',
+        'string2': 'generalPasteboard',
+        'input_case': 'exact'
+    },
+     
 ]

@@ -344,6 +344,15 @@ APIS = [
         'input_case': 'exact'
     },
     {
+        'desc': 'Set or Read Clipboard data',
+        'type': 'string',
+        'match': 'string_and_or',
+        'string1': 'content.ClipboardManager',
+        'string_or1': 'CLIPBOARD_SERVICE',
+        'string_or2': 'ClipboardManager',
+        'input_case': 'exact'
+    },
+    {
         'desc': 'Base64 Encode',
         'type': 'string',
         'match': 'string_and_or',

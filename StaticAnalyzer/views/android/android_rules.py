@@ -50,7 +50,7 @@ RULES = [
         'desc': 'IP Address disclosure',
         'type': 'regex',
         'regex1': r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}',
-        'level': 'high',
+        'level': 'warning',
         'match': 'single_regex',
         'input_case': 'exact'
     },
@@ -254,6 +254,24 @@ RULES = [
         'string1': '.setWebContentsDebuggingEnabled(true)',
         'string2': 'WebView',
         'level': 'high',
+        'match': 'string_and',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'This app listens to Clipboard changes. Some malwares also listen to Clipboard changes.',
+        'type': 'string',
+        'string1': 'content.ClipboardManager',
+        'string2': 'OnPrimaryClipChangedListener',
+        'level': 'warning',
+        'match': 'string_and',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'This App copies data to clipboard. Sensitive data should not be copied to clipboard as other applications can access it.',
+        'type': 'string',
+        'string1': 'content.ClipboardManager',
+        'string2': 'setPrimaryClip(',
+        'level': 'info',
         'match': 'string_and',
         'input_case': 'exact'
     },
