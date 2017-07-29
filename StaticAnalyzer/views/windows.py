@@ -24,9 +24,11 @@ from django.http import HttpResponseRedirect
 from django.conf import settings
 from django.utils.html import escape
 
-from shared_func import FileSize
-from shared_func import HashGen
-from shared_func import Unzip
+from StaticAnalyzer.views.shared_func import (
+    file_size,
+    hash_gen,
+    unzip
+)
 
 from StaticAnalyzer.models import StaticAnalyzerWindows
 
@@ -98,13 +100,13 @@ def staticanalyzer_windows(request):
                     app_dic['app_path'] = os.path.join(
                         app_dic['app_dir'], app_dic['md5'] + '.appx')
                     # ANALYSIS BEGINS
-                    app_dic['size'] = str(FileSize(app_dic['app_path'])) + 'MB'
+                    app_dic['size'] = str(file_size(app_dic['app_path'])) + 'MB'
                     # Generate hashes
                     app_dic['sha1'], app_dic[
-                        'sha256'] = HashGen(app_dic['app_path'])
+                        'sha256'] = hash_gen(app_dic['app_path'])
                     # EXTRACT APPX
                     print "[INFO] Extracting APPX"
-                    app_dic['files'] = Unzip(
+                    app_dic['files'] = unzip(
                         app_dic['app_path'], app_dic['app_dir'])
                     xml_dic = _parse_xml(app_dic['app_dir'])
                     bin_an_dic = _binary_analysis(app_dic)

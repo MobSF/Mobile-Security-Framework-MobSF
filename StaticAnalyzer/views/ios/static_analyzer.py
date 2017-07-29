@@ -40,7 +40,11 @@ from StaticAnalyzer.views.ios.plist_analysis import (
 )
 
 
-from StaticAnalyzer.views.shared_func import FileSize, HashGen, Unzip
+from StaticAnalyzer.views.shared_func import (
+    file_size,
+    hash_gen,
+    unzip
+)
 from StaticAnalyzer.models import StaticAnalyzerIPA, StaticAnalyzerIOSZIP
 
 from MobSF.utils import PrintException, isFileExists
@@ -66,12 +70,12 @@ def view_file(request):
                 ext_type and
                 re.findall('xml|db|txt|m', typ) and
                 re.findall('ios|ipa', mode)
-           ):
+            ):
             if (("../" in fil) or
                     ("%2e%2e" in fil) or
                     (".." in fil) or
-                    ("%252e" in fil)
-               ):
+                ("%252e" in fil)
+                ):
                 return HttpResponseRedirect('/error/')
             else:
                 if mode == 'ipa':
@@ -101,7 +105,7 @@ def view_file(request):
                                      mode='r',
                                      encoding="utf8",
                                      errors="ignore"
-                                    ) as flip:
+                                     ) as flip:
                             dat = flip.read()
                     else:
                         dat = "Class Dump not Found"
@@ -135,8 +139,8 @@ def read_sqlite(sqlite_file):
             head = ''
             for row in rows:
                 head += str(row[1]).decode('utf8', 'ignore') + " | "
-            data += head + " \n========================================"+\
-            "=============================\n"
+            data += head + " \n========================================" +\
+                "=============================\n"
             cur.execute("SELECT * FROM '%s'" % table)
             rows = cur.fetchall()
             for row in rows:
@@ -177,13 +181,15 @@ def ios_list_files(src, md5_hash, binary_form, mode):
                     if re.search("db|sqlitedb|sqlite", ext):
                         database += "<a href='../ViewFile/?file=" + \
                             escape(fileparam) + "&type=db&mode=" + mode + "&md5=" + \
-                            md5_hash + "''> " + escape(fileparam) + " </a></br>"
+                            md5_hash + "''> " + \
+                            escape(fileparam) + " </a></br>"
                     if jfile.endswith(".plist"):
                         if binary_form:
                             convert_bin_xml(file_path)
                         plist += "<a href='../ViewFile/?file=" + \
                             escape(fileparam) + "&type=xml&mode=" + mode + "&md5=" + \
-                            md5_hash + "''> " + escape(fileparam) + " </a></br>"
+                            md5_hash + "''> " + \
+                            escape(fileparam) + " </a></br>"
         if len(database) > 1:
             database = "<tr><td>SQLite Files</td><td>" + database + "</td></tr>"
             sfiles += database
@@ -209,9 +215,9 @@ def static_analyzer_ios(request):
         if ((md5_match) and
                 (request.GET['name'].lower().endswith('.ipa') or
                  request.GET['name'].lower().endswith('.zip')
-                ) and
+                 ) and
                 (file_type in ['ipa', 'ios'])
-           ):
+            ):
             app_dict = {}
             app_dict["directory"] = settings.BASE_DIR  # BASE DIR
             app_dict["app_name"] = request.GET['name']  # APP ORGINAL NAME
@@ -235,12 +241,12 @@ def static_analyzer_ios(request):
                     app_dict["bin_dir"] = os.path.join(
                         app_dict["app_dir"], "Payload/")
                     app_dict["size"] = str(
-                        FileSize(app_dict["app_path"])) + 'MB'  # FILE SIZE
-                    app_dict["sha1"], app_dict["sha256"] = HashGen(
+                        file_size(app_dict["app_path"])) + 'MB'  # FILE SIZE
+                    app_dict["sha1"], app_dict["sha256"] = hash_gen(
                         app_dict["app_path"])  # SHA1 & SHA256 HASHES
                     print "[INFO] Extracting IPA"
                     # EXTRACT IPA
-                    Unzip(app_dict["app_path"], app_dict["app_dir"])
+                    unzip(app_dict["app_path"], app_dict["app_dir"])
                     # Get Files, normalize + to x,
                     # and convert binary plist -> xml
                     files, sfiles = ios_list_files(
@@ -276,14 +282,14 @@ def static_analyzer_ios(request):
                     # ANALYSIS BEGINS - Already Unzipped‰
                     print "[INFO] ZIP Already Extracted"
                     app_dict["size"] = str(
-                        FileSize(app_dict["app_path"])) + 'MB'  # FILE SIZE
-                    app_dict["sha1"], app_dict["sha256"] = HashGen(
+                        file_size(app_dict["app_path"])) + 'MB'  # FILE SIZE
+                    app_dict["sha1"], app_dict["sha256"] = hash_gen(
                         app_dict["app_path"])  # SHA1 & SHA256 HASHES
                     files, sfiles = ios_list_files(
-                        app_dict["app_dir"], app_dict["md5_hash"], False, 'os')
+                        app_dict["app_dir"], app_dict["md5_hash"], False, 'ios')
                     infoplist_dict = plist_analysis(app_dict["app_dir"], True)
                     code_analysis_dic = ios_source_analysis(
-                        app_dict["app_dir"], app_dict["md5_hash"])
+                        app_dict["app_dir"])
                     # Saving to DB
                     print "\n[INFO] Connecting to DB"
                     if rescan == '1':

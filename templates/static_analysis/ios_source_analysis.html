@@ -309,7 +309,19 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                    {{ api | safe}}
+                     {% for desc, details in api.items %}
+                  <tr>
+                  <td>
+                  {{ desc }}
+                  </td>
+                  <td>
+                  {% for path in details|key:"path" %}
+                   <a href="../ViewFile/?file={{ path }}&md5={{ md5 }}&type=m&mode=ios"> {{ path }}</a>
+                  </br>
+                  {% endfor %}
+                  </td>
+                </tr>    
+              {% endfor %} 
                     </tbody>
                     </table>
 
@@ -344,7 +356,30 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                    {{ insecure| safe}}
+                     {% for issue, details in insecure.items %}
+                  <tr>
+                  <td>
+                  {{ issue }}
+                  </td>
+                  <td>
+                    {% if details|key:"level" == "high" %}
+                      <span class="label label-danger">high</span>
+                      {% elif details|key:"level" == "good" %}
+                      <span class="label label-success">secure</span>
+                      {% elif details|key:"level" == "warning" %}
+                      <span class="label label-warning">warning</span>
+                      {% elif details|key:"level" == "info" %}
+                      <span class="label label-info">info</span>
+                      {% endif %}
+                  </td>
+                  <td>
+                  {% for path in details|key:"path" %}
+                   <a href="../ViewFile/?file={{ path }}&md5={{ md5 }}&type=m&mode=ios"> {{ path }}</a>
+                  </br>
+                  {% endfor %}
+                  </td>
+                </tr>    
+              {% endfor %} 
                     </tbody>
                     </table>
 
@@ -402,17 +437,31 @@
             <div class="box-body no-padding">
               <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
-                                         {% if urls|length > 1 %}
+              {% if urls %} 
                   <thead>
                   <tr>
                      <th>URL</th>
                      <th>File</th>
                   </tr>
                  </thead>
-                    {% endif %}
-                                        <tbody>
+                  {% endif %}
+                 <tbody>
+                
+                
+                  {% for urldict in urls %}
+                    <tr>
+                       <td>
+                       {% for u in urldict|key:"urls" %}
+                         {{ u }}
+                       {% endfor %}
+                        </td>
 
-                  {{ urls | safe}}
+                       <td>
+                          <a href="../ViewFile/?file={{urldict|key:"path"}}&md5={{ md5}}&type=m&mode=ios">{{urldict|key:"path"}}</a>
+                          
+                       </td>
+                    </tr>
+                  {% endfor %} 
                     </tbody>
                     </table>
 
@@ -438,7 +487,7 @@
             <div class="box-body no-padding">
               <div class="table-responsive">
                 <table class="table table-bordered table-hover table-striped">
-                  {% if urls|length > 1 %}
+                  {% if urls %}
                   <thead>
                   <tr>
                      <th>Domain</th>
@@ -490,7 +539,7 @@
             <div class="box-body no-padding">
               <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
-                                        {% if emails|length > 1 %}
+               {% if emails %} 
                   <thead>
                   <tr>
                      <th>Email</th>
@@ -498,13 +547,25 @@
                   </tr>
                  </thead>
                  {% endif %}
+                 <tbody>
                                         <tbody>
+                
+                 {% for email_dict in emails %}
+                    <tr>
+                       <td>
+                       {% for e in email_dict|key:"emails" %}
+                         {{ e }}
+                       {% endfor %}
+                        </td>
 
-                  {{ emails | safe}}
+                       <td>
+                          <a href="../ViewFile/?file={{email_dict|key:"path"}}&md5={{ md5}}&type=m&mode=ios">{{email_dict|key:"path"}}</a>   
+                       </td>
+                    </tr>
+                  {% endfor %} 
                     </tbody>
                     </table>
-
-                            </div>
+                 </div>
             </div>
             <!-- /.box-body -->
           </div>

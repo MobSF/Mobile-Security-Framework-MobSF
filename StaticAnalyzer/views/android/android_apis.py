@@ -28,6 +28,7 @@ Rule Format
 5. others
    a. string<no> - string1, string2, string3, string_or1, string_and1
    b. regex<no> - regex1, regex2, regex3
+   c. perm - Permission
 
 """
 APIS = [

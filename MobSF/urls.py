@@ -38,7 +38,7 @@ urlpatterns = [
         StaticAnalyzer.views.windows.staticanalyzer_windows),
     url(r'^ViewFile/$', StaticAnalyzer.views.ios.static_analyzer.view_file),
     url(r'^ViewSource/$', StaticAnalyzer.views.android.view_source.run),
-    url(r'^PDF/$', StaticAnalyzer.views.shared_func.PDF),
+    url(r'^PDF/$', StaticAnalyzer.views.shared_func.pdf),
     url(r'^Smali/$', StaticAnalyzer.views.android.smali.run),
     url(r'^Java/$', StaticAnalyzer.views.android.java.run),
     url(r'^Find/$', StaticAnalyzer.views.android.find.run),
