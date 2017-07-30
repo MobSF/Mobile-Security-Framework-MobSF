@@ -47,8 +47,11 @@ from StaticAnalyzer.views.shared_func import (
 )
 from StaticAnalyzer.models import StaticAnalyzerIPA, StaticAnalyzerIOSZIP
 
-from MobSF.utils import PrintException, isFileExists
-
+from MobSF.utils import (
+    print_n_send_error_response,
+    PrintException,
+    isFileExists
+)
 
 ##############################################################
 # Code to support iOS Static Code Analysis
@@ -205,23 +208,32 @@ def ios_list_files(src, md5_hash, binary_form, mode):
         PrintException("[ERROR] iOS List Files")
 
 
-def static_analyzer_ios(request):
+def static_analyzer_ios(request, api=False):
     """Module that performs iOS IPA/ZIP Static Analysis"""
     try:
         print "[INFO] iOS Static Analysis Started"
-        file_type = request.GET['type']
-        rescan = str(request.GET.get('rescan', 0))
-        md5_match = re.match('^[0-9a-f]{32}$', request.GET['checksum'])
+        if api:
+            file_type = request.POST['scan_type']
+            checksum = request.POST['hash']
+            rescan = str(request.POST.get('re_scan', 0))
+            filename = request.POST['file_name']
+        else:
+            file_type = request.GET['type']
+            checksum = request.GET['checksum']
+            rescan = str(request.GET.get('rescan', 0))
+            filename = request.GET['name']
+        
+        md5_match = re.match('^[0-9a-f]{32}$', checksum)
         if ((md5_match) and
-                (request.GET['name'].lower().endswith('.ipa') or
-                 request.GET['name'].lower().endswith('.zip')
+                (filename.lower().endswith('.ipa') or
+                 filename.lower().endswith('.zip')
                  ) and
                 (file_type in ['ipa', 'ios'])
             ):
             app_dict = {}
             app_dict["directory"] = settings.BASE_DIR  # BASE DIR
-            app_dict["app_name"] = request.GET['name']  # APP ORGINAL NAME
-            app_dict["md5_hash"] = request.GET['checksum']  # MD5
+            app_dict["app_name"] = filename  # APP ORGINAL NAME
+            app_dict["md5_hash"] = checksum  # MD5
             app_dict["app_dir"] = os.path.join(
                 settings.UPLD_DIR, app_dict["md5_hash"] + '/')  # APP DIRECTORY
             tools_dir = os.path.join(
@@ -267,7 +279,10 @@ def static_analyzer_ios(request):
                     context = get_context_from_analysis_ipa(
                         app_dict, infoplist_dict, bin_analysis_dict, files, sfiles)
                 template = "static_analysis/ios_binary_analysis.html"
-                return render(request, template, context)
+                if api:
+                    return context
+                else:
+                    return render(request, template, context)
             elif file_type == 'ios':
                 ios_zip_db = StaticAnalyzerIOSZIP.objects.filter(
                     MD5=app_dict["md5_hash"])
@@ -279,7 +294,7 @@ def static_analyzer_ios(request):
                         "md5_hash"] + '.zip'  # NEW FILENAME
                     app_dict["app_path"] = app_dict["app_dir"] + \
                         app_dict["app_file"]  # APP PATH
-                    # ANALYSIS BEGINS - Already Unzipped‰
+                    # ANALYSIS BEGINS - Already Unzipped
                     print "[INFO] ZIP Already Extracted"
                     app_dict["size"] = str(
                         file_size(app_dict["app_path"])) + 'MB'  # FILE SIZE
@@ -303,17 +318,26 @@ def static_analyzer_ios(request):
                     context = get_context_from_analysis_ios(
                         app_dict, infoplist_dict, code_analysis_dic, files, sfiles)
                 template = "static_analysis/ios_source_analysis.html"
-                return render(request, template, context)
+                if api:
+                    return context
+                else:
+                    return render(request, template, context)
             else:
-                return HttpResponseRedirect('/error/')
+                msg = "File Type not supported!"
+                if api:
+                    return print_n_send_error_response(request, msg, True)
+                else:
+                    return print_n_send_error_response(request, msg, False)
         else:
-            return HttpResponseRedirect('/error/')
+            msg = "Hash match failed or Invalid file extension or file type"
+            if api:
+                return print_n_send_error_response(request, msg, True)
+            else:
+                return print_n_send_error_response(request, msg, False)
     except Exception as exp:
-        PrintException("[ERROR] Static Analyzer iOS")
-        context = {
-            'title': 'Error',
-            'exp': exp.message,
-            'doc': exp.__doc__
-        }
-        template = "general/error.html"
-        return render(request, template, context)
+        msg = str(exp)
+        exp_doc = exp.__doc__
+        if api:
+            return print_n_send_error_response(request, msg, True, exp_doc)
+        else:
+            return print_n_send_error_response(request, msg, False, exp_doc)

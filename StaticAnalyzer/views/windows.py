@@ -34,8 +34,12 @@ from StaticAnalyzer.models import StaticAnalyzerWindows
 
 from StaticAnalyzer.tools.strings import strings
 
-from MobSF.utils import PrintException
-from MobSF.utils import python_list
+from MobSF.utils import (
+    print_n_send_error_response,
+    python_list,
+    PrintException,
+)
+
 
 # Only used when xmlrpc is used
 proxy = None
@@ -48,18 +52,26 @@ config = None
 # Windows Support Functions
 
 
-def staticanalyzer_windows(request):
+def staticanalyzer_windows(request, api=False):
     """Analyse a windows app."""
     try:
         # Input validation
         print "[INFO] Windows Static Analysis Started"
         app_dic = {}  # Dict to store the binary attributes
-        typ = request.GET['type']
-        rescan = str(request.GET.get('rescan', 0))
-        md5_regex = re.match('^[0-9a-f]{32}$', request.GET['checksum'])
+        if api:
+            typ = request.POST['scan_type']
+            rescan = str(request.POST.get('re_scan', 0))
+            checksum = request.POST['hash']
+            filename = request.POST['file_name']
+        else:
+            typ = request.GET['type']
+            rescan = str(request.GET.get('rescan', 0))
+            checksum = request.GET['checksum']
+            filename = request.GET['name']
+        md5_regex = re.match('^[0-9a-f]{32}$', checksum)
         if (md5_regex) and (typ in ['appx']):
-            app_dic['app_name'] = request.GET['name']  # APP ORGINAL NAME
-            app_dic['md5'] = request.GET['checksum']
+            app_dic['app_name'] = filename  # APP ORGINAL NAME
+            app_dic['md5'] = checksum
             app_dic['app_dir'] = os.path.join(
                 settings.UPLD_DIR, app_dic['md5'] + '/')
             app_dic['tools_dir'] = os.path.join(
@@ -196,21 +208,29 @@ def staticanalyzer_windows(request):
                         'bin_an_warnings': bin_an_dic['warnings'],
                     }
                 template = "static_analysis/windows_binary_analysis.html"
-                return render(request, template, context)
+                if api:
+                    return context
+                else:
+                    return render(request, template, context)
             else:
-                return HttpResponseRedirect('/error/')
+                msg = "File type not supported"
+                if api:
+                    return print_n_send_error_response(request, msg, True)
+                else:
+                    return print_n_send_error_response(request, msg, False)
         else:
-            return HttpResponseRedirect('/error/')
+            msg = "Hash match failed or Invalid file extension"
+            if api:
+                return print_n_send_error_response(request, msg, True)
+            else:
+                return print_n_send_error_response(request, msg, False)
     except Exception as exception:
-        PrintException("[ERROR] Static Analyzer Windows")
-        context = {
-            'title': 'Error',
-            'exp': exception.message,
-            'doc': exception.__doc__
-        }
-        template = "general/error.html"
-        return render(request, template, context)
-
+        msg = str(exception)
+        exp_doc = exception.__doc__
+        if api:
+            return print_n_send_error_response(request, msg, True, exp_doc)
+        else:
+            return print_n_send_error_response(request, msg, False, exp_doc)
 
 def _get_token():
     """Get the authentication token for windows vm xmlrpc client."""
