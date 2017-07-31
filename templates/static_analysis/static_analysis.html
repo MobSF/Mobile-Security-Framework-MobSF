@@ -1,5 +1,6 @@
 
   {% extends "base.html" %}
+   {% load staticfiles %}
    {% block content %}
       <!-- Left side column. contains the logo and sidebar -->
       <aside class="main-sidebar">
@@ -85,8 +86,17 @@
           <h3 class="box-title">Icon</h3>
           <span class="label label-primary pull-right"><i class="glyphicon glyphicon-picture"></i></span>
         </div><!-- /.box-header -->
-        <div class="box-body">
-        <strong>App doesn't have Icon!</strong>
+        <div class="box-body center">
+            <img id="app_icon" src="
+            {% if icon_found %}
+                /download/{{ md5 }}-icon.png
+            {% else %}
+                {% static 'img/no_icon.png' %}
+            {% endif %}
+            "/><br />
+        {% if icon_hidden %}
+        <strong>Hidden Icon!</strong>
+        {% endif %}
         </div><!-- /.box-body -->
       </div><!-- /.box -->
     </div><!-- /.col -->

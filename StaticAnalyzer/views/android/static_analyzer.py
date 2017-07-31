@@ -6,6 +6,7 @@ Android Static Code Analysis
 import re
 import os
 import zipfile
+import shutil
 
 try:
     import StringIO
@@ -56,6 +57,9 @@ from StaticAnalyzer.views.android.manifest_analysis import (
 from StaticAnalyzer.views.android.binary_analysis import (
     elf_analysis,
     res_analysis,
+)
+from StaticAnalyzer.views.android.icon_analysis import (
+    get_icon,
 )
 
 from MalwareAnalyzer.views import apkid_analysis
@@ -129,6 +133,19 @@ def static_analyzer(request):
                         True
                     )
 
+                    # Get icon
+                    res_path = os.path.join(app_dic['app_dir'], 'res')
+                    app_dic['icon_hidden'] = True
+                    app_dic['icon_found'] = False  # Even if the icon is hidden, try to guess it by the default paths
+                    app_dic['icon_path'] = ''
+                    if os.path.exists(res_path):  # TODO: Check for possible different names for resource folder?
+                        icon_dic = get_icon(app_dic['app_path'], res_path, app_dic['tools_dir'])
+                        app_dic['icon_hidden'] = icon_dic['hidden']
+                        app_dic['icon_found'] = bool(icon_dic['path'])
+                        app_dic['icon_path'] = icon_dic['path']
+
+
+
                     # Set Manifest link
                     app_dic['mani'] = '../ManifestView/?md5=' + \
                         app_dic['md5'] + '&type=apk&bin=1'
@@ -161,7 +178,7 @@ def static_analyzer(request):
                         "apk"
                     )
                     print "\n[INFO] Generating Java and Smali Downloads"
-                    gen_downloads(app_dic['app_dir'], app_dic['md5'])
+                    gen_downloads(app_dic['app_dir'], app_dic['md5'], app_dic['icon_path'])
 
                     # Get the strings
                     app_dic['strings'] = strings(
@@ -361,7 +378,7 @@ def valid_android_zip(app_dir):
         PrintException("[ERROR] Determining Upload type")
 
 
-def gen_downloads(app_dir, md5):
+def gen_downloads(app_dir, md5, icon_path=''):
     """Generate downloads for java and smali."""
     try:
         print "[INFO] Generating Downloads"
@@ -377,5 +394,11 @@ def gen_downloads(app_dir, md5):
         zipf = zipfile.ZipFile(dwd_dir, 'w')
         zipdir(directory, zipf)
         zipf.close()
+        # Icon
+        if icon_path:
+            if os.path.exists(icon_path):
+                shutil.copy2(icon_path, os.path.join(settings.DWD_DIR, md5 + '-icon.png'))
+
+
     except:
         PrintException("[ERROR] Generating Downloads")
