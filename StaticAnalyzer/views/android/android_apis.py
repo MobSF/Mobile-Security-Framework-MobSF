@@ -126,6 +126,13 @@ APIS = [
         'input_case': 'exact'
     },
     {
+        'desc': 'Content Provider',
+        'type': 'string',
+        'match': 'single_string',
+        'string1': 'android.content.ContentProvider',
+        'input_case': 'exact'
+    },
+    {
         'desc': 'Obfuscation',
         'type': 'string',
         'match': 'string_and',
@@ -141,6 +148,15 @@ APIS = [
         'string2': 'getRuntime(',
         'input_case': 'exact'
     },
+    {
+        'desc': 'Android Keystore',
+        'type': 'string',
+        'match': 'string_and',
+        'string1': 'security.KeyStore',
+        'string2': 'Keystore.getInstance(',
+        'input_case': 'exact'
+    },
+    
     {
         'desc': 'TCP Server Socket',
         'type': 'string',
