@@ -16,6 +16,8 @@ import unicodedata
 import httplib
 import settings
 
+from django.shortcuts import render
+
 
 class Color(object):
     GREEN = '\033[92m'
@@ -24,13 +26,25 @@ class Color(object):
     BOLD = '\033[1m'
     END = '\033[0m'
 
+def api_key():
+    """Print REST API Key"""
+    secret_file = os.path.join(settings.MobSF_HOME, "secret")
+    if isFileExists(secret_file):  
+        try:
+            api_key = open(secret_file).read().strip()
+            return gen_sha256_hash(api_key)
+        except:
+            PrintException("[ERROR] Cannot Read API Key")
 
 def printMobSFverison():
+    """Print MobSF Version"""
+    print settings.BANNER
     if platform.system() == "Windows":
         print '\n\nMobile Security Framework ' + settings.MOBSF_VER
+        print "\nREST API Key: " + api_key()
     else:
         print '\n\n\033[1m\033[34mMobile Security Framework ' + settings.MOBSF_VER + '\033[0m'
-    print settings.BANNER
+        print "\nREST API Key: " + Color.BOLD +  api_key() + Color.END
     print "OS: " + platform.system()
     print "Platform: " + platform.platform()
     if platform.dist()[0]:
@@ -315,6 +329,32 @@ def PrintException(msg, web=False):
     with open(LOGPATH + 'MobSF.log', 'a') as f:
         f.write(dat)
 
+def print_n_send_error_response(request, msg, api, exp='Error Description'):
+    """Print and log errors"""
+    print Color.BOLD + Color.RED + '[ERROR] ' + msg + Color.END
+    time_stamp = time.time()
+    formatted_tms = datetime.datetime.fromtimestamp(time_stamp).strftime('%Y-%m-%d %H:%M:%S')
+    data = '\n[' + formatted_tms + ']\n[ERROR] ' + msg
+    try:
+        log_path = settings.LOG_DIR
+    except:
+        log_path = os.path.join(settings.BASE_DIR, "logs/")
+    if not os.path.exists(log_path):
+        os.makedirs(log_path)
+    with open(os.path.join(log_path, 'MobSF.log'), 'a') as flip:
+        flip.write(data)
+    if api:
+        api_response = {"error": msg}
+        return api_response
+    else:
+        context = {
+            'title': 'Error',
+            'exp': exp,
+            'doc': msg
+        }
+        template = "general/error.html"
+        return render(request, template, context, status=500)
+
 
 def filename_from_path(path):
     head, tail = ntpath.split(path)
@@ -391,6 +431,10 @@ def sha256(file_path):
             buf = afile.read(BLOCKSIZE)
     return (hasher.hexdigest())
 
+def gen_sha256_hash(msg):
+    """Generate SHA 256 Hash of the message"""
+    hash_object = hashlib.sha256(msg)
+    return hash_object.hexdigest()
 
 def isFileExists(file_path):
     if os.path.isfile(file_path):

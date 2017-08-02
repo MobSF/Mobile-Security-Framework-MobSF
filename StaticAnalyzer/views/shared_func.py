@@ -21,6 +21,7 @@ from django.template.loader import get_template
 from django.utils.html import escape
 
 from MobSF.utils import (
+    print_n_send_error_response,
     PrintException,
     python_list
 )
@@ -40,24 +41,24 @@ from StaticAnalyzer.views.ios.db_interaction import (
 )
 
 
-def file_size(APP_PATH):
+def file_size(app_path):
     """Return the size of the file."""
-    return round(float(os.path.getsize(APP_PATH)) / (1024 * 1024), 2)
+    return round(float(os.path.getsize(app_path)) / (1024 * 1024), 2)
 
 
-def hash_gen(APP_PATH):
+def hash_gen(app_path):
     """Generate and return sha1 and sha256 as a tupel."""
     try:
         print "[INFO] Generating Hashes"
         sha1 = hashlib.sha1()
         sha256 = hashlib.sha256()
-        BLOCKSIZE = 65536
-        with io.open(APP_PATH, mode='rb') as afile:
-            buf = afile.read(BLOCKSIZE)
+        block_size = 65536
+        with io.open(app_path, mode='rb') as afile:
+            buf = afile.read(block_size)
             while buf:
                 sha1.update(buf)
                 sha256.update(buf)
-                buf = afile.read(BLOCKSIZE)
+                buf = afile.read(block_size)
         sha1val = sha1.hexdigest()
         sha256val = sha256.hexdigest()
         return sha1val, sha256val
@@ -65,18 +66,18 @@ def hash_gen(APP_PATH):
         PrintException("[ERROR] Generating Hashes")
 
 
-def unzip(APP_PATH, EXT_PATH):
+def unzip(app_path, ext_path):
     print "[INFO] Unzipping"
     try:
         files = []
-        with zipfile.ZipFile(APP_PATH, "r") as z:
-            for fileinfo in z.infolist():
+        with zipfile.ZipFile(app_path, "r") as zipptr:
+            for fileinfo in zipptr.infolist():
                 filename = fileinfo.filename
                 if not isinstance(filename, unicode):
                     filename = unicode(
                         filename, encoding="utf-8", errors="replace")
                 files.append(filename)
-                z.extract(fileinfo, str(EXT_PATH))
+                zipptr.extract(fileinfo, str(ext_path))
         return files
     except:
         PrintException("[ERROR] Unzipping Error")
@@ -86,60 +87,73 @@ def unzip(APP_PATH, EXT_PATH):
             print "\n[INFO] Using the Default OS Unzip Utility."
             try:
                 subprocess.call(
-                    ['unzip', '-o', '-q', APP_PATH, '-d', EXT_PATH])
-                dat = subprocess.check_output(['unzip', '-qq', '-l', APP_PATH])
+                    ['unzip', '-o', '-q', app_path, '-d', ext_path])
+                dat = subprocess.check_output(['unzip', '-qq', '-l', app_path])
                 dat = dat.split('\n')
-                x = ['Length   Date   Time   Name']
-                x = x + dat
-                return x
+                files_det = ['Length   Date   Time   Name']
+                files_det = files_det + dat
+                return files_det
             except:
                 PrintException("[ERROR] Unzipping Error")
 
 
-def pdf(request):
+def pdf(request, api=False):
     try:
-        MD5 = request.GET['md5']
-        TYP = request.GET['type']
-        m = re.match('^[0-9a-f]{32}$', MD5)
-        if m:
-            if TYP in ['APK', 'ANDZIP']:
-                DB = StaticAnalyzerAndroid.objects.filter(MD5=MD5)
-                if DB.exists():
+        if api:
+            checksum = request.POST['hash']
+            scan_type = request.POST['scan_type']
+        else:
+            checksum = request.GET['md5']
+            scan_type = request.GET['type']
+        hash_match = re.match('^[0-9a-f]{32}$', checksum)
+        if hash_match:
+            if scan_type.lower() in ['apk', 'andzip']:
+                static_db = StaticAnalyzerAndroid.objects.filter(MD5=checksum)
+                if static_db.exists():
                     print "\n[INFO] Fetching data from DB for PDF Report Generation (Android)"
-                    context = get_context_from_db_entry(DB)
-                    if TYP == 'APK':
+                    context = get_context_from_db_entry(static_db)
+                    if scan_type.lower() == 'apk':
                         template = get_template("pdf/static_analysis_pdf.html")
                     else:
                         template = get_template(
                             "pdf/static_analysis_zip_pdf.html")
                 else:
-                    return HttpResponse(json.dumps({"report": "Report not Found"}),
-                                        content_type="application/json; charset=utf-8")
-            elif re.findall('IPA|IOSZIP', TYP):
-                if TYP == 'IPA':
-                    DB = StaticAnalyzerIPA.objects.filter(MD5=MD5)
-                    if DB.exists():
+                    if api:
+                        return {"report": "Report not Found"}
+                    else:
+                        return HttpResponse(json.dumps({"report": "Report not Found"}),
+                                            content_type="application/json; charset=utf-8", status_code=500)
+            elif re.findall('ipa|ioszip', scan_type.lower()):
+                if scan_type.lower() == 'ipa':
+                    static_db = StaticAnalyzerIPA.objects.filter(MD5=checksum)
+                    if static_db.exists():
                         print "\n[INFO] Fetching data from DB for PDF Report Generation (IOS IPA)"
-                        context = get_context_from_db_entry_ipa(DB)
+                        context = get_context_from_db_entry_ipa(static_db)
                         template = get_template(
                             "pdf/ios_binary_analysis_pdf.html")
                     else:
-                        return HttpResponse(json.dumps({"report": "Report not Found"}),
-                                            content_type="application/json; charset=utf-8")
-                elif TYP == 'IOSZIP':
-                    DB = StaticAnalyzerIOSZIP.objects.filter(MD5=MD5)
-                    if DB.exists():
+                        if api:
+                            return {"report": "Report not Found"}
+                        else:
+                            return HttpResponse(json.dumps({"report": "Report not Found"}),
+                                                content_type="application/json; charset=utf-8", status_code=500)
+                elif scan_type.lower() == 'ioszip':
+                    static_db = StaticAnalyzerIOSZIP.objects.filter(MD5=checksum)
+                    if static_db.exists():
                         print "\n[INFO] Fetching data from DB for PDF Report Generation (IOS ZIP)"
-                        context = get_context_from_db_entry_ios(DB)
+                        context = get_context_from_db_entry_ios(static_db)
                         template = get_template(
                             "pdf/ios_source_analysis_pdf.html")
                     else:
-                        return HttpResponse(json.dumps({"report": "Report not Found"}),
-                                            content_type="application/json; charset=utf-8")
-            elif re.findall('APPX', TYP):
-                if TYP == 'APPX':
-                    db_entry = StaticAnalyzerWindows.objects.filter(  # pylint: disable-msg=E1101
-                        MD5=MD5
+                        if api:
+                            return {"report": "Report not Found"}
+                        else:
+                            return HttpResponse(json.dumps({"report": "Report not Found"}),
+                                                content_type="application/json; charset=utf-8", status_code=500)
+            elif re.findall('appx', scan_type.lower()):
+                if scan_type.lower() == 'appx':
+                    db_entry = StaticAnalyzerWindows.objects.filter(# pylint: disable-msg=E1101
+                        MD5=checksum
                     )
                     if db_entry.exists():
                         print "\n[INFO] Fetching data from DB for PDF Report Generation (APPX)"
@@ -171,8 +185,11 @@ def pdf(request):
                         template = get_template(
                             "pdf/windows_binary_analysis_pdf.html")
             else:
-                return HttpResponse(json.dumps({"type": "Type is not Allowed"}),
-                                    content_type="application/json; charset=utf-8")
+                if api:
+                    return {"scan_type": "Type is not Allowed"}
+                else:
+                    return HttpResponse(json.dumps({"type": "Type is not Allowed"}),
+                                        content_type="application/json; charset=utf-8", status_code=500)
             html = template.render(context)
             try:
                 options = {
@@ -189,20 +206,32 @@ def pdf(request):
                     ],
                     'no-outline': None
                 }
-                pdf = pdfkit.from_string(html, False, options=options)
-                return HttpResponse(pdf, content_type='application/pdf')
+                pdf_dat = pdfkit.from_string(html, False, options=options)
+                if api:
+                    return {"pdf_dat": pdf_dat}
+                else:
+                    return HttpResponse(pdf_dat, content_type='application/pdf')
             except Exception as exp:
-                return HttpResponse(json.dumps({"pdf_error": "Cannot Generate PDF",
-                                                "err_details": str(exp)}),
-                                    content_type="application/json; charset=utf-8")
+                if api:
+                    return {"error": "Cannot Generate PDF", "err_details": str(exp)}
+                else:
+                    return HttpResponse(json.dumps({"pdf_error": "Cannot Generate PDF",
+                                                    "err_details": str(exp)}),
+                                        content_type="application/json; charset=utf-8", status_code=500)
 
         else:
-            return HttpResponse(json.dumps({"md5": "Invalid MD5"}),
-                                content_type="application/json; charset=utf-8")
-    except:
-
-        PrintException("[ERROR] PDF Report Generation Error")
-        return HttpResponseRedirect('/error/')
+            if api:
+                return {"error": "Invalid scan hash"}
+            else:
+                return HttpResponse(json.dumps({"md5": "Invalid MD5"}),
+                                    content_type="application/json; charset=utf-8", status_code=500)
+    except Exception as exp:
+        msg = str(exp)
+        exp = exp.__doc__
+        if api:
+            return print_n_send_error_response(request, msg, True, exp)
+        else:
+            return print_n_send_error_response(request, msg, False, exp)
 
 
 def get_list_match_items(ruleset):

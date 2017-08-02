@@ -15,7 +15,12 @@ from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.conf import settings
 from django.utils import timezone
-from MobSF.utils import PrintException, isDirExists, isFileExists
+from MobSF.utils import (
+    print_n_send_error_response,
+    PrintException,
+    isDirExists,
+    isFileExists
+)
 from MobSF.models import RecentScansDB
 from APITester.models import ScopeURLSandTests
 from StaticAnalyzer.models import (
@@ -67,7 +72,7 @@ def handle_uploaded_file(filecnt, typ):
     return md5sum
 
 
-def upload(request):
+def upload(request, api=False):
     """
     Handle File Upload based on App type
     """
@@ -75,7 +80,8 @@ def upload(request):
         response_data = {}
         response_data['url'] = ''
         response_data['description'] = ''
-        response_data['status'] = ''
+        response_data['status'] = 'error'
+        api_response = {}
         if request.method == 'POST':
             form = UploadFileForm(request.POST, request.FILES)
             if form.is_valid():
@@ -85,9 +91,14 @@ def upload(request):
                         request.FILES['file'].name.lower().endswith('.apk')):
                         # APK
                     md5 = handle_uploaded_file(request.FILES['file'], '.apk')
-                    response_data['url'] = ('StaticAnalyzer/?name=' + request.FILES['file'].name +
-                                            '&type=apk&checksum=' + md5)
-                    response_data['status'] = 'success'
+                    if api:
+                        api_response["hash"] = md5
+                        api_response["scan_type"] = "apk"
+                        api_response["file_name"] = request.FILES['file'].name
+                    else:
+                        response_data['url'] = ('StaticAnalyzer/?name=' + request.FILES['file'].name +
+                                                '&type=apk&checksum=' + md5)
+                        response_data['status'] = 'success'
                     add_to_recent_scan(
                         request.FILES['file'].name, md5, response_data['url'])
                     print "\n[INFO] Performing Static Analysis of Android APK"
@@ -95,9 +106,14 @@ def upload(request):
                       request.FILES['file'].name.lower().endswith('.zip')):
                       # Android /iOS Zipped Source
                     md5 = handle_uploaded_file(request.FILES['file'], '.zip')
-                    response_data['url'] = ('StaticAnalyzer/?name=' + request.FILES['file'].name +
-                                            '&type=zip&checksum=' + md5)
-                    response_data['status'] = 'success'
+                    if api:
+                        api_response["hash"] = md5
+                        api_response["scan_type"] = "zip"
+                        api_response["file_name"] = request.FILES['file'].name
+                    else:
+                        response_data['url'] = ('StaticAnalyzer/?name=' + request.FILES['file'].name +
+                                                '&type=zip&checksum=' + md5)
+                        response_data['status'] = 'success'
                     add_to_recent_scan(
                         request.FILES['file'].name, md5, response_data['url'])
                     print "\n[INFO] Performing Static Analysis of Android/iOS Source Code"
@@ -107,50 +123,85 @@ def upload(request):
                     if platform.system() == "Darwin":  # Check for Mac OS X
                         md5 = handle_uploaded_file(
                             request.FILES['file'], '.ipa')
-                        response_data['url'] = ('StaticAnalyzer_iOS/?name=' +
-                                                request.FILES['file'].name +
-                                                '&type=ipa&checksum=' + md5)
-                        response_data['status'] = 'success'
+                        if api:
+                            api_response["hash"] = md5
+                            api_response["scan_type"] = "ipa"
+                            api_response["file_name"] = request.FILES[
+                                'file'].name
+                        else:
+                            response_data['url'] = ('StaticAnalyzer_iOS/?name=' +
+                                                    request.FILES['file'].name +
+                                                    '&type=ipa&checksum=' + md5)
+                            response_data['status'] = 'success'
+
                         add_to_recent_scan(
                             request.FILES['file'].name, md5, response_data['url'])
                         print "\n[INFO] Performing Static Analysis of iOS IPA"
                     else:
-                        response_data['url'] = 'mac_only/'
-                        response_data['status'] = 'success'
+                        if api:
+                            api_response[
+                                "error"] = "Static Analysis of iOS IPA requires OSX"
+                        else:
+                            response_data['url'] = 'mac_only/'
+                            response_data['status'] = 'success'
                         print "\n[ERROR] Static Analysis of iOS IPA requires OSX"
                 # Windows APPX
                 elif (file_type in settings.APPX_MIME) and request.FILES['file'].name.lower().endswith('.appx'):
                     md5 = handle_uploaded_file(request.FILES['file'], '.appx')
-                    response_data['url'] = 'StaticAnalyzer_Windows/?name=' + \
-                        request.FILES['file'].name + \
-                        '&type=appx&checksum=' + md5
-                    response_data['status'] = 'success'
+                    if api:
+                        api_response["hash"] = md5
+                        api_response["scan_type"] = "appx"
+                        api_response["file_name"] = request.FILES['file'].name
+                    else:
+                        response_data['url'] = 'StaticAnalyzer_Windows/?name=' + \
+                            request.FILES['file'].name + \
+                            '&type=appx&checksum=' + md5
+                        response_data['status'] = 'success'
                     add_to_recent_scan(
                         request.FILES['file'].name, md5, response_data['url'])
                     print "\n[INFO] Performing Static Analysis of Windows APP"
                 else:
-                    response_data['url'] = ''
-                    response_data['description'] = 'File format not Supported!'
-                    response_data['status'] = 'error'
+                    if api:
+                        api_response["error"] = "File format not Supported!"
+                    else:
+                        response_data['url'] = ''
+                        response_data[
+                            'description'] = 'File format not Supported!'
+                        response_data['status'] = 'error'
+
                     print "\n[ERROR] File format not Supported!"
 
             else:
-                response_data['url'] = ''
-                response_data['description'] = 'Invalid Form Data!'
-                response_data['status'] = 'error'
+                if api:
+                    api_response["error"] = "Invalid Form Data!"
+                else:
+                    response_data['url'] = ''
+                    response_data['description'] = 'Invalid Form Data!'
+                    response_data['status'] = 'error'
+
                 print "\n[ERROR] Invalid Form Data!"
         else:
-            response_data['url'] = ''
-            response_data['description'] = 'Method not Supported!'
-            response_data['status'] = 'error'
+            if api:
+                api_response["error"] = "Method not Supported!"
+            else:
+                response_data['url'] = ''
+                response_data['description'] = 'Method not Supported!'
+                response_data['status'] = 'error'
             print "\n[ERROR] Method not Supported!"
             form = UploadFileForm()
-        resp = HttpResponse(json.dumps(response_data),
-                            content_type="application/json")
-        resp['Access-Control-Allow-Origin'] = '*'
-        return resp
     except:
         PrintException("[ERROR] Uploading File:")
+    if api:
+        return api_response
+    else:
+        if response_data['status'] == 'error':
+            resp = HttpResponse(json.dumps(
+                response_data), content_type="application/json; charset=utf-8", status=500)
+        else:
+            resp = HttpResponse(json.dumps(response_data),
+                                content_type="application/json; charset=utf-8")
+    resp['Access-Control-Allow-Origin'] = '*'
+    return resp
 
 
 def about(request):
@@ -248,38 +299,50 @@ def download(request):
     return HttpResponseRedirect('/error/')
 
 
-def delete_scan(request):
+def delete_scan(request, api=False):
     """
     Delete Scan from DB and remove the scan related files
     """
     try:
         if request.method == 'POST':
-            md5_hash = request.POST['md5']
+            if api:
+                md5_hash = request.POST['hash']
+            else:
+                md5_hash = request.POST['md5']
             data = {'deleted': 'no'}
             if re.match('[0-9a-f]{32}', md5_hash):
                 # Delete DB Entries
-                RecentScansDB.objects.filter(MD5=md5_hash).delete()
-                ScopeURLSandTests.objects.filter(MD5=md5_hash).delete()
-                StaticAnalyzerAndroid.objects.filter(MD5=md5_hash).delete()
-                StaticAnalyzerIPA.objects.filter(MD5=md5_hash).delete()
-                StaticAnalyzerIOSZIP.objects.filter(MD5=md5_hash).delete()
-                StaticAnalyzerWindows.objects.filter(MD5=md5_hash).delete()
-                # Delete Upload Dir Contents
-                app_upload_dir = os.path.join(settings.UPLD_DIR, md5_hash)
-                if isDirExists(app_upload_dir):
-                    shutil.rmtree(app_upload_dir)
-                # Delete Download Dir Contents
-                dw_dir = settings.DWD_DIR
-                for item in os.listdir(dw_dir):
-                    item_path = os.path.join(dw_dir, item)
-                    # Delete all related files
-                    if isFileExists(item_path) and item.startswith(md5_hash + "-"):
-                        os.remove(item_path)
-                    # Delete related directories
-                    if isDirExists(item_path) and item.startswith(md5_hash + "-"):
-                        shutil.rmtree(item_path)
-                data = {'deleted': 'yes'}
-            return HttpResponse(json.dumps(data), content_type='application/json')
-    except:
-        PrintException("Error Deleting Scan")
-    return HttpResponseRedirect('/error/')
+                scan = RecentScansDB.objects.filter(MD5=md5_hash)
+                if scan.exists():
+                    RecentScansDB.objects.filter(MD5=md5_hash).delete()
+                    ScopeURLSandTests.objects.filter(MD5=md5_hash).delete()
+                    StaticAnalyzerAndroid.objects.filter(MD5=md5_hash).delete()
+                    StaticAnalyzerIPA.objects.filter(MD5=md5_hash).delete()
+                    StaticAnalyzerIOSZIP.objects.filter(MD5=md5_hash).delete()
+                    StaticAnalyzerWindows.objects.filter(MD5=md5_hash).delete()
+                    # Delete Upload Dir Contents
+                    app_upload_dir = os.path.join(settings.UPLD_DIR, md5_hash)
+                    if isDirExists(app_upload_dir):
+                        shutil.rmtree(app_upload_dir)
+                    # Delete Download Dir Contents
+                    dw_dir = settings.DWD_DIR
+                    for item in os.listdir(dw_dir):
+                        item_path = os.path.join(dw_dir, item)
+                        # Delete all related files
+                        if isFileExists(item_path) and item.startswith(md5_hash + "-"):
+                            os.remove(item_path)
+                        # Delete related directories
+                        if isDirExists(item_path) and item.startswith(md5_hash + "-"):
+                            shutil.rmtree(item_path)
+                    data = {'deleted': 'yes'}
+            if api:
+                return data
+            else:
+                return HttpResponse(json.dumps(data), content_type='application/json; charset=utf-8')
+    except Exception as exp:
+        msg = str(exp)
+        exp_doc = exp.__doc__
+        if api:
+            return print_n_send_error_response(request, msg, True, exp_doc)
+        else:
+            return print_n_send_error_response(request, msg, False, exp_doc)
