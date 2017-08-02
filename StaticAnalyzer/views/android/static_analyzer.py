@@ -60,6 +60,7 @@ from StaticAnalyzer.views.android.binary_analysis import (
 )
 from StaticAnalyzer.views.android.icon_analysis import (
     get_icon,
+    find_icon_path_zip,
 )
 
 from MalwareAnalyzer.views import apkid_analysis
@@ -140,9 +141,10 @@ def static_analyzer(request):
                     app_dic['icon_path'] = ''
                     if os.path.exists(res_path):  # TODO: Check for possible different names for resource folder?
                         icon_dic = get_icon(app_dic['app_path'], res_path, app_dic['tools_dir'])
-                        app_dic['icon_hidden'] = icon_dic['hidden']
-                        app_dic['icon_found'] = bool(icon_dic['path'])
-                        app_dic['icon_path'] = icon_dic['path']
+                        if icon_dic:
+                            app_dic['icon_hidden'] = icon_dic['hidden']
+                            app_dic['icon_found'] = bool(icon_dic['path'])
+                            app_dic['icon_path'] = icon_dic['path']
 
 
 
@@ -289,6 +291,28 @@ def static_analyzer(request):
                             app_dic['persed_xml'],
                             man_data_dic
                         )
+
+                        # Get icon
+                        eclipse_res_path = os.path.join(app_dic['app_dir'], 'res')
+                        studio_res_path = os.path.join(app_dic['app_dir'], 'app', 'src', 'main', 'res')
+                        if os.path.exists(eclipse_res_path):
+                            res_path = eclipse_res_path
+                        elif os.path.exists(studio_res_path):
+                            res_path = studio_res_path
+                        else:
+                            res_path = ''
+
+                        app_dic['icon_hidden'] = man_an_dic['icon_hidden']
+                        app_dic['icon_found'] = False
+                        app_dic['icon_path'] = ''
+                        if res_path:
+                            app_dic['icon_path'] = find_icon_path_zip(res_path, man_data_dic['icons'])
+                            if app_dic['icon_path']:
+                                app_dic['icon_found'] = True
+
+                        if app_dic['icon_path']:
+                            if os.path.exists(app_dic['icon_path']):
+                                shutil.copy2(app_dic['icon_path'], os.path.join(settings.DWD_DIR, app_dic['md5'] + '-icon.png'))
 
                         code_an_dic = code_analysis(
                             app_dic['app_dir'],
