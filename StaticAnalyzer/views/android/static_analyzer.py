@@ -6,6 +6,7 @@ Android Static Code Analysis
 import re
 import os
 import zipfile
+import shutil
 
 try:
     import StringIO
@@ -57,6 +58,10 @@ from StaticAnalyzer.views.android.manifest_analysis import (
 from StaticAnalyzer.views.android.binary_analysis import (
     elf_analysis,
     res_analysis,
+)
+from StaticAnalyzer.views.android.icon_analysis import (
+    get_icon,
+    find_icon_path_zip,
 )
 
 from MalwareAnalyzer.views import apkid_analysis
@@ -138,6 +143,20 @@ def static_analyzer(request, api=False):
                         True
                     )
 
+                    # Get icon
+                    res_path = os.path.join(app_dic['app_dir'], 'res')
+                    app_dic['icon_hidden'] = True
+                    app_dic['icon_found'] = False  # Even if the icon is hidden, try to guess it by the default paths
+                    app_dic['icon_path'] = ''
+                    if os.path.exists(res_path):  # TODO: Check for possible different names for resource folder?
+                        icon_dic = get_icon(app_dic['app_path'], res_path, app_dic['tools_dir'])
+                        if icon_dic:
+                            app_dic['icon_hidden'] = icon_dic['hidden']
+                            app_dic['icon_found'] = bool(icon_dic['path'])
+                            app_dic['icon_path'] = icon_dic['path']
+
+
+
                     # Set Manifest link
                     app_dic['mani'] = '../ManifestView/?md5=' + \
                         app_dic['md5'] + '&type=apk&bin=1'
@@ -170,7 +189,7 @@ def static_analyzer(request, api=False):
                         "apk"
                     )
                     print "\n[INFO] Generating Java and Smali Downloads"
-                    gen_downloads(app_dic['app_dir'], app_dic['md5'])
+                    gen_downloads(app_dic['app_dir'], app_dic['md5'], app_dic['icon_path'])
 
                     # Get the strings
                     app_dic['strings'] = strings(
@@ -288,6 +307,28 @@ def static_analyzer(request, api=False):
                             man_data_dic
                         )
 
+                        # Get icon
+                        eclipse_res_path = os.path.join(app_dic['app_dir'], 'res')
+                        studio_res_path = os.path.join(app_dic['app_dir'], 'app', 'src', 'main', 'res')
+                        if os.path.exists(eclipse_res_path):
+                            res_path = eclipse_res_path
+                        elif os.path.exists(studio_res_path):
+                            res_path = studio_res_path
+                        else:
+                            res_path = ''
+
+                        app_dic['icon_hidden'] = man_an_dic['icon_hidden']
+                        app_dic['icon_found'] = False
+                        app_dic['icon_path'] = ''
+                        if res_path:
+                            app_dic['icon_path'] = find_icon_path_zip(res_path, man_data_dic['icons'])
+                            if app_dic['icon_path']:
+                                app_dic['icon_found'] = True
+
+                        if app_dic['icon_path']:
+                            if os.path.exists(app_dic['icon_path']):
+                                shutil.copy2(app_dic['icon_path'], os.path.join(settings.DWD_DIR, app_dic['md5'] + '-icon.png'))
+
                         code_an_dic = code_analysis(
                             app_dic['app_dir'],
                             man_an_dic['permissons'],
@@ -386,7 +427,7 @@ def valid_android_zip(app_dir):
         PrintException("[ERROR] Determining Upload type")
 
 
-def gen_downloads(app_dir, md5):
+def gen_downloads(app_dir, md5, icon_path=''):
     """Generate downloads for java and smali."""
     try:
         print "[INFO] Generating Downloads"
@@ -402,5 +443,11 @@ def gen_downloads(app_dir, md5):
         zipf = zipfile.ZipFile(dwd_dir, 'w')
         zipdir(directory, zipf)
         zipf.close()
+        # Icon
+        if icon_path:
+            if os.path.exists(icon_path):
+                shutil.copy2(icon_path, os.path.join(settings.DWD_DIR, md5 + '-icon.png'))
+
+
     except:
         PrintException("[ERROR] Generating Downloads")

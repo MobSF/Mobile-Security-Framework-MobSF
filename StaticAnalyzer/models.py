@@ -21,6 +21,8 @@ class StaticAnalyzerAndroid(models.Model):
     BIN_ANALYSIS = models.TextField()
     FILES = models.TextField()
     CERTZ = models.TextField()
+    ICON_HIDDEN = models.BooleanField(default=False)
+    ICON_FOUND = models.BooleanField(default=False)
     ACTIVITIES = models.TextField()
     RECEIVERS = models.TextField()
     PROVIDERS = models.TextField()

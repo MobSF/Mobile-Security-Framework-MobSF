@@ -52,6 +52,8 @@ def manifest_data(mfxml):
         cnp = []
         lib = []
         perm = []
+        cat = []
+        icons = []
         dvm_perm = {}
         package = ''
         minsdk = ''
@@ -60,6 +62,7 @@ def manifest_data(mfxml):
         mainact = ''
         androidversioncode = ''
         androidversionname = ''
+        applications = mfxml.getElementsByTagName("application")
         permissions = mfxml.getElementsByTagName("uses-permission")
         manifest = mfxml.getElementsByTagName("manifest")
         activities = mfxml.getElementsByTagName("activity")
@@ -68,6 +71,7 @@ def manifest_data(mfxml):
         receivers = mfxml.getElementsByTagName("receiver")
         libs = mfxml.getElementsByTagName("uses-library")
         sdk = mfxml.getElementsByTagName("uses-sdk")
+        categories = mfxml.getElementsByTagName("category")
         for node in sdk:
             minsdk = node.getAttribute("android:minSdkVersion")
             maxsdk = node.getAttribute("android:maxSdkVersion")
@@ -113,6 +117,16 @@ def manifest_data(mfxml):
             libary = _lib.getAttribute("android:name")
             lib.append(libary)
 
+        for category in categories:
+            cat.append(category.getAttribute("android:name"))
+
+        for application in applications:
+            try:
+                icon_path = application.getAttribute("android:icon")
+                icons.append(icon_path)
+            except:
+                continue  # No icon attribute?
+
         for permission in permissions:
             perm.append(permission.getAttribute("android:name"))
 
@@ -136,6 +150,7 @@ def manifest_data(mfxml):
             'receivers': brd,
             'providers': cnp,
             'libraries': lib,
+            'categories': cat,
             'perm': dvm_perm,
             'packagename': package,
             'mainactivity': mainact,
@@ -143,7 +158,8 @@ def manifest_data(mfxml):
             'max_sdk': maxsdk,
             'target_sdk': targetsdk,
             'androver': androidversioncode,
-            'androvername': androidversionname
+            'androvername': androidversionname,
+            'icons': icons
         }
 
         return man_data_dic
@@ -660,6 +676,7 @@ def manifest_analysis(mfxml, man_data_dic):
         exported = []
         browsable_activities = {}
         permission_dict = {}
+        icon_hidden = True
         # PERMISSION
         for permission in permissions:
             if permission.getAttribute("android:protectionLevel"):
@@ -1205,6 +1222,12 @@ def manifest_analysis(mfxml, man_data_dic):
                 ret_value.append({"title": a_title,
                                   "stat": a_template[1],
                                   "desc": a_desc})
+
+        for category in man_data_dic['categories']:
+            if category == "android.intent.category.LAUNCHER":
+                icon_hidden = False
+                break
+
         # Prepare return dict
         man_an_dic = {
             'manifest_anal': ret_value,
@@ -1215,7 +1238,8 @@ def manifest_analysis(mfxml, man_data_dic):
             'cnt_act': len(man_data_dic['activities']),
             'cnt_pro': len(man_data_dic['providers']),
             'cnt_ser': len(man_data_dic['services']),
-            'cnt_bro': len(man_data_dic['receivers'])
+            'cnt_bro': len(man_data_dic['receivers']),
+            'icon_hidden': icon_hidden
         }
         return man_an_dic
     except:
