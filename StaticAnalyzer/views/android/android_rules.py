@@ -88,6 +88,15 @@ RULES = [
         'input_case': 'exact'
     },
     {
+        'desc': 'WebView load files from external storage. Files in external storage can be modified by any application.',
+        'type': 'regex',
+        'regex1': r'\.loadUrl\(.*getExternalStorageDirectory\(',
+        'regex2': r'webkit\.WebView',
+        'level': 'high',
+        'match': 'regex_and',
+        'input_case': 'exact'
+    },
+    {
         'desc': 'The file is World Readable. Any App can read from the file',
         'type': 'regex',
         'regex1': r'MODE_WORLD_READABLE|Context\.MODE_WORLD_READABLE',
@@ -146,14 +155,6 @@ RULES = [
         'input_case': 'exact'
     },
     {
-        'desc': 'App can write to App Directory. Sensitive Information should be encrypted.',
-        'type': 'regex',
-        'regex1': r'MODE_PRIVATE|Context\.MODE_PRIVATE',
-        'level': 'info',
-        'match': 'single_regex',
-        'input_case': 'exact'
-    },
-    {
         'desc': 'The App uses an insecure Random Number Generator.',
         'type': 'regex',
         'regex1': r'java\.util\.Random',
@@ -164,7 +165,7 @@ RULES = [
     {
         'desc': 'The App logs information. Sensitive information should never be logged.',
         'type': 'regex',
-        'regex1': r'Log\.(v|d|i|w|e|f|s)|System\.out\.print',
+        'regex1': r'Log\.(v|d|i|w|e|f|s)|System\.out\.print|System\.err\.print',
         'level': 'info',
         'match': 'single_regex',
         'input_case': 'exact'
@@ -174,6 +175,14 @@ RULES = [
         'type': 'string',
         'string1': '.hashCode()',
         'level': 'high',
+        'match': 'single_string',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'These activities prevent screenshot when they go to background.',
+        'type': 'string',
+        'string1': 'LayoutParams.FLAG_SECURE',
+        'level': 'good',
         'match': 'single_string',
         'input_case': 'exact'
     },
@@ -236,6 +245,15 @@ RULES = [
         'string1': 'android.app.DownloadManager',
         'string2': 'getSystemService(DOWNLOAD_SERVICE)',
         'level': 'high',
+        'match': 'string_and',
+        'input_case': 'exact'
+    },
+    {
+        'desc': 'This App use Realm Database with encryption.',
+        'type': 'string',
+        'string1': 'io.realm.Realm',
+        'string2': '.encryptionKey(',
+        'level': 'good',
         'match': 'string_and',
         'input_case': 'exact'
     },
