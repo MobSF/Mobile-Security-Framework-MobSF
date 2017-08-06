@@ -30,7 +30,7 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 *Gratipay:* [<img alt="Support via Gratipay" src="https://user-images.githubusercontent.com/4301109/28208477-6fa272ce-68ab-11e7-819c-45b1f50832c3.png" height="30" width="165">](https://gratipay.com/Mobile-Security-Framework/)
 
 ## Documentation
-* [Read MobSF Documentation](https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/1.-Documentation)
+* [See MobSF Documentation](https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/1.-Documentation)
 
 ## Collaborators
 
