@@ -1,0 +1,184 @@
+### v0.9.5.2 Beta Changelog
+
+* Features or Enhancements
+  * Supports Android ARM Emulator for Android Dynamic Analysis. Thanks to Matan Dobrushin - [Documentation](https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/1.-Documentation#configuring-dynamic-analyzer-with-with-mobsf-android-412-arm-emulator)
+  * Android Dynamic Analysis Code QA and Refactoring
+  * Delete Scan Results from DB and related files under Recent Scan
+  * Detects Apps Signed with SHA1-RSA
+  * Added APKiD to MobSF Android APK Static Analysis
+  * Python Dependency updates
+  * Dockerfile updated
+  * Added unit test for delete scan
+  
+* Bug Fixes
+  * Fixed Android Certificate Analyzer find match bug
+  * Android Static Analyzer content provider rules bug fix
+  * Windows Static Analyzer Bugfixes
+  * Moved from buggy syntaxhighlighter to highlightjs
+
+### v0.9.4 Beta Changelog
+
+* Features or Enhancements
+  * Android Binary/ELF Analysis and Resource Analysis
+  * Android App Static Analysis: Tapjacking Detection
+  * Android App Static Analysis: Better Exported Component Analysis
+  * iOS App Static Analysis: Listing App Permissions
+  * iOS App Static Analysis: ATS Check
+  * Better and Faster PDF Generation
+  * Updated Dependencies
+  * Optimised DB Interactions
+  * Unit Tests for Static Analyzer, PDF Report Generation
+
+* Bug Fixes
+  * Windows App Static Analyzer Bug Fix
+  * Fixed all PDF Related Bugs
+  * Windows App Static Analyzer: BinScope Bug Fix
+  * iOS App Static Analysis: Plist Bug Fix
+
+### v0.9.3 Beta Changelog
+
+
+* Features or Enhancements
+  * Added Docker File
+  * Clipboard Monitor for Android Dynamic Analysis
+  * Windows APPX Static Analysis Support
+  * Added Support for Kali Linux
+  * Code Quality and Lintering
+  * Partial PEP8 Formating, Code Refactoring and Restructuring
+  * Imporved Static Analyzer Regex
+  * Disabling Syntax Highlighter Edit mode
+  * More MIME Type additions
+  * Update File Upload Size to 100 MB
+  * MobSFfy script to support commandline args
+  * New strings.py tool for string extraction in iOS Apps.
+  * Updated iOS Static Analysis ruleset.
+  * Django Upgrade to 1.10
+  * MobSF VM 0.3 Released
+
+* Bug Fixes
+  * Fixed Code Analyis Regex Error
+  * Fixed iOS Binary Analyis and File Analysus PDF Generation bug
+  * API Fuzzer Bug Fixes
+  * SQLite3 Bug Fix
+  * Fixed Bug when no code signing cert is present
+  * Fixed Bug in xhtml2pdf
+  * Dynamic Analysis Bug Fixes
+  * Unicode Bug Fixes
+  * Fixed MobSFy upload error
+  * Fixed Variable redefining bug
+
+* Security Fixes
+  * Fixed Local File Inclusion casued due to incorrect regex
+
+### v0.9.2 Beta Changelog
+
+* Features
+  * Drag and Drop support, allows upto 8 files in Web GUI
+  * Mass Static Analysis - Mass static analysis on a directory of app binaries or zipped source code
+  * Domain Malware check
+  * CFR Decompiler updated to 0_115
+  * Added Google Enjarify
+  * Added procyon decompiler
+  * Allows user to skip inbuilt android classes. (Performance improvement ~ 20%)
+  * Android Code signing certificate check
+  * Detect hardcoded Keystores
+  * Static Analyzer rules updated for Android and iOS
+  * Better Android Manifest analysis rule set
+  * Dynamic Analysis Base64 Decoding
+  * Support for Home Directory - Move all user created files and settings to Home directory
+
+* Bug Fix
+  * Dynamic Analyzer report print in Landscape mode
+  * Windows fix for command prompt color support
+  * Fixed Upper case file extension bug
+  * PDF Creator unicode error fixed
+  * Fixed manifest analyzer bug
+  * Ptrace API recommendation enhancement
+
+### v0.9.1 Beta Changelog
+
+* Minor Bug Fixes
+* Static Analyzer rules updated
+
+### v0.9 Beta Changelog
+
+* Improved and Responsive UI
+* Search stored Static Analysis reports with APK MD5
+* Recent Scan View
+* Added Live Device/VM ScreenCast on Dynamic Analyzer view
+* Added Basic Touch event based Interaction with ScreenCast
+* Better Error Handling and Logging
+* Improved Web Proxy
+* Added a centralized log file for MobSF
+* A new UI component to show the count of vulnerable components of Android App
+* Tooltips explaining code nature
+* All new API Fuzzer that can do Information Gathering, detect Security Headers, identify vulnerabilities like XXE, SSRF, Path Traversal, IDOR, Rate Limit Checking and perform Session related logical checks.
+api tester
+* Update APKs and pushed them to VM
+* Updated and stable MobSF VM 0.2
+* Added rules to static analyzer
+* Added Custom VM and Android Device Support for MobSF Dynamic Analysis
+* MobSF VM can now bypass Anti-Emulator Checks
+* Support for Dynamically Installing and Removing MobSF RootCA
+* Bug Fixes
+  * Fixed Java path finding issue in windows
+  * Fixed Set-Cookie Handling issue of Web Proxy
+  * Fixed some UI issues
+  * Fixed a bug in finding VirtualBox path in Mac and Linux
+
+### v0.8.8 Beta Changelog
+
+* New name: Mobile Security Framework (MobSF)
+* Added Dynamic Analysis
+* VM Available for Download
+* Fixed RCE
+* Fixed Broken Manifest File Parsing Logic
+* Sqlite DB Support
+* Fixed Reporting with new PDF report
+* Rescan Option
+* Detect Root Detection
+* Added Requiremnts.txt
+* Automated Java Path Detection
+* Improved Manifest and Code Analysis
+* Fixed Unzipping error for Unix.
+* Activity Tester Module
+* Exported Activity Tester Module
+* Device API Hooker with DroidMon
+* SSL Certificate Pinning Bypass with JustTrustMe
+* RootCloak to prevent root Detection
+* Data Pusher to Dump Application Data
+* pyWebproxy to decrypt SSL Traffic
+
+### v0.8.7 Beta Changelog
+
+* Improved Static Analysis Rules
+* Better AndroidManifest View
+* Search in Files
+
+### v0.8.6 Beta Changelog
+
+* Detects implicitly exported component from manifest.
+* Added CFR decompiler support 
+* Fixed Regex DoS on URL Regex
+
+### v0.8.5 Beta Changelog
+
+* Bug Fix to support IPA MIME Type: application/x-itunes-ipa
+
+### v0.8.4 Beta Changelog
+
+* Improved Android Static Code Analysis speed (2X performance)
+* Static Code analysis on Dexguard protected APK.
+* Fixed a Security Issue - Email Regex DoS.
+* Added Logging Code.
+* All Browser Support.
+* MIME Type Bug fix to Support IE.
+* Fixed Progress Bar.
+
+### v0.8.3 Beta Changelog
+ 
+* View AndroidManifest.xml & Info.plist
+* Supports iOS Binary (IPA)
+* Bug Fix for Linux (Ubuntu), missing MIME Type Detection
+* Check for Hardcoded Certificates
+* Added Code to prevent from Directory Traversal
