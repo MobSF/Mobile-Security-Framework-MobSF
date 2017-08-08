@@ -1,0 +1,313 @@
+{% extends "base_top_only.html" %}
+   {% block content %}
+    
+
+<div class="box box-default">
+     
+          <div class="box-body">
+
+
+        <h1><strong>REST API Docs</strong></h1>
+      
+      <p class="lead">
+      REST API Key: <strong><code>{{ api_key}}</code></strong>
+      </p>
+
+      
+       
+
+
+<ol>
+<li><code>api/v1/upload</code> - <a href="#upload-file-api">Upload a File</a></li>
+<li><code>api/v1/scan</code> - <a href="#scan-file-api">Scan a File</a></li>
+<li><code>api/v1/delete_scan</code> - <a href="#delete-scan-api">Delete a Scan</a></li>
+<li><code>api/v1/download_pdf</code> - <a href="#generate-pdf-report-api">Download PDF Report</a></li>
+</ol>
+<h2><a id="upload-file-api"></a><strong>Upload File API</strong></h2>
+<p>API to upload a file. Supported file types are apk, zip, ipa and appx.</p>
+<ul>
+<li>
+<p><strong>URL:</strong> <code>/api/v1/upload</code></p>
+</li>
+<li>
+<p><strong>Method:</strong> <code>POST</code></p>
+</li>
+<li>
+<p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code></p>
+</li>
+<li>
+<p><strong>Data Params</strong></p>
+</li>
+</ul>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>Param Name</th>
+<th>Param Value</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>file</td>
+<td><code>multipart/form-data</code></td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<br>
+<ul>
+<li>
+<p><strong>Success Response:</strong></p>
+<ul>
+<li><strong>Code:</strong> <code>200</code> <br>
+<strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code> <br>
+<strong>Content:</strong> <code>{&quot;file_name&quot;: &quot;diva-beta.apk&quot;, &quot;hash&quot;: &quot;82ab8b2193b3cfb1c737e3a786be363a&quot;, &quot;scan_type&quot;: &quot;apk&quot;}</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Error Response:</strong></p>
+<ul>
+<li><strong>Code:</strong>  <code>500 Internal Server Error</code> or  <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br>
+<strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code><br>
+<strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code></li>
+</ul>
+<p>OR</p>
+<ul>
+<li><strong>Code:</strong> <code>401 Unauthorized</code><br>
+<strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code><br>
+<strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Sample Call:</strong></p>
+<pre><code>curl -F 'file=@/Users/ajin/Desktop/diva-beta.apk' http://localhost:8000/api/v1/upload -H &quot;Authorization:563d64fc5054d3b239ac0419f1d6b2378465f5c80e1778c283eb1e3265bdd7ae&quot;
+</code></pre>
+</li>
+</ul>
+<hr/>
+<h2><a id="scan-file-api"></a><strong>Scan File API</strong></h2>
+<p>API to scan a file that is already uploaded.</p>
+<ul>
+<li>
+<p><strong>URL:</strong> <code>/api/v1/scan</code></p>
+</li>
+<li>
+<p><strong>Method:</strong> <code>POST</code></p>
+</li>
+<li>
+<p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code></p>
+</li>
+<li>
+<p><strong>Data Params</strong></p>
+</li>
+</ul>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>Param Name</th>
+<th>Param Value</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>scan_type</td>
+<td>apk, zip, ipa, or appx</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>file_name</td>
+<td>Name of the app with extension</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>hash</td>
+<td>hash of the scan</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>re_scan</td>
+<td>0 or 1, default is 0</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<br>
+<ul>
+<li>
+<p><strong>Success Response:</strong></p>
+<ul>
+<li><strong>Code:</strong> <code>200</code><br>
+<strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code><br>
+<strong>Content:</strong></li>
+</ul>
+<pre><code>{&quot;act_count&quot;: &quot;17&quot;, &quot;api&quot;: {&quot;Loading Native Code (Shared Library) &quot;: {&quot;path&quot;: 
+[&quot;jakhar/aseem/diva/DivaJni.java&quot;]}, &quot;Local File I/O Operations&quot;: {&quot;path&quot;: 
+[&quot;jakhar/aseem/diva/InsecureDataStorage2Activity.java&quot;, &quot;jakhar/aseem/diva/SQLInjectionActivity.java&quot;]}, 
+&quot;Starting Activity&quot;: {&quot;path&quot;: [&quot;jakhar/aseem/diva/AccessControl1Activity.java&quot;, 
+&quot;jakhar/aseem/diva/AccessControl2Activity.java&quot;, &quot;jakhar/aseem/diva/AccessControl3Activity.java&quot;, 
+&quot;jakhar/aseem/diva/MainActivity.java&quot;]}, &quot;Query Database of SMS, Contacts etc.&quot;: {&quot;path&quot;: 
+[&quot;jakhar/aseem/diva/AccessControl3NotesActivity.java&quot;, &quot;jakhar/aseem/diva/NotesProvider.java&quot;]}
+SNIPPED
+</code></pre>
+</li>
+<li>
+<p><strong>Error Response:</strong></p>
+<ul>
+<li><strong>Code:</strong>  <code>500 Internal Server Error</code> or  <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code><br>
+<strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code><br>
+<strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code></li>
+</ul>
+<p>OR</p>
+<ul>
+<li><strong>Code:</strong> <code>401 Unauthorized</code><br>
+<strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code><br>
+<strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Sample Call:</strong></p>
+<pre><code>curl -X POST --url http://localhost:8000/api/v1/scan --data &quot;scan_type=apk&amp;file_name=diva-beta.apk&amp;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization:563d64fc5054d3b239ac0419f1d6b2378465f5c80e1778c283eb1e3265bdd7ae&quot;
+</code></pre>
+</li>
+</ul>
+<hr/>
+<h2><a id="delete-scan-api"></a><strong>Delete Scan API</strong></h2>
+<p>API to delete scan results.</p>
+<ul>
+<li>
+<p><strong>URL:</strong> <code>/api/v1/delete_scan</code></p>
+</li>
+<li>
+<p><strong>Method:</strong> <code>POST</code></p>
+</li>
+<li>
+<p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code></p>
+</li>
+<li>
+<p><strong>Data Params</strong></p>
+</li>
+</ul>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>Param Name</th>
+<th>Param Value</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hash</td>
+<td>hash of the scan</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<br>
+<ul>
+<li>
+<p><strong>Success Response:</strong></p>
+<ul>
+<li><strong>Code:</strong> <code>200</code><br>
+<strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code> <br>
+<strong>Content:</strong> <code>{&quot;deleted&quot;: &quot;yes&quot;}</code> or <code>{&quot;deleted&quot;: &quot;no&quot;}</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Error Response:</strong></p>
+<ul>
+<li><strong>Code:</strong>  <code>500 Internal Server Error</code> or  <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code><br>
+<strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code><br>
+<strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code></li>
+</ul>
+<p>OR</p>
+<ul>
+<li><strong>Code:</strong> <code>401 Unauthorized</code> <br>
+<strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code><br>
+<strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Sample Call:</strong></p>
+<pre><code>curl -X POST --url http://localhost:8000/api/v1/delete_scan --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization:563d64fc5054d3b239ac0419f1d6b2378465f5c80e1778c283eb1e3265bdd7ae&quot;
+</code></pre>
+</li>
+</ul>
+<hr/>
+<h2><a id="generate-pdf-report-api"></a><strong>Generate PDF Report API</strong></h2>
+<p>API to generate PDF Report</p>
+<ul>
+<li>
+<p><strong>URL:</strong> <code>/api/v1/download_pdf</code></p>
+</li>
+<li>
+<p><strong>Method:</strong> <code>POST</code></p>
+</li>
+<li>
+<p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code></p>
+</li>
+<li>
+<p><strong>Data Params</strong></p>
+</li>
+</ul>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>Param Name</th>
+<th>Param Value</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hash</td>
+<td>hash of the scan</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>scan_type</td>
+<td>apk, andzip, ioszip, ipa, or appx</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<br>
+<ul>
+<li>
+<p><strong>Success Response:</strong></p>
+<ul>
+<li><strong>Code:</strong> <code>200</code><br>
+<strong>Content-Type:</strong>  <code>application/pdf</code> <br>
+<strong>Content:</strong> <code>PDF Contents</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Error Response:</strong></p>
+<ul>
+<li><strong>Code:</strong>  <code>500 Internal Server Error</code> or  <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br>
+<strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code> <br>
+<strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code></li>
+</ul>
+<p>OR</p>
+<ul>
+<li><strong>Code:</strong> <code>401 Unauthorized</code> <br>
+<strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code> <br>
+<strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Sample Call:</strong></p>
+<pre><code>curl -X POST --url http://localhost:8000/api/v1/download_pdf --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&amp;scan_type=apk&quot; -H &quot;Authorization:563d64fc5054d3b239ac0419f1d6b2378465f5c80e1778c283eb1e3265bdd7ae&quot;
+</code></pre>
+</li>
+</ul>
+
+   </div>
+
+          <!-- /.box-body -->
+
+        </div>
+{% endblock %}
+
