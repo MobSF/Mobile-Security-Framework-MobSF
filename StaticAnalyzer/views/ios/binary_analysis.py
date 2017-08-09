@@ -73,9 +73,10 @@ def otool_analysis(bin_name, bin_path, bin_dir):
 
         banned_apis = ''
         baned = re.findall(
-            "alloca|gets|memcpy|printf|scanf|sprintf|sscanf|strcat|StrCat|strcpy|" +
-            "StrCpy|strlen|StrLen|strncat|StrNCat|strncpy|StrNCpy|strtok|swprintf|vsnprintf|" +
-            "vsprintf|vswprintf|wcscat|wcscpy|wcslen|wcsncat|wcsncpy|wcstok|wmemcpy", dat)
+            r"_alloca|_gets|_memcpy|_printf|_scanf|_sprintf|_sscanf|_strcat|StrCat|_strcpy|" +
+            r"StrCpy|_strlen|StrLen|_strncat|StrNCat|_strncpy|StrNCpy|_strtok|_swprintf|_vsnprintf|" +
+            r"_vsprintf|_vswprintf|_wcscat|_wcscpy|_wcslen|_wcsncat|_wcsncpy|_wcstok|_wmemcpy|" +
+            r"_fopen|_chmod|_chown|_stat|_mktemp", dat)
         baned = list(set(baned))
         baned_s = ', '.join(baned)
         if len(baned_s) > 1:
@@ -85,8 +86,8 @@ def otool_analysis(bin_name, bin_path, bin_dir):
                 str(baned_s) + "</strong>.</td></tr>"
         weak_cryptos = ''
         weak_algo = re.findall(
-            "kCCAlgorithmDES|kCCAlgorithm3DES||kCCAlgorithmRC2|kCCAlgorithmRC4|" +
-            "kCCOptionECBMode|kCCOptionCBCMode", dat)
+            r"kCCAlgorithmDES|kCCAlgorithm3DES||kCCAlgorithmRC2|kCCAlgorithmRC4|" +
+            r"kCCOptionECBMode|kCCOptionCBCMode", dat)
         weak_algo = list(set(weak_algo))
         weak_algo_s = ', '.join(weak_algo)
         if len(weak_algo_s) > 1:
@@ -96,25 +97,25 @@ def otool_analysis(bin_name, bin_path, bin_dir):
                 str(weak_algo_s) + "</strong>.</td></tr>"
         crypto = ''
         crypto_algo = re.findall(
-            "CCKeyDerivationPBKDF|CCCryptorCreate|CCCryptorCreateFromData|" +
-            "CCCryptorRelease|CCCryptorUpdate|CCCryptorFinal|CCCryptorGetOutputLength|" +
-            "CCCryptorReset|CCCryptorRef|kCCEncrypt|kCCDecrypt|kCCAlgorithmAES128|" +
-            "kCCKeySizeAES128|kCCKeySizeAES192|kCCKeySizeAES256|kCCAlgorithmCAST|" +
-            "SecCertificateGetTypeID|SecIdentityGetTypeID|SecKeyGetTypeID|SecPolicyGetTypeID|" +
-            "SecTrustGetTypeID|SecCertificateCreateWithData|SecCertificateCreateFromData|" +
-            "SecCertificateCopyData|SecCertificateAddToKeychain|SecCertificateGetData|" +
-            "SecCertificateCopySubjectSummary|SecIdentityCopyCertificate|" +
-            "SecIdentityCopyPrivateKey|SecPKCS12Import|SecKeyGeneratePair|SecKeyEncrypt|" +
-            "SecKeyDecrypt|SecKeyRawSign|SecKeyRawVerify|SecKeyGetBlockSize|" +
-            "SecPolicyCopyProperties|SecPolicyCreateBasicX509|SecPolicyCreateSSL|" +
-            "SecTrustCopyCustomAnchorCertificates|SecTrustCopyExceptions|" +
-            "SecTrustCopyProperties|SecTrustCopyPolicies|SecTrustCopyPublicKey|" +
-            "SecTrustCreateWithCertificates|SecTrustEvaluate|SecTrustEvaluateAsync|" +
-            "SecTrustGetCertificateCount|SecTrustGetCertificateAtIndex|SecTrustGetTrustResult|" +
-            "SecTrustGetVerifyTime|SecTrustSetAnchorCertificates|" +
-            "SecTrustSetAnchorCertificatesOnly|SecTrustSetExceptions|SecTrustSetPolicies|" +
-            "SecTrustSetVerifyDate|SecCertificateRef|" +
-            "SecIdentityRef|SecKeyRef|SecPolicyRef|SecTrustRef", dat)
+            r"CCKeyDerivationPBKDF|CCCryptorCreate|CCCryptorCreateFromData|" +
+            r"CCCryptorRelease|CCCryptorUpdate|CCCryptorFinal|CCCryptorGetOutputLength|" +
+            r"CCCryptorReset|CCCryptorRef|kCCEncrypt|kCCDecrypt|kCCAlgorithmAES128|" +
+            r"kCCKeySizeAES128|kCCKeySizeAES192|kCCKeySizeAES256|kCCAlgorithmCAST|" +
+            r"SecCertificateGetTypeID|SecIdentityGetTypeID|SecKeyGetTypeID|SecPolicyGetTypeID|" +
+            r"SecTrustGetTypeID|SecCertificateCreateWithData|SecCertificateCreateFromData|" +
+            r"SecCertificateCopyData|SecCertificateAddToKeychain|SecCertificateGetData|" +
+            r"SecCertificateCopySubjectSummary|SecIdentityCopyCertificate|" +
+            r"SecIdentityCopyPrivateKey|SecPKCS12Import|SecKeyGeneratePair|SecKeyEncrypt|" +
+            r"SecKeyDecrypt|SecKeyRawSign|SecKeyRawVerify|SecKeyGetBlockSize|" +
+            r"SecPolicyCopyProperties|SecPolicyCreateBasicX509|SecPolicyCreateSSL|" +
+            r"SecTrustCopyCustomAnchorCertificates|SecTrustCopyExceptions|" +
+            r"SecTrustCopyProperties|SecTrustCopyPolicies|SecTrustCopyPublicKey|" +
+            r"SecTrustCreateWithCertificates|SecTrustEvaluate|SecTrustEvaluateAsync|" +
+            r"SecTrustGetCertificateCount|SecTrustGetCertificateAtIndex|SecTrustGetTrustResult|" +
+            r"SecTrustGetVerifyTime|SecTrustSetAnchorCertificates|" +
+            r"SecTrustSetAnchorCertificatesOnly|SecTrustSetExceptions|SecTrustSetPolicies|" +
+            r"SecTrustSetVerifyDate|SecCertificateRef|" +
+            r"SecIdentityRef|SecKeyRef|SecPolicyRef|SecTrustRef", dat)
         crypto_algo = list(set(crypto_algo))
         crypto_algo_s = ', '.join(crypto_algo)
         if len(crypto_algo_s) > 1:
@@ -124,11 +125,11 @@ def otool_analysis(bin_name, bin_path, bin_dir):
                 str(crypto_algo_s) + "</strong>.</td></tr>"
         weak_hashes = ''
         weak_hash_algo = re.findall(
-            "CC_MD2_Init|CC_MD2_Update|CC_MD2_Final|CC_MD2|MD2_Init|" +
-            "MD2_Update|MD2_Final|CC_MD4_Init|CC_MD4_Update|CC_MD4_Final|CC_MD4|MD4_Init|" +
-            "MD4_Update|MD4_Final|CC_MD5_Init|CC_MD5_Update|CC_MD5_Final|CC_MD5|MD5_Init|" +
-            "MD5_Update|MD5_Final|MD5Init|MD5Update|MD5Final|CC_SHA1_Init|CC_SHA1_Update|" +
-            "CC_SHA1_Final|CC_SHA1|SHA1_Init|SHA1_Update|SHA1_Final", dat)
+            r"CC_MD2_Init|CC_MD2_Update|CC_MD2_Final|CC_MD2|MD2_Init|" +
+            r"MD2_Update|MD2_Final|CC_MD4_Init|CC_MD4_Update|CC_MD4_Final|CC_MD4|MD4_Init|" +
+            r"MD4_Update|MD4_Final|CC_MD5_Init|CC_MD5_Update|CC_MD5_Final|CC_MD5|MD5_Init|" +
+            r"MD5_Update|MD5_Final|MD5Init|MD5Update|MD5Final|CC_SHA1_Init|CC_SHA1_Update|" +
+            r"CC_SHA1_Final|CC_SHA1|SHA1_Init|SHA1_Update|SHA1_Final", dat)
         weak_hash_algo = list(set(weak_hash_algo))
         weak_hash_algo_s = ', '.join(weak_hash_algo)
         if len(weak_hash_algo_s) > 1:
@@ -138,12 +139,12 @@ def otool_analysis(bin_name, bin_path, bin_dir):
                 str(weak_hash_algo_s) + "</strong>.</td></tr>"
         hashes = ''
         hash_algo = re.findall(
-            "CC_SHA224_Init|CC_SHA224_Update|CC_SHA224_Final|CC_SHA224|" +
-            "SHA224_Init|SHA224_Update|SHA224_Final|CC_SHA256_Init|CC_SHA256_Update|" +
-            "CC_SHA256_Final|CC_SHA256|SHA256_Init|SHA256_Update|SHA256_Final|" +
-            "CC_SHA384_Init|CC_SHA384_Update|CC_SHA384_Final|CC_SHA384|SHA384_Init|" +
-            "SHA384_Update|SHA384_Final|CC_SHA512_Init|CC_SHA512_Update|CC_SHA512_Final|" +
-            "CC_SHA512|SHA512_Init|SHA512_Update|SHA512_Final", dat)
+            r"CC_SHA224_Init|CC_SHA224_Update|CC_SHA224_Final|CC_SHA224|" +
+            r"SHA224_Init|SHA224_Update|SHA224_Final|CC_SHA256_Init|CC_SHA256_Update|" +
+            r"CC_SHA256_Final|CC_SHA256|SHA256_Init|SHA256_Update|SHA256_Final|" +
+            r"CC_SHA384_Init|CC_SHA384_Update|CC_SHA384_Final|CC_SHA384|SHA384_Init|" +
+            r"SHA384_Update|SHA384_Final|CC_SHA512_Init|CC_SHA512_Update|CC_SHA512_Final|" +
+            r"CC_SHA512|SHA512_Init|SHA512_Update|SHA512_Final", dat)
         hash_algo = list(set(hash_algo))
         hash_algo_s = ', '.join(hash_algo)
         if len(hash_algo_s) > 1:
@@ -152,7 +153,7 @@ def otool_analysis(bin_name, bin_path, bin_dir):
                 " following hash API(s)</br><strong>" + \
                 str(hash_algo_s) + "</strong>.</td></tr>"
         randoms = ''
-        rand_algo = re.findall("srand|random", dat)
+        rand_algo = re.findall(r"_srand|_random", dat)
         rand_algo = list(set(rand_algo))
         rand_algo_s = ', '.join(rand_algo)
         if len(rand_algo_s) > 1:
@@ -161,7 +162,7 @@ def otool_analysis(bin_name, bin_path, bin_dir):
                 "use the following insecure Random Function(s)</br><strong>" + \
                 str(rand_algo_s) + "</strong>.</td></tr>"
         logging = ''
-        log = re.findall("NSLog", dat)
+        log = re.findall(r"_NSLog", dat)
         log = list(set(log))
         log_s = ', '.join(log)
         if len(log_s) > 1:
@@ -169,7 +170,7 @@ def otool_analysis(bin_name, bin_path, bin_dir):
                 "<span class='label label-info'>Info</span></td><td>The binary may " +\
                 "use <strong>NSLog</strong> function for logging.</td></tr>"
         malloc = ''
-        mal = re.findall("malloc", dat)
+        mal = re.findall(r"_malloc", dat)
         mal = list(set(mal))
         mal_s = ', '.join(mal)
         if len(mal_s) > 1:
@@ -177,7 +178,7 @@ def otool_analysis(bin_name, bin_path, bin_dir):
                 "<span class='label label-danger'>Insecure</span></td><td>The binary may use " +\
                 "<strong>malloc</strong> function instead of <strong>calloc</strong>.</td></tr>"
         debug = ''
-        ptrace = re.findall("ptrace", dat)
+        ptrace = re.findall(r"_ptrace", dat)
         ptrace = list(set(ptrace))
         ptrace_s = ', '.join(ptrace)
         if len(ptrace_s) > 1:
