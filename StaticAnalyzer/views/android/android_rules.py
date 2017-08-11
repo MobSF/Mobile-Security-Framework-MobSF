@@ -312,6 +312,17 @@ RULES = [
         'match': 'string_and_or',
         'input_case': 'exact'
     },
+       {
+        'desc': 'This App detects frida server.',
+        'type': 'string',
+        'string1': 'fridaserver',
+        'string_or1': '27047',
+        'string_or2': 'REJECT',
+        'string_or3': 'LIBFRIDA',
+        'level': 'good',
+        'match': 'string_and_or',
+        'input_case': 'exact'
+    },
     {
         'desc': 'This App uses an SSL Pinning Library (org.thoughtcrime.ssl.pinning) to prevent MITM attacks in secure communication channel.',
         'type': 'string',

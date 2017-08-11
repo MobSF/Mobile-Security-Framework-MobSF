@@ -19,7 +19,8 @@ from MobSF.utils import (
     print_n_send_error_response,
     PrintException,
     isDirExists,
-    isFileExists
+    isFileExists,
+    api_key
 )
 from MobSF.models import RecentScansDB
 from APITester.models import ScopeURLSandTests
@@ -44,7 +45,6 @@ def add_to_recent_scan(name, md5, url):
             new_db_obj.save()
     except:
         PrintException("[ERROR] Adding Scan URL to Database")
-
 
 def index(request):
     """
@@ -203,6 +203,13 @@ def upload(request, api=False):
     resp['Access-Control-Allow-Origin'] = '*'
     return resp
 
+def api_docs(request):
+    """
+    API Docs Route
+    """
+    context = {'title': 'REST API Docs', 'api_key': api_key()}
+    template = "general/apidocs.html"
+    return render(request, template, context)
 
 def about(request):
     """

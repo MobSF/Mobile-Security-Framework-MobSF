@@ -30,7 +30,7 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 *Gratipay:* [<img alt="Support via Gratipay" src="https://user-images.githubusercontent.com/4301109/28208477-6fa272ce-68ab-11e7-819c-45b1f50832c3.png" height="30" width="165">](https://gratipay.com/Mobile-Security-Framework/)
 
 ## Documentation
-* https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/1.-Documentation
+* [See MobSF Documentation](https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/1.-Documentation)
 
 ## Collaborators
 
@@ -39,21 +39,23 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 * [Matan Dobrushin](https://github.com/matandobr)
 
 ## Presentations
-* OWASP APPSEC EU 2016 - [Slides](http://www.slideshare.net/ajin25/automated-mobile-application-security-assessment-with-mobsf) | [Video](https://www.youtube.com/watch?v=h00v1euuFXg)
+* OWASP APPSEC EU 2016 - [Slides](http://www.slideshare.net/ajin25/automated-mobile-application-security-assessment-with-mobsf)
 * NULLCON 2016 - [Slides](https://www.slideshare.net/ajin25/nullcon-goa-2016-automated-mobile-application-security-testing-with-mobile-security-framework-mobsf)
 * c0c0n 2015 - [Slides](https://www.slideshare.net/ajin25/automated-security-analysis-of-android-ios-applications-with-mobile-security-framework-c0c0n-2015)
+*  OWASP AppSec EU 2016 - [Video](https://www.youtube.com/watch?v=h00v1euuFXg)
+*  G4H Webcast 2015 - [Video](https://www.youtube.com/watch?v=CysfO6AZmo8)
 
 ## Video Course
-* Automated Mobile Application Security Assessment with MobSF: https://opsecx.com/index.php/product/automated-mobile-application-security-assessment-with-mobsf/
+* [Automated Mobile Application Security Assessment with MobSF](https://opsecx.com/index.php/product/automated-mobile-application-security-assessment-with-mobsf/)
 
 ## What's New?
-* See Changelog: https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/3.-Changelog
+* [See Changelog](https://mobsf.github.io/Mobile-Security-Framework-MobSF/changelog.html)
 
 ## Contribution, Feature Requests & Bugs
 
 * Read [CONTRIBUTING.md](https://github.com/MobSF/Mobile-Security-Framework-MobSF/blob/master/.github/CONTRIBUTING.md) before opening bugs, feature requests and pull request.
 * Features Requests: [@ajinabraham](https://twitter.com/ajinabraham) or [@OpenSecurity_IN](https://twitter.com/OpenSecurity_IN). 
-* For discussions use our Slack Channel: https://mobsf.slack.com/ , Get Invitation: https://goo.gl/6cYU5a
+* For discussions use our Slack Channel: [https://mobsf.slack.com/](https://mobsf.slack.com/) , Get Invitation: [https://goo.gl/6cYU5a](https://goo.gl/6cYU5a)
 * Open Bugs after reading [Guidelines to Report a Bug](https://github.com/MobSF/Mobile-Security-Framework-MobSF/blob/master/.github/CONTRIBUTING.md#using-the-issue-tracker)
 
 ## Screenshots
