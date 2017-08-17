@@ -122,7 +122,7 @@ def pdf(request, api=False):
                         return {"report": "Report not Found"}
                     else:
                         return HttpResponse(json.dumps({"report": "Report not Found"}),
-                                            content_type="application/json; charset=utf-8", status_code=500)
+                                            content_type="application/json; charset=utf-8", status=500)
             elif re.findall('ipa|ioszip', scan_type.lower()):
                 if scan_type.lower() == 'ipa':
                     static_db = StaticAnalyzerIPA.objects.filter(MD5=checksum)
@@ -136,7 +136,7 @@ def pdf(request, api=False):
                             return {"report": "Report not Found"}
                         else:
                             return HttpResponse(json.dumps({"report": "Report not Found"}),
-                                                content_type="application/json; charset=utf-8", status_code=500)
+                                                content_type="application/json; charset=utf-8", status=500)
                 elif scan_type.lower() == 'ioszip':
                     static_db = StaticAnalyzerIOSZIP.objects.filter(MD5=checksum)
                     if static_db.exists():
@@ -149,7 +149,7 @@ def pdf(request, api=False):
                             return {"report": "Report not Found"}
                         else:
                             return HttpResponse(json.dumps({"report": "Report not Found"}),
-                                                content_type="application/json; charset=utf-8", status_code=500)
+                                                content_type="application/json; charset=utf-8", status=500)
             elif re.findall('appx', scan_type.lower()):
                 if scan_type.lower() == 'appx':
                     db_entry = StaticAnalyzerWindows.objects.filter(# pylint: disable-msg=E1101
@@ -189,7 +189,7 @@ def pdf(request, api=False):
                     return {"scan_type": "Type is not Allowed"}
                 else:
                     return HttpResponse(json.dumps({"type": "Type is not Allowed"}),
-                                        content_type="application/json; charset=utf-8", status_code=500)
+                                        content_type="application/json; charset=utf-8", status=500)
             html = template.render(context)
             try:
                 options = {
@@ -217,14 +217,14 @@ def pdf(request, api=False):
                 else:
                     return HttpResponse(json.dumps({"pdf_error": "Cannot Generate PDF",
                                                     "err_details": str(exp)}),
-                                        content_type="application/json; charset=utf-8", status_code=500)
+                                        content_type="application/json; charset=utf-8", status=500)
 
         else:
             if api:
                 return {"error": "Invalid scan hash"}
             else:
                 return HttpResponse(json.dumps({"md5": "Invalid MD5"}),
-                                    content_type="application/json; charset=utf-8", status_code=500)
+                                    content_type="application/json; charset=utf-8", status=500)
     except Exception as exp:
         msg = str(exp)
         exp = exp.__doc__
