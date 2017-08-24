@@ -417,6 +417,14 @@ RULES = [
         'input_case': 'exact'
     },
     {
+        'desc': 'This App uses SafetyNet API.',
+        'type': 'string',
+        'string1': 'com.google.android.gms.safetynet.SafetyNetApi',
+        'level': 'good',
+        'match': 'single_string',
+        'input_case': 'exact'
+    },
+    {
         'desc': 'This App may request root (Super User) privileges.',
         'type': 'string',
         'string1': 'com.noshufou.android.su',
@@ -442,3 +450,5 @@ RULES = [
         'match': 'string_or',
         'input_case': 'exact'
     }]
+
+
