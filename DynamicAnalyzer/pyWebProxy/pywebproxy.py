@@ -59,17 +59,6 @@ TRAFFIC = ""
 REQUEST_LIST = []
 URLS = []
 
-# API Tester
-
-
-def APITester(request, response):
-    '''
-    API Tester perform security testing on all API calls passed via the proxy.
-    requestdb: File contains list of request dict
-    urls: file contains all the URLs passed via Proxy
-    '''
-    print "not yet implemented"
-
 # Save things on Exit
 
 
@@ -327,10 +316,14 @@ class ProxyHandler(tornado.web.RequestHandler):
         ######
         # Hacking to be done here, so as to check for ssl using proxy and auth
         try:
-            s = ssl.wrap_socket(socket.socket(
-                socket.AF_INET, socket.SOCK_STREAM, 0))
-            upstream = tornado.iostream.SSLIOStream(s)
-            # start_tunnel()
+            # Adds a fix for check_hostname errors in Tornado 4.3.0
+            context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+            context.check_hostname = False
+            context.load_default_certs()
+            # When connecting through a new socket, no need to wrap the socket before passing
+            # to SSIOStream
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
+            upstream = tornado.iostream.SSLIOStream(s, ssl_options=context)
             upstream.set_close_callback(ssl_fail)
             upstream.connect((host, int(port)), start_tunnel)
         except Exception:
@@ -495,8 +488,7 @@ application.async_client = tornado.httpclient.AsyncHTTPClient()
 instances = "1"
 
 # SSL MiTM
-# SSL certs, keys and other settings (os.path.expanduser because they are
-# stored in users home directory ~/.owtf/proxy )
+# SSL certs, keys and other settings
 
 application.outbound_ip = settings.UPSTREAM_PROXY_IP
 application.outbound_port = settings.UPSTREAM_PROXY_PORT
