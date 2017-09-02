@@ -232,8 +232,10 @@ def check_elf_built(f):
                         section_header['sh_offset'] + i * section_header['sh_entsize'])
                     name = elffile.decode_string(
                         strtab_section + entry['st_name'])
-                    if name == '__stack_chk_guard':
+                    if name =='__stack_chk_guard' or (name == '__stack_chk_fail' and elffile.header['e_machine'] != 3):
+                        # __stack_chk_fail in crtbegin_dynamic.o linked when x86
                         has_sp = True
+                        break
     return has_pi, has_sp
 
 
