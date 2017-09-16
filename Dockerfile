@@ -6,14 +6,12 @@ LABEL \
     maintainer="Ajin Abraham <ajin25@gmail.com>" \
     description="Mobile Security Framework is an intelligent, all-in-one open source mobile application (Android/iOS/Windows) automated pen-testing framework capable of performing static, dynamic analysis and web API testing"
 
+ENV DEBIAN_FRONTEND="noninteractive"
 ENV PDFGEN_PKGFILE="wkhtmltox-0.12.4_linux-generic-amd64.tar.xz" 
 ENV PDFGEN_URL="https://downloads.wkhtmltopdf.org/0.12/0.12.4/${PDFGEN_PKGFILE}"
 
 #Update the repository sources list
 RUN apt update -y
-
-#Install xorg (needed for pdf generation)
-RUN apt install -y xorg
 
 #Install Git and required Libs
 RUN apt install -y \
@@ -46,7 +44,8 @@ RUN \
     sqlite3 \
     fontconfig-config \
     libjpeg-turbo8 \
-    fontconfig 
+    fontconfig \
+    xorg
 
 #Clone MobSF master
 WORKDIR /root
