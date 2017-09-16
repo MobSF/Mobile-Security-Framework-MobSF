@@ -27,8 +27,7 @@ RUN apt install -y software-properties-common && \
     add-apt-repository ppa:webupd8team/java -y && \
     apt update && \
     echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections && \
-    apt install -y oracle-java8-installer && \
-    apt clean
+    apt install -y oracle-java8-installer
 
 #Install Python, pip
 RUN \
@@ -64,7 +63,11 @@ RUN sed -i 's/USE_HOME = False/USE_HOME = True/g' settings.py
 RUN ./kali_fix.sh
 
 #Cleanup
-RUN rm -rf /var/lib/apt/lists/*
+RUN \
+    apt clean && \
+    apt autoclean && \
+    apt autoremove
+RUN rm -rf /var/lib/apt/lists/* /tmp/* > /dev/null 2>&1
 
 #Install pdf generator
 WORKDIR /tmp
