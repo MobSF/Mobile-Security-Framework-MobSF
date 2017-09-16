@@ -1,6 +1,10 @@
 FROM ubuntu:17.04
 
-LABEL maintainer="Ajin Abraham <ajin25@gmail.com>"
+LABEL \
+    name="MobSF" \
+    author="Ajin Abraham <ajin25@gmail.com>" \
+    maintainer="Ajin Abraham <ajin25@gmail.com>" \
+    description="Mobile Security Framework is an intelligent, all-in-one open source mobile application (Android/iOS/Windows) automated pen-testing framework capable of performing static, dynamic analysis and web API testing"
 
 ENV PDFGEN_PKGFILE="wkhtmltox-0.12.4_linux-generic-amd64.tar.xz" 
 ENV PDFGEN_URL="https://downloads.wkhtmltopdf.org/0.12/0.12.4/${PDFGEN_PKGFILE}"
