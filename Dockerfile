@@ -62,20 +62,18 @@ RUN sed -i 's/USE_HOME = False/USE_HOME = True/g' settings.py
 # need to apply Kali fix on docker image to remove error
 RUN ./kali_fix.sh
 
+#Install pdf generator
+WORKDIR /tmp
+RUN wget ${PDFGEN_URL} && \
+    tar xvf ${PDFGEN_PKGFILE} && \
+    cp -r /tmp/wkhtmltox/* /usr/local/
+
 #Cleanup
 RUN \
     apt clean && \
     apt autoclean && \
     apt autoremove
 RUN rm -rf /var/lib/apt/lists/* /tmp/* > /dev/null 2>&1
-
-#Install pdf generator
-WORKDIR /tmp
-RUN wget ${PDFGEN_URL} && \
-    tar xvf ${PDFGEN_PKGFILE} && \
-    rm -rf ${PDFGEN_PKGFILE} 2>/dev/null && \
-    cp -r   /tmp/wkhtmltox/* /usr/local/ && \
-    rm -fr /tmp/wkhtmltox
 
 #Expose MobSF Port
 EXPOSE 8000
