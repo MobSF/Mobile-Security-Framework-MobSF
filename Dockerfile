@@ -1,11 +1,14 @@
+# Base image
 FROM ubuntu:17.04
 
+#Labels and Credits
 LABEL \
     name="MobSF" \
     author="Ajin Abraham <ajin25@gmail.com>" \
     maintainer="Ajin Abraham <ajin25@gmail.com>" \
     description="Mobile Security Framework is an intelligent, all-in-one open source mobile application (Android/iOS/Windows) automated pen-testing framework capable of performing static, dynamic analysis and web API testing"
 
+#Environment vars
 ENV DEBIAN_FRONTEND="noninteractive"
 ENV PDFGEN_PKGFILE="wkhtmltox-0.12.4_linux-generic-amd64.tar.xz" 
 ENV PDFGEN_URL="https://downloads.wkhtmltopdf.org/0.12/0.12.4/${PDFGEN_PKGFILE}"
@@ -59,7 +62,7 @@ RUN pip install -r requirements.txt && \
 WORKDIR /root/Mobile-Security-Framework-MobSF/MobSF
 RUN sed -i 's/USE_HOME = False/USE_HOME = True/g' settings.py
 
-# need to apply Kali fix on docker image to remove error
+#Need to apply Kali fix on docker image to remove error
 RUN ./kali_fix.sh
 
 #Install pdf generator
