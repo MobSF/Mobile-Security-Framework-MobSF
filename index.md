@@ -47,6 +47,7 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 
 ## Video Course
 * [Automated Mobile Application Security Assessment with MobSF](https://opsecx.com/index.php/product/automated-mobile-application-security-assessment-with-mobsf/)
+* [Android Security Tools Expert ](https://opsecx.com/index.php/product/android-security-tools-expert-atx/)
 
 ## What's New?
 * [See Changelog](https://mobsf.github.io/Mobile-Security-Framework-MobSF/changelog.html)
