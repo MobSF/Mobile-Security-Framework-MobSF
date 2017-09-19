@@ -1,26 +1,27 @@
 <html>
 	<body>
-	<script src="//blockr.io/js_external/coinwidget/coin.js"></script>
-		<script>
-			CoinWidgetCom.go({
-				wallet_address: '1HRW3KyuxB6VmMaY63gQeCXyaou7Zgi8H3',
-				currency: 'bitcoin',
-				counter: 'count',
-				lbl_button: 'Donate',
-				lbl_count: 'donations',
-				lbl_amount: 'BTC',
-				lbl_address: 'Use address below to donate. Thanks!',
-				qrcode: true,
-				alignment: 'bl',
-				decimals: 8,
-				size: "big",
-				color: "dark",
-				countdownFrom: "0",
-				element: "#coinwidget-bitcoin-1HRW3KyuxB6VmMaY63gQeCXyaou7Zgi8H3",
-				onShow: function(){},
-				onHide: function(){}
-			});
-		</script>
-		<div style="margin: auto; width: 20%;" id="coinwidget-bitcoin-1HRW3KyuxB6VmMaY63gQeCXyaou7Zgi8H3"></div>
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
+	<script type="text/javascript" src="https://blockchain.info/Resources/js/pay-now-button.js"></script>
+
+	<div style="font-size:16px;margin:0 auto;width:300px" class="blockchain-btn"
+	     data-address="1HRW3KyuxB6VmMaY63gQeCXyaou7Zgi8H3"
+	     data-shared="false">
+	    <div class="blockchain stage-begin">
+		<img src="https://blockchain.info/Resources/buttons/donate_64.png"/>
+	    </div>
+	    <div class="blockchain stage-loading" style="text-align:center">
+		<img src="https://blockchain.info/Resources/loading-large.gif"/>
+	    </div>
+	    <div class="blockchain stage-ready">
+		 <p align="center">Please Donate To Bitcoin Address: <b>[[address]]</b></p>
+		 <p align="center" class="qr-code"></p>
+	    </div>
+	    <div class="blockchain stage-paid">
+		 Donation of <b>[[value]] BTC</b> Received. Thank You.
+	    </div>
+	    <div class="blockchain stage-error">
+		<font color="red">[[error]]</font>
+	    </div>
+	</div>
 	</body>	
 </html>
