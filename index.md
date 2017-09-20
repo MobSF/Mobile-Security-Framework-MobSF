@@ -29,6 +29,13 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 ## Documentation
 * [See MobSF Documentation](https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/1.-Documentation)
 
+## MobSF Static Analyzer Docker Image
+Automated prebuilt docker image of MobSF Static Analyzer is available from [DockerHub](https://hub.docker.com/r/opensecurity/mobile-security-framework-mobsf/)
+```
+docker pull opensecurity/mobile-security-framework-mobsf
+docker run -it -p 8000:8000 opensecurity/mobile-security-framework-mobsf:latest
+```
+
 ## Collaborators
 
 * [Ajin Abraham](https://in.linkedin.com/in/ajinabraham)
