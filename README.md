@@ -10,7 +10,6 @@ Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82
 [![ToolsWatch Best Security Tools 2016](https://img.shields.io/badge/ToolsWatch-Rank%205%20%7C%20Year%202016-red.svg)](http://www.toolswatch.org/2017/02/2016-top-security-tools-as-voted-by-toolswatch-org-readers/)
 [![Blackhat Arsenal Asia 2015](https://img.shields.io/badge/Black%20Hat%20Arsenal-Asia%202015-blue.svg)](https://www.blackhat.com/asia-15/arsenal.html#yso-mobile-security-framework)
 [![support](https://baikal.io/badges/ajinabraham/mobsf)](https://baikal.io/ajinabraham/mobsf)
-
 [![platform](https://img.shields.io/badge/platform-osx%2Flinux%2Fwindows-green.svg)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/)
 [![License](https://img.shields.io/:license-gpl3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![python](https://img.shields.io/badge/python-2.7-blue.svg)](https://www.python.org/downloads/)
@@ -21,7 +20,7 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 ## Donations
 **Your generous donations will keep us motivated.**
 
-*Paypal:* [<img alt="Donate via Paypal" src="https://user-images.githubusercontent.com/4301109/28491754-14774f54-6f14-11e7-9975-8a5faeda7e30.gif" height="40" width="120">](https://mobsf.github.io/Mobile-Security-Framework-MobSF/paypal.html)
+*Paypal:* [![Donate via Paypal](https://user-images.githubusercontent.com/4301109/28491754-14774f54-6f14-11e7-9975-8a5faeda7e30.gif)](https://mobsf.github.io/Mobile-Security-Framework-MobSF/paypal.html)
 
 *Bitcoin:* [<img alt="Donate Bitcoin" src="https://user-images.githubusercontent.com/4301109/27862054-08f80b3a-61a1-11e7-8e07-e9b953c48bab.png" height="20" width="88">](https://mobsf.github.io/Mobile-Security-Framework-MobSF/donate.html)
 
