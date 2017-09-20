@@ -24,7 +24,7 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 
 *Bitcoin:* [![Donate Bitcoin](https://user-images.githubusercontent.com/4301109/30631105-cb8063c8-9e00-11e7-95df-43c20b840e52.png)](https://mobsf.github.io/Mobile-Security-Framework-MobSF/donate.html)
 
-*Gratipay:* [![Support via Gratipay](https://user-images.githubusercontent.com/4301109/30631223-21315fca-9e01-11e7-9f46-e3ae13723435.png30)](https://gratipay.com/Mobile-Security-Framework/)
+*Gratipay:* [![Support via Gratipay](https://user-images.githubusercontent.com/4301109/30631223-21315fca-9e01-11e7-9f46-e3ae13723435.png)](https://gratipay.com/Mobile-Security-Framework/)
 
 ## Documentation
 * [See MobSF Documentation](https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/1.-Documentation)
