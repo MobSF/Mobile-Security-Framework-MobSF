@@ -13,7 +13,6 @@ LABEL \
 ENV DEBIAN_FRONTEND="noninteractive"
 ENV PDFGEN_PKGFILE="wkhtmltox-0.12.4_linux-generic-amd64.tar.xz" 
 ENV PDFGEN_URL="https://downloads.wkhtmltopdf.org/0.12/0.12.4/${PDFGEN_PKGFILE}"
-ENV LD_LIBRARY_PATH="/root/Mobile-Security-Framework-MobSF/DynamicAnalyzer/tools/adb/linux/lib64/"
 
 #Update the repository sources list
 RUN apt update -y
