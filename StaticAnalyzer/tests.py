@@ -123,6 +123,8 @@ def api_test():
         apk_dir = os.path.join(settings.BASE_DIR, "StaticAnalyzer/test_files/")
         for filename in os.listdir(apk_dir):
             fpath = os.path.join(apk_dir, filename)
+            if platform.system() != 'Darwin' and fpath.endswith(".ipa"):
+                continue
             with open(fpath) as filp:
                 response = http_client.post(
                     '/api/v1/upload', {'file': filp}, HTTP_AUTHORIZATION=auth)
