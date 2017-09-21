@@ -1,4 +1,4 @@
-# Base image
+#Base image
 FROM ubuntu:17.04
 
 #Labels and Credits
@@ -6,6 +6,7 @@ LABEL \
     name="MobSF" \
     author="Ajin Abraham <ajin25@gmail.com>" \
     maintainer="Ajin Abraham <ajin25@gmail.com>" \
+    contributor="OscarAkaElvis <oscar.alfonso.diaz@gmail.com>" \
     description="Mobile Security Framework is an intelligent, all-in-one open source mobile application (Android/iOS/Windows) automated pen-testing framework capable of performing static, dynamic analysis and web API testing"
 
 #Environment vars
@@ -17,9 +18,8 @@ ENV LD_LIBRARY_PATH="/root/Mobile-Security-Framework-MobSF/DynamicAnalyzer/tools
 #Update the repository sources list
 RUN apt update -y
 
-#Install Git and required Libs
+#Install Required Libs
 RUN apt install -y \
-    git \
     build-essential \
     libssl-dev \
     libffi-dev \
@@ -33,7 +33,7 @@ RUN apt install -y software-properties-common && \
     echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections && \
     apt install -y oracle-java8-installer
 
-#Install Python, pip
+#Install Python 2.7, pip
 RUN \
     apt install -y \
     python \
@@ -41,7 +41,7 @@ RUN \
     python-pip && \
     pip install --upgrade pip
 
-#Install sqlite client and pdf generator needed dependencies
+#Install sqlite3 client and pdf generator needed dependencies
 RUN \
     apt install -y \
     sqlite3 \
@@ -50,27 +50,25 @@ RUN \
     fontconfig \
     xorg
 
-#Clone MobSF master
-WORKDIR /root
-RUN git clone https://github.com/MobSF/Mobile-Security-Framework-MobSF.git
+#Install wkhtmltopdf for PDF Reports
+WORKDIR /tmp
+RUN wget ${PDFGEN_URL} && \
+    tar xvf ${PDFGEN_PKGFILE} && \
+    cp -r /tmp/wkhtmltox/* /usr/local/
 
-#Enable Virtualenv and Install Dependencies
-WORKDIR /root/Mobile-Security-Framework-MobSF
-RUN pip install -r requirements.txt && \
-    pip install html5lib==1.0b8
+#Add MobSF master
+COPY . /root/Mobile-Security-Framework-MobSF
 
 #Enable Use Home Directory
 WORKDIR /root/Mobile-Security-Framework-MobSF/MobSF
 RUN sed -i 's/USE_HOME = False/USE_HOME = True/g' settings.py
 
-#Need to apply Kali fix on docker image to remove error
+#Kali fix to support 32 bit execution
 RUN ./kali_fix.sh
 
-#Install pdf generator
-WORKDIR /tmp
-RUN wget ${PDFGEN_URL} && \
-    tar xvf ${PDFGEN_PKGFILE} && \
-    cp -r /tmp/wkhtmltox/* /usr/local/
+#Install Dependencies
+WORKDIR /root/Mobile-Security-Framework-MobSF
+RUN pip install -r requirements.txt
 
 #Cleanup
 RUN \
@@ -83,5 +81,4 @@ RUN rm -rf /var/lib/apt/lists/* /tmp/* > /dev/null 2>&1
 EXPOSE 8000
 
 #Run MobSF
-WORKDIR /root/Mobile-Security-Framework-MobSF
 CMD ["python","manage.py","runserver","0.0.0.0:8000"]
