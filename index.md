@@ -103,3 +103,4 @@ docker run -it -p 8000:8000 opensecurity/mobile-security-framework-mobsf:latest
 * Shuxin - Android Binary Analysis
 * Thomas Abraham - For JS Hacks on UI.
 * Tim Brown (@timb_machine) - For the iOS Binary Analysis Ruleset.
+* Oscar - (@OscarAkaElvis) - For Dockerfile contributions
