@@ -6,7 +6,6 @@ import re
 import os
 import platform
 import fnmatch
-import os
 import string
 
 from django.conf import settings
@@ -35,9 +34,10 @@ from MobSF.utils import (
     PrintException
 )
 
+
 def search_folder(src, file_pattern):
     matches = []
-    for root, dirnames, filenames in os.walk(src):
+    for root, _, filenames in os.walk(src):
         for filename in fnmatch.filter(filenames, file_pattern):
             matches.append(os.path.join(root, filename))
     return matches
@@ -55,7 +55,7 @@ def get_aapt(tools_dir):
 
 
 def guess_icon_path(res_dir):
-    icon_folders =[
+    icon_folders = [
         'mipmap-hdpi',
         'mipmap-hdpi-v4',
         'drawable'
@@ -82,7 +82,12 @@ def get_icon(apk_path, res_dir, tools_dir):
 
         aapt_binary = get_aapt(tools_dir)
         args = [aapt_binary, 'd', 'badging', apk_path]
-        aapt_output = subprocess.check_output(args)
+        if platform.system() == "Linux":
+            env = {"LD_LIBRARY_PATH": str(os.path.join(
+                settings.BASE_DIR, "DynamicAnalyzer/tools/adb/linux/lib64/"))}
+            aapt_output = subprocess.check_output(args, env=env)
+        else:
+            aapt_output = subprocess.check_output(args)
         regex = re.compile(r"application:[^\n]+icon='(.*)'.*")
         found_regex = regex.findall(aapt_output)
         if len(found_regex) > 0:
@@ -105,19 +110,19 @@ def find_icon_path_zip(res_dir, icon_paths_from_manifest):
     global KNOWN_MIPMAP_SIZES
     try:
         print "[INFO] Fetching icon path"
-        icon_full_path = ''
-
         for icon_path in icon_paths_from_manifest:
             if icon_path.startswith('@'):
                 path_array = icon_path.strip('@').split(os.sep)
                 rel_path = string.join(path_array[1:], os.sep)
                 for size_str in KNOWN_MIPMAP_SIZES:
-                    tmp_path = os.path.join(res_dir, path_array[0] + size_str, rel_path + '.png')
+                    tmp_path = os.path.join(
+                        res_dir, path_array[0] + size_str, rel_path + '.png')
                     if os.path.exists(tmp_path):
                         return tmp_path
             else:
                 if icon_path.starswith('res/') or icon_path.starswith('/res/'):
-                    stripped_relative_path = icon_path.strip('/res')  # Works for neither /res and res
+                    stripped_relative_path = icon_path.strip(
+                        '/res')  # Works for neither /res and res
                     full_path = os.path.join(res_dir, stripped_relative_path)
                     if os.path.exists(full_path):
                         return full_path
@@ -133,7 +138,8 @@ def find_icon_path_zip(res_dir, icon_paths_from_manifest):
                 if os.path.exists(guess):
                     return guess
 
-        return guess_icon_path(res_dir)  # If didn't find, try the default name.. returns empty if not find
+        # If didn't find, try the default name.. returns empty if not find
+        return guess_icon_path(res_dir)
 
     except:
         PrintException("[ERROR] Get icon function")

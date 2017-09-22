@@ -200,7 +200,7 @@ def plist_analysis(src, is_source):
             plist_file = app_name + "-Info.plist"
             for dirname, _, files in os.walk(src):
                 for jfile in files:
-                    if plist_file in jfile:
+                    if (plist_file in jfile) and ("__MACOSX" not in dirname):
                         info_plist = os.path.join(src, dirname, jfile)
                         break
             if not isFileExists(info_plist):

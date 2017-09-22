@@ -53,18 +53,26 @@ def static_analysis_test():
                 failed = True
         print "[OK] Static Analysis test completed"
         print "[INFO] Running PDF Generation Test"
+        if platform.system() == 'Darwin':
+            pdfs = [
+                "/PDF/?md5=3a552566097a8de588b8184b059b0158&type=APK",
+                "/PDF/?md5=6c23c2970551be15f32bbab0b5db0c71&type=IPA",
+                "/PDF/?md5=52c50ae824e329ba8b5b7a0f523efffe&type=ANDZIP",
+                "/PDF/?md5=57bb5be0ea44a755ada4a93885c3825e&type=IOSZIP",
+                "/PDF/?md5=8179b557433835827a70510584f3143e&type=APPX",
+            ]
+        else:
+            pdfs = [
+                "/PDF/?md5=3a552566097a8de588b8184b059b0158&type=APK",
+                "/PDF/?md5=52c50ae824e329ba8b5b7a0f523efffe&type=ANDZIP",
+                "/PDF/?md5=57bb5be0ea44a755ada4a93885c3825e&type=IOSZIP",
+                "/PDF/?md5=8179b557433835827a70510584f3143e&type=APPX",
+            ]
 
-        pdfs = [
-            "/PDF/?md5=3a552566097a8de588b8184b059b0158&type=APK",
-            "/PDF/?md5=6c23c2970551be15f32bbab0b5db0c71&type=IPA",
-            "/PDF/?md5=52c50ae824e329ba8b5b7a0f523efffe&type=ANDZIP",
-            "/PDF/?md5=57bb5be0ea44a755ada4a93885c3825e&type=IOSZIP",
-            "/PDF/?md5=8179b557433835827a70510584f3143e&type=APPX",
-        ]
         for pdf in pdfs:
             resp = http_client.get(pdf)
             if (resp.status_code == 200 and
-                    resp._headers['content-type'][1] == "application/pdf"
+                        resp._headers['content-type'][1] == "application/pdf"
                     ):
                 print "[OK] PDF Report Generated: " + pdf
             else:
@@ -74,8 +82,14 @@ def static_analysis_test():
         print "[OK] PDF Generation test completed"
         print "[INFO] Running Delete Scan Results test"
         # Deleting Scan Results
-        scan_md5s = ["3a552566097a8de588b8184b059b0158", "6c23c2970551be15f32bbab0b5db0c71",
-                     "52c50ae824e329ba8b5b7a0f523efffe", "57bb5be0ea44a755ada4a93885c3825e", "8179b557433835827a70510584f3143e"]
+        if platform.system() == 'Darwin':
+            scan_md5s = ["3a552566097a8de588b8184b059b0158", "6c23c2970551be15f32bbab0b5db0c71",
+                         "52c50ae824e329ba8b5b7a0f523efffe", "57bb5be0ea44a755ada4a93885c3825e",
+                         "8179b557433835827a70510584f3143e"
+                         ]
+        else:
+            scan_md5s = ["3a552566097a8de588b8184b059b0158", "52c50ae824e329ba8b5b7a0f523efffe",
+                         "57bb5be0ea44a755ada4a93885c3825e", "8179b557433835827a70510584f3143e"]
         for md5 in scan_md5s:
             resp = http_client.post('/delete_scan/', {'md5': md5})
             if resp.status_code == 200:
@@ -93,6 +107,7 @@ def static_analysis_test():
         PrintException("[ERROR] Completing Static Analyzer Test")
     return failed
 
+
 def api_test():
     """View for Handling REST API Test"""
     print "\n[INFO] Running REST API Unit test"
@@ -108,8 +123,11 @@ def api_test():
         apk_dir = os.path.join(settings.BASE_DIR, "StaticAnalyzer/test_files/")
         for filename in os.listdir(apk_dir):
             fpath = os.path.join(apk_dir, filename)
+            if platform.system() != 'Darwin' and fpath.endswith(".ipa"):
+                continue
             with open(fpath) as filp:
-                response = http_client.post('/api/v1/upload', {'file': filp}, HTTP_AUTHORIZATION=auth)
+                response = http_client.post(
+                    '/api/v1/upload', {'file': filp}, HTTP_AUTHORIZATION=auth)
                 obj = json.loads(response.content)
                 if response.status_code == 200 and "hash" in obj:
                     print "[OK] Upload OK: " + filename
@@ -120,7 +138,8 @@ def api_test():
         print "[OK] Completed Upload API test"
         print "[INFO] Running Static Analysis API Test"
         for upl in uploaded:
-            resp = http_client.post('/api/v1/scan', upl, HTTP_AUTHORIZATION=auth)
+            resp = http_client.post(
+                '/api/v1/scan', upl, HTTP_AUTHORIZATION=auth)
             if resp.status_code == 200:
                 print "[OK] Static Analysis Complete: " + upl["file_name"]
             else:
@@ -128,18 +147,26 @@ def api_test():
                 failed = True
         print "[OK] Static Analysis API test completed"
         print "[INFO] Running PDF Generation API Test"
-
-        pdfs = [
-            {"hash": "3a552566097a8de588b8184b059b0158", "scan_type": "apk"},
-            {"hash": "6c23c2970551be15f32bbab0b5db0c71", "scan_type": "ipa"},
-            {"hash": "52c50ae824e329ba8b5b7a0f523efffe", "scan_type": "andzip"},
-            {"hash": "57bb5be0ea44a755ada4a93885c3825e", "scan_type": "ioszip"},
-            {"hash": "8179b557433835827a70510584f3143e", "scan_type": "appx"},
-        ]
+        if platform.system() == 'Darwin':
+            pdfs = [
+                {"hash": "3a552566097a8de588b8184b059b0158", "scan_type": "apk"},
+                {"hash": "6c23c2970551be15f32bbab0b5db0c71", "scan_type": "ipa"},
+                {"hash": "52c50ae824e329ba8b5b7a0f523efffe", "scan_type": "andzip"},
+                {"hash": "57bb5be0ea44a755ada4a93885c3825e", "scan_type": "ioszip"},
+                {"hash": "8179b557433835827a70510584f3143e", "scan_type": "appx"},
+            ]
+        else:
+            pdfs = [
+                {"hash": "3a552566097a8de588b8184b059b0158", "scan_type": "apk"},
+                {"hash": "52c50ae824e329ba8b5b7a0f523efffe", "scan_type": "andzip"},
+                {"hash": "57bb5be0ea44a755ada4a93885c3825e", "scan_type": "ioszip"},
+                {"hash": "8179b557433835827a70510584f3143e", "scan_type": "appx"},
+            ]
         for pdf in pdfs:
-            resp = http_client.post('/api/v1/download_pdf', pdf, HTTP_AUTHORIZATION=auth)
+            resp = http_client.post(
+                '/api/v1/download_pdf', pdf, HTTP_AUTHORIZATION=auth)
             if (resp.status_code == 200 and
-                    resp._headers['content-type'][1] == "application/pdf"
+                        resp._headers['content-type'][1] == "application/pdf"
                     ):
                 print "[OK] PDF Report Generated: " + pdf["hash"]
             else:
@@ -149,10 +176,18 @@ def api_test():
         print "[OK] PDF Generation API test completed"
         print "[INFO] Running Delete Scan API Results test"
         # Deleting Scan Results
-        scan_md5s = ["3a552566097a8de588b8184b059b0158", "6c23c2970551be15f32bbab0b5db0c71",
-                     "52c50ae824e329ba8b5b7a0f523efffe", "57bb5be0ea44a755ada4a93885c3825e", "8179b557433835827a70510584f3143e"]
+        if platform.system() == 'Darwin':
+            scan_md5s = ["3a552566097a8de588b8184b059b0158", "6c23c2970551be15f32bbab0b5db0c71",
+                         "52c50ae824e329ba8b5b7a0f523efffe", "57bb5be0ea44a755ada4a93885c3825e",
+                         "8179b557433835827a70510584f3143e"
+                         ]
+        else:
+            scan_md5s = ["3a552566097a8de588b8184b059b0158", "52c50ae824e329ba8b5b7a0f523efffe",
+                         "57bb5be0ea44a755ada4a93885c3825e", "8179b557433835827a70510584f3143e"
+                         ]
         for md5 in scan_md5s:
-            resp = http_client.post('/api/v1/delete_scan', {'hash': md5}, HTTP_AUTHORIZATION=auth)
+            resp = http_client.post(
+                '/api/v1/delete_scan', {'hash': md5}, HTTP_AUTHORIZATION=auth)
             if resp.status_code == 200:
                 dat = json.loads(resp.content)
                 if dat["deleted"] == "yes":
