@@ -64,6 +64,8 @@ from StaticAnalyzer.views.android.icon_analysis import (
     find_icon_path_zip,
 )
 
+import StaticAnalyzer.views.android.VirusTotal as VirusTotal
+
 from MalwareAnalyzer.views import apkid_analysis
 
 
@@ -235,8 +237,16 @@ def static_analyzer(request, api=False):
                         bin_an_buff,
                         apkid_results,
                     )
+
                 context['dynamic_analysis_done'] = os.path.exists(
                     os.path.join(app_dic['app_dir'], 'logcat.txt'))
+
+                context['VT_RESULT'] = None
+                if settings.VT_ENABLED:
+                    context['VT_RESULT'] = VirusTotal.get_result(
+                        os.path.join(app_dic['app_dir'], app_dic['md5']) + '.apk',
+                        app_dic['md5']
+                    )
                 template = "static_analysis/static_analysis.html"
                 if api:
                     return context
