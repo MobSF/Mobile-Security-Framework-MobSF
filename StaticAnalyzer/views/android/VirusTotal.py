@@ -85,6 +85,6 @@ def get_result(file_path, file_hash):
         upload_response = upload_file(file_path)
         if upload_response:
             print "[INFO] VirusTotal: " + upload_response['verbose_msg']
-        return None
+        return upload_response
     except:
         PrintException("[ERROR] in VirusTotal get_result")
