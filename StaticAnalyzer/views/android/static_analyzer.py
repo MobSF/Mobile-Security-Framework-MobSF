@@ -243,7 +243,8 @@ def static_analyzer(request, api=False):
 
                 context['VT_RESULT'] = None
                 if settings.VT_ENABLED:
-                    context['VT_RESULT'] = VirusTotal.get_result(
+                    vt = VirusTotal.VirusTotal()
+                    context['VT_RESULT'] = vt.get_result(
                         os.path.join(app_dic['app_dir'], app_dic['md5']) + '.apk',
                         app_dic['md5']
                     )

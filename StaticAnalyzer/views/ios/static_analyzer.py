@@ -283,7 +283,8 @@ def static_analyzer_ios(request, api=False):
 
                 context['VT_RESULT'] = None
                 if settings.VT_ENABLED:
-                    context['VT_RESULT'] = VirusTotal.get_result(
+                    vt = VirusTotal.VirusTotal()
+                    context['VT_RESULT'] = vt.get_result(
                         os.path.join(app_dict['app_dir'], app_dict['md5_hash']) + '.ipa',
                         app_dict['md5_hash']
                     )
