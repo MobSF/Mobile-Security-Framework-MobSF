@@ -13,6 +13,9 @@
             <li><a href="#options"><i class="fa fa-gears"></i> Options</a></li>
             <li><a href="#permissions"><i class="fa fa-align-justify"></i> Permissons</a></li>
             <li><a href="#insecure_connections"><i class="glyphicon glyphicon-eye-open"></i> Transport Security</a></li>
+            {% if VT_RESULT %}
+                <li><a href="#virus_total"><i class="fa fa-bug"></i>Virus Total</a></li>
+            {% endif %}
             <li><a href="#binary"><i class="fa fa-mobile"></i> Binary Analysis</a></li>
             <li><a href="#file"><i class="fa fa-file-text-o"></i> File Analysis</a></li>
             <li><a href="#libraries"><i class="glyphicon glyphicon-chevron-down"></i> Libraries</a></li>
@@ -344,6 +347,54 @@
 
 
 <!-- ============================================================= -->
+{% if VT_RESULT %}
+    <section id="virus_total">
+      <h2 class="page-header"></h2>
+      <!-- /.box -->
+
+              <div class="box">
+              <div class="box-header">
+                 <!-- /.box-header -->
+                  <h3 class="box-title"><i class="fa fa-bug"></i> VirusTotal Report</h3>
+              </div>
+              <div class="box-body no-padding">
+                 <div class="table-responsive">
+                 {% if VT_RESULT.items|length < 9 %} {% comment %} Basic check to determine if the response is a msg or a result {% endcomment %}
+                    <p align="left">&nbsp;&nbsp;<strong>{{ VT_RESULT.verbose_msg }}</strong></p>
+                 {% else %}
+                    <p align="left">&nbsp;&nbsp;<strong> {{ VT_RESULT.positives }} / {{ VT_RESULT.total }}&nbsp; AVs found this file Malicious! </strong> &nbsp;&nbsp;<a href="{{ VT_RESULT.permalink }}" ><i class="glyphicon glyphicon-list-alt"></i> Full Report</a></p>
+                    {% if VT_RESULT.positives > 0 %}
+                        <table class="table table-bordered table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th>AV</th>
+                                    <th>Detection</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for av_name,av_result in VT_RESULT.scans.items %}
+                                {% if av_result.detected == True %}
+                                   <tr>
+                                        <td>
+                                            {{ av_name }}
+                                        </td>
+                                       <td>
+                                            <span class="label label-danger">{{ av_result.result }}</span>
+                                        </td>
+                                  </tr>
+                                {% endif %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                        {% endif %}{% comment %} if results.positive > 0 {% endcomment %}
+                     {% endif %}{% comment %} if this is the upload msg or a result {% endcomment %}
+                 </div>
+                <!-- /.box-body -->
+              </div>
+              <!-- /.box -->
+            </div>
+    </section>
+{% endif %}
 
 <section id="file">
   <h2 class="page-header"></h2>

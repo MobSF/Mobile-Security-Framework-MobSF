@@ -25,6 +25,7 @@ from MobSF.utils import (
     PrintException,
     python_list
 )
+from MobSF import settings
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 from StaticAnalyzer.models import StaticAnalyzerIPA
@@ -40,6 +41,7 @@ from StaticAnalyzer.views.ios.db_interaction import (
     get_context_from_db_entry_ios
 )
 
+import StaticAnalyzer.views.android.VirusTotal as VirusTotal
 
 def file_size(app_path):
     """Return the size of the file."""
@@ -190,6 +192,16 @@ def pdf(request, api=False):
                 else:
                     return HttpResponse(json.dumps({"type": "Type is not Allowed"}),
                                         content_type="application/json; charset=utf-8", status=500)
+
+            context['VT_RESULT'] = None
+            if settings.VT_ENABLED:
+                app_dir = os.path.join(settings.UPLD_DIR, checksum + '/')
+                vt = VirusTotal.VirusTotal()
+                context['VT_RESULT'] = vt.get_result(
+                    os.path.join(app_dir, checksum) + '.' + scan_type.lower(),
+                    checksum
+                )
+
             html = template.render(context)
             try:
                 options = {

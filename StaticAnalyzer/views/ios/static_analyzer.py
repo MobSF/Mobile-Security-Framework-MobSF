@@ -53,6 +53,8 @@ from MobSF.utils import (
     isFileExists
 )
 
+import StaticAnalyzer.views.android.VirusTotal as VirusTotal
+
 ##############################################################
 # Code to support iOS Static Code Analysis
 ##############################################################
@@ -278,6 +280,15 @@ def static_analyzer_ios(request, api=False):
                             app_dict, infoplist_dict, bin_analysis_dict, files, sfiles)
                     context = get_context_from_analysis_ipa(
                         app_dict, infoplist_dict, bin_analysis_dict, files, sfiles)
+
+                context['VT_RESULT'] = None
+                if settings.VT_ENABLED:
+                    vt = VirusTotal.VirusTotal()
+                    context['VT_RESULT'] = vt.get_result(
+                        os.path.join(app_dict['app_dir'], app_dict['md5_hash']) + '.ipa',
+                        app_dict['md5_hash']
+                    )
+
                 template = "static_analysis/ios_binary_analysis.html"
                 if api:
                     return context
