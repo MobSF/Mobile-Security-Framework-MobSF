@@ -46,6 +46,7 @@ def add_to_recent_scan(name, md5, url):
     except:
         PrintException("[ERROR] Adding Scan URL to Database")
 
+
 def index(request):
     """
     Index Route
@@ -95,10 +96,9 @@ def upload(request, api=False):
                         api_response["hash"] = md5
                         api_response["scan_type"] = "apk"
                         api_response["file_name"] = request.FILES['file'].name
-                    else:
-                        response_data['url'] = ('StaticAnalyzer/?name=' + request.FILES['file'].name +
-                                                '&type=apk&checksum=' + md5)
-                        response_data['status'] = 'success'
+                    response_data['url'] = ('StaticAnalyzer/?name=' + request.FILES['file'].name +
+                                            '&type=apk&checksum=' + md5)
+                    response_data['status'] = 'success'
                     add_to_recent_scan(
                         request.FILES['file'].name, md5, response_data['url'])
                     print "\n[INFO] Performing Static Analysis of Android APK"
@@ -110,10 +110,9 @@ def upload(request, api=False):
                         api_response["hash"] = md5
                         api_response["scan_type"] = "zip"
                         api_response["file_name"] = request.FILES['file'].name
-                    else:
-                        response_data['url'] = ('StaticAnalyzer/?name=' + request.FILES['file'].name +
-                                                '&type=zip&checksum=' + md5)
-                        response_data['status'] = 'success'
+                    response_data['url'] = ('StaticAnalyzer/?name=' + request.FILES['file'].name +
+                                            '&type=zip&checksum=' + md5)
+                    response_data['status'] = 'success'
                     add_to_recent_scan(
                         request.FILES['file'].name, md5, response_data['url'])
                     print "\n[INFO] Performing Static Analysis of Android/iOS Source Code"
@@ -128,12 +127,10 @@ def upload(request, api=False):
                             api_response["scan_type"] = "ipa"
                             api_response["file_name"] = request.FILES[
                                 'file'].name
-                        else:
-                            response_data['url'] = ('StaticAnalyzer_iOS/?name=' +
-                                                    request.FILES['file'].name +
-                                                    '&type=ipa&checksum=' + md5)
-                            response_data['status'] = 'success'
-
+                        response_data['url'] = ('StaticAnalyzer_iOS/?name=' +
+                                                request.FILES['file'].name +
+                                                '&type=ipa&checksum=' + md5)
+                        response_data['status'] = 'success'
                         add_to_recent_scan(
                             request.FILES['file'].name, md5, response_data['url'])
                         print "\n[INFO] Performing Static Analysis of iOS IPA"
@@ -141,9 +138,8 @@ def upload(request, api=False):
                         if api:
                             api_response[
                                 "error"] = "Static Analysis of iOS IPA requires OSX"
-                        else:
-                            response_data['url'] = 'mac_only/'
-                            response_data['status'] = 'success'
+                        response_data['url'] = 'mac_only/'
+                        response_data['status'] = 'success'
                         print "\n[ERROR] Static Analysis of iOS IPA requires OSX"
                 # Windows APPX
                 elif (file_type in settings.APPX_MIME) and request.FILES['file'].name.lower().endswith('.appx'):
@@ -152,41 +148,34 @@ def upload(request, api=False):
                         api_response["hash"] = md5
                         api_response["scan_type"] = "appx"
                         api_response["file_name"] = request.FILES['file'].name
-                    else:
-                        response_data['url'] = 'StaticAnalyzer_Windows/?name=' + \
-                            request.FILES['file'].name + \
-                            '&type=appx&checksum=' + md5
-                        response_data['status'] = 'success'
+                    response_data['url'] = 'StaticAnalyzer_Windows/?name=' + \
+                        request.FILES['file'].name + \
+                        '&type=appx&checksum=' + md5
+                    response_data['status'] = 'success'
                     add_to_recent_scan(
                         request.FILES['file'].name, md5, response_data['url'])
                     print "\n[INFO] Performing Static Analysis of Windows APP"
                 else:
                     if api:
                         api_response["error"] = "File format not Supported!"
-                    else:
-                        response_data['url'] = ''
-                        response_data[
-                            'description'] = 'File format not Supported!'
-                        response_data['status'] = 'error'
-
+                    response_data['url'] = ''
+                    response_data['description'] = 'File format not Supported!'
+                    response_data['status'] = 'error'
                     print "\n[ERROR] File format not Supported!"
 
             else:
                 if api:
                     api_response["error"] = "Invalid Form Data!"
-                else:
-                    response_data['url'] = ''
-                    response_data['description'] = 'Invalid Form Data!'
-                    response_data['status'] = 'error'
-
+                response_data['url'] = ''
+                response_data['description'] = 'Invalid Form Data!'
+                response_data['status'] = 'error'
                 print "\n[ERROR] Invalid Form Data!"
         else:
             if api:
                 api_response["error"] = "Method not Supported!"
-            else:
-                response_data['url'] = ''
-                response_data['description'] = 'Method not Supported!'
-                response_data['status'] = 'error'
+            response_data['url'] = ''
+            response_data['description'] = 'Method not Supported!'
+            response_data['status'] = 'error'
             print "\n[ERROR] Method not Supported!"
             form = UploadFileForm()
     except:
@@ -203,6 +192,7 @@ def upload(request, api=False):
     resp['Access-Control-Allow-Origin'] = '*'
     return resp
 
+
 def api_docs(request):
     """
     API Docs Route
@@ -210,6 +200,7 @@ def api_docs(request):
     context = {'title': 'REST API Docs', 'api_key': api_key()}
     template = "general/apidocs.html"
     return render(request, template, context)
+
 
 def about(request):
     """
