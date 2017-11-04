@@ -28,10 +28,11 @@ class VirusTotal:
             except:
                 print "[ERROR] VirusTotal ConnectionError, check internet connectivity"
                 return None
-    
+            try:
             json_response = response.json()
             return json_response
-    
+            except ValueError:
+                return None
         except:
             PrintException("[ERROR] in VirusTotal get_report")
             return None
@@ -79,8 +80,7 @@ class VirusTotal:
             if report:
                 if report['response_code'] == 1:
                     print "[INFO] VirusTotal: " + report['verbose_msg']
-                    return report
-            print "[INFO] VirusTotal: " + report['verbose_msg']
+                    return report                  
             if settings.VT_UPLOAD:
                 print "[INFO] VirusTotal: file upload"
                 upload_response = self.upload_file(file_path)
