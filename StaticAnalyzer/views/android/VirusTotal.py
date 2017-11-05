@@ -29,8 +29,8 @@ class VirusTotal:
                 print "[ERROR] VirusTotal ConnectionError, check internet connectivity"
                 return None
             try:
-            json_response = response.json()
-            return json_response
+                json_response = response.json()
+                return json_response
             except ValueError:
                 return None
         except:
