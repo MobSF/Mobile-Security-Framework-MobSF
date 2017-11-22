@@ -287,7 +287,7 @@ else:
     # You can get your API KEY from https://www.virustotal.com/en/user/<username>/apikey/
     # VT has a premium features but the free account is just enough for personal use
     # BE AWARE - if you enable VT, in case the file wasn't already uploaded to VirusTotal,
-    # It will be uploaded if you set VT_UPLAOD to True!
+    # It will be uploaded if you set VT_UPLOAD to True!
     #==============================================
 
     #----------APKiD-------------------------------
