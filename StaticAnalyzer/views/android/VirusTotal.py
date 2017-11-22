@@ -88,8 +88,8 @@ class VirusTotal:
                     print "[INFO] VirusTotal: " + upload_response['verbose_msg']
                 return upload_response
             else:
-                print "[INFO] MobSF: Upload not done VT_UPLOAD set to False in settings.py"
-                report = {"verbose_msg": "No Report file upload disabled"}
+                print "[INFO] MobSF: VirusTotal Scan not performed as file upload is disabled in settings.py. To enable file upload, set VT_UPLOAD to True."
+                report = {"verbose_msg": "Scan Not performed, VirusTotal file upload disabled in settings.py"}
                 return report     
         except:
             PrintException("[ERROR] in VirusTotal get_result")
