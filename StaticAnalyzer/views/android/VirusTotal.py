@@ -28,10 +28,11 @@ class VirusTotal:
             except:
                 print "[ERROR] VirusTotal ConnectionError, check internet connectivity"
                 return None
-    
-            json_response = response.json()
-            return json_response
-    
+            try:
+                json_response = response.json()
+                return json_response
+            except ValueError:
+                return None
         except:
             PrintException("[ERROR] in VirusTotal get_report")
             return None
@@ -79,12 +80,16 @@ class VirusTotal:
             if report:
                 if report['response_code'] == 1:
                     print "[INFO] VirusTotal: " + report['verbose_msg']
-                    return report
-            print "[INFO] VirusTotal: " + report['verbose_msg']
-            print "[INFO] VirusTotal: file upload"
-            upload_response = self.upload_file(file_path)
-            if upload_response:
-                print "[INFO] VirusTotal: " + upload_response['verbose_msg']
-            return upload_response
+                    return report                  
+            if settings.VT_UPLOAD:
+                print "[INFO] VirusTotal: file upload"
+                upload_response = self.upload_file(file_path)
+                if upload_response:
+                    print "[INFO] VirusTotal: " + upload_response['verbose_msg']
+                return upload_response
+            else:
+                print "[INFO] MobSF: VirusTotal Scan not performed as file upload is disabled in settings.py. To enable file upload, set VT_UPLOAD to True."
+                report = {"verbose_msg": "Scan Not performed, VirusTotal file upload disabled in settings.py", "positives": 0, "total": 0}
+                return report     
         except:
             PrintException("[ERROR] in VirusTotal get_result")
