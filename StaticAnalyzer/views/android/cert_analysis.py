@@ -49,6 +49,7 @@ def cert_info(app_dir, tools_dir):
             cert) if os.path.isfile(os.path.join(cert, f))]
         certfile = None
         dat = ''
+        manidat = ''
         if "CERT.RSA" in files:
             certfile = os.path.join(cert, "CERT.RSA")
         else:
@@ -70,9 +71,17 @@ def cert_info(app_dir, tools_dir):
             issued = 'bad'
         if re.findall(r"\[SHA1withRSA\]", dat):
             issued = 'bad hash'
+        if "MANIFEST.MF" in files:
+            manifestfile = os.path.join(cert, "MANIFEST.MF")
+        if manifestfile:
+            with open(manifestfile,'r') as manifile:
+                manidat = manifile.read()
+        sha256Digest = bool(re.findall(r"SHA-256-Digest", manidat))
+        print sha256Digest
         cert_dic = {
             'cert_info': dat,
-            'issued': issued
+            'issued': issued,
+            'sha256Digest': sha256Digest
         }
         return cert_dic
     except:
