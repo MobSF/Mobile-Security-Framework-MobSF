@@ -35,6 +35,7 @@ class StaticAnalyzerAndroid(models.Model):
     CNT_BRO = models.CharField(max_length=50)
     CERT_INFO = models.TextField()
     ISSUED = models.CharField(max_length=10)
+    SHA256DIGEST = models.BooleanField(default=False)
     API = models.TextField()
     DANG = models.TextField()
     URLS = models.TextField()

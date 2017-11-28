@@ -259,6 +259,7 @@ def static_analyzer(request, api=False):
                 cert_dic = {}
                 cert_dic['cert_info'] = ''
                 cert_dic['issued'] = ''
+                cert_dic['sha256Digest'] = ''
                 bin_an_buff = []
                 app_dic['strings'] = ''
                 app_dic['zipped'] = ''
