@@ -77,10 +77,6 @@ def cert_info(app_dir, tools_dir):
             with open(manifestfile,'r') as manifile:
                 manidat = manifile.read()
         sha256Digest = bool(re.findall(r"SHA-256-Digest", manidat))
-<<<<<<< HEAD
-=======
-        print sha256Digest
->>>>>>> 74bd804b63934791f34c3f71bd27db97d5e9a40b
         cert_dic = {
             'cert_info': dat,
             'issued': issued,
