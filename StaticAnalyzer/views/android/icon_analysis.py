@@ -44,8 +44,8 @@ def search_folder(src, file_pattern):
 
 
 def get_aapt(tools_dir):
-    if os.path.exists(settings.ADB_BINARY):
-        return settings.ADB_BINARY
+    if os.path.exists(settings.AAPT_BINARY):
+        return settings.AAPT_BINARY
     platform_system = platform.system()
     if platform_system == 'Darwin':
         return os.path.join(tools_dir, 'aapt', 'mac', 'aapt')
