@@ -89,7 +89,7 @@ def static_analyzer(request, api=False):
             filename = request.GET['name']
             rescan = str(request.GET.get('rescan', 0))
         # Input validation
-        app_dic = {}     
+        app_dic = {}
         match = re.match('^[0-9a-f]{32}$', checksum)
         if (
                 (
@@ -103,14 +103,14 @@ def static_analyzer(request, api=False):
         ):
             app_dic['dir'] = settings.BASE_DIR  # BASE DIR
             app_dic['app_name'] = filename  # APP ORGINAL NAME
-            app_dic['md5'] = checksum # MD5
+            app_dic['md5'] = checksum  # MD5
             app_dic['app_dir'] = os.path.join(settings.UPLD_DIR, app_dic[
                                               'md5'] + '/')  # APP DIRECTORY
             app_dic['tools_dir'] = os.path.join(
                 app_dic['dir'], 'StaticAnalyzer/tools/')  # TOOLS DIR
             # DWD_DIR = settings.DWD_DIR # not needed? Var is never used.
             print "[INFO] Starting Analysis on : " + app_dic['app_name']
-            
+
             if typ == 'apk':
                 # Check if in DB
                 # pylint: disable=E1101
@@ -139,6 +139,7 @@ def static_analyzer(request, api=False):
 
                     # Manifest XML
                     app_dic['parsed_xml'] = get_manifest(
+                        app_dic['app_path'],
                         app_dic['app_dir'],
                         app_dic['tools_dir'],
                         '',
@@ -148,16 +149,19 @@ def static_analyzer(request, api=False):
                     # Get icon
                     res_path = os.path.join(app_dic['app_dir'], 'res')
                     app_dic['icon_hidden'] = True
-                    app_dic['icon_found'] = False  # Even if the icon is hidden, try to guess it by the default paths
+                    # Even if the icon is hidden, try to guess it by the
+                    # default paths
+                    app_dic['icon_found'] = False
                     app_dic['icon_path'] = ''
-                    if os.path.exists(res_path):  # TODO: Check for possible different names for resource folder?
-                        icon_dic = get_icon(app_dic['app_path'], res_path, app_dic['tools_dir'])
+                    # TODO: Check for possible different names for resource
+                    # folder?
+                    if os.path.exists(res_path):
+                        icon_dic = get_icon(
+                            app_dic['app_path'], res_path, app_dic['tools_dir'])
                         if icon_dic:
                             app_dic['icon_hidden'] = icon_dic['hidden']
                             app_dic['icon_found'] = bool(icon_dic['path'])
                             app_dic['icon_path'] = icon_dic['path']
-
-
 
                     # Set Manifest link
                     app_dic['mani'] = '../ManifestView/?md5=' + \
@@ -191,7 +195,8 @@ def static_analyzer(request, api=False):
                         "apk"
                     )
                     print "\n[INFO] Generating Java and Smali Downloads"
-                    gen_downloads(app_dic['app_dir'], app_dic['md5'], app_dic['icon_path'])
+                    gen_downloads(app_dic['app_dir'], app_dic[
+                                  'md5'], app_dic['icon_path'])
 
                     # Get the strings
                     app_dic['strings'] = strings(
@@ -245,7 +250,8 @@ def static_analyzer(request, api=False):
                 if settings.VT_ENABLED:
                     vt = VirusTotal.VirusTotal()
                     context['VT_RESULT'] = vt.get_result(
-                        os.path.join(app_dic['app_dir'], app_dic['md5']) + '.apk',
+                        os.path.join(app_dic['app_dir'],
+                                     app_dic['md5']) + '.apk',
                         app_dic['md5']
                     )
                 template = "static_analysis/static_analysis.html"
@@ -300,6 +306,7 @@ def static_analyzer(request, api=False):
 
                         # Manifest XML
                         app_dic['persed_xml'] = get_manifest(
+                            "",
                             app_dic['app_dir'],
                             app_dic['tools_dir'],
                             pro_type,
@@ -320,8 +327,10 @@ def static_analyzer(request, api=False):
                         )
 
                         # Get icon
-                        eclipse_res_path = os.path.join(app_dic['app_dir'], 'res')
-                        studio_res_path = os.path.join(app_dic['app_dir'], 'app', 'src', 'main', 'res')
+                        eclipse_res_path = os.path.join(
+                            app_dic['app_dir'], 'res')
+                        studio_res_path = os.path.join(
+                            app_dic['app_dir'], 'app', 'src', 'main', 'res')
                         if os.path.exists(eclipse_res_path):
                             res_path = eclipse_res_path
                         elif os.path.exists(studio_res_path):
@@ -333,13 +342,15 @@ def static_analyzer(request, api=False):
                         app_dic['icon_found'] = False
                         app_dic['icon_path'] = ''
                         if res_path:
-                            app_dic['icon_path'] = find_icon_path_zip(res_path, man_data_dic['icons'])
+                            app_dic['icon_path'] = find_icon_path_zip(
+                                res_path, man_data_dic['icons'])
                             if app_dic['icon_path']:
                                 app_dic['icon_found'] = True
 
                         if app_dic['icon_path']:
                             if os.path.exists(app_dic['icon_path']):
-                                shutil.copy2(app_dic['icon_path'], os.path.join(settings.DWD_DIR, app_dic['md5'] + '-icon.png'))
+                                shutil.copy2(app_dic['icon_path'], os.path.join(
+                                    settings.DWD_DIR, app_dic['md5'] + '-icon.png'))
 
                         code_an_dic = code_analysis(
                             app_dic['app_dir'],
@@ -391,7 +402,7 @@ def static_analyzer(request, api=False):
                             return HttpResponseRedirect('/zip_format/')
                 template = "static_analysis/static_analysis_android_zip.html"
                 if api:
-                    return context     
+                    return context
                 else:
                     return render(request, template, context)
             else:
@@ -458,8 +469,8 @@ def gen_downloads(app_dir, md5, icon_path=''):
         # Icon
         if icon_path:
             if os.path.exists(icon_path):
-                shutil.copy2(icon_path, os.path.join(settings.DWD_DIR, md5 + '-icon.png'))
-
+                shutil.copy2(icon_path, os.path.join(
+                    settings.DWD_DIR, md5 + '-icon.png'))
 
     except:
         PrintException("[ERROR] Generating Downloads")

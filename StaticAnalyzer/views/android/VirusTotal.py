@@ -7,7 +7,7 @@ from django.conf import settings
 class VirusTotal:
 
     base_url = 'https://www.virustotal.com/vtapi/v2/file/'
-    
+
     def get_report(self, file_hash):
         '''
         :param file_hash: md5/sha1/sha256
@@ -36,7 +36,7 @@ class VirusTotal:
         except:
             PrintException("[ERROR] in VirusTotal get_report")
             return None
-    
+
     def upload_file(self, file_path):
         '''
         :param file_path: file path to upload
@@ -60,12 +60,11 @@ class VirusTotal:
                 return None
             json_response = response.json()
             return json_response
-    
+
         except:
             PrintException("[ERROR] in VirusTotal upload_file")
             return None
-    
-    
+
     def get_result(self, file_path, file_hash):
         '''
         Uoloading a file and getting the approval msg from VT or fetching existing report
@@ -80,7 +79,7 @@ class VirusTotal:
             if report:
                 if report['response_code'] == 1:
                     print "[INFO] VirusTotal: " + report['verbose_msg']
-                    return report                  
+                    return report
             if settings.VT_UPLOAD:
                 print "[INFO] VirusTotal: file upload"
                 upload_response = self.upload_file(file_path)
@@ -89,7 +88,8 @@ class VirusTotal:
                 return upload_response
             else:
                 print "[INFO] MobSF: VirusTotal Scan not performed as file upload is disabled in settings.py. To enable file upload, set VT_UPLOAD to True."
-                report = {"verbose_msg": "Scan Not performed, VirusTotal file upload disabled in settings.py", "positives": 0, "total": 0}
-                return report     
+                report = {
+                    "verbose_msg": "Scan Not performed, VirusTotal file upload disabled in settings.py", "positives": 0, "total": 0}
+                return report
         except:
             PrintException("[ERROR] in VirusTotal get_result")
