@@ -96,6 +96,10 @@ body {
 Production ready applications should not be signed with 'Android Debug' Certificate.
 {% elif issued == "missing" %}
 <strong>Certicate Status: </strong><span class="label label-warning">Certificate not found</span>
+{% elif issued == "bad hash" and sha256Digest is True %}
+<strong>Certicate Status: </strong><span class="label label-warning">Warning</span>
+<strong>Description:</strong>The app is signed with `SHA1withRSA`. SHA1 hash algorithm is known to have collision issues.
+<strong>Note:</strong>The manifest indicates `SHA256withRSA` is in use. Be sure to manually confirm this issue.
 {% elif issued == "bad hash" %}
 <strong>Certicate Status: </strong><span class="label label-danger">Bad</span>
 <strong>Description:</strong>The app is signed with `SHA1withRSA`. SHA1 hash algorithm is known to have collision issues.
