@@ -904,6 +904,8 @@ Production ready applications should not be signed with 'Android Debug' Certific
                         </td>
  
                       </tr>
+                      {% elif apkid|key:"error" %}
+                      <p align="center"><strong>APKiD ERROR - No classes.dex file!</strong></p>
                       {% else %}
                       <p align="center"><strong>APKiD not enabled.</strong></p>
                       {% endif %}
