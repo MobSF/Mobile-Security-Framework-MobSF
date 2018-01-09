@@ -7,7 +7,7 @@ from os.path import expanduser
 import platform
 
 # Binskim/Binscope analysis
-import xmlrpclib
+import xmlrpc.client
 import json
 import base64
 import rsa
@@ -32,7 +32,7 @@ from StaticAnalyzer.views.shared_func import (
 
 from StaticAnalyzer.models import StaticAnalyzerWindows
 
-from StaticAnalyzer.tools.strings import strings
+from StaticAnalyzer.tools.strings import strings_util
 
 from MobSF.utils import (
     print_n_send_error_response,
@@ -56,7 +56,7 @@ def staticanalyzer_windows(request, api=False):
     """Analyse a windows app."""
     try:
         # Input validation
-        print "[INFO] Windows Static Analysis Started"
+        print("[INFO] Windows Static Analysis Started")
         app_dic = {}  # Dict to store the binary attributes
         if api:
             typ = request.POST['scan_type']
@@ -82,7 +82,7 @@ def staticanalyzer_windows(request, api=False):
                     MD5=app_dic['md5']
                 )
                 if db_entry.exists() and rescan == '0':
-                    print "\n[INFO] Analysis is already Done. Fetching data from the DB..."
+                    print("\n[INFO] Analysis is already Done. Fetching data from the DB...")
                     context = {
                         'title': db_entry[0].TITLE,
                         'name': db_entry[0].APP_NAME,
@@ -108,7 +108,7 @@ def staticanalyzer_windows(request, api=False):
                         'bin_an_warnings': python_list(db_entry[0].BIN_AN_WARNINGS)
                     }
                 else:
-                    print "[INFO] Windows Binary Analysis Started"
+                    print("[INFO] Windows Binary Analysis Started")
                     app_dic['app_path'] = os.path.join(
                         app_dic['app_dir'], app_dic['md5'] + '.appx')
                     # ANALYSIS BEGINS
@@ -117,15 +117,15 @@ def staticanalyzer_windows(request, api=False):
                     app_dic['sha1'], app_dic[
                         'sha256'] = hash_gen(app_dic['app_path'])
                     # EXTRACT APPX
-                    print "[INFO] Extracting APPX"
+                    print("[INFO] Extracting APPX")
                     app_dic['files'] = unzip(
                         app_dic['app_path'], app_dic['app_dir'])
                     xml_dic = _parse_xml(app_dic['app_dir'])
                     bin_an_dic = _binary_analysis(app_dic)
                     # Saving to db
-                    print "\n[INFO] Connecting to DB"
+                    print("\n[INFO] Connecting to DB")
                     if rescan == '1':
-                        print "\n[INFO] Updating Database..."
+                        print("\n[INFO] Updating Database...")
                         StaticAnalyzerWindows.objects.filter(  # pylint: disable-msg=E1101
                             MD5=app_dic['md5']
                         ).update(
@@ -155,7 +155,7 @@ def staticanalyzer_windows(request, api=False):
                             BIN_AN_WARNINGS=bin_an_dic['warnings'],
                         )
                     elif rescan == '0':
-                        print "\n[INFO] Saving to Database"
+                        print("\n[INFO] Saving to Database")
                         db_item = StaticAnalyzerWindows(
                             TITLE='Static Analysis',
                             APP_NAME=app_dic['app_name'],
@@ -237,14 +237,14 @@ def _get_token():
     challenge = proxy.get_challenge()
     priv_key = rsa.PrivateKey.load_pkcs1(
         open(settings.WINDOWS_VM_SECRET).read())
-    signature = rsa.sign(challenge, priv_key, 'SHA-512')
+    signature = rsa.sign(challenge.encode('ascii'), priv_key, 'SHA-512')
     sig_b64 = base64.b64encode(signature)
     return sig_b64
 
 
 def _binary_analysis(app_dic):
     """Start binary analsis."""
-    print "[INFO] Starting Binary Analysis"
+    print("[INFO] Starting Binary Analysis")
     bin_an_dic = {}
 
     # Init optional sections to prevent None-Pointer-Errors
@@ -264,11 +264,7 @@ def _binary_analysis(app_dic):
 
     # Execute strings command
     bin_an_dic['strings'] = ""
-    str_list = list(strings(bin_path))
-    str_list = set(str_list)  # Make unique # pylint: disable-msg=R0204
-
-    str_list = [s if isinstance(s, unicode) else unicode(
-        s, encoding="utf-8", errors="replace") for s in str_list]
+    str_list = list(set(strings_util(bin_path)))  # Make unique # pylint: disable-msg=R0204
     str_list = [escape(s) for s in str_list]
     bin_an_dic['strings'] = str_list
 
@@ -286,9 +282,9 @@ def _binary_analysis(app_dic):
     # Execute binskim analysis if vm is available
     if platform.system() != 'Windows':
         if settings.WINDOWS_VM_IP:
-            print "[INFO] Windows VM configured."
+            print("[INFO] Windows VM configured.")
             global proxy
-            proxy = xmlrpclib.ServerProxy(  # pylint: disable-msg=C0103
+            proxy = xmlrpc.client.ServerProxy(  # pylint: disable-msg=C0103
                 "http://{}:{}".format(
                     settings.WINDOWS_VM_IP,
                     settings.WINDOWS_VM_PORT
@@ -298,7 +294,7 @@ def _binary_analysis(app_dic):
             bin_an_dic = __binskim(name, bin_an_dic)
             bin_an_dic = __binscope(name, bin_an_dic)
         else:
-            print "[INFO] Windows VM not configured in settings.py. Skipping Binskim and Binscope."
+            print("[INFO] Windows VM not configured in settings.py. Skipping Binskim and Binscope.")
             warning = {
                 "rule_id": "VM",
                 "status": "Info",
@@ -306,7 +302,7 @@ def _binary_analysis(app_dic):
             }
             bin_an_dic['results'].append(warning)
     else:
-        print "[INFO] Running lokal analysis."
+        print("[INFO] Running lokal analysis.")
 
         global config
         config = configparser.ConfigParser()
@@ -324,12 +320,11 @@ def _binary_analysis(app_dic):
 
 def _upload_sample(bin_path):
     """Upload sample to windows vm."""
-    print "[INFO] Uploading sample."
+    print("[INFO] Uploading sample.")
 
     # Upload test
-    with io.open(bin_path, mode="rb") as handle:
-        binary_data = xmlrpclib.Binary(handle.read())
-
+    with open(bin_path,"rb") as handle:
+        binary_data = xmlrpc.client.Binary(handle.read())
     # Name of the sample is return by the remote machine
     name = proxy.upload_file(binary_data, _get_token())
 
@@ -338,7 +333,7 @@ def _upload_sample(bin_path):
 
 def __binskim(name, bin_an_dic, run_local=False, app_dir=None):
     """Run the binskim analysis."""
-    print "[INFO] Running binskim."
+    print("[INFO] Running binskim.")
     if run_local:
         bin_path = os.path.join(app_dir, bin_an_dic['bin'])
 
@@ -409,7 +404,7 @@ def __parse_binskim(bin_an_dic, output):
                 }
             bin_an_dic['results'].append(result)
     else:
-        print "[WARNING] binskim has no results."
+        print("[WARNING] binskim has no results.")
         # Create an warining for the gui
         warning = {
             "rule_id": "No Binskim-Results",
@@ -433,8 +428,7 @@ def __parse_binskim(bin_an_dic, output):
 
 def __binscope(name, bin_an_dic, run_local=False, app_dir=None):
     """Run the binskim analysis."""
-    print "[INFO] Running binscope. This might take a while, depending on the binary size."
-
+    print("[INFO] Running binscope. This might take a while, depending on the binary size.")
     if run_local:
         global config
         bin_path = os.path.join(app_dir, bin_an_dic['bin'])
@@ -490,7 +484,7 @@ def __binscope(name, bin_an_dic, run_local=False, app_dir=None):
         remove_blank_text=True,
         resolve_entities=False
     )
-    xml_file = etree.XML(bytes(res), config)  # pylint: disable-msg=E1101
+    xml_file = etree.XML(bytes(res, "utf-8", "ignore"), config)  # pylint: disable-msg=E1101
 
     for item in xml_file.find('items').getchildren():
         if item.find('issueType') is not None:
@@ -527,7 +521,7 @@ def __binscope(name, bin_an_dic, run_local=False, app_dir=None):
 
 def _parse_xml(app_dir):
     """Parse the AppxManifest file to get basic informations."""
-    print "[INFO] Starting Binary Analysis - XML"
+    print("[INFO] Starting Binary Analysis - XML")
     xml_file = os.path.join(app_dir, "AppxManifest.xml")
     xml_dic = {
         'version': '',
@@ -545,12 +539,12 @@ def _parse_xml(app_dir):
     }
 
     try:
-        print "[INFO] Reading AppxManifest"
+        print("[INFO] Reading AppxManifest")
         config = etree.XMLParser(  # pylint: disable-msg=E1101
             remove_blank_text=True,
             resolve_entities=False
         )
-        xml = etree.XML(open(xml_file).read(),
+        xml = etree.XML(open(xml_file, "rb").read(),
                         config)  # pylint: disable-msg=E1101
         for child in xml.getchildren():
             # } to prevent conflict with PhoneIdentity..

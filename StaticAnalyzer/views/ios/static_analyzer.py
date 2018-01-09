@@ -63,7 +63,7 @@ import StaticAnalyzer.views.android.VirusTotal as VirusTotal
 def view_file(request):
     """View iOS Files"""
     try:
-        print "[INFO] View iOS Files"
+        print("[INFO] View iOS Files")
         fil = request.GET['file']
         typ = request.GET['type']
         md5_hash = request.GET['md5']
@@ -130,7 +130,7 @@ def view_file(request):
 def read_sqlite(sqlite_file):
     """Read SQlite File"""
     try:
-        print "[INFO] Dumping SQLITE Database"
+        print("[INFO] Dumping SQLITE Database")
         data = ''
         con = sqlite3.connect(sqlite_file)
         cur = con.cursor()
@@ -161,7 +161,7 @@ def read_sqlite(sqlite_file):
 def ios_list_files(src, md5_hash, binary_form, mode):
     """List iOS files"""
     try:
-        print "[INFO] Get Files, BIN Plist -> XML, and Normalize"
+        print("[INFO] Get Files, BIN Plist -> XML, and Normalize")
         # Multi function, Get Files, BIN Plist -> XML, normalize + to x
         filez = []
         certz = ''
@@ -213,7 +213,7 @@ def ios_list_files(src, md5_hash, binary_form, mode):
 def static_analyzer_ios(request, api=False):
     """Module that performs iOS IPA/ZIP Static Analysis"""
     try:
-        print "[INFO] iOS Static Analysis Started"
+        print("[INFO] iOS Static Analysis Started")
         if api:
             file_type = request.POST['scan_type']
             checksum = request.POST['hash']
@@ -247,7 +247,7 @@ def static_analyzer_ios(request, api=False):
                 if ipa_db.exists() and rescan == '0':
                     context = get_context_from_db_entry_ipa(ipa_db)
                 else:
-                    print "[INFO] iOS Binary (IPA) Analysis Started"
+                    print("[INFO] iOS Binary (IPA) Analysis Started")
                     app_dict["app_file"] = app_dict[
                         "md5_hash"] + '.ipa'  # NEW FILENAME
                     app_dict["app_path"] = app_dict["app_dir"] + \
@@ -258,7 +258,7 @@ def static_analyzer_ios(request, api=False):
                         file_size(app_dict["app_path"])) + 'MB'  # FILE SIZE
                     app_dict["sha1"], app_dict["sha256"] = hash_gen(
                         app_dict["app_path"])  # SHA1 & SHA256 HASHES
-                    print "[INFO] Extracting IPA"
+                    print("[INFO] Extracting IPA")
                     # EXTRACT IPA
                     unzip(app_dict["app_path"], app_dict["app_dir"])
                     # Get Files, normalize + to x,
@@ -269,13 +269,13 @@ def static_analyzer_ios(request, api=False):
                     bin_analysis_dict = binary_analysis(
                         app_dict["bin_dir"], tools_dir, app_dict["app_dir"])
                     # Saving to DB
-                    print "\n[INFO] Connecting to DB"
+                    print("\n[INFO] Connecting to DB")
                     if rescan == '1':
-                        print "\n[INFO] Updating Database..."
+                        print("\n[INFO] Updating Database...")
                         update_db_entry_ipa(
                             app_dict, infoplist_dict, bin_analysis_dict, files, sfiles)
                     elif rescan == '0':
-                        print "\n[INFO] Saving to Database"
+                        print("\n[INFO] Saving to Database")
                         create_db_entry_ipa(
                             app_dict, infoplist_dict, bin_analysis_dict, files, sfiles)
                     context = get_context_from_analysis_ipa(
@@ -300,13 +300,13 @@ def static_analyzer_ios(request, api=False):
                 if ios_zip_db.exists() and rescan == '0':
                     context = get_context_from_db_entry_ios(ios_zip_db)
                 else:
-                    print "[INFO] iOS Source Code Analysis Started"
+                    print("[INFO] iOS Source Code Analysis Started")
                     app_dict["app_file"] = app_dict[
                         "md5_hash"] + '.zip'  # NEW FILENAME
                     app_dict["app_path"] = app_dict["app_dir"] + \
                         app_dict["app_file"]  # APP PATH
                     # ANALYSIS BEGINS - Already Unzipped
-                    print "[INFO] ZIP Already Extracted"
+                    print("[INFO] ZIP Already Extracted")
                     app_dict["size"] = str(
                         file_size(app_dict["app_path"])) + 'MB'  # FILE SIZE
                     app_dict["sha1"], app_dict["sha256"] = hash_gen(
@@ -317,13 +317,13 @@ def static_analyzer_ios(request, api=False):
                     code_analysis_dic = ios_source_analysis(
                         app_dict["app_dir"])
                     # Saving to DB
-                    print "\n[INFO] Connecting to DB"
+                    print("\n[INFO] Connecting to DB")
                     if rescan == '1':
-                        print "\n[INFO] Updating Database..."
+                        print("\n[INFO] Updating Database...")
                         update_db_entry_ios(
                             app_dict, infoplist_dict, code_analysis_dic, files, sfiles)
                     elif rescan == '0':
-                        print "\n[INFO] Saving to Database"
+                        print("\n[INFO] Saving to Database")
                         create_db_entry_ios(
                             app_dict, infoplist_dict, code_analysis_dic, files, sfiles)
                     context = get_context_from_analysis_ios(

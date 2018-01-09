@@ -13,7 +13,7 @@ from MobSF.utils import PrintException, getMD5, is_number, findBetween, python_l
 
 
 from random import randint, shuffle, choice
-from urlparse import urlparse
+from urllib.parse import urlparse
 from cgi import parse_qs
 import tornado.httpclient
 import os
@@ -22,7 +22,7 @@ import json
 import datetime
 import socket
 import string
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import pickle
 from lxml import etree
 
@@ -58,7 +58,7 @@ def NoAPI(request):
 
 def APIFuzzer(request):
     global TESTS
-    print "\n[INFO] API Testing Started"
+    print("\n[INFO] API Testing Started")
     try:
         if request.method == 'GET':
             MD5 = request.GET['md5']
@@ -142,7 +142,7 @@ def APIFuzzer(request):
 
 
 def StartScan(request):
-    print "\n[INFO] Web API Scan Started"
+    print("\n[INFO] Web API Scan Started")
     try:
         if request.method == "POST":
             MD5 = request.POST['md5']
@@ -152,7 +152,7 @@ def StartScan(request):
                 SCAN_MODE = request.POST['scanmode']
                 URLS_CONF = {}
                 # Untrusted User Input
-                for key, value in request.POST.iteritems():
+                for key, value in request.POST.items():
                     if key.startswith("login-") or key.startswith("pin-") or key.startswith("logout-") or key.startswith("register-"):
                         action_domain = key.split("-", 1)
                         #[action,url]
@@ -233,7 +233,7 @@ def StartScan(request):
 
 def api_info_gathering(SCOPE_URLS):
     global STATUS
-    print "\n[INFO] Performing Information Gathering"
+    print("\n[INFO] Performing Information Gathering")
     result = []
     try:
         # Initally Do on Scope URLs
@@ -264,7 +264,7 @@ def api_info_gathering(SCOPE_URLS):
 def api_security_headers(SCOPE_URLS):
     global STATUS
     result = []
-    print "\n[INFO] Checking for Security Headers"
+    print("\n[INFO] Checking for Security Headers")
     try:
 
         # Initally Do on Scope URLs
@@ -367,7 +367,7 @@ def api_ssrf(SCAN_REQUESTS, URLS_CONF):
     SSRF_MSG_1 = " Server Side Request Forgery (SSRF) is identified in Request URI"
     SSRF_MSG_2 = " Server Side Request Forgery (SSRF) is identified in Request Body"
 
-    print "\n[INFO] Starting SSRF Tester"
+    print("\n[INFO] Starting SSRF Tester")
     try:
         url_n_cookie_pair, url_n_header_pair = getAuthTokens(
             SCAN_REQUESTS, URLS_CONF)
@@ -397,7 +397,7 @@ def api_ssrf(SCAN_REQUESTS, URLS_CONF):
             if path_n_querystring:
                 SSRF_entry_list = extractURLS(path_n_querystring)
                 if SSRF_entry_list:
-                    print "\n[INFO] Injecting SSRF Payload on URI"
+                    print("\n[INFO] Injecting SSRF Payload on URI")
                     request_uri = request
                     # for each URL in path + querystring
                     for entry in SSRF_entry_list:
@@ -418,8 +418,8 @@ def api_ssrf(SCAN_REQUESTS, URLS_CONF):
                         else:
                             SSRF_PAYLOAD = settings.CLOUD_SERVER + "/" + SSRF_MD5
 
-                        encoded_entry = urllib.quote_plus(entry)
-                        encoded_ssrf_payload = urllib.quote_plus(SSRF_PAYLOAD)
+                        encoded_entry = urllib.parse.quote_plus(entry)
+                        encoded_ssrf_payload = urllib.parse.quote_plus(SSRF_PAYLOAD)
                         new_pq = path_n_querystring.replace(entry, SSRF_PAYLOAD).replace(
                             encoded_entry, encoded_ssrf_payload)
                         request_uri["url"] = domain + new_pq
@@ -442,8 +442,8 @@ def api_ssrf(SCAN_REQUESTS, URLS_CONF):
                         else:
                             SSRF_PAYLOAD = settings.CLOUD_SERVER
 
-                        encoded_entry = urllib.quote_plus(entry)
-                        encoded_ssrf_payload = urllib.quote_plus(SSRF_PAYLOAD)
+                        encoded_entry = urllib.parse.quote_plus(entry)
+                        encoded_ssrf_payload = urllib.parse.quote_plus(SSRF_PAYLOAD)
                         new_pq = path_n_querystring.replace(entry, SSRF_PAYLOAD).replace(
                             encoded_entry, encoded_ssrf_payload)
                         request_uri["url"] = domain + new_pq
@@ -472,7 +472,7 @@ def api_ssrf(SCAN_REQUESTS, URLS_CONF):
                 SSRF_entry_list_body = extractURLS(body)
                 if SSRF_entry_list_body:
                     request_bd = request
-                    print "\n[INFO] Injecting SSRF Payload on Request Body"
+                    print("\n[INFO] Injecting SSRF Payload on Request Body")
                     # for each URL in request body
                     for entry in SSRF_entry_list_body:
                         # Inject payload and test (one at a time).
@@ -491,8 +491,8 @@ def api_ssrf(SCAN_REQUESTS, URLS_CONF):
                         else:
                             SSRF_PAYLOAD = settings.CLOUD_SERVER + "/" + SSRF_MD5
 
-                        encoded_entry = urllib.quote_plus(entry)
-                        encoded_ssrf_payload = urllib.quote_plus(SSRF_PAYLOAD)
+                        encoded_entry = urllib.parse.quote_plus(entry)
+                        encoded_ssrf_payload = urllib.parse.quote_plus(SSRF_PAYLOAD)
                         request_bd["body"] = body.replace(entry, SSRF_PAYLOAD).replace(
                             encoded_entry, encoded_ssrf_payload)
                         ssrf_res = HTTP_Request(request_bd)
@@ -514,8 +514,8 @@ def api_ssrf(SCAN_REQUESTS, URLS_CONF):
                                     "https://", "")
                         else:
                             SSRF_PAYLOAD = settings.CLOUD_SERVER
-                        encoded_entry = urllib.quote_plus(entry)
-                        encoded_ssrf_payload = urllib.quote_plus(SSRF_PAYLOAD)
+                        encoded_entry = urllib.parse.quote_plus(entry)
+                        encoded_ssrf_payload = urllib.parse.quote_plus(SSRF_PAYLOAD)
                         request_bd["body"] = body.replace(entry, SSRF_PAYLOAD).replace(
                             encoded_entry, encoded_ssrf_payload)
                         if ip_check:
@@ -546,7 +546,7 @@ def api_ssrf(SCAN_REQUESTS, URLS_CONF):
 def api_xxe(SCAN_REQUESTS, URLS_CONF):
     global STATUS
     result = []
-    print "\n[INFO] Starting XXE Tester"
+    print("\n[INFO] Starting XXE Tester")
     try:
         url_n_cookie_pair, url_n_header_pair = getAuthTokens(
             SCAN_REQUESTS, URLS_CONF)
@@ -584,7 +584,7 @@ def api_xxe(SCAN_REQUESTS, URLS_CONF):
                     # Start XXE Test
 
                     xxe_request = request
-                    print "\n[INFO] Generic XXE Check"
+                    print("\n[INFO] Generic XXE Check")
                     # Vanila XXE Payload
                     VALIDATE_STRING = settings.XXE_VALIDATE_STRING
                     XXE_PAYLOAD_BASIC = '<?xml version="1.0"?><!DOCTYPE bla [<!ENTITY x "' + \
@@ -636,7 +636,7 @@ def api_xxe(SCAN_REQUESTS, URLS_CONF):
 def api_pathtraversal(SCAN_REQUESTS, URLS_CONF, SCAN_MODE):
     global STATUS
     result = []
-    print "\n[INFO] Starting Path Traversal Tester"
+    print("\n[INFO] Starting Path Traversal Tester")
     '''
     Perform path Traversal checks on Request URI and Body
     In URI only if it contains a parameter value a foooo.bar (filename.extl) or foo/bar/ddd ("/")
@@ -754,7 +754,7 @@ def api_idor(SCAN_REQUESTS, URLS_CONF):
     Add feature to allow user to select session parameter 
     '''
     global STATUS, ACCEPTED_CONTENT_TYPE
-    print "\n[INFO] Performing API IDOR Checks"
+    print("\n[INFO] Performing API IDOR Checks")
     result = []
     try:
         LOGIN_API, PIN_API, REGISTER_API, LOGOUT_API = getAPI(URLS_CONF)
@@ -799,8 +799,8 @@ def api_idor(SCAN_REQUESTS, URLS_CONF):
                                     if cookie != "nil":
                                         cookies_pair = url_n_cookie_pair[
                                             getProtocolDomain(url)]
-                                        for cookie1, cookie2 in cookies_pair.items():
-                                            print "\n[INFO] Changing Cookie and Checking for IDOR"
+                                        for cookie1, cookie2 in list(cookies_pair.items()):
+                                            print("\n[INFO] Changing Cookie and Checking for IDOR")
                                             req_cookie["headers"][
                                                 cookie] = cookie1
                                             res_cookie1 = HTTP_Request(
@@ -824,11 +824,11 @@ def api_idor(SCAN_REQUESTS, URLS_CONF):
                                 if getProtocolDomain(url) in url_n_header_pair:
                                     for k in req_authheader["headers"]:
                                         if re.findall("Authorization|Authentication|auth", k, re.I):
-                                            print "\n[INFO] Changing Auth Header and Checking for IDOR"
+                                            print("\n[INFO] Changing Auth Header and Checking for IDOR")
                                             auth_header_pairs = url_n_header_pair[
                                                 getProtocolDomain(url)]
                                             #{{"auth":"foo","authee":"foooee"}:{"auth":"foo1","authee":"foooee1"}}
-                                            for auth1, auth2 in auth_header_pairs.items():
+                                            for auth1, auth2 in list(auth_header_pairs.items()):
                                                 req_authheader = request
                                                 req_authheader["headers"][
                                                     k] = auth1[k]
@@ -861,7 +861,7 @@ def api_idor(SCAN_REQUESTS, URLS_CONF):
                                     x = 1
                                 if x == 1:
                                     # Cookie Exists
-                                    print "\n[INFO] Removing Cookie and Checking for IDOR"
+                                    print("\n[INFO] Removing Cookie and Checking for IDOR")
                                     res2 = HTTP_Request(req_cookie)
                                     if res2:
                                         if res1.code == res2.code:
@@ -879,7 +879,7 @@ def api_idor(SCAN_REQUESTS, URLS_CONF):
                                 for k in req3["headers"]:
                                     if re.findall("Authorization|Authentication|auth", k, re.I):
                                         req3 = req_authheader
-                                        print "\n[INFO] Removing Auth Header and Checking for IDOR"
+                                        print("\n[INFO] Removing Auth Header and Checking for IDOR")
                                         req3["headers"][k] = "foo bar"
                                         res3 = HTTP_Request(req3)
                                         if res3:
@@ -899,7 +899,7 @@ def api_idor(SCAN_REQUESTS, URLS_CONF):
 
 def api_session_check(SCAN_REQUESTS, LOGOUT_REQUESTS, URLS_CONF):
     global STATUS, ACCEPTED_CONTENT_TYPE
-    print "\n[INFO] Performing Session Handling related Checks"
+    print("\n[INFO] Performing Session Handling related Checks")
     result = []
     try:
         LOGIN_API, PIN_API, REGISTER_API, LOGOUT_API = getAPI(URLS_CONF)
@@ -981,7 +981,7 @@ def api_check_ratelimit(SCAN_REQUESTS, URLS_CONF):
     Detection Based on Response Code and Response Body Length
     '''
     global STATUS
-    print "\n[INFO] Performing API Rate Limit Check"
+    print("\n[INFO] Performing API Rate Limit Check")
     result = []
     try:
         LOGIN_API, PIN_API, REGISTER_API, LOGOUT_API = getAPI(URLS_CONF)
@@ -1001,7 +1001,7 @@ def api_check_ratelimit(SCAN_REQUESTS, URLS_CONF):
                 body_type = findBodyType(request)
                 # We mutate body first and then URI, and not together.
                 if body_type != "none":
-                    print "\n[INFO] Register API Rate Limit Check - Checking in HTTP Request Body"
+                    print("\n[INFO] Register API Rate Limit Check - Checking in HTTP Request Body")
                     # Register Params in Body
                     stat, res = APIRateLimitCheck(
                         request, body_type, "register", settings.RATE_REGISTER, False)
@@ -1010,7 +1010,7 @@ def api_check_ratelimit(SCAN_REQUESTS, URLS_CONF):
                                                       "API Tester created " + str(settings.RATE_REGISTER) + " users by mutating HTTP body.", res))
 
                 if dict_qs:
-                    print "\n[INFO] Register API Rate Limit Check - Checking in HTTP Request URI"
+                    print("\n[INFO] Register API Rate Limit Check - Checking in HTTP Request URI")
                     # Register Parms in QS
                     stat, res = APIRateLimitCheck(
                         request, "form", "register", settings.RATE_REGISTER, True)
@@ -1033,7 +1033,7 @@ def api_check_ratelimit(SCAN_REQUESTS, URLS_CONF):
                 body_type = findBodyType(request)
                 # We mutate body first and then URI, and not together.
                 if body_type != "none":
-                    print "\n[INFO] Login API Rate Limit Check - Checking in HTTP Request Body"
+                    print("\n[INFO] Login API Rate Limit Check - Checking in HTTP Request Body")
                     # Login Params in Body
                     stat, res = APIRateLimitCheck(
                         request, body_type, "login", settings.RATE_LOGIN, False)
@@ -1041,7 +1041,7 @@ def api_check_ratelimit(SCAN_REQUESTS, URLS_CONF):
                         result.append(genFindingsDict(STATUS["INSECURE"] + " Login API is not protected from bruteforce.", url, "API Tester bruteforced Login API " + str(
                             settings.RATE_LOGIN) + " times by modifying HTTP body without getting blocked.", res))
                 if dict_qs:
-                    print "\n[INFO] Login API Rate Limit Check - Checking in HTTP Request URI"
+                    print("\n[INFO] Login API Rate Limit Check - Checking in HTTP Request URI")
                     # Login Parms in QS
                     stat, res = APIRateLimitCheck(
                         request, "form", "login", settings.RATE_LOGIN, True)
@@ -1064,7 +1064,7 @@ def api_check_ratelimit(SCAN_REQUESTS, URLS_CONF):
                 body_type = findBodyType(request)
                 # We mutate body first and then URI, and not together.
                 if body_type != "none":
-                    print "\n[INFO] Pin API Rate Limit Check - Checking in HTTP Request Body"
+                    print("\n[INFO] Pin API Rate Limit Check - Checking in HTTP Request Body")
                     # Pin Param in Body
                     stat, res = APIRateLimitCheck(
                         request, body_type, "pin", settings.RATE_LOGIN, False)
@@ -1072,7 +1072,7 @@ def api_check_ratelimit(SCAN_REQUESTS, URLS_CONF):
                         result.append(genFindingsDict(STATUS["INSECURE"] + " Pin API is not protected from bruteforce.", url, "API Tester bruteforced Pin API " + str(
                             settings.RATE_LOGIN) + " times by modifying HTTP body without getting blocked.", res))
                 if dict_qs:
-                    print "\n[INFO] Pin API Rate Limit Check - Checking in HTTP Request URI"
+                    print("\n[INFO] Pin API Rate Limit Check - Checking in HTTP Request URI")
                     # Pin Parm in QS
                     stat, res = APIRateLimitCheck(
                         request, "form", "pin", settings.RATE_LOGIN, True)
@@ -1087,7 +1087,7 @@ def api_check_ratelimit(SCAN_REQUESTS, URLS_CONF):
 # Helper Functions
 def HTTP_Request(req):
     # print "DEBUGGING", req
-    print "\n[INFO] Making HTTP Requst to: " + req["url"]
+    print("\n[INFO] Making HTTP Requst to: " + req["url"])
     response = None
     http_client = tornado.httpclient.HTTPClient()
     try:
@@ -1139,7 +1139,7 @@ def getAPI(URLS_CONF):
     REGISTER_API = []
     LOGOUT_API = []
     try:
-        for key, val in URLS_CONF.items():
+        for key, val in list(URLS_CONF.items()):
             if val["login"] != "none":
                 LOGIN_API.append(val["login"])
             if val["pin"] != "none":
@@ -1159,7 +1159,7 @@ def getAPI(URLS_CONF):
 
 def getScanRequests(MD5, SCOPE_URLS, URLS_CONF):
     try:
-        print "\n[INFO] Getting Scan Request Objects"
+        print("\n[INFO] Getting Scan Request Objects")
         SCAN_REQUESTS = []
         LOGOUT_REQUESTS = []
         data = []
@@ -1233,10 +1233,10 @@ def extractURLS(string):
     final = []
     try:
         # URL Decode
-        string = urllib.unquote(string)
-        p = re.compile(ur'((?:https?://|s?ftps?://|file://|javascript:|www\d{0,3}[.])[\w().=/;,#:@?&~*+!$%\'{}-]+)', re.UNICODE)
+        string = urllib.parse.unquote(string)
+        p = re.compile(r'((?:https?://|s?ftps?://|file://|javascript:|www\d{0,3}[.])[\w().=/;,#:@?&~*+!$%\'{}-]+)', re.UNICODE)
         urllist = re.findall(p, string.lower())
-        p = re.compile(ur'(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\:[0-9]{1,5}', re.UNICODE)
+        p = re.compile(r'(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\:[0-9]{1,5}', re.UNICODE)
         ipport = re.findall(p, string.lower())
         final = list(set(ipport + urllist))
 
@@ -1351,7 +1351,7 @@ def path_traversal_payloads(SCAN_MODE):
         PAYLOADS_DIR = os.path.join(settings.BASE_DIR, 'APITester/payloads/')
         with open(os.path.join(PAYLOADS_DIR, "path_traversal.txt"), "r") as f:
             if SCAN_MODE == "basic":
-                dat = [next(f).replace("\n", "") for x in xrange(N)]
+                dat = [next(f).replace("\n", "") for x in range(N)]
                 PT = list(set(dat))
             else:
                 dat = f.read()
@@ -1566,7 +1566,7 @@ def XMLMutate(xml, typ):
 
 
 def APIRateLimitCheck(request, body_type, action, limit, isQS=False):
-    print "\n[INFO] Checking " + action + " API Rate Limiting"
+    print("\n[INFO] Checking " + action + " API Rate Limiting")
     res = {}
     try:
         if body_type == "form":
@@ -1590,7 +1590,7 @@ def APIRateLimitCheck(request, body_type, action, limit, isQS=False):
                     return True, res
                 if res.error:
                     # If Initial Request is failing, no point of checking again
-                    print "URI - Response Error"
+                    print("URI - Response Error")
                     return True, res
                 else:
                     initial_res = res
@@ -1598,7 +1598,7 @@ def APIRateLimitCheck(request, body_type, action, limit, isQS=False):
                         frm_request["url"] = prev_url + QSMutate(qs, action)
                         res = HTTP_Request(frm_request)
                     if res.error:
-                        print "URI - Response Error"
+                        print("URI - Response Error")
                         return True, res
                     else:
                         if res.code == initial_res.code:
@@ -1632,7 +1632,7 @@ def APIRateLimitCheck(request, body_type, action, limit, isQS=False):
                     return True, res
                 if res.error:
                     # If Initial Request is failing, no point of checking again
-                    print "Form Body - Response Error"
+                    print("Form Body - Response Error")
                     return True, res
                 else:
                     initial_res = res
@@ -1640,7 +1640,7 @@ def APIRateLimitCheck(request, body_type, action, limit, isQS=False):
                         frm_request["body"] = QSMutate(request["body"], action)
                         res = HTTP_Request(frm_request)
                     if res.error:
-                        print "Form Body - Response Error"
+                        print("Form Body - Response Error")
                         return True, res
                     else:
                         if res.code == initial_res.code:
@@ -1671,7 +1671,7 @@ def APIRateLimitCheck(request, body_type, action, limit, isQS=False):
                 return True, res
             if res.error:
                 # If Initial Request is failing, no point of checking again
-                print "JSON Body - Response Error"
+                print("JSON Body - Response Error")
                 return True, res
             else:
                 initial_res = res
@@ -1679,7 +1679,7 @@ def APIRateLimitCheck(request, body_type, action, limit, isQS=False):
                     json_request["body"] = JSONMutate(request["body"], action)
                     res = HTTP_Request(json_request)
                 if res.error:
-                    print "JSON Body - Response Error"
+                    print("JSON Body - Response Error")
                     return True, res
                 else:
                     if res.code == initial_res.code:
@@ -1709,7 +1709,7 @@ def APIRateLimitCheck(request, body_type, action, limit, isQS=False):
                 return True, res
             if res.error:
                 # If Initial Request is failing, no point of checking again
-                print "XML Body - Response Error"
+                print("XML Body - Response Error")
                 return True, res
             else:
                 initial_res = res
@@ -1717,7 +1717,7 @@ def APIRateLimitCheck(request, body_type, action, limit, isQS=False):
                     xml_request["body"] = XMLMutate(request["body"], action)
                     res = HTTP_Request(xml_request)
                 if res.error:
-                    print "XML Body - Response Error"
+                    print("XML Body - Response Error")
                     return True, res
                 else:
                     if res.code == initial_res.code:
@@ -1744,7 +1744,7 @@ def getAuthTokens(SCAN_REQUESTS, URLS_CONF):
     url_n_cookie_pair = {}
     url_n_header_pair = {}
     try:
-        print "\n[INFO] Extracting Auth Tokens"
+        print("\n[INFO] Extracting Auth Tokens")
         LOGIN_API, PIN_API, REGISTER_API, LOGOUT_API = getAPI(URLS_CONF)
         LOGIN_API_COMBINED = LOGIN_API + PIN_API
         LOGIN_API_COMBINED = list(set(LOGIN_API_COMBINED))
@@ -1801,7 +1801,7 @@ def getAuthTokensTwoUser(SCAN_REQUESTS, URLS_CONF):
     url_n_cookie_pair = {}
     url_n_header_pair = {}
     try:
-        print "\n[INFO] Extracting Auth Tokens for two different users"
+        print("\n[INFO] Extracting Auth Tokens for two different users")
         LOGIN_API, PIN_API, REGISTER_API, LOGOUT_API = getAPI(URLS_CONF)
         LOGIN_API_COMBINED = LOGIN_API + PIN_API
         LOGIN_API_COMBINED = list(set(LOGIN_API_COMBINED))
@@ -1820,13 +1820,13 @@ def getAuthTokensTwoUser(SCAN_REQUESTS, URLS_CONF):
         # we only need those requests whose count is more than 1
         # Multi user IDOR check needs 2 login calls
 
-        for url, lists in reqs_multiple_users.items():
+        for url, lists in list(reqs_multiple_users.items()):
             # TO-DO - Better logic to exactly select login calls
             if len(lists) < 2:
                 del reqs_multiple_users[url]
         # We now have 2 login request for different users
         # Now apply cookie and auth header method
-        for url, lists in reqs_multiple_users.items():
+        for url, lists in list(reqs_multiple_users.items()):
             auth_req1 = req1 = lists[0]
             auth_req2 = req2 = lists[1]
             res1 = HTTP_Request(req1)

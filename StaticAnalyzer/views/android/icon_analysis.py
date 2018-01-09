@@ -78,7 +78,7 @@ def get_icon(apk_path, res_dir, tools_dir):
     """Returns a dict with isHidden boolean and a relative path
         path is a full path (not relative to resource folder) """
     try:
-        print "[INFO] Fetching icon path"
+        print("[INFO] Fetching icon path")
 
         aapt_binary = get_aapt(tools_dir)
         args = [aapt_binary, 'd', 'badging', apk_path]
@@ -89,7 +89,7 @@ def get_icon(apk_path, res_dir, tools_dir):
         else:
             aapt_output = subprocess.check_output(args)
         regex = re.compile(r"application:[^\n]+icon='(.*)'.*")
-        found_regex = regex.findall(aapt_output)
+        found_regex = regex.findall(aapt_output.decode('utf-8'))
         if len(found_regex) > 0:
             if found_regex[0]:
                 return {
@@ -109,11 +109,11 @@ def find_icon_path_zip(res_dir, icon_paths_from_manifest):
         returns an empty string on fail or a full path"""
     global KNOWN_MIPMAP_SIZES
     try:
-        print "[INFO] Fetching icon path"
+        print("[INFO] Fetching icon path")
         for icon_path in icon_paths_from_manifest:
             if icon_path.startswith('@'):
                 path_array = icon_path.strip('@').split(os.sep)
-                rel_path = string.join(path_array[1:], os.sep)
+                rel_path = os.sep.join(path_array[1:])
                 for size_str in KNOWN_MIPMAP_SIZES:
                     tmp_path = os.path.join(
                         res_dir, path_array[0] + size_str, rel_path + '.png')

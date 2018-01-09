@@ -22,11 +22,11 @@ from MobSF.utils import (
 def dex_2_jar(app_path, app_dir, tools_dir):
     """Run dex2jar."""
     try:
-        print "[INFO] DEX -> JAR"
+        print("[INFO] DEX -> JAR")
         working_dir = None
         args = []
         if settings.JAR_CONVERTER == "d2j":
-            print "[INFO] Using JAR converter - dex2jar"
+            print("[INFO] Using JAR converter - dex2jar")
             if len(settings.DEX2JAR_BINARY) > 0 and isFileExists(settings.DEX2JAR_BINARY):
                 d2j = settings.DEX2JAR_BINARY
             else:
@@ -46,7 +46,7 @@ def dex_2_jar(app_path, app_dir, tools_dir):
                 app_dir + 'classes.jar'
             ]
         elif settings.JAR_CONVERTER == "enjarify":
-            print "[INFO] Using JAR converter - Google enjarify"
+            print("[INFO] Using JAR converter - Google enjarify")
             if len(settings.ENJARIFY_DIRECTORY) > 0 and isDirExists(settings.ENJARIFY_DIRECTORY):
                 working_dir = settings.ENJARIFY_DIRECTORY
             else:
@@ -82,7 +82,7 @@ def dex_2_jar(app_path, app_dir, tools_dir):
 def dex_2_smali(app_dir, tools_dir):
     """Run dex2smali"""
     try:
-        print "[INFO] DEX -> SMALI"
+        print("[INFO] DEX -> SMALI")
         dex_path = app_dir + 'classes.dex'
         if len(settings.BACKSMALI_BINARY) > 0 and isFileExists(settings.BACKSMALI_BINARY):
             bs_path = settings.BACKSMALI_BINARY
@@ -101,7 +101,7 @@ def dex_2_smali(app_dir, tools_dir):
 def jar_2_java(app_dir, tools_dir):
     """Conver jar to java."""
     try:
-        print "[INFO] JAR -> JAVA"
+        print("[INFO] JAR -> JAVA")
         jar_path = app_dir + 'classes.jar'
         output = os.path.join(app_dir, 'java_source/')
         if settings.DECOMPILER == 'jd-core':

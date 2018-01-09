@@ -12,13 +12,13 @@ ROOTCA = os.path.join(BASE_DIR, 'DynamicAnalyzer/pyWebProxy/ca.crt')
 
 def ExecuteCMD(args, ret=False):
     try:
-        print "\n[INFO] Executing Command - " + ' '.join(args)
+        print("\n[INFO] Executing Command - " + ' '.join(args))
         if ret:
             return subprocess.check_output(args)
         else:
             subprocess.call(args)
     except Exception as e:
-        print("\n[ERROR] Executing Command - " + str(e))
+        print(("\n[ERROR] Executing Command - " + str(e)))
 
 
 def getADB(TOOLSDIR):
@@ -37,10 +37,10 @@ def getADB(TOOLSDIR):
             adb = os.path.join(TOOLSDIR, 'adb/windows/adb.exe')
         return adb
     except Exception as e:
-        print("\n[ERROR] Getting ADB Location - " + str(e))
+        print(("\n[ERROR] Getting ADB Location - " + str(e)))
         return "adb"
 
-print "\nMobSFy Script\n\nThis script allows you to configure any rooted android Device or VM to perfrom MobSF dynamic analysis.\n(Supports Android Version 4.03 to 4.4)"
+print("\nMobSFy Script\n\nThis script allows you to configure any rooted android Device or VM to perfrom MobSF dynamic analysis.\n(Supports Android Version 4.03 to 4.4)")
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--identifier",
@@ -53,9 +53,9 @@ try:
         adbconnect = args.identifier
         vm_or_ip = args.type
     else:
-        adbconnect = raw_input(
+        adbconnect = input(
             "Enter the IP:PORT or Serial no of the Device/VM (Ex: 192.168.1.2:5555) and press enter: ")
-        vm_or_ip = raw_input("Choose\n 1. VM\n 2. Device\nEnter your choice: ")
+        vm_or_ip = input("Choose\n 1. VM\n 2. Device\nEnter your choice: ")
     adb = getADB(TOOLSDIR)
     ExecuteCMD([adb, "kill-server"])
     ExecuteCMD([adb, "start-server"])
@@ -89,40 +89,40 @@ try:
     FC = os.path.join(TOOLSDIR, 'onDevice/antivm/fake-cpuinfo')
     FD = os.path.join(TOOLSDIR, 'onDevice/antivm/fake-drivers')
 
-    print "\n[INFO] Installing MobSF DataPusher"
+    print("\n[INFO] Installing MobSF DataPusher")
     ExecuteCMD([adb, "-s", adbconnect, "install", "-r", DP])
-    print "\n[INFO] Installing MobSF ScreenCast"
+    print("\n[INFO] Installing MobSF ScreenCast")
     ExecuteCMD([adb, "-s", adbconnect, "install", "-r", SC])
-    print "\n[INFO] Installing MobSF Clipboard Dumper"
+    print("\n[INFO] Installing MobSF Clipboard Dumper")
     ExecuteCMD([adb, "-s", adbconnect, "install", "-r", CD])
-    print "\n[INFO] Copying hooks.json"
+    print("\n[INFO] Copying hooks.json")
     ExecuteCMD([adb, "-s", adbconnect, "push", HK, "/data/local/tmp/"])
-    print "\n[INFO] Installing Xposed Framework"
+    print("\n[INFO] Installing Xposed Framework")
     ExecuteCMD([adb, "-s", adbconnect, "install", "-r", XP])
-    print "\n[INFO] Installing Droidmon API Analyzer"
+    print("\n[INFO] Installing Droidmon API Analyzer")
     ExecuteCMD([adb, "-s", adbconnect, "install", "-r", DM])
-    print "\n[INFO] Installing JustTrustMe"
+    print("\n[INFO] Installing JustTrustMe")
     ExecuteCMD([adb, "-s", adbconnect, "install", "-r", JT])
-    print "\n[INFO] Installing RootCloak"
+    print("\n[INFO] Installing RootCloak")
     ExecuteCMD([adb, "-s", adbconnect, "install", "-r", RC])
 
     if vm_or_ip == "1":
-        print "\n[INFO] Installing Android BluePill"
+        print("\n[INFO] Installing Android BluePill")
         ExecuteCMD([adb, "-s", adbconnect, "install", "-r", AP])
-        print "\n[INFO] Copying fake-build.prop"
+        print("\n[INFO] Copying fake-build.prop")
         ExecuteCMD([adb, "-s", adbconnect, "push", FB, "/data/local/tmp/"])
-        print "\n[INFO] Copying fake-cpuinfo"
+        print("\n[INFO] Copying fake-cpuinfo")
         ExecuteCMD([adb, "-s", adbconnect, "push", FC, "/data/local/tmp/"])
-        print "\n[INFO] Copying fake-drivers"
+        print("\n[INFO] Copying fake-drivers")
         ExecuteCMD([adb, "-s", adbconnect, "push", FD, "/data/local/tmp/"])
-    print "\n[INFO] Launching Xposed Framework."
+    print("\n[INFO] Launching Xposed Framework.")
     ExecuteCMD([adb, "-s", adbconnect, "shell", "am", "start", "-n",
                 "de.robv.android.xposed.installer/de.robv.android.xposed.installer.WelcomeActivity"])
     if vm_or_ip == "1":
-        print "\n 1 .Install the Framework\n 2. Restart the device\n 3. Enable Android BluePill, Droidmon, JustTrustMe and RootCloak."
+        print("\n 1 .Install the Framework\n 2. Restart the device\n 3. Enable Android BluePill, Droidmon, JustTrustMe and RootCloak.")
     else:
-        print "\n 1 .Install the Framework\n 2. Restart the device\n 3. Enable Droidmon, JustTrustMe and RootCloak."
-    print "\n[INFO] MobSFy Script Executed Successfully"
+        print("\n 1 .Install the Framework\n 2. Restart the device\n 3. Enable Droidmon, JustTrustMe and RootCloak.")
+    print("\n[INFO] MobSFy Script Executed Successfully")
 except Exception as e:
-    print "\n[ERROR] Error occured - " + str(e)
+    print("\n[ERROR] Error occured - " + str(e))
     sys.exit(0)

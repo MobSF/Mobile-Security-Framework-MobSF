@@ -22,7 +22,7 @@ from MobSF.utils import (
     isFileExists,
     api_key
 )
-from MobSF.models import RecentScansDB
+from StaticAnalyzer.models import RecentScansDB
 from APITester.models import ScopeURLSandTests
 from StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
@@ -87,7 +87,7 @@ def upload(request, api=False):
             form = UploadFileForm(request.POST, request.FILES)
             if form.is_valid():
                 file_type = request.FILES['file'].content_type
-                print "[INFO] MIME Type: " + file_type + " FILE: " + request.FILES['file'].name
+                print("[INFO] MIME Type: " + file_type + " FILE: " + request.FILES['file'].name)
                 if ((file_type in settings.APK_MIME) and
                         request.FILES['file'].name.lower().endswith('.apk')):
                         # APK
@@ -101,7 +101,7 @@ def upload(request, api=False):
                     response_data['status'] = 'success'
                     add_to_recent_scan(
                         request.FILES['file'].name, md5, response_data['url'])
-                    print "\n[INFO] Performing Static Analysis of Android APK"
+                    print("\n[INFO] Performing Static Analysis of Android APK")
                 elif ((file_type in settings.ZIP_MIME) and
                       request.FILES['file'].name.lower().endswith('.zip')):
                       # Android /iOS Zipped Source
@@ -115,7 +115,7 @@ def upload(request, api=False):
                     response_data['status'] = 'success'
                     add_to_recent_scan(
                         request.FILES['file'].name, md5, response_data['url'])
-                    print "\n[INFO] Performing Static Analysis of Android/iOS Source Code"
+                    print("\n[INFO] Performing Static Analysis of Android/iOS Source Code")
                 elif ((file_type in settings.IPA_MIME) and
                       request.FILES['file'].name.lower().endswith('.ipa')):
                       # iOS Binary
@@ -133,14 +133,14 @@ def upload(request, api=False):
                         response_data['status'] = 'success'
                         add_to_recent_scan(
                             request.FILES['file'].name, md5, response_data['url'])
-                        print "\n[INFO] Performing Static Analysis of iOS IPA"
+                        print("\n[INFO] Performing Static Analysis of iOS IPA")
                     else:
                         if api:
                             api_response[
                                 "error"] = "Static Analysis of iOS IPA requires OSX"
                         response_data['url'] = 'mac_only/'
                         response_data['status'] = 'success'
-                        print "\n[ERROR] Static Analysis of iOS IPA requires OSX"
+                        print("\n[ERROR] Static Analysis of iOS IPA requires OSX")
                 # Windows APPX
                 elif (file_type in settings.APPX_MIME) and request.FILES['file'].name.lower().endswith('.appx'):
                     md5 = handle_uploaded_file(request.FILES['file'], '.appx')
@@ -154,14 +154,14 @@ def upload(request, api=False):
                     response_data['status'] = 'success'
                     add_to_recent_scan(
                         request.FILES['file'].name, md5, response_data['url'])
-                    print "\n[INFO] Performing Static Analysis of Windows APP"
+                    print("\n[INFO] Performing Static Analysis of Windows APP")
                 else:
                     if api:
                         api_response["error"] = "File format not Supported!"
                     response_data['url'] = ''
                     response_data['description'] = 'File format not Supported!'
                     response_data['status'] = 'error'
-                    print "\n[ERROR] File format not Supported!"
+                    print("\n[ERROR] File format not Supported!")
 
             else:
                 if api:
@@ -169,14 +169,14 @@ def upload(request, api=False):
                 response_data['url'] = ''
                 response_data['description'] = 'Invalid Form Data!'
                 response_data['status'] = 'error'
-                print "\n[ERROR] Invalid Form Data!"
+                print("\n[ERROR] Invalid Form Data!")
         else:
             if api:
                 api_response["error"] = "Method not Supported!"
             response_data['url'] = ''
             response_data['description'] = 'Method not Supported!'
             response_data['status'] = 'error'
-            print "\n[ERROR] Method not Supported!"
+            print("\n[ERROR] Method not Supported!")
             form = UploadFileForm()
     except:
         PrintException("[ERROR] Uploading File:")
@@ -281,13 +281,13 @@ def download(request):
             filename = request.path.replace("/download/", "", 1)
             # Security Checks
             if "../" in filename:
-                print "\n[ATTACK] Path Traversal Attack detected"
+                print("\n[ATTACK] Path Traversal Attack detected")
                 return HttpResponseRedirect('/error/')
             ext = os.path.splitext(filename)[1]
             if ext in allowed_exts:
                 dwd_file = os.path.join(settings.DWD_DIR, filename)
                 if os.path.isfile(dwd_file):
-                    wrapper = FileWrapper(file(dwd_file))
+                    wrapper = FileWrapper(open(dwd_file, "rb"))
                     response = HttpResponse(
                         wrapper, content_type=allowed_exts[ext])
                     response['Content-Length'] = os.path.getsize(dwd_file)

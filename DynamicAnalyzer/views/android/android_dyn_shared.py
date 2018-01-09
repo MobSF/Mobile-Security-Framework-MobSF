@@ -7,19 +7,23 @@ from django.conf import settings
 from DynamicAnalyzer.pyWebProxy.pywebproxy import Proxy
 from MobSF.utils import PrintException, getADB
 
+
 def connect(toolsdir):
     """Connect to VM/Device"""
-    print "\n[INFO] Connecting to VM/Device"
+    print("\n[INFO] Connecting to VM/Device")
+
+    adb = getADB(toolsdir)
+    subprocess.call([adb, "kill-server"])
+    subprocess.call([adb, "start-server"])
+    print("\n[INFO] ADB Started")
+    wait(5)
+    print("\n[INFO] Connecting to VM/Device")
+    out = subprocess.check_output([adb, "connect", get_identifier()])
+    if b"unable to connect" in out:
+        raise ValueError("ERROR Connecting to VM/Device. ", out.decode("utf-8").replace("\n",""))
     try:
-        adb = getADB(toolsdir)
-        subprocess.call([adb, "kill-server"])
-        subprocess.call([adb, "start-server"])
-        print "\n[INFO] ADB Started"
-        wait(5)
-        print "\n[INFO] Connecting to VM/Device"
-        subprocess.call([adb, "connect", get_identifier()])
         subprocess.call([adb, "-s", get_identifier(), "wait-for-device"])
-        print "\n[INFO] Mounting"
+        print("\n[INFO] Mounting")
         if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_REAL_DEVICE":
             subprocess.call([adb, "-s", get_identifier(), "shell",
                              "su", "-c", "mount", "-o", "rw,remount,rw", "/system"])
@@ -35,34 +39,34 @@ def connect(toolsdir):
 
 def install_and_run(toolsdir, apk_path, package, launcher, is_activity):
     """Install APK and Run it"""
-    print "\n[INFO] Starting App for Dynamic Analysis"
+    print("\n[INFO] Starting App for Dynamic Analysis")
     try:
         adb = getADB(toolsdir)
-        print "\n[INFO] Installing APK"
+        print("\n[INFO] Installing APK")
         subprocess.call([adb, "-s", get_identifier(),
                          "install", "-r", apk_path])
         if is_activity:
             run_app = package + "/" + launcher
-            print "\n[INFO] Launching APK Main Activity"
+            print("\n[INFO] Launching APK Main Activity")
             subprocess.call([adb, "-s", get_identifier(),
                              "shell", "am", "start", "-n", run_app])
         else:
-            print "\n[INFO] App Doesn't have a Main Activity"
+            print("\n[INFO] App Doesn't have a Main Activity")
             # Handle Service or Give Choice to Select in Future.
-        print "[INFO] Testing Environment is Ready!"
+        print("[INFO] Testing Environment is Ready!")
     except:
         PrintException("[ERROR]  Starting App for Dynamic Analysis")
 
 
 def wait(sec):
     """Wait in Seconds"""
-    print "\n[INFO] Waiting for " + str(sec) + " seconds..."
+    print("\n[INFO] Waiting for " + str(sec) + " seconds...")
     time.sleep(sec)
 
 
 def web_proxy(apk_dir, ip_address, port):
     """Run MITM Proxy"""
-    print "\n[INFO] Starting Web Proxy"
+    print("\n[INFO] Starting Web Proxy")
     try:
         Proxy(ip_address, port, apk_dir, "on")
     except:
@@ -71,14 +75,14 @@ def web_proxy(apk_dir, ip_address, port):
 
 def get_res():
     """Get Screen Resolution or Device or VM"""
-    print "\n[INFO] Getting Screen Resolution"
+    print("\n[INFO] Getting Screen Resolution")
     try:
         toolsdir = os.path.join(
             settings.BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
         adb = getADB(toolsdir)
         resp = subprocess.check_output(
             [adb, "-s", get_identifier(), "shell", "dumpsys", "window"])
-        resp = resp.split("\n")
+        resp = resp.decode("utf-8").split("\n")
         res = ""
         for line in resp:
             if "mUnrestrictedScreen" in line:

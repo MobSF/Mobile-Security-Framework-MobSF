@@ -16,7 +16,7 @@ from MobSF.utils import (
 def get_hardcoded_cert_keystore(files):
     """Returns the hardcoded certificate keystore."""
     try:
-        print "[INFO] Getting Hardcoded Certificates/Keystores"
+        print("[INFO] Getting Hardcoded Certificates/Keystores")
         dat = ''
         certz = ''
         key_store = ''
@@ -42,7 +42,7 @@ def get_hardcoded_cert_keystore(files):
 def cert_info(app_dir, tools_dir):
     """Return certificate information."""
     try:
-        print "[INFO] Reading Code Signing Certificate"
+        print("[INFO] Reading Code Signing Certificate")
         cert = os.path.join(app_dir, 'META-INF/')
         cp_path = tools_dir + 'CertPrint.jar'
         files = [f for f in os.listdir(
@@ -62,7 +62,7 @@ def cert_info(app_dir, tools_dir):
             args = [settings.JAVA_PATH + 'java', '-jar', cp_path, certfile]
             issued = 'good'
             dat = subprocess.check_output(args)
-            unicode_output = unicode(dat, encoding="utf-8", errors="replace")
+            unicode_output = str(dat, encoding="utf-8", errors="replace")
             dat = escape(unicode_output).replace('\n', '</br>')
         else:
             dat = 'No Code Signing Certificate Found!'

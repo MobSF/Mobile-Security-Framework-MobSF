@@ -70,7 +70,7 @@ def download_config():
     conf_file = urlrequest.urlopen(CONFIG_URL)  # pylint: disable-msg=E1101
 
     # Save content
-    print("[*] Saving to File {}".format(CONFIG_FILE))
+    print(("[*] Saving to File {}".format(CONFIG_FILE)))
 
     # Write content to file
     conf_file_local.write(bytes(conf_file.read()))
@@ -144,7 +144,7 @@ def tools_nuget():
     nuget_file = urlrequest.urlopen(nuget_url)  # pylint: disable-msg=E1101
 
     # Save content
-    print("[*] Saving to File {}".format(nuget_file_path))
+    print(("[*] Saving to File {}".format(nuget_file_path)))
 
     # Write content to file
     nuget_file_local.write(bytes(nuget_file.read()))
@@ -232,7 +232,7 @@ def tools_rpcclient():
     rpc_file = urlrequest.urlopen(rpc_url)
 
     # Save content
-    print("[*] Saving to File {}".format(rpc_file_path))
+    print(("[*] Saving to File {}".format(rpc_file_path)))
 
     # Write content to file
     rpc_local_file.write(bytes(rpc_file.read()))
@@ -265,7 +265,7 @@ def tools_binscope():
     binscope_installer = urlrequest.urlopen(binscope_url)
 
     # Save content
-    print("[*] Saving to File {}".format(binscope_installer_path))
+    print(("[*] Saving to File {}".format(binscope_installer_path)))
 
     # Write content to file
     binscope_installer_file.write(bytes(binscope_installer.read()))
@@ -274,7 +274,7 @@ def tools_binscope():
     binscope_installer_file.close()
 
     # Execute the installer
-    print("[*] Installing BinScope to {}".format(binscope_path))
+    print(("[*] Installing BinScope to {}".format(binscope_path)))
     os.system(
         'msiexec' + ' '
         'INSTALLLOCATION="' + binscope_path + '" ' +
@@ -305,13 +305,13 @@ def generate_secret():
     pub_key_file.write(pubkey.save_pkcs1().decode('utf-8'))
     pub_key_file.close()
 
-    print(
+    print((
         "[!] Please move the private key file\n"
         "\t{}\n"
         "\tto MobSF to the path specified in settings.py\n"
         "\t(default: Mobile-Security-Framework-MobSF/MobSF/windows_vm_priv_key.asc)"
         .format(CONFIG['MobSF']['priv_key'])
-    )
+    ))
     if sys.version_info.major == 3:
         # pylint: disable-msg=W0141
         # For python3

@@ -63,20 +63,20 @@ URLS = []
 
 
 def SaveOnExit():
-    print "\n[INFO] Saving Captured Web Proxy Data"
+    print("\n[INFO] Saving Captured Web Proxy Data")
     try:
         global REQUEST_LIST, URLS, TRAFFIC, log
-        print "\n[INFO] Saving URLS"
+        print("\n[INFO] Saving URLS")
         with open(os.path.join(log, "urls"), "w") as f2:
             URLS = list(set(URLS))
             URLS = '\n'.join(URLS)
             f2.write(URLS)
 
-        print "\n[INFO] Saving WebTraffic"
+        print("\n[INFO] Saving WebTraffic")
         with open(os.path.join(log, "WebTraffic.txt"), "w") as f3:
             f3.write(TRAFFIC)
 
-        print "\n[INFO] Saving Request Objects"
+        print("\n[INFO] Saving Request Objects")
         REQUEST_DB_FILE = os.path.join(log, "requestdb")
         fp = open(REQUEST_DB_FILE, "wb")
         pickle.dump(REQUEST_LIST, fp)
@@ -193,7 +193,7 @@ class ProxyHandler(tornado.web.RequestHandler):
         if self.request.uri.startswith(self.request.protocol, 0):
             self.request.url = self.request.uri
         else:  # Transparent Proxy Request
-            self.request.url = self.request.protocol + "://" + self.request.host
+            self.request.url = "%s://%s" % (self.request.protocol, self.request.host)
             if self.request.uri != '/':  # Add uri only if needed
                 self.request.url += self.request.uri
 
@@ -360,7 +360,7 @@ class CustomWebSocketHandler(tornado.websocket.WebSocketHandler):
 
         # Have to add cookies and stuff
         request_headers = tornado.httputil.HTTPHeaders()
-        for name, value in self.request.headers.iteritems():
+        for name, value in list(self.request.headers.items()):
             if name not in restricted_request_headers:
                 request_headers.add(name, value)
         # Build a custom request
@@ -531,7 +531,7 @@ def try_exit():
         try:
             tornado.ioloop.IOLoop.instance().stop()
             SaveOnExit()
-            print "\n[INFO] Stopped WebProxy and Data Saved"
+            print("\n[INFO] Stopped WebProxy and Data Saved")
         except:
             pass
 
@@ -543,7 +543,7 @@ def startTornado(IP, PORT, log):
         # http://www.joet3ch.com/blog/2011/09/08/alternative-tornado-logging/
         server.start(int(1))
     except:
-        print "\n[INFO] WebProxy Socket is already in use"
+        print("\n[INFO] WebProxy Socket is already in use")
         pass
     # Clean Up
     rmfiles = [os.path.join(log, "requestdb"), os.path.join(
@@ -563,9 +563,9 @@ def Proxy(IP, PORT, LOG, STAT):
     if STAT == "on":
         log = LOG
         kill = False
-        print "\n[INFO] Started Web Proxy at " + IP + ":" + PORT
+        print("\n[INFO] Started Web Proxy at " + IP + ":" + PORT)
         threading.Thread(target=startTornado, kwargs=dict(
             IP=IP, PORT=PORT, log=log)).start()
     else:
-        print "\n[INFO] Stopping any running instance of WebProxy"
+        print("\n[INFO] Stopping any running instance of WebProxy")
         kill = True

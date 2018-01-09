@@ -21,7 +21,7 @@ from install.windows.setup import windows_config_local
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
 
-MOBSF_VER = "v0.9.5.5 Beta"
+MOBSF_VER = "v0.9.5.6 Beta"
 BANNER = """
  __  __       _    ____  _____        ___   ___   ____  
 |  \/  | ___ | |__/ ___||  ___|_   __/ _ \ / _ \ | ___| 
@@ -83,7 +83,7 @@ try:
         USER_CONFIG = os.path.join(MobSF_HOME, 'config.py')
         sett = imp.load_source('user_settings', USER_CONFIG)
         locals().update(
-            {k: v for k, v in sett.__dict__.items() if not k.startswith("__")})
+            {k: v for k, v in list(sett.__dict__.items()) if not k.startswith("__")})
         CONFIG_HOME = True
     else:
         CONFIG_HOME = False
@@ -141,7 +141,7 @@ except NameError:
     except IOError:
         try:
             SECRET_KEY = utils.genRandom()
-            secret = file(SECRET_FILE, 'w')
+            secret = open(SECRET_FILE, 'w')
             secret.write(SECRET_KEY)
             secret.close()
         except IOError:
@@ -224,7 +224,7 @@ STATIC_URL = '/static/'
 #===================
 
 if CONFIG_HOME:
-    print "[INFO] Loading User config from: " + USER_CONFIG
+    print("[INFO] Loading User config from: " + USER_CONFIG)
 else:
     '''
     IMPORTANT
@@ -273,30 +273,6 @@ else:
     ex: PYTHON3_PATH = "C:/Users/Ajin/AppData/Local/Programs/Python/Python35-32/"
     '''
     PYTHON3_PATH = ""
-    #==============================================
-
-    #========DISABLED COMPONENTS===================
-
-    #----------VirusTotal--------------------------
-    VT_ENABLED = False
-    VT_API_KEY = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
-    VT_UPLOAD = False
-    # Before setting VT_ENABLED to True,
-    # Make sure VT_API_KEY is set to your VirusTotal API key
-    # register at: https://www.virustotal.com/#/join-us
-    # You can get your API KEY from https://www.virustotal.com/en/user/<username>/apikey/
-    # VT has a premium features but the free account is just enough for personal use
-    # BE AWARE - if you enable VT, in case the file wasn't already uploaded to VirusTotal,
-    # It will be uploaded if you set VT_UPLOAD to True!
-    #==============================================
-
-    #----------APKiD-------------------------------
-    APKID_ENABLED = False
-    # Before setting APKID_ENABLED to True,
-    # Install rednaga fork of Yara Python
-    # git clone https://github.com/rednaga/yara-python
-    # cd yara-python
-    # python setup.py install
     #==============================================
 
     #======WINDOWS STATIC ANALYSIS SETTINGS ===========
@@ -414,6 +390,38 @@ else:
     UPSTREAM_PROXY_USERNAME = None
     UPSTREAM_PROXY_PASSWORD = None
     #==============================================
+
+
+    #--------------------------
+    # MALWARE ANALYZER SETTINGS
+    #--------------------------
+    
+    DOMAIN_MALWARE_SCAN = True
+
+    #========DISABLED COMPONENTS===================
+
+    #----------VirusTotal--------------------------
+    VT_ENABLED = False
+    VT_API_KEY = 'XXXXXXXXXXXXXX'
+    VT_UPLOAD = False
+    # Before setting VT_ENABLED to True,
+    # Make sure VT_API_KEY is set to your VirusTotal API key
+    # register at: https://www.virustotal.com/#/join-us
+    # You can get your API KEY from https://www.virustotal.com/en/user/<username>/apikey/
+    # VT has a premium features but the free account is just enough for personal use
+    # BE AWARE - if you enable VT, in case the file wasn't already uploaded to VirusTotal,
+    # It will be uploaded if you set VT_UPLOAD to True!
+    #==============================================
+
+    #----------APKiD-------------------------------
+    APKID_ENABLED = False
+    # Before setting APKID_ENABLED to True,
+    # Install rednaga fork of Yara Python
+    # git clone https://github.com/rednaga/yara-python
+    # cd yara-python
+    # python setup.py install
+    #==============================================
+
 
     #------------------------
     # WEB API FUZZER SETTINGS

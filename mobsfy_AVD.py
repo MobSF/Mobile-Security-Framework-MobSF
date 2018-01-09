@@ -21,26 +21,26 @@ def get_windows_drive():
 
 
 def print_log(msg, log_type='INFO'):
-    print '\n[' + log_type + '] ' + msg + '\n'
+    print('\n[' + log_type + '] ' + msg + '\n')
 
 
 def execute_cmd(args, ret=False):
     try:
-        print "\n[INFO] Executing Command - " + ' '.join(args)
+        print("\n[INFO] Executing Command - " + ' '.join(args))
         if ret:
             return subprocess.check_output(args)
         else:
             subprocess.call(args)
     except Exception as e:
-        print "\n[ERROR] Executing Command - " + str(e)
+        print("\n[ERROR] Executing Command - " + str(e))
 
 
 def verify_path(help_msg):
-    path = raw_input(help_msg + ': ')
+    path = input(help_msg + ': ')
     path = path.strip()
     while not os.path.exists(path):
         print_log('Path specified does not exists \ no access', 'ERROR')
-        path = raw_input(help_msg)
+        path = input(help_msg)
     return path
 
 
@@ -180,7 +180,7 @@ def replace_values_by_fieldnames(path, replace_dict):
             tmp_line = line
             if path.endswith('.py'):
                 tabs_and_str = split_tabs(line)
-            for field_to_replace in replace_dict.keys():
+            for field_to_replace in list(replace_dict.keys()):
                 # Python files has annoying tabs that we should consider
                 if path.endswith('.py'):
                     if tabs_and_str[1].lower().startswith(field_to_replace.lower()):
@@ -204,7 +204,7 @@ def main():
     mobsf_arm_folder = ''
     settings_py = ''
 
-    print "\nMobSFy_AVD Script\n\n"
+    print("\nMobSFy_AVD Script\n\n")
     print_log('Starting MobSF - AVD interactive configuration script')
     print_log('Make sure to run this script ONLY after you successfuly installed leatest AndroidStudio & downloaded MobSF_ARM_Emulator.zip')
 
@@ -218,7 +218,7 @@ def main():
     print_log('This script will overwrite any previously generated files.')
     guessd_sdk_path = guess_android_sdk_folder()
     if guessd_sdk_path:
-        user_approve = raw_input(
+        user_approve = input(
             "Guessing Android sdk path: " + guessd_sdk_path + '\n Press Enter/alternative path')
         if user_approve.strip() == '':
             sdk_path = guessd_sdk_path
@@ -229,7 +229,7 @@ def main():
 
     guessd_avd_path = guess_android_avd_folder()
     if guessd_avd_path:
-        user_approve = raw_input(
+        user_approve = input(
             "Guessing Android AVD folder: " + guessd_avd_path + '\n Press Enter/alternative path')
         if user_approve.strip() == '':
             avd_path = guessd_avd_path
@@ -311,7 +311,7 @@ def main():
         'ADB_BINARY': 'r"' + adb_path + '"'
     })
 
-    print "\n\nAll Done! you can now use MobSF AVD Emulator :)\n\n"
+    print("\n\nAll Done! you can now use MobSF AVD Emulator :)\n\n")
 
 if __name__ == '__main__':
     sys.exit(main())

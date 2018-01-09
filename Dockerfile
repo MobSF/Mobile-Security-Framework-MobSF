@@ -32,13 +32,13 @@ RUN apt install -y software-properties-common && \
     echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections && \
     apt install -y oracle-java8-installer
 
-#Install Python 2.7, pip
+#Install Python 3
 RUN \
     apt install -y \
-    python \
-    python-dev \
-    python-pip && \
-    pip install --upgrade pip
+    python3.6 \
+    python3-dev \
+    python3-setuptools && \
+    easy_install3 pip
 
 #Install sqlite3 client and pdf generator needed dependencies
 RUN \
@@ -67,7 +67,7 @@ RUN ./kali_fix.sh
 
 #Install Dependencies
 WORKDIR /root/Mobile-Security-Framework-MobSF
-RUN pip install -r requirements.txt
+RUN pip3 install -r requirements.txt
 
 #Cleanup
 RUN \
@@ -80,4 +80,4 @@ RUN rm -rf /var/lib/apt/lists/* /tmp/* > /dev/null 2>&1
 EXPOSE 8000
 
 #Run MobSF
-CMD ["python","manage.py","runserver","0.0.0.0:8000"]
+CMD ["python3","manage.py","runserver","0.0.0.0:8000"]

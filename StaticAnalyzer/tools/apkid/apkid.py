@@ -56,9 +56,9 @@ logging.basicConfig(level=LOGGING_LEVEL,
                     stream=sys.stdout)
 
 # Magic doesn't need to be perfect. Just used to filter likely scannable files.
-ZIP_MAGIC = ['PK\x03\x04', 'PK\x05\x06', 'PK\x07\x08']
-DEX_MAGIC = ['dex\n', 'dey\n']
-ELF_MAGIC = ['\x7fELF']
+ZIP_MAGIC = [b'PK\x03\x04', b'PK\x05\x06', b'PK\x07\x08']
+DEX_MAGIC = [b'dex\n', b'dey\n']
+ELF_MAGIC = [b'\x7fELF']
 AXML_MAGIC = []  # TODO
 
 

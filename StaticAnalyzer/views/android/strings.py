@@ -2,6 +2,7 @@
 """Module for strings-method for java."""
 
 import io
+import os
 import subprocess
 
 from django.conf import settings
@@ -11,16 +12,18 @@ from MobSF.utils import (
 )
 
 
-def strings(app_file, app_dir, tools_dir):
+def strings_jar(app_file, app_dir, tools_dir):
     """Extract the strings from an app."""
     try:
-        print "[INFO] Extracting Strings from APK"
-        strings_jar = tools_dir + 'strings_from_apk.jar'
+        print("[INFO] Extracting Strings from APK")
+        strings_jar_loc = tools_dir + 'strings_from_apk.jar'
         args = [
             settings.JAVA_PATH + 'java',
-            '-jar', strings_jar, app_dir + app_file, app_dir
+            '-jar', strings_jar_loc, app_dir + app_file, app_dir
         ]
-        subprocess.call(args)
+        FNULL = open(os.devnull, 'w')
+        # Prevent exceptions from strings.jar from showing up in console
+        subprocess.call(args, stdout=FNULL, stderr=subprocess.STDOUT)
         dat = ''
         try:
             with io.open(

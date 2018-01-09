@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from tornado import ioloop
 import ssl
 
-from gen_cert import gen_signed_cert
+from .gen_cert import gen_signed_cert
 
 
 def wrap_socket(socket, domain, ca_crt, ca_key, ca_pass, certs_folder, success=None, failure=None, io=None, **options):

@@ -46,7 +46,7 @@ def get_context_from_analysis_ipa(app_dict, info_dict, bin_dict, files, sfiles):
 def get_context_from_db_entry_ipa(db_entry):
     """Return the context for IPA from DB"""
     try:
-        print "\n[INFO] Analysis is already Done. Fetching data from the DB..."
+        print("\n[INFO] Analysis is already Done. Fetching data from the DB...")
         context = {
             'title': db_entry[0].TITLE,
             'name': db_entry[0].APPNAMEX,
@@ -172,7 +172,7 @@ def get_context_from_analysis_ios(app_dict, info_dict,code_dict, files, sfiles):
 def get_context_from_db_entry_ios(db_entry):
     """Return the context for IOS ZIP from DB"""
     try:
-        print "\n[INFO] Analysis is already Done. Fetching data from the DB..."
+        print("\n[INFO] Analysis is already Done. Fetching data from the DB...")
         context = {
             'title': db_entry[0].TITLE,
             'name': db_entry[0].APPNAMEX,

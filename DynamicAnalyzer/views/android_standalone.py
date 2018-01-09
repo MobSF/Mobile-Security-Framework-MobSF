@@ -19,17 +19,17 @@ from MobSF.utils import getADB
 
 def dynamic_analyzer_standalone(request):
     """Standalone Dynamic Analysis"""
-    print "\n[INFO] Starting Standalone Android Dynamic Analyzer"
+    print("\n[INFO] Starting Standalone Android Dynamic Analyzer")
     toolsdir = os.path.join(
         settings.BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
     Proxy("", "", "", "")
     if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_REAL_DEVICE":
-        print "\n[INFO] MobSF will perform Dynamic Analysis on real Android Device"
+        print("\n[INFO] MobSF will perform Dynamic Analysis on real Android Device")
     else:
         # Refersh VM
         refresh_vm(settings.UUID, settings.SUUID, settings.VBOX)
     connect(toolsdir)
-    print get_packages(toolsdir)
+    print(get_packages(toolsdir))
     context = {'md5': '',
                'pkg': '',
                'lng': '',

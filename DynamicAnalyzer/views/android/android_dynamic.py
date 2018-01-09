@@ -65,14 +65,14 @@ def key(d, key_name):
 
 def android_dynamic_analyzer(request):
     """Android Dynamic Analyzer View"""
-    print "\n[INFO] Dynamic Analysis Started"
+    print("\n[INFO] Dynamic Analysis Started")
     try:
         if request.method == 'POST':
             md5_hash = request.POST['md5']
             package = request.POST['pkg']
             launcher = request.POST['lng']
             if re.findall(r';|\$\(|\|\||&&', package) or re.findall(r';|\$\(|\|\||&&', launcher):
-                print "[ATTACK] Possible RCE"
+                print("[ATTACK] Possible RCE")
                 return HttpResponseRedirect('/error/')
             if re.match('^[0-9a-f]{32}$', md5_hash):
                 # Delete ScreenCast Cache
@@ -92,7 +92,7 @@ def android_dynamic_analyzer(request):
                     settings.BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
                 adb = getADB(toolsdir)
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_REAL_DEVICE":
-                    print "\n[INFO] MobSF will perform Dynamic Analysis on real Android Device"
+                    print("\n[INFO] MobSF will perform Dynamic Analysis on real Android Device")
                     is_avd = False
                 elif settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                     # adb, avd_path, reference_name, dup_name, emulator
@@ -117,13 +117,12 @@ def android_dynamic_analyzer(request):
     except:
         PrintException("[ERROR] DynamicAnalyzer")
         return HttpResponseRedirect('/error/')
-
 # AJAX
 
 
 def get_env(request):
     """Get Dynamic Analysis Environment for Android"""
-    print "\n[INFO] Setting up Dynamic Analysis Environment"
+    print("\n[INFO] Setting up Dynamic Analysis Environment")
     try:
         if request.method == 'POST':
             data = {}
@@ -131,7 +130,7 @@ def get_env(request):
             package = request.POST['pkg']
             launcher = request.POST['lng']
             if re.findall(r";|\$\(|\|\||&&", package) or re.findall(r";|\$\(|\|\||&&", launcher):
-                print "[ATTACK] Possible RCE"
+                print("[ATTACK] Possible RCE")
                 return HttpResponseRedirect('/error/')
             if re.match('^[0-9a-f]{32}$', md5_hash):
                 base_dir = settings.BASE_DIR
@@ -149,12 +148,16 @@ def get_env(request):
                 port = str(settings.PORT)  # Proxy Port
                 web_proxy(app_dir, proxy_ip, port)
                 # AVD only needs to wait, vm needs the connect function
-                if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
-                    if not avd_load_wait(adb):
-                        print "\n[WARNING] ADB Load Wait Failed"
-                        return HttpResponseRedirect('/error/')
-                else:
-                    connect(toolsdir)
+                try:
+                    if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
+                        avd_load_wait(adb)
+                    else:
+                        connect(toolsdir)
+                except Exception as exp:
+                    data = {'ready': 'no',
+                        'msg': 'Cannot Connect to the VM/Device.',
+                        'error': str(exp)}
+                    return HttpResponse(json.dumps(data), content_type='application/json')
                 # Change True to support non-activity components
                 install_and_run(toolsdir, app_path, package, launcher, True)
                 screen_width, screen_width = get_res()
@@ -174,7 +177,7 @@ def get_env(request):
 
 def take_screenshot(request):
     """Take Screenshot"""
-    print "\n[INFO] Taking Screenshot"
+    print("\n[INFO] Taking Screenshot")
     try:
         if request.method == 'POST':
             md5_hash = request.POST['md5']
@@ -203,7 +206,7 @@ def take_screenshot(request):
                                  "pull",
                                  "/data/local/screen.png",
                                  screen_dir + "screenshot-" + str(rand_int) + ".png"])
-                print "\n[INFO] Screenshot Taken"
+                print("\n[INFO] Screenshot Taken")
                 data = {'screenshot': 'yes'}
                 return HttpResponse(json.dumps(data), content_type='application/json')
             else:
@@ -218,7 +221,7 @@ def take_screenshot(request):
 
 def screen_cast(request):
     """Start or Stop ScreenCast Feature"""
-    print "\n[INFO] Invoking ScreenCast Service in VM/Device"
+    print("\n[INFO] Invoking ScreenCast Service in VM/Device")
     try:
         global TCP_SERVER_MODE
         data = {}
@@ -278,7 +281,7 @@ def screen_cast(request):
 
 def clip_dump(request):
     """Dump Android ClipBoard"""
-    print "\n[INFO] Starting Clipboard Dump Service in VM/Device"
+    print("\n[INFO] Starting Clipboard Dump Service in VM/Device")
     try:
         data = {}
         if request.method == 'POST':
@@ -310,7 +313,7 @@ def clip_dump(request):
 
 def touch(request):
     """Sending Touch Events"""
-    print "\n[INFO] Sending Touch Events"
+    print("\n[INFO] Sending Touch Events")
     try:
         data = {}
         if (request.method == 'POST') and (is_number(request.POST['x'])) and (is_number(request.POST['y'])):
@@ -344,7 +347,7 @@ def touch(request):
 
 def execute_adb(request):
     """Execute ADB Commands"""
-    print "\n[INFO] Executing ADB Commands"
+    print("\n[INFO] Executing ADB Commands")
     try:
         if request.method == 'POST':
             data = {}
@@ -364,7 +367,7 @@ def execute_adb(request):
                 resp = subprocess.check_output(args)
             except:
                 PrintException("[ERROR] Executing ADB Commands")
-            data = {'cmd': 'yes', 'resp': resp}
+            data = {'cmd': 'yes', 'resp': resp.decode("utf8", "ignore")}
             return HttpResponse(json.dumps(data), content_type='application/json')
         else:
             return HttpResponseRedirect('/error/')
@@ -387,7 +390,7 @@ def mobsf_ca(request):
                 settings.BASE_DIR, 'DynamicAnalyzer/pyWebProxy/ca.crt')
             adb = getADB(toolsdir)
             if act == "install":
-                print "\n[INFO] Installing MobSF RootCA"
+                print("\n[INFO] Installing MobSF RootCA")
                 subprocess.call([adb,
                                  "-s",
                                  get_identifier(),
@@ -438,7 +441,7 @@ def mobsf_ca(request):
                                  "/data/local/tmp/" + settings.ROOT_CA])
                 data = {'ca': 'installed'}
             elif act == "remove":
-                print "\n[INFO] Removing MobSF RootCA"
+                print("\n[INFO] Removing MobSF RootCA")
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                     subprocess.call([adb,
                                  "-s",
@@ -469,14 +472,14 @@ def mobsf_ca(request):
 def final_test(request):
     """Collecting Data and Cleanup"""
     global TCP_SERVER_MODE
-    print "\n[INFO] Collecting Data and Cleaning Up"
+    print("\n[INFO] Collecting Data and Cleaning Up")
     try:
         if request.method == 'POST':
             data = {}
             md5_hash = request.POST['md5']
             package = request.POST['pkg']
             if re.findall(r";|\$\(|\|\||&&", package):
-                print "[ATTACK] Possible RCE"
+                print("[ATTACK] Possible RCE")
                 return HttpResponseRedirect('/error/')
             if re.match('^[0-9a-f]{32}$', md5_hash):
                 # Stop ScreenCast Client if it is running
@@ -490,7 +493,7 @@ def final_test(request):
                 # Can't RCE
                 os.system(adb + ' -s ' + get_identifier() +
                           ' logcat -d dalvikvm:W ActivityManager:I > "' + apk_dir + 'logcat.txt"')
-                print "\n[INFO] Downloading Logcat logs"
+                print("\n[INFO] Downloading Logcat logs")
                 subprocess.call([adb,
                                  "-s",
                                  get_identifier(),
@@ -498,11 +501,11 @@ def final_test(request):
                                  "/data/data/de.robv.android.xposed.installer/log/error.log",
                                  apk_dir + "x_logcat.txt"])
 
-                print "\n[INFO] Downloading Droidmon API Monitor Logcat logs"
+                print("\n[INFO] Downloading Droidmon API Monitor Logcat logs")
                 # Can't RCE
                 os.system(adb + ' -s ' + get_identifier() +
                           ' shell dumpsys > "' + apk_dir + 'dump.txt"')
-                print "\n[INFO] Downloading Dumpsys logs"
+                print("\n[INFO] Downloading Dumpsys logs")
                 subprocess.call([adb,
                                  "-s",
                                  get_identifier(),
@@ -510,7 +513,7 @@ def final_test(request):
                                  "am",
                                  "force-stop",
                                  package])
-                print "\n[INFO] Stopping Application"
+                print("\n[INFO] Stopping Application")
 
                 subprocess.call([adb,
                                  "-s",
@@ -519,7 +522,7 @@ def final_test(request):
                                  "am",
                                  "force-stop",
                                  "opensecurity.screencast"])
-                print "\n[INFO] Stopping ScreenCast Service"
+                print("\n[INFO] Stopping ScreenCast Service")
                 data = {'final': 'yes'}
                 return HttpResponse(json.dumps(data), content_type='application/json')
             else:
@@ -534,7 +537,7 @@ def final_test(request):
 
 def dump_data(request):
     """Downloading Application Data from Device"""
-    print "\n[INFO] Downloading Application Data from Device"
+    print("\n[INFO] Downloading Application Data from Device")
     try:
         if request.method == 'POST':
             data = {}
@@ -542,7 +545,7 @@ def dump_data(request):
             md5_hash = request.POST['md5']
             if re.match('^[0-9a-f]{32}$', md5_hash):
                 if re.findall(r";|\$\(|\|\||&&", package):
-                    print "[ATTACK] Possible RCE"
+                    print("[ATTACK] Possible RCE")
                     return HttpResponseRedirect('/error/')
                 base_dir = settings.BASE_DIR
                 apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
@@ -552,14 +555,14 @@ def dump_data(request):
                 # Let's try to close Proxy a bit early as we don't have much
                 # control on the order of thread execution
                 Proxy("", "", "", "")
-                print "\n[INFO] Deleting Dump Status File"
+                print("\n[INFO] Deleting Dump Status File")
                 subprocess.call([adb,
                                  "-s",
                                  get_identifier(),
                                  "shell",
                                  "rm",
                                  "/sdcard/mobsec_status"])
-                print "\n[INFO] Creating TAR of Application Files."
+                print("\n[INFO] Creating TAR of Application Files.")
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                     # tar -cvf /data/local/"+pkg+".tar /data/data/"+pkg+"/",
                     subprocess.call([adb,
@@ -578,7 +581,7 @@ def dump_data(request):
                                      "-a",
                                      package,
                                      "opensecurity.ajin.datapusher/.GetPackageLocation"])
-                print "\n[INFO] Waiting for TAR dump to complete..."
+                print("\n[INFO] Waiting for TAR dump to complete...")
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_REAL_DEVICE":
                     timeout = settings.DEVICE_TIMEOUT
                 else:
@@ -586,7 +589,7 @@ def dump_data(request):
                 start_time = time.time()
                 while True:
                     current_time = time.time()
-                    if "MOBSEC-TAR-CREATED" in subprocess.check_output([adb,
+                    if b"MOBSEC-TAR-CREATED" in subprocess.check_output([adb,
                                                                         "-s",
                                                                         get_identifier(),
                                                                         "shell",
@@ -594,9 +597,9 @@ def dump_data(request):
                                                                         "/sdcard/mobsec_status"]):
                         break
                     if (current_time - start_time) > timeout:
-                        print "\n[ERROR] TAR Generation Failed. Process timed out."
+                        print("\n[ERROR] TAR Generation Failed. Process timed out.")
                         break
-                print "\n[INFO] Dumping Application Files from Device/VM"
+                print("\n[INFO] Dumping Application Files from Device/VM")
                 subprocess.call([adb,
                                  "-s",
                                  get_identifier(),
@@ -605,7 +608,7 @@ def dump_data(request):
                                  apk_dir + package + ".tar"])
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                     stop_avd(adb)
-                print "\n[INFO] Stopping ADB"
+                print("\n[INFO] Stopping ADB")
                 subprocess.call([adb,
                                  "-s",
                                  get_identifier(),
@@ -624,13 +627,13 @@ def dump_data(request):
 
 def exported_activity_tester(request):
     """Exported Activity Tester"""
-    print "\n[INFO] Exported Activity Tester"
+    print("\n[INFO] Exported Activity Tester")
     try:
         md5_hash = request.POST['md5']
         package = request.POST['pkg']
         if re.match('^[0-9a-f]{32}$', md5_hash):
             if re.findall(r";|\$\(|\|\||&&", package):
-                print "[ATTACK] Possible RCE"
+                print("[ATTACK] Possible RCE")
                 return HttpResponseRedirect('/error/')
             if request.method == 'POST':
                 base_dir = settings.BASE_DIR
@@ -646,19 +649,19 @@ def exported_activity_tester(request):
                 static_android_db = StaticAnalyzerAndroid.objects.filter(
                     MD5=md5_hash)
                 if static_android_db.exists():
-                    print "\n[INFO] Fetching Exported Activity List from DB"
+                    print("\n[INFO] Fetching Exported Activity List from DB")
                     exported_act = python_list(
                         static_android_db[0].EXPORTED_ACT)
                     if exported_act:
                         exp_act_no = 0
-                        print "\n[INFO] Starting Exported Activity Tester..."
-                        print "\n[INFO] " + str(len(exported_act)) + \
-                            " Exported Activities Identified"
+                        print("\n[INFO] Starting Exported Activity Tester...")
+                        print("\n[INFO] " + str(len(exported_act)) + \
+                            " Exported Activities Identified")
                         for line in exported_act:
                             try:
                                 exp_act_no += 1
-                                print "\n[INFO] Launching Exported Activity - " + \
-                                    str(exp_act_no) + ". " + line
+                                print("\n[INFO] Launching Exported Activity - " + \
+                                    str(exp_act_no) + ". " + line)
                                 subprocess.call(
                                     [adb,
                                      "-s",
@@ -688,7 +691,7 @@ def exported_activity_tester(request):
                                      "pull",
                                      "/data/local/screen.png",
                                      screen_dir + "expact-" + str(exp_act_no) + ".png"])
-                                print "\n[INFO] Activity Screenshot Taken"
+                                print("\n[INFO] Activity Screenshot Taken")
                                 subprocess.call(
                                     [adb,
                                      "-s",
@@ -697,17 +700,17 @@ def exported_activity_tester(request):
                                      "am",
                                      "force-stop",
                                      package])
-                                print "\n[INFO] Stopping App"
+                                print("\n[INFO] Stopping App")
                             except:
                                 PrintException(
                                     "[ERROR] Exported Activity Tester")
                         data = {'expacttest': 'done'}
                     else:
-                        print "\n[INFO] Exported Activity Tester - No Activity Found!"
+                        print("\n[INFO] Exported Activity Tester - No Activity Found!")
                         data = {'expacttest': 'noact'}
                     return HttpResponse(json.dumps(data), content_type='application/json')
                 else:
-                    print "\n[ERROR] Entry does not exist in DB."
+                    print("\n[ERROR] Entry does not exist in DB.")
                     return HttpResponseRedirect('/error/')
             else:
                 return HttpResponseRedirect('/error/')
@@ -722,13 +725,13 @@ def exported_activity_tester(request):
 
 def activity_tester(request):
     """Activity Tester"""
-    print "\n[INFO] Activity Tester"
+    print("\n[INFO] Activity Tester")
     try:
         md5_hash = request.POST['md5']
         package = request.POST['pkg']
         if re.match('^[0-9a-f]{32}$', md5_hash):
             if re.findall(r";|\$\(|\|\||&&", package):
-                print "[ATTACK] Possible RCE"
+                print("[ATTACK] Possible RCE")
                 return HttpResponseRedirect('/error/')
             if request.method == 'POST':
                 base_dir = settings.BASE_DIR
@@ -743,16 +746,16 @@ def activity_tester(request):
                 static_android_db = StaticAnalyzerAndroid.objects.filter(
                     MD5=md5_hash)
                 if static_android_db.exists():
-                    print "\n[INFO] Fetching Activity List from DB"
+                    print("\n[INFO] Fetching Activity List from DB")
                     activities = python_list(static_android_db[0].ACTIVITIES)
                     if activities:
                         act_no = 0
-                        print "\n[INFO] Starting Activity Tester..."
-                        print "\n[INFO] " + str(len(activities)) + " Activities Identified"
+                        print("\n[INFO] Starting Activity Tester...")
+                        print("\n[INFO] " + str(len(activities)) + " Activities Identified")
                         for line in activities:
                             try:
                                 act_no += 1
-                                print "\n[INFO] Launching Activity - " + str(act_no) + ". " + line
+                                print("\n[INFO] Launching Activity - " + str(act_no) + ". " + line)
                                 subprocess.call(
                                     [adb,
                                      "-s",
@@ -783,7 +786,7 @@ def activity_tester(request):
                                      "pull",
                                      "/data/local/screen.png",
                                      screen_dir + "act-" + str(act_no) + ".png"])
-                                print "\n[INFO] Activity Screenshot Taken"
+                                print("\n[INFO] Activity Screenshot Taken")
                                 subprocess.call([adb,
                                                  "-s",
                                                  get_identifier(),
@@ -791,16 +794,16 @@ def activity_tester(request):
                                                  "am",
                                                  "force-stop",
                                                  package])
-                                print "\n[INFO] Stopping App"
+                                print("\n[INFO] Stopping App")
                             except:
                                 PrintException("Activity Tester")
                         data = {'acttest': 'done'}
                     else:
-                        print "\n[INFO] Activity Tester - No Activity Found!"
+                        print("\n[INFO] Activity Tester - No Activity Found!")
                         data = {'acttest': 'noact'}
                     return HttpResponse(json.dumps(data), content_type='application/json')
                 else:
-                    print "\n[ERROR] Entry does not exist in DB."
+                    print("\n[ERROR] Entry does not exist in DB.")
                     return HttpResponseRedirect('/error/')
             else:
                 return HttpResponseRedirect('/error/')
@@ -813,13 +816,13 @@ def activity_tester(request):
 
 def report(request):
     """Dynamic Analysis Report Generation"""
-    print "\n[INFO] Dynamic Analysis Report Generation"
+    print("\n[INFO] Dynamic Analysis Report Generation")
     try:
         if request.method == 'GET':
             md5_hash = request.GET['md5']
             package = request.GET['pkg']
             if re.findall(r";|\$\(|\|\||&&", package):
-                print "[ATTACK] Possible RCE"
+                print("[ATTACK] Possible RCE")
                 return HttpResponseRedirect('/error/')
             if re.match('^[0-9a-f]{32}$', md5_hash):
                 app_dir = os.path.join(
@@ -850,20 +853,20 @@ def report(request):
                         static_android_db = StaticAnalyzerAndroid.objects.filter(
                             MD5=md5_hash)
                         if static_android_db.exists():
-                            print "\n[INFO] Fetching Exported Activity & Activity List from DB"
+                            print("\n[INFO] Fetching Exported Activity & Activity List from DB")
                             exported_act = python_list(
                                 static_android_db[0].EXPORTED_ACT)
                             act_desc = python_list(
                                 static_android_db[0].ACTIVITIES)
                             if act_imgs:
                                 if len(act_imgs) == len(act_desc):
-                                    act = dict(zip(act_imgs, act_desc))
+                                    act = dict(list(zip(act_imgs, act_desc)))
                             if expact_imgs:
                                 if len(expact_imgs) == len(exported_act):
                                     exp_act = dict(
-                                        zip(expact_imgs, exported_act))
+                                        list(zip(expact_imgs, exported_act)))
                         else:
-                            print "\n[WARNING] Entry does not exists in the DB."
+                            print("\n[WARNING] Entry does not exists in the DB.")
                     except:
                         PrintException("[ERROR] Screenshot Sorting")
                 context = {'md5': md5_hash,
@@ -906,7 +909,7 @@ def report(request):
 
 def handle_sqlite(sfile):
     """SQLite Dump - Readable Text"""
-    print "\n[INFO] SQLite DB Extraction"
+    print("\n[INFO] SQLite DB Extraction")
     try:
         data = ''
         con = sq.connect(sfile)
@@ -914,17 +917,14 @@ def handle_sqlite(sfile):
         cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
         tables = cur.fetchall()
         for table in tables:
-            data += "\nTABLE: " + str(table[0]).decode('utf8', 'ignore') + \
+            data += "\nTABLE: " + table[0] + \
                 " \n=====================================================\n"
             cur.execute("PRAGMA table_info('%s')" % table)
             rows = cur.fetchall()
             head = ''
             for sq_row in rows:
                 elm_data = sq_row[1]
-                if isinstance(elm_data, unicode):
-                    elm_data = unicodedata.normalize(
-                        'NFKD', elm_data).encode('ascii', 'ignore')
-                head += str(elm_data).decode('utf8', 'ignore') + " | "
+                head += elm_data + " | "
             data += head + " \n============================================" + \
                 "=========================\n"
             cur.execute("SELECT * FROM '%s'" % table)
@@ -932,10 +932,7 @@ def handle_sqlite(sfile):
             for sq_row in rows:
                 dat = ''
                 for each_row in sq_row:
-                    if isinstance(each_row, unicode):
-                        each_row = unicodedata.normalize(
-                            'NFKD', each_row).encode('ascii', 'ignore')
-                    dat += str(each_row).decode('utf8', 'ignore') + " | "
+                    dat += str(each_row) + " | "
                 data += dat + "\n"
         return data
     except:
@@ -945,7 +942,7 @@ def handle_sqlite(sfile):
 def api_analysis(package, location):
     """API Analysis"""
     api_analysis_result = {}
-    print "\n[INFO] Dynamic API Analysis"
+    print("\n[INFO] Dynamic API Analysis")
     dat = ""
     api_base64 = []
     api_fileio = []
@@ -965,7 +962,6 @@ def api_analysis(package, location):
             dat = flip.readlines()
         res_id = "Droidmon-apimonitor-" + package + ":"
         for line in dat:
-            line = line.decode('utf8', 'ignore')
             if res_id in line:
                 # print "LINE: " + line
                 _, value = line.split(res_id, 1)
@@ -1051,7 +1047,7 @@ def api_analysis(package, location):
 
 def download(md5_hash, download_dir, apk_dir, package):
     """Generating Downloads"""
-    print "\n[INFO] Generating Downloads"
+    print("\n[INFO] Generating Downloads")
     try:
         logcat = os.path.join(apk_dir, 'logcat.txt')
         xlogcat = os.path.join(apk_dir, 'x_logcat.txt')
@@ -1097,7 +1093,7 @@ def download(md5_hash, download_dir, apk_dir, package):
 def run_analysis(apk_dir, md5_hash, package):
     """Run Dynamic File Analysis"""
     analysis_result = {}
-    print "\n[INFO] Dynamic File Analysis"
+    print("\n[INFO] Dynamic File Analysis")
     web = os.path.join(apk_dir, 'WebTraffic.txt')
     logcat = os.path.join(apk_dir, 'logcat.txt')
     xlogcat = os.path.join(apk_dir, 'x_logcat.txt')
@@ -1124,10 +1120,10 @@ def run_analysis(apk_dir, md5_hash, package):
             clipboard.append(log_line.replace(clip_tag, "Process ID "))
     urls = []
     # URLs My Custom regex
-    url_pattern = re.compile(ur'((?:https?://|s?ftps?://|file://|javascript:|data:|www\d{0,3}[.])[\w().=/;,#:@?&~*+!$%\'{}-]+)', re.UNICODE)
+    url_pattern = re.compile(r'((?:https?://|s?ftps?://|file://|javascript:|data:|www\d{0,3}[.])[\w().=/;,#:@?&~*+!$%\'{}-]+)', re.UNICODE)
     urllist = re.findall(url_pattern, traffic.lower())
     # Domain Extraction and Malware Check
-    print "[INFO] Performing Malware Check on extracted Domains"
+    print("[INFO] Performing Malware Check on extracted Domains")
     domains = malware_check(urllist)
     for url in urllist:
         if url not in urls:
@@ -1209,7 +1205,7 @@ def run_analysis(apk_dir, md5_hash, package):
 
 def view(request):
     """View File"""
-    print "\n[INFO] Viewing File"
+    print("\n[INFO] Viewing File")
     try:
         typ = ''
         fil = ''
@@ -1252,7 +1248,7 @@ def view(request):
 def screencast_service():
     """Start or Stop ScreenCast Services"""
     global TCP_SERVER_MODE
-    print "\n[INFO] ScreenCast Service Status: " + TCP_SERVER_MODE
+    print("\n[INFO] ScreenCast Service Status: " + TCP_SERVER_MODE)
     try:
         screen_dir = settings.SCREEN_DIR
         if not os.path.exists(screen_dir):
@@ -1269,7 +1265,7 @@ def screencast_service():
             screen_socket.listen(10)
             while TCP_SERVER_MODE == "on":
                 screens, address = screen_socket.accept()
-                print "Got Connection from: ", address[0]
+                print("Got Connection from: ", address[0])
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_REAL_DEVICE":
                     ip_address = settings.DEVICE_IP
                 else:
@@ -1286,8 +1282,8 @@ def screencast_service():
                                 break
                             flip.write(data)
                 else:
-                    print "\n[ATTACK] An unknown client :" + address[0] + " is trying " + \
-                        "to make a connection with MobSF ScreenCast Service!"
+                    print("\n[ATTACK] An unknown client :" + address[0] + " is trying " + \
+                        "to make a connection with MobSF ScreenCast Service!")
         elif TCP_SERVER_MODE == "off":
             screen_socket.close()
     except:

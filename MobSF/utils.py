@@ -9,12 +9,12 @@ import time
 import datetime
 import ntpath
 import hashlib
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import io
 import ast
 import unicodedata
-import httplib
-import settings
+import http.client
+from . import settings
 
 from django.shortcuts import render
 
@@ -38,17 +38,17 @@ def api_key():
 
 def printMobSFverison():
     """Print MobSF Version"""
-    print settings.BANNER
+    print(settings.BANNER)
     if platform.system() == "Windows":
-        print '\n\nMobile Security Framework ' + settings.MOBSF_VER
-        print "\nREST API Key: " + api_key()
+        print('\n\nMobile Security Framework ' + settings.MOBSF_VER)
+        print("\nREST API Key: " + api_key())
     else:
-        print '\n\n\033[1m\033[34mMobile Security Framework ' + settings.MOBSF_VER + '\033[0m'
-        print "\nREST API Key: " + Color.BOLD +  api_key() + Color.END
-    print "OS: " + platform.system()
-    print "Platform: " + platform.platform()
+        print('\n\n\033[1m\033[34mMobile Security Framework ' + settings.MOBSF_VER + '\033[0m')
+        print("\nREST API Key: " + Color.BOLD +  api_key() + Color.END)
+    print("OS: " + platform.system())
+    print("Platform: " + platform.platform())
     if platform.dist()[0]:
-        print "Dist: " + str(platform.dist())
+        print("Dist: " + str(platform.dist()))
     FindJava(True)
     FindVbox(True)
     adb_binary_or32bit_support()
@@ -57,21 +57,21 @@ def printMobSFverison():
 
 def check_update():
     try:
-        print "\n[INFO] Checking for Update."
+        print("\n[INFO] Checking for Update.")
         github_url = "https://raw.githubusercontent.com/MobSF/Mobile-Security-Framework-MobSF/master/MobSF/settings.py"
-        response = urllib2.urlopen(github_url)
-        html = response.read().split("\n")
+        response = urllib.request.urlopen(github_url)
+        html = str(response.read()).split("\n")
         for line in html:
             if line.startswith("MOBSF_VER"):
                 line = line.replace("MOBSF_VER", "").replace('"', '')
                 line = line.replace("=", "").strip()
                 if line != settings.MOBSF_VER:
-                    print """\n[WARN] A new version of MobSF is available,
-Please update from master branch or check for new releases.\n"""
+                    print("""\n[WARN] A new version of MobSF is available,
+Please update from master branch or check for new releases.\n""")
                 else:
-                    print "\n[INFO] No updates available."
-    except (urllib2.HTTPError, httplib.HTTPException):
-        print "\n[WARN] Cannot check for updates.. No Internet Connection Found."
+                    print("\n[INFO] No updates available.")
+    except (urllib.error.HTTPError, http.client.HTTPException):
+        print("\n[WARN] Cannot check for updates.. No Internet Connection Found.")
         return
     except:
         PrintException("[ERROR] Cannot Check for updates.")
@@ -140,10 +140,14 @@ def getMobSFHome(useHOME):
 def make_migrations(base_dir):
     """Create Database Migrations"""
     try:
+        if sys.version_info[0] < 3:
+            python = "python"
+        else:
+            python = "python3"
         manage = os.path.join(base_dir, "manage.py")
-        args = ["python", manage, "makemigrations"]
+        args = [python, manage, "makemigrations"]
         subprocess.call(args)
-        args = ["python", manage, "makemigrations", "StaticAnalyzer"]
+        args = [python, manage, "makemigrations", "StaticAnalyzer"]
         subprocess.call(args)
     except:
         PrintException("[ERROR] Cannot Make Migrations")
@@ -152,8 +156,12 @@ def make_migrations(base_dir):
 def migrate(BASE_DIR):
     """Migrate Database"""
     try:
+        if sys.version_info[0] < 3:
+            python = "python"
+        else:
+            python = "python3"
         manage = os.path.join(BASE_DIR, "manage.py")
-        args = ["python", manage, "migrate"]
+        args = [python, manage, "migrate"]
         subprocess.call(args)
     except:
         PrintException("[ERROR] Cannot Migrate")
@@ -189,7 +197,7 @@ def FindVbox(debug=False):
                     if os.path.isfile(path):
                         return path
             if debug:
-                print "\n[WARNING] Could not find VirtualBox path."
+                print("\n[WARNING] Could not find VirtualBox path.")
     except:
         if debug:
             PrintException("[ERROR] Cannot find VirtualBox path.")
@@ -205,7 +213,7 @@ def FindJava(debug=False):
             return settings.JAVA_DIRECTORY
         if platform.system() == "Windows":
             if debug:
-                print "\n[INFO] Finding JDK Location in Windows...."
+                print("\n[INFO] Finding JDK Location in Windows....")
             # JDK 7 jdk1.7.0_17/bin/
             WIN_JAVA_LIST = ["C:/Program Files/Java/",
                              "C:/Program Files (x86)/Java/"]
@@ -222,11 +230,11 @@ def FindJava(debug=False):
                         dat = RunProcess(args)
                         if "oracle" in dat:
                             if debug:
-                                print "\n[INFO] Oracle Java (JDK >= 1.7) is installed!"
+                                print("\n[INFO] Oracle Java (JDK >= 1.7) is installed!")
                             return WIN_JAVA
                 elif len(JDK) > 1:
                     if debug:
-                        print "\n[INFO] Multiple JDK Instances Identified. Looking for JDK 1.7 or above"
+                        print("\n[INFO] Multiple JDK Instances Identified. Looking for JDK 1.7 or above")
                     for j in JDK:
                         if re.findall(JAVA_VER, j):
                             WIN_JAVA = WIN_JAVA_BASE + j + "/bin/"
@@ -238,7 +246,7 @@ def FindJava(debug=False):
                         dat = RunProcess(args)
                         if "oracle" in dat:
                             if debug:
-                                print "\n[INFO] Oracle Java (JDK >= 1.7) is installed!"
+                                print("\n[INFO] Oracle Java (JDK >= 1.7) is installed!")
                             return WIN_JAVA
             for env in ["JDK_HOME", "JAVA_HOME"]:
                 java_home = os.environ.get(env)
@@ -250,15 +258,15 @@ def FindJava(debug=False):
                         dat = RunProcess(args)
                         if "oracle" in dat:
                             if debug:
-                                print "\n[INFO] Oracle Java (JDK >= 1.7) is installed!"
+                                print("\n[INFO] Oracle Java (JDK >= 1.7) is installed!")
                             return WIN_JAVA
 
             if debug:
-                print err_msg1
+                print(err_msg1)
             return ""
         else:
             if debug:
-                print "\n[INFO] Finding JDK Location in Linux/MAC...."
+                print("\n[INFO] Finding JDK Location in Linux/MAC....")
             MAC_LINUX_JAVA = "/usr/bin/"
             args = [MAC_LINUX_JAVA + "java"]
             dat = RunProcess(args)
@@ -268,16 +276,16 @@ def FindJava(debug=False):
                 f_line = dat.split("\n")[0]
                 if re.findall(JAVA_VER, f_line):
                     if debug:
-                        print "\n[INFO] JDK 1.7 or above is available"
+                        print("\n[INFO] JDK 1.7 or above is available")
                     return MAC_LINUX_JAVA
                 else:
                     err_msg = "[ERROR] Please install Oracle JDK 1.7 or above"
                     if debug:
-                        print Color.BOLD + Color.RED + err_msg + Color.END
+                        print(Color.BOLD + Color.RED + err_msg + Color.END)
                     return ""
             else:
                 if debug:
-                    print Color.BOLD + Color.RED + err_msg1 + Color.END
+                    print(Color.BOLD + Color.RED + err_msg1 + Color.END)
                 return ""
     except:
         if debug:
@@ -294,7 +302,7 @@ def RunProcess(args):
             line = proc.stdout.readline()
             if not line:
                 break
-            dat += line
+            dat += str(line)
         return dat
     except:
         PrintException("[ERROR] Finding Java path - Cannot Run Process")
@@ -320,18 +328,18 @@ def PrintException(msg, web=False):
         ' ({0}, LINE {1} "{2}"): {3}'.format(
             filename, lineno, line.strip(), exc_obj)
     if platform.system() == "Windows":
-        print dat
+        print(dat)
     else:
         if web:
-            print Color.BOLD + Color.ORANGE + dat + Color.END
+            print(Color.BOLD + Color.ORANGE + dat + Color.END)
         else:
-            print Color.BOLD + Color.RED + dat + Color.END
+            print(Color.BOLD + Color.RED + dat + Color.END)
     with open(LOGPATH + 'MobSF.log', 'a') as f:
         f.write(dat)
 
 def print_n_send_error_response(request, msg, api, exp='Error Description'):
     """Print and log errors"""
-    print Color.BOLD + Color.RED + '[ERROR] ' + msg + Color.END
+    print(Color.BOLD + Color.RED + '[ERROR] ' + msg + Color.END)
     time_stamp = time.time()
     formatted_tms = datetime.datetime.fromtimestamp(time_stamp).strftime('%Y-%m-%d %H:%M:%S')
     data = '\n[' + formatted_tms + ']\n[ERROR] ' + msg
@@ -410,13 +418,13 @@ def isBase64(str):
 
 def isInternetAvailable():
     try:
-        urllib2.urlopen('http://216.58.220.46', timeout=5)
+        urllib.request.urlopen('http://216.58.220.46', timeout=5)
         return True
-    except urllib2.URLError as err:
+    except urllib.error.URLError as err:
         try:
-            urllib2.urlopen('http://180.149.132.47', timeout=5)
+            urllib.request.urlopen('http://180.149.132.47', timeout=5)
             return True
-        except urllib2.URLError as err1:
+        except urllib.error.URLError as err1:
             return False
     return False
 
@@ -433,7 +441,7 @@ def sha256(file_path):
 
 def gen_sha256_hash(msg):
     """Generate SHA 256 Hash of the message"""
-    hash_object = hashlib.sha256(msg)
+    hash_object = hashlib.sha256(msg.encode('utf-8'))
     return hash_object.hexdigest()
 
 def isFileExists(file_path):
@@ -457,7 +465,7 @@ def genRandom():
 def zipdir(path, zip_file):
     """Zip a directory."""
     try:
-        print "[INFO] Zipping"
+        print("[INFO] Zipping")
         # pylint: disable=unused-variable
         # Needed by os.walk
         for root, _sub_dir, files in os.walk(path):
@@ -503,6 +511,6 @@ def adb_binary_or32bit_support():
             " ADB binary is not compatible with your OS."\
             "\nPlease set the 'ADB_BINARY' path in settings.py"
         if platform.system != "Windows":
-            print Color.BOLD + Color.ORANGE + msg + Color.END
+            print(Color.BOLD + Color.ORANGE + msg + Color.END)
         else:
-            print msg
+            print(msg)
