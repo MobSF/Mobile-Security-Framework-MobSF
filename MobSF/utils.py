@@ -136,14 +136,24 @@ def getMobSFHome(useHOME):
     except:
         PrintException("[ERROR] Creating MobSF Home Directory")
 
+def get_python():
+    """Detect Correct Python"""
+    if sys.version_info[0] < 3:
+        python = "python"
+    else:
+        python = "python3"
+    try:
+        data = subprocess.check_output([python, "-c", "'import django; print (django.__version__)'"])
+        if len(data) < 1:
+            python = "python"
+    except:
+        python = "python"
+    return python
 
 def make_migrations(base_dir):
     """Create Database Migrations"""
     try:
-        if sys.version_info[0] < 3:
-            python = "python"
-        else:
-            python = "python3"
+        python = get_python()
         manage = os.path.join(base_dir, "manage.py")
         args = [python, manage, "makemigrations"]
         subprocess.call(args)
@@ -156,10 +166,7 @@ def make_migrations(base_dir):
 def migrate(BASE_DIR):
     """Migrate Database"""
     try:
-        if sys.version_info[0] < 3:
-            python = "python"
-        else:
-            python = "python3"
+        python = get_python()
         manage = os.path.join(BASE_DIR, "manage.py")
         args = [python, manage, "migrate"]
         subprocess.call(args)
