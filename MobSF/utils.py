@@ -222,55 +222,32 @@ def FindJava(debug=False):
             if debug:
                 print("\n[INFO] Finding JDK Location in Windows....")
             # JDK 7 jdk1.7.0_17/bin/
-            WIN_JAVA_LIST = ["C:/Program Files/Java/",
-                             "C:/Program Files (x86)/Java/"]
-            for WIN_JAVA_BASE in WIN_JAVA_LIST:
-                JDK = []
-                for dirname in os.listdir(WIN_JAVA_BASE):
-                    if "jdk" in dirname:
-                        JDK.append(dirname)
-                if len(JDK) == 1:
-                    j = ''.join(JDK)
-                    if re.findall(JAVA_VER, j):
-                        WIN_JAVA = WIN_JAVA_BASE + j + "/bin/"
-                        args = [WIN_JAVA + "java"]
-                        dat = RunProcess(args)
-                        if "oracle" in dat:
-                            if debug:
-                                print("\n[INFO] Oracle Java (JDK >= 1.7) is installed!")
-                            return WIN_JAVA
-                elif len(JDK) > 1:
-                    if debug:
-                        print("\n[INFO] Multiple JDK Instances Identified. Looking for JDK 1.7 or above")
-                    for j in JDK:
-                        if re.findall(JAVA_VER, j):
-                            WIN_JAVA = WIN_JAVA_BASE + j + "/bin/"
-                            break
-                        else:
-                            WIN_JAVA = ""
-                    if len(WIN_JAVA) > 1:
-                        args = [WIN_JAVA + "java"]
-                        dat = RunProcess(args)
-                        if "oracle" in dat:
-                            if debug:
-                                print("\n[INFO] Oracle Java (JDK >= 1.7) is installed!")
-                            return WIN_JAVA
+            for java_path in ["C:/Program Files/Java/",
+                             "C:/Program Files (x86)/Java/"]:
+                if os.path.isdir(java_path):
+                    for dirname in os.listdir(java_path):
+                        if "jdk" in dirname:
+                            win_java_path = java_path + dirname + "/bin/"
+                            args = [win_java_path + "java", "--version"]
+                            dat = RunProcess(args)
+                            if "java" in dat:
+                                if debug:
+                                    print("\n[INFO] Oracle Java JDK is installed!")
+                                return win_java_path
             for env in ["JDK_HOME", "JAVA_HOME"]:
                 java_home = os.environ.get(env)
                 if java_home and os.path.isdir(java_home):
-                    j = os.path.basename(java_home)
-                    if re.findall(JAVA_VER, j):
-                        WIN_JAVA = java_home + "/bin/"
-                        args = [WIN_JAVA + "java"]
-                        dat = RunProcess(args)
-                        if "oracle" in dat:
-                            if debug:
-                                print("\n[INFO] Oracle Java (JDK >= 1.7) is installed!")
-                            return WIN_JAVA
+                    win_java_path = java_home + "/bin/"
+                    args = [win_java_path + "java", "--version"]
+                    dat = RunProcess(args)
+                    if "java" in dat:
+                        if debug:
+                            print("\n[INFO] Oracle Java is installed!")
+                        return win_java_path
 
             if debug:
                 print(err_msg1)
-            return ""
+            return "java"
         else:
             if debug:
                 print("\n[INFO] Finding JDK Location in Linux/MAC....")
