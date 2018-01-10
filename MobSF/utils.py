@@ -143,7 +143,7 @@ def get_python():
     else:
         python = "python3"
     try:
-        data = subprocess.check_output([python, "-c", "'import django; print (django.__version__)'"])
+        data = subprocess.check_output([python, "-c", "import django; print (django.__version__)"])
         if len(data) < 1:
             python = "python"
     except:
