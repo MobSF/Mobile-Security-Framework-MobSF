@@ -60,20 +60,20 @@ def check_update():
         print "\n[INFO] Checking for Update."
         github_url = "https://raw.githubusercontent.com/MobSF/Mobile-Security-Framework-MobSF/master/MobSF/settings.py"
         if settings.UPSTREAM_PROXY_IP:
-        proxy = urllib2.ProxyHandler({'http': '127.0.0.1'})
-        opener = urllib2.build_opener(proxy)
-        urllib2.install_opener(opener)
-            response = urllib2.urlopen(github_url)
-            html = response.read().split("\n")
-            for line in html:
-                if line.startswith("MOBSF_VER"):
-                    line = line.replace("MOBSF_VER", "").replace('"', '')
-                    line = line.replace("=", "").strip()
-                    if line != settings.MOBSF_VER:
-                        print """\n[WARN] A new version of MobSF is available,
+            proxy = urllib2.ProxyHandler({'http': '127.0.0.1'})
+            opener = urllib2.build_opener(proxy)
+            urllib2.install_opener(opener)
+        response = urllib2.urlopen(github_url)
+        html = response.read().split("\n")
+        for line in html:
+            if line.startswith("MOBSF_VER"):
+                line = line.replace("MOBSF_VER", "").replace('"', '')
+                line = line.replace("=", "").strip()
+                if line != settings.MOBSF_VER:
+                    print """\n[WARN] A new version of MobSF is available,
 Please update from master branch or check for new releases.\n"""
-                    else:
-                        print "\n[INFO] No updates available."
+                else:
+                    print "\n[INFO] No updates available."
         except (urllib2.HTTPError, httplib.HTTPException):
             print "\n[WARN] Cannot check for updates.. No Internet Connection Found."
             return
