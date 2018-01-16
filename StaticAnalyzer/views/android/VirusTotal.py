@@ -63,7 +63,7 @@ class VirusTotal:
                         proxies = {"https": settings.UPSTREAM_PROXY_IP + ":" + settings.UPSTREAM_PROXY_PORT}
                     else:
                         proxies = {"https": settings.UPSTREAM_PROXY_USERNAME + ":" + settings.UPSTREAM_PROXY_PASSWORD + "@" + settings.UPSTREAM_PROXY_IP + ":" + settings.UPSTREAM_PROXY_PORT}
-                    response = requests.post(url, files=files, data=headers, proxies)
+                    response = requests.post(url, files=files, data=headers, proxies=proxies)
                 else:    
                     response = requests.post(url, files=files, data=headers)
                 if response.status_code == 403:
