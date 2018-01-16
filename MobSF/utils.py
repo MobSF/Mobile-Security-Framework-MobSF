@@ -60,7 +60,10 @@ def check_update():
         print "\n[INFO] Checking for Update."
         github_url = "https://raw.githubusercontent.com/MobSF/Mobile-Security-Framework-MobSF/master/MobSF/settings.py"
         if settings.UPSTREAM_PROXY_ENABLED:
-            proxy_host = settings.UPSTREAM_PROXY_IP + ':' + settings.UPSTREAM_PROXY_PORT
+            if settings.UPSTREAM_PROXY_USERNAME is None:
+                proxy_host = settings.UPSTREAM_PROXY_IP + ':' + settings.UPSTREAM_PROXY_PORT
+            else:
+                proxy_host = settings.UPSTREAM_PROXY_USERNAME + ":"+ settings.UPSTREAM_PROXY_PASSWORD + "@" + settings.UPSTREAM_PROXY_IP ':' + settings.UPSTREAM_PROXY_PORT
             proxy = urllib2.ProxyHandler({'https': proxy_host})
             opener = urllib2.build_opener(proxy)
             urllib2.install_opener(opener)
