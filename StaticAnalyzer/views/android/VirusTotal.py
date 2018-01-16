@@ -24,6 +24,7 @@ class VirusTotal:
                 if settings.UPSTREAM_PROXY_ENABLED:
                     if settings.UPSTREAM_PROXY_IP is None :
                         proxies = {"https": settings.UPSTREAM_PROXY_IP + ":" + settings.UPSTREAM_PROXY_PORT}
+                        print "\nProxy:" + proxies + "\n"
                     else:
                         proxies = {"https": settings.UPSTREAM_PROXY_USERNAME + ":" + settings.UPSTREAM_PROXY_PASSWORD + "@" + settings.UPSTREAM_PROXY_IP + ":" + settings.UPSTREAM_PROXY_PORT}
                     response = requests.get(url, params=params, headers=headers, proxies=proxies)
