@@ -418,7 +418,7 @@ def isBase64(str):
 
 def isInternetAvailable():
     try:
-         if settings.UPSTREAM_PROXY_ENABLED:
+        if settings.UPSTREAM_PROXY_ENABLED:
             if settings.UPSTREAM_PROXY_USERNAME is None:
                 proxy_host = settings.UPSTREAM_PROXY_IP + ':' + settings.UPSTREAM_PROXY_PORT
             else:
