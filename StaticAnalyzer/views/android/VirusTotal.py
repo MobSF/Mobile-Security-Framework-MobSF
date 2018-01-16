@@ -22,7 +22,10 @@ class VirusTotal:
             headers = {"Accept-Encoding": "gzip, deflate"}
             try:
                 if settings.UPSTREAM_PROXY_ENABLED:
-                    proxies = {"https": settings.UPSTREAM_PROXY_IP + ":" + settings.UPSTREAM_PROXY_PORT}
+                    if settings.UPSTREAM_PROXY_IP is None :
+                        proxies = {"https": settings.UPSTREAM_PROXY_IP + ":" + settings.UPSTREAM_PROXY_PORT}
+                     else:
+                        proxies = {"https": settings.UPSTREAM_PROXY_USERNAME + ":" + settings.UPSTREAM_PROXY_PASSWORD + "@" + settings.UPSTREAM_PROXY_IP + ":" + settings.UPSTREAM_PROXY_PORT}
                     response = requests.get(url, params=params, headers=headers, proxies=proxies)
                 else:
                     response = requests.get(url, params=params, headers=headers)
@@ -56,7 +59,10 @@ class VirusTotal:
             }
             try:
                 if settings.UPSTREAM_PROXY_ENABLED:
-                    proxies = {"https": settings.UPSTREAM_PROXY_IP + ":" + settings.UPSTREAM_PROXY_PORT}
+                    if settings.UPSTREAM_PROXY_IP is None:
+                        proxies = {"https": settings.UPSTREAM_PROXY_IP + ":" + settings.UPSTREAM_PROXY_PORT}
+                    else:
+                        proxies = {"https": settings.UPSTREAM_PROXY_USERNAME + ":" + settings.UPSTREAM_PROXY_PASSWORD + "@" + settings.UPSTREAM_PROXY_IP + ":" + settings.UPSTREAM_PROXY_PORT}
                     response = requests.post(url, files=files, data=headers, proxies)
                 else:    
                     response = requests.post(url, files=files, data=headers)
