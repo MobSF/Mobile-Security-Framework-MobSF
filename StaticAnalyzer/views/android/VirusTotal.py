@@ -21,7 +21,11 @@ class VirusTotal:
             }
             headers = {"Accept-Encoding": "gzip, deflate"}
             try:
-                response = requests.get(url, params=params, headers=headers)
+                if settings.UPSTREAM_PROXY_ENABLED:
+                    proxies = {"https": "http://user:pass@10.10.1.10:3128/"}
+                    response = requests.get(url, params=params, headers=headers, proxies=proxies)
+                else:
+                    response = requests.get(url, params=params, headers=headers)
                 if response.status_code == 403:
                     print "[ERROR] VirusTotal Permission denied, wrong api key?"
                     return None
