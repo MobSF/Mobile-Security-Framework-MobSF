@@ -423,7 +423,7 @@ def isInternetAvailable():
                 proxy_host = settings.UPSTREAM_PROXY_IP + ':' + settings.UPSTREAM_PROXY_PORT
             else:
                 proxy_host = settings.UPSTREAM_PROXY_USERNAME + ":" + settings.UPSTREAM_PROXY_PASSWORD + "@" + settings.UPSTREAM_PROXY_IP + ':' + settings.UPSTREAM_PROXY_PORT
-            proxy = urllib2.ProxyHandler({'https': proxy_host})
+            proxy = urllib2.ProxyHandler({'http': proxy_host})
             opener = urllib2.build_opener(proxy)
             urllib2.install_opener(opener)
         urllib2.urlopen('http://216.58.220.46', timeout=5)
