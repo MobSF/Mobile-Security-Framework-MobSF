@@ -22,7 +22,7 @@ class VirusTotal:
             headers = {"Accept-Encoding": "gzip, deflate"}
             try:
                 if settings.UPSTREAM_PROXY_ENABLED:
-                    if settings.UPSTREAM_PROXY_IP is None :
+                    if settings.UPSTREAM_PROXY_USERNAME is None :
                         proxies = {"https": '"' + settings.UPSTREAM_PROXY_IP + ":" + settings.UPSTREAM_PROXY_PORT + '"'}
                         print "\nProxy:" + proxies + "\n"
                     else:
@@ -60,7 +60,7 @@ class VirusTotal:
             }
             try:
                 if settings.UPSTREAM_PROXY_ENABLED:
-                    if settings.UPSTREAM_PROXY_IP is None:
+                    if settings.UPSTREAM_PROXY_USERNAME is None:
                         proxies = {"https": settings.UPSTREAM_PROXY_IP + ":" + settings.UPSTREAM_PROXY_PORT}
                     else:
                         proxies = {"https": settings.UPSTREAM_PROXY_USERNAME + ":" + settings.UPSTREAM_PROXY_PASSWORD + "@" + settings.UPSTREAM_PROXY_IP + ":" + settings.UPSTREAM_PROXY_PORT}
