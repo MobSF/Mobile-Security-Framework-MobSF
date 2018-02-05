@@ -414,7 +414,9 @@ else:
     # The port must also be set as string ('3128')
     # Same for user and password set it as string if needed
     # if no user/password leave it to None
+    #if your proxy use https change UPSTREAM_PROXY_TYPE to "https"
     UPSTREAM_PROXY_ENABLED = False
+    UPSTREAM_PROXY_TYPE = "http"
     UPSTREAM_PROXY_IP = None
     UPSTREAM_PROXY_PORT = None
     UPSTREAM_PROXY_USERNAME = None
