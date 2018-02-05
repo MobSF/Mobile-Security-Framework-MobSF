@@ -21,7 +21,14 @@ class VirusTotal:
             }
             headers = {"Accept-Encoding": "gzip, deflate"}
             try:
-                response = requests.get(url, params=params, headers=headers)
+                if settings.UPSTREAM_PROXY_ENABLED:
+                    if settings.UPSTREAM_PROXY_USERNAME is None :
+                        proxy_host = settings.UPSTREAM_PROXY_TYPE + '://'  + settings.UPSTREAM_PROXY_IP + ':' + settings.UPSTREAM_PROXY_PORT
+                        proxies = {"https": proxy_host}
+                    else:
+                        proxy_host = settings.UPSTREAM_PROXY_TYPE + '://' + settings.UPSTREAM_PROXY_USERNAME + ':' + settings.UPSTREAM_PROXY_PASSWORD + "@" + settings.UPSTREAM_PROXY_IP + ':' + settings.UPSTREAM_PROXY_PORT
+                        proxies = {"https": proxy_host}
+                    response = requests.get(url, params=params, headers=headers)
                 if response.status_code == 403:
                     print("[ERROR] VirusTotal Permission denied, wrong api key?")
                     return None
@@ -51,7 +58,14 @@ class VirusTotal:
                 "apikey": settings.VT_API_KEY
             }
             try:
-                response = requests.post(url, files=files, data=headers)
+                if settings.UPSTREAM_PROXY_ENABLED:
+                    if settings.UPSTREAM_PROXY_USERNAME is None:
+                        proxies = {"https": settings.UPSTREAM_PROXY_IP + ":" + settings.UPSTREAM_PROXY_PORT}
+                    else:
+                        proxies = {"https": settings.UPSTREAM_PROXY_USERNAME + ":" + settings.UPSTREAM_PROXY_PASSWORD + "@" + settings.UPSTREAM_PROXY_IP + ":" + settings.UPSTREAM_PROXY_PORT}
+                    response = requests.post(url, files=files, data=headers, proxies=proxies)
+                else:    
+                    response = requests.post(url, files=files, data=headers)
                 if response.status_code == 403:
                     print("[ERROR] VirusTotal Permission denied, wrong api key?")
                     return None
