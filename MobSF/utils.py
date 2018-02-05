@@ -14,6 +14,7 @@ import io
 import ast
 import unicodedata
 import http.client
+import requests
 from . import settings
 
 from django.shortcuts import render
@@ -59,8 +60,15 @@ def check_update():
     try:
         print("\n[INFO] Checking for Update.")
         github_url = "https://raw.githubusercontent.com/MobSF/Mobile-Security-Framework-MobSF/master/MobSF/settings.py"
-        response = urllib.request.urlopen(github_url)
-        html = str(response.read()).split("\n")
+        if settings.UPSTREAM_PROXY_ENABLED:
+           if settings.UPSTREAM_PROXY_USERNAME is None :
+               proxy_host = settings.UPSTREAM_PROXY_TYPE + '://'  + settings.UPSTREAM_PROXY_IP + ':' + settings.UPSTREAM_PROXY_PORT
+               proxies = {"https": proxy_host}
+           else:
+               proxy_host = settings.UPSTREAM_PROXY_TYPE + '://' + settings.UPSTREAM_PROXY_USERNAME + ':' + settings.UPSTREAM_PROXY_PASSWORD + "@" + settings.UPSTREAM_PROXY_IP + ':' + settings.UPSTREAM_PROXY_PORT
+               proxies = {"https": proxy_host}
+        response = requests.get(github_url, proxies=proxies)
+        html = str(response.text).split("\n")
         for line in html:
             if line.startswith("MOBSF_VER"):
                 line = line.replace("MOBSF_VER", "").replace('"', '')
