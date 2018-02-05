@@ -1300,7 +1300,8 @@ def read_manifest_apktool(app_path, app_dir, tools_dir, binary):
             if len(settings.APKTOOL_BINARY) > 0 and isFileExists(settings.APKTOOL_BINARY):
                 apktool_path = settings.APKTOOL_BINARY
             else:
-                apktool_path = os.path.join(tools_dir, 'apktool_2.3.0.jar')
+                apktool_binary = 'apktool_' + settings.APKTOOL_VERSION + '.jar'
+                apktool_path = os.path.join(tools_dir, apktool_binary)
             output_dir = os.path.join(app_dir, "apktool_out")
             args = [settings.JAVA_PATH + 'java', '-jar',
                     apktool_path, "-f", "-s", "d", app_path, "-o", output_dir]
