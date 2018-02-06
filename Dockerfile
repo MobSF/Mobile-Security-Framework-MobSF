@@ -1,6 +1,5 @@
 #Base image
-FROM ubuntu:17.04
-
+FROM ubuntu:17.10
 #Labels and Credits
 LABEL \
     name="MobSF" \
