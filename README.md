@@ -19,7 +19,7 @@ Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82
 
 MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-release) and [BlackArch](https://blackarch.org/mobile.html)
 
-## Donations
+## Buy us a Coffee!
 **Your generous donations will keep us motivated.**
 
 *Paypal:* [![Donate via Paypal](https://user-images.githubusercontent.com/4301109/28491754-14774f54-6f14-11e7-9975-8a5faeda7e30.gif)](https://mobsf.github.io/Mobile-Security-Framework-MobSF/paypal.html)
