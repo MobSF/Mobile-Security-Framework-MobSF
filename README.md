@@ -7,12 +7,14 @@ Mobile Security Framework (MobSF) is an intelligent, all-in-one open source mobi
 
 Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82e3a63c-4813-11e6-9430-6015d98aeaab.png) in India
 
+[![ToolsWatch Best Security Tools 2017](https://img.shields.io/badge/ToolsWatch-Rank%209%20%7C%20Year%202017-red.svg)](http://www.toolswatch.org/2018/01/black-hat-arsenal-top-10-security-tools/)
 [![ToolsWatch Best Security Tools 2016](https://img.shields.io/badge/ToolsWatch-Rank%205%20%7C%20Year%202016-red.svg)](http://www.toolswatch.org/2017/02/2016-top-security-tools-as-voted-by-toolswatch-org-readers/)
+[![Blackhat Arsenal Asia 2018](https://github.com/toolswatch/badges/blob/master/arsenal/2017.svg)](https://www.blackhat.com/asia-18/arsenal.html#mobile-security-framework-mobsf)
 [![Blackhat Arsenal Asia 2015](https://img.shields.io/badge/Black%20Hat%20Arsenal-Asia%202015-blue.svg)](https://www.blackhat.com/asia-15/arsenal.html#yso-mobile-security-framework)
 [![support](https://baikal.io/badges/ajinabraham/mobsf)](https://baikal.io/ajinabraham/mobsf)
 [![platform](https://img.shields.io/badge/platform-osx%2Flinux%2Fwindows-green.svg)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/)
 [![License](https://img.shields.io/:license-gpl3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
-[![python](https://img.shields.io/badge/python-2.7-blue.svg)](https://www.python.org/downloads/)
+[![python](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/)
 [![Requirements Status](https://requires.io/github/MobSF/Mobile-Security-Framework-MobSF/requirements.svg?branch=master)](https://requires.io/github/MobSF/Mobile-Security-Framework-MobSF/requirements/?branch=master)
 
 MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-release) and [BlackArch](https://blackarch.org/mobile.html)
@@ -24,8 +26,6 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 
 *Bitcoin:* [![Donate Bitcoin](https://user-images.githubusercontent.com/4301109/30631105-cb8063c8-9e00-11e7-95df-43c20b840e52.png)](https://mobsf.github.io/Mobile-Security-Framework-MobSF/donate.html)
 
-*Gratipay:* [![Support via Gratipay](https://user-images.githubusercontent.com/4301109/30631453-df5a0966-9e01-11e7-8a9f-62a9c644617f.png)](https://gratipay.com/Mobile-Security-Framework/)
-
 ## Documentation
 * [See MobSF Documentation](https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/1.-Documentation)
 
@@ -34,10 +34,11 @@ Automated prebuilt docker image of MobSF Static Analyzer is available from [Dock
 ```
 docker pull opensecurity/mobile-security-framework-mobsf
 docker run -it -p 8000:8000 opensecurity/mobile-security-framework-mobsf:latest
-if you want data persistence you can use :
- docker run -p 8000:8000 -v /home/debian/MobSF_Data:/root/.MobSF -d --name mobsf opensecurity/mobile-security-framework-mobsf:latest 
-  where /home/debian/MobSF_Data is the directoy where you want to save dabatase and apk/ipa ...
-  -d put it in backgrounds
+```
+### For persistence
+
+```
+docker run -it -p 8000:8000 -v <your_local_dir>:/root/.MobSF opensecurity/mobile-security-framework-mobsf:latest
 ```
 
 ## Collaborators
@@ -45,6 +46,7 @@ if you want data persistence you can use :
 * [Ajin Abraham](https://in.linkedin.com/in/ajinabraham)
 * [Dominik Schlecht](https://github.com/DominikSchlecht)
 * [Matan Dobrushin](https://github.com/matandobr)
+* [Vincent Nadal](https://github.com/superpoussin22)
 
 ## Presentations
 * OWASP APPSEC EU 2016 - [Slides](http://www.slideshare.net/ajin25/automated-mobile-application-security-assessment-with-mobsf)
