@@ -22,11 +22,13 @@ class VirusTotal:
             headers = {"Accept-Encoding": "gzip, deflate"}
             try:
                 if settings.UPSTREAM_PROXY_ENABLED:
-                    if settings.UPSTREAM_PROXY_USERNAME is None :
-                        proxy_host = settings.UPSTREAM_PROXY_TYPE + '://'  + settings.UPSTREAM_PROXY_IP + ':' + settings.UPSTREAM_PROXY_PORT
+                    if not settings.UPSTREAM_PROXY_USERNAME:
+                        proxy_port = str(settings.UPSTREAM_PROXY_PORT)
+                        proxy_host = settings.UPSTREAM_PROXY_TYPE + '://'  + settings.UPSTREAM_PROXY_IP + ':' + proxy_port
                         proxies = {"https": proxy_host}
                     else:
-                        proxy_host = settings.UPSTREAM_PROXY_TYPE + '://' + settings.UPSTREAM_PROXY_USERNAME + ':' + settings.UPSTREAM_PROXY_PASSWORD + "@" + settings.UPSTREAM_PROXY_IP + ':' + settings.UPSTREAM_PROXY_PORT
+                        proxy_port = str(settings.UPSTREAM_PROXY_PORT)
+                        proxy_host = settings.UPSTREAM_PROXY_TYPE + '://' + settings.UPSTREAM_PROXY_USERNAME + ':' + settings.UPSTREAM_PROXY_PASSWORD + "@" + settings.UPSTREAM_PROXY_IP + ':' + proxy_port
                         proxies = {"https": proxy_host}
                     response = requests.get(url, params=params, headers=headers)
                 if response.status_code == 403:
@@ -59,10 +61,12 @@ class VirusTotal:
             }
             try:
                 if settings.UPSTREAM_PROXY_ENABLED:
-                    if settings.UPSTREAM_PROXY_USERNAME is None:
-                        proxies = {"https": settings.UPSTREAM_PROXY_IP + ":" + settings.UPSTREAM_PROXY_PORT}
+                    if not settings.UPSTREAM_PROXY_USERNAME:
+                        proxy_port = str(settings.UPSTREAM_PROXY_PORT)
+                        proxies = {"https": settings.UPSTREAM_PROXY_IP + ":" + proxy_port}
                     else:
-                        proxies = {"https": settings.UPSTREAM_PROXY_USERNAME + ":" + settings.UPSTREAM_PROXY_PASSWORD + "@" + settings.UPSTREAM_PROXY_IP + ":" + settings.UPSTREAM_PROXY_PORT}
+                        proxy_port = str(settings.UPSTREAM_PROXY_PORT)
+                        proxies = {"https": settings.UPSTREAM_PROXY_USERNAME + ":" + settings.UPSTREAM_PROXY_PASSWORD + "@" + settings.UPSTREAM_PROXY_IP + ":" + proxy_port}
                     response = requests.post(url, files=files, data=headers, proxies=proxies)
                 else:    
                     response = requests.post(url, files=files, data=headers)
