@@ -10,7 +10,7 @@ import io
 import string
 import re
 
-BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+BASE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../")
 
 
 def get_windows_drive():

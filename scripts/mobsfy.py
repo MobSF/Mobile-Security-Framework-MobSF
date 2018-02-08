@@ -6,8 +6,8 @@ import subprocess
 import sys
 import argparse
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
-TOOLSDIR = os.path.join(BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
-ROOTCA = os.path.join(BASE_DIR, 'DynamicAnalyzer/pyWebProxy/ca.crt')
+TOOLSDIR = os.path.join(BASE_DIR, '../DynamicAnalyzer/tools/')  # TOOLS DIR
+ROOTCA = os.path.join(BASE_DIR, '../DynamicAnalyzer/pyWebProxy/ca.crt')
 
 
 def ExecuteCMD(args, ret=False):
@@ -47,15 +47,19 @@ parser.add_argument("-i", "--identifier",
                     help="IP:PORT or Serial no of Device/VM. (ex: 192.168.1.2:5555)")
 parser.add_argument(
     "-t", "--type", help="Specify the type. Supported types are 1. VM or 2.Device. (ex: 1)")
+parser.add_argument(
+    "-v", "--version", help="Specify the Android Version. Available options are 1. <5 or 2. >=5. (ex: 1)")
 args = parser.parse_args()
 try:
     if args.identifier and args.type:
         adbconnect = args.identifier
         vm_or_ip = args.type
+        xposed_ver = args.version
     else:
         adbconnect = input(
             "Enter the IP:PORT or Serial no of the Device/VM (Ex: 192.168.1.2:5555) and press enter: ")
         vm_or_ip = input("Choose\n 1. VM\n 2. Device\nEnter your choice: ")
+        xposed_ver = input("Android Version\n1. <5\n2.>=5\nEnter your choice: ")        
     adb = getADB(TOOLSDIR)
     ExecuteCMD([adb, "kill-server"])
     ExecuteCMD([adb, "start-server"])
@@ -77,7 +81,10 @@ try:
     SC = os.path.join(TOOLSDIR, 'onDevice/ScreenCast.apk')
     CD = os.path.join(TOOLSDIR, 'onDevice/ClipDump.apk')
     # 3P
-    XP = os.path.join(TOOLSDIR, 'onDevice/Xposed.apk')
+    if xposed_ver == "1":
+        XP = os.path.join(TOOLSDIR, 'onDevice/Xposed.apk')
+    else:
+        XP = os.path.join(TOOLSDIR, 'onDevice/XposedInstaller_3.1.5.apk')
     # Xposed Modules and Support Files
     HK = os.path.join(TOOLSDIR, 'onDevice/hooks.json')
     DM = os.path.join(TOOLSDIR, 'onDevice/Droidmon.apk')
