@@ -386,8 +386,9 @@ else:
     #========UPSTREAM PROXY SETTINGS ==============
     # If you are behind a Proxy
     UPSTREAM_PROXY_ENABLED = False
-    UPSTREAM_PROXY_IP = None
-    UPSTREAM_PROXY_PORT = None
+    UPSTREAM_PROXY_TYPE = "http"
+    UPSTREAM_PROXY_IP = "127.0.0.1"
+    UPSTREAM_PROXY_PORT = "3128"
     UPSTREAM_PROXY_USERNAME = None
     UPSTREAM_PROXY_PASSWORD = None
     #==============================================
