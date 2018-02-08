@@ -34,6 +34,10 @@ Automated prebuilt docker image of MobSF Static Analyzer is available from [Dock
 ```
 docker pull opensecurity/mobile-security-framework-mobsf
 docker run -it -p 8000:8000 opensecurity/mobile-security-framework-mobsf:latest
+if you want data persistence you can use :
+ docker run -p 8000:8000 -v /home/debian/MobSF_Data:/root/.MobSF -d --name mobsf opensecurity/mobile-security-framework-mobsf:latest 
+  where /home/debian/MobSF_Data is the directoy where you want to save dabatase and apk/ipa ...
+  -d put it in backgrounds
 ```
 
 ## Collaborators
