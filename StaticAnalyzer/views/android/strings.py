@@ -13,27 +13,19 @@ from MobSF.utils import (
 )
 
 
-def strings(app_file, app_dir, tools_dir):
+def strings_jar(app_file, app_dir):
     """Extract the strings from an app."""
     try:
-        print "[INFO] Extracting Strings from APK"
-
-        apk_file = os.path.join(app_dir, app_file)
-        
-        a = apk.APK(apk_file)
-
-        rsrc = a.get_android_resources() 
-
-        pkg = rsrc.get_packages_names()[0]
-
+        print("[INFO] Extracting Strings from APK")
         dat = []
-
-        rsrc.get_strings_resources() 
-
+        apk_file = os.path.join(app_dir, app_file)
+        and_a = apk.APK(apk_file)
+        rsrc = and_a.get_android_resources() 
+        pkg = rsrc.get_packages_names()[0]
+        rsrc.get_strings_resources()
         for i in rsrc.values[pkg].keys():
             for duo in rsrc.values[pkg][i]['string']:
                 dat.append('"'+duo[0]+'" : "'+duo[1]+'"') 
-
         return dat
     except:
         PrintException("[ERROR] Extracting Strings from APK")
