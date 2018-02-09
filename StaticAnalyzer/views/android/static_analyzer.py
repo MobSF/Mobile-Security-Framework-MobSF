@@ -201,8 +201,7 @@ def static_analyzer(request, api=False):
                     # Get the strings
                     app_dic['strings'] = strings_jar(
                         app_dic['app_file'],
-                        app_dic['app_dir'],
-                        app_dic['tools_dir']
+                        app_dic['app_dir']
                     )
                     app_dic['zipped'] = '&type=apk'
 
