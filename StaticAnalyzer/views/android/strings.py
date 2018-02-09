@@ -2,6 +2,7 @@
 """Module for strings-method for java."""
 
 import io
+import os
 import subprocess
 from androguard.core.bytecodes import apk
 
@@ -17,7 +18,9 @@ def strings(app_file, app_dir, tools_dir):
     try:
         print "[INFO] Extracting Strings from APK"
 
-        a = apk.APK(app_dir+app_file)
+        apk_file = os.path.join(app_dir, app_file)
+        
+        a = apk.APK(apk_file)
 
         rsrc = a.get_android_resources() 
 
