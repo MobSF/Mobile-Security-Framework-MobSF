@@ -62,11 +62,10 @@ class VirusTotal:
             }
             try:
                 if settings.UPSTREAM_PROXY_ENABLED:
+                    proxy_port = str(settings.UPSTREAM_PROXY_PORT)
                     if not settings.UPSTREAM_PROXY_USERNAME:
-                        proxy_port = str(settings.UPSTREAM_PROXY_PORT)
                         proxies = {"https": settings.UPSTREAM_PROXY_IP + ":" + proxy_port}
                     else:
-                        proxy_port = str(settings.UPSTREAM_PROXY_PORT)
                         proxies = {"https": settings.UPSTREAM_PROXY_USERNAME + ":" + settings.UPSTREAM_PROXY_PASSWORD + "@" + settings.UPSTREAM_PROXY_IP + ":" + proxy_port}
                     response = requests.post(url, files=files, data=headers, proxies=proxies)
                 else:    
