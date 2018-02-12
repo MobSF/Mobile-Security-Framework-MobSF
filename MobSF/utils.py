@@ -27,6 +27,22 @@ class Color(object):
     BOLD = '\033[1m'
     END = '\033[0m'
 
+def upstream_proxy():
+    """Set upstream Proxy if needed"""
+    if settings.UPSTREAM_PROXY_ENABLED:
+        if not settings.UPSTREAM_PROXY_USERNAME:
+            proxy_port = str(settings.UPSTREAM_PROXY_PORT)
+            proxy_host = settings.UPSTREAM_PROXY_TYPE + '://'  + settings.UPSTREAM_PROXY_IP + ':' + proxy_port
+            proxies = {"https": proxy_host}
+        else:
+            proxy_port = str(settings.UPSTREAM_PROXY_PORT)
+            proxy_host = settings.UPSTREAM_PROXY_TYPE + '://' + settings.UPSTREAM_PROXY_USERNAME + ':' + settings.UPSTREAM_PROXY_PASSWORD + "@" + settings.UPSTREAM_PROXY_IP + ':' + proxy_port
+            proxies = {"https": proxy_host}
+    else:
+        proxies = ""
+    
+    return proxies    
+    
 def api_key():
     """Print REST API Key"""
     secret_file = os.path.join(settings.MobSF_HOME, "secret")
@@ -60,16 +76,8 @@ def check_update():
     try:
         print("\n[INFO] Checking for Update.")
         github_url = "https://raw.githubusercontent.com/MobSF/Mobile-Security-Framework-MobSF/master/MobSF/settings.py"
-        if settings.UPSTREAM_PROXY_ENABLED:
-           if not settings.UPSTREAM_PROXY_USERNAME :
-               proxy_port = str(settings.UPSTREAM_PROXY_PORT)
-               proxy_host = settings.UPSTREAM_PROXY_TYPE + '://'  + settings.UPSTREAM_PROXY_IP + ':' + proxy_port
-               proxies = {"https": proxy_host}
-           else:
-               proxy_port = str(settings.UPSTREAM_PROXY_PORT)
-               proxy_host = settings.UPSTREAM_PROXY_TYPE + '://' + settings.UPSTREAM_PROXY_USERNAME + ':' + settings.UPSTREAM_PROXY_PASSWORD + "@" + settings.UPSTREAM_PROXY_IP + ':' + proxy_port
-               proxies = {"https": proxy_host}
-        response = requests.get(github_url, proxies=proxies)
+        proxies = upstream_proxy()
+        response = requests.get(github_url, timeout=5, proxies=proxies)
         html = str(response.text).split("\n")
         for line in html:
             if line.startswith("MOBSF_VER"):
@@ -80,7 +88,7 @@ def check_update():
 Please update from master branch or check for new releases.\n""")
                 else:
                     print("\n[INFO] No updates available.")
-    except (urllib.error.HTTPError, http.client.HTTPException):
+    except (requests.exceptions.HTTPError, http.client.HTTPException):
         print("\n[WARN] Cannot check for updates.. No Internet Connection Found.")
         return
     except:
@@ -411,14 +419,15 @@ def isBase64(str):
 
 
 def isInternetAvailable():
+    proxies = upstream_proxy()
     try:
-        urllib.request.urlopen('http://216.58.220.46', timeout=5)
+        requests.get('https://216.58.220.46', timeout=5, proxies=proxies)
         return True
-    except urllib.error.URLError as err:
+    except requests.exceptions.HTTPError as err:
         try:
-            urllib.request.urlopen('http://180.149.132.47', timeout=5)
+            requests.get('https://180.149.132.47', timeout=5, proxies=proxies)
             return True
-        except urllib.error.URLError as err1:
+        except requests.exceptions.HTTPError as err1:
             return False
     return False
 
