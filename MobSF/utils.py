@@ -27,19 +27,19 @@ class Color(object):
     BOLD = '\033[1m'
     END = '\033[0m'
 
-def upstream_proxy():
+def upstream_proxy(flaw_type):
     """Set upstream Proxy if needed"""
     if settings.UPSTREAM_PROXY_ENABLED:
         if not settings.UPSTREAM_PROXY_USERNAME:
             proxy_port = str(settings.UPSTREAM_PROXY_PORT)
             proxy_host = settings.UPSTREAM_PROXY_TYPE + '://'  + settings.UPSTREAM_PROXY_IP + ':' + proxy_port
-            proxies = {"https": proxy_host}
+            proxies = {flaw_type: proxy_host}
         else:
             proxy_port = str(settings.UPSTREAM_PROXY_PORT)
             proxy_host = settings.UPSTREAM_PROXY_TYPE + '://' + settings.UPSTREAM_PROXY_USERNAME + ':' + settings.UPSTREAM_PROXY_PASSWORD + "@" + settings.UPSTREAM_PROXY_IP + ':' + proxy_port
-            proxies = {"https": proxy_host}
+            proxies = {flaw_type: proxy_host}
     else:
-        proxies = ""
+        proxies = {flaw_type: None}
     
     return proxies    
     
@@ -76,7 +76,7 @@ def check_update():
     try:
         print("\n[INFO] Checking for Update.")
         github_url = "https://raw.githubusercontent.com/MobSF/Mobile-Security-Framework-MobSF/master/MobSF/settings.py"
-        proxies = upstream_proxy()
+        proxies = upstream_proxy('https')
         response = requests.get(github_url, timeout=5, proxies=proxies)
         html = str(response.text).split("\n")
         for line in html:
@@ -419,7 +419,7 @@ def isBase64(str):
 
 
 def isInternetAvailable():
-    proxies = upstream_proxy()
+    proxies = upstream_proxy('https')
     try:
         requests.get('https://216.58.220.46', timeout=5, proxies=proxies)
         return True
