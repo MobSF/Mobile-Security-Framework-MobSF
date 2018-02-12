@@ -88,7 +88,7 @@ def check_update():
 Please update from master branch or check for new releases.\n""")
                 else:
                     print("\n[INFO] No updates available.")
-    except (requests.exceptions.HTTPError, http.client.HTTPException):
+    except requests.exceptions.HTTPError as err:
         print("\n[WARN] Cannot check for updates.. No Internet Connection Found.")
         return
     except:
