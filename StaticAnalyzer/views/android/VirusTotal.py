@@ -1,6 +1,6 @@
 import requests
 
-from MobSF.utils import PrintException
+from MobSF.utils import PrintException, upstream_proxy
 from django.conf import settings
 
 
@@ -20,18 +20,9 @@ class VirusTotal:
                 'resource': file_hash
             }
             headers = {"Accept-Encoding": "gzip, deflate"}
+            proxies = upstream_proxy()
             try:
-                if settings.UPSTREAM_PROXY_ENABLED:
-                    proxy_port = str(settings.UPSTREAM_PROXY_PORT)
-                    if not settings.UPSTREAM_PROXY_USERNAME:
-                        proxy_host = settings.UPSTREAM_PROXY_TYPE + '://'  + settings.UPSTREAM_PROXY_IP + ':' + proxy_port
-                        proxies = {"https": proxy_host}
-                    else:
-                        proxy_host = settings.UPSTREAM_PROXY_TYPE + '://' + settings.UPSTREAM_PROXY_USERNAME + ':' + settings.UPSTREAM_PROXY_PASSWORD + "@" + settings.UPSTREAM_PROXY_IP + ':' + proxy_port
-                        proxies = {"https": proxy_host}
-                    response = requests.get(url, params=params, headers=headers, proxies=proxies)
-                else:
-                    response = requests.get(url, params=params, headers=headers)
+                response = requests.get(url, params=params, headers=headers, proxies=proxies)
                 if response.status_code == 403:
                     print("[ERROR] VirusTotal Permission denied, wrong api key?")
                     return None
