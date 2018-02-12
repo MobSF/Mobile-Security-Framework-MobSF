@@ -20,7 +20,7 @@ class VirusTotal:
                 'resource': file_hash
             }
             headers = {"Accept-Encoding": "gzip, deflate"}
-            proxies = upstream_proxy()
+            proxies = upstream_proxy('https')
             try:
                 response = requests.get(url, params=params, headers=headers, proxies=proxies)
                 if response.status_code == 403:
@@ -51,16 +51,9 @@ class VirusTotal:
             headers = {
                 "apikey": settings.VT_API_KEY
             }
+            proxies = upstream_proxy('https')
             try:
-                if settings.UPSTREAM_PROXY_ENABLED:
-                    proxy_port = str(settings.UPSTREAM_PROXY_PORT)
-                    if not settings.UPSTREAM_PROXY_USERNAME:
-                        proxies = {"https": settings.UPSTREAM_PROXY_IP + ":" + proxy_port}
-                    else:
-                        proxies = {"https": settings.UPSTREAM_PROXY_USERNAME + ":" + settings.UPSTREAM_PROXY_PASSWORD + "@" + settings.UPSTREAM_PROXY_IP + ":" + proxy_port}
-                    response = requests.post(url, files=files, data=headers, proxies=proxies)
-                else:    
-                    response = requests.post(url, files=files, data=headers)
+                response = requests.post(url, files=files, data=headers, proxies=proxies)
                 if response.status_code == 403:
                     print("[ERROR] VirusTotal Permission denied, wrong api key?")
                     return None
