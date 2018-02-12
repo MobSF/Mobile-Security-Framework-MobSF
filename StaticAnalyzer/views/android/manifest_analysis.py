@@ -1269,7 +1269,8 @@ def read_manifest(app_dir, tools_dir, typ, binary):
 
             args = [settings.JAVA_PATH + 'java', '-jar', cp_path, manifest]
             dat = subprocess.check_output(args)
-            dat = dat.replace(b"\n", b"")
+            #dat = dat.replace(b"\n", b"")
+            dat = dat.decode()
         else:
             print("[INFO] Getting Manifest from Source")
             if typ == "eclipse":
