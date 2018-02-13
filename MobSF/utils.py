@@ -419,13 +419,13 @@ def isBase64(str):
 
 
 def isInternetAvailable():
-    proxies = upstream_proxy('http')
+    proxies = upstream_proxy('https')
     try:
-        requests.get('http://216.58.220.46', timeout=5, proxies=proxies)
+        requests.get('https://www.google.com', timeout=5, proxies=proxies)
         return True
     except requests.exceptions.HTTPError as err:
         try:
-            requests.get('http://180.149.132.47', timeout=5, proxies=proxies)
+            requests.get('https://www.baidu.com/', timeout=5, proxies=proxies)
             return True
         except requests.exceptions.HTTPError as err1:
             return False
