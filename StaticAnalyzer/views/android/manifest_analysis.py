@@ -1269,7 +1269,8 @@ def read_manifest(app_dir, tools_dir, typ, binary):
 
             args = [settings.JAVA_PATH + 'java', '-jar', cp_path, manifest]
             dat = subprocess.check_output(args)
-            dat = dat.replace(b"\n", b"")
+            #dat = dat.replace(b"\n", b"")
+            dat = dat.decode("utf-8", "ignore")
         else:
             print("[INFO] Getting Manifest from Source")
             if typ == "eclipse":
@@ -1301,7 +1302,7 @@ def read_manifest_apktool(app_path, app_dir, tools_dir, binary):
             if len(settings.APKTOOL_BINARY) > 0 and isFileExists(settings.APKTOOL_BINARY):
                 apktool_path = settings.APKTOOL_BINARY
             else:
-                apktool_path = os.path.join(tools_dir, 'apktool_2.3.0.jar')
+                apktool_path = os.path.join(tools_dir, 'apktool_2.3.1.jar')
             output_dir = os.path.join(app_dir, "apktool_out")
             args = [settings.JAVA_PATH + 'java', '-jar',
                     apktool_path, "-f", "-s", "d", app_path, "-o", output_dir]

