@@ -20,7 +20,10 @@ class VirusTotal:
                 'resource': file_hash
             }
             headers = {"Accept-Encoding": "gzip, deflate"}
-            proxies = upstream_proxy('https')
+            try:
+                proxies = upstream_proxy('https')
+            except:
+                PrintException("[ERROR] Setting upstream proxy")
             try:
                 response = requests.get(url, params=params, headers=headers, proxies=proxies)
                 if response.status_code == 403:
@@ -51,7 +54,10 @@ class VirusTotal:
             headers = {
                 "apikey": settings.VT_API_KEY
             }
-            proxies = upstream_proxy('https')
+            try:
+                proxies = upstream_proxy('https')
+            except:
+                PrintException("[ERROR] Setting upstream proxy")
             try:
                 response = requests.post(url, files=files, data=headers, proxies=proxies)
                 if response.status_code == 403:
