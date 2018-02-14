@@ -76,7 +76,10 @@ def check_update():
     try:
         print("\n[INFO] Checking for Update.")
         github_url = "https://raw.githubusercontent.com/MobSF/Mobile-Security-Framework-MobSF/master/MobSF/settings.py"
-        proxies = upstream_proxy('https')
+        try:
+            proxies = upstream_proxy('https')
+        except:
+            PrintException("[ERROR] Setting upstream proxy")      
         response = requests.get(github_url, timeout=5, proxies=proxies)
         html = str(response.text).split("\n")
         for line in html:
@@ -419,7 +422,10 @@ def isBase64(str):
 
 
 def isInternetAvailable():
-    proxies = upstream_proxy('https')
+    try:
+        proxies = upstream_proxy('https')
+    except:
+        PrintException("[ERROR] Setting upstream proxy") 
     try:
         requests.get('https://www.google.com', timeout=5, proxies=proxies)
         return True
