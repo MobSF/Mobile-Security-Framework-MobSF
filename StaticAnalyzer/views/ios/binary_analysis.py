@@ -78,7 +78,7 @@ def otool_analysis(bin_name, bin_path, bin_dir):
             b"_vsprintf|_vswprintf|_wcscat|_wcscpy|_wcslen|_wcsncat|_wcsncpy|_wcstok|_wmemcpy|" +
             b"_fopen|_chmod|_chown|_stat|_mktemp", dat)
         baned = list(set(baned))
-        baned_s = ', '.join(baned)
+        baned_s = b', '.join(baned)
         if len(baned_s) > 1:
             banned_apis = "<tr><td>Binary make use of banned API(s)</td><td>" +\
                 "<span class='label label-danger'>Insecure</span></td><td>The binary " +\
@@ -117,7 +117,7 @@ def otool_analysis(bin_name, bin_path, bin_dir):
             b"SecTrustSetVerifyDate|SecCertificateRef|" +
             b"SecIdentityRef|SecKeyRef|SecPolicyRef|SecTrustRef", dat)
         crypto_algo = list(set(crypto_algo))
-        crypto_algo_s = ', '.join(crypto_algo)
+        crypto_algo_s = b', '.join(crypto_algo)
         if len(crypto_algo_s) > 1:
             crypto = "<tr><td>Binary make use of the following Crypto API(s)</td><td>" +\
                 "<span class='label label-info'>Info</span></td><td>The binary may use the" +\
@@ -131,7 +131,7 @@ def otool_analysis(bin_name, bin_path, bin_dir):
             b"MD5_Update|MD5_Final|MD5Init|MD5Update|MD5Final|CC_SHA1_Init|CC_SHA1_Update|" +
             b"CC_SHA1_Final|CC_SHA1|SHA1_Init|SHA1_Update|SHA1_Final", dat)
         weak_hash_algo = list(set(weak_hash_algo))
-        weak_hash_algo_s = ', '.join(weak_hash_algo)
+        weak_hash_algo_s = b', '.join(weak_hash_algo)
         if len(weak_hash_algo_s) > 1:
             weak_hashes = "<tr><td>Binary make use of the following Weak HASH API(s)</td><td>" +\
                 "<span class='label label-danger'>Insecure</span></td><td>The binary " +\
@@ -146,7 +146,7 @@ def otool_analysis(bin_name, bin_path, bin_dir):
             b"SHA384_Update|SHA384_Final|CC_SHA512_Init|CC_SHA512_Update|CC_SHA512_Final|" +
             b"CC_SHA512|SHA512_Init|SHA512_Update|SHA512_Final", dat)
         hash_algo = list(set(hash_algo))
-        hash_algo_s = ', '.join(hash_algo)
+        hash_algo_s = b', '.join(hash_algo)
         if len(hash_algo_s) > 1:
             hashes = "<tr><td>Binary make use of the following HASH API(s)</td><td>" +\
                 "<span class='label label-info'>Info</span></td><td>The binary may use the" +\
@@ -155,7 +155,7 @@ def otool_analysis(bin_name, bin_path, bin_dir):
         randoms = ''
         rand_algo = re.findall(b"_srand|_random", dat)
         rand_algo = list(set(rand_algo))
-        rand_algo_s = ', '.join(rand_algo)
+        rand_algo_s = b', '.join(rand_algo)
         if len(rand_algo_s) > 1:
             randoms = "<tr><td>Binary make use of the insecure Random Function(s)</td><td>" +\
                 "<span class='label label-danger'>Insecure</span></td><td>The binary may " +\
@@ -164,7 +164,7 @@ def otool_analysis(bin_name, bin_path, bin_dir):
         logging = ''
         log = re.findall(b"_NSLog", dat)
         log = list(set(log))
-        log_s = ', '.join(log)
+        log_s = b', '.join(log)
         if len(log_s) > 1:
             logging = "<tr><td>Binary make use of Logging Function</td><td>" +\
                 "<span class='label label-info'>Info</span></td><td>The binary may " +\
@@ -172,7 +172,7 @@ def otool_analysis(bin_name, bin_path, bin_dir):
         malloc = ''
         mal = re.findall(b"_malloc", dat)
         mal = list(set(mal))
-        mal_s = ', '.join(mal)
+        mal_s = b', '.join(mal)
         if len(mal_s) > 1:
             malloc = "<tr><td>Binary make use of <strong>malloc</strong> Function</td><td>" +\
                 "<span class='label label-danger'>Insecure</span></td><td>The binary may use " +\
@@ -180,7 +180,7 @@ def otool_analysis(bin_name, bin_path, bin_dir):
         debug = ''
         ptrace = re.findall(b"_ptrace", dat)
         ptrace = list(set(ptrace))
-        ptrace_s = ', '.join(ptrace)
+        ptrace_s = b', '.join(ptrace)
         if len(ptrace_s) > 1:
             debug = "<tr><td>Binary calls <strong>ptrace</strong> Function for anti-debugging." +\
                 "</td><td><span class='label label-warning'>warning</span></td><td>The binary" +\
