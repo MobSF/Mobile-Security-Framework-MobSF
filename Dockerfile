@@ -48,6 +48,11 @@ RUN \
     fontconfig \
     xorg
 
+#Install git
+RUN \
+    apt install -y \
+    git
+
 #Install wkhtmltopdf for PDF Reports
 WORKDIR /tmp
 RUN wget ${PDFGEN_URL} && \
@@ -68,8 +73,17 @@ RUN ./kali_fix.sh
 WORKDIR /root/Mobile-Security-Framework-MobSF
 RUN pip3 install -r requirements.txt
 
+#Install apkid dependencies, and enable it 
+WORKDIR /tmp
+RUN git clone https://github.com/rednaga/yara-python && \
+    cd yara-python && \
+    python3 setup.py install && \
+    rm -fr /tmp/yara-python && \
+    sed -i 's/APKID_ENABLED.*/APKID_ENABLED = True/' /root/Mobile-Security-Framework-MobSF/MobSF/settings.py
+
 #Cleanup
 RUN \
+    apt remove -y git && \
     apt clean && \
     apt autoclean && \
     apt autoremove
@@ -79,4 +93,5 @@ RUN rm -rf /var/lib/apt/lists/* /tmp/* > /dev/null 2>&1
 EXPOSE 8000
 
 #Run MobSF
+WORKDIR /root/Mobile-Security-Framework-MobSF
 CMD ["python3","manage.py","runserver","0.0.0.0:8000"]
