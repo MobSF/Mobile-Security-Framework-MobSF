@@ -1,6 +1,6 @@
 import requests
 
-from MobSF.utils import PrintException
+from MobSF.utils import PrintException, upstream_proxy
 from django.conf import settings
 
 
@@ -21,12 +21,18 @@ class VirusTotal:
             }
             headers = {"Accept-Encoding": "gzip, deflate"}
             try:
-                response = requests.get(url, params=params, headers=headers)
+                proxies, verify = upstream_proxy('https')
+            except:
+                PrintException("[ERROR] Setting upstream proxy")
+            try:
+                response = requests.get(
+                    url, params=params, headers=headers, proxies=proxies, verify=verify)
                 if response.status_code == 403:
                     print("[ERROR] VirusTotal Permission denied, wrong api key?")
                     return None
             except:
-                print("[ERROR] VirusTotal ConnectionError, check internet connectivity")
+                print(
+                    "[ERROR] VirusTotal ConnectionError, check internet connectivity")
                 return None
             try:
                 json_response = response.json()
@@ -51,12 +57,18 @@ class VirusTotal:
                 "apikey": settings.VT_API_KEY
             }
             try:
-                response = requests.post(url, files=files, data=headers)
+                proxies, verify = upstream_proxy('https')
+            except:
+                PrintException("[ERROR] Setting upstream proxy")
+            try:
+                response = requests.post(
+                    url, files=files, data=headers, proxies=proxies, verify=verify)
                 if response.status_code == 403:
                     print("[ERROR] VirusTotal Permission denied, wrong api key?")
                     return None
             except:
-                print("[ERROR] VirusTotal ConnectionError, check internet connectivity")
+                print(
+                    "[ERROR] VirusTotal ConnectionError, check internet connectivity")
                 return None
             json_response = response.json()
             return json_response
@@ -84,7 +96,8 @@ class VirusTotal:
                 print("[INFO] VirusTotal: file upload")
                 upload_response = self.upload_file(file_path)
                 if upload_response:
-                    print("[INFO] VirusTotal: " + upload_response['verbose_msg'])
+                    print("[INFO] VirusTotal: " +
+                          upload_response['verbose_msg'])
                 return upload_response
             else:
                 print("[INFO] MobSF: VirusTotal Scan not performed as file upload is disabled in settings.py. To enable file upload, set VT_UPLOAD to True.")

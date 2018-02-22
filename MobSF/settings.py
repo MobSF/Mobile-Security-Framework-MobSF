@@ -385,17 +385,19 @@ else:
 
     #========UPSTREAM PROXY SETTINGS ==============
     # If you are behind a Proxy
-    UPSTREAM_PROXY_IP = None
-    UPSTREAM_PROXY_PORT = None
-    UPSTREAM_PROXY_USERNAME = None
-    UPSTREAM_PROXY_PASSWORD = None
+    UPSTREAM_PROXY_ENABLED = False
+    UPSTREAM_PROXY_SSL_VERIFY = True
+    UPSTREAM_PROXY_TYPE = "http"
+    UPSTREAM_PROXY_IP = "127.0.0.1"
+    UPSTREAM_PROXY_PORT = 3128
+    UPSTREAM_PROXY_USERNAME = ""
+    UPSTREAM_PROXY_PASSWORD = ""
     #==============================================
-
 
     #--------------------------
     # MALWARE ANALYZER SETTINGS
     #--------------------------
-    
+
     DOMAIN_MALWARE_SCAN = True
 
     #========DISABLED COMPONENTS===================
@@ -421,7 +423,6 @@ else:
     # cd yara-python
     # python setup.py install
     #==============================================
-
 
     #------------------------
     # WEB API FUZZER SETTINGS
