@@ -1,6 +1,6 @@
 import requests
 
-from MobSF.utils import PrintException
+from MobSF.utils import PrintException, upstream_proxy
 from django.conf import settings
 
 
@@ -21,7 +21,11 @@ class VirusTotal:
             }
             headers = {"Accept-Encoding": "gzip, deflate"}
             try:
-                response = requests.get(url, params=params, headers=headers)
+                proxies = upstream_proxy('https')
+            except:
+                PrintException("[ERROR] Setting upstream proxy")
+            try:
+                response = requests.get(url, params=params, headers=headers, proxies=proxies)
                 if response.status_code == 403:
                     print("[ERROR] VirusTotal Permission denied, wrong api key?")
                     return None
@@ -51,7 +55,11 @@ class VirusTotal:
                 "apikey": settings.VT_API_KEY
             }
             try:
-                response = requests.post(url, files=files, data=headers)
+                proxies = upstream_proxy('https')
+            except:
+                PrintException("[ERROR] Setting upstream proxy")
+            try:
+                response = requests.post(url, files=files, data=headers, proxies=proxies)
                 if response.status_code == 403:
                     print("[ERROR] VirusTotal Permission denied, wrong api key?")
                     return None
