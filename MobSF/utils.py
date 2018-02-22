@@ -9,7 +9,9 @@ import time
 import datetime
 import ntpath
 import hashlib
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
+import urllib.error
+import urllib.parse
 import io
 import ast
 import unicodedata
@@ -27,31 +29,40 @@ class Color(object):
     BOLD = '\033[1m'
     END = '\033[0m'
 
+
 def upstream_proxy(flaw_type):
     """Set upstream Proxy if needed"""
     if settings.UPSTREAM_PROXY_ENABLED:
         if not settings.UPSTREAM_PROXY_USERNAME:
             proxy_port = str(settings.UPSTREAM_PROXY_PORT)
-            proxy_host = settings.UPSTREAM_PROXY_TYPE + '://'  + settings.UPSTREAM_PROXY_IP + ':' + proxy_port
+            proxy_host = settings.UPSTREAM_PROXY_TYPE + '://' + \
+                settings.UPSTREAM_PROXY_IP + ':' + proxy_port
             proxies = {flaw_type: proxy_host}
         else:
             proxy_port = str(settings.UPSTREAM_PROXY_PORT)
-            proxy_host = settings.UPSTREAM_PROXY_TYPE + '://' + settings.UPSTREAM_PROXY_USERNAME + ':' + settings.UPSTREAM_PROXY_PASSWORD + "@" + settings.UPSTREAM_PROXY_IP + ':' + proxy_port
+            proxy_host = settings.UPSTREAM_PROXY_TYPE + '://' + settings.UPSTREAM_PROXY_USERNAME + \
+                ':' + settings.UPSTREAM_PROXY_PASSWORD + "@" + \
+                settings.UPSTREAM_PROXY_IP + ':' + proxy_port
             proxies = {flaw_type: proxy_host}
     else:
         proxies = {flaw_type: None}
-    
-    return proxies    
-    
+    if settings.UPSTREAM_PROXY_SSL_VERIFY:
+        verify = True
+    else:
+        verify = False
+    return proxies, verify
+
+
 def api_key():
     """Print REST API Key"""
     secret_file = os.path.join(settings.MobSF_HOME, "secret")
-    if isFileExists(secret_file):  
+    if isFileExists(secret_file):
         try:
             api_key = open(secret_file).read().strip()
             return gen_sha256_hash(api_key)
         except:
             PrintException("[ERROR] Cannot Read API Key")
+
 
 def printMobSFverison():
     """Print MobSF Version"""
@@ -60,8 +71,9 @@ def printMobSFverison():
         print('\n\nMobile Security Framework ' + settings.MOBSF_VER)
         print("\nREST API Key: " + api_key())
     else:
-        print('\n\n\033[1m\033[34mMobile Security Framework ' + settings.MOBSF_VER + '\033[0m')
-        print("\nREST API Key: " + Color.BOLD +  api_key() + Color.END)
+        print('\n\n\033[1m\033[34mMobile Security Framework ' +
+              settings.MOBSF_VER + '\033[0m')
+        print("\nREST API Key: " + Color.BOLD + api_key() + Color.END)
     print("OS: " + platform.system())
     print("Platform: " + platform.platform())
     if platform.dist()[0]:
@@ -77,10 +89,11 @@ def check_update():
         print("\n[INFO] Checking for Update.")
         github_url = "https://raw.githubusercontent.com/MobSF/Mobile-Security-Framework-MobSF/master/MobSF/settings.py"
         try:
-            proxies = upstream_proxy('https')
+            proxies, verify = upstream_proxy('https')
         except:
-            PrintException("[ERROR] Setting upstream proxy")      
-        response = requests.get(github_url, timeout=5, proxies=proxies)
+            PrintException("[ERROR] Setting upstream proxy")
+        response = requests.get(github_url, timeout=5,
+                                proxies=proxies, verify=verify)
         html = str(response.text).split("\n")
         for line in html:
             if line.startswith("MOBSF_VER"):
@@ -157,6 +170,7 @@ def getMobSFHome(useHOME):
     except:
         PrintException("[ERROR] Creating MobSF Home Directory")
 
+
 def get_python():
     """Detect Correct Python"""
     if sys.version_info[0] < 3:
@@ -164,12 +178,14 @@ def get_python():
     else:
         python = "python3"
     try:
-        data = subprocess.check_output([python, "-c", "import django; print (django.__version__)"])
+        data = subprocess.check_output(
+            [python, "-c", "import django; print (django.__version__)"])
         if len(data) < 1:
             python = "python"
     except:
         python = "python"
     return python
+
 
 def make_migrations(base_dir):
     """Create Database Migrations"""
@@ -244,7 +260,7 @@ def FindJava(debug=False):
                 print("\n[INFO] Finding JDK Location in Windows....")
             # JDK 7 jdk1.7.0_17/bin/
             for java_path in ["C:/Program Files/Java/",
-                             "C:/Program Files (x86)/Java/"]:
+                              "C:/Program Files (x86)/Java/"]:
                 if os.path.isdir(java_path):
                     for dirname in os.listdir(java_path):
                         if "jdk" in dirname:
@@ -253,7 +269,8 @@ def FindJava(debug=False):
                             dat = RunProcess(args)
                             if "java" in dat:
                                 if debug:
-                                    print("\n[INFO] Oracle Java JDK is installed!")
+                                    print(
+                                        "\n[INFO] Oracle Java JDK is installed!")
                                 return win_java_path
             for env in ["JDK_HOME", "JAVA_HOME"]:
                 java_home = os.environ.get(env)
@@ -342,11 +359,13 @@ def PrintException(msg, web=False):
     with open(LOGPATH + 'MobSF.log', 'a') as f:
         f.write(dat)
 
+
 def print_n_send_error_response(request, msg, api, exp='Error Description'):
     """Print and log errors"""
     print(Color.BOLD + Color.RED + '[ERROR] ' + msg + Color.END)
     time_stamp = time.time()
-    formatted_tms = datetime.datetime.fromtimestamp(time_stamp).strftime('%Y-%m-%d %H:%M:%S')
+    formatted_tms = datetime.datetime.fromtimestamp(
+        time_stamp).strftime('%Y-%m-%d %H:%M:%S')
     data = '\n[' + formatted_tms + ']\n[ERROR] ' + msg
     try:
         log_path = settings.LOG_DIR
@@ -423,15 +442,17 @@ def isBase64(str):
 
 def isInternetAvailable():
     try:
-        proxies = upstream_proxy('https')
+        proxies, verify = upstream_proxy('https')
     except:
-        PrintException("[ERROR] Setting upstream proxy") 
+        PrintException("[ERROR] Setting upstream proxy")
     try:
-        requests.get('https://www.google.com', timeout=5, proxies=proxies)
+        requests.get('https://www.google.com', timeout=5,
+                     proxies=proxies, verify=verify)
         return True
     except requests.exceptions.HTTPError as err:
         try:
-            requests.get('https://www.baidu.com/', timeout=5, proxies=proxies)
+            requests.get('https://www.baidu.com/', timeout=5,
+                         proxies=proxies, verify=verify)
             return True
         except requests.exceptions.HTTPError as err1:
             return False
@@ -448,10 +469,12 @@ def sha256(file_path):
             buf = afile.read(BLOCKSIZE)
     return (hasher.hexdigest())
 
+
 def gen_sha256_hash(msg):
     """Generate SHA 256 Hash of the message"""
     hash_object = hashlib.sha256(msg.encode('utf-8'))
     return hash_object.hexdigest()
+
 
 def isFileExists(file_path):
     if os.path.isfile(file_path):
