@@ -12,6 +12,7 @@ LABEL \
 ENV DEBIAN_FRONTEND="noninteractive"
 ENV PDFGEN_PKGFILE="wkhtmltox-0.12.4_linux-generic-amd64.tar.xz" 
 ENV PDFGEN_URL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/${PDFGEN_PKGFILE}"
+ENV YARA_URL="https://github.com/rednaga/yara-python"
 
 #Update the repository sources list
 RUN apt update -y
@@ -48,6 +49,11 @@ RUN \
     fontconfig \
     xorg
 
+#Install git
+RUN \
+    apt install -y \
+    git
+
 #Install wkhtmltopdf for PDF Reports
 WORKDIR /tmp
 RUN wget ${PDFGEN_URL} && \
@@ -68,15 +74,25 @@ RUN ./kali_fix.sh
 WORKDIR /root/Mobile-Security-Framework-MobSF
 RUN pip3 install -r requirements.txt
 
+#Install apkid dependencies, and enable it 
+WORKDIR /tmp
+RUN git clone ${YARA_URL} && \
+    cd yara-python && \
+    python3 setup.py install && \
+    rm -fr /tmp/yara-python && \
+    sed -i 's/APKID_ENABLED.*/APKID_ENABLED = True/' /root/Mobile-Security-Framework-MobSF/MobSF/settings.py
+
 #Cleanup
 RUN \
+    apt remove -y git && \
     apt clean && \
     apt autoclean && \
-    apt autoremove
+    apt autoremove -y
 RUN rm -rf /var/lib/apt/lists/* /tmp/* > /dev/null 2>&1
 
 #Expose MobSF Port
 EXPOSE 8000
 
 #Run MobSF
+WORKDIR /root/Mobile-Security-Framework-MobSF
 CMD ["python3","manage.py","runserver","0.0.0.0:8000"]
