@@ -12,6 +12,7 @@ LABEL \
 ENV DEBIAN_FRONTEND="noninteractive"
 ENV PDFGEN_PKGFILE="wkhtmltox-0.12.4_linux-generic-amd64.tar.xz" 
 ENV PDFGEN_URL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/${PDFGEN_PKGFILE}"
+ENV YARA_URL="https://github.com/rednaga/yara-python"
 
 #Update the repository sources list
 RUN apt update -y
@@ -75,7 +76,7 @@ RUN pip3 install -r requirements.txt
 
 #Install apkid dependencies, and enable it 
 WORKDIR /tmp
-RUN git clone https://github.com/rednaga/yara-python && \
+RUN git clone ${YARA_URL} && \
     cd yara-python && \
     python3 setup.py install && \
     rm -fr /tmp/yara-python && \
