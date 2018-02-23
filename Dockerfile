@@ -87,7 +87,7 @@ RUN \
     apt remove -y git && \
     apt clean && \
     apt autoclean && \
-    apt autoremove
+    apt autoremove -y
 RUN rm -rf /var/lib/apt/lists/* /tmp/* > /dev/null 2>&1
 
 #Expose MobSF Port
