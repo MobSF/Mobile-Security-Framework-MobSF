@@ -157,7 +157,7 @@ def static_analyzer(request, api=False):
                     # folder?
                     if os.path.exists(res_path):
                         icon_dic = get_icon(
-                            app_dic['app_path'], res_path, app_dic['tools_dir'])
+                            app_dic['app_path'], res_path)
                         if icon_dic:
                             app_dic['icon_hidden'] = icon_dic['hidden']
                             app_dic['icon_found'] = bool(icon_dic['path'])
