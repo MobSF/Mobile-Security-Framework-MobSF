@@ -423,32 +423,6 @@ else:
     # python setup.py install
     #==============================================
 
-    #------------------------
-    # WEB API FUZZER SETTINGS
-    #------------------------
-
-    #==============RESPONSE VALIDATION==============
-    XXE_VALIDATE_STRING = "m0bsfxx3"
-    #===============================================
-
-    #=========Path Traversal - API Testing==========
-    CHECK_FILE = "/etc/passwd"
-    RESPONSE_REGEX = "root:|nobody:"
-    #===============================================
-
-    #=========Rate Limit Check - API Testing========
-    RATE_REGISTER = 20
-    RATE_LOGIN = 20
-    #===============================================
-
-    #===============MobSF Cloud Settings============
-    CLOUD_SERVER = 'http://opensecurity.in:8080'
-    '''
-    This server validates SSRF and XXE during Web API Testing
-    See the source code of the cloud server from APITester/cloud/cloud_server.py
-    You can also host the cloud server. Host it on a public IP and point CLOUD_SERVER to that IP.
-    '''
-
     #^CONFIG-END^: Do not edit this line
 
 # The below code should be loaded last.
