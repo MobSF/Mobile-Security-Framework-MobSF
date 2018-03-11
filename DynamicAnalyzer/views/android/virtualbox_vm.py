@@ -1,3 +1,4 @@
+import time
 import subprocess
 from MobSF.utils import PrintException
 
@@ -10,6 +11,7 @@ def refresh_vm(uuid, snapshot_uuid, vbox_exe):
         args = [vbox_exe, 'controlvm', uuid, 'poweroff']
         subprocess.call(args)
         print("\n[INFO] VM Closed")
+        time.sleep(3)
         # Restore Snapshot
         args = [vbox_exe, 'snapshot', uuid, 'restore', snapshot_uuid]
         subprocess.call(args)

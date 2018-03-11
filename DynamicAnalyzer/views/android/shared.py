@@ -4,7 +4,6 @@ import subprocess
 import os
 import time
 from django.conf import settings
-from DynamicAnalyzer.pyWebProxy.pywebproxy import Proxy
 from MobSF.utils import PrintException, getADB
 
 
@@ -62,15 +61,6 @@ def wait(sec):
     """Wait in Seconds"""
     print("\n[INFO] Waiting for " + str(sec) + " seconds...")
     time.sleep(sec)
-
-
-def web_proxy(apk_dir, ip_address, port):
-    """Run MITM Proxy"""
-    print("\n[INFO] Starting Web Proxy")
-    try:
-        Proxy(ip_address, port, apk_dir, "on")
-    except:
-        PrintException("[ERROR] Starting Web Proxy")
 
 
 def get_res():

@@ -23,7 +23,6 @@ from MobSF.utils import (
     api_key
 )
 from StaticAnalyzer.models import RecentScansDB
-from APITester.models import ScopeURLSandTests
 from StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
     StaticAnalyzerIPA,
@@ -313,7 +312,6 @@ def delete_scan(request, api=False):
                 scan = RecentScansDB.objects.filter(MD5=md5_hash)
                 if scan.exists():
                     RecentScansDB.objects.filter(MD5=md5_hash).delete()
-                    ScopeURLSandTests.objects.filter(MD5=md5_hash).delete()
                     StaticAnalyzerAndroid.objects.filter(MD5=md5_hash).delete()
                     StaticAnalyzerIPA.objects.filter(MD5=md5_hash).delete()
                     StaticAnalyzerIOSZIP.objects.filter(MD5=md5_hash).delete()

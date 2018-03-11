@@ -174,7 +174,6 @@ INSTALLED_APPS = (
     'StaticAnalyzer',
     'DynamicAnalyzer',
     'MobSF',
-    'APITester',
     'MalwareAnalyzer',
 )
 MIDDLEWARE_CLASSES = (
@@ -378,7 +377,7 @@ else:
     #================HOST/PROXY SETTINGS ===============
     PROXY_IP = '192.168.56.1'  # Host/Server/Proxy IP
     PORT = 1337  # Proxy Port
-    ROOT_CA = '0025aabb.0'
+    ROOT_CA = '0026aabb.0'
     SCREEN_IP = PROXY_IP  # ScreenCast IP
     SCREEN_PORT = 9339  # ScreenCast Port(Do not Change)
     #===================================================

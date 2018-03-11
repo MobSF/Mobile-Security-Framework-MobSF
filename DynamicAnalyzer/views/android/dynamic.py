@@ -3,18 +3,18 @@
 import subprocess
 import os
 import re
-import shutil
-import tarfile
 import ntpath
 import io
 import json
 import random
 import time
 import socket
+import shutil
 import unicodedata
 import threading
-import base64
 import sqlite3 as sq
+
+from pathlib import Path
 
 from django.shortcuts import render
 from django.conf import settings
@@ -23,25 +23,36 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.utils.html import escape
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
-from DynamicAnalyzer.pyWebProxy.pywebproxy import Proxy
-from DynamicAnalyzer.views.android.android_avd import (
+from DynamicAnalyzer.tools.webproxy import (
+    start_proxy,
+    stop_proxy,
+    start_fuzz_ui,
+    get_ca_dir,
+)
+
+from DynamicAnalyzer.views.android.avd import (
     avd_load_wait,
     refresh_avd,
     stop_avd
 )
-from DynamicAnalyzer.views.android.android_virtualbox_vm import (
+
+from DynamicAnalyzer.views.android.analysis import (
+    api_analysis,
+    run_analysis,
+    download
+)
+from DynamicAnalyzer.views.android.virtualbox_vm import (
     refresh_vm
 )
-from DynamicAnalyzer.views.android.android_dyn_shared import (
+from DynamicAnalyzer.views.android.shared import (
     connect,
     install_and_run,
-    web_proxy,
     get_res,
     get_identifier,
     wait,
 )
-from MobSF.utils import PrintException, is_number, python_list, isBase64, getADB
-from MalwareAnalyzer.views import malware_check
+from MobSF.utils import PrintException, is_number, python_list, getADB
+
 
 #===========================================
 # Dynamic Analyzer Related Views for Android
@@ -87,12 +98,13 @@ def android_dynamic_analyzer(request):
                 else:
                     os.makedirs(screen_dir)
                 # Start DM
-                Proxy("", "", "", "")
+                stop_proxy()
                 toolsdir = os.path.join(
                     settings.BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
                 adb = getADB(toolsdir)
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_REAL_DEVICE":
-                    print("\n[INFO] MobSF will perform Dynamic Analysis on real Android Device")
+                    print(
+                        "\n[INFO] MobSF will perform Dynamic Analysis on real Android Device")
                     is_avd = False
                 elif settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                     # adb, avd_path, reference_name, dup_name, emulator
@@ -121,6 +133,7 @@ def android_dynamic_analyzer(request):
 
 
 def get_env(request):
+    global capfuzz
     """Get Dynamic Analysis Environment for Android"""
     print("\n[INFO] Setting up Dynamic Analysis Environment")
     try:
@@ -145,8 +158,7 @@ def get_env(request):
                     proxy_ip = '127.0.0.1'
                 else:
                     proxy_ip = settings.PROXY_IP  # Proxy IP
-                port = str(settings.PORT)  # Proxy Port
-                web_proxy(app_dir, proxy_ip, port)
+                start_proxy(settings.PORT, package)
                 # AVD only needs to wait, vm needs the connect function
                 try:
                     if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
@@ -155,8 +167,8 @@ def get_env(request):
                         connect(toolsdir)
                 except Exception as exp:
                     data = {'ready': 'no',
-                        'msg': 'Cannot Connect to the VM/Device.',
-                        'error': str(exp)}
+                            'msg': 'Cannot Connect to the VM/Device.',
+                            'error': str(exp)}
                     return HttpResponse(json.dumps(data), content_type='application/json')
                 # Change True to support non-activity components
                 install_and_run(toolsdir, app_path, package, launcher, True)
@@ -384,10 +396,9 @@ def mobsf_ca(request):
         if request.method == 'POST':
             data = {}
             act = request.POST['action']
+            rootca = get_ca_dir()
             toolsdir = os.path.join(
                 settings.BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
-            rootca = os.path.join(
-                settings.BASE_DIR, 'DynamicAnalyzer/pyWebProxy/ca.crt')
             adb = getADB(toolsdir)
             if act == "install":
                 print("\n[INFO] Installing MobSF RootCA")
@@ -444,20 +455,20 @@ def mobsf_ca(request):
                 print("\n[INFO] Removing MobSF RootCA")
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                     subprocess.call([adb,
-                                 "-s",
-                                 get_identifier(),
-                                 "shell",
-                                 "rm",
-                                 "/system/etc/security/cacerts/" + settings.ROOT_CA])
+                                     "-s",
+                                     get_identifier(),
+                                     "shell",
+                                     "rm",
+                                     "/system/etc/security/cacerts/" + settings.ROOT_CA])
                 else:
                     subprocess.call([adb,
-                                 "-s",
-                                 get_identifier(),
-                                 "shell",
-                                 "su",
-                                 "-c",
-                                 "rm",
-                                 "/system/etc/security/cacerts/" + settings.ROOT_CA])
+                                     "-s",
+                                     get_identifier(),
+                                     "shell",
+                                     "su",
+                                     "-c",
+                                     "rm",
+                                     "/system/etc/security/cacerts/" + settings.ROOT_CA])
                 data = {'ca': 'removed'}
             return HttpResponse(json.dumps(data), content_type='application/json')
         else:
@@ -536,6 +547,7 @@ def final_test(request):
 
 
 def dump_data(request):
+    global capfuzz
     """Downloading Application Data from Device"""
     print("\n[INFO] Downloading Application Data from Device")
     try:
@@ -554,7 +566,7 @@ def dump_data(request):
                 adb = getADB(toolsdir)
                 # Let's try to close Proxy a bit early as we don't have much
                 # control on the order of thread execution
-                Proxy("", "", "", "")
+                stop_proxy()
                 print("\n[INFO] Deleting Dump Status File")
                 subprocess.call([adb,
                                  "-s",
@@ -590,14 +602,15 @@ def dump_data(request):
                 while True:
                     current_time = time.time()
                     if b"MOBSEC-TAR-CREATED" in subprocess.check_output([adb,
-                                                                        "-s",
-                                                                        get_identifier(),
-                                                                        "shell",
-                                                                        "cat",
-                                                                        "/sdcard/mobsec_status"]):
+                                                                         "-s",
+                                                                         get_identifier(),
+                                                                         "shell",
+                                                                         "cat",
+                                                                         "/sdcard/mobsec_status"]):
                         break
                     if (current_time - start_time) > timeout:
-                        print("\n[ERROR] TAR Generation Failed. Process timed out.")
+                        print(
+                            "\n[ERROR] TAR Generation Failed. Process timed out.")
                         break
                 print("\n[INFO] Dumping Application Files from Device/VM")
                 subprocess.call([adb,
@@ -655,13 +668,13 @@ def exported_activity_tester(request):
                     if exported_act:
                         exp_act_no = 0
                         print("\n[INFO] Starting Exported Activity Tester...")
-                        print("\n[INFO] " + str(len(exported_act)) + \
-                            " Exported Activities Identified")
+                        print("\n[INFO] " + str(len(exported_act)) +
+                              " Exported Activities Identified")
                         for line in exported_act:
                             try:
                                 exp_act_no += 1
-                                print("\n[INFO] Launching Exported Activity - " + \
-                                    str(exp_act_no) + ". " + line)
+                                print("\n[INFO] Launching Exported Activity - " +
+                                      str(exp_act_no) + ". " + line)
                                 subprocess.call(
                                     [adb,
                                      "-s",
@@ -706,7 +719,8 @@ def exported_activity_tester(request):
                                     "[ERROR] Exported Activity Tester")
                         data = {'expacttest': 'done'}
                     else:
-                        print("\n[INFO] Exported Activity Tester - No Activity Found!")
+                        print(
+                            "\n[INFO] Exported Activity Tester - No Activity Found!")
                         data = {'expacttest': 'noact'}
                     return HttpResponse(json.dumps(data), content_type='application/json')
                 else:
@@ -751,11 +765,13 @@ def activity_tester(request):
                     if activities:
                         act_no = 0
                         print("\n[INFO] Starting Activity Tester...")
-                        print("\n[INFO] " + str(len(activities)) + " Activities Identified")
+                        print("\n[INFO] " + str(len(activities)) +
+                              " Activities Identified")
                         for line in activities:
                             try:
                                 act_no += 1
-                                print("\n[INFO] Launching Activity - " + str(act_no) + ". " + line)
+                                print("\n[INFO] Launching Activity - " +
+                                      str(act_no) + ". " + line)
                                 subprocess.call(
                                     [adb,
                                      "-s",
@@ -853,7 +869,8 @@ def report(request):
                         static_android_db = StaticAnalyzerAndroid.objects.filter(
                             MD5=md5_hash)
                         if static_android_db.exists():
-                            print("\n[INFO] Fetching Exported Activity & Activity List from DB")
+                            print(
+                                "\n[INFO] Fetching Exported Activity & Activity List from DB")
                             exported_act = python_list(
                                 static_android_db[0].EXPORTED_ACT)
                             act_desc = python_list(
@@ -866,7 +883,8 @@ def report(request):
                                     exp_act = dict(
                                         list(zip(expact_imgs, exported_act)))
                         else:
-                            print("\n[WARNING] Entry does not exists in the DB.")
+                            print(
+                                "\n[WARNING] Entry does not exists in the DB.")
                     except:
                         PrintException("[ERROR] Screenshot Sorting")
                 context = {'md5': md5_hash,
@@ -939,270 +957,6 @@ def handle_sqlite(sfile):
         PrintException("[ERROR] SQLite DB Extraction")
 
 
-def api_analysis(package, location):
-    """API Analysis"""
-    api_analysis_result = {}
-    print("\n[INFO] Dynamic API Analysis")
-    dat = ""
-    api_base64 = []
-    api_fileio = []
-    api_reflect = []
-    api_sysprop = []
-    api_cntvl = []
-    api_binder = []
-    api_crypto = []
-    api_acntmnger = []
-    api_deviceinfo = []
-    api_net = []
-    api_dexloader = []
-    api_cmd = []
-    api_sms = []
-    try:
-        with open(location, "r") as flip:
-            dat = flip.readlines()
-        res_id = "Droidmon-apimonitor-" + package + ":"
-        for line in dat:
-            if res_id in line:
-                # print "LINE: " + line
-                _, value = line.split(res_id, 1)
-                # print "PARAM is :" + param
-                # print "Value is :"+ value
-                try:
-                    apis = json.loads(value, strict=False)
-                    ret = ''
-                    args = ''
-                    mtd = str(apis["method"])
-                    clss = str(apis["class"])
-                    # print "Called Class: " + CLS
-                    # print "Called Method: " + MTD
-                    if apis.get('return'):
-                        ret = str(apis["return"])
-                        # print "Return Data: " + RET
-                    else:
-                        # print "No Return Data"
-                        ret = "No Return Data"
-                    if apis.get('args'):
-                        args = str(apis["args"])
-                        # print "Passed Arguments" + ARGS
-                    else:
-                        # print "No Arguments Passed"
-                        args = "No Arguments Passed"
-                    # XSS Safe
-                    call_data = "</br>METHOD: " + \
-                        escape(mtd) + "</br>ARGUMENTS: " + escape(args) + \
-                        "</br>RETURN DATA: " + escape(ret)
-
-                    if re.findall("android.util.Base64", clss):
-                        # Base64 Decode
-                        if "decode" in mtd:
-                            args_list = python_list(args)
-                            if isBase64(args_list[0]):
-                                call_data += '</br><span class="label label-info">' +\
-                                    'Decoded String:</span> ' + \
-                                    escape(base64.b64decode(args_list[0]))
-                        api_base64.append(call_data)
-                    if re.findall('libcore.io|android.app.SharedPreferencesImpl$EditorImpl', clss):
-                        api_fileio.append(call_data)
-                    if re.findall('java.lang.reflect', clss):
-                        api_reflect.append(call_data)
-                    if re.findall('android.content.ContentResolver|android.location.Location|android.media.AudioRecord|android.media.MediaRecorder|android.os.SystemProperties', clss):
-                        api_sysprop.append(call_data)
-                    if re.findall('android.app.Activity|android.app.ContextImpl|android.app.ActivityThread', clss):
-                        api_binder.append(call_data)
-                    if re.findall('javax.crypto.spec.SecretKeySpec|javax.crypto.Cipher|javax.crypto.Mac', clss):
-                        api_crypto.append(call_data)
-                    if re.findall('android.accounts.AccountManager|android.app.ApplicationPackageManager|android.app.NotificationManager|android.net.ConnectivityManager|android.content.BroadcastReceiver', clss):
-                        api_acntmnger.append(call_data)
-                    if re.findall('android.telephony.TelephonyManager|android.net.wifi.WifiInfo|android.os.Debug', clss):
-                        api_deviceinfo.append(call_data)
-                    if re.findall('dalvik.system.BaseDexClassLoader|dalvik.system.DexFile|dalvik.system.DexClassLoader|dalvik.system.PathClassLoader', clss):
-                        api_dexloader.append(call_data)
-                    if re.findall('java.lang.Runtime|java.lang.ProcessBuilder|java.io.FileOutputStream|java.io.FileInputStream|android.os.Process', clss):
-                        api_cmd.append(call_data)
-                    if re.findall('android.content.ContentValues', clss):
-                        api_cntvl.append(call_data)
-                    if re.findall('android.telephony.SmsManager', clss):
-                        api_sms.append(call_data)
-                    if re.findall('java.net.URL|org.apache.http.impl.client.AbstractHttpClient', clss):
-                        api_net.append(call_data)
-                except:
-                    PrintException("[ERROR] Parsing JSON Failed for: " + value)
-    except:
-        PrintException("[ERROR] Dynamic API Analysis")
-    api_analysis_result["api_net"] = list(set(api_net))
-    api_analysis_result["api_base64"] = list(set(api_base64))
-    api_analysis_result["api_fileio"] = list(set(api_fileio))
-    api_analysis_result["api_binder"] = list(set(api_binder))
-    api_analysis_result["api_crypto"] = list(set(api_crypto))
-    api_analysis_result["api_deviceinfo"] = list(set(api_deviceinfo))
-    api_analysis_result["api_cntvl"] = list(set(api_cntvl))
-    api_analysis_result["api_sms"] = list(set(api_sms))
-    api_analysis_result["api_sysprop"] = list(set(api_sysprop))
-    api_analysis_result["api_dexloader"] = list(set(api_dexloader))
-    api_analysis_result["api_reflect"] = list(set(api_reflect))
-    api_analysis_result["api_acntmnger"] = list(set(api_acntmnger))
-    api_analysis_result["api_cmd"] = list(set(api_cmd))
-    return api_analysis_result
-
-
-def download(md5_hash, download_dir, apk_dir, package):
-    """Generating Downloads"""
-    print("\n[INFO] Generating Downloads")
-    try:
-        logcat = os.path.join(apk_dir, 'logcat.txt')
-        xlogcat = os.path.join(apk_dir, 'x_logcat.txt')
-        dumpsys = os.path.join(apk_dir, 'dump.txt')
-        sshot = os.path.join(apk_dir, 'screenshots-apk/')
-        web = os.path.join(apk_dir, 'WebTraffic.txt')
-        star = os.path.join(apk_dir, package + '.tar')
-
-        dlogcat = os.path.join(download_dir, md5_hash + '-logcat.txt')
-        dxlogcat = os.path.join(download_dir, md5_hash + '-x_logcat.txt')
-        ddumpsys = os.path.join(download_dir, md5_hash + '-dump.txt')
-        dsshot = os.path.join(download_dir, md5_hash + '-screenshots-apk/')
-        dweb = os.path.join(download_dir, md5_hash + '-WebTraffic.txt')
-        dstar = os.path.join(download_dir, md5_hash + '-AppData.tar')
-
-        # Delete existing data
-        dellist = [dlogcat, dxlogcat, ddumpsys, dsshot, dweb, dstar]
-        for item in dellist:
-            if os.path.isdir(item):
-                shutil.rmtree(item)
-            elif os.path.isfile(item):
-                os.remove(item)
-        # Copy new data
-        shutil.copyfile(logcat, dlogcat)
-        shutil.copyfile(xlogcat, dxlogcat)
-        shutil.copyfile(dumpsys, ddumpsys)
-        try:
-            shutil.copytree(sshot, dsshot)
-        except:
-            pass
-        try:
-            shutil.copyfile(web, dweb)
-        except:
-            pass
-        try:
-            shutil.copyfile(star, dstar)
-        except:
-            pass
-    except:
-        PrintException("[ERROR] Generating Downloads")
-
-
-def run_analysis(apk_dir, md5_hash, package):
-    """Run Dynamic File Analysis"""
-    analysis_result = {}
-    print("\n[INFO] Dynamic File Analysis")
-    web = os.path.join(apk_dir, 'WebTraffic.txt')
-    logcat = os.path.join(apk_dir, 'logcat.txt')
-    xlogcat = os.path.join(apk_dir, 'x_logcat.txt')
-    traffic = ''
-    web_data = ''
-    xlg = ''
-    domains = {}
-    logcat_data = []
-    clipboard = []
-    clip_tag = "I/CLIPDUMP-INFO-LOG"
-    try:
-        with io.open(web, mode='r', encoding="utf8", errors="ignore") as flip:
-            web_data = flip.read()
-    except:
-        pass
-    with io.open(logcat, mode='r', encoding="utf8", errors="ignore") as flip:
-        logcat_data = flip.readlines()
-        traffic = ''.join(logcat_data)
-    with io.open(xlogcat, mode='r', encoding="utf8", errors="ignore") as flip:
-        xlg = flip.read()
-    traffic = web_data + traffic + xlg
-    for log_line in logcat_data:
-        if log_line.startswith(clip_tag):
-            clipboard.append(log_line.replace(clip_tag, "Process ID "))
-    urls = []
-    # URLs My Custom regex
-    url_pattern = re.compile(r'((?:https?://|s?ftps?://|file://|javascript:|data:|www\d{0,3}[.])[\w().=/;,#:@?&~*+!$%\'{}-]+)', re.UNICODE)
-    urllist = re.findall(url_pattern, traffic.lower())
-    # Domain Extraction and Malware Check
-    print("[INFO] Performing Malware Check on extracted Domains")
-    domains = malware_check(urllist)
-    for url in urllist:
-        if url not in urls:
-            urls.append(url)
-
-    # Email Etraction Regex
-    emails = []
-    regex = re.compile(r"[\w.-]+@[\w-]+\.[\w.]+")
-    for email in regex.findall(traffic.lower()):
-        if (email not in emails) and (not email.startswith('//')):
-            if email == "yodleebanglore@gmail.com":
-                pass
-            else:
-                emails.append(email)
-    # Extract Device Data
-    try:
-        tar_loc = os.path.join(apk_dir, package + '.tar')
-        untar_dir = os.path.join(apk_dir, 'DYNAMIC_DeviceData/')
-        if not os.path.exists(untar_dir):
-            os.makedirs(untar_dir)
-        with tarfile.open(tar_loc) as tar:
-            try:
-                tar.extractall(untar_dir)
-            except:
-                pass
-    except:
-        PrintException("[ERROR] TAR EXTRACTION FAILED")
-    # Do Static Analysis on Data from Device
-    xmlfiles = ''
-    sqlite_db = ''
-    other_files = ''
-    typ = ''
-    untar_dir = os.path.join(apk_dir, 'DYNAMIC_DeviceData/')
-    if not os.path.exists(untar_dir):
-        os.makedirs(untar_dir)
-    try:
-        for dir_name, _, files in os.walk(untar_dir):
-            for jfile in files:
-                file_path = os.path.join(untar_dir, dir_name, jfile)
-                if "+" in file_path:
-                    shutil.move(file_path, file_path.replace("+", "x"))
-                    file_path = file_path.replace("+", "x")
-                fileparam = file_path.replace(untar_dir, '')
-                if jfile == 'lib':
-                    pass
-                else:
-                    if jfile.endswith('.xml'):
-                        typ = 'xml'
-                        xmlfiles += "<tr><td><a href='../View/?file=" + \
-                            escape(fileparam) + "&md5=" + md5_hash + "&type=" + \
-                            typ + "'>" + escape(fileparam) + "</a></td><tr>"
-                    else:
-                        with io.open(file_path, mode='r', encoding="utf8", errors="ignore") as flip:
-                            file_cnt_sig = flip.read(6)
-                        if file_cnt_sig == "SQLite":
-                            typ = 'db'
-                            sqlite_db += "<tr><td><a href='../View/?file=" + \
-                                escape(fileparam) + "&md5=" + md5_hash + "&type=" + \
-                                typ + "'>" + \
-                                escape(fileparam) + "</a></td><tr>"
-                        elif not jfile.endswith('.DS_Store'):
-                            typ = 'others'
-                            other_files += "<tr><td><a href='../View/?file=" + \
-                                escape(fileparam) + "&md5=" + md5_hash + "&type=" + \
-                                typ + "'>" + \
-                                escape(fileparam) + "</a></td><tr>"
-    except:
-        PrintException("[ERROR] Dynamic File Analysis")
-    analysis_result["urls"] = urls
-    analysis_result["domains"] = domains
-    analysis_result["emails"] = emails
-    analysis_result["clipboard"] = clipboard
-    analysis_result["web_data"] = web_data
-    analysis_result["xmlfiles"] = xmlfiles
-    analysis_result["sqlite_db"] = sqlite_db
-    analysis_result["other_files"] = other_files
-    return analysis_result
-
-
 def view(request):
     """View File"""
     print("\n[INFO] Viewing File")
@@ -1245,6 +999,23 @@ def view(request):
         return HttpResponseRedirect('/error/')
 
 
+def capfuzz_start(request):
+    """Start CapFuzz UI"""
+    print("[INFO] Starting CapFuzz Web UI")
+    try:
+        start_fuzz_ui(settings.PORT)
+        time.sleep(3)
+        print("[INFO] CapFuzz UI Started")
+        if request.GET['project']:
+            project = request.GET['project']
+        else:
+            project = ""
+        return HttpResponseRedirect('http://localhost:' + str(settings.PORT) + "/dashboard/" + project)
+    except:
+        PrintException("[ERROR] Starting CapFuzz Web UI")
+        return HttpResponseRedirect('/error/')
+
+
 def screencast_service():
     """Start or Stop ScreenCast Services"""
     global TCP_SERVER_MODE
@@ -1282,8 +1053,8 @@ def screencast_service():
                                 break
                             flip.write(data)
                 else:
-                    print("\n[ATTACK] An unknown client :" + address[0] + " is trying " + \
-                        "to make a connection with MobSF ScreenCast Service!")
+                    print("\n[ATTACK] An unknown client :" + address[0] + " is trying " +
+                          "to make a connection with MobSF ScreenCast Service!")
         elif TCP_SERVER_MODE == "off":
             screen_socket.close()
     except:
