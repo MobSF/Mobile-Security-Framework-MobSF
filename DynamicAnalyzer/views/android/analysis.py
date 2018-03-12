@@ -82,7 +82,7 @@ def api_analysis(package, location):
                                     'Decoded String:</span> ' + \
                                     escape(base64.b64decode(args_list[0]))
                         api_base64.append(call_data)
-                    if re.findall('libcore.io|android.app.SharedPreferencesImpl$EditorImpl', clss):
+                    if re.findall('libcore.io|android.app.SharedPreferencesImpl\$EditorImpl', clss):
                         api_fileio.append(call_data)
                     if re.findall('java.lang.reflect', clss):
                         api_reflect.append(call_data)
