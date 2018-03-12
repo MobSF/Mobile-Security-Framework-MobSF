@@ -5,7 +5,8 @@ LABEL \
     name="MobSF" \
     author="Ajin Abraham <ajin25@gmail.com>" \
     maintainer="Ajin Abraham <ajin25@gmail.com>" \
-    contributor="OscarAkaElvis <oscar.alfonso.diaz@gmail.com>" \
+    contributor_1="OscarAkaElvis <oscar.alfonso.diaz@gmail.com>" \
+    contributor_2="Vincent Nadal <vincent.nadal@orange.fr>" \
     description="Mobile Security Framework is an intelligent, all-in-one open source mobile application (Android/iOS/Windows) automated pen-testing framework capable of performing static, dynamic analysis and web API testing"
 
 #Environment vars
@@ -15,10 +16,9 @@ ENV PDFGEN_URL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.1
 ENV YARA_URL="https://github.com/rednaga/yara-python"
 
 #Update the repository sources list
-RUN apt update -y
-
 #Install Required Libs
-RUN apt install -y \
+#see https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
+RUN apt update -y && apt install -y \
     build-essential \
     libssl-dev \
     libffi-dev \
