@@ -76,12 +76,12 @@ def upload(request, api=False):
     """
     Handle File Upload based on App type
     """
-    try:
-        response_data = {}
+    api_response = {}
+    response_data = {}
+    try: 
         response_data['url'] = ''
         response_data['description'] = ''
         response_data['status'] = 'error'
-        api_response = {}
         if request.method == 'POST':
             form = UploadFileForm(request.POST, request.FILES)
             if form.is_valid():
