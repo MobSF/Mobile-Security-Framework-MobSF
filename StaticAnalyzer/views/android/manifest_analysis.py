@@ -1257,7 +1257,7 @@ def read_manifest(app_dir, tools_dir, typ, binary):
     """Read the manifest file."""
     try:
         dat = ''
-
+        manifest = ''
         if binary is True:
             print("[INFO] Getting Manifest from Binary")
             print("[INFO] AXML -> XML")
