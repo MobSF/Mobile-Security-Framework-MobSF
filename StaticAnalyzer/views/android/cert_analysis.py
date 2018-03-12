@@ -50,6 +50,7 @@ def cert_info(app_dir, tools_dir):
         certfile = None
         dat = ''
         manidat = ''
+        manifestfile = None
         if "CERT.RSA" in files:
             certfile = os.path.join(cert, "CERT.RSA")
         else:
