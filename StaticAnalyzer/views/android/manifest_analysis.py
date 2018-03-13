@@ -1257,11 +1257,24 @@ def read_manifest(app_dir, tools_dir, typ, binary):
     """Read the manifest file."""
     try:
         dat = ''
-        manifest = ''
+
         if binary is True:
             print("[INFO] Getting Manifest from Binary")
-            print("[INFO] AXML -> XML")
-            manifest = os.path.join(app_dir, "AndroidManifest.xml")
+            manifest = os.path.join(app_dir, "apktool_out", "AndroidManifest.xml")
+            if isFileExists(manifest):
+                print("[INFO] using Manifest from apktool")
+                with io.open(
+                    manifest,
+                    mode='r',
+                    encoding="utf8",
+                    errors="ignore"
+                ) as file_pointer:
+                    dat = file_pointer.read()
+                return dat
+            else:
+                print("[INFO] Using Manifest from Binary")
+                print("[INFO] AXML -> XML")
+                manifest = os.path.join(app_dir, "AndroidManifest.xml")
             if len(settings.AXMLPRINTER_BINARY) > 0 and isFileExists(settings.AXMLPRINTER_BINARY):
                 cp_path = settings.AXMLPRINTER_BINARY
             else:
@@ -1291,7 +1304,7 @@ def read_manifest(app_dir, tools_dir, typ, binary):
     except:
         PrintException("[ERROR] AXMLPrinter2 Reading Manifest file")
 
-
+        
 def read_manifest_apktool(app_path, app_dir, tools_dir, binary):
     """Get raw AndroidManifest.xml if AXMLPrinter2 fails"""
     try:
