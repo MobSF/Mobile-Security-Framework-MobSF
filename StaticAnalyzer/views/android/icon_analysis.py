@@ -80,7 +80,7 @@ def get_icon(apk_path, res_dir):
         path is a full path (not relative to resource folder) """
     try:
         print("[INFO] Fetching icon path")
-         a = apk.APK(apk_path)
+        a = apk.APK(apk_path)
         icon_name = a.get_app_icon(max_dpi=65536)
         if len(icon_name) > 0:
             return {
