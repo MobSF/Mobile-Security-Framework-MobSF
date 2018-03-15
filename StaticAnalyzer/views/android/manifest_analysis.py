@@ -1275,15 +1275,14 @@ def read_manifest(app_dir, tools_dir, typ, binary):
                 print("[INFO] Using Manifest from Binary")
                 print("[INFO] AXML -> XML")
                 manifest = os.path.join(app_dir, "AndroidManifest.xml")
-            if len(settings.AXMLPRINTER_BINARY) > 0 and isFileExists(settings.AXMLPRINTER_BINARY):
-                cp_path = settings.AXMLPRINTER_BINARY
-            else:
-                cp_path = os.path.join(tools_dir, 'AXMLPrinter2.jar')
-
-            args = [settings.JAVA_PATH + 'java', '-jar', cp_path, manifest]
-            dat = subprocess.check_output(args)
-            #dat = dat.replace(b"\n", b"")
-            dat = dat.decode("utf-8", "ignore")
+                if len(settings.AXMLPRINTER_BINARY) > 0 and isFileExists(settings.AXMLPRINTER_BINARY):
+                    cp_path = settings.AXMLPRINTER_BINARY
+                else:
+                    cp_path = os.path.join(tools_dir, 'AXMLPrinter2.jar')
+                args = [settings.JAVA_PATH + 'java', '-jar', cp_path, manifest]
+                dat = subprocess.check_output(args)
+                #dat = dat.replace(b"\n", b"")
+                dat = dat.decode("utf-8", "ignore")
         else:
             print("[INFO] Getting Manifest from Source")
             if typ == "eclipse":
