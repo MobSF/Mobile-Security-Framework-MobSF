@@ -9,6 +9,7 @@ import fnmatch
 import string
 
 from django.conf import settings
+from androguard.core.bytecodes import apk
 
 # relative to res folder
 KNOWN_PATHS = [
@@ -74,31 +75,21 @@ def guess_icon_path(res_dir):
     return ''
 
 
-def get_icon(apk_path, res_dir, tools_dir):
+def get_icon(apk_path, res_dir):
     """Returns a dict with isHidden boolean and a relative path
         path is a full path (not relative to resource folder) """
     try:
         print("[INFO] Fetching icon path")
-
-        aapt_binary = get_aapt(tools_dir)
-        args = [aapt_binary, 'd', 'badging', apk_path]
-        if platform.system() == "Linux":
-            env = {"LD_LIBRARY_PATH": str(os.path.join(
-                settings.BASE_DIR, "DynamicAnalyzer/tools/adb/linux/lib64/"))}
-            aapt_output = subprocess.check_output(args, env=env)
-        else:
-            aapt_output = subprocess.check_output(args)
-        regex = re.compile(r"application:[^\n]+icon='(.*)'.*")
-        found_regex = regex.findall(aapt_output.decode('utf-8'))
-        if len(found_regex) > 0:
-            if found_regex[0]:
-                return {
-                    'path': os.path.join(os.path.dirname(apk_path), found_regex[0]),
-                    'hidden': False
-                }
+        a = apk.APK(apk_path)
+        icon_name = a.get_app_icon(max_dpi=65536)
+        if len(icon_name) > 0:
+            return {
+                'path': os.path.join(os.path.dirname(apk_path), icon_name) ,
+                'hidden': False
+            }
         return {
-            'path': guess_icon_path(res_dir),
-            'hidden': True
+           'path': guess_icon_path(res_dir),
+           'hidden': True
         }
     except:
         PrintException("[ERROR] Get icon function")
