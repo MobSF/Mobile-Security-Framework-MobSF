@@ -1288,7 +1288,6 @@ def read_manifest(app_dir, app_path, tools_dir, typ, apk):
 def get_manifest_file(app_path, app_dir, tools_dir):
     """Get readable AndroidManifest.xml"""
     try:
-        print("[INFO] Converting AXML to XML")
         manifest = None
         if len(settings.APKTOOL_BINARY) > 0 and isFileExists(settings.APKTOOL_BINARY):
             apktool_path = settings.APKTOOL_BINARY
@@ -1297,8 +1296,12 @@ def get_manifest_file(app_path, app_dir, tools_dir):
         output_dir = os.path.join(app_dir, "apktool_out")
         args = [settings.JAVA_PATH + 'java', '-jar',
                 apktool_path, "-f", "-s", "d", app_path, "-o", output_dir]
-        subprocess.check_output(args)
         manifest = os.path.join(output_dir, "AndroidManifest.xml")
+        if isFileExists(manifest):
+            # APKTool already created readable XML
+            return manifest
+        print("[INFO] Converting AXML to XML")
+        subprocess.check_output(args)
         return manifest
     except:
         PrintException("[ERROR]Getting Manifest file")
