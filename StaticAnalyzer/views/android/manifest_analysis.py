@@ -27,7 +27,8 @@ def get_manifest(app_path, app_dir, tools_dir, typ, binary):
             print("[INFO] Parsing AndroidManifest.xml")
             manifest = minidom.parseString(dat)
         except:
-            PrintException("[ERROR] apktool failed to extract AndroidManifest.xml or parsing failed")
+            PrintException(
+                "[ERROR] apktool failed to extract AndroidManifest.xml or parsing failed")
             manifest = minidom.parseString(
                 (
                     r'<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android='
@@ -1283,11 +1284,11 @@ def read_manifest(app_dir, app_path, tools_dir, typ, apk):
     except:
         PrintException("[ERROR] Reading Manifest file")
 
-        
+
 def get_manifest_file(app_path, app_dir, tools_dir):
     """Get readable AndroidManifest.xml"""
     try:
-        print ("[INFO] Converting AXML to XML")
+        print("[INFO] Converting AXML to XML")
         manifest = None
         if len(settings.APKTOOL_BINARY) > 0 and isFileExists(settings.APKTOOL_BINARY):
             apktool_path = settings.APKTOOL_BINARY
@@ -1298,6 +1299,6 @@ def get_manifest_file(app_path, app_dir, tools_dir):
                 apktool_path, "-f", "-s", "d", app_path, "-o", output_dir]
         subprocess.check_output(args)
         manifest = os.path.join(output_dir, "AndroidManifest.xml")
-    return manifest
+        return manifest
     except:
         PrintException("[ERROR]Getting Manifest file")
