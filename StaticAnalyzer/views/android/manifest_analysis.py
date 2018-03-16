@@ -1253,16 +1253,15 @@ def manifest_analysis(mfxml, man_data_dic):
         PrintException("[ERROR] Performing Manifest Analysis")
 
 
-def read_manifest(app_dir, tools_dir, typ, binary):
+def read_manifest(app_dir, tools_dir, typ, apk):
     """Read the manifest file."""
     try:
         dat = ''
         manifest = ''
-        if binary is True:
-            print("[INFO] Getting Manifest from Binary")
+        if apk:
             manifest = os.path.join(app_dir, "apktool_out", "AndroidManifest.xml")
             if isFileExists(manifest):
-                print("[INFO] using Manifest from apktool")
+                print("[INFO] Reading Android Manifest")
                 with io.open(
                     manifest,
                     mode='r',
@@ -1272,7 +1271,7 @@ def read_manifest(app_dir, tools_dir, typ, binary):
                     dat = file_pointer.read()
                 return dat
             else:
-                print("[INFO] Using Manifest from Binary")
+                print("[INFO] Reading Android Manifest from Binary")
                 print("[INFO] AXML -> XML")
                 manifest = os.path.join(app_dir, "AndroidManifest.xml")
                 if len(settings.AXMLPRINTER_BINARY) > 0 and isFileExists(settings.AXMLPRINTER_BINARY):
@@ -1284,7 +1283,7 @@ def read_manifest(app_dir, tools_dir, typ, binary):
                 #dat = dat.replace(b"\n", b"")
                 dat = dat.decode("utf-8", "ignore")
         else:
-            print("[INFO] Getting Manifest from Source")
+            print("[INFO] Reading Manifest from Source")
             if typ == "eclipse":
                 manifest = os.path.join(app_dir, "AndroidManifest.xml")
             elif typ == "studio":
@@ -1301,7 +1300,7 @@ def read_manifest(app_dir, tools_dir, typ, binary):
                 dat = file_pointer.read()
         return dat
     except:
-        PrintException("[ERROR] AXMLPrinter2 Reading Manifest file")
+        PrintException("[ERROR] Reading Manifest file")
 
         
 def read_manifest_apktool(app_path, app_dir, tools_dir, binary):
