@@ -21,28 +21,23 @@ from .dvm_permissions import DVM_PERMISSIONS
 def get_manifest(app_path, app_dir, tools_dir, typ, binary):
     """Get the manifest file."""
     try:
-        dat = read_manifest(app_dir, tools_dir, typ, binary)
+        manifest = None
+        dat = read_manifest(app_dir, app_path, tools_dir, typ, binary)
         try:
             print("[INFO] Parsing AndroidManifest.xml")
             manifest = minidom.parseString(dat)
         except:
-            try:
-                manifest_file = read_manifest_apktool(
-                    app_path, app_dir, tools_dir, binary)
-                manifest = minidom.parse(manifest_file)
-            except:
-                PrintException(
-                    "[ERROR] AXMLPrinter2 and apktool failed to extract AndroidManifest.xml or parsing failed")
-                manifest = minidom.parseString(
-                    (
-                        r'<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android='
-                        r'"http://schemas.android.com/apk/res/android" android:versionCode="Failed"  '
-                        r'android:versionName="Failed" package="Failed"  '
-                        r'platformBuildVersionCode="Failed" '
-                        r'platformBuildVersionName="Failed XML Parsing" ></manifest>'
-                    )
+            PrintException("[ERROR] apktool failed to extract AndroidManifest.xml or parsing failed")
+            manifest = minidom.parseString(
+                (
+                    r'<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android='
+                    r'"http://schemas.android.com/apk/res/android" android:versionCode="Failed"  '
+                    r'android:versionName="Failed" package="Failed"  '
+                    r'platformBuildVersionCode="Failed" '
+                    r'platformBuildVersionName="Failed XML Parsing" ></manifest>'
                 )
-                print("[WARNING] Using Fake XML to continue the Analysis")
+            )
+            print("[WARNING] Using Fake XML to continue the Analysis")
         return manifest
     except:
         PrintException("[ERROR] Parsing Manifest file")
@@ -1253,13 +1248,13 @@ def manifest_analysis(mfxml, man_data_dic):
         PrintException("[ERROR] Performing Manifest Analysis")
 
 
-def read_manifest(app_dir, tools_dir, typ, apk):
+def read_manifest(app_dir, app_path, tools_dir, typ, apk):
     """Read the manifest file."""
     try:
         dat = ''
         manifest = ''
         if apk:
-            manifest = os.path.join(app_dir, "apktool_out", "AndroidManifest.xml")
+            manifest = get_manifest_file(app_path, app_dir, tools_dir)
             if isFileExists(manifest):
                 print("[INFO] Reading Android Manifest")
                 with io.open(
@@ -1269,25 +1264,11 @@ def read_manifest(app_dir, tools_dir, typ, apk):
                     errors="ignore"
                 ) as file_pointer:
                     dat = file_pointer.read()
-                return dat
-            else:
-                print("[INFO] Reading Android Manifest from Binary")
-                print("[INFO] AXML -> XML")
-                manifest = os.path.join(app_dir, "AndroidManifest.xml")
-                if len(settings.AXMLPRINTER_BINARY) > 0 and isFileExists(settings.AXMLPRINTER_BINARY):
-                    cp_path = settings.AXMLPRINTER_BINARY
-                else:
-                    cp_path = os.path.join(tools_dir, 'AXMLPrinter2.jar')
-                args = [settings.JAVA_PATH + 'java', '-jar', cp_path, manifest]
-                dat = subprocess.check_output(args)
-                #dat = dat.replace(b"\n", b"")
-                dat = dat.decode("utf-8", "ignore")
         else:
             print("[INFO] Reading Manifest from Source")
             if typ == "eclipse":
                 manifest = os.path.join(app_dir, "AndroidManifest.xml")
             elif typ == "studio":
-
                 manifest = os.path.join(
                     app_dir, "app/src/main/AndroidManifest.xml"
                 )
@@ -1303,22 +1284,20 @@ def read_manifest(app_dir, tools_dir, typ, apk):
         PrintException("[ERROR] Reading Manifest file")
 
         
-def read_manifest_apktool(app_path, app_dir, tools_dir, binary):
-    """Get raw AndroidManifest.xml if AXMLPrinter2 fails"""
+def get_manifest_file(app_path, app_dir, tools_dir):
+    """Get readable AndroidManifest.xml"""
     try:
+        print ("[INFO] Converting AXML to XML")
         manifest = None
-        if binary:
-            print("[INFO] AXMLPrinter2 failed, trying with apktool")
-            print("[INFO] AXML -> XML")
-            if len(settings.APKTOOL_BINARY) > 0 and isFileExists(settings.APKTOOL_BINARY):
-                apktool_path = settings.APKTOOL_BINARY
-            else:
-                apktool_path = os.path.join(tools_dir, 'apktool_2.3.1.jar')
-            output_dir = os.path.join(app_dir, "apktool_out")
-            args = [settings.JAVA_PATH + 'java', '-jar',
-                    apktool_path, "-f", "-s", "d", app_path, "-o", output_dir]
-            subprocess.check_output(args)
-            manifest = os.path.join(output_dir, "AndroidManifest.xml")
-        return manifest
+        if len(settings.APKTOOL_BINARY) > 0 and isFileExists(settings.APKTOOL_BINARY):
+            apktool_path = settings.APKTOOL_BINARY
+        else:
+            apktool_path = os.path.join(tools_dir, 'apktool_2.3.1.jar')
+        output_dir = os.path.join(app_dir, "apktool_out")
+        args = [settings.JAVA_PATH + 'java', '-jar',
+                apktool_path, "-f", "-s", "d", app_path, "-o", output_dir]
+        subprocess.check_output(args)
+        manifest = os.path.join(output_dir, "AndroidManifest.xml")
+    return manifest
     except:
-        PrintException("[ERROR] apktool Reading Manifest file")
+        PrintException("[ERROR]Getting Manifest file")
