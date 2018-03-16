@@ -21,15 +21,16 @@ from install.windows.setup import windows_config_local
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
 
-MOBSF_VER = "v0.9.5.6 Beta"
+MOBSF_VER = "v1.0 Beta"
 BANNER = """
- __  __       _    ____  _____        ___   ___   ____  
-|  \/  | ___ | |__/ ___||  ___|_   __/ _ \ / _ \ | ___| 
-| |\/| |/ _ \| '_ \___ \| |_  \ \ / / | | | (_) ||___ \ 
-| |  | | (_) | |_) |__) |  _|  \ V /| |_| |\__, | ___) |
-|_|  |_|\___/|_.__/____/|_|     \_/  \___(_) /_(_)____/ 
-                                                        
+  __  __       _    ____  _____         _   ___  
+ |  \/  | ___ | |__/ ___||  ___| __   _/ | / _ \ 
+ | |\/| |/ _ \| '_ \___ \| |_    \ \ / / || | | |
+ | |  | | (_) | |_) |__) |  _|    \ V /| || |_| |
+ |_|  |_|\___/|_.__/____/|_|       \_/ |_(_)___/ 
+        
 """
+# ASCII Standard
 #==============================================
 
 #==========MobSF Home Directory=================
@@ -294,7 +295,6 @@ else:
     # Android 3P Tools
     DEX2JAR_BINARY = ""
     BACKSMALI_BINARY = ""
-    AXMLPRINTER_BINARY = ""
     CFR_DECOMPILER_BINARY = ""
     JD_CORE_DECOMPILER_BINARY = ""
     PROCYON_DECOMPILER_BINARY = ""
