@@ -14,8 +14,6 @@ import unicodedata
 import threading
 import sqlite3 as sq
 
-from pathlib import Path
-
 from django.shortcuts import render
 from django.conf import settings
 from django.template.defaulttags import register
@@ -54,9 +52,9 @@ from DynamicAnalyzer.views.android.shared import (
 from MobSF.utils import PrintException, is_number, python_list, getADB
 
 
-#===========================================
+# ===========================================
 # Dynamic Analyzer Related Views for Android
-#===========================================
+# ===========================================
 
 
 '''

@@ -3,12 +3,13 @@ import time
 import requests
 import subprocess
 
-# from threading import Thread
-
 import capfuzz as cp
-# from capfuzz.__main__ import (
-#    CapFuzz
-#)
+
+'''
+from capfuzz.__main__ import (
+    CapFuzz
+)
+'''
 
 
 def stop_capfuzz(port):
@@ -49,7 +50,7 @@ def start_fuzz_ui(port):
     """Start Fuzz UI"""
     subprocess.Popen(["capfuzz",
                       "-m", "fuzz", "-p", str(port)])
-    time.sleep(5)
+    time.sleep(3)
     """
     capfuzz_obj = CapFuzz()
     ui_trd = Thread(target=capfuzz_obj.run_fuzz_server, args=(port,))
