@@ -25,7 +25,7 @@ from django.utils.html import escape
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 from DynamicAnalyzer.tools.webproxy import (
     start_proxy,
-    stop_proxy,
+    stop_capfuzz,
     start_fuzz_ui,
     get_ca_dir,
 )
@@ -98,7 +98,7 @@ def android_dynamic_analyzer(request):
                 else:
                     os.makedirs(screen_dir)
                 # Start DM
-                stop_proxy()
+                stop_capfuzz(settings.PORT)
                 toolsdir = os.path.join(
                     settings.BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
                 adb = getADB(toolsdir)
@@ -133,7 +133,6 @@ def android_dynamic_analyzer(request):
 
 
 def get_env(request):
-    global capfuzz
     """Get Dynamic Analysis Environment for Android"""
     print("\n[INFO] Setting up Dynamic Analysis Environment")
     try:
@@ -547,7 +546,6 @@ def final_test(request):
 
 
 def dump_data(request):
-    global capfuzz
     """Downloading Application Data from Device"""
     print("\n[INFO] Downloading Application Data from Device")
     try:
@@ -566,7 +564,7 @@ def dump_data(request):
                 adb = getADB(toolsdir)
                 # Let's try to close Proxy a bit early as we don't have much
                 # control on the order of thread execution
-                stop_proxy()
+                stop_capfuzz(settings.PORT)
                 print("\n[INFO] Deleting Dump Status File")
                 subprocess.call([adb,
                                  "-s",
@@ -1003,6 +1001,7 @@ def capfuzz_start(request):
     """Start CapFuzz UI"""
     print("[INFO] Starting CapFuzz Web UI")
     try:
+        stop_capfuzz(settings.PORT)
         start_fuzz_ui(settings.PORT)
         time.sleep(3)
         print("[INFO] CapFuzz UI Started")

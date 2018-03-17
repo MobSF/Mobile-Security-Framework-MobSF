@@ -158,7 +158,7 @@ textarea:focus {
    
    	     $('#stat').attr('readonly','readonly');
                    
-                    $("#start").on( "click", function() {
+                     $("#start").one( "click", function() {
                     	$('#stat').append("\nTrying to setup the environment");
                     		$.ajax({
                                 url : "../GetEnv/", 
@@ -195,7 +195,6 @@ textarea:focus {
 
                                     	$('#start').addClass("btn btn-success");
                                     	$('#start').text("Environment Created");
-                                      $('#start').attr("disabled", "disabled");
                                     	$('#stat').append("\nRunning HTTPS Proxy");
 
                                     {% comment %}
