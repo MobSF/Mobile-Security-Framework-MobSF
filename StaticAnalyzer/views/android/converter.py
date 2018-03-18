@@ -16,7 +16,8 @@ from StaticAnalyzer.views.android.win_fixes import (
 from MobSF.utils import (
     PrintException,
     isFileExists,
-    isDirExists
+    isDirExists,
+    get_python
 )
 
 def get_dex_files(app_dir):
@@ -76,7 +77,7 @@ def dex_2_jar(app_path, app_dir, tools_dir):
                 if len(settings.PYTHON3_PATH) > 2:
                     python3 = os.path.join(settings.PYTHON3_PATH, "python3")
                 else:
-                    python3 = "python3"
+                    python3 = get_python()
                 args = [
                     python3,
                     "-O",
