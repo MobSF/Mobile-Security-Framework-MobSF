@@ -172,19 +172,8 @@ def getMobSFHome(useHOME):
 
 
 def get_python():
-    """Detect Correct Python"""
-    if sys.version_info[0] < 3:
-        python = "python"
-    else:
-        python = "python3"
-    try:
-        data = subprocess.check_output(
-            [python, "-c", "import django; print (django.__version__)"])
-        if len(data) < 1:
-            python = "python"
-    except:
-        python = "python"
-    return python
+    """Get Python Executable"""
+    return sys.executable
 
 
 def make_migrations(base_dir):
