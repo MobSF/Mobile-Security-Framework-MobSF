@@ -1,6 +1,4 @@
 """Setup script for the Windows vm for usage with MobSF for static analysis of Windows apps."""
-# Most pylinter warnings are disabled because implementation happendend on a Python2 machine
-# while the code is Python3
 import os
 from os.path import expanduser
 import platform
@@ -22,7 +20,7 @@ import configparser
 # Only static URL, let's hope this never changes..
 CONFIG_URL = (
     "https://raw.githubusercontent.com/MobSF/"
-    "Mobile-Security-Framework-MobSF/python3/install/windows/config.txt"
+    "Mobile-Security-Framework-MobSF/master/install/windows/config.txt"
 )
 
 # Static path to config file as a starting point
