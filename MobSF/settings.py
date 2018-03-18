@@ -266,13 +266,6 @@ else:
     # Two Dex to Jar converters are available
     # 1. d2j
     # 2. enjarify
-
-    '''
-    enjarify requires python3. Install Python 3 and add the path to environment variable
-    PATH or provide the Python 3 path to "PYTHON3_PATH" variable in settings.py
-    ex: PYTHON3_PATH = "C:/Users/Ajin/AppData/Local/Programs/Python/Python35-32/"
-    '''
-    PYTHON3_PATH = ""
     #==============================================
 
     #======WINDOWS STATIC ANALYSIS SETTINGS ===========
@@ -309,6 +302,7 @@ else:
     # COMMON
     JAVA_DIRECTORY = ""
     VBOXMANAGE_BINARY = ""
+    PYTHON3_PATH = ""
 
     '''
     Examples:
@@ -318,6 +312,7 @@ else:
     ENJARIFY_DIRECTORY = "D:/enjarify/"
     VBOXMANAGE_BINARY = "/usr/bin/VBoxManage"
     CFR_DECOMPILER_BINARY = "/home/ajin/tools/cfr.jar"
+    PYTHON3_PATH = "C:/Users/Ajin/AppData/Local/Programs/Python/Python35-32/"
     '''
     #===============================================
 
@@ -338,6 +333,7 @@ else:
     MobSF_VM - x86 Android 4.4.2 running on VirtualBox (Fast, not all Apps work)
     MobSF_AVD - ARM Android 4.1.2 running on Android Emulator (Slow, Most Apps work)
     MobSF_REAL_DEVICE - Rooted Android 4.03 - 4.4 Device (Very Fast, All Apps work)
+    Supports Android 5+ for real device. Not tested!
     '''
 
     #=========================================================================
