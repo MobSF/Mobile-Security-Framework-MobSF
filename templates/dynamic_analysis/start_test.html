@@ -158,7 +158,7 @@ textarea:focus {
    
    	     $('#stat').attr('readonly','readonly');
                    
-                    $("#start").one( "click", function() {
+                     $("#start").one( "click", function() {
                     	$('#stat').append("\nTrying to setup the environment");
                     		$.ajax({
                                 url : "../GetEnv/", 
@@ -171,7 +171,10 @@ textarea:focus {
                                     lng: '{{ lng }}',
                                     },
                                     success : function(json) {
-                                    	if (json.ready==="yes"){
+                                      if (json.ready==="no"){
+                                        $.bootstrapGrowl(json.msg + "\n" + json.error, { type: 'error' });
+                                      }
+                                    	else if (json.ready==="yes"){
                                       //Set Screen Resolution
                                       setScreenResoultion(json.screen_witdth,json.screen_height);
                                     	ready=json.ready;

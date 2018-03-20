@@ -21,15 +21,16 @@ from install.windows.setup import windows_config_local
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
 
-MOBSF_VER = "v0.9.5.5 Beta"
+MOBSF_VER = "v1.0 Beta"
 BANNER = """
- __  __       _    ____  _____        ___   ___   ____  
-|  \/  | ___ | |__/ ___||  ___|_   __/ _ \ / _ \ | ___| 
-| |\/| |/ _ \| '_ \___ \| |_  \ \ / / | | | (_) ||___ \ 
-| |  | | (_) | |_) |__) |  _|  \ V /| |_| |\__, | ___) |
-|_|  |_|\___/|_.__/____/|_|     \_/  \___(_) /_(_)____/ 
-                                                        
+  __  __       _    ____  _____         _   ___  
+ |  \/  | ___ | |__/ ___||  ___| __   _/ | / _ \ 
+ | |\/| |/ _ \| '_ \___ \| |_    \ \ / / || | | |
+ | |  | | (_) | |_) |__) |  _|    \ V /| || |_| |
+ |_|  |_|\___/|_.__/____/|_|       \_/ |_(_)___/ 
+        
 """
+# ASCII Standard
 #==============================================
 
 #==========MobSF Home Directory=================
@@ -83,7 +84,7 @@ try:
         USER_CONFIG = os.path.join(MobSF_HOME, 'config.py')
         sett = imp.load_source('user_settings', USER_CONFIG)
         locals().update(
-            {k: v for k, v in sett.__dict__.items() if not k.startswith("__")})
+            {k: v for k, v in list(sett.__dict__.items()) if not k.startswith("__")})
         CONFIG_HOME = True
     else:
         CONFIG_HOME = False
@@ -141,7 +142,7 @@ except NameError:
     except IOError:
         try:
             SECRET_KEY = utils.genRandom()
-            secret = file(SECRET_FILE, 'w')
+            secret = open(SECRET_FILE, 'w')
             secret.write(SECRET_KEY)
             secret.close()
         except IOError:
@@ -174,7 +175,6 @@ INSTALLED_APPS = (
     'StaticAnalyzer',
     'DynamicAnalyzer',
     'MobSF',
-    'APITester',
     'MalwareAnalyzer',
 )
 MIDDLEWARE_CLASSES = (
@@ -224,7 +224,7 @@ STATIC_URL = '/static/'
 #===================
 
 if CONFIG_HOME:
-    print "[INFO] Loading User config from: " + USER_CONFIG
+    print("[INFO] Loading User config from: " + USER_CONFIG)
 else:
     '''
     IMPORTANT
@@ -266,37 +266,6 @@ else:
     # Two Dex to Jar converters are available
     # 1. d2j
     # 2. enjarify
-
-    '''
-    enjarify requires python3. Install Python 3 and add the path to environment variable
-    PATH or provide the Python 3 path to "PYTHON3_PATH" variable in settings.py
-    ex: PYTHON3_PATH = "C:/Users/Ajin/AppData/Local/Programs/Python/Python35-32/"
-    '''
-    PYTHON3_PATH = ""
-    #==============================================
-
-    #========DISABLED COMPONENTS===================
-
-    #----------VirusTotal--------------------------
-    VT_ENABLED = False
-    VT_API_KEY = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
-    VT_UPLOAD = False
-    # Before setting VT_ENABLED to True,
-    # Make sure VT_API_KEY is set to your VirusTotal API key
-    # register at: https://www.virustotal.com/#/join-us
-    # You can get your API KEY from https://www.virustotal.com/en/user/<username>/apikey/
-    # VT has a premium features but the free account is just enough for personal use
-    # BE AWARE - if you enable VT, in case the file wasn't already uploaded to VirusTotal,
-    # It will be uploaded if you set VT_UPLOAD to True!
-    #==============================================
-
-    #----------APKiD-------------------------------
-    APKID_ENABLED = False
-    # Before setting APKID_ENABLED to True,
-    # Install rednaga fork of Yara Python
-    # git clone https://github.com/rednaga/yara-python
-    # cd yara-python
-    # python setup.py install
     #==============================================
 
     #======WINDOWS STATIC ANALYSIS SETTINGS ===========
@@ -319,11 +288,9 @@ else:
     # Android 3P Tools
     DEX2JAR_BINARY = ""
     BACKSMALI_BINARY = ""
-    AXMLPRINTER_BINARY = ""
     CFR_DECOMPILER_BINARY = ""
     JD_CORE_DECOMPILER_BINARY = ""
     PROCYON_DECOMPILER_BINARY = ""
-    AAPT_BINARY = ""
     APKTOOL_BINARY = ""
     ADB_BINARY = ""
     ENJARIFY_DIRECTORY = ""
@@ -335,6 +302,7 @@ else:
     # COMMON
     JAVA_DIRECTORY = ""
     VBOXMANAGE_BINARY = ""
+    PYTHON3_PATH = ""
 
     '''
     Examples:
@@ -344,6 +312,7 @@ else:
     ENJARIFY_DIRECTORY = "D:/enjarify/"
     VBOXMANAGE_BINARY = "/usr/bin/VBoxManage"
     CFR_DECOMPILER_BINARY = "/home/ajin/tools/cfr.jar"
+    PYTHON3_PATH = "C:/Users/Ajin/AppData/Local/Programs/Python/Python35-32/"
     '''
     #===============================================
 
@@ -364,6 +333,7 @@ else:
     MobSF_VM - x86 Android 4.4.2 running on VirtualBox (Fast, not all Apps work)
     MobSF_AVD - ARM Android 4.1.2 running on Android Emulator (Slow, Most Apps work)
     MobSF_REAL_DEVICE - Rooted Android 4.03 - 4.4 Device (Very Fast, All Apps work)
+    Supports Android 5+ for real device. Not tested!
     '''
 
     #=========================================================================
@@ -402,44 +372,51 @@ else:
     #================HOST/PROXY SETTINGS ===============
     PROXY_IP = '192.168.56.1'  # Host/Server/Proxy IP
     PORT = 1337  # Proxy Port
-    ROOT_CA = '0025aabb.0'
+    ROOT_CA = '0026aabb.0'
     SCREEN_IP = PROXY_IP  # ScreenCast IP
     SCREEN_PORT = 9339  # ScreenCast Port(Do not Change)
     #===================================================
 
     #========UPSTREAM PROXY SETTINGS ==============
     # If you are behind a Proxy
-    UPSTREAM_PROXY_IP = None
-    UPSTREAM_PROXY_PORT = None
-    UPSTREAM_PROXY_USERNAME = None
-    UPSTREAM_PROXY_PASSWORD = None
+    UPSTREAM_PROXY_ENABLED = False
+    UPSTREAM_PROXY_SSL_VERIFY = True
+    UPSTREAM_PROXY_TYPE = "http"
+    UPSTREAM_PROXY_IP = "127.0.0.1"
+    UPSTREAM_PROXY_PORT = 3128
+    UPSTREAM_PROXY_USERNAME = ""
+    UPSTREAM_PROXY_PASSWORD = ""
     #==============================================
 
-    #------------------------
-    # WEB API FUZZER SETTINGS
-    #------------------------
+    #--------------------------
+    # MALWARE ANALYZER SETTINGS
+    #--------------------------
 
-    #==============RESPONSE VALIDATION==============
-    XXE_VALIDATE_STRING = "m0bsfxx3"
-    #===============================================
+    DOMAIN_MALWARE_SCAN = True
 
-    #=========Path Traversal - API Testing==========
-    CHECK_FILE = "/etc/passwd"
-    RESPONSE_REGEX = "root:|nobody:"
-    #===============================================
+    #========DISABLED COMPONENTS===================
 
-    #=========Rate Limit Check - API Testing========
-    RATE_REGISTER = 20
-    RATE_LOGIN = 20
-    #===============================================
+    #----------VirusTotal--------------------------
+    VT_ENABLED = False
+    VT_API_KEY = 'XXXXXXXXXXXXXX'
+    VT_UPLOAD = False
+    # Before setting VT_ENABLED to True,
+    # Make sure VT_API_KEY is set to your VirusTotal API key
+    # register at: https://www.virustotal.com/#/join-us
+    # You can get your API KEY from https://www.virustotal.com/en/user/<username>/apikey/
+    # VT has a premium features but the free account is just enough for personal use
+    # BE AWARE - if you enable VT, in case the file wasn't already uploaded to VirusTotal,
+    # It will be uploaded if you set VT_UPLOAD to True!
+    #==============================================
 
-    #===============MobSF Cloud Settings============
-    CLOUD_SERVER = 'http://opensecurity.in:8080'
-    '''
-    This server validates SSRF and XXE during Web API Testing
-    See the source code of the cloud server from APITester/cloud/cloud_server.py
-    You can also host the cloud server. Host it on a public IP and point CLOUD_SERVER to that IP.
-    '''
+    #----------APKiD-------------------------------
+    APKID_ENABLED = False
+    # Before setting APKID_ENABLED to True,
+    # Install rednaga fork of Yara Python
+    # git clone https://github.com/rednaga/yara-python
+    # cd yara-python
+    # python setup.py install
+    #==============================================
 
     #^CONFIG-END^: Do not edit this line
 

@@ -2,7 +2,9 @@
 """Module for strings-method for java."""
 
 import io
+import os
 import subprocess
+from androguard.core.bytecodes import apk
 
 from django.conf import settings
 
@@ -11,28 +13,19 @@ from MobSF.utils import (
 )
 
 
-def strings(app_file, app_dir, tools_dir):
+def strings_jar(app_file, app_dir):
     """Extract the strings from an app."""
     try:
-        print "[INFO] Extracting Strings from APK"
-        strings_jar = tools_dir + 'strings_from_apk.jar'
-        args = [
-            settings.JAVA_PATH + 'java',
-            '-jar', strings_jar, app_dir + app_file, app_dir
-        ]
-        subprocess.call(args)
-        dat = ''
-        try:
-            with io.open(
-                app_dir + 'strings.json',
-                mode='r',
-                encoding="utf8",
-                errors="ignore"
-            ) as file_pointer:
-                dat = file_pointer.read()
-        except:
-            pass
-        dat = dat[1:-1].split(",")
+        print("[INFO] Extracting Strings from APK")
+        dat = []
+        apk_file = os.path.join(app_dir, app_file)
+        and_a = apk.APK(apk_file)
+        rsrc = and_a.get_android_resources() 
+        pkg = rsrc.get_packages_names()[0]
+        rsrc.get_strings_resources()
+        for i in rsrc.values[pkg].keys():
+            for duo in rsrc.values[pkg][i]['string']:
+                dat.append('"'+duo[0]+'" : "'+duo[1]+'"') 
         return dat
     except:
         PrintException("[ERROR] Extracting Strings from APK")

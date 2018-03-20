@@ -30,7 +30,8 @@ def run(request):
                 is_binary = True
             elif binary == '0':
                 is_binary = False
-            manifest = read_manifest(app_dir, tools_dir, typ, is_binary)
+            app_path = os.path.join(app_dir, md5 + ".apk")
+            manifest = read_manifest(app_dir, app_path, tools_dir, typ, is_binary)
             context = {
                 'title': 'AndroidManifest.xml',
                 'file': 'AndroidManifest.xml',

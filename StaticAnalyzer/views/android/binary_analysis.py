@@ -242,18 +242,18 @@ def check_elf_built(f):
 def res_analysis(app_dir, typ):
     """Perform the elf analysis."""
     try:
-        print "[INFO] Static Android Resourse Analysis Started"
+        print("[INFO] Static Android Resourse Analysis Started")
         elf_desc = {
             'html_infected':
                 (
-                    u'Found html files infected by malware.',
-                    u'high',
-                    u'The built environment was probably infected by malware, The html file '
-                    u'used in this APK is infected.'
+                    'Found html files infected by malware.',
+                    'high',
+                    'The built environment was probably infected by malware, The html file '
+                    'used in this APK is infected.'
                 ),
         }
         html_an_dic = {}
-        for k in elf_desc.keys():
+        for k in list(elf_desc.keys()):
             html_an_dic[k] = []
         resraw = os.path.join(app_dir, "res", "raw")
         assets = os.path.join(app_dir, "assets")
@@ -273,7 +273,7 @@ def res_analysis(app_dir, typ):
                             except Exception as e:
                                 pass
         res = []
-        for k, filelist in html_an_dic.items():
+        for k, filelist in list(html_an_dic.items()):
             if len(filelist):
                 descs = elf_desc.get(k)
                 res.append({'title': descs[0],
@@ -290,30 +290,30 @@ def res_analysis(app_dir, typ):
 def elf_analysis(app_dir, typ):
     """Perform the elf analysis."""
     try:
-        print "[INFO] Static Android Binary Analysis Started"
+        print("[INFO] Static Android Binary Analysis Started")
         elf_desc = {
             'elf_no_pi':
                 (
-                    u'Found elf built without Position Independent Executable (PIE) flag',
-                    u'high',
-                    u'In order to prevent an attacker from reliably jumping to, for example, a particular'
-                    u' exploited function in memory, Address space layout randomization (ASLR) randomly '
-                    u'arranges the address space positions of key data areas of a process, including the '
-                    u'base of the executable and the positions of the stack, heap and libraries. Built with'
-                    u' option <strong>-pie</strong>.'
+                    'Found elf built without Position Independent Executable (PIE) flag',
+                    'high',
+                    'In order to prevent an attacker from reliably jumping to, for example, a particular'
+                    ' exploited function in memory, Address space layout randomization (ASLR) randomly '
+                    'arranges the address space positions of key data areas of a process, including the '
+                    'base of the executable and the positions of the stack, heap and libraries. Built with'
+                    ' option <strong>-pie</strong>.'
                 ),
             'elf_no_sp':
                 (
-                    u'Found elf built without Stack Protection',
-                    u'high',
-                    u'Stack canaries can greatly increase the difficulty of exploiting a stack buffer '
-                    u'overflow because it forces the attacker to gain control of the instruction pointer'
-                    u' by some non-traditional means such as corrupting other important variables on the'
-                    u' stack. Built with option <strong>-fstack-protector</strong>.'
+                    'Found elf built without Stack Protection',
+                    'high',
+                    'Stack canaries can greatly increase the difficulty of exploiting a stack buffer '
+                    'overflow because it forces the attacker to gain control of the instruction pointer'
+                    ' by some non-traditional means such as corrupting other important variables on the'
+                    ' stack. Built with option <strong>-fstack-protector</strong>.'
                 ),
         }
         elf_an_dic = {}
-        for k in elf_desc.keys():
+        for k in list(elf_desc.keys()):
             elf_an_dic[k] = []
         libdir = os.path.join(app_dir, "lib")
         if os.path.exists(libdir):
@@ -337,7 +337,7 @@ def elf_analysis(app_dir, typ):
                         except Exception as e:
                             pass
         res = []
-        for k, filelist in elf_an_dic.items():
+        for k, filelist in list(elf_an_dic.items()):
             if len(filelist):
                 descs = elf_desc.get(k)
                 res.append({'title': descs[0],

@@ -29,7 +29,7 @@ from StaticAnalyzer.views.android import (
 def code_analysis(app_dir, perms, typ):
     """Perform the code analysis."""
     try:
-        print "[INFO] Static Android Code Analysis Started"
+        print("[INFO] Static Android Code Analysis Started")
         api_rules = android_apis.APIS
         code_rules = android_rules.RULES
         code_findings = {}
@@ -45,7 +45,7 @@ def code_analysis(app_dir, perms, typ):
             java_src = os.path.join(app_dir, 'app/src/main/java/')
         elif typ == "eclipse":
             java_src = os.path.join(app_dir, 'src/')
-        print "[INFO] Code Analysis Started on - " + java_src
+        print("[INFO] Code Analysis Started on - " + java_src)
         # pylint: disable=unused-variable
         # Needed by os.walk
         for dir_name, sub_dir, files in os.walk(java_src):
@@ -75,9 +75,9 @@ def code_analysis(app_dir, perms, typ):
                     # print "[INFO] Doing Code Analysis on - " + jfile_path
                     relative_java_path = jfile_path.replace(java_src, '')
                     code_rule_matcher(
-                        code_findings, perms.keys(), dat, relative_java_path, code_rules)
+                        code_findings, list(perms.keys()), dat, relative_java_path, code_rules)
                     # API Check
-                    api_rule_matcher(api_findings, perms.keys(),
+                    api_rule_matcher(api_findings, list(perms.keys()),
                                      dat, relative_java_path, api_rules)
                      # Extract URLs and Emails
                     urls, urls_nf, emails_nf = url_n_email_extract(dat, relative_java_path)
@@ -85,9 +85,9 @@ def code_analysis(app_dir, perms, typ):
                     url_n_file.extend(urls_nf)
                     email_n_file.extend(emails_nf)
         # Domain Extraction and Malware Check
-        print "[INFO] Performing Malware Check on extracted Domains"
+        print("[INFO] Performing Malware Check on extracted Domains")
         domains = malware_check(list(set(url_list)))
-        print "[INFO] Finished Code Analysis, Email and URL Extraction"
+        print("[INFO] Finished Code Analysis, Email and URL Extraction")
         code_an_dic = {
             'api': api_findings,
             'findings': code_findings,

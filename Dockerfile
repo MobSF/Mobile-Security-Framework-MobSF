@@ -1,24 +1,24 @@
 #Base image
-FROM ubuntu:17.04
-
+FROM ubuntu:17.10
 #Labels and Credits
 LABEL \
     name="MobSF" \
     author="Ajin Abraham <ajin25@gmail.com>" \
     maintainer="Ajin Abraham <ajin25@gmail.com>" \
-    contributor="OscarAkaElvis <oscar.alfonso.diaz@gmail.com>" \
+    contributor_1="OscarAkaElvis <oscar.alfonso.diaz@gmail.com>" \
+    contributor_2="Vincent Nadal <vincent.nadal@orange.fr>" \
     description="Mobile Security Framework is an intelligent, all-in-one open source mobile application (Android/iOS/Windows) automated pen-testing framework capable of performing static, dynamic analysis and web API testing"
 
 #Environment vars
 ENV DEBIAN_FRONTEND="noninteractive"
 ENV PDFGEN_PKGFILE="wkhtmltox-0.12.4_linux-generic-amd64.tar.xz" 
 ENV PDFGEN_URL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/${PDFGEN_PKGFILE}"
+ENV YARA_URL="https://github.com/rednaga/yara-python"
 
 #Update the repository sources list
-RUN apt update -y
-
 #Install Required Libs
-RUN apt install -y \
+#see https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
+RUN apt update -y && apt install -y \
     build-essential \
     libssl-dev \
     libffi-dev \
@@ -32,13 +32,13 @@ RUN apt install -y software-properties-common && \
     echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections && \
     apt install -y oracle-java8-installer
 
-#Install Python 2.7, pip
+#Install Python 3
 RUN \
     apt install -y \
-    python \
-    python-dev \
-    python-pip && \
-    pip install --upgrade pip
+    python3.6 \
+    python3-dev \
+    python3-setuptools && \
+    easy_install3 pip
 
 #Install sqlite3 client and pdf generator needed dependencies
 RUN \
@@ -48,6 +48,11 @@ RUN \
     libjpeg-turbo8 \
     fontconfig \
     xorg
+
+#Install git
+RUN \
+    apt install -y \
+    git
 
 #Install wkhtmltopdf for PDF Reports
 WORKDIR /tmp
@@ -67,17 +72,27 @@ RUN ./kali_fix.sh
 
 #Install Dependencies
 WORKDIR /root/Mobile-Security-Framework-MobSF
-RUN pip install -r requirements.txt
+RUN pip3 install -r requirements.txt
+
+#Install apkid dependencies, and enable it 
+WORKDIR /tmp
+RUN git clone ${YARA_URL} && \
+    cd yara-python && \
+    python3 setup.py install && \
+    rm -fr /tmp/yara-python && \
+    sed -i 's/APKID_ENABLED.*/APKID_ENABLED = True/' /root/Mobile-Security-Framework-MobSF/MobSF/settings.py
 
 #Cleanup
 RUN \
+    apt remove -y git && \
     apt clean && \
     apt autoclean && \
-    apt autoremove
+    apt autoremove -y
 RUN rm -rf /var/lib/apt/lists/* /tmp/* > /dev/null 2>&1
 
 #Expose MobSF Port
 EXPOSE 8000
 
 #Run MobSF
-CMD ["python","manage.py","runserver","0.0.0.0:8000"]
+WORKDIR /root/Mobile-Security-Framework-MobSF
+CMD ["python3","manage.py","runserver","0.0.0.0:8000"]

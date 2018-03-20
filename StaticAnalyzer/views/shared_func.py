@@ -14,7 +14,7 @@ import platform
 try:
     import pdfkit
 except:
-    print "[WARNING] wkhtmltopdf is not installed/configured properly. PDF Report Generation is disabled"
+    print("[WARNING] wkhtmltopdf is not installed/configured properly. PDF Report Generation is disabled")
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
 from django.template.loader import get_template
@@ -51,7 +51,7 @@ def file_size(app_path):
 def hash_gen(app_path):
     """Generate and return sha1 and sha256 as a tupel."""
     try:
-        print "[INFO] Generating Hashes"
+        print("[INFO] Generating Hashes")
         sha1 = hashlib.sha1()
         sha256 = hashlib.sha256()
         block_size = 65536
@@ -69,14 +69,14 @@ def hash_gen(app_path):
 
 
 def unzip(app_path, ext_path):
-    print "[INFO] Unzipping"
+    print("[INFO] Unzipping")
     try:
         files = []
         with zipfile.ZipFile(app_path, "r") as zipptr:
             for fileinfo in zipptr.infolist():
                 filename = fileinfo.filename
-                if not isinstance(filename, unicode):
-                    filename = unicode(
+                if not isinstance(filename, str):
+                    filename = str(
                         filename, encoding="utf-8", errors="replace")
                 files.append(filename)
                 zipptr.extract(fileinfo, str(ext_path))
@@ -84,9 +84,9 @@ def unzip(app_path, ext_path):
     except:
         PrintException("[ERROR] Unzipping Error")
         if platform.system() == "Windows":
-            print "\n[INFO] Not yet Implemented."
+            print("\n[INFO] Not yet Implemented.")
         else:
-            print "\n[INFO] Using the Default OS Unzip Utility."
+            print("\n[INFO] Using the Default OS Unzip Utility.")
             try:
                 subprocess.call(
                     ['unzip', '-o', '-q', app_path, '-d', ext_path])
@@ -112,7 +112,7 @@ def pdf(request, api=False):
             if scan_type.lower() in ['apk', 'andzip']:
                 static_db = StaticAnalyzerAndroid.objects.filter(MD5=checksum)
                 if static_db.exists():
-                    print "\n[INFO] Fetching data from DB for PDF Report Generation (Android)"
+                    print("\n[INFO] Fetching data from DB for PDF Report Generation (Android)")
                     context = get_context_from_db_entry(static_db)
                     if scan_type.lower() == 'apk':
                         template = get_template("pdf/static_analysis_pdf.html")
@@ -129,7 +129,7 @@ def pdf(request, api=False):
                 if scan_type.lower() == 'ipa':
                     static_db = StaticAnalyzerIPA.objects.filter(MD5=checksum)
                     if static_db.exists():
-                        print "\n[INFO] Fetching data from DB for PDF Report Generation (IOS IPA)"
+                        print("\n[INFO] Fetching data from DB for PDF Report Generation (IOS IPA)")
                         context = get_context_from_db_entry_ipa(static_db)
                         template = get_template(
                             "pdf/ios_binary_analysis_pdf.html")
@@ -142,7 +142,7 @@ def pdf(request, api=False):
                 elif scan_type.lower() == 'ioszip':
                     static_db = StaticAnalyzerIOSZIP.objects.filter(MD5=checksum)
                     if static_db.exists():
-                        print "\n[INFO] Fetching data from DB for PDF Report Generation (IOS ZIP)"
+                        print("\n[INFO] Fetching data from DB for PDF Report Generation (IOS ZIP)")
                         context = get_context_from_db_entry_ios(static_db)
                         template = get_template(
                             "pdf/ios_source_analysis_pdf.html")
@@ -158,7 +158,7 @@ def pdf(request, api=False):
                         MD5=checksum
                     )
                     if db_entry.exists():
-                        print "\n[INFO] Fetching data from DB for PDF Report Generation (APPX)"
+                        print("\n[INFO] Fetching data from DB for PDF Report Generation (APPX)")
 
                         context = {
                             'title': db_entry[0].TITLE,
@@ -197,10 +197,13 @@ def pdf(request, api=False):
             if settings.VT_ENABLED:
                 app_dir = os.path.join(settings.UPLD_DIR, checksum + '/')
                 vt = VirusTotal.VirusTotal()
-                context['VT_RESULT'] = vt.get_result(
-                    os.path.join(app_dir, checksum) + '.' + scan_type.lower(),
-                    checksum
-                )
+                if "zip" in scan_type.lower():
+                    context['VT_RESULT'] = None
+                else:
+                    context['VT_RESULT'] = vt.get_result(
+                        os.path.join(app_dir, checksum) + '.' + scan_type.lower(),
+                        checksum
+                    )
 
             html = template.render(context)
             try:
@@ -315,7 +318,7 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                         add_findings(findings, rule[
                                      "desc"], file_path, rule["level"])
                 else:
-                    print "\n[ERROR] Code Regex Rule Match Error\n" + rule
+                    print("\n[ERROR] Code Regex Rule Match Error\n" + rule)
 
             elif rule["type"] == "string":
                 if rule["match"] == 'single_string':
@@ -374,9 +377,9 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                         add_findings(findings, rule[
                                      "desc"], file_path, rule["level"])
                 else:
-                    print "\n[ERROR] Code String Rule Match Error\n" + rule
+                    print("\n[ERROR] Code String Rule Match Error\n" + rule)
             else:
-                print "\n[ERROR] Code Rule Error\n", + rule
+                print("\n[ERROR] Code Rule Error\n", + rule)
     except:
         PrintException("[ERROR] Error in Code Rule Processing")
 
@@ -429,7 +432,7 @@ def api_rule_matcher(api_findings, perms, data, file_path, api_rules):
                     if (api["perm"] in perms) and (re.findall(api["regex1"], tmp_data)):
                         add_apis(api_findings, api["desc"], file_path)
                 else:
-                    print "\n[ERROR] API Regex Rule Match Error\n" + api
+                    print("\n[ERROR] API Regex Rule Match Error\n" + api)
 
             elif api["type"] == "string":
                 if api["match"] == 'single_string':
@@ -481,9 +484,9 @@ def api_rule_matcher(api_findings, perms, data, file_path, api_rules):
                     if (api["perm"] in perms) and string_or_ps:
                         add_apis(api_findings, api["desc"], file_path)
                 else:
-                    print "\n[ERROR] API String Rule Match Error\n" + api
+                    print("\n[ERROR] API String Rule Match Error\n" + api)
             else:
-                print "\n[ERROR] API Rule Error\n", + api
+                print("\n[ERROR] API Rule Error\n", + api)
     except:
         PrintException("[ERROR] Error in API Rule Processing")
 
@@ -498,8 +501,8 @@ def url_n_email_extract(dat, relative_path):
     # URLs Extraction My Custom regex
     pattern = re.compile(
         (
-            ur'((?:https?://|s?ftps?://|file://|javascript:|data:|www\d{0,3}[.])'
-            ur'[\w().=/;,#:@?&~*+!$%\'{}-]+)'
+            r'((?:https?://|s?ftps?://|file://|javascript:|data:|www\d{0,3}[.])'
+            r'[\w().=/;,#:@?&~*+!$%\'{}-]+)'
         ),
         re.UNICODE
     )

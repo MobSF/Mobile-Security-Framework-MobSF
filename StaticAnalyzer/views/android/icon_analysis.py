@@ -9,6 +9,7 @@ import fnmatch
 import string
 
 from django.conf import settings
+from androguard.core.bytecodes import apk
 
 # relative to res folder
 KNOWN_PATHS = [
@@ -43,17 +44,6 @@ def search_folder(src, file_pattern):
     return matches
 
 
-def get_aapt(tools_dir):
-    if os.path.exists(settings.AAPT_BINARY):
-        return settings.AAPT_BINARY
-    platform_system = platform.system()
-    if platform_system == 'Darwin':
-        return os.path.join(tools_dir, 'aapt', 'mac', 'aapt')
-    elif platform_system == 'Linux':
-        return os.path.join(tools_dir, 'aapt', 'linux', 'aapt')
-    return os.path.join(tools_dir, 'aapt', 'windows', 'aapt.exe')
-
-
 def guess_icon_path(res_dir):
     icon_folders = [
         'mipmap-hdpi',
@@ -74,46 +64,16 @@ def guess_icon_path(res_dir):
     return ''
 
 
-def get_icon(apk_path, res_dir, tools_dir):
-    """Returns a dict with isHidden boolean and a relative path
-        path is a full path (not relative to resource folder) """
-    try:
-        print "[INFO] Fetching icon path"
-
-        aapt_binary = get_aapt(tools_dir)
-        args = [aapt_binary, 'd', 'badging', apk_path]
-        if platform.system() == "Linux":
-            env = {"LD_LIBRARY_PATH": str(os.path.join(
-                settings.BASE_DIR, "DynamicAnalyzer/tools/adb/linux/lib64/"))}
-            aapt_output = subprocess.check_output(args, env=env)
-        else:
-            aapt_output = subprocess.check_output(args)
-        regex = re.compile(r"application:[^\n]+icon='(.*)'.*")
-        found_regex = regex.findall(aapt_output)
-        if len(found_regex) > 0:
-            if found_regex[0]:
-                return {
-                    'path': os.path.join(os.path.dirname(apk_path), found_regex[0]),
-                    'hidden': False
-                }
-        return {
-            'path': guess_icon_path(res_dir),
-            'hidden': True
-        }
-    except:
-        PrintException("[ERROR] Get icon function")
-
-
 def find_icon_path_zip(res_dir, icon_paths_from_manifest):
     """Tries to find an icon, based on paths fetched from the manifest and by global search
         returns an empty string on fail or a full path"""
     global KNOWN_MIPMAP_SIZES
     try:
-        print "[INFO] Fetching icon path"
+        print("[INFO] Guessing icon path")
         for icon_path in icon_paths_from_manifest:
             if icon_path.startswith('@'):
                 path_array = icon_path.strip('@').split(os.sep)
-                rel_path = string.join(path_array[1:], os.sep)
+                rel_path = os.sep.join(path_array[1:])
                 for size_str in KNOWN_MIPMAP_SIZES:
                     tmp_path = os.path.join(
                         res_dir, path_array[0] + size_str, rel_path + '.png')
@@ -142,4 +102,23 @@ def find_icon_path_zip(res_dir, icon_paths_from_manifest):
         return guess_icon_path(res_dir)
 
     except:
-        PrintException("[ERROR] Get icon function")
+        PrintException("[ERROR] Guessing icon path")
+
+def get_icon(apk_path, res_dir):
+    """Returns a dict with isHidden boolean and a relative path
+        path is a full path (not relative to resource folder) """
+    try:
+        print("[INFO] Fetching icon path")
+        a = apk.APK(apk_path)
+        icon_name = a.get_app_icon(max_dpi=65536)
+        if len(icon_name) > 0:
+            return {
+                'path': os.path.join(os.path.dirname(apk_path), icon_name),
+                'hidden': False
+            }
+        return {
+            'path': guess_icon_path(res_dir),
+            'hidden': True
+        }
+    except:
+        PrintException("[ERROR] Fetching icon function")

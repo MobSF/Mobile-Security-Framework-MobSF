@@ -25,7 +25,7 @@ def _init_key():
     )
 
 def _check_challenge(signature):
-    signature = base64.b64decode(signature)
+    signature = base64.b64decode(signature.data)
     try:
         rsa.verify(challenge.encode('utf-8'), signature, pub_key)
         print("[*] Challenge successfully verified.")
