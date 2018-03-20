@@ -7,6 +7,8 @@ def refresh_vm(uuid, snapshot_uuid, vbox_exe):
     """Refresh VirtualBox based VMs"""
     print("\n[INFO] Refreshing MobSF VM")
     try:
+        if not vbox_exe:
+            print("[ERROR] VirtualBox not found, Manually set VBOXMANAGE_BINARY in settings.py")
         # Close VM
         args = [vbox_exe, 'controlvm', uuid, 'poweroff']
         subprocess.call(args)
