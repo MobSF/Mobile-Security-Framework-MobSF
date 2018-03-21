@@ -65,13 +65,14 @@ urlpatterns = [
     url(r'^View/$', DynamicAnalyzer.views.android.dynamic.view),
     url(r'^ScreenCast/$', DynamicAnalyzer.views.android.dynamic.screen_cast),
     url(r'^Touch/$', DynamicAnalyzer.views.android.dynamic.touch),
-    url(r'^capfuzz$',DynamicAnalyzer.views.android.dynamic.capfuzz_start),
+    url(r'^capfuzz$', DynamicAnalyzer.views.android.dynamic.capfuzz_start),
 
-    #REST API
+    # REST API
     url(r'^api/v1/upload$', MobSF.rest_api.api_upload),
     url(r'^api/v1/scan$', MobSF.rest_api.api_scan),
     url(r'^api/v1/delete_scan$', MobSF.rest_api.api_delete_scan),
     url(r'^api/v1/download_pdf$', MobSF.rest_api.api_pdf_report),
+    url(r'^api/v1/report_json$', MobSF.rest_api.api_json_report),
 
     # Test
     url(r'^runtest/$', StaticAnalyzer.tests.start_test),

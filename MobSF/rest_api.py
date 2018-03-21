@@ -25,7 +25,8 @@ from django.views.decorators.csrf import csrf_exempt
 def make_api_response(data, status=200):
     """Make API Response"""
     api_resp = HttpResponse(json.dumps(
-        data), content_type="application/json; charset=utf-8", status=status)
+        data, sort_keys=True,
+        indent=4, separators=(',', ': ')), content_type="application/json; charset=utf-8", status=status)
     api_resp['Access-Control-Allow-Origin'] = '*'
     return api_resp
 
@@ -138,6 +139,32 @@ def api_pdf_report(request):
                 else:
                     response = make_api_response(
                         {"error": "PDF Generation Error"}, 500)
+            else:
+                response = make_api_response(
+                    {"error": "Missing Parameters"}, 422)
+        else:
+            response = make_api_response({"error": "Method Not Allowed"}, 405)
+    else:
+        response = make_api_response(
+            {"error": "You are unauthorized to make this request."}, 401)
+    return response
+
+
+@csrf_exempt
+def api_json_report(request):
+    """Generate JSON Report"""
+    if api_auth(request.META):
+        if request.method == 'POST':
+            params = ['scan_type', 'hash']
+            if set(request.POST) == set(params):
+                resp = pdf(request, api=True)
+                if "error" in resp:
+                    response = make_api_response(resp, 500)
+                elif "report_dat" in resp:
+                    response = make_api_response(resp["report_dat"], 200)
+                else:
+                    response = make_api_response(
+                        {"error": "JSON Generation Error"}, 500)
             else:
                 response = make_api_response(
                     {"error": "Missing Parameters"}, 422)

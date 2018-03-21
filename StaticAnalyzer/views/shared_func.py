@@ -223,7 +223,7 @@ def pdf(request, api=False):
                 }
                 pdf_dat = pdfkit.from_string(html, False, options=options)
                 if api:
-                    return {"pdf_dat": pdf_dat}
+                    return {"pdf_dat": pdf_dat, "report_dat": context}
                 else:
                     return HttpResponse(pdf_dat, content_type='application/pdf')
             except Exception as exp:
