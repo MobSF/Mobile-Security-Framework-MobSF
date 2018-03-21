@@ -72,8 +72,8 @@ def static_analysis_test():
         for pdf in pdfs:
             resp = http_client.get(pdf)
             if (resp.status_code == 200 and
-                        resp._headers['content-type'][1] == "application/pdf"
-                    ):
+                resp._headers['content-type'][1] == "application/pdf"
+                ):
                 print("[OK] PDF Report Generated: " + pdf)
             else:
                 print(err_msg % "[ERROR] Generating PDF: " + pdf)
@@ -143,7 +143,8 @@ def api_test():
             if resp.status_code == 200:
                 print("[OK] Static Analysis Complete: " + upl["file_name"])
             else:
-                print(err_msg % "[ERROR] Performing Static Analysis: " + upl["file_name"])
+                print(err_msg %
+                      "[ERROR] Performing Static Analysis: " + upl["file_name"])
                 failed = True
         print("[OK] Static Analysis API test completed")
         print("[INFO] Running PDF Generation API Test")
@@ -166,14 +167,28 @@ def api_test():
             resp = http_client.post(
                 '/api/v1/download_pdf', pdf, HTTP_AUTHORIZATION=auth)
             if (resp.status_code == 200 and
-                        resp._headers['content-type'][1] == "application/pdf"
-                    ):
+                resp._headers['content-type'][1] == "application/pdf"
+                ):
                 print("[OK] PDF Report Generated: " + pdf["hash"])
             else:
                 print(err_msg % "[ERROR] Generating PDF: " + pdf["hash"])
                 print(resp.content)
                 failed = True
         print("[OK] PDF Generation API test completed")
+        print("[INFO] Running Delete Scan API Results test")
+        # JSON Report
+        for pdf in pdfs:
+            resp = http_client.post(
+                '/api/v1/report_json', pdf, HTTP_AUTHORIZATION=auth)
+            if (resp.status_code == 200 and
+                resp._headers['content-type'][1] == "application/json; charset=utf-8"
+                ):
+                print("[OK] JSON Report Generated: " + pdf["hash"])
+            else:
+                print(err_msg %
+                      "[ERROR] Generating JSON Response: " + pdf["hash"])
+                failed = True
+        print("[OK] JSON Report API test completed")
         print("[INFO] Running Delete Scan API Results test")
         # Deleting Scan Results
         if platform.system() == 'Darwin':
