@@ -111,7 +111,7 @@ def get_icon(apk_path, res_dir):
         print("[INFO] Fetching icon path")
         a = apk.APK(apk_path)
         icon_name = a.get_app_icon(max_dpi=65536)
-        if len(icon_name) > 0:
+        if len(icon_name) > 0 and os.path.splitext(icon_name)[1] == ".png":
             return {
                 'path': os.path.join(os.path.dirname(apk_path), icon_name),
                 'hidden': False
