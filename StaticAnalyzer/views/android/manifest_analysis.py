@@ -1295,7 +1295,7 @@ def get_manifest_file(app_path, app_dir, tools_dir):
             apktool_path = os.path.join(tools_dir, 'apktool_2.3.1.jar')
         output_dir = os.path.join(app_dir, "apktool_out")
         args = [settings.JAVA_PATH + 'java', '-jar',
-                apktool_path, "-f", "-s", "d", app_path, "-o", output_dir]
+                apktool_path, "--match-original", "-f", "-s", "d", app_path, "-o", output_dir]
         manifest = os.path.join(output_dir, "AndroidManifest.xml")
         if isFileExists(manifest):
             # APKTool already created readable XML
