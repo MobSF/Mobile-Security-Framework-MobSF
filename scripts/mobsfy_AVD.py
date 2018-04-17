@@ -206,7 +206,7 @@ def main():
 
     print("\nMobSFy_AVD Script\n\n")
     print_log('Starting MobSF - AVD interactive configuration script')
-    print_log('Make sure to run this script ONLY after you successfuly installed leatest AndroidStudio & downloaded MobSF_ARM_Emulator.zip')
+    print_log('Make sure to run this script ONLY after you successfuly installed latest AndroidStudio & downloaded MobSF_ARM_Emulator.zip')
 
     # First gather all the paths needed to make to copy opera
 
