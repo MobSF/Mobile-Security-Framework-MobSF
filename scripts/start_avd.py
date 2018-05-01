@@ -23,6 +23,9 @@ def check_config():
             if not path:
                 print("\n[ERROR] AVD binary not configured, please refer to the official documentation")
                 return False
+        if settings.ANDROID_DYNAMIC_ANALYZER != 'MobSF_AVD':
+            print("\n[ERROR] Wrong configuration - ANDROID_DYNAMIC_ANALYZER, please refer to the official documentation")
+            return False
         return True
     except:
         PrintException("[ERROR] check_config")
