@@ -29,7 +29,6 @@ from DynamicAnalyzer.tools.webproxy import (
 )
 
 from DynamicAnalyzer.views.android.avd import (
-    avd_load_wait,
     refresh_avd,
     stop_avd
 )
@@ -48,6 +47,7 @@ from DynamicAnalyzer.views.android.shared import (
     get_res,
     get_identifier,
     wait,
+    adb_command,
 )
 from MobSF.utils import PrintException, is_number, python_list, getADB
 
@@ -97,21 +97,20 @@ def android_dynamic_analyzer(request):
                     os.makedirs(screen_dir)
                 # Start DM
                 stop_capfuzz(settings.PORT)
-                toolsdir = os.path.join(
-                    settings.BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
-                adb = getADB(toolsdir)
+                adb = getADB()
+                is_avd = False
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_REAL_DEVICE":
                     print(
                         "\n[INFO] MobSF will perform Dynamic Analysis on real Android Device")
-                    is_avd = False
                 elif settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                     # adb, avd_path, reference_name, dup_name, emulator
                     is_avd = True
-                    refresh_avd(adb, settings.AVD_PATH, settings.AVD_REFERENCE_NAME,
-                                settings.AVD_DUP_NAME, settings.AVD_EMULATOR)
+                    if not os.path.exists(settings.AVD_EMULATOR):
+                        return HttpResponseRedirect('/error/')
+                    if not refresh_avd():
+                        return HttpResponseRedirect('/error/')
                 else:
                     # Refersh VM
-                    is_avd = False
                     refresh_vm(settings.UUID, settings.SUUID, settings.VBOX)
                 context = {'md5': md5_hash,
                            'pkg': package,
@@ -148,27 +147,23 @@ def get_env(request):
                     settings.UPLD_DIR, md5_hash + '/')  # APP DIRECTORY
                 app_file = md5_hash + '.apk'  # NEW FILENAME
                 app_path = app_dir + app_file  # APP PATH
-                toolsdir = os.path.join(
-                    base_dir, 'DynamicAnalyzer/tools/')  # TOOLS DIR
-                adb = getADB(toolsdir)
+                adb = getADB()
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                     proxy_ip = '127.0.0.1'
                 else:
                     proxy_ip = settings.PROXY_IP  # Proxy IP
                 start_proxy(settings.PORT, package)
-                # AVD only needs to wait, vm needs the connect function
+                # vm needs the connect function
                 try:
-                    if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
-                        avd_load_wait(adb)
-                    else:
-                        connect(toolsdir)
+                    if not settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
+                        connect()
                 except Exception as exp:
                     data = {'ready': 'no',
                             'msg': 'Cannot Connect to the VM/Device.',
                             'error': str(exp)}
                     return HttpResponse(json.dumps(data), content_type='application/json')
                 # Change True to support non-activity components
-                install_and_run(toolsdir, app_path, package, launcher, True)
+                install_and_run(app_path, package, launcher, True)
                 screen_width, screen_width = get_res()
                 data = {'ready': 'yes',
                         'screen_witdth': screen_width,
@@ -199,22 +194,9 @@ def take_screenshot(request):
                     settings.UPLD_DIR, md5_hash + '/screenshots-apk/')
                 if not os.path.exists(screen_dir):
                     os.makedirs(screen_dir)
-                toolsdir = os.path.join(
-                    base_dir, 'DynamicAnalyzer/tools/')  # TOOLS DIR
-                adb = getADB(toolsdir)
-                subprocess.call([adb,
-                                 "-s",
-                                 get_identifier(),
-                                 "shell",
-                                 "screencap",
-                                 "-p",
-                                 "/data/local/screen.png"])
-                subprocess.call([adb,
-                                 "-s",
-                                 get_identifier(),
-                                 "pull",
-                                 "/data/local/screen.png",
-                                 screen_dir + "screenshot-" + str(rand_int) + ".png"])
+                adb_command(["screencap", "-p", "/data/local/screen.png"], True)
+                adb_command(["pull", "/data/local/screen.png",
+                             screen_dir + "screenshot-" + str(rand_int) + ".png"])
                 print("\n[INFO] Screenshot Taken")
                 data = {'screenshot': 'yes'}
                 return HttpResponse(json.dumps(data), content_type='application/json')
@@ -236,20 +218,13 @@ def screen_cast(request):
         data = {}
         if request.method == 'POST':
             mode = request.POST['mode']
-            toolsdir = os.path.join(
-                settings.BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
-            adb = getADB(toolsdir)
             if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                 ip_address = '10.0.2.2'
             else:
                 ip_address = settings.SCREEN_IP
             port = str(settings.SCREEN_PORT)
             if mode == "on":
-                args = [adb,
-                        "-s",
-                        get_identifier(),
-                        "shell",
-                        "am",
+                args = ["am",
                         "startservice",
                         "-a",
                         ip_address + ":" + port,
@@ -257,18 +232,14 @@ def screen_cast(request):
                 data = {'status': 'on'}
                 TCP_SERVER_MODE = "on"
             elif mode == "off":
-                args = [adb,
-                        "-s",
-                        get_identifier(),
-                        "shell",
-                        "am",
+                args = ["am",
                         "force-stop",
                         "opensecurity.screencast"]
                 data = {'status': 'off'}
                 TCP_SERVER_MODE = "off"
             if (mode in ["on", "off"]):
                 try:
-                    subprocess.call(args)
+                    adb_command(args, True)
                     screen_trd = threading.Thread(target=screencast_service)
                     screen_trd.setDaemon(True)
                     screen_trd.start()
@@ -294,18 +265,12 @@ def clip_dump(request):
     try:
         data = {}
         if request.method == 'POST':
-            toolsdir = os.path.join(
-                settings.BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
-            adb = getADB(toolsdir)
-            args = [adb,
-                    "-s",
-                    get_identifier(),
-                    "shell",
-                    "am",
+            adb = getADB()
+            args = ["am",
                     "startservice",
                     "opensecurity.clipdump/.ClipDumper"]
             try:
-                subprocess.call(args)
+                adb_command(args, True)
                 data = {'status': 'success'}
             except:
                 PrintException("[ERROR] Dumping Clipboard")
@@ -328,20 +293,14 @@ def touch(request):
         if (request.method == 'POST') and (is_number(request.POST['x'])) and (is_number(request.POST['y'])):
             x_axis = request.POST['x']
             y_axis = request.POST['y']
-            toolsdir = os.path.join(
-                settings.BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
-            adb = getADB(toolsdir)
-            args = [adb,
-                    "-s",
-                    get_identifier(),
-                    "shell",
-                    "input",
+            adb = getADB()
+            args = ["input",
                     "tap",
                     x_axis,
                     y_axis]
             data = {'status': 'success'}
             try:
-                subprocess.call(args)
+                adb_command(args, True)
             except:
                 data = {'status': 'error'}
                 PrintException("[ERROR] Performing Touch Action")
@@ -365,15 +324,13 @@ def execute_adb(request):
             Allow dangerous chars as it's functional
             TODO: Deal with it.
             '''
-            toolsdir = os.path.join(
-                settings.BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
-            adb = getADB(toolsdir)
+            adb = getADB()
             args = [adb,
                     "-s",
                     get_identifier()] + cmd.split(' ')
             resp = "error"
             try:
-                resp = subprocess.check_output(args)
+                resp = adb
             except:
                 PrintException("[ERROR] Executing ADB Commands")
             data = {'cmd': 'yes', 'resp': resp.decode("utf8", "ignore")}
@@ -394,78 +351,39 @@ def mobsf_ca(request):
             data = {}
             act = request.POST['action']
             rootca = get_ca_dir()
-            toolsdir = os.path.join(
-                settings.BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
-            adb = getADB(toolsdir)
+            adb = getADB()
             if act == "install":
                 print("\n[INFO] Installing MobSF RootCA")
-                subprocess.call([adb,
-                                 "-s",
-                                 get_identifier(),
-                                 "push",
-                                 rootca,
-                                 "/data/local/tmp/" + settings.ROOT_CA])
+                adb_command(["push", rootca, "/data/local/tmp/" + settings.ROOT_CA])
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                     # For some reason, avd emulator does not have cp binary
-                    subprocess.call([adb,
-                                     "-s",
-                                     get_identifier(),
-                                     "shell",
-                                     "/data/local/tmp/busybox",
-                                     "cp",
-                                     "/data/local/tmp/" + settings.ROOT_CA,
-                                     "/system/etc/security/cacerts/" + settings.ROOT_CA])
-                    subprocess.call([adb,
-                                     "-s",
-                                     get_identifier(),
-                                     "shell",
-                                     "chmod",
-                                     "644",
-                                     "/system/etc/security/cacerts/" + settings.ROOT_CA])
+                    adb_command(["/data/local/tmp/busybox", "cp",
+                                "/data/local/tmp/" + settings.ROOT_CA,
+                                "/system/etc/security/cacerts/" + settings.ROOT_CA], True)
+                    adb_command(["chmod", "644",
+                                "/system/etc/security/cacerts/" + settings.ROOT_CA], True)
                 else:
-                    subprocess.call([adb,
-                                     "-s",
-                                     get_identifier(),
-                                     "shell",
-                                     "su",
-                                     "-c",
-                                     "cp",
-                                     "/data/local/tmp/" + settings.ROOT_CA,
-                                     "/system/etc/security/cacerts/" + settings.ROOT_CA])
-                    subprocess.call([adb,
-                                     "-s",
-                                     get_identifier(),
-                                     "shell",
-                                     "su",
-                                     "-c",
-                                     "chmod",
-                                     "644",
-                                     "/system/etc/security/cacerts/" + settings.ROOT_CA])
-                subprocess.call([adb,
-                                 "-s",
-                                 get_identifier(),
-                                 "shell",
-                                 "rm",
-                                 "/data/local/tmp/" + settings.ROOT_CA])
+                    adb_command(["su",
+                                 "-c",
+                                 "cp",
+                                 "/data/local/tmp/" + settings.ROOT_CA,
+                                 "/system/etc/security/cacerts/" + settings.ROOT_CA], True)
+                    adb_command(["su",
+                                "-c",
+                                "chmod",
+                                "644",
+                                "/system/etc/security/cacerts/" + settings.ROOT_CA], True)
+                adb_command(["rm", "/data/local/tmp/" + settings.ROOT_CA], True)
                 data = {'ca': 'installed'}
             elif act == "remove":
                 print("\n[INFO] Removing MobSF RootCA")
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
-                    subprocess.call([adb,
-                                     "-s",
-                                     get_identifier(),
-                                     "shell",
-                                     "rm",
-                                     "/system/etc/security/cacerts/" + settings.ROOT_CA])
+                    adb_command(["rm", "/system/etc/security/cacerts/" + settings.ROOT_CA], True)
                 else:
-                    subprocess.call([adb,
-                                     "-s",
-                                     get_identifier(),
-                                     "shell",
-                                     "su",
-                                     "-c",
-                                     "rm",
-                                     "/system/etc/security/cacerts/" + settings.ROOT_CA])
+                    adb_command(["su",
+                                 "-c",
+                                 "rm",
+                                 "/system/etc/security/cacerts/" + settings.ROOT_CA], True)
                 data = {'ca': 'removed'}
             return HttpResponse(json.dumps(data), content_type='application/json')
         else:
@@ -494,19 +412,13 @@ def final_test(request):
                 TCP_SERVER_MODE = "off"
                 base_dir = settings.BASE_DIR
                 apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
-                toolsdir = os.path.join(
-                    base_dir, 'DynamicAnalyzer/tools/')  # TOOLS DIR
-                adb = getADB(toolsdir)
+                adb = getADB()
                 # Change to check output of subprocess when analysis is done
                 # Can't RCE
                 os.system(adb + ' -s ' + get_identifier() +
                           ' logcat -d dalvikvm:W ActivityManager:I > "' + apk_dir + 'logcat.txt"')
                 print("\n[INFO] Downloading Logcat logs")
-                subprocess.call([adb,
-                                 "-s",
-                                 get_identifier(),
-                                 "pull",
-                                 "/data/data/de.robv.android.xposed.installer/log/error.log",
+                adb_command(["pull", "/data/data/de.robv.android.xposed.installer/log/error.log",
                                  apk_dir + "x_logcat.txt"])
 
                 print("\n[INFO] Downloading Droidmon API Monitor Logcat logs")
@@ -514,23 +426,13 @@ def final_test(request):
                 os.system(adb + ' -s ' + get_identifier() +
                           ' shell dumpsys > "' + apk_dir + 'dump.txt"')
                 print("\n[INFO] Downloading Dumpsys logs")
-                subprocess.call([adb,
-                                 "-s",
-                                 get_identifier(),
-                                 "shell",
-                                 "am",
-                                 "force-stop",
-                                 package])
+
+                adb_command(["am", "force-stop", package], True)
                 print("\n[INFO] Stopping Application")
 
-                subprocess.call([adb,
-                                 "-s",
-                                 get_identifier(),
-                                 "shell",
-                                 "am",
-                                 "force-stop",
-                                 "opensecurity.screencast"])
+                adb_command(["am", "force-stop", "opensecurity.screencast"], True)
                 print("\n[INFO] Stopping ScreenCast Service")
+
                 data = {'final': 'yes'}
                 return HttpResponse(json.dumps(data), content_type='application/json')
             else:
@@ -557,38 +459,14 @@ def dump_data(request):
                     return HttpResponseRedirect('/error/')
                 base_dir = settings.BASE_DIR
                 apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
-                toolsdir = os.path.join(
-                    base_dir, 'DynamicAnalyzer/tools/')  # TOOLS DIR
-                adb = getADB(toolsdir)
                 # Let's try to close Proxy a bit early as we don't have much
                 # control on the order of thread execution
                 stop_capfuzz(settings.PORT)
                 print("\n[INFO] Deleting Dump Status File")
-                subprocess.call([adb,
-                                 "-s",
-                                 get_identifier(),
-                                 "shell",
-                                 "rm",
-                                 "/sdcard/mobsec_status"])
+                adb_command(["rm", "/sdcard/mobsec_status"], True)
                 print("\n[INFO] Creating TAR of Application Files.")
-                if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
-                    # tar -cvf /data/local/"+pkg+".tar /data/data/"+pkg+"/",
-                    subprocess.call([adb,
-                                     "-s",
-                                     get_identifier(),
-                                     "shell",
-                                     "/data/local/tmp/tar.sh",
-                                     package])
-                else:
-                    subprocess.call([adb,
-                                     "-s",
-                                     get_identifier(),
-                                     "shell",
-                                     "am",
-                                     "startservice",
-                                     "-a",
-                                     package,
-                                     "opensecurity.ajin.datapusher/.GetPackageLocation"])
+                adb_command(["am", "startservice", "-a",package,
+                            "opensecurity.ajin.datapusher/.GetPackageLocation"], True)
                 print("\n[INFO] Waiting for TAR dump to complete...")
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_REAL_DEVICE":
                     timeout = settings.DEVICE_TIMEOUT
@@ -597,31 +475,18 @@ def dump_data(request):
                 start_time = time.time()
                 while True:
                     current_time = time.time()
-                    if b"MOBSEC-TAR-CREATED" in subprocess.check_output([adb,
-                                                                         "-s",
-                                                                         get_identifier(),
-                                                                         "shell",
-                                                                         "cat",
-                                                                         "/sdcard/mobsec_status"]):
+                    if b"MOBSEC-TAR-CREATED" in adb_command(["cat","/sdcard/mobsec_status"], shell=True):
                         break
                     if (current_time - start_time) > timeout:
                         print(
                             "\n[ERROR] TAR Generation Failed. Process timed out.")
                         break
                 print("\n[INFO] Dumping Application Files from Device/VM")
-                subprocess.call([adb,
-                                 "-s",
-                                 get_identifier(),
-                                 "pull",
-                                 "/data/local/" + package + ".tar",
-                                 apk_dir + package + ".tar"])
+                adb_command(["pull", "/data/local/" + package + ".tar", apk_dir + package + ".tar"])
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
-                    stop_avd(adb)
+                    stop_avd()
                 print("\n[INFO] Stopping ADB")
-                subprocess.call([adb,
-                                 "-s",
-                                 get_identifier(),
-                                 "kill-server"])
+                adb_command(["kill-server"])
                 data = {'dump': 'yes'}
                 return HttpResponse(json.dumps(data), content_type='application/json')
             else:
@@ -647,13 +512,11 @@ def exported_activity_tester(request):
             if request.method == 'POST':
                 base_dir = settings.BASE_DIR
                 app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
-                toolsdir = os.path.join(
-                    base_dir, 'DynamicAnalyzer/tools/')  # TOOLS DIR
                 screen_dir = os.path.join(app_dir, 'screenshots-apk/')
                 if not os.path.exists(screen_dir):
                     os.makedirs(screen_dir)
                 data = {}
-                adb = getADB(toolsdir)
+                adb = getADB()
 
                 static_android_db = StaticAnalyzerAndroid.objects.filter(
                     MD5=md5_hash)
@@ -671,44 +534,18 @@ def exported_activity_tester(request):
                                 exp_act_no += 1
                                 print("\n[INFO] Launching Exported Activity - " +
                                       str(exp_act_no) + ". " + line)
-                                subprocess.call(
-                                    [adb,
-                                     "-s",
-                                     get_identifier(),
-                                     "shell",
-                                     "am",
-                                     "start",
-                                     "-n",
-                                     package + "/" + line])
+                                adb_command(["am", "start", "-n", package + "/" + line], True)
                                 # AVD is much slower, it should get extra time
                                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                                     wait(8)
                                 else:
                                     wait(4)
-                                subprocess.call(
-                                    [adb,
-                                     "-s",
-                                     get_identifier(),
-                                     "shell", "screencap",
-                                     "-p",
-                                     "/data/local/screen.png"])
+                                adb_command(["screencap", "-p", "/data/local/screen.png"], True)
                                 #? get appended from Air :-() if activity names are used
-                                subprocess.call(
-                                    [adb,
-                                     "-s",
-                                     get_identifier(),
-                                     "pull",
-                                     "/data/local/screen.png",
+                                adb_command(["pull", "/data/local/screen.png",
                                      screen_dir + "expact-" + str(exp_act_no) + ".png"])
                                 print("\n[INFO] Activity Screenshot Taken")
-                                subprocess.call(
-                                    [adb,
-                                     "-s",
-                                     get_identifier(),
-                                     "shell",
-                                     "am",
-                                     "force-stop",
-                                     package])
+                                adb_command(["am", "force-stop", package], True)
                                 print("\n[INFO] Stopping App")
                             except:
                                 PrintException(
@@ -746,13 +583,11 @@ def activity_tester(request):
             if request.method == 'POST':
                 base_dir = settings.BASE_DIR
                 app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
-                toolsdir = os.path.join(
-                    base_dir, 'DynamicAnalyzer/tools/')  # TOOLS DIR
                 screen_dir = os.path.join(app_dir, 'screenshots-apk/')
                 if not os.path.exists(screen_dir):
                     os.makedirs(screen_dir)
                 data = {}
-                adb = getADB(toolsdir)
+                adb = getADB()
                 static_android_db = StaticAnalyzerAndroid.objects.filter(
                     MD5=md5_hash)
                 if static_android_db.exists():
@@ -768,44 +603,18 @@ def activity_tester(request):
                                 act_no += 1
                                 print("\n[INFO] Launching Activity - " +
                                       str(act_no) + ". " + line)
-                                subprocess.call(
-                                    [adb,
-                                     "-s",
-                                     get_identifier(),
-                                     "shell",
-                                     "am",
-                                     "start",
-                                     "-n",
-                                     package + "/" + line])
+                                adb_command(["am", "start", "-n", package + "/" + line], True)
                                 # AVD is much slower, it should get extra time
                                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                                     wait(8)
                                 else:
                                     wait(4)
-                                subprocess.call(
-                                    [adb,
-                                     "-s",
-                                     get_identifier(),
-                                     "shell",
-                                     "screencap",
-                                     "-p",
-                                     "/data/local/screen.png"])
+                                adb_command(["screencap", "-p", "/data/local/screen.png"], True)
                                 #? get appended from Air :-() if activity names are used
-                                subprocess.call(
-                                    [adb,
-                                     "-s",
-                                     get_identifier(),
-                                     "pull",
-                                     "/data/local/screen.png",
+                                adb_command(["pull", "/data/local/screen.png",
                                      screen_dir + "act-" + str(act_no) + ".png"])
                                 print("\n[INFO] Activity Screenshot Taken")
-                                subprocess.call([adb,
-                                                 "-s",
-                                                 get_identifier(),
-                                                 "shell",
-                                                 "am",
-                                                 "force-stop",
-                                                 package])
+                                adb_command(["am", "force-stop", package], True)
                                 print("\n[INFO] Stopping App")
                             except:
                                 PrintException("Activity Tester")

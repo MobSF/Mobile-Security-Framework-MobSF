@@ -55,7 +55,7 @@ textarea:focus {
 <div class="row">
     <p id="but">
       <a id="start" class="btn btn-primary" role="button">Create Environment</a>
-      <a id="screen" class="btn btn-primary" role="button" style="visibility: hidden" >Show Screen</a>
+      <a id="screen" class="btn btn-primary" role="button" style="visibility: hidden" {% if AVD %}disabled{% endif %}>Show Screen</a>
       <a id="rootca" class="btn btn-primary" role="button" style="visibility: hidden" >Remove MobSF RootCA</a>
       <a id="expactt" class="btn btn-primary" role="button" style="visibility: hidden" >Start Exported Activity Tester</a>
       <a id="actt" class="btn btn-primary" role="button" style="visibility: hidden" >Start Activity Tester</a>

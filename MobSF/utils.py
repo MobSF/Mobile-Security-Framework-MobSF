@@ -9,14 +9,11 @@ import time
 import datetime
 import ntpath
 import hashlib
-import urllib.request
-import urllib.error
-import urllib.parse
 import io
 import ast
 import unicodedata
-import http.client
 import requests
+import shutil
 from . import settings
 
 from django.shortcuts import render
@@ -468,6 +465,9 @@ def gen_sha256_hash(msg):
 def isFileExists(file_path):
     if os.path.isfile(file_path):
         return True
+    # This fix situation where a user just typed "adb" or another executable inside settings.py
+    if shutil.which(file_path):
+        return True
     else:
         return False
 
@@ -496,7 +496,7 @@ def zipdir(path, zip_file):
         PrintException("[ERROR] Zipping")
 
 
-def getADB(TOOLSDIR):
+def getADB():
     """Get ADB binary path"""
     try:
         if len(settings.ADB_BINARY) > 0 and isFileExists(settings.ADB_BINARY):
@@ -504,15 +504,15 @@ def getADB(TOOLSDIR):
         else:
             adb = 'adb'
             if platform.system() == "Darwin":
-                adb_dir = os.path.join(TOOLSDIR, 'adb/mac/')
+                adb_dir = os.path.join(settings.TOOLS_DIR, 'adb/mac/')
                 subprocess.call(["chmod", "777", adb_dir])
-                adb = os.path.join(TOOLSDIR, 'adb/mac/adb')
+                adb = os.path.join(settings.TOOLS_DIR, 'adb/mac/adb')
             elif platform.system() == "Linux":
-                adb_dir = os.path.join(TOOLSDIR, 'adb/linux/')
+                adb_dir = os.path.join(settings.TOOLS_DIR, 'adb/linux/')
                 subprocess.call(["chmod", "777", adb_dir])
-                adb = os.path.join(TOOLSDIR, 'adb/linux/adb')
+                adb = os.path.join(settings.TOOLS_DIR, 'adb/linux/adb')
             elif platform.system() == "Windows":
-                adb = os.path.join(TOOLSDIR, 'adb/windows/adb.exe')
+                adb = os.path.join(settings.TOOLS_DIR, 'adb/windows/adb.exe')
             return adb
     except:
         PrintException("[ERROR] Getting ADB Location")
@@ -521,9 +521,7 @@ def getADB(TOOLSDIR):
 
 def adb_binary_or32bit_support():
     """Check if 32bit is supported. Also if the binary works"""
-    tools_dir = os.path.join(
-        settings.BASE_DIR, 'DynamicAnalyzer/tools/')
-    adb_path = getADB(tools_dir)
+    adb_path = getADB()
     try:
         fnull = open(os.devnull, 'w')
         subprocess.call([adb_path], stdout=fnull, stderr=fnull)

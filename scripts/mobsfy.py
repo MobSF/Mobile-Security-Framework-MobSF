@@ -21,7 +21,7 @@ def ExecuteCMD(args, ret=False):
         print(("\n[ERROR] Executing Command - " + str(e)))
 
 
-def getADB(TOOLSDIR):
+def getADB():
     print("\n[INFO] Getting ADB Location")
     try:
         adb = 'adb'
@@ -60,7 +60,7 @@ try:
             "Enter the IP:PORT or Serial no of the Device/VM (Ex: 192.168.1.2:5555) and press enter: ")
         vm_or_ip = input("Choose\n 1. VM\n 2. Device\nEnter your choice: ")
         xposed_ver = input("Android Version\n1. <5\n2.>=5\nEnter your choice: ")        
-    adb = getADB(TOOLSDIR)
+    adb = getADB()
     ExecuteCMD([adb, "kill-server"])
     ExecuteCMD([adb, "start-server"])
     ExecuteCMD([adb, "connect", adbconnect])
