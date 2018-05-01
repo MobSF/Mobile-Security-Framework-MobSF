@@ -294,7 +294,7 @@ else:
     JD_CORE_DECOMPILER_BINARY = ""
     PROCYON_DECOMPILER_BINARY = ""
     APKTOOL_BINARY = ""
-    ADB_BINARY = ""
+    ADB_BINARY = "adb"
     ENJARIFY_DIRECTORY = ""
 
     # iOS 3P Tools
@@ -348,7 +348,7 @@ else:
 
     #===========ANDROID EMULATOR SETTINGS ===========
     # Android-Studio 'emulator' binary path
-    AVD_EMULATOR = "/Users/[username]/Library/Android/sdk/tools/emulator"
+    AVD_EMULATOR = "/Users/matandobr/Library/Android/sdk/tools/emulator"
     AVD_NAME = "MobSFAPI23arm"
     AVD_ADB_PORT = 5554
     #================================================
