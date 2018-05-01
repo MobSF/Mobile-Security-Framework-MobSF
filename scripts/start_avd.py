@@ -21,7 +21,7 @@ def check_config():
         for path in [settings.AVD_EMULATOR,
                      settings.ADB_BINARY]:
             if not path:
-                print("\n[ERROR] AVD binaries not configured, please refer to the official documentation")
+                print("\n[ERROR] AVD binary not configured, please refer to the official documentation")
                 return False
         return True
     except:
