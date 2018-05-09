@@ -587,7 +587,10 @@ def check_basic_env():
     except ImportError:
         PrintException("[ERROR] lxml is not installed!")
         os.kill(os.getpid(), signal.SIGTERM)
-    java = settings.JAVA_PATH + 'java'
+    if platform.system() == "Windows":
+        java = settings.JAVA_PATH + 'java.exe'
+    else:
+        java = settings.JAVA_PATH + 'java'
     if not isFileExists(java):
         print("[ERROR] Oracle Java is not available or `JAVA_DIRECTORY` in settings.py is configured incorrectly!")
         print("JAVA_DIRECTORY=%s" % settings.JAVA_DIRECTORY)
