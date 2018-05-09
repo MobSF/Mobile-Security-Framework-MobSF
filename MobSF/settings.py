@@ -149,11 +149,11 @@ except NameError:
             Exception('Please create a %s file with random characters \
             to generate your secret key!' % SECRET_FILE)
         # Run Once
-        # Windows Setup
-        windows_config_local(MobSF_HOME)
         utils.make_migrations(BASE_DIR)
         utils.migrate(BASE_DIR)
         utils.kali_fix(BASE_DIR)
+        # Windows Setup
+        windows_config_local(MobSF_HOME)
 
 #=============================================
 
