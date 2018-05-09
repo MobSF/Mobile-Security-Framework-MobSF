@@ -330,11 +330,11 @@ def FindJava(debug=False):
                     err_msg = "[ERROR] Please install Oracle JDK 1.7 or above"
                     if debug:
                         print(Color.BOLD + Color.RED + err_msg + Color.END)
-                        return "java"
+                    return "java"
             else:
                 if debug:
                     print(Color.BOLD + Color.RED + err_msg1 + Color.END)
-                    return "java"
+                return "java"
     except:
         if debug:
             PrintException("[ERROR] Oracle Java (JDK >=1.7) is not found!")
