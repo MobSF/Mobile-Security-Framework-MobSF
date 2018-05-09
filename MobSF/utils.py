@@ -1,4 +1,5 @@
 import os
+import signal
 import platform
 import random
 import subprocess
@@ -80,6 +81,7 @@ def printMobSFverison():
         print("Dist: " + str(platform.dist()))
     FindJava(True)
     FindVbox(True)
+    check_basic_env()
     adb_binary_or32bit_support()
     check_update()
 
@@ -535,3 +537,27 @@ def adb_binary_or32bit_support():
             print(Color.BOLD + Color.ORANGE + msg + Color.END)
         else:
             print(msg)
+
+
+def check_basic_env():
+    """Check if we have basic env for MobSF to run"""
+    print("[INFO] MobSF Basic Environment Check")
+    try:
+        import capfuzz
+    except ImportError:
+        PrintException("[ERROR] CapFuzz not installed!")
+        os.kill(os.getpid(), signal.SIGTERM)
+    try:
+        import lxml
+    except ImportError:
+        PrintException("[ERROR] lxml is not installed!")
+        os.kill(os.getpid(), signal.SIGTERM)
+    java = settings.JAVA_PATH + 'java'
+    if not isFileExists(java):
+        print("[ERROR] Oracle Java is not available or `JAVA_DIRECTORY` in settings.py is configured incorrectly!")
+        print("JAVA_DIRECTORY=%s" % settings.JAVA_DIRECTORY)
+        print('''Example Configuration:
+                 JAVA_DIRECTORY = "C:/Program Files/Java/jdk1.7.0_17/bin/"
+                 JAVA_DIRECTORY = "/usr/bin/"
+        ''')
+        os.kill(os.getpid(), signal.SIGTERM)
