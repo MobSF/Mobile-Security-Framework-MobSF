@@ -6,7 +6,8 @@ services:
     environment:
       POSTGRES_PASSWORD: 'password'
   mobsf:
-    build: .
+    build:
+      dockerfile: Dockerfile.postgres
     ports:
      - "8000:8000"
   
