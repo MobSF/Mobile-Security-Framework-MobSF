@@ -74,6 +74,9 @@ RUN ./kali_fix.sh
 WORKDIR /root/Mobile-Security-Framework-MobSF
 RUN pip3 install -r requirements.txt
 
+#install Postgres dependencies
+RUN pip3 install psycopg2
+
 #Install apkid dependencies, and enable it 
 WORKDIR /tmp
 RUN git clone ${YARA_URL} && \
