@@ -1,0 +1,12 @@
+version: '3'
+services:
+  postgres:
+    image: "postgres:latest"
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: 'password'
+  mobsf:
+    build: .
+    ports:
+     - "8000:8000"
+  
