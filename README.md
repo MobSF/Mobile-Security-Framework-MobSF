@@ -39,6 +39,11 @@ docker run -it -p 8000:8000 opensecurity/mobile-security-framework-mobsf:latest
 ```
 docker run -it -p 8000:8000 -v <your_local_dir>:/root/.MobSF opensecurity/mobile-security-framework-mobsf:latest
 ```
+### For postgres support
+
+```
+docker-compose up 
+```
 
 ## Collaborators
 
