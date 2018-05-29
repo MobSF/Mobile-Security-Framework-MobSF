@@ -4,10 +4,12 @@ services:
     image: "postgres:latest"
     restart: always
     environment:
-      - POSTGRES_PASSWORD: 'password'
-      - POSTGRES_DB: 'mobsf'
+      - PSOTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=mobsf
   mobsf:
     build:
+      context: .
       dockerfile: Dockerfile.postgres
     ports:
      - "8000:8000"
