@@ -78,7 +78,7 @@ WORKDIR /root/Mobile-Security-Framework-MobSF
 RUN pip3 install -r requirements.txt
 
 #install Postgres dependencies
-RUN pip3 install psycopg2
+RUN pip3 install psycopg2-binary
 
 #Install apkid dependencies, and enable it 
 WORKDIR /tmp
