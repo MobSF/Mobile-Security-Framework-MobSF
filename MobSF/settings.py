@@ -55,6 +55,7 @@ DB_DIR = os.path.join(MobSF_HOME, 'db.sqlite3')
 
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
+# Sqlite3 suport
 
 DATABASES = {
     'default': {
@@ -62,6 +63,8 @@ DATABASES = {
         'NAME': DB_DIR,
     }
 }
+# End Sqlite3 support
+
 # Postgres DB - Install psycopg2
 '''
 DATABASES = {
@@ -75,6 +78,7 @@ DATABASES = {
     }
 }
 '''
+# End Postgres support
 #===============================================
 
 #==========LOAD CONFIG FROM MobSF HOME==========
