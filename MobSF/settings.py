@@ -77,8 +77,8 @@ DATABASES = {
         'PORT': '',
     }
 }
-'''
 # End Postgres support
+'''
 #===============================================
 
 #==========LOAD CONFIG FROM MobSF HOME==========
