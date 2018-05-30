@@ -65,8 +65,12 @@ COPY . /root/Mobile-Security-Framework-MobSF
 
 WORKDIR /root/Mobile-Security-Framework-MobSF/MobSF
 #Enable postgres support 
-RUN rm -f settings.py && \
-    mv settings.py.postgres settings.py 
+RUN sed -i '/# Sqlite3 suport/,/# End Sqlite3 support/d' settings.py && \
+    sed -i '/# Postgres DB - Install psycopg2/,/'''/d' settings.py && \
+    sed -i '/# End Postgres support/,/'''/d' settings.py && \
+    sed -i 's/'PASSWORD': '',/'PASSWORD': 'password',/' settings.py && \
+    sed -i 's/'HOST': 'localhost',/'HOST': 'postgres',/' settings.py
+    
 #Enable Use Home Directory
 RUN sed -i 's/USE_HOME = False/USE_HOME = True/g' settings.py
 
