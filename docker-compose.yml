@@ -3,6 +3,8 @@ services:
   postgres:
     image: "postgres:latest"
     restart: always
+    volumes:
+      - /Postgres_data/var/lib/postgresql:/var/lib/postgresql
     environment:
       - PSOTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
@@ -11,6 +13,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.postgres
+    volumes:
+      - /MobSF_data:/root/.MobSF
     ports:
      - "8000:8000"
   
