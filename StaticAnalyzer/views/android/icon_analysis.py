@@ -110,7 +110,8 @@ def get_icon(apk_path, res_dir):
     try:
         print("[INFO] Fetching icon path")
         a = apk.APK(apk_path)
-        icon_name = a.get_app_icon(max_dpi=65536)
+        icon_resolution = 0xFFFE - 1
+        icon_name = a.get_app_icon(max_dpi=icon_resolution)
         if len(icon_name) > 0:
             return {
                 'path': os.path.join(os.path.dirname(apk_path), icon_name),
