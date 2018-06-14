@@ -12,7 +12,9 @@ services:
   mobsf:
     build:
       context: .
-      dockerfile: Dockerfile.postgres
+      dockerfile: Dockerfile
+      args:
+       - POSTGRES=True
     volumes:
       - /MobSF_data:/root/.MobSF
     ports:
