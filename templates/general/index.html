@@ -1,178 +1,147 @@
-<!DOCTYPE html>
-<html>
-<head><title>بارگذاری فایل</title>
-    <meta charset="utf-8">
-    <meta content="ie=edge" http-equiv="x-ua-compatible">
-    <meta content="template language" name="keywords">
-    <meta content="Tamerlan Soziev" name="author">
-    <meta content="Admin dashboard html template" name="description">
-    <meta content="width=device-width, initial-scale=1" name="viewport">
-    <link href="/static/img/favicon.png" rel="shortcut icon">
-    <link href="/static/img/apple-touch-icon.png" rel="apple-touch-icon">
-    <link href="http://fast.fonts.net/cssapi/487b73f1-c2d1-43db-8526-db577e4c822b.css" rel="stylesheet" type="text/css">
-    <link href="/static/bower_components/select2/dist/css/select2.min.css" rel="stylesheet">
-    <link href="/static/bower_components/bootstrap-daterangepicker/daterangepicker.css" rel="stylesheet">
-    <link href="/static/bower_components/dropzone/dist/dropzone.css" rel="stylesheet">
-    <link href="/static/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css" rel="stylesheet">
-    <link href="/static/bower_components/fullcalendar/dist/fullcalendar.min.css" rel="stylesheet">
-    <link href="/static/bower_components/perfect-scrollbar/css/perfect-scrollbar.min.css" rel="stylesheet">
-    <link href="/static/bower_components/slick-carousel/slick/slick.css" rel="stylesheet">
-    <link href="/static/css/main_css.css" rel="stylesheet">
-      <script src="/static/js/dropzone.js"></script>
 
-</head>
-<body class=" full-screen">
+  {% extends "base_top_only.html" %}
+   {% block content %}
 <div class="solid-bg-all">
+
 
 
     <div class="">
 
 
-            <div class="content-i">
-                <div class="content-box">
-                    <div class="element-wrapper">
-                        <div class="element-box"><h5 class="form-header">بارگذاری فایل</h5>
+        <div class="">
+            <div class="">
+                <div class="">
+                    <div class="element-box"><h5 class="form-header">بارگذاری فایل</h5>
 
-                            <form id="upload-widget" method="POST" action="/upload/" class="dropzone">
-                                <div class="dz-message">
-                                    <div><h4  class="text-center">فایل ها را در اینجا بکشید یا اینجا را کلیک کنید.</h4></div>
-                                    {% csrf_token %}
-                                </div>
-                            </form>
-                        </div>
-                    </div></div>
+                        <form id="upload-widget" method="POST" action="/upload/" class="dropzone">
+                            <div class="dz-message">
+                                <div><h4 class="text-center">فایل ها را در اینجا بکشید یا اینجا را کلیک کنید.</h4></div>
+                                {% csrf_token %}
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+</div>
 
 </div>
 
 <script src="/static/js/demo_customizer-version=4.4.1.js"></script>
-    <script>
-function _(el){
-  return document.getElementById(el);
-}
-function responseHandler (json, isbutton) {
+<script>
+    function _(el) {
+        return document.getElementById(el);
+    }
 
-  if (json.status==='error')
-  {
-    _("status").innerHTML = json.description;
-  }
-  else if (json.status==='success')
-  {
+    function responseHandler(json, isbutton) {
 
-    i=1;
-    setInterval(function () {
-      dot='';
-      for (x=1;x<=i;x++)
-       {
-        dot+='.';
-       }
-       _("status").innerHTML = "در حال تجزیه و تحلیل" +dot;
-       i+=1;
-       if(i==5)
-       {
-        i=1;
-       }
-    }, 2000);
+        if (json.status === 'error') {
+            _("status").innerHTML = json.description;
+        }
+        else if (json.status === 'success') {
 
-    window.location.href=window.location.href+json.url;
-  }
-}
-
-
- Dropzone.options.uploadWidget = {
-  paramName: 'file',
-  createImageThumbnails: false,
-  maxFilesize: 300, // MB
-  maxFiles: 8,
-  dictDefaultMessage: 'فایل ها را در اینجا بکشید یا روی دکمه بارگذاری و تجزیه وتحلیل کلیک کنید',
-  acceptedFiles: '.apk,.ipa,.zip,.appx',
-
-  init: function() {
-    this.on('success', function( file, resp ){
-      //console.log( file );
-      console.log( resp );
-      responseHandler (resp);
-    });
-  },
-
-};
-
-
-$(document).ready(function ()
-{
-$('input[type=file]').change(function ()
-{
-  var val = $(this).val().toLowerCase();
-  var regex = new RegExp("(.*?)\.(ipa|apk|zip|appx)$");
-  val = val.replace(/^.*[\\\/]/, '');
-   try {
-        if (!(regex.test(val)))
-          {
-            $(this).val('');
-            _('status').innerHTML = "لطفا فقط فایل های  APK/IPA/ZIP/APPX بارگذاری نمایید!";
-          }
-          else
-          {
-                _('status').innerHTML = "";
-                if (_("uploadFile").files.length === 0)
-                {
-                  return;
+            i = 1;
+            setInterval(function () {
+                dot = '';
+                for (x = 1; x <= i; x++) {
+                    dot += '.';
                 }
-                _("uploadFile").style.display= "none";
-                 _("but").style.display = "none";
-                var file = _("uploadFile").files[0];
-                _("progressBar").style.visibility = "visible";
+                _("status").innerHTML = "در حال تجزیه و تحلیل" + dot;
+                i += 1;
+                if (i == 5) {
+                    i = 1;
+                }
+            }, 2000);
+
+            window.location.href = window.location.href + json.url;
+        }
+    }
 
 
-                var formdata = new FormData();
-                formdata.append("file", file);
-                var ajax = new XMLHttpRequest();
+    Dropzone.options.uploadWidget = {
+        paramName: 'file',
+        createImageThumbnails: false,
+        maxFilesize: 300, // MB
+        maxFiles: 8,
+        dictDefaultMessage: 'فایل ها را در اینجا بکشید یا روی دکمه بارگذاری و تجزیه وتحلیل کلیک کنید',
+        acceptedFiles: '.apk,.ipa,.zip,.appx',
 
-                ajax.upload.addEventListener("progress", progressHandler, false);
-                ajax.addEventListener("load", completeHandler, false);
-                ajax.addEventListener("error", errorHandler, false);
-                ajax.addEventListener("abort", abortHandler, false);
-                ajax.open("POST", "../upload/");
-                ajax.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
-                ajax.send(formdata);
-          }
+        init: function () {
+            this.on('success', function (file, resp) {
+                //console.log( file );
+                console.log(resp);
+                responseHandler(resp);
+            });
+        },
 
-      }
-      catch (e)
-      {
-          alert("Error:" + e);
-      }
-  });
+    };
 
 
-});
-function progressHandler(event){
-  var percent = (event.loaded / event.total) * 100;
-  console.log("Uploaded..."+Math.round(percent));
-  _("progressBar").value = Math.round(percent);
-  _("status").innerHTML = Math.round(percent)+"% آپلود شده...";
-}
-function completeHandler(event)
-{
+    $(document).ready(function () {
+        $('input[type=file]').change(function () {
+            var val = $(this).val().toLowerCase();
+            var regex = new RegExp("(.*?)\.(ipa|apk|zip|appx)$");
+            val = val.replace(/^.*[\\\/]/, '');
+            try {
+                if (!(regex.test(val))) {
+                    $(this).val('');
+                    _('status').innerHTML = "لطفا فقط فایل های  APK/IPA/ZIP/APPX بارگذاری نمایید!";
+                }
+                else {
+                    _('status').innerHTML = "";
+                    if (_("uploadFile").files.length === 0) {
+                        return;
+                    }
+                    _("uploadFile").style.display = "none";
+                    _("but").style.display = "none";
+                    var file = _("uploadFile").files[0];
+                    _("progressBar").style.visibility = "visible";
 
-  var json= JSON.parse(event.target.responseText);
-  responseHandler(json);
-}
-function errorHandler(event){
-  _("status").innerHTML = "آپلود نشد!";
-}
-function abortHandler(event){
-  _("status").innerHTML = "آپلود لغو شد!";
-}
+
+                    var formdata = new FormData();
+                    formdata.append("file", file);
+                    var ajax = new XMLHttpRequest();
+
+                    ajax.upload.addEventListener("progress", progressHandler, false);
+                    ajax.addEventListener("load", completeHandler, false);
+                    ajax.addEventListener("error", errorHandler, false);
+                    ajax.addEventListener("abort", abortHandler, false);
+                    ajax.open("POST", "../upload/");
+                    ajax.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+                    ajax.send(formdata);
+                }
+
+            }
+            catch (e) {
+                alert("Error:" + e);
+            }
+        });
+
+
+    });
+
+    function progressHandler(event) {
+        var percent = (event.loaded / event.total) * 100;
+        console.log("Uploaded..." + Math.round(percent));
+        _("progressBar").value = Math.round(percent);
+        _("status").innerHTML = Math.round(percent) + "% آپلود شده...";
+    }
+
+    function completeHandler(event) {
+
+        var json = JSON.parse(event.target.responseText);
+        responseHandler(json);
+    }
+
+    function errorHandler(event) {
+        _("status").innerHTML = "آپلود نشد!";
+    }
+
+    function abortHandler(event) {
+        _("status").innerHTML = "آپلود لغو شد!";
+    }
 </script>
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
+{% endblock %}
 
-    <script src="/static/js/bootstrap.min.js"></script>
-    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <script src="/static/js/ie10-viewport-bug-workaround.js"></script>
-</body>
-</html>
+

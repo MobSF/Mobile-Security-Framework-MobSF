@@ -4,10 +4,10 @@
 
 <div class="box box-default">
           <div class="box-header with-border">
-            <h3 class="box-title"><i class="fa fa-code"></i> Smali Source</h3>
+            <h3 class="box-title"><i class="fa fa-code"></i> Smali سورس کد</h3>
            <form class="navbar-form navbar-right" action="../Find/" method="POST">
                {% csrf_token %} 
-            Find in files: <input type="text" name="q" class="form-control" placeholder="Find....">
+            جستجو در فایلها: <input type="text" name="q" class="form-control" placeholder="Find....">
             <input type="hidden" name="md5" value="{{md5}}">
             <input type="hidden" name="code" value="smali">
            </form>

@@ -7,7 +7,7 @@
           <div class="box-body">
 
 
-        <h1><strong>REST API Docs</strong></h1>
+        <h1><strong> مستندات API</strong></h1>
       
       <p class="lead">
       REST API Key: <strong><code>{{ api_key}}</code></strong>
@@ -18,14 +18,14 @@
 
 
 <ol>
-<li><code>api/v1/upload</code> - <a href="#upload-file-api">Upload a File</a></li>
-<li><code>api/v1/scan</code> - <a href="#scan-file-api">Scan a File</a></li>
-<li><code>api/v1/delete_scan</code> - <a href="#delete-scan-api">Delete a Scan</a></li>
-<li><code>api/v1/download_pdf</code> - <a href="#generate-pdf-report-api">Download PDF Report</a></li>
-<li><code>api/v1/report_json</code> - <a href="#generate-json-report-api">Generate JSON Report</a></li>
+<li><code>api/v1/upload</code> - <a href="#upload-file-api">بارگذاری فایل</a></li>
+<li><code>api/v1/scan</code> - <a href="#scan-file-api">اسکن فایل</a></li>
+<li><code>api/v1/delete_scan</code> - <a href="#delete-scan-api">حذف فایل</a></li>
+<li><code>api/v1/download_pdf</code> - <a href="#generate-pdf-report-api">دانلود PDF گزارش</a></li>
+<li><code>api/v1/report_json</code> - <a href="#generate-json-report-api">تولید Json گزارش</a></li>
 </ol>
-<h2><a id="upload-file-api"></a><strong>Upload File API</strong></h2>
-<p>API to upload a file. Supported file types are apk, zip, ipa and appx.</p>
+<h2><a id="upload-file-api"></a><strong>بارگذاری فایل</strong></h2>
+<p>نوع فایل های قایل پشتبانی : apk, zip, ipa and appx.</p>
 <ul>
 <li>
 <p><strong>URL:</strong> <code>/api/v1/upload</code></p>
@@ -37,15 +37,15 @@
 <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code></p>
 </li>
 <li>
-<p><strong>Data Params</strong></p>
+<p><strong>پارامترها</strong></p>
 </li>
 </ul>
 <table class="table table-striped table-bordered">
 <thead>
 <tr>
-<th>Param Name</th>
-<th>Param Value</th>
-<th>Required</th>
+<th>نام</th>
+<th>مقدار</th>
+<th>اجباری</th>
 </tr>
 </thead>
 <tbody>
@@ -59,7 +59,7 @@
 <br>
 <ul>
 <li>
-<p><strong>Success Response:</strong></p>
+<p><strong>پاسخ موفقیت آمیز بودن:</strong></p>
 <ul>
 <li><strong>Code:</strong> <code>200</code> <br>
 <strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code> <br>
@@ -67,13 +67,13 @@
 </ul>
 </li>
 <li>
-<p><strong>Error Response:</strong></p>
+<p><strong>پاسخ خطا:</strong></p>
 <ul>
-<li><strong>Code:</strong>  <code>500 Internal Server Error</code> or  <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br>
+<li><strong>Code:</strong>  <code>500 Internal Server Error</code> یا  <code>405 Method Not Allowed</code> یا <code>422 Unprocessable Entity</code> <br>
 <strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code><br>
 <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code></li>
 </ul>
-<p>OR</p>
+<p>یا</p>
 <ul>
 <li><strong>Code:</strong> <code>401 Unauthorized</code><br>
 <strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code><br>
@@ -81,14 +81,14 @@
 </ul>
 </li>
 <li>
-<p><strong>Sample Call:</strong></p>
+<p><strong> نمونه فراخوانی:</strong></p>
 <pre><code>curl -F 'file=@/Users/ajin/Desktop/diva-beta.apk' http://localhost:8000/api/v1/upload -H &quot;Authorization:563d64fc5054d3b239ac0419f1d6b2378465f5c80e1778c283eb1e3265bdd7ae&quot;
 </code></pre>
 </li>
 </ul>
 <hr/>
-<h2><a id="scan-file-api"></a><strong>Scan File API</strong></h2>
-<p>API to scan a file that is already uploaded.</p>
+<h2><a id="scan-file-api"></a><strong>اسکن فایل</strong></h2>
+<p>API برای اسکن یک فایل که قبلا آپلود شده است</p>
 <ul>
 <li>
 <p><strong>URL:</strong> <code>/api/v1/scan</code></p>
@@ -100,21 +100,21 @@
 <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code></p>
 </li>
 <li>
-<p><strong>Data Params</strong></p>
+<p><strong>پارامترها</strong></p>
 </li>
 </ul>
 <table class="table table-striped table-bordered">
 <thead>
 <tr>
-<th>Param Name</th>
-<th>Param Value</th>
-<th>Required</th>
+<th>نام</th>
+<th>مقدار</th>
+<th>اجباری</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>scan_type</td>
-<td>apk, zip, ipa, or appx</td>
+<td>apk, zip, ipa, یا appx</td>
 <td>Yes</td>
 </tr>
 <tr>
@@ -129,7 +129,7 @@
 </tr>
 <tr>
 <td>re_scan</td>
-<td>0 or 1, default is 0</td>
+<td>0 یا 1, default is 0</td>
 <td>No</td>
 </tr>
 </tbody>
@@ -137,7 +137,7 @@
 <br>
 <ul>
 <li>
-<p><strong>Success Response:</strong></p>
+<p><strong>پاسخ موفقیت آمیز بودن:</strong></p>
 <ul>
 <li><strong>Code:</strong> <code>200</code><br>
 <strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code><br>
@@ -154,13 +154,13 @@ SNIPPED
 </code></pre>
 </li>
 <li>
-<p><strong>Error Response:</strong></p>
+<p><strong>پاسخ خطا:</strong></p>
 <ul>
-<li><strong>Code:</strong>  <code>500 Internal Server Error</code> or  <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code><br>
+<li><strong>Code:</strong>  <code>500 Internal Server Error</code> یا  <code>405 Method Not Allowed</code> یا <code>422 Unprocessable Entity</code><br>
 <strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code><br>
 <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code></li>
 </ul>
-<p>OR</p>
+<p>یا</p>
 <ul>
 <li><strong>Code:</strong> <code>401 Unauthorized</code><br>
 <strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code><br>
@@ -168,14 +168,14 @@ SNIPPED
 </ul>
 </li>
 <li>
-<p><strong>Sample Call:</strong></p>
+<p><strong>نمونه فراخونی:</strong></p>
 <pre><code>curl -X POST --url http://localhost:8000/api/v1/scan --data &quot;scan_type=apk&amp;file_name=diva-beta.apk&amp;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization:563d64fc5054d3b239ac0419f1d6b2378465f5c80e1778c283eb1e3265bdd7ae&quot;
 </code></pre>
 </li>
 </ul>
 <hr/>
-<h2><a id="delete-scan-api"></a><strong>Delete Scan API</strong></h2>
-<p>API to delete scan results.</p>
+<h2><a id="delete-scan-api"></a><strong>حذف اسکن ها</strong></h2>
+<p>حذف نتیجه اسکن ها.</p>
 <ul>
 <li>
 <p><strong>URL:</strong> <code>/api/v1/delete_scan</code></p>
@@ -187,15 +187,15 @@ SNIPPED
 <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code></p>
 </li>
 <li>
-<p><strong>Data Params</strong></p>
+<p><strong>پارامتر</strong></p>
 </li>
 </ul>
 <table class="table table-striped table-bordered">
 <thead>
 <tr>
-<th>Param Name</th>
-<th>Param Value</th>
-<th>Required</th>
+<th>نام</th>
+<th>مقدار</th>
+<th>اجباری</th>
 </tr>
 </thead>
 <tbody>
@@ -209,21 +209,21 @@ SNIPPED
 <br>
 <ul>
 <li>
-<p><strong>Success Response:</strong></p>
+<p><strong>پاسخ موفقیت آمیز بودن:</strong></p>
 <ul>
 <li><strong>Code:</strong> <code>200</code><br>
 <strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code> <br>
-<strong>Content:</strong> <code>{&quot;deleted&quot;: &quot;yes&quot;}</code> or <code>{&quot;deleted&quot;: &quot;no&quot;}</code></li>
+<strong>Content:</strong> <code>{&quot;deleted&quot;: &quot;yes&quot;}</code> یا <code>{&quot;deleted&quot;: &quot;no&quot;}</code></li>
 </ul>
 </li>
 <li>
-<p><strong>Error Response:</strong></p>
+<p><strong>پاسخ خطا:</strong></p>
 <ul>
-<li><strong>Code:</strong>  <code>500 Internal Server Error</code> or  <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code><br>
+<li><strong>Code:</strong>  <code>500 Internal Server Error</code> یا  <code>405 Method Not Allowed</code> یا <code>422 Unprocessable Entity</code><br>
 <strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code><br>
 <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code></li>
 </ul>
-<p>OR</p>
+<p>یا</p>
 <ul>
 <li><strong>Code:</strong> <code>401 Unauthorized</code> <br>
 <strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code><br>
@@ -231,14 +231,14 @@ SNIPPED
 </ul>
 </li>
 <li>
-<p><strong>Sample Call:</strong></p>
+<p><strong>نمونه فراخوانی:</strong></p>
 <pre><code>curl -X POST --url http://localhost:8000/api/v1/delete_scan --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization:563d64fc5054d3b239ac0419f1d6b2378465f5c80e1778c283eb1e3265bdd7ae&quot;
 </code></pre>
 </li>
 </ul>
 <hr/>
-<h2><a id="generate-pdf-report-api"></a><strong>Generate PDF Report API</strong></h2>
-<p>API to generate PDF Report</p>
+<h2><a id="generate-pdf-report-api"></a><strong> ایجاد PDF گزارش</strong></h2>
+<p>ایجاد PDF گزارش</p>
 <ul>
 <li>
 <p><strong>URL:</strong> <code>/api/v1/download_pdf</code></p>
@@ -250,15 +250,15 @@ SNIPPED
 <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code></p>
 </li>
 <li>
-<p><strong>Data Params</strong></p>
+<p><strong>پارامتر</strong></p>
 </li>
 </ul>
 <table class="table table-striped table-bordered">
 <thead>
 <tr>
-<th>Param Name</th>
-<th>Param Value</th>
-<th>Required</th>
+<th>نام</th>
+<th>مقدار</th>
+<th>اجباری</th>
 </tr>
 </thead>
 <tbody>
@@ -269,7 +269,7 @@ SNIPPED
 </tr>
 <tr>
 <td>scan_type</td>
-<td>apk, andzip, ioszip, ipa, or appx</td>
+<td>apk, andzip, ioszip, ipa, یا appx</td>
 <td>Yes</td>
 </tr>
 </tbody>
@@ -277,7 +277,7 @@ SNIPPED
 <br>
 <ul>
 <li>
-<p><strong>Success Response:</strong></p>
+<p><strong>پاسخ موفقیت آمیز بودن:</strong></p>
 <ul>
 <li><strong>Code:</strong> <code>200</code><br>
 <strong>Content-Type:</strong>  <code>application/pdf</code> <br>
@@ -285,13 +285,13 @@ SNIPPED
 </ul>
 </li>
 <li>
-<p><strong>Error Response:</strong></p>
+<p><strong>پاسخ خطا:</strong></p>
 <ul>
-<li><strong>Code:</strong>  <code>500 Internal Server Error</code> or  <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br>
+<li><strong>Code:</strong>  <code>500 Internal Server Error</code> یا  <code>405 Method Not Allowed</code> یا <code>422 Unprocessable Entity</code> <br>
 <strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code> <br>
 <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code></li>
 </ul>
-<p>OR</p>
+<p>یا</p>
 <ul>
 <li><strong>Code:</strong> <code>401 Unauthorized</code> <br>
 <strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code> <br>
@@ -299,15 +299,15 @@ SNIPPED
 </ul>
 </li>
 <li>
-<p><strong>Sample Call:</strong></p>
+<p><strong>نمونه فراخوانی:</strong></p>
 <pre><code>curl -X POST --url http://localhost:8000/api/v1/download_pdf --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&amp;scan_type=apk&quot; -H &quot;Authorization:563d64fc5054d3b239ac0419f1d6b2378465f5c80e1778c283eb1e3265bdd7ae&quot;
 </code></pre>
 </li>
 </ul>
 
 <hr/>
-<h2><a id="generate-json-report-api"></a><strong>Generate JSON Report API</strong></h2>
-<p>API to generate JSON Report</p>
+<h2><a id="generate-json-report-api"></a><strong>تولید Json برای گزارش</strong></h2>
+<p>تولید Json برای گزارش</p>
 <ul>
 <li>
 <p><strong>URL:</strong> <code>/api/v1/report_json</code></p>
@@ -319,15 +319,15 @@ SNIPPED
 <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code></p>
 </li>
 <li>
-<p><strong>Data Params</strong></p>
+<p><strong>پارامتر</strong></p>
 </li>
 </ul>
 <table class="table table-striped table-bordered">
 <thead>
 <tr>
-<th>Param Name</th>
-<th>Param Value</th>
-<th>Required</th>
+<th>نام</th>
+<th>مقدار</th>
+<th>اجباری</th>
 </tr>
 </thead>
 <tbody>
@@ -338,7 +338,7 @@ SNIPPED
 </tr>
 <tr>
 <td>scan_type</td>
-<td>apk, andzip, ioszip, ipa, or appx</td>
+<td>apk, andzip, ioszip, ipa, یا appx</td>
 <td>Yes</td>
 </tr>
 </tbody>
@@ -346,7 +346,7 @@ SNIPPED
 <br>
 <ul>
 <li>
-<p><strong>Success Response:</strong></p>
+<p><strong>پاسخ موفقیت آمیز بودن:</strong></p>
 <ul>
 <li><strong>Code:</strong> <code>200</code><br>
 <strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code> <br>
@@ -354,13 +354,13 @@ SNIPPED
 </ul>
 </li>
 <li>
-<p><strong>Error Response:</strong></p>
+<p><strong>پاسخ خطا:</strong></p>
 <ul>
-<li><strong>Code:</strong>  <code>500 Internal Server Error</code> or  <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br>
+<li><strong>Code:</strong>  <code>500 Internal Server Error</code> یا  <code>405 Method Not Allowed</code> یا <code>422 Unprocessable Entity</code> <br>
 <strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code> <br>
 <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code></li>
 </ul>
-<p>OR</p>
+<p>یا</p>
 <ul>
 <li><strong>Code:</strong> <code>401 Unauthorized</code> <br>
 <strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code> <br>
@@ -368,7 +368,7 @@ SNIPPED
 </ul>
 </li>
 <li>
-<p><strong>Sample Call:</strong></p>
+<p><strong>نمونه فراخوانی:</strong></p>
 <pre><code>curl -X POST --url http://localhost:8000/api/v1/report_json --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&amp;scan_type=apk&quot; -H &quot;Authorization:563d64fc5054d3b239ac0419f1d6b2378465f5c80e1778c283eb1e3265bdd7ae&quot;
 </code></pre>
 </li>

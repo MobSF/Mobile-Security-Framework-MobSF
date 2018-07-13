@@ -6,17 +6,17 @@
 <script>
 function delete_scan(item){
   swal({
-  title: 'Are you sure?',
-  text: "This will permanently remove the scan results from MobSF",
+  title: 'آیا مطمن هستید برای حذف؟',
+  text: "تمام نتایج تجزیه و تحلیل حذف خواهد و قابل بازیابی نیست",
   type: 'warning',
   showCancelButton: true,
   confirmButtonColor: '#3085d6',
   cancelButtonColor: '#d33',
-  confirmButtonText: 'Yes',
-  cancelButtonText: 'No',
+  confirmButtonText: 'بلی',
+  cancelButtonText: 'خیر',
   confirmButtonClass: 'btn btn-success',
   cancelButtonClass: 'btn btn-danger',
-  buttonsStyling: false
+  buttonsStyling: true
 }).then(function () {
   var md5_hash = item.id;
   $.ajax({
@@ -29,25 +29,26 @@ function delete_scan(item){
                   },
               success : function(json) {
                   if (json.deleted==='yes'){
-                    swal(
-                        'Deleted!',
-                        'The scan result is deleted!',
-                        'success'
+                    swal({
+                        title:'حذف شد!',
+                        text:'تمام نتایح تجزیه و تحلیل حذف شد!',
+                        type:'success',
+                        confirmButtonText: 'تایید'}
                       ).then(function () {
                          location.reload();
                         })
                   }
                   else {
-                    swal(
-                      'Delete Failed',
-                      'Cannot delete the scan result!',
-                      'error'
+                    swal({
+                      title:'خطا',
+                      text:'حذف نتایج تجزیه و تحلیل با خطا مواجه شد',
+                      type:'error', sconfirmButtonText: 'تایید'}
                     )
                   }
               },
               error : function(xhr,errmsg,err) {
                   swal(
-                      'Delete Failed',
+                      'حذف نشد',
                       errmsg,
                       'error'
                     )
@@ -59,7 +60,7 @@ function delete_scan(item){
 
 <div class="box box-default">
           <div class="box-header with-border">
-            <h3 class="box-title"><i class="fa fa-rocket"></i> Recent Scans</h3>
+            <h3 class="box-title"><i class="fa fa-rocket"></i> اسکن های اخیر</h3>
           </div>
 
           <div class="box-body">
@@ -68,9 +69,9 @@ function delete_scan(item){
                       <table class="table table-bordered table-hover table-striped">
                         <thead>
                             <tr>
-                                <th>Name</th>
+                                <th>نام</th>
                                 <th>MD5</th>
-                                <th>Report</th>    
+                                <th>گزارش</th>
                             </tr>
                         </thead>
                     <tbody>
@@ -78,8 +79,8 @@ function delete_scan(item){
                       <tr>
                         <td>{{ e.NAME }}</td>
                         <td>{{ e.MD5 }}</td>
-                        <td><a href="../{{ e.URL }}"><i class="fa fa-eye"></i> View</a> | 
-                        <a id="{{ e.MD5 }}" onclick="delete_scan(this)"><i class="fa fa-trash"></i> Delete</a></td>
+                        <td><a href="../{{ e.URL }}"><i class="fa fa-eye"></i> نمایش</a> |
+                        <a id="{{ e.MD5 }}" onclick="delete_scan(this)"><i class="fa fa-trash"></i> حذف</a></td>
                       </tr>
                       {% endfor %}
                     </tbody>

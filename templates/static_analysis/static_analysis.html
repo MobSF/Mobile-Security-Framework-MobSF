@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
-<head><title>Admin Dashboard HTML Template</title>
+<head><title>Static Analyzer</title>
     <meta charset="utf-8">
     <meta content="ie=edge" http-equiv="x-ua-compatible">
     <meta content="template language" name="keywords">
     <meta content="Tamerlan Soziev" name="author">
     <meta content="Admin dashboard html template" name="description">
     <meta content="width=device-width, initial-scale=1" name="viewport">
-        <link rel="stylesheet" href="/static/dash/css/AdminLTE.css">
+    <link rel="stylesheet" href="/static/dash/css/AdminLTE.css">
     <link rel="stylesheet" href="/static/dash/css/skins/_all-skins.min.css">
     <link rel="stylesheet" href="/static/css/style.css">
     <link href="favicon.png" rel="shortcut icon">
@@ -20,8 +20,81 @@
     <link href="/static/bower_components/fullcalendar/dist/fullcalendar.min.css" rel="stylesheet">
     <link href="/static/bower_components/perfect-scrollbar/css/perfect-scrollbar.min.css" rel="stylesheet">
     <link href="/static/bower_components/slick-carousel/slick/slick.css" rel="stylesheet">
-    <link href="/static/css/main_css.css" rel="stylesheet">
+    <style>
+        #mainList  li, #mainList li ul li{
+            margin: 0;
+            padding: 0;
+            margin: 0 10px;
 
+        }
+        #mainList  li a,  #mainList li ul li a{
+            color: snow;
+            text-align: right;
+            direction: rtl;
+            display: block;
+            width: 100%;
+
+        }
+        #mainList  a{
+            color: snow;
+            text-align: right;
+            direction: rtl;
+            display: block;
+            width: 100%;
+        }
+
+        #mainList  .bold{
+font-weight: bold;
+        }
+
+#return-to-top {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: rgb(0, 0, 0);
+    background: rgba(0, 0, 0, 0.7);
+    width: 50px;
+    height: 50px;
+    display: block;
+    text-decoration: none;
+    -webkit-border-radius: 35px;
+    -moz-border-radius: 35px;
+    border-radius: 35px;
+    display: none;
+    -webkit-transition: all 0.3s linear;
+    -moz-transition: all 0.3s ease;
+    -ms-transition: all 0.3s ease;
+    -o-transition: all 0.3s ease;
+    transition: all 0.3s ease;
+    z-index: 999999;
+}
+#return-to-top i {
+    color: #fff;
+    margin: 0;
+    position: relative;
+    left: 16px;
+    top: 13px;
+    font-size: 19px;
+    -webkit-transition: all 0.3s ease;
+    -moz-transition: all 0.3s ease;
+    -ms-transition: all 0.3s ease;
+    -o-transition: all 0.3s ease;
+    transition: all 0.3s ease;
+}
+.icon-top{
+    background-image: url('/static/img/topArrow.png');
+}
+
+#return-to-top:hover {
+    background: rgba(0, 0, 0, 0.9);
+}
+#return-to-top:hover i {
+    color: #fff;
+    top: 5px;
+}
+
+    </style>
+    <link href="/static/css/main_css.css" rel="stylesheet">
 </head>
 <body class="full-screen with-content-panel menu-position-side menu-side-right">
 
@@ -88,21 +161,20 @@ START - Settings Link in secondary top menu
                             <aside class="">
                                 <!-- sidebar: style can be found in sidebar.less -->
                                 <div class="" id="scrollspy">
-                                    <ul class="nav sidebar-menu">
 
+                                    <ul  id="mainList" class="" style="color: snow;list-style: none;direction: rtl; margin: 0;padding: 0">
 
-                                        <li><a href="#certificate"><i class="fa fa-certificate"></i>امضا گواهی</a></li>
-                                        <li><a href="#permissions"><i class="fa fa-align-justify"></i> مجوزها</a></li>
-                                        <li><a href="#binary_analysis"><i class="fa fa-flag"></i>تجزیه و تحلیل
-                                            باینری</a></li>
+                                        <li> <a href="#certificate"><i class=""></i>امضا گواهی</a></li>
+                                        <li><a href="#permissions"><i class=""></i> مجوزها</a></li>
+                                        <li><a href="#binary_analysis"><i class="fa fa-flag"></i>تجزیه و تحلیل باینری</a></li>
 
                                         <li><a href="#android-api"><i class="fa fa-dot-circle-o"></i>اندرویدAPI</a></li>
                                         <li><a href="#browsable"><i class="fa fa-clone"></i>فرم های قابل مشاهده</a></li>
 
                                         <li class="treeview">
-                                            <a href="javascript::;"><i class="fa fa-circle-o"></i>تجزیه و تحلیل
+                                            <a href="javascript::;"><i class="bold"></i>تجزیه و تحلیل
                                                 امنیتی</a>
-                                            <ul class="nav treeview-menu">
+                                            <ul class="">
                                                 <li><a href="#manifest"><i class="fa fa-search"></i> Manifest تجزیه و
                                                     تحلیل</a>
                                                 </li>
@@ -115,15 +187,15 @@ START - Settings Link in secondary top menu
                                             </ul>
                                         </li>
 
-                                        <li class="treeview">
-                                            <a href="javascript::;"><i class="fa fa-bug"></i> تجزیه و تحلیل بد افزار</a>
-                                            <ul class="nav treeview-menu">
-                                                <li><a href="#dex_malware_analysis"><i class="fa fa-android"></i> DEX
+                                        <li class="">
+                                            <a href="javascript::;"><i class="bold"></i> تجزیه و تحلیل بد افزار</a>
+                                            <ul class="">
+                                                <li><a href="#dex_malware_analysis"><i class=""></i> DEX
                                                     تجزیه و
                                                     تحلیل بد افزار</a>
                                                 </li>
                                                 {% if VT_RESULT %}
-                                                    <li><a href="#virus_total"><i class="fa fa-upload"></i>مجموع ویروس
+                                                    <li><a href="#virus_total"><i class=""></i>مجموع ویروس
                                                         ها</a>
                                                     </li>
                                                 {% endif %}
@@ -133,9 +205,9 @@ START - Settings Link in secondary top menu
                                             </ul>
                                         </li>
 
-                                        <li class="treeview">
-                                            <a href="javascript::;"><i class="fa fa-plus"></i>شناسایی</a>
-                                            <ul class="nav treeview-menu">
+                                        <li class="">
+                                            <a href="javascript::;"><i class="bold"></i>شناسایی</a>
+                                            <ul class="">
                                                 <li><a href="#url"><i class="glyphicon glyphicon-globe"></i> URL ها</a>
                                                 </li>
                                                 <li><a href="#email"><i class="glyphicon glyphicon-envelope"></i> پست
@@ -148,8 +220,8 @@ START - Settings Link in secondary top menu
                                         </li>
 
                                         <li class="treeview">
-                                            <a href="javascript::;"><i class="fa fa-bullseye"></i> اجزاء</a>
-                                            <ul class="nav treeview-menu">
+                                            <a href="javascript::;"><i class="bold"></i> اجزاء</a>
+                                            <ul class="">
                                                 <li><a href="#activities"><i class="fa fa-language"></i> فرم ها</a></li>
                                                 <li><a href="#services"><i class="fa fa-gears"></i> سرویس ها</a></li>
                                                 <li><a href="#receivers"><i class="fa fa-sort-amount-desc"></i> گیرندها</a>
@@ -234,45 +306,68 @@ END - Top Menu Controls
 --------------------></div><!--------------------
 END - Top Bar
 -------------------->
-                <div class="content-panel-toggler"><i class="os-icon os-icon-grid-squares-22"></i><span>Sidebar</span>
-                </div>
+<a href="javascript:" id="return-to-top"><i class="icon-top"></i></a>
+
+
+
                 <div class="content-i">
                     <div class="content-box">
                         <!-- ============================================================= -->
+                        <div class="todo-sidebar-section">
+                            <div class="todo-sidebar-section-header">
+                                <div class="todo-sidebar-section-contents">
+                                    <div class="todo-sidebar-section-sub-section">
+                                        <div class="todo-sidebar-section-sub-section-toggler">
+                                            <i class="">
+                                                <h6>Signer Certificate</h6>
+                                            </i>
 
-                        <section id="certificate">
-                            <h2 class="page-header"></h2>
-                            <div class="box-header">
-                                <!-- /.box-header -->
-                                <h3 class="box-title"><i class="fa fa-certificate"></i> Signer Certificate</h3>
-                            </div>
-                            <pre class="hierarchy bring-up"><code class="language-bash" data-lang="bash">
+                                        </div>
+
+                                        <div class="todo-sidebar-section-sub-section-content">
+                                             <pre class="hierarchy bring-up"><code class="language-bash"
+                                                                                   data-lang="bash">
 {{ certinfo | safe }}
-                                {% if issued == "good" %}
-                                    <strong>Certicate Status: </strong><span class="label label-success">Good</span>
-                                {% elif issued == "bad" %}
-                                    <strong>Certicate Status: </strong><span class="label label-danger">Bad</span>
-                                    <strong>Description:</strong>App Signed by 'Android Debug' Certificate.
-                                    Production ready applications should not be signed with 'Android Debug' Certificate.
-                                {% elif issued == "missing" %}
-                                    <strong>Certicate Status: </strong>
-                                    <span class="label label-warning">Certificate not found</span>
-                                {% elif issued == "bad hash" and sha256Digest is True %}
-                                    <strong>Certicate Status: </strong><span class="label label-warning">Warning</span>
-                                    <strong>Description:</strong>The app is signed with `SHA1withRSA`. SHA1 hash
-                                    algorithm is known to have
-                                    collision issues.
-                                    <strong>Note:</strong>The manifest indicates `SHA256withRSA` is in use. Be sure to
-                                    manually confirm this
-                                    issue.
-                                {% elif issued == "bad hash" %}
-                                    <strong>Certicate Status: </strong><span class="label label-danger">Bad</span>
-                                    <strong>Description:</strong>The app is signed with `SHA1withRSA`. SHA1 hash
-                                    algorithm is known to have
-                                    collision issues.
-                                {% endif %}
+                                                 {% if issued == "good" %}
+                                                     <strong>Certicate Status: </strong>
+                                                     <span class="label label-success">Good</span>
+                                                 {% elif issued == "bad" %}
+                                                     <strong>Certicate Status: </strong>
+                                                     <span class="label label-danger">Bad</span>
+                                                     <strong>Description:</strong>App Signed by 'Android Debug'
+                                                     Certificate.
+                                                     Production ready applications should not be signed with 'Android
+                                                     Debug' Certificate.
+                                                 {% elif issued == "missing" %}
+                                                     <strong>Certicate Status: </strong>
+                                                     <span class="label label-warning">Certificate not found</span>
+                                                 {% elif issued == "bad hash" and sha256Digest is True %}
+                                                     <strong>Certicate Status: </strong>
+                                                     <span class="label label-warning">Warning</span>
+                                                     <strong>Description:</strong>The app is signed with `SHA1withRSA`.
+                                                     SHA1 hash
+                                                     algorithm is known to have
+                                                     collision issues.
+                                                     <strong>Note:</strong>The manifest indicates `SHA256withRSA` is in
+                                                     use. Be sure to
+                                                     manually confirm this
+                                                     issue.
+                                                 {% elif issued == "bad hash" %}
+                                                     <strong>Certicate Status: </strong>
+                                                     <span class="label label-danger">Bad</span>
+                                                     <strong>Description:</strong>The app is signed with `SHA1withRSA`.
+                                                     SHA1 hash
+                                                     algorithm is known to have
+                                                     collision issues.
+                                                 {% endif %}
 </code></pre>
-                        </section>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
 
                         <!-- ============================================================= -->
 
@@ -1345,7 +1440,7 @@ START - Sidebar
                                                         class="fa fa-arrow-circle-right"></i></a>
                                             </div>
                                         </div>
-                                       <div style="width: 10px"></div>
+                                        <div style="width: 10px"></div>
                                         <!-- ./col -->
                                         <div class="col-lg-5 col-xs-6 border border-white">
                                             <!-- small box -->
@@ -1365,7 +1460,7 @@ START - Sidebar
                                     </div>
                                     <br>
                                     <br>
-                                     <div class="row">
+                                    <div class="row">
                                         <!-- ./col -->
                                         <div class="col-lg-5 col-xs-6 border border-primary">
                                             <!-- small box -->
@@ -1382,7 +1477,7 @@ START - Sidebar
                                                         class="fa fa-arrow-circle-right"></i></a>
                                             </div>
                                         </div>
-                                         <div style="width: 10px"></div>
+                                        <div style="width: 10px"></div>
 
                                         <!-- ./col -->
                                         <div class="col-lg-5 col-xs-6 border border-success">
@@ -1436,8 +1531,8 @@ START - Sidebar
                                 <div class="box-body">
                                     <a href="../Java/?md5={{ md5 }}{{ zipped }}" class="btn btn-info" role="button"><i
                                             class="fa fa-code"></i>نمابش کدهای جاوا</a>
-<br/>
-<br/>
+                                    <br/>
+                                    <br/>
                                     <a href="../download/{{ md5 }}-java.zip" class="btn btn-warning" role="button"> <i
                                             class="glyphicon glyphicon-download"></i>دریافت کدهای جاوا</a>
                                     <br/>
@@ -1497,6 +1592,22 @@ END - Sidebar
     <script src="/static/bower_components/bootstrap/js/dist/popover.js"></script>
     <script src="/static/js/demo_customizer-version=4.4.1.js"></script>
     <script src="/static/js/main-version=4.4.1.js"></script>
+
+    <script>
+$(window).scroll(function() {
+    if ($(this).scrollTop() >= 50) {        // If page is scrolled more than 50px
+        $('#return-to-top').fadeIn(200);    // Fade in the arrow
+    } else {
+        $('#return-to-top').fadeOut(200);   // Else fade out the arrow
+    }
+});
+$('#return-to-top').click(function() {      // When arrow is clicked
+    $('body,html').animate({
+        scrollTop : 0                       // Scroll to top of body
+    }, 500);
+});
+</script>
+
 {% endblock %}
 </body>
 </html>
