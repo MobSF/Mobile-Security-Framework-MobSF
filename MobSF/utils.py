@@ -406,7 +406,7 @@ def print_n_send_error_response(request, msg, api, exp='Error Description'):
         return api_response
     else:
         context = {
-            'title': 'Error',
+            'title': 'خطا',
             'exp': exp,
             'doc': msg
         }
