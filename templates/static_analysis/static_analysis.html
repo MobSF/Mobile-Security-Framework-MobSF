@@ -234,9 +234,9 @@ START - Settings Link in secondary top menu
                                                 <li><a href="#files"><i class="fa fa-files-o"></i> فایل ها</a></li>
                                             </ul>
                                         </li>
-                                        <li><a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=APK"><i
-                                                class="glyphicon glyphicon-list-alt"></i> دریافت گزارش</a></li>
-                                        {% if dynamic_analysis_done == False %}
+                                        {% comment %}<li><a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=APK"><i
+                                                class="glyphicon glyphicon-list-alt"></i> دریافت گزارش</a></li>{% endcomment %}
+                                        {% comment %}{% if dynamic_analysis_done == False %}
                                             <li><a href="javascript:document.getElementById('dynform').submit();"><i
                                                     class="glyphicon glyphicon-play-circle""></i> <strong>شروع تجزیه و
                                                 تحلیل
@@ -247,7 +247,7 @@ START - Settings Link in secondary top menu
                                                     class="glyphicon glyphicon-play-circle""></i> <strong> گزارش تجزیه و
                                                 تحیلیل
                                                 پویا</strong></a></li>
-                                        {% endif %}
+                                        {% endif %}{% endcomment %}
                                     </ul>
                                 </div>
                             </aside>
@@ -1513,9 +1513,9 @@ START - Sidebar
                                                class="btn btn-info" role="button"><i
                                                     class="glyphicon glyphicon-refresh"></i> اسکن مجدد</a>
 
-                                            <a href="javascript:document.getElementById('dynform').submit();"
+                                           {% comment %} <a href="javascript:document.getElementById('dynform').submit();"
                                                class="btn btn-success" role="button"><i
-                                                    class="glyphicon glyphicon-play-circle"></i> شروع تجزیه و تحلیل پویا</a>
+                                                    class="glyphicon glyphicon-play-circle"></i> شروع تجزیه و تحلیل پویا</a>{% endcomment %}
                                         </p>
 
                                     </div>
