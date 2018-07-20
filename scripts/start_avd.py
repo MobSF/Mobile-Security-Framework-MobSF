@@ -25,7 +25,7 @@ def check_config():
         for path in [settings.AVD_EMULATOR,
                      settings.ADB_BINARY]:
             if not path:
-                print("\n[ERROR] AVD binary not configured, please refer to the official documentation")
+                print("\n[ERROR] ADB binary not configured, please refer to the official documentation")
                 return False
         if settings.ANDROID_DYNAMIC_ANALYZER != 'MobSF_AVD':
             print("\n[ERROR] Wrong configuration - ANDROID_DYNAMIC_ANALYZER, please refer to the official documentation")
