@@ -79,8 +79,8 @@ WORKDIR /root/Mobile-Security-Framework-MobSF
 RUN pip3 install -r requirements.txt
 
 #check if Postgres support must be enabled 
-WORKDIR /root/Mobile-Security-Framework-MobSF/
-RUN chmod +x ./postgres_support.sh && ./postgres_support.sh $POSTGRES
+WORKDIR /root/Mobile-Security-Framework-MobSF/scripts
+RUN chmod +x ./postgres_support.sh; sync; ./postgres_support.sh $POSTGRES
 
 #Install apkid dependencies, and enable it 
 WORKDIR /tmp
