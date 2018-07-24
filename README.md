@@ -34,11 +34,7 @@ Automated prebuilt docker image of MobSF Static Analyzer is available from [Dock
 docker pull opensecurity/mobile-security-framework-mobsf
 docker run -it -p 8000:8000 opensecurity/mobile-security-framework-mobsf:latest
 ```
-### For persistence
-
-```
-docker run -it -p 8000:8000 -v <your_local_dir>:/root/.MobSF opensecurity/mobile-security-framework-mobsf:latest
-```
+Other docker options: [MobSF Docker Options](https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/7.-Docker-Container-for-MobSF-Static-Analysis)
 
 ## Collaborators
 
