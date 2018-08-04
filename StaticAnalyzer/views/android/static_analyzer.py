@@ -184,7 +184,7 @@ def static_analyzer(request, api=False):
                     cert_dic = cert_info(
                         app_dic['app_dir'], app_dic['tools_dir'])
                     apkid_results = apkid_analysis(app_dic[
-                        'app_dir'], app_dic['app_path'])
+                        'app_dir'])
                     dex_2_jar(app_dic['app_path'], app_dic[
                               'app_dir'], app_dic['tools_dir'])
                     dex_2_smali(app_dic['app_dir'], app_dic['tools_dir'])

@@ -2,187 +2,96 @@
 Android Dynamic Analyzer for Android AVD (ARM) VM
 """
 import os
-import io
 import time
 import platform
-import shutil
 import subprocess
 
-from DynamicAnalyzer.views.android.shared import get_identifier
+from DynamicAnalyzer.views.android.shared import adb_command
 from MobSF.utils import PrintException
 from django.conf import settings
+from scripts.start_avd import main as start_avd_cold
 
 
-def stop_avd(adb):
+def stop_avd():
     """Stop AVD"""
     print("\n[INFO] Stopping MobSF Emulator")
     try:
-        # adb -s emulator-xxxx emu kill
-        FNULL = open(os.devnull, 'w')
-        args = [adb, '-s', get_identifier(), 'emu', 'kill']
-        subprocess.call(args, stderr=FNULL)
+        adb_command(['emu', 'kill'], silent=True)
     except:
         PrintException("[ERROR] Stopping MobSF Emulator")
 
 
-def delete_avd(avd_path, avd_name):
-    """Delete AVD"""
-    print("\n[INFO] Deleting emulator files")
-    try:
-        config_file = os.path.join(avd_path, avd_name + '.ini')
-        if os.path.exists(config_file):
-            os.remove(config_file)
-        '''
-        # todo: Sometimes there is an error here because of the locks that avd
-        # does - check this out
-        '''
-        avd_folder = os.path.join(avd_path, avd_name + '.avd')
-        if os.path.isdir(avd_folder):
-            shutil.rmtree(avd_folder)
-    except:
-        PrintException("[ERROR] Deleting emulator files")
-
-
-def duplicate_avd(avd_path, reference_name, dup_name):
-    """Duplicate AVD"""
-    print("\n[INFO] Duplicating MobSF Emulator")
-    try:
-        reference_ini = os.path.join(avd_path, reference_name + '.ini')
-        dup_ini = os.path.join(avd_path, dup_name + '.ini')
-        reference_avd = os.path.join(avd_path, reference_name + '.avd')
-        dup_avd = os.path.join(avd_path, dup_name + '.avd')
-
-        # Copy the files from the referenve avd to the one-time analysis avd
-        shutil.copyfile(reference_ini, dup_ini)
-        shutil.copytree(reference_avd, dup_avd)
-
-        # Replacing every occuration of the reference avd name to the dup one
-        for path_to_update in [dup_ini,
-                               os.path.join(dup_avd, 'hardware-qemu.ini'),
-                               os.path.join(dup_avd, 'config.ini')
-                              ]:
-            with io.open(path_to_update, mode='r', encoding="utf8", errors="ignore") as fled:
-                replaced_file = fled.read()
-                replaced_file = replaced_file.replace(reference_name, dup_name)
-            with io.open(path_to_update, 'w') as fled:
-                fled.write(replaced_file)
-    except:
-        PrintException("[ERROR] Duplicating MobSF Emulator")
-
-
-def start_avd(emulator, avd_name, emulator_port):
+def start_avd_from_snapshot():
     """Start AVD"""
     print("\n[INFO] Starting MobSF Emulator")
     try:
-        args = [
-            emulator,
-            '-avd',
-            avd_name,
-            "-no-snapshot-save",
-            "-netspeed",
-            "full",
-            "-netdelay",
-            "none",
-            "-port",
-            str(emulator_port),
-        ]
-
         if platform.system() == 'Darwin':
             # There is a strage error in mac with the dyld one in a while..
             # this should fix it..
             if 'DYLD_FALLBACK_LIBRARY_PATH' in list(os.environ.keys()):
                 del os.environ['DYLD_FALLBACK_LIBRARY_PATH']
 
+        args = [
+            settings.AVD_EMULATOR,
+            '-avd',
+            settings.AVD_NAME,
+            "-writable-system",
+            "-snapshot",
+            settings.AVD_SNAPSHOT,
+            "-netspeed",
+            "full",
+            "-netdelay",
+            "none",
+            "-port",
+            str(settings.AVD_ADB_PORT),
+        ]
         subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        # Give a few seconds and check if the snapshot load succeed
+        time.sleep(5)
+        result = adb_command(["getprop", "init.svc.bootanim"], True)
+
+        if result:
+            if result.strip() == b"stopped":
+                return True
+
+        # Snapshot failed, stop the avd and return an error
+        adb_command(["emu", "kill"])
+        return False
     except:
         PrintException("[ERROR] Starting MobSF Emulator")
+        return False
 
 
-def refresh_avd(adb, avd_path, reference_name, dup_name, emulator):
+def refresh_avd():
     """Refresh AVD"""
+
+    # Before we load the AVD, check paths
+    for path in [settings.AVD_EMULATOR,
+                 settings.ADB_BINARY]:
+        if not path:
+            print("\n[ERROR] AVD binaries not configured, please refer to the official documentation")
+            return False
+
     print("\n[INFO] Refreshing MobSF Emulator")
     try:
-        # Stop existing emulator on the spesified port
-        stop_avd(adb)
+        # Stop existing emulator
+        stop_avd()
 
-        # Windows has annoying lock system, it takes time for it to remove the locks after we stopped the emulator
-        if platform.system() == 'Windows':
-            time.sleep(3)
+        # Check if configuration specifies cold or warm boot
+        if settings.AVD_COLD_BOOT:
+            if start_avd_cold():
+                print("\n[INFO] AVD has been started successfully")
+                return True
+        else:
+            if not settings.AVD_SNAPSHOT:
+                print("\n[ERROR] AVD not configured properly - AVD_SNAPSHOT is missing")
+                return False
+            if start_avd_from_snapshot():
+                print("\n[INFO] AVD has been loaded from snapshot successfully")
+                return True
+        return False
 
-        # Delete old emulator
-        delete_avd(avd_path, dup_name)
-
-        # Copy and replace the contents of the reference machine
-        duplicate_avd(avd_path, reference_name, dup_name)
-
-        # Start emulator
-        start_avd(emulator, dup_name, settings.AVD_ADB_PORT)
     except:
         PrintException("[ERROR] Refreshing MobSF VM")
-
-
-def avd_load_wait(adb):
-    """Wait for AVD Load"""
-    
-    emulator = get_identifier()
-
-    print("[INFO] Wait for emulator to load")
-    args = [adb,
-            "-s",
-            emulator,
-            "wait-for-device"]
-    subprocess.call(args)
-
-    print("[INFO] Wait for dev.boot_complete loop")
-    while True:
-        args = [adb,
-                "-s",
-                emulator,
-                "shell",
-                "getprop",
-                "dev.bootcomplete"]
-        try:
-            result = subprocess.check_output(args)
-        except:
-            result = None
-        if result is not None and result.strip() == "1":
-            break
-        else:
-            time.sleep(1)
-
-    print("[INFO] Wait for sys.boot_complete loop")
-    while True:
-        args = [adb,
-                "-s",
-                emulator,
-                "shell",
-                "getprop",
-                "sys.boot_completed"]
-        try:
-            result = subprocess.check_output(args)
-        except:
-            result = None
-        if result is not None and result.strip() == "1":
-            break
-        else:
-            time.sleep(1)
-
-    print("[INFO] Wait for svc.boot_complete loop")
-    while True:
-        args = [adb,
-                "-s",
-                emulator,
-                "shell",
-                "getprop",
-                "init.svc.bootanim"]
-        try:
-            result = subprocess.check_output(args)
-        except:
-            result = None
-        if result is not None and result.strip() == "stopped":
-            break
-        else:
-            time.sleep(1)
-    time.sleep(5)
-    # Remount the partitions for RW
-    subprocess.call([adb, "-s", emulator, "remount"])
+        return False

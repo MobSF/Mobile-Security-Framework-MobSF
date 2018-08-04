@@ -1,5 +1,4 @@
 import os
-import signal
 import platform
 import random
 import subprocess
@@ -10,14 +9,11 @@ import time
 import datetime
 import ntpath
 import hashlib
-import urllib.request
-import urllib.error
-import urllib.parse
 import io
 import ast
 import unicodedata
-import http.client
 import requests
+import shutil
 from . import settings
 
 from django.shortcuts import render
@@ -86,14 +82,13 @@ def printMobSFverison():
         print("Dist: " + str(platform.dist()))
     FindJava(True)
     FindVbox(True)
-    check_basic_env()
     adb_binary_or32bit_support()
     check_update()
 
 
 def check_update():
     try:
-        print("[INFO] Checking for Update.")
+        print("\n[INFO] Checking for Update.")
         github_url = "https://raw.githubusercontent.com/MobSF/Mobile-Security-Framework-MobSF/master/MobSF/settings.py"
         try:
             proxies, verify = upstream_proxy('https')
@@ -242,50 +237,26 @@ def FindVbox(debug=False):
         if debug:
             PrintException("[ERROR] Cannot find VirtualBox path.")
 
+# Maintain JDK Version
+JAVA_VER = '1.7|1.8|1.9|2.0|2.1|2.2|2.3'
+
 
 def FindJava(debug=False):
-    """ Find Java """
-    # Maintain JDK Version
-    java_versions = '1.7|1.8|1.9|2.0|2.1|2.2|2.3|8|9'
-    """
-    This code is needed because some people are not capable
-    of setting java path :-(
-    """
-    win_java_paths = [
-        "C:/Program Files/Java/",
-        "C:/Program Files (x86)/Java/",
-        "D:/Program Files/Java/",
-        "D:/Program Files (x86)/Java/",
-        "E:/Program Files/Java/",
-        "E:/Program Files (x86)/Java/",
-        "F:/Program Files/Java/",
-        "F:/Program Files (x86)/Java/",
-        "G:/Program Files/Java/",
-        "G:/Program Files (x86)/Java/",
-        "H:/Program Files/Java/",
-        "H:/Program Files (x86)/Java/",
-        "I:/Program Files/Java/",
-        "I:/Program Files (x86)/Java/",
-    ]
     try:
         err_msg1 = "[ERROR] Oracle JDK 1.7 or above is not found!"
-        if isDirExists(settings.JAVA_DIRECTORY):
-            if settings.JAVA_DIRECTORY.endswith("/"):
-                return settings.JAVA_DIRECTORY
-            elif settings.JAVA_DIRECTORY.endswith("\\"):
-                return settings.JAVA_DIRECTORY
-            else:
-                return settings.JAVA_DIRECTORY + "/"
-        elif platform.system() == "Windows":
+        if len(settings.JAVA_DIRECTORY) > 0 and isDirExists(settings.JAVA_DIRECTORY):
+            return settings.JAVA_DIRECTORY
+        if platform.system() == "Windows":
             if debug:
                 print("\n[INFO] Finding JDK Location in Windows....")
             # JDK 7 jdk1.7.0_17/bin/
-            for java_path in win_java_paths:
+            for java_path in ["C:/Program Files/Java/",
+                              "C:/Program Files (x86)/Java/"]:
                 if os.path.isdir(java_path):
                     for dirname in os.listdir(java_path):
                         if "jdk" in dirname:
                             win_java_path = java_path + dirname + "/bin/"
-                            args = [win_java_path + "java", "-version"]
+                            args = [win_java_path + "java", "--version"]
                             dat = RunProcess(args)
                             if "java" in dat:
                                 if debug:
@@ -296,7 +267,7 @@ def FindJava(debug=False):
                 java_home = os.environ.get(env)
                 if java_home and os.path.isdir(java_home):
                     win_java_path = java_home + "/bin/"
-                    args = [win_java_path + "java", "-version"]
+                    args = [win_java_path + "java", "--version"]
                     dat = RunProcess(args)
                     if "java" in dat:
                         if debug:
@@ -308,42 +279,31 @@ def FindJava(debug=False):
             return "java"
         else:
             if debug:
-                print("[INFO] Finding JDK Location in Linux/MAC....")
-            # Check in Environment Variables
-            for env in ["JDK_HOME", "JAVA_HOME"]:
-                java_home = os.environ.get(env)
-                if java_home and os.path.isdir(java_home):
-                    lm_java_path = java_home + "/bin/"
-                    args = [lm_java_path + "java", "-version"]
-                    dat = RunProcess(args)
-                    if "oracle" in dat:
-                        if debug:
-                            print("\n[INFO] Oracle Java is installed!")
-                        return lm_java_path
-            mac_linux_java_dir = "/usr/bin/"
-            args = [mac_linux_java_dir + "java"]
+                print("\n[INFO] Finding JDK Location in Linux/MAC....")
+            MAC_LINUX_JAVA = "/usr/bin/"
+            args = [MAC_LINUX_JAVA + "java"]
             dat = RunProcess(args)
             if "oracle" in dat:
-                args = [mac_linux_java_dir + "java", '-version']
+                args = [MAC_LINUX_JAVA + "java", '-version']
                 dat = RunProcess(args)
                 f_line = dat.split("\n")[0]
-                if re.findall(java_versions, f_line):
+                if re.findall(JAVA_VER, f_line):
                     if debug:
-                        print("[INFO] JDK 1.7 or above is available")
-                    return mac_linux_java_dir
+                        print("\n[INFO] JDK 1.7 or above is available")
+                    return MAC_LINUX_JAVA
                 else:
                     err_msg = "[ERROR] Please install Oracle JDK 1.7 or above"
                     if debug:
                         print(Color.BOLD + Color.RED + err_msg + Color.END)
-                    return "java"
+                    return ""
             else:
                 if debug:
                     print(Color.BOLD + Color.RED + err_msg1 + Color.END)
-                return "java"
+                return ""
     except:
         if debug:
             PrintException("[ERROR] Oracle Java (JDK >=1.7) is not found!")
-        return "java"
+        return ""
 
 
 def RunProcess(args):
@@ -510,6 +470,9 @@ def gen_sha256_hash(msg):
 def isFileExists(file_path):
     if os.path.isfile(file_path):
         return True
+    # This fix situation where a user just typed "adb" or another executable inside settings.py
+    if shutil.which(file_path):
+        return True
     else:
         return False
 
@@ -538,7 +501,7 @@ def zipdir(path, zip_file):
         PrintException("[ERROR] Zipping")
 
 
-def getADB(TOOLSDIR):
+def getADB():
     """Get ADB binary path"""
     try:
         if len(settings.ADB_BINARY) > 0 and isFileExists(settings.ADB_BINARY):
@@ -546,15 +509,15 @@ def getADB(TOOLSDIR):
         else:
             adb = 'adb'
             if platform.system() == "Darwin":
-                adb_dir = os.path.join(TOOLSDIR, 'adb/mac/')
+                adb_dir = os.path.join(settings.TOOLS_DIR, 'adb/mac/')
                 subprocess.call(["chmod", "777", adb_dir])
-                adb = os.path.join(TOOLSDIR, 'adb/mac/adb')
+                adb = os.path.join(settings.TOOLS_DIR, 'adb/mac/adb')
             elif platform.system() == "Linux":
-                adb_dir = os.path.join(TOOLSDIR, 'adb/linux/')
+                adb_dir = os.path.join(settings.TOOLS_DIR, 'adb/linux/')
                 subprocess.call(["chmod", "777", adb_dir])
-                adb = os.path.join(TOOLSDIR, 'adb/linux/adb')
+                adb = os.path.join(settings.TOOLS_DIR, 'adb/linux/adb')
             elif platform.system() == "Windows":
-                adb = os.path.join(TOOLSDIR, 'adb/windows/adb.exe')
+                adb = os.path.join(settings.TOOLS_DIR, 'adb/windows/adb.exe')
             return adb
     except:
         PrintException("[ERROR] Getting ADB Location")
@@ -563,9 +526,7 @@ def getADB(TOOLSDIR):
 
 def adb_binary_or32bit_support():
     """Check if 32bit is supported. Also if the binary works"""
-    tools_dir = os.path.join(
-        settings.BASE_DIR, 'DynamicAnalyzer/tools/')
-    adb_path = getADB(tools_dir)
+    adb_path = getADB()
     try:
         fnull = open(os.devnull, 'w')
         subprocess.call([adb_path], stdout=fnull, stderr=fnull)
@@ -577,30 +538,3 @@ def adb_binary_or32bit_support():
             print(Color.BOLD + Color.ORANGE + msg + Color.END)
         else:
             print(msg)
-
-
-def check_basic_env():
-    """Check if we have basic env for MobSF to run"""
-    print("[INFO] MobSF Basic Environment Check")
-    try:
-        import capfuzz
-    except ImportError:
-        PrintException("[ERROR] CapFuzz not installed!")
-        os.kill(os.getpid(), signal.SIGTERM)
-    try:
-        import lxml
-    except ImportError:
-        PrintException("[ERROR] lxml is not installed!")
-        os.kill(os.getpid(), signal.SIGTERM)
-    if platform.system() == "Windows":
-        java = settings.JAVA_PATH + 'java.exe'
-    else:
-        java = settings.JAVA_PATH + 'java'
-    if not isFileExists(java):
-        print("[ERROR] Oracle Java is not available or `JAVA_DIRECTORY` in settings.py is configured incorrectly!")
-        print("JAVA_DIRECTORY=%s" % settings.JAVA_DIRECTORY)
-        print('''Example Configuration:
-                 JAVA_DIRECTORY = "C:/Program Files/Java/jdk1.7.0_17/bin/"
-                 JAVA_DIRECTORY = "/usr/bin/"
-        ''')
-        os.kill(os.getpid(), signal.SIGTERM)
