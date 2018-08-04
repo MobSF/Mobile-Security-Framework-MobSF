@@ -349,8 +349,10 @@ else:
     #===========ANDROID EMULATOR SETTINGS ===========
     # Android-Studio 'emulator' binary path
     AVD_EMULATOR = "/Users/[USERNAME]/Library/Android/sdk/tools/emulator"
-    AVD_NAME = "MobSFAPI23arm"
+    AVD_NAME = "MobSFAPI23armV1"
     AVD_ADB_PORT = 5554
+    AVD_SNAPSHOT = ""
+    AVD_COLD_BOOT = True
     #================================================
 
     #====ANDROID MOBSF VIRTUALBOX VM SETTINGS =====
