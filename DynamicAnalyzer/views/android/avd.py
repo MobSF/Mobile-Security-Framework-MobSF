@@ -9,6 +9,7 @@ import subprocess
 from DynamicAnalyzer.views.android.shared import adb_command
 from MobSF.utils import PrintException
 from django.conf import settings
+from scripts.start_avd import main as start_avd_cold
 
 
 def stop_avd():
@@ -20,7 +21,7 @@ def stop_avd():
         PrintException("[ERROR] Stopping MobSF Emulator")
 
 
-def start_avd():
+def start_avd_from_snapshot():
     """Start AVD"""
     print("\n[INFO] Starting MobSF Emulator")
     try:
@@ -36,7 +37,7 @@ def start_avd():
             settings.AVD_NAME,
             "-writable-system",
             "-snapshot",
-            "default_boot",
+            settings.AVD_SNAPSHOT,
             "-netspeed",
             "full",
             "-netdelay",
@@ -77,10 +78,18 @@ def refresh_avd():
         # Stop existing emulator
         stop_avd()
 
-        # Start emulator
-        if start_avd():
-            print("\n[INFO] AVD has been loaded from snapshot successfully")
-            return True
+        # Check if configuration specifies cold or warm boot
+        if settings.AVD_COLD_BOOT:
+            if start_avd_cold():
+                print("\n[INFO] AVD has been started successfully")
+                return True
+        else:
+            if not settings.AVD_SNAPSHOT:
+                print("\n[ERROR] AVD not configured properly - AVD_SNAPSHOT is missing")
+                return False
+            if start_avd_from_snapshot():
+                print("\n[INFO] AVD has been loaded from snapshot successfully")
+                return True
         return False
 
     except:

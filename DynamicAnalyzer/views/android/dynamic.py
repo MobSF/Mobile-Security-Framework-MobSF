@@ -484,6 +484,8 @@ def dump_data(request):
                 print("\n[INFO] Dumping Application Files from Device/VM")
                 adb_command(["pull", "/data/local/" + package + ".tar", apk_dir + package + ".tar"])
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
+                    print("\n[INFO] Removing package")
+                    adb_command(["uninstall", package])
                     stop_avd()
                 print("\n[INFO] Stopping ADB")
                 adb_command(["kill-server"])

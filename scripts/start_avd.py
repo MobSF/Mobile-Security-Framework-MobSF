@@ -3,10 +3,8 @@ import os
 import platform
 import subprocess
 import django
-import time
 from os.path import dirname, abspath
-import traceback
-from multiprocessing import Process
+from scripts.qcow2 import Qcow2
 
 
 MobSF_path = dirname(dirname(abspath(__file__)))
@@ -52,6 +50,10 @@ def help_boot_avd():
         # Make sure adb running as root
         print("[INFO] help_boot_avd: root")
         adb_command(['root'])
+
+        # Make sure adb running as root
+        print("[INFO] help_boot_avd: remount")
+        adb_command(['remount'])
 
         # Make sure the system verity feature is disabled (Obviously, modified the system partition)
         print("[INFO] help_boot_avd: disable-verity")
@@ -116,7 +118,7 @@ def get_qcow_image(avd_emulator_path):
     if platform.system() == 'Darwin':
         # Get only /Users/username first
         user_home = '/'.join(avd_emulator_path.split(os.path.sep)[:3])
-        potential_paths.append(os.path.join(user_home, '.android/avd/MobSFAPI23arm.avd/system.img.qcow2'))
+        potential_paths.append(os.path.join(user_home, '.android/avd/{}.avd/system.img.qcow2'.format(settings.AVD_NAME)))
     elif platform.system() == 'Linux':
         # TODO: TBD
         pass
@@ -127,42 +129,6 @@ def get_qcow_image(avd_emulator_path):
         if os.path.exists(path):
             return path
     return None
-
-
-def extract_qcow_system(qcow_path):
-    try:
-        with open(qcow_path, 'rb') as read_fd:
-            read_fd.seek(280)
-            image_path = read_fd.read(256)
-        return str(image_path.decode('ascii')).replace('\x00', '')
-    except:
-        print("[ERROR] Error reading qcow image")
-        return None
-
-
-def write_new_system_path_inside_qcow(qcow_path, system_path):
-    try:
-        # Get the length of the path so we can calculate how many zeros to append afterwards
-        system_image_str_len = len(system_path)
-        zeros_to_write = 256 - system_image_str_len
-
-        # Open in override mode so we don't need to read the whole file just to replace a little string
-        with open(qcow_path, 'r+b') as qcow_fd:
-            # Seek to the strings offset
-            qcow_fd.seek(280)
-
-            # Write the new system.img path
-            qcow_fd.write(system_path.encode('ascii'))
-
-            # Append enough zeros to make sure we don't write just the begining of the previous path
-            qcow_fd.write(b'\x00' * zeros_to_write)
-
-        print("[INFO] New system path was written to qcow file")
-        return True
-    except:
-        print(traceback.format_exc())
-        print("[ERROR] Error writing new system file to qcow file")
-        return False
 
 
 def check_system_file():
@@ -177,21 +143,33 @@ def check_system_file():
 
     # Check if the modified system is already been patched
     qcow_image = get_qcow_image(emulator_binary)
+    if not qcow_image:
+        print("[ERROR] system.img.qcow2 wasn't found on the system, make sure you copied the emulator to the proper folder")
+        return False
     if not os.path.exists(qcow_image):
-        print("[ERROR] system.img.qcow2 wasn't found on the system, make sure you copied MobSFAPI23arm.avd folder to the proper folder")
+        print("[ERROR] system.img.qcow2 wasn't found on the system, make sure you copied the emulator to the proper folder")
+        return False
 
-    original_system_path = extract_qcow_system(qcow_image)
+    qcow = Qcow2(qcow_image)
+    if not qcow.parse_header():
+        return False
+
+    original_system_path = qcow.get_backing_file_path_str()
+    if not original_system_path:
+        return False
+
     if os.path.exists(original_system_path):
         print("[INFO] system.img.qcow path check passed successfully")
         return True
 
     print("[INFO] qcow path didn't match, replacing")
-    if not write_new_system_path_inside_qcow(qcow_image, local_system_image):
+    if not qcow.write_new_system_path_inside_qcow(local_system_image):
         print("[ERROR] Error fixing system file")
         return False
 
-    # After we wrote a new system path, verify it again
-    new_system_path = extract_qcow_system(qcow_image)
+    # After we wrote a new system path, verify it
+    qcow.parse_header()
+    new_system_path = qcow.get_backing_file_path_str()
     if os.path.exists(new_system_path):
         print("[INFO] system.img.qcow path check passed successfully")
         return True
@@ -212,6 +190,7 @@ def main():
         return -1
     print("[INFO] start_avd successfully finished")
     print("[INFO] Please wait untill the emulator will load completely, only then take a snapshot")
+    return 1
 
 
 if __name__ == '__main__':
