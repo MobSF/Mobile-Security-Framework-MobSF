@@ -57,6 +57,7 @@ TOOLS_DIR = os.path.join(BASE_DIR, 'DynamicAnalyzer/tools/')
 
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
+# Sqlite3 suport
 
 DATABASES = {
     'default': {
@@ -64,6 +65,8 @@ DATABASES = {
         'NAME': DB_DIR,
     }
 }
+# End Sqlite3 support
+
 # Postgres DB - Install psycopg2
 '''
 DATABASES = {
@@ -76,6 +79,7 @@ DATABASES = {
         'PORT': '',
     }
 }
+# End Postgres support
 '''
 #===============================================
 

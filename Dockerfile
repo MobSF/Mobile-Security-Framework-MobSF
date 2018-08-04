@@ -16,6 +16,9 @@ ENV PDFGEN_PKGFILE="wkhtmltox-0.12.4_linux-generic-amd64.tar.xz"
 ENV PDFGEN_URL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/${PDFGEN_PKGFILE}"
 ENV YARA_URL="https://github.com/rednaga/yara-python"
 
+#Postgres support is set to false by default
+ARG POSTGRES=False
+
 #Update the repository sources list
 #Install Required Libs
 #see https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
@@ -74,6 +77,10 @@ RUN ./kali_fix.sh
 #Install Dependencies
 WORKDIR /root/Mobile-Security-Framework-MobSF
 RUN pip3 install -r requirements.txt
+
+#check if Postgres support must be enabled 
+WORKDIR /root/Mobile-Security-Framework-MobSF/scripts
+RUN chmod +x ./postgres_support.sh; sync; ./postgres_support.sh $POSTGRES
 
 #Install apkid dependencies, and enable it 
 WORKDIR /tmp

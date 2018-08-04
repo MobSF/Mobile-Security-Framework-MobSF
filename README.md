@@ -34,11 +34,8 @@ Automated prebuilt docker image of MobSF Static Analyzer is available from [Dock
 docker pull opensecurity/mobile-security-framework-mobsf
 docker run -it -p 8000:8000 opensecurity/mobile-security-framework-mobsf:latest
 ```
-### For persistence
+Other docker options: [MobSF Docker Options](https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/7.-Docker-Container-for-MobSF-Static-Analysis)
 
-```
-docker run -it -p 8000:8000 -v <your_local_dir>:/root/.MobSF opensecurity/mobile-security-framework-mobsf:latest
-```
 
 ## Collaborators
 
@@ -48,7 +45,7 @@ docker run -it -p 8000:8000 -v <your_local_dir>:/root/.MobSF opensecurity/mobile
 * [Vincent Nadal](https://github.com/superpoussin22) ![france](https://user-images.githubusercontent.com/4301109/37564175-71d6d92c-2ab6-11e8-89d7-d21f5aa0bda8.png) 
 
 ## Presentations
-* OWASP APPSEC EU 2016 - [Slides](http://www.slideshare.net/ajin25/automated-mobile-application-security-assessment-with-mobsf)
+* OWASP APPSEC EU 2016 - [Slides](http://www.slideshare.net/ajin25/automated-mobile-application-security-assessment-with-mobsf), [Video](https://www.youtube.com/watch?v=h00v1euuFXg)
 * NULLCON 2016 - [Slides](https://www.slideshare.net/ajin25/nullcon-goa-2016-automated-mobile-application-security-testing-with-mobile-security-framework-mobsf)
 * c0c0n 2015 - [Slides](https://www.slideshare.net/ajin25/automated-security-analysis-of-android-ios-applications-with-mobile-security-framework-c0c0n-2015)
 *  OWASP AppSec EU 2016 - [Video](https://www.youtube.com/watch?v=h00v1euuFXg)
