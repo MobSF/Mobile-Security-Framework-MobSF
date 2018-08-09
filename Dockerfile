@@ -62,7 +62,7 @@ RUN \
 #Install wkhtmltopdf for PDF Reports
 WORKDIR /tmp
 RUN wget ${PDFGEN_URL} && \
-    dpkg -i ${PDFGEN_PKGFILE} && \
+    dpkg -i ${PDFGEN_PKGFILE}
    
 #Add MobSF master
 COPY . /root/Mobile-Security-Framework-MobSF
