@@ -194,7 +194,8 @@ def take_screenshot(request):
                     settings.UPLD_DIR, md5_hash + '/screenshots-apk/')
                 if not os.path.exists(screen_dir):
                     os.makedirs(screen_dir)
-                adb_command(["screencap", "-p", "/data/local/screen.png"], True)
+                adb_command(
+                    ["screencap", "-p", "/data/local/screen.png"], True)
                 adb_command(["pull", "/data/local/screen.png",
                              screen_dir + "screenshot-" + str(rand_int) + ".png"])
                 print("\n[INFO] Screenshot Taken")
@@ -320,17 +321,9 @@ def execute_adb(request):
         if request.method == 'POST':
             data = {}
             cmd = request.POST['cmd']
-            '''
-            Allow dangerous chars as it's functional
-            TODO: Deal with it.
-            '''
-            adb = getADB()
-            args = [adb,
-                    "-s",
-                    get_identifier()] + cmd.split(' ')
             resp = "error"
             try:
-                resp = adb
+                resp = adb_command(cmd.split(' '))
             except:
                 PrintException("[ERROR] Executing ADB Commands")
             data = {'cmd': 'yes', 'resp': resp.decode("utf8", "ignore")}
@@ -354,14 +347,15 @@ def mobsf_ca(request):
             adb = getADB()
             if act == "install":
                 print("\n[INFO] Installing MobSF RootCA")
-                adb_command(["push", rootca, "/data/local/tmp/" + settings.ROOT_CA])
+                adb_command(
+                    ["push", rootca, "/data/local/tmp/" + settings.ROOT_CA])
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                     # For some reason, avd emulator does not have cp binary
                     adb_command(["/data/local/tmp/busybox", "cp",
-                                "/data/local/tmp/" + settings.ROOT_CA,
-                                "/system/etc/security/cacerts/" + settings.ROOT_CA], True)
+                                 "/data/local/tmp/" + settings.ROOT_CA,
+                                 "/system/etc/security/cacerts/" + settings.ROOT_CA], True)
                     adb_command(["chmod", "644",
-                                "/system/etc/security/cacerts/" + settings.ROOT_CA], True)
+                                 "/system/etc/security/cacerts/" + settings.ROOT_CA], True)
                 else:
                     adb_command(["su",
                                  "-c",
@@ -369,16 +363,18 @@ def mobsf_ca(request):
                                  "/data/local/tmp/" + settings.ROOT_CA,
                                  "/system/etc/security/cacerts/" + settings.ROOT_CA], True)
                     adb_command(["su",
-                                "-c",
-                                "chmod",
-                                "644",
-                                "/system/etc/security/cacerts/" + settings.ROOT_CA], True)
-                adb_command(["rm", "/data/local/tmp/" + settings.ROOT_CA], True)
+                                 "-c",
+                                 "chmod",
+                                 "644",
+                                 "/system/etc/security/cacerts/" + settings.ROOT_CA], True)
+                adb_command(
+                    ["rm", "/data/local/tmp/" + settings.ROOT_CA], True)
                 data = {'ca': 'installed'}
             elif act == "remove":
                 print("\n[INFO] Removing MobSF RootCA")
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
-                    adb_command(["rm", "/system/etc/security/cacerts/" + settings.ROOT_CA], True)
+                    adb_command(
+                        ["rm", "/system/etc/security/cacerts/" + settings.ROOT_CA], True)
                 else:
                     adb_command(["su",
                                  "-c",
@@ -419,7 +415,7 @@ def final_test(request):
                           ' logcat -d dalvikvm:W ActivityManager:I > "' + apk_dir + 'logcat.txt"')
                 print("\n[INFO] Downloading Logcat logs")
                 adb_command(["pull", "/data/data/de.robv.android.xposed.installer/log/error.log",
-                                 apk_dir + "x_logcat.txt"])
+                             apk_dir + "x_logcat.txt"])
 
                 print("\n[INFO] Downloading Droidmon API Monitor Logcat logs")
                 # Can't RCE
@@ -430,7 +426,8 @@ def final_test(request):
                 adb_command(["am", "force-stop", package], True)
                 print("\n[INFO] Stopping Application")
 
-                adb_command(["am", "force-stop", "opensecurity.screencast"], True)
+                adb_command(
+                    ["am", "force-stop", "opensecurity.screencast"], True)
                 print("\n[INFO] Stopping ScreenCast Service")
 
                 data = {'final': 'yes'}
@@ -465,8 +462,8 @@ def dump_data(request):
                 print("\n[INFO] Deleting Dump Status File")
                 adb_command(["rm", "/sdcard/mobsec_status"], True)
                 print("\n[INFO] Creating TAR of Application Files.")
-                adb_command(["am", "startservice", "-a",package,
-                            "opensecurity.ajin.datapusher/.GetPackageLocation"], True)
+                adb_command(["am", "startservice", "-a", package,
+                             "opensecurity.ajin.datapusher/.GetPackageLocation"], True)
                 print("\n[INFO] Waiting for TAR dump to complete...")
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_REAL_DEVICE":
                     timeout = settings.DEVICE_TIMEOUT
@@ -475,14 +472,15 @@ def dump_data(request):
                 start_time = time.time()
                 while True:
                     current_time = time.time()
-                    if b"MOBSEC-TAR-CREATED" in adb_command(["cat","/sdcard/mobsec_status"], shell=True):
+                    if b"MOBSEC-TAR-CREATED" in adb_command(["cat", "/sdcard/mobsec_status"], shell=True):
                         break
                     if (current_time - start_time) > timeout:
                         print(
                             "\n[ERROR] TAR Generation Failed. Process timed out.")
                         break
                 print("\n[INFO] Dumping Application Files from Device/VM")
-                adb_command(["pull", "/data/local/" + package + ".tar", apk_dir + package + ".tar"])
+                adb_command(["pull", "/data/local/" + package +
+                             ".tar", apk_dir + package + ".tar"])
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                     print("\n[INFO] Removing package")
                     adb_command(["uninstall", package])
@@ -536,18 +534,21 @@ def exported_activity_tester(request):
                                 exp_act_no += 1
                                 print("\n[INFO] Launching Exported Activity - " +
                                       str(exp_act_no) + ". " + line)
-                                adb_command(["am", "start", "-n", package + "/" + line], True)
+                                adb_command(
+                                    ["am", "start", "-n", package + "/" + line], True)
                                 # AVD is much slower, it should get extra time
                                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                                     wait(8)
                                 else:
                                     wait(4)
-                                adb_command(["screencap", "-p", "/data/local/screen.png"], True)
+                                adb_command(
+                                    ["screencap", "-p", "/data/local/screen.png"], True)
                                 #? get appended from Air :-() if activity names are used
                                 adb_command(["pull", "/data/local/screen.png",
-                                     screen_dir + "expact-" + str(exp_act_no) + ".png"])
+                                             screen_dir + "expact-" + str(exp_act_no) + ".png"])
                                 print("\n[INFO] Activity Screenshot Taken")
-                                adb_command(["am", "force-stop", package], True)
+                                adb_command(
+                                    ["am", "force-stop", package], True)
                                 print("\n[INFO] Stopping App")
                             except:
                                 PrintException(
@@ -605,18 +606,21 @@ def activity_tester(request):
                                 act_no += 1
                                 print("\n[INFO] Launching Activity - " +
                                       str(act_no) + ". " + line)
-                                adb_command(["am", "start", "-n", package + "/" + line], True)
+                                adb_command(
+                                    ["am", "start", "-n", package + "/" + line], True)
                                 # AVD is much slower, it should get extra time
                                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                                     wait(8)
                                 else:
                                     wait(4)
-                                adb_command(["screencap", "-p", "/data/local/screen.png"], True)
+                                adb_command(
+                                    ["screencap", "-p", "/data/local/screen.png"], True)
                                 #? get appended from Air :-() if activity names are used
                                 adb_command(["pull", "/data/local/screen.png",
-                                     screen_dir + "act-" + str(act_no) + ".png"])
+                                             screen_dir + "act-" + str(act_no) + ".png"])
                                 print("\n[INFO] Activity Screenshot Taken")
-                                adb_command(["am", "force-stop", package], True)
+                                adb_command(
+                                    ["am", "force-stop", package], True)
                                 print("\n[INFO] Stopping App")
                             except:
                                 PrintException("Activity Tester")
