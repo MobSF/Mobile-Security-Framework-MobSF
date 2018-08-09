@@ -12,8 +12,8 @@ LABEL \
 
 #Environment vars
 ENV DEBIAN_FRONTEND="noninteractive"
-ENV PDFGEN_PKGFILE="wkhtmltox-0.12.4_linux-generic-amd64.tar.xz" 
-ENV PDFGEN_URL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/${PDFGEN_PKGFILE}"
+ENV PDFGEN_PKGFILE="wkhtmltox_0.12.5-1.bionic_amd64.deb" 
+ENV PDFGEN_URL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/${PDFGEN_PKGFILE}"
 ENV YARA_URL="https://github.com/rednaga/yara-python"
 
 #Postgres support is set to false by default
@@ -51,7 +51,8 @@ RUN \
     fontconfig-config \
     libjpeg-turbo8 \
     fontconfig \
-    xorg
+    xorg \
+    xfonts-75dpi
 
 #Install git
 RUN \
@@ -61,9 +62,8 @@ RUN \
 #Install wkhtmltopdf for PDF Reports
 WORKDIR /tmp
 RUN wget ${PDFGEN_URL} && \
-    tar xvf ${PDFGEN_PKGFILE} && \
-    cp -r /tmp/wkhtmltox/* /usr/local/
-
+    dpkg -i ${PDFGEN_PKGFILE} && \
+   
 #Add MobSF master
 COPY . /root/Mobile-Security-Framework-MobSF
 
