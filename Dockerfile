@@ -84,7 +84,7 @@ RUN chmod +x ./postgres_support.sh; sync; ./postgres_support.sh $POSTGRES
 
 #Install apkid dependencies, and enable it 
 WORKDIR /tmp
-RUN git clone ${YARA_URL} yara-python && \
+RUN git clone --recursive ${YARA_URL} yara-python && \
     cd yara-python && \
     python3 setup.py build --enable-dex install && \
     rm -fr /tmp/yara-python && \
