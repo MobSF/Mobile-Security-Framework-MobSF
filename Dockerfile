@@ -14,7 +14,7 @@ LABEL \
 ENV DEBIAN_FRONTEND="noninteractive"
 ENV PDFGEN_PKGFILE="wkhtmltox_0.12.5-1.bionic_amd64.deb" 
 ENV PDFGEN_URL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/${PDFGEN_PKGFILE}"
-ENV YARA_URL="https://github.com/rednaga/yara-python"
+ENV YARA_URL="https://github.com/rednaga/yara-python-1"
 
 #Postgres support is set to false by default
 ARG POSTGRES=False
@@ -84,9 +84,9 @@ RUN chmod +x ./postgres_support.sh; sync; ./postgres_support.sh $POSTGRES
 
 #Install apkid dependencies, and enable it 
 WORKDIR /tmp
-RUN git clone ${YARA_URL} && \
+RUN git clone ${YARA_URL} yara-python && \
     cd yara-python && \
-    python3 setup.py install && \
+    python3 setup.py build --enable-dex install && \
     rm -fr /tmp/yara-python && \
     sed -i 's/APKID_ENABLED.*/APKID_ENABLED = True/' /root/Mobile-Security-Framework-MobSF/MobSF/settings.py
 
