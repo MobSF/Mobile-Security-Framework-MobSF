@@ -303,6 +303,7 @@ else:
 
     # iOS 3P Tools
     OTOOL_BINARY = ""
+    JTOOL_BINARY = ""
     CLASSDUMPZ_BINARY = ""
 
     # COMMON
