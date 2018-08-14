@@ -3,6 +3,7 @@
 
 import re
 import os
+import platform
 import subprocess
 
 from django.conf import settings
@@ -13,25 +14,60 @@ from StaticAnalyzer.tools.strings import strings_util
 from MobSF.utils import PrintException, isFileExists
 
 
-def otool_analysis(bin_name, bin_path, bin_dir):
+def get_otool_out(tools_dir, cmd_type, bin_path, bin_dir):
+    """Get otool args by OS and type"""
+    if len(settings.OTOOL_BINARY) > 0 and isFileExists(settings.OTOOL_BINARY):
+        otool_bin = settings.OTOOL_BINARY
+    else:
+        otool_bin = "otool"
+    if len(settings.JTOOL_BINARY) > 0 and isFileExists(settings.JTOOL_BINARY):
+        jtool_bin = settings.JTOOL_BINARY
+    else:
+        jtool_bin = os.path.join(tools_dir, 'jtool.ELF64')
+    plat = platform.system()
+    if cmd_type == "libs":
+        if plat == "Darwin":
+            args = [otool_bin, '-L', bin_path]
+        elif plat == "Linux":
+            args = [jtool_bin, '-arch', 'arm', '-L', '-v', bin_path]
+        else:
+            # Platform Not Supported
+            return None
+        libs = subprocess.check_output(args).decode("utf-8", "ignore")
+        libs = smart_text(escape(libs.replace(bin_dir + "/", "")))
+        return libs.replace("\n", "</br>")
+    elif cmd_type == "header":
+        if plat == "Darwin":
+            args = [otool_bin, '-hv', bin_path]
+        elif plat == "Linux":
+            args = [jtool_bin, '-arch', 'arm', '-h', '-v', bin_path]
+        else:
+            # Platform Not Supported
+            return None
+        return subprocess.check_output(args)
+    elif cmd_type == "symbols":
+        if plat == "Darwin":
+            args = [otool_bin, '-Iv', bin_path]
+            return subprocess.check_output(args)
+        elif plat == "Linux":
+            arg1 = [jtool_bin, '-arch', 'arm', '-bind', '-v', bin_path]
+            arg2 = [jtool_bin, '-arch', 'arm', '-lazy_bind', '-v', bin_path]
+            return subprocess.check_output(arg1) + subprocess.check_output(arg2)
+        else:
+            # Platform Not Supported
+            return None
+
+
+def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
     """OTOOL Analysis of Binary"""
     try:
-        print("[INFO] Starting Otool Analysis")
         otool_dict = {}
         otool_dict["libs"] = ''
         otool_dict["anal"] = ''
-        print("[INFO] Running otool against Binary : " + bin_name)
-        if len(settings.OTOOL_BINARY) > 0 and isFileExists(settings.OTOOL_BINARY):
-            otool_bin = settings.OTOOL_BINARY
-        else:
-            otool_bin = "otool"
-        args = [otool_bin, '-L', bin_path]
-        libs = str(subprocess.check_output(args), 'utf-8')
-        libs = smart_text(escape(libs.replace(bin_dir + "/", "")))
-        otool_dict["libs"] = libs.replace("\n", "</br>")
+        print("[INFO] Running Object Analysis of Binary : " + bin_name)
+        otool_dict["libs"] = get_otool_out(tools_dir, "libs", bin_path, bin_dir)
         # PIE
-        args = [otool_bin, '-hv', bin_path]
-        pie_dat = subprocess.check_output(args)
+        pie_dat = get_otool_out(tools_dir, "header", bin_path, bin_dir)
         if b"PIE" in pie_dat:
             pie_flag = "<tr><td><strong>fPIE -pie</strong> flag is Found</td><td>" + \
                 "<span class='label label-success'>Secure</span>" + \
@@ -45,8 +81,7 @@ def otool_analysis(bin_name, bin_path, bin_dir):
                 "Randomization (ASLR) is missing. ASLR is a memory protection mechanism for" +\
                 " exploit mitigation.</td></tr>"
         # Stack Smashing Protection & ARC
-        args = [otool_bin, '-Iv', bin_path]
-        dat = subprocess.check_output(args)
+        dat = get_otool_out(tools_dir, "symbols", bin_path, bin_dir)
         if b"stack_chk_guard" in dat:
             ssmash = "<tr><td><strong>fstack-protector-all</strong> flag is Found</td><td>" +\
                 "<span class='label label-success'>Secure</span></td><td>App is compiled with" +\
@@ -192,24 +227,37 @@ def otool_analysis(bin_name, bin_path, bin_dir):
             debug
         return otool_dict
     except:
-        PrintException("[ERROR] Performing Otool Analysis of Binary")
+        PrintException("[ERROR] Performing Object Analysis of Binary")
 
 
 def class_dump_z(tools_dir, bin_path, app_dir):
     """Running Classdumpz on binary"""
     try:
         webview = ''
-        print("[INFO] Running class-dump-z against the Binary")
-        if len(settings.CLASSDUMPZ_BINARY) > 0 and isFileExists(settings.CLASSDUMPZ_BINARY):
-            class_dump_z_bin = settings.CLASSDUMPZ_BINARY
+        if platform.system() == "Darwin":
+            print("[INFO] Running class-dump-z against the binary for dumping classes")
+            if len(settings.CLASSDUMPZ_BINARY) > 0 and isFileExists(settings.CLASSDUMPZ_BINARY):
+                class_dump_z_bin = settings.CLASSDUMPZ_BINARY
+            else:
+                class_dump_z_bin = os.path.join(tools_dir, 'class-dump-z')
+            subprocess.call(["chmod", "777", class_dump_z_bin])
+            args = [class_dump_z_bin, bin_path]
+        elif platform.system() == "Linux":
+            print("[INFO] Running jtool against the binary for dumping classes")
+            if len(settings.JTOOL_BINARY) > 0 and isFileExists(settings.JTOOL_BINARY):
+                jtool_bin = settings.JTOOL_BINARY
+            else:
+                jtool_bin = os.path.join(tools_dir, 'jtool.ELF64')
+            subprocess.call(["chmod", "777", jtool_bin])
+            args = [jtool_bin, '-arch', 'arm', '-d', 'objc', '-v', bin_path]
         else:
-            class_dump_z_bin = os.path.join(tools_dir, 'class-dump-z')
-        subprocess.call(["chmod", "777", class_dump_z_bin])
-        class_dump = subprocess.check_output([class_dump_z_bin, bin_path])
+            # Platform not supported
+            return ''
+        classdump = subprocess.check_output(args)
         dump_file = os.path.join(app_dir, "classdump.txt")
         with open(dump_file, "w") as flip:
-            flip.write(class_dump.decode("utf-8"))
-        if b"UIWebView" in class_dump:
+            flip.write(classdump.decode("utf-8", "ignore"))
+        if b"UIWebView" in classdump:
             webview = "<tr><td>Binary uses WebView Component.</td><td>" +\
                 "<span class='label label-info'>Info</span></td><td>The binary" +\
                 " may use WebView Component.</td></tr>"
@@ -225,7 +273,8 @@ def strings_on_ipa(bin_path):
         print("[INFO] Running strings against the Binary")
         unique_str = []
         unique_str = list(set(strings_util(bin_path)))  # Make unique
-        unique_str = [escape(ip_str) for ip_str in unique_str]  # Escape evil strings
+        unique_str = [escape(ip_str)
+                      for ip_str in unique_str]  # Escape evil strings
         return unique_str
     except:
         PrintException("[ERROR] - Running strings against the Binary")
@@ -254,9 +303,9 @@ def binary_analysis(src, tools_dir, app_dir):
             print("[WARNING] MobSF Cannot find binary in " + bin_path)
             print("[WARNING] Skipping Otool, Classdump and Strings")
         else:
-            otool_dict = otool_analysis(bin_name, bin_path, bin_dir)
+            otool_dict = otool_analysis(tools_dir, bin_name, bin_path, bin_dir)
             cls_dump = class_dump_z(tools_dir, bin_path, app_dir)
-            #Classdumpz can fail on swift coded binaries
+            # Classdumpz can fail on swift coded binaries
             if not cls_dump:
                 cls_dump = ""
             strings_in_ipa = strings_on_ipa(bin_path)
