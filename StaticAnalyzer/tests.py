@@ -53,7 +53,7 @@ def static_analysis_test():
                 failed = True
         print("[OK] Static Analysis test completed")
         print("[INFO] Running PDF Generation Test")
-        if platform.system() == 'Darwin':
+        if platform.system() in ['Darwin', 'Linux']:
             pdfs = [
                 "/PDF/?md5=3a552566097a8de588b8184b059b0158&type=APK",
                 "/PDF/?md5=6c23c2970551be15f32bbab0b5db0c71&type=IPA",
@@ -82,7 +82,7 @@ def static_analysis_test():
         print("[OK] PDF Generation test completed")
         print("[INFO] Running Delete Scan Results test")
         # Deleting Scan Results
-        if platform.system() == 'Darwin':
+        if platform.system() in ['Darwin', 'Linux']:
             scan_md5s = ["3a552566097a8de588b8184b059b0158", "6c23c2970551be15f32bbab0b5db0c71",
                          "52c50ae824e329ba8b5b7a0f523efffe", "57bb5be0ea44a755ada4a93885c3825e",
                          "8179b557433835827a70510584f3143e"
@@ -123,7 +123,8 @@ def api_test():
         apk_dir = os.path.join(settings.BASE_DIR, "StaticAnalyzer/test_files/")
         for filename in os.listdir(apk_dir):
             fpath = os.path.join(apk_dir, filename)
-            if platform.system() != 'Darwin' and fpath.endswith(".ipa"):
+            if (platform.system() not in ['Darwin', 'Linux'] and
+                    fpath.endswith(".ipa")):
                 continue
             with open(fpath, "rb") as filp:
                 response = http_client.post(
@@ -148,7 +149,7 @@ def api_test():
                 failed = True
         print("[OK] Static Analysis API test completed")
         print("[INFO] Running PDF Generation API Test")
-        if platform.system() == 'Darwin':
+        if platform.system() in ['Darwin', 'Linux']:
             pdfs = [
                 {"hash": "3a552566097a8de588b8184b059b0158", "scan_type": "apk"},
                 {"hash": "6c23c2970551be15f32bbab0b5db0c71", "scan_type": "ipa"},
@@ -191,7 +192,7 @@ def api_test():
         print("[OK] JSON Report API test completed")
         print("[INFO] Running Delete Scan API Results test")
         # Deleting Scan Results
-        if platform.system() == 'Darwin':
+        if platform.system() in ['Darwin', 'Linux']:
             scan_md5s = ["3a552566097a8de588b8184b059b0158", "6c23c2970551be15f32bbab0b5db0c71",
                          "52c50ae824e329ba8b5b7a0f523efffe", "57bb5be0ea44a755ada4a93885c3825e",
                          "8179b557433835827a70510584f3143e"

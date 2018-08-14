@@ -120,7 +120,7 @@ def upload(request, api=False):
                 elif ((file_type in settings.IPA_MIME) and
                       request.FILES['file'].name.lower().endswith('.ipa')):
                     # iOS Binary
-                    if platform.system() == "Darwin" or platform.system() == "Linux":
+                    if platform.system() in ["Darwin", "Linux"]:
                         md5 = handle_uploaded_file(
                             request.FILES['file'], '.ipa')
                         if api:

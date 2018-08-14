@@ -118,7 +118,7 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
             banned_apis = "<tr><td>Binary make use of banned API(s)</td><td>" +\
                 "<span class='label label-danger'>Insecure</span></td><td>The binary " +\
                 "may contain the following banned API(s) </br><strong>" + \
-                str(baned_s) + "</strong>.</td></tr>"
+                baned_s.decode('utf-8', 'ignore') + "</strong>.</td></tr>"
         weak_cryptos = ''
         weak_algo = re.findall(
             b"kCCAlgorithmDES|kCCAlgorithm3DES||kCCAlgorithmRC2|kCCAlgorithmRC4|" +
@@ -129,7 +129,7 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
             weak_cryptos = "<tr><td>Binary make use of some Weak Crypto API(s)</td><td>" +\
                 "<span class='label label-danger'>Insecure</span></td><td>The binary may use " +\
                 "the following weak crypto API(s)</br><strong>" + \
-                str(weak_algo_s) + "</strong>.</td></tr>"
+                weak_algo_s.decode('utf-8', 'ignore') + "</strong>.</td></tr>"
         crypto = ''
         crypto_algo = re.findall(
             b"CCKeyDerivationPBKDF|CCCryptorCreate|CCCryptorCreateFromData|" +
@@ -157,7 +157,7 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
             crypto = "<tr><td>Binary make use of the following Crypto API(s)</td><td>" +\
                 "<span class='label label-info'>Info</span></td><td>The binary may use the" +\
                 " following crypto API(s)</br><strong>" + \
-                str(crypto_algo_s) + "</strong>.</td></tr>"
+                crypto_algo_s.decode('utf-8', 'ignore') + "</strong>.</td></tr>"
         weak_hashes = ''
         weak_hash_algo = re.findall(
             b"CC_MD2_Init|CC_MD2_Update|CC_MD2_Final|CC_MD2|MD2_Init|" +
@@ -171,7 +171,7 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
             weak_hashes = "<tr><td>Binary make use of the following Weak HASH API(s)</td><td>" +\
                 "<span class='label label-danger'>Insecure</span></td><td>The binary " +\
                 "may use the following weak hash API(s)</br><strong>" + \
-                str(weak_hash_algo_s) + "</strong>.</td></tr>"
+                weak_hash_algo_s.decode('utf-8', 'ignore') + "</strong>.</td></tr>"
         hashes = ''
         hash_algo = re.findall(
             b"CC_SHA224_Init|CC_SHA224_Update|CC_SHA224_Final|CC_SHA224|" +
@@ -186,7 +186,7 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
             hashes = "<tr><td>Binary make use of the following HASH API(s)</td><td>" +\
                 "<span class='label label-info'>Info</span></td><td>The binary may use the" +\
                 " following hash API(s)</br><strong>" + \
-                str(hash_algo_s) + "</strong>.</td></tr>"
+                hash_algo_s.decode('utf-8', 'ignore') + "</strong>.</td></tr>"
         randoms = ''
         rand_algo = re.findall(b"_srand|_random", dat)
         rand_algo = list(set(rand_algo))
@@ -195,7 +195,7 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
             randoms = "<tr><td>Binary make use of the insecure Random Function(s)</td><td>" +\
                 "<span class='label label-danger'>Insecure</span></td><td>The binary may " +\
                 "use the following insecure Random Function(s)</br><strong>" + \
-                str(rand_algo_s) + "</strong>.</td></tr>"
+                rand_algo_s.decode('utf-8', 'ignore') + "</strong>.</td></tr>"
         logging = ''
         log = re.findall(b"_NSLog", dat)
         log = list(set(log))
