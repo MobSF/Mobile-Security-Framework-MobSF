@@ -78,7 +78,7 @@ def upload(request, api=False):
     """
     api_response = {}
     response_data = {}
-    try: 
+    try:
         response_data['url'] = ''
         response_data['description'] = ''
         response_data['status'] = 'error'
@@ -86,7 +86,8 @@ def upload(request, api=False):
             form = UploadFileForm(request.POST, request.FILES)
             if form.is_valid():
                 file_type = request.FILES['file'].content_type
-                print("[INFO] MIME Type: " + file_type + " FILE: " + request.FILES['file'].name)
+                print("[INFO] MIME Type: " + file_type +
+                      " FILE: " + request.FILES['file'].name)
                 if ((file_type in settings.APK_MIME) and
                         request.FILES['file'].name.lower().endswith('.apk')):
                         # APK
@@ -114,11 +115,12 @@ def upload(request, api=False):
                     response_data['status'] = 'success'
                     add_to_recent_scan(
                         request.FILES['file'].name, md5, response_data['url'])
-                    print("\n[INFO] Performing Static Analysis of Android/iOS Source Code")
+                    print(
+                        "\n[INFO] Performing Static Analysis of Android/iOS Source Code")
                 elif ((file_type in settings.IPA_MIME) and
                       request.FILES['file'].name.lower().endswith('.ipa')):
-                      # iOS Binary
-                    if platform.system() == "Darwin":  # Check for Mac OS X
+                    # iOS Binary
+                    if platform.system() in ["Darwin", "Linux"]:
                         md5 = handle_uploaded_file(
                             request.FILES['file'], '.ipa')
                         if api:
@@ -136,10 +138,11 @@ def upload(request, api=False):
                     else:
                         if api:
                             api_response[
-                                "error"] = "Static Analysis of iOS IPA requires OSX"
+                                "error"] = "Static Analysis of iOS IPA requires Mac or Linux"
                         response_data['url'] = 'mac_only/'
                         response_data['status'] = 'success'
-                        print("\n[ERROR] Static Analysis of iOS IPA requires OSX")
+                        print(
+                            "\n[ERROR] Static Analysis of iOS IPA requires Mac or Linux")
                 # Windows APPX
                 elif (file_type in settings.APPX_MIME) and request.FILES['file'].name.lower().endswith('.appx'):
                     md5 = handle_uploaded_file(request.FILES['file'], '.appx')

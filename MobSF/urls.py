@@ -22,7 +22,7 @@ urlpatterns = [
     url(r'^download/', MobSF.views.download),
     url(r'^about$', MobSF.views.about),
     url(r'^api_docs$', MobSF.views.api_docs),
-    url(r'^recent_scans$', MobSF.views.recent_scans),
+    url(r'^recent_scans/$', MobSF.views.recent_scans),
     url(r'^delete_scan/$', MobSF.views.delete_scan),
     url(r'^search$', MobSF.views.search),
     url(r'^error/$', MobSF.views.error),
