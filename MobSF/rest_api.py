@@ -136,6 +136,8 @@ def api_pdf_report(request):
                 elif "pdf_dat" in resp:
                     response = HttpResponse(
                         resp["pdf_dat"], content_type='application/pdf')
+                elif "not Found" in resp.get("report"):
+                    response = make_api_response(resp, 404)
                 else:
                     response = make_api_response(
                         {"error": "PDF Generation Error"}, 500)
