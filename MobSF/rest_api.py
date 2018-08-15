@@ -132,7 +132,10 @@ def api_pdf_report(request):
             if set(request.POST) == set(params):
                 resp = pdf(request, api=True)
                 if "error" in resp:
-                    response = make_api_response(resp, 500)
+                    if "Invalid scan hash" == resp.get("error"):
+                        response = make_api_response(resp, 400)
+                    else:
+                        response = make_api_response(resp, 500)
                 elif "pdf_dat" in resp:
                     response = HttpResponse(
                         resp["pdf_dat"], content_type='application/pdf')
@@ -161,7 +164,10 @@ def api_json_report(request):
             if set(request.POST) == set(params):
                 resp = pdf(request, api=True)
                 if "error" in resp:
-                    response = make_api_response(resp, 500)
+                    if "Invalid scan hash" == resp.get("error"):
+                        response = make_api_response(resp, 400)
+                    else:
+                        response = make_api_response(resp, 500)
                 elif "report_dat" in resp:
                     response = make_api_response(resp["report_dat"], 200)
                 elif "not Found" in resp.get("report"):
