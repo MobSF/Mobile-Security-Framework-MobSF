@@ -162,6 +162,8 @@ def api_json_report(request):
                     response = make_api_response(resp, 500)
                 elif "report_dat" in resp:
                     response = make_api_response(resp["report_dat"], 200)
+                elif "not Found" in resp.get("report"):
+                    response = make_api_response(resp, 404)
                 else:
                     response = make_api_response(
                         {"error": "JSON Generation Error"}, 500)
