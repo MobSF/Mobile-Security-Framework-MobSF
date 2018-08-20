@@ -193,6 +193,10 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
 )
+
+MIDDLEWARE = (
+    'MobSF.rest_api_middleware.RestApiAuthMiddleware',
+)
 ROOT_URLCONF = 'MobSF.urls'
 WSGI_APPLICATION = 'MobSF.wsgi.application'
 # Internationalization
@@ -224,6 +228,8 @@ STATICFILES_DIRS = (
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 STATIC_URL = '/static/'
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 524288000
 
 #===================
 # USER CONFIGURATION
