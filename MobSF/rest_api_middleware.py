@@ -7,8 +7,8 @@ UNAUTHORIZED = 401
 class RestApiAuthMiddleware(MiddlewareMixin):
     
     def process_request(self, request):
-        if request.path.startswith("/api") is False:
+        if not request.path.startswith("/api"):
             return
-        if api_auth(request.META) is False:
+        if not api_auth(request.META):
             return make_api_response(
             {"error": "You are unauthorized to make this request."}, UNAUTHORIZED)

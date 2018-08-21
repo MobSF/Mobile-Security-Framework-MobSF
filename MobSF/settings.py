@@ -229,8 +229,8 @@ STATICFILES_DIRS = (
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 STATIC_URL = '/static/'
 
-# 500MB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 524288000
+# 256MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 256000000
 
 #===================
 # USER CONFIGURATION
