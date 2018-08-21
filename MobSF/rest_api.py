@@ -97,7 +97,6 @@ def api_scan(request):
 @csrf_exempt
 def api_delete_scan(request):
     """POST - Delete a Scan"""
-    
     if request.method == 'POST':
         if "hash" in request.POST:
             resp = delete_scan(request, True)
@@ -122,10 +121,17 @@ def api_pdf_report(request):
         if set(request.POST) == set(params):
             resp = pdf(request, api=True)
             if "error" in resp:
-                response = make_api_response(resp, 500)
+                if "Invalid scan hash" == resp.get("error"):
+                    response = make_api_response(resp, 400)
+                else:
+                    response = make_api_response(resp, 500)
             elif "pdf_dat" in resp:
                 response = HttpResponse(
                     resp["pdf_dat"], content_type='application/pdf')
+            elif "Report not Found" == resp.get("report"):
+                response = make_api_response(resp, 404)
+            elif "Type is not Allowed" == resp.get("scan_type"):
+                response = make_api_response(resp, 400)
             else:
                 response = make_api_response(
                     {"error": "PDF Generation Error"}, 500)
@@ -145,9 +151,16 @@ def api_json_report(request):
         if set(request.POST) == set(params):
             resp = pdf(request, api=True)
             if "error" in resp:
-                response = make_api_response(resp, 500)
+                if "Invalid scan hash" == resp.get("error"):
+                    response = make_api_response(resp, 400)
+                else:
+                    response = make_api_response(resp, 500)
             elif "report_dat" in resp:
                 response = make_api_response(resp["report_dat"], 200)
+            elif "Report not Found" == resp.get("report"):
+                response = make_api_response(resp, 404)
+            elif "Type is not Allowed" == resp.get("scan_type"):
+                response = make_api_response(resp, 400)
             else:
                 response = make_api_response(
                     {"error": "JSON Generation Error"}, 500)

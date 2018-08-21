@@ -125,7 +125,7 @@ def pdf(request, api=False):
                     else:
                         return HttpResponse(json.dumps({"report": "Report not Found"}),
                                             content_type="application/json; charset=utf-8", status=500)
-            elif re.findall('ipa|ioszip', scan_type.lower()):
+            elif scan_type.lower() in ['ipa', 'ioszip']:
                 if scan_type.lower() == 'ipa':
                     static_db = StaticAnalyzerIPA.objects.filter(MD5=checksum)
                     if static_db.exists():
@@ -152,7 +152,7 @@ def pdf(request, api=False):
                         else:
                             return HttpResponse(json.dumps({"report": "Report not Found"}),
                                                 content_type="application/json; charset=utf-8", status=500)
-            elif re.findall('appx', scan_type.lower()):
+            elif 'appx' == scan_type.lower():
                 if scan_type.lower() == 'appx':
                     db_entry = StaticAnalyzerWindows.objects.filter(# pylint: disable-msg=E1101
                         MD5=checksum
