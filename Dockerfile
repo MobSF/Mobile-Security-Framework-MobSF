@@ -27,7 +27,8 @@ RUN apt update -y && apt install -y \
     libssl-dev \
     libffi-dev \
     libxml2-dev \
-    libxslt1-dev
+    libxslt1-dev \
+    unzip
 
 #Install Oracle JDK 8
 RUN apt install -y software-properties-common && \
