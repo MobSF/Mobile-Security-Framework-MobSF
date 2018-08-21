@@ -24,7 +24,10 @@ def strings_jar(app_file, app_dir):
         pkg = rsrc.get_packages_names()[0]
         rsrc.get_strings_resources()
         for i in rsrc.values[pkg].keys():
-            for duo in rsrc.values[pkg][i]['string']:
+            string = rsrc.values[pkg][i].get('string')
+            if string is None:
+                return dat
+            for duo in string:
                 dat.append('"'+duo[0]+'" : "'+duo[1]+'"') 
         return dat
     except:
