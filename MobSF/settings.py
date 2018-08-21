@@ -193,6 +193,10 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
 )
+
+MIDDLEWARE = (
+    'MobSF.rest_api_middleware.RestApiAuthMiddleware',
+)
 ROOT_URLCONF = 'MobSF.urls'
 WSGI_APPLICATION = 'MobSF.wsgi.application'
 # Internationalization
@@ -224,6 +228,9 @@ STATICFILES_DIRS = (
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 STATIC_URL = '/static/'
+
+# 256MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 256000000
 
 #===================
 # USER CONFIGURATION
@@ -303,6 +310,7 @@ else:
 
     # iOS 3P Tools
     OTOOL_BINARY = ""
+    JTOOL_BINARY = ""
     CLASSDUMPZ_BINARY = ""
 
     # COMMON
