@@ -93,8 +93,8 @@ class Scanning(object):
 
         add_to_recent_scan(
             self.file_name, md5, data['url'])
-        print(
-            "\n[INFO] Performing Static Analysis of Android/iOS Source Code")
+        print("\n[INFO] Performing Static Analysis of Android/iOS Source Code")
+        return data
 
 
     def scan_ipa(self):

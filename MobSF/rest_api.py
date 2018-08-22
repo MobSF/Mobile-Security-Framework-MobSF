@@ -21,8 +21,6 @@ from StaticAnalyzer.views.windows import staticanalyzer_windows
 from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest, HttpResponseNotAllowed
 from django.views.decorators.csrf import csrf_exempt
 
-from .api_response import ApiResponse
-
 
 def make_api_response(data, status=200):
     """Make API Response"""

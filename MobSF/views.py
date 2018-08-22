@@ -139,7 +139,6 @@ class Upload(object):
             'file_name': data['file_name']
         })
 
-    
     def upload(self):
         request = self.request
         scanning = Scanning(request)
