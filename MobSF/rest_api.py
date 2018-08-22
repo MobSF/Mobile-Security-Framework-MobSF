@@ -21,6 +21,7 @@ from StaticAnalyzer.views.windows import staticanalyzer_windows
 from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest, HttpResponseNotAllowed
 from django.views.decorators.csrf import csrf_exempt
 
+POST = 'POST'
 
 def make_api_response(data, status=200):
     """Make API Response"""
@@ -41,11 +42,11 @@ def api_auth(meta):
 @csrf_exempt
 def api_upload(request):
     """POST - Upload API"""
-    if request.method == 'POST':
+    if request.method == POST:
         upload = Upload(request)
         return upload.upload_api()
     else:
-        return HttpResponseNotAllowed(['post'])
+        return HttpResponseNotAllowed([POST])
 
 
 
