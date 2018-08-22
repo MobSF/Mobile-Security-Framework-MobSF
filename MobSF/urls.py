@@ -18,7 +18,7 @@ from MobSF import utils
 urlpatterns = [
     # Examples:
     url(r'^$', MobSF.views.index),
-    url(r'^upload/$', MobSF.views.upload),
+    url(r'^upload/$', MobSF.views.Upload.as_view),
     url(r'^download/', MobSF.views.download),
     url(r'^about$', MobSF.views.about),
     url(r'^api_docs$', MobSF.views.api_docs),

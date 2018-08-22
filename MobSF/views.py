@@ -3,7 +3,7 @@
 MobSF File Upload and Home Routes
 """
 import os
-import hashlib
+
 import shutil
 import platform
 import json
@@ -11,16 +11,17 @@ import re
 
 from wsgiref.util import FileWrapper
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.http import HttpResponseRedirect
 from django.conf import settings
-from django.utils import timezone
+
 from MobSF.utils import (
     print_n_send_error_response,
     PrintException,
     isDirExists,
     isFileExists,
-    api_key
+    api_key,
+    FileType
 )
 from StaticAnalyzer.models import RecentScansDB
 from StaticAnalyzer.models import (
@@ -29,22 +30,10 @@ from StaticAnalyzer.models import (
     StaticAnalyzerIOSZIP,
     StaticAnalyzerWindows,
 )
-from .forms import UploadFileForm
+from .forms import UploadFileForm, FormUtil
+from .scanning import Scanning
 
-
-def add_to_recent_scan(name, md5, url):
-    """
-    Add Entry to Database under Recent Scan
-    """
-    try:
-        db_obj = RecentScansDB.objects.filter(MD5=md5)
-        if not db_obj.exists():
-            new_db_obj = RecentScansDB(
-                NAME=name, MD5=md5, URL=url, TS=timezone.now())
-            new_db_obj.save()
-    except:
-        PrintException("[ERROR] Adding Scan URL to Database")
-
+LINUX_PLATFORM = ["Darwin", "Linux"]
 
 def index(request):
     """
@@ -55,144 +44,119 @@ def index(request):
     return render(request, template, context)
 
 
-def handle_uploaded_file(filecnt, typ):
-    """
-    Write Uploaded File
-    """
-    md5 = hashlib.md5()  # modify if crash for large
-    for chunk in filecnt.chunks():
-        md5.update(chunk)
-    md5sum = md5.hexdigest()
-    anal_dir = os.path.join(settings.UPLD_DIR, md5sum + '/')
-    if not os.path.exists(anal_dir):
-        os.makedirs(anal_dir)
-    with open(anal_dir + md5sum + typ, 'wb+') as destination:
-        for chunk in filecnt.chunks():
-            destination.write(chunk)
-    return md5sum
-
-
-def upload(request, api=False):
+class Upload(object):
     """
     Handle File Upload based on App type
     """
-    api_response = {}
-    response_data = {}
-    try:
-        response_data['url'] = ''
-        response_data['description'] = ''
-        response_data['status'] = 'error'
-        if request.method == 'POST':
-            form = UploadFileForm(request.POST, request.FILES)
-            if form.is_valid():
-                file_type = request.FILES['file'].content_type
-                print("[INFO] MIME Type: " + file_type +
-                      " FILE: " + request.FILES['file'].name)
-                if ((file_type in settings.APK_MIME) and
-                        request.FILES['file'].name.lower().endswith('.apk')):
-                        # APK
-                    md5 = handle_uploaded_file(request.FILES['file'], '.apk')
-                    if api:
-                        api_response["hash"] = md5
-                        api_response["scan_type"] = "apk"
-                        api_response["file_name"] = request.FILES['file'].name
-                    response_data['url'] = ('StaticAnalyzer/?name=' + request.FILES['file'].name +
-                                            '&type=apk&checksum=' + md5)
-                    response_data['status'] = 'success'
-                    add_to_recent_scan(
-                        request.FILES['file'].name, md5, response_data['url'])
-                    print("\n[INFO] Performing Static Analysis of Android APK")
-                elif ((file_type in settings.ZIP_MIME) and
-                      request.FILES['file'].name.lower().endswith('.zip')):
-                      # Android /iOS Zipped Source
-                    md5 = handle_uploaded_file(request.FILES['file'], '.zip')
-                    if api:
-                        api_response["hash"] = md5
-                        api_response["scan_type"] = "zip"
-                        api_response["file_name"] = request.FILES['file'].name
-                    response_data['url'] = ('StaticAnalyzer/?name=' + request.FILES['file'].name +
-                                            '&type=zip&checksum=' + md5)
-                    response_data['status'] = 'success'
-                    add_to_recent_scan(
-                        request.FILES['file'].name, md5, response_data['url'])
-                    print(
-                        "\n[INFO] Performing Static Analysis of Android/iOS Source Code")
-                elif ((file_type in settings.IPA_MIME) and
-                      request.FILES['file'].name.lower().endswith('.ipa')):
-                    # iOS Binary
-                    if platform.system() in ["Darwin", "Linux"]:
-                        md5 = handle_uploaded_file(
-                            request.FILES['file'], '.ipa')
-                        if api:
-                            api_response["hash"] = md5
-                            api_response["scan_type"] = "ipa"
-                            api_response["file_name"] = request.FILES[
-                                'file'].name
-                        response_data['url'] = ('StaticAnalyzer_iOS/?name=' +
-                                                request.FILES['file'].name +
-                                                '&type=ipa&checksum=' + md5)
-                        response_data['status'] = 'success'
-                        add_to_recent_scan(
-                            request.FILES['file'].name, md5, response_data['url'])
-                        print("\n[INFO] Performing Static Analysis of iOS IPA")
-                    else:
-                        if api:
-                            api_response[
-                                "error"] = "Static Analysis of iOS IPA requires Mac or Linux"
-                        response_data['url'] = 'mac_only/'
-                        response_data['status'] = 'success'
-                        print(
-                            "\n[ERROR] Static Analysis of iOS IPA requires Mac or Linux")
-                # Windows APPX
-                elif (file_type in settings.APPX_MIME) and request.FILES['file'].name.lower().endswith('.appx'):
-                    md5 = handle_uploaded_file(request.FILES['file'], '.appx')
-                    if api:
-                        api_response["hash"] = md5
-                        api_response["scan_type"] = "appx"
-                        api_response["file_name"] = request.FILES['file'].name
-                    response_data['url'] = 'StaticAnalyzer_Windows/?name=' + \
-                        request.FILES['file'].name + \
-                        '&type=appx&checksum=' + md5
-                    response_data['status'] = 'success'
-                    add_to_recent_scan(
-                        request.FILES['file'].name, md5, response_data['url'])
-                    print("\n[INFO] Performing Static Analysis of Windows APP")
-                else:
-                    if api:
-                        api_response["error"] = "File format not Supported!"
-                    response_data['url'] = ''
-                    response_data['description'] = 'File format not Supported!'
-                    response_data['status'] = 'error'
-                    print("\n[ERROR] File format not Supported!")
+    
+    def __init__(self, request):
+        self.request = request
+        self.form = UploadFileForm(request.POST, request.FILES)
 
-            else:
-                if api:
-                    api_response["error"] = "Invalid Form Data!"
-                response_data['url'] = ''
-                response_data['description'] = 'Invalid Form Data!'
-                response_data['status'] = 'error'
-                print("\n[ERROR] Invalid Form Data!")
-        else:
-            if api:
-                api_response["error"] = "Method not Supported!"
-            response_data['url'] = ''
+    @staticmethod
+    def as_view(request):
+        upload = Upload(request)
+        return upload.upload_html()
+
+    def upload_html(self):
+        response_data = {
+            'url': '',
+            'description': '',
+            'status': 'error'
+        }
+        request = self.request
+        resp = HttpResponse(json.dumps(response_data),
+                    content_type="application/json; charset=utf-8")
+        resp['Access-Control-Allow-Origin'] = '*'
+
+        if request.method != 'POST':
             response_data['description'] = 'Method not Supported!'
-            response_data['status'] = 'error'
             print("\n[ERROR] Method not Supported!")
             form = UploadFileForm()
-    except:
-        PrintException("[ERROR] Uploading File:")
-    if api:
-        return api_response
-    else:
-        if response_data['status'] == 'error':
-            resp = HttpResponse(json.dumps(
-                response_data), content_type="application/json; charset=utf-8", status=500)
-        else:
-            resp = HttpResponse(json.dumps(response_data),
-                                content_type="application/json; charset=utf-8")
-    resp['Access-Control-Allow-Origin'] = '*'
-    return resp
+            resp['status'] = 400
+            return resp
+        
+        if not self.form.is_valid():
+            response_data['description'] = 'Invalid Form Data!'
+            print("\n[ERROR] Invalid Form Data!")
+            resp['status'] = 400
+            return resp
+
+        self.file_content_type = request.FILES['file'].content_type
+        self.file_name_lower = request.FILES['file'].name.lower()
+        self.file_type = FileType(self.file_content_type, self.file_name_lower)
+        if not self.file_type.is_allow_file():
+            response_data['url'] = ''
+            response_data['description'] = 'File format not Supported!'
+            response_data['status'] = 'error'
+            print("\n[ERROR] File format not Supported!")
+            resp['status'] = 400
+            return resp
+
+        if self.file_type.is_ipa():
+            if platform.system() not in LINUX_PLATFORM:
+                data = {
+                    'error': "Static Analysis of iOS IPA requires Mac or Linux",
+                    'url': 'mac_only/',
+                    'status': 'success'
+                }
+                print(
+                    "\n[ERROR] Static Analysis of iOS IPA requires Mac or Linux")
+                return data
+        
+        
+        data = self.upload()
+
+        response_data['url'] = data['url']
+        response_data['status'] = data['status']
+        return HttpResponse(json.dumps(response_data),
+                    content_type="application/json; charset=utf-8")
+
+        
+
+    def upload_api(self):
+        api_response = {
+        }
+
+        request = self.request
+        if not self.form.is_valid():
+            api_response['error'] = FormUtil.errors_message(self.form)
+            return JsonResponse(data=api_response, status=400)
+
+        self.file_content_type = request.FILES['file'].content_type
+        self.file_name_lower = request.FILES['file'].name.lower()
+        self.file_type = FileType(self.file_content_type, self.file_name_lower)
+
+        if not self.file_type.is_allow_file():
+            api_response["error"] = "File format not Supported!"
+            return JsonResponse(data=api_response, status=400)
+        self.file_content_type = request.FILES['file'].content_type
+        self.file_name_lower = request.FILES['file'].name.lower()
+        data = self.upload()
+        return JsonResponse({
+            'scan_type': data['scan_type'],
+            'hash': data['hash'],
+            'file_name': data['file_name']
+        })
+
+    
+    def upload(self):
+        request = self.request
+        scanning = Scanning(request)
+        file_type = self.file_content_type
+        file_name_lower = self.file_name_lower
+
+        print("[INFO] MIME Type: " + file_type +
+                " FILE: " + request.FILES['file'].name)
+        if self.file_type.is_apk():
+            return scanning.scan_apk()
+        elif self.file_type.is_zip():
+            return scanning.scan_zip()
+        elif self.file_type.is_ipa():
+            return scanning.scan_ipa()
+        # Windows APPX
+        elif self.file_type.is_appx():
+            return scanning.scan_appx()
 
 
 def api_docs(request):

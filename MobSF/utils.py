@@ -606,3 +606,28 @@ def check_basic_env():
                  JAVA_DIRECTORY = "/usr/bin/"
         ''')
         os.kill(os.getpid(), signal.SIGTERM)
+
+
+
+class FileType(object):
+    def __init__(self, file_type, file_name_lower):
+        self.file_type = file_type
+        self.file_name_lower = file_name_lower
+
+    def is_allow_file(self):
+        """
+        return bool
+        """
+        if self.is_apk() or self.is_zip() or self.is_ipa() or self.is_appx():
+            return True
+        return False
+    
+    def is_apk(self):
+        return ((self.file_type in settings.APK_MIME) and self.file_name_lower.endswith('.apk'))
+    
+    def is_zip(self):
+        return ((self.file_type in settings.ZIP_MIME) and self.file_name_lower.endswith('.zip'))
+    def is_ipa(self):
+        return ((self.file_type in settings.IPA_MIME) and self.file_name_lower.endswith('.ipa'))
+    def is_appx(self):
+        return (self.file_type in settings.APPX_MIME) and self.file_name_lower.endswith('.appx')
