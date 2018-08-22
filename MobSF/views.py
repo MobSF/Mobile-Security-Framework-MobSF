@@ -34,6 +34,7 @@ from .forms import UploadFileForm, FormUtil
 from .scanning import Scanning
 
 LINUX_PLATFORM = ["Darwin", "Linux"]
+HTTP_BAD_REQUEST = 400
 
 def index(request):
     """
@@ -73,24 +74,22 @@ class Upload(object):
             response_data['description'] = 'Method not Supported!'
             print("\n[ERROR] Method not Supported!")
             form = UploadFileForm()
-            resp['status'] = 400
+            resp['status'] = HTTP_BAD_REQUEST
             return resp
         
         if not self.form.is_valid():
             response_data['description'] = 'Invalid Form Data!'
             print("\n[ERROR] Invalid Form Data!")
-            resp['status'] = 400
+            resp['status'] = HTTP_BAD_REQUEST
             return resp
 
         self.file_content_type = request.FILES['file'].content_type
         self.file_name_lower = request.FILES['file'].name.lower()
         self.file_type = FileType(self.file_content_type, self.file_name_lower)
         if not self.file_type.is_allow_file():
-            response_data['url'] = ''
             response_data['description'] = 'File format not Supported!'
-            response_data['status'] = 'error'
             print("\n[ERROR] File format not Supported!")
-            resp['status'] = 400
+            resp['status'] = HTTP_BAD_REQUEST
             return resp
 
         if self.file_type.is_ipa():
@@ -100,10 +99,8 @@ class Upload(object):
                     'url': 'mac_only/',
                     'status': 'success'
                 }
-                print(
-                    "\n[ERROR] Static Analysis of iOS IPA requires Mac or Linux")
+                print("\n[ERROR] Static Analysis of iOS IPA requires Mac or Linux")
                 return data
-        
         
         data = self.upload()
 
@@ -121,7 +118,7 @@ class Upload(object):
         request = self.request
         if not self.form.is_valid():
             api_response['error'] = FormUtil.errors_message(self.form)
-            return JsonResponse(data=api_response, status=400)
+            return JsonResponse(data=api_response, status=HTTP_BAD_REQUEST)
 
         self.file_content_type = request.FILES['file'].content_type
         self.file_name_lower = request.FILES['file'].name.lower()
@@ -129,9 +126,7 @@ class Upload(object):
 
         if not self.file_type.is_allow_file():
             api_response["error"] = "File format not Supported!"
-            return JsonResponse(data=api_response, status=400)
-        self.file_content_type = request.FILES['file'].content_type
-        self.file_name_lower = request.FILES['file'].name.lower()
+            return JsonResponse(data=api_response, status=HTTP_BAD_REQUEST)
         data = self.upload()
         return JsonResponse({
             'scan_type': data['scan_type'],
@@ -145,8 +140,7 @@ class Upload(object):
         file_type = self.file_content_type
         file_name_lower = self.file_name_lower
 
-        print("[INFO] MIME Type: " + file_type +
-                " FILE: " + request.FILES['file'].name)
+        print("[INFO] MIME Type: {} FILE: {}".format(file_type, file_name_lower))
         if self.file_type.is_apk():
             return scanning.scan_apk()
         elif self.file_type.is_zip():
