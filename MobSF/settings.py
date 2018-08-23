@@ -22,8 +22,16 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
 
 MOBSF_VER = "v1.0 Beta"
-BANNER = """ 
-        
+BANNER = """
+ _____              __ _         ___  ___      _     _ _        _____                      _ _         
+/  ___|            / _| |        |  \/  |     | |   (_) |      /  ___|                    (_) |        
+\ `--.  __ _  __ _| |_| |_ __ _  | .  . | ___ | |__  _| | ___  \ `--.  ___  ___ _   _ _ __ _| |_ _   _ 
+ `--. \/ _` |/ _` |  _| __/ _` | | |\/| |/ _ \| '_ \| | |/ _ \  `--. \/ _ \/ __| | | | '__| | __| | | |
+/\__/ / (_| | (_| | | | || (_| | | |  | | (_) | |_) | | |  __/ /\__/ /  __/ (__| |_| | |  | | |_| |_| |
+\____/ \__,_|\__,_|_|  \__\__,_| \_|  |_/\___/|_.__/|_|_|\___| \____/ \___|\___|\__,_|_|  |_|\__|\__, |
+                                                                                                  __/ |
+                                                                                                 |___/ 
+
 """
 # ASCII Standard
 #==============================================
@@ -129,7 +137,7 @@ APPX_MIME = [
 #=====MOBSF SECRET GENERATION AND MIGRATION=====
 # Based on https://gist.github.com/ndarville/3452907#file-secret-key-gen-py
 try:
-    SECRET_KEY
+    SECRET_KEY="nq@n!jqcg473ha54q-0840zry%h6=ia^&m!*c4hao)n87)^aya"
 except NameError:
     SECRET_FILE = os.path.join(MobSF_HOME, "secret")
     try:
@@ -351,9 +359,9 @@ else:
 
     #====ANDROID MOBSF VIRTUALBOX VM SETTINGS =====
     # VM UUID
-    UUID = '408e1874-759f-4417-9453-53ef21dc2ade'
+    UUID = 'c0e864bd-d52a-41f1-9a8c-23976f770537'
     # Snapshot UUID
-    SUUID = '5c9deb28-def6-49c0-9233-b5e03edd85c6'
+    SUUID = '823f112f-0cff-4583-9769-4cc4e9af59dd'
     # IP of the MobSF VM
     VM_IP = '192.168.56.101'
     VM_ADB_PORT = 5555
@@ -367,6 +375,8 @@ else:
     #================HOST/PROXY SETTINGS ===============
     PROXY_IP = '192.168.56.1'  # Host/Server/Proxy IP
     PORT = 1337  # Proxy Port
+    #PROXY_IP = '192.168.1.37'  # Host/Server/Proxy IP
+    #PORT = 5555   # Proxy Port
     ROOT_CA = '0026aabb.0'
     SCREEN_IP = PROXY_IP  # ScreenCast IP
     SCREEN_PORT = 9339  # ScreenCast Port(Do not Change)

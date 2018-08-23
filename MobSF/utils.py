@@ -72,7 +72,7 @@ def printMobSFverison():
         print('\n\n ****Mobile Security Framework ' + settings.MOBSF_VER)
         print("\nREST API Key: " + api_key())
     else:
-        print('\n\n\033[1m\033[34m***Mobile Security Framework ' +
+        print('\n\n\033[1m\033[34m***Saafta Mobile Security ' +
               settings.MOBSF_VER + '\033[0m')
         print("\nREST API Key: " + Color.BOLD + api_key() + Color.END)
     print("OS: " + platform.system())
@@ -83,7 +83,7 @@ def printMobSFverison():
     FindVbox(True)
     check_basic_env()
     adb_binary_or32bit_support()
-    check_update()
+    # check_update()
 
 
 def check_update():
