@@ -4,7 +4,7 @@ import platform
 import subprocess
 import django
 from os.path import dirname, abspath
-from scripts.qcow2 import Qcow2
+from qcow2 import Qcow2
 
 
 MobSF_path = dirname(dirname(abspath(__file__)))
