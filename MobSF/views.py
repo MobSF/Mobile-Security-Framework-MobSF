@@ -2,36 +2,24 @@
 """
 MobSF File Upload and Home Routes
 """
-import os
-
-import shutil
-import platform
 import json
+import os
+import platform
 import re
-
+import shutil
 from wsgiref.util import FileWrapper
-from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
-from django.http import HttpResponseRedirect
-from django.conf import settings
 
-from MobSF.utils import (
-    print_n_send_error_response,
-    PrintException,
-    isDirExists,
-    isFileExists,
-    api_key,
-    FileType
-)
-from StaticAnalyzer.models import RecentScansDB
-from StaticAnalyzer.models import (
-    StaticAnalyzerAndroid,
-    StaticAnalyzerIPA,
-    StaticAnalyzerIOSZIP,
-    StaticAnalyzerWindows,
-)
-from .forms import UploadFileForm, FormUtil
-from .scanning import Scanning
+from django.conf import settings
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import render
+
+from MobSF.forms import FormUtil, UploadFileForm
+from MobSF.scanning import Scanning
+from MobSF.utils import (FileType, PrintException, api_key, isDirExists,
+                         isFileExists, print_n_send_error_response)
+from StaticAnalyzer.models import (RecentScansDB, StaticAnalyzerAndroid,
+                                   StaticAnalyzerIOSZIP, StaticAnalyzerIPA,
+                                   StaticAnalyzerWindows)
 
 LINUX_PLATFORM = ["Darwin", "Linux"]
 HTTP_BAD_REQUEST = 400

@@ -3,13 +3,11 @@
 import hashlib
 import os
 
-from django.utils import timezone
 from django.conf import settings
-from StaticAnalyzer.models import RecentScansDB
-from MobSF.utils import (
-    PrintException,
-)
+from django.utils import timezone
 
+from MobSF.utils import PrintException
+from StaticAnalyzer.models import RecentScansDB
 
 
 def add_to_recent_scan(name, md5, url):
@@ -133,4 +131,3 @@ class Scanning(object):
         add_to_recent_scan(self.file_name, md5, data['url'])
         print("\n[INFO] Performing Static Analysis of Windows APP")
         return data
-
