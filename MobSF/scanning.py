@@ -46,16 +46,14 @@ class Scanning(object):
 
     def __init__(self, request):
         self.request = request
+        self.file = request.FILES['file']
         self.file_name = request.FILES['file'].name
-
     
     def scan_apk(self):
         """
         """
         # APK
-        request = self.request
-        md5 = handle_uploaded_file(request.FILES['file'], '.apk')
-
+        md5 = handle_uploaded_file(self.file, '.apk')
         data = {
             'url': 'StaticAnalyzer/?name={}&type=apk&checksum={}'.format(self.file_name, md5),
             'status': 'success',
@@ -69,14 +67,11 @@ class Scanning(object):
         print("\n[INFO] Performing Static Analysis of Android APK")
         return data
 
-        
-
     def scan_zip(self):
         """
         """
-        request = self.request
         # Android /iOS Zipped Source
-        md5 = handle_uploaded_file(request.FILES['file'], '.zip')
+        md5 = handle_uploaded_file(self.file, '.zip')
 
         data = {
             'url': 'StaticAnalyzer/?name={}&type=zip&checksum={}'.format(self.file_name, md5),
@@ -90,14 +85,11 @@ class Scanning(object):
         print("\n[INFO] Performing Static Analysis of Android/iOS Source Code")
         return data
 
-
     def scan_ipa(self):
         """
         iOS Binary
         """
-
-        request = self.request
-        md5 = handle_uploaded_file(request.FILES['file'], '.ipa')
+        md5 = handle_uploaded_file(self.file, '.ipa')
         data = {
             'hash': md5,
             'scan_type': 'ipa',
@@ -110,12 +102,10 @@ class Scanning(object):
         print("\n[INFO] Performing Static Analysis of iOS IPA")
         return data
 
-
     def scan_appx(self):
         """
         """
-        request = self.request
-        md5 = handle_uploaded_file(request.FILES['file'], '.appx')
+        md5 = handle_uploaded_file(self.file, '.appx')
         data = {
             'hash': md5,
             'scan_type': 'appx',
