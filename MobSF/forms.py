@@ -11,7 +11,18 @@ class FormUtil(object):
 
     @staticmethod
     def errors_message(form):
-        return '; '.join([v for k, v in form.errors.items() for v in v])
+        """
+        :param form forms.Form
+        form.errors.get_json_data() django 2.0 or higher
+
+        :return
+        example { "error": "file This field is required." }
+        """
+        errors_messages = []
+        for k, value in form.errors.get_json_data().items():
+            errors_messages.append(
+                (k + ' ' + ' , '.join([i['message'] for i in value])))
+        return '; '.join(errors_messages)
 
     @staticmethod
     def errors(form):
