@@ -5,7 +5,7 @@ import json
 
 from .forms import UploadFileForm
 from MobSF.views import (
-    upload,
+    Upload,
     delete_scan
 )
 from MobSF.utils import (
@@ -18,9 +18,10 @@ from StaticAnalyzer.views.android.static_analyzer import static_analyzer
 from StaticAnalyzer.views.ios.static_analyzer import static_analyzer_ios
 from StaticAnalyzer.views.windows import staticanalyzer_windows
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest, HttpResponseNotAllowed
 from django.views.decorators.csrf import csrf_exempt
 
+POST = 'POST'
 
 def make_api_response(data, status=200):
     """Make API Response"""
@@ -41,15 +42,12 @@ def api_auth(meta):
 @csrf_exempt
 def api_upload(request):
     """POST - Upload API"""
-    if request.method == 'POST':
-        resp = upload(request, True)
-        if "error" in resp:
-            response = make_api_response(resp, 500)
-        else:
-            response = make_api_response(resp)
+    if request.method == POST:
+        upload = Upload(request)
+        return upload.upload_api()
     else:
-        response = make_api_response({"error": "Method Not Allowed"}, 405)
-    return response
+        return HttpResponseNotAllowed([POST])
+
 
 
 @csrf_exempt
