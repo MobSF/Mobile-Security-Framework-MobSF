@@ -58,15 +58,13 @@ class Scanning(object):
 
         data = {
             'url': 'StaticAnalyzer/?name={}&type=apk&checksum={}'.format(self.file_name, md5),
-            'status': 'success'
+            'status': 'success',
+            'hash': md5,
+            'scan_type': 'apk',
+            'file_name': self.file_name
         }
-
     
         add_to_recent_scan(self.file_name, md5, data['url'])
-        
-        data["hash"] = md5
-        data["scan_type"] = "apk"
-        data["file_name"] = self.file_name
 
         print("\n[INFO] Performing Static Analysis of Android APK")
         return data
@@ -82,15 +80,13 @@ class Scanning(object):
 
         data = {
             'url': 'StaticAnalyzer/?name={}&type=zip&checksum={}'.format(self.file_name, md5),
-            'status': 'success'
+            'status': 'success',
+            'hash': md5,
+            'scan_type': 'zip',
+            'file_name': self.file_name
         }
 
-        data["hash"] = md5
-        data["scan_type"] = "zip"
-        data["file_name"] = self.file_name
-
-        add_to_recent_scan(
-            self.file_name, md5, data['url'])
+        add_to_recent_scan(self.file_name, md5, data['url'])
         print("\n[INFO] Performing Static Analysis of Android/iOS Source Code")
         return data
 
