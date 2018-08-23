@@ -623,11 +623,11 @@ class FileType(object):
         return False
     
     def is_apk(self):
-        return ((self.file_type in settings.APK_MIME) and self.file_name_lower.endswith('.apk'))
+        return (self.file_type in settings.APK_MIME) and self.file_name_lower.endswith('.apk')
     
     def is_zip(self):
-        return ((self.file_type in settings.ZIP_MIME) and self.file_name_lower.endswith('.zip'))
+        return (self.file_type in settings.ZIP_MIME) and self.file_name_lower.endswith('.zip')
     def is_ipa(self):
-        return ((self.file_type in settings.IPA_MIME) and self.file_name_lower.endswith('.ipa'))
+        return (self.file_type in settings.IPA_MIME) and self.file_name_lower.endswith('.ipa')
     def is_appx(self):
         return (self.file_type in settings.APPX_MIME) and self.file_name_lower.endswith('.appx')
