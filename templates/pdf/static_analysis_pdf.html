@@ -2,39 +2,39 @@
    {% block content %}
 <style>
 body {
-    font: normal 30px Verdana, Arial, sans-serif;
+    font: normal 30px Verdana, Arial, sans-serif;direction: rtl;
 }
 
 </style>
-<h1 align="center" class="page-header">Static Analysis - {{name}} </h1>
+<h1 align="center" class="page-header">تجزیه و تحلیل استانیک -  {{name}} </h1>
 <hr>
 
                   <div class="col-lg-7">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-file"></span> FILE INFORMATION</h3><hr>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-file"></span>اطلاعات فایل </h3><hr>
                             </div>
 
                             <div class="panel-body">
                                 <div class="list-group">
 									<p>                                       
-									   <span class="label label-primary"><b>Name: </b></span>
+									   <span class="label label-primary"><b>نام: </b></span>
                                     {{ name }}
                                     </p>
 									<p>
-                                       <span class="label label-primary"><b>Size :</b></span>
+                                       <span class="label label-primary"><b>حجم فایل :</b></span>
                                     {{ size }}
                                    </p><p>
-                                       <span class="label label-primary"><b>MD5: </b></span>
                                     {{ md5 }}
-                                    
+                                       <span class="label label-primary"><b>MD5: </b></span>
+
                                    </p><p>
-								     <span class="label label-primary"><b>SHA1: </b></span>
                                     {{ sha1 }}
-                                  
+								     <span class="label label-primary"><b>SHA1: </b></span>
+
 									 </p><p>
-								     <span class="label label-primary"><b>SHA256: </b></span>
                                     {{ sha256 }}
+								     <span class="label label-primary"><b>SHA256: </b></span>
                                 </div>
                                 
                             </div>
@@ -44,32 +44,32 @@ body {
                   <div class="col-lg-5">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-phone"></span> APP INFORMATION</h3><hr>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-phone"></span>اطلاعات برنامه</h3><hr>
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
 									<p>                                       
-									   <span class="label label-primary"><b>Package Name: </b></span>
+									   <span class="label label-primary"><b>نام پکیج: </b></span>
                                     {{ packagename }}
                                     </p>
 									<p>
-                                       <span class="label label-primary"><b>Main Activity: </b></span>
+                                       <span class="label label-primary"><b>فرم آغازین: </b></span>
                                     {{ mainactivity }}
                                    </p><p>
                                        <span class="label label-primary"><b>Target SDK: </b></span>
                                     {{ targetsdk }}
                                     </p><p>
-								     <span class="label label-primary"><b>Min SDK: </b></span>
+								     <span class="label label-primary"><b>حداقل SDK: </b></span>
                                     {{ minsdk }}
                                   </p><p>
 									
-								     <span class="label label-primary"><b>Max SDK: </b></span>
+								     <span class="label label-primary"><b>حداکثر SDK: </b></span>
                                     {{ maxsdk }}
 									</p><p>
-									<span class="label label-primary"><b>Android Version Name: </b></span>
+									<span class="label label-primary"><b>نام نسخه برنامه: </b></span>
                                     {{ androvername }}
 									</p><p>
-									<span class="label label-primary"><b>Android Version Code: </b></span>
+									<span class="label label-primary"><b>شماره نسخه برنامه: </b></span>
                                     {{ androver }}
 									</p>
                                 </div>
@@ -82,7 +82,7 @@ body {
                   		  <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-eye-close"></span> CERTIFICATE</h3><hr>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-eye-close"></span> امضاهای برنامه</h3><hr>
                             </div>
                             <div class="panel-body">
                             <pre>
@@ -112,16 +112,16 @@ Production ready applications should not be signed with 'Android Debug' Certific
 					<div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-ok"></span> PERMISSIONS</h3><hr>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-ok"></span> دسترسی ها</h3><hr>
                             </div>
                             <div class="panel-body">
 								  <div class="table-responsive">
                     <table>
                       <thead>
                     <tr>
-                        <th>PERMISSION</th>
-                        <th>INFO </th>
-                        <th>DESCRIPTION</th>
+                        <th>نوع</th>
+                        <th>عنوان </th>
+                        <th>توضیحات</th>
                       </tr>
                                         </thead>
                                         <tbody>
@@ -143,17 +143,17 @@ Production ready applications should not be signed with 'Android Debug' Certific
                     <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class=""></span> ANDROID LIBRARY BINARY ANALYSIS</h3><hr>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class=""></span> تجزیه و تحلیل و کتابخانه باینری</h3><hr>
                             </div>
                             <div class="panel-body">
                   <div class="table-responsive">
                      <table class="table table-bordered table-hover table-striped">
                                         <thead>
                                             <tr>
-                                                <th>ISSUE</th>
-                                                <th>SEVERITY</th>
-                                                <th>DESCRIPTION</th>
-                                                <th>FILES</th>
+                                                <th>موضوع</th>
+                                                <th>شدت</th>
+                                                <th>توضیحات</th>
+                                                <th>فایلها</th>
                                                 
                                             </tr>
                                         </thead>
@@ -196,17 +196,17 @@ Production ready applications should not be signed with 'Android Debug' Certific
                 <div class="col-lg-12">
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                             <h3 class="panel-title"><i class="fa fa-bug"></i>VirusTotal Report</h3><hr>
+                             <h3 class="panel-title"><i class="fa fa-bug"></i>گزارش ویروس</h3><hr>
                         </div>
                         <div class="panel-body">
-                        <p> {{ VT_RESULT.positives }} / {{ VT_RESULT.total }}&nbsp; AVs found this file Malicious! </p>
+                        <p> {{ VT_RESULT.positives }} / {{ VT_RESULT.total }}&nbsp; AV این فایل را مخرب یافت!</p>
                         {% if VT_RESULT.positives %}
                           <div class="table-responsive">
                                 <table class="table table-bordered table-hover table-striped">
                                                 <thead>
                                                     <tr>
                                                         <th>AV</th>
-                                                        <th>Detection</th>
+                                                        <th>تشخیص</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -236,7 +236,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                     <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                 <h3 class="panel-title"><i class="fa fa-bug"></i> DEX MALWARE ANALYSIS</h3><hr>
+                                 <h3 class="panel-title"><i class="fa fa-bug"></i>  DEX تجزیه و تحلیل بد افزار</h3><hr>
                             </div>
                             <div class="panel-body">
                   <div class="table-responsive">
@@ -244,9 +244,9 @@ Production ready applications should not be signed with 'Android Debug' Certific
                                         <thead>
                                             <tr>
                                                 <th>ANTI-VM</th>
-                                                <th>COMPILER</th>
-                                                <th>OBFUSCATOR</th>
-                                                <th>PACKER</th>
+                                                <th>کامپایلر</th>
+                                                <th>مبهم سازی</th>
+                                                <th>بسته</th>
                                                 <th>DROPPER</th>
                                                 <th>MANIPULATOR</th>
                                                 <th>ANTI-ASSEMBLY</th>
@@ -264,9 +264,9 @@ Production ready applications should not be signed with 'Android Debug' Certific
                        
                         <td>
                             {% if apkid|key:"anti_vm" == "" %}
-                              <span class="label label-info">No Anti-VM Code</span>
+                              <span class="label label-info">هیچ کد ضد VM وجود ندارد</span>
                             {% else %}
-                              <span class="label label-info">Anti-VM Code Found</span></br>
+                              <span class="label label-info">کد ضد VM یافت شد</span></br>
                               {% for cmp in apkid|key:"anti_vm" %}
                                {{cmp}}</br>
                               {% endfor %}
@@ -276,9 +276,9 @@ Production ready applications should not be signed with 'Android Debug' Certific
                   
                         <td>
                           {% if apkid|key:"compiler" == "" %}
-                              <span class="label label-info">Cannot Identify Compiler</span>
+                              <span class="label label-info">نمی توان کامپایلر را شناسایی کرد</span>
                             {% else %}
-                               <span class="label label-info">Compiler Found</span></br>
+                               <span class="label label-info">کامپایلر یافت شد</span></br>
                               {% for cmp in apkid|key:"compiler" %}
                                {{cmp}}</br>
                               {% endfor %}
@@ -287,9 +287,9 @@ Production ready applications should not be signed with 'Android Debug' Certific
                  
                         <td>
                           {% if apkid|key:"obfuscator" == "" %}
-                              <span class="label label-info">No Obfuscator Found</span>
+                              <span class="label label-info"> بدون Obfuscator</span>
                             {% else %}
-                              <span class="label label-info">Obfuscator Found</span></br>
+                              <span class="label label-info">Obfuscator یافت شد</span></br>
                               {% for cmp in apkid|key:"obfuscator" %}
                                {{cmp}}</br>
                               {% endfor %}
@@ -298,9 +298,9 @@ Production ready applications should not be signed with 'Android Debug' Certific
 
                         <td>
                           {% if apkid|key:"packer" == "" %}
-                              <span class="label label-success">No Packer Found</span>
+                              <span class="label label-success">هیچ بستهی یافت نشد</span>
                             {% else %}
-                              <span class="label label-danger">Packer Found</span></br>
+                              <span class="label label-danger">Packer یافت شد</span></br>
                               {% for cmp in apkid|key:"packer" %}
                                {{cmp}}</br>
                               {% endfor %}
@@ -309,9 +309,9 @@ Production ready applications should not be signed with 'Android Debug' Certific
 
                         <td>
                           {% if apkid|key:"dropper" == "" %}
-                              <span class="label label-success">No Dropper Found</span>
+                              <span class="label label-success"> Dropper یافت نشد</span>
                             {% else %}
-                             <span class="label label-danger">Dropper Found</span></br>
+                             <span class="label label-danger">Dropper بافت شد</span></br>
                               {% for cmp in apkid|key:"dropper" %}
                                {{cmp}}</br>
                               {% endfor %}
@@ -320,9 +320,9 @@ Production ready applications should not be signed with 'Android Debug' Certific
 
                         <td>
                           {% if apkid|key:"manipulator" == "" %}
-                              <span class="label label-info">No Manipulator Found</span>
+                              <span class="label label-info"> Manipulator بدون</span>
                             {% else %}
-                             <span class="label label-info">Manipulator Found</span></br>
+                             <span class="label label-info">Manipulator یافت شد</span></br>
                               {% for cmp in apkid|key:"manipulator" %}
                                {{cmp}}</br>
                               {% endfor %}
@@ -331,9 +331,9 @@ Production ready applications should not be signed with 'Android Debug' Certific
 
                         <td>
                           {% if apkid|key:"anti_disassembly" == "" %}
-                              <span class="label label-success">No Anti-Disassembly Code</span>
+                              <span class="label label-success"> Anti-Disassembly بدون کد</span>
                             {% else %}
-                              <span class="label label-danger">Anti-Disassembly Code Found</span></br>
+                              <span class="label label-danger">کد Anti-Disassembly یافت شد</span></br>
                               {% for cmp in apkid|key:"anti_disassembly" %}
                                {{cmp}}</br>
                               {% endfor %}
@@ -342,9 +342,9 @@ Production ready applications should not be signed with 'Android Debug' Certific
 
                         <td>
                           {% if apkid|key:"abnormal" == "" %}
-                              <span class="label label-success">No Abnormal Pattern Found</span>
+                              <span class="label label-success">هیچ الگوی غیر طبیعی یافت نشد</span>
                             {% else %}
-                              <span class="label label-danger">Abnormal Pattern Found</span></br>
+                              <span class="label label-danger">الگوی غیر طبیعی پیدا شد</span></br>
                               {% for cmp in apkid|key:"abnormal" %}
                                {{cmp}}</br>
                               {% endfor %}
@@ -353,7 +353,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                         
                       </tr>
                       {% else %}
-                      <p align="center"><strong>APKiD not enabled.</strong></p>
+                      <p align="center"><strong>APKiD فعال نیست</strong></p>
                       {% endif %}
        
                     </tbody>
@@ -374,7 +374,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                          <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class=""></i><span class=""></span> BROWSABLE ACTIVITIES</h3><hr>
+                                <h3 class="panel-title"><i class=""></i><span class=""></span> فرم های قایل نمایش</h3><hr>
 
                             </div>
                             <div class="panel-body">
@@ -382,8 +382,8 @@ Production ready applications should not be signed with 'Android Debug' Certific
                                    <table class="table table-bordered table-hover table-striped">
                                         <thead>
                                             <tr>
-                                                <th>ACTIVITY</th>
-                                                <th>INTENT</th>   
+                                                <th>فرم</th>
+                                                <th>مقصد</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -392,44 +392,44 @@ Production ready applications should not be signed with 'Android Debug' Certific
                             <td>{{activity}}</td>
                             <td>
                                    {% if intent_details|key:"schemes" %}
-                                      <strong>Schemes</strong>: 
+                                      <strong>اسکیماها</strong>:
                                       {% for scheme in intent_details|key:"schemes" %}
                                         {{scheme}},
                                       {% endfor %}
                                        </br>
                                    {% endif %}
                                    {% if intent_details|key:"hosts" %}
-                                      <strong>Hosts:</strong> {% for host in intent_details|key:"hosts" %}
+                                      <strong>هاست:</strong> {% for host in intent_details|key:"hosts" %}
                                         {{host}},
                                       {% endfor %} 
                                       </br>
                                    {% endif %}
                                    {% if intent_details|key:"ports" %}
-                                      <strong>Ports:</strong> {% for port in intent_details|key:"ports" %}
+                                      <strong>پورت:</strong> {% for port in intent_details|key:"ports" %}
                                         {{port}},
                                       {% endfor %} 
                                       </br>
                                    {% endif %}
                                    {% if intent_details|key:"mime_types" %}
-                                      <strong>Mime Types:</strong> {% for mime in intent_details|key:"mime_types" %}
+                                      <strong>Mime نوع:</strong> {% for mime in intent_details|key:"mime_types" %}
                                         {{mime}},
                                       {% endfor %} 
                                       </br>
                                    {% endif %}
                                    {% if intent_details|key:"paths" %}
-                                      <strong>Paths:</strong> {% for path in intent_details|key:"paths" %}
+                                      <strong>مسیرها:</strong> {% for path in intent_details|key:"paths" %}
                                         {{path}},
                                       {% endfor %} 
                                       </br>
                                    {% endif %}
                                    {% if intent_details|key:"path_prefixs" %}
-                                      <strong>Path Prefixes:</strong> {% for prefix in intent_details|key:"path_prefixs" %}
+                                      <strong>پیشوند مسیر:</strong> {% for prefix in intent_details|key:"path_prefixs" %}
                                         {{prefix}},
                                       {% endfor %} 
                                       </br>
                                    {% endif %}
                                    {% if intent_details|key:"path_patterns" %}
-                                      <strong>Path Patterns:</strong> {% for pattern in intent_details|key:"path_patterns" %}
+                                      <strong>الگوهای مسیر:</strong> {% for pattern in intent_details|key:"path_patterns" %}
                                         {{pattern}},
                                       {% endfor %} 
                                       </br>
@@ -448,7 +448,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
 			<div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-search"></span> MANIFEST ANALYSIS</h3><hr>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-search"></span> MANIFEST تجزیه و تحلیل</h3><hr>
 
                             </div>
                             <div class="panel-body">
@@ -456,9 +456,9 @@ Production ready applications should not be signed with 'Android Debug' Certific
                                     <table class="table table-bordered table-hover table-striped">
                                         <thead>
                                             <tr>
-                                                <th>ISSUE</th>
-                                                <th>SEVERITY</th>
-												<th>DESCRIPTION</th>
+                                                <th>موضوع</th>
+                                                <th>شدت</th>
+												<th>توضیحات</th>
                                                 
                                             </tr>
                                         </thead>
@@ -500,16 +500,16 @@ Production ready applications should not be signed with 'Android Debug' Certific
 						<div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-warning-sign"></span> CODE ANALYSIS</h3><hr>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-warning-sign"></span> تجزیه و تحلیل کدها</h3><hr>
                             </div>
                             <div class="panel-body">
 								  <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
                                         <thead>
                                             <tr>
-                                                <th>ISSUE</th>
-                                                <th>SEVERITY</th>
-												<th>FILES</th>
+                                                <th>موضوع</th>
+                                                <th>شدت</th>
+												<th>فایلها</th>
                                                 
                                             </tr>
                                         </thead>
@@ -558,7 +558,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                                             <tr>
                                                 
                                                 <th>API</th>
-												<th>FILES</th>
+												<th>فایلها</th>
                                                 
                                             </tr>
                                         </thead>
@@ -587,7 +587,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
 					    <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-globe"></span> URLS</h3><hr>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-globe"></span> مسیرها</h3><hr>
                             </div>
                             <div class="panel-body">
 								  <div class="table-responsive">
@@ -596,7 +596,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                   <thead>
                   <tr>
                      <th>URL</th>
-                     <th>File</th>
+                     <th>فایل</th>
                   </tr>
                  </thead>
                     {% endif %}
@@ -627,7 +627,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                     <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-screenshot"></span> MALWARE CHECK</h3><hr>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-screenshot"></span> بررسی بد افزار</h3><hr>
                             </div>
                             <div class="panel-body">
                                   <div class="table-responsive">
@@ -635,8 +635,8 @@ Production ready applications should not be signed with 'Android Debug' Certific
                                         {% if urls %} 
                   <thead>
                   <tr>
-                     <th>Domain</th>
-                     <th>Status</th>
+                     <th>دامین</th>
+                     <th>وضعیت ها</th>
                   </tr>
                  </thead>
                   {% endif %}
@@ -671,7 +671,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
 							    <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-envelope"></span> EMAILS</h3><hr>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-envelope"></span> پست های الکترونیکی</h3><hr>
                             </div>
                             <div class="panel-body">
 								  <div class="table-responsive">
@@ -710,15 +710,15 @@ Production ready applications should not be signed with 'Android Debug' Certific
 							<hr>		    <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-lock"></span> FILE ANALYSIS</h3><hr>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-lock"></span> فایل تجزیه و تحلیل</h3><hr>
                             </div>
                             <div class="panel-body">
 								  <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
                                               <thead>
                                             <tr>
-                                                <th>ISSUE</th>
-                                                <th>FILES</th>
+                                                <th>موضوع</th>
+                                                <th>فایل ها</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -734,7 +734,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
   			<hr><div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-sort-by-alphabet-alt"></span> STRINGS</h3><hr>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-sort-by-alphabet-alt"></span> عنوان ها</h3><hr>
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
@@ -757,7 +757,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                    <div class="col-lg-5">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-credit-card"></span> ACTIVITIES</h3><hr>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-credit-card"></span> فرم ها</h3><hr>
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
@@ -775,7 +775,8 @@ Production ready applications should not be signed with 'Android Debug' Certific
           <hr><div class="col-lg-5">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-hdd"></span> PROVIDERS</h3><hr>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-hdd"></span>  ارائه
+                                                    دهندگان</h3><hr>
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
@@ -793,7 +794,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
 			<hr>		<div class="col-lg-5">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-sort-by-attributes-alt"></span> RECEIVERS</h3><hr>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-sort-by-attributes-alt"></span> گیرنده ها</h3><hr>
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
@@ -811,7 +812,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
 			<hr>		<div class="col-lg-5">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-refresh"></span> SERVICES</h3><hr>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-refresh"></span>سرویس ها</h3><hr>
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
@@ -829,7 +830,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
 			<hr>			<div class="col-lg-5">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-chevron-down"></span> LIBRARIES</h3><hr>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-chevron-down"></span> کتابخانه ها</h3><hr>
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
@@ -846,7 +847,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                     </div><hr>  <div class="col-lg-7">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-folder-open"></span> FILES</h3><hr>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-folder-open"></span> فایل ها</h3><hr>
                             </div>
                             <div class="panel-body">
                                 <div class="list-group">
@@ -863,7 +864,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                     </div>
 
 	<hr><hr>
-    <h3 align="center"> Report Generated by - MobSF | http://opensecurity.in</h3>
+
 		   
 		   
        

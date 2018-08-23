@@ -56,11 +56,6 @@ def upstream_proxy(flaw_type):
 
 def api_key():
     """Print REST API Key"""
-
-    if os.environ.get('MOBSF_API_KEY'):
-        print("\nAPI Key read from environment variable")
-        return os.environ['MOBSF_API_KEY']
-
     secret_file = os.path.join(settings.MobSF_HOME, "secret")
     if isFileExists(secret_file):
         try:
@@ -74,10 +69,10 @@ def printMobSFverison():
     """Print MobSF Version"""
     print(settings.BANNER)
     if platform.system() == "Windows":
-        print('\n\nMobile Security Framework ' + settings.MOBSF_VER)
+        print('\n\n ****Mobile Security Framework ' + settings.MOBSF_VER)
         print("\nREST API Key: " + api_key())
     else:
-        print('\n\n\033[1m\033[34mMobile Security Framework ' +
+        print('\n\n\033[1m\033[34m***Mobile Security Framework ' +
               settings.MOBSF_VER + '\033[0m')
         print("\nREST API Key: " + Color.BOLD + api_key() + Color.END)
     print("OS: " + platform.system())
@@ -94,7 +89,7 @@ def printMobSFverison():
 def check_update():
     try:
         print("[INFO] Checking for Update.")
-        github_url = "https://raw.githubusercontent.com/MobSF/Mobile-Security-Framework-MobSF/master/MobSF/settings.py"
+        github_url = "#"
         try:
             proxies, verify = upstream_proxy('https')
         except:

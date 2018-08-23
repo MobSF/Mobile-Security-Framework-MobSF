@@ -21,13 +21,14 @@
     <link href="/static/bower_components/perfect-scrollbar/css/perfect-scrollbar.min.css" rel="stylesheet">
     <link href="/static/bower_components/slick-carousel/slick/slick.css" rel="stylesheet">
     <style>
-        #mainList  li, #mainList li ul li{
+        #mainList li, #mainList li ul li {
             margin: 0;
             padding: 0;
             margin: 0 10px;
 
         }
-        #mainList  li a,  #mainList li ul li a{
+
+        #mainList li a, #mainList li ul li a {
             color: snow;
             text-align: right;
             direction: rtl;
@@ -35,7 +36,8 @@
             width: 100%;
 
         }
-        #mainList  a{
+
+        #mainList a {
             color: snow;
             text-align: right;
             direction: rtl;
@@ -43,55 +45,58 @@
             width: 100%;
         }
 
-        #mainList  .bold{
-font-weight: bold;
+        #mainList .bold {
+            font-weight: bold;
         }
 
-#return-to-top {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    background: rgb(0, 0, 0);
-    background: rgba(0, 0, 0, 0.7);
-    width: 50px;
-    height: 50px;
-    display: block;
-    text-decoration: none;
-    -webkit-border-radius: 35px;
-    -moz-border-radius: 35px;
-    border-radius: 35px;
-    display: none;
-    -webkit-transition: all 0.3s linear;
-    -moz-transition: all 0.3s ease;
-    -ms-transition: all 0.3s ease;
-    -o-transition: all 0.3s ease;
-    transition: all 0.3s ease;
-    z-index: 999999;
-}
-#return-to-top i {
-    color: #fff;
-    margin: 0;
-    position: relative;
-    left: 16px;
-    top: 13px;
-    font-size: 19px;
-    -webkit-transition: all 0.3s ease;
-    -moz-transition: all 0.3s ease;
-    -ms-transition: all 0.3s ease;
-    -o-transition: all 0.3s ease;
-    transition: all 0.3s ease;
-}
-.icon-top{
-    background-image: url('/static/img/topArrow.png');
-}
+        #return-to-top {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgb(0, 0, 0);
+            background: rgba(0, 0, 0, 0.7);
+            width: 50px;
+            height: 50px;
+            display: block;
+            text-decoration: none;
+            -webkit-border-radius: 35px;
+            -moz-border-radius: 35px;
+            border-radius: 35px;
+            display: none;
+            -webkit-transition: all 0.3s linear;
+            -moz-transition: all 0.3s ease;
+            -ms-transition: all 0.3s ease;
+            -o-transition: all 0.3s ease;
+            transition: all 0.3s ease;
+            z-index: 999999;
+        }
 
-#return-to-top:hover {
-    background: rgba(0, 0, 0, 0.9);
-}
-#return-to-top:hover i {
-    color: #fff;
-    top: 5px;
-}
+        #return-to-top i {
+            color: #fff;
+            margin: 0;
+            position: relative;
+            left: 16px;
+            top: 13px;
+            font-size: 19px;
+            -webkit-transition: all 0.3s ease;
+            -moz-transition: all 0.3s ease;
+            -ms-transition: all 0.3s ease;
+            -o-transition: all 0.3s ease;
+            transition: all 0.3s ease;
+        }
+
+        .icon-top {
+            background-image: url('/static/img/topArrow.png');
+        }
+
+        #return-to-top:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        #return-to-top:hover i {
+            color: #fff;
+            top: 5px;
+        }
 
     </style>
     <link href="/static/css/main_css.css" rel="stylesheet">
@@ -162,11 +167,13 @@ START - Settings Link in secondary top menu
                                 <!-- sidebar: style can be found in sidebar.less -->
                                 <div class="" id="scrollspy">
 
-                                    <ul  id="mainList" class="" style="color: snow;list-style: none;direction: rtl; margin: 0;padding: 0">
+                                    <ul id="mainList" class=""
+                                        style="color: snow;list-style: none;direction: rtl; margin: 0;padding: 0">
 
-                                        <li> <a href="#certificate"><i class=""></i>امضا گواهی</a></li>
+                                        <li><a href="#certificate"><i class=""></i>امضا گواهی</a></li>
                                         <li><a href="#permissions"><i class=""></i> مجوزها</a></li>
-                                        <li><a href="#binary_analysis"><i class="fa fa-flag"></i>تجزیه و تحلیل باینری</a></li>
+                                        <li><a href="#binary_analysis"><i class="fa fa-flag"></i>تجزیه و تحلیل
+                                            باینری</a></li>
 
                                         <li><a href="#android-api"><i class="fa fa-dot-circle-o"></i>اندرویدAPI</a></li>
                                         <li><a href="#browsable"><i class="fa fa-clone"></i>فرم های قابل مشاهده</a></li>
@@ -234,8 +241,8 @@ START - Settings Link in secondary top menu
                                                 <li><a href="#files"><i class="fa fa-files-o"></i> فایل ها</a></li>
                                             </ul>
                                         </li>
-                                        {% comment %}<li><a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=APK"><i
-                                                class="glyphicon glyphicon-list-alt"></i> دریافت گزارش</a></li>{% endcomment %}
+                                        <li><a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=APK"><i
+                                                class="glyphicon glyphicon-list-alt"></i> دریافت گزارش</a></li>
                                         {% comment %}{% if dynamic_analysis_done == False %}
                                             <li><a href="javascript:document.getElementById('dynform').submit();"><i
                                                     class="glyphicon glyphicon-play-circle""></i> <strong>شروع تجزیه و
@@ -306,8 +313,7 @@ END - Top Menu Controls
 --------------------></div><!--------------------
 END - Top Bar
 -------------------->
-<a href="javascript:" id="return-to-top"><i class="icon-top"></i></a>
-
+                <a href="javascript:" id="return-to-top"><i class="icon-top"></i></a>
 
 
                 <div class="content-i">
@@ -1513,9 +1519,9 @@ START - Sidebar
                                                class="btn btn-info" role="button"><i
                                                     class="glyphicon glyphicon-refresh"></i> اسکن مجدد</a>
 
-                                           {% comment %} <a href="javascript:document.getElementById('dynform').submit();"
+                                            <a href="javascript:document.getElementById('dynform').submit();"
                                                class="btn btn-success" role="button"><i
-                                                    class="glyphicon glyphicon-play-circle"></i> شروع تجزیه و تحلیل پویا</a>{% endcomment %}
+                                                    class="glyphicon glyphicon-play-circle"></i> شروع تجزیه و تحلیل پویا</a>
                                         </p>
 
                                     </div>
@@ -1561,6 +1567,14 @@ END - Sidebar
             </div>
         </div>
         <div class="display-type"></div>
+
+        <form id="dynform" action="../DynamicAnalyzer/" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="md5" value="{{ md5 }}">
+            <input type="hidden" name="pkg" value="{{ packagename }}">
+            <input type="hidden" name="lng" value="{{ mainactivity }}">
+        </form>
+
     </div>
     <script src="/static/bower_components/jquery/dist/jquery.min.js"></script>
     <script src="/static/bower_components/popper.js/dist/umd/popper.min.js"></script>
@@ -1594,19 +1608,19 @@ END - Sidebar
     <script src="/static/js/main-version=4.4.1.js"></script>
 
     <script>
-$(window).scroll(function() {
-    if ($(this).scrollTop() >= 50) {        // If page is scrolled more than 50px
-        $('#return-to-top').fadeIn(200);    // Fade in the arrow
-    } else {
-        $('#return-to-top').fadeOut(200);   // Else fade out the arrow
-    }
-});
-$('#return-to-top').click(function() {      // When arrow is clicked
-    $('body,html').animate({
-        scrollTop : 0                       // Scroll to top of body
-    }, 500);
-});
-</script>
+        $(window).scroll(function () {
+            if ($(this).scrollTop() >= 50) {        // If page is scrolled more than 50px
+                $('#return-to-top').fadeIn(200);    // Fade in the arrow
+            } else {
+                $('#return-to-top').fadeOut(200);   // Else fade out the arrow
+            }
+        });
+        $('#return-to-top').click(function () {      // When arrow is clicked
+            $('body,html').animate({
+                scrollTop: 0                       // Scroll to top of body
+            }, 500);
+        });
+    </script>
 
 {% endblock %}
 </body>

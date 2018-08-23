@@ -1,6 +1,5 @@
 #Base image
-FROM ubuntu:18.04
-
+FROM ubuntu:17.10
 #Labels and Credits
 LABEL \
     name="MobSF" \
@@ -39,7 +38,7 @@ RUN \
     python3.6 \
     python3-dev \
     python3-setuptools && \
-    python3 /usr/lib/python3/dist-packages/easy_install.py pip
+    easy_install3 pip
 
 #Install sqlite3 client and pdf generator needed dependencies
 RUN \

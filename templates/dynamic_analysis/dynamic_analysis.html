@@ -1,722 +1,941 @@
-{% extends "base.html" %}
-   {% block content %}
-    <script src="/static/js/jquery.min.js"></script>
-  <script type="text/javascript" src="/static/js/highlight.min.js"></script>
-  <link type="text/css" rel="stylesheet" href="/static/css/xcode.min.css"/>
-  <script>hljs.initHighlightingOnLoad();</script>
-  <style type="text/css" media="print">
-  @page { size: landscape; }
-</style>
+<!DOCTYPE html>
+<html>
+<head><title>تجزیه و تحلیل پویا</title>
+    <meta charset="utf-8">
+    <meta content="ie=edge" http-equiv="x-ua-compatible">
+    <meta content="template language" name="keywords">
+    <meta content="Tamerlan Soziev" name="author">
+    <meta content="Admin dashboard html template" name="description">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <link rel="stylesheet" href="/static/dash/css/AdminLTE.css">
+    <link rel="stylesheet" href="/static/dash/css/skins/_all-skins.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="favicon.png" rel="shortcut icon">
+    <link href="apple-touch-icon.png" rel="apple-touch-icon">
+    <link href="http://fast.fonts.net/cssapi/487b73f1-c2d1-43db-8526-db577e4c822b.css" rel="stylesheet" type="text/css">
+    <link href="/static/bower_components/select2/dist/css/select2.min.css" rel="stylesheet">
+    <link href="/static/bower_components/bootstrap-daterangepicker/daterangepicker.css" rel="stylesheet">
+    <link href="/static/bower_components/dropzone/dist/dropzone.css" rel="stylesheet">
+    <link href="/static/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css" rel="stylesheet">
+    <link href="/static/bower_components/fullcalendar/dist/fullcalendar.min.css" rel="stylesheet">
+    <link href="/static/bower_components/perfect-scrollbar/css/perfect-scrollbar.min.css" rel="stylesheet">
+    <link href="/static/bower_components/slick-carousel/slick/slick.css" rel="stylesheet">
+    <style>
+        #mainList li, #mainList li ul li {
+            margin: 0;
+            padding: 0;
+            margin: 0 10px;
+
+        }
+
+        #mainList li a, #mainList li ul li a {
+            color: snow;
+            text-align: right;
+            direction: rtl;
+            display: block;
+            width: 100%;
+
+        }
+
+        #mainList a {
+            color: snow;
+            text-align: right;
+            direction: rtl;
+            display: block;
+            width: 100%;
+        }
+
+        #mainList .bold {
+            font-weight: bold;
+        }
+
+        #return-to-top {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgb(0, 0, 0);
+            background: rgba(0, 0, 0, 0.7);
+            width: 50px;
+            height: 50px;
+            display: block;
+            text-decoration: none;
+            -webkit-border-radius: 35px;
+            -moz-border-radius: 35px;
+            border-radius: 35px;
+            display: none;
+            -webkit-transition: all 0.3s linear;
+            -moz-transition: all 0.3s ease;
+            -ms-transition: all 0.3s ease;
+            -o-transition: all 0.3s ease;
+            transition: all 0.3s ease;
+            z-index: 999999;
+        }
+
+        #return-to-top i {
+            color: #fff;
+            margin: 0;
+            position: relative;
+            left: 16px;
+            top: 13px;
+            font-size: 19px;
+            -webkit-transition: all 0.3s ease;
+            -moz-transition: all 0.3s ease;
+            -ms-transition: all 0.3s ease;
+            -o-transition: all 0.3s ease;
+            transition: all 0.3s ease;
+        }
+
+        .icon-top {
+            background-image: url('/static/img/topArrow.png');
+        }
+
+        #return-to-top:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        #return-to-top:hover i {
+            color: #fff;
+            top: 5px;
+        }
+
+        #mainMenu {
+            list-style: none;
+
+        }
+
+        #mainMenu li {
+            display: block;
+            margin: 2px;
+        }
+
+        #mainMenu  a {
+            display: block;
+            width: 184px;
+            color: white;
+            margin: 5px;
+        }
+
+    </style>
+    <link href="/static/css/main_css.css" rel="stylesheet">
+</head>
+<body class="full-screen with-content-panel menu-position-side menu-side-right">
+{% block content %}
+    {% comment %} <script src="/static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/js/highlight.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="/static/css/xcode.min.css"/>
+    <script>hljs.initHighlightingOnLoad();</script>{% endcomment %}
+    <style type="text/css" media="print">
+        @page {
+            size: landscape;
+        }
+    </style>
+
+    <div class="content-w"><!--------------------
+START - Top Bar
+-------------------->
+        <div class="top-bar color-scheme-bright">
+
+            <!--------------------
+START - Top Menu Controls
+-------------------->
+
+            <!--------------------
+START - Settings Link in secondary top menu
+-------------------->
 
 
-   <!-- Left side column. contains the logo and sidebar -->
-      <aside class="main-sidebar">
-        <!-- sidebar: style can be found in sidebar.less -->
-        <div class="sidebar" id="scrollspy">
 
-          <!-- sidebar menu: : style can be found in sidebar.less -->
-          <ul class="nav sidebar-menu">
-            <li class="header">Dynamic Analysis</li>
-            <li class="active"><a href="#general"><i class="fa fa-rocket"></i> Information</a></li>
-             <li class="treeview">
-              <a href="javascript::;"><i class="glyphicon glyphicon-phone"></i> API Monitor</a>
-              <ul class="nav treeview-menu">
-                <li><a href="#fileio"><i class="glyphicon glyphicon-file"></i> File IO</a></li>
-                <li><a href="#networkcalls"><i class="fa fa-plug"></i> Network Calls</a></li>
-                <li><a href="#bindercalls"><i class="fa fa-cubes"></i> Binder Calls</a></li>
-                <li><a href="#crypto"><i class="fa fa-flash"></i> Crypto</a></li>
-                <li><a href="#deviceinfo"><i class="fa fa-info"></i> Device Info</a></li>
-                <li><a href="#base64"><i class="fa fa-puzzle-piece"></i> Base64</a></li>
-                <li><a href="#content"><i class="fa fa-reorder"></i> Content</a></li>
-                <li><a href="#sms"><i class="fa fa-comments"></i> SMS</a></li>
-                <li><a href="#devicedata"><i class="fa fa-phone"></i> Device Data</a></li>
-                <li><a href="#dexclassloader"><i class="fa fa-asterisk"></i> Dex Class Loader</a></li>
-                <li><a href="#reflection"><i class="fa fa-object-ungroup"></i> Reflection</a></li>
-                <li><a href="#systemmanager"><i class="fa fa-cogs"></i> System Manager</a></li>
-                <li><a href="#process"><i class="fa fa-bar-chart-o"></i> Process</a></li>
-              </ul>
-            </li>
+            <header class="top-bar color-scheme-bright">
+                <ul class="main-menu">
+                    <li class="has-sub-menu"><a href="../recent_scans">اسکن های اخیر</a></li>
+                    <li class="has-sub-menu"><a href="../api_docs"> مستندات API</a></li>
+                    <li class="sub-header"><a href="../about">درباره ما</a></li>
+                </ul>
 
-            <li><a href="#exportedactivitytester"><i class="glyphicon glyphicon-search"></i> Exported Activity Tester</a></li>
-            <li><a href="#activitytester"><i class="glyphicon glyphicon-search"></i> Activity Tester</a></li>
-            <li><a href="#screenshots"><i class="fa fa-camera"></i> Screenshots</a></li>
-            <li><a href="#httpstraffic"><i class="fa fa-exchange"></i> HTTPs Traffic</a></li>
+                <!-- Header Navbar: style can be found in header.less -->
+                <nav class="nav navbar" role="navigation">
+                    <!-- Sidebar toggle button-->
 
-           
 
-            <li class="treeview">
-              <a href="javascript::;"><i class="fa fa-plus"></i> Reconnaissance</a>
-              <ul class="nav treeview-menu">
-              <li><a href="#clipboard"><i class="fa fa-clipboard"></i> Clipboard Dump</a></li>
-              <li><a href="#url"><i class="glyphicon glyphicon-globe"></i> URLs</a></li>
-              <li><a href="#domain"><i class="glyphicon glyphicon-screenshot"></i> Malware Check</a></li>
-              <li><a href="#email"><i class="glyphicon glyphicon-envelope"></i> Emails</a></li>
-              </ul>
-            </li>
+                    <div class="menu-page-header">
 
-            <li class="treeview">
-              <a href="javascript::;"><i class="fa fa-files-o"></i> File Analysis</a>
-              <ul class="nav treeview-menu">
-                <li><a href="#sqlitedatabase"><i class="fa fa-database"></i> SQLite Database</a></li>
-                <li><a href="#xmlfiles"><i class="fa fa-file-excel-o"></i> XML Files</a></li>
-                <li><a href="#otherfiles"><i class="fa fa-file-o"></i> Other Files</a></li>
-              </ul>
-            </li>
-            <li><a href="javascript:window.print()"><i class="fa fa-cloud-download"></i> Download / Print</a></li>
-            
-          </ul>
-        </div>
-        <!-- /.sidebar -->
-      </aside>
 
-      <!-- Content Wrapper. Contains page content -->
-      <div class="content-wrapper">
+                        <!--Menu Items-->
+
+
+                        <form class="left" role="search" action="/search" method="GET">
+                            <div class="form-group">
+                                <input type="text" name="md5" class="form-control" id="navbar-search-input"
+                                       placeholder="جستجو MD5">
+                            </div>
+                        </form>
+                        <!-- Control Sidebar Toggle Button -->
+                        <!--
+                        <li>
+                          <a href="#" data-toggle="control-sidebar"><i class="fa fa-gears"></i> Console</a>
+                        </li>
+                      -->
+
+                    </div>
+                </nav>
+            </header>
+
+            <!--------------------
+END - Top Menu Controls
+--------------------></div>
+
+    </div>
+    <!-- Left side column. contains the logo and sidebar -->
+
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
         <!-- Content Header (Page header) -->
         <!-- Main content -->
+        <aside class="main-sidebar">
+            <div class="sidebar" id="scrollspy" style="padding-top: 30px">
+
+                <div align="center"><a class="btn btn-success btn-lg" target="_blank" role="button"
+                                       href="../capfuzz?project={{ pkg }}"
+                                       style="width: 182px;text-align: center;margin-bottom: 5px">اجرای CapFuzz</a>
+
+                    <br>
+                    <br>
+                    <br>
+                    <a class="btn btn-facebook btn-lg" role="button"
+                       href="../download/{{ md5 }}-WebTraffic.txt"
+                       style="width: 182px;text-align: center;margin-bottom: 5px">ترافیک HTTP(S)</a>
+                    <a class="btn btn-facebook btn-lg" role="button"
+                       href="../download/{{ md5 }}-logcat.txt"
+                       style="width: 182px;text-align: center;margin-bottom: 5px">گزارش
+                        لاگ ها</a>
+                    <a class="btn btn-facebook btn-lg" role="button"
+                       href="../download/{{ md5 }}-x_logcat.txt"
+                       style="width: 182px;text-align: center;margin-bottom: 5px">مانیتورنبگ
+                        لاگ API</a>
+                    <a class="btn btn-facebook btn-lg" role="button" href="../download/{{ md5 }}-dump.txt"
+                       style="width: 182px;text-align: center;margin-bottom: 5px">لاگ Dumpsys
+                    </a>
+                    <a class="btn btn-facebook btn-lg" role="button"
+                       href="../download/{{ md5 }}-AppData.tar" style="width: 182px;text-align: center;">داده های
+                        برنامه</a>
+
+                </div>
+
+                <!--<a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-pcap.cap">Packet Capture</a>-->
+                <hr>
+
+                <div id="mainMenu" align="center">
+
+
+                    <a class="btn btn-sm btn-yahoo" href=" #fileio"><i class="glyphicon glyphicon-file"></i>فایل</a>
+                    <a class="btn btn-sm  btn-yahoo" href=" #networkcalls"><i class="fa fa-plug"></i>فراخوانی شبکه</a>
+
+                    <a class="btn btn-sm btn-yahoo" href=" #bindercalls"><i class="fa fa-cubes"></i>تماس گیرنده ها</a>
+
+                    <a class="btn btn-sm btn-yahoo" href=" #crypto"><i class="fa fa-flash"></i>رمز نگاری</a>
+                    <a class="btn btn-sm btn-yahoo" href=" #deviceinfo"><i class="fa fa-info"></i>اطلاعات دستگاه</a>
+
+                    <a class="btn btn-sm  btn-yahoo" href=" #base64"><i class="fa fa-puzzle-piece"></i> Base64</a>
+                    <a class="btn btn-sm btn-yahoo" href=" #content"><i class="fa fa-reorder"></i>محتوا</a>
+                    <a class="btn btn-sm btn-yahoo" href=" #sms"><i class="fa fa-comments"></i>پیامک</a>
+                    <a class="btn btn-sm btn-yahoo" href=" #devicedata"><i class="fa fa-phone"></i>دادهای دستگاه</a>
+
+                    <a class="btn btn-sm btn-yahoo" href=" #dexclassloader"><i class="fa fa-asterisk"></i>بارگذاری کلاس های DEX</a>
+                    <a class="btn btn-sm btn-yahoo" href=" #reflection"><i class="fa fa-object-ungroup"></i>
+                    Reflection</a>
+                    <a class="btn btn-sm btn-yahoo" href=" #systemmanager"><i class="fa fa-cogs"></i>مدیریت دستگاه</a>
+                    <a class="btn btn-sm btn-yahoo" href=" #process"><i class="fa fa-bar-chart-o"></i>پردازش ها</a>
+
+
+                    <a class="btn btn-sm btn-yahoo" href=" #exportedactivitytester"><i class="glyphicon glyphicon-search"></i>استخراج فرم های تست کننده</a>
+                    <a class="btn btn-sm btn-yahoo" href=" #activitytester"><i class="glyphicon glyphicon-search"></i>
+                    فرم های تست کننده</a>
+                    <a class="btn btn-sm btn-yahoo" href=" #screenshots"><i class="fa fa-camera"></i>تصاویر</a>
+                    <a class="btn btn-sm btn-yahoo" href=" #httpstraffic"><i class="fa fa-exchange"></i> HTTPs ترافیک</a>
+
+
+                    <a class="btn btn-sm btn-adn" href=" #clipboard"><i class="fa fa-clipboard"></i>داده های کلیپ بورد</a>
+
+                    <a class="btn btn-sm btn-adn" href=" #url"><i class="glyphicon glyphicon-globe"></i> URLs</a>
+
+                    <a class="btn btn-sm btn-adn" href=" #domain"><i class="glyphicon glyphicon-screenshot"></i>
+                    Malware بررسی</a>
+                    <a class="btn btn-sm btn-adn" href=" #email"><i class="glyphicon glyphicon-envelope"></i> پست الکترونیک</a>
+
+
+                    <a class="btn btn-sm btn-openid" href=" #sqlitedatabase"><i class="fa fa-database"></i>دیتابیس</a>
+                    <a class="btn btn-sm btn-openid" href=" #xmlfiles"><i class="fa fa-file-excel-o"></i>فایلهای XML</a>
+
+                    <a class="btn btn-sm btn-openid" href=" #otherfiles"><i class="fa fa-file-o"></i>سایر فایلها</a>
+
+
+                    <a class="btn btn-sm btn-vimeo" href=" javascript:window.print()"><i class="fa fa-cloud-download"></i>دریافت / چاپ</a>
+
+                </div>
+
+
+            </div>
+        </aside>
         <div class="content body">
 
+            <!-- ============================================================= -->
+
+            <section id="fileio">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
+
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="glyphicon glyphicon-file"></i> فایل</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <div class="alert alert-light" role="alert">
+                            {% for i in fileio %} {{ i | safe }}</br> {% endfor %}</div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
+
+
+            <!-- ============================================================= -->
+
+
+            <section id="networkcalls">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
+
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="fa fa-plug"></i> فراخوانی های شبکه</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <div class="alert alert-light" role="alert">
+                            {% for i in net %} {{ i | safe }}</br> {% endfor %}</div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
+
 
+            <!-- ============================================================= -->
 
-
-<section id="general">
-  <h2 class="page-header"><strong>Dynamic Analysis Result </strong> - {{pkg}} </h2>
-  <div align="center"><a class="btn btn-success btn-lg" target="_blank" role="button" href="../capfuzz?project={{pkg}}">Start CapFuzz</a></div>
-  <p class="lead">
-    <div class="row">
-    <div class="col-sm-12">
-      <div class="box box-danger">
-        <div class="box-header with-border">
-          <h3 class="box-title">Downloads</h3>
-          <span class="label label-danger pull-right"><i class="fa fa-cloud-download"></i></span>
-        </div><!-- /.box-header -->
-        <div class="box-body">
-        <div class="list-group">
-            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-WebTraffic.txt">HTTP(S) Traffic</a>
-            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-logcat.txt">Logcat Logs</a>
-            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-x_logcat.txt">Droidmon API Monitor Logs</a>
-            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-dump.txt">Dumpsys Logs</a> 
-            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-AppData.tar">Application Data</a>
-            
-            <!--<a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-pcap.cap">Packet Capture</a>-->
-       </div>
-        
-        </div><!-- /.box-body -->
-      </div><!-- /.box -->
-    </div><!-- /.col -->
-  </div><!-- /.row -->
-  </p>
-</section><!-- /#introduction -->
-
-
-<!-- ============================================================= -->
-
-<section id="fileio">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="glyphicon glyphicon-file"></i> File IO</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-           <div class="alert alert-info" role="alert">
-          {% for i in fileio %} {{i | safe}}</br> {% endfor %}</div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-
-
-<section id="networkcalls">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-plug"></i> Network Calls</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-        <div class="alert alert-success" role="alert">
-     {% for i in net %} {{i | safe}}</br> {% endfor %}</div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-
-
-<section id="bindercalls">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-cubes"></i> Binder Calls</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-      
-             <div class="alert alert-warning" role="alert">
-             {% for i in binder %} {{i | safe}}</br> {% endfor %}</div>
-
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-
-<section id="crypto">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-flash"></i> Crypto</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-      
-            <div class="alert alert-danger" role="alert">
-    {% for i in crypto %} {{i | safe}}</br> {% endfor %}</div>
-
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-<section id="deviceinfo">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-info"></i> Device Info</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-
-        <div class="alert alert-info" role="alert">
-    {% for i in divinfo %} {{i | safe}}</br> {% endfor %}</div>
-
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-<section id="base64">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-puzzle-piece"></i> Base64</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-
-  
-<div class="alert alert-success" role="alert">
-     {% for i in base64 %} {{i | safe}}</br> {% endfor %}</div>
-
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-<section id="content">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-reorder"></i> Content</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-
-<div class="alert alert-warning" role="alert">
-     {% for i in cntval %} {{i | safe}}</br> {% endfor %}</div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-<section id="sms">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-comments"></i> SMS</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-<div class="alert alert-danger" role="alert">
-     {% for i in sms %} {{i | safe}}</br> {% endfor %}</div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-<section id="devicedata">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-phone"></i> Device Data</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-<div class="alert alert-success" role="alert">
-     {% for i in sysprop %} {{i | safe}}</br> {% endfor %}</div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-
-<section id="dexclassloader">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-asterisk"></i> Dex Class Loader</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-<div class="alert alert-warning" role="alert">
-    {% for i in dexload %} {{i | safe}}</br> {% endfor %}</div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-
-<section id="reflection">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-object-ungroup"></i> Reflection</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-<div class="alert alert-info" role="alert">
-     {% for i in reflect %} {{i | safe}}</br> {% endfor %}</div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-
-
-<section id="systemmanager">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-cogs"></i> System Manager</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-<div class="alert alert-danger" role="alert">
-     {% for i in sysman %} {{i | safe}}</br> {% endfor %}</div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-
-
-<section id="process">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-bar-chart-o"></i> Process</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-
-<div class="alert alert-success" role="alert">
-     {% for i in process %} {{i | safe}}</br> {% endfor %}</div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-
-<section id="exportedactivitytester">
-  <h2 class="page-header"></h2>
-     <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="glyphicon glyphicon-search"></i> EXPORTED ACTIVITY TESTER</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body no-padding">
-              <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
-                      
-                                    {% for img, desc in expacttest.items %}
-                                        <tr>
-                                         <td><img alt="{{desc}}" src="../download/{{ md5 }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
+
+            <section id="bindercalls">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
+
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="fa fa-cubes"></i> تماس گیرندها</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+
+                        <div class="alert alert-light" role="alert">
+                            {% for i in binder %} {{ i | safe }}</br> {% endfor %}</div>
+
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
+
+
+            <!-- ============================================================= -->
+
+
+            <section id="crypto">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
+
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="fa fa-flash"></i> رمزنگاری ها</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+
+                        <div class="alert alert-light" role="alert">
+                            {% for i in crypto %} {{ i | safe }}</br> {% endfor %}</div>
+
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
+
+
+            <!-- ============================================================= -->
+            <section id="deviceinfo">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
+
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="fa fa-info"></i> اطلاعات دستگاه</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+
+                        <div class="alert alert-light" role="alert">
+                            {% for i in divinfo %} {{ i | safe }}</br> {% endfor %}</div>
+
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
+
+
+            <!-- ============================================================= -->
+            <section id="base64">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
+
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="fa fa-puzzle-piece"></i> Base64</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+
+
+                        <div class="alert alert-light" role="alert">
+                            {% for i in base64 %} {{ i | safe }}</br> {% endfor %}</div>
+
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
+
+
+            <!-- ============================================================= -->
+
+            <section id="content">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
+
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="fa fa-reorder"></i> محتوا</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+
+                        <div class="alert alert-light" role="alert">
+                            {% for i in cntval %} {{ i | safe }}</br> {% endfor %}</div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
+
+
+            <!-- ============================================================= -->
+
+            <section id="sms">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
+
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="fa fa-comments"></i> پیامک</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <div class="alert alert-light" role="alert">
+                            {% for i in sms %} {{ i | safe }}</br> {% endfor %}</div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
+
+
+            <!-- ============================================================= -->
+
+            <section id="devicedata">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
+
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="fa fa-phone"></i> دادهای دستگاه</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <div class="alert alert-light" role="alert">
+                            {% for i in sysprop %} {{ i | safe }}</br> {% endfor %}</div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
+
+
+            <!-- ============================================================= -->
+
+
+            <section id="dexclassloader">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
+
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="fa fa-asterisk"></i> بارگذاری کلاس های DEX</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <div class="alert alert-light" role="alert">
+                            {% for i in dexload %} {{ i | safe }}</br> {% endfor %}</div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
+
+
+            <!-- ============================================================= -->
+
+
+            <section id="reflection">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
+
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="fa fa-object-ungroup"></i> Reflection</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <div class="alert alert-light" role="alert">
+                            {% for i in reflect %} {{ i | safe }}</br> {% endfor %}</div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
+
+
+            <!-- ============================================================= -->
+
+
+            <section id="systemmanager">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
+
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="fa fa-cogs"></i> مدیریت سیستم</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <div class="alert alert-light" role="alert">
+                            {% for i in sysman %} {{ i | safe }}</br> {% endfor %}</div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
+
+
+            <!-- ============================================================= -->
+
+
+            <section id="process">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
+
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="fa fa-bar-chart-o"></i> پردازش ها</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+
+                        <div class="alert alert-light" role="alert">
+                            {% for i in process %} {{ i | safe }}</br> {% endfor %}</div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
+
+
+            <!-- ============================================================= -->
+
+
+            <section id="exportedactivitytester">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
+
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="glyphicon glyphicon-search"></i> استخراج فرمها</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body no-padding">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover table-striped">
+
+                                {% for img, desc in expacttest.items %}
+                                    <tr>
+                                        <td><img alt="{{ desc }}" src="../download/{{ md5 }}-screenshots-apk/{{ img }}"
+                                                 class="img-thumbnail" height="300" width="175"></td>
                                         <td>{{ desc }}</td>
-                                        </tr>
-                                    {% endfor %}
-                    </table>
-                                
-                            </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-</section>
-<!-- ============================================================= -->
+                                    </tr>
+                                {% endfor %}
+                            </table>
 
-<section id="activitytester">
-  <h2 class="page-header"></h2>
-     <!-- /.box -->
+                        </div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
+            <!-- ============================================================= -->
 
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="glyphicon glyphicon-search"></i> ACTIVITY TESTER</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body no-padding">
-              <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
-                       {% for img, desc in acttest.items %}
-                                        <tr>
-                                         <td><img alt="{{desc}}" src="../download/{{ md5 }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
+            <section id="activitytester">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
+
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="glyphicon glyphicon-search"></i> تست کننده فرمها</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body no-padding">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover table-striped">
+                                {% for img, desc in acttest.items %}
+                                    <tr>
+                                        <td><img alt="{{ desc }}" src="../download/{{ md5 }}-screenshots-apk/{{ img }}"
+                                                 class="img-thumbnail" height="300" width="175"></td>
                                         <td>{{ desc }}</td>
-                                        </tr>
-                                    {% endfor %}
-                    </table>
-                                
-                            </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-</section>
+                                    </tr>
+                                {% endfor %}
+                            </table>
 
-<!-- ============================================================= -->
+                        </div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
 
-
-<section id="screenshots">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-camera"></i> SCREENSHOTS</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-
-                            <div class="list-group">
-                
-                                        {% for i in imgs %}
-                                         <img alt="Screenshot" src="../download/{{ md5 }}-screenshots-apk/{{ i}}" class="img-thumbnail" height="600" width="350">
-                                        {% endfor %}
-                                   
-
-                                </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-<!-- ============================================================= -->
+            <!-- ============================================================= -->
 
 
-<section id="httpstraffic">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
+            <section id="screenshots">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
 
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-exchange"></i> HTTP(s) Traffic</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="fa fa-camera"></i> تصاویر</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
 
-                            <div class="list-group">
-<pre><code class="http">{{ http }}</code></pre>
-                                </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
+                        <div class="list-group">
+
+                            {% for i in imgs %}
+                                <img alt="Screenshot" src="../download/{{ md5 }}-screenshots-apk/{{ i }}"
+                                     class="img-thumbnail" height="600" width="350">
+                            {% endfor %}
 
 
-<!-- ============================================================= -->
+                        </div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
 
-<section id="clipboard">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-clipboard"></i> Clipboard Dump</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-
-                            <div class="list-group">
-                                  {% for f in clipboard %}
-                                      {{ f}} <br>
-                                  {% endfor %}
-
-                                </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-  <!-- ============================================================= -->
-
-<section id="url">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="glyphicon glyphicon-globe"></i> URLs</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-
-                            <div class="list-group">
-                                    {% for f in urls %}
-                                        {{ f}} <br>
-                                        {% endfor %}
-
-                                </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
+            <!-- ============================================================= -->
 
 
-<!-- ============================================================= -->
+            <section id="httpstraffic">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
 
-<!-- ============================================================= -->
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="fa fa-exchange"></i> HTTP(s) ترافیک</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
 
-<section id="domain">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
+                        <div class="list-group">
+                            <pre><code class="http">{{ http }}</code></pre>
+                        </div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
 
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="glyphicon glyphicon-screenshot"></i> Malware Check</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body no-padding">
-              <div class="table-responsive">
-                <table class="table table-bordered table-hover table-striped">
-                  {% if urls|length > 1 %} 
-                  <thead>
-                  <tr>
-                     <th>Domain</th>
-                     <th>Status</th>
-                  </tr>
-                 </thead>
-                  {% endif %}
-                 <tbody>
-                
-                  {% for domain, details in domains.items %}
-                  <tr><td>{{domain}}</td><td> 
 
-                    {% if details|key:"bad" == "yes" %}
-                    <span class="label label-danger">malware</span></br>
-<pre>
-<strong>URL: </strong>{{details|key:"domain_or_url"}}
-<strong>IP: </strong><span class="label label-danger">{{details|key:"ip"}}</span>
-<strong>Description: </strong>{{details|key:"desc"}}
+            <!-- ============================================================= -->
+
+            <section id="clipboard">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
+
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="fa fa-clipboard"></i> دادهای کلیپ بورد</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+
+                        <div class="list-group">
+                            {% for f in clipboard %}
+                                {{ f }} <br>
+                            {% endfor %}
+
+                        </div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
+
+            <!-- ============================================================= -->
+
+            <section id="url">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
+
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="glyphicon glyphicon-globe"></i> URLs</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+
+                        <div class="list-group">
+                            {% for f in urls %}
+                                {{ f }} <br>
+                            {% endfor %}
+
+                        </div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
+
+
+            <!-- ============================================================= -->
+
+            <!-- ============================================================= -->
+
+            <section id="domain">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
+
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="glyphicon glyphicon-screenshot"></i> Malware بررسی</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body no-padding">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover table-striped">
+                                {% if urls|length > 1 %}
+                                    <thead>
+                                    <tr>
+                                        <th>Domain</th>
+                                        <th>Status</th>
+                                    </tr>
+                                    </thead>
+                                {% endif %}
+                                <tbody>
+
+                                {% for domain, details in domains.items %}
+                                    <tr>
+                                        <td>{{ domain }}</td>
+                                        <td>
+
+                                            {% if details|key:"bad" == "yes" %}
+                                                <span class="label label-danger">malware</span></br>
+                                                <pre>
+<strong>URL: </strong>{{ details|key:"domain_or_url" }}
+<strong>IP: </strong><span class="label label-danger">{{ details|key:"ip" }}</span>
+<strong>Description: </strong>{{ details|key:"desc" }}
 </pre>
-                  {% else %}
-                    <span class="label label-success">good</span></br>
-                  {% endif %}
+                                            {% else %}
+                                                <span class="label label-success">good</span></br>
+                                            {% endif %}
 
 
-                  </td> </tr>
-                  {% endfor %}
-                   
-                    </tbody>
-                    </table>
-                                
-             </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
 
-<section id="email">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
+                                </tbody>
+                            </table>
 
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="glyphicon glyphicon-envelope"></i> EMAILs</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
+                        </div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
 
-                            <div class="list-group">
-                                  {% for f in emails %}
-                                        {{ f}} <br>
-                                        {% endfor %}
+            <section id="email">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
 
-                                </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="glyphicon glyphicon-envelope"></i> پست های الکترونبک</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
 
-  <!-- ============================================================= -->
+                        <div class="list-group">
+                            {% for f in emails %}
+                                {{ f }} <br>
+                            {% endfor %}
+
+                        </div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
+
+            <!-- ============================================================= -->
 
 
-<section id="sqlitedatabase">
-  <h2 class="page-header"></h2>
-     <!-- /.box -->
+            <section id="sqlitedatabase">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
 
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-database"></i> SQLite Databases</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-              <div class="table-responsive">
-                    <table class="table table-bordered table-hover table-striped">
-                      {{ sqlite | safe}}
-                    </table>
-                                
-                            </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-</section>
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="fa fa-database"></i>اطلاعات دیتابیس</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover table-striped">
+                                {{ sqlite | safe }}
+                            </table>
 
-<!-- ============================================================= -->
+                        </div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
 
-<section id="xmlfiles">
-  <h2 class="page-header"></h2>
-     <!-- /.box -->
+            <!-- ============================================================= -->
 
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-file-excel-o"></i> XML Files</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-              <div class="table-responsive">
-                    <table class="table table-bordered table-hover table-striped">
-                        {{ xml | safe}}
-                    </table>
-                                
-                            </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-</section>
+            <section id="xmlfiles">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
 
-<!-- ============================================================= -->
-	
-<section id="otherfiles">
-  <h2 class="page-header"></h2>
-     <!-- /.box -->
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="fa fa-file-excel-o"></i>فایلهای XML</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover table-striped">
+                                {{ xml | safe }}
+                            </table>
 
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-file-o"></i> Other Files</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-              <div class="table-responsive">
-                    <table class="table table-bordered table-hover table-striped">
-                         {{ others | safe}}
-                    </table>
-                                
-                            </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-</section>
+                        </div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
 
-<!-- ============================================================= -->
+            <!-- ============================================================= -->
 
- </div><!-- /.content -->
-      </div><!-- /.content-wrapper -->
+            <section id="otherfiles">
+                <h2 class="page-header"></h2>
+                <!-- /.box -->
 
-       
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title"><i class="fa fa-file-o"></i> سایر فایلها</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover table-striped">
+                                {{ others | safe }}
+                            </table>
+
+                        </div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </section>
+
+            <!-- ============================================================= -->
+
+        </div><!-- /.content -->
+    </div><!-- /.content-wrapper -->
+
+    <script src="/static/bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="/static/bower_components/popper.js/dist/umd/popper.min.js"></script>
+    <script src="/static/bower_components/moment/moment.js"></script>
+    <script src="/static/bower_components/chart.js/dist/Chart.min.js"></script>
+    <script src="/static/bower_components/select2/dist/js/select2.full.min.js"></script>
+    <script src="/static/bower_components/jquery-bar-rating/dist/jquery.barrating.min.js"></script>
+    <script src="/static/bower_components/ckeditor/ckeditor.js"></script>
+    <script src="/static/bower_components/bootstrap-validator/dist/validator.min.js"></script>
+    <script src="/static/bower_components/bootstrap-daterangepicker/daterangepicker.js"></script>
+    <script src="/static/bower_components/ion.rangeSlider/js/ion.rangeSlider.min.js"></script>
+    <script src="/static/bower_components/dropzone/dist/dropzone.js"></script>
+    <script src="/static/bower_components/editable-table/mindmup-editabletable.js"></script>
+    <script src="/static/bower_components/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="/static/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+    <script src="/static/bower_components/fullcalendar/dist/fullcalendar.min.js"></script>
+    <script src="/static/bower_components/perfect-scrollbar/js/perfect-scrollbar.jquery.min.js"></script>
+    <script src="/static/bower_components/tether/dist/js/tether.min.js"></script>
+    <script src="/static/bower_components/slick-carousel/slick/slick.min.js"></script>
+    <script src="/static/bower_components/bootstrap/js/dist/util.js"></script>
+    <script src="/static/bower_components/bootstrap/js/dist/alert.js"></script>
+    <script src="/static/bower_components/bootstrap/js/dist/button.js"></script>
+    <script src="/static/bower_components/bootstrap/js/dist/carousel.js"></script>
+    <script src="/static/bower_components/bootstrap/js/dist/collapse.js"></script>
+    <script src="/static/bower_components/bootstrap/js/dist/dropdown.js"></script>
+    <script src="/static/bower_components/bootstrap/js/dist/modal.js"></script>
+    <script src="/static/bower_components/bootstrap/js/dist/tab.js"></script>
+    <script src="/static/bower_components/bootstrap/js/dist/tooltip.js"></script>
+    <script src="/static/bower_components/bootstrap/js/dist/popover.js"></script>
+    <script src="/static/js/demo_customizer-version=4.4.1.js"></script>
+
+
+    <script>
+        $(window).scroll(function () {
+            if ($(this).scrollTop() >= 50) {        // If page is scrolled more than 50px
+                $('#return-to-top').fadeIn(200);    // Fade in the arrow
+            } else {
+                $('#return-to-top').fadeOut(200);   // Else fade out the arrow
+            }
+        });
+        $('#return-to-top').click(function () {      // When arrow is clicked
+            $('body,html').animate({
+                scrollTop: 0                       // Scroll to top of body
+            }, 500);
+        });
+    </script>
 {% endblock %}
+</body>
+</html>

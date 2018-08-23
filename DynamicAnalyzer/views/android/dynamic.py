@@ -116,7 +116,7 @@ def android_dynamic_analyzer(request):
                 context = {'md5': md5_hash,
                            'pkg': package,
                            'lng': launcher,
-                           'title': 'Start Testing',
+                           'title': 'شروع آزمون',
                            'AVD': is_avd, }
                 template = "dynamic_analysis/start_test.html"
                 return render(request, template, context)
@@ -398,7 +398,7 @@ def mobsf_ca(request):
                 settings.BASE_DIR, 'DynamicAnalyzer/tools/')  # TOOLS DIR
             adb = getADB(toolsdir)
             if act == "install":
-                print("\n[INFO] Installing MobSF RootCA")
+                print("\n[INFO] Installing RootCA")
                 subprocess.call([adb,
                                  "-s",
                                  get_identifier(),
@@ -449,7 +449,7 @@ def mobsf_ca(request):
                                  "/data/local/tmp/" + settings.ROOT_CA])
                 data = {'ca': 'installed'}
             elif act == "remove":
-                print("\n[INFO] Removing MobSF RootCA")
+                print("\n[INFO] Removing RootCA")
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                     subprocess.call([adb,
                                      "-s",
@@ -471,7 +471,7 @@ def mobsf_ca(request):
         else:
             return HttpResponseRedirect('/error/')
     except:
-        PrintException("[ERROR] MobSF RootCA Handler")
+        PrintException("[ERROR] RootCA Handler")
         return HttpResponseRedirect('/error/')
 
 # AJAX
