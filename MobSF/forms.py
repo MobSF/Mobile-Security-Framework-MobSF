@@ -16,14 +16,19 @@ class FormUtil(object):
         form.errors.get_json_data() django 2.0 or higher
 
         :return
-        example { "error": "file This field is required." }
+        example
+        {
+        "error": {
+            "file": "This field is required.", 
+            "test": "This field is required."
+            }
+        }
         """
-        errors_messages = []
-        for k, value in form.errors.get_json_data().items():
-            errors_messages.append(
-                (k + ' ' + ' , '.join([i['message'] for i in value])))
-        return '; '.join(errors_messages)
+        data = form.errors.get_json_data()
+        for k, v in data.items():
+            data[k] = '; '.join([value_detail['message'] for value_detail in v])
+        return data
 
     @staticmethod
     def errors(form):
-        return form.errors.items()
+        return form.errors.get_json_data()
