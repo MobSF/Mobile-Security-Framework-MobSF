@@ -21,6 +21,8 @@ from StaticAnalyzer.views.windows import staticanalyzer_windows
 from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest, HttpResponseNotAllowed
 from django.views.decorators.csrf import csrf_exempt
 
+from MobSF.utils import request_method
+
 POST = 'POST'
 
 def make_api_response(data, status=200):
@@ -38,8 +40,6 @@ def api_auth(meta):
         return bool(api_key() == meta["HTTP_AUTHORIZATION"])
     return False
 
-
-from MobSF.utils import request_method
 
 @request_method(['POST'])
 @csrf_exempt
