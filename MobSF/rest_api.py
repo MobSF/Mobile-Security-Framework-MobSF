@@ -39,15 +39,14 @@ def api_auth(meta):
     return False
 
 
+from MobSF.utils import request_method
+
+@request_method(['POST'])
 @csrf_exempt
 def api_upload(request):
     """POST - Upload API"""
-    if request.method == POST:
-        upload = Upload(request)
-        return upload.upload_api()
-    else:
-        return HttpResponseNotAllowed([POST])
-
+    upload = Upload(request)
+    return upload.upload_api()
 
 
 @csrf_exempt
