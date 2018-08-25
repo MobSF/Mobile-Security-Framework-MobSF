@@ -26,7 +26,7 @@ class FormUtil(object):
         """
         data = form.errors.get_json_data()
         for k, v in data.items():
-            data[k] = '; '.join([value_detail['message'] for value_detail in v])
+            data[k] = ' '.join([value_detail['message'] for value_detail in v])
         return data
 
     @staticmethod
