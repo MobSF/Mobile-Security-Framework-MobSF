@@ -19,7 +19,8 @@ import shutil
 from . import settings
 
 from django.shortcuts import render
-from django.http import HttpResponseNotAllowed, HttpRequest
+from django.http import (HttpResponseNotAllowed,
+                        HttpRequest)
 
 
 ALLOW_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD', 'TRACE', ]
@@ -654,14 +655,14 @@ def request_method(methods):
             methods_upper = [m.upper() for m in methods]
             for method in methods_upper:
                 if method not in ALLOW_METHODS:
-                    raise ValueError('the methods is not allow')
+                    raise ValueError('This method is not allowed')
 
             request = None
             for arg in args:
                 if isinstance(arg, HttpRequest):
                     request = arg
             if request is None:
-                raise ValueError('the parameter not have request')
+                raise ValueError('Request object not found')
             
             if request.method not in methods_upper:
                 return HttpResponseNotAllowed(methods_upper)
