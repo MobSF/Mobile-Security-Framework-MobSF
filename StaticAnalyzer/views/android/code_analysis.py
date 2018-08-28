@@ -75,9 +75,9 @@ def code_analysis(app_dir, perms, typ):
                     # print "[INFO] Doing Code Analysis on - " + jfile_path
                     relative_java_path = jfile_path.replace(java_src, '')
                     code_rule_matcher(
-                        code_findings, list(perms.keys()), dat, relative_java_path, code_rules)
+                        code_findings, perms, dat, relative_java_path, code_rules)
                     # API Check
-                    api_rule_matcher(api_findings, list(perms.keys()),
+                    api_rule_matcher(api_findings, perms,
                                      dat, relative_java_path, api_rules)
                      # Extract URLs and Emails
                     urls, urls_nf, emails_nf = url_n_email_extract(dat, relative_java_path)
