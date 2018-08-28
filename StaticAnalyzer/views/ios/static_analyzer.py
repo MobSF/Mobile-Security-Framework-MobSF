@@ -267,7 +267,7 @@ def static_analyzer_ios(request, api=False):
                         app_dict["bin_dir"], app_dict["md5_hash"], True, 'ipa')
                     infoplist_dict = plist_analysis(app_dict["bin_dir"], False)
                     bin_analysis_dict = binary_analysis(
-                        app_dict["bin_dir"], tools_dir, app_dict["app_dir"])
+                        app_dict["bin_dir"], tools_dir, app_dict["app_dir"], infoplist_dict.get("bin"))
                     # Saving to DB
                     print("\n[INFO] Connecting to DB")
                     if rescan == '1':
