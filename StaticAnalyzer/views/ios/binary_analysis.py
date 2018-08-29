@@ -280,7 +280,7 @@ def strings_on_ipa(bin_path):
         PrintException("[ERROR] - Running strings against the Binary")
 
 
-def binary_analysis(src, tools_dir, app_dir):
+def binary_analysis(src, tools_dir, app_dir, executable_name):
     """Binary Analysis of IPA"""
     try:
         binary_analysis_dict = {}
@@ -293,7 +293,10 @@ def binary_analysis(src, tools_dir, app_dir):
                 break
         # Bin Dir - Dir/Payload/x.app/
         bin_dir = os.path.join(src, dot_app_dir)
-        bin_name = dot_app_dir.replace(".app", "")
+        if executable_name is None:
+            bin_name = dot_app_dir.replace(".app", "")
+        else:
+            bin_name = executable_name
         # Bin Path - Dir/Payload/x.app/x
         bin_path = os.path.join(bin_dir, bin_name)
         binary_analysis_dict["libs"] = ''
