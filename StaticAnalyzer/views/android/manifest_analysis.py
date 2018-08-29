@@ -1231,13 +1231,21 @@ def manifest_analysis(mfxml, man_data_dic):
                 icon_hidden = False
                 break
 
+        permissons = {}
+        for k, permisson in man_data_dic['perm'].items():
+            permissons[k] = (
+                {
+                    'status': permisson[0],
+                    'info': permisson[1],
+                    'description': permisson[2]
+                })
         # Prepare return dict
         man_an_dic = {
             'manifest_anal': ret_value,
             'exported_act': exported,
             'exported_cnt': exp_count,
             'browsable_activities': browsable_activities,
-            'permissons': man_data_dic['perm'],
+            'permissons': permissons,
             'cnt_act': len(man_data_dic['activities']),
             'cnt_pro': len(man_data_dic['providers']),
             'cnt_ser': len(man_data_dic['services']),
