@@ -197,7 +197,7 @@ def plist_analysis(src, is_source):
                 if ifile.endswith(".xcodeproj"):
                     app_name = ifile.replace(".xcodeproj", "")
                     break
-            app_plist_file = app_name + "-Info.plist"
+            app_plist_file = "Info.plist"
             for dirpath, dirnames, files in os.walk(src):
                 for name in files:
                     if "__MACOSX" not in dirpath and name == app_plist_file:
