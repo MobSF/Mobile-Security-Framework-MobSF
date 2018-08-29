@@ -14,6 +14,8 @@ BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 TOOLSDIR = os.path.join(BASE_DIR, '../DynamicAnalyzer/tools/')  # TOOLS DIR
 ROOTCA = os.path.join(os.path.dirname(cp.__file__),
                       "ca", "mitmproxy-ca-cert.cer")
+TYPE_VM = "1"
+XPOSED_OLD = "1"
 
 
 def execute_cmd(args, ret=False):
@@ -104,7 +106,7 @@ def main():
         screen_cast = os.path.join(TOOLSDIR, 'onDevice/ScreenCast.apk')
         clip_dump = os.path.join(TOOLSDIR, 'onDevice/ClipDump.apk')
         # 3P
-        if xposed_ver == "1":
+        if xposed_ver == XPOSED_OLD:
             xposed = os.path.join(TOOLSDIR, 'onDevice/Xposed.apk')
         else:
             xposed = os.path.join(
@@ -140,7 +142,7 @@ def main():
         print("\n[INFO] Installing RootCloak")
         execute_cmd([get_adb(), "-s", adbconnect, "install", "-r", rootcloak])
 
-        if vm_or_ip == "1":
+        if vm_or_ip == TYPE_VM:
             print("\n[INFO] Installing Android BluePill")
             execute_cmd([get_adb(), "-s", adbconnect,
                          "install", "-r", bluepill])
@@ -158,7 +160,7 @@ def main():
                             "de.robv.android.xposed.installer.WelcomeActivity")
         execute_cmd([get_adb(), "-s", adbconnect, "shell", "am", "start", "-n",
                      xposed_installer])
-        if vm_or_ip == "1":
+        if vm_or_ip == TYPE_VM:
             print("\n 1 .Install the Framework\n 2. Restart the device\n"
                   " 3. Enable Android BluePill, Droidmon, "
                   "JustTrustMe and RootCloak.")
