@@ -58,6 +58,9 @@ class Upload(object):
     def __init__(self, request):
         self.request = request
         self.form = UploadFileForm(request.POST, request.FILES)
+        self.file_content_type = None
+        self.file_name_lower = None
+        self.file_type = None
 
     @staticmethod
     def as_view(request):
@@ -115,27 +118,27 @@ class Upload(object):
                             content_type="application/json; charset=utf-8")
 
     def upload_api(self):
-        api_response = {
-        }
-
+        """
+        API File Upload
+        """
+        api_response = {}
         request = self.request
         if not self.form.is_valid():
             api_response['error'] = FormUtil.errors_message(self.form)
-            return JsonResponse(data=api_response, status=HTTP_BAD_REQUEST)
-
+            return api_response, HTTP_BAD_REQUEST
         self.file_content_type = request.FILES['file'].content_type
         self.file_name_lower = request.FILES['file'].name.lower()
         self.file_type = FileType(self.file_content_type, self.file_name_lower)
-
         if not self.file_type.is_allow_file():
             api_response["error"] = "File format not Supported!"
-            return JsonResponse(data=api_response, status=HTTP_BAD_REQUEST)
+            return api_response, HTTP_BAD_REQUEST
         data = self.upload()
-        return JsonResponse({
+        api_response = {
             'scan_type': data['scan_type'],
             'hash': data['hash'],
             'file_name': data['file_name']
-        })
+        }
+        return api_response, 200
 
     def upload(self):
         request = self.request
