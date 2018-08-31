@@ -10,16 +10,32 @@ import shutil
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import (
+  HttpResponse,
+  HttpResponseRedirect,
+  JsonResponse
+)
 from django.shortcuts import render
-
-from MobSF.forms import FormUtil, UploadFileForm
+from MobSF.forms import (
+  FormUtil,
+  UploadFileForm
+)
 from MobSF.views.scanning import Scanning
-from MobSF.utils import (FileType, PrintException, api_key, isDirExists,
-                         isFileExists, print_n_send_error_response)
-from StaticAnalyzer.models import (RecentScansDB, StaticAnalyzerAndroid,
-                                   StaticAnalyzerIOSZIP, StaticAnalyzerIPA,
-                                   StaticAnalyzerWindows)
+from MobSF.utils import (
+  FileType,
+  PrintException,
+  api_key,
+  isDirExists,
+  isFileExists,
+  print_n_send_error_response
+)
+from StaticAnalyzer.models import (
+  RecentScansDB,
+  StaticAnalyzerAndroid,
+  StaticAnalyzerIOSZIP,
+  StaticAnalyzerIPA,
+  StaticAnalyzerWindows
+)
 
 LINUX_PLATFORM = ["Darwin", "Linux"]
 HTTP_BAD_REQUEST = 400
