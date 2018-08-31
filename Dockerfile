@@ -72,6 +72,7 @@ WORKDIR /root/Mobile-Security-Framework-MobSF/MobSF
 RUN sed -i 's/USE_HOME = False/USE_HOME = True/g' settings.py
 
 #Kali fix to support 32 bit execution
+WORKDIR /root/Mobile-Security-Framework-MobSF/scripts
 RUN ./kali_fix.sh
 
 #Install Dependencies

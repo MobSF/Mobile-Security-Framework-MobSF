@@ -1,6 +1,6 @@
 from django.conf.urls import url
-import MobSF.views
-import MobSF.rest_api
+import MobSF.views.home
+import MobSF.views.api.rest_api
 import DynamicAnalyzer.views.android.dynamic
 import StaticAnalyzer.views.android.static_analyzer
 import StaticAnalyzer.views.android.java
@@ -17,18 +17,18 @@ from MobSF import utils
 
 urlpatterns = [
     # Examples:
-    url(r'^$', MobSF.views.index),
-    url(r'^upload/$', MobSF.views.Upload.as_view),
-    url(r'^download/', MobSF.views.download),
-    url(r'^about$', MobSF.views.about),
-    url(r'^api_docs$', MobSF.views.api_docs),
-    url(r'^recent_scans/$', MobSF.views.recent_scans),
-    url(r'^delete_scan/$', MobSF.views.delete_scan),
-    url(r'^search$', MobSF.views.search),
-    url(r'^error/$', MobSF.views.error),
-    url(r'^not_found/$', MobSF.views.not_found),
-    url(r'^zip_format/$', MobSF.views.zip_format),
-    url(r'^mac_only/$', MobSF.views.mac_only),
+    url(r'^$', MobSF.views.home.index),
+    url(r'^upload/$', MobSF.views.home.Upload.as_view),
+    url(r'^download/', MobSF.views.home.download),
+    url(r'^about$', MobSF.views.home.about),
+    url(r'^api_docs$', MobSF.views.home.api_docs),
+    url(r'^recent_scans/$', MobSF.views.home.recent_scans),
+    url(r'^delete_scan/$', MobSF.views.home.delete_scan),
+    url(r'^search$', MobSF.views.home.search),
+    url(r'^error/$', MobSF.views.home.error),
+    url(r'^not_found/$', MobSF.views.home.not_found),
+    url(r'^zip_format/$', MobSF.views.home.zip_format),
+    url(r'^mac_only/$', MobSF.views.home.mac_only),
 
     # Android Static Analysis
     url(r'^StaticAnalyzer/$',
@@ -68,11 +68,11 @@ urlpatterns = [
     url(r'^capfuzz$', DynamicAnalyzer.views.android.dynamic.capfuzz_start),
 
     # REST API
-    url(r'^api/v1/upload$', MobSF.rest_api.api_upload),
-    url(r'^api/v1/scan$', MobSF.rest_api.api_scan),
-    url(r'^api/v1/delete_scan$', MobSF.rest_api.api_delete_scan),
-    url(r'^api/v1/download_pdf$', MobSF.rest_api.api_pdf_report),
-    url(r'^api/v1/report_json$', MobSF.rest_api.api_json_report),
+    url(r'^api/v1/upload$', MobSF.views.api.rest_api.api_upload),
+    url(r'^api/v1/scan$', MobSF.views.api.rest_api.api_scan),
+    url(r'^api/v1/delete_scan$', MobSF.views.api.rest_api.api_delete_scan),
+    url(r'^api/v1/download_pdf$', MobSF.views.api.rest_api.api_pdf_report),
+    url(r'^api/v1/report_json$', MobSF.views.api.rest_api.api_json_report),
 
     # Test
     url(r'^runtest/$', StaticAnalyzer.tests.start_test),

@@ -195,7 +195,7 @@ MIDDLEWARE_CLASSES = (
 )
 
 MIDDLEWARE = (
-    'MobSF.rest_api_middleware.RestApiAuthMiddleware',
+    'MobSF.views.api.rest_api_middleware.RestApiAuthMiddleware',
 )
 ROOT_URLCONF = 'MobSF.urls'
 WSGI_APPLICATION = 'MobSF.wsgi.application'
