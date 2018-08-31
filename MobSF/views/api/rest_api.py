@@ -3,33 +3,45 @@ MobSF REST API V 1
 """
 import json
 
-from .forms import UploadFileForm
-from MobSF.views import (
+from django.http import (
+    HttpResponse
+)
+from django.views.decorators.csrf import csrf_exempt
+
+from MobSF.views.home import (
     Upload,
     delete_scan
 )
 from MobSF.utils import (
-    api_key
+    api_key,
+    request_method
 )
 from StaticAnalyzer.views.shared_func import (
     pdf
 )
-from StaticAnalyzer.views.android.static_analyzer import static_analyzer
-from StaticAnalyzer.views.ios.static_analyzer import static_analyzer_ios
-from StaticAnalyzer.views.windows import staticanalyzer_windows
+from StaticAnalyzer.views.android.static_analyzer import (
+    static_analyzer
+)
+from StaticAnalyzer.views.ios.static_analyzer import (
+    static_analyzer_ios
+)
+from StaticAnalyzer.views.windows import (
+    staticanalyzer_windows
+)
 
-from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest, HttpResponseNotAllowed
-from django.views.decorators.csrf import csrf_exempt
-
-from MobSF.utils import request_method
 
 POST = 'POST'
+
 
 def make_api_response(data, status=200):
     """Make API Response"""
     api_resp = HttpResponse(json.dumps(
-        data, sort_keys=True,
-        indent=4, separators=(',', ': ')), content_type="application/json; charset=utf-8", status=status)
+        data,
+        sort_keys=True,
+        indent=4,
+        separators=(',', ': ')),
+                            content_type="application/json; charset=utf-8",
+                            status=status)
     api_resp['Access-Control-Allow-Origin'] = '*'
     return api_resp
 
@@ -87,7 +99,7 @@ def api_scan(request):
                 {"error": "Missing Parameters"}, 422)
     else:
         response = make_api_response({"error": "Method Not Allowed"}, 405)
-    
+
     return response
 
 

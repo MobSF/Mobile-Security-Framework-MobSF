@@ -10,19 +10,36 @@ import shutil
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import (
+    HttpResponse,
+    HttpResponseRedirect,
+    JsonResponse
+)
 from django.shortcuts import render
-
-from MobSF.forms import FormUtil, UploadFileForm
-from MobSF.scanning import Scanning
-from MobSF.utils import (FileType, PrintException, api_key, isDirExists,
-                         isFileExists, print_n_send_error_response)
-from StaticAnalyzer.models import (RecentScansDB, StaticAnalyzerAndroid,
-                                   StaticAnalyzerIOSZIP, StaticAnalyzerIPA,
-                                   StaticAnalyzerWindows)
+from MobSF.forms import (
+    FormUtil,
+    UploadFileForm
+)
+from MobSF.views.scanning import Scanning
+from MobSF.utils import (
+    FileType,
+    PrintException,
+    api_key,
+    isDirExists,
+    isFileExists,
+    print_n_send_error_response
+)
+from StaticAnalyzer.models import (
+    RecentScansDB,
+    StaticAnalyzerAndroid,
+    StaticAnalyzerIOSZIP,
+    StaticAnalyzerIPA,
+    StaticAnalyzerWindows
+)
 
 LINUX_PLATFORM = ["Darwin", "Linux"]
 HTTP_BAD_REQUEST = 400
+
 
 def index(request):
     """
@@ -37,7 +54,7 @@ class Upload(object):
     """
     Handle File Upload based on App type
     """
-    
+
     def __init__(self, request):
         self.request = request
         self.form = UploadFileForm(request.POST, request.FILES)
@@ -55,7 +72,7 @@ class Upload(object):
         }
         request = self.request
         resp = HttpResponse(json.dumps(response_data),
-                    content_type="application/json; charset=utf-8")
+                            content_type="application/json; charset=utf-8")
         resp['Access-Control-Allow-Origin'] = '*'
 
         if request.method != 'POST':
@@ -64,7 +81,7 @@ class Upload(object):
             form = UploadFileForm()
             resp['status'] = HTTP_BAD_REQUEST
             return resp
-        
+
         if not self.form.is_valid():
             response_data['description'] = 'Invalid Form Data!'
             print("\n[ERROR] Invalid Form Data!")
@@ -89,15 +106,13 @@ class Upload(object):
                 }
                 print("\n[ERROR] Static Analysis of iOS IPA requires Mac or Linux")
                 return data
-        
+
         data = self.upload()
 
         response_data['url'] = data['url']
         response_data['status'] = data['status']
         return HttpResponse(json.dumps(response_data),
-                    content_type="application/json; charset=utf-8")
-
-        
+                            content_type="application/json; charset=utf-8")
 
     def upload_api(self):
         api_response = {
@@ -128,7 +143,8 @@ class Upload(object):
         file_type = self.file_content_type
         file_name_lower = self.file_name_lower
 
-        print("[INFO] MIME Type: {} FILE: {}".format(file_type, file_name_lower))
+        print("[INFO] MIME Type: {} FILE: {}".format(
+            file_type, file_name_lower))
         if self.file_type.is_apk():
             return scanning.scan_apk()
         elif self.file_type.is_zip():
