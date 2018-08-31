@@ -28,11 +28,6 @@ Paste the contents of logs/MobSF.log here
 (NOT REQUIRED FOR FEATURE REQUEST/ENHANCEMENT)
 ```
 
-```
-If you have issues with API Fuzzer,
-Paste the contents of logs/webproxy.log here
-(NOT REQUIRED FOR FEATURE REQUEST/ENHANCEMENT)
-```
 <!--
 BEFORE POSTING YOUR ISSUE/BUG
 - These comments won't show up when you submit the issue.
