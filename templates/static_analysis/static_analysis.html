@@ -802,6 +802,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                                                 <th>DROPPER</th>
                                                 <th>MANIPULATOR</th>
                                                 <th>ANTI-ASSEMBLY</th>
+						<th>ANTI-DEBUG</th>
                                                 <th>ABNORMAL PATTERN</th>
                                                 
                                                 
@@ -887,6 +888,17 @@ Production ready applications should not be signed with 'Android Debug' Certific
                             {% else %}
                               <span class="label label-danger">Anti-Disassembly Code Found</span></br>
                               {% for cmp in apkid|key:"anti_disassembly" %}
+                               {{cmp}}</br>
+                              {% endfor %}
+                          {% endif %}
+                        </td>
+                       
+                        <td>
+                          {% if apkid|key:"anti_debug" == "" %}
+                              <span class="label label-info">No Anti-Debug Code</span>
+                            {% else %}
+                              <span class="label label-info">Anti-Debug Code Found</span></br>
+                              {% for cmp in apkid|key:"anti_debug" %}
                                {{cmp}}</br>
                               {% endfor %}
                           {% endif %}
