@@ -21,7 +21,7 @@ from install.windows.setup import windows_config_local
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
 
-MOBSF_VER = "v1.0 Beta"
+MOBSF_VER = "v1.0.1 Beta"
 BANNER = """
   __  __       _    ____  _____         _   ___  
  |  \/  | ___ | |__/ ___||  ___| __   _/ | / _ \ 
@@ -195,7 +195,7 @@ MIDDLEWARE_CLASSES = (
 )
 
 MIDDLEWARE = (
-    'MobSF.rest_api_middleware.RestApiAuthMiddleware',
+    'MobSF.views.api.rest_api_middleware.RestApiAuthMiddleware',
 )
 ROOT_URLCONF = 'MobSF.urls'
 WSGI_APPLICATION = 'MobSF.wsgi.application'

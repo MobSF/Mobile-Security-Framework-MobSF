@@ -4,7 +4,6 @@ import platform
 import subprocess
 import django
 from os.path import dirname, abspath
-from scripts.qcow2 import Qcow2
 
 
 MobSF_path = dirname(dirname(abspath(__file__)))
@@ -194,4 +193,7 @@ def main():
 
 
 if __name__ == '__main__':
+    from qcow2 import Qcow2
     sys.exit(main())
+else:
+    from scripts.qcow2 import Qcow2

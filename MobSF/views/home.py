@@ -10,19 +10,36 @@ import shutil
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import (
+    HttpResponse,
+    HttpResponseRedirect,
+    JsonResponse
+)
 from django.shortcuts import render
-
-from MobSF.forms import FormUtil, UploadFileForm
-from MobSF.scanning import Scanning
-from MobSF.utils import (FileType, PrintException, api_key, isDirExists,
-                         isFileExists, print_n_send_error_response)
-from StaticAnalyzer.models import (RecentScansDB, StaticAnalyzerAndroid,
-                                   StaticAnalyzerIOSZIP, StaticAnalyzerIPA,
-                                   StaticAnalyzerWindows)
+from MobSF.forms import (
+    FormUtil,
+    UploadFileForm
+)
+from MobSF.views.scanning import Scanning
+from MobSF.utils import (
+    FileType,
+    PrintException,
+    api_key,
+    isDirExists,
+    isFileExists,
+    print_n_send_error_response
+)
+from StaticAnalyzer.models import (
+    RecentScansDB,
+    StaticAnalyzerAndroid,
+    StaticAnalyzerIOSZIP,
+    StaticAnalyzerIPA,
+    StaticAnalyzerWindows
+)
 
 LINUX_PLATFORM = ["Darwin", "Linux"]
 HTTP_BAD_REQUEST = 400
+
 
 def index(request):
     """
@@ -37,10 +54,13 @@ class Upload(object):
     """
     Handle File Upload based on App type
     """
-    
+
     def __init__(self, request):
         self.request = request
         self.form = UploadFileForm(request.POST, request.FILES)
+        self.file_content_type = None
+        self.file_name_lower = None
+        self.file_type = None
 
     @staticmethod
     def as_view(request):
@@ -55,7 +75,7 @@ class Upload(object):
         }
         request = self.request
         resp = HttpResponse(json.dumps(response_data),
-                    content_type="application/json; charset=utf-8")
+                            content_type="application/json; charset=utf-8")
         resp['Access-Control-Allow-Origin'] = '*'
 
         if request.method != 'POST':
@@ -64,7 +84,7 @@ class Upload(object):
             form = UploadFileForm()
             resp['status'] = HTTP_BAD_REQUEST
             return resp
-        
+
         if not self.form.is_valid():
             response_data['description'] = 'Invalid Form Data!'
             print("\n[ERROR] Invalid Form Data!")
@@ -89,38 +109,36 @@ class Upload(object):
                 }
                 print("\n[ERROR] Static Analysis of iOS IPA requires Mac or Linux")
                 return data
-        
+
         data = self.upload()
 
         response_data['url'] = data['url']
         response_data['status'] = data['status']
         return HttpResponse(json.dumps(response_data),
-                    content_type="application/json; charset=utf-8")
-
-        
+                            content_type="application/json; charset=utf-8")
 
     def upload_api(self):
-        api_response = {
-        }
-
+        """
+        API File Upload
+        """
+        api_response = {}
         request = self.request
         if not self.form.is_valid():
             api_response['error'] = FormUtil.errors_message(self.form)
-            return JsonResponse(data=api_response, status=HTTP_BAD_REQUEST)
-
+            return api_response, HTTP_BAD_REQUEST
         self.file_content_type = request.FILES['file'].content_type
         self.file_name_lower = request.FILES['file'].name.lower()
         self.file_type = FileType(self.file_content_type, self.file_name_lower)
-
         if not self.file_type.is_allow_file():
             api_response["error"] = "File format not Supported!"
-            return JsonResponse(data=api_response, status=HTTP_BAD_REQUEST)
+            return api_response, HTTP_BAD_REQUEST
         data = self.upload()
-        return JsonResponse({
+        api_response = {
             'scan_type': data['scan_type'],
             'hash': data['hash'],
             'file_name': data['file_name']
-        })
+        }
+        return api_response, 200
 
     def upload(self):
         request = self.request
@@ -128,7 +146,8 @@ class Upload(object):
         file_type = self.file_content_type
         file_name_lower = self.file_name_lower
 
-        print("[INFO] MIME Type: {} FILE: {}".format(file_type, file_name_lower))
+        print("[INFO] MIME Type: {} FILE: {}".format(
+            file_type, file_name_lower))
         if self.file_type.is_apk():
             return scanning.scan_apk()
         elif self.file_type.is_zip():
