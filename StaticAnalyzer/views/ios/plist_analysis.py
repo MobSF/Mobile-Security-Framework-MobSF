@@ -6,20 +6,15 @@ import os
 import glob
 import subprocess
 import plistlib
-
+from biplist import readPlist, writePlistToString
 from MobSF.utils import PrintException, isFileExists
 
 
 def convert_bin_xml(bin_xml_file):
     """Convert Binary XML to Readable XML"""
-    try:
-        plist_obj = plistlib.readPlist(bin_xml_file)
-        data = plistlib.writePlistToBytes(plist_obj)
-        with open(bin_xml_file, 'wb') as flip:
-            flip.write(data)
-        return data.decode("utf-8", "ignore")
-    except:
-        PrintException("[ERROR] Converting Binary XML to Readable XML")
+    plist_obj = readPlist(bin_xml_file)
+    data = writePlistToString(plist_obj)
+    return data
 
 
 def __check_permissions(p_list):
