@@ -1,10 +1,10 @@
 """
 MobSF REST API V 1
 """
-import json
 
 from django.http import (
-    HttpResponse
+    HttpResponse,
+    JsonResponse
 )
 from django.views.decorators.csrf import csrf_exempt
 
@@ -32,17 +32,11 @@ from StaticAnalyzer.views.windows import (
 
 def make_api_response(data, status=200):
     """Make API Response"""
-    api_resp = HttpResponse(json.dumps(
-        data,
-        sort_keys=True,
-        indent=4,
-        separators=(',', ': ')),
-        content_type="application/json; charset=utf-8",
-        status=status)
-    api_resp['Access-Control-Allow-Origin'] = '*'
-    api_resp['Access-Control-Allow-Methods'] = 'POST'
-    api_resp['Access-Control-Allow-Headers'] = 'Authorization'
-    return api_resp
+    resp = JsonResponse(data=data, status=status)
+    resp['Access-Control-Allow-Origin'] = '*'
+    resp['Access-Control-Allow-Methods'] = 'POST'
+    resp['Access-Control-Allow-Headers'] = 'Authorization'
+    return resp
 
 
 def api_auth(meta):
@@ -52,7 +46,7 @@ def api_auth(meta):
     return False
 
 
-@request_method(['POST', 'OPTIONS'])
+@request_method(['POST'])
 @csrf_exempt
 def api_upload(request):
     """POST - Upload API"""
@@ -61,7 +55,7 @@ def api_upload(request):
     return make_api_response(resp, code)
 
 
-@request_method(['POST', 'OPTIONS'])
+@request_method(['POST'])
 @csrf_exempt
 def api_scan(request):
     """POST - Scan API"""
@@ -100,7 +94,7 @@ def api_scan(request):
     return response
 
 
-@request_method(['POST', 'OPTIONS'])
+@request_method(['POST'])
 @csrf_exempt
 def api_delete_scan(request):
     """POST - Delete a Scan"""
@@ -116,7 +110,7 @@ def api_delete_scan(request):
     return response
 
 
-@request_method(['POST', 'OPTIONS'])
+@request_method(['POST'])
 @csrf_exempt
 def api_pdf_report(request):
     """Generate and Download PDF"""
@@ -124,7 +118,7 @@ def api_pdf_report(request):
     if set(request.POST) == set(params):
         resp = pdf(request, api=True)
         if "error" in resp:
-            if "Invalid scan hash" == resp.get("error"):
+            if resp.get("error") == "Invalid scan hash":
                 response = make_api_response(resp, 400)
             else:
                 response = make_api_response(resp, 500)
@@ -132,9 +126,9 @@ def api_pdf_report(request):
             response = HttpResponse(
                 resp["pdf_dat"], content_type='application/pdf')
             response["Access-Control-Allow-Origin"] = "*"
-        elif "Report not Found" == resp.get("report"):
+        elif resp.get("report") == "Report not Found":
             response = make_api_response(resp, 404)
-        elif "Type is not Allowed" == resp.get("scan_type"):
+        elif resp.get("scan_type") == "Type is not Allowed":
             response = make_api_response(resp, 400)
         else:
             response = make_api_response(
@@ -145,7 +139,7 @@ def api_pdf_report(request):
     return response
 
 
-@request_method(['POST', 'OPTIONS'])
+@request_method(['POST'])
 @csrf_exempt
 def api_json_report(request):
     """Generate JSON Report"""
@@ -153,15 +147,15 @@ def api_json_report(request):
     if set(request.POST) == set(params):
         resp = pdf(request, api=True)
         if "error" in resp:
-            if "Invalid scan hash" == resp.get("error"):
+            if resp.get("error") == "Invalid scan hash":
                 response = make_api_response(resp, 400)
             else:
                 response = make_api_response(resp, 500)
         elif "report_dat" in resp:
             response = make_api_response(resp["report_dat"], 200)
-        elif "Report not Found" == resp.get("report"):
+        elif resp.get("report") == "Report not Found":
             response = make_api_response(resp, 404)
-        elif "Type is not Allowed" == resp.get("scan_type"):
+        elif resp.get("scan_type") == "Type is not Allowed":
             response = make_api_response(resp, 400)
         else:
             response = make_api_response(
