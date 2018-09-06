@@ -576,11 +576,11 @@ def adb_binary_or32bit_support():
 
 def check_basic_env():
     """Check if we have basic env for MobSF to run"""
-    print("[INFO] MobSF Basic Environment Check")
+    print("[INFO] SAFTA MOBILE Security Basic Environment Check")
     try:
         import capfuzz
     except ImportError:
-        PrintException("[ERROR] CapFuzz not installed!")
+        PrintException("[ERROR] FUZZI not installed!")
         os.kill(os.getpid(), signal.SIGTERM)
     try:
         import lxml
