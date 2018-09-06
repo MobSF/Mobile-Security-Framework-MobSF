@@ -1,10 +1,10 @@
 """
 MobSF REST API V 1
 """
-import json
 
 from django.http import (
-    HttpResponse
+    HttpResponse,
+    JsonResponse
 )
 from django.views.decorators.csrf import csrf_exempt
 
@@ -32,17 +32,11 @@ from StaticAnalyzer.views.windows import (
 
 def make_api_response(data, status=200):
     """Make API Response"""
-    api_resp = HttpResponse(
-        json.dumps(data,
-                   sort_keys=True,
-                   indent=4,
-                   separators=(',', ': ')),
-        content_type="application/json; charset=utf-8",
-        status=status)
-    api_resp['Access-Control-Allow-Origin'] = '*'
-    api_resp['Access-Control-Allow-Methods'] = 'POST'
-    api_resp['Access-Control-Allow-Headers'] = 'Authorization'
-    return api_resp
+    resp = JsonResponse(data=data, status=status)
+    resp['Access-Control-Allow-Origin'] = '*'
+    resp['Access-Control-Allow-Methods'] = 'POST'
+    resp['Access-Control-Allow-Headers'] = 'Authorization'
+    return resp
 
 
 def api_auth(meta):
