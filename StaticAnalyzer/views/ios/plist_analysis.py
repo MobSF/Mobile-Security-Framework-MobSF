@@ -6,9 +6,14 @@ import os
 import glob
 import subprocess
 import plistlib
-from biplist import readPlist, writePlistToString
-from MobSF.utils import PrintException, isFileExists
-
+from MobSF.utils import (
+    PrintException,
+    isFileExists
+)
+from biplist import (
+    readPlist,
+    writePlistToString
+)
 
 def convert_bin_xml(bin_xml_file):
     """Convert Binary XML to Readable XML"""
