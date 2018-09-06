@@ -12,7 +12,6 @@ import shutil
 from pathlib import Path
 
 from django.utils.html import escape
-
 from MalwareAnalyzer.views import malware_check
 from MobSF.utils import (
     python_list,
