@@ -426,9 +426,9 @@ else:
     APKID_ENABLED = False
     # Before setting APKID_ENABLED to True,
     # Install rednaga fork of Yara Python
-    # git clone https://github.com/rednaga/yara-python
+    # git clone --recursive https://github.com/rednaga/yara-python-1 yara-python
     # cd yara-python
-    # python setup.py install
+    # python3 setup.py build --enable-dex install
     #==============================================
 
     #^CONFIG-END^: Do not edit this line
