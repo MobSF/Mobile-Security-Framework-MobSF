@@ -3,8 +3,10 @@ FROM ubuntu:17.10
 #Labels and Credits
 LABEL \
     name="MobSF" \
-    author="Ajin Abraham <ajin25@gmail.com>" \
-    maintainer="Ajin Abraham <ajin25@gmail.com>" \
+    author="khashayar yadmand <khashayar.yadmand@gmail.com>" \
+    maintainer="khashayar yadmand <khashayar.yadmand@gmail.com>" \
+    maintainer="khashayar yadmand <khashayar.yadmand@gmail.com>" \
+    maintainer="khashayar yadmand <khashayar.yadmand@gmail.com>" \
     contributor_1="OscarAkaElvis <oscar.alfonso.diaz@gmail.com>" \
     contributor_2="Vincent Nadal <vincent.nadal@orange.fr>" \
     description="Mobile Security Framework is an intelligent, all-in-one open source mobile application (Android/iOS/Windows) automated pen-testing framework capable of performing static, dynamic analysis and web API testing"
