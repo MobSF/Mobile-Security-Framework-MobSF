@@ -1,5 +1,5 @@
 """
-Django settings for MobSF project.
+Django settings for  SAAFTA_MOBILE_Security project.
 
 For more information on this file, see
 https://docs.djangoproject.com/en/dev/topics/settings/
@@ -15,7 +15,7 @@ from MobSF import utils
 from install.windows.setup import windows_config_local
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#       MOBSF FRAMEWORK CONFIGURATIONS
+#       SAAFTA_MOBILE_Security FRAMEWORK CONFIGURATIONS
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -40,7 +40,7 @@ BANNER = """
 USE_HOME = False
 
 # True : All Uploads/Downloads will be stored in user's home directory
-# False : All Uploads/Downloads will be stored in MobSF root directory
+# False : All Uploads/Downloads will be stored in  SAAFTA_MOBILE_Security root directory
 # If you need multiple users to share the scan results set this to False
 #===============================================
 
@@ -134,7 +134,7 @@ APPX_MIME = [
 
 #===============================================
 
-#=====MOBSF SECRET GENERATION AND MIGRATION=====
+#=====SAAFTA_MOBILE_Security SECRET GENERATION AND MIGRATION=====
 # Based on https://gist.github.com/ndarville/3452907#file-secret-key-gen-py
 try:
     SECRET_KEY="nq@n!jqcg473ha54q-0840zry%h6=ia^&m!*c4hao)n87)^aya"
@@ -236,7 +236,7 @@ else:
     '''
     #^CONFIG-START^: Do not edit this line
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    #          MOBSF USER CONFIGURATIONS
+    #          SAAFTA_MOBILE_Security USER CONFIGURATIONS
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     #-------------------------
@@ -357,7 +357,7 @@ else:
     AVD_ADB_PORT = 5554
     #================================================
 
-    #====ANDROID MOBSF VIRTUALBOX VM SETTINGS =====
+    #====ANDROID SAAFTA_MOBILE_Security VIRTUALBOX VM SETTINGS =====
     # VM UUID
     UUID = 'c0e864bd-d52a-41f1-9a8c-23976f770537'
     # Snapshot UUID
