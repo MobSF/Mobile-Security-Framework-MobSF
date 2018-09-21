@@ -1231,10 +1231,11 @@ def manifest_analysis(mfxml, man_data_dic):
                 icon_hidden = False
                 break
 
-        permissons = {}
+        permissons = []
         for k, permisson in man_data_dic['perm'].items():
-            permissons[k] = (
+            permissons.append(
                 {
+                    'name': k,
                     'status': permisson[0],
                     'info': permisson[1],
                     'description': permisson[2]
