@@ -30,7 +30,7 @@ def get_context_from_db_entry(db_entry):
             'androvername': db_entry[0].ANDROVERNAME,
             'androver': db_entry[0].ANDROVER,
             'manifest': python_list(db_entry[0].MANIFEST_ANAL),
-            'permissions': python_dict(db_entry[0].PERMISSIONS),
+            'permissions': python_list(db_entry[0].PERMISSIONS),
             'binary_analysis': python_list(db_entry[0].BIN_ANALYSIS),
             'files': python_list(db_entry[0].FILES),
             'certz': db_entry[0].CERTZ,
