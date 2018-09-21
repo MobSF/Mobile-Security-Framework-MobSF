@@ -1,5 +1,5 @@
 echo 
-echo "=======================MobSF Clean Script for Unix======================="
+echo "=======================Saffta Clean Script for Unix======================="
 echo "Running this script will delete the Scan database, all files uploaded and generated."
 read -p "Are you sure? " -n 1 -r
 echo 
@@ -13,7 +13,7 @@ then
 	rm -rf ../StaticAnalyzer/migrations/*
 	echo "Deleting Dynamic Analyzer Migrations"
 	rm -rf ../DynamicAnalyzer/migrations/*
-	echo "Deleting MobSF Migrations"
+	echo "Deleting Saffta Migrations"
 	rm -rf ../MobSF/migrations/*
 	echo "Deleting python byte code files"
         find ../ -name "*.pyc" -exec rm -rf {} \;

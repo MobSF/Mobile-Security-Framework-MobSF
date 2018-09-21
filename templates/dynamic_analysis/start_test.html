@@ -199,7 +199,7 @@
             $('#stat').attr('readonly', 'readonly');
 
             $("#start").one("click", function () {
-                $('#stat').append("\nTrying to setup the environment");
+                $('#stat').append("\nآماده سازی محیط نرم افزار");
                 $.ajax({
                     url: "../GetEnv/",
                     type: "POST",
@@ -235,13 +235,13 @@
 
                             $('#start').addClass("btn btn-success");
                             $('#start').text("ایجاد محیط عملیات");
-                            $('#stat').append("\nRunning HTTPS Proxy");
+                            $('#stat').append("\nاجرای پروکسی HTTPS");
 
                             {% comment %}
                                 AVD throws error if we overwrite files
                             {% endcomment %}
                             {% if AVD == True %}
-                                $('#stat').append("\nRootCA Installed Successfully");
+                                $('#stat').append("\nRootCA نصب شده است");
                             {% else %}
                                 //Install MobSF RootCA
                                 $.ajax({
@@ -254,7 +254,7 @@
                                     },
                                     success: function (json) {
                                         if (json.ca === "installed") {
-                                            $('#stat').append("\n RootCA Installed Successfully");
+                                            $('#stat').append("\n RootCA نصب شده است");
                                         }
                                         $('#stat').scrollTop($('#stat')[0].scrollHeight);
                                     },
@@ -264,10 +264,10 @@
                                 });
                             {% endif %}
 
-                            $('#stat').append("\nConnecting to VM");
-                            $('#stat').append("\nMounting");
-                            $('#stat').append("\nInstalling APK");
-                            $('#stat').append("\nRunning APK");
+                            $('#stat').append("\nاتصال به محیط نرم افزار");
+                            $('#stat').append("\nآماده سازی نصب");
+                            $('#stat').append("\nنصب نرم افزار");
+                            $('#stat').append("\nاجرای نرم افزار");
                             //Starting ClipDump
                             $.ajax({
                                 url: "../ClipDump/",
@@ -278,7 +278,7 @@
                                 },
                                 success: function (json) {
                                     if (json.status === "success") {
-                                        $('#stat').append("\nClipboard Monitoring Started!");
+                                        $('#stat').append("\nذخیره اطلاعات توسط نرم افزار درحال اجرا شروع شده است");
                                         $('#stat').scrollTop($('#stat')[0].scrollHeight);
                                     }
                                 },
@@ -286,9 +286,9 @@
                                     document.getElementById("er").srcdoc = xhr.responseText;
                                 }
                             });
-                            $('#stat').append("\nEnvironment is Ready!");
-                            $('#stat').append("\nAgents are running in the Background");
-                            $('#stat').append("\nGo Ahead and navigate through all the flows of the Application.");
+                            $('#stat').append("\nمحیط اجرا اماده شد !");
+                            $('#stat').append("\nمانیتور نرم افزار شروع شده است");
+                            $('#stat').append("\nتست های نرم افزار قابل اجرا هستند");
                             $('#stat').scrollTop($('#stat')[0].scrollHeight);
                         }
 

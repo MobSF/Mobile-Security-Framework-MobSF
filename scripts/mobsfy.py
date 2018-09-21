@@ -40,7 +40,7 @@ def getADB(TOOLSDIR):
         print(("\n[ERROR] Getting ADB Location - " + str(e)))
         return "adb"
 
-print("\nMobSFy Script\n\nThis script allows you to configure any rooted android Device or VM to perfrom MobSF dynamic analysis.\n(Supports Android Version 4.03 to 4.4)")
+print("\nSafftay Script\n\nThis script allows you to configure any rooted android Device or VM to perfrom MobSF dynamic analysis.\n(Supports Android Version 4.03 to 4.4)")
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--identifier",
@@ -76,7 +76,7 @@ try:
                 "644", "/system/etc/security/cacerts/0025aabb.0"])
     ExecuteCMD([adb, "-s", adbconnect, "shell",
                 "rm", "/data/local/tmp/0025aabb.0"])
-    # Install MobSF requirements
+    # Install Saffta requirements
     DP = os.path.join(TOOLSDIR, 'onDevice/DataPusher.apk')
     SC = os.path.join(TOOLSDIR, 'onDevice/ScreenCast.apk')
     CD = os.path.join(TOOLSDIR, 'onDevice/ClipDump.apk')
@@ -96,11 +96,11 @@ try:
     FC = os.path.join(TOOLSDIR, 'onDevice/antivm/fake-cpuinfo')
     FD = os.path.join(TOOLSDIR, 'onDevice/antivm/fake-drivers')
 
-    print("\n[INFO] Installing MobSF DataPusher")
+    print("\n[INFO] Installing Saffta DataPusher")
     ExecuteCMD([adb, "-s", adbconnect, "install", "-r", DP])
-    print("\n[INFO] Installing MobSF ScreenCast")
+    print("\n[INFO] Installing Saffta ScreenCast")
     ExecuteCMD([adb, "-s", adbconnect, "install", "-r", SC])
-    print("\n[INFO] Installing MobSF Clipboard Dumper")
+    print("\n[INFO] Installing Saffta Clipboard Dumper")
     ExecuteCMD([adb, "-s", adbconnect, "install", "-r", CD])
     print("\n[INFO] Copying hooks.json")
     ExecuteCMD([adb, "-s", adbconnect, "push", HK, "/data/local/tmp/"])
@@ -129,7 +129,7 @@ try:
         print("\n 1 .Install the Framework\n 2. Restart the device\n 3. Enable Android BluePill, Droidmon, JustTrustMe and RootCloak.")
     else:
         print("\n 1 .Install the Framework\n 2. Restart the device\n 3. Enable Droidmon, JustTrustMe and RootCloak.")
-    print("\n[INFO] MobSFy Script Executed Successfully")
+    print("\n[INFO] Safftay Script Executed Successfully")
 except Exception as e:
     print("\n[ERROR] Error occured - " + str(e))
     sys.exit(0)

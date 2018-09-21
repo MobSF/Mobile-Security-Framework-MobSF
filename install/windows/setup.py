@@ -1,4 +1,4 @@
-"""Setup script for the Windows vm for usage with MobSF for static analysis of Windows apps."""
+"""Setup script for the Windows vm for usage with Saffta for static analysis of Windows apps."""
 import os
 from os.path import expanduser
 import platform
@@ -88,7 +88,7 @@ def read_config():
 
 
 def create_folders():
-    """Create MobSF dirs."""
+    """Create Saffta dirs."""
 
     print("[*] Creating other folders...")
 
@@ -417,7 +417,7 @@ def install_locally(mobsf_home):
     rewrite_config()
     create_folders()
     # if not os.path.exists(CONFIG['MobSF']['subdir_tools']):
-    #    os.makedirs(CONFIG['MobSF']['subdir_tools'])
+    #    os.makedirs(CONFIG['Saffta']['subdir_tools'])
     tools_nuget()
     tools_binskim()
     tools_binscope()
@@ -425,7 +425,7 @@ def install_locally(mobsf_home):
 
 
 def _install_remote():
-    """Install the MobSF-Utils on a Windows-VM for static analysis."""
+    """Install the Saffta-Utils on a Windows-VM for static analysis."""
     download_config()
     read_config()
     rewrite_config()

@@ -204,14 +204,14 @@ def main():
     mobsf_arm_folder = ''
     settings_py = ''
 
-    print("\nMobSFy_AVD Script\n\n")
-    print_log('Starting MobSF - AVD interactive configuration script')
-    print_log('Make sure to run this script ONLY after you successfuly installed latest AndroidStudio & downloaded MobSF_ARM_Emulator.zip')
+    print("\nSafftay_AVD Script\n\n")
+    print_log('Starting Saffta - AVD interactive configuration script')
+    print_log('Make sure to run this script ONLY after you successfuly installed latest AndroidStudio & downloaded Saffta_ARM_Emulator.zip')
 
     # First gather all the paths needed to make to copy opera
 
-    print_log('Please specify the path to MobSF_ARM_Emulator extracted folder')
-    mobsf_arm_folder = verify_path('MobSF_ARM_Emulator folder')
+    print_log('Please specify the path to Saffta_ARM_Emulator extracted folder')
+    mobsf_arm_folder = verify_path('Saffta_ARM_Emulator folder')
 
     # Give the user the ability to change the sdk and avd folder, let me guess
     # the other tools
@@ -311,7 +311,7 @@ def main():
         'ADB_BINARY': 'r"' + adb_path + '"'
     })
 
-    print("\n\nAll Done! you can now use MobSF AVD Emulator :)\n\n")
+    print("\n\nAll Done! you can now use Saffta AVD Emulator :)\n\n")
 
 if __name__ == '__main__':
     sys.exit(main())

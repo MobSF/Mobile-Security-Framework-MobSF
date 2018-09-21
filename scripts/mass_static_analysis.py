@@ -19,7 +19,7 @@ def is_server_up(url):
 
 def start_scan(directory, server_url, apikey, rescan='0'):
     print("\nLooking for Android/iOS/Windows binaries or source code in : " + directory)
-    print("[INFO] Uploading to MobSF Server")
+    print("[INFO] Uploading to Saffta Server")
     uploaded = []
     MIME = {
         ".apk": 'application/octet-stream',
@@ -72,10 +72,10 @@ if __name__ == "__main__":
         apikey = args.apikey
         rescan = args.rescan
         if is_server_up(server_url) == False:
-            print("MobSF REST API Server is not running at " + server_url)
+            print("Saffta REST API Server is not running at " + server_url)
             print("Exiting!")
             exit(0)
-        # MobSF is running, start scan
+        # Saffta is running, start scan
         start_scan(directory, server_url, apikey, rescan)
     else:
         parser.print_help()

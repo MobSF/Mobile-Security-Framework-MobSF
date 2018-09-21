@@ -1,4 +1,4 @@
-"""MobSF rpc_client for static windows app analysis."""
+"""Saffta rpc_client for static windows app analysis."""
 # pylint: disable=C0325,W0603,C0103
 import os
 from os.path import expanduser
