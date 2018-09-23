@@ -39,7 +39,7 @@ def api_analysis(package, location):
     api_cmd = []
     api_sms = []
     try:
-        with open(location, "r") as flip:
+        with open(location, "r", encoding="utf-8") as flip:
             dat = flip.readlines()
         res_id = "Droidmon-apimonitor-" + package + ":"
         for line in dat:
