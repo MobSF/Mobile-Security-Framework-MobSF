@@ -74,12 +74,16 @@ def unzip(app_path, ext_path):
         files = []
         with zipfile.ZipFile(app_path, "r") as zipptr:
             for fileinfo in zipptr.infolist():
+                filename = ''
                 filename = fileinfo.filename
                 if not isinstance(filename, str):
                     filename = str(
                         filename, encoding="utf-8", errors="replace")
                 files.append(filename)
-                zipptr.extract(fileinfo, str(ext_path))
+                full_filename = app_path + filename
+                full_filename = bytes(full_filename, 'utf-8')
+                full_filename = str(full_filename, encoding="utf-8", errors="replace")
+                zipptr.extract(full_filename, ext_path)
         return files
     except:
         PrintException("[ERROR] Unzipping Error")
