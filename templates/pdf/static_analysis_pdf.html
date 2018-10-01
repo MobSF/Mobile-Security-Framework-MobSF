@@ -1,90 +1,109 @@
 
-   {% block content %}
+
+{% block content %}
+
 <style>
-body {
-    font: normal 30px Verdana, Arial, sans-serif;direction: rtl;
-}
+    body {
+        font: normal 30px Verdana, Arial, sans-serif;
+        direction: rtl;
+
+    }
 
 </style>
-<h1 align="center" class="page-header">تجزیه و تحلیل استانیک -  {{name}} </h1>
+<meta charset="UTF-8">
+<h1 align="center" class="page-header" lang="fa">تجزیه و تحلیل استاتیک {{name}} </h1>
 <hr>
 
-                  <div class="col-lg-7">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-file"></span>اطلاعات فایل </h3><hr>
-                            </div>
+<div class="col-lg-7">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-file"></span>اطلاعات
+                فایل </h3>
+            <hr>
+        </div>
 
-                            <div class="panel-body">
-                                <div class="list-group">
-									<p>                                       
-									   <span class="label label-primary"><b>نام: </b></span>
-                                    {{ name }}
-                                    </p>
-									<p>
-                                       <span class="label label-primary"><b>حجم فایل :</b></span>
-                                    {{ size }}
-                                   </p><p>
-                                    {{ md5 }}
-                                       <span class="label label-primary"><b>MD5: </b></span>
+        <div class="panel-body">
+            <div class="list-group">
+                <p>
+                    <span class="label label-primary"><b>نام: </b></span>
+                    {{ name }}
+                </p>
+                <p>
+                    <span class="label label-primary"><b>حجم فایل :</b></span>
+                    {{ size }}
+                </p>
+                <p>
+                    {{ md5 }}
+                    <span class="label label-primary"><b>MD5: </b></span>
 
-                                   </p><p>
-                                    {{ sha1 }}
-								     <span class="label label-primary"><b>SHA1: </b></span>
+                </p>
+                <p>
+                    {{ sha1 }}
+                    <span class="label label-primary"><b>SHA1: </b></span>
 
-									 </p><p>
-                                    {{ sha256 }}
-								     <span class="label label-primary"><b>SHA256: </b></span>
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div>
+                </p>
+                <p>
+                    {{ sha256 }}
+                    <span class="label label-primary"><b>SHA256: </b></span>
+            </div>
+
+        </div>
+    </div>
+</div>
 <hr>
-                  <div class="col-lg-5">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-phone"></span>اطلاعات برنامه</h3><hr>
-                            </div>
-                            <div class="panel-body">
-                                <div class="list-group">
-									<p>                                       
-									   <span class="label label-primary"><b>نام پکیج: </b></span>
-                                    {{ packagename }}
-                                    </p>
-									<p>
-                                       <span class="label label-primary"><b>فرم آغازین: </b></span>
-                                    {{ mainactivity }}
-                                   </p><p>
-                                       <span class="label label-primary"><b>Target SDK: </b></span>
-                                    {{ targetsdk }}
-                                    </p><p>
-								     <span class="label label-primary"><b>حداقل SDK: </b></span>
-                                    {{ minsdk }}
-                                  </p><p>
-									
-								     <span class="label label-primary"><b>حداکثر SDK: </b></span>
-                                    {{ maxsdk }}
-									</p><p>
-									<span class="label label-primary"><b>نام نسخه برنامه: </b></span>
-                                    {{ androvername }}
-									</p><p>
-									<span class="label label-primary"><b>شماره نسخه برنامه: </b></span>
-                                    {{ androver }}
-									</p>
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div>
-                    <hr>
-                        </div>
-                  		  <div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-eye-close"></span> امضاهای برنامه</h3><hr>
-                            </div>
-                            <div class="panel-body">
+<div class="col-lg-5">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-phone"></span>اطلاعات
+                برنامه</h3>
+            <hr>
+        </div>
+        <div class="panel-body">
+            <div class="list-group">
+                <p>
+                    <span class="label label-primary"><b>نام پکیج: </b></span>
+                    {{ packagename }}
+                </p>
+                <p>
+                    <span class="label label-primary"><b>فرم اغازین: </b></span>
+                    {{ mainactivity }}
+                </p>
+                <p>
+                    <span class="label label-primary"><b>Target SDK: </b></span>
+                    {{ targetsdk }}
+                </p>
+                <p>
+                    <span class="label label-primary"><b>حداقل SDK: </b></span>
+                    {{ minsdk }}
+                </p>
+                <p>
+
+                    <span class="label label-primary"><b>حداکثر SDK: </b></span>
+                    {{ maxsdk }}
+                </p>
+                <p>
+                    <span class="label label-primary"><b>نام نسخه برنامه: </b></span>
+                    {{ androvername }}
+                </p>
+                <p>
+                    <span class="label label-primary"><b>شماره نسخه برنامه: </b></span>
+                    {{ androver }}
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+<hr>
+</div>
+<div class="col-lg-12">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span
+                    class="glyphicon glyphicon-eye-close"></span> امضاهای برنامه</h3>
+            <hr>
+        </div>
+        <div class="panel-body">
                             <pre>
                               {{ certinfo | safe}}
 
@@ -105,768 +124,813 @@ Production ready applications should not be signed with 'Android Debug' Certific
 <strong>Description:</strong>The app is signed with `SHA1withRSA`. SHA1 hash algorithm is known to have collision issues.
 {% endif %}
                             </pre>
-                            </div>
-                        </div>
-                    </div> 
-                    <hr>
-					<div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-ok"></span> دسترسی ها</h3><hr>
-                            </div>
-                            <div class="panel-body">
-								  <div class="table-responsive">
-                    <table>
-                      <thead>
+        </div>
+    </div>
+</div>
+<hr>
+<div class="col-lg-12">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-ok"></span>
+                دسترسی ها</h3>
+            <hr>
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table>
+                    <thead>
                     <tr>
                         <th>نوع</th>
-                        <th>عنوان </th>
+                        <th>عنوان</th>
                         <th>توضیحات</th>
-                      </tr>
-                                        </thead>
-                                        <tbody>
+                    </tr>
+                    </thead>
+                    <tbody>
                     {% for perm,desc in permissions.items %}
                     <tr>
-                    <td>{{ perm }} ({{ desc.0 }})</td>
-                    <td>{{ desc.1 }}</td>
-                    <td>{{ desc.2 }}</td>
+                        <td>{{ perm }} ({{ desc.0 }})</td>
+                        <td>{{ desc.1 }}</td>
+                        <td>{{ desc.2 }}</td>
                     </tr>
                     {% endfor %}
                     </tbody>
-                    </table>
-                                
-                            </div>
-                        </div>
-                    </div>
-					</div>
-                    <hr>
-                    <div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class=""></span> تجزیه و تحلیل و کتابخانه باینری</h3><hr>
-                            </div>
-                            <div class="panel-body">
-                  <div class="table-responsive">
-                     <table class="table table-bordered table-hover table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>موضوع</th>
-                                                <th>شدت</th>
-                                                <th>توضیحات</th>
-                                                <th>فایلها</th>
-                                                
-                                            </tr>
-                                        </thead>
-                                        <tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>
+<hr>
+<div class="col-lg-12">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class=""></span>تجزیه و تحلیل کتابخانه های باینری</h3>
+            <hr>
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th>موضوع</th>
+                        <th>شدت</th>
+                        <th>توضیحات</th>
+                        <th>فایل ها</th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
                     {% for item in binary_analysis %}
-                      <tr>
+                    <tr>
                         <td>
-                        {{item|key:"title" | safe}}
+                            {{item|key:"title" | safe}}
                         </td>
                         <td>
-                          {% if item|key:"stat" == "high" %}
+                            {% if item|key:"stat" == "high" %}
                             <span class="label label-danger">high</span>
-                          {% elif item|key:"stat" == "info" %}
+                            {% elif item|key:"stat" == "info" %}
                             <span class="label label-info">info</span>
-                          {% elif item|key:"stat" == "medium" %}
+                            {% elif item|key:"stat" == "medium" %}
                             <span class="label label-warning">medium</span>
-                          {% endif %}
-                         
+                            {% endif %}
+
                         </td>
                         <td>
-                        {{item|key:"desc"}}
+                            {{item|key:"desc"}}
                         </td>
                         <td>
-                        {{item|key:"file"}}
+                            {{item|key:"file"}}
                         </td>
-   
-                       </tr>
-                     {% endfor %}
+
+                    </tr>
+                    {% endfor %}
                     </tbody>
-                    </table>
+                </table>
 
-                            </div>
-                        </div>
-                    </div>
-                    </div>
-                    <hr>
+            </div>
+        </div>
+    </div>
+</div>
+<hr>
 
-                    <!-- ============================================================= -->
-        {% if VT_RESULT %}
-                <div class="col-lg-12">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
-                             <h3 class="panel-title"><i class="fa fa-bug"></i>گزارش ویروس</h3><hr>
-                        </div>
-                        <div class="panel-body">
-                        <p> {{ VT_RESULT.positives }} / {{ VT_RESULT.total }}&nbsp; AV این فایل را مخرب یافت!</p>
-                        {% if VT_RESULT.positives %}
-                          <div class="table-responsive">
-                                <table class="table table-bordered table-hover table-striped">
-                                                <thead>
-                                                    <tr>
-                                                        <th>AV</th>
-                                                        <th>تشخیص</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                {% for av_name,av_result in VT_RESULT.scans.items %}
-                                                    {% if av_result.detected == True %}
-                                                       <tr>
-                                                            <td>
-                                                                {{ av_name }}
-                                                            </td>
-                                                           <td>
-                                                                <span class="label label-danger">{{ av_result.result }}</span>
-                                                            </td>
-                                                      </tr>
-                                                    {% endif %}
-                                                {% endfor %}
-                                                </tbody>
-                                </table>
-                          </div>
-                        {% endif %}
-                        </div>
-                    </div>
-                </div>
-        {% endif %}
+<!-- ============================================================= -->
+{% if VT_RESULT %}
+<div class="col-lg-12">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-bug"></i>گزارش ویروس</h3>
+            <hr>
+        </div>
+        <div class="panel-body">
+            <p> {{ VT_RESULT.positives }} / {{ VT_RESULT.total }}&nbsp; AV این فایل مخرب را یافت!</p>
+            {% if VT_RESULT.positives %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th>AV</th>
+                        <th>تشخیص</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for av_name,av_result in VT_RESULT.scans.items %}
+                    {% if av_result.detected == True %}
+                    <tr>
+                        <td>
+                            {{ av_name }}
+                        </td>
+                        <td>
+                            <span class="label label-danger">{{ av_result.result }}</span>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
 
-                    <!-- ============================================================= -->
+<!-- ============================================================= -->
 
-                    <div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                 <h3 class="panel-title"><i class="fa fa-bug"></i>  DEX تجزیه و تحلیل بد افزار</h3><hr>
-                            </div>
-                            <div class="panel-body">
-                  <div class="table-responsive">
-                        <table class="table table-bordered table-hover table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>ANTI-VM</th>
-                                                <th>کامپایلر</th>
-                                                <th>مبهم سازی</th>
-                                                <th>بسته</th>
-                                                <th>DROPPER</th>
-                                                <th>MANIPULATOR</th>
-                                                <th>ANTI-ASSEMBLY</th>
-                                                <th>ABNORMAL PATTERN</th>
-                                                
-                                            </tr>
-                                        </thead>
+<div class="col-lg-12">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-bug"></i> DEX تجزیه و تحلیل بد افزار</h3>
+            <hr>
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th>ANTI-VM</th>
+                        <th>کامپایلر</th>
+                        <th>مبهم سازی</th>
+                        <th>بسته</th>
+                        <th>DROPPER</th>
+                        <th>MANIPULATOR</th>
+                        <th>ANTI-ASSEMBLY</th>
+                        <th>ABNORMAL PATTERN</th>
+
+                    </tr>
+                    </thead>
 
 
-                                        <tbody>
-                     
-            
-                      {% if apkid|key:"apkid_version" %}
-                       <tr>
-                       
+                    <tbody>
+
+
+                    {% if apkid|key:"apkid_version" %}
+                    <tr>
+
                         <td>
                             {% if apkid|key:"anti_vm" == "" %}
-                              <span class="label label-info">هیچ کد ضد VM وجود ندارد</span>
+                            <span class="label label-info">هیچ کد ضد VM وجود ندارد</span>
                             {% else %}
-                              <span class="label label-info">کد ضد VM یافت شد</span></br>
-                              {% for cmp in apkid|key:"anti_vm" %}
-                               {{cmp}}</br>
-                              {% endfor %}
+                            <span class="label label-info">کد ضد VM یافت شد</span></br>
+                            {% for cmp in apkid|key:"anti_vm" %}
+                            {{cmp}}</br>
+                            {% endfor %}
                             {% endif %}
 
                         </td>
-                  
+
                         <td>
-                          {% if apkid|key:"compiler" == "" %}
-                              <span class="label label-info">نمی توان کامپایلر را شناسایی کرد</span>
+                            {% if apkid|key:"compiler" == "" %}
+                            <span class="label label-info">نمی توان کامپایلر را شناسایی کرد</span>
                             {% else %}
-                               <span class="label label-info">کامپایلر یافت شد</span></br>
-                              {% for cmp in apkid|key:"compiler" %}
-                               {{cmp}}</br>
-                              {% endfor %}
-                            {% endif %}
-                        </td>
-                 
-                        <td>
-                          {% if apkid|key:"obfuscator" == "" %}
-                              <span class="label label-info"> بدون Obfuscator</span>
-                            {% else %}
-                              <span class="label label-info">Obfuscator یافت شد</span></br>
-                              {% for cmp in apkid|key:"obfuscator" %}
-                               {{cmp}}</br>
-                              {% endfor %}
+                            <span class="label label-info">کامپایلر یافت شد</span></br>
+                            {% for cmp in apkid|key:"compiler" %}
+                            {{cmp}}</br>
+                            {% endfor %}
                             {% endif %}
                         </td>
 
                         <td>
-                          {% if apkid|key:"packer" == "" %}
-                              <span class="label label-success">هیچ بستهی یافت نشد</span>
+                            {% if apkid|key:"obfuscator" == "" %}
+                            <span class="label label-info"> بدون مبهم سازی</span>
                             {% else %}
-                              <span class="label label-danger">Packer یافت شد</span></br>
-                              {% for cmp in apkid|key:"packer" %}
-                               {{cmp}}</br>
-                              {% endfor %}
+                            <span class="label label-info">مبهم سازی یافت شد</span></br>
+                            {% for cmp in apkid|key:"obfuscator" %}
+                            {{cmp}}</br>
+                            {% endfor %}
                             {% endif %}
                         </td>
 
                         <td>
-                          {% if apkid|key:"dropper" == "" %}
-                              <span class="label label-success"> Dropper یافت نشد</span>
+                            {% if apkid|key:"packer" == "" %}
+                            <span class="label label-success">هیچ Packer یافت نشد</span>
                             {% else %}
-                             <span class="label label-danger">Dropper بافت شد</span></br>
-                              {% for cmp in apkid|key:"dropper" %}
-                               {{cmp}}</br>
-                              {% endfor %}
+                            <span class="label label-danger">Packer یافت شد</span></br>
+                            {% for cmp in apkid|key:"packer" %}
+                            {{cmp}}</br>
+                            {% endfor %}
                             {% endif %}
                         </td>
 
                         <td>
-                          {% if apkid|key:"manipulator" == "" %}
-                              <span class="label label-info"> Manipulator بدون</span>
+                            {% if apkid|key:"dropper" == "" %}
+                            <span class="label label-success"> Dropper یافت نشد</span>
                             {% else %}
-                             <span class="label label-info">Manipulator یافت شد</span></br>
-                              {% for cmp in apkid|key:"manipulator" %}
-                               {{cmp}}</br>
-                              {% endfor %}
+                            <span class="label label-danger">Dropper بافت شد</span></br>
+                            {% for cmp in apkid|key:"dropper" %}
+                            {{cmp}}</br>
+                            {% endfor %}
                             {% endif %}
                         </td>
 
                         <td>
-                          {% if apkid|key:"anti_disassembly" == "" %}
-                              <span class="label label-success"> Anti-Disassembly بدون کد</span>
+                            {% if apkid|key:"manipulator" == "" %}
+                            <span class="label label-info"> Manipulator بدون</span>
                             {% else %}
-                              <span class="label label-danger">کد Anti-Disassembly یافت شد</span></br>
-                              {% for cmp in apkid|key:"anti_disassembly" %}
-                               {{cmp}}</br>
-                              {% endfor %}
-                          {% endif %}
-                        </td>
-
-                        <td>
-                          {% if apkid|key:"abnormal" == "" %}
-                              <span class="label label-success">هیچ الگوی غیر طبیعی یافت نشد</span>
-                            {% else %}
-                              <span class="label label-danger">الگوی غیر طبیعی پیدا شد</span></br>
-                              {% for cmp in apkid|key:"abnormal" %}
-                               {{cmp}}</br>
-                              {% endfor %}
+                            <span class="label label-info">Manipulator یافت شد</span></br>
+                            {% for cmp in apkid|key:"manipulator" %}
+                            {{cmp}}</br>
+                            {% endfor %}
                             {% endif %}
                         </td>
-                        
-                      </tr>
-                      {% else %}
-                      <p align="center"><strong>APKiD فعال نیست</strong></p>
-                      {% endif %}
-       
-                    </tbody>
-                    </table>
 
-                            </div>
-                  <div class="box-body">
-                      {% if apkid|key:"apkid_version" %}
-                       <strong> APKiD: </strong>{{ apkid|key:"apkid_version" }}
-                      {% endif %}
-                      </div>
-                  </div>
-                        </div>
-                    </div>
-                    </div>
-                    <hr>
-
-                         <div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class=""></i><span class=""></span> فرم های قایل نمایش</h3><hr>
-
-                            </div>
-                            <div class="panel-body">
-                                  <div class="table-responsive">
-                                   <table class="table table-bordered table-hover table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>فرم</th>
-                                                <th>مقصد</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                      {% for activity,intent_details in browsable_activities.items %}
-                          <tr>
-                            <td>{{activity}}</td>
-                            <td>
-                                   {% if intent_details|key:"schemes" %}
-                                      <strong>اسکیماها</strong>:
-                                      {% for scheme in intent_details|key:"schemes" %}
-                                        {{scheme}},
-                                      {% endfor %}
-                                       </br>
-                                   {% endif %}
-                                   {% if intent_details|key:"hosts" %}
-                                      <strong>هاست:</strong> {% for host in intent_details|key:"hosts" %}
-                                        {{host}},
-                                      {% endfor %} 
-                                      </br>
-                                   {% endif %}
-                                   {% if intent_details|key:"ports" %}
-                                      <strong>پورت:</strong> {% for port in intent_details|key:"ports" %}
-                                        {{port}},
-                                      {% endfor %} 
-                                      </br>
-                                   {% endif %}
-                                   {% if intent_details|key:"mime_types" %}
-                                      <strong>Mime نوع:</strong> {% for mime in intent_details|key:"mime_types" %}
-                                        {{mime}},
-                                      {% endfor %} 
-                                      </br>
-                                   {% endif %}
-                                   {% if intent_details|key:"paths" %}
-                                      <strong>مسیرها:</strong> {% for path in intent_details|key:"paths" %}
-                                        {{path}},
-                                      {% endfor %} 
-                                      </br>
-                                   {% endif %}
-                                   {% if intent_details|key:"path_prefixs" %}
-                                      <strong>پیشوند مسیر:</strong> {% for prefix in intent_details|key:"path_prefixs" %}
-                                        {{prefix}},
-                                      {% endfor %} 
-                                      </br>
-                                   {% endif %}
-                                   {% if intent_details|key:"path_patterns" %}
-                                      <strong>الگوهای مسیر:</strong> {% for pattern in intent_details|key:"path_patterns" %}
-                                        {{pattern}},
-                                      {% endfor %} 
-                                      </br>
-                                   {% endif %}
-                              {% endfor %}
-                            </td>
-                          </tr>
-                    </tbody>
-                    </table>
-                                
-                            </div>
-                        </div>
-                    </div>
-                    </div>
-<hr>
-			<div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-search"></span> MANIFEST تجزیه و تحلیل</h3><hr>
-
-                            </div>
-                            <div class="panel-body">
-								  <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>موضوع</th>
-                                                <th>شدت</th>
-												<th>توضیحات</th>
-                                                
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-									  {% for item in manifest %}
-                      <tr>
                         <td>
-                        {{item|key:"title" | safe}}
+                            {% if apkid|key:"anti_disassembly" == "" %}
+                            <span class="label label-success"> Anti-Disassembly بدون کد</span>
+                            {% else %}
+                            <span class="label label-danger">کد Anti-Disassembly یافت شد</span></br>
+                            {% for cmp in apkid|key:"anti_disassembly" %}
+                            {{cmp}}</br>
+                            {% endfor %}
+                            {% endif %}
                         </td>
+
                         <td>
-
-                          {% if item|key:"stat" == "high" %}
-                            <span class="label label-danger">high</span>
-                          {% elif item|key:"stat" == "info" %}
-                            <span class="label label-info">info</span>
-                          {% elif item|key:"stat" == "medium" %}
-                            <span class="label label-warning">medium</span>
-                          {% endif %}
-                         
-                        </td>
-                        <td>
-                        {{item|key:"desc"}}
-                        </td>
-   
-                       </tr>
-                     {% endfor %}
-
-
-										</tbody>
-										</table>
-                                
-                            </div>
-                        </div>
-                    </div>
-					</div>
-<hr>
-
-       
-						<div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-warning-sign"></span> تجزیه و تحلیل کدها</h3><hr>
-                            </div>
-                            <div class="panel-body">
-								  <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>موضوع</th>
-                                                <th>شدت</th>
-												<th>فایلها</th>
-                                                
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-										{% for issue, details in findings.items %}
-                  <tr>
-                  <td>
-                  {{ issue }}
-                  </td>
-                  <td>
-                    {% if details|key:"level" == "high" %}
-                      <span class="label label-danger">high</span>
-                      {% elif details|key:"level" == "good" %}
-                      <span class="label label-success">secure</span>
-                      {% elif details|key:"level" == "warning" %}
-                      <span class="label label-warning">warning</span>
-                      {% elif details|key:"level" == "info" %}
-                      <span class="label label-info">info</span>
-                      {% endif %}
-                  </td>
-                  <td>
-                  {% for path in details|key:"path" %}
-                   <a href="../ViewSource/?file={{ path }}&md5={{ md5 }}&type=apk"> {{ path }}</a>
-                  </br>
-                  {% endfor %}
-                  </td>
-                </tr>    
-              {% endfor %} 
-										</tbody>
-										</table>
-                                
-                            </div>
-                        </div>
-                    </div>
-					</div>		
-                    <hr>
-	<div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-tasks"></span> ANDROID API</h3><hr>
-                            </div>
-                            <div class="panel-body">
-								  <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
-                                        <thead>
-                                            <tr>
-                                                
-                                                <th>API</th>
-												<th>فایلها</th>
-                                                
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-										{% for desc, details in api.items %}
-                  <tr>
-                  <td>
-                  {{ desc }}
-                  </td>
-                  <td>
-                  {% for path in details|key:"path" %}
-                   <a href="../ViewSource/?file={{ path }}&md5={{ md5 }}&type=apk"> {{ path }}</a>
-                  </br>
-                  {% endfor %}
-                  </td>
-                </tr>    
-              {% endfor %} 
-										</tbody>
-										</table>
-                                
-                            </div>
-                        </div>
-                    </div>
-					</div>
-	<hr>
-					    <div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-globe"></span> مسیرها</h3><hr>
-                            </div>
-                            <div class="panel-body">
-								  <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
-                                        {% if urls %} 
-                  <thead>
-                  <tr>
-                     <th>URL</th>
-                     <th>فایل</th>
-                  </tr>
-                 </thead>
-                    {% endif %}
-                                        <tbody>
-								
-									{% for urldict in urls %}
-                    <tr>
-                       <td>
-                       {% for u in urldict|key:"urls" %}
-                         {{ u }}
-                       {% endfor %}
+                            {% if apkid|key:"abnormal" == "" %}
+                            <span class="label label-success">هیچ الگوی غیر طبیعی یافت نشد</span>
+                            {% else %}
+                            <span class="label label-danger">الگوی غیر طبیعی یافت شد</span></br>
+                            {% for cmp in apkid|key:"abnormal" %}
+                            {{cmp}}</br>
+                            {% endfor %}
+                            {% endif %}
                         </td>
 
-                       <td>
-                          <a href="../ViewSource/?file={{urldict|key:"path"}}&md5={{ md5}}&type=apk">{{urldict|key:"path"}}</a>
-                          
-                       </td>
                     </tr>
-                  {% endfor %} 
-										</tbody>
-										</table>
-                                
-                            </div>
-                        </div>
-                    </div>
-					</div>
-                    <hr>
-                    <div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-screenshot"></span> بررسی بد افزار</h3><hr>
-                            </div>
-                            <div class="panel-body">
-                                  <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
-                                        {% if urls %} 
-                  <thead>
-                  <tr>
-                     <th>دامین</th>
-                     <th>وضعیت ها</th>
-                  </tr>
-                 </thead>
-                  {% endif %}
-                                      <tbody>
-                
-                  {% for domain, details in domains.items %}
-                  <tr><td>{{domain}}</td><td> 
+                    {% else %}
+                    <p align="center"><strong>APKiD فعال نیست</strong></p>
+                    {% endif %}
 
-                    {% if details|key:"bad" == "yes" %}
-                    <span class="label label-danger">malware</span></br>
-<pre>
+                    </tbody>
+                </table>
+
+            </div>
+            <div class="box-body">
+                {% if apkid|key:"apkid_version" %}
+                <strong> APKiD: </strong>{{ apkid|key:"apkid_version" }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<hr>
+
+<div class="col-lg-12">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class=""></i><span class=""></span>فرم های قابل نمایش</h3>
+            <hr>
+
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th>فرم</th>
+                        <th>مقصد</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for activity,intent_details in browsable_activities.items %}
+                    <tr>
+                        <td>{{activity}}</td>
+                        <td>
+                            {% if intent_details|key:"schemes" %}
+                            <strong>اسکیماها</strong>:
+                            {% for scheme in intent_details|key:"schemes" %}
+                            {{scheme}},
+                            {% endfor %}
+                            </br>
+                            {% endif %}
+                            {% if intent_details|key:"hosts" %}
+                            <strong>هاست:</strong> {% for host in intent_details|key:"hosts" %}
+                            {{host}},
+                            {% endfor %}
+                            </br>
+                            {% endif %}
+                            {% if intent_details|key:"ports" %}
+                            <strong>پورت:</strong> {% for port in intent_details|key:"ports" %}
+                            {{port}},
+                            {% endfor %}
+                            </br>
+                            {% endif %}
+                            {% if intent_details|key:"mime_types" %}
+                            <strong>Mime نوع:</strong> {% for mime in intent_details|key:"mime_types" %}
+                            {{mime}},
+                            {% endfor %}
+                            </br>
+                            {% endif %}
+                            {% if intent_details|key:"paths" %}
+                            <strong>مسیرها:</strong> {% for path in intent_details|key:"paths" %}
+                            {{path}},
+                            {% endfor %}
+                            </br>
+                            {% endif %}
+                            {% if intent_details|key:"path_prefixs" %}
+                            <strong>پیشوند مسیر:</strong> {% for prefix in intent_details|key:"path_prefixs" %}
+                            {{prefix}},
+                            {% endfor %}
+                            </br>
+                            {% endif %}
+                            {% if intent_details|key:"path_patterns" %}
+                            <strong>الگوهای مسیر:</strong> {% for pattern in intent_details|key:"path_patterns" %}
+                            {{pattern}},
+                            {% endfor %}
+                            </br>
+                            {% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>
+<hr>
+<div class="col-lg-12">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-search"></span>
+                MANIFEST تجزیه و تحلیل</h3>
+            <hr>
+
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th>موضوع</th>
+                        <th>شدت</th>
+                        <th>توضیحات</th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in manifest %}
+                    <tr>
+                        <td>
+                            {{item|key:"title" | safe}}
+                        </td>
+                        <td>
+
+                            {% if item|key:"stat" == "high" %}
+                            <span class="label label-danger">high</span>
+                            {% elif item|key:"stat" == "info" %}
+                            <span class="label label-info">info</span>
+                            {% elif item|key:"stat" == "medium" %}
+                            <span class="label label-warning">medium</span>
+                            {% endif %}
+
+                        </td>
+                        <td>
+                            {{item|key:"desc"}}
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+
+
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>
+<hr>
+
+
+<div class="col-lg-12">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span
+                    class="glyphicon glyphicon-warning-sign"></span> تجزیه و تحلیل کدها</h3>
+            <hr>
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th>موضوع</th>
+                        <th>شدت</th>
+                        <th>فایلها</th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for issue, details in findings.items %}
+                    <tr>
+                        <td>
+                            {{ issue }}
+                        </td>
+                        <td>
+                            {% if details|key:"level" == "high" %}
+                            <span class="label label-danger">high</span>
+                            {% elif details|key:"level" == "good" %}
+                            <span class="label label-success">secure</span>
+                            {% elif details|key:"level" == "warning" %}
+                            <span class="label label-warning">warning</span>
+                            {% elif details|key:"level" == "info" %}
+                            <span class="label label-info">info</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% for path in details|key:"path" %}
+                            <a href="../ViewSource/?file={{ path }}&md5={{ md5 }}&type=apk"> {{ path }}</a>
+                            </br>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>
+<hr>
+<div class="col-lg-12">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-tasks"></span>
+                ANDROID API</h3>
+            <hr>
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped">
+                    <thead>
+                    <tr>
+
+                        <th>API</th>
+                        <th>فایلها</th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for desc, details in api.items %}
+                    <tr>
+                        <td>
+                            {{ desc }}
+                        </td>
+                        <td>
+                            {% for path in details|key:"path" %}
+                            <a href="../ViewSource/?file={{ path }}&md5={{ md5 }}&type=apk"> {{ path }}</a>
+                            </br>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>
+<hr>
+<div class="col-lg-12">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-globe"></span>
+                مسیرها</h3>
+            <hr>
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped">
+                    {% if urls %}
+                    <thead>
+                    <tr>
+                        <th>URL</th>
+                        <th>فایل</th>
+                    </tr>
+                    </thead>
+                    {% endif %}
+                    <tbody>
+
+                    {% for urldict in urls %}
+                    <tr>
+                        <td>
+                            {% for u in urldict|key:"urls" %}
+                            {{ u }}
+                            {% endfor %}
+                        </td>
+
+                        <td>
+                            <a href="../ViewSource/?file={{urldict|key:" path"}}&md5={{
+                            md5}}&type=apk">{{urldict|key:"path"}}</a>
+
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>
+<hr>
+<div class="col-lg-12">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span
+                    class="glyphicon glyphicon-screenshot"></span> بررسی بد افزار</h3>
+            <hr>
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped">
+                    {% if urls %}
+                    <thead>
+                    <tr>
+                        <th>دامین</th>
+                        <th>وضعیت ها</th>
+                    </tr>
+                    </thead>
+                    {% endif %}
+                    <tbody>
+
+                    {% for domain, details in domains.items %}
+                    <tr>
+                        <td>{{domain}}</td>
+                        <td>
+
+                            {% if details|key:"bad" == "yes" %}
+                            <span class="label label-danger">malware</span></br>
+                            <pre>
 <strong>URL: </strong>{{details|key:"domain_or_url"}}
 <strong>IP: </strong><span class="label label-danger">{{details|key:"ip"}}</span>
 <strong>Description: </strong>{{details|key:"desc"}}
 </pre>
-                  {% else %}
-                    <span class="label label-success">good</span></br>
-                  {% endif %}
+                            {% else %}
+                            <span class="label label-success">good</span></br>
+                            {% endif %}
 
 
-                  </td> </tr>
-                  {% endfor %}
-                   
+                        </td>
+                    </tr>
+                    {% endfor %}
+
                     </tbody>
-                                        </table>
-                                
-                            </div>
-                        </div>
-                    </div>
-                    </div>
-                    <hr>
-							    <div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-envelope"></span> پست های الکترونیکی</h3><hr>
-                            </div>
-                            <div class="panel-body">
-								  <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
-                                        {% if emails %} 
-                  <thead>
-                  <tr>
-                     <th>Email</th>
-                     <th>File</th>
-                  </tr>
-                 </thead>
-                 {% endif %}
-                                        <tbody>
-								
-									{% for email_dict in emails %}
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>
+<hr>
+<div class="col-lg-12">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span
+                    class="glyphicon glyphicon-envelope"></span> پست های الکترونیکی</h3>
+            <hr>
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped">
+                    {% if emails %}
+                    <thead>
                     <tr>
-                       <td>
-                       {% for u in email_dict|key:"emails" %}
-                         {{ e }}
-                       {% endfor %}
+                        <th>Email</th>
+                        <th>File</th>
+                    </tr>
+                    </thead>
+                    {% endif %}
+                    <tbody>
+
+                    {% for email_dict in emails %}
+                    <tr>
+                        <td>
+                            {% for u in email_dict|key:"emails" %}
+                            {{ e }}
+                            {% endfor %}
                         </td>
 
-                       <td>
-                          <a href="../ViewSource/?file={{email_dict|key:"path"}}&md5={{ md5}}&type=apk">{{email_dict|key:"path"}}</a>
-                          
-                       </td>
+                        <td>
+                            <a href="../ViewSource/?file={{email_dict|key:" path"}}&md5={{
+                            md5}}&type=apk">{{email_dict|key:"path"}}</a>
+
+                        </td>
                     </tr>
-                  {% endfor %} 
-										</tbody>
-										</table>
-                                
-                            </div>
-                        </div>
-                    </div>
-					</div>
-							<hr>		    <div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-lock"></span> فایل تجزیه و تحلیل</h3><hr>
-                            </div>
-                            <div class="panel-body">
-								  <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
-                                              <thead>
-                                            <tr>
-                                                <th>موضوع</th>
-                                                <th>فایل ها</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-								
-									{{ certz | safe}} 
-										</tbody>
-										</table>
-                                
-                            </div>
-                        </div>
-                    </div>
-					</div>
-  			<hr><div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-sort-by-alphabet-alt"></span> عنوان ها</h3><hr>
-                            </div>
-                            <div class="panel-body">
-                                <div class="list-group">
-									<p>  
-								  
-										{% for val in strings %}
-									    
-										 {{ val }}<br>
-										
-										{% endfor %}									
-																
-									
-									</p>
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div>
-							<hr>
-                   <div class="col-lg-5">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-credit-card"></span> فرم ها</h3><hr>
-                            </div>
-                            <div class="panel-body">
-                                <div class="list-group">
-									<p>  
-								{% for act in activities %}
-									{{ act}} <br>
-								{% endfor %}									
-									
-									</p>
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div>
-          <hr><div class="col-lg-5">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-hdd"></span>  ارائه
-                                                    دهندگان</h3><hr>
-                            </div>
-                            <div class="panel-body">
-                                <div class="list-group">
-									<p>  
-								{% for prv in providers %}
-									{{ prv}} <br>
-								{% endfor %}									
-									
-									</p>
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div>
-			<hr>		<div class="col-lg-5">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-sort-by-attributes-alt"></span> گیرنده ها</h3><hr>
-                            </div>
-                            <div class="panel-body">
-                                <div class="list-group">
-									<p>  
-								{% for rcv in receivers %}
-									{{ rcv}} <br>
-								{% endfor %}									
-									
-									</p>
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div>
-			<hr>		<div class="col-lg-5">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-refresh"></span>سرویس ها</h3><hr>
-                            </div>
-                            <div class="panel-body">
-                                <div class="list-group">
-									<p>  
-								{% for srv in services %}
-									{{ srv}} <br>
-								{% endfor %}									
-									
-									</p>
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div>
-			<hr>			<div class="col-lg-5">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-chevron-down"></span> کتابخانه ها</h3><hr>
-                            </div>
-                            <div class="panel-body">
-                                <div class="list-group">
-									<p>  
-								{% for lib in libraries %}
-									{{ lib }} <br>
-								{% endfor %}									
-									
-									</p>
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div><hr>  <div class="col-lg-7">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-folder-open"></span> فایل ها</h3><hr>
-                            </div>
-                            <div class="panel-body">
-                                <div class="list-group">
-                                    <p>  
-                                {% for file in files %}
-                                    {{ file}} <br>
-                                {% endfor %}                                    
-                                    
-                                    </p>
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div>
+                    {% endfor %}
+                    </tbody>
+                </table>
 
-	<hr><hr>
+            </div>
+        </div>
+    </div>
+</div>
+<hr>
+<div class="col-lg-12">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-lock"></span>
+                فایل تجزیه و تحلیل</h3>
+            <hr>
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th>موضوع</th>
+                        <th>فایل ها</th>
+                    </tr>
+                    </thead>
+                    <tbody>
 
-		   
-		   
-       
-      
-   {% endblock %}
+                    {{ certz | safe}}
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>
+<hr>
+<div class="col-lg-12">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span
+                    class="glyphicon glyphicon-sort-by-alphabet-alt"></span> عنوان ها</h3>
+            <hr>
+        </div>
+        <div class="panel-body">
+            <div class="list-group">
+                <p>
+
+                    {% for val in strings %}
+
+                    {{ val }}<br>
+
+                    {% endfor %}
+
+
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+<hr>
+<div class="col-lg-5">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span
+                    class="glyphicon glyphicon-credit-card"></span> فرم ها</h3>
+            <hr>
+        </div>
+        <div class="panel-body">
+            <div class="list-group">
+                <p>
+                    {% for act in activities %}
+                    {{ act}} <br>
+                    {% endfor %}
+
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+<hr>
+<div class="col-lg-5">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-hdd"></span>
+                ارائه
+                دهندگان</h3>
+            <hr>
+        </div>
+        <div class="panel-body">
+            <div class="list-group">
+                <p>
+                    {% for prv in providers %}
+                    {{ prv}} <br>
+                    {% endfor %}
+
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+<hr>
+<div class="col-lg-5">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span
+                    class="glyphicon glyphicon-sort-by-attributes-alt"></span> گیرنده ها</h3>
+            <hr>
+        </div>
+        <div class="panel-body">
+            <div class="list-group">
+                <p>
+                    {% for rcv in receivers %}
+                    {{ rcv}} <br>
+                    {% endfor %}
+
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+<hr>
+<div class="col-lg-5">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-refresh"></span>سرویس
+                ها</h3>
+            <hr>
+        </div>
+        <div class="panel-body">
+            <div class="list-group">
+                <p>
+                    {% for srv in services %}
+                    {{ srv}} <br>
+                    {% endfor %}
+
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+<hr>
+<div class="col-lg-5">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span
+                    class="glyphicon glyphicon-chevron-down"></span> کتابخانه ها</h3>
+            <hr>
+        </div>
+        <div class="panel-body">
+            <div class="list-group">
+                <p>
+                    {% for lib in libraries %}
+                    {{ lib }} <br>
+                    {% endfor %}
+
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+<hr>
+<div class="col-lg-7">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span
+                    class="glyphicon glyphicon-folder-open"></span> فایل ها</h3>
+            <hr>
+        </div>
+        <div class="panel-body">
+            <div class="list-group">
+                <p>
+                    {% for file in files %}
+                    {{ file}} <br>
+                    {% endfor %}
+
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<hr>
+<hr>
+
+
+{% endblock %}
