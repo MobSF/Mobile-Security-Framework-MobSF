@@ -74,6 +74,7 @@ def unzip(app_path, ext_path):
         files = []
         with zipfile.ZipFile(app_path, "r") as zipptr:
             for fileinfo in zipptr.infolist():
+                filename = fileinfo.filename
                 if not isinstance(filename, str):
                     filename = str(
                         filename, encoding="utf-8", errors="replace")
