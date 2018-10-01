@@ -466,6 +466,7 @@ def gen_downloads(app_dir, md5, icon_path=''):
         zipdir(directory, zipf)
         zipf.close()
         # Icon
+        icon_path = icon_path.encode('utf-8')
         if icon_path:
             if os.path.exists(icon_path):
                 shutil.copy2(icon_path, os.path.join(

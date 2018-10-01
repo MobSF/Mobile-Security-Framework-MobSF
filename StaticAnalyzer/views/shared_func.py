@@ -74,12 +74,11 @@ def unzip(app_path, ext_path):
         files = []
         with zipfile.ZipFile(app_path, "r") as zipptr:
             for fileinfo in zipptr.infolist():
-                filename = fileinfo.filename
                 if not isinstance(filename, str):
                     filename = str(
                         filename, encoding="utf-8", errors="replace")
                 files.append(filename)
-                zipptr.extract(fileinfo, str(ext_path))
+                zipptr.extract(filename, ext_path)
         return files
     except:
         PrintException("[ERROR] Unzipping Error")
@@ -89,9 +88,9 @@ def unzip(app_path, ext_path):
             print("\n[INFO] Using the Default OS Unzip Utility.")
             try:
                 subprocess.call(
-                    ['unzip', '-o', '-q', app_path, '-d', ext_path])
+                    ['unzip', '-o', '-I utf-8', '-q', app_path, '-d', ext_path])
                 dat = subprocess.check_output(['unzip', '-qq', '-l', app_path])
-                dat = dat.split('\n')
+                dat = dat.decode('utf-8').split('\n')
                 files_det = ['Length   Date   Time   Name']
                 files_det = files_det + dat
                 return files_det
