@@ -359,9 +359,9 @@ else:
 
     #====ANDROID SAAFTA_MOBILE_Security VIRTUALBOX VM SETTINGS =====
     # VM UUID
-    UUID = 'c0e864bd-d52a-41f1-9a8c-23976f770537'
+    UUID = 'ac531192-e5f3-4c14-9b28-f7b4927f4f61'
     # Snapshot UUID
-    SUUID = '823f112f-0cff-4583-9769-4cc4e9af59dd'
+    SUUID = '98aaa360-9df3-4c6a-99c8-6bab443381f6'
     # IP of the MobSF VM
     VM_IP = '192.168.56.101'
     VM_ADB_PORT = 5555
@@ -375,6 +375,7 @@ else:
     #================HOST/PROXY SETTINGS ===============
     PROXY_IP = '192.168.56.1'  # Host/Server/Proxy IP
     PORT = 1337  # Proxy Port
+    SERVER_ADDRESS = '192.168.43.24'
     #PROXY_IP = '192.168.1.37'  # Host/Server/Proxy IP
     #PORT = 5555   # Proxy Port
     ROOT_CA = '0026aabb.0'
