@@ -378,7 +378,6 @@ else:
     SERVER_ADDRESS = '192.168.43.24'
     #PROXY_IP = '192.168.1.37'  # Host/Server/Proxy IP
     #PORT = 5555   # Proxy Port
-    SERVER_ADDRESS='127.0.0.1'
     ROOT_CA = '0026aabb.0'
     SCREEN_IP = PROXY_IP  # ScreenCast IP
     SCREEN_PORT = 9339  # ScreenCast Port(Do not Change)
