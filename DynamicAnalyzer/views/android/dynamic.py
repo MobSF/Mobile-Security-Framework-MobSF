@@ -1007,7 +1007,7 @@ def capfuzz_start(request):
             project = request.GET['project']
         else:
             project = ""
-        return HttpResponseRedirect('http://localhost:' + str(settings.PORT) + "/dashboard/" + project)
+        return HttpResponseRedirect('http://' + str(settings.SERVER_ADDRESS)  +':' + str(settings.PORT) + "/dashboard/" + project)
     except:
         PrintException("[ERROR] Starting CapFuzz Web UI")
         return HttpResponseRedirect('/error/')
