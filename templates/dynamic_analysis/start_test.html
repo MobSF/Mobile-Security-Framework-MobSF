@@ -474,7 +474,7 @@
 
             //Start Activity Tester
             $("#actt").click(function () {
-                $('#stat').append("\nStarting Activity Tester...");
+                $('#stat').append("\nشروع تست Activity ها");
                 $.ajax({
                     url: "../ActivityTester/",
                     type: "POST",
@@ -486,11 +486,11 @@
                     },
                     success: function (json) {
                         if (json.acttest === "done") {
-                            $('#stat').append("\nActivity Testing Completed.");
+                            $('#stat').append("\nپایان تست Activity ها");
                             $('#stat').scrollTop($('#stat')[0].scrollHeight);
                         }
                         else if (json.acttest == "noact") {
-                            $('#stat').append("\nNo Activities Found!");
+                            $('#stat').append("\nاک");
                             $('#stat').scrollTop($('#stat')[0].scrollHeight);
                         }
 
@@ -504,7 +504,7 @@
 
 //Finish Testing
             $("#stop").one("click", function () {
-                $('#stat').append("\nCollecting Data...");
+                $('#stat').append("\nحمع اوری داده ها ....");
 
                 //Stop Screen Casting if it's running
 
@@ -526,7 +526,7 @@
                             if (json.status === "off") {
                                 touch = "off;"
                                 refresh = false;
-                                $('#stat').append("\nScreen sharing stopped");
+                                $('#stat').append("\nتوقف نمایش مشنرک صفحه مبایل ");
                                 $('#my').attr('src', '/static/img/loading.jpg');
 
                             }
@@ -551,11 +551,11 @@
                     success: function (json) {
                         if (json.final === "yes") {
                             $('#stop').addClass("btn btn-success");
-                            $('#stop').text("Testing Completed");
-                            $('#stat').append("\nDownloading Logcat logs");
-                            $('#stat').append("\nDownloading Droidmon API Monitor Logcat logs");
+                            $('#stop').text("پایان تست");
+                            $('#stat').append("\nدانلود لاگ های از Logcat");
+                    /*        $('#stat').append("\nDownloading Droidmon API Monitor Logcat logs");
                             $('#stat').append("\nDownloading Dumpsys logs");
-                            $('#stat').append("\nStopping Application");
+                            $('#stat').append("\nStopping Application");*/
                             $('#stat').scrollTop($('#stat')[0].scrollHeight);
                             dump();
                         }
@@ -605,7 +605,7 @@
         }
 
         function dump() {
-            $('#stat').append("\nDumping Application Data from the device. Please Wait....");
+            $('#stat').append("\nاماده سازی داده های جمع اوری شده....");
             $('#stat').scrollTop($('#stat')[0].scrollHeight);
             $.ajax({
                 url: "../DumpData/",
@@ -618,8 +618,8 @@
                 },
                 success: function (json) {
                     if (json.dump === "yes") {
-                        $('#stat').append("\nApplication Data Dumped!");
-                        $('#stat').append("\nGenerating Report...Please Wait!");
+                        $('#stat').append("\nپایان جمع اوری اطلاعات !");
+                        $('#stat').append("\nدرحال ساحت گزارشات نرم افزار لطفا کمی صبر کنید .... !");
                         $('#stat').scrollTop($('#stat')[0].scrollHeight);
                         //Call reporting
                         location.href = "//" + location.host + "/Report/?md5={{ md5 }}&pkg={{ pkg }}";
