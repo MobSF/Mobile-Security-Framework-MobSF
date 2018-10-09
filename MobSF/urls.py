@@ -38,7 +38,7 @@ urlpatterns = [
     url(r'^StaticAnalyzer_Windows/$',
         StaticAnalyzer.views.windows.staticanalyzer_windows),
     url(r'^ViewFile/$', StaticAnalyzer.views.ios.static_analyzer.view_file),
-    url(r'^ViewSource/$', StaticAnalyzer.views.android.view_source.run),
+    url(r'^ViewSource/$', StaticAnalyzer.views.android.view_source.ViewSource.as_view),
     url(r'^PDF/$', StaticAnalyzer.views.shared_func.pdf),
     url(r'^Smali/$', StaticAnalyzer.views.android.smali.run),
     url(r'^Java/$', StaticAnalyzer.views.android.java.run),
@@ -73,6 +73,7 @@ urlpatterns = [
     url(r'^api/v1/delete_scan$', MobSF.views.api.rest_api.api_delete_scan),
     url(r'^api/v1/download_pdf$', MobSF.views.api.rest_api.api_pdf_report),
     url(r'^api/v1/report_json$', MobSF.views.api.rest_api.api_json_report),
+    url(r'^api/v1/viewsource/android$',MobSF.views.api.rest_api.api_viewsource_android),
 
     # Test
     url(r'^runtest/$', StaticAnalyzer.tests.start_test),

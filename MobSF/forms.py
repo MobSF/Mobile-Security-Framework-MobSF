@@ -3,6 +3,16 @@ from django import forms
 class UploadFileForm(forms.Form):
     file = forms.FileField()
 
+class ViewSourceForm(forms.Form):
+    file = forms.CharField()
+    md5 = forms.CharField(min_length=32, max_length=32)
+    type = forms.ChoiceField(choices=
+        (
+            ('eclipse', 'eclipse'),
+            ('studio', 'studio'), 
+            ('apk', 'apk')
+        )
+    )
 
 class FormUtil(object):
 

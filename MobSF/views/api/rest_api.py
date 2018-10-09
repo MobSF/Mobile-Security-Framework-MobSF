@@ -16,6 +16,10 @@ from MobSF.utils import (
     api_key,
     request_method
 )
+from MobSF.forms import (
+    ViewSourceForm, 
+    FormUtil
+)
 from StaticAnalyzer.views.shared_func import (
     pdf
 )
@@ -28,6 +32,11 @@ from StaticAnalyzer.views.ios.static_analyzer import (
 from StaticAnalyzer.views.windows import (
     staticanalyzer_windows
 )
+from StaticAnalyzer.views.android.view_source import (
+    ViewSource
+)
+
+
 
 
 def make_api_response(data, status=200):
@@ -164,3 +173,20 @@ def api_json_report(request):
         response = make_api_response(
             {"error": "Missing Parameters"}, 422)
     return response
+
+
+BAD_REQUEST = 400
+@request_method(['GET'])
+@csrf_exempt
+def api_viewsource_android(request):
+    """
+    viewsource for android file
+    """
+    viewsource_form = ViewSourceForm(request.GET)
+    if not viewsource_form.is_valid():
+        return JsonResponse(FormUtil.errors_message(viewsource_form), status=BAD_REQUEST)
+
+    view_source = ViewSource(request)
+    return JsonResponse(view_source.api())
+    
+
