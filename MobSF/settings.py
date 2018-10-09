@@ -230,7 +230,7 @@ STATICFILES_DIRS = (
 STATIC_URL = '/static/'
 
 # 256MB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 256000000
+DATA_UPLOAD_MAX_MEMORY_SIZE = 268435456
 
 #===================
 # USER CONFIGURATION
@@ -426,9 +426,9 @@ else:
     APKID_ENABLED = False
     # Before setting APKID_ENABLED to True,
     # Install rednaga fork of Yara Python
-    # git clone https://github.com/rednaga/yara-python
+    # git clone --recursive https://github.com/rednaga/yara-python-1 yara-python
     # cd yara-python
-    # python setup.py install
+    # python3 setup.py build --enable-dex install
     #==============================================
 
     #^CONFIG-END^: Do not edit this line

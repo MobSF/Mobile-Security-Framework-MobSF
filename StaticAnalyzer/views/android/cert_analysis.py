@@ -75,7 +75,7 @@ def cert_info(app_dir, tools_dir):
         if "MANIFEST.MF" in files:
             manifestfile = os.path.join(cert, "MANIFEST.MF")
         if manifestfile:
-            with open(manifestfile,'r') as manifile:
+            with open(manifestfile,'r', encoding='utf-8') as manifile:
                 manidat = manifile.read()
         sha256Digest = bool(re.findall(r"SHA-256-Digest", manidat))
         cert_dic = {
