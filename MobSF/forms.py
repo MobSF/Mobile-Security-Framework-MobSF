@@ -6,8 +6,8 @@ class UploadFileForm(forms.Form):
 class ViewSourceForm(forms.Form):
     file = forms.CharField()
     md5 = forms.CharField(min_length=32, max_length=32)
-    type = forms.ChoiceField(choices=
-        (
+    type = forms.ChoiceField(
+        choices=(
             ('eclipse', 'eclipse'),
             ('studio', 'studio'), 
             ('apk', 'apk')

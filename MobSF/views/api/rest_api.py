@@ -37,9 +37,10 @@ from StaticAnalyzer.views.android.view_source import (
 )
 
 
+BAD_REQUEST = 400
+OK = 200
 
-
-def make_api_response(data, status=200):
+def make_api_response(data, status=OK):
     """Make API Response"""
     resp = JsonResponse(data=data, status=status)
     resp['Access-Control-Allow-Origin'] = '*'
@@ -175,7 +176,6 @@ def api_json_report(request):
     return response
 
 
-BAD_REQUEST = 400
 @request_method(['GET'])
 @csrf_exempt
 def api_viewsource_android(request):
