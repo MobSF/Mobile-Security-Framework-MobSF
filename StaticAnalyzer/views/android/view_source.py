@@ -7,7 +7,7 @@ import re
 import os
 
 from django.shortcuts import render
-from django.http import HttpResponseRedirect, HttpResponseBadRequest
+from django.http import HttpResponseRedirect, HttpResponseBadRequest, JsonResponse
 from django.conf import settings
 from django.utils.html import escape
 
@@ -34,6 +34,17 @@ class ViewSource(object):
         view_source = ViewSource(request)
         return view_source.to_html()
 
+
+    def get_package_type(self, md5, package_type):
+        if package_type == 'eclipse':
+            src = os.path.join(settings.UPLD_DIR, md5 + SRC_DIRECTORY)
+        elif package_type == 'studio':
+            src = os.path.join(settings.UPLD_DIR, md5 + JAVA_DIRECTORY)
+        elif package_type == 'apk':
+            src = os.path.join(settings.UPLD_DIR, md5 + JAVA_SOURCE_DIRECTORY)
+        else:
+            src = ''
+        return src
 
     def to_html(self):
         request = self.request
@@ -103,16 +114,10 @@ class ViewSource(object):
         if ("../" in file_name) or ("%2e%2e" in file_name) or (".." in file_name) or ("%252e" in file_name):
             return HttpResponseBadRequest()
         if is_endswith_java:
-            if package_type == 'eclipse':
-                src = os.path.join(settings.UPLD_DIR, md5 + SRC_DIRECTORY)
-            elif package_type == 'studio':
-                src = os.path.join(settings.UPLD_DIR, md5 + JAVA_DIRECTORY)
-            elif package_type == 'apk':
-                src = os.path.join(settings.UPLD_DIR, md5 + JAVA_SOURCE_DIRECTORY)
-            else:
-                return HttpResponseBadRequest()
+            src = self.get_package_type(md5, package_type)
         elif is_endswith_smali:
             src = os.path.join(settings.UPLD_DIR, md5 + SMALI_SOURCE_DIRECTORY)
+            
         sfile = os.path.join(src, file_name)
         dat = ''
         with io.open(
@@ -128,4 +133,4 @@ class ViewSource(object):
             'file': escape(ntpath.basename(file_name)),
             'dat': dat
         }
-        return context
+        return JsonResponse(context)

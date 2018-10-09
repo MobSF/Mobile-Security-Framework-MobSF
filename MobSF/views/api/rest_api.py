@@ -187,6 +187,6 @@ def api_viewsource_android(request):
         return JsonResponse(FormUtil.errors_message(viewsource_form), status=BAD_REQUEST)
 
     view_source = ViewSource(request)
-    return JsonResponse(view_source.api())
+    return view_source.api()
     
 
