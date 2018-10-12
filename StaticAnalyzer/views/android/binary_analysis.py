@@ -218,28 +218,10 @@ def check_elf_built(f):
                         if entry['r_info_sym'] == 0:
                             has_pi = True
                             break
-        # SHT_SYMTAB=2,SHT_DYNSYM=11,SHT_SUNW_LDYNSYM=0x6ffffff3,
-        elif sectype in (2, 11, 0x6ffffff3):
-            strtab_header = elffile.decode_shdr(elffile.header[
-                                                'e_shoff'] + section_header['sh_link'] * elffile.header['e_shentsize'])
-            if strtab_header['sh_type'] == 3:  # SHT_STRTAB=3,
-                strtab_section = strtab_header['sh_offset']
-            else:
-                continue
-            if section_header['sh_entsize'] > 0:
-                for i in range(section_header['sh_size'] // section_header['sh_entsize']):
-                    entry = elffile.decode_sym(
-                        section_header['sh_offset'] + i * section_header['sh_entsize'])
-                    name = elffile.decode_string(
-                        strtab_section + entry['st_name'])
-                    if name =='__stack_chk_guard' or (name == '__stack_chk_fail' and elffile.header['e_machine'] != 3):
-                        # __stack_chk_fail in crtbegin_dynamic.o linked when x86
-                        has_sp = True
-                        break
     return has_pi, has_sp
 
 
-def res_analysis(app_dir, typ):
+def res_analysis(app_dir):
     """Perform the elf analysis."""
     try:
         print("[INFO] Static Android Resourse Analysis Started")
@@ -287,7 +269,7 @@ def res_analysis(app_dir, typ):
         PrintException("[ERROR] Performing Resourse Analysis")
 
 
-def elf_analysis(app_dir, typ):
+def elf_analysis(app_dir: str) -> list:
     """Perform the elf analysis."""
     try:
         print("[INFO] Static Android Binary Analysis Started")
@@ -301,16 +283,7 @@ def elf_analysis(app_dir, typ):
                     'arranges the address space positions of key data areas of a process, including the '
                     'base of the executable and the positions of the stack, heap and libraries. Built with'
                     ' option <strong>-pie</strong>.'
-                ),
-            'elf_no_sp':
-                (
-                    'Found elf built without Stack Protection',
-                    'high',
-                    'Stack canaries can greatly increase the difficulty of exploiting a stack buffer '
-                    'overflow because it forces the attacker to gain control of the instruction pointer'
-                    ' by some non-traditional means such as corrupting other important variables on the'
-                    ' stack. Built with option <strong>-fstack-protector</strong>.'
-                ),
+                )
         }
         elf_an_dic = {}
         for k in list(elf_desc.keys()):
@@ -325,15 +298,10 @@ def elf_analysis(app_dir, typ):
                             f = io.open(filepath, mode='rb')
                             has_pie, has_sg = check_elf_built(f)
                             f.close()
-                            if has_pie == False:
-                                if "nopie" in filename or "nonpie" in filename or "no-pie" in filename:
-                                    pass
-                                else:
+                            if not has_pie:
+                                if not any(pie_str in ["nopie", "nonpie", "no-pie"] for pie_str in filename):
                                     elf_an_dic['elf_no_pi'].append(
                                         filepath.replace(libdir, "lib"))
-                            if has_sg == False:
-                                elf_an_dic['elf_no_sp'].append(
-                                    filepath.replace(libdir, "lib"))
                         except Exception as e:
                             pass
         res = []
