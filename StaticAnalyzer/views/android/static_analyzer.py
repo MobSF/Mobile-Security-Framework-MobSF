@@ -173,14 +173,8 @@ def static_analyzer(request, api=False):
                         man_data_dic
                     )
                     bin_an_buff = []
-                    bin_an_buff += elf_analysis(
-                        app_dic['app_dir'],
-                        "apk"
-                    )
-                    bin_an_buff += res_analysis(
-                        app_dic['app_dir'],
-                        "apk"
-                    )
+                    bin_an_buff += elf_analysis(app_dic['app_dir'])
+                    bin_an_buff += res_analysis(app_dic['app_dir'])
                     cert_dic = cert_info(
                         app_dic['app_dir'], app_dic['tools_dir'])
                     apkid_results = apkid_analysis(app_dic[
