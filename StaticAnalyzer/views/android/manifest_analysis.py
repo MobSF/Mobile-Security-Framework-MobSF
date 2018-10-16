@@ -762,6 +762,7 @@ def manifest_analysis(mfxml, man_data_dic):
 
                 # LaunchMode
                 if (
+                        int(man_data_dic['min_sdk']) < 21 and
                         itemname in ['Activity', 'Activity-Alias'] and
                         (
                             node.getAttribute("android:launchMode") == 'singleInstance' or
