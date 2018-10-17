@@ -761,8 +761,14 @@ def manifest_analysis(mfxml, man_data_dic):
                     ret_list.append(("a_taskaffinity", (item,), tuple(),))
 
                 # LaunchMode
+                try:
+                    affected_sdk = int(man_data_dic['min_sdk']) < 21
+                except:
+                    # in case min_sdk is not defined we assume vulnerability
+                    affected_sdk = True
+
                 if (
-                        int(man_data_dic['min_sdk']) < 21 and
+                        affected_sdk and
                         itemname in ['Activity', 'Activity-Alias'] and
                         (
                             node.getAttribute("android:launchMode") == 'singleInstance' or
