@@ -18,6 +18,10 @@ from MobSF.utils import (
 from .dvm_permissions import DVM_PERMISSIONS
 
 
+ANDROID_4_2_LEVEL = 17
+ANDROID_5_0_LEVEL = 21
+
+
 def get_manifest(app_path, app_dir, tools_dir, typ, binary):
     """Get the manifest file."""
     try:
@@ -762,7 +766,7 @@ def manifest_analysis(mfxml, man_data_dic):
 
                 # LaunchMode
                 try:
-                    affected_sdk = int(man_data_dic['min_sdk']) < 21
+                    affected_sdk = int(man_data_dic['min_sdk']) < ANDROID_5_0_LEVEL
                 except:
                     # in case min_sdk is not defined we assume vulnerability
                     affected_sdk = True
@@ -1027,8 +1031,8 @@ def manifest_analysis(mfxml, man_data_dic):
                                     # app will not be run on a system where the
                                     # system's API level is below 17.
                         else:
-                            if man_data_dic['min_sdk'] and man_data_dic['target_sdk'] and int(man_data_dic['min_sdk']) < 17:
-                                if itemname == 'Content Provider' and int(man_data_dic['target_sdk']) < 17:
+                            if man_data_dic['min_sdk'] and man_data_dic['target_sdk'] and int(man_data_dic['min_sdk']) < ANDROID_4_2_LEVEL:
+                                if itemname == 'Content Provider' and int(man_data_dic['target_sdk']) < ANDROID_4_2_LEVEL:
                                     perm = ''
                                     item = node.getAttribute("android:name")
                                     if node.getAttribute("android:permission"):
