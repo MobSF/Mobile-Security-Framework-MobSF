@@ -17,7 +17,8 @@ from MobSF.utils import (
     request_method
 )
 from MobSF.forms import (
-    ViewSourceForm, 
+    ViewSourceAndroidForm,
+    ViewSourceIosForm,
     FormUtil
 )
 from StaticAnalyzer.views.shared_func import (
@@ -32,8 +33,9 @@ from StaticAnalyzer.views.ios.static_analyzer import (
 from StaticAnalyzer.views.windows import (
     staticanalyzer_windows
 )
-from StaticAnalyzer.views.android.view_source import (
-    ViewSource
+from StaticAnalyzer.views.view_source import (
+    ViewSourceAndroid,
+    ViewSourceIos
 )
 
 
@@ -182,11 +184,26 @@ def api_viewsource_android(request):
     """
     viewsource for android file
     """
-    viewsource_form = ViewSourceForm(request.GET)
+    viewsource_form = ViewSourceAndroidForm(request.GET)
     if not viewsource_form.is_valid():
         return JsonResponse(FormUtil.errors_message(viewsource_form), status=BAD_REQUEST)
 
-    view_source = ViewSource(request)
+    view_source = ViewSourceAndroid(request)
+    return view_source.api()
+
+
+
+@request_method(['GET'])
+@csrf_exempt
+def api_viewsource_ios(request):
+    """
+    viewsource for ios file
+    """
+    viewsource_form = ViewSourceIosForm(request.GET)
+    if not viewsource_form.is_valid():
+        return JsonResponse(FormUtil.errors_message(viewsource_form), status=BAD_REQUEST)
+
+    view_source = ViewSourceIos(request)
     return view_source.api()
     
 

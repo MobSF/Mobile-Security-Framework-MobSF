@@ -12,8 +12,10 @@ from django.conf import settings
 from django.utils.html import escape
 
 from MobSF.utils import (
-    PrintException
+    PrintException,
+    isFileExists
 )
+from StaticAnalyzer import views
 
 # directory
 SRC_DIRECTORY = '/src/'
@@ -22,7 +24,79 @@ JAVA_SOURCE_DIRECTORY = '/java_source/'
 SMALI_SOURCE_DIRECTORY = '/smali_source/'
 
 
-class ViewSource(object):
+class ViewSourceIos(object):
+    """View iOS Files"""
+    def __init__(self, request):
+        self.request = request
+
+    @classmethod
+    def as_view(cls, request):
+        """
+        With url.py
+        """
+        return cls(request).to_html()
+
+    def api(self):
+        """
+        For REST API
+        """
+        request = self.request
+        fil = request.GET['file']
+        typ = request.GET['type']
+        md5_hash = request.GET['md5']
+        mode = request.GET['mode']
+        md5_match = re.match('^[0-9a-f]{32}$', md5_hash)
+        ext = fil.split('.')[-1]
+        ext_type = re.search("plist|db|sqlitedb|sqlite|txt|m", ext)
+        if not md5_match or not ext_type or not re.findall('xml|db|txt|m', typ) or not re.findall('ios|ipa', mode):
+            return HttpResponseBadRequest()
+    
+        if mode == 'ipa':
+            src = os.path.join(settings.UPLD_DIR,
+                            md5_hash + '/Payload/')
+        elif mode == 'ios':
+            src = os.path.join(settings.UPLD_DIR, md5_hash + '/')
+        sfile = os.path.join(src, fil)
+        dat = ''
+        file_format = 'txt'
+        if typ == 'm':
+            file_format = 'cpp'
+            with io.open(sfile, mode='r', encoding="utf8", errors="ignore") as flip:
+                dat = flip.read()
+        elif typ == 'xml':
+            file_format = 'xml'
+            with io.open(sfile, mode='r', encoding="utf8", errors="ignore") as flip:
+                dat = flip.read()
+        elif typ == 'db':
+            file_format = 'asciidoc'
+            dat = views.ios.static_analyzer.read_sqlite(sfile)
+        elif typ == 'txt' and fil == "classdump.txt":
+            file_format = 'cpp'
+            app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
+            cls_dump_file = os.path.join(app_dir, "classdump.txt")
+            if isFileExists(cls_dump_file):
+                with io.open(cls_dump_file, mode='r', encoding="utf8", errors="ignore") as flip:
+                    dat = flip.read()
+            else:
+                dat = "Class Dump not Found"
+        context = {'title': escape(ntpath.basename(fil)),
+                'file': escape(ntpath.basename(fil)),
+                'type': file_format,
+                'dat': dat}
+        return JsonResponse(context)
+
+
+    def to_html(self):
+        """
+        For template
+        TODO need 
+        """
+        return views.ios.static_analyzer.view_file(self.request)
+
+
+
+
+class ViewSourceAndroid(object):
     """
     """
     def __init__(self, request):
@@ -31,7 +105,7 @@ class ViewSource(object):
     @staticmethod
     def as_view(request):
         """View the source of a file."""
-        view_source = ViewSource(request)
+        view_source = ViewSourceAndroid(request)
         return view_source.to_html()
 
 

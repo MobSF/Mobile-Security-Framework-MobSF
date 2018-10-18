@@ -5,7 +5,6 @@ import DynamicAnalyzer.views.android.dynamic
 import StaticAnalyzer.views.android.static_analyzer
 import StaticAnalyzer.views.android.java
 import StaticAnalyzer.views.android.smali
-import StaticAnalyzer.views.android.view_source
 import StaticAnalyzer.views.android.manifest_view
 import StaticAnalyzer.views.android.find
 import StaticAnalyzer.views.ios.static_analyzer
@@ -38,7 +37,7 @@ urlpatterns = [
     url(r'^StaticAnalyzer_Windows/$',
         StaticAnalyzer.views.windows.staticanalyzer_windows),
     url(r'^ViewFile/$', StaticAnalyzer.views.ios.static_analyzer.view_file),
-    url(r'^ViewSource/$', StaticAnalyzer.views.android.view_source.ViewSource.as_view),
+    url(r'^ViewSource/$', StaticAnalyzer.views.view_source.ViewSourceAndroid.as_view),
     url(r'^PDF/$', StaticAnalyzer.views.shared_func.pdf),
     url(r'^Smali/$', StaticAnalyzer.views.android.smali.run),
     url(r'^Java/$', StaticAnalyzer.views.android.java.run),
@@ -74,6 +73,7 @@ urlpatterns = [
     url(r'^api/v1/download_pdf$', MobSF.views.api.rest_api.api_pdf_report),
     url(r'^api/v1/report_json$', MobSF.views.api.rest_api.api_json_report),
     url(r'^api/v1/viewsource/android$',MobSF.views.api.rest_api.api_viewsource_android),
+    url(r'^api/v1/viewsource/ios$',MobSF.views.api.rest_api.api_viewsource_ios),
 
     # Test
     url(r'^runtest/$', StaticAnalyzer.tests.start_test),
