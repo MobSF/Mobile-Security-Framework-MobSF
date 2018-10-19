@@ -20,9 +20,13 @@ from MobSF.forms import (
     FormUtil,
     UploadFileForm
 )
-from MobSF.views.scanning import Scanning
-from MobSF.utils import (
+from MobSF.views.scanning import (
+    Scanning,
+)
+from MobSF.views.helpers import (
     FileType,
+)
+from MobSF.utils import (
     PrintException,
     api_key,
     isDirExists,

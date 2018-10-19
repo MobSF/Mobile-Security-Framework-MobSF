@@ -1,3 +1,6 @@
+"""
+Common Utils
+"""
 import os
 import signal
 import platform
@@ -13,17 +16,13 @@ import hashlib
 import io
 import ast
 import unicodedata
-import functools
-import requests
 import shutil
-from . import settings
+import requests
+
 
 from django.shortcuts import render
-from django.http import (HttpResponseNotAllowed,
-                        HttpRequest)
 
-
-ALLOW_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD', 'TRACE', ]
+from . import settings
 
 
 class Color(object):
@@ -50,10 +49,7 @@ def upstream_proxy(flaw_type):
             proxies = {flaw_type: proxy_host}
     else:
         proxies = {flaw_type: None}
-    if settings.UPSTREAM_PROXY_SSL_VERIFY:
-        verify = True
-    else:
-        verify = False
+    verify = bool(settings.UPSTREAM_PROXY_SSL_VERIFY)
     return proxies, verify
 
 
@@ -308,7 +304,7 @@ def FindJava(debug=False):
                         if debug:
                             print("\n[INFO] Oracle Java is installed!")
                         return win_java_path
- 
+
             if debug:
                 print(err_msg1)
             return "java"
@@ -613,60 +609,3 @@ def check_basic_env():
         ''')
         os.kill(os.getpid(), signal.SIGTERM)
 
-
-
-class FileType(object):
-    def __init__(self, file_type, file_name_lower):
-        self.file_type = file_type
-        self.file_name_lower = file_name_lower
-
-    def is_allow_file(self):
-        """
-        return bool
-        """
-        if self.is_apk() or self.is_zip() or self.is_ipa() or self.is_appx():
-            return True
-        return False
-    
-    def is_apk(self):
-        return (self.file_type in settings.APK_MIME) and self.file_name_lower.endswith('.apk')
-    
-    def is_zip(self):
-        return (self.file_type in settings.ZIP_MIME) and self.file_name_lower.endswith('.zip')
-    def is_ipa(self):
-        return (self.file_type in settings.IPA_MIME) and self.file_name_lower.endswith('.ipa')
-    def is_appx(self):
-        return (self.file_type in settings.APPX_MIME) and self.file_name_lower.endswith('.appx')
-
-
-
-def request_method(methods):
-    """
-    :param methods http method
-    need django HttpRequest
-    """
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-
-            if not isinstance(methods, list) and not isinstance(methods, tuple):
-                raise ValueError('the parameter methods is not a list or tuple')
-            
-            methods_upper = [m.upper() for m in methods]
-            for method in methods_upper:
-                if method not in ALLOW_METHODS:
-                    raise ValueError('This method is not allowed')
-
-            request = None
-            for arg in args:
-                if isinstance(arg, HttpRequest):
-                    request = arg
-            if request is None:
-                raise ValueError('Request object not found')
-            
-            if request.method not in methods_upper:
-                return HttpResponseNotAllowed(methods_upper)
-
-            return func(*args, **kwargs)
-        return wrapper
-    return decorator

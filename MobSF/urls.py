@@ -75,8 +75,7 @@ urlpatterns = [
     url(r'^api/v1/report_json$', MobSF.views.api.rest_api.api_json_report),
 
     # Test
-    url(r'^runtest/$', StaticAnalyzer.tests.start_test),
-    url(r'^runapitest/$', StaticAnalyzer.tests.start_api_test),
+    url(r'^tests/$', StaticAnalyzer.tests.start_test),
 
 ]
 
