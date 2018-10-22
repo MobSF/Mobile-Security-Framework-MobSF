@@ -14,7 +14,9 @@ from MobSF.views.home import (
 )
 from MobSF.utils import (
     api_key,
-    request_method
+)
+from MobSF.views.helpers import (
+    request_method,
 )
 from StaticAnalyzer.views.shared_func import (
     pdf
@@ -36,6 +38,7 @@ def make_api_response(data, status=200):
     resp['Access-Control-Allow-Origin'] = '*'
     resp['Access-Control-Allow-Methods'] = 'POST'
     resp['Access-Control-Allow-Headers'] = 'Authorization'
+    resp['Content-Type'] = 'application/json; charset=utf-8'
     return resp
 
 

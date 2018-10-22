@@ -102,6 +102,11 @@ RUN rm -rf /var/lib/apt/lists/* /tmp/* > /dev/null 2>&1
 #Expose MobSF Port
 EXPOSE 8000
 
-#Run MobSF
+
 WORKDIR /root/Mobile-Security-Framework-MobSF
+
+#Run Unit Tests
+RUN python3 manage.py test
+
+#Run MobSF
 CMD ["python3","manage.py","runserver","0.0.0.0:8000"]

@@ -12,12 +12,15 @@ from MobSF.utils import (
     api_key,
 )
 
+from django.test import TestCase
+
 RESCAN = False
 # Set RESCAN to True if Static Analyzer Code is modified
 
 
 def static_analysis_test():
     """Test Static Analyzer"""
+    print("\n[INFO] Running Static Analyzer Unit test")
     failed = False
     err_msg = '%s'
     if platform.system() != "Windows":
@@ -72,8 +75,8 @@ def static_analysis_test():
         for pdf in pdfs:
             resp = http_client.get(pdf)
             if (resp.status_code == 200 and
-                resp._headers['content-type'][1] == "application/pdf"
-                ):
+                        resp._headers['content-type'][1] == "application/pdf"
+                    ):
                 print("[OK] PDF Report Generated: " + pdf)
             else:
                 print(err_msg % "[ERROR] Generating PDF: " + pdf)
@@ -168,22 +171,23 @@ def api_test():
             resp = http_client.post(
                 '/api/v1/download_pdf', pdf, HTTP_AUTHORIZATION=auth)
             if (resp.status_code == 200 and
-                resp._headers['content-type'][1] == "application/pdf"
-                ):
+                        resp._headers['content-type'][1] == "application/pdf"
+                    ):
                 print("[OK] PDF Report Generated: " + pdf["hash"])
             else:
                 print(err_msg % "[ERROR] Generating PDF: " + pdf["hash"])
                 print(resp.content)
                 failed = True
         print("[OK] PDF Generation API test completed")
-        print("[INFO] Running Delete Scan API Results test")
+        print("[INFO] Running JSON Report API test")
         # JSON Report
         for pdf in pdfs:
             resp = http_client.post(
                 '/api/v1/report_json', pdf, HTTP_AUTHORIZATION=auth)
             if (resp.status_code == 200 and
-                resp._headers['content-type'][1] == "application/json; charset=utf-8"
-                ):
+                        resp._headers[
+                            'content-type'][1] == "application/json; charset=utf-8"
+                    ):
                 print("[OK] JSON Report Generated: " + pdf["hash"])
             else:
                 print(err_msg %
@@ -222,33 +226,39 @@ def api_test():
 
 def start_test(request):
     """ Static Analyzer Unit test"""
-    print("\n[INFO] Running Static Analyzer Unit test")
+    item = request.GET.get('module', 'static')
+    if item == "static":
+        comp = "static_analyzer"
+        failed_stat = static_analysis_test()
+    else:
+        comp = "static_analyzer_api"
+        failed_stat = api_test()
     try:
-        failed_status = static_analysis_test()
-        if failed_status:
+        if failed_stat:
             message = "some tests failed"
+            resp_code = 403
         else:
             message = "all tests completed"
+            resp_code = 200
     except:
+        resp_code = 403
         message = "error"
     print("\n\n[INFO] ALL TESTS COMPLETED!")
     print("[INFO] Test Status: " + message)
-    return HttpResponse(json.dumps({"static_analyzer_test": message}),
-                        content_type="application/json; charset=utf-8")
+    return HttpResponse(json.dumps({comp: message}),
+                        content_type="application/json; charset=utf-8",
+                        status=resp_code)
 
 
-def start_api_test(request):
-    """ REST API Unit test"""
-    print("\n[INFO] Running REST API Unit test")
-    try:
-        failed_status = api_test()
-        if failed_status:
-            message = "some tests failed"
-        else:
-            message = "all tests completed"
-    except:
-        message = "error"
-    print("\n\n[INFO] ALL TESTS COMPLETED!")
-    print("[INFO] Test Status: " + message)
-    return HttpResponse(json.dumps({"rest_api_test": message}),
-                        content_type="application/json; charset=utf-8")
+class StaticAnalyzerAndAPI(TestCase):
+    """Unit Tests"""
+    def setUp(self):
+        self.http_client = Client()
+
+    def test_static_analyzer(self):
+        resp = self.http_client.post('/tests/?module=static')
+        self.assertEqual(resp.status_code, 200)
+
+    def test_rest_api(self):
+        resp = self.http_client.post('/tests/?module=api')
+        self.assertEqual(resp.status_code, 200)
