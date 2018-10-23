@@ -71,55 +71,51 @@ class Upload(object):
         upload = Upload(request)
         return upload.upload_html()
 
+    def resp_json(self, data):
+        resp = HttpResponse(json.dumps(data),
+                            content_type="application/json; charset=utf-8")
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
+
     def upload_html(self):
+        request = self.request
         response_data = {
             'url': '',
             'description': '',
-            'status': 'error'
+            'status': ''
         }
-        request = self.request
-        resp = HttpResponse(json.dumps(response_data),
-                            content_type="application/json; charset=utf-8")
-        resp['Access-Control-Allow-Origin'] = '*'
-
         if request.method != 'POST':
-            response_data['description'] = 'Method not Supported!'
             print("\n[ERROR] Method not Supported!")
             form = UploadFileForm()
-            resp['status'] = HTTP_BAD_REQUEST
-            return resp
+            response_data['description'] = 'Method not Supported!'
+            response_data['status'] = HTTP_BAD_REQUEST
+            return self.resp_json(response_data)
 
         if not self.form.is_valid():
-            response_data['description'] = 'Invalid Form Data!'
             print("\n[ERROR] Invalid Form Data!")
-            resp['status'] = HTTP_BAD_REQUEST
-            return resp
+            response_data['description'] = 'Invalid Form Data!'
+            response_data['status'] = HTTP_BAD_REQUEST
+            return self.resp_json(response_data)
 
         self.file_content_type = request.FILES['file'].content_type
         self.file_name_lower = request.FILES['file'].name.lower()
         self.file_type = FileType(self.file_content_type, self.file_name_lower)
         if not self.file_type.is_allow_file():
-            response_data['description'] = 'File format not Supported!'
             print("\n[ERROR] File format not Supported!")
-            resp['status'] = HTTP_BAD_REQUEST
-            return resp
+            response_data['description'] = 'File format not Supported!'
+            response_data['status'] = HTTP_BAD_REQUEST
+            return self.resp_json(response_data)
 
         if self.file_type.is_ipa():
             if platform.system() not in LINUX_PLATFORM:
-                data = {
-                    'error': "Static Analysis of iOS IPA requires Mac or Linux",
-                    'url': 'mac_only/',
-                    'status': 'success'
-                }
                 print("\n[ERROR] Static Analysis of iOS IPA requires Mac or Linux")
-                return data
+                response_data['description'] = 'Static Analysis of iOS IPA requires Mac or Linux'
+                response_data['status'] = 'success'
+                response_data['url'] = 'mac_only/'
+                return self.resp_json(response_data)
 
-        data = self.upload()
-
-        response_data['url'] = data['url']
-        response_data['status'] = data['status']
-        return HttpResponse(json.dumps(response_data),
-                            content_type="application/json; charset=utf-8")
+        response_data = self.upload()
+        return self.resp_json(response_data)
 
     def upload_api(self):
         """
