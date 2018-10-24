@@ -18,7 +18,7 @@ def get_context_from_analysis_ipa(app_dict, info_dict, bin_dict, files, sfiles):
     try:
         context = {
             'title': 'Static Analysis',
-            'name': app_dict["app_name"],
+            'file_name': app_dict["file_name"],
             'size': app_dict["size"],
             'md5': app_dict["md5_hash"],
             'sha1': app_dict["sha1"],
@@ -26,7 +26,8 @@ def get_context_from_analysis_ipa(app_dict, info_dict, bin_dict, files, sfiles):
             'plist': info_dict["plist_xml"],
             'bin_name': info_dict["bin_name"],
             'id': info_dict["id"],
-            'ver': info_dict["ver"],
+            'build': info_dict["build"],
+            'version': info_dict["bundle_version_name"],
             'sdk': info_dict["sdk"],
             'pltfm': info_dict["pltfm"],
             'min': info_dict["min"],
@@ -36,7 +37,12 @@ def get_context_from_analysis_ipa(app_dict, info_dict, bin_dict, files, sfiles):
             'file_analysis': sfiles,
             'strings': bin_dict["strings"],
             'permissions': info_dict["permissions"],
-            'insecure_connections': info_dict["inseccon"]
+            'insecure_connections': info_dict["inseccon"],
+            'bundle_name': info_dict["bundle_name"],
+            'bundle_url_types': info_dict["bundle_url_types"],
+            'bundle_supported_platforms': info_dict["bundle_supported_platforms"],
+            'bundle_localizations': info_dict["bundle_localizations"],
+
         }
         return context
     except:
@@ -49,7 +55,7 @@ def get_context_from_db_entry_ipa(db_entry):
         print("\n[INFO] Analysis is already Done. Fetching data from the DB...")
         context = {
             'title': db_entry[0].TITLE,
-            'name': db_entry[0].APPNAMEX,
+            'file_name': db_entry[0].FILE_NAME,
             'size': db_entry[0].SIZE,
             'md5': db_entry[0].MD5,
             'sha1': db_entry[0].SHA1,
@@ -57,7 +63,8 @@ def get_context_from_db_entry_ipa(db_entry):
             'plist': db_entry[0].INFOPLIST,
             'bin_name': db_entry[0].BINNAME,
             'id': db_entry[0].IDF,
-            'ver': db_entry[0].VERSION,
+            'build': db_entry[0].BUILD,
+            'version': db_entry[0].VERSION,
             'sdk': db_entry[0].SDK,
             'pltfm': db_entry[0].PLTFM,
             'min': db_entry[0].MINX,
@@ -67,7 +74,12 @@ def get_context_from_db_entry_ipa(db_entry):
             'file_analysis': db_entry[0].SFILESX,
             'strings': python_list(db_entry[0].STRINGS),
             'permissions': python_list(db_entry[0].PERMISSIONS),
-            'insecure_connections': python_list(db_entry[0].INSECCON)
+            'insecure_connections': python_list(db_entry[0].INSECCON),
+            'bundle_name': db_entry[0].BUNDLE_NAME,
+            'bundle_url_types': python_list(db_entry[0].BUNDLE_URL_TYPES),
+            'bundle_supported_platforms': python_list(db_entry[0].BUNDLE_SUPPORTED_PLATFORMS),
+            'bundle_localizations': python_list(db_entry[0].BUNDLE_LOCALIZATIONS),
+
         }
         return context
     except:
@@ -80,7 +92,7 @@ def update_db_entry_ipa(app_dict, info_dict, bin_dict, files, sfiles):
         # pylint: disable=E1101
         StaticAnalyzerIPA.objects.filter(MD5=app_dict["md5_hash"]).update(
             TITLE='Static Analysis',
-            APPNAMEX=app_dict["app_name"],
+            FILE_NAME=app_dict["file_name"],
             SIZE=app_dict["size"],
             MD5=app_dict["md5_hash"],
             SHA1=app_dict["sha1"],
@@ -88,7 +100,8 @@ def update_db_entry_ipa(app_dict, info_dict, bin_dict, files, sfiles):
             INFOPLIST=info_dict["plist_xml"],
             BINNAME=info_dict["bin_name"],
             IDF=info_dict["id"],
-            VERSION=info_dict["ver"],
+            BUILD=info_dict["build"],
+            VERSION=info_dict["bundle_version_name"],
             SDK=info_dict["sdk"],
             PLTFM=info_dict["pltfm"],
             MINX=info_dict["min"],
@@ -98,7 +111,11 @@ def update_db_entry_ipa(app_dict, info_dict, bin_dict, files, sfiles):
             SFILESX=sfiles,
             STRINGS=bin_dict["strings"],
             PERMISSIONS=info_dict["permissions"],
-            INSECCON=info_dict["inseccon"]
+            INSECCON=info_dict["inseccon"],
+            BUNDLE_NAME=info_dict["bundle_name"],
+            BUNDLE_URL_TYPES=info_dict["bundle_url_types"],
+            BUNDLE_SUPPORTED_PLATFORMS=info_dict["bundle_supported_platforms"],
+            BUNDLE_LOCALIZATIONS=info_dict["bundle_localizations"],
         )
 
     except:
@@ -110,7 +127,7 @@ def create_db_entry_ipa(app_dict, info_dict, bin_dict, files, sfiles):
     try:
         static_db = StaticAnalyzerIPA(
             TITLE='Static Analysis',
-            APPNAMEX=app_dict["app_name"],
+            FILE_NAME=app_dict["file_name"],
             SIZE=app_dict["size"],
             MD5=app_dict["md5_hash"],
             SHA1=app_dict["sha1"],
@@ -118,7 +135,8 @@ def create_db_entry_ipa(app_dict, info_dict, bin_dict, files, sfiles):
             INFOPLIST=info_dict["plist_xml"],
             BINNAME=info_dict["bin_name"],
             IDF=info_dict["id"],
-            VERSION=info_dict["ver"],
+            BUILD=info_dict["build"],
+            VERSION=info_dict['bundle_version_name'],
             SDK=info_dict["sdk"],
             PLTFM=info_dict["pltfm"],
             MINX=info_dict["min"],
@@ -128,10 +146,14 @@ def create_db_entry_ipa(app_dict, info_dict, bin_dict, files, sfiles):
             SFILESX=sfiles,
             STRINGS=bin_dict["strings"],
             PERMISSIONS=info_dict["permissions"],
-            INSECCON=info_dict["inseccon"]
+            INSECCON=info_dict["inseccon"],
+            BUNDLE_NAME=info_dict["bundle_name"],
+            BUNDLE_URL_TYPES=info_dict["bundle_url_types"],
+            BUNDLE_SUPPORTED_PLATFORMS=info_dict["bundle_supported_platforms"],
+            BUNDLE_LOCALIZATIONS=info_dict["bundle_localizations"],
         )
         static_db.save()
-    except:
+    except Exception as e:
         PrintException("[ERROR] Saving to DB")
 
 # IOS ZIP DB ENTRY
@@ -142,7 +164,7 @@ def get_context_from_analysis_ios(app_dict, info_dict,code_dict, files, sfiles):
     try:
         context = {
             'title': 'Static Analysis',
-            'name': app_dict["app_name"],
+            'file_name': app_dict["file_name"],
             'size': app_dict["size"],
             'md5': app_dict["md5_hash"],
             'sha1': app_dict["sha1"],
@@ -150,7 +172,8 @@ def get_context_from_analysis_ios(app_dict, info_dict,code_dict, files, sfiles):
             'plist': info_dict["plist_xml"],
             'bin_name': info_dict["bin_name"],
             'id': info_dict["id"],
-            'ver': info_dict["ver"],
+            'build': info_dict["bundle_version_name"],
+            'version': info_dict['bundle_version_name'],
             'sdk': info_dict["sdk"],
             'pltfm': info_dict["pltfm"],
             'min': info_dict["min"],
@@ -162,7 +185,11 @@ def get_context_from_analysis_ios(app_dict, info_dict,code_dict, files, sfiles):
             'domains': code_dict["domains"],
             'emails': code_dict["emailnfile"],
             'permissions': info_dict["permissions"],
-            'insecure_connections': info_dict["inseccon"]
+            'insecure_connections': info_dict["inseccon"],
+            'bundle_name': info_dict["bundle_name"],
+            'bundle_url_types': info_dict["bundle_url_types"],
+            'bundle_supported_platforms': info_dict["bundle_supported_platforms"],
+            'bundle_localizations': info_dict["bundle_localizations"],
         }
         return context
     except:
@@ -175,7 +202,7 @@ def get_context_from_db_entry_ios(db_entry):
         print("\n[INFO] Analysis is already Done. Fetching data from the DB...")
         context = {
             'title': db_entry[0].TITLE,
-            'name': db_entry[0].APPNAMEX,
+            'file_name': db_entry[0].FILE_NAME,
             'size': db_entry[0].SIZE,
             'md5': db_entry[0].MD5,
             'sha1': db_entry[0].SHA1,
@@ -183,7 +210,8 @@ def get_context_from_db_entry_ios(db_entry):
             'plist': db_entry[0].INFOPLIST,
             'bin_name': db_entry[0].BINNAME,
             'id': db_entry[0].IDF,
-            'ver': db_entry[0].VERSION,
+            'build': db_entry[0].BUILD,
+            'version': db_entry[0].VERSION,
             'sdk': db_entry[0].SDK,
             'pltfm': db_entry[0].PLTFM,
             'min': db_entry[0].MINX,
@@ -195,7 +223,11 @@ def get_context_from_db_entry_ios(db_entry):
             'domains': python_dict(db_entry[0].DOMAINS),
             'emails': python_list(db_entry[0].EmailnFile),
             'permissions': python_list(db_entry[0].PERMISSIONS),
-            'insecure_connections': python_list(db_entry[0].INSECCON)
+            'insecure_connections': python_list(db_entry[0].INSECCON),
+            'bundle_name': db_entry[0].BUNDLE_NAME,
+            'bundle_url_types': python_list(db_entry[0].BUNDLE_URL_TYPES),
+            'bundle_supported_platforms': python_list(db_entry[0].BUNDLE_SUPPORTED_PLATFORMS),
+            'bundle_localizations': python_list(db_entry[0].BUNDLE_LOCALIZATIONS),
         }
         return context
     except:
@@ -208,7 +240,7 @@ def update_db_entry_ios(app_dict, info_dict, code_dict, files, sfiles):
         # pylint: disable=E1101
         StaticAnalyzerIOSZIP.objects.filter(MD5=app_dict["md5_hash"]).update(
             TITLE='Static Analysis',
-            APPNAMEX=app_dict["app_name"],
+            FILE_NAME=app_dict["file_name"],
             SIZE=app_dict["size"],
             MD5=app_dict["md5_hash"],
             SHA1=app_dict["sha1"],
@@ -216,7 +248,8 @@ def update_db_entry_ios(app_dict, info_dict, code_dict, files, sfiles):
             INFOPLIST=info_dict["plist_xml"],
             BINNAME=info_dict["bin_name"],
             IDF=info_dict["id"],
-            VERSION=info_dict["ver"],
+            BUILD=info_dict["build"],
+            VERSION=info_dict["bundle_version_name"],
             SDK=info_dict["sdk"],
             PLTFM=info_dict["pltfm"],
             MINX=info_dict["min"],
@@ -228,7 +261,12 @@ def update_db_entry_ios(app_dict, info_dict, code_dict, files, sfiles):
             DOMAINS=code_dict["domains"],
             EmailnFile=code_dict["emailnfile"],
             PERMISSIONS=info_dict["permissions"],
-            INSECCON=info_dict["inseccon"])
+            INSECCON=info_dict["inseccon"],
+            BUNDLE_NAME=info_dict["bundle_name"],
+            BUNDLE_URL_TYPES=info_dict["bundle_url_types"],
+            BUNDLE_SUPPORTED_PLATFORMS=info_dict["bundle_supported_platforms"],
+            BUNDLE_LOCALIZATIONS=info_dict["bundle_localizations"]
+        )
 
     except:
         PrintException("[ERROR] Updating DB")
@@ -240,7 +278,7 @@ def create_db_entry_ios(app_dict, info_dict, code_dict, files, sfiles):
         # pylint: disable=E1101
         static_db = StaticAnalyzerIOSZIP(
             TITLE='Static Analysis',
-            APPNAMEX=app_dict["app_name"],
+            FILE_NAME=app_dict["file_name"],
             SIZE=app_dict["size"],
             MD5=app_dict["md5_hash"],
             SHA1=app_dict["sha1"],
@@ -248,7 +286,8 @@ def create_db_entry_ios(app_dict, info_dict, code_dict, files, sfiles):
             INFOPLIST=info_dict["plist_xml"],
             BINNAME=info_dict["bin_name"],
             IDF=info_dict["id"],
-            VERSION=info_dict["ver"],
+            BUILD=info_dict["build"],
+            VERSION=info_dict["bundle_version_name"],
             SDK=info_dict["sdk"],
             PLTFM=info_dict["pltfm"],
             MINX=info_dict["min"],
@@ -260,7 +299,12 @@ def create_db_entry_ios(app_dict, info_dict, code_dict, files, sfiles):
             DOMAINS=code_dict["domains"],
             EmailnFile=code_dict["emailnfile"],
             PERMISSIONS=info_dict["permissions"],
-            INSECCON=info_dict["inseccon"])
+            INSECCON=info_dict["inseccon"],
+            BUNDLE_NAME=info_dict["bundle_name"],
+            BUNDLE_URL_TYPES=info_dict["bundle_url_types"],
+            BUNDLE_SUPPORTED_PLATFORMS=info_dict["bundle_supported_platforms"],
+            BUNDLE_LOCALIZATIONS=info_dict["bundle_localizations"],
+        )
         static_db.save()
     except:
         PrintException("[ERROR] Updating DB")

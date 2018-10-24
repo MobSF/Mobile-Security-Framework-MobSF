@@ -234,7 +234,7 @@ def static_analyzer_ios(request, api=False):
             ):
             app_dict = {}
             app_dict["directory"] = settings.BASE_DIR  # BASE DIR
-            app_dict["app_name"] = filename  # APP ORGINAL NAME
+            app_dict["file_name"] = filename  # APP ORGINAL NAME
             app_dict["md5_hash"] = checksum  # MD5
             app_dict["app_dir"] = os.path.join(
                 settings.UPLD_DIR, app_dict["md5_hash"] + '/')  # APP DIRECTORY

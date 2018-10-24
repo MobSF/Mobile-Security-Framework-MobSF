@@ -1,10 +1,7 @@
 # -*- coding: utf_8 -*-
 """Module for iOS App Plist Analysis."""
 
-import io
 import os
-import glob
-import subprocess
 import plistlib
 from MobSF.utils import (
     PrintException,
@@ -14,6 +11,7 @@ from biplist import (
     readPlist,
     writePlistToString
 )
+
 
 def convert_bin_xml(bin_xml_file):
     """Convert Binary XML to Readable XML"""
@@ -180,17 +178,24 @@ def plist_analysis(src, is_source):
     """Plist Analysis"""
     try:
         print("[INFO] iOS Info.plist Analysis Started")
-        plist_info = {}
-        plist_info["bin_name"] = ""
-        plist_info["bin"] = ""
-        plist_info["id"] = ""
-        plist_info["ver"] = ""
-        plist_info["sdk"] = ""
-        plist_info["pltfm"] = ""
-        plist_info["min"] = ""
-        plist_info["plist_xml"] = ""
-        plist_info["permissions"] = []
-        plist_info["inseccon"] = []
+        plist_info = {
+            "bin_name": "",
+            "bin": "",
+            "id": "",
+            "version": "",
+            "build": "",
+            "sdk": "",
+            "pltfm": "",
+            "min": "",
+            "plist_xml": "",
+            "permissions": [],
+            "inseccon": [],
+            "bundle_name": "",
+            "build_version_name": "",
+            "bundle_url_types": [],
+            "bundle_supported_platforms": [],
+            "bundle_localizations": []
+        }
         if is_source:
             print("[INFO] Finding Info.plist in iOS Source")
             for ifile in os.listdir(src):
@@ -229,14 +234,23 @@ def plist_analysis(src, is_source):
                 plist_info["bin"] = plist_obj["CFBundleExecutable"]
             if "CFBundleIdentifier" in plist_obj:
                 plist_info["id"] = plist_obj["CFBundleIdentifier"]
+
+            # build
             if "CFBundleVersion" in plist_obj:
-                plist_info["ver"] = plist_obj["CFBundleVersion"]
+                plist_info["build"] = plist_obj["CFBundleVersion"]
             if "DTSDKName" in plist_obj:
                 plist_info["sdk"] = plist_obj["DTSDKName"]
             if "DTPlatformVersion" in plist_obj:
                 plist_info["pltfm"] = plist_obj["DTPlatformVersion"]
             if "MinimumOSVersion" in plist_obj:
                 plist_info["min"] = plist_obj["MinimumOSVersion"]
+
+            plist_info["bundle_name"] = plist_obj.get("CFBundleName", "")
+            plist_info["bundle_version_name"] = plist_obj.get("CFBundleShortVersionString", "")
+            plist_info["bundle_url_types"] = plist_obj.get("CFBundleURLTypes", [])
+            plist_info["bundle_supported_platforms"] = plist_obj.get("CFBundleSupportedPlatforms", [])
+            plist_info["bundle_localizations"] = plist_obj.get("CFBundleLocalizations", [])
+
             # Check possible app-permissions
             plist_info["permissions"] = __check_permissions(plist_obj)
             plist_info["inseccon"] = __check_insecure_connections(plist_obj)
