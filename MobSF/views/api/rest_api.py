@@ -18,6 +18,11 @@ from MobSF.utils import (
 from MobSF.views.helpers import (
     request_method,
 )
+from MobSF.forms import (
+    ViewSourceAndroidForm,
+    ViewSourceIosForm,
+    FormUtil
+)
 from StaticAnalyzer.views.shared_func import (
     pdf
 )
@@ -30,9 +35,16 @@ from StaticAnalyzer.views.ios.static_analyzer import (
 from StaticAnalyzer.views.windows import (
     staticanalyzer_windows
 )
+from StaticAnalyzer.views.view_source import (
+    ViewSourceAndroid,
+    ViewSourceIos
+)
 
 
-def make_api_response(data, status=200):
+BAD_REQUEST = 400
+OK = 200
+
+def make_api_response(data, status=OK):
     """Make API Response"""
     resp = JsonResponse(data=data, status=status)
     resp['Access-Control-Allow-Origin'] = '*'
@@ -167,3 +179,34 @@ def api_json_report(request):
         response = make_api_response(
             {"error": "Missing Parameters"}, 422)
     return response
+
+
+@request_method(['GET'])
+@csrf_exempt
+def api_viewsource_android(request):
+    """
+    viewsource for android file
+    """
+    viewsource_form = ViewSourceAndroidForm(request.GET)
+    if not viewsource_form.is_valid():
+        return JsonResponse(FormUtil.errors_message(viewsource_form), status=BAD_REQUEST)
+
+    view_source = ViewSourceAndroid(request)
+    return view_source.api()
+
+
+
+@request_method(['GET'])
+@csrf_exempt
+def api_viewsource_ios(request):
+    """
+    viewsource for ios file
+    """
+    viewsource_form = ViewSourceIosForm(request.GET)
+    if not viewsource_form.is_valid():
+        return JsonResponse(FormUtil.errors_message(viewsource_form), status=BAD_REQUEST)
+
+    view_source = ViewSourceIos(request)
+    return view_source.api()
+    
+
