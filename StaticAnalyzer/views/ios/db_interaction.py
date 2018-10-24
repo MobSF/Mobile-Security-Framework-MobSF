@@ -34,7 +34,6 @@ def get_context_from_analysis_ipa(app_dict, info_dict, bin_dict, files, sfiles):
             'libs': bin_dict["libs"],
             'files': files,
             'file_analysis': sfiles,
-            'strings': bin_dict["strings"],
             'permissions': info_dict["permissions"],
             'insecure_connections': info_dict["inseccon"]
         }
@@ -65,7 +64,6 @@ def get_context_from_db_entry_ipa(db_entry):
             'libs': db_entry[0].LIBS,
             'files': python_list(db_entry[0].FILES),
             'file_analysis': db_entry[0].SFILESX,
-            'strings': python_list(db_entry[0].STRINGS),
             'permissions': python_list(db_entry[0].PERMISSIONS),
             'insecure_connections': python_list(db_entry[0].INSECCON)
         }
@@ -96,7 +94,6 @@ def update_db_entry_ipa(app_dict, info_dict, bin_dict, files, sfiles):
             LIBS=bin_dict["libs"],
             FILES=files,
             SFILESX=sfiles,
-            STRINGS=bin_dict["strings"],
             PERMISSIONS=info_dict["permissions"],
             INSECCON=info_dict["inseccon"]
         )
@@ -126,7 +123,6 @@ def create_db_entry_ipa(app_dict, info_dict, bin_dict, files, sfiles):
             LIBS=bin_dict["libs"],
             FILES=files,
             SFILESX=sfiles,
-            STRINGS=bin_dict["strings"],
             PERMISSIONS=info_dict["permissions"],
             INSECCON=info_dict["inseccon"]
         )

@@ -301,7 +301,6 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
         bin_path = os.path.join(bin_dir, bin_name)
         binary_analysis_dict["libs"] = ''
         binary_analysis_dict["bin_res"] = ''
-        binary_analysis_dict["strings"] = ''
         if not isFileExists(bin_path):
             print("[WARNING] MobSF Cannot find binary in " + bin_path)
             print("[WARNING] Skipping Otool, Classdump and Strings")
@@ -311,10 +310,8 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
             # Classdumpz can fail on swift coded binaries
             if not cls_dump:
                 cls_dump = ""
-            strings_in_ipa = strings_on_ipa(bin_path)
             binary_analysis_dict["libs"] = otool_dict["libs"]
             binary_analysis_dict["bin_res"] = otool_dict["anal"] + cls_dump
-            binary_analysis_dict["strings"] = strings_in_ipa
         return binary_analysis_dict
     except:
         PrintException("[ERROR] iOS Binary Analysis")
