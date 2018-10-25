@@ -89,19 +89,19 @@ body {
                    </tr>
                  </thead>
                  <tbody>
-                   {%for perm in permissions%}
-                   <tr>
-                     <td>
-                       {{ perm.0 | safe }}
-                     </td>
-                     <td>
-                       {{ perm.1 | safe }}
-                     </td>
-                     <td>
-                       {{ perm.2 | safe }}
-                     </td>
-                   </tr>
-                   {% endfor %}
+                   {%for  perm in permissions%}
+                    <tr>
+                      <td>
+                        {{ perm.name | safe}}
+                      </td>
+                      <td>
+                        {{ perm.description | safe}}
+                      </td>
+                      <td>
+                        {{ perm.reason | safe}}
+                      </td>
+                    </tr>
+                    {% endfor %}
                  </tbody>
                </table>
              </div>
@@ -224,9 +224,29 @@ body {
 
                       </tr>
                   </thead>
-                  <tbody>
-                    {{ bin_anal | safe}}
-                    </tbody>
+                   <tbody>
+                   {%for  bin in bin_anal%}
+                    <tr>
+                      <td>
+                        {{ bin.issue | safe}}
+                      </td>
+                      <td>
+                        {% if bin.status == 'Info' %}
+                          <span class='label label-danger'>{{bin.status}}</span>
+                        {% elif bin.status == 'Secure' %}
+                          <span class='label label-success'>{{bin.status}}</span>
+                        {% elif bin.status == 'Insecure' %}
+                          <span class='label label-info'>{{bin.status}}</span>
+                        {% elif bin.status == 'warning' %}
+                          <span class='label label-warning'>{{bin.status}}</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        {{ bin.description | safe}}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                 </tbody>
                     </table>
 
                             </div>
@@ -244,7 +264,31 @@ body {
                             <div class="panel-body">
                   <div class="table-responsive">
 
-         {{ file_analysis | safe}}
+                 <table class="table table-bordered table-hover table-striped">
+                          <thead>
+                              <tr>
+                                  <th>ISSUE</th>
+                                  <th>FILES</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+
+                            {%for item in file_analysis %}
+                            <tr>
+                              <td>
+                                {{ item.issue | safe}}
+                              </td>
+                              <td>
+                                {% for file in item.files %}
+                                  {{file | safe }}
+                                  </br>
+                                {% endfor %}
+                              </td>
+                          
+                            </tr>
+                            {% endfor %}
+                          </tbody>
+                      </table>
 
                             </div>
                         </div>
@@ -259,7 +303,10 @@ body {
                             <div class="panel-body">
                                 <div class="list-group">
                   <p>
-                  {{ libs|safe }}
+                    {% for lib in libs %}
+                    {{ lib | safe }}
+                    </br>
+                    {% endfor %}
                   </p>
                                 </div>
 

@@ -68,10 +68,10 @@ def get_context_from_db_entry_ipa(db_entry):
             'sdk': db_entry[0].SDK,
             'pltfm': db_entry[0].PLTFM,
             'min': db_entry[0].MINX,
-            'bin_anal': db_entry[0].BIN_ANAL,
-            'libs': db_entry[0].LIBS,
+            'bin_anal': python_list(db_entry[0].BIN_ANAL),
+            'libs': python_list(db_entry[0].LIBS),
             'files': python_list(db_entry[0].FILES),
-            'file_analysis': db_entry[0].SFILESX,
+            'file_analysis': python_list(db_entry[0].SFILESX),
             'strings': python_list(db_entry[0].STRINGS),
             'permissions': python_list(db_entry[0].PERMISSIONS),
             'insecure_connections': python_list(db_entry[0].INSECCON),
@@ -153,7 +153,7 @@ def create_db_entry_ipa(app_dict, info_dict, bin_dict, files, sfiles):
             BUNDLE_LOCALIZATIONS=info_dict["bundle_localizations"],
         )
         static_db.save()
-    except Exception as e:
+    except:
         PrintException("[ERROR] Saving to DB")
 
 # IOS ZIP DB ENTRY

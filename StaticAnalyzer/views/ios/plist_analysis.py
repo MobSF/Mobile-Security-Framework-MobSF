@@ -27,133 +27,101 @@ def __check_permissions(p_list):
     print("[INFO] Checking Permissions")
     permissions = []
     if "NSAppleMusicUsageDescription" in p_list:
-        permissions.append(
-            (
-                "NSAppleMusicUsageDescription",
-                "Access Apple Media Library.",
-                p_list["NSAppleMusicUsageDescription"]
-            )
-        )
+        permissions.append({
+            "name": "NSAppleMusicUsageDescription",
+            "description": "Access Apple Media Library.",
+            "reason": p_list["NSAppleMusicUsageDescription"]
+        })
     if "NSBluetoothPeripheralUsageDescription" in p_list:
-        permissions.append(
-            (
-                "NSBluetoothPeripheralUsageDescription",
-                "Access Bluetooth Interface.",
-                p_list["NSBluetoothPeripheralUsageDescription"]
-            )
-        )
+        permissions.append({
+            "name": "NSBluetoothPeripheralUsageDescription",
+            "description": "Access Bluetooth Interface.",
+            "reason": p_list["NSBluetoothPeripheralUsageDescription"]
+        })
     if "NSCalendarsUsageDescription" in p_list:
-        permissions.append(
-            (
-                "NSCalendarsUsageDescription",
-                "Access Calendars.",
-                p_list["NSCalendarsUsageDescription"]
-            )
-        )
+        permissions.append({
+            "name": "NSCalendarsUsageDescription",
+            "description": "Access Calendars.",
+            "reason": p_list["NSCalendarsUsageDescription"]
+        })
     if "NSCameraUsageDescription" in p_list:
-        permissions.append(
-            (
-                "NSCameraUsageDescription",
-                "Access the Camera.",
-                p_list["NSCameraUsageDescription"]
-            )
-        )
+        permissions.append({
+            "name": "NSCameraUsageDescription",
+            "description": "Access the Camera.",
+            "reason": p_list["NSCameraUsageDescription"]
+        })
     if "NSContactsUsageDescription" in p_list:
-        permissions.append(
-            (
-                "NSContactsUsageDescription",
-                "Access Contacts.",
-                p_list["NSContactsUsageDescription"]
-            )
-        )
+        permissions.append({
+            "name": "NSContactsUsageDescription",
+            "description": "Access Contacts.",
+            "reason": p_list["NSContactsUsageDescription"]
+        })
     if "NSHealthShareUsageDescription" in p_list:
-        permissions.append(
-            (
-                "NSHealthShareUsageDescription",
-                "Read Health Data.",
-                p_list["NSHealthShareUsageDescription"]
-            )
-        )
+        permissions.append({
+            "name": "NSHealthShareUsageDescription",
+            "description": "Read Health Data.",
+            "reason": p_list["NSHealthShareUsageDescription"]
+        })
     if "NSHealthUpdateUsageDescription" in p_list:
-        permissions.append(
-            (
-                "NSHealthUpdateUsageDescription",
-                "Write Health Data.",
-                p_list["NSHealthUpdateUsageDescription"]
-            )
-        )
+        permissions.append({
+            "name": "NSHealthUpdateUsageDescription",
+            "description": "Write Health Data.",
+            "reason": p_list["NSHealthUpdateUsageDescription"]
+        })
     if "NSHomeKitUsageDescription" in p_list:
-        permissions.append(
-            (
-                "NSHomeKitUsageDescription",
-                "Access HomeKit configuration data.",
-                p_list["NSHomeKitUsageDescription"]
-            )
-        )
+        permissions.append({
+            "name": "NSHomeKitUsageDescription",
+            "description": "Access HomeKit configuration data.",
+            "reason": p_list["NSHomeKitUsageDescription"]
+        })
     if "NSLocationAlwaysUsageDescription" in p_list:
-        permissions.append(
-            (
-                "NSLocationAlwaysUsageDescription",
-                "Access location information at all times.",
-                p_list["NSLocationAlwaysUsageDescription"]
-            )
-        )
+        permissions.append({
+            "name": "NSLocationAlwaysUsageDescription",
+            "description": "Access location information at all times.",
+            "reason": p_list["NSLocationAlwaysUsageDescription"]
+        })
     if "NSLocationUsageDescription" in p_list:
-        permissions.append(
-            (
-                "NSLocationUsageDescription",
-                "Access location information at all times (< iOS 8).",
-                p_list["NSLocationUsageDescription"]
-            )
-        )
+        permissions.append({
+            "name": "NSLocationUsageDescription",
+            "description": "Access location information at all times (< iOS 8).",
+            "reason": p_list["NSLocationUsageDescription"]
+        })
     if "NSLocationWhenInUseUsageDescription" in p_list:
-        permissions.append(
-            (
-                "NSLocationWhenInUseUsageDescription",
-                "Access location information when app is in the foreground.",
-                p_list["NSLocationWhenInUseUsageDescription"]
-            )
-        )
+        permissions.append({
+            "name": "NSLocationWhenInUseUsageDescription",
+            "description": "Access location information when app is in the foreground.",
+            "reason": p_list["NSLocationWhenInUseUsageDescription"]
+        })
     if "NSMicrophoneUsageDescription" in p_list:
-        permissions.append(
-            (
-                "NSMicrophoneUsageDescription",
-                "Access microphone.",
-                p_list["NSMicrophoneUsageDescription"]
-            )
-        )
+        permissions.append({
+            "name": "NSMicrophoneUsageDescription",
+            "description": "Access microphone.",
+            "reason": p_list["NSMicrophoneUsageDescription"]
+        })
     if "NSMotionUsageDescription" in p_list:
-        permissions.append(
-            (
-                "NSMotionUsageDescription",
-                "Access the device’s accelerometer.",
-                p_list["NSMotionUsageDescription"]
-            )
-        )
+        permissions.append({
+            "name": "NSMotionUsageDescription",
+            "description": "Access the device’s accelerometer.",
+            "reason": p_list["NSMotionUsageDescription"]
+        })
     if "NSPhotoLibraryUsageDescription" in p_list:
-        permissions.append(
-            (
-                "NSPhotoLibraryUsageDescription",
-                "Access the user’s photo library.",
-                p_list["NSPhotoLibraryUsageDescription"]
-            )
-        )
+        permissions.append({
+            "name": "NSPhotoLibraryUsageDescription",
+            "description": "Access the user’s photo library.",
+            "reason": p_list["NSPhotoLibraryUsageDescription"]
+        })
     if "NSRemindersUsageDescription" in p_list:
-        permissions.append(
-            (
-                "NSRemindersUsageDescription",
-                "Access the user’s reminders.",
-                p_list["NSRemindersUsageDescription"]
-            )
-        )
+        permissions.append({
+            "name": "NSRemindersUsageDescription",
+            "description": "Access the user’s reminders.",
+            "reason": p_list["NSRemindersUsageDescription"]
+        })
     if "NSVideoSubscriberAccountUsageDescription" in p_list:
-        permissions.append(
-            (
-                "NSVideoSubscriberAccountUsageDescription",
-                "Access the user’s TV provider account.",
-                p_list["NSVideoSubscriberAccountUsageDescription"]
-            )
-        )
+        permissions.append({
+            "name": "NSVideoSubscriberAccountUsageDescription",
+            "description": "Access the user’s TV provider account.",
+            "reason": p_list["NSVideoSubscriberAccountUsageDescription"]
+        })
 
     return permissions
 

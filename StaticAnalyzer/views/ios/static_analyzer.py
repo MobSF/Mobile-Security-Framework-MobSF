@@ -164,11 +164,10 @@ def ios_list_files(src, md5_hash, binary_form, mode):
         print("[INFO] Get Files, BIN Plist -> XML, and Normalize")
         # Multi function, Get Files, BIN Plist -> XML, normalize + to x
         filez = []
-        certz = ''
-        sfiles = ''
-        database = ''
-        plist = ''
-        certz = ''
+        certz = []
+        sfiles = []
+        database = []
+        plist = []
         for dirname, _, files in os.walk(src):
             for jfile in files:
                 if not jfile.endswith(".DS_Store"):
@@ -182,29 +181,25 @@ def ios_list_files(src, md5_hash, binary_form, mode):
                     filez.append(fileparam)
                     ext = jfile.split('.')[-1]
                     if re.search("cer|pem|cert|crt|pub|key|pfx|p12", ext):
-                        certz += escape(file_path.replace(src, '')) + "</br>"
+                        certz.append(escape(file_path.replace(src, '')))
                     if re.search("db|sqlitedb|sqlite", ext):
-                        database += "<a href='../ViewFile/?file=" + \
+                        database.append("<a href='../ViewFile/?file=" + \
                             escape(fileparam) + "&type=db&mode=" + mode + "&md5=" + \
                             md5_hash + "''> " + \
-                            escape(fileparam) + " </a></br>"
+                            escape(fileparam) + " </a>")
                     if jfile.endswith(".plist"):
                         if binary_form:
                             convert_bin_xml(file_path)
-                        plist += "<a href='../ViewFile/?file=" + \
+                        plist.append("<a href='../ViewFile/?file=" + \
                             escape(fileparam) + "&type=xml&mode=" + mode + "&md5=" + \
                             md5_hash + "''> " + \
-                            escape(fileparam) + " </a></br>"
-        if len(database) > 1:
-            database = "<tr><td>SQLite Files</td><td>" + database + "</td></tr>"
-            sfiles += database
-        if len(plist) > 1:
-            plist = "<tr><td>Plist Files</td><td>" + plist + "</td></tr>"
-            sfiles += plist
-        if len(certz) > 1:
-            certz = "<tr><td>Certificate/Key Files Hardcoded inside the App.</td><td>" + \
-                certz + "</td><tr>"
-            sfiles += certz
+                            escape(fileparam) + " </a>")
+        if len(database) > 0:
+            sfiles.append({ "issue": "SQLite Files", "files": database })
+        if len(plist) > 0:
+            sfiles.append({ "issue": "Plist Files", "files": plist })
+        if len(certz) > 0:
+            sfiles.append({ "issue": "Certificate/Key Files Hardcoded inside the App.", "files": certz })
         return filez, sfiles
     except:
         PrintException("[ERROR] iOS List Files")
