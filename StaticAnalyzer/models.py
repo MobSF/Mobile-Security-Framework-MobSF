@@ -2,7 +2,7 @@ from django.db import models
 # Create your models here.
 
 class RecentScansDB(models.Model):
-    NAME = models.CharField(max_length=200)
+    NAME = models.CharField(max_length=255)
     MD5 = models.CharField(max_length=32)
     URL = models.URLField()
     TS = models.DateTimeField()
