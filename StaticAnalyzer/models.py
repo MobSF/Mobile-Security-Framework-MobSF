@@ -14,8 +14,8 @@ class StaticAnalyzerAndroid(models.Model):
     MD5 = models.CharField(max_length=32)
     SHA1 = models.CharField(max_length=40)
     SHA256 = models.CharField(max_length=64)
-    PACKAGENAME = models.CharField(max_length=150)
-    MAINACTIVITY = models.CharField(max_length=150)
+    PACKAGENAME = models.CharField(max_length=200)
+    MAINACTIVITY = models.CharField(max_length=300)
     TARGET_SDK = models.CharField(max_length=50)
     MAX_SDK = models.CharField(max_length=50)
     MIN_SDK = models.CharField(max_length=50)
@@ -59,7 +59,7 @@ class StaticAnalyzerAndroid(models.Model):
 
 class StaticAnalyzerIPA(models.Model):
     TITLE = models.CharField(max_length=50)
-    FILE_NAME = models.CharField(max_length=200)
+    FILE_NAME = models.CharField(max_length=255)
     SIZE = models.CharField(max_length=50)
     MD5 = models.CharField(max_length=32)
     SHA1 = models.CharField(max_length=40)
@@ -87,7 +87,7 @@ class StaticAnalyzerIPA(models.Model):
 
 class StaticAnalyzerIOSZIP(models.Model):
     TITLE = models.CharField(max_length=50)
-    FILE_NAME = models.CharField(max_length=200)
+    FILE_NAME = models.CharField(max_length=255)
     SIZE = models.CharField(max_length=50)
     MD5 = models.CharField(max_length=32)
     SHA1 = models.CharField(max_length=40)
