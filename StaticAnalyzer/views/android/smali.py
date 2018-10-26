@@ -35,7 +35,7 @@ def run(request):
                         fileparam = file_path.replace(src, '')
                         html += (
                             "<tr><td><a href='../ViewSource/?file=" + escape(fileparam) +
-                            "&md5=" + md5 + "'>" +
+                            "&type=apk&md5=" + md5 + "'>" +
                             escape(fileparam) + "</a></td></tr>"
                         )
         context = {

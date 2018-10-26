@@ -6,8 +6,6 @@ import re
 import os
 import io
 import shutil
-import ntpath
-import sqlite3
 
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
@@ -60,104 +58,6 @@ import StaticAnalyzer.views.android.VirusTotal as VirusTotal
 ##############################################################
 
 
-def view_file(request):
-    """View iOS Files"""
-    try:
-        print("[INFO] View iOS Files")
-        fil = request.GET['file']
-        typ = request.GET['type']
-        md5_hash = request.GET['md5']
-        mode = request.GET['mode']
-        md5_match = re.match('^[0-9a-f]{32}$', md5_hash)
-        ext = fil.split('.')[-1]
-        ext_type = re.search("plist|db|sqlitedb|sqlite|txt|m", ext)
-        if (md5_match and
-                ext_type and
-                re.findall('xml|db|txt|m', typ) and
-                re.findall('ios|ipa', mode)
-            ):
-            if (("../" in fil) or
-                    ("%2e%2e" in fil) or
-                    (".." in fil) or
-                ("%252e" in fil)
-                ):
-                return HttpResponseRedirect('/error/')
-            else:
-                if mode == 'ipa':
-                    src = os.path.join(settings.UPLD_DIR,
-                                       md5_hash + '/Payload/')
-                elif mode == 'ios':
-                    src = os.path.join(settings.UPLD_DIR, md5_hash + '/')
-                sfile = os.path.join(src, fil)
-                dat = ''
-                if typ == 'm':
-                    file_format = 'cpp'
-                    with io.open(sfile, mode='r', encoding="utf8", errors="ignore") as flip:
-                        dat = flip.read()
-                elif typ == 'xml':
-                    file_format = 'xml'
-                    with io.open(sfile, mode='r', encoding="utf8", errors="ignore") as flip:
-                        dat = flip.read()
-                elif typ == 'db':
-                    file_format = 'asciidoc'
-                    dat = read_sqlite(sfile)
-                elif typ == 'txt' and fil == "classdump.txt":
-                    file_format = 'cpp'
-                    app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
-                    cls_dump_file = os.path.join(app_dir, "classdump.txt")
-                    if isFileExists(cls_dump_file):
-                        with io.open(cls_dump_file,
-                                     mode='r',
-                                     encoding="utf8",
-                                     errors="ignore"
-                                     ) as flip:
-                            dat = flip.read()
-                    else:
-                        dat = "Class Dump not Found"
-        else:
-            return HttpResponseRedirect('/error/')
-        context = {'title': escape(ntpath.basename(fil)),
-                   'file': escape(ntpath.basename(fil)),
-                   'type': file_format,
-                   'dat': dat}
-        template = "general/view.html"
-        return render(request, template, context)
-    except:
-        PrintException("[ERROR] View iOS Files")
-        return HttpResponseRedirect('/error/')
-
-
-def read_sqlite(sqlite_file):
-    """Read SQlite File"""
-    try:
-        print("[INFO] Dumping SQLITE Database")
-        data = ''
-        con = sqlite3.connect(sqlite_file)
-        cur = con.cursor()
-        cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
-        tables = cur.fetchall()
-        for table in tables:
-            data += "\nTABLE: " + str(table[0]).decode('utf8', 'ignore') + \
-                " \n=====================================================\n"
-            cur.execute("PRAGMA table_info('%s')" % table)
-            rows = cur.fetchall()
-            head = ''
-            for row in rows:
-                head += str(row[1]).decode('utf8', 'ignore') + " | "
-            data += head + " \n========================================" +\
-                "=============================\n"
-            cur.execute("SELECT * FROM '%s'" % table)
-            rows = cur.fetchall()
-            for row in rows:
-                dat = ''
-                for item in row:
-                    dat += str(item).decode('utf8', 'ignore') + " | "
-                data += dat + "\n"
-        return data
-    except:
-        PrintException("[ERROR] Dumping SQLITE Database")
-
-
 def ios_list_files(src, md5_hash, binary_form, mode):
     """List iOS files"""
     try:
@@ -185,14 +85,14 @@ def ios_list_files(src, md5_hash, binary_form, mode):
                         certz += escape(file_path.replace(src, '')) + "</br>"
                     if re.search("db|sqlitedb|sqlite", ext):
                         database += "<a href='../ViewFile/?file=" + \
-                            escape(fileparam) + "&type=db&mode=" + mode + "&md5=" + \
+                            escape(fileparam) + "&type=" + mode + "&md5=" + \
                             md5_hash + "''> " + \
                             escape(fileparam) + " </a></br>"
                     if jfile.endswith(".plist"):
                         if binary_form:
                             convert_bin_xml(file_path)
                         plist += "<a href='../ViewFile/?file=" + \
-                            escape(fileparam) + "&type=xml&mode=" + mode + "&md5=" + \
+                            escape(fileparam) + "&type=" + mode + "&md5=" + \
                             md5_hash + "''> " + \
                             escape(fileparam) + " </a></br>"
         if len(database) > 1:
@@ -224,14 +124,14 @@ def static_analyzer_ios(request, api=False):
             checksum = request.GET['checksum']
             rescan = str(request.GET.get('rescan', 0))
             filename = request.GET['name']
-        
+
         md5_match = re.match('^[0-9a-f]{32}$', checksum)
         if ((md5_match) and
-                (filename.lower().endswith('.ipa') or
-                 filename.lower().endswith('.zip')
-                 ) and
-                (file_type in ['ipa', 'ios'])
-            ):
+                    (filename.lower().endswith('.ipa') or
+                     filename.lower().endswith('.zip')
+                     ) and
+                    (file_type in ['ipa', 'ios'])
+                ):
             app_dict = {}
             app_dict["directory"] = settings.BASE_DIR  # BASE DIR
             app_dict["app_name"] = filename  # APP ORGINAL NAME
@@ -285,7 +185,8 @@ def static_analyzer_ios(request, api=False):
                 if settings.VT_ENABLED:
                     vt = VirusTotal.VirusTotal()
                     context['VT_RESULT'] = vt.get_result(
-                        os.path.join(app_dict['app_dir'], app_dict['md5_hash']) + '.ipa',
+                        os.path.join(app_dict['app_dir'], app_dict[
+                                     'md5_hash']) + '.ipa',
                         app_dict['md5_hash']
                     )
 
