@@ -18,11 +18,6 @@ from MobSF.utils import (
 from MobSF.views.helpers import (
     request_method,
 )
-from MobSF.forms import (
-    ViewSourceAndroidForm,
-    ViewSourceIosForm,
-    FormUtil
-)
 from StaticAnalyzer.views.shared_func import (
     pdf
 )
@@ -30,19 +25,22 @@ from StaticAnalyzer.views.android.static_analyzer import (
     static_analyzer
 )
 from StaticAnalyzer.views.ios.static_analyzer import (
-    static_analyzer_ios
+    static_analyzer_ios,
+)
+from StaticAnalyzer.views.android import (
+    view_source
+)
+from StaticAnalyzer.views.ios import (
+    view_source as ios_view_source
 )
 from StaticAnalyzer.views.windows import (
     staticanalyzer_windows
-)
-from StaticAnalyzer.views.view_source import (
-    ViewSourceAndroid,
-    ViewSourceIos
 )
 
 
 BAD_REQUEST = 400
 OK = 200
+
 
 def make_api_response(data, status=OK):
     """Make API Response"""
@@ -160,7 +158,7 @@ def api_json_report(request):
     """Generate JSON Report"""
     params = ['scan_type', 'hash']
     if set(request.POST) == set(params):
-        resp = pdf(request, api=True)
+        resp = pdf(request, api=True, json=True)
         if "error" in resp:
             if resp.get("error") == "Invalid scan hash":
                 response = make_api_response(resp, 400)
@@ -181,32 +179,22 @@ def api_json_report(request):
     return response
 
 
-@request_method(['GET'])
+@request_method(['POST'])
 @csrf_exempt
-def api_viewsource_android(request):
+def api_view_source(request):
     """
-    viewsource for android file
+    View Source for android & ios source file
     """
-    viewsource_form = ViewSourceAndroidForm(request.GET)
-    if not viewsource_form.is_valid():
-        return JsonResponse(FormUtil.errors_message(viewsource_form), status=BAD_REQUEST)
-
-    view_source = ViewSourceAndroid(request)
-    return view_source.api()
-
-
-
-@request_method(['GET'])
-@csrf_exempt
-def api_viewsource_ios(request):
-    """
-    viewsource for ios file
-    """
-    viewsource_form = ViewSourceIosForm(request.GET)
-    if not viewsource_form.is_valid():
-        return JsonResponse(FormUtil.errors_message(viewsource_form), status=BAD_REQUEST)
-
-    view_source = ViewSourceIos(request)
-    return view_source.api()
-    
-
+    params = ['file', 'type', 'hash']
+    if set(request.POST) >= set(params):
+        if request.POST["type"] in ["eclipse", "studio", "apk"]:
+            resp = view_source.run(request, api=True)
+        else:
+            resp = ios_view_source.run(request, api=True)
+        if "error" in resp:
+            response = make_api_response(resp, 500)
+        else:
+            response = make_api_response(resp, 200)
+    else:
+        response = make_api_response({"error": "Missing Parameters"}, 422)
+    return response
