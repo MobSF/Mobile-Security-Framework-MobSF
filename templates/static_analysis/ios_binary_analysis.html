@@ -227,7 +227,7 @@
                     {%for  perm in permissions%}
                     <tr>
                       <td>
-                        {{ perm.name | safe}}
+                        {{ perm.name }}
                       </td>
                       <td>
                         {{ perm.description | safe}}
@@ -339,7 +339,7 @@
                    {%for  bin in bin_anal%}
                     <tr>
                       <td>
-                        {{ bin.issue | safe}}
+                        {{ bin.issue }}
                       </td>
                       <td>
                         {% if bin.status == 'Info' %}
