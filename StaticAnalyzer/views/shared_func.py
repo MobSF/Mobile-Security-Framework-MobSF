@@ -99,7 +99,7 @@ def unzip(app_path, ext_path):
                 PrintException("[ERROR] Unzipping Error")
 
 
-def pdf(request, api=False):
+def pdf(request, api=False, json=False):
     try:
         if api:
             checksum = request.POST['hash']
@@ -204,31 +204,32 @@ def pdf(request, api=False):
                         os.path.join(app_dir, checksum) + '.' + scan_type.lower(),
                         checksum
                     )
-
-            html = template.render(context)
             try:
-                options = {
-                    'page-size': 'A4',
-                    'quiet': '',
-                    'no-collate': '',
-                    'margin-top': '0.50in',
-                    'margin-right': '0.50in',
-                    'margin-bottom': '0.50in',
-                    'margin-left': '0.50in',
-                    'encoding': "UTF-8",
-                    'custom-header': [
-                        ('Accept-Encoding', 'gzip')
-                    ],
-                    'no-outline': None
-                }
-                pdf_dat = pdfkit.from_string(html, False, options=options)
-                if api:
-                    return {"pdf_dat": pdf_dat, "report_dat": context}
+                if api and json:
+                    return {"report_dat": context}
                 else:
+                    options = {
+                        'page-size': 'A4',
+                        'quiet': '',
+                        'no-collate': '',
+                        'margin-top': '0.50in',
+                        'margin-right': '0.50in',
+                        'margin-bottom': '0.50in',
+                        'margin-left': '0.50in',
+                        'encoding': "UTF-8",
+                        'custom-header': [
+                            ('Accept-Encoding', 'gzip')
+                        ],
+                        'no-outline': None
+                    }
+                    html = template.render(context)
+                    pdf_dat = pdfkit.from_string(html, False, options=options)
+                    if api:
+                        return {"pdf_dat": pdf_dat}
                     return HttpResponse(pdf_dat, content_type='application/pdf')
             except Exception as exp:
                 if api:
-                    return {"error": "Cannot Generate PDF", "err_details": str(exp)}
+                    return {"error": "Cannot Generate PDF/JSON", "err_details": str(exp)}
                 else:
                     return HttpResponse(json.dumps({"pdf_error": "Cannot Generate PDF",
                                                     "err_details": str(exp)}),
