@@ -249,7 +249,7 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
 def class_dump_z(tools_dir, bin_path, app_dir):
     """Running Classdumpz on binary"""
     try:
-        webview = ''
+        webview = {}
         if platform.system() == "Darwin":
             print("[INFO] Running class-dump-z against the binary for dumping classes")
             if len(settings.CLASSDUMPZ_BINARY) > 0 and isFileExists(settings.CLASSDUMPZ_BINARY):
