@@ -327,7 +327,7 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
             cls_dump = class_dump_z(tools_dir, bin_path, app_dir)
             # Classdumpz can fail on swift coded binaries
             if not cls_dump:
-                cls_dump = []
+                cls_dump = {}
             strings_in_ipa = strings_on_ipa(bin_path)
             otool_dict["anal"] = otool_dict["anal"] + [cls_dump]
             binary_analysis_dict["libs"] = otool_dict["libs"]
