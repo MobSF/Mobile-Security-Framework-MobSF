@@ -237,7 +237,7 @@ body {
                           <span class='label label-success'>{{bin.status}}</span>
                         {% elif bin.status == 'Insecure' %}
                           <span class='label label-info'>{{bin.status}}</span>
-                        {% elif bin.status == 'warning' %}
+                        {% elif bin.status == 'Warning' %}
                           <span class='label label-warning'>{{bin.status}}</span>
                         {% endif %}
                       </td>
@@ -280,7 +280,7 @@ body {
                               </td>
                               <td>
                                 {% for file in item.files %}
-                                  {{file | safe }}
+                                  {{ file }}
                                   </br>
                                 {% endfor %}
                               </td>
@@ -304,7 +304,7 @@ body {
                                 <div class="list-group">
                   <p>
                     {% for lib in libs %}
-                    {{ lib | safe }}
+                    {{ lib }}
                     </br>
                     {% endfor %}
                   </p>

@@ -17,7 +17,7 @@ from MobSF.utils import PrintException, isFileExists
 SECURE = "Secure"
 IN_SECURE = "Insecure"
 INFO = "Info"
-WARNING = "warning"
+WARNING = "Warning"
 
 
 def get_otool_out(tools_dir, cmd_type, bin_path, bin_dir):
