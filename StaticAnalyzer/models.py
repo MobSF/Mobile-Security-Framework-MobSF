@@ -2,14 +2,14 @@ from django.db import models
 # Create your models here.
 
 class RecentScansDB(models.Model):
-    NAME = models.CharField(max_length=255)
+    NAME = models.CharField(max_length=260)
     MD5 = models.CharField(max_length=32)
     URL = models.URLField()
     TS = models.DateTimeField()
 
 class StaticAnalyzerAndroid(models.Model):
     TITLE = models.CharField(max_length=50)
-    APP_NAME = models.CharField(max_length=150)
+    APP_NAME = models.CharField(max_length=260)
     SIZE = models.CharField(max_length=50)
     MD5 = models.CharField(max_length=32)
     SHA1 = models.CharField(max_length=40)
@@ -87,7 +87,7 @@ class StaticAnalyzerIPA(models.Model):
 
 class StaticAnalyzerIOSZIP(models.Model):
     TITLE = models.CharField(max_length=50)
-    FILE_NAME = models.CharField(max_length=255)
+    FILE_NAME = models.CharField(max_length=260)
     SIZE = models.CharField(max_length=50)
     MD5 = models.CharField(max_length=32)
     SHA1 = models.CharField(max_length=40)
