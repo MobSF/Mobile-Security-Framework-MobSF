@@ -75,8 +75,8 @@ def static_analysis_test():
         for pdf in pdfs:
             resp = http_client.get(pdf)
             if (resp.status_code == 200 and
-                        resp._headers['content-type'][1] == "application/pdf"
-                    ):
+                resp._headers['content-type'][1] == "application/pdf"
+                ):
                 print("[OK] PDF Report Generated: " + pdf)
             else:
                 print(err_msg % "[ERROR] Generating PDF: " + pdf)
@@ -171,8 +171,8 @@ def api_test():
             resp = http_client.post(
                 '/api/v1/download_pdf', pdf, HTTP_AUTHORIZATION=auth)
             if (resp.status_code == 200 and
-                        resp._headers['content-type'][1] == "application/pdf"
-                    ):
+                resp._headers['content-type'][1] == "application/pdf"
+                ):
                 print("[OK] PDF Report Generated: " + pdf["hash"])
             else:
                 print(err_msg % "[ERROR] Generating PDF: " + pdf["hash"])
@@ -185,15 +185,35 @@ def api_test():
             resp = http_client.post(
                 '/api/v1/report_json', pdf, HTTP_AUTHORIZATION=auth)
             if (resp.status_code == 200 and
-                        resp._headers[
+                resp._headers[
                             'content-type'][1] == "application/json; charset=utf-8"
-                    ):
+                ):
                 print("[OK] JSON Report Generated: " + pdf["hash"])
             else:
                 print(err_msg %
                       "[ERROR] Generating JSON Response: " + pdf["hash"])
                 failed = True
         print("[OK] JSON Report API test completed")
+        print("[INFO] Running View Source API test")
+        # View Source tests
+        files = [{"file": "opensecurity/helloworld/MainActivity.java", "type": "apk", "hash": "3a552566097a8de588b8184b059b0158"},
+                 {"file": "helloworld.app/Info.plist", "type": "ipa", "hash": "6c23c2970551be15f32bbab0b5db0c71"},
+                 {"file": "opensecurity/webviewignoressl/MainActivity.java", "type": "studio", "hash": "52c50ae824e329ba8b5b7a0f523efffe"},
+                 {"file": "DamnVulnerableIOSApp/AppDelegate.m", "type": "ios", "hash": "57bb5be0ea44a755ada4a93885c3825e"}]
+        for sfile in files:
+            resp = http_client.post(
+                '/api/v1/view_source', sfile, HTTP_AUTHORIZATION=auth)
+            if resp.status_code == 200:
+                dat = json.loads(resp.content.decode("utf-8"))
+                if dat["title"]:
+                    print("[OK] Reading - ", sfile)
+                else:
+                    print(err_msg % "[ERROR] Reading - " + sfile)
+                    failed = True
+            else:
+                print(err_msg % "[ERROR] Reading - " + sfile)
+                failed = True
+        print("[OK] View Source API test completed")
         print("[INFO] Running Delete Scan API Results test")
         # Deleting Scan Results
         if platform.system() in ['Darwin', 'Linux']:
@@ -252,6 +272,7 @@ def start_test(request):
 
 class StaticAnalyzerAndAPI(TestCase):
     """Unit Tests"""
+
     def setUp(self):
         self.http_client = Client()
 

@@ -23,6 +23,7 @@
 <li><code>api/v1/delete_scan</code> - <a href="#delete-scan-api">Delete a Scan</a></li>
 <li><code>api/v1/download_pdf</code> - <a href="#generate-pdf-report-api">Download PDF Report</a></li>
 <li><code>api/v1/report_json</code> - <a href="#generate-json-report-api">Generate JSON Report</a></li>
+<li><code>api/v1/view_source</code> - <a href="#view-source-api">View Source Files</a></li>
 </ol>
 <h2><a id="upload-file-api"></a><strong>Upload File API</strong></h2>
 <p>API to upload a file. Supported file types are apk, zip, ipa and appx.</p>
@@ -373,6 +374,84 @@ SNIPPED
 </code></pre>
 </li>
 </ul>
+
+<hr/>
+<h2><a id="view-source-api"></a><strong>View Source Files API</strong></h2>
+<p>API to view source files</p>
+<ul>
+<li>
+<p><strong>URL:</strong> <code>/api/v1/view_source</code></p>
+</li>
+<li>
+<p><strong>Method:</strong> <code>POST</code></p>
+</li>
+<li>
+<p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code></p>
+</li>
+<li>
+<p><strong>Data Params</strong></p>
+</li>
+</ul>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>Param Name</th>
+<th>Param Value</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hash</td>
+<td>hash of the scan</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>file</td>
+<td>relative file path</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>type</td>
+<td><code>apk/ipa/studio/eclipse/ios</code></td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<br>
+<ul>
+<li>
+<p><strong>Success Response:</strong></p>
+<ul>
+<li><strong>Code:</strong> <code>200</code><br>
+<strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code> <br>
+<strong>Content:</strong> <code>JSON Contents</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Error Response:</strong></p>
+<ul>
+<li><strong>Code:</strong>  <code>500 Internal Server Error</code> or  <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br>
+<strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code> <br>
+<strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code></li>
+</ul>
+<p>OR</p>
+<ul>
+<li><strong>Code:</strong> <code>401 Unauthorized</code> <br>
+<strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code> <br>
+<strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Sample Call:</strong></p>
+<pre><code>curl -X POST --url http://localhost:8000/api/v1/view_source --data "hash=18e244926da1e49c5b8ffc1c30de8abc&amp;type=apk&amp;file=b/a/a/a/a/a.java" -H "Authorization:7e2ddf418b291d2e070496524d1b8599c31637f84055c5db632f49f1a613f5f5"
+</code></pre>
+<pre><code>curl -X POST --url http://localhost:8000/api/v1/view_source --data "hash=6c23c2970551be15f32bbab0b5db0c71&amp;type=ipa&amp;file=classdump.txt" -H "Authorization:87e2ddf418b291d2e070496524d1b8599c31637f84055c5db632f49f1a613f5f5"
+</code></pre>
+</li>
+</ul>
+
+
    </div>
 
           <!-- /.box-body -->
