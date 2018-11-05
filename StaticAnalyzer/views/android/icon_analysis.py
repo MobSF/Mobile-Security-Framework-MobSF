@@ -116,7 +116,7 @@ def get_icon(apk_path, res_dir):
             return {
             'path': guess_icon_path(res_dir),
             'hidden': True
-        }
+            }
         if len(icon_name) > 0:
             return {
                 'path': os.path.join(os.path.dirname(apk_path), icon_name),
