@@ -104,6 +104,7 @@ def find_icon_path_zip(res_dir, icon_paths_from_manifest):
     except:
         PrintException("[ERROR] Guessing icon path")
 
+
 def get_icon(apk_path, res_dir):
     """Returns a dict with isHidden boolean and a relative path
         path is a full path (not relative to resource folder) """
@@ -112,12 +113,7 @@ def get_icon(apk_path, res_dir):
         a = apk.APK(apk_path)
         icon_resolution = 0xFFFE - 1
         icon_name = a.get_app_icon(max_dpi=icon_resolution)
-        if icon_name is None:
-            return {
-            'path': guess_icon_path(res_dir),
-            'hidden': True
-            }
-        if len(icon_name) > 0:
+        if icon_name:
             return {
                 'path': os.path.join(os.path.dirname(apk_path), icon_name),
                 'hidden': False
