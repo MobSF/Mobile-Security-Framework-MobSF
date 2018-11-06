@@ -232,11 +232,11 @@ body {
                       </td>
                       <td>
                         {% if bin.status == 'Info' %}
-                          <span class='label label-danger'>{{bin.status}}</span>
+                          <span class='label label-info'>{{bin.status}}</span>
                         {% elif bin.status == 'Secure' %}
                           <span class='label label-success'>{{bin.status}}</span>
                         {% elif bin.status == 'Insecure' %}
-                          <span class='label label-info'>{{bin.status}}</span>
+                          <span class='label label-danger'>{{bin.status}}</span>
                         {% elif bin.status == 'Warning' %}
                           <span class='label label-warning'>{{bin.status}}</span>
                         {% endif %}
