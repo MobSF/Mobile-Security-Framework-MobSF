@@ -130,6 +130,7 @@ DVM_PERMISSIONS = {
         "BIND_DEVICE_ADMIN": ["signature", "interact with device admin", "Allows the holder to send intents to a device administrator. Should never be needed for common applications."],
         "SET_ORIENTATION": ["signature", "change screen orientation", "Allows an application to change the rotation of the screen at any time. Should never be needed for common applications."],
         "INSTALL_PACKAGES": ["signatureOrSystem", "directly install applications", "Allows an application to install new or updated Android packages. Malicious applications can use this to add new applications with arbitrarily powerful permissions."],
+        "REQUEST_INSTALL_PACKAGES": ["dangerous", "Allows an application to request installing packages.", "Malicious applications can use this to try and trick users into installing additional malicious packages."],
         "CLEAR_APP_USER_DATA": ["signature", "delete other applications\' data", "Allows an application to clear user data."],
         "DELETE_CACHE_FILES": ["signatureOrSystem", "delete other applications\' caches", "Allows an application to delete cache files."],
         "DELETE_PACKAGES": ["signatureOrSystem", "delete applications", "Allows an application to delete Android packages. Malicious applications can use this to delete important applications."],
