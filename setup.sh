@@ -17,4 +17,9 @@ if [[ "$unamestr" == 'Darwin' ]]; then
 fi
 echo '[INSTALL] Installing Requirements'
 pip install -r requirements.txt
+echo '[INSTALL] Clean Up'
+bash scripts/clean.sh y
+echo '[INSTALL] Migrating Database'
+python manage.py makemigrations
+python manage.py migrate
 echo '[INSTALL] Installation Complete'

@@ -1,9 +1,15 @@
 echo 
 echo "=======================MobSF Clean Script for Unix======================="
 echo "Running this script will delete the Scan database, all files uploaded and generated."
-read -p "Are you sure? " -n 1 -r
+
+if [ "$1" != "" ]; then
+    VAL="$1"
+else
+    read -p "Continue? (Y/N): " confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] || exit 1
+    VAL=$confirm
+fi
 echo 
-if [[ $REPLY =~ ^[Yy]$ ]]
+if [[ $VAL =~ ^[Yy]$ ]]
 then
 	echo "Deleting all Uploads"
 	rm -rf ../uploads/*

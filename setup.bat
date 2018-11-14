@@ -24,6 +24,9 @@ where python >nul 2>&1 && (
   set INCLUDE=C:\Program Files\OpenSSL-Win64\include;%INCLUDE%
   echo [INSTALL] Installing Requirements
   pip install -r requirements.txt
+  echo [INSTALL] Migrating Database
+  python manage.py makemigrations
+  python manage.py migrate
   echo [INSTALL] Installation Complete
 ) || (
   echo [ERROR] python3 is not installed
