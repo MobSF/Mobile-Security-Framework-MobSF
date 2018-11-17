@@ -402,7 +402,21 @@ body {
                                             </tr>
                                         </thead>
                                         <tbody>
-                    {{ file_analysis | safe}}
+                    {%for item in file_analysis %}
+                    <tr>
+                      <td>
+                        {{ item.issue }}
+                      </td>
+                      <td>
+                        {% for file in item.files %}
+                                  {{ file.file_path }}
+                                </br>
+                                {% endfor %}
+                        {% endfor %}
+                      </td>
+                  
+                    </tr>
+                    {% endfor %}
                     </tbody>
                     </table>
 

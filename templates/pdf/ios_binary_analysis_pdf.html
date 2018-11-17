@@ -276,11 +276,15 @@ body {
                             {%for item in file_analysis %}
                             <tr>
                               <td>
-                                {{ item.issue | safe}}
+                                {{ item.issue }}
                               </td>
                               <td>
                                 {% for file in item.files %}
-                                  {{ file }}
+                                  {% if file.type %}
+                                  <a href="../ViewFile/?file={{file.file_path}}&type={{file.type}}&md5={{file.hash}}">{{ file.file_path }}</a>
+                                  {% else %}
+                                  {{ file.file_path }}
+                                  {% endif %}
                                   </br>
                                 {% endfor %}
                               </td>

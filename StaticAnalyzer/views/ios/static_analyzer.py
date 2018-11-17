@@ -81,19 +81,36 @@ def ios_list_files(src, md5_hash, binary_form, mode):
                     filez.append(fileparam)
                     ext = jfile.split('.')[-1]
                     if re.search("cer|pem|cert|crt|pub|key|pfx|p12", ext):
-                        certz.append(escape(file_path.replace(src, '')))
+                        d = {
+                            'file_path': escape(file_path.replace(src, '')),
+                            'type': None,
+                            'hash': None
+                        }
+                        certz.append(d)
                     if re.search("db|sqlitedb|sqlite", ext):
-                        database.append("<a href='../ViewFile/?file=" + \
-                            escape(fileparam) + "&type=" + mode + "&md5=" + \
-                            md5_hash + "''> " + \
-                            escape(fileparam) + " </a>")
+                        d = {
+                            'file_path': escape(fileparam),
+                            'type': mode,
+                            'hash': md5_hash
+                        }
+                        database.append(d)
+                        # database.append("<a href='../ViewFile/?file=" + \
+                        #     escape(fileparam) + "&type=" + mode + "&md5=" + \
+                        #     md5_hash + "''> " + \
+                        #     escape(fileparam) + " </a>")
                     if jfile.endswith(".plist"):
                         if binary_form:
                             convert_bin_xml(file_path)
-                        plist.append("<a href='../ViewFile/?file=" + \
-                            escape(fileparam) + "&type=" + mode + "&md5=" + \
-                            md5_hash + "''> " + \
-                            escape(fileparam) + " </a>")
+                        d = {
+                            'file_path': escape(fileparam),
+                            'type': mode,
+                            'hash': md5_hash
+                        }
+                        plist.append(d)
+                        # plist.append("<a href='../ViewFile/?file=" + \
+                        #     escape(fileparam) + "&type=" + mode + "&md5=" + \
+                        #     md5_hash + "''> " + \
+                        #     escape(fileparam) + " </a>")
         if len(database) > 0:
             sfiles.append({ "issue": "SQLite Files", "files": database })
         if len(plist) > 0:
