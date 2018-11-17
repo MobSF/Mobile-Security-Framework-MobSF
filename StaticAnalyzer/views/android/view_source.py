@@ -63,6 +63,9 @@ def run(request, api=False):
         elif fil.endswith('.smali'):
             src = os.path.join(settings.UPLD_DIR,
                                md5 + '/smali_source/')
+        else:
+            src = os.path.join(settings.UPLD_DIR,
+                                md5 + '/')
         sfile = os.path.join(src, fil)
         dat = ''
         with io.open(

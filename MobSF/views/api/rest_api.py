@@ -37,6 +37,9 @@ from StaticAnalyzer.views.windows import (
     staticanalyzer_windows
 )
 
+from StaticAnalyzer.views.android import (
+    manifest_view
+)
 
 BAD_REQUEST = 400
 OK = 200
@@ -198,3 +201,16 @@ def api_view_source(request):
     else:
         response = make_api_response({"error": "Missing Parameters"}, 422)
     return response
+
+
+@request_method(['GET'])
+@csrf_exempt
+def api_manifest(request):
+    """
+    """
+    params = ['bin', 'type', 'md5']
+    if set(request.GET) >= set(params):
+        resp = manifest_view.run(request, api=True)
+        return make_api_response(resp, 200)
+    else:
+        return make_api_response({"error": "Missing Parameters"}, 422)

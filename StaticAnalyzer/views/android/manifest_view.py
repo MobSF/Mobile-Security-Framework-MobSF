@@ -14,7 +14,7 @@ from MobSF.utils import (
 
 from StaticAnalyzer.views.android.manifest_analysis import read_manifest
 
-def run(request):
+def run(request, api=False):
     """View the manifest."""
     try:
         directory = settings.BASE_DIR  # BASE DIR
@@ -37,6 +37,8 @@ def run(request):
                 'file': 'AndroidManifest.xml',
                 'dat': manifest
             }
+            if api:
+                return context
             template = "static_analysis/view_mani.html"
             return render(request, template, context)
     except:
