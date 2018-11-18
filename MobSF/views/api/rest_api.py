@@ -209,7 +209,7 @@ def api_manifest(request):
     """
     """
     params = ['bin', 'type', 'md5']
-    if set(request.GET) >= set(params):
+    if set(request.POST) >= set(params):
         resp = manifest_view.run(request, api=True)
         return make_api_response(resp, 200)
     else:
