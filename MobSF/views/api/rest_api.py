@@ -203,7 +203,7 @@ def api_view_source(request):
     return response
 
 
-@request_method(['GET'])
+@request_method(['POST'])
 @csrf_exempt
 def api_manifest(request):
     """

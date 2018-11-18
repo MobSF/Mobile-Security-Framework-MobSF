@@ -18,9 +18,15 @@ def run(request, api=False):
     """View the manifest."""
     try:
         directory = settings.BASE_DIR  # BASE DIR
-        md5 = request.GET['md5']  # MD5
-        typ = request.GET['type']  # APK or SOURCE
-        binary = request.GET['bin']
+        if api:
+            md5 = request.POST['md5']  # MD5
+            typ = request.POST['type']  # APK or SOURCE
+            binary = request.POST['bin']
+        else:
+            md5 = request.GET['md5']  # MD5
+            typ = request.GET['type']  # APK or SOURCE
+            binary = request.GET['bin']
+
         match = re.match('^[0-9a-f]{32}$', md5)
         if match and (typ in ['eclipse', 'studio', 'apk']) and (binary in ['1', '0']):
             app_dir = os.path.join(
