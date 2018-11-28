@@ -13,6 +13,8 @@ from django.http import HttpResponseRedirect
 from django.utils.html import escape
 from django.conf import settings
 
+import biplist
+
 from MobSF.forms import (
     FormUtil
 )
@@ -76,8 +78,7 @@ def view_info_plist(md5):
         }
         return context
 
-    with io.open(info_plist_path, mode='r', encoding="utf8", errors="ignore") as flip:
-                dat = flip.read()
+    dat = biplist.readPlist(info_plist_path)
     context = {
         'title': 'Info.plist',
         'file': 'Info.plist',
