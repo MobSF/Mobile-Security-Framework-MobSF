@@ -216,7 +216,7 @@ def get_context_from_db_entry_ios(db_entry):
             'pltfm': db_entry[0].PLTFM,
             'min': db_entry[0].MINX,
             'files': python_list(db_entry[0].FILES),
-            'file_analysis': db_entry[0].SFILESX,
+            'file_analysis': python_list(db_entry[0].SFILESX),
             'api': python_dict(db_entry[0].API),
             'insecure': python_dict(db_entry[0].CODEANAL),
             'urls': python_list(db_entry[0].URLnFile),
