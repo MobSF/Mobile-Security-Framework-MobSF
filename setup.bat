@@ -26,6 +26,7 @@ where python >nul 2>&1 && (
   pip install -r requirements.txt
   echo [INSTALL] Migrating Database
   python manage.py makemigrations
+  python manage.py makemigrations StaticAnalyzer
   python manage.py migrate
   echo [INSTALL] Installation Complete
 ) || (
