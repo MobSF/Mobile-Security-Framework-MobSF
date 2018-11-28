@@ -81,14 +81,14 @@ def ios_list_files(src, md5_hash, binary_form, mode):
                     filez.append(fileparam)
                     ext = jfile.split('.')[-1]
                     if re.search("cer|pem|cert|crt|pub|key|pfx|p12", ext):
-                        plist.append({
+                        certz.append({
                             'file_path': escape(file_path.replace(src, '')),
                             'type': None,
                             'hash': None
                         })
                         
                     if re.search("db|sqlitedb|sqlite", ext):
-                        plist.append({
+                        database.append({
                             'file_path': escape(fileparam),
                             'type': mode,
                             'hash': md5_hash
