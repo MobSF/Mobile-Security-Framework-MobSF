@@ -207,10 +207,19 @@ def api_view_source(request):
 @csrf_exempt
 def api_manifest(request):
     """
+    :param type ipa/apk
     """
     params = ['bin', 'type', 'md5']
     if set(request.POST) >= set(params):
-        resp = manifest_view.run(request, api=True)
+        scan_type = request.POST.get('type')
+        md5 = request.POST.get('md5')
+        if scan_type in ['eclipse', 'studio', 'apk']:
+            resp = manifest_view.run(request, api=True)
+        elif scan_type == 'ipa':
+            resp = ios_view_source.view_info_plist(md5)
+        else:
+            return make_api_response({"error": "Bad Parameters"}, 400) 
+
         return make_api_response(resp, 200)
     else:
         return make_api_response({"error": "Missing Parameters"}, 422)

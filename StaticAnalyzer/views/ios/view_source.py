@@ -42,6 +42,50 @@ def set_ext_api(file_path):
     else:
         return "txt"
 
+
+def walklevel(some_dir, level=1):
+    some_dir = some_dir.rstrip(os.path.sep)
+    assert os.path.isdir(some_dir)
+    num_sep = some_dir.count(os.path.sep)
+    for root, dirs, files in os.walk(some_dir):
+        yield root, dirs, files
+        num_sep_this = root.count(os.path.sep)
+        if num_sep + level <= num_sep_this:
+            del dirs[:]
+
+
+def view_info_plist(md5):
+    """
+    """
+    src = os.path.join(settings.UPLD_DIR,
+                               md5 + '/Payload/')
+
+    info_plist_path = ''
+    dat = ''
+    for root, dirs, files in walklevel(src, 1):
+        for file in files:
+            if file == "Info.plist":
+                info_plist_path = os.path.join(root, "Info.plist")
+
+    print(info_plist_path)
+    if len(info_plist_path) == 0:
+        context = {
+            'title': 'Info.plist',
+            'file': 'Info.plist',
+            'dat': dat
+        }
+        return context
+
+    with io.open(info_plist_path, mode='r', encoding="utf8", errors="ignore") as flip:
+                dat = flip.read()
+    context = {
+        'title': 'Info.plist',
+        'file': 'Info.plist',
+        'dat': dat
+    }
+    return context 
+
+
 def run(request, api=False):
     """View iOS Files"""
     try:
