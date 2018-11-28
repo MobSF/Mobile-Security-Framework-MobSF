@@ -6,7 +6,7 @@ body {
 }
 
 </style>
-<h1 align="center" class="page-header">Static Analysis - {{name}} </h1>
+<h1 align="center" class="page-header">Static Analysis - {{file_name}} </h1>
 <hr>
 
                   <div class="col-lg-7">
@@ -19,7 +19,7 @@ body {
                                 <div class="list-group">
                                     <p>
                                        <span class="label label-primary"><b>File Name: </b></span>
-                                    {{ name }}
+                                    {{ file_name }}
                                     </p>
                                     <p>
                                        <span class="label label-primary"><b>Size: </b></span>
@@ -58,7 +58,7 @@ body {
                                     {{ id }}
                                     </p><p>
                                     <span class="label label-primary"><b>Version: </b></span>
-                                    {{ ver }}
+                                    {{ version }}
 
                                     </p>
                                       <p>
@@ -411,7 +411,6 @@ body {
                         {% for file in item.files %}
                                   {{ file.file_path }}
                                 </br>
-                                {% endfor %}
                         {% endfor %}
                       </td>
                   

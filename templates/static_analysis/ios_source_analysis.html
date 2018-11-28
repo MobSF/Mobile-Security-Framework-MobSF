@@ -77,7 +77,7 @@
            <div class="list-group">
                   <p>
                       <span class="label label-primary">Name</span>
-                      {{ name }}
+                      {{ file_name }}
                   </p>
                   <p>
                       <span class="label label-primary">Size</span>
@@ -122,7 +122,7 @@
               </p>
                 <p>
              <span class="label label-primary">Version</span>
-              {{ ver }}
+              {{ version }}
                </p>
                <p>
               <span class="label label-primary">Platform Version</span>
@@ -160,7 +160,7 @@
         <div class="box-body">
          <div align="center">
       <a data-target="#myModal" role="button" class="btn btn-info" data-toggle="modal"><i class="fa fa-list"></i> View Info.plist</a>
-      <a href="../StaticAnalyzer_iOS/?checksum={{ md5 }}&amp;name={{ name }}&amp;type=ios&amp;rescan=1" class="btn btn-info" role="button"><i class="glyphicon glyphicon-refresh"></i> Rescan</a>
+      <a href="../StaticAnalyzer_iOS/?checksum={{ md5 }}&amp;name={{ file_name }}&amp;type=ios&amp;rescan=1" class="btn btn-info" role="button"><i class="glyphicon glyphicon-refresh"></i> Rescan</a>
 </div>
 
                </div><!-- /.box-body -->

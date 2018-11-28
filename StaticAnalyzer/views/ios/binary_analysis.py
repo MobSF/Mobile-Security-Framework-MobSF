@@ -72,12 +72,13 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
             "anal": []
         }
         print("[INFO] Running Object Analysis of Binary : " + bin_name)
-        otool_dict["libs"] = get_otool_out(tools_dir, "libs", bin_path, bin_dir)
+        otool_dict["libs"] = get_otool_out(
+            tools_dir, "libs", bin_path, bin_dir)
         # PIE
         pie_dat = get_otool_out(tools_dir, "header", bin_path, bin_dir)
         if b"PIE" in pie_dat:
             pie_flag = {
-                "issue": "<strong>fPIE -pie</strong> flag is Found",
+                "issue": "fPIE -pie flag is Found",
                 "status": SECURE,
                 "description": """App is compiled with Position Independent Executable (PIE) flag. 
                     This enables Address Space Layout Randomization (ASLR), a memory protection
@@ -85,7 +86,7 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
             }
         else:
             pie_flag = {
-                "issue": "<strong>fPIE -pie</strong> flag is not Found",
+                "issue": "fPIE -pie flag is not Found",
                 "status": IN_SECURE,
                 "description": """with Position Independent Executable (PIE) flag. So Address Space Layout 
                     Randomization (ASLR) is missing. ASLR is a memory protection mechanism for exploit mitigation."""
@@ -93,32 +94,32 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
         # Stack Smashing Protection & ARC
         dat = get_otool_out(tools_dir, "symbols", bin_path, bin_dir)
         if b"stack_chk_guard" in dat:
-            ssmash = { "issue": "<strong>fstack-protector-all</strong> flag is Found",
-                "status": SECURE,
-                "description": """App is compiled with Stack Smashing Protector (SSP) flag and is having protection against Stack
+            ssmash = {"issue": "fstack-protector-all flag is Found",
+                      "status": SECURE,
+                      "description": """App is compiled with Stack Smashing Protector (SSP) flag and is having protection against Stack
                 Overflows/Stack Smashing Attacks."""
-                }
+                      }
         else:
-            ssmash = { "issue": "<strong>fstack-protector-all</strong> flag is not Found",
-                "status": IN_SECURE,
-                "description": """App is not compiled with Stack Smashing Protector (SSP) flag. It is vulnerable to
+            ssmash = {"issue": "fstack-protector-all flag is not Found",
+                      "status": IN_SECURE,
+                      "description": """App is not compiled with Stack Smashing Protector (SSP) flag. It is vulnerable to
                 Stack Overflows/Stack Smashing Attacks."""
-                }
+                      }
         # ARC
         if b"_objc_release" in dat:
-            arc_flag = { "issue": "<strong>fobjc-arc</strong> flag is Found",
-                "status": SECURE,
-                "description": """App is compiled with Automatic Reference Counting (ARC) flag. ARC is a compiler feature 
+            arc_flag = {"issue": "fobjc-arc flag is Found",
+                        "status": SECURE,
+                        "description": """App is compiled with Automatic Reference Counting (ARC) flag. ARC is a compiler feature 
                 that provides automatic memory management of Objective-C objects and is an
                 exploit mitigation mechanism against memory corruption vulnerabilities."""
-                }
+                        }
         else:
-            arc_flag = { "issue": "<strong>fobjc-arc</strong> flag is not Found",
-                "status": IN_SECURE,
-                "description": """App is not compiled with Automatic Reference Counting (ARC) flag. ARC is a compiler feature that
+            arc_flag = {"issue": "fobjc-arc flag is not Found",
+                        "status": IN_SECURE,
+                        "description": """App is not compiled with Automatic Reference Counting (ARC) flag. ARC is a compiler feature that
                 provides automatic memory management of Objective-C objects and protects from
                 memory corruption vulnerabilities."""
-                }
+                        }
 
         banned_apis = {}
         baned = re.findall(
@@ -129,10 +130,10 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
         baned = list(set(baned))
         baned_s = b', '.join(baned)
         if len(baned_s) > 1:
-            banned_apis = { "issue" : "Binary make use of banned API(s)",
-                "status": IN_SECURE,
-                "description": "The binary may contain the following banned API(s)<strong>" + baned_s.decode('utf-8', 'ignore') + "</strong>."
-                }
+            banned_apis = {"issue": "Binary make use of banned API(s)",
+                           "status": IN_SECURE,
+                           "description": "The binary may contain the following banned API(s) " + baned_s.decode('utf-8', 'ignore') + "."
+                           }
         weak_cryptos = {}
         weak_algo = re.findall(
             b"kCCAlgorithmDES|kCCAlgorithm3DES||kCCAlgorithmRC2|kCCAlgorithmRC4|" +
@@ -141,9 +142,9 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
         weak_algo_s = b', '.join(weak_algo)
         if len(weak_algo_s) > 1:
             weak_cryptos = {"issue": "Binary make use of some Weak Crypto API(s)",
-                "status": IN_SECURE,
-                "description": "The binary may use the following weak crypto API(s) <strong>" + weak_algo_s.decode('utf-8', 'ignore') + "</strong>."
-            }
+                            "status": IN_SECURE,
+                            "description": "The binary may use the following weak crypto API(s) " + weak_algo_s.decode('utf-8', 'ignore') + "."
+                            }
         crypto = {}
         crypto_algo = re.findall(
             b"CCKeyDerivationPBKDF|CCCryptorCreate|CCCryptorCreateFromData|" +
@@ -168,10 +169,10 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
         crypto_algo = list(set(crypto_algo))
         crypto_algo_s = b', '.join(crypto_algo)
         if len(crypto_algo_s) > 1:
-            crypto = { "issue": "Binary make use of the following Crypto API(s)",
-                "status": "Info",
-                "description": "The binary may use the following crypto API(s) <strong>" + crypto_algo_s.decode('utf-8', 'ignore') + "</strong>."
-            }
+            crypto = {"issue": "Binary make use of the following Crypto API(s)",
+                      "status": "Info",
+                      "description": "The binary may use the following crypto API(s) " + crypto_algo_s.decode('utf-8', 'ignore') + "."
+                      }
         weak_hashes = {}
         weak_hash_algo = re.findall(
             b"CC_MD2_Init|CC_MD2_Update|CC_MD2_Final|CC_MD2|MD2_Init|" +
@@ -182,10 +183,10 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
         weak_hash_algo = list(set(weak_hash_algo))
         weak_hash_algo_s = b', '.join(weak_hash_algo)
         if len(weak_hash_algo_s) > 1:
-            weak_hashe = { "issue": "Binary make use of the following Weak HASH API(s)",
-                            "status": IN_SECURE,
-                            "description": "The binary may use the following weak hash API(s) <strong>" + weak_hash_algo_s.decode('utf-8', 'ignore') + "</strong>."
-                        }
+            weak_hashe = {"issue": "Binary make use of the following Weak HASH API(s)",
+                          "status": IN_SECURE,
+                          "description": "The binary may use the following weak hash API(s) " + weak_hash_algo_s.decode('utf-8', 'ignore') + "."
+                          }
         hashes = {}
         hash_algo = re.findall(
             b"CC_SHA224_Init|CC_SHA224_Update|CC_SHA224_Final|CC_SHA224|" +
@@ -197,27 +198,27 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
         hash_algo = list(set(hash_algo))
         hash_algo_s = b', '.join(hash_algo)
         if len(hash_algo_s) > 1:
-            hashes = { "issue": "Binary make use of the following HASH API(s)",
-                       "status": INFO,
-                       "description": "The binary may use the following hash API(s) <strong>" + hash_algo_s.decode('utf-8', 'ignore') + "</strong>."
-                    }
+            hashes = {"issue": "Binary make use of the following HASH API(s)",
+                      "status": INFO,
+                      "description": "The binary may use the following hash API(s) " + hash_algo_s.decode('utf-8', 'ignore') + "."
+                      }
         randoms = {}
         rand_algo = re.findall(b"_srand|_random", dat)
         rand_algo = list(set(rand_algo))
         rand_algo_s = b', '.join(rand_algo)
         if len(rand_algo_s) > 1:
-            randoms = { "issue": "Binary make use of the insecure Random Function(s)",
+            randoms = {"issue": "Binary make use of the insecure Random Function(s)",
                        "status": IN_SECURE,
-                       "description": "The binary may use the following insecure Random Function(s) <strong>" + rand_algo_s.decode('utf-8', 'ignore') + "</strong>."
-                    }
+                       "description": "The binary may use the following insecure Random Function(s) " + rand_algo_s.decode('utf-8', 'ignore') + "."
+                       }
         logging = {}
         log = re.findall(b"_NSLog", dat)
         log = list(set(log))
         log_s = b', '.join(log)
         if len(log_s) > 1:
-            logging = { "issue": "Binary make use of Logging Function",
+            logging = {"issue": "Binary make use of Logging Function",
                        "status": INFO,
-                       "description": "The binary may use <strong>NSLog</strong> function for logging."
+                       "description": "The binary may use NSLog function for logging."
                        }
         malloc = {}
 
@@ -225,22 +226,23 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
         mal = list(set(mal))
         mal_s = b', '.join(mal)
         if len(mal_s) > 1:
-            malloc = { "issue": "Binary make use of <strong>malloc</strong> Function",
-                       "status": IN_SECURE,
-                       "description": "The binary may use <strong>malloc</strong> function instead of <strong>calloc</strong>."
-                    }
+            malloc = {"issue": "Binary make use of malloc Function",
+                      "status": IN_SECURE,
+                      "description": "The binary may use malloc function instead of calloc."
+                      }
         debug = {}
 
         ptrace = re.findall(b"_ptrace", dat)
         ptrace = list(set(ptrace))
         ptrace_s = b', '.join(ptrace)
         if len(ptrace_s) > 1:
-            debug = { "issue": "Binary calls <strong>ptrace</strong> Function for anti-debugging.",
-                       "status": WARNING,
-                       "description": """The binary may use <strong>ptrace</strong> function. It can be used to detect and prevent debuggers. 
+            debug = {"issue": "Binary calls ptrace Function for anti-debugging.",
+                     "status": WARNING,
+                     "description": """The binary may use ptrace function. It can be used to detect and prevent debuggers. 
                             Ptrace is not a public API and Apps that use non-public APIs will be rejected from AppStore. """
-                    }
-        otool_dict["anal"] = [pie_flag, ssmash, arc_flag, banned_apis, weak_cryptos, crypto, weak_hashes, hashes, randoms, logging, malloc, debug]
+                     }
+        otool_dict["anal"] = [pie_flag, ssmash, arc_flag, banned_apis, weak_cryptos,
+                              crypto, weak_hashes, hashes, randoms, logging, malloc, debug]
         return otool_dict
     except:
         PrintException("[ERROR] Performing Object Analysis of Binary")
@@ -274,10 +276,10 @@ def class_dump_z(tools_dir, bin_path, app_dir):
         with open(dump_file, "w") as flip:
             flip.write(classdump.decode("utf-8", "ignore"))
         if b"UIWebView" in classdump:
-            webview = { "issue": "Binary uses WebView Component.",
-                        "status": INFO,
-                        "description":  "The binary may use WebView Component."
-                    }
+            webview = {"issue": "Binary uses WebView Component.",
+                       "status": INFO,
+                       "description":  "The binary may use WebView Component."
+                       }
         return webview
     except:
         print("[INFO] class-dump-z does not work on iOS apps developed in Swift")
@@ -329,7 +331,7 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
             if not cls_dump:
                 cls_dump = {}
             strings_in_ipa = strings_on_ipa(bin_path)
-            otool_dict["anal"] = otool_dict["anal"] + [cls_dump]
+            otool_dict["anal"] = list(filter(None, otool_dict["anal"] + [cls_dump]))
             binary_analysis_dict["libs"] = otool_dict["libs"]
             binary_analysis_dict["bin_res"] = otool_dict["anal"]
             binary_analysis_dict["strings"] = strings_in_ipa

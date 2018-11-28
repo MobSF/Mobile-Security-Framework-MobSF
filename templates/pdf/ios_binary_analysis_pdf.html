@@ -5,7 +5,7 @@ body {
     font: normal 30px Verdana, Arial, sans-serif;
 }
 </style>
-<h1 align="center" class="page-header">Static Analysis - {{name}} </h1>
+<h1 align="center" class="page-header">Static Analysis - {{file_name}} </h1>
 <hr>
 
                   <div class="col-lg-7">
@@ -17,8 +17,8 @@ body {
                             <div class="panel-body">
                                 <div class="list-group">
                                     <p>
-                                       <span class="label label-primary"><b>File Name:</b>b </span>
-                                    {{ name }}
+                                       <span class="label label-primary"><b>File Name:</b> </span>
+                                    {{ file_name }}
                                     </p>
                                     <p>
                                        <span class="label label-primary"><b>Size: </b></span>
@@ -53,11 +53,16 @@ body {
                                     </p>
                                      <p>
                                     <span class="label label-primary"><b>Identifier: </b></span>
-                                    {{ id }}</p><p>
+                                    {{ id }}</p>
+                                    <p>
                                     <span class="label label-primary"><b>Version: </b></span>
-                                    {{ ver }}
+                                    {{ version }}
 
                                     </p>
+                                    <p>
+                                      <span class="label label-primary"><b>Build: </b></span>
+                                          {{ build }}
+                                     </p>
                                       <p>
                                     <span class="label label-primary"><b>SDK Name: </b></span>
                                     {{ sdk }}</p><p>

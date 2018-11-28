@@ -86,14 +86,14 @@ def ios_list_files(src, md5_hash, binary_form, mode):
                             'type': None,
                             'hash': None
                         })
-                        
+
                     if re.search("db|sqlitedb|sqlite", ext):
                         database.append({
                             'file_path': escape(fileparam),
                             'type': mode,
                             'hash': md5_hash
                         })
-                        
+
                     if jfile.endswith(".plist"):
                         if binary_form:
                             convert_bin_xml(file_path)
@@ -102,13 +102,14 @@ def ios_list_files(src, md5_hash, binary_form, mode):
                             'type': mode,
                             'hash': md5_hash
                         })
-                        
+
         if len(database) > 0:
-            sfiles.append({ "issue": "SQLite Files", "files": database })
+            sfiles.append({"issue": "SQLite Files", "files": database})
         if len(plist) > 0:
-            sfiles.append({ "issue": "Plist Files", "files": plist })
+            sfiles.append({"issue": "Plist Files", "files": plist})
         if len(certz) > 0:
-            sfiles.append({ "issue": "Certificate/Key Files Hardcoded inside the App.", "files": certz })
+            sfiles.append(
+                {"issue": "Certificate/Key Files Hardcoded inside the App.", "files": certz})
         return filez, sfiles
     except:
         PrintException("[ERROR] iOS List Files")
@@ -131,11 +132,11 @@ def static_analyzer_ios(request, api=False):
 
         md5_match = re.match('^[0-9a-f]{32}$', checksum)
         if ((md5_match) and
-                    (filename.lower().endswith('.ipa') or
-                     filename.lower().endswith('.zip')
-                     ) and
-                    (file_type in ['ipa', 'ios'])
-                ):
+                (filename.lower().endswith('.ipa') or
+                 filename.lower().endswith('.zip')
+                 ) and
+                (file_type in ['ipa', 'ios'])
+            ):
             app_dict = {}
             app_dict["directory"] = settings.BASE_DIR  # BASE DIR
             app_dict["file_name"] = filename  # APP ORGINAL NAME
