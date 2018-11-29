@@ -298,6 +298,9 @@ def delete_scan(request, api=False):
                         if isDirExists(item_path) and item.startswith(md5_hash + "-"):
                             shutil.rmtree(item_path)
                     data = {'deleted': 'yes'}
+                else:
+                    if api:
+                        return {'deleted': 'not_found'}
             if api:
                 return data
             else:
