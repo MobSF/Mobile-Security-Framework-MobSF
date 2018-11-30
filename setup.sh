@@ -23,4 +23,5 @@ echo '[INSTALL] Migrating Database'
 python manage.py makemigrations
 python manage.py makemigrations StaticAnalyzer
 python manage.py migrate
+echo 'Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html'
 echo '[INSTALL] Installation Complete'
