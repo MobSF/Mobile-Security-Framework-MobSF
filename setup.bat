@@ -28,6 +28,7 @@ where python >nul 2>&1 && (
   python manage.py makemigrations
   python manage.py makemigrations StaticAnalyzer
   python manage.py migrate
+  echo Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html
   echo [INSTALL] Installation Complete
 ) || (
   echo [ERROR] python3 is not installed
