@@ -8,10 +8,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/dev/ref/settings/
 """
 
-import os
 import imp
-from MobSF import utils
+import os
 
+from MobSF import utils
 from install.windows.setup import windows_config_local
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -256,10 +256,21 @@ else:
     #==========ANDROID SKIP CLASSES==========================
     # Common third party classes that will be skipped during static analysis
     SKIP_CLASSES = [
-        r'android[\\\/]{1}support[\\\/]{1}', r'com[\\\/]{1}google[\\\/]{1}', r'android[\\\/]{1}content[\\\/]{1}',
-        r'com[\\\/]{1}android[\\\/]{1}', r'com[\\\/]{1}facebook[\\\/]{1}', r'com[\\\/]{1}twitter[\\\/]{1}',
-        r'twitter4j[\\\/]{1}', r'org[\\\/]{1}apache[\\\/]{1}', r'com[\\\/]{1}squareup[\\\/]{1}okhttp[\\\/]{1}',
-        r'oauth[\\\/]{1}signpost[\\\/]{1}', r'org[\\\/]{1}chromium[\\\/]{1}'
+        r'com[\\\/]{1}google[\\\/]{1}',
+        r'com[\\\/]{1}android[\\\/]{1}',
+        r'android[\\\/]{1}content[\\\/]{1}',
+        r'android[\\\/]{1}support[\\\/]{1}',
+        r'android[\\\/]{1}arch[\\\/]{1}',
+        r'kotlin[\\\/]{1}',
+
+        r'okhttp2[\\\/]{1}', r'okhttp3[\\\/]{1}',
+        r'com[\\\/]{1}squareup[\\\/]{1}okhttp[\\\/]{1}',
+        r'com[\\\/]{1}twitter[\\\/]{1}',
+        r'twitter4j[\\\/]{1}',
+        r'org[\\\/]{1}apache[\\\/]{1}',
+        r'oauth[\\\/]{1}signpost[\\\/]{1}',
+        r'org[\\\/]{1}chromium[\\\/]{1}',
+        r'com[\\\/]{1}facebook[\\\/]{1}'
     ]
 
     #==========DECOMPILER SETTINGS=================

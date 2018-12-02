@@ -1,17 +1,12 @@
 # -*- coding: utf_8 -*-
 """Module holding the functions for converting."""
 
+import glob
+import os
 import platform
 import subprocess
-import os
-import glob
 
 from django.conf import settings
-
-from StaticAnalyzer.views.android.win_fixes import (
-    win_fix_python3,
-    win_fix_java
-)
 
 from MobSF.utils import (
     PrintException,
@@ -19,6 +14,11 @@ from MobSF.utils import (
     isDirExists,
     get_python
 )
+from StaticAnalyzer.views.android.win_fixes import (
+    win_fix_python3,
+    win_fix_java
+)
+
 
 def get_dex_files(app_dir):
     """Get all Dex Files for analysis"""
@@ -141,7 +141,7 @@ def jar_2_java(app_dir, tools_dir):
                 else:
                     jd_path = os.path.join(tools_dir, 'cfr_0_132.jar')
                 args = [settings.JAVA_PATH + 'java', '-jar',
-                        jd_path, jar_path, '--outputdir', output]
+                        jd_path, jar_path, '--outputdir', output, '--silent', 'true']
             elif settings.DECOMPILER == "procyon":
                 if (
                         len(settings.PROCYON_DECOMPILER_BINARY) > 0 and
