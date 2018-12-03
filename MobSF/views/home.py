@@ -109,7 +109,8 @@ class Upload(object):
         if self.file_type.is_ipa():
             if platform.system() not in LINUX_PLATFORM:
                 print("\n[ERROR] Static Analysis of iOS IPA requires Mac or Linux")
-                response_data['description'] = 'Static Analysis of iOS IPA requires Mac or Linux'
+                response_data[
+                    'description'] = 'Static Analysis of iOS IPA requires Mac or Linux'
                 response_data['status'] = 'success'
                 response_data['url'] = 'mac_only/'
                 return self.resp_json(response_data)
@@ -273,7 +274,7 @@ def delete_scan(request, api=False):
                 md5_hash = request.POST['hash']
             else:
                 md5_hash = request.POST['md5']
-            data = {'deleted': 'no'}
+            data = {'deleted': 'scan hash not found'}
             if re.match('[0-9a-f]{32}', md5_hash):
                 # Delete DB Entries
                 scan = RecentScansDB.objects.filter(MD5=md5_hash)
@@ -298,9 +299,6 @@ def delete_scan(request, api=False):
                         if isDirExists(item_path) and item.startswith(md5_hash + "-"):
                             shutil.rmtree(item_path)
                     data = {'deleted': 'yes'}
-                else:
-                    if api:
-                        return {'deleted': 'not_found'}
             if api:
                 return data
             else:
