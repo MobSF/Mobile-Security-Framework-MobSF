@@ -5,6 +5,7 @@ iOS View Source
 import re
 import os
 import io
+import json
 import ntpath
 import sqlite3
 
@@ -88,8 +89,12 @@ def run(request, api=False):
             with io.open(sfile, mode='r', encoding="utf8", errors="ignore") as flip:
                 dat = flip.read()
         elif typ == 'plist':
-            file_format = 'plist'
+            file_format = 'json'
             dat = biplist.readPlist(sfile)
+            try:
+                dat = json.dumps(dat, indent=4, sort_keys=True)
+            except:
+                pass
         elif typ == 'db':
             file_format = 'asciidoc'
             dat = read_sqlite(sfile)
