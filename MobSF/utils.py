@@ -248,7 +248,7 @@ JAVA_VER = '1.7|1.8|1.9|2.0|2.1|2.2|2.3'
 def FindJava(debug=False):
     """ Find Java """
     # Maintain JDK Version
-    java_versions = '1.7|1.8|1.9|2.0|2.1|2.2|2.3|8|9'
+    java_versions = '1.7|1.8|1.9|2.0|2.1|2.2|2.3|8|9|10|11'
     """
     This code is needed because some people are not capable
     of setting java path :-(
