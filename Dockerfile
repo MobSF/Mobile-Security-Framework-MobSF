@@ -91,9 +91,6 @@ RUN git clone --recursive ${YARA_URL} yara-python && \
     rm -fr /tmp/yara-python && \
     sed -i 's/APKID_ENABLED.*/APKID_ENABLED = True/' /root/Mobile-Security-Framework-MobSF/MobSF/settings.py
 
-# Set Java 11 Directory
-RUN sed -i 's#JAVA_DIRECTORY = ""#JAVA_DIRECTORY = "/usr/bin/"#' /root/Mobile-Security-Framework-MobSF/MobSF/settings.py
-
 #Cleanup
 RUN \
     apt remove -y git && \
