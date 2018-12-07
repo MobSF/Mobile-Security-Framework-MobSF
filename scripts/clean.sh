@@ -2,6 +2,12 @@ echo
 echo "=======================MobSF Clean Script for Unix======================="
 echo "Running this script will delete the Scan database, all files uploaded and generated."
 
+script_path=$(dirname $0)
+if [ "$script_path" != "." ] && [ "$script_path" != "./scripts" ]; then
+    echo "Please run script from MobSF script directory "
+    exit  1
+fi
+
 if [ "$1" != "" ]; then
     VAL="$1"
 else
