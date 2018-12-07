@@ -4,7 +4,7 @@ echo "Running this script will delete the Scan database, all files uploaded and 
 
 script_path=$(dirname $0)
 if [ "$script_path" != "." ] && [ "$script_path" != "./scripts" ]; then
-    echo "Please run script from MobSF script directory "
+    echo "Please run script from MobSF scripts directory "
     exit  1
 fi
 
