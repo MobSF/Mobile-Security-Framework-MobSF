@@ -1,12 +1,20 @@
 from django.conf.urls import url
+
+from DynamicAnalyzer.views.android import (
+    dynamic
+)
+from MobSF import utils
 from MobSF.views import (
     home,
 )
-from StaticAnalyzer.views.ios import (
-    static_analyzer as ios_sa,
-    view_source as io_view_source
+from MobSF.views.api import (
+    rest_api
 )
-
+from StaticAnalyzer import tests
+from StaticAnalyzer.views import (
+    shared_func,
+    windows
+)
 from StaticAnalyzer.views.android import (
     static_analyzer as android_sa,
     view_source,
@@ -15,24 +23,10 @@ from StaticAnalyzer.views.android import (
     find,
     manifest_view
 )
-
-from StaticAnalyzer.views import (
-    shared_func,
-    windows
+from StaticAnalyzer.views.ios import (
+    static_analyzer as ios_sa,
+    view_source as io_view_source
 )
-
-from MobSF.views.api import (
-    rest_api
-)
-
-from DynamicAnalyzer.views.android import (
-    dynamic
-)
-
-from StaticAnalyzer import tests
-
-from MobSF import utils
-
 
 urlpatterns = [
     # Examples:
@@ -64,6 +58,8 @@ urlpatterns = [
     url(r'^StaticAnalyzer_Windows/$', windows.staticanalyzer_windows),
     #Shared
     url(r'^PDF/$', shared_func.pdf),
+    # We validate the hash sanity in the URL already
+    url(r'^compare/(?P<first_hash>[0-9a-f]{32})/(?P<second_hash>[0-9a-f]{32})/$', shared_func.compare_apps, ),
 
     # Android Dynamic Analysis
     url(r'^DynamicAnalyzer/$', dynamic.android_dynamic_analyzer),

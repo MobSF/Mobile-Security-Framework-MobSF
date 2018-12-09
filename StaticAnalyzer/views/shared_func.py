@@ -2,20 +2,18 @@
 """
 Module providing the shared functions for static analysis of iOS and Android
 """
-import os
 import hashlib
 import io
-import re
-import json
-import zipfile
-import subprocess
+import os
 import platform
+import re
+import subprocess
+import zipfile
 
 try:
     import pdfkit
 except:
     print("[WARNING] wkhtmltopdf is not installed/configured properly. PDF Report Generation is disabled")
-from django.http import HttpResponseRedirect
 from django.http import HttpResponse
 from django.template.loader import get_template
 from django.utils.html import escape
@@ -42,6 +40,9 @@ from StaticAnalyzer.views.ios.db_interaction import (
 )
 
 import StaticAnalyzer.views.android.VirusTotal as VirusTotal
+
+from StaticAnalyzer.views.comparer import generic_compare
+
 
 def file_size(app_path):
     """Return the size of the file."""
@@ -528,3 +529,12 @@ def url_n_email_extract(dat, relative_path):
         email_n_file.append(
             {"emails": emails, "path": escape(relative_path)})
     return urllist, url_n_file, email_n_file
+
+
+# This is just the first sanity check that triggers generic_compare
+def compare_apps(request, first_hash: str, second_hash: str):
+    if first_hash == second_hash:
+        error_msg = "2 same hashes were provide for comparison"
+        return print_n_send_error_response(request, error_msg, False)
+    print(f"[INFO] Starting app compare for-{first_hash} and {second_hash}")
+    return generic_compare(request, first_hash, second_hash)

@@ -1,4 +1,5 @@
 # -*- coding: utf_8 -*-
+from django.db.models import QuerySet
 """Module holding the functions for the db."""
 
 from MobSF.utils import (
@@ -10,7 +11,7 @@ from MobSF.utils import (
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 
 
-def get_context_from_db_entry(db_entry):
+def get_context_from_db_entry(db_entry: QuerySet) -> dict:
     """Return the context for APK/ZIP from DB"""
     try:
         print("\n[INFO] Analysis is already Done. Fetching data from the DB...")
@@ -68,7 +69,7 @@ def get_context_from_db_entry(db_entry):
         PrintException("[ERROR] Fetching from DB")
 
 
-def get_context_from_analysis(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bin_anal, apk_id):
+def get_context_from_analysis(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bin_anal, apk_id) -> dict:
     """Get the context for APK/ZIP from analysis results"""
     try:
         context = {
@@ -124,7 +125,7 @@ def get_context_from_analysis(app_dic, man_data_dic, man_an_dic, code_an_dic, ce
         PrintException("[ERROR] Rendering to Template")
 
 
-def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bin_anal, apk_id):
+def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bin_anal, apk_id) -> None:
     """Update an APK/ZIP DB entry"""
     try:
         # pylint: disable=E1101
@@ -181,7 +182,7 @@ def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bi
         PrintException("[ERROR] Updating DB")
 
 
-def create_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bin_anal, apk_id):
+def create_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bin_anal, apk_id) -> None:
     """Create a new DB-Entry for APK/ZIP"""
     try:
         static_db = StaticAnalyzerAndroid(

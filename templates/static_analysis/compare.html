@@ -1,0 +1,477 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block content %}
+    <!-- Left side column. contains the logo and sidebar -->
+    <aside class="main-sidebar">
+        <!-- sidebar: style can be found in sidebar.less -->
+        <div class="sidebar" id="scrollspy">
+
+            <!-- sidebar menu: : style can be found in sidebar.less -->
+            <ul class="nav sidebar-menu">
+                <li class="header">Static Analysis</li>
+                <li class="active"><a href="#information"><i class="glyphicon glyphicon-info-sign"></i> Information</a>
+                </li>
+                <li><a href="#options"><i class="glyphicon glyphicon-tasks"></i> Scan Options</a></li>
+                <li><a href="#certificate"><i class="fa fa-certificate"></i> Signer Certificate</a></li>
+                <li><a href="#permissions"><i class="fa fa-align-justify"></i> Permissions</a></li>
+                <li><a href="#binary_analysis"><i class="fa fa-flag"></i> Binary Analysis</a></li>
+
+                <li><a href="#android-api"><i class="fa fa-dot-circle-o"></i> Android API</a></li>
+                <li><a href="#browsable"><i class="fa fa-clone"></i> Browsable Activities</a></li>
+
+                <li class="treeview">
+                    <a href="javascript::"><i class="fa fa-circle-o"></i> Security Analysis</a>
+                    <ul class="nav treeview-menu">
+                        <li><a href="#manifest"><i class="fa fa-search"></i> Manifest Analysis</a></li>
+
+                        <li><a href="#code"><i class="fa fa-code"></i> Code Analysis</a></li>
+                        <li><a href="#file"><i class="fa fa-file-text-o"></i> File Analysis</a></li>
+                    </ul>
+                </li>
+
+                <li class="treeview">
+                    <a href="javascript::"><i class="fa fa-bug"></i> Malware Analysis</a>
+                    <ul class="nav treeview-menu">
+                        <li><a href="#dex_malware_analysis"><i class="fa fa-android"></i> DEX Malware Analysis</a></li>
+                        {% if VT_RESULT %}
+                            <li><a href="#virus_total"><i class="fa fa-upload"></i>Virus Total</a></li>
+                        {% endif %}
+                        <li><a href="#domain"><i class="glyphicon glyphicon-screenshot"></i> Domain Malware Check</a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="treeview">
+                    <a href="javascript::"><i class="fa fa-plus"></i> Reconnaissance</a>
+                    <ul class="nav treeview-menu">
+                        <li><a href="#url"><i class="glyphicon glyphicon-globe"></i> URLs</a></li>
+                        <li><a href="#email"><i class="glyphicon glyphicon-envelope"></i> Emails</a></li>
+                        <li><a href="#string"><i class="glyphicon glyphicon-sort-by-alphabet-alt"></i> Strings</a></li>
+                    </ul>
+                </li>
+
+                <li class="treeview">
+                    <a href="javascript::"><i class="fa fa-bullseye"></i> Components</a>
+                    <ul class="nav treeview-menu">
+                        <li><a href="#activities"><i class="fa fa-language"></i> Activities</a></li>
+                        <li><a href="#services"><i class="fa fa-gears"></i> Services</a></li>
+                        <li><a href="#receivers"><i class="fa fa-sort-amount-desc"></i> Receivers</a></li>
+                        <li><a href="#providers"><i class="fa fa-database"></i> Providers</a></li>
+                        <li><a href="#libraries"><i class="glyphicon glyphicon-chevron-down"></i> Libraries</a></li>
+                        <li><a href="#files"><i class="fa fa-files-o"></i> Files</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <!-- /.sidebar -->
+    </aside>
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <!-- Main content -->
+        <div class="content body">
+            <section id="information">
+                <h2 class="page-header">Comparing {{ first_app.name_ver }} and {{ second_app.name_ver }}</h2>
+
+                <div class="row">
+                    <div class="col-sm-8">
+                        <div class="box box-primary">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">App information</h3>
+
+                            </div><!-- /.box-header -->
+                            <div class="box-body center">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>{{ first_app.name_ver }} </th>
+                                            <th>{{ second_app.name_ver }} </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <td>File name</td>
+                                            <td>{{ first_app.name }}</td>
+                                            <td>{{ second_app.name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>MD5</td>
+                                            <td>{{ first_app.md5 }}</td>
+                                            <td>{{ second_app.md5 }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Size</td>
+                                            <td>{{ first_app.size }}</td>
+                                            <td>{{ second_app.size }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Certificate</td>
+                                            <td>{{ first_app.cert_subject }}</td>
+                                            <td>{{ second_app.cert_subject }}</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div> <!-- dic table -->
+                            </div>   <!-- /.box-body -->
+                        </div> <!-- /.box -->
+                    </div> <!-- div col> -->
+
+                    <div class="col-sm-4">
+                        <div class="box box-primary">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Icon</h3>
+
+                            </div><!-- /.box-header -->
+                            <div class="box-body left">
+
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                        <tr>
+                                            <th>{{ first_app.name_ver }} </th>
+                                            <th>{{ second_app.name_ver }} </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <td>
+                                                <img id="app_icon" src="
+                                        {% if first_app.icon_found %}
+                                            /download/{{ first_app.md5 }}-icon.png
+                                        {% else %}
+                                            {% static 'img/no_icon.png' %}
+                                        {% endif %}
+                                        "/><br/>
+                                                {% if first_app.icon_hidden %}
+                                                    <strong>Hidden Icon!</strong>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <img id="app_icon" src="
+                                        {% if second_app.icon_found %}
+                                            /download/{{ second_app.md5 }}-icon.png
+                                        {% else %}
+                                            {% static 'img/no_icon.png' %}
+                                        {% endif %}
+                                        "/><br/>
+                                                {% if second_app.icon_hidden %}
+                                                    <strong>Hidden Icon!</strong>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                        </tbody>
+                                    </table>
+                                </div> <!-- dic table -->
+                            </div> <!-- box body -->
+                        </div> <!-- box -->
+                    </div> <!-- col -->
+                </div> <!-- row -->
+
+                <div class="row">
+                    <div class="col-sm-8">
+                        <div class="box box-primary">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Components</h3>
+
+                            </div><!-- /.box-header -->
+                            <div class="box-body left">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <tr>
+                                            <th></th>
+                                            <th>Activities</th>
+                                            <th>Exported Activities</th>
+                                            <th>Services</th>
+                                            <th>Exported Services</th>
+                                            <th>Receivers</th>
+                                            <th>Exported Rceivers</th>
+                                            <th>Providers</th>
+                                            <th>Exported Providers</th>
+                                        </tr>
+                                        <tr>
+                                            <td>{{ first_app.name_ver }}</td>
+                                            <td>{{ first_app.act_count }}</td>
+                                            <td>{{ first_app.e_act }}</td>
+                                            <td>{{ first_app.serv_count }}</td>
+                                            <td>{{ first_app.e_ser }}</td>
+                                            <td>{{ first_app.bro_count }}</td>
+                                            <td>{{ first_app.e_bro }}</td>
+                                            <td>{{ first_app.prov_count }}</td>
+                                            <td>{{ first_app.e_cnt }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>{{ second_app.name_ver }}</td>
+                                            <td>{{ second_app.act_count }}</td>
+                                            <td>{{ second_app.e_act }}</td>
+                                            <td>{{ second_app.serv_count }}</td>
+                                            <td>{{ second_app.e_ser }}</td>
+                                            <td>{{ second_app.bro_count }}</td>
+                                            <td>{{ second_app.e_bro }}</td>
+                                            <td>{{ second_app.prov_count }}</td>
+                                            <td>{{ second_app.e_cnt }}</td>
+                                        </tr>
+                                    </table>
+                                </div> <!-- dic table -->
+                            </div> <!-- box body -->
+                        </div> <!-- box -->
+                    </div> <!-- col -->
+
+                    <div class="col-sm-4">
+                        <div class="box box-primary">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Code Diff</h3>
+
+                            </div><!-- /.box-header -->
+                            <div class="box-body left">
+                                <div class="table-responsive">
+                                    <strong>
+                                        Soon to come!
+                                    </strong>
+                                </div> <!-- dic table -->
+                            </div> <!-- box body -->
+                        </div> <!-- box -->
+                    </div> <!-- col -->
+
+                </div> <!-- row -->
+
+                <div class="row">
+                    <div class="col-sm-8">
+                        <div class="box box-primary">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Permissions</h3>
+
+                            </div><!-- /.box-header -->
+
+                            <div class="box box-default">
+                                <div class="box-header with-border">
+                                    <h3 class="box-title">Mutual</h3>
+                                </div><!-- /.box-header -->
+                                <div class="box-body left">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-hover table-striped">
+                                            <thead>
+                                            <tr>
+                                                <th>PERMISSION</th>
+                                                <th>STATUS</th>
+                                                <th>INFO</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for perm, desc in permissions.mutual %}
+                                                <tr>
+                                                    <td>{{ perm }}</td>
+                                                    <td>
+                                                        {% if desc.status == 'dangerous' %}
+                                                            <span class="label label-danger">dangerous</span>
+                                                        {% elif desc.status == 'normal' %}
+                                                            <span class="label label-info">normal</span>
+                                                        {% elif desc.status == 'signatureOrSystem' %}
+                                                            <span class="label label-warning">SignatureOrSystem</span>
+                                                        {% elif desc.status == 'signature' %}
+                                                            <span class="label label-success">signature</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ desc.info }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div> <!-- dic table -->
+                                </div> <!-- box body -->
+                            </div>
+
+                            <div class="box box-default">
+                                <div class="box-header with-border">
+                                    <h3 class="box-title">Only in {{ first_app.name_ver }}</h3>
+                                </div><!-- /.box-header -->
+                                <div class="box-body left">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-hover table-striped">
+                                            <thead>
+                                            <tr>
+                                                <th>PERMISSION</th>
+                                                <th>STATUS</th>
+                                                <th>INFO</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for perm, desc in permissions.only_first %}
+                                                <tr>
+                                                    <td>{{ perm }}</td>
+                                                    <td>
+                                                        {% if desc.status == 'dangerous' %}
+                                                            <span class="label label-danger">dangerous</span>
+                                                        {% elif desc.status == 'normal' %}
+                                                            <span class="label label-info">normal</span>
+                                                        {% elif desc.status == 'signatureOrSystem' %}
+                                                            <span class="label label-warning">SignatureOrSystem</span>
+                                                        {% elif desc.status == 'signature' %}
+                                                            <span class="label label-success">signature</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ desc.info }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div> <!-- dic table -->
+                                </div> <!-- box body -->
+                            </div>
+
+                            <div class="box box-default">
+                                <div class="box-header with-border">
+                                    <h3 class="box-title">Only in {{ second_app.name_ver }}</h3>
+                                </div><!-- /.box-header -->
+                                <div class="box-body left">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-hover table-striped">
+                                            <thead>
+                                            <tr>
+                                                <th>PERMISSION</th>
+                                                <th>STATUS</th>
+                                                <th>INFO</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for perm, desc in permissions.only_second %}
+                                                <tr>
+                                                    <td>{{ perm }}</td>
+                                                    <td>
+                                                        {% if desc.status == 'dangerous' %}
+                                                            <span class="label label-danger">dangerous</span>
+                                                        {% elif desc.status == 'normal' %}
+                                                            <span class="label label-info">normal</span>
+                                                        {% elif desc.status == 'signatureOrSystem' %}
+                                                            <span class="label label-warning">SignatureOrSystem</span>
+                                                        {% elif desc.status == 'signature' %}
+                                                            <span class="label label-success">signature</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ desc.info }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div> <!-- dic table -->
+                                </div> <!-- box body -->
+                            </div>
+
+                        </div> <!--containing box -->
+                    </div> <!-- col -->
+
+                    <div class="col-sm-4">
+                        <div class="box box-primary">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Permission summary</h3>
+                            </div><!-- /.box-header -->
+                            <div class="box-body left">
+                                <div class="list-group">
+                                    <p>
+                                        <span class="label label-primary">Total Mutual</span>
+                                        {{ permissions.mutual | length }}
+                                    </p>
+                                    <p>
+                                        <span class="label label-primary">Only in first</span>
+                                        {{ permissions.only_first | length }}
+                                    </p>
+                                    <p>
+                                        <span class="label label-primary">Only in second</span>
+                                        {{ permissions.only_second | length }}
+                                    </p>
+                                </div>
+                            </div> <!-- box body -->
+                        </div> <!-- box -->
+                    </div> <!-- col -->
+
+                </div> <!-- row -->
+
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="box box-primary">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">API</h3>
+                            </div><!-- /.box-header -->
+                            <div class="box-body left">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <tr>
+                                            <th>Mutual</th>
+                                            <th>Only in {{ first_app.name_ver }}</th>
+                                            <th>Only in {{ second_app.name_ver }}</th>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                {% for desc, info in api.mutual %}
+                                                    {{ desc }} <br/>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for desc, info in api.only_first %}
+                                                    {{ desc }} <br/>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for desc, info in api.only_second %}
+                                                    {{ desc }} <br/>
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div> <!-- dic table -->
+                            </div> <!-- box body -->
+                        </div> <!-- box -->
+                    </div> <!-- col -->
+
+                </div> <!-- row -->
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="box box-primary">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">URLs</h3>
+                            </div><!-- /.box-header -->
+                            <div class="box-body left">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <tr>
+                                            <th>Mutual</th>
+                                            <th>Only in {{ first_app.name_ver }}</th>
+                                            <th>Only in {{ second_app.name_ver }}</th>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                {% for url in urls.mutual %}
+                                                    {{ url | safe }} <br/>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for url in urls.only_first %}
+                                                    {{ url }} <br/>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for url in urls.only_second %}
+                                                    {{ url }} <br/>
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div> <!-- dic table -->
+                            </div> <!-- box body -->
+                        </div> <!-- box -->
+                    </div> <!-- col -->
+
+
+                </div> <!-- row -->
+
+            </section>
+        </div><!-- /.content body -->
+    </div><!-- /.content-wrapper -->
+
+
+{% endblock %}
