@@ -87,6 +87,20 @@ class AndroidChecks(forms.Form):
             raise forms.ValidationError("File Extension not supported")
         return file
 
+class JavaFileForm(forms.Form):
+    md5 = forms.CharField(
+        max_length=32,
+        min_length=32
+    )
+    type = forms.ChoiceField(
+        choices=(
+            ('eclipse', 'eclipse'),
+            ('studio', 'studio'),
+            ('apk', 'apk')
+        )
+    )
+
+
 
 class ViewSourceIOSApiForm(AttackDetect, IOSChecks, APIChecks):
     pass
