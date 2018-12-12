@@ -34,7 +34,8 @@ from StaticAnalyzer.views.ios.static_analyzer import (
 )
 from StaticAnalyzer.views.android import (
     view_source,
-    java as java_file
+    java as java_file,
+    find
 )
 from StaticAnalyzer.views.ios import (
     view_source as ios_view_source
@@ -214,3 +215,12 @@ def api_java_file(request):
     if not form.is_valid():
         return JsonResponse(FormUtil.errors_message(form), status=400)
     return java_file.java_file_api(request)
+
+
+@request_method(['POST'])
+@csrf_exempt
+def api_find(request):
+    form = forms.FindForm(request.POST)
+    if not form.is_valid():
+        return JsonResponse(FormUtil.errors_message(form), status=400)
+    return find.find_api(request)

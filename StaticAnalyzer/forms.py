@@ -101,6 +101,19 @@ class JavaFileForm(forms.Form):
     )
 
 
+class FindForm(forms.Form):
+    md5 = forms.CharField(
+        max_length=32,
+        min_length=32
+    )
+    q = forms.CharField(min_length=1)
+    code = forms.ChoiceField(
+        choices=(
+            ('java', 'java'),
+            ('small', 'small')
+        )
+    )
+
 
 class ViewSourceIOSApiForm(AttackDetect, IOSChecks, APIChecks):
     pass
