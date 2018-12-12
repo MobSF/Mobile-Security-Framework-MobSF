@@ -113,7 +113,7 @@ class FindForm(forms.Form):
             ('small', 'small')
         )
     )
-
+    include_path = forms.CharField(max_length=20, required=False)
 
 class ViewSourceIOSApiForm(AttackDetect, IOSChecks, APIChecks):
     pass

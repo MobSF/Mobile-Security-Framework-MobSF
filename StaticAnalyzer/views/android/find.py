@@ -79,6 +79,8 @@ def find_api(request):
     md5 = request.POST['md5']
     query = request.POST['q']
     code = request.POST['code']
+
+    include_path = request.POST.get('include_path', None)
     matches = []
     if code == 'java':
         src = os.path.join(settings.UPLD_DIR, md5+'/java_source/')
@@ -90,6 +92,9 @@ def find_api(request):
         return HttpResponseBadRequest()
 
     for dir_name, sub_dir, files in os.walk(src):
+        if include_path and len(include_path) > 0:
+            if include_path not in dir_name:
+                continue
         for jfile in files:
             if jfile.endswith(ext):
                 file_path = os.path.join(src, dir_name, jfile)
