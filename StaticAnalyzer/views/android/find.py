@@ -59,18 +59,13 @@ def run(request, is_api=False):
                     ) as file_pointer:
                         dat = file_pointer.read()
                     if query in dat:
-                        if is_api:
-                            matches.append(escape(fileparam))
-                        else:
-                            matches.append(
-                                "<a href='../ViewSource/?file=" + escape(fileparam) +
-                                "&md5=" + md5 +
-                                "&type=apk'>" + escape(fileparam) + "</a>"
-                            )
+                        matches.append(escape(fileparam))
+
         flz = len(matches)
         context = {
             'title': 'Search Results',
             'matches': matches,
+            'md5': md5,
             'term': query,
             'found' : str(flz)
         }
