@@ -50,6 +50,8 @@ from StaticAnalyzer import forms
 BAD_REQUEST = 400
 OK = 200
 
+IS_API = True
+
 
 def make_api_response(data, status=OK):
     """Make API Response"""
@@ -214,7 +216,7 @@ def api_java_file(request):
     form = forms.JavaFileForm(request.GET)
     if not form.is_valid():
         return JsonResponse(FormUtil.errors_message(form), status=400)
-    return java_file.run(request, True)
+    return java_file.run(request, IS_API)
 
 
 @request_method(['POST'])
@@ -223,4 +225,4 @@ def api_find(request):
     form = forms.FindForm(request.POST)
     if not form.is_valid():
         return JsonResponse(FormUtil.errors_message(form), status=400)
-    return find.run(request, True)
+    return find.run(request, IS_API)
