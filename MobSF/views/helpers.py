@@ -40,23 +40,20 @@ class FileType(object):
         return (self.file_type in settings.APPX_MIME) and self.file_name_lower.endswith('.appx')
 
 
-def request_method(methods):
+def request_method(method):
     """
-    :param methods http method
+    :param method http method
     need django HttpRequest
     """
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-
-            if not isinstance(methods, list) and not isinstance(methods, tuple):
+            if not isinstance(method, str):
                 raise ValueError(
-                    'the parameter methods is not a list or tuple')
-
-            methods_upper = [m.upper() for m in methods]
-            for method in methods_upper:
-                if method not in ALLOW_METHODS:
-                    raise ValueError('This method is not allowed')
+                    'the parameter methods is not a str')
+            method_value = method.upper()
+            if method_value not in ALLOW_METHODS:
+                raise ValueError('This method is not allowed')
 
             request = None
             for arg in args:
@@ -65,8 +62,8 @@ def request_method(methods):
             if request is None:
                 raise ValueError('Request object not found')
 
-            if request.method not in methods_upper:
-                return HttpResponseNotAllowed(methods_upper)
+            if request.method != method_value:
+                return HttpResponseNotAllowed(method_value)
 
             return func(*args, **kwargs)
         return wrapper

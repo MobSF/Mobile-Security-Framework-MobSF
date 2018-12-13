@@ -59,7 +59,7 @@ def api_auth(meta):
     return False
 
 
-@request_method(['POST'])
+@request_method('POST')
 @csrf_exempt
 def api_upload(request):
     """POST - Upload API"""
@@ -68,7 +68,7 @@ def api_upload(request):
     return make_api_response(resp, code)
 
 
-@request_method(['POST'])
+@request_method('POST')
 @csrf_exempt
 def api_scan(request):
     """POST - Scan API"""
@@ -107,7 +107,7 @@ def api_scan(request):
     return response
 
 
-@request_method(['POST'])
+@request_method('POST')
 @csrf_exempt
 def api_delete_scan(request):
     """POST - Delete a Scan"""
@@ -123,7 +123,7 @@ def api_delete_scan(request):
     return response
 
 
-@request_method(['POST'])
+@request_method('POST')
 @csrf_exempt
 def api_pdf_report(request):
     """Generate and Download PDF"""
@@ -152,7 +152,7 @@ def api_pdf_report(request):
     return response
 
 
-@request_method(['POST'])
+@request_method('POST')
 @csrf_exempt
 def api_json_report(request):
     """Generate JSON Report"""
@@ -179,7 +179,7 @@ def api_json_report(request):
     return response
 
 
-@request_method(['POST'])
+@request_method('POST')
 @csrf_exempt
 def api_view_source(request):
     """
