@@ -88,7 +88,7 @@ class AndroidChecks(forms.Form):
         return file
 
 class JavaFileForm(forms.Form):
-    md5 = forms.CharField(
+    hash = forms.CharField(
         max_length=32,
         min_length=32
     )
@@ -102,7 +102,7 @@ class JavaFileForm(forms.Form):
 
 
 class FindForm(forms.Form):
-    md5 = forms.CharField(
+    hash = forms.CharField(
         max_length=32,
         min_length=32
     )

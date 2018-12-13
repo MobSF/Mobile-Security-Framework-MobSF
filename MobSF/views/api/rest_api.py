@@ -214,7 +214,7 @@ def api_java_file(request):
     form = forms.JavaFileForm(request.GET)
     if not form.is_valid():
         return JsonResponse(FormUtil.errors_message(form), status=400)
-    return java_file.java_file_api(request)
+    return java_file.run(request, True)
 
 
 @request_method(['POST'])
@@ -223,4 +223,4 @@ def api_find(request):
     form = forms.FindForm(request.POST)
     if not form.is_valid():
         return JsonResponse(FormUtil.errors_message(form), status=400)
-    return find.find_api(request)
+    return find.run(request, True)
