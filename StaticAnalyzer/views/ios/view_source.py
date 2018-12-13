@@ -5,6 +5,7 @@ iOS View Source
 import re
 import os
 import io
+import json
 import ntpath
 import sqlite3
 
@@ -14,7 +15,6 @@ from django.utils.html import escape
 from django.conf import settings
 
 import biplist
-
 from MobSF.forms import (
     FormUtil
 )
@@ -36,7 +36,9 @@ def set_ext_api(file_path):
     """
     ext = file_path.split('.')[-1]
     if ext == "plist":
-        return "xml"
+        return "plist"
+    elif ext == 'xml':
+        return 'xml'
     elif ext in ["sqlitedb", "db", "sqlite"]:
         return "db"
     elif ext == "m":
@@ -129,6 +131,13 @@ def run(request, api=False):
             file_format = 'xml'
             with io.open(sfile, mode='r', encoding="utf8", errors="ignore") as flip:
                 dat = flip.read()
+        elif typ == 'plist':
+            file_format = 'json'
+            dat = biplist.readPlist(sfile)
+            try:
+                dat = json.dumps(dat, indent=4, sort_keys=True)
+            except:
+                pass
         elif typ == 'db':
             file_format = 'asciidoc'
             dat = read_sqlite(sfile)

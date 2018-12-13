@@ -12,7 +12,7 @@ where python >nul 2>&1 && (
     echo [INSTALL] Found OpenSSL executable
   ) else (
    echo [ERROR] OpenSSL executable not found in [C:\Program Files\OpenSSL-Win64\bin\openssl.exe]
-   echo [ERROR] Install OpenSSL - https://slproweb.com/download/Win64OpenSSL-1_1_1.exe
+   echo [ERROR] Install OpenSSL - https://slproweb.com/download/Win64OpenSSL-1_1_1a.exe
    pause
    exit /b
   )
@@ -26,7 +26,9 @@ where python >nul 2>&1 && (
   pip install -r requirements.txt
   echo [INSTALL] Migrating Database
   python manage.py makemigrations
+  python manage.py makemigrations StaticAnalyzer
   python manage.py migrate
+  echo Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html
   echo [INSTALL] Installation Complete
 ) || (
   echo [ERROR] python3 is not installed

@@ -248,7 +248,7 @@ JAVA_VER = '1.7|1.8|1.9|2.0|2.1|2.2|2.3'
 def FindJava(debug=False):
     """ Find Java """
     # Maintain JDK Version
-    java_versions = '1.7|1.8|1.9|2.0|2.1|2.2|2.3|8|9'
+    java_versions = '1.7|1.8|1.9|2.0|2.1|2.2|2.3|8|9|10|11'
     """
     This code is needed because some people are not capable
     of setting java path :-(
@@ -339,9 +339,19 @@ def FindJava(debug=False):
                         print(Color.BOLD + Color.RED + err_msg + Color.END)
                     return "java"
             else:
-                if debug:
-                    print(Color.BOLD + Color.RED + err_msg1 + Color.END)
-                return "java"
+                args = [mac_linux_java_dir + "java", '-version']
+                dat = RunProcess(args)
+                f_line = dat.split("\n")[0]
+                if re.findall(java_versions, f_line):
+                    if debug:
+                        print("[INFO] JDK 1.7 or above is available")
+                    return mac_linux_java_dir
+                else:
+                    err_msg = "[ERROR] Please install Oracle JDK 1.7 or above"
+                    if debug:
+                        print(Color.BOLD + Color.RED + err_msg + Color.END)
+                    return "java"
+
     except:
         if debug:
             PrintException("[ERROR] Oracle Java (JDK >=1.7) is not found!")
