@@ -29,12 +29,12 @@ RUN apt update -y && apt install -y \
     libxml2-dev \
     libxslt1-dev
 
-#Install Oracle JDK 8
+#Install Oracle JDK11 LTS
 RUN apt install -y software-properties-common && \
-    add-apt-repository ppa:webupd8team/java -y && \
+    add-apt-repository ppa:linuxuprising/java -y && \
     apt update && \
-    echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections && \
-    apt install -y oracle-java8-installer
+    echo oracle-java11-installer shared/accepted-oracle-license-v1-2 select true | /usr/bin/debconf-set-selections && \
+    apt install -y oracle-java11-installer
 
 #Install Python 3
 RUN \
