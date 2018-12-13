@@ -209,10 +209,10 @@ def api_manifest(request):
     """
     :param type ipa/apk
     """
-    params = ['bin', 'type', 'md5']
+    params = ['bin', 'type', 'hash']
     if set(request.POST) >= set(params):
         scan_type = request.POST.get('type')
-        md5 = request.POST.get('md5')
+        md5 = request.POST.get('hash')
         if scan_type in ['eclipse', 'studio', 'apk']:
             resp = manifest_view.run(request, api=True)
         elif scan_type == 'ipa':

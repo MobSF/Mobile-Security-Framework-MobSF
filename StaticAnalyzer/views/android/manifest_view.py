@@ -19,7 +19,7 @@ def run(request, api=False):
     try:
         directory = settings.BASE_DIR  # BASE DIR
         if api:
-            md5 = request.POST['md5']  # MD5
+            md5 = request.POST['hash']  # MD5
             typ = request.POST['type']  # APK or SOURCE
             binary = request.POST['bin']
         else:

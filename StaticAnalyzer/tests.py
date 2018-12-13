@@ -213,6 +213,19 @@ def api_test():
             else:
                 print(err_msg % "[ERROR] Reading - " + sfile)
                 failed = True
+
+        manifest_views = [
+            {"bin": "1", "hash": "3a552566097a8de588b8184b059b0158", "type": "apk"},
+            {"bin": "1", "type": "ipa", "hash": "6c23c2970551be15f32bbab0b5db0c71"},
+            {"bin": "1", "type": "studio", "hash": "52c50ae824e329ba8b5b7a0f523efffe"},
+        ]
+        for manifest in manifest_views:
+            resp = http_client.post(
+                '/api/v1/view_source/manifest_view', manifest, HTTP_AUTHORIZATION=auth
+            )
+            if resp.status_code != 200:
+                failed = True
+                print("error response = {}".format(resp))
         print("[OK] View Source API test completed")
         print("[INFO] Running Delete Scan API Results test")
         # Deleting Scan Results
