@@ -30,15 +30,15 @@ from StaticAnalyzer.views.ios import (
 
 urlpatterns = [
     # Examples:
-    url(r'^$', home.index),
+    url(r'^$', home.index, name="home"),
     url(r'^upload/$', home.Upload.as_view),
     url(r'^download/', home.download),
-    url(r'^about$', home.about),
-    url(r'^api_docs$', home.api_docs),
-    url(r'^recent_scans/$', home.recent_scans),
+    url(r'^about$', home.about, name="about"),
+    url(r'^api_docs$', home.api_docs, name="api_docs"),
+    url(r'^recent_scans/$', home.recent_scans, name="recent"),
     url(r'^delete_scan/$', home.delete_scan),
     url(r'^search$', home.search),
-    url(r'^error/$', home.error),
+    url(r'^error/$', home.error, name="error"),
     url(r'^not_found/$', home.not_found),
     url(r'^zip_format/$', home.zip_format),
     url(r'^mac_only/$', home.mac_only),
