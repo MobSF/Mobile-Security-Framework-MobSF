@@ -536,5 +536,5 @@ def compare_apps(request, first_hash: str, second_hash: str):
     if first_hash == second_hash:
         error_msg = "2 same hashes were provide for comparison"
         return print_n_send_error_response(request, error_msg, False)
-    print(f"[INFO] Starting app compare for-{first_hash} and {second_hash}")
+    print("[INFO] Starting app compare for-{} and {}".format(first_hash, second_hash))
     return generic_compare(request, first_hash, second_hash)

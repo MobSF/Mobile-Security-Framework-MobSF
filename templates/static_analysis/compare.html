@@ -11,56 +11,11 @@
                 <li class="header">Static Analysis</li>
                 <li class="active"><a href="#information"><i class="glyphicon glyphicon-info-sign"></i> Information</a>
                 </li>
-                <li><a href="#options"><i class="glyphicon glyphicon-tasks"></i> Scan Options</a></li>
-                <li><a href="#certificate"><i class="fa fa-certificate"></i> Signer Certificate</a></li>
+                <li><a href="#components"><i class="glyphicon glyphicon-tasks"></i> Components</a></li>
                 <li><a href="#permissions"><i class="fa fa-align-justify"></i> Permissions</a></li>
-                <li><a href="#binary_analysis"><i class="fa fa-flag"></i> Binary Analysis</a></li>
-
                 <li><a href="#android-api"><i class="fa fa-dot-circle-o"></i> Android API</a></li>
-                <li><a href="#browsable"><i class="fa fa-clone"></i> Browsable Activities</a></li>
-
-                <li class="treeview">
-                    <a href="javascript::"><i class="fa fa-circle-o"></i> Security Analysis</a>
-                    <ul class="nav treeview-menu">
-                        <li><a href="#manifest"><i class="fa fa-search"></i> Manifest Analysis</a></li>
-
-                        <li><a href="#code"><i class="fa fa-code"></i> Code Analysis</a></li>
-                        <li><a href="#file"><i class="fa fa-file-text-o"></i> File Analysis</a></li>
-                    </ul>
-                </li>
-
-                <li class="treeview">
-                    <a href="javascript::"><i class="fa fa-bug"></i> Malware Analysis</a>
-                    <ul class="nav treeview-menu">
-                        <li><a href="#dex_malware_analysis"><i class="fa fa-android"></i> DEX Malware Analysis</a></li>
-                        {% if VT_RESULT %}
-                            <li><a href="#virus_total"><i class="fa fa-upload"></i>Virus Total</a></li>
-                        {% endif %}
-                        <li><a href="#domain"><i class="glyphicon glyphicon-screenshot"></i> Domain Malware Check</a>
-                        </li>
-                    </ul>
-                </li>
-
-                <li class="treeview">
-                    <a href="javascript::"><i class="fa fa-plus"></i> Reconnaissance</a>
-                    <ul class="nav treeview-menu">
-                        <li><a href="#url"><i class="glyphicon glyphicon-globe"></i> URLs</a></li>
-                        <li><a href="#email"><i class="glyphicon glyphicon-envelope"></i> Emails</a></li>
-                        <li><a href="#string"><i class="glyphicon glyphicon-sort-by-alphabet-alt"></i> Strings</a></li>
-                    </ul>
-                </li>
-
-                <li class="treeview">
-                    <a href="javascript::"><i class="fa fa-bullseye"></i> Components</a>
-                    <ul class="nav treeview-menu">
-                        <li><a href="#activities"><i class="fa fa-language"></i> Activities</a></li>
-                        <li><a href="#services"><i class="fa fa-gears"></i> Services</a></li>
-                        <li><a href="#receivers"><i class="fa fa-sort-amount-desc"></i> Receivers</a></li>
-                        <li><a href="#providers"><i class="fa fa-database"></i> Providers</a></li>
-                        <li><a href="#libraries"><i class="glyphicon glyphicon-chevron-down"></i> Libraries</a></li>
-                        <li><a href="#files"><i class="fa fa-files-o"></i> Files</a></li>
-                    </ul>
-                </li>
+                <li><a href="#apkid"><i class="fa fa-bug"></i> APKiD</a></li>
+                <li><a href="#urls"><i class="fa fa-plus"></i> URLs</a></li>
             </ul>
         </div>
         <!-- /.sidebar -->
@@ -171,8 +126,8 @@
                     </div> <!-- col -->
                 </div> <!-- row -->
 
-                <div class="row">
-                    <div class="col-sm-8">
+                <div class="row" id="components">
+                    <div class="col-sm-10">
                         <div class="box box-primary">
                             <div class="box-header with-border">
                                 <h3 class="box-title">Components</h3>
@@ -220,25 +175,27 @@
                         </div> <!-- box -->
                     </div> <!-- col -->
 
+                    <!-- Code diff
                     <div class="col-sm-4">
                         <div class="box box-primary">
                             <div class="box-header with-border">
                                 <h3 class="box-title">Code Diff</h3>
 
-                            </div><!-- /.box-header -->
+                            </div>
                             <div class="box-body left">
                                 <div class="table-responsive">
                                     <strong>
                                         Soon to come!
                                     </strong>
-                                </div> <!-- dic table -->
-                            </div> <!-- box body -->
-                        </div> <!-- box -->
-                    </div> <!-- col -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    -->
 
                 </div> <!-- row -->
 
-                <div class="row">
+                <div class="row" id="permissions">
                     <div class="col-sm-8">
                         <div class="box box-primary">
                             <div class="box-header with-border">
@@ -389,8 +346,151 @@
 
                 </div> <!-- row -->
 
+            <div class="row" id="apkid"> <!--apkid  row -->
+                <div class="col-sm-12">
+                     <div class="box">
+                              <div class="box-header">
+                                 <!-- /.box-header -->
+                                  <h3 class="box-title"><i class="fa fa-bug"></i> APKiD </h3>
+                              </div>
 
-                <div class="row">
+                          {% if not apkid_error %}
+
+                              <div class="box-body no-padding">
+                                 <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th></th>
+                                                <th>ANTI-VM</th>
+                                                <th>COMPILER</th>
+                                                <th>OBFUSCATOR</th>
+                                                <th>PACKER</th>
+                                                <th>DROPPER</th>
+                                                <th>MANIPULATOR</th>
+                                                <th>ANTI-ASSEMBLY</th>
+                                                <th>ANTI-DEBUG</th>
+                                                <th>ABNORMAL PATTERN</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                           <tr>
+                                            <td>
+                                              {{ first_app.name_ver }}
+                                            </td>
+                                            <td>
+                                              {% for cmp in first_app.apkid|key:"anti_vm" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in first_app.apkid|key:"compiler" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in first_app.apkid|key:"obfuscator" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in first_app.apkid|key:"packer" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in first_app.apkid|key:"dropper" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                             <td>
+                                              {% for cmp in first_app.apkid|key:"manipulator" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in first_app.apkid|key:"anti_disassembly" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in first_app.apkid|key:"anti_debug" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in first_app.apkid|key:"abnormal" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                          </tr>
+                                            <tr>
+                                            <td>
+                                              {{ second_app.name_ver }}
+                                            </td>
+                                            <td>
+                                              {% for cmp in second_app.apkid|key:"anti_vm" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in second_app.apkid|key:"compiler" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in second_app.apkid|key:"obfuscator" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in second_app.apkid|key:"packer" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in second_app.apkid|key:"dropper" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                             <td>
+                                              {% for cmp in second_app.apkid|key:"manipulator" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in second_app.apkid|key:"anti_disassembly" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in second_app.apkid|key:"anti_debug" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in second_app.apkid|key:"abnormal" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                          </tr>
+                                        </tbody>
+                                        </table>
+                                  </div><!-- table -->
+                              </div><!-- /.box-body -->
+                          {% else %}
+                             <p align="center"><strong>APKiD ERROR / No result for one of the apps</strong></p>
+                          {% endif %}
+                     </div> <!-- /.box -->
+                </div><!-- col -->
+            </div><!-- row -->
+
+
+                <div class="row" id="android-api">
                     <div class="col-sm-12">
                         <div class="box box-primary">
                             <div class="box-header with-border">
@@ -429,7 +529,7 @@
 
                 </div> <!-- row -->
 
-                <div class="row">
+                <div class="row" id="urls">
                     <div class="col-sm-12">
                         <div class="box box-primary">
                             <div class="box-header with-border">
@@ -465,9 +565,8 @@
                             </div> <!-- box body -->
                         </div> <!-- box -->
                     </div> <!-- col -->
+                </div><!--row-->
 
-
-                </div> <!-- row -->
 
             </section>
         </div><!-- /.content body -->

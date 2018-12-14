@@ -35,7 +35,7 @@ def generic_compare(request, first_hash: str, second_hash: str, api: bool = Fals
         'permissions': dict()
     }
     static_fields = ['md5', 'name', 'size', 'icon_found', 'icon_hidden', 'act_count', 'e_act', 'serv_count', 'e_ser',
-                     'bro_count', 'e_bro', 'prov_count', 'e_cnt']
+                     'bro_count', 'e_bro', 'prov_count', 'e_cnt', 'apkid']
 
     # For now - support only android
     db_entry = StaticAnalyzerAndroid.objects.filter(MD5=first_hash)
@@ -84,6 +84,15 @@ def generic_compare(request, first_hash: str, second_hash: str, api: bool = Fals
 
         db_context['urls'] = deepcopy(tmp_list)
         tmp_list.clear()
+
+    # apkid check - we do it here just because its really ugly inside the template
+    # I split it into these lines just it to be really clear what I'm checking
+
+    first_error = context['first_app']['apkid'].get('error', False)
+    second_error = context['second_app']['apkid'].get('error', False)
+    first_has_version = context['first_app']['apkid'].get('apkid_version', False)
+    second_has_version = context['second_app']['apkid'].get('apkid_version', False)
+    context['apkid_error'] = (first_error or not first_has_version) or (second_error or not second_has_version)
 
     # Third, calculate some diffs
     for section, is_tuples in [
