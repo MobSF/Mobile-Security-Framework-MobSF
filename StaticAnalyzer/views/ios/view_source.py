@@ -71,7 +71,6 @@ def view_info_plist(md5):
             if file == "Info.plist":
                 info_plist_path = os.path.join(root, "Info.plist")
 
-    print(info_plist_path)
     if len(info_plist_path) == 0:
         context = {
             'title': 'Info.plist',
