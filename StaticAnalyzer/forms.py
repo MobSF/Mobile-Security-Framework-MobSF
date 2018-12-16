@@ -110,7 +110,7 @@ class FindForm(forms.Form):
     code = forms.ChoiceField(
         choices=(
             ('java', 'java'),
-            ('small', 'small')
+            ('smali', 'smali')
         )
     )
     include_path = forms.CharField(max_length=20, required=False)
