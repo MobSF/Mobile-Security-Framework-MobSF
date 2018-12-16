@@ -83,12 +83,27 @@ def static_analysis_test():
                 print(resp.content)
                 failed = True
         print("[OK] PDF Generation test completed")
+
+        # Compare apps test
+        print("[INFO] testing app compare")
+        first_app = '3a552566097a8de588b8184b059b0158'
+        second_app = 'f79e40c4c8622c6ebd44679ffbd2f475'
+        url = '/compare/{}/{}/'.format(first_app, second_app)
+        resp = http_client.get(url, follow=True)
+        assert (resp.status_code == 200)
+        if resp.status_code == 200:
+            print("[OK] App compare passed Successfully")
+        else:
+            print(err_msg % "[ERROR] App compare ")
+            print(resp.content)
+            failed = True
+
         print("[INFO] Running Delete Scan Results test")
         # Deleting Scan Results
         if platform.system() in ['Darwin', 'Linux']:
             scan_md5s = ["3a552566097a8de588b8184b059b0158", "6c23c2970551be15f32bbab0b5db0c71",
                          "52c50ae824e329ba8b5b7a0f523efffe", "57bb5be0ea44a755ada4a93885c3825e",
-                         "8179b557433835827a70510584f3143e"
+                         "8179b557433835827a70510584f3143e", "f79e40c4c8622c6ebd44679ffbd2f475"
                          ]
         else:
             scan_md5s = ["3a552566097a8de588b8184b059b0158", "52c50ae824e329ba8b5b7a0f523efffe",

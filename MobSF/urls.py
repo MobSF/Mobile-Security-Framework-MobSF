@@ -1,12 +1,20 @@
 from django.conf.urls import url
+
+from DynamicAnalyzer.views.android import (
+    dynamic
+)
+from MobSF import utils
 from MobSF.views import (
     home,
 )
-from StaticAnalyzer.views.ios import (
-    static_analyzer as ios_sa,
-    view_source as io_view_source
+from MobSF.views.api import (
+    rest_api
 )
-
+from StaticAnalyzer import tests
+from StaticAnalyzer.views import (
+    shared_func,
+    windows
+)
 from StaticAnalyzer.views.android import (
     static_analyzer as android_sa,
     view_source,
@@ -15,36 +23,22 @@ from StaticAnalyzer.views.android import (
     find,
     manifest_view
 )
-
-from StaticAnalyzer.views import (
-    shared_func,
-    windows
+from StaticAnalyzer.views.ios import (
+    static_analyzer as ios_sa,
+    view_source as io_view_source
 )
-
-from MobSF.views.api import (
-    rest_api
-)
-
-from DynamicAnalyzer.views.android import (
-    dynamic
-)
-
-from StaticAnalyzer import tests
-
-from MobSF import utils
-
 
 urlpatterns = [
     # Examples:
-    url(r'^$', home.index),
+    url(r'^$', home.index, name="home"),
     url(r'^upload/$', home.Upload.as_view),
     url(r'^download/', home.download),
-    url(r'^about$', home.about),
-    url(r'^api_docs$', home.api_docs),
-    url(r'^recent_scans/$', home.recent_scans),
+    url(r'^about$', home.about, name="about"),
+    url(r'^api_docs$', home.api_docs, name="api_docs"),
+    url(r'^recent_scans/$', home.recent_scans, name="recent"),
     url(r'^delete_scan/$', home.delete_scan),
     url(r'^search$', home.search),
-    url(r'^error/$', home.error),
+    url(r'^error/$', home.error, name="error"),
     url(r'^not_found/$', home.not_found),
     url(r'^zip_format/$', home.zip_format),
     url(r'^mac_only/$', home.mac_only),
@@ -64,6 +58,8 @@ urlpatterns = [
     url(r'^StaticAnalyzer_Windows/$', windows.staticanalyzer_windows),
     #Shared
     url(r'^PDF/$', shared_func.pdf),
+    # We validate the hash sanity in the URL already
+    url(r'^compare/(?P<first_hash>[0-9a-f]{32})/(?P<second_hash>[0-9a-f]{32})/$', shared_func.compare_apps, ),
 
     # Android Dynamic Analysis
     url(r'^DynamicAnalyzer/$', dynamic.android_dynamic_analyzer),

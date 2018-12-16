@@ -2,20 +2,18 @@
 """
 Module providing the shared functions for static analysis of iOS and Android
 """
-import os
 import hashlib
 import io
-import re
-import json
-import zipfile
-import subprocess
+import os
 import platform
+import re
+import subprocess
+import zipfile
 
 try:
     import pdfkit
 except:
     print("[WARNING] wkhtmltopdf is not installed/configured properly. PDF Report Generation is disabled")
-from django.http import HttpResponseRedirect
 from django.http import HttpResponse
 from django.template.loader import get_template
 from django.utils.html import escape
@@ -43,12 +41,15 @@ from StaticAnalyzer.views.ios.db_interaction import (
 
 import StaticAnalyzer.views.android.VirusTotal as VirusTotal
 
+from StaticAnalyzer.views.comparer import generic_compare
+
+
 def file_size(app_path):
     """Return the size of the file."""
     return round(float(os.path.getsize(app_path)) / (1024 * 1024), 2)
 
 
-def hash_gen(app_path):
+def hash_gen(app_path) -> tuple:
     """Generate and return sha1 and sha256 as a tupel."""
     try:
         print("[INFO] Generating Hashes")
@@ -528,3 +529,12 @@ def url_n_email_extract(dat, relative_path):
         email_n_file.append(
             {"emails": emails, "path": escape(relative_path)})
     return urllist, url_n_file, email_n_file
+
+
+# This is just the first sanity check that triggers generic_compare
+def compare_apps(request, first_hash: str, second_hash: str):
+    if first_hash == second_hash:
+        error_msg = "Results with same hash cannot be compared"
+        return print_n_send_error_response(request, error_msg, False)
+    print("[INFO] Starting app compare for-{} and {}".format(first_hash, second_hash))
+    return generic_compare(request, first_hash, second_hash)

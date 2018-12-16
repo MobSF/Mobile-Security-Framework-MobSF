@@ -1,0 +1,576 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block content %}
+    <!-- Left side column. contains the logo and sidebar -->
+    <aside class="main-sidebar">
+        <!-- sidebar: style can be found in sidebar.less -->
+        <div class="sidebar" id="scrollspy">
+
+            <!-- sidebar menu: : style can be found in sidebar.less -->
+            <ul class="nav sidebar-menu">
+                <li class="header">Static Analysis</li>
+                <li class="active"><a href="#information"><i class="glyphicon glyphicon-info-sign"></i> Information</a>
+                </li>
+                <li><a href="#components"><i class="glyphicon glyphicon-tasks"></i> Components</a></li>
+                <li><a href="#permissions"><i class="fa fa-align-justify"></i> Permissions</a></li>
+                <li><a href="#android-api"><i class="fa fa-dot-circle-o"></i> Android API</a></li>
+                <li><a href="#apkid"><i class="fa fa-bug"></i> APKiD</a></li>
+                <li><a href="#urls"><i class="fa fa-plus"></i> URLs</a></li>
+            </ul>
+        </div>
+        <!-- /.sidebar -->
+    </aside>
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <!-- Main content -->
+        <div class="content body">
+            <section id="information">
+                <h2 class="page-header">Comparing {{ first_app.name_ver }} and {{ second_app.name_ver }}</h2>
+
+                <div class="row">
+                    <div class="col-sm-8">
+                        <div class="box box-primary">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">App information</h3>
+
+                            </div><!-- /.box-header -->
+                            <div class="box-body center">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>{{ first_app.name_ver }} </th>
+                                            <th>{{ second_app.name_ver }} </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <td>File name</td>
+                                            <td>{{ first_app.name }}</td>
+                                            <td>{{ second_app.name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>MD5</td>
+                                            <td>{{ first_app.md5 }}</td>
+                                            <td>{{ second_app.md5 }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Size</td>
+                                            <td>{{ first_app.size }}</td>
+                                            <td>{{ second_app.size }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Certificate</td>
+                                            <td>{{ first_app.cert_subject }}</td>
+                                            <td>{{ second_app.cert_subject }}</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div> <!-- dic table -->
+                            </div>   <!-- /.box-body -->
+                        </div> <!-- /.box -->
+                    </div> <!-- div col> -->
+
+                    <div class="col-sm-4">
+                        <div class="box box-primary">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Icon</h3>
+
+                            </div><!-- /.box-header -->
+                            <div class="box-body left">
+
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                        <tr>
+                                            <th>{{ first_app.name_ver }} </th>
+                                            <th>{{ second_app.name_ver }} </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <td>
+                                                <img id="app_icon" src="
+                                        {% if first_app.icon_found %}
+                                            /download/{{ first_app.md5 }}-icon.png
+                                        {% else %}
+                                            {% static 'img/no_icon.png' %}
+                                        {% endif %}
+                                        "/><br/>
+                                                {% if first_app.icon_hidden %}
+                                                    <strong>Hidden Icon!</strong>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <img id="app_icon" src="
+                                        {% if second_app.icon_found %}
+                                            /download/{{ second_app.md5 }}-icon.png
+                                        {% else %}
+                                            {% static 'img/no_icon.png' %}
+                                        {% endif %}
+                                        "/><br/>
+                                                {% if second_app.icon_hidden %}
+                                                    <strong>Hidden Icon!</strong>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                        </tbody>
+                                    </table>
+                                </div> <!-- dic table -->
+                            </div> <!-- box body -->
+                        </div> <!-- box -->
+                    </div> <!-- col -->
+                </div> <!-- row -->
+
+                <div class="row" id="components">
+                    <div class="col-sm-10">
+                        <div class="box box-primary">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Components</h3>
+
+                            </div><!-- /.box-header -->
+                            <div class="box-body left">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <tr>
+                                            <th></th>
+                                            <th>Activities</th>
+                                            <th>Exported Activities</th>
+                                            <th>Services</th>
+                                            <th>Exported Services</th>
+                                            <th>Receivers</th>
+                                            <th>Exported Rceivers</th>
+                                            <th>Providers</th>
+                                            <th>Exported Providers</th>
+                                        </tr>
+                                        <tr>
+                                            <td>{{ first_app.name_ver }}</td>
+                                            <td>{{ first_app.act_count }}</td>
+                                            <td>{{ first_app.e_act }}</td>
+                                            <td>{{ first_app.serv_count }}</td>
+                                            <td>{{ first_app.e_ser }}</td>
+                                            <td>{{ first_app.bro_count }}</td>
+                                            <td>{{ first_app.e_bro }}</td>
+                                            <td>{{ first_app.prov_count }}</td>
+                                            <td>{{ first_app.e_cnt }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>{{ second_app.name_ver }}</td>
+                                            <td>{{ second_app.act_count }}</td>
+                                            <td>{{ second_app.e_act }}</td>
+                                            <td>{{ second_app.serv_count }}</td>
+                                            <td>{{ second_app.e_ser }}</td>
+                                            <td>{{ second_app.bro_count }}</td>
+                                            <td>{{ second_app.e_bro }}</td>
+                                            <td>{{ second_app.prov_count }}</td>
+                                            <td>{{ second_app.e_cnt }}</td>
+                                        </tr>
+                                    </table>
+                                </div> <!-- dic table -->
+                            </div> <!-- box body -->
+                        </div> <!-- box -->
+                    </div> <!-- col -->
+
+                    <!-- Code diff
+                    <div class="col-sm-4">
+                        <div class="box box-primary">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Code Diff</h3>
+
+                            </div>
+                            <div class="box-body left">
+                                <div class="table-responsive">
+                                    <strong>
+                                        Soon to come!
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    -->
+
+                </div> <!-- row -->
+
+                <div class="row" id="permissions">
+                    <div class="col-sm-8">
+                        <div class="box box-primary">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Permissions</h3>
+
+                            </div><!-- /.box-header -->
+
+                            <div class="box box-default">
+                                <div class="box-header with-border">
+                                    <h3 class="box-title">Mutual</h3>
+                                </div><!-- /.box-header -->
+                                <div class="box-body left">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-hover table-striped">
+                                            <thead>
+                                            <tr>
+                                                <th>PERMISSION</th>
+                                                <th>STATUS</th>
+                                                <th>INFO</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for perm, desc in permissions.mutual %}
+                                                <tr>
+                                                    <td>{{ perm }}</td>
+                                                    <td>
+                                                        {% if desc.status == 'dangerous' %}
+                                                            <span class="label label-danger">dangerous</span>
+                                                        {% elif desc.status == 'normal' %}
+                                                            <span class="label label-info">normal</span>
+                                                        {% elif desc.status == 'signatureOrSystem' %}
+                                                            <span class="label label-warning">SignatureOrSystem</span>
+                                                        {% elif desc.status == 'signature' %}
+                                                            <span class="label label-success">signature</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ desc.info }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div> <!-- dic table -->
+                                </div> <!-- box body -->
+                            </div>
+
+                            <div class="box box-default">
+                                <div class="box-header with-border">
+                                    <h3 class="box-title">Only in {{ first_app.name_ver }}</h3>
+                                </div><!-- /.box-header -->
+                                <div class="box-body left">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-hover table-striped">
+                                            <thead>
+                                            <tr>
+                                                <th>PERMISSION</th>
+                                                <th>STATUS</th>
+                                                <th>INFO</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for perm, desc in permissions.only_first %}
+                                                <tr>
+                                                    <td>{{ perm }}</td>
+                                                    <td>
+                                                        {% if desc.status == 'dangerous' %}
+                                                            <span class="label label-danger">dangerous</span>
+                                                        {% elif desc.status == 'normal' %}
+                                                            <span class="label label-info">normal</span>
+                                                        {% elif desc.status == 'signatureOrSystem' %}
+                                                            <span class="label label-warning">SignatureOrSystem</span>
+                                                        {% elif desc.status == 'signature' %}
+                                                            <span class="label label-success">signature</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ desc.info }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div> <!-- dic table -->
+                                </div> <!-- box body -->
+                            </div>
+
+                            <div class="box box-default">
+                                <div class="box-header with-border">
+                                    <h3 class="box-title">Only in {{ second_app.name_ver }}</h3>
+                                </div><!-- /.box-header -->
+                                <div class="box-body left">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-hover table-striped">
+                                            <thead>
+                                            <tr>
+                                                <th>PERMISSION</th>
+                                                <th>STATUS</th>
+                                                <th>INFO</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for perm, desc in permissions.only_second %}
+                                                <tr>
+                                                    <td>{{ perm }}</td>
+                                                    <td>
+                                                        {% if desc.status == 'dangerous' %}
+                                                            <span class="label label-danger">dangerous</span>
+                                                        {% elif desc.status == 'normal' %}
+                                                            <span class="label label-info">normal</span>
+                                                        {% elif desc.status == 'signatureOrSystem' %}
+                                                            <span class="label label-warning">SignatureOrSystem</span>
+                                                        {% elif desc.status == 'signature' %}
+                                                            <span class="label label-success">signature</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ desc.info }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div> <!-- dic table -->
+                                </div> <!-- box body -->
+                            </div>
+
+                        </div> <!--containing box -->
+                    </div> <!-- col -->
+
+                    <div class="col-sm-4">
+                        <div class="box box-primary">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Permission summary</h3>
+                            </div><!-- /.box-header -->
+                            <div class="box-body left">
+                                <div class="list-group">
+                                    <p>
+                                        <span class="label label-primary">Total Mutual</span>
+                                        {{ permissions.mutual | length }}
+                                    </p>
+                                    <p>
+                                        <span class="label label-primary">Only in first</span>
+                                        {{ permissions.only_first | length }}
+                                    </p>
+                                    <p>
+                                        <span class="label label-primary">Only in second</span>
+                                        {{ permissions.only_second | length }}
+                                    </p>
+                                </div>
+                            </div> <!-- box body -->
+                        </div> <!-- box -->
+                    </div> <!-- col -->
+
+                </div> <!-- row -->
+
+            <div class="row" id="apkid"> <!--apkid  row -->
+                <div class="col-sm-12">
+                     <div class="box">
+                              <div class="box-header">
+                                 <!-- /.box-header -->
+                                  <h3 class="box-title"><i class="fa fa-bug"></i> APKiD </h3>
+                              </div>
+
+                          {% if not apkid_error %}
+
+                              <div class="box-body no-padding">
+                                 <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th></th>
+                                                <th>ANTI-VM</th>
+                                                <th>COMPILER</th>
+                                                <th>OBFUSCATOR</th>
+                                                <th>PACKER</th>
+                                                <th>DROPPER</th>
+                                                <th>MANIPULATOR</th>
+                                                <th>ANTI-ASSEMBLY</th>
+                                                <th>ANTI-DEBUG</th>
+                                                <th>ABNORMAL PATTERN</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                           <tr>
+                                            <td>
+                                              {{ first_app.name_ver }}
+                                            </td>
+                                            <td>
+                                              {% for cmp in first_app.apkid|key:"anti_vm" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in first_app.apkid|key:"compiler" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in first_app.apkid|key:"obfuscator" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in first_app.apkid|key:"packer" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in first_app.apkid|key:"dropper" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                             <td>
+                                              {% for cmp in first_app.apkid|key:"manipulator" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in first_app.apkid|key:"anti_disassembly" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in first_app.apkid|key:"anti_debug" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in first_app.apkid|key:"abnormal" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                          </tr>
+                                            <tr>
+                                            <td>
+                                              {{ second_app.name_ver }}
+                                            </td>
+                                            <td>
+                                              {% for cmp in second_app.apkid|key:"anti_vm" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in second_app.apkid|key:"compiler" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in second_app.apkid|key:"obfuscator" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in second_app.apkid|key:"packer" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in second_app.apkid|key:"dropper" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                             <td>
+                                              {% for cmp in second_app.apkid|key:"manipulator" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in second_app.apkid|key:"anti_disassembly" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in second_app.apkid|key:"anti_debug" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in second_app.apkid|key:"abnormal" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                          </tr>
+                                        </tbody>
+                                        </table>
+                                  </div><!-- table -->
+                              </div><!-- /.box-body -->
+                          {% else %}
+                             <p align="center"><strong>APKiD ERROR / No result for one of the apps</strong></p>
+                          {% endif %}
+                     </div> <!-- /.box -->
+                </div><!-- col -->
+            </div><!-- row -->
+
+
+                <div class="row" id="android-api">
+                    <div class="col-sm-12">
+                        <div class="box box-primary">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">API</h3>
+                            </div><!-- /.box-header -->
+                            <div class="box-body left">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <tr>
+                                            <th>Mutual</th>
+                                            <th>Only in {{ first_app.name_ver }}</th>
+                                            <th>Only in {{ second_app.name_ver }}</th>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                {% for desc, info in api.mutual %}
+                                                    {{ desc }} <br/>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for desc, info in api.only_first %}
+                                                    {{ desc }} <br/>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for desc, info in api.only_second %}
+                                                    {{ desc }} <br/>
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div> <!-- dic table -->
+                            </div> <!-- box body -->
+                        </div> <!-- box -->
+                    </div> <!-- col -->
+
+                </div> <!-- row -->
+
+                <div class="row" id="urls">
+                    <div class="col-sm-12">
+                        <div class="box box-primary">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">URLs</h3>
+                            </div><!-- /.box-header -->
+                            <div class="box-body left">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <tr>
+                                            <th>Mutual</th>
+                                            <th>Only in {{ first_app.name_ver }}</th>
+                                            <th>Only in {{ second_app.name_ver }}</th>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                {% for url in urls.mutual %}
+                                                    {{ url | safe }} <br/>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for url in urls.only_first %}
+                                                    {{ url }} <br/>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for url in urls.only_second %}
+                                                    {{ url }} <br/>
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div> <!-- dic table -->
+                            </div> <!-- box body -->
+                        </div> <!-- box -->
+                    </div> <!-- col -->
+                </div><!--row-->
+
+
+            </section>
+        </div><!-- /.content body -->
+    </div><!-- /.content-wrapper -->
+
+
+{% endblock %}
