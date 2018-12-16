@@ -87,10 +87,10 @@
     function diff_select(item) {
 
         swal({
-            title: '<strong>Select partner</strong>',
+            title: '<strong>Select App to Compare</strong>',
             type: 'info',
             html:
-                'Please select which scan to diff with',
+                'Please select the second scan result for comparison',
             timer: 10000
         });
         diff_first_md5 = item.attr('id').slice(0, 32);

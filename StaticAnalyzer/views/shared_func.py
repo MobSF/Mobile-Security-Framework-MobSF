@@ -49,7 +49,7 @@ def file_size(app_path):
     return round(float(os.path.getsize(app_path)) / (1024 * 1024), 2)
 
 
-def hash_gen(app_path):
+def hash_gen(app_path) -> tuple:
     """Generate and return sha1 and sha256 as a tupel."""
     try:
         print("[INFO] Generating Hashes")
@@ -534,7 +534,7 @@ def url_n_email_extract(dat, relative_path):
 # This is just the first sanity check that triggers generic_compare
 def compare_apps(request, first_hash: str, second_hash: str):
     if first_hash == second_hash:
-        error_msg = "2 same hashes were provide for comparison"
+        error_msg = "Results with same hash cannot be compared"
         return print_n_send_error_response(request, error_msg, False)
     print("[INFO] Starting app compare for-{} and {}".format(first_hash, second_hash))
     return generic_compare(request, first_hash, second_hash)

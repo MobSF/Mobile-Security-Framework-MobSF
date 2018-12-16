@@ -5,10 +5,6 @@ Module providing the shared functions for static analysis of iOS and Android
 import re
 from copy import deepcopy
 
-try:
-    import pdfkit
-except:
-    print("[WARNING] wkhtmltopdf is not installed/configured properly. PDF Report Generation is disabled")
 from django.shortcuts import render
 
 from MobSF.utils import (
@@ -42,7 +38,7 @@ def generic_compare(request, first_hash: str, second_hash: str, api: bool = Fals
     db_entry2 = StaticAnalyzerAndroid.objects.filter(MD5=second_hash)
 
     if not (db_entry.exists() and db_entry2.exists()):
-        return print_n_send_error_response(request, "One of the Hashes was not found in the DB", False)
+        return print_n_send_error_response(request, "One of the Hashes wasn't found in the Android-results DB, make sure both of the apps finished analysis & they are both Android", False)
 
     # First fetch the already done analysis on each of the apps
     # We don't want to return this whole context back to the user because its a lot of data we don't use
@@ -82,7 +78,7 @@ def generic_compare(request, first_hash: str, second_hash: str, api: bool = Fals
                     tmp_url += url[:70]
                 tmp_list.append(tmp_url)
 
-        db_context['urls'] = deepcopy(tmp_list)
+        db_context['urls'] = list(set(deepcopy(tmp_list)))
         tmp_list.clear()
 
     # apkid check - we do it here just because its really ugly inside the template
