@@ -67,8 +67,8 @@ def view_info_plist(md5):
     info_plist_path = ''
     dat = ''
     for root, dirs, files in walklevel(src, 1):
-        for file in files:
-            if file == "Info.plist":
+        for file_name in files:
+            if file_name == "Info.plist":
                 info_plist_path = os.path.join(root, "Info.plist")
 
     if len(info_plist_path) == 0:
