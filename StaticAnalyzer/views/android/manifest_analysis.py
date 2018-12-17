@@ -1067,7 +1067,8 @@ def manifest_analysis(mfxml, man_data_dic):
                     {"title": a_template['title'] % t_name,
                     "stat": a_template['level'],
                     "desc": a_template['description'] % t_desc,
-                    "name": a_template['name']
+                    "name": a_template['name'],
+                    "title_value": t_name
                     }
                 )
 
