@@ -17,7 +17,7 @@ from MobSF.utils import (
 # pylint: disable=E0401
 from .dvm_permissions import DVM_PERMISSIONS
 
-from StaticAnalyzer.views.android import manifest_desc
+from StaticAnalyzer.views.android import android_manifest_desc
 
 
 ANDROID_4_2_LEVEL = 17
@@ -791,14 +791,14 @@ def manifest_analysis(mfxml, man_data_dic):
                     ret_list.append(
                         ("a_high_action_priority", (value,), tuple(),))
         for a_key, t_name, t_desc in ret_list:
-            a_template = manifest_desc.MANIFEST_DESC.get(a_key)
+            a_template = android_manifest_desc.MANIFEST_DESC.get(a_key)
             if a_template:
                 ret_value.append(
                     {"title": a_template['title'] % t_name,
                     "stat": a_template['level'],
                     "desc": a_template['description'] % t_desc,
                     "name": a_template['name'],
-                    "title_value": t_name
+                    "component": t_name
                     }
                 )
 
