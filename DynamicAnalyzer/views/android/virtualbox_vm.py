@@ -1,7 +1,7 @@
 import time
 import subprocess
 from MobSF.utils import PrintException
-
+from django.conf import settings
 
 def refresh_vm(uuid, snapshot_uuid, vbox_exe):
     """Refresh VirtualBox based VMs"""
@@ -20,6 +20,8 @@ def refresh_vm(uuid, snapshot_uuid, vbox_exe):
         print("\n[INFO] VM Restore Snapshot")
         # Start Fresh VM
         args = [vbox_exe, 'startvm', uuid]
+        if settings.VBOX_HEADLESS:
+            args += ['--type', 'headless']
         subprocess.call(args)
         print("\n[INFO] VM Starting")
     except:
