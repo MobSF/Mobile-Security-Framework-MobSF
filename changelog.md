@@ -1,3 +1,62 @@
+### v1.0.3 Beta Changelog
+- Features or Enhancements
+   - Android APK Scan Results Diffing Support
+   - VirtualBox VM Headless mode
+   - UI Changes
+   - Improved Android icon analysis
+   - CapFuzz for API Fuzzing
+   - JSON Report REST API
+   - Dependency Updates
+   - Code QA and Refactoring
+   - More unit tests
+   - Update 3rd party tools
+   - Improved APKiD Scans
+   - Added Basic Environment Checks on first run
+   - Docker support for PostgreSQL
+   - Improved REST APIs
+   - Android AVD 6 Support (Broken)
+   - iOS IPA Analysis support in Linux
+   - Improved Form Handling
+   - REST API CORS Support
+   - Improved Plist Parsing
+   - Removed Faulty Binary Analysis
+   - Improved Manifest Analysis
+   - Updated Android Permission Mappings
+   - New Setup and Run scripts for easy installation and usage
+   - Updated Dockerfile
+   - Multi Dex Support
+   - Upstream Proxy Support
+   - Improved String Extraction for Android
+
+- Bug Fixes
+  - Fixed manifest view
+  - Performance improvements
+  - Find Java Bug fixes
+  - Fixed APK String extraction
+  - Fixed Regression Bug
+  - Fixed Byte Bug
+
+### v0.9.5.4 Beta Changelog
+- Features or Enhancements
+   - REST API for MobSF and API Docs
+   - Icon Extractor Android Static Analysis
+   - Updating Libraries to latest
+   - Malware Analysis Code refactoring
+   - Updated ADB binaries
+   - Code Refactoring Android Static Analysis
+   - Android and iOS new static analysis rules added
+
+- Bug Fixes
+  - iOS file analysis bug fix
+  - iOS Classdump exception fix
+  - Unicode Unzip fix
+  - sqlitedb isinstance bug fix
+  - Dockerfile error fix
+  - Bug Fix in skip classes
+  - Bug Fix in https traffic decryption due to tornado upgrade
+  - iOS Binary analysis regex fix
+  - Android binary analysis bug fix
+
 ### v0.9.5.2 Beta Changelog
 
 * Features or Enhancements
