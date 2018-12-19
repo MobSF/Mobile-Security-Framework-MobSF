@@ -113,7 +113,9 @@ class FindForm(forms.Form):
             ('smali', 'smali')
         )
     )
-    include_path = forms.CharField(max_length=20, required=False)
+
+    """ support multiple parameters """
+    include_path = forms.CharField(min_length=1, required=False)
 
 class ViewSourceIOSApiForm(AttackDetect, IOSChecks, APIChecks):
     pass

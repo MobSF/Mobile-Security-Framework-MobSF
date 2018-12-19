@@ -39,9 +39,11 @@ def run(request, is_api=False):
             return HttpResponseRedirect('/error/')
         # pylint: disable=unused-variable
         # Needed by os.walk
+        if include_path:
+            include_path = include_path.split(',')
         for dir_name, sub_dir, files in os.walk(src):
             if is_api and include_path and len(include_path) > 0:
-                if include_path not in dir_name:
+                if not filter_path(dir_name, include_path):
                     continue
             for jfile in files:
                 if jfile.endswith(ext):
@@ -79,3 +81,10 @@ def run(request, is_api=False):
     except:
         PrintException("[ERROR] Searching Failed")
         return HttpResponseRedirect('/error/')
+
+
+def filter_path(dir_name, include_path):
+    for path in include_path:
+        if path.strip() in dir_name:
+            return True
+    return False
