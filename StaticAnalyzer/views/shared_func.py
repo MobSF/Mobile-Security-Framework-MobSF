@@ -549,7 +549,7 @@ def compare_apps(request, first_hash: str, second_hash: str):
     if first_hash == second_hash:
         error_msg = "Results with same hash cannot be compared"
         return print_n_send_error_response(request, error_msg, False)
-    print("[INFO] Starting app compare for-{} and {}".format(first_hash, second_hash))
+    print("[INFO] Starting App compare for - {} and {}".format(first_hash, second_hash))
     return generic_compare(request, first_hash, second_hash)
 
 
