@@ -568,8 +568,9 @@
                                             <tr>
                                                 <th>ISSUE</th>
                                                 <th>SEVERITY</th>
-                        <th>FILES</th>
-                                                
+                                                <th>CVSS</th>
+                                                <th>CWE</th>
+                                                <th>FILES</th>   
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -589,6 +590,8 @@
                       <span class="label label-info">info</span>
                       {% endif %}
                   </td>
+                  <td><b>{{ details|key:"cvss" }}</b></td>
+                  <td><b>{{ details|key:"cwe" }}</b></td>
                   <td>
                   {% for path in details|key:"path" %}
                    <a href="../ViewSource/?file={{ path }}&md5={{ md5 }}&type={{zipped}}"> {{ path }}</a>

@@ -703,7 +703,9 @@ Production ready applications should not be signed with 'Android Debug' Certific
                                             <tr>
                                                 <th>ISSUE</th>
                                                 <th>SEVERITY</th>
-                        <th>FILES</th>
+                                                <th>CVSS</th>
+                                                <th>CWE</th>
+                                                <th>FILES</th>
                                                 
                                             </tr>
                     </thead>
@@ -724,6 +726,8 @@ Production ready applications should not be signed with 'Android Debug' Certific
                       <span class="label label-info">info</span>
                       {% endif %}
                   </td>
+                  <td><b>{{ details|key:"cvss" }}</b></td>
+                  <td><b>{{ details|key:"cwe" }}</b></td>
                   <td>
                   {% for path in details|key:"path" %}
                    <a href="../ViewSource/?file={{ path }}&md5={{ md5 }}&type=apk"> {{ path }}</a>

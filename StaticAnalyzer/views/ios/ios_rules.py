@@ -40,7 +40,9 @@ CODE_RULES = [
         'regex1': r'strcpy|memcpy|strcat|strncat|strncpy|sprintf|vsprintf|gets',
         'level': 'high',
         'match': 'single_regex',
-        'input_case': 'exact'
+        'input_case': 'exact',
+        'cvss': 2.2,
+        'cwe': 'CWE-676'
     },
     {
         'desc': 'App allows self signed or invalid SSL certificates. App is vulnerable to MITM attacks.',
@@ -54,7 +56,9 @@ CODE_RULES = [
                   r'allowInvalidCertificates\s*=\s*(YES|yes)',
         'level': 'high',
         'match': 'single_regex',
-        'input_case': 'exact'
+        'input_case': 'exact',
+        'cvss': 7.4,
+        'cwe': 'CWE-295'
     },
     {
         'desc': 'UIWebView in App ignore SSL errors and accept any SSL Certificate. App is vulnerable to MITM attacks.',
@@ -64,7 +68,9 @@ CODE_RULES = [
                   r'loadingUnvalidatedHTTPSPage\s*=\s*(YES|yes)',
         'level': 'high',
         'match': 'single_regex',
-        'input_case': 'exact'
+        'input_case': 'exact',
+        'cvss': 7.4,
+        'cwe': 'CWE-295'
     },
     {
         'desc': 'Files may contain hardcoded sensitive informations like usernames, passwords, keys etc.',
@@ -72,7 +78,9 @@ CODE_RULES = [
         'regex1': r'''(password\s*=\s*@*\s*['|"].+['|"]\s{0,5})|(pass\s*=\s*@*\s*['|"].+['|"]\s{0,5})|(username\s*=\s*@*\s*['|"].+['|"]\s{0,5})|(secret\s*=\s*@*\s*['|"].+['|"]\s{0,5})|(key\s*=\s*@*\s*['|"].+['|"]\s{0,5})''',
         'level': 'high',
         'match': 'single_regex',
-        'input_case': 'lower'
+        'input_case': 'lower',
+        'cvss': 7.4,
+        'cwe': 'CWE-312'
     },
     {
         'desc': 'IP Address disclosure',
@@ -80,7 +88,9 @@ CODE_RULES = [
         'regex1': r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}',
         'level': 'warning',
         'match': 'single_regex',
-        'input_case': 'exact'
+        'input_case': 'exact',
+        'cvss': 4.3,
+        'cwe': 'CWE-200'
     },
     {
         'desc': 'The App logs information. Sensitive information should never be logged.',
@@ -88,7 +98,9 @@ CODE_RULES = [
         'regex1': r'NSLog|NSAssert|fprintf|fprintf|Logging',
         'level': 'info',
         'match': 'single_regex',
-        'input_case': 'exact'
+        'input_case': 'exact',
+        'cvss': 7.5,
+        'cwe': 'CWE-532'
     },
     {
         'desc': 'This app listens to Clipboard changes. Some malwares also listen to Clipboard changes.',
@@ -96,7 +108,9 @@ CODE_RULES = [
         'regex1': r'UIPasteboardChangedNotification|generalPasteboard\]\.string',
         'level': 'warning',
         'match': 'single_regex',
-        'input_case': 'exact'
+        'input_case': 'exact',
+        'cvss': 0,
+        'cwe': ''
     },
     {
         'desc': 'App uses SQLite Database. Sensitive Information should be encrypted.',
@@ -104,7 +118,9 @@ CODE_RULES = [
         'string1': 'sqlite3_exec',
         'level': 'info',
         'match': 'single_string',
-        'input_case': 'exact'
+        'input_case': 'exact',
+        'cvss': 0,
+        'cwe': ''
     },
     {
         'desc': 'Untrusted user input to "NSTemporaryDirectory()" will result in path traversal vulnerability.',
@@ -112,7 +128,9 @@ CODE_RULES = [
         'string1': 'NSTemporaryDirectory(),',
         'level': 'warning',
         'match': 'single_string',
-        'input_case': 'exact'
+        'input_case': 'exact',
+        'cvss': 7.5,
+        'cwe': 'CWE-22'
     },
     {
         'desc': 'User input in "loadHTMLString" will result in JavaScript Injection.',
@@ -121,7 +139,9 @@ CODE_RULES = [
         'string2': 'webView',
         'level': 'warning',
         'match': 'string_and',
-        'input_case': 'exact'
+        'input_case': 'exact',
+        'cvss': 8.8,
+        'cwe': 'CWE-95'
     },
     {
         'desc': 'SFAntiPiracy Jailbreak checks found',
@@ -131,7 +151,9 @@ CODE_RULES = [
         'string3': 'isJailbroken',
         'level': 'good',
         'match': 'string_and',
-        'input_case': 'exact'
+        'input_case': 'exact',
+        'cvss': 0,
+        'cwe': ''
     },
     {
         'desc': 'SFAntiPiracy Piracy checks found',
@@ -141,7 +163,9 @@ CODE_RULES = [
         'string3': 'isPirated',
         'level': 'good',
         'match': 'string_and',
-        'input_case': 'exact'
+        'input_case': 'exact',
+        'cvss': 0,
+        'cwe': ''
     },
     {
         'desc': 'MD5 is a weak hash known to have hash collisions.',
@@ -150,7 +174,9 @@ CODE_RULES = [
         'string2': 'CC_MD5',
         'level': 'high',
         'match': 'string_and',
-        'input_case': 'exact'
+        'input_case': 'exact',
+        'cvss': 7.4,
+        'cwe': 'CWE-327'
     },
     {
         'desc': 'SHA1 is a weak hash known to have hash collisions.',
@@ -159,7 +185,9 @@ CODE_RULES = [
         'string2': 'CC_SHA1',
         'level': 'high',
         'match': 'string_and',
-        'input_case': 'exact'
+        'input_case': 'exact',
+        'cvss': 5.9,
+        'cwe': 'CWE-327'
     },
     {
         'desc': 'The App uses ECB mode in Cryptographic encryption algorithm. ECB mode is known to be weak as it results in the same ciphertext for identical blocks of plaintext.',
@@ -168,7 +196,9 @@ CODE_RULES = [
         'string2': 'kCCAlgorithmAES',
         'level': 'high',
         'match': 'string_and',
-        'input_case': 'exact'
+        'input_case': 'exact',
+        'cvss': 5.9,
+        'cwe': 'CWE-327'
     },
     {
         'desc': 'The App has ant-debugger code using ptrace() ',
@@ -177,7 +207,9 @@ CODE_RULES = [
         'string2': 'PT_DENY_ATTACH',
         'level': 'info',
         'match': 'string_and',
-        'input_case': 'exact'
+        'input_case': 'exact',
+        'cvss': 0,
+        'cwe': ''
     },
     {
         'desc': 'This App has anti-debugger code using Mach Exception Ports.',
@@ -187,7 +219,9 @@ CODE_RULES = [
         'string_or2': 'mach_task_self()',
         'level': 'info',
         'match': 'string_and_or',
-        'input_case': 'exact'
+        'input_case': 'exact',
+        'cvss': 0,
+        'cwe': ''
     },
     {
         'desc': 'This App copies data to clipboard. Sensitive data should not be copied to clipboard as other applications can access it.',
@@ -197,7 +231,9 @@ CODE_RULES = [
         'string_or2': '@select(copy:)',
         'level': 'info',
         'match': 'string_and_or',
-        'input_case': 'exact'
+        'input_case': 'exact',
+        'cvss': 0,
+        'cwe': ''
     },
     {
         'desc': 'This App may have Jailbreak detection capabilities.',
@@ -220,6 +256,8 @@ CODE_RULES = [
         'string16': '/usr/libexec/ssh-keysign',
         'level': 'good',
         'match': 'string_or',
-        'input_case': 'exact'
+        'input_case': 'exact',
+        'cvss': 0,
+        'cwe': ''
     }
 ]

@@ -350,8 +350,10 @@
                                         <thead>
                                             <tr>
                                                 <th>ISSUE</th>
-                                                <th>STATUS</th>
-                                                <th>DESCRIPTION</th>
+                                                <th>SEVERITY</th>
+                                                <th>CVSS</th>
+                                                <th>CWE</th>
+                                                <th>FILES</th>
 
                                             </tr>
                                         </thead>
@@ -372,6 +374,8 @@
                       <span class="label label-info">info</span>
                       {% endif %}
                   </td>
+                  <td><b>{{ details|key:"cvss" }}</b></td>
+                  <td><b>{{ details|key:"cwe" }}</b></td>
                   <td>
                   {% for path in details|key:"path" %}
                    <a href="../ViewFile/?file={{ path }}&md5={{ md5 }}&type=ios"> {{ path }}</a>
