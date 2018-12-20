@@ -113,8 +113,11 @@ def pdf(request, api=False, json=False):
             if scan_type.lower() in ['apk', 'andzip']:
                 static_db = StaticAnalyzerAndroid.objects.filter(MD5=checksum)
                 if static_db.exists():
-                    print("\n[INFO] Fetching data from DB for PDF Report Generation (Android)")
+                    print(
+                        "\n[INFO] Fetching data from DB for PDF Report Generation (Android)")
                     context = get_context_from_db_entry(static_db)
+                    context["average_cvss"], context[
+                        "security_score"] = score(context["findings"])
                     if scan_type.lower() == 'apk':
                         template = get_template("pdf/static_analysis_pdf.html")
                     else:
@@ -130,7 +133,8 @@ def pdf(request, api=False, json=False):
                 if scan_type.lower() == 'ipa':
                     static_db = StaticAnalyzerIPA.objects.filter(MD5=checksum)
                     if static_db.exists():
-                        print("\n[INFO] Fetching data from DB for PDF Report Generation (IOS IPA)")
+                        print(
+                            "\n[INFO] Fetching data from DB for PDF Report Generation (IOS IPA)")
                         context = get_context_from_db_entry_ipa(static_db)
                         template = get_template(
                             "pdf/ios_binary_analysis_pdf.html")
@@ -141,10 +145,14 @@ def pdf(request, api=False, json=False):
                             return HttpResponse(json.dumps({"report": "Report not Found"}),
                                                 content_type="application/json; charset=utf-8", status=500)
                 elif scan_type.lower() == 'ioszip':
-                    static_db = StaticAnalyzerIOSZIP.objects.filter(MD5=checksum)
+                    static_db = StaticAnalyzerIOSZIP.objects.filter(
+                        MD5=checksum)
                     if static_db.exists():
-                        print("\n[INFO] Fetching data from DB for PDF Report Generation (IOS ZIP)")
+                        print(
+                            "\n[INFO] Fetching data from DB for PDF Report Generation (IOS ZIP)")
                         context = get_context_from_db_entry_ios(static_db)
+                        context["average_cvss"], context[
+                            "security_score"] = score(context["insecure"])
                         template = get_template(
                             "pdf/ios_source_analysis_pdf.html")
                     else:
@@ -155,11 +163,12 @@ def pdf(request, api=False, json=False):
                                                 content_type="application/json; charset=utf-8", status=500)
             elif 'appx' == scan_type.lower():
                 if scan_type.lower() == 'appx':
-                    db_entry = StaticAnalyzerWindows.objects.filter(# pylint: disable-msg=E1101
+                    db_entry = StaticAnalyzerWindows.objects.filter(  # pylint: disable-msg=E1101
                         MD5=checksum
                     )
                     if db_entry.exists():
-                        print("\n[INFO] Fetching data from DB for PDF Report Generation (APPX)")
+                        print(
+                            "\n[INFO] Fetching data from DB for PDF Report Generation (APPX)")
 
                         context = {
                             'title': db_entry[0].TITLE,
@@ -202,7 +211,8 @@ def pdf(request, api=False, json=False):
                     context['VT_RESULT'] = None
                 else:
                     context['VT_RESULT'] = vt.get_result(
-                        os.path.join(app_dir, checksum) + '.' + scan_type.lower(),
+                        os.path.join(app_dir, checksum) +
+                        '.' + scan_type.lower(),
                         checksum
                     )
             try:
@@ -268,7 +278,7 @@ def get_list_match_items(ruleset):
     return match_list
 
 
-def add_findings(findings, desc, file_path, level):
+def add_findings(findings, desc, file_path, rule):
     """Add Code Analysis Findings"""
     if desc in findings:
         tmp_list = findings[desc]["path"]
@@ -276,7 +286,10 @@ def add_findings(findings, desc, file_path, level):
             tmp_list.append(escape(file_path))
             findings[desc]["path"] = tmp_list
     else:
-        findings[desc] = {"path": [escape(file_path)], "level": level}
+        findings[desc] = {"path": [escape(file_path)],
+                          "level": rule["level"],
+                          "cvss": rule["cvss"],
+                          "cwe": rule["cwe"]}
 
 
 def code_rule_matcher(findings, perms, data, file_path, code_rules):
@@ -297,7 +310,7 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                 if rule["match"] == 'single_regex':
                     if re.findall(rule["regex1"], tmp_data):
                         add_findings(findings, rule[
-                                     "desc"], file_path, rule["level"])
+                                     "desc"], file_path, rule)
                 elif rule["match"] == 'regex_and':
                     and_match_rgx = True
                     match_list = get_list_match_items(rule)
@@ -307,18 +320,18 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                             break
                     if and_match_rgx:
                         add_findings(findings, rule[
-                                     "desc"], file_path, rule["level"])
+                                     "desc"], file_path, rule)
                 elif rule["match"] == 'regex_or':
                     match_list = get_list_match_items(rule)
                     for match in match_list:
                         if re.findall(match, tmp_data):
                             add_findings(findings, rule[
-                                         "desc"], file_path, rule["level"])
+                                         "desc"], file_path, rule)
                             break
                 elif rule["match"] == 'regex_and_perm':
                     if (rule["perm"] in perms) and (re.findall(rule["regex1"], tmp_data)):
                         add_findings(findings, rule[
-                                     "desc"], file_path, rule["level"])
+                                     "desc"], file_path, rule)
                 else:
                     print("\n[ERROR] Code Regex Rule Match Error\n" + rule)
 
@@ -326,7 +339,7 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                 if rule["match"] == 'single_string':
                     if rule["string1"] in tmp_data:
                         add_findings(findings, rule[
-                                     "desc"], file_path, rule["level"])
+                                     "desc"], file_path, rule)
                 elif rule["match"] == 'string_and':
                     and_match_str = True
                     match_list = get_list_match_items(rule)
@@ -336,13 +349,13 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                             break
                     if and_match_str:
                         add_findings(findings, rule[
-                                     "desc"], file_path, rule["level"])
+                                     "desc"], file_path, rule)
                 elif rule["match"] == 'string_or':
                     match_list = get_list_match_items(rule)
                     for match in match_list:
                         if match in tmp_data:
                             add_findings(findings, rule[
-                                         "desc"], file_path, rule["level"])
+                                         "desc"], file_path, rule)
                             break
                 elif rule["match"] == 'string_and_or':
                     match_list = get_list_match_items(rule)
@@ -353,7 +366,7 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                             break
                     if string_or_stat and (rule["string1"] in tmp_data):
                         add_findings(findings, rule[
-                                     "desc"], file_path, rule["level"])
+                                     "desc"], file_path, rule)
                 elif rule["match"] == 'string_or_and':
                     match_list = get_list_match_items(rule)
                     string_and_stat = True
@@ -363,11 +376,11 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                             break
                     if string_and_stat or (rule["string1"] in tmp_data):
                         add_findings(findings, rule[
-                                     "desc"], file_path, rule["level"])
+                                     "desc"], file_path, rule)
                 elif rule["match"] == 'string_and_perm':
                     if (rule["perm"] in perms) and (rule["string1"] in tmp_data):
                         add_findings(findings, rule[
-                                     "desc"], file_path, rule["level"])
+                                     "desc"], file_path, rule)
                 elif rule["match"] == 'string_or_and_perm':
                     match_list = get_list_match_items(rule)
                     string_or_ps = False
@@ -377,7 +390,7 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                             break
                     if (rule["perm"] in perms) and string_or_ps:
                         add_findings(findings, rule[
-                                     "desc"], file_path, rule["level"])
+                                     "desc"], file_path, rule)
                 else:
                     print("\n[ERROR] Code String Rule Match Error\n" + rule)
             else:
@@ -536,5 +549,21 @@ def compare_apps(request, first_hash: str, second_hash: str):
     if first_hash == second_hash:
         error_msg = "Results with same hash cannot be compared"
         return print_n_send_error_response(request, error_msg, False)
-    print("[INFO] Starting app compare for-{} and {}".format(first_hash, second_hash))
+    print("[INFO] Starting App compare for - {} and {}".format(first_hash, second_hash))
     return generic_compare(request, first_hash, second_hash)
+
+
+def score(findings):
+    # Score Apps based on AVG CVSS Score
+    cvss_scores = []
+    avg_cvss = 0
+    app_score = 100
+    for _, finding in findings.items():
+        if "cvss" not in finding:
+            cvss_scores.append(0)
+        else:
+            cvss_scores.append(finding["cvss"])
+    if cvss_scores:
+        avg_cvss = round(sum(cvss_scores) / len(cvss_scores), 1)
+        app_score = int((10 - avg_cvss) * 10)
+    return avg_cvss, app_score

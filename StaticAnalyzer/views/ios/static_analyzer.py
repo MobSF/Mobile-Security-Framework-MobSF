@@ -41,7 +41,8 @@ from StaticAnalyzer.views.ios.plist_analysis import (
 from StaticAnalyzer.views.shared_func import (
     file_size,
     hash_gen,
-    unzip
+    unzip,
+    score
 )
 from StaticAnalyzer.models import StaticAnalyzerIPA, StaticAnalyzerIOSZIP
 
@@ -234,6 +235,8 @@ def static_analyzer_ios(request, api=False):
                             app_dict, infoplist_dict, code_analysis_dic, files, sfiles)
                     context = get_context_from_analysis_ios(
                         app_dict, infoplist_dict, code_analysis_dic, files, sfiles)
+                context["average_cvss"], context[
+                    "security_score"] = score(context["insecure"])
                 template = "static_analysis/ios_source_analysis.html"
                 if api:
                     return context

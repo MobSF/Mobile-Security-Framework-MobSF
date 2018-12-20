@@ -29,7 +29,8 @@ from StaticAnalyzer.models import StaticAnalyzerAndroid
 from StaticAnalyzer.views.shared_func import (
     file_size,
     hash_gen,
-    unzip
+    unzip,
+    score
 )
 
 from StaticAnalyzer.views.android.db_interaction import (
@@ -235,7 +236,8 @@ def static_analyzer(request, api=False):
                         bin_an_buff,
                         apkid_results,
                     )
-
+                context["average_cvss"], context[
+                    "security_score"] = score(context["findings"])
                 context['dynamic_analysis_done'] = os.path.exists(
                     os.path.join(app_dic['app_dir'], 'logcat.txt'))
 
@@ -393,13 +395,16 @@ def static_analyzer(request, api=False):
                         else:
                             print_n_send_error_response(request, msg, False)
                             return HttpResponseRedirect('/zip_format/')
+                context["average_cvss"], context[
+                    "security_score"] = score(context["findings"])
                 template = "static_analysis/static_analysis_android_zip.html"
                 if api:
                     return context
                 else:
                     return render(request, template, context)
             else:
-                print("\n[ERROR] Only APK,IPA and Zipped Android/iOS Source code supported now!")
+                print(
+                    "\n[ERROR] Only APK,IPA and Zipped Android/iOS Source code supported now!")
         else:
             msg = "Hash match failed or Invalid file extension or file type"
             if api:

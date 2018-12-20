@@ -8,6 +8,24 @@ body {
 </style>
 <h1 align="center" class="page-header">Static Analysis - {{file_name}} </h1>
 <hr>
+ <div class="col-lg-2">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><span class="glyphicon glyphicon-file"></span> APP SCORE</h3><hr>
+                            </div>
+
+                            <div class="panel-body">
+                                <div class="list-group">
+                  <p>                                       
+                     <span class="label label-primary"><b>Average CVSS Score: </b>{{ average_cvss }}</span></br>
+                     <span class="label label-primary"><b>App Security Score: </b>{{ security_score }}/100</span>
+
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <hr>
 
                   <div class="col-lg-7">
                         <div class="panel panel-default">
@@ -186,8 +204,10 @@ body {
                                          <thead>
                                             <tr>
                                                 <th>ISSUE</th>
-                                                <th>STATUS</th>
-                                                <th>DESCRIPTION</th>
+                                                <th>SEVERITY</th>
+                                                <th>CVSS</th>
+                                                <th>CWE</th>
+                                                <th>FILES</th>
 
                                             </tr>
                                         </thead>
@@ -208,6 +228,8 @@ body {
                       <span class="label label-info">info</span>
                       {% endif %}
                   </td>
+                   <td><b>{{ details|key:"cvss" }}</b></td>
+                  <td><b>{{ details|key:"cwe" }}</b></td>
                   <td>
                   {% for path in details|key:"path" %}
                    <a href="../ViewFile/?file={{ path }}&md5={{ md5 }}&type=m&mode=ios"> {{ path }}</a>
