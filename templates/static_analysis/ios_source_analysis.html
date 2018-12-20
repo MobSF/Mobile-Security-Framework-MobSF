@@ -67,7 +67,21 @@
   <h2 class="page-header"></h2>
   <p class="lead">
       <div class="row">
-    <div class="col-sm-7">
+         
+      <div class="col-sm-3">
+       <div class="box box-danger">
+        <div class="box-header with-border">
+          <h3 class="box-title">App Score</h3>
+          <span class="label label-danger pull-right"><i class="glyphicon glyphicon-collapse-up"></i></span>
+        </div><!-- /.box-header -->
+        <div class="box-body danger">
+          <span class="label label-danger">Average CVSS</span> <b>{{ average_cvss }} </b></br>
+          <span class="label label-danger">Security Score</span> <b>{{ security_score }}/100</b>
+        </div><!-- /.box-body -->
+      </div><!-- /.box -->
+        </div>
+
+    <div class="col-sm-5">
       <div class="box box-primary">
         <div class="box-header with-border">
           <h3 class="box-title">File Information</h3>
@@ -100,36 +114,36 @@
         </div><!-- /.box-body -->
       </div><!-- /.box -->
     </div><!-- /.col -->
-    <div class="col-sm-5">
-      <div class="box box-danger">
+    <div class="col-sm-4">
+      <div class="box box-warning">
         <div class="box-header with-border">
           <h3 class="box-title">App Information</h3>
-          <span class="label label-danger pull-right"><i class="glyphicon glyphicon-info-sign"></i></span>
+          <span class="label label-warning pull-right"><i class="glyphicon glyphicon-info-sign"></i></span>
         </div><!-- /.box-header -->
         <div class="box-body">
         <div class="list-group">
                <p>
-              <span class="label label-primary">App Name</span>
+              <span class="label label-warning">App Name</span>
               {{ bin_name }}
               </p>
                <p>
-              <span class="label label-primary">Identifier</span>
+              <span class="label label-warning">Identifier</span>
               {{ id }}
-                <span class="label label-primary">SDK Name</span>
+                <span class="label label-warning">SDK Name</span>
               {{ sdk }}
 
 
               </p>
                 <p>
-             <span class="label label-primary">Version</span>
+             <span class="label label-warning">Version</span>
               {{ version }}
                </p>
                <p>
-              <span class="label label-primary">Platform Version</span>
+              <span class="label label-warning">Platform Version</span>
               {{ pltfm }}
             </p>
             <p>
-             <span class="label label-primary">Min OS Version</span>
+             <span class="label label-warning">Min OS Version</span>
               {{ min }}
             </p>
        </div>
@@ -152,10 +166,10 @@
   <div class="row">
 
     <div class="col-sm-12">
-      <div class="box box-danger">
+      <div class="box box-info">
         <div class="box-header with-border">
           <h3 class="box-title">Options</h3>
-          <span class="label label-danger pull-right"><i class="fa fa-flash"></i></span>
+          <span class="label label-info pull-right"><i class="fa fa-flash"></i></span>
         </div><!-- /.box-header -->
         <div class="box-body">
          <div align="center">

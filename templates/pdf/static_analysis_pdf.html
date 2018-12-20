@@ -7,8 +7,25 @@ body {
 
 </style>
 <h1 align="center" class="page-header">Static Analysis - {{name}} </h1>
-<hr>
+<hr>  
+                <div class="col-lg-2">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><span class="glyphicon glyphicon-file"></span> APP SCORE</h3><hr>
+                            </div>
 
+                            <div class="panel-body">
+                                <div class="list-group">
+                  <p>                                       
+                     <span class="label label-primary"><b>Average CVSS Score: </b>{{ average_cvss }}</span></br>
+                     <span class="label label-primary"><b>App Security Score: </b>{{ security_score }}/100</span>
+
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <hr>
                   <div class="col-lg-7">
                         <div class="panel panel-default">
                             <div class="panel-heading">
@@ -22,7 +39,7 @@ body {
                                     {{ name }}
                                     </p>
 									<p>
-                                       <span class="label label-primary"><b>Size :</b></span>
+                                       <span class="label label-primary"><b>Size:</b></span>
                                     {{ size }}
                                    </p><p>
                                        <span class="label label-primary"><b>MD5: </b></span>

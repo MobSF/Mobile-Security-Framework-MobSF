@@ -116,6 +116,8 @@ def pdf(request, api=False, json=False):
                     print(
                         "\n[INFO] Fetching data from DB for PDF Report Generation (Android)")
                     context = get_context_from_db_entry(static_db)
+                    context["average_cvss"], context[
+                        "security_score"] = score(context["findings"])
                     if scan_type.lower() == 'apk':
                         template = get_template("pdf/static_analysis_pdf.html")
                     else:
@@ -149,6 +151,8 @@ def pdf(request, api=False, json=False):
                         print(
                             "\n[INFO] Fetching data from DB for PDF Report Generation (IOS ZIP)")
                         context = get_context_from_db_entry_ios(static_db)
+                        context["average_cvss"], context[
+                            "security_score"] = score(context["insecure"])
                         template = get_template(
                             "pdf/ios_source_analysis_pdf.html")
                     else:
@@ -547,3 +551,19 @@ def compare_apps(request, first_hash: str, second_hash: str):
         return print_n_send_error_response(request, error_msg, False)
     print("[INFO] Starting app compare for-{} and {}".format(first_hash, second_hash))
     return generic_compare(request, first_hash, second_hash)
+
+
+def score(findings):
+    # Score Apps based on AVG CVSS Score
+    cvss_scores = []
+    avg_cvss = 0
+    app_score = 100
+    for _, finding in findings.items():
+        if "cvss" not in finding:
+            cvss_scores.append(0)
+        else:
+            cvss_scores.append(finding["cvss"])
+    if cvss_scores:
+        avg_cvss = round(sum(cvss_scores) / len(cvss_scores), 1)
+        app_score = int((10 - avg_cvss) * 10)
+    return avg_cvss, app_score
