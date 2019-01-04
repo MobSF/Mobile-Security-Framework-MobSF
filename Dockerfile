@@ -91,6 +91,9 @@ RUN git clone --recursive ${YARA_URL} yara-python && \
     rm -fr /tmp/yara-python && \
     sed -i 's/APKID_ENABLED.*/APKID_ENABLED = True/' /root/Mobile-Security-Framework-MobSF/MobSF/settings.py
 
+#Add apktool working path
+RUN mkdir -p /root/.local/share/apktool/framework
+
 #Cleanup
 RUN \
     apt remove -y git && \
