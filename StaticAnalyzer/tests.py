@@ -11,8 +11,9 @@ from MobSF.utils import (
     PrintException,
     api_key,
 )
-
+import logging
 from django.test import TestCase
+logger = logging.getLogger(__name__)
 
 RESCAN = False
 # Set RESCAN to True if Static Analyzer Code is modified
@@ -20,14 +21,14 @@ RESCAN = False
 
 def static_analysis_test():
     """Test Static Analyzer"""
-    print("\n[INFO] Running Static Analyzer Unit test")
+    logger.info("Running Static Analyzer Unit test")
     failed = False
     err_msg = '%s'
     if platform.system() != "Windows":
         err_msg = '\033[91m \033[1m %s \033[0m'
     try:
         uploaded = []
-        print("[INFO] Running Upload Test")
+        logger.info("[INFO] Running Upload Test")
         http_client = Client()
         apk_dir = os.path.join(settings.BASE_DIR, "StaticAnalyzer/test_files/")
         for filename in os.listdir(apk_dir):
@@ -36,13 +37,13 @@ def static_analysis_test():
                 response = http_client.post('/upload/', {'file': filp})
                 obj = json.loads(response.content.decode("utf-8"))
                 if response.status_code == 200 and obj["status"] == "success":
-                    print("[OK] Upload OK: " + filename)
+                    logger.info("[OK] Upload OK: " + filename)
                     uploaded.append(obj["url"])
                 else:
-                    print(err_msg % "[ERROR] Performing Upload: " + filename)
+                    logger.info(err_msg % "[ERROR] Performing Upload: " + filename)
                     failed = True
-        print("[OK] Completed Upload test")
-        print("[INFO] Running Static Analysis Test")
+        logger.info("[OK] Completed Upload test")
+        logger.info("Running Static Analysis Test")
         for upl in uploaded:
             if RESCAN:
                 upl = "/" + upl + "&rescan=1"
@@ -50,12 +51,12 @@ def static_analysis_test():
                 upl = "/" + upl
             resp = http_client.get(upl, follow=True)
             if resp.status_code == 200:
-                print("[OK] Static Analysis Complete: " + upl)
+                logger.info("[OK] Static Analysis Complete: " + upl)
             else:
-                print(err_msg % "[ERROR] Performing Static Analysis: " + upl)
+                logger.info(err_msg % "[ERROR] Performing Static Analysis: " + upl)
                 failed = True
-        print("[OK] Static Analysis test completed")
-        print("[INFO] Running PDF Generation Test")
+        logger.info("[OK] Static Analysis test completed")
+        logger.info("Running PDF Generation Test")
         if platform.system() in ['Darwin', 'Linux']:
             pdfs = [
                 "/PDF/?md5=3a552566097a8de588b8184b059b0158&type=APK",
@@ -77,28 +78,28 @@ def static_analysis_test():
             if (resp.status_code == 200 and
                 resp._headers['content-type'][1] == "application/pdf"
                 ):
-                print("[OK] PDF Report Generated: " + pdf)
+                logger.info("[OK] PDF Report Generated: " + pdf)
             else:
-                print(err_msg % "[ERROR] Generating PDF: " + pdf)
-                print(resp.content)
+                logger.info(err_msg % "[ERROR] Generating PDF: " + pdf)
+                logger.info(resp.content)
                 failed = True
-        print("[OK] PDF Generation test completed")
+        logger.info("[OK] PDF Generation test completed")
 
         # Compare apps test
-        print("[INFO] Running App Compare tests")
+        logger.info("[INFO] Running App Compare tests")
         first_app = '3a552566097a8de588b8184b059b0158'
         second_app = '52c50ae824e329ba8b5b7a0f523efffe'
         url = '/compare/{}/{}/'.format(first_app, second_app)
         resp = http_client.get(url, follow=True)
         assert (resp.status_code == 200)
         if resp.status_code == 200:
-            print("[OK] App compare tests passed successfully")
+            logger.info("[OK] App compare tests passed successfully")
         else:
-            print(err_msg % "[ERROR] App compare tests failed")
-            print(resp.content)
+            logger.info(err_msg % "[ERROR] App compare tests failed")
+            logger.info(resp.content)
             failed = True
 
-        print("[INFO] Running Delete Scan Results test")
+        logger.info("[INFO] Running Delete Scan Results test")
         # Deleting Scan Results
         if platform.system() in ['Darwin', 'Linux']:
             scan_md5s = ["3a552566097a8de588b8184b059b0158", "6c23c2970551be15f32bbab0b5db0c71",
@@ -112,14 +113,14 @@ def static_analysis_test():
             if resp.status_code == 200:
                 dat = json.loads(resp.content.decode("utf-8"))
                 if dat["deleted"] == "yes":
-                    print("[OK] Deleted Scan: " + md5)
+                    logger.info("[OK] Deleted Scan: " + md5)
                 else:
-                    print(err_msg % "[ERROR] Deleting Scan: " + md5)
+                    logger.info(err_msg % "[ERROR] Deleting Scan: " + md5)
                     failed = True
             else:
-                print(err_msg % "[ERROR] Deleting Scan: " + md5)
+                logger.info(err_msg % "[ERROR] Deleting Scan: " + md5)
                 failed = True
-        print("[INFO] Delete Scan Results test completed")
+        logger.info("[INFO] Delete Scan Results test completed")
     except:
         PrintException("[ERROR] Completing Static Analyzer Test")
     return failed
@@ -127,7 +128,7 @@ def static_analysis_test():
 
 def api_test():
     """View for Handling REST API Test"""
-    print("\n[INFO] Running REST API Unit test")
+    logger.info("\n[INFO] Running REST API Unit test")
     auth = api_key()
     failed = False
     err_msg = '%s'
@@ -135,7 +136,7 @@ def api_test():
         err_msg = '\033[91m \033[1m %s \033[0m'
     try:
         uploaded = []
-        print("[INFO] Running Test on Upload API")
+        logger.info("[INFO] Running Test on Upload API")
         http_client = Client()
         apk_dir = os.path.join(settings.BASE_DIR, "StaticAnalyzer/test_files/")
         for filename in os.listdir(apk_dir):
@@ -148,24 +149,24 @@ def api_test():
                     '/api/v1/upload', {'file': filp}, HTTP_AUTHORIZATION=auth)
                 obj = json.loads(response.content.decode("utf-8"))
                 if response.status_code == 200 and "hash" in obj:
-                    print("[OK] Upload OK: " + filename)
+                    logger.info("[OK] Upload OK: " + filename)
                     uploaded.append(obj)
                 else:
-                    print(err_msg % "[ERROR] Performing Upload" + filename)
+                    logger.info(err_msg % "[ERROR] Performing Upload" + filename)
                     failed = True
-        print("[OK] Completed Upload API test")
-        print("[INFO] Running Static Analysis API Test")
+        logger.info("[OK] Completed Upload API test")
+        logger.info("[INFO] Running Static Analysis API Test")
         for upl in uploaded:
             resp = http_client.post(
                 '/api/v1/scan', upl, HTTP_AUTHORIZATION=auth)
             if resp.status_code == 200:
-                print("[OK] Static Analysis Complete: " + upl["file_name"])
+                logger.info("[OK] Static Analysis Complete: " + upl["file_name"])
             else:
-                print(err_msg %
+                logger.info(err_msg %
                       "[ERROR] Performing Static Analysis: " + upl["file_name"])
                 failed = True
-        print("[OK] Static Analysis API test completed")
-        print("[INFO] Running PDF Generation API Test")
+        logger.info("[OK] Static Analysis API test completed")
+        logger.info("[INFO] Running PDF Generation API Test")
         if platform.system() in ['Darwin', 'Linux']:
             pdfs = [
                 {"hash": "3a552566097a8de588b8184b059b0158", "scan_type": "apk"},
@@ -187,28 +188,24 @@ def api_test():
             if (resp.status_code == 200 and
                 resp._headers['content-type'][1] == "application/pdf"
                 ):
-                print("[OK] PDF Report Generated: " + pdf["hash"])
+                logger.info("[OK] PDF Report Generated: " + pdf["hash"])
             else:
-                print(err_msg % "[ERROR] Generating PDF: " + pdf["hash"])
-                print(resp.content)
+                logger.info(err_msg % "[ERROR] Generating PDF: " + pdf["hash"])
+                logger.info(resp.content)
                 failed = True
-        print("[OK] PDF Generation API test completed")
-        print("[INFO] Running JSON Report API test")
+        logger.info("[OK] PDF Generation API test completed")
+        logger.info("Running JSON Report API test")
         # JSON Report
         for pdf in pdfs:
             resp = http_client.post(
                 '/api/v1/report_json', pdf, HTTP_AUTHORIZATION=auth)
-            if (resp.status_code == 200 and
-                resp._headers[
-                            'content-type'][1] == "application/json; charset=utf-8"
-                ):
-                print("[OK] JSON Report Generated: " + pdf["hash"])
+            if (resp.status_code == 200) and (resp._headers['content-type'][1] == "application/json; charset=utf-8"):
+                logger.info("[OK] JSON Report Generated: " + pdf["hash"])
             else:
-                print(err_msg %
-                      "[ERROR] Generating JSON Response: " + pdf["hash"])
+                logger.info("[ERROR]: {} Generating JSON Response: {}".format(err_msg, pdf["hash"]))
                 failed = True
-        print("[OK] JSON Report API test completed")
-        print("[INFO] Running View Source API test")
+        logger.info("[OK] JSON Report API test completed")
+        logger.info("[INFO] Running View Source API test")
         # View Source tests
         files = [{"file": "opensecurity/helloworld/MainActivity.java", "type": "apk", "hash": "3a552566097a8de588b8184b059b0158"},
                  {"file": "helloworld.app/Info.plist", "type": "ipa", "hash": "6c23c2970551be15f32bbab0b5db0c71"},
@@ -220,15 +217,15 @@ def api_test():
             if resp.status_code == 200:
                 dat = json.loads(resp.content.decode("utf-8"))
                 if dat["title"]:
-                    print("[OK] Reading - ", sfile)
+                    logger.info("[OK] Reading - ", sfile)
                 else:
-                    print(err_msg % "[ERROR] Reading - " + sfile)
+                    logger.info(err_msg % "[ERROR] Reading - " + sfile)
                     failed = True
             else:
-                print(err_msg % "[ERROR] Reading - " + sfile)
+                logger.info(err_msg % "[ERROR] Reading - " + sfile)
                 failed = True
-        print("[OK] View Source API test completed")
-        print("[INFO] Running Delete Scan API Results test")
+        logger.info("[OK] View Source API test completed")
+        logger.info("[INFO] Running Delete Scan API Results test")
         # Deleting Scan Results
         if platform.system() in ['Darwin', 'Linux']:
             scan_md5s = ["3a552566097a8de588b8184b059b0158", "6c23c2970551be15f32bbab0b5db0c71",
@@ -245,14 +242,14 @@ def api_test():
             if resp.status_code == 200:
                 dat = json.loads(resp.content.decode("utf-8"))
                 if dat["deleted"] == "yes":
-                    print("[OK] Deleted Scan: " + md5)
+                    logger.info("[OK] Deleted Scan: " + md5)
                 else:
-                    print(err_msg % "[ERROR] Deleting Scan: " + md5)
+                    logger.info(err_msg % "[ERROR] Deleting Scan: " + md5)
                     failed = True
             else:
-                print(err_msg % "[ERROR] Deleting Scan: " + md5)
+                logger.info(err_msg % "[ERROR] Deleting Scan: " + md5)
                 failed = True
-        print("[INFO] Delete Scan Results API test completed")
+        logger.info("[INFO] Delete Scan Results API test completed")
     except:
         PrintException("[ERROR] Completing REST API Unit Test")
     return failed
@@ -277,8 +274,8 @@ def start_test(request):
     except:
         resp_code = 403
         message = "error"
-    print("\n\n[INFO] ALL TESTS COMPLETED!")
-    print("[INFO] Test Status: " + message)
+    logger.info("\n\nALL TESTS COMPLETED!")
+    logger.info("Test Status: " + message)
     return HttpResponse(json.dumps({comp: message}),
                         content_type="application/json; charset=utf-8",
                         status=resp_code)

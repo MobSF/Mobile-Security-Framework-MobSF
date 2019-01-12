@@ -9,13 +9,13 @@ from MobSF.utils import PrintException, getADB
 
 def wait(sec):
     """Wait in Seconds"""
-    print("\n[INFO] Waiting for " + str(sec) + " seconds...")
+    logger.info("Waiting for " + str(sec) + " seconds...")
     time.sleep(sec)
 
 
 def get_res():
     """Get Screen Resolution or Device or VM"""
-    print("\n[INFO] Getting Screen Resolution")
+    logger.info("Getting Screen Resolution")
     try:
         adb = getADB()
         resp = subprocess.check_output(
@@ -74,19 +74,19 @@ def adb_command(cmd_list, shell=False, silent=False):
 
 def connect():
     """Connect to VM/Device"""
-    print("\n[INFO] Connecting to VM/Device")
+    logger.info("Connecting to VM/Device")
     adb = getADB()
     subprocess.call([adb, "kill-server"])
     subprocess.call([adb, "start-server"])
-    print("\n[INFO] ADB Started")
+    logger.info("ADB Started")
     wait(5)
-    print("\n[INFO] Connecting to VM/Device")
+    logger.info("Connecting to VM/Device")
     out = subprocess.check_output([adb, "connect", get_identifier()])
     if b"unable to connect" in out:
         raise ValueError("ERROR Connecting to VM/Device. ", out.decode("utf-8").replace("\n",""))
     try:
         subprocess.call([adb, "-s", get_identifier(), "wait-for-device"])
-        print("\n[INFO] Mounting")
+        logger.info("Mounting")
         if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_REAL_DEVICE":
             adb_command(["su", "-c", "mount", "-o", "rw,remount,rw", "/system"], True)
         else:
@@ -99,18 +99,18 @@ def connect():
 
 def install_and_run(apk_path, package, launcher, is_activity):
     """Install APK and Run it"""
-    print("\n[INFO] Starting App for Dynamic Analysis")
+    logger.info("Starting App for Dynamic Analysis")
     try:
         adb = getADB()
-        print("\n[INFO] Installing APK")
+        logger.info("Installing APK")
         adb_command(["install", "-r", apk_path])
         if is_activity:
             run_app = package + "/" + launcher
-            print("\n[INFO] Launching APK Main Activity")
+            logger.info("Launching APK Main Activity")
             adb_command(["am", "start", "-n", run_app], True)
         else:
-            print("\n[INFO] App Doesn't have a Main Activity")
+            logger.info("App Doesn't have a Main Activity")
             # Handle Service or Give Choice to Select in Future.
-        print("[INFO] Testing Environment is Ready!")
+        logger.info("Testing Environment is Ready!")
     except:
         PrintException("[ERROR]  Starting App for Dynamic Analysis")

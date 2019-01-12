@@ -3,9 +3,11 @@
 import os
 import io
 import struct
+import logging
 from MobSF.utils import (
     PrintException
 )
+logger = logging.getLogger(__name__)
 
 
 class tinyELFFile(object):
@@ -224,7 +226,7 @@ def check_elf_built(f):
 def res_analysis(app_dir):
     """Perform the elf analysis."""
     try:
-        print("[INFO] Static Android Resourse Analysis Started")
+        logger.info("Static Android Resource Analysis Started")
         elf_desc = {
             'html_infected':
                 (
@@ -272,7 +274,7 @@ def res_analysis(app_dir):
 def elf_analysis(app_dir: str) -> list:
     """Perform the elf analysis."""
     try:
-        print("[INFO] Static Android Binary Analysis Started")
+        logger.info("Static Android Binary Analysis Started")
         elf_desc = {
             'elf_no_pi':
                 (

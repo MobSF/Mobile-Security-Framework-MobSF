@@ -18,11 +18,10 @@ import ast
 import unicodedata
 import shutil
 import requests
-
-
+import logging
 from django.shortcuts import render
-
 from . import settings
+logger = logging.getLogger(__name__)
 
 
 class Color(object):
@@ -57,32 +56,31 @@ def api_key():
     """Print REST API Key"""
 
     if os.environ.get('MOBSF_API_KEY'):
-        print("\nAPI Key read from environment variable")
+        logger.info("\nAPI Key read from environment variable")
         return os.environ['MOBSF_API_KEY']
 
     secret_file = os.path.join(settings.MobSF_HOME, "secret")
     if isFileExists(secret_file):
         try:
-            api_key = open(secret_file).read().strip()
-            return gen_sha256_hash(api_key)
-        except:
+            _api_key = open(secret_file).read().strip()
+            return gen_sha256_hash(_api_key)
+        except Exception:
             PrintException("[ERROR] Cannot Read API Key")
 
 
 def printMobSFverison():
     """Print MobSF Version"""
-    print(settings.BANNER)
+    logger.info(settings.BANNER)
     if platform.system() == "Windows":
-        print('\n\nMobile Security Framework ' + settings.MOBSF_VER)
-        print("\nREST API Key: " + api_key())
+        logger.info('Mobile Security Framework ' + settings.MOBSF_VER)
+        print("REST API Key: " + api_key())
     else:
-        print('\n\n\033[1m\033[34mMobile Security Framework ' +
-              settings.MOBSF_VER + '\033[0m')
-        print("\nREST API Key: " + Color.BOLD + api_key() + Color.END)
-    print("OS: " + platform.system())
-    print("Platform: " + platform.platform())
+        logger.info('\033[1m\033[34mMobile Security Framework ' + settings.MOBSF_VER + '\033[0m')
+        print("REST API Key: " + Color.BOLD + api_key() + Color.END)
+    logger.info("OS: " + platform.system())
+    logger.info("Platform: " + platform.platform())
     if platform.dist()[0]:
-        print("Dist: " + str(platform.dist()))
+        logger.info("Dist: " + str(platform.dist()))
     FindJava(True)
     FindVbox(True)
     check_basic_env()
@@ -92,26 +90,25 @@ def printMobSFverison():
 
 def check_update():
     try:
-        print("[INFO] Checking for Update.")
+        logger.info("Checking for Update.")
         github_url = "https://raw.githubusercontent.com/MobSF/Mobile-Security-Framework-MobSF/master/MobSF/settings.py"
         try:
             proxies, verify = upstream_proxy('https')
-        except:
+        except Exception:
             PrintException("[ERROR] Setting upstream proxy")
-        response = requests.get(github_url, timeout=5,
-                                proxies=proxies, verify=verify)
+        response = requests.get(github_url, timeout=5, proxies=proxies, verify=verify)
         html = str(response.text).split("\n")
         for line in html:
             if line.startswith("MOBSF_VER"):
                 line = line.replace("MOBSF_VER", "").replace('"', '')
                 line = line.replace("=", "").strip()
                 if line != settings.MOBSF_VER:
-                    print("""\n[WARN] A new version of MobSF is available,
+                    logger.info("""\n[WARN] A new version of MobSF is available,
 Please update from master branch or check for new releases.\n""")
                 else:
-                    print("[INFO] No updates available.")
+                    logger.info("No updates available.")
     except requests.exceptions.HTTPError as err:
-        print("\n[WARN] Cannot check for updates.. No Internet Connection Found.")
+        logger.warning("\n[WARN] Cannot check for updates.. No Internet Connection Found.")
         return
     except:
         PrintException("[ERROR] Cannot Check for updates.")
@@ -236,10 +233,11 @@ def FindVbox(debug=False):
                     if os.path.isfile(path):
                         return path
             if debug:
-                print("\n[WARNING] Could not find VirtualBox path.")
+                logger.info("\n[WARNING] Could not find VirtualBox path.")
     except:
         if debug:
             PrintException("[ERROR] Cannot find VirtualBox path.")
+
 
 # Maintain JDK Version
 JAVA_VER = '1.7|1.8|1.9|2.0|2.1|2.2|2.3'
@@ -280,7 +278,7 @@ def FindJava(debug=False):
                 return settings.JAVA_DIRECTORY + "/"
         elif platform.system() == "Windows":
             if debug:
-                print("\n[INFO] Finding JDK Location in Windows....")
+                logger.info("Finding JDK Location in Windows....")
             # JDK 7 jdk1.7.0_17/bin/
             for java_path in win_java_paths:
                 if os.path.isdir(java_path):
@@ -291,8 +289,7 @@ def FindJava(debug=False):
                             dat = RunProcess(args)
                             if "java" in dat:
                                 if debug:
-                                    print(
-                                        "\n[INFO] Oracle Java JDK is installed!")
+                                    logger.info("Oracle Java JDK is installed!")
                                 return win_java_path
             for env in ["JDK_HOME", "JAVA_HOME"]:
                 java_home = os.environ.get(env)
@@ -302,15 +299,15 @@ def FindJava(debug=False):
                     dat = RunProcess(args)
                     if "java" in dat:
                         if debug:
-                            print("\n[INFO] Oracle Java is installed!")
+                            logger.info("Oracle Java is installed!")
                         return win_java_path
 
             if debug:
-                print(err_msg1)
+                logger.info(err_msg1)
             return "java"
         else:
             if debug:
-                print("[INFO] Finding JDK Location in Linux/MAC....")
+                logger.info("Finding JDK Location in Linux/MAC....")
             # Check in Environment Variables
             for env in ["JDK_HOME", "JAVA_HOME"]:
                 java_home = os.environ.get(env)
@@ -320,7 +317,7 @@ def FindJava(debug=False):
                     dat = RunProcess(args)
                     if "oracle" in dat:
                         if debug:
-                            print("\n[INFO] Oracle Java is installed!")
+                            logger.info("Oracle Java is installed!")
                         return lm_java_path
             mac_linux_java_dir = "/usr/bin/"
             args = [mac_linux_java_dir + "java"]
@@ -331,12 +328,12 @@ def FindJava(debug=False):
                 f_line = dat.split("\n")[0]
                 if re.findall(java_versions, f_line):
                     if debug:
-                        print("[INFO] JDK 1.7 or above is available")
+                        logger.info("JDK 1.7 or above is available")
                     return mac_linux_java_dir
                 else:
                     err_msg = "[ERROR] Please install Oracle JDK 1.7 or above"
                     if debug:
-                        print(Color.BOLD + Color.RED + err_msg + Color.END)
+                        logger.error(Color.BOLD + Color.RED + err_msg + Color.END)
                     return "java"
             else:
                 args = [mac_linux_java_dir + "java", '-version']
@@ -344,12 +341,12 @@ def FindJava(debug=False):
                 f_line = dat.split("\n")[0]
                 if re.findall(java_versions, f_line):
                     if debug:
-                        print("[INFO] JDK 1.7 or above is available")
+                        logger.info("JDK 1.7 or above is available")
                     return mac_linux_java_dir
                 else:
                     err_msg = "[ERROR] Please install Oracle JDK 1.7 or above"
                     if debug:
-                        print(Color.BOLD + Color.RED + err_msg + Color.END)
+                        logger.info(Color.BOLD + Color.RED + err_msg + Color.END)
                     return "java"
 
     except:
@@ -393,19 +390,19 @@ def PrintException(msg, web=False):
         ' ({0}, LINE {1} "{2}"): {3}'.format(
             filename, lineno, line.strip(), exc_obj)
     if platform.system() == "Windows":
-        print(dat)
+        logger.info(dat)
     else:
         if web:
-            print(Color.BOLD + Color.ORANGE + dat + Color.END)
+            logger.info(Color.BOLD + Color.ORANGE + dat + Color.END)
         else:
-            print(Color.BOLD + Color.RED + dat + Color.END)
+            logger.info(Color.BOLD + Color.RED + dat + Color.END)
     with open(LOGPATH + 'MobSF.log', 'a') as f:
         f.write(dat)
 
 
 def print_n_send_error_response(request, msg, api, exp='Error Description'):
     """Print and log errors"""
-    print(Color.BOLD + Color.RED + '[ERROR] ' + msg + Color.END)
+    logger.info(Color.BOLD + Color.RED + '[ERROR] ' + msg + Color.END)
     time_stamp = time.time()
     formatted_tms = datetime.datetime.fromtimestamp(
         time_stamp).strftime('%Y-%m-%d %H:%M:%S')
@@ -544,7 +541,7 @@ def genRandom():
 def zipdir(path, zip_file):
     """Zip a directory."""
     try:
-        print("[INFO] Zipping")
+        logger.info("Zipping")
         # pylint: disable=unused-variable
         # Needed by os.walk
         for root, _sub_dir, files in os.walk(path):
@@ -588,14 +585,14 @@ def adb_binary_or32bit_support():
             " ADB binary is not compatible with your OS."\
             "\nPlease set the 'ADB_BINARY' path in settings.py"
         if platform.system != "Windows":
-            print(Color.BOLD + Color.ORANGE + msg + Color.END)
+            logger.info(Color.BOLD + Color.ORANGE + msg + Color.END)
         else:
-            print(msg)
+            logger.info(msg)
 
 
 def check_basic_env():
     """Check if we have basic env for MobSF to run"""
-    print("[INFO] MobSF Basic Environment Check")
+    logger.info("MobSF Basic Environment Check")
     try:
         import capfuzz
     except ImportError:
@@ -611,9 +608,9 @@ def check_basic_env():
     else:
         java = settings.JAVA_PATH + 'java'
     if not isFileExists(java):
-        print("[ERROR] Oracle Java is not available or `JAVA_DIRECTORY` in settings.py is configured incorrectly!")
-        print("JAVA_DIRECTORY=%s" % settings.JAVA_DIRECTORY)
-        print('''Example Configuration:
+        logger.info("[ERROR] Oracle Java is not available or `JAVA_DIRECTORY` in settings.py is configured incorrectly!")
+        logger.info("JAVA_DIRECTORY=%s" % settings.JAVA_DIRECTORY)
+        logger.info('''Example Configuration:
                  JAVA_DIRECTORY = "C:/Program Files/Java/jdk1.7.0_17/bin/"
                  JAVA_DIRECTORY = "/usr/bin/"
         ''')

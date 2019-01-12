@@ -8,11 +8,13 @@ import io
 import json
 import ntpath
 import sqlite3
-
+import logging
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.utils.html import escape
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 import biplist
 from MobSF.forms import (
@@ -49,7 +51,7 @@ def set_ext_api(file_path):
 def run(request, api=False):
     """View iOS Files"""
     try:
-        print("[INFO] View iOS Source File")
+        logger.info("View iOS Source File")
         file_format = "cpp"
         if api:
             fil = request.POST['file']
@@ -135,7 +137,7 @@ def run(request, api=False):
 def read_sqlite(sqlite_file):
     """Read SQlite File"""
     try:
-        print("[INFO] Dumping SQLITE Database")
+        logger.info("Dumping SQLITE Database")
         data = ''
         con = sqlite3.connect(sqlite_file)
         cur = con.cursor()

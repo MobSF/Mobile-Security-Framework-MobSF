@@ -14,7 +14,7 @@ from scripts.start_avd import main as start_avd_cold
 
 def stop_avd():
     """Stop AVD"""
-    print("\n[INFO] Stopping MobSF Emulator")
+    logger.info("Stopping MobSF Emulator")
     try:
         adb_command(['emu', 'kill'], silent=True)
     except:
@@ -23,7 +23,7 @@ def stop_avd():
 
 def start_avd_from_snapshot():
     """Start AVD"""
-    print("\n[INFO] Starting MobSF Emulator")
+    logger.info("Starting MobSF Emulator")
     try:
         if platform.system() == 'Darwin':
             # There is a strage error in mac with the dyld one in a while..
@@ -73,7 +73,7 @@ def refresh_avd():
             print("\n[ERROR] AVD binaries not configured, please refer to the official documentation")
             return False
 
-    print("\n[INFO] Refreshing MobSF Emulator")
+    logger.info("Refreshing MobSF Emulator")
     try:
         # Stop existing emulator
         stop_avd()
@@ -81,14 +81,14 @@ def refresh_avd():
         # Check if configuration specifies cold or warm boot
         if settings.AVD_COLD_BOOT:
             if start_avd_cold():
-                print("\n[INFO] AVD has been started successfully")
+                logger.info("AVD has been started successfully")
                 return True
         else:
             if not settings.AVD_SNAPSHOT:
                 print("\n[ERROR] AVD not configured properly - AVD_SNAPSHOT is missing")
                 return False
             if start_avd_from_snapshot():
-                print("\n[INFO] AVD has been loaded from snapshot successfully")
+                logger.info("AVD has been loaded from snapshot successfully")
                 return True
         return False
 

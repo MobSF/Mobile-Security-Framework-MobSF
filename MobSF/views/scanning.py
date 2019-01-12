@@ -2,12 +2,13 @@
 # from MobSF.views import handle_uploaded_file, add_to_recent_scan
 import hashlib
 import os
-
+import logging
 from django.conf import settings
 from django.utils import timezone
 
 from MobSF.utils import PrintException
 from StaticAnalyzer.models import RecentScansDB
+logger = logging.getLogger(__name__)
 
 
 def add_to_recent_scan(name, md5, url):
@@ -64,7 +65,7 @@ class Scanning(object):
     
         add_to_recent_scan(self.file_name, md5, data['url'])
 
-        print("\n[INFO] Performing Static Analysis of Android APK")
+        logger.info("Performing Static Analysis of Android APK")
         return data
 
     def scan_zip(self):
@@ -82,7 +83,7 @@ class Scanning(object):
         }
 
         add_to_recent_scan(self.file_name, md5, data['url'])
-        print("\n[INFO] Performing Static Analysis of Android/iOS Source Code")
+        logger.info("Performing Static Analysis of Android/iOS Source Code")
         return data
 
     def scan_ipa(self):
@@ -99,7 +100,7 @@ class Scanning(object):
         }
 
         add_to_recent_scan(self.file_name, md5, data['url'])
-        print("\n[INFO] Performing Static Analysis of iOS IPA")
+        logger.info("Performing Static Analysis of iOS IPA")
         return data
 
     def scan_appx(self):
@@ -115,5 +116,5 @@ class Scanning(object):
         }
         
         add_to_recent_scan(self.file_name, md5, data['url'])
-        print("\n[INFO] Performing Static Analysis of Windows APP")
+        logger.info("Performing Static Analysis of Windows APP")
         return data

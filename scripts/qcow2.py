@@ -74,7 +74,7 @@ class Qcow2():
                         zeros_to_append = len(self.tmp_backing_str) - system_image_str_len
                         write_fd.write(b'\x00' * zeros_to_append)
 
-                print("[INFO] New system path was written to qcow file")
+                logger.info("New system path was written to qcow file")
                 return True
         except:
             print("[ERROR] Qcow2-write_new_system_path_inside_qcow: \r\n{}".format(traceback.format_exc()))

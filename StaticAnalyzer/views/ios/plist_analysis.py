@@ -2,6 +2,7 @@
 """Module for iOS App Plist Analysis."""
 
 import os
+import logging
 import plistlib
 from MobSF.utils import (
     PrintException,
@@ -11,6 +12,7 @@ from biplist import (
     readPlist,
     writePlistToString
 )
+logger = logging.getLogger(__name__)
 
 
 def convert_bin_xml(bin_xml_file):
@@ -21,10 +23,10 @@ def convert_bin_xml(bin_xml_file):
 
 
 def __check_permissions(p_list):
-    '''Check the permissions the app requests.'''
+    """Check the permissions the app requests."""
     # List taken from
     # https://developer.apple.com/library/content/documentation/General/Reference/InfoPlistKeyReference/Articles/CocoaKeys.html
-    print("[INFO] Checking Permissions")
+    logger.info("Checking Permissions")
     permissions = []
     if "NSAppleMusicUsageDescription" in p_list:
         permissions.append({
@@ -127,8 +129,8 @@ def __check_permissions(p_list):
 
 
 def __check_insecure_connections(p_list):
-    '''Check info.plist for insecure connection configurations.'''
-    print("[INFO] Checking for Insecure Connections")
+    """Check info.plist for insecure connection configurations."""
+    logger.info("Checking for Insecure Connections")
 
     insecure_connections = []
     if 'NSAppTransportSecurity' in p_list:
@@ -145,7 +147,7 @@ def __check_insecure_connections(p_list):
 def plist_analysis(src, is_source):
     """Plist Analysis"""
     try:
-        print("[INFO] iOS Info.plist Analysis Started")
+        logger.info("iOS Info.plist Analysis Started")
         plist_info = {
             "bin_name": "",
             "bin": "",
@@ -164,8 +166,9 @@ def plist_analysis(src, is_source):
             "bundle_supported_platforms": [],
             "bundle_localizations": []
         }
+        plist_file = None
         if is_source:
-            print("[INFO] Finding Info.plist in iOS Source")
+            logger.info("Finding Info.plist in iOS Source")
             for ifile in os.listdir(src):
                 if ifile.endswith(".xcodeproj"):
                     app_name = ifile.replace(".xcodeproj", "")
@@ -177,7 +180,7 @@ def plist_analysis(src, is_source):
                         plist_file = os.path.join(dirpath, name)
                         break
         else:
-            print("[INFO] Finding Info.plist in iOS Binary")
+            logger.info("Finding Info.plist in iOS Binary")
             dirs = os.listdir(src)
             dot_app_dir = ""
             for dir_ in dirs:
@@ -187,7 +190,7 @@ def plist_analysis(src, is_source):
             bin_dir = os.path.join(src, dot_app_dir) # Full Dir/Payload/x.app
             plist_file = os.path.join(bin_dir, "Info.plist")
         if not isFileExists(plist_file):
-            print("[WARNING] Cannot find Info.plist file. Skipping Plist Analysis.")
+            logger.warning("Cannot find Info.plist file. Skipping Plist Analysis.")
         else:
             #Generic Plist Analysis
             plist_obj = plistlib.readPlist(plist_file)

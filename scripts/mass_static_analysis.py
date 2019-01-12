@@ -19,7 +19,7 @@ def is_server_up(url):
 
 def start_scan(directory, server_url, apikey, rescan='0'):
     print("\nLooking for Android/iOS/Windows binaries or source code in : " + directory)
-    print("[INFO] Uploading to MobSF Server")
+    logger.info("Uploading to MobSF Server")
     uploaded = []
     MIME = {
         ".apk": 'application/octet-stream',
@@ -41,9 +41,9 @@ def start_scan(directory, server_url, apikey, rescan='0'):
             else:
                 print("[ERROR] Performing Upload: " + filename)
 
-    print("[INFO] Running Static Analysis")
+    logger.info("Running Static Analysis")
     for upl in uploaded:
-        print("[INFO] Started Static Analysis on: ", upl["file_name"])
+        logger.info("Started Static Analysis on: ", upl["file_name"])
         if rescan == '1':
             upl["re_scan"] = 1
         response = requests.post(
