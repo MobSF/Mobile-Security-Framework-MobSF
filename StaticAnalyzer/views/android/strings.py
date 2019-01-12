@@ -3,6 +3,7 @@
 
 import io
 import os
+import logging
 import subprocess
 from androguard.core.bytecodes import apk
 
@@ -11,12 +12,13 @@ from django.conf import settings
 from MobSF.utils import (
     PrintException
 )
+logger = logging.getLogger(__name__)
 
 
 def strings_jar(app_file, app_dir):
     """Extract the strings from an app."""
     try:
-        print("[INFO] Extracting Strings from APK")
+        logger.info("Extracting Strings from APK")
         dat = []
         apk_file = os.path.join(app_dir, app_file)
         and_a = apk.APK(apk_file)

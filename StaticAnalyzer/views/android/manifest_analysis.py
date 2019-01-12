@@ -4,7 +4,7 @@
 import io
 import os
 import subprocess
-
+import logging
 from xml.dom import minidom
 
 from django.conf import settings
@@ -16,8 +16,8 @@ from MobSF.utils import (
 
 # pylint: disable=E0401
 from .dvm_permissions import DVM_PERMISSIONS
-
 from StaticAnalyzer.views.android import android_manifest_desc
+logger = logging.getLogger(__name__)
 
 
 ANDROID_4_2_LEVEL = 17
@@ -30,7 +30,7 @@ def get_manifest(app_path, app_dir, tools_dir, typ, binary):
         manifest = None
         dat = read_manifest(app_dir, app_path, tools_dir, typ, binary)
         try:
-            print("[INFO] Parsing AndroidManifest.xml")
+            logger.info("Parsing AndroidManifest.xml")
             manifest = minidom.parseString(dat)
         except:
             PrintException(
@@ -44,7 +44,7 @@ def get_manifest(app_path, app_dir, tools_dir, typ, binary):
                     r'platformBuildVersionName="Failed XML Parsing" ></manifest>'
                 )
             )
-            print("[WARNING] Using Fake XML to continue the Analysis")
+            logger.info("[WARNING] Using Fake XML to continue the Analysis")
         return manifest
     except:
         PrintException("[ERROR] Parsing Manifest file")
@@ -53,7 +53,7 @@ def get_manifest(app_path, app_dir, tools_dir, typ, binary):
 def manifest_data(mfxml):
     """Extract manifest data."""
     try:
-        print("[INFO] Extracting Manifest Data")
+        logger.info("Extracting Manifest Data")
         svc = []
         act = []
         brd = []
@@ -231,7 +231,7 @@ def manifest_analysis(mfxml, man_data_dic):
     """Analyse manifest file."""
     # pylint: disable=C0301
     try:
-        print("[INFO] Manifest Analysis Started")
+        logger.info("Manifest Analysis Started")
         exp_count = dict.fromkeys(["act", "ser", "bro", "cnt"], 0)
         applications = mfxml.getElementsByTagName("application")
         datas = mfxml.getElementsByTagName("data")
@@ -841,7 +841,7 @@ def read_manifest(app_dir, app_path, tools_dir, typ, apk):
         if apk:
             manifest = get_manifest_file(app_path, app_dir, tools_dir)
             if isFileExists(manifest):
-                print("[INFO] Reading Android Manifest")
+                logger.info("Reading Android Manifest")
                 with io.open(
                     manifest,
                     mode='r',
@@ -850,7 +850,7 @@ def read_manifest(app_dir, app_path, tools_dir, typ, apk):
                 ) as file_pointer:
                     dat = file_pointer.read()
         else:
-            print("[INFO] Reading Manifest from Source")
+            logger.info("Reading Manifest from Source")
             if typ == "eclipse":
                 manifest = os.path.join(app_dir, "AndroidManifest.xml")
             elif typ == "studio":
@@ -884,7 +884,7 @@ def get_manifest_file(app_path, app_dir, tools_dir):
         if isFileExists(manifest):
             # APKTool already created readable XML
             return manifest
-        print("[INFO] Converting AXML to XML")
+        logger.info("Converting AXML to XML")
         subprocess.check_output(args)
         return manifest
     except:

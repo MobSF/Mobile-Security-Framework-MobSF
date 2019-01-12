@@ -13,6 +13,9 @@ from MobSF.utils import (
 )
 
 from StaticAnalyzer.views.android.manifest_analysis import read_manifest
+import logging
+logger = logging.getLogger(__name__)
+
 
 def run(request):
     """View the manifest."""

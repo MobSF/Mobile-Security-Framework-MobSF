@@ -18,6 +18,8 @@ from StaticAnalyzer.views.android.win_fixes import (
     win_fix_python3,
     win_fix_java
 )
+import logging
+logger = logging.getLogger(__name__)
 
 
 def get_dex_files(app_dir):
@@ -25,23 +27,25 @@ def get_dex_files(app_dir):
     glob_pattern = app_dir + "*.dex"
     return glob.glob(glob_pattern)
 
+
 def get_jar_files(app_dir):
     """Get all Dex Files for analysis"""
     glob_pattern = app_dir + "*.jar"
     return glob.glob(glob_pattern)
 
+
 def dex_2_jar(app_path, app_dir, tools_dir):
     """Run dex2jar."""
     try:
-        print("[INFO] DEX -> JAR")
+        logger.info("DEX -> JAR")
         working_dir = None
         args = []
 
         if settings.JAR_CONVERTER == "d2j":
-            print("[INFO] Using JAR converter - dex2jar")
+            logger.info("Using JAR converter - dex2jar")
             dexes = get_dex_files(app_dir)
             for idx, dex in enumerate(dexes):
-                print ("[INFO] Converting " + dex + " to JAR")
+                logger.info("Converting " + dex + " to JAR")
                 if len(settings.DEX2JAR_BINARY) > 0 and isFileExists(settings.DEX2JAR_BINARY):
                     d2j = settings.DEX2JAR_BINARY
                 else:
@@ -63,7 +67,7 @@ def dex_2_jar(app_path, app_dir, tools_dir):
                 subprocess.call(args)
 
         elif settings.JAR_CONVERTER == "enjarify":
-            print("[INFO] Using JAR converter - Google enjarify")
+            logger.info("Using JAR converter - Google enjarify")
             if len(settings.ENJARIFY_DIRECTORY) > 0 and isDirExists(settings.ENJARIFY_DIRECTORY):
                 working_dir = settings.ENJARIFY_DIRECTORY
             else:
@@ -96,10 +100,10 @@ def dex_2_jar(app_path, app_dir, tools_dir):
 def dex_2_smali(app_dir, tools_dir):
     """Run dex2smali"""
     try:
-        print("[INFO] DEX -> SMALI")
+        logger.info("DEX -> SMALI")
         dexes = get_dex_files(app_dir)
         for dex_path in dexes:
-            print("[INFO] Converting " + dex_path + " to Smali Code")
+            logger.info("Converting " + dex_path + " to Smali Code")
             if len(settings.BACKSMALI_BINARY) > 0 and isFileExists(settings.BACKSMALI_BINARY):
                 bs_path = settings.BACKSMALI_BINARY
             else:
@@ -117,11 +121,11 @@ def dex_2_smali(app_dir, tools_dir):
 def jar_2_java(app_dir, tools_dir):
     """Conver jar to java."""
     try:
-        print("[INFO] JAR -> JAVA")
+        logger.info("JAR -> JAVA")
         jar_files = get_jar_files(app_dir)
         output = os.path.join(app_dir, 'java_source/')
         for jar_path in jar_files:
-            print ("[INFO] Decompiling " + jar_path + " to Java Code")
+            logger.info("Decompiling {} to Java Code".format(jar_path))
             if settings.DECOMPILER == 'jd-core':
                 if (
                         len(settings.JD_CORE_DECOMPILER_BINARY) > 0 and

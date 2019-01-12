@@ -7,9 +7,11 @@ import os
 import platform
 import fnmatch
 import string
-
+import logging
 from django.conf import settings
 from androguard.core.bytecodes import apk
+logger = logging.getLogger(__name__)
+
 
 # relative to res folder
 KNOWN_PATHS = [
@@ -69,7 +71,7 @@ def find_icon_path_zip(res_dir, icon_paths_from_manifest):
         returns an empty string on fail or a full path"""
     global KNOWN_MIPMAP_SIZES
     try:
-        print("[INFO] Guessing icon path")
+        logger.info("Guessing icon path")
         for icon_path in icon_paths_from_manifest:
             if icon_path.startswith('@'):
                 path_array = icon_path.strip('@').split(os.sep)
@@ -109,7 +111,7 @@ def get_icon(apk_path, res_dir):
     """Returns a dict with isHidden boolean and a relative path
         path is a full path (not relative to resource folder) """
     try:
-        print("[INFO] Fetching icon path")
+        logger.info("Fetching icon path")
         a = apk.APK(apk_path)
         icon_resolution = 0xFFFE - 1
         icon_name = a.get_app_icon(max_dpi=icon_resolution)
