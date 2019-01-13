@@ -20,7 +20,7 @@ from MobSF.utils import (
 def ios_source_analysis(src):
     """iOS Objective-C Code Analysis"""
     try:
-        print("[INFO] Starting iOS Source Code and PLIST Analysis")
+        logger.info("Starting iOS Source Code and PLIST Analysis")
         api_rules = ios_apis.CODE_APIS
         code_rules = ios_rules.CODE_RULES
         code_findings = {}
@@ -56,9 +56,9 @@ def ios_source_analysis(src):
                     url_n_file.extend(urls_nf)
                     email_n_file.extend(emails_nf)      
         # Domain Extraction and Malware Check
-        print("[INFO] Performing Malware Check on extracted Domains")
+        logger.info("Performing Malware Check on extracted Domains")
         domains = malware_check(list(set(url_list)))
-        print("[INFO] Finished Code Analysis, Email and URL Extraction")
+        logger.info("Finished Code Analysis, Email and URL Extraction")
         code_analysis_dict = {
             'api': api_findings,
             'code_anal': code_findings,

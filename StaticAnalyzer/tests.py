@@ -21,7 +21,7 @@ RESCAN = False
 
 def static_analysis_test():
     """Test Static Analyzer"""
-    logger.info("\n[INFO] Running Static Analyzer Unit test")
+    logger.info("Running Static Analyzer Unit test")
     failed = False
     err_msg = '%s'
     if platform.system() != "Windows":
@@ -43,7 +43,7 @@ def static_analysis_test():
                     logger.info(err_msg % "[ERROR] Performing Upload: " + filename)
                     failed = True
         logger.info("[OK] Completed Upload test")
-        logger.info("[INFO] Running Static Analysis Test")
+        logger.info("Running Static Analysis Test")
         for upl in uploaded:
             if RESCAN:
                 upl = "/" + upl + "&rescan=1"
@@ -56,7 +56,7 @@ def static_analysis_test():
                 logger.info(err_msg % "[ERROR] Performing Static Analysis: " + upl)
                 failed = True
         logger.info("[OK] Static Analysis test completed")
-        logger.info("[INFO] Running PDF Generation Test")
+        logger.info("Running PDF Generation Test")
         if platform.system() in ['Darwin', 'Linux']:
             pdfs = [
                 "/PDF/?md5=3a552566097a8de588b8184b059b0158&type=APK",
@@ -194,19 +194,15 @@ def api_test():
                 logger.info(resp.content)
                 failed = True
         logger.info("[OK] PDF Generation API test completed")
-        logger.info("[INFO] Running JSON Report API test")
+        logger.info("Running JSON Report API test")
         # JSON Report
         for pdf in pdfs:
             resp = http_client.post(
                 '/api/v1/report_json', pdf, HTTP_AUTHORIZATION=auth)
-            if (resp.status_code == 200 and
-                resp._headers[
-                            'content-type'][1] == "application/json; charset=utf-8"
-                ):
+            if (resp.status_code == 200) and (resp._headers['content-type'][1] == "application/json; charset=utf-8"):
                 logger.info("[OK] JSON Report Generated: " + pdf["hash"])
             else:
-                logger.info(err_msg %
-                      "[ERROR] Generating JSON Response: " + pdf["hash"])
+                logger.info("[ERROR]: {} Generating JSON Response: {}".format(err_msg, pdf["hash"]))
                 failed = True
         logger.info("[OK] JSON Report API test completed")
         logger.info("[INFO] Running View Source API test")
@@ -278,8 +274,8 @@ def start_test(request):
     except:
         resp_code = 403
         message = "error"
-    logger.info("\n\n[INFO] ALL TESTS COMPLETED!")
-    logger.info("[INFO] Test Status: " + message)
+    logger.info("\n\nALL TESTS COMPLETED!")
+    logger.info("Test Status: " + message)
     return HttpResponse(json.dumps({comp: message}),
                         content_type="application/json; charset=utf-8",
                         status=resp_code)

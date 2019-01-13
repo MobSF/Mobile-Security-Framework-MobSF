@@ -23,7 +23,7 @@ def execute_cmd(args, ret=False):
     Execute Commands
     """
     try:
-        print("\n[INFO] Executing Command - " + ' '.join(args))
+        logger.info("Executing Command - " + ' '.join(args))
         if ret:
             return subprocess.check_output(args)
         else:
@@ -122,40 +122,40 @@ def main():
         fake_cpuinfo = os.path.join(TOOLSDIR, 'onDevice/antivm/fake-cpuinfo')
         fake_drivers = os.path.join(TOOLSDIR, 'onDevice/antivm/fake-drivers')
 
-        print("\n[INFO] Installing MobSF DataPusher")
+        logger.info("Installing MobSF DataPusher")
         execute_cmd([get_adb(), "-s", adbconnect,
                      "install", "-r", data_pusher])
-        print("\n[INFO] Installing MobSF ScreenCast")
+        logger.info("Installing MobSF ScreenCast")
         execute_cmd([get_adb(), "-s", adbconnect,
                      "install", "-r", screen_cast])
-        print("\n[INFO] Installing MobSF Clipboard Dumper")
+        logger.info("Installing MobSF Clipboard Dumper")
         execute_cmd([get_adb(), "-s", adbconnect, "install", "-r", clip_dump])
-        print("\n[INFO] Copying hooks.json")
+        logger.info("Copying hooks.json")
         execute_cmd([get_adb(), "-s", adbconnect,
                      "push", hooks, "/data/local/tmp/"])
-        print("\n[INFO] Installing Xposed Framework")
+        logger.info("Installing Xposed Framework")
         execute_cmd([get_adb(), "-s", adbconnect, "install", "-r", xposed])
-        print("\n[INFO] Installing Droidmon API Analyzer")
+        logger.info("Installing Droidmon API Analyzer")
         execute_cmd([get_adb(), "-s", adbconnect, "install", "-r", droidmon])
-        print("\n[INFO] Installing JustTrustMe")
+        logger.info("Installing JustTrustMe")
         execute_cmd([get_adb(), "-s", adbconnect, "install", "-r", justrustme])
-        print("\n[INFO] Installing RootCloak")
+        logger.info("Installing RootCloak")
         execute_cmd([get_adb(), "-s", adbconnect, "install", "-r", rootcloak])
 
         if vm_or_ip == TYPE_VM:
-            print("\n[INFO] Installing Android BluePill")
+            logger.info("Installing Android BluePill")
             execute_cmd([get_adb(), "-s", adbconnect,
                          "install", "-r", bluepill])
-            print("\n[INFO] Copying fake-build.prop")
+            logger.info("Copying fake-build.prop")
             execute_cmd([get_adb(), "-s", adbconnect, "push",
                          fake_build, "/data/local/tmp/"])
-            print("\n[INFO] Copying fake-cpuinfo")
+            logger.info("Copying fake-cpuinfo")
             execute_cmd([get_adb(), "-s", adbconnect, "push",
                          fake_cpuinfo, "/data/local/tmp/"])
-            print("\n[INFO] Copying fake-drivers")
+            logger.info("Copying fake-drivers")
             execute_cmd([get_adb(), "-s", adbconnect, "push",
                          fake_drivers, "/data/local/tmp/"])
-        print("\n[INFO] Launching Xposed Framework.")
+        logger.info("Launching Xposed Framework.")
         xposed_installer = ("de.robv.android.xposed.installer/"
                             "de.robv.android.xposed.installer.WelcomeActivity")
         execute_cmd([get_adb(), "-s", adbconnect, "shell", "am", "start", "-n",
@@ -167,7 +167,7 @@ def main():
         else:
             print("\n 1 .Install the Framework\n 2. Restart the device\n "
                   "3. Enable Droidmon, JustTrustMe and RootCloak.")
-        print("\n[INFO] MobSFy Script Executed Successfully")
+        logger.info("MobSFy Script Executed Successfully")
     except Exception as exp:
         print("\n[ERROR] Error occured - " + str(exp))
         sys.exit(0)

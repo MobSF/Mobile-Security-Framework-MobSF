@@ -26,7 +26,7 @@ def print_log(msg, log_type='INFO'):
 
 def execute_cmd(args, ret=False):
     try:
-        print("\n[INFO] Executing Command - " + ' '.join(args))
+        logger.info("Executing Command - " + ' '.join(args))
         if ret:
             return subprocess.check_output(args)
         else:

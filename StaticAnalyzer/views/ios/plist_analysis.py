@@ -24,7 +24,7 @@ def __check_permissions(p_list):
     '''Check the permissions the app requests.'''
     # List taken from
     # https://developer.apple.com/library/content/documentation/General/Reference/InfoPlistKeyReference/Articles/CocoaKeys.html
-    print("[INFO] Checking Permissions")
+    logger.info("Checking Permissions")
     permissions = []
     if "NSAppleMusicUsageDescription" in p_list:
         permissions.append({
@@ -128,7 +128,7 @@ def __check_permissions(p_list):
 
 def __check_insecure_connections(p_list):
     '''Check info.plist for insecure connection configurations.'''
-    print("[INFO] Checking for Insecure Connections")
+    logger.info("Checking for Insecure Connections")
 
     insecure_connections = []
     if 'NSAppTransportSecurity' in p_list:
@@ -145,7 +145,7 @@ def __check_insecure_connections(p_list):
 def plist_analysis(src, is_source):
     """Plist Analysis"""
     try:
-        print("[INFO] iOS Info.plist Analysis Started")
+        logger.info("iOS Info.plist Analysis Started")
         plist_info = {
             "bin_name": "",
             "bin": "",
@@ -165,7 +165,7 @@ def plist_analysis(src, is_source):
             "bundle_localizations": []
         }
         if is_source:
-            print("[INFO] Finding Info.plist in iOS Source")
+            logger.info("Finding Info.plist in iOS Source")
             for ifile in os.listdir(src):
                 if ifile.endswith(".xcodeproj"):
                     app_name = ifile.replace(".xcodeproj", "")
@@ -177,7 +177,7 @@ def plist_analysis(src, is_source):
                         plist_file = os.path.join(dirpath, name)
                         break
         else:
-            print("[INFO] Finding Info.plist in iOS Binary")
+            logger.info("Finding Info.plist in iOS Binary")
             dirs = os.listdir(src)
             dot_app_dir = ""
             for dir_ in dirs:

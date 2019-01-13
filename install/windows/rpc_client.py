@@ -18,11 +18,13 @@ config = None
 challenge = None
 pub_key = None
 
+
 def _init_key():
     global pub_key
     pub_key = rsa.PublicKey.load_pkcs1(
         open(config['MobSF']['pub_key']).read()
     )
+
 
 def _check_challenge(signature):
     signature = base64.b64decode(signature.data)

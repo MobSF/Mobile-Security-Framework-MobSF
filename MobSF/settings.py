@@ -474,9 +474,8 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(MobSF_HOME, 'logs', 'debug.log'),
-            'maxBytes': 50000,
-            'backupCount': 2,
             'formatter': 'standard',
+            'mode': 'w',
         },
         'console': {
             'level': 'INFO',

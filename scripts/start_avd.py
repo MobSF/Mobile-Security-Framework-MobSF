@@ -43,26 +43,26 @@ def help_boot_avd():
                 "-s",
                 emulator,
                 "wait-for-device"]
-        print("[INFO] help_boot_avd: wait-for-device")
+        logger.info("help_boot_avd: wait-for-device")
         subprocess.call(args)
 
         # Make sure adb running as root
-        print("[INFO] help_boot_avd: root")
+        logger.info("help_boot_avd: root")
         adb_command(['root'])
 
         # Make sure adb running as root
-        print("[INFO] help_boot_avd: remount")
+        logger.info("help_boot_avd: remount")
         adb_command(['remount'])
 
         # Make sure the system verity feature is disabled (Obviously, modified the system partition)
-        print("[INFO] help_boot_avd: disable-verity")
+        logger.info("help_boot_avd: disable-verity")
         adb_command(['disable-verity'])
 
         # Make SELinux permissive - in case SuperSu/Xposed didn't patch things right
-        print("[INFO] help_boot_avd: setenforce")
+        logger.info("help_boot_avd: setenforce")
         adb_command(['setenforce', '0'], shell=True)
 
-        print("[INFO] help_boot_avd: finished!")
+        logger.info("help_boot_avd: finished!")
         return True
     except:
         PrintException("[ERROR] help_boot_avd")
@@ -86,7 +86,7 @@ def start_avd():
             "-port",
             str(settings.AVD_ADB_PORT),
         ]
-        print("[INFO] starting emulator: \r\n" + ' '.join(args))
+        logger.info("starting emulator: \r\n" + ' '.join(args))
         subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return True
     except:
@@ -158,10 +158,10 @@ def check_system_file():
         return False
 
     if os.path.exists(original_system_path):
-        print("[INFO] system.img.qcow path check passed successfully")
+        logger.info("system.img.qcow path check passed successfully")
         return True
 
-    print("[INFO] qcow path didn't match, replacing")
+    logger.info("qcow path didn't match, replacing")
     if not qcow.write_new_system_path_inside_qcow(local_system_image):
         print("[ERROR] Error fixing system file")
         return False
@@ -170,7 +170,7 @@ def check_system_file():
     qcow.parse_header()
     new_system_path = qcow.get_backing_file_path_str()
     if os.path.exists(new_system_path):
-        print("[INFO] system.img.qcow path check passed successfully")
+        logger.info("system.img.qcow path check passed successfully")
         return True
     else:
         print("[ERROR] system file verification failed")
@@ -178,7 +178,7 @@ def check_system_file():
 
 
 def main():
-    print("[INFO] MobSF - start_avd.py has started")
+    logger.info("MobSF - start_avd.py has started")
     if not check_config():
         return -1
     if not check_system_file():
@@ -187,8 +187,8 @@ def main():
         return -1
     if not help_boot_avd():
         return -1
-    print("[INFO] start_avd successfully finished")
-    print("[INFO] Please wait untill the emulator will load completely, only then take a snapshot")
+    logger.info("start_avd successfully finished")
+    logger.info("Please wait untill the emulator will load completely, only then take a snapshot")
     return 1
 
 

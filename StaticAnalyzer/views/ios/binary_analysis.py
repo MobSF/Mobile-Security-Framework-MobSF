@@ -71,7 +71,7 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
             "libs": [],
             "anal": []
         }
-        print("[INFO] Running Object Analysis of Binary : " + bin_name)
+        logger.info("Running Object Analysis of Binary : " + bin_name)
         otool_dict["libs"] = get_otool_out(
             tools_dir, "libs", bin_path, bin_dir)
         # PIE
@@ -253,7 +253,7 @@ def class_dump_z(tools_dir, bin_path, app_dir):
     try:
         webview = {}
         if platform.system() == "Darwin":
-            print("[INFO] Running class-dump-z against the binary for dumping classes")
+            logger.info("Running class-dump-z against the binary for dumping classes")
             if len(settings.CLASSDUMPZ_BINARY) > 0 and isFileExists(settings.CLASSDUMPZ_BINARY):
                 class_dump_z_bin = settings.CLASSDUMPZ_BINARY
             else:
@@ -261,7 +261,7 @@ def class_dump_z(tools_dir, bin_path, app_dir):
             subprocess.call(["chmod", "777", class_dump_z_bin])
             args = [class_dump_z_bin, bin_path]
         elif platform.system() == "Linux":
-            print("[INFO] Running jtool against the binary for dumping classes")
+            logger.info("Running jtool against the binary for dumping classes")
             if len(settings.JTOOL_BINARY) > 0 and isFileExists(settings.JTOOL_BINARY):
                 jtool_bin = settings.JTOOL_BINARY
             else:
@@ -282,14 +282,14 @@ def class_dump_z(tools_dir, bin_path, app_dir):
                        }
         return webview
     except:
-        print("[INFO] class-dump-z does not work on iOS apps developed in Swift")
+        logger.info("class-dump-z does not work on iOS apps developed in Swift")
         PrintException("[ERROR] - Cannot perform class dump")
 
 
 def strings_on_ipa(bin_path):
     """Extract Strings from IPA"""
     try:
-        print("[INFO] Running strings against the Binary")
+        logger.info("Running strings against the Binary")
         unique_str = []
         unique_str = list(set(strings_util(bin_path)))  # Make unique
         unique_str = [escape(ip_str)
@@ -303,7 +303,7 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
     """Binary Analysis of IPA"""
     try:
         binary_analysis_dict = {}
-        print("[INFO] Starting Binary Analysis")
+        logger.info("Starting Binary Analysis")
         dirs = os.listdir(src)
         dot_app_dir = ""
         for dir_ in dirs:
