@@ -1,6 +1,6 @@
 language: python
 python:
-- '3.5'
+- '3.6'
 virtualenv:
   system_site_packages: false
 sudo: false
@@ -19,23 +19,40 @@ addons:
     - python3-pip
     - git
     - unzip
-    - python-dev
+    - libssl-dev
+    - libffi-dev
+    - libxml2-dev
+    - libxslt1-dev
+    - python3-dev
     - libevent-dev
     - libsmi2ldbl
     - snmp-mibs-downloader
     - libxml2
     - libxml2-dev
     - libxml2-utils
-    - python-mysqldb
-    - libmysqlclient-dev
+    - software-properties-common
+    - python3-setuptools
 install:
 - export PYTHONIOENCODING=UTF8
-- git show HEAD:conpot/__init__.py > docs/source/conpot_version.py
+- PDFGEN_PKGFILE="wkhtmltox_0.12.5-1.bionic_amd64.deb"
+- export PDFGEN_URL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/${PDFGEN_PKGFILE}"
+- export YARA_URL="https://github.com/rednaga/yara-python-1"
+- export POSTGRES=False
+- add-apt-repository ppa:linuxuprising/java -y && \
+  apt update && \
+  echo oracle-java11-installer shared/accepted-oracle-license-v1-2 select true | /usr/bin/debconf-set-selections && \
+  apt install -y oracle-java11-installer
 - pip install coveralls
-- pip install tox
-- pip install -r requirements.txt
+- apt install -y \
+  sqlite3 \
+  fontconfig-config \
+  libjpeg-turbo8 \
+  fontconfig \
+  xorg \
+  xfonts-75dpi
+- wget ${PDFGEN_URL} && dpkg -i ${PDFGEN_PKGFILE}
 before_script:
-- mysql -e 'CREATE DATABASE IF NOT EXISTS conpot_unittest;'
-- chmod +x "$REPO/bin/conpot"
+  # apkid is not being tested currently
+  - pip install -r requirements.txt
 script:
-- tox
+  - python manage.py test
