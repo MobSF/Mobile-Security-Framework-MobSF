@@ -5,7 +5,7 @@ import os
 import io
 from os.path import expanduser
 import platform
-
+import logging
 # Binskim/Binscope analysis
 import xmlrpc.client
 import json
@@ -39,7 +39,7 @@ from MobSF.utils import (
     python_list,
     PrintException,
 )
-
+logger = logging.getLogger(__name__)
 
 # Only used when xmlrpc is used
 proxy = None
@@ -404,7 +404,7 @@ def __parse_binskim(bin_an_dic, output):
                 }
             bin_an_dic['results'].append(result)
     else:
-        print("[WARNING] binskim has no results.")
+        logger.warning("binskim has no results.")
         # Create an warining for the gui
         warning = {
             "rule_id": "No Binskim-Results",

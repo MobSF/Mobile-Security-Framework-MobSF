@@ -12,8 +12,8 @@ from django.utils.encoding import smart_text
 
 from StaticAnalyzer.tools.strings import strings_util
 from MobSF.utils import PrintException, isFileExists
-
-
+import logging
+logger = logging.getLogger(__name__)
 SECURE = "Secure"
 IN_SECURE = "Insecure"
 INFO = "Info"

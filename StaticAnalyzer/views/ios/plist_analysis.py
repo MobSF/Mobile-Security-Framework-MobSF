@@ -2,6 +2,7 @@
 """Module for iOS App Plist Analysis."""
 
 import os
+import logging
 import plistlib
 from MobSF.utils import (
     PrintException,
@@ -11,6 +12,7 @@ from biplist import (
     readPlist,
     writePlistToString
 )
+logger = logging.getLogger(__name__)
 
 
 def convert_bin_xml(bin_xml_file):
@@ -21,7 +23,7 @@ def convert_bin_xml(bin_xml_file):
 
 
 def __check_permissions(p_list):
-    '''Check the permissions the app requests.'''
+    """Check the permissions the app requests."""
     # List taken from
     # https://developer.apple.com/library/content/documentation/General/Reference/InfoPlistKeyReference/Articles/CocoaKeys.html
     logger.info("Checking Permissions")
@@ -127,7 +129,7 @@ def __check_permissions(p_list):
 
 
 def __check_insecure_connections(p_list):
-    '''Check info.plist for insecure connection configurations.'''
+    """Check info.plist for insecure connection configurations."""
     logger.info("Checking for Insecure Connections")
 
     insecure_connections = []
@@ -164,6 +166,7 @@ def plist_analysis(src, is_source):
             "bundle_supported_platforms": [],
             "bundle_localizations": []
         }
+        plist_file = None
         if is_source:
             logger.info("Finding Info.plist in iOS Source")
             for ifile in os.listdir(src):
@@ -187,7 +190,7 @@ def plist_analysis(src, is_source):
             bin_dir = os.path.join(src, dot_app_dir) # Full Dir/Payload/x.app
             plist_file = os.path.join(bin_dir, "Info.plist")
         if not isFileExists(plist_file):
-            print("[WARNING] Cannot find Info.plist file. Skipping Plist Analysis.")
+            logger.warning("Cannot find Info.plist file. Skipping Plist Analysis.")
         else:
             #Generic Plist Analysis
             plist_obj = plistlib.readPlist(plist_file)

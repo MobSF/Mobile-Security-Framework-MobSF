@@ -10,10 +10,6 @@ import re
 import subprocess
 import zipfile
 import logging
-try:
-    import pdfkit
-except:
-    logger.info("[WARNING] wkhtmltopdf is not installed/configured properly. PDF Report Generation is disabled")
 from django.http import HttpResponse
 from django.template.loader import get_template
 from django.utils.html import escape
@@ -42,6 +38,11 @@ from StaticAnalyzer.views.ios.db_interaction import (
 import StaticAnalyzer.views.android.VirusTotal as VirusTotal
 
 from StaticAnalyzer.views.comparer import generic_compare
+logger = logging.getLogger(__name__)
+try:
+    import pdfkit
+except ImportError:
+    logger.warning("wkhtmltopdf is not installed/configured properly. PDF Report Generation is disabled")
 logger = logging.getLogger(__name__)
 
 

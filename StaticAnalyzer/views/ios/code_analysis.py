@@ -15,6 +15,8 @@ from MalwareAnalyzer.views import malware_check
 from MobSF.utils import (
     PrintException,
 )
+import logging
+logger = logging.getLogger(__name__)
 
 
 def ios_source_analysis(src):

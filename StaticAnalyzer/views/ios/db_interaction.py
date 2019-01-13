@@ -1,4 +1,3 @@
-# -*- coding: utf_8 -*-
 """Module holding the functions for the db."""
 from MobSF.utils import (
     PrintException,
@@ -9,7 +8,8 @@ from StaticAnalyzer.models import (
     StaticAnalyzerIPA,
     StaticAnalyzerIOSZIP
 )
-
+import logging
+logger = logging.getLogger(__name__)
 # IPA DB
 
 

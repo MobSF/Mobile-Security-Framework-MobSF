@@ -1,0 +1,41 @@
+language: python
+python:
+- '3.5'
+virtualenv:
+  system_site_packages: false
+sudo: false
+cache:
+- apt
+- pip
+before_install:
+- export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
+- REPO=`pwd`
+- echo $REPO
+- echo $TRAVIS_TAG
+- pwd
+addons:
+  apt:
+    packages:
+    - python3-pip
+    - git
+    - unzip
+    - python-dev
+    - libevent-dev
+    - libsmi2ldbl
+    - snmp-mibs-downloader
+    - libxml2
+    - libxml2-dev
+    - libxml2-utils
+    - python-mysqldb
+    - libmysqlclient-dev
+install:
+- export PYTHONIOENCODING=UTF8
+- git show HEAD:conpot/__init__.py > docs/source/conpot_version.py
+- pip install coveralls
+- pip install tox
+- pip install -r requirements.txt
+before_script:
+- mysql -e 'CREATE DATABASE IF NOT EXISTS conpot_unittest;'
+- chmod +x "$REPO/bin/conpot"
+script:
+- tox

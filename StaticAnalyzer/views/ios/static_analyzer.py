@@ -6,7 +6,7 @@ import re
 import os
 import io
 import shutil
-
+import logging
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.conf import settings
@@ -24,7 +24,6 @@ from StaticAnalyzer.views.ios.db_interaction import (
     create_db_entry_ios,
 )
 
-
 from StaticAnalyzer.views.ios.binary_analysis import (
     binary_analysis,
 )
@@ -36,7 +35,6 @@ from StaticAnalyzer.views.ios.plist_analysis import (
     plist_analysis,
     convert_bin_xml
 )
-
 
 from StaticAnalyzer.views.shared_func import (
     file_size,
@@ -53,6 +51,7 @@ from MobSF.utils import (
 )
 
 import StaticAnalyzer.views.android.VirusTotal as VirusTotal
+logger = logging.getLogger(__name__)
 
 ##############################################################
 # Code to support iOS Static Code Analysis

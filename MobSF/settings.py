@@ -458,6 +458,7 @@ JAVA_PATH = utils.FindJava(False)
 VBOX = utils.FindVbox(False)
 #===============================================
 
+DJANGO_LOG_LEVEL = DEBUG
 
 # Better logging
 LOGGING = {
@@ -475,26 +476,32 @@ LOGGING = {
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(MobSF_HOME, 'logs', 'debug.log'),
             'formatter': 'standard',
-            'mode': 'w',
         },
         'console': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            'formatter': 'standard'
+            'formatter': 'standard',
         },
     },
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'propagate': True,
-            'level': 'WARN',
-        },
-        'django.db.backends': {
-            'handlers': ['console'],
             'level': 'DEBUG',
-            'propagate': False,
+            'propagate': True,
         },
         'MobSF': {
+            'handlers': ['console', 'logfile'],
+            'level': 'DEBUG',
+        },
+        'StaticAnalyzer': {
+            'handlers': ['console', 'logfile'],
+            'level': 'DEBUG',
+        },
+        'MalwareAnalyzer': {
+            'handlers': ['console', 'logfile'],
+            'level': 'DEBUG',
+        },
+        'DynamicAnalyzer': {
             'handlers': ['console', 'logfile'],
             'level': 'DEBUG',
         },
