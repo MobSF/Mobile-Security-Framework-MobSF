@@ -13,44 +13,41 @@ before_install:
 - echo $REPO
 - echo $TRAVIS_TAG
 - pwd
-addons:
-  apt:
-    packages:
-    - python3-pip
-    - git
-    - unzip
-    - libssl-dev
-    - libffi-dev
-    - libxml2-dev
-    - libxslt1-dev
-    - python3-dev
-    - libevent-dev
-    - libsmi2ldbl
-    - snmp-mibs-downloader
-    - libxml2
-    - libxml2-dev
-    - libxml2-utils
-    - software-properties-common
-    - python3-setuptools
-install:
-- export PYTHONIOENCODING=UTF8
-- PDFGEN_PKGFILE="wkhtmltox_0.12.5-1.bionic_amd64.deb"
+- export PDFGEN_PKGFILE="wkhtmltox_0.12.5-1.bionic_amd64.deb"
 - export PDFGEN_URL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/${PDFGEN_PKGFILE}"
 - export YARA_URL="https://github.com/rednaga/yara-python-1"
 - export POSTGRES=False
-- add-apt-repository ppa:linuxuprising/java -y && \
-  apt update && \
-  echo oracle-java11-installer shared/accepted-oracle-license-v1-2 select true | /usr/bin/debconf-set-selections && \
-  apt install -y oracle-java11-installer
+- wget ${PDFGEN_URL}
+- dpkg -i ${PDFGEN_PKGFILE}
+addons:
+  apt:
+    sources:
+      - sourceline: 'ppa:linuxuprising/java'
+    packages:
+      - python3-pip
+      - git
+      - unzip
+      - libssl-dev
+      - libffi-dev
+      - libxml2-dev
+      - libxslt1-dev
+      - python3-dev
+      - libevent-dev
+      - libxml2
+      - libxml2-dev
+      - libxml2-utils
+      - software-properties-common
+      - python3-setuptools
+      - oracle-java11-installer
+      - sqlite3
+      - fontconfig-config
+      - libjpeg-turbo8
+      - fontconfig
+      - xorg
+      - xfonts-75dpi
+install:
+- export PYTHONIOENCODING=UTF8
 - pip install coveralls
-- apt install -y \
-  sqlite3 \
-  fontconfig-config \
-  libjpeg-turbo8 \
-  fontconfig \
-  xorg \
-  xfonts-75dpi
-- wget ${PDFGEN_URL} && dpkg -i ${PDFGEN_PKGFILE}
 before_script:
   # apkid is not being tested currently
   - pip install -r requirements.txt
