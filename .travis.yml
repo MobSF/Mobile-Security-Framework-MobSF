@@ -1,3 +1,4 @@
+dist: bionic
 language: python
 python:
 - '3.6'
@@ -17,22 +18,26 @@ before_install:
 - export PDFGEN_URL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/${PDFGEN_PKGFILE}"
 - export YARA_URL="https://github.com/rednaga/yara-python-1"
 - export POSTGRES=False
+- export LIBSSL1="http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4.3_amd64.deb"
+- export LIBSSL1_NAME="libssl1.1_1.1.0g-2ubuntu4.3_amd64.deb"
+- sudo apt-get install -y libpng16-16 libssl-dev xfonts-75dpi xfonts-base libffi-dev libxml2-dev libxslt1-dev
+- sudo apt-get install -y openssl
 - wget ${PDFGEN_URL}
-- dpkg -i ${PDFGEN_PKGFILE}
+- wget ${LIBSSL1}
+- sudo dpkg -i ${LIBSSL1_NAME}
+- sudo dpkg -i ${PDFGEN_PKGFILE}
 - sudo apt install -y software-properties-common
 - sudo add-apt-repository ppa:linuxuprising/java -y
+- sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 762E3157
 - sudo apt update
-- echo oracle-java11-installer shared/accepted-oracle-license-v1-2 select true | /usr/bin/debconf-set-selections
+- echo oracle-java11-installer shared/accepted-oracle-license-v1-2 select true | sudo /usr/bin/debconf-set-selections
+- sudo apt install -y oracle-java11-installer
 addons:
   apt:
     packages:
       - python3-pip
       - git
       - unzip
-      - libssl-dev
-      - libffi-dev
-      - libxml2-dev
-      - libxslt1-dev
       - python3-dev
       - libevent-dev
       - libxml2
@@ -40,13 +45,7 @@ addons:
       - libxml2-utils
       - software-properties-common
       - python3-setuptools
-      - oracle-java11-installer
       - sqlite3
-      - fontconfig-config
-      - libjpeg-turbo8
-      - fontconfig
-      - xorg
-      - xfonts-75dpi
 install:
 - export PYTHONIOENCODING=UTF8
 - pip install coveralls
