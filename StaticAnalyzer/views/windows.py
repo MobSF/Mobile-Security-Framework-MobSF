@@ -384,25 +384,48 @@ def __parse_binskim(bin_an_dic, output):
     current_run = output['runs'][0]
 
     if 'results' in current_run:
-        rules = output['runs'][0]['rules']
-        for res in current_run['results']:
-            if res['level'] != "pass":
-                result = {
-                    "rule_id": res['ruleId'],
-                    "status": "Insecure",
-                    "desc": rules[res['ruleId']]['shortDescription']
-                }
-                if len(res['formattedRuleMessage']["arguments"])>2:
-                    result["info"] = res['formattedRuleMessage']["arguments"][2]
+        try:
+            # Json result changed, so first try old format
+            rules = output['runs'][0]['rules']
+            for res in current_run['results']:
+                if res['level'] != "pass":
+                    result = {
+                        "rule_id": res['ruleId'],
+                        "status": "Insecure",
+                        "desc": rules[res['ruleId']]['shortDescription']
+                    }
+                    if len(res['formattedRuleMessage']["arguments"])>2:
+                        result["info"] = res['formattedRuleMessage']["arguments"][2]
+                    else:
+                        result["info"] = ""
                 else:
-                    result["info"] = ""
-            else:
-                result = {
-                    "rule_id": res['ruleId'],
-                    "status": "Secure",
-                    "desc": rules[res['ruleId']]['shortDescription']
-                }
-            bin_an_dic['results'].append(result)
+                    result = {
+                        "rule_id": res['ruleId'],
+                        "status": "Secure",
+                        "desc": rules[res['ruleId']]['shortDescription']
+                    }
+                bin_an_dic['results'].append(result)
+        except:
+            # Old format failed, so parse it with the new format
+            rules = output['runs'][0]['resources']['rules']
+            for res in current_run['results']:
+                if res['level'] != "pass":
+                    result = {
+                        "rule_id": res['ruleId'],
+                        "status": "Insecure",
+                        "desc": rules[res['ruleId']]['shortDescription']['text']
+                    }
+                    if len(res['message']["arguments"])>2:
+                        result["info"] = res['message']["arguments"][2]
+                    else:
+                        result["info"] = ""
+                else:
+                    result = {
+                        "rule_id": res['ruleId'],
+                        "status": "Secure",
+                        "desc": rules[res['ruleId']]['shortDescription']['text']
+                    }
+                bin_an_dic['results'].append(result)
     else:
         print("[WARNING] binskim has no results.")
         # Create an warining for the gui
