@@ -86,14 +86,14 @@ class Upload(object):
             'status': ''
         }
         if request.method != 'POST':
-            logger.info("\n[ERROR] Method not Supported!")
+            logger.error("Method not Supported!")
             form = UploadFileForm()
             response_data['description'] = 'Method not Supported!'
             response_data['status'] = HTTP_BAD_REQUEST
             return self.resp_json(response_data)
 
         if not self.form.is_valid():
-            logger.info("\n[ERROR] Invalid Form Data!")
+            logger.error("Invalid Form Data!")
             response_data['description'] = 'Invalid Form Data!'
             response_data['status'] = HTTP_BAD_REQUEST
             return self.resp_json(response_data)
@@ -102,14 +102,14 @@ class Upload(object):
         self.file_name_lower = request.FILES['file'].name.lower()
         self.file_type = FileType(self.file_content_type, self.file_name_lower)
         if not self.file_type.is_allow_file():
-            logger.info("\n[ERROR] File format not Supported!")
+            logger.error("File format not Supported!")
             response_data['description'] = 'File format not Supported!'
             response_data['status'] = HTTP_BAD_REQUEST
             return self.resp_json(response_data)
 
         if self.file_type.is_ipa():
             if platform.system() not in LINUX_PLATFORM:
-                logger.info("\n[ERROR] Static Analysis of iOS IPA requires Mac or Linux")
+                logger.error("Static Analysis of iOS IPA requires Mac or Linux")
                 response_data[
                     'description'] = 'Static Analysis of iOS IPA requires Mac or Linux'
                 response_data['status'] = 'success'

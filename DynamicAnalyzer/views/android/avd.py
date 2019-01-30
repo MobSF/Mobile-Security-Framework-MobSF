@@ -5,11 +5,12 @@ import os
 import time
 import platform
 import subprocess
-
+import logging
 from DynamicAnalyzer.views.android.shared import adb_command
 from MobSF.utils import PrintException
 from django.conf import settings
 from scripts.start_avd import main as start_avd_cold
+logger = logging.getLogger(__name__)
 
 
 def stop_avd():
@@ -70,7 +71,7 @@ def refresh_avd():
     for path in [settings.AVD_EMULATOR,
                  settings.ADB_BINARY]:
         if not path:
-            print("\n[ERROR] AVD binaries not configured, please refer to the official documentation")
+            logger.error("AVD binaries not configured, please refer to the official documentation")
             return False
 
     logger.info("Refreshing MobSF Emulator")
@@ -85,7 +86,7 @@ def refresh_avd():
                 return True
         else:
             if not settings.AVD_SNAPSHOT:
-                print("\n[ERROR] AVD not configured properly - AVD_SNAPSHOT is missing")
+                logger.error("AVD not configured properly - AVD_SNAPSHOT is missing")
                 return False
             if start_avd_from_snapshot():
                 logger.info("AVD has been loaded from snapshot successfully")

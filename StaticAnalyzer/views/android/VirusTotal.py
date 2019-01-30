@@ -29,10 +29,10 @@ class VirusTotal:
                 response = requests.get(
                     url, params=params, headers=headers, proxies=proxies, verify=verify)
                 if response.status_code == 403:
-                    logger.info("[ERROR] VirusTotal Permission denied, wrong api key?")
+                    logger.error("VirusTotal Permission denied, wrong api key?")
                     return None
             except:
-                logger.info("[ERROR] VirusTotal ConnectionError, check internet connectivity")
+                logger.error("VirusTotal ConnectionError, check internet connectivity")
                 return None
             try:
                 json_response = response.json()
@@ -64,11 +64,10 @@ class VirusTotal:
                 response = requests.post(
                     url, files=files, data=headers, proxies=proxies, verify=verify)
                 if response.status_code == 403:
-                    logger.info("[ERROR] VirusTotal Permission denied, wrong api key?")
+                    logger.error("VirusTotal Permission denied, wrong api key?")
                     return None
             except:
-                logger.info(
-                    "[ERROR] VirusTotal ConnectionError, check internet connectivity")
+                logger.error("VirusTotal ConnectionError, check internet connectivity")
                 return None
             json_response = response.json()
             return json_response

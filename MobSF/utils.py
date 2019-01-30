@@ -103,8 +103,8 @@ def check_update():
                 line = line.replace("MOBSF_VER", "").replace('"', '')
                 line = line.replace("=", "").strip()
                 if line != settings.MOBSF_VER:
-                    logger.info("""\n[WARN] A new version of MobSF is available,
-Please update from master branch or check for new releases.\n""")
+                    logger.warning("A new version of MobSF is available, Please update from master branch or check "
+                                   "for new releases.")
                 else:
                     logger.info("No updates available.")
     except requests.exceptions.HTTPError as err:
@@ -233,7 +233,7 @@ def FindVbox(debug=False):
                     if os.path.isfile(path):
                         return path
             if debug:
-                logger.info("\n[WARNING] Could not find VirtualBox path.")
+                logger.warning("Could not find VirtualBox path.")
     except:
         if debug:
             PrintException("[ERROR] Cannot find VirtualBox path.")
@@ -344,9 +344,9 @@ def FindJava(debug=False):
                         logger.info("JDK 1.7 or above is available")
                     return mac_linux_java_dir
                 else:
-                    err_msg = "[ERROR] Please install Oracle JDK 1.7 or above"
+                    err_msg = "Please install Oracle JDK 1.7 or above"
                     if debug:
-                        logger.info(Color.BOLD + Color.RED + err_msg + Color.END)
+                        logger.error(Color.BOLD + Color.RED + err_msg + Color.END)
                     return "java"
 
     except:
@@ -390,19 +390,19 @@ def PrintException(msg, web=False):
         ' ({0}, LINE {1} "{2}"): {3}'.format(
             filename, lineno, line.strip(), exc_obj)
     if platform.system() == "Windows":
-        logger.info(dat)
+        logger.error(dat)
     else:
         if web:
-            logger.info(Color.BOLD + Color.ORANGE + dat + Color.END)
+            logger.error(Color.BOLD + Color.ORANGE + dat + Color.END)
         else:
-            logger.info(Color.BOLD + Color.RED + dat + Color.END)
+            logger.error(Color.BOLD + Color.RED + dat + Color.END)
     with open(LOGPATH + 'MobSF.log', 'a') as f:
         f.write(dat)
 
 
 def print_n_send_error_response(request, msg, api, exp='Error Description'):
     """Print and log errors"""
-    logger.info(Color.BOLD + Color.RED + '[ERROR] ' + msg + Color.END)
+    logger.error(Color.BOLD + Color.RED + '[ERROR] ' + msg + Color.END)
     time_stamp = time.time()
     formatted_tms = datetime.datetime.fromtimestamp(
         time_stamp).strftime('%Y-%m-%d %H:%M:%S')
@@ -585,9 +585,9 @@ def adb_binary_or32bit_support():
             " ADB binary is not compatible with your OS."\
             "\nPlease set the 'ADB_BINARY' path in settings.py"
         if platform.system != "Windows":
-            logger.info(Color.BOLD + Color.ORANGE + msg + Color.END)
+            logger.warning(Color.BOLD + Color.ORANGE + msg + Color.END)
         else:
-            logger.info(msg)
+            logger.warning(msg)
 
 
 def check_basic_env():
@@ -608,7 +608,7 @@ def check_basic_env():
     else:
         java = settings.JAVA_PATH + 'java'
     if not isFileExists(java):
-        logger.info("[ERROR] Oracle Java is not available or `JAVA_DIRECTORY` in settings.py is configured incorrectly!")
+        logger.error("Oracle Java is not available or `JAVA_DIRECTORY` in settings.py is configured incorrectly!")
         logger.info("JAVA_DIRECTORY=%s" % settings.JAVA_DIRECTORY)
         logger.info('''Example Configuration:
                  JAVA_DIRECTORY = "C:/Program Files/Java/jdk1.7.0_17/bin/"

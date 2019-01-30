@@ -335,7 +335,7 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                         add_findings(findings, rule[
                                      "desc"], file_path, rule)
                 else:
-                    logger.info("\n[ERROR] Code Regex Rule Match Error\n" + rule)
+                    logger.error("Code Regex Rule Match Error\n" + rule)
 
             elif rule["type"] == "string":
                 if rule["match"] == 'single_string':
@@ -394,9 +394,9 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                         add_findings(findings, rule[
                                      "desc"], file_path, rule)
                 else:
-                    logger.info("\n[ERROR] Code String Rule Match Error\n" + rule)
+                    logger.error("Code String Rule Match Error\n" + rule)
             else:
-                logger.info("\n[ERROR] Code Rule Error\n", + rule)
+                logger.error("Code Rule Error\n", + rule)
     except:
         PrintException("[ERROR] Error in Code Rule Processing")
 
@@ -449,7 +449,7 @@ def api_rule_matcher(api_findings, perms, data, file_path, api_rules):
                     if (api["perm"] in perms) and (re.findall(api["regex1"], tmp_data)):
                         add_apis(api_findings, api["desc"], file_path)
                 else:
-                    logger.info("\n[ERROR] API Regex Rule Match Error\n" + api)
+                    logger.error("API Regex Rule Match Error\n" + api)
 
             elif api["type"] == "string":
                 if api["match"] == 'single_string':
@@ -501,9 +501,9 @@ def api_rule_matcher(api_findings, perms, data, file_path, api_rules):
                     if (api["perm"] in perms) and string_or_ps:
                         add_apis(api_findings, api["desc"], file_path)
                 else:
-                    logger.info("\n[ERROR] API String Rule Match Error\n" + api)
+                    logger.error("API String Rule Match Error\n" + api)
             else:
-                logger.info("\n[ERROR] API Rule Error\n", + api)
+                logger.error("API Rule Error\n", + api)
     except:
         PrintException("[ERROR] Error in API Rule Processing")
 

@@ -54,11 +54,11 @@ logger = logging.getLogger(__name__)
 # ===========================================
 
 
-'''
+"""
 Need to improve RCE Detection on Framework, audit all subprocess calls
 TCP Connnection to screenshot service needs to be secured.
 Globals!
-'''
+"""
 
 TCP_SERVER_MODE = "off"  # ScreenCast TCP Service Status
 
@@ -471,8 +471,7 @@ def dump_data(request):
                     if b"MOBSEC-TAR-CREATED" in adb_command(["cat", "/sdcard/mobsec_status"], shell=True):
                         break
                     if (current_time - start_time) > timeout:
-                        logger.info(
-                            "\n[ERROR] TAR Generation Failed. Process timed out.")
+                        logger.error("TAR Generation Failed. Process timed out.")
                         break
                 logger.info("Dumping Application Files from Device/VM")
                 adb_command(["pull", "/data/local/" + package +
@@ -555,7 +554,7 @@ def exported_activity_tester(request):
                         data = {'expacttest': 'noact'}
                     return HttpResponse(json.dumps(data), content_type='application/json')
                 else:
-                    logger.info("\n[ERROR] Entry does not exist in DB.")
+                    logger.error("Entry does not exist in DB.")
                     return HttpResponseRedirect('/error/')
             else:
                 return HttpResponseRedirect('/error/')
@@ -625,7 +624,7 @@ def activity_tester(request):
                         data = {'acttest': 'noact'}
                     return HttpResponse(json.dumps(data), content_type='application/json')
                 else:
-                    logger.info("\n[ERROR] Entry does not exist in DB.")
+                    logger.error("Entry does not exist in DB.")
                     return HttpResponseRedirect('/error/')
             else:
                 return HttpResponseRedirect('/error/')
@@ -688,7 +687,7 @@ def report(request):
                                     exp_act = dict(
                                         list(zip(expact_imgs, exported_act)))
                         else:
-                            logger.info("\n[WARNING] Entry does not exists in the DB.")
+                            logger.warning("Entry does not exists in the DB.")
                     except:
                         PrintException("[ERROR] Screenshot Sorting")
                 context = {'md5': md5_hash,
@@ -847,10 +846,10 @@ def screencast_service():
                 else:
                     ip_address = settings.VM_IP
                 if address[0] in [ip_address, '127.0.0.1']:
-                    '''
+                    """
                     Very Basic Check to ensure that only MobSF VM/Device/Emulator
                     is allowed to connect to MobSF ScreenCast Service.
-                    '''
+                    """
                     with open(screen_dir + 'screen.png', 'wb') as flip:
                         while True:
                             data = screens.recv(1024)

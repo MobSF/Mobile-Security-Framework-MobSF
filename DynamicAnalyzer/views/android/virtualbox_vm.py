@@ -1,14 +1,17 @@
 import time
 import subprocess
+import logging
 from MobSF.utils import PrintException
 from django.conf import settings
+logger = logging.getLogger(__name__)
+
 
 def refresh_vm(uuid, snapshot_uuid, vbox_exe):
     """Refresh VirtualBox based VMs"""
     logger.info("Refreshing MobSF VM")
     try:
         if not vbox_exe:
-            print("[ERROR] VirtualBox not found, Manually set VBOXMANAGE_BINARY in settings.py")
+            logger.error("VirtualBox not found, Manually set VBOXMANAGE_BINARY in settings.py")
         # Close VM
         args = [vbox_exe, 'controlvm', uuid, 'poweroff']
         subprocess.call(args)

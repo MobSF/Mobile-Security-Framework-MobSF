@@ -282,7 +282,7 @@ def class_dump_z(tools_dir, bin_path, app_dir):
                        }
         return webview
     except:
-        logger.info("class-dump-z does not work on iOS apps developed in Swift")
+        logger.warning("class-dump-z does not work on iOS apps developed in Swift")
         PrintException("[ERROR] - Cannot perform class dump")
 
 
@@ -322,8 +322,8 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
         binary_analysis_dict["bin_res"] = []
         binary_analysis_dict["strings"] = []
         if not isFileExists(bin_path):
-            print("[WARNING] MobSF Cannot find binary in " + bin_path)
-            print("[WARNING] Skipping Otool, Classdump and Strings")
+            logger.warning("MobSF Cannot find binary in " + bin_path)
+            logger.warning("Skipping Otool, Classdump and Strings")
         else:
             otool_dict = otool_analysis(tools_dir, bin_name, bin_path, bin_dir)
             cls_dump = class_dump_z(tools_dir, bin_path, app_dir)

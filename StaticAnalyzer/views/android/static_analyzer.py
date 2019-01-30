@@ -402,8 +402,7 @@ def static_analyzer(request, api=False):
                 else:
                     return render(request, template, context)
             else:
-                logger.info(
-                    "\n[ERROR] Only APK,IPA and Zipped Android/iOS Source code supported now!")
+                logger.error("Only APK,IPA and Zipped Android/iOS Source code supported now!")
         else:
             msg = "Hash match failed or Invalid file extension or file type"
             if api:
