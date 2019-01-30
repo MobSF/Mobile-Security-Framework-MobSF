@@ -294,7 +294,7 @@ def _binary_analysis(app_dic):
             bin_an_dic = __binskim(name, bin_an_dic)
             bin_an_dic = __binscope(name, bin_an_dic)
         else:
-            logger.info("Windows VM not configured in settings.py. Skipping Binskim and Binscope.")
+            logger.warning("Windows VM not configured in settings.py. Skipping Binskim and Binscope.")
             warning = {
                 "rule_id": "VM",
                 "status": "Info",

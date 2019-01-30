@@ -9,7 +9,8 @@ import shutil
 import io
 import string
 import re
-
+import logging
+logger = logging.getLogger(__name__)
 BASE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../")
 
 
@@ -32,7 +33,7 @@ def execute_cmd(args, ret=False):
         else:
             subprocess.call(args)
     except Exception as e:
-        print("\n[ERROR] Executing Command - " + str(e))
+        logger.error("Executing Command - " + str(e))
 
 
 def verify_path(help_msg):

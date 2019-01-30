@@ -4,17 +4,17 @@ import platform
 import subprocess
 import django
 from os.path import dirname, abspath
+import logging
+from django.conf import settings
+from DynamicAnalyzer.views.android.shared import adb_command
+from DynamicAnalyzer.views.android.shared import get_identifier
+from MobSF.utils import PrintException
 
-
+logger = logging.getLogger(__name__)
 MobSF_path = dirname(dirname(abspath(__file__)))
 sys.path.append(MobSF_path)
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'MobSF.settings')
 django.setup()
-from django.conf import settings
-
-from DynamicAnalyzer.views.android.shared import adb_command
-from DynamicAnalyzer.views.android.shared import get_identifier
-from MobSF.utils import PrintException
 
 
 def check_config():
@@ -22,10 +22,10 @@ def check_config():
         for path in [settings.AVD_EMULATOR,
                      settings.ADB_BINARY]:
             if not path:
-                print("\n[ERROR] ADB binary not configured, please refer to the official documentation")
+                logger.error("ADB binary not configured, please refer to the official documentation")
                 return False
         if settings.ANDROID_DYNAMIC_ANALYZER != 'MobSF_AVD':
-            print("\n[ERROR] Wrong configuration - ANDROID_DYNAMIC_ANALYZER, please refer to the official documentation")
+            logger.error("Wrong configuration - ANDROID_DYNAMIC_ANALYZER, please refer to the official documentation")
             return False
         return True
     except:
@@ -109,8 +109,8 @@ def guess_system_image(avd_emulator_path):
     for path in potential_paths:
         if os.path.exists(path):
             return path
-
     return None
+
 
 def get_qcow_image(avd_emulator_path):
     potential_paths = list()
@@ -137,16 +137,16 @@ def check_system_file():
     # Check if the system image is installed currectly
     local_system_image = guess_system_image(emulator_binary)
     if not local_system_image:
-        print("[ERROR] Cannot find system.img file, Please verify you've installed android 6 armv7 with google apis system image")
+        logger.error("Cannot find system.img file, Please verify you've installed android 6 armv7 with google apis system image")
         return False
 
     # Check if the modified system is already been patched
     qcow_image = get_qcow_image(emulator_binary)
     if not qcow_image:
-        print("[ERROR] system.img.qcow2 wasn't found on the system, make sure you copied the emulator to the proper folder")
+        logger.error("system.img.qcow2 wasn't found on the system, make sure you copied the emulator to the proper folder")
         return False
     if not os.path.exists(qcow_image):
-        print("[ERROR] system.img.qcow2 wasn't found on the system, make sure you copied the emulator to the proper folder")
+        logger.error("system.img.qcow2 wasn't found on the system, make sure you copied the emulator to the proper folder")
         return False
 
     qcow = Qcow2(qcow_image)
@@ -163,7 +163,7 @@ def check_system_file():
 
     logger.info("qcow path didn't match, replacing")
     if not qcow.write_new_system_path_inside_qcow(local_system_image):
-        print("[ERROR] Error fixing system file")
+        logger.error("Error fixing system file")
         return False
 
     # After we wrote a new system path, verify it
@@ -173,7 +173,7 @@ def check_system_file():
         logger.info("system.img.qcow path check passed successfully")
         return True
     else:
-        print("[ERROR] system file verification failed")
+        logger.error("system file verification failed")
         return False
 
 

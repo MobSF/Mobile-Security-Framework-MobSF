@@ -44,7 +44,7 @@ def get_manifest(app_path, app_dir, tools_dir, typ, binary):
                     r'platformBuildVersionName="Failed XML Parsing" ></manifest>'
                 )
             )
-            logger.info("[WARNING] Using Fake XML to continue the Analysis")
+            logger.warning("Using Fake XML to continue the Analysis")
         return manifest
     except:
         PrintException("[ERROR] Parsing Manifest file")

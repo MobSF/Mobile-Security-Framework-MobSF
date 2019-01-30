@@ -9,11 +9,12 @@ import subprocess
 import sys
 import argparse
 import capfuzz as cp
+import logging
+logger = logging.getLogger(__name__)
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 TOOLSDIR = os.path.join(BASE_DIR, '../DynamicAnalyzer/tools/')  # TOOLS DIR
-ROOTCA = os.path.join(os.path.dirname(cp.__file__),
-                      "ca", "mitmproxy-ca-cert.cer")
+ROOTCA = os.path.join(os.path.dirname(cp.__file__), "ca", "mitmproxy-ca-cert.cer")
 TYPE_VM = "1"
 XPOSED_OLD = "1"
 
@@ -29,7 +30,7 @@ def execute_cmd(args, ret=False):
         else:
             subprocess.call(args)
     except Exception as exp:
-        print(("\n[ERROR] Executing Command - " + str(exp)))
+        logger.error(("Executing Command - " + str(exp)))
 
 
 def get_adb():
@@ -50,7 +51,7 @@ def get_adb():
             adb = os.path.join(TOOLSDIR, 'adb/windows/adb.exe')
         return adb
     except Exception as exp:
-        print(("\n[ERROR] Getting ADB Location - " + str(exp)))
+        logger.error(("Getting ADB Location - " + str(exp)))
         return "adb"
 
 
@@ -169,7 +170,7 @@ def main():
                   "3. Enable Droidmon, JustTrustMe and RootCloak.")
         logger.info("MobSFy Script Executed Successfully")
     except Exception as exp:
-        print("\n[ERROR] Error occured - " + str(exp))
+        logger.error("Error occurred - " + str(exp))
         sys.exit(0)
 
 

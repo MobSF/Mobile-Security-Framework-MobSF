@@ -1,7 +1,8 @@
 import os
 import traceback
 import struct
-
+import logging
+logger = logging.getLogger(__name__)
 # This is a small wraper to help manipulate the qcow2 system image inside the avd
 # For more info please refer to - https://people.gnome.org/~markmc/qcow-image-format.html
 
@@ -32,13 +33,13 @@ class Qcow2():
 
                 return True
         except:
-            print("[ERROR] Qcow2-parse_header: \r\n{}".format(traceback.format_exc()))
+            logger.error("Qcow2-parse_header: \r\n{}".format(traceback.format_exc()))
             return None
 
     def get_backing_file_path_str(self):
         try:
             if not (self.backing_file_str_offset and self.backing_file_str_size):
-                print("[ERROR] Qcow2-get_backing_file_path_str: offset and size not initialized, run parse_header first")
+                logger.error("Qcow2-get_backing_file_path_str: offset and size not initialized, run parse_header first")
                 return None
 
             with open(self.path, 'rb') as read_fd:
@@ -48,7 +49,7 @@ class Qcow2():
                 self.tmp_backing_str = backing_str
                 return backing_str
         except:
-            print("[ERROR] Qcow2-get_backing_file_path_str: \r\n{}".format(traceback.format_exc()))
+            logger.error("Qcow2-get_backing_file_path_str: \r\n{}".format(traceback.format_exc()))
             return None
 
     def write_new_system_path_inside_qcow(self, new_system_path):
@@ -68,7 +69,8 @@ class Qcow2():
                 write_fd.write(new_system_path.encode('ascii'))
 
                 # optional - Clean up the left overs from the previous string
-                # We don't really care about this check so we do it only when we already called get_backing_file_path_str
+                # We don't really care about this check so we do it only when we already called get_backing_file_
+                # path_str
                 if self.tmp_backing_str:
                     if len(self.tmp_backing_str) > system_image_str_len:
                         zeros_to_append = len(self.tmp_backing_str) - system_image_str_len
@@ -77,7 +79,7 @@ class Qcow2():
                 logger.info("New system path was written to qcow file")
                 return True
         except:
-            print("[ERROR] Qcow2-write_new_system_path_inside_qcow: \r\n{}".format(traceback.format_exc()))
+            logger.error("Qcow2-write_new_system_path_inside_qcow: \r\n{}".format(traceback.format_exc()))
             return False
 
 

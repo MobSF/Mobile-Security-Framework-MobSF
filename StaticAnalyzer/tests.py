@@ -40,7 +40,7 @@ def static_analysis_test():
                     logger.info("[OK] Upload OK: " + filename)
                     uploaded.append(obj["url"])
                 else:
-                    logger.info(err_msg % "[ERROR] Performing Upload: " + filename)
+                    logger.error(err_msg % " Performing Upload: " + filename)
                     failed = True
         logger.info("[OK] Completed Upload test")
         logger.info("Running Static Analysis Test")
@@ -53,7 +53,7 @@ def static_analysis_test():
             if resp.status_code == 200:
                 logger.info("[OK] Static Analysis Complete: " + upl)
             else:
-                logger.info(err_msg % "[ERROR] Performing Static Analysis: " + upl)
+                logger.error(err_msg % " Performing Static Analysis: " + upl)
                 failed = True
         logger.info("[OK] Static Analysis test completed")
         logger.info("Running PDF Generation Test")
@@ -80,7 +80,7 @@ def static_analysis_test():
                 ):
                 logger.info("[OK] PDF Report Generated: " + pdf)
             else:
-                logger.info(err_msg % "[ERROR] Generating PDF: " + pdf)
+                logger.error(err_msg % " Generating PDF: " + pdf)
                 logger.info(resp.content)
                 failed = True
         logger.info("[OK] PDF Generation test completed")
@@ -95,7 +95,7 @@ def static_analysis_test():
         if resp.status_code == 200:
             logger.info("[OK] App compare tests passed successfully")
         else:
-            logger.info(err_msg % "[ERROR] App compare tests failed")
+            logger.error(err_msg % " App compare tests failed")
             logger.info(resp.content)
             failed = True
 
@@ -115,10 +115,10 @@ def static_analysis_test():
                 if dat["deleted"] == "yes":
                     logger.info("[OK] Deleted Scan: " + md5)
                 else:
-                    logger.info(err_msg % "[ERROR] Deleting Scan: " + md5)
+                    logger.error(err_msg % " Deleting Scan: " + md5)
                     failed = True
             else:
-                logger.info(err_msg % "[ERROR] Deleting Scan: " + md5)
+                logger.error(err_msg % " Deleting Scan: " + md5)
                 failed = True
         logger.info("[INFO] Delete Scan Results test completed")
     except:
@@ -152,7 +152,7 @@ def api_test():
                     logger.info("[OK] Upload OK: " + filename)
                     uploaded.append(obj)
                 else:
-                    logger.info(err_msg % "[ERROR] Performing Upload" + filename)
+                    logger.error(err_msg % " Performing Upload" + filename)
                     failed = True
         logger.info("[OK] Completed Upload API test")
         logger.info("[INFO] Running Static Analysis API Test")
@@ -162,8 +162,7 @@ def api_test():
             if resp.status_code == 200:
                 logger.info("[OK] Static Analysis Complete: " + upl["file_name"])
             else:
-                logger.info(err_msg %
-                      "[ERROR] Performing Static Analysis: " + upl["file_name"])
+                logger.error(err_msg % " Performing Static Analysis: " + upl["file_name"])
                 failed = True
         logger.info("[OK] Static Analysis API test completed")
         logger.info("[INFO] Running PDF Generation API Test")
@@ -190,7 +189,7 @@ def api_test():
                 ):
                 logger.info("[OK] PDF Report Generated: " + pdf["hash"])
             else:
-                logger.info(err_msg % "[ERROR] Generating PDF: " + pdf["hash"])
+                logger.error(err_msg % " Generating PDF: " + pdf["hash"])
                 logger.info(resp.content)
                 failed = True
         logger.info("[OK] PDF Generation API test completed")
@@ -202,7 +201,7 @@ def api_test():
             if (resp.status_code == 200) and (resp._headers['content-type'][1] == "application/json; charset=utf-8"):
                 logger.info("[OK] JSON Report Generated: " + pdf["hash"])
             else:
-                logger.info("[ERROR]: {} Generating JSON Response: {}".format(err_msg, pdf["hash"]))
+                logger.error("{} Generating JSON Response: {}".format(err_msg, pdf["hash"]))
                 failed = True
         logger.info("[OK] JSON Report API test completed")
         logger.info("[INFO] Running View Source API test")
@@ -219,10 +218,10 @@ def api_test():
                 if dat["title"]:
                     logger.info("[OK] Reading - ", sfile)
                 else:
-                    logger.info(err_msg % "[ERROR] Reading - " + sfile)
+                    logger.error(err_msg % " Reading - " + sfile)
                     failed = True
             else:
-                logger.info(err_msg % "[ERROR] Reading - " + sfile)
+                logger.error(err_msg % " Reading - " + sfile)
                 failed = True
         logger.info("[OK] View Source API test completed")
         logger.info("[INFO] Running Delete Scan API Results test")
@@ -244,10 +243,10 @@ def api_test():
                 if dat["deleted"] == "yes":
                     logger.info("[OK] Deleted Scan: " + md5)
                 else:
-                    logger.info(err_msg % "[ERROR] Deleting Scan: " + md5)
+                    logger.error(err_msg % " Deleting Scan: " + md5)
                     failed = True
             else:
-                logger.info(err_msg % "[ERROR] Deleting Scan: " + md5)
+                logger.error(err_msg % " Deleting Scan: " + md5)
                 failed = True
         logger.info("[INFO] Delete Scan Results API test completed")
     except:

@@ -6,6 +6,8 @@ import urllib.error
 import urllib.parse
 import argparse
 import requests
+import logging
+logger = logging.getLogger(__name__)
 
 
 def is_server_up(url):
@@ -36,10 +38,10 @@ def start_scan(directory, server_url, apikey, rescan='0'):
             response = requests.post(
                 server_url + '/api/v1/upload', files=files, headers={'AUTHORIZATION': apikey})
             if response.status_code == 200 and "hash" in response.json():
-                print("[OK] Upload OK: " + filename)
+                logger.info("[OK] Upload OK: " + filename)
                 uploaded.append(response.json())
             else:
-                print("[ERROR] Performing Upload: " + filename)
+                logger.error("Performing Upload: " + filename)
 
     logger.info("Running Static Analysis")
     for upl in uploaded:
@@ -49,9 +51,10 @@ def start_scan(directory, server_url, apikey, rescan='0'):
         response = requests.post(
             server_url + "/api/v1/scan", data=upl, headers={'AUTHORIZATION': apikey})
         if response.status_code == 200:
-            print("[OK] Static Analysis Complete: " + upl["file_name"])
+            logger.info("[OK] Static Analysis Complete: " + upl["file_name"])
         else:
-            print("[ERROR] Performing Static Analysis: " + upl["file_name"])
+            logger.error("Performing Static Analysis: " + upl["file_name"])
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
