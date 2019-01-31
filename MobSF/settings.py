@@ -473,7 +473,7 @@ LOGGING = {
     'handlers': {
         'logfile': {
             'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
+            'class': 'logging.FileHandler',
             'filename': os.path.join(MobSF_HOME, 'logs', 'debug.log'),
             'formatter': 'standard',
         },
@@ -485,9 +485,14 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers': ['console'],
+            'handlers': ['console', 'logfile'],
             'level': 'DEBUG',
             'propagate': True,
+        },
+        'django.db.backends': {
+            'handlers': ['console', 'logfile'],
+            'level': 'INFO',   # DEBUG will log all queries, so change it to WARNING.
+            'propagate': False,   # Don't propagate to other handlers
         },
         'MobSF': {
             'handlers': ['console', 'logfile'],
