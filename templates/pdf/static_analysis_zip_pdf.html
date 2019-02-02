@@ -105,6 +105,7 @@ body {
                       <thead>
                     <tr>
                         <th>PERMISSION</th>
+                        <th>STATUS</th>
                         <th>INFO </th>
                         <th>DESCRIPTION</th>
                       </tr>
@@ -112,9 +113,10 @@ body {
                                         <tbody>
                     {% for perm,desc in permissions.items %}
                     <tr>
-                    <td>{{ perm }} ({{ desc.0 }})</td>
-                    <td>{{ desc.1 }}</td>
-                    <td>{{ desc.2 }}</td>
+                    <td>{{ perm }}</td>
+                    <td>{{ desc.status }}</td>
+                    <td>{{ desc.info }}</td>
+                    <td>{{ desc.description }}</td>
                     </tr>
                     {% endfor %}
                     </tbody>

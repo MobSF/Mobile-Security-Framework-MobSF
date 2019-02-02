@@ -216,12 +216,12 @@ def api_test():
             if resp.status_code == 200:
                 dat = json.loads(resp.content.decode("utf-8"))
                 if dat["title"]:
-                    logger.info("[OK] Reading - ", sfile)
+                    logger.info("[OK] Reading - " + sfile["file"])
                 else:
-                    logger.error(err_msg % " Reading - " + sfile)
+                    logger.error(err_msg % " Reading - " + sfile["file"])
                     failed = True
             else:
-                logger.error(err_msg % " Reading - " + sfile)
+                logger.error(err_msg % " Reading - " + sfile["file"])
                 failed = True
         logger.info("[OK] View Source API test completed")
         logger.info("[INFO] Running Delete Scan API Results test")

@@ -21,7 +21,7 @@ before_install:
 - export LIBSSL1="http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4.3_amd64.deb"
 - export LIBSSL1_NAME="libssl1.1_1.1.0g-2ubuntu4.3_amd64.deb"
 - sudo apt-get install -y libpng16-16 libssl-dev xfonts-75dpi xfonts-base libffi-dev libxml2-dev libxslt1-dev
-- sudo apt-get install -y openssl
+- sudo apt-get install -y libc-bin=2.27-3ubuntu1 openssl
 - wget ${PDFGEN_URL}
 - wget ${LIBSSL1}
 - sudo dpkg -i ${LIBSSL1_NAME}

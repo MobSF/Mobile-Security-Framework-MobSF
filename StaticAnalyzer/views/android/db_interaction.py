@@ -66,7 +66,6 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'e_cnt': db_entry[0].E_CNT,
             'apkid': python_dict(db_entry[0].APK_ID),
         }
-        logger.debug("Prepared context: \n{}".format(context))
         return context
     except:
         PrintException("[ERROR] Fetching from DB")

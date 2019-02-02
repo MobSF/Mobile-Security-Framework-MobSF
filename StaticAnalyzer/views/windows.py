@@ -298,6 +298,7 @@ def _binary_analysis(app_dic):
             warning = {
                 "rule_id": "VM",
                 "status": "Info",
+                "info": "",
                 "desc": "VM is not configured. Please read the readme.md in MobSF/install/windows."
             }
             bin_an_dic['results'].append(warning)

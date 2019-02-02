@@ -137,6 +137,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                       <thead>
                     <tr>
                         <th>PERMISSION</th>
+                        <th>STATUS</th>
                         <th>INFO </th>
                         <th>DESCRIPTION</th>
                       </tr>
@@ -144,9 +145,10 @@ Production ready applications should not be signed with 'Android Debug' Certific
                                         <tbody>
                     {% for perm,desc in permissions.items %}
                     <tr>
-                    <td>{{ perm }} ({{ desc.0 }})</td>
-                    <td>{{ desc.1 }}</td>
-                    <td>{{ desc.2 }}</td>
+                    <td>{{ perm }}</td>
+                    <td>{{ desc.status }}</td>
+                    <td>{{ desc.info }}</td>
+                    <td>{{ desc.description }}</td>
                     </tr>
                     {% endfor %}
                     </tbody>

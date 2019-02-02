@@ -354,18 +354,18 @@
                     <tr>
                     <td>{{ perm }}</td>
                     <td>
-                    {% if desc.0 == 'dangerous' %}
+                    {% if desc.status == 'dangerous' %}
                       <span class="label label-danger">dangerous</span>
-                    {% elif desc.0 == 'normal' %}
+                    {% elif desc.status == 'normal' %}
                       <span class="label label-info">normal</span>
-                    {% elif desc.0 == 'signatureOrSystem' %}
+                    {% elif desc.status == 'signatureOrSystem' %}
                       <span class="label label-warning">SignatureOrSystem</span>
-                    {% elif desc.0 == 'signature' %}
+                    {% elif desc.status == 'signature' %}
                       <span class="label label-success">signature</span>
                     {% endif %}
                     </td>
-                    <td>{{ desc.1 }}</td>
-                    <td>{{ desc.2 }}</td>
+                    <td>{{ desc.info }}</td>
+                    <td>{{ desc.description }}</td>
                     </tr>
                     {% endfor %}
                     </tbody>

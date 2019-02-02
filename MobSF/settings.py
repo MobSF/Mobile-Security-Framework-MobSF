@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
 
-MOBSF_VER = "v1.0.3 Beta"
+MOBSF_VER = "v1.0.4 Beta"
 BANNER = """
 
   __  __       _    ____  _____         _   ___  
@@ -466,7 +466,7 @@ LOGGING = {
     'disable_existing_loggers': True,
     'formatters': {
         'standard': {
-            'format': "[%(levelname)s:%(asctime)-15s]:[%(name)s:%(lineno)s]: %(message)s",
+            'format': "[%(levelname)s] %(asctime)-15s - %(message)s",
             'datefmt': "%d/%b/%Y %H:%M:%S"
         },
     },
