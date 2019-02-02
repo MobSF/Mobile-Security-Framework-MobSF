@@ -1,4 +1,4 @@
-dist: bionic
+dist: xenial
 language: python
 python:
 - '3.6'
@@ -14,14 +14,14 @@ before_install:
 - echo $REPO
 - echo $TRAVIS_TAG
 - pwd
-- export PDFGEN_PKGFILE="wkhtmltox_0.12.5-1.bionic_amd64.deb"
-- export PDFGEN_URL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/${PDFGEN_PKGFILE}"
+- export PDFGEN_PKGFILE="wkhtmltox_0.12.5-1.xenial_amd64.deb"
+- export PDFGEN_URL="https://downloads.wkhtmltopdf.org/0.12/0.12.5/${PDFGEN_PKGFILE}"
 - export YARA_URL="https://github.com/rednaga/yara-python-1"
 - export POSTGRES=False
 - export LIBSSL1="http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4.3_amd64.deb"
 - export LIBSSL1_NAME="libssl1.1_1.1.0g-2ubuntu4.3_amd64.deb"
 - sudo apt-get install -y libpng16-16 libssl-dev xfonts-75dpi xfonts-base libffi-dev libxml2-dev libxslt1-dev
-- sudo apt-get install -y libc-bin=2.27-3ubuntu1 openssl
+- sudo apt-get install -y openssl
 - wget ${PDFGEN_URL}
 - wget ${LIBSSL1}
 - sudo dpkg -i ${LIBSSL1_NAME}
