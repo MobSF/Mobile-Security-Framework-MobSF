@@ -17,7 +17,7 @@ def stop_capfuzz(port):
     # Invoke CapFuzz UI Kill Request
     try:
         requests.get("http://127.0.0.1:" + str(port) + "/kill", timeout=5)
-        print("[INFO] Killing CapFuzz UI")
+        logger.info("Killing CapFuzz UI")
     except:
         pass
 
@@ -28,7 +28,7 @@ def stop_capfuzz(port):
         url = "http://127.0.0.1"
         requests.get(url, headers=headers, proxies={
                      'http': http_proxy})
-        print("[INFO] Killing CapFuzz Proxy")
+        logger.info("Killing CapFuzz Proxy")
     except:
         pass
 

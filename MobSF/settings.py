@@ -10,9 +10,11 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 
 import imp
 import os
-
+import logging
 from MobSF import utils
 from install.windows.setup import windows_config_local
+
+logger = logging.getLogger(__name__)
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #       MOBSF FRAMEWORK CONFIGURATIONS
@@ -21,14 +23,16 @@ from install.windows.setup import windows_config_local
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
 
-MOBSF_VER = "v1.0.3 Beta"
+MOBSF_VER = "v1.0.4 Beta"
 BANNER = """
+
   __  __       _    ____  _____         _   ___  
  |  \/  | ___ | |__/ ___||  ___| __   _/ | / _ \ 
  | |\/| |/ _ \| '_ \___ \| |_    \ \ / / || | | |
  | |  | | (_) | |_) |__) |  _|    \ V /| || |_| |
  |_|  |_|\___/|_.__/____/|_|       \_/ |_(_)___/ 
         
+
 """
 # ASCII Standard
 #==============================================
@@ -237,7 +241,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 268435456
 #===================
 
 if CONFIG_HOME:
-    print("[INFO] Loading User config from: " + USER_CONFIG)
+    logger.info("Loading User config from: {}".format(USER_CONFIG))
 else:
     '''
     IMPORTANT
@@ -453,3 +457,58 @@ JAVA_PATH = utils.FindJava(False)
 #================VirtualBox Settings============
 VBOX = utils.FindVbox(False)
 #===============================================
+
+DJANGO_LOG_LEVEL = DEBUG
+
+# Better logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'standard': {
+            'format': "[%(levelname)s] %(asctime)-15s - %(message)s",
+            'datefmt': "%d/%b/%Y %H:%M:%S"
+        },
+    },
+    'handlers': {
+        'logfile': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(MobSF_HOME, 'logs', 'debug.log'),
+            'formatter': 'standard',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'logfile'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.db.backends': {
+            'handlers': ['console', 'logfile'],
+            'level': 'INFO',   # DEBUG will log all queries, so change it to WARNING.
+            'propagate': False,   # Don't propagate to other handlers
+        },
+        'MobSF': {
+            'handlers': ['console', 'logfile'],
+            'level': 'DEBUG',
+        },
+        'StaticAnalyzer': {
+            'handlers': ['console', 'logfile'],
+            'level': 'DEBUG',
+        },
+        'MalwareAnalyzer': {
+            'handlers': ['console', 'logfile'],
+            'level': 'DEBUG',
+        },
+        'DynamicAnalyzer': {
+            'handlers': ['console', 'logfile'],
+            'level': 'DEBUG',
+        },
+    }
+}

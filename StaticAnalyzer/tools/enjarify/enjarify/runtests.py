@@ -12,19 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import zipfile, os, subprocess
-
+import zipfile
+import os
+import subprocess
 from .main import read, translate, writeToJar
 from .jvm.optimization import options
+import logging
+logger = logging.getLogger(__name__)
+
 
 def getStubs():
     with zipfile.ZipFile('tests/stubs/stubs.zip', 'r') as stubs:
         for name in stubs.namelist():
             yield (name, stubs.read(name))
+
+
 STUB_FILES = dict(getStubs())
 
+
 def executeTest(name, opts):
-    print('running test', name)
+    logger.info('running test : {}', name)
     dir = os.path.join('tests', name)
     rawdex = read(os.path.join(dir, 'classes.dex'), 'rb')
     classes, errors = translate(rawdex, opts=opts)
@@ -33,9 +40,8 @@ def executeTest(name, opts):
     classes.update(STUB_FILES)
     writeToJar('out.jar', classes)
 
-    result = subprocess.check_output("java -Xss515m -jar out.jar a.a".split(),
-        stderr=subprocess.STDOUT,
-        universal_newlines=True)
+    result = subprocess.check_output("java -Xss515m -jar out.jar a.a".split(), stderr=subprocess.STDOUT, 
+                                     universal_newlines=True)
     expected = read(os.path.join(dir, 'expected.txt'), 'r')
     assert(result == expected)
 
@@ -43,4 +49,5 @@ def executeTest(name, opts):
 for opts in [options.NONE, options.PRETTY, options.ALL]:
     for i in range(1, 7):
         executeTest('test{}'.format(i), opts)
-print('all tests passed!')
+
+logger.info('all tests passed!')

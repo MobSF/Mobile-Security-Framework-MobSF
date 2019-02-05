@@ -5,7 +5,7 @@ import os
 import io
 from os.path import expanduser
 import platform
-
+import logging
 # Binskim/Binscope analysis
 import xmlrpc.client
 import json
@@ -39,7 +39,7 @@ from MobSF.utils import (
     python_list,
     PrintException,
 )
-
+logger = logging.getLogger(__name__)
 
 # Only used when xmlrpc is used
 proxy = None
@@ -56,7 +56,7 @@ def staticanalyzer_windows(request, api=False):
     """Analyse a windows app."""
     try:
         # Input validation
-        print("[INFO] Windows Static Analysis Started")
+        logger.info("Windows Static Analysis Started")
         app_dic = {}  # Dict to store the binary attributes
         if api:
             typ = request.POST['scan_type']
@@ -82,7 +82,7 @@ def staticanalyzer_windows(request, api=False):
                     MD5=app_dic['md5']
                 )
                 if db_entry.exists() and rescan == '0':
-                    print("\n[INFO] Analysis is already Done. Fetching data from the DB...")
+                    logger.info("Analysis is already Done. Fetching data from the DB...")
                     context = {
                         'title': db_entry[0].TITLE,
                         'name': db_entry[0].APP_NAME,
@@ -108,7 +108,7 @@ def staticanalyzer_windows(request, api=False):
                         'bin_an_warnings': python_list(db_entry[0].BIN_AN_WARNINGS)
                     }
                 else:
-                    print("[INFO] Windows Binary Analysis Started")
+                    logger.info("Windows Binary Analysis Started")
                     app_dic['app_path'] = os.path.join(
                         app_dic['app_dir'], app_dic['md5'] + '.appx')
                     # ANALYSIS BEGINS
@@ -117,15 +117,15 @@ def staticanalyzer_windows(request, api=False):
                     app_dic['sha1'], app_dic[
                         'sha256'] = hash_gen(app_dic['app_path'])
                     # EXTRACT APPX
-                    print("[INFO] Extracting APPX")
+                    logger.info("Extracting APPX")
                     app_dic['files'] = unzip(
                         app_dic['app_path'], app_dic['app_dir'])
                     xml_dic = _parse_xml(app_dic['app_dir'])
                     bin_an_dic = _binary_analysis(app_dic)
                     # Saving to db
-                    print("\n[INFO] Connecting to DB")
+                    logger.info("Connecting to DB")
                     if rescan == '1':
-                        print("\n[INFO] Updating Database...")
+                        logger.info("Updating Database...")
                         StaticAnalyzerWindows.objects.filter(  # pylint: disable-msg=E1101
                             MD5=app_dic['md5']
                         ).update(
@@ -155,7 +155,7 @@ def staticanalyzer_windows(request, api=False):
                             BIN_AN_WARNINGS=bin_an_dic['warnings'],
                         )
                     elif rescan == '0':
-                        print("\n[INFO] Saving to Database")
+                        logger.info("Saving to Database")
                         db_item = StaticAnalyzerWindows(
                             TITLE='Static Analysis',
                             APP_NAME=app_dic['app_name'],
@@ -244,7 +244,7 @@ def _get_token():
 
 def _binary_analysis(app_dic):
     """Start binary analsis."""
-    print("[INFO] Starting Binary Analysis")
+    logger.info("Starting Binary Analysis")
     bin_an_dic = {}
 
     # Init optional sections to prevent None-Pointer-Errors
@@ -282,7 +282,7 @@ def _binary_analysis(app_dic):
     # Execute binskim analysis if vm is available
     if platform.system() != 'Windows':
         if settings.WINDOWS_VM_IP:
-            print("[INFO] Windows VM configured.")
+            logger.info("Windows VM configured.")
             global proxy
             proxy = xmlrpc.client.ServerProxy(  # pylint: disable-msg=C0103
                 "http://{}:{}".format(
@@ -294,15 +294,16 @@ def _binary_analysis(app_dic):
             bin_an_dic = __binskim(name, bin_an_dic)
             bin_an_dic = __binscope(name, bin_an_dic)
         else:
-            print("[INFO] Windows VM not configured in settings.py. Skipping Binskim and Binscope.")
+            logger.warning("Windows VM not configured in settings.py. Skipping Binskim and Binscope.")
             warning = {
                 "rule_id": "VM",
                 "status": "Info",
+                "info": "",
                 "desc": "VM is not configured. Please read the readme.md in MobSF/install/windows."
             }
             bin_an_dic['results'].append(warning)
     else:
-        print("[INFO] Running lokal analysis.")
+        logger.info("Running lokal analysis.")
 
         global config
         config = configparser.ConfigParser()
@@ -320,7 +321,7 @@ def _binary_analysis(app_dic):
 
 def _upload_sample(bin_path):
     """Upload sample to windows vm."""
-    print("[INFO] Uploading sample.")
+    logger.info("Uploading sample.")
 
     # Upload test
     with open(bin_path,"rb") as handle:
@@ -333,7 +334,7 @@ def _upload_sample(bin_path):
 
 def __binskim(name, bin_an_dic, run_local=False, app_dir=None):
     """Run the binskim analysis."""
-    print("[INFO] Running binskim.")
+    logger.info("Running binskim.")
     if run_local:
         bin_path = os.path.join(app_dir, bin_an_dic['bin'])
 
@@ -384,50 +385,27 @@ def __parse_binskim(bin_an_dic, output):
     current_run = output['runs'][0]
 
     if 'results' in current_run:
-        try:
-            # Json result changed, so first try old format
-            rules = output['runs'][0]['rules']
-            for res in current_run['results']:
-                if res['level'] != "pass":
-                    result = {
-                        "rule_id": res['ruleId'],
-                        "status": "Insecure",
-                        "desc": rules[res['ruleId']]['shortDescription']
-                    }
-                    if len(res['formattedRuleMessage']["arguments"])>2:
-                        result["info"] = res['formattedRuleMessage']["arguments"][2]
-                    else:
-                        result["info"] = ""
+        rules = output['runs'][0]['rules']
+        for res in current_run['results']:
+            if res['level'] != "pass":
+                result = {
+                    "rule_id": res['ruleId'],
+                    "status": "Insecure",
+                    "desc": rules[res['ruleId']]['shortDescription']
+                }
+                if len(res['formattedRuleMessage']["arguments"])>2:
+                    result["info"] = res['formattedRuleMessage']["arguments"][2]
                 else:
-                    result = {
-                        "rule_id": res['ruleId'],
-                        "status": "Secure",
-                        "desc": rules[res['ruleId']]['shortDescription']
-                    }
-                bin_an_dic['results'].append(result)
-        except:
-            # Old format failed, so parse it with the new format
-            rules = output['runs'][0]['resources']['rules']
-            for res in current_run['results']:
-                if res['level'] != "pass":
-                    result = {
-                        "rule_id": res['ruleId'],
-                        "status": "Insecure",
-                        "desc": rules[res['ruleId']]['shortDescription']['text']
-                    }
-                    if len(res['message']["arguments"])>2:
-                        result["info"] = res['message']["arguments"][2]
-                    else:
-                        result["info"] = ""
-                else:
-                    result = {
-                        "rule_id": res['ruleId'],
-                        "status": "Secure",
-                        "desc": rules[res['ruleId']]['shortDescription']['text']
-                    }
-                bin_an_dic['results'].append(result)
+                    result["info"] = ""
+            else:
+                result = {
+                    "rule_id": res['ruleId'],
+                    "status": "Secure",
+                    "desc": rules[res['ruleId']]['shortDescription']
+                }
+            bin_an_dic['results'].append(result)
     else:
-        print("[WARNING] binskim has no results.")
+        logger.warning("binskim has no results.")
         # Create an warining for the gui
         warning = {
             "rule_id": "No Binskim-Results",
@@ -451,7 +429,7 @@ def __parse_binskim(bin_an_dic, output):
 
 def __binscope(name, bin_an_dic, run_local=False, app_dir=None):
     """Run the binskim analysis."""
-    print("[INFO] Running binscope. This might take a while, depending on the binary size.")
+    logger.info("Running binscope. This might take a while, depending on the binary size.")
     if run_local:
         global config
         bin_path = os.path.join(app_dir, bin_an_dic['bin'])
@@ -544,7 +522,7 @@ def __binscope(name, bin_an_dic, run_local=False, app_dir=None):
 
 def _parse_xml(app_dir):
     """Parse the AppxManifest file to get basic informations."""
-    print("[INFO] Starting Binary Analysis - XML")
+    logger.info("Starting Binary Analysis - XML")
     xml_file = os.path.join(app_dir, "AppxManifest.xml")
     xml_dic = {
         'version': '',
@@ -562,7 +540,7 @@ def _parse_xml(app_dir):
     }
 
     try:
-        print("[INFO] Reading AppxManifest")
+        logger.info("Reading AppxManifest")
         config = etree.XMLParser(  # pylint: disable-msg=E1101
             remove_blank_text=True,
             resolve_entities=False

@@ -4,7 +4,7 @@
 import re
 import shutil
 import os
-
+import logging
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.conf import settings
@@ -13,6 +13,8 @@ from django.utils.html import escape
 from MobSF.utils import (
     PrintException
 )
+logger = logging.getLogger(__name__)
+
 
 def run(request):
     """Show the smali code."""

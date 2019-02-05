@@ -5,7 +5,7 @@ import io
 import ntpath
 import re
 import os
-
+import logging
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.conf import settings
@@ -23,13 +23,13 @@ from MobSF.forms import (
 from MobSF.utils import (
     print_n_send_error_response
 )
-
+logger = logging.getLogger(__name__)
 
 
 def run(request, api=False):
     """View the source of a file."""
     try:
-        print("[INFO] View Android Source File")
+        logger.info("View Android Source File")
         if api:
             fil = request.POST['file']
             md5 = request.POST['hash']

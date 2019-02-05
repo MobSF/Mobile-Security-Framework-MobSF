@@ -23,7 +23,7 @@ from MobSF.utils import (
 def api_analysis(package, location):
     """API Analysis"""
     api_analysis_result = {}
-    print("\n[INFO] Dynamic API Analysis")
+    logger.info("Dynamic API Analysis")
     dat = ""
     api_base64 = []
     api_fileio = []
@@ -128,7 +128,7 @@ def api_analysis(package, location):
 def run_analysis(apk_dir, md5_hash, package):
     """Run Dynamic File Analysis"""
     analysis_result = {}
-    print("\n[INFO] Dynamic File Analysis")
+    logger.info("Dynamic File Analysis")
     capfuzz_home = os.path.join(str(Path.home()), ".capfuzz")
     web = os.path.join(capfuzz_home, 'flows', package + ".flows.txt")
     logcat = os.path.join(apk_dir, 'logcat.txt')
@@ -159,7 +159,7 @@ def run_analysis(apk_dir, md5_hash, package):
     url_pattern = re.compile(r'((?:https?://|s?ftps?://|file://|javascript:|data:|www\d{0,3}[.])[\w().=/;,#:@?&~*+!$%\'{}-]+)', re.UNICODE)
     urllist = re.findall(url_pattern, traffic.lower())
     # Domain Extraction and Malware Check
-    print("[INFO] Performing Malware Check on extracted Domains")
+    logger.info("Performing Malware Check on extracted Domains")
     domains = malware_check(urllist)
     for url in urllist:
         if url not in urls:
@@ -240,7 +240,7 @@ def run_analysis(apk_dir, md5_hash, package):
 
 def download(md5_hash, download_dir, apk_dir, package):
     """Generating Downloads"""
-    print("\n[INFO] Generating Downloads")
+    logger.info("Generating Downloads")
     try:
 
         capfuzz_home = os.path.join(str(Path.home()), ".capfuzz")

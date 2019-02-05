@@ -7,7 +7,7 @@ import re
 import os
 import zipfile
 import shutil
-
+import logging
 try:
     import io
     StringIO = io.StringIO
@@ -64,10 +64,9 @@ from StaticAnalyzer.views.android.icon_analysis import (
     get_icon,
     find_icon_path_zip,
 )
-
-import StaticAnalyzer.views.android.VirusTotal as VirusTotal
-
 from MalwareAnalyzer.views import apkid_analysis
+import StaticAnalyzer.views.android.VirusTotal as VirusTotal
+logger = logging.getLogger(__name__)
 
 
 @register.filter
@@ -110,7 +109,7 @@ def static_analyzer(request, api=False):
             app_dic['tools_dir'] = os.path.join(
                 app_dic['dir'], 'StaticAnalyzer/tools/')  # TOOLS DIR
             # DWD_DIR = settings.DWD_DIR # not needed? Var is never used.
-            print("[INFO] Starting Analysis on : " + app_dic['app_name'])
+            logger.info("Starting Analysis on : " + app_dic['app_name'])
 
             if typ == 'apk':
                 # Check if in DB
@@ -136,7 +135,7 @@ def static_analyzer(request, api=False):
                     app_dic['certz'] = get_hardcoded_cert_keystore(app_dic[
                                                                    'files'])
 
-                    print("[INFO] APK Extracted")
+                    logger.info("APK Extracted")
 
                     # Manifest XML
                     app_dic['parsed_xml'] = get_manifest(
@@ -189,7 +188,7 @@ def static_analyzer(request, api=False):
                         man_an_dic['permissons'],
                         "apk"
                     )
-                    print("\n[INFO] Generating Java and Smali Downloads")
+                    logger.info("Generating Java and Smali Downloads")
                     gen_downloads(app_dic['app_dir'], app_dic[
                                   'md5'], app_dic['icon_path'])
 
@@ -200,11 +199,11 @@ def static_analyzer(request, api=False):
                     )
                     app_dic['zipped'] = '&type=apk'
 
-                    print("\n[INFO] Connecting to Database")
+                    logger.info("Connecting to Database")
                     try:
                         # SAVE TO DB
                         if rescan == '1':
-                            print("\n[INFO] Updating Database...")
+                            logger.info("Updating Database...")
                             update_db_entry(
                                 app_dic,
                                 man_data_dic,
@@ -215,7 +214,7 @@ def static_analyzer(request, api=False):
                                 apkid_results,
                             )
                         elif rescan == '0':
-                            print("\n[INFO] Saving to Database")
+                            logger.info("Saving to Database")
                             create_db_entry(
                                 app_dic,
                                 man_data_dic,
@@ -274,13 +273,13 @@ def static_analyzer(request, api=False):
                         'md5'] + '.zip'  # NEW FILENAME
                     app_dic['app_path'] = app_dic['app_dir'] + \
                         app_dic['app_file']  # APP PATH
-                    print("[INFO] Extracting ZIP")
+                    logger.info("Extracting ZIP")
                     app_dic['files'] = unzip(
                         app_dic['app_path'], app_dic['app_dir'])
                     # Check if Valid Directory Structure and get ZIP Type
                     pro_type, valid = valid_android_zip(app_dic['app_dir'])
                     if valid and pro_type == 'ios':
-                        print("[INFO] Redirecting to iOS Source Code Analyzer")
+                        logger.info("Redirecting to iOS Source Code Analyzer")
                         if api:
                             return {"type": "ios"}
                         else:
@@ -291,7 +290,7 @@ def static_analyzer(request, api=False):
                     app_dic['certz'] = get_hardcoded_cert_keystore(app_dic[
                                                                    'files'])
                     app_dic['zipped'] = pro_type
-                    print("[INFO] ZIP Type - " + pro_type)
+                    logger.info("ZIP Type - " + pro_type)
                     if valid and (pro_type in ['eclipse', 'studio']):
                         # ANALYSIS BEGINS
                         app_dic['size'] = str(
@@ -352,11 +351,11 @@ def static_analyzer(request, api=False):
                             man_an_dic['permissons'],
                             pro_type
                         )
-                        print("\n[INFO] Connecting to Database")
+                        logger.info("Connecting to Database")
                         try:
                             # SAVE TO DB
                             if rescan == '1':
-                                print("\n[INFO] Updating Database...")
+                                logger.info("Updating Database...")
                                 update_db_entry(
                                     app_dic,
                                     man_data_dic,
@@ -367,7 +366,7 @@ def static_analyzer(request, api=False):
                                     {},
                                 )
                             elif rescan == '0':
-                                print("\n[INFO] Saving to Database")
+                                logger.info("Saving to Database")
                                 create_db_entry(
                                     app_dic,
                                     man_data_dic,
@@ -403,8 +402,7 @@ def static_analyzer(request, api=False):
                 else:
                     return render(request, template, context)
             else:
-                print(
-                    "\n[ERROR] Only APK,IPA and Zipped Android/iOS Source code supported now!")
+                logger.error("Only APK,IPA and Zipped Android/iOS Source code supported now!")
         else:
             msg = "Hash match failed or Invalid file extension or file type"
             if api:
@@ -424,7 +422,7 @@ def static_analyzer(request, api=False):
 def valid_android_zip(app_dir):
     """Test if this is an valid android zip."""
     try:
-        print("[INFO] Checking for ZIP Validity and Mode")
+        logger.info("Checking for ZIP Validity and Mode")
         # Eclipse
         man = os.path.isfile(os.path.join(app_dir, "AndroidManifest.xml"))
         src = os.path.exists(os.path.join(app_dir, "src/"))
@@ -451,7 +449,7 @@ def valid_android_zip(app_dir):
 def gen_downloads(app_dir, md5, icon_path=''):
     """Generate downloads for java and smali."""
     try:
-        print("[INFO] Generating Downloads")
+        logger.info("Generating Downloads")
         # For Java
         directory = os.path.join(app_dir, 'java_source/')
         dwd_dir = os.path.join(settings.DWD_DIR, md5 + '-java.zip')

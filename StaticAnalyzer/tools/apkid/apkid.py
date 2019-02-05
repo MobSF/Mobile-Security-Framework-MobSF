@@ -33,7 +33,6 @@
 """
 
 import json
-import logging
 import os
 import shutil
 import sys
@@ -41,19 +40,14 @@ import tempfile
 import traceback
 import yara
 import zipfile
+import logging
+logger = logging.getLogger(__name__)
 
 __title__ = 'apkid'
 __version__ = '1.0.0'
 __author__ = 'Caleb Fenton & Tim Strazzere'
 __license__ = 'GPL & Commercial'
 __copyright__ = 'Copyright (C) 2017 RedNaga'
-
-
-LOGGING_LEVEL = logging.INFO
-logging.basicConfig(level=LOGGING_LEVEL,
-                    format='%(asctime)s %(levelname)-8s %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S',
-                    stream=sys.stdout)
 
 # Magic doesn't need to be perfect. Just used to filter likely scannable files.
 ZIP_MAGIC = [b'PK\x03\x04', b'PK\x05\x06', b'PK\x07\x08']
@@ -212,7 +206,7 @@ def scan_singly(input, timeout, output_dir):
         out_file = os.path.join(output_dir, filename)
         if os.path.exists(out_file):
             continue
-        print("Processing: {}".format(file_path))
+        logger.info("Processing: {}".format(file_path))
         try:
             match_dict = do_yara(file_path, rules, timeout)
             if len(match_dict) > 0:

@@ -12,11 +12,14 @@ from MobSF.utils import (
     PrintException
 )
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 def get_hardcoded_cert_keystore(files):
     """Returns the hardcoded certificate keystore."""
     try:
-        print("[INFO] Getting Hardcoded Certificates/Keystores")
+        logger.info("Getting Hardcoded Certificates/Keystores")
         dat = ''
         certz = ''
         key_store = ''
@@ -42,7 +45,7 @@ def get_hardcoded_cert_keystore(files):
 def cert_info(app_dir, tools_dir):
     """Return certificate information."""
     try:
-        print("[INFO] Reading Code Signing Certificate")
+        logger.info("Reading Code Signing Certificate")
         cert = os.path.join(app_dir, 'META-INF/')
         cp_path = tools_dir + 'CertPrint.jar'
         files = [f for f in os.listdir(

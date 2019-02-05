@@ -9,11 +9,7 @@ import platform
 import re
 import subprocess
 import zipfile
-
-try:
-    import pdfkit
-except:
-    print("[WARNING] wkhtmltopdf is not installed/configured properly. PDF Report Generation is disabled")
+import logging
 from django.http import HttpResponse
 from django.template.loader import get_template
 from django.utils.html import escape
@@ -42,6 +38,12 @@ from StaticAnalyzer.views.ios.db_interaction import (
 import StaticAnalyzer.views.android.VirusTotal as VirusTotal
 
 from StaticAnalyzer.views.comparer import generic_compare
+logger = logging.getLogger(__name__)
+try:
+    import pdfkit
+except ImportError:
+    logger.warning("wkhtmltopdf is not installed/configured properly. PDF Report Generation is disabled")
+logger = logging.getLogger(__name__)
 
 
 def file_size(app_path):
@@ -52,7 +54,7 @@ def file_size(app_path):
 def hash_gen(app_path) -> tuple:
     """Generate and return sha1 and sha256 as a tupel."""
     try:
-        print("[INFO] Generating Hashes")
+        logger.info("Generating Hashes")
         sha1 = hashlib.sha1()
         sha256 = hashlib.sha256()
         block_size = 65536
@@ -70,7 +72,7 @@ def hash_gen(app_path) -> tuple:
 
 
 def unzip(app_path, ext_path):
-    print("[INFO] Unzipping")
+    logger.info("Unzipping")
     try:
         files = []
         with zipfile.ZipFile(app_path, "r") as zipptr:
@@ -85,9 +87,9 @@ def unzip(app_path, ext_path):
     except:
         PrintException("[ERROR] Unzipping Error")
         if platform.system() == "Windows":
-            print("\n[INFO] Not yet Implemented.")
+            logger.info("Not yet Implemented.")
         else:
-            print("\n[INFO] Using the Default OS Unzip Utility.")
+            logger.info("Using the Default OS Unzip Utility.")
             try:
                 subprocess.call(
                     ['unzip', '-o', '-I utf-8', '-q', app_path, '-d', ext_path])
@@ -113,8 +115,8 @@ def pdf(request, api=False, json=False):
             if scan_type.lower() in ['apk', 'andzip']:
                 static_db = StaticAnalyzerAndroid.objects.filter(MD5=checksum)
                 if static_db.exists():
-                    print(
-                        "\n[INFO] Fetching data from DB for PDF Report Generation (Android)")
+                    logger.info(
+                        "Fetching data from DB for PDF Report Generation (Android)")
                     context = get_context_from_db_entry(static_db)
                     context["average_cvss"], context[
                         "security_score"] = score(context["findings"])
@@ -133,8 +135,8 @@ def pdf(request, api=False, json=False):
                 if scan_type.lower() == 'ipa':
                     static_db = StaticAnalyzerIPA.objects.filter(MD5=checksum)
                     if static_db.exists():
-                        print(
-                            "\n[INFO] Fetching data from DB for PDF Report Generation (IOS IPA)")
+                        logger.info(
+                            "Fetching data from DB for PDF Report Generation (IOS IPA)")
                         context = get_context_from_db_entry_ipa(static_db)
                         template = get_template(
                             "pdf/ios_binary_analysis_pdf.html")
@@ -148,8 +150,8 @@ def pdf(request, api=False, json=False):
                     static_db = StaticAnalyzerIOSZIP.objects.filter(
                         MD5=checksum)
                     if static_db.exists():
-                        print(
-                            "\n[INFO] Fetching data from DB for PDF Report Generation (IOS ZIP)")
+                        logger.info(
+                            "Fetching data from DB for PDF Report Generation (IOS ZIP)")
                         context = get_context_from_db_entry_ios(static_db)
                         context["average_cvss"], context[
                             "security_score"] = score(context["insecure"])
@@ -167,8 +169,8 @@ def pdf(request, api=False, json=False):
                         MD5=checksum
                     )
                     if db_entry.exists():
-                        print(
-                            "\n[INFO] Fetching data from DB for PDF Report Generation (APPX)")
+                        logger.info(
+                            "Fetching data from DB for PDF Report Generation (APPX)")
 
                         context = {
                             'title': db_entry[0].TITLE,
@@ -333,7 +335,7 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                         add_findings(findings, rule[
                                      "desc"], file_path, rule)
                 else:
-                    print("\n[ERROR] Code Regex Rule Match Error\n" + rule)
+                    logger.error("Code Regex Rule Match Error\n" + rule)
 
             elif rule["type"] == "string":
                 if rule["match"] == 'single_string':
@@ -392,9 +394,9 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                         add_findings(findings, rule[
                                      "desc"], file_path, rule)
                 else:
-                    print("\n[ERROR] Code String Rule Match Error\n" + rule)
+                    logger.error("Code String Rule Match Error\n" + rule)
             else:
-                print("\n[ERROR] Code Rule Error\n", + rule)
+                logger.error("Code Rule Error\n", + rule)
     except:
         PrintException("[ERROR] Error in Code Rule Processing")
 
@@ -447,7 +449,7 @@ def api_rule_matcher(api_findings, perms, data, file_path, api_rules):
                     if (api["perm"] in perms) and (re.findall(api["regex1"], tmp_data)):
                         add_apis(api_findings, api["desc"], file_path)
                 else:
-                    print("\n[ERROR] API Regex Rule Match Error\n" + api)
+                    logger.error("API Regex Rule Match Error\n" + api)
 
             elif api["type"] == "string":
                 if api["match"] == 'single_string':
@@ -499,9 +501,9 @@ def api_rule_matcher(api_findings, perms, data, file_path, api_rules):
                     if (api["perm"] in perms) and string_or_ps:
                         add_apis(api_findings, api["desc"], file_path)
                 else:
-                    print("\n[ERROR] API String Rule Match Error\n" + api)
+                    logger.error("API String Rule Match Error\n" + api)
             else:
-                print("\n[ERROR] API Rule Error\n", + api)
+                logger.error("API Rule Error\n", + api)
     except:
         PrintException("[ERROR] Error in API Rule Processing")
 
@@ -549,7 +551,7 @@ def compare_apps(request, first_hash: str, second_hash: str):
     if first_hash == second_hash:
         error_msg = "Results with same hash cannot be compared"
         return print_n_send_error_response(request, error_msg, False)
-    print("[INFO] Starting App compare for - {} and {}".format(first_hash, second_hash))
+    logger.info("Starting App compare for - {} and {}".format(first_hash, second_hash))
     return generic_compare(request, first_hash, second_hash)
 
 

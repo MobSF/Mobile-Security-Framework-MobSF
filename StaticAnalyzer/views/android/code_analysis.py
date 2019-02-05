@@ -25,11 +25,14 @@ from StaticAnalyzer.views.android import (
     android_rules,
     android_apis
 )
+import logging
+logger = logging.getLogger(__name__)
+
 
 def code_analysis(app_dir, perms, typ):
     """Perform the code analysis."""
     try:
-        print("[INFO] Static Android Code Analysis Started")
+        logger.info("Static Android Code Analysis Started")
         api_rules = android_apis.APIS
         code_rules = android_rules.RULES
         code_findings = {}
@@ -45,7 +48,7 @@ def code_analysis(app_dir, perms, typ):
             java_src = os.path.join(app_dir, 'app/src/main/java/')
         elif typ == "eclipse":
             java_src = os.path.join(app_dir, 'src/')
-        print("[INFO] Code Analysis Started on - " + java_src)
+        logger.info("Code Analysis Started on - " + java_src)
         # pylint: disable=unused-variable
         # Needed by os.walk
         for dir_name, sub_dir, files in os.walk(java_src):
@@ -85,9 +88,9 @@ def code_analysis(app_dir, perms, typ):
                     url_n_file.extend(urls_nf)
                     email_n_file.extend(emails_nf)
         # Domain Extraction and Malware Check
-        print("[INFO] Performing Malware Check on extracted Domains")
+        logger.info("Performing Malware Check on extracted Domains")
         domains = malware_check(list(set(url_list)))
-        print("[INFO] Finished Code Analysis, Email and URL Extraction")
+        logger.info("Finished Code Analysis, Email and URL Extraction")
         code_an_dic = {
             'api': api_findings,
             'findings': code_findings,

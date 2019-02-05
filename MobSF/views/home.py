@@ -8,7 +8,7 @@ import platform
 import re
 import shutil
 from wsgiref.util import FileWrapper
-
+import logging
 from django.conf import settings
 from django.http import (
     HttpResponse,
@@ -43,6 +43,7 @@ from StaticAnalyzer.models import (
 
 LINUX_PLATFORM = ["Darwin", "Linux"]
 HTTP_BAD_REQUEST = 400
+logger = logging.getLogger(__name__)
 
 
 def index(request):
@@ -85,14 +86,14 @@ class Upload(object):
             'status': ''
         }
         if request.method != 'POST':
-            print("\n[ERROR] Method not Supported!")
+            logger.error("Method not Supported!")
             form = UploadFileForm()
             response_data['description'] = 'Method not Supported!'
             response_data['status'] = HTTP_BAD_REQUEST
             return self.resp_json(response_data)
 
         if not self.form.is_valid():
-            print("\n[ERROR] Invalid Form Data!")
+            logger.error("Invalid Form Data!")
             response_data['description'] = 'Invalid Form Data!'
             response_data['status'] = HTTP_BAD_REQUEST
             return self.resp_json(response_data)
@@ -101,14 +102,14 @@ class Upload(object):
         self.file_name_lower = request.FILES['file'].name.lower()
         self.file_type = FileType(self.file_content_type, self.file_name_lower)
         if not self.file_type.is_allow_file():
-            print("\n[ERROR] File format not Supported!")
+            logger.error("File format not Supported!")
             response_data['description'] = 'File format not Supported!'
             response_data['status'] = HTTP_BAD_REQUEST
             return self.resp_json(response_data)
 
         if self.file_type.is_ipa():
             if platform.system() not in LINUX_PLATFORM:
-                print("\n[ERROR] Static Analysis of iOS IPA requires Mac or Linux")
+                logger.error("Static Analysis of iOS IPA requires Mac or Linux")
                 response_data[
                     'description'] = 'Static Analysis of iOS IPA requires Mac or Linux'
                 response_data['status'] = 'success'
@@ -147,7 +148,7 @@ class Upload(object):
         file_type = self.file_content_type
         file_name_lower = self.file_name_lower
 
-        print("[INFO] MIME Type: {} FILE: {}".format(
+        logger.info("MIME Type: {} FILE: {}".format(
             file_type, file_name_lower))
         if self.file_type.is_apk():
             return scanning.scan_apk()
@@ -248,7 +249,7 @@ def download(request):
             filename = request.path.replace("/download/", "", 1)
             # Security Checks
             if "../" in filename:
-                print("\n[ATTACK] Path Traversal Attack detected")
+                logger.info("\n[ATTACK] Path Traversal Attack detected")
                 return HttpResponseRedirect('/error/')
             ext = os.path.splitext(filename)[1]
             if ext in allowed_exts:
