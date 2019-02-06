@@ -394,9 +394,9 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                         add_findings(findings, rule[
                                      "desc"], file_path, rule)
                 else:
-                    logger.error("Code String Rule Match Error\n" + rule)
+                    logger.error("Code String Rule Match Error\n%s", rule)
             else:
-                logger.error("Code Rule Error\n", + rule)
+                logger.error("Code Rule Error\n%s", rule)
     except:
         PrintException("[ERROR] Error in Code Rule Processing")
 
@@ -501,9 +501,9 @@ def api_rule_matcher(api_findings, perms, data, file_path, api_rules):
                     if (api["perm"] in perms) and string_or_ps:
                         add_apis(api_findings, api["desc"], file_path)
                 else:
-                    logger.error("API String Rule Match Error\n" + api)
+                    logger.error("API String Rule Match Error\n%s", api)
             else:
-                logger.error("API Rule Error\n", + api)
+                logger.error("API Rule Error\n%s", api)
     except:
         PrintException("[ERROR] Error in API Rule Processing")
 

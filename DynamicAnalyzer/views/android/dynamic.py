@@ -840,16 +840,14 @@ def screencast_service():
             screen_socket.listen(10)
             while TCP_SERVER_MODE == "on":
                 screens, address = screen_socket.accept()
-                logger.info("Got Connection from: ", address[0])
+                logger.info("Got Connection from: %s", address[0])
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_REAL_DEVICE":
                     ip_address = settings.DEVICE_IP
                 else:
                     ip_address = settings.VM_IP
                 if address[0] in [ip_address, '127.0.0.1']:
-                    """
-                    Very Basic Check to ensure that only MobSF VM/Device/Emulator
-                    is allowed to connect to MobSF ScreenCast Service.
-                    """
+                    # Very Basic Check to ensure that only MobSF VM/Device/Emulator
+                    # is allowed to connect to MobSF ScreenCast Service.
                     with open(screen_dir + 'screen.png', 'wb') as flip:
                         while True:
                             data = screens.recv(1024)
