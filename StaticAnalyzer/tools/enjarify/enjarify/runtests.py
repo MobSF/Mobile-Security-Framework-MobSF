@@ -17,8 +17,6 @@ import os
 import subprocess
 from .main import read, translate, writeToJar
 from .jvm.optimization import options
-import logging
-logger = logging.getLogger(__name__)
 
 
 def getStubs():
@@ -31,7 +29,7 @@ STUB_FILES = dict(getStubs())
 
 
 def executeTest(name, opts):
-    logger.info('running test : {}', name)
+    print('running test', name)
     dir = os.path.join('tests', name)
     rawdex = read(os.path.join(dir, 'classes.dex'), 'rb')
     classes, errors = translate(rawdex, opts=opts)
