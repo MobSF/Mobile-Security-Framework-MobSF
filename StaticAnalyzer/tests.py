@@ -122,7 +122,7 @@ def static_analysis_test():
                 failed = True
         logger.info("Delete Scan Results test completed")
     except:
-        PrintException("[ERROR] Completing Static Analyzer Test")
+        PrintException("Completing Static Analyzer Test")
     return failed
 
 
@@ -250,7 +250,7 @@ def api_test():
                 failed = True
         logger.info("Delete Scan Results API test completed")
     except:
-        PrintException("[ERROR] Completing REST API Unit Test")
+        PrintException("Completing REST API Unit Test")
     return failed
 
 

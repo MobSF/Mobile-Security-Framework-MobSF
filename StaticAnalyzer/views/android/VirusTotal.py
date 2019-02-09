@@ -24,7 +24,7 @@ class VirusTotal:
             try:
                 proxies, verify = upstream_proxy('https')
             except:
-                PrintException("[ERROR] Setting upstream proxy")
+                PrintException("Setting upstream proxy")
             try:
                 response = requests.get(
                     url, params=params, headers=headers, proxies=proxies, verify=verify)
@@ -40,7 +40,7 @@ class VirusTotal:
             except ValueError:
                 return None
         except:
-            PrintException("[ERROR] in VirusTotal get_report")
+            PrintException("VirusTotal get_report")
             return None
 
     def upload_file(self, file_path):
@@ -59,7 +59,7 @@ class VirusTotal:
             try:
                 proxies, verify = upstream_proxy('https')
             except:
-                PrintException("[ERROR] Setting upstream proxy")
+                PrintException("Setting upstream proxy")
             try:
                 response = requests.post(
                     url, files=files, data=headers, proxies=proxies, verify=verify)
@@ -73,7 +73,7 @@ class VirusTotal:
             return json_response
 
         except:
-            PrintException("[ERROR] in VirusTotal upload_file")
+            PrintException("VirusTotal upload_file")
             return None
 
     def get_result(self, file_path, file_hash):
@@ -104,4 +104,4 @@ class VirusTotal:
                     "verbose_msg": "Scan Not performed, VirusTotal file upload disabled in settings.py", "positives": 0, "total": 0}
                 return report
         except:
-            PrintException("[ERROR] in VirusTotal get_result")
+            PrintException("VirusTotal get_result")

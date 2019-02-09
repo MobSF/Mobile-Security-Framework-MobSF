@@ -111,9 +111,9 @@ def api_analysis(package, location):
                     if re.findall('java.net.URL|org.apache.http.impl.client.AbstractHttpClient', clss):
                         api_net.append(call_data)
                 except:
-                    PrintException("[ERROR] Parsing JSON Failed for: " + value)
+                    PrintException("Parsing JSON Failed for: " + value)
     except:
-        PrintException("[ERROR] Dynamic API Analysis")
+        PrintException("Dynamic API Analysis")
     api_analysis_result["api_net"] = list(set(api_net))
     api_analysis_result["api_base64"] = list(set(api_base64))
     api_analysis_result["api_fileio"] = list(set(api_fileio))
@@ -192,7 +192,7 @@ def run_analysis(apk_dir, md5_hash, package):
             except:
                 pass
     except:
-        PrintException("[ERROR] TAR EXTRACTION FAILED")
+        PrintException("TAR EXTRACTION FAILED")
     # Do Static Analysis on Data from Device
     xmlfiles = ''
     sqlite_db = ''
@@ -233,7 +233,7 @@ def run_analysis(apk_dir, md5_hash, package):
                                 typ + "'>" + \
                                 escape(fileparam) + "</a></td><tr>"
     except:
-        PrintException("[ERROR] Dynamic File Analysis")
+        PrintException("Dynamic File Analysis")
     analysis_result["urls"] = urls
     analysis_result["domains"] = domains
     analysis_result["emails"] = emails
@@ -289,4 +289,4 @@ def download(md5_hash, download_dir, apk_dir, package):
         except:
             pass
     except:
-        PrintException("[ERROR] Generating Downloads")
+        PrintException("Generating Downloads")

@@ -68,5 +68,5 @@ def run(request):
         template = "general/search.html"
         return render(request, template, context)
     except:
-        PrintException("[ERROR] Searching Failed")
+        PrintException("Searching Failed")
         return HttpResponseRedirect('/error/')

@@ -120,7 +120,7 @@ def android_dynamic_analyzer(request):
         else:
             return HttpResponseRedirect('/error/')
     except:
-        PrintException("[ERROR] DynamicAnalyzer")
+        PrintException("DynamicAnalyzer")
         return HttpResponseRedirect('/error/')
 # AJAX
 
@@ -170,7 +170,7 @@ def get_env(request):
         else:
             return HttpResponseRedirect('/error/')
     except:
-        PrintException("[ERROR] Setting up Dynamic Analysis Environment")
+        PrintException("Setting up Dynamic Analysis Environment")
         return HttpResponseRedirect('/error/')
 # AJAX
 
@@ -202,7 +202,7 @@ def take_screenshot(request):
         else:
             return HttpResponseRedirect('/error/')
     except:
-        PrintException("[ERROR] Taking Screenshot")
+        PrintException("Taking Screenshot")
         return HttpResponseRedirect('/error/')
 # AJAX
 
@@ -241,7 +241,7 @@ def screen_cast(request):
                     screen_trd.setDaemon(True)
                     screen_trd.start()
                 except:
-                    PrintException("[ERROR] Casting Screen")
+                    PrintException("Casting Screen")
                     data = {'status': 'error'}
                     return HttpResponse(json.dumps(data), content_type='application/json')
             else:
@@ -250,7 +250,7 @@ def screen_cast(request):
             data = {'status': 'failed'}
         return HttpResponse(json.dumps(data), content_type='application/json')
     except:
-        PrintException("[ERROR] Casting Screen")
+        PrintException("Casting Screen")
         return HttpResponseRedirect('/error/')
 
 # AJAX
@@ -270,13 +270,13 @@ def clip_dump(request):
                 adb_command(args, True)
                 data = {'status': 'success'}
             except:
-                PrintException("[ERROR] Dumping Clipboard")
+                PrintException("Dumping Clipboard")
                 data = {'status': 'error'}
         else:
             data = {'status': 'failed'}
         return HttpResponse(json.dumps(data), content_type='application/json')
     except:
-        PrintException("[ERROR] Dumping Clipboard")
+        PrintException("Dumping Clipboard")
         return HttpResponseRedirect('/error/')
 
 # AJAX
@@ -300,12 +300,12 @@ def touch(request):
                 adb_command(args, True)
             except:
                 data = {'status': 'error'}
-                PrintException("[ERROR] Performing Touch Action")
+                PrintException("Performing Touch Action")
         else:
             data = {'status': 'failed'}
         return HttpResponse(json.dumps(data), content_type='application/json')
     except:
-        PrintException("[ERROR] Sending Touch Events")
+        PrintException("Sending Touch Events")
         return HttpResponseRedirect('/error/')
 # AJAX
 
@@ -321,13 +321,13 @@ def execute_adb(request):
             try:
                 resp = adb_command(cmd.split(' '))
             except:
-                PrintException("[ERROR] Executing ADB Commands")
+                PrintException("Executing ADB Commands")
             data = {'cmd': 'yes', 'resp': resp.decode("utf8", "ignore")}
             return HttpResponse(json.dumps(data), content_type='application/json')
         else:
             return HttpResponseRedirect('/error/')
     except:
-        PrintException("[ERROR] Executing ADB Commands")
+        PrintException("Executing ADB Commands")
         return HttpResponseRedirect('/error/')
 
 # AJAX
@@ -381,7 +381,7 @@ def mobsf_ca(request):
         else:
             return HttpResponseRedirect('/error/')
     except:
-        PrintException("[ERROR] MobSF RootCA Handler")
+        PrintException("MobSF RootCA Handler")
         return HttpResponseRedirect('/error/')
 
 # AJAX
@@ -433,7 +433,7 @@ def final_test(request):
         else:
             return HttpResponseRedirect('/error/')
     except:
-        PrintException("[ERROR] Clean Up")
+        PrintException("Clean Up")
         return HttpResponseRedirect('/error/')
 # AJAX
 
@@ -489,7 +489,7 @@ def dump_data(request):
         else:
             return HttpResponseRedirect('/error/')
     except:
-        PrintException("[ERROR] Downloading Application Data from Device")
+        PrintException("Downloading Application Data from Device")
         return HttpResponseRedirect('/error/')
 # AJAX
 
@@ -547,7 +547,7 @@ def exported_activity_tester(request):
                                 logger.info("Stopping App")
                             except:
                                 PrintException(
-                                    "[ERROR] Exported Activity Tester")
+                                    "Exported Activity Tester")
                         data = {'expacttest': 'done'}
                     else:
                         logger.info("Exported Activity Tester - No Activity Found!")
@@ -631,7 +631,7 @@ def activity_tester(request):
         else:
             return HttpResponseRedirect('/error/')
     except:
-        PrintException("[ERROR] Activity Tester")
+        PrintException("Activity Tester")
         return HttpResponseRedirect('/error/')
 
 
@@ -689,7 +689,7 @@ def report(request):
                         else:
                             logger.warning("Entry does not exists in the DB.")
                     except:
-                        PrintException("[ERROR] Screenshot Sorting")
+                        PrintException("Screenshot Sorting")
                 context = {'md5': md5_hash,
                            'emails': analysis_result["emails"],
                            'urls': analysis_result["urls"],
@@ -724,7 +724,7 @@ def report(request):
         else:
             return HttpResponseRedirect('/error/')
     except:
-        PrintException("[ERROR] Dynamic Analysis Report Generation")
+        PrintException("Dynamic Analysis Report Generation")
         return HttpResponseRedirect('/error/')
 
 
@@ -757,7 +757,7 @@ def handle_sqlite(sfile):
                 data += dat + "\n"
         return data
     except:
-        PrintException("[ERROR] SQLite DB Extraction")
+        PrintException("SQLite DB Extraction")
 
 
 def view(request):
@@ -798,7 +798,7 @@ def view(request):
         else:
             return HttpResponseRedirect('/error/')
     except:
-        PrintException("[ERROR] Viewing File")
+        PrintException("Viewing File")
         return HttpResponseRedirect('/error/')
 
 
@@ -816,7 +816,7 @@ def capfuzz_start(request):
             project = ""
         return HttpResponseRedirect('http://localhost:' + str(settings.PORT) + "/dashboard/" + project)
     except:
-        PrintException("[ERROR] Starting CapFuzz Web UI")
+        PrintException("Starting CapFuzz Web UI")
         return HttpResponseRedirect('/error/')
 
 
@@ -861,4 +861,4 @@ def screencast_service():
             screen_socket.close()
     except:
         screen_socket.close()
-        PrintException("[ERROR] ScreenCast Server")
+        PrintException("ScreenCast Server")

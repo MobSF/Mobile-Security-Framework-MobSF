@@ -29,7 +29,7 @@ def check_config():
             return False
         return True
     except:
-        PrintException("[ERROR] check_config")
+        PrintException("check_config")
         return False
 
 
@@ -65,7 +65,7 @@ def help_boot_avd():
         logger.info("help_boot_avd: finished!")
         return True
     except:
-        PrintException("[ERROR] help_boot_avd")
+        PrintException("help_boot_avd")
         return False
 
 
@@ -90,7 +90,7 @@ def start_avd():
         subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return True
     except:
-        PrintException("[ERROR] start_avd")
+        PrintException("start_avd")
         return False
 
 

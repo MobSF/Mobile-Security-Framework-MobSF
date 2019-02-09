@@ -33,4 +33,4 @@ def strings_jar(app_file, app_dir):
                 dat.append('"'+duo[0]+'" : "'+duo[1]+'"') 
         return dat
     except:
-        PrintException("[ERROR] Extracting Strings from APK")
+        PrintException("Extracting Strings from APK")

@@ -71,4 +71,4 @@ def ios_source_analysis(src):
         return code_analysis_dict
 
     except:
-        PrintException("[ERROR] iOS Source Code Analysis")
+        PrintException("iOS Source Code Analysis")

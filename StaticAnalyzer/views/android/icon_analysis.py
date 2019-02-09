@@ -104,7 +104,7 @@ def find_icon_path_zip(res_dir, icon_paths_from_manifest):
         return guess_icon_path(res_dir)
 
     except:
-        PrintException("[ERROR] Guessing icon path")
+        PrintException("Guessing icon path")
 
 
 def get_icon(apk_path, res_dir):
@@ -125,4 +125,4 @@ def get_icon(apk_path, res_dir):
             'hidden': True
         }
     except:
-        PrintException("[ERROR] Fetching icon function")
+        PrintException("Fetching icon function")

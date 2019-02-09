@@ -43,5 +43,5 @@ def run(request):
             template = "static_analysis/view_mani.html"
             return render(request, template, context)
     except:
-        PrintException("[ERROR] Viewing AndroidManifest.xml")
+        PrintException("Viewing AndroidManifest.xml")
         return HttpResponseRedirect('/error/')

@@ -68,7 +68,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
         }
         return context
     except:
-        PrintException("[ERROR] Fetching from DB")
+        PrintException("Fetching from DB")
 
 
 def get_context_from_analysis(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bin_anal, apk_id) -> dict:
@@ -124,7 +124,7 @@ def get_context_from_analysis(app_dic, man_data_dic, man_an_dic, code_an_dic, ce
         }
         return context
     except:
-        PrintException("[ERROR] Rendering to Template")
+        PrintException("Rendering to Template")
 
 
 def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bin_anal, apk_id) -> None:
@@ -181,7 +181,7 @@ def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bi
             APK_ID=apk_id,
         )
     except:
-        PrintException("[ERROR] Updating DB")
+        PrintException("Updating DB")
 
 
 def create_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bin_anal, apk_id) -> None:
@@ -238,4 +238,4 @@ def create_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bi
         )
         static_db.save()
     except:
-        PrintException("[ERROR] Saving to DB")
+        PrintException("Saving to DB")

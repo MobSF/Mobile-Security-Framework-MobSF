@@ -62,5 +62,5 @@ def run(request):
         template = "static_analysis/java.html"
         return render(request, template, context)
     except:
-        PrintException("[ERROR] Getting Java Files")
+        PrintException("Getting Java Files")
         return HttpResponseRedirect('/error/')

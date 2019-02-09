@@ -37,7 +37,7 @@ def get_res():
             # width, height
         return "", ""
     except:
-        PrintException("[ERROR] Getting Screen Resolution")
+        PrintException("Getting Screen Resolution")
         return "", ""
 
 
@@ -52,7 +52,7 @@ def get_identifier():
             return settings.VM_IP + ":" + str(settings.VM_ADB_PORT)
     except:
         PrintException(
-            "[ERROR] Getting ADB Connection Identifier for Device/VM")
+            "Getting ADB Connection Identifier for Device/VM")
 
 
 def adb_command(cmd_list, shell=False, silent=False):
@@ -71,7 +71,7 @@ def adb_command(cmd_list, shell=False, silent=False):
         return result
     except:
         if not silent:
-            PrintException("[ERROR] adb_command")
+            PrintException("Running ADB Command")
         return None
 
 
@@ -101,7 +101,7 @@ def connect():
             adb_command(["mount", "-o", "rw,remount", "-t", "rfs",
                          "/dev/block/sda6", "/system"], True)
     except:
-        PrintException("[ERROR]  Connecting to VM/Device")
+        PrintException("Connecting to VM/Device")
 
 
 def install_and_run(apk_path, package, launcher, is_activity):
@@ -120,4 +120,4 @@ def install_and_run(apk_path, package, launcher, is_activity):
             # Handle Service or Give Choice to Select in Future.
         logger.info("Testing Environment is Ready!")
     except:
-        PrintException("[ERROR]  Starting App for Dynamic Analysis")
+        PrintException("Starting App for Dynamic Analysis")
