@@ -64,8 +64,8 @@ from StaticAnalyzer.views.android.icon_analysis import (
     get_icon,
     find_icon_path_zip,
 )
-from MalwareAnalyzer.views import apkid_analysis
-import StaticAnalyzer.views.android.VirusTotal as VirusTotal
+from MalwareAnalyzer.views.apkid import apkid_analysis
+import MalwareAnalyzer.views.VirusTotal as VirusTotal
 logger = logging.getLogger(__name__)
 
 

@@ -32,7 +32,7 @@
             <li class="treeview">
               <a href="javascript::;"><i class="fa fa-bug"></i> Malware Analysis</a>
               <ul class="nav treeview-menu">
-                <li><a href="#dex_malware_analysis"><i class="fa fa-android"></i> DEX Malware Analysis</a></li>
+                <li><a href="#apkid"><i class="fa fa-android"></i> APKiD Analysis</a></li>
                 {% if VT_RESULT %}
                   <li><a href="#virus_total"><i class="fa fa-upload"></i>Virus Total</a></li>
                 {% endif %}
@@ -61,11 +61,11 @@
               </ul>
             </li>
             <li><a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=APK"><i class="glyphicon glyphicon-list-alt"></i> Download Report</a></li>
-			{% if dynamic_analysis_done == False %}
-            	<li><a href="javascript:document.getElementById('dynform').submit();"><i class="glyphicon glyphicon-play-circle""></i> <strong>Start Dynamic Analysis</strong></a></li>
-			{% else %}
-				<li><a href="/Report/?md5={{ md5 }}&pkg={{ packagename }}"><i class="glyphicon glyphicon-play-circle""></i> <strong>Dynamic Analysis Report</strong></a></li>
-			{% endif %}
+      {% if dynamic_analysis_done == False %}
+              <li><a href="javascript:document.getElementById('dynform').submit();"><i class="glyphicon glyphicon-play-circle""></i> <strong>Start Dynamic Analysis</strong></a></li>
+      {% else %}
+        <li><a href="/Report/?md5={{ md5 }}&pkg={{ packagename }}"><i class="glyphicon glyphicon-play-circle""></i> <strong>Dynamic Analysis Report</strong></a></li>
+      {% endif %}
           </ul>
         </div>
         <!-- /.sidebar -->
@@ -799,153 +799,80 @@ Production ready applications should not be signed with 'Android Debug' Certific
 <!-- ============================================================= -->
 
 
-<section id="dex_malware_analysis">
+<section id="apkid">
   <h2 class="page-header"></h2>
   <!-- /.box -->
 
           <div class="box">
           <div class="box-header">
              <!-- /.box-header -->
-              <h3 class="box-title"><i class="fa fa-bug"></i> DEX Malware Analysis</h3>
+              <h3 class="box-title"><i class="fa fa-bug"></i> APKiD Analysis</h3>
             </div>
           <div class="box-body no-padding">
              <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>ANTI-VM</th>
-                                                <th>COMPILER</th>
-                                                <th>OBFUSCATOR</th>
-                                                <th>PACKER</th>
-                                                <th>DROPPER</th>
-                                                <th>MANIPULATOR</th>
-                                                <th>ANTI-ASSEMBLY</th>
-						<th>ANTI-DEBUG</th>
-                                                <th>ABNORMAL PATTERN</th>
-                                                
-                                                
-                                            </tr>
-                                        </thead>
-
-
-                                        <tbody>
-                     
-            
-                      {% if apkid|key:"apkid_version" %}
+              <table class="table table-bordered table-hover table-striped">
+                  <thead>
+                      <tr>
+                          <th>FILE</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      {% if apkid %}
+                       {% for file, details in apkid.items %}
                        <tr>
-                        <td>
-                            {% if apkid|key:"anti_vm" == "" %}
-                              <span class="label label-info">No Anti-VM Code</span>
-                            {% else %}
-                              <span class="label label-info">Anti-VM Code Found</span></br>
-                              {% for cmp in apkid|key:"anti_vm" %}
-                               {{cmp}}</br>
-                              {% endfor %}
-                            {% endif %}
-
+                         <td>
+                             {{file}}
                         </td>
-                  
                         <td>
-                          {% if apkid|key:"compiler" == "" %}
-                              <span class="label label-info">Cannot Identify Compiler</span>
-                            {% else %}
-                               <span class="label label-info">Compiler Found</span></br>
-                              {% for cmp in apkid|key:"compiler" %}
-                               {{cmp}}</br>
-                              {% endfor %}
-                            {% endif %}
+                            <table class="table table-bordered table-hover table-striped">
+                              <thead>
+                                  <tr>
+                                      <th>FINDINGS</th>
+                                      <th>DETAILS</th>
+                                  </tr>
+                              </thead>
+                            <tbody>
+                            {% for detail, idens in details.items %}
+                            <tr>
+                              <td>
+                               {% if detail == "anti_vm" %}
+                               <span class="label label-warning">Anti-VM Code</span>
+                               {% elif detail == "anti_disassembly" %}
+                               <span class="label label-warning">Anti Disassembly Code</span>
+                               {% elif detail == "anti_debug" %}
+                               <span class="label label-warning">Anti Debug Code</span>
+                               {% elif detail == "compiler" %}
+                               <span class="label label-info">Compiler</span>
+                               {% elif detail == "abnormal" %}
+                               <span class="label label-warning">Abnormal Code</span>
+                               {% elif detail == "obfuscator" %}
+                               <span class="label label-warning">Obfuscator</span>
+                               {% elif detail == "protector" %}
+                               <span class="label label-info">Protector</span>
+                               {% elif detail == "packer" %}
+                               <span class="label label-danger">Packer Found</span>
+                               {% elif detail == "dropper" %}
+                               <span class="label label-danger">Dropper Found</span>
+                               {% elif detail == "manipulator" %}
+                               <span class="label label-warning">Manipulator Found</span>
+                               {% else %}
+                               <span class="label label-info">{{detail}}</span>
+                               {% endif %}
+                            </td>
+                              <td> {% for idn in idens %} {{ idn }}</br> {% endfor %}</td>
+                            </tr>
+                            {% endfor %}
+                           </tbody>
+                            </table>
                         </td>
                  
-                        <td>
-                          {% if apkid|key:"obfuscator" == "" %}
-                              <span class="label label-info">No Obfuscator Found</span>
-                            {% else %}
-                              <span class="label label-info">Obfuscator Found</span></br>
-                              {% for cmp in apkid|key:"obfuscator" %}
-                               {{cmp}}</br>
-                              {% endfor %}
-                            {% endif %}
-                        </td>
-
-                        <td>
-                          {% if apkid|key:"packer" == "" %}
-                              <span class="label label-success">No Packer Found</span>
-                            {% else %}
-                              <span class="label label-danger">Packer Found</span></br>
-                              {% for cmp in apkid|key:"packer" %}
-                               {{cmp}}</br>
-                              {% endfor %}
-                            {% endif %}
-                        </td>
-
-                        <td>
-                          {% if apkid|key:"dropper" == "" %}
-                              <span class="label label-success">No Dropper Found</span>
-                            {% else %}
-                             <span class="label label-danger">Dropper Found</span></br>
-                              {% for cmp in apkid|key:"dropper" %}
-                               {{cmp}}</br>
-                              {% endfor %}
-                            {% endif %}
-                        </td>
-
-                         <td>
-                          {% if apkid|key:"manipulator" == "" %}
-                              <span class="label label-info">No Manipulator Found</span>
-                            {% else %}
-                             <span class="label label-info">Manipulator Found</span></br>
-                              {% for cmp in apkid|key:"manipulator" %}
-                               {{cmp}}</br>
-                              {% endfor %}
-                            {% endif %}
-                        </td>
-
-                        <td>
-                          {% if apkid|key:"anti_disassembly" == "" %}
-                              <span class="label label-success">No Anti-Disassembly Code</span>
-                            {% else %}
-                              <span class="label label-danger">Anti-Disassembly Code Found</span></br>
-                              {% for cmp in apkid|key:"anti_disassembly" %}
-                               {{cmp}}</br>
-                              {% endfor %}
-                          {% endif %}
-                        </td>
-                       
-                        <td>
-                          {% if apkid|key:"anti_debug" == "" %}
-                              <span class="label label-info">No Anti-Debug Code</span>
-                            {% else %}
-                              <span class="label label-info">Anti-Debug Code Found</span></br>
-                              {% for cmp in apkid|key:"anti_debug" %}
-                               {{cmp}}</br>
-                              {% endfor %}
-                          {% endif %}
-                        </td>
-
-                        <td>
-                          {% if apkid|key:"abnormal" == "" %}
-                              <span class="label label-success">No Abnormal Pattern Found</span>
-                            {% else %}
-                              <span class="label label-danger">Abnormal Pattern Found</span></br>
-                              {% for cmp in apkid|key:"abnormal" %}
-                               {{cmp}}</br>
-                              {% endfor %}
-                            {% endif %}
-                        </td>
- 
-                      </tr>
-                      {% elif apkid|key:"error" %}
-                      <p align="center"><strong>APKiD ERROR - No classes.dex file!</strong></p>
+                        </tr>
+                         {% endfor %}
                       {% else %}
                       <p align="center"><strong>APKiD not enabled.</strong></p>
                       {% endif %}
                     </tbody>
                     </table>
-                    <div class="box-body">
-                      {% if apkid|key:"apkid_version" %}
-                       <strong> APKiD: </strong>{{ apkid|key:"apkid_version" }}
-                      {% endif %}
-                      </div>
                   </div>
        
             <!-- /.box-body -->

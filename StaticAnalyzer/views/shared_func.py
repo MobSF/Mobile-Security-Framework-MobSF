@@ -35,7 +35,7 @@ from StaticAnalyzer.views.ios.db_interaction import (
     get_context_from_db_entry_ios
 )
 
-import StaticAnalyzer.views.android.VirusTotal as VirusTotal
+import MalwareAnalyzer.views.VirusTotal as VirusTotal
 
 from StaticAnalyzer.views.comparer import generic_compare
 logger = logging.getLogger(__name__)
