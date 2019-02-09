@@ -585,10 +585,7 @@ def adb_binary_or32bit_support():
         msg = "\nYou don't have 32 bit execution support enabled or MobSF shipped" \
             " ADB binary is not compatible with your OS."\
             "\nPlease set the 'ADB_BINARY' path in settings.py"
-        if platform.system != "Windows":
-            logger.warning(Color.BOLD + Color.ORANGE + msg + Color.END)
-        else:
-            logger.warning(msg)
+        logger.warning(msg)
 
 
 def check_basic_env():
