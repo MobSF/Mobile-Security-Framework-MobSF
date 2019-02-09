@@ -8,6 +8,7 @@ import json
 import base64
 import tarfile
 import shutil
+import logging
 
 from pathlib import Path
 
@@ -19,6 +20,9 @@ from MobSF.utils import (
     isBase64,
     PrintException
 )
+
+logger = logging.getLogger(__name__)
+
 
 def api_analysis(package, location):
     """API Analysis"""
@@ -125,6 +129,7 @@ def api_analysis(package, location):
     api_analysis_result["api_cmd"] = list(set(api_cmd))
     return api_analysis_result
 
+
 def run_analysis(apk_dir, md5_hash, package):
     """Run Dynamic File Analysis"""
     analysis_result = {}
@@ -156,7 +161,8 @@ def run_analysis(apk_dir, md5_hash, package):
             clipboard.append(log_line.replace(clip_tag, "Process ID "))
     urls = []
     # URLs My Custom regex
-    url_pattern = re.compile(r'((?:https?://|s?ftps?://|file://|javascript:|data:|www\d{0,3}[.])[\w().=/;,#:@?&~*+!$%\'{}-]+)', re.UNICODE)
+    url_pattern = re.compile(
+        r'((?:https?://|s?ftps?://|file://|javascript:|data:|www\d{0,3}[.])[\w().=/;,#:@?&~*+!$%\'{}-]+)', re.UNICODE)
     urllist = re.findall(url_pattern, traffic.lower())
     # Domain Extraction and Malware Check
     logger.info("Performing Malware Check on extracted Domains")
@@ -237,6 +243,7 @@ def run_analysis(apk_dir, md5_hash, package):
     analysis_result["sqlite_db"] = sqlite_db
     analysis_result["other_files"] = other_files
     return analysis_result
+
 
 def download(md5_hash, download_dir, apk_dir, package):
     """Generating Downloads"""
