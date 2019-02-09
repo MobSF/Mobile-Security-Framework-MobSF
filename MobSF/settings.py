@@ -445,6 +445,7 @@ else:
     # git clone --recursive https://github.com/rednaga/yara-python-1 yara-python
     # cd yara-python
     # python3 setup.py build --enable-dex install
+    # pip install apkid
     #==============================================
 
     #^CONFIG-END^: Do not edit this line
