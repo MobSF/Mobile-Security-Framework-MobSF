@@ -44,4 +44,4 @@ def run(request):
             return render(request, template, context)
     except:
         PrintException("Viewing AndroidManifest.xml")
-        return HttpResponseRedirect('/error/')
+        return print_n_send_error_response(request, "Error Viewing AndroidManifest.xml")

@@ -50,4 +50,4 @@ def run(request):
         return render(request, template, context)
     except:
         PrintException("Getting Smali Files")
-        return HttpResponseRedirect('/error/')
+        return print_n_send_error_response(request, "Error Getting Smali Files")

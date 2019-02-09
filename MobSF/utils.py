@@ -391,7 +391,7 @@ def PrintException(msg, web=False):
         logger.error(dat)
 
 
-def print_n_send_error_response(request, msg, api, exp='Error Description'):
+def print_n_send_error_response(request, msg, api=False, exp='Error Description'):
     """Print and log errors"""
     logger.error(msg)
     if api:

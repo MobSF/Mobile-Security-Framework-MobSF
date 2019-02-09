@@ -33,7 +33,7 @@ def run(request):
                 src = os.path.join(settings.UPLD_DIR, md5+'/smali_source/')
                 ext = '.smali'
             else:
-                return HttpResponseRedirect('/error/')
+                return print_n_send_error_response(request, "Only Java/Smali files are allowed")
             # pylint: disable=unused-variable
             # Needed by os.walk
             for dir_name, sub_dir, files in os.walk(src):
@@ -69,4 +69,4 @@ def run(request):
         return render(request, template, context)
     except:
         PrintException("Searching Failed")
-        return HttpResponseRedirect('/error/')
+        return print_n_send_error_response(request, "Searching Failed")

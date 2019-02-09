@@ -32,7 +32,7 @@ def run(request):
             elif typ == 'apk':
                 src = os.path.join(settings.UPLD_DIR, md5 + '/java_source/')
             else:
-                return HttpResponseRedirect('/error/')
+                return print_n_send_error_response(request, "Invalid Directory Structure")
             html = ''
             # pylint: disable=unused-variable
             # Needed by os.walk
@@ -63,4 +63,4 @@ def run(request):
         return render(request, template, context)
     except:
         PrintException("Getting Java Files")
-        return HttpResponseRedirect('/error/')
+        return print_n_send_error_response(request, "Error Getting Java Files")

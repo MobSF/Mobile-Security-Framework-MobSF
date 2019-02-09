@@ -236,7 +236,7 @@ def search(request):
             return HttpResponseRedirect('/' + db_obj[0].URL)
         else:
             return HttpResponseRedirect('/not_found')
-    return HttpResponseRedirect('/error/')
+    return print_n_send_error_response(request, "Invalid Scan Hash")
 
 
 def download(request):
@@ -249,8 +249,7 @@ def download(request):
         filename = request.path.replace("/download/", "", 1)
         # Security Checks
         if "../" in filename:
-            logger.info("\n[ATTACK] Path Traversal Attack detected")
-            return HttpResponseRedirect('/error/')
+            return print_n_send_error_response(request, "Path Traversal Attack detected")
         ext = os.path.splitext(filename)[1]
         if ext in allowed_exts:
             dwd_file = os.path.join(settings.DWD_DIR, filename)
@@ -261,7 +260,7 @@ def download(request):
                 response['Content-Length'] = os.path.getsize(dwd_file)
                 return response
     msg += filename
-    return print_n_send_error_response(request, msg, False)
+    return print_n_send_error_response(request, msg)
 
 
 def delete_scan(request, api=False):
