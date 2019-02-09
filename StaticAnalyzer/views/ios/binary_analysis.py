@@ -245,7 +245,7 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
                               crypto, weak_hashes, hashes, randoms, logging, malloc, debug]
         return otool_dict
     except:
-        PrintException("[ERROR] Performing Object Analysis of Binary")
+        PrintException("Performing Object Analysis of Binary")
 
 
 def class_dump_z(tools_dir, bin_path, app_dir):
@@ -283,7 +283,7 @@ def class_dump_z(tools_dir, bin_path, app_dir):
         return webview
     except:
         logger.warning("class-dump-z does not work on iOS apps developed in Swift")
-        PrintException("[ERROR] - Cannot perform class dump")
+        PrintException("Cannot perform class dump")
 
 
 def strings_on_ipa(bin_path):
@@ -296,7 +296,7 @@ def strings_on_ipa(bin_path):
                       for ip_str in unique_str]  # Escape evil strings
         return unique_str
     except:
-        PrintException("[ERROR] - Running strings against the Binary")
+        PrintException("Running strings against the Binary")
 
 
 def binary_analysis(src, tools_dir, app_dir, executable_name):
@@ -337,4 +337,4 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
             binary_analysis_dict["strings"] = strings_in_ipa
         return binary_analysis_dict
     except:
-        PrintException("[ERROR] iOS Binary Analysis")
+        PrintException("iOS Binary Analysis")

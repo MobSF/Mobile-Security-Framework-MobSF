@@ -94,7 +94,7 @@ def dex_2_jar(app_path, app_dir, tools_dir):
                 ]
             subprocess.call(args, cwd=working_dir)
     except:
-        PrintException("[ERROR] Converting Dex to JAR")
+        PrintException("Converting Dex to JAR")
 
 
 def dex_2_smali(app_dir, tools_dir):
@@ -115,7 +115,7 @@ def dex_2_smali(app_dir, tools_dir):
             ]
             subprocess.call(args)
     except:
-        PrintException("[ERROR] Converting DEX to SMALI")
+        PrintException("Converting DEX to SMALI")
 
 
 def jar_2_java(app_dir, tools_dir):
@@ -159,4 +159,4 @@ def jar_2_java(app_dir, tools_dir):
                         '-jar', pd_path, jar_path, '-o', output]
             subprocess.call(args)
     except:
-        PrintException("[ERROR] Converting JAR to JAVA")
+        PrintException("Converting JAR to JAVA")

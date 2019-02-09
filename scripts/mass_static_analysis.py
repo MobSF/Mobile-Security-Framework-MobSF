@@ -45,7 +45,7 @@ def start_scan(directory, server_url, apikey, rescan='0'):
 
     logger.info("Running Static Analysis")
     for upl in uploaded:
-        logger.info("Started Static Analysis on: ", upl["file_name"])
+        logger.info("Started Static Analysis on: %s", upl["file_name"])
         if rescan == '1':
             upl["re_scan"] = 1
         response = requests.post(

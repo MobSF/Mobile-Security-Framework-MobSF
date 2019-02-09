@@ -19,7 +19,7 @@ def stop_avd():
     try:
         adb_command(['emu', 'kill'], silent=True)
     except:
-        PrintException("[ERROR] Stopping MobSF Emulator")
+        PrintException("Stopping MobSF Emulator")
 
 
 def start_avd_from_snapshot():
@@ -60,7 +60,7 @@ def start_avd_from_snapshot():
         adb_command(["emu", "kill"])
         return False
     except:
-        PrintException("[ERROR] Starting MobSF Emulator")
+        PrintException("Starting MobSF Emulator")
         return False
 
 
@@ -94,5 +94,5 @@ def refresh_avd():
         return False
 
     except:
-        PrintException("[ERROR] Refreshing MobSF VM")
+        PrintException("Refreshing MobSF VM")
         return False

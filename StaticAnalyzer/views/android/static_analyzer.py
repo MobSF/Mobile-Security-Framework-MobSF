@@ -225,7 +225,7 @@ def static_analyzer(request, api=False):
                                 apkid_results,
                             )
                     except:
-                        PrintException("[ERROR] Saving to Database Failed")
+                        PrintException("Saving to Database Failed")
                     context = get_context_from_analysis(
                         app_dic,
                         man_data_dic,
@@ -377,7 +377,7 @@ def static_analyzer(request, api=False):
                                     {},
                                 )
                         except:
-                            PrintException("[ERROR] Saving to Database Failed")
+                            PrintException("Saving to Database Failed")
                         context = get_context_from_analysis(
                             app_dic,
                             man_data_dic,
@@ -443,7 +443,7 @@ def valid_android_zip(app_dir):
             return 'ios', True
         return '', False
     except:
-        PrintException("[ERROR] Determining Upload type")
+        PrintException("Determining Upload type")
 
 
 def gen_downloads(app_dir, md5, icon_path=''):
@@ -470,4 +470,4 @@ def gen_downloads(app_dir, md5, icon_path=''):
                     settings.DWD_DIR, md5 + '-icon.png'))
 
     except:
-        PrintException("[ERROR] Generating Downloads")
+        PrintException("Generating Downloads")

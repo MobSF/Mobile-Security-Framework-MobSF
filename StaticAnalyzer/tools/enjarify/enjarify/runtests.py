@@ -17,8 +17,6 @@ import os
 import subprocess
 from .main import read, translate, writeToJar
 from .jvm.optimization import options
-import logging
-logger = logging.getLogger(__name__)
 
 
 def getStubs():
@@ -31,7 +29,7 @@ STUB_FILES = dict(getStubs())
 
 
 def executeTest(name, opts):
-    logger.info('running test : {}', name)
+    print('running test', name)
     dir = os.path.join('tests', name)
     rawdex = read(os.path.join(dir, 'classes.dex'), 'rb')
     classes, errors = translate(rawdex, opts=opts)
@@ -40,7 +38,8 @@ def executeTest(name, opts):
     classes.update(STUB_FILES)
     writeToJar('out.jar', classes)
 
-    result = subprocess.check_output("java -Xss515m -jar out.jar a.a".split(), stderr=subprocess.STDOUT, 
+    result = subprocess.check_output("java -Xss515m -jar out.jar a.a".split(),
+                                     stderr=subprocess.STDOUT,
                                      universal_newlines=True)
     expected = read(os.path.join(dir, 'expected.txt'), 'r')
     assert(result == expected)

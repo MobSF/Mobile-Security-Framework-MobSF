@@ -162,4 +162,4 @@ def read_sqlite(sqlite_file):
                 data += dat + "\n"
         return data
     except:
-        PrintException("[ERROR] Dumping SQLITE Database")
+        PrintException("Dumping SQLITE Database")

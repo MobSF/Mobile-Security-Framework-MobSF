@@ -8,6 +8,7 @@ import json
 import base64
 import tarfile
 import shutil
+import logging
 
 from pathlib import Path
 
@@ -19,6 +20,9 @@ from MobSF.utils import (
     isBase64,
     PrintException
 )
+
+logger = logging.getLogger(__name__)
+
 
 def api_analysis(package, location):
     """API Analysis"""
@@ -107,9 +111,9 @@ def api_analysis(package, location):
                     if re.findall('java.net.URL|org.apache.http.impl.client.AbstractHttpClient', clss):
                         api_net.append(call_data)
                 except:
-                    PrintException("[ERROR] Parsing JSON Failed for: " + value)
+                    PrintException("Parsing JSON Failed for: " + value)
     except:
-        PrintException("[ERROR] Dynamic API Analysis")
+        PrintException("Dynamic API Analysis")
     api_analysis_result["api_net"] = list(set(api_net))
     api_analysis_result["api_base64"] = list(set(api_base64))
     api_analysis_result["api_fileio"] = list(set(api_fileio))
@@ -124,6 +128,7 @@ def api_analysis(package, location):
     api_analysis_result["api_acntmnger"] = list(set(api_acntmnger))
     api_analysis_result["api_cmd"] = list(set(api_cmd))
     return api_analysis_result
+
 
 def run_analysis(apk_dir, md5_hash, package):
     """Run Dynamic File Analysis"""
@@ -156,7 +161,8 @@ def run_analysis(apk_dir, md5_hash, package):
             clipboard.append(log_line.replace(clip_tag, "Process ID "))
     urls = []
     # URLs My Custom regex
-    url_pattern = re.compile(r'((?:https?://|s?ftps?://|file://|javascript:|data:|www\d{0,3}[.])[\w().=/;,#:@?&~*+!$%\'{}-]+)', re.UNICODE)
+    url_pattern = re.compile(
+        r'((?:https?://|s?ftps?://|file://|javascript:|data:|www\d{0,3}[.])[\w().=/;,#:@?&~*+!$%\'{}-]+)', re.UNICODE)
     urllist = re.findall(url_pattern, traffic.lower())
     # Domain Extraction and Malware Check
     logger.info("Performing Malware Check on extracted Domains")
@@ -186,7 +192,7 @@ def run_analysis(apk_dir, md5_hash, package):
             except:
                 pass
     except:
-        PrintException("[ERROR] TAR EXTRACTION FAILED")
+        PrintException("TAR EXTRACTION FAILED")
     # Do Static Analysis on Data from Device
     xmlfiles = ''
     sqlite_db = ''
@@ -227,7 +233,7 @@ def run_analysis(apk_dir, md5_hash, package):
                                 typ + "'>" + \
                                 escape(fileparam) + "</a></td><tr>"
     except:
-        PrintException("[ERROR] Dynamic File Analysis")
+        PrintException("Dynamic File Analysis")
     analysis_result["urls"] = urls
     analysis_result["domains"] = domains
     analysis_result["emails"] = emails
@@ -237,6 +243,7 @@ def run_analysis(apk_dir, md5_hash, package):
     analysis_result["sqlite_db"] = sqlite_db
     analysis_result["other_files"] = other_files
     return analysis_result
+
 
 def download(md5_hash, download_dir, apk_dir, package):
     """Generating Downloads"""
@@ -282,4 +289,4 @@ def download(md5_hash, download_dir, apk_dir, package):
         except:
             pass
     except:
-        PrintException("[ERROR] Generating Downloads")
+        PrintException("Generating Downloads")

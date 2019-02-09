@@ -46,7 +46,7 @@ def get_context_from_analysis_ipa(app_dict, info_dict, bin_dict, files, sfiles):
         }
         return context
     except:
-        PrintException("[ERROR] Rendering to Template")
+        PrintException("Rendering to Template")
 
 
 def get_context_from_db_entry_ipa(db_entry):
@@ -83,7 +83,7 @@ def get_context_from_db_entry_ipa(db_entry):
         }
         return context
     except:
-        PrintException("[ERROR] Fetching from DB")
+        PrintException("Fetching from DB")
 
 
 def update_db_entry_ipa(app_dict, info_dict, bin_dict, files, sfiles):
@@ -119,7 +119,7 @@ def update_db_entry_ipa(app_dict, info_dict, bin_dict, files, sfiles):
         )
 
     except:
-        PrintException("[ERROR] Updating DB")
+        PrintException("Updating DB")
 
 
 def create_db_entry_ipa(app_dict, info_dict, bin_dict, files, sfiles):
@@ -154,7 +154,7 @@ def create_db_entry_ipa(app_dict, info_dict, bin_dict, files, sfiles):
         )
         static_db.save()
     except:
-        PrintException("[ERROR] Saving to DB")
+        PrintException("Saving to DB")
 
 # IOS ZIP DB ENTRY
 
@@ -193,7 +193,7 @@ def get_context_from_analysis_ios(app_dict, info_dict,code_dict, files, sfiles):
         }
         return context
     except:
-        PrintException("[ERROR] Rendering to Template")
+        PrintException("Rendering to Template")
 
 
 def get_context_from_db_entry_ios(db_entry):
@@ -231,7 +231,7 @@ def get_context_from_db_entry_ios(db_entry):
         }
         return context
     except:
-        PrintException("[ERROR] Fetching from DB")
+        PrintException("Fetching from DB")
 
 
 def update_db_entry_ios(app_dict, info_dict, code_dict, files, sfiles):
@@ -269,7 +269,7 @@ def update_db_entry_ios(app_dict, info_dict, code_dict, files, sfiles):
         )
 
     except:
-        PrintException("[ERROR] Updating DB")
+        PrintException("Updating DB")
 
 
 def create_db_entry_ios(app_dict, info_dict, code_dict, files, sfiles):
@@ -307,4 +307,4 @@ def create_db_entry_ios(app_dict, info_dict, code_dict, files, sfiles):
         )
         static_db.save()
     except:
-        PrintException("[ERROR] Updating DB")
+        PrintException("Updating DB")

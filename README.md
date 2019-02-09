@@ -6,15 +6,18 @@ Mobile Security Framework (MobSF) is an automated, all-in-one mobile application
 
 Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82e3a63c-4813-11e6-9430-6015d98aeaab.png) in India
 
+[![python](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/)
+[![platform](https://img.shields.io/badge/platform-osx%2Flinux%2Fwindows-green.svg)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/)
+[![License](https://img.shields.io/:license-gpl3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e05e96c6cecc48139dd2d67563a93805)](https://www.codacy.com/app/ajinabraham/Mobile-Security-Framework-MobSF?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=MobSF/Mobile-Security-Framework-MobSF&amp;utm_campaign=Badge_Grade)
+[![Build Status](https://travis-ci.com/MobSF/Mobile-Security-Framework-MobSF.svg?branch=master)](https://travis-ci.com/MobSF/Mobile-Security-Framework-MobSF)
+[![Requirements Status](https://requires.io/github/MobSF/Mobile-Security-Framework-MobSF/requirements.svg?branch=master)](https://requires.io/github/MobSF/Mobile-Security-Framework-MobSF/requirements/?branch=master)
+[![support](https://baikal.io/badges/ajinabraham/mobsf)](https://baikal.io/ajinabraham/mobsf)
 [![ToolsWatch Best Security Tools 2017](https://img.shields.io/badge/ToolsWatch-Rank%209%20%7C%20Year%202017-red.svg)](http://www.toolswatch.org/2018/01/black-hat-arsenal-top-10-security-tools/)
 [![ToolsWatch Best Security Tools 2016](https://img.shields.io/badge/ToolsWatch-Rank%205%20%7C%20Year%202016-red.svg)](http://www.toolswatch.org/2017/02/2016-top-security-tools-as-voted-by-toolswatch-org-readers/)
 [![Blackhat Arsenal Asia 2018](https://img.shields.io/badge/Black%20Hat%20Arsenal-Asia%202018-blue.svg)](https://www.blackhat.com/asia-18/arsenal.html#mobile-security-framework-mobsf)
 [![Blackhat Arsenal Asia 2015](https://img.shields.io/badge/Black%20Hat%20Arsenal-Asia%202015-blue.svg)](https://www.blackhat.com/asia-15/arsenal.html#yso-mobile-security-framework)
-[![support](https://baikal.io/badges/ajinabraham/mobsf)](https://baikal.io/ajinabraham/mobsf)
-[![platform](https://img.shields.io/badge/platform-osx%2Flinux%2Fwindows-green.svg)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/)
-[![License](https://img.shields.io/:license-gpl3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
-[![python](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/)
-[![Requirements Status](https://requires.io/github/MobSF/Mobile-Security-Framework-MobSF/requirements.svg?branch=master)](https://requires.io/github/MobSF/Mobile-Security-Framework-MobSF/requirements/?branch=master)
+
 
 MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-release) and [BlackArch](https://blackarch.org/mobile.html)
 
@@ -107,3 +110,4 @@ Other docker options: [MobSF Docker Options](https://github.com/MobSF/Mobile-Sec
 * Thomas Abraham - For JS Hacks on UI.
 * Tim Brown (@timb_machine) - For the iOS Binary Analysis Ruleset.
 * Oscar Alfonso Diaz - (@OscarAkaElvis) - For Dockerfile contributions
+* Abhinav Saxena - (@xandfury) - For Travis CI and Logging integration

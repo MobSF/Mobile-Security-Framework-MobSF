@@ -68,7 +68,7 @@ def hash_gen(app_path) -> tuple:
         sha256val = sha256.hexdigest()
         return sha1val, sha256val
     except:
-        PrintException("[ERROR] Generating Hashes")
+        PrintException("Generating Hashes")
 
 
 def unzip(app_path, ext_path):
@@ -85,7 +85,7 @@ def unzip(app_path, ext_path):
                 zipptr.extract(filename, ext_path)
         return files
     except:
-        PrintException("[ERROR] Unzipping Error")
+        PrintException("Unzipping Error")
         if platform.system() == "Windows":
             logger.info("Not yet Implemented.")
         else:
@@ -99,7 +99,7 @@ def unzip(app_path, ext_path):
                 files_det = files_det + dat
                 return files_det
             except:
-                PrintException("[ERROR] Unzipping Error")
+                PrintException("Unzipping Error")
 
 
 def pdf(request, api=False, json=False):
@@ -394,11 +394,11 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                         add_findings(findings, rule[
                                      "desc"], file_path, rule)
                 else:
-                    logger.error("Code String Rule Match Error\n" + rule)
+                    logger.error("Code String Rule Match Error\n%s", rule)
             else:
-                logger.error("Code Rule Error\n", + rule)
+                logger.error("Code Rule Error\n%s", rule)
     except:
-        PrintException("[ERROR] Error in Code Rule Processing")
+        PrintException("Error in Code Rule Processing")
 
 
 def add_apis(api_findings, desc, file_path):
@@ -501,11 +501,11 @@ def api_rule_matcher(api_findings, perms, data, file_path, api_rules):
                     if (api["perm"] in perms) and string_or_ps:
                         add_apis(api_findings, api["desc"], file_path)
                 else:
-                    logger.error("API String Rule Match Error\n" + api)
+                    logger.error("API String Rule Match Error\n%s", api)
             else:
-                logger.error("API Rule Error\n", + api)
+                logger.error("API Rule Error\n%s", api)
     except:
-        PrintException("[ERROR] Error in API Rule Processing")
+        PrintException("Error in API Rule Processing")
 
 
 def url_n_email_extract(dat, relative_path):

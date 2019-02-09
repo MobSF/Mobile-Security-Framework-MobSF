@@ -46,7 +46,13 @@ from DynamicAnalyzer.views.android.shared import (
     wait,
     adb_command,
 )
-from MobSF.utils import PrintException, is_number, python_list, getADB
+from MobSF.utils import (
+    PrintException,
+    is_number,
+    python_list,
+    getADB,
+    print_n_send_error_response
+)
 logger = logging.getLogger(__name__)
 
 # ===========================================
@@ -78,8 +84,7 @@ def android_dynamic_analyzer(request):
             package = request.POST['pkg']
             launcher = request.POST['lng']
             if re.findall(r';|\$\(|\|\||&&', package) or re.findall(r';|\$\(|\|\||&&', launcher):
-                logger.info("[ATTACK] Possible RCE")
-                return HttpResponseRedirect('/error/')
+                return print_n_send_error_response(request, "Possible RCE Attack")
             if re.match('^[0-9a-f]{32}$', md5_hash):
                 # Delete ScreenCast Cache
                 screen_file = os.path.join(settings.SCREEN_DIR, 'screen.png')
@@ -97,14 +102,15 @@ def android_dynamic_analyzer(request):
                 adb = getADB()
                 is_avd = False
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_REAL_DEVICE":
-                    logger.info("MobSF will perform Dynamic Analysis on real Android Device")
+                    logger.info(
+                        "MobSF will perform Dynamic Analysis on real Android Device")
                 elif settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_AVD":
                     # adb, avd_path, reference_name, dup_name, emulator
                     is_avd = True
                     if not os.path.exists(settings.AVD_EMULATOR):
-                        return HttpResponseRedirect('/error/')
+                        return print_n_send_error_response(request, "Cannot Find AVD Emulator")
                     if not refresh_avd():
-                        return HttpResponseRedirect('/error/')
+                        return print_n_send_error_response(request, "Cannot Refresh AVD")
                 else:
                     # Refersh VM
                     refresh_vm(settings.UUID, settings.SUUID, settings.VBOX)
@@ -116,12 +122,12 @@ def android_dynamic_analyzer(request):
                 template = "dynamic_analysis/start_test.html"
                 return render(request, template, context)
             else:
-                return HttpResponseRedirect('/error/')
+                return print_n_send_error_response(request, "Invalid Scan Hash")
         else:
-            return HttpResponseRedirect('/error/')
+            return print_n_send_error_response(request, "Only POST allowed")
     except:
-        PrintException("[ERROR] DynamicAnalyzer")
-        return HttpResponseRedirect('/error/')
+        PrintException("DynamicAnalyzer")
+        return print_n_send_error_response(request, "Dynamic Analysis Failed.")
 # AJAX
 
 
@@ -135,8 +141,7 @@ def get_env(request):
             package = request.POST['pkg']
             launcher = request.POST['lng']
             if re.findall(r";|\$\(|\|\||&&", package) or re.findall(r";|\$\(|\|\||&&", launcher):
-                logger.info("[ATTACK] Possible RCE")
-                return HttpResponseRedirect('/error/')
+                return print_n_send_error_response(request, "Possible RCE Attack", True)
             if re.match('^[0-9a-f]{32}$', md5_hash):
                 base_dir = settings.BASE_DIR
                 app_dir = os.path.join(
@@ -166,12 +171,12 @@ def get_env(request):
                         'screen_height': screen_width, }
                 return HttpResponse(json.dumps(data), content_type='application/json')
             else:
-                return HttpResponseRedirect('/error/')
+                return print_n_send_error_response(request, "Invalid Scan Hash", True)
         else:
-            return HttpResponseRedirect('/error/')
+            return print_n_send_error_response(request, "Only POST allowed", True)
     except:
-        PrintException("[ERROR] Setting up Dynamic Analysis Environment")
-        return HttpResponseRedirect('/error/')
+        PrintException("Setting up Dynamic Analysis Environment")
+        return print_n_send_error_response(request, "Environment Setup Failed", True)
 # AJAX
 
 
@@ -198,12 +203,12 @@ def take_screenshot(request):
                 data = {'screenshot': 'yes'}
                 return HttpResponse(json.dumps(data), content_type='application/json')
             else:
-                return HttpResponseRedirect('/error/')
+                return print_n_send_error_response(request, "Invalid Scan Hash", True)
         else:
-            return HttpResponseRedirect('/error/')
+            return print_n_send_error_response(request, "Only POST allowed", True)
     except:
-        PrintException("[ERROR] Taking Screenshot")
-        return HttpResponseRedirect('/error/')
+        PrintException("Taking Screenshot")
+        return print_n_send_error_response(request, "Error Taking Screenshot", True)
 # AJAX
 
 
@@ -241,7 +246,7 @@ def screen_cast(request):
                     screen_trd.setDaemon(True)
                     screen_trd.start()
                 except:
-                    PrintException("[ERROR] Casting Screen")
+                    PrintException("Casting Screen")
                     data = {'status': 'error'}
                     return HttpResponse(json.dumps(data), content_type='application/json')
             else:
@@ -250,9 +255,8 @@ def screen_cast(request):
             data = {'status': 'failed'}
         return HttpResponse(json.dumps(data), content_type='application/json')
     except:
-        PrintException("[ERROR] Casting Screen")
-        return HttpResponseRedirect('/error/')
-
+        PrintException("Casting Screen")
+        return print_n_send_error_response(request, "Error Casting Screen", True)
 # AJAX
 
 
@@ -270,14 +274,14 @@ def clip_dump(request):
                 adb_command(args, True)
                 data = {'status': 'success'}
             except:
-                PrintException("[ERROR] Dumping Clipboard")
+                PrintException("Dumping Clipboard")
                 data = {'status': 'error'}
         else:
             data = {'status': 'failed'}
         return HttpResponse(json.dumps(data), content_type='application/json')
     except:
-        PrintException("[ERROR] Dumping Clipboard")
-        return HttpResponseRedirect('/error/')
+        PrintException("Dumping Clipboard")
+        return print_n_send_error_response(request, "Error Dumping Clipboard", True)
 
 # AJAX
 
@@ -300,13 +304,13 @@ def touch(request):
                 adb_command(args, True)
             except:
                 data = {'status': 'error'}
-                PrintException("[ERROR] Performing Touch Action")
+                PrintException("Performing Touch Action")
         else:
             data = {'status': 'failed'}
         return HttpResponse(json.dumps(data), content_type='application/json')
     except:
-        PrintException("[ERROR] Sending Touch Events")
-        return HttpResponseRedirect('/error/')
+        PrintException("Sending Touch Events")
+        return print_n_send_error_response(request, "Error Sending Touch Events", True)
 # AJAX
 
 
@@ -321,14 +325,14 @@ def execute_adb(request):
             try:
                 resp = adb_command(cmd.split(' '))
             except:
-                PrintException("[ERROR] Executing ADB Commands")
+                PrintException("Executing ADB Commands")
             data = {'cmd': 'yes', 'resp': resp.decode("utf8", "ignore")}
             return HttpResponse(json.dumps(data), content_type='application/json')
         else:
-            return HttpResponseRedirect('/error/')
+            return print_n_send_error_response(request, "Only POST allowed", True)
     except:
-        PrintException("[ERROR] Executing ADB Commands")
-        return HttpResponseRedirect('/error/')
+        PrintException("Executing ADB Commands")
+        return print_n_send_error_response(request, "Error running ADB commands", True)
 
 # AJAX
 
@@ -379,10 +383,10 @@ def mobsf_ca(request):
                 data = {'ca': 'removed'}
             return HttpResponse(json.dumps(data), content_type='application/json')
         else:
-            return HttpResponseRedirect('/error/')
+            return print_n_send_error_response(request, "Only POST allowed", True)
     except:
-        PrintException("[ERROR] MobSF RootCA Handler")
-        return HttpResponseRedirect('/error/')
+        PrintException("MobSF RootCA Handler")
+        return print_n_send_error_response(request, "Error in RootCA Handler", True)
 
 # AJAX
 
@@ -397,8 +401,7 @@ def final_test(request):
             md5_hash = request.POST['md5']
             package = request.POST['pkg']
             if re.findall(r";|\$\(|\|\||&&", package):
-                logger.info("[ATTACK] Possible RCE")
-                return HttpResponseRedirect('/error/')
+                return print_n_send_error_response(request, "Possible RCE Attack", True)
             if re.match('^[0-9a-f]{32}$', md5_hash):
                 # Stop ScreenCast Client if it is running
                 TCP_SERVER_MODE = "off"
@@ -429,12 +432,12 @@ def final_test(request):
                 data = {'final': 'yes'}
                 return HttpResponse(json.dumps(data), content_type='application/json')
             else:
-                return HttpResponseRedirect('/error/')
+                return print_n_send_error_response(request, "Invalid Scan Hash", True)
         else:
-            return HttpResponseRedirect('/error/')
+            return print_n_send_error_response(request, "Only POST allowed", True)
     except:
-        PrintException("[ERROR] Clean Up")
-        return HttpResponseRedirect('/error/')
+        PrintException("Data Collection & Clean Up")
+        return print_n_send_error_response(request, "Data Collection & Clean Up failed", True)
 # AJAX
 
 
@@ -448,8 +451,7 @@ def dump_data(request):
             md5_hash = request.POST['md5']
             if re.match('^[0-9a-f]{32}$', md5_hash):
                 if re.findall(r";|\$\(|\|\||&&", package):
-                    logger.info("[ATTACK] Possible RCE")
-                    return HttpResponseRedirect('/error/')
+                    return print_n_send_error_response(request, "Possible RCE Attack", True)
                 base_dir = settings.BASE_DIR
                 apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
                 # Let's try to close Proxy a bit early as we don't have much
@@ -471,7 +473,8 @@ def dump_data(request):
                     if b"MOBSEC-TAR-CREATED" in adb_command(["cat", "/sdcard/mobsec_status"], shell=True):
                         break
                     if (current_time - start_time) > timeout:
-                        logger.error("TAR Generation Failed. Process timed out.")
+                        logger.error(
+                            "TAR Generation Failed. Process timed out.")
                         break
                 logger.info("Dumping Application Files from Device/VM")
                 adb_command(["pull", "/data/local/" + package +
@@ -485,12 +488,13 @@ def dump_data(request):
                 data = {'dump': 'yes'}
                 return HttpResponse(json.dumps(data), content_type='application/json')
             else:
-                return HttpResponseRedirect('/error/')
+                return print_n_send_error_response(request, "Invalid Scan Hash", True)
         else:
-            return HttpResponseRedirect('/error/')
+            return print_n_send_error_response(request, "Only POST allowed", True)
     except:
-        PrintException("[ERROR] Downloading Application Data from Device")
-        return HttpResponseRedirect('/error/')
+        PrintException("Downloading Application Data from Device")
+        return print_n_send_error_response(request, "Application Data Dump from Device failed", True)
+
 # AJAX
 
 
@@ -502,8 +506,7 @@ def exported_activity_tester(request):
         package = request.POST['pkg']
         if re.match('^[0-9a-f]{32}$', md5_hash):
             if re.findall(r";|\$\(|\|\||&&", package):
-                logger.info("[ATTACK] Possible RCE")
-                return HttpResponseRedirect('/error/')
+                return print_n_send_error_response(request, "Possible RCE Attack", True)
             if request.method == 'POST':
                 base_dir = settings.BASE_DIR
                 app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
@@ -523,12 +526,12 @@ def exported_activity_tester(request):
                         exp_act_no = 0
                         logger.info("Starting Exported Activity Tester...")
                         logger.info("" + str(len(exported_act)) +
-                              " Exported Activities Identified")
+                                    " Exported Activities Identified")
                         for line in exported_act:
                             try:
                                 exp_act_no += 1
                                 logger.info("Launching Exported Activity - " +
-                                      str(exp_act_no) + ". " + line)
+                                            str(exp_act_no) + ". " + line)
                                 adb_command(
                                     ["am", "start", "-n", package + "/" + line], True)
                                 # AVD is much slower, it should get extra time
@@ -547,22 +550,22 @@ def exported_activity_tester(request):
                                 logger.info("Stopping App")
                             except:
                                 PrintException(
-                                    "[ERROR] Exported Activity Tester")
+                                    "Exported Activity Tester")
                         data = {'expacttest': 'done'}
                     else:
-                        logger.info("Exported Activity Tester - No Activity Found!")
+                        logger.info(
+                            "Exported Activity Tester - No Activity Found!")
                         data = {'expacttest': 'noact'}
                     return HttpResponse(json.dumps(data), content_type='application/json')
                 else:
-                    logger.error("Entry does not exist in DB.")
-                    return HttpResponseRedirect('/error/')
+                    return print_n_send_error_response(request, "Entry does not exist in DB", True)
             else:
-                return HttpResponseRedirect('/error/')
+                return print_n_send_error_response(request, "Only POST allowed", True)
         else:
-            return HttpResponseRedirect('/error/')
+            return print_n_send_error_response(request, "Invalid Scan Hash", True)
     except:
         PrintException("ERROR] Exported Activity Tester")
-        return HttpResponseRedirect('/error/')
+        return print_n_send_error_response(request, "Error Running Exported Activity Tests", True)
 
 # AJAX
 
@@ -575,8 +578,7 @@ def activity_tester(request):
         package = request.POST['pkg']
         if re.match('^[0-9a-f]{32}$', md5_hash):
             if re.findall(r";|\$\(|\|\||&&", package):
-                logger.info("[ATTACK] Possible RCE")
-                return HttpResponseRedirect('/error/')
+                return print_n_send_error_response(request, "Possible RCE Attack", True)
             if request.method == 'POST':
                 base_dir = settings.BASE_DIR
                 app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
@@ -594,12 +596,12 @@ def activity_tester(request):
                         act_no = 0
                         logger.info("Starting Activity Tester...")
                         logger.info("" + str(len(activities)) +
-                              " Activities Identified")
+                                    " Activities Identified")
                         for line in activities:
                             try:
                                 act_no += 1
                                 logger.info("Launching Activity - " +
-                                      str(act_no) + ". " + line)
+                                            str(act_no) + ". " + line)
                                 adb_command(
                                     ["am", "start", "-n", package + "/" + line], True)
                                 # AVD is much slower, it should get extra time
@@ -624,15 +626,14 @@ def activity_tester(request):
                         data = {'acttest': 'noact'}
                     return HttpResponse(json.dumps(data), content_type='application/json')
                 else:
-                    logger.error("Entry does not exist in DB.")
-                    return HttpResponseRedirect('/error/')
+                    return print_n_send_error_response(request, "Entry does not exist in DB", True)
             else:
-                return HttpResponseRedirect('/error/')
+                return print_n_send_error_response(request, "Only POST allowed", True)
         else:
-            return HttpResponseRedirect('/error/')
+            return print_n_send_error_response(request, "Invalid Scan Hash", True)
     except:
-        PrintException("[ERROR] Activity Tester")
-        return HttpResponseRedirect('/error/')
+        PrintException("Activity Tester")
+        return print_n_send_error_response(request, "Error Running Activity Tester", True)
 
 
 def report(request):
@@ -643,8 +644,7 @@ def report(request):
             md5_hash = request.GET['md5']
             package = request.GET['pkg']
             if re.findall(r";|\$\(|\|\||&&", package):
-                logger.info("[ATTACK] Possible RCE")
-                return HttpResponseRedirect('/error/')
+                return print_n_send_error_response(request, "Possible RCE Attack")
             if re.match('^[0-9a-f]{32}$', md5_hash):
                 app_dir = os.path.join(
                     settings.UPLD_DIR, md5_hash + '/')  # APP DIRECTORY
@@ -674,7 +674,8 @@ def report(request):
                         static_android_db = StaticAnalyzerAndroid.objects.filter(
                             MD5=md5_hash)
                         if static_android_db.exists():
-                            logger.info("\n[INFO] Fetching Exported Activity & Activity List from DB")
+                            logger.info(
+                                "\nFetching Exported Activity & Activity List from DB")
                             exported_act = python_list(
                                 static_android_db[0].EXPORTED_ACT)
                             act_desc = python_list(
@@ -689,7 +690,7 @@ def report(request):
                         else:
                             logger.warning("Entry does not exists in the DB.")
                     except:
-                        PrintException("[ERROR] Screenshot Sorting")
+                        PrintException("Screenshot Sorting")
                 context = {'md5': md5_hash,
                            'emails': analysis_result["emails"],
                            'urls': analysis_result["urls"],
@@ -720,12 +721,12 @@ def report(request):
                 template = "dynamic_analysis/dynamic_analysis.html"
                 return render(request, template, context)
             else:
-                return HttpResponseRedirect('/error/')
+                return print_n_send_error_response(request, "Invalid Scan Hash")
         else:
-            return HttpResponseRedirect('/error/')
+            return print_n_send_error_response(request, "Only GET allowed")
     except:
-        PrintException("[ERROR] Dynamic Analysis Report Generation")
-        return HttpResponseRedirect('/error/')
+        PrintException("Dynamic Analysis Report Generation")
+        return print_n_send_error_response(request, "Error Geneating Dynamic Analysis Report")
 
 
 def handle_sqlite(sfile):
@@ -757,7 +758,7 @@ def handle_sqlite(sfile):
                 data += dat + "\n"
         return data
     except:
-        PrintException("[ERROR] SQLite DB Extraction")
+        PrintException("SQLite DB Extraction")
 
 
 def view(request):
@@ -777,7 +778,7 @@ def view(request):
             sfile = os.path.join(src, fil)
             # Prevent Directory Traversal Attacks
             if ("../" in fil) or ("%2e%2e" in fil) or (".." in fil) or ("%252e" in fil):
-                return HttpResponseRedirect('/error/')
+                return print_n_send_error_response(request, "Path Traversal Attack Detected")
             else:
                 with io.open(sfile, mode='r', encoding="utf8", errors="ignore") as flip:
                     dat = flip.read()
@@ -789,17 +790,16 @@ def view(request):
                 elif typ == 'others':
                     rtyp = 'asciidoc'
                 else:
-                    return HttpResponseRedirect('/error/')
+                    return print_n_send_error_response(request, "File Type not supported")
                 context = {'title': escape(ntpath.basename(fil)), 'file': escape(
                     ntpath.basename(fil)), 'dat': dat, 'type': rtyp, }
                 template = "general/view.html"
                 return render(request, template, context)
-
         else:
-            return HttpResponseRedirect('/error/')
+            return print_n_send_error_response(request, "Invalid Scan Hash")
     except:
-        PrintException("[ERROR] Viewing File")
-        return HttpResponseRedirect('/error/')
+        PrintException("Viewing File")
+        return print_n_send_error_response(request, "ERROR Viewing File")
 
 
 def capfuzz_start(request):
@@ -816,8 +816,8 @@ def capfuzz_start(request):
             project = ""
         return HttpResponseRedirect('http://localhost:' + str(settings.PORT) + "/dashboard/" + project)
     except:
-        PrintException("[ERROR] Starting CapFuzz Web UI")
-        return HttpResponseRedirect('/error/')
+        PrintException("Starting CapFuzz Web UI")
+        return print_n_send_error_response(request, "Error Starting CapFuzz UI")
 
 
 def screencast_service():
@@ -840,16 +840,14 @@ def screencast_service():
             screen_socket.listen(10)
             while TCP_SERVER_MODE == "on":
                 screens, address = screen_socket.accept()
-                logger.info("Got Connection from: ", address[0])
+                logger.info("Got Connection from: %s", address[0])
                 if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_REAL_DEVICE":
                     ip_address = settings.DEVICE_IP
                 else:
                     ip_address = settings.VM_IP
                 if address[0] in [ip_address, '127.0.0.1']:
-                    """
-                    Very Basic Check to ensure that only MobSF VM/Device/Emulator
-                    is allowed to connect to MobSF ScreenCast Service.
-                    """
+                    # Very Basic Check to ensure that only MobSF VM/Device/Emulator
+                    # is allowed to connect to MobSF ScreenCast Service.
                     with open(screen_dir + 'screen.png', 'wb') as flip:
                         while True:
                             data = screens.recv(1024)
@@ -857,10 +855,10 @@ def screencast_service():
                                 break
                             flip.write(data)
                 else:
-                    logger.info("\n[ATTACK] An unknown client :" + address[0] + " is trying " +
+                    logger.warning("\n[ATTACK] An unknown client :" + address[0] + " is trying " +
                                 "to make a connection with MobSF ScreenCast Service!")
         elif TCP_SERVER_MODE == "off":
             screen_socket.close()
     except:
         screen_socket.close()
-        PrintException("[ERROR] ScreenCast Server")
+        PrintException("ScreenCast Server")

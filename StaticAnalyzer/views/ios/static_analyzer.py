@@ -112,7 +112,7 @@ def ios_list_files(src, md5_hash, binary_form, mode):
                 {"issue": "Certificate/Key Files Hardcoded inside the App.", "files": certz})
         return filez, sfiles
     except:
-        PrintException("[ERROR] iOS List Files")
+        PrintException("iOS List Files")
 
 
 def static_analyzer_ios(request, api=False):

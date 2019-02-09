@@ -258,7 +258,7 @@ def _binary_analysis(app_dic):
             bin_an_dic['bin_name'] = file_name.replace(".exe", "")
             break
     if not bin_an_dic['bin_name']:
-        PrintException("[ERROR] No executeable in appx.")
+        PrintException("No executeable in appx.")
 
     bin_path = os.path.join(app_dic['app_dir'], bin_an_dic['bin'])
 
@@ -562,7 +562,7 @@ def _parse_xml(app_dir):
             elif isinstance(child.tag, str) and child.tag.endswith("}Metadata"):
                 xml_dic = __parse_xml_metadata(xml_dic, child)
     except:
-        PrintException("[ERROR] - Reading from AppxManifest.xml")
+        PrintException("Reading from AppxManifest.xml")
     return xml_dic
 
 
