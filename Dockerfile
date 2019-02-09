@@ -88,6 +88,7 @@ WORKDIR /tmp
 RUN git clone --recursive ${YARA_URL} yara-python && \
     cd yara-python && \
     python3 setup.py build --enable-dex install && \
+    pip3 install apkid && \
     rm -fr /tmp/yara-python && \
     sed -i 's/APKID_ENABLED.*/APKID_ENABLED = True/' /root/Mobile-Security-Framework-MobSF/MobSF/settings.py
 
@@ -105,11 +106,7 @@ RUN rm -rf /var/lib/apt/lists/* /tmp/* > /dev/null 2>&1
 #Expose MobSF Port
 EXPOSE 8000
 
-
 WORKDIR /root/Mobile-Security-Framework-MobSF
-
-#Run Unit Tests
-RUN python3 manage.py test
 
 #Run MobSF
 CMD ["python3","manage.py","runserver","0.0.0.0:8000"]

@@ -34,3 +34,4 @@ def strings_jar(app_file, app_dir):
         return dat
     except:
         PrintException("[ERROR] Extracting Strings from APK")
+        return []
