@@ -208,7 +208,7 @@ def take_screenshot(request):
             return print_n_send_error_response(request, "Only POST allowed", True)
     except:
         PrintException("Taking Screenshot")
-        return print_n_send_error_response(request, "Error Taking Screenshot". True)
+        return print_n_send_error_response(request, "Error Taking Screenshot", True)
 # AJAX
 
 
