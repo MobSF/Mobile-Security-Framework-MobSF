@@ -204,7 +204,7 @@ def api_test():
                 logger.error("{} Generating JSON Response: {}".format(err_msg, pdf["hash"]))
                 failed = True
         logger.info("[OK] JSON Report API test completed")
-        logger.info("[INFO] Running View Source API test")
+        logger.info("Running View Source API test")
         # View Source tests
         files = [{"file": "opensecurity/helloworld/MainActivity.java", "type": "apk", "hash": "3a552566097a8de588b8184b059b0158"},
                  {"file": "helloworld.app/Info.plist", "type": "ipa", "hash": "6c23c2970551be15f32bbab0b5db0c71"},
