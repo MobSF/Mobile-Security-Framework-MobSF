@@ -2,23 +2,22 @@
 Common Utils
 """
 import os
+import re
+import io
+import ast
+import sys
 import signal
 import platform
 import random
 import subprocess
-import re
-import sys
 import linecache
-import time
-import datetime
 import ntpath
 import hashlib
-import io
-import ast
 import unicodedata
 import shutil
 import requests
 import logging
+
 from django.shortcuts import render
 from . import settings
 logger = logging.getLogger(__name__)
@@ -337,8 +336,7 @@ def FindJava(debug=False):
                 else:
                     err_msg = "Please install Oracle JDK 1.7 or above"
                     if debug:
-                        logger.error(Color.BOLD + Color.RED +
-                                     err_msg + Color.END)
+                        logger.error(err_msg)
                     return "java"
             else:
                 args = [mac_linux_java_dir + "java", '-version']
@@ -351,8 +349,7 @@ def FindJava(debug=False):
                 else:
                     err_msg = "Please install Oracle JDK 1.7 or above"
                     if debug:
-                        logger.error(Color.BOLD + Color.RED +
-                                     err_msg + Color.END)
+                        logger.error(err_msg)
                     return "java"
 
     except:
@@ -378,12 +375,7 @@ def RunProcess(args):
 
 
 def PrintException(msg, web=False):
-    try:
-        LOGPATH = settings.LOG_DIR
-    except:
-        LOGPATH = os.path.join(settings.BASE_DIR, "logs/")
-    if not os.path.exists(LOGPATH):
-        os.makedirs(LOGPATH)
+    """Print Exception verbose"""
     exc_type, exc_obj, tb = sys.exc_info()
     f = tb.tb_frame
     lineno = tb.tb_lineno
@@ -397,25 +389,11 @@ def PrintException(msg, web=False):
         logger.warning(dat)
     else:
         logger.error(dat)
-    with open(LOGPATH + 'MobSF.log', 'a') as f:
-        f.write(dat)
 
 
 def print_n_send_error_response(request, msg, api, exp='Error Description'):
     """Print and log errors"""
-    logger.error(Color.BOLD + Color.RED + msg + Color.END)
-    time_stamp = time.time()
-    formatted_tms = datetime.datetime.fromtimestamp(
-        time_stamp).strftime('%Y-%m-%d %H:%M:%S')
-    data = '\n[' + formatted_tms + ']\n' + msg
-    try:
-        log_path = settings.LOG_DIR
-    except:
-        log_path = os.path.join(settings.BASE_DIR, "logs/")
-    if not os.path.exists(log_path):
-        os.makedirs(log_path)
-    with open(os.path.join(log_path, 'MobSF.log'), 'a') as flip:
-        flip.write(data)
+    logger.error(msg)
     if api:
         api_response = {"error": msg}
         return api_response
