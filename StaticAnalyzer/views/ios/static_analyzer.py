@@ -50,7 +50,7 @@ from MobSF.utils import (
     isFileExists
 )
 
-import StaticAnalyzer.views.android.VirusTotal as VirusTotal
+import MalwareAnalyzer.views.VirusTotal as VirusTotal
 logger = logging.getLogger(__name__)
 
 ##############################################################

@@ -24,7 +24,7 @@ class VirusTotal:
             try:
                 proxies, verify = upstream_proxy('https')
             except:
-                PrintException("[ERROR] Setting upstream proxy")
+                PrintException("Setting upstream proxy")
             try:
                 response = requests.get(
                     url, params=params, headers=headers, proxies=proxies, verify=verify)
@@ -40,7 +40,7 @@ class VirusTotal:
             except ValueError:
                 return None
         except:
-            PrintException("[ERROR] in VirusTotal get_report")
+            PrintException("VirusTotal get_report")
             return None
 
     def upload_file(self, file_path):
@@ -59,7 +59,7 @@ class VirusTotal:
             try:
                 proxies, verify = upstream_proxy('https')
             except:
-                PrintException("[ERROR] Setting upstream proxy")
+                PrintException("Setting upstream proxy")
             try:
                 response = requests.post(
                     url, files=files, data=headers, proxies=proxies, verify=verify)
@@ -67,13 +67,13 @@ class VirusTotal:
                     logger.error("VirusTotal Permission denied, wrong api key?")
                     return None
             except:
-                logger.error("VirusTotal ConnectionError, check internet connectivity")
+                logger.error("VirusTotal Connection Error, check internet connectivity")
                 return None
             json_response = response.json()
             return json_response
 
         except:
-            PrintException("[ERROR] in VirusTotal upload_file")
+            PrintException("VirusTotal upload_file")
             return None
 
     def get_result(self, file_path, file_hash):
@@ -84,18 +84,18 @@ class VirusTotal:
         :return: VirusTotal result json / None upon error
         """
         try:
-            logger.info("[INFO] VirusTotal: Check for existing report")
+            logger.info("VirusTotal: Check for existing report")
             report = self.get_report(file_hash)
             # Check for existing report
             if report:
                 if report['response_code'] == 1:
-                    logger.info("[INFO] VirusTotal: " + report['verbose_msg'])
+                    logger.info("VirusTotal: " + report['verbose_msg'])
                     return report
             if settings.VT_UPLOAD:
-                logger.info("[INFO] VirusTotal: file upload")
+                logger.info("VirusTotal: file upload")
                 upload_response = self.upload_file(file_path)
                 if upload_response:
-                    logger.info("[INFO] VirusTotal: {}".format(upload_response['verbose_msg']))
+                    logger.info("VirusTotal: {}".format(upload_response['verbose_msg']))
                 return upload_response
             else:
                 logger.info("MobSF: VirusTotal Scan not performed as file upload is disabled in settings.py. "
@@ -104,4 +104,4 @@ class VirusTotal:
                     "verbose_msg": "Scan Not performed, VirusTotal file upload disabled in settings.py", "positives": 0, "total": 0}
                 return report
         except:
-            PrintException("[ERROR] in VirusTotal get_result")
+            PrintException("VirusTotal get_result")

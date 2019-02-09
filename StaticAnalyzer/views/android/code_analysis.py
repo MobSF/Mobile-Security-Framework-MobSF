@@ -9,7 +9,7 @@ import os
 from django.conf import settings
 from django.utils.html import escape
 
-from MalwareAnalyzer.views import malware_check
+from MalwareAnalyzer.views.domain_check import malware_check
 
 from MobSF.utils import (
     PrintException

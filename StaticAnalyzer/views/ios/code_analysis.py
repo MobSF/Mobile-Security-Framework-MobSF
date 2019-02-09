@@ -11,7 +11,7 @@ from StaticAnalyzer.views.ios import (
     ios_rules,
     ios_apis
 )
-from MalwareAnalyzer.views import malware_check
+from MalwareAnalyzer.views.domain_check import malware_check
 from MobSF.utils import (
     PrintException,
 )
