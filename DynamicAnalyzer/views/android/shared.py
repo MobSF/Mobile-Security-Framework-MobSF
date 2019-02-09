@@ -3,8 +3,11 @@
 import subprocess
 import time
 import traceback
+import logging
 from django.conf import settings
 from MobSF.utils import PrintException, getADB
+
+logger = logging.getLogger(__name__)
 
 
 def wait(sec):
@@ -34,7 +37,7 @@ def get_res():
             # width, height
         return "", ""
     except:
-        PrintException("[ERROR] Getting Screen Resolution")
+        PrintException("Getting Screen Resolution")
         return "", ""
 
 
@@ -49,27 +52,27 @@ def get_identifier():
             return settings.VM_IP + ":" + str(settings.VM_ADB_PORT)
     except:
         PrintException(
-            "[ERROR] Getting ADB Connection Identifier for Device/VM")
+            "Getting ADB Connection Identifier for Device/VM")
 
 
 def adb_command(cmd_list, shell=False, silent=False):
-        emulator = get_identifier()
-        adb = getADB()
+    emulator = get_identifier()
+    adb = getADB()
 
-        args = [adb,
-                "-s",
-                emulator]
-        if shell:
-            args += ['shell']
-        args += cmd_list
+    args = [adb,
+            "-s",
+            emulator]
+    if shell:
+        args += ['shell']
+    args += cmd_list
 
-        try:
-            result = subprocess.check_output(args)
-            return result
-        except:
-            if not silent:
-                PrintException("[ERROR] adb_command")
-            return None
+    try:
+        result = subprocess.check_output(args)
+        return result
+    except:
+        if not silent:
+            PrintException("Running ADB Command")
+        return None
 
 
 def connect():
@@ -83,18 +86,22 @@ def connect():
     logger.info("Connecting to VM/Device")
     out = subprocess.check_output([adb, "connect", get_identifier()])
     if b"unable to connect" in out:
-        raise ValueError("ERROR Connecting to VM/Device. ", out.decode("utf-8").replace("\n",""))
+        raise ValueError("ERROR Connecting to VM/Device. ",
+                         out.decode("utf-8").replace("\n", ""))
     try:
         subprocess.call([adb, "-s", get_identifier(), "wait-for-device"])
         logger.info("Mounting")
         if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_REAL_DEVICE":
-            adb_command(["su", "-c", "mount", "-o", "rw,remount,rw", "/system"], True)
+            adb_command(["su", "-c", "mount", "-o",
+                         "rw,remount,rw", "/system"], True)
         else:
-            adb_command(["su", "-c", "mount", "-o", "rw,remount,rw", "/system"], True)
+            adb_command(["su", "-c", "mount", "-o",
+                         "rw,remount,rw", "/system"], True)
             # This may not work for VMs other than the default MobSF VM
-            adb_command(["mount", "-o", "rw,remount", "-t", "rfs", "/dev/block/sda6", "/system"], True)
+            adb_command(["mount", "-o", "rw,remount", "-t", "rfs",
+                         "/dev/block/sda6", "/system"], True)
     except:
-        PrintException("[ERROR]  Connecting to VM/Device")
+        PrintException("Connecting to VM/Device")
 
 
 def install_and_run(apk_path, package, launcher, is_activity):
@@ -113,4 +120,4 @@ def install_and_run(apk_path, package, launcher, is_activity):
             # Handle Service or Give Choice to Select in Future.
         logger.info("Testing Environment is Ready!")
     except:
-        PrintException("[ERROR]  Starting App for Dynamic Analysis")
+        PrintException("Starting App for Dynamic Analysis")

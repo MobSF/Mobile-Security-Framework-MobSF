@@ -227,4 +227,4 @@ def plist_analysis(src, is_source):
             plist_info["inseccon"] = __check_insecure_connections(plist_obj)
         return plist_info
     except:
-        PrintException("[ERROR] - Reading from Info.plist")
+        PrintException("Reading from Info.plist")

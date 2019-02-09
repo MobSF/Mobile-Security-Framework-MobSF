@@ -49,5 +49,5 @@ def run(request):
         template = "static_analysis/smali.html"
         return render(request, template, context)
     except:
-        PrintException("[ERROR] Getting Smali Files")
-        return HttpResponseRedirect('/error/')
+        PrintException("Getting Smali Files")
+        return print_n_send_error_response(request, "Error Getting Smali Files")

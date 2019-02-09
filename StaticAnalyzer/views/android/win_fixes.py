@@ -23,7 +23,7 @@ def win_fix_java(tools_dir):
         with open(org, 'w') as file_pointer:
             file_pointer.write(dat)
     except:
-        PrintException("[ERROR] Running JAVA path fix in Windows")
+        PrintException("Running JAVA path fix in Windows")
 
 
 def win_fix_python3(tools_dir):
@@ -49,4 +49,4 @@ def win_fix_python3(tools_dir):
         with open(org, 'w') as file_pointer:
             file_pointer.write(dat)
     except:
-        PrintException("[ERROR] Running Python 3 path fix in Windows")
+        PrintException("Running Python 3 path fix in Windows")

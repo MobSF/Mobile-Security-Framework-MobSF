@@ -2,23 +2,22 @@
 Common Utils
 """
 import os
+import re
+import io
+import ast
+import sys
 import signal
 import platform
 import random
 import subprocess
-import re
-import sys
 import linecache
-import time
-import datetime
 import ntpath
 import hashlib
-import io
-import ast
 import unicodedata
 import shutil
 import requests
 import logging
+
 from django.shortcuts import render
 from . import settings
 logger = logging.getLogger(__name__)
@@ -65,7 +64,7 @@ def api_key():
             _api_key = open(secret_file).read().strip()
             return gen_sha256_hash(_api_key)
         except Exception:
-            PrintException("[ERROR] Cannot Read API Key")
+            PrintException("Cannot Read API Key")
 
 
 def printMobSFverison():
@@ -75,7 +74,8 @@ def printMobSFverison():
         logger.info('Mobile Security Framework ' + settings.MOBSF_VER)
         print("REST API Key: " + api_key())
     else:
-        logger.info('\033[1m\033[34mMobile Security Framework ' + settings.MOBSF_VER + '\033[0m')
+        logger.info('\033[1m\033[34mMobile Security Framework ' +
+                    settings.MOBSF_VER + '\033[0m')
         print("REST API Key: " + Color.BOLD + api_key() + Color.END)
     logger.info("OS: " + platform.system())
     logger.info("Platform: " + platform.platform())
@@ -95,8 +95,9 @@ def check_update():
         try:
             proxies, verify = upstream_proxy('https')
         except Exception:
-            PrintException("[ERROR] Setting upstream proxy")
-        response = requests.get(github_url, timeout=5, proxies=proxies, verify=verify)
+            PrintException("Setting upstream proxy")
+        response = requests.get(github_url, timeout=5,
+                                proxies=proxies, verify=verify)
         html = str(response.text).split("\n")
         for line in html:
             if line.startswith("MOBSF_VER"):
@@ -108,10 +109,11 @@ def check_update():
                 else:
                     logger.info("No updates available.")
     except requests.exceptions.HTTPError as err:
-        logger.warning("\n[WARN] Cannot check for updates.. No Internet Connection Found.")
+        logger.warning(
+            "\nCannot check for updates.. No Internet Connection Found.")
         return
     except:
-        PrintException("[ERROR] Cannot Check for updates.")
+        PrintException("Cannot Check for updates.")
 
 
 def createUserConfig(MobSF_HOME):
@@ -135,7 +137,7 @@ def createUserConfig(MobSF_HOME):
             with io.open(CONFIG_PATH, mode='w', encoding="utf8", errors="ignore") as f:
                 f.write(COMFIG_STR)
     except:
-        PrintException("[ERROR] Cannot create config file")
+        PrintException("Cannot create config file")
 
 
 def getMobSFHome(useHOME):
@@ -171,7 +173,7 @@ def getMobSFHome(useHOME):
             os.makedirs(UPLD_DIR)
         return MobSF_HOME
     except:
-        PrintException("[ERROR] Creating MobSF Home Directory")
+        PrintException("Creating MobSF Home Directory")
 
 
 def get_python():
@@ -189,7 +191,7 @@ def make_migrations(base_dir):
         args = [python, manage, "makemigrations", "StaticAnalyzer"]
         subprocess.call(args)
     except:
-        PrintException("[ERROR] Cannot Make Migrations")
+        PrintException("Cannot Make Migrations")
 
 
 def migrate(BASE_DIR):
@@ -200,7 +202,7 @@ def migrate(BASE_DIR):
         args = [python, manage, "migrate"]
         subprocess.call(args)
     except:
-        PrintException("[ERROR] Cannot Migrate")
+        PrintException("Cannot Migrate")
 
 
 def kali_fix(BASE_DIR):
@@ -210,7 +212,7 @@ def kali_fix(BASE_DIR):
             subprocess.call(["chmod", "a+x", fix_path])
             subprocess.call([fix_path], shell=True)
     except:
-        PrintException("[ERROR] Cannot run Kali Fix")
+        PrintException("Cannot run Kali Fix")
 
 
 def FindVbox(debug=False):
@@ -236,7 +238,7 @@ def FindVbox(debug=False):
                 logger.warning("Could not find VirtualBox path.")
     except:
         if debug:
-            PrintException("[ERROR] Cannot find VirtualBox path.")
+            PrintException("Cannot find VirtualBox path.")
 
 
 # Maintain JDK Version
@@ -268,7 +270,7 @@ def FindJava(debug=False):
         "I:/Program Files (x86)/Java/",
     ]
     try:
-        err_msg1 = "[ERROR] Oracle JDK 1.7 or above is not found!"
+        err_msg1 = "Oracle JDK 1.7 or above is not found!"
         if isDirExists(settings.JAVA_DIRECTORY):
             if settings.JAVA_DIRECTORY.endswith("/"):
                 return settings.JAVA_DIRECTORY
@@ -289,7 +291,8 @@ def FindJava(debug=False):
                             dat = RunProcess(args)
                             if "java" in dat:
                                 if debug:
-                                    logger.info("Oracle Java JDK is installed!")
+                                    logger.info(
+                                        "Oracle Java JDK is installed!")
                                 return win_java_path
             for env in ["JDK_HOME", "JAVA_HOME"]:
                 java_home = os.environ.get(env)
@@ -331,9 +334,9 @@ def FindJava(debug=False):
                         logger.info("JDK 1.7 or above is available")
                     return mac_linux_java_dir
                 else:
-                    err_msg = "[ERROR] Please install Oracle JDK 1.7 or above"
+                    err_msg = "Please install Oracle JDK 1.7 or above"
                     if debug:
-                        logger.error(Color.BOLD + Color.RED + err_msg + Color.END)
+                        logger.error(err_msg)
                     return "java"
             else:
                 args = [mac_linux_java_dir + "java", '-version']
@@ -346,12 +349,12 @@ def FindJava(debug=False):
                 else:
                     err_msg = "Please install Oracle JDK 1.7 or above"
                     if debug:
-                        logger.error(Color.BOLD + Color.RED + err_msg + Color.END)
+                        logger.error(err_msg)
                     return "java"
 
     except:
         if debug:
-            PrintException("[ERROR] Oracle Java (JDK >=1.7) is not found!")
+            PrintException("Oracle Java (JDK >=1.7) is not found!")
         return "java"
 
 
@@ -367,54 +370,30 @@ def RunProcess(args):
             dat += str(line)
         return dat
     except:
-        PrintException("[ERROR] Finding Java path - Cannot Run Process")
+        PrintException("Finding Java path - Cannot Run Process")
         return ""
 
 
 def PrintException(msg, web=False):
-    try:
-        LOGPATH = settings.LOG_DIR
-    except:
-        LOGPATH = os.path.join(settings.BASE_DIR, "logs/")
-    if not os.path.exists(LOGPATH):
-        os.makedirs(LOGPATH)
+    """Print Exception verbose"""
     exc_type, exc_obj, tb = sys.exc_info()
     f = tb.tb_frame
     lineno = tb.tb_lineno
     filename = f.f_code.co_filename
     linecache.checkcache(filename)
     line = linecache.getline(filename, lineno, f.f_globals)
-    ts = time.time()
-    st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-    dat = '\n[' + st + ']\n' + msg + \
+    dat = '\n' + msg + \
         ' ({0}, LINE {1} "{2}"): {3}'.format(
             filename, lineno, line.strip(), exc_obj)
-    if platform.system() == "Windows":
-        logger.error(dat)
+    if web:
+        logger.warning(dat)
     else:
-        if web:
-            logger.error(Color.BOLD + Color.ORANGE + dat + Color.END)
-        else:
-            logger.error(Color.BOLD + Color.RED + dat + Color.END)
-    with open(LOGPATH + 'MobSF.log', 'a') as f:
-        f.write(dat)
+        logger.error(dat)
 
 
-def print_n_send_error_response(request, msg, api, exp='Error Description'):
+def print_n_send_error_response(request, msg, api=False, exp='Error Description'):
     """Print and log errors"""
-    logger.error(Color.BOLD + Color.RED + '[ERROR] ' + msg + Color.END)
-    time_stamp = time.time()
-    formatted_tms = datetime.datetime.fromtimestamp(
-        time_stamp).strftime('%Y-%m-%d %H:%M:%S')
-    data = '\n[' + formatted_tms + ']\n[ERROR] ' + msg
-    try:
-        log_path = settings.LOG_DIR
-    except:
-        log_path = os.path.join(settings.BASE_DIR, "logs/")
-    if not os.path.exists(log_path):
-        os.makedirs(log_path)
-    with open(os.path.join(log_path, 'MobSF.log'), 'a') as flip:
-        flip.write(data)
+    logger.error(msg)
     if api:
         api_response = {"error": msg}
         return api_response
@@ -484,7 +463,7 @@ def isInternetAvailable():
     try:
         proxies, verify = upstream_proxy('https')
     except:
-        PrintException("[ERROR] Setting upstream proxy")
+        PrintException("Setting upstream proxy")
     try:
         requests.get('https://www.google.com', timeout=5,
                      proxies=proxies, verify=verify)
@@ -548,7 +527,7 @@ def zipdir(path, zip_file):
             for file_name in files:
                 zip_file.write(os.path.join(root, file_name))
     except:
-        PrintException("[ERROR] Zipping")
+        PrintException("Zipping")
 
 
 def getADB():
@@ -570,7 +549,7 @@ def getADB():
                 adb = os.path.join(settings.TOOLS_DIR, 'adb/windows/adb.exe')
             return adb
     except:
-        PrintException("[ERROR] Getting ADB Location")
+        PrintException("Getting ADB Location")
         return "adb"
 
 
@@ -581,13 +560,10 @@ def adb_binary_or32bit_support():
         fnull = open(os.devnull, 'w')
         subprocess.call([adb_path], stdout=fnull, stderr=fnull)
     except:
-        msg = "\n[WARNING] You don't have 32 bit execution support enabled or MobSF shipped" \
+        msg = "\nYou don't have 32 bit execution support enabled or MobSF shipped" \
             " ADB binary is not compatible with your OS."\
             "\nPlease set the 'ADB_BINARY' path in settings.py"
-        if platform.system != "Windows":
-            logger.warning(Color.BOLD + Color.ORANGE + msg + Color.END)
-        else:
-            logger.warning(msg)
+        logger.warning(msg)
 
 
 def check_basic_env():
@@ -596,23 +572,23 @@ def check_basic_env():
     try:
         import capfuzz
     except ImportError:
-        PrintException("[ERROR] CapFuzz not installed!")
+        PrintException("CapFuzz not installed!")
         os.kill(os.getpid(), signal.SIGTERM)
     try:
         import lxml
     except ImportError:
-        PrintException("[ERROR] lxml is not installed!")
+        PrintException("lxml is not installed!")
         os.kill(os.getpid(), signal.SIGTERM)
     if platform.system() == "Windows":
         java = settings.JAVA_PATH + 'java.exe'
     else:
         java = settings.JAVA_PATH + 'java'
     if not isFileExists(java):
-        logger.error("Oracle Java is not available or `JAVA_DIRECTORY` in settings.py is configured incorrectly!")
+        logger.error(
+            "Oracle Java is not available or `JAVA_DIRECTORY` in settings.py is configured incorrectly!")
         logger.info("JAVA_DIRECTORY=%s" % settings.JAVA_DIRECTORY)
         logger.info('''Example Configuration:
                  JAVA_DIRECTORY = "C:/Program Files/Java/jdk1.7.0_17/bin/"
                  JAVA_DIRECTORY = "/usr/bin/"
         ''')
         os.kill(os.getpid(), signal.SIGTERM)
-

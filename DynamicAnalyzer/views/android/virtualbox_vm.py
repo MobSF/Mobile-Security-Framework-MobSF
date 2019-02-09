@@ -28,4 +28,4 @@ def refresh_vm(uuid, snapshot_uuid, vbox_exe):
         subprocess.call(args)
         logger.info("VM Starting")
     except:
-        PrintException("[ERROR] Refreshing MobSF VM")
+        PrintException("Refreshing MobSF VM")

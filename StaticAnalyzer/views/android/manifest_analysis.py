@@ -34,7 +34,7 @@ def get_manifest(app_path, app_dir, tools_dir, typ, binary):
             manifest = minidom.parseString(dat)
         except:
             PrintException(
-                "[ERROR] apktool failed to extract AndroidManifest.xml or parsing failed")
+                "apktool failed to extract AndroidManifest.xml or parsing failed")
             manifest = minidom.parseString(
                 (
                     r'<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android='
@@ -47,7 +47,7 @@ def get_manifest(app_path, app_dir, tools_dir, typ, binary):
             logger.warning("Using Fake XML to continue the Analysis")
         return manifest
     except:
-        PrintException("[ERROR] Parsing Manifest file")
+        PrintException("Parsing Manifest file")
 
 
 def manifest_data(mfxml):
@@ -173,7 +173,7 @@ def manifest_data(mfxml):
 
         return man_data_dic
     except:
-        PrintException("[ERROR] Extracting Manifest Data")
+        PrintException("Extracting Manifest Data")
 
 
 def get_browsable_activities(node):
@@ -224,7 +224,7 @@ def get_browsable_activities(node):
         browse_dic["browsable"] = bool(browse_dic["schemes"])
         return browse_dic
     except:
-        PrintException("[ERROR] Getting Browsable Activities")
+        PrintException("Getting Browsable Activities")
 
 
 def manifest_analysis(mfxml, man_data_dic):
@@ -830,7 +830,7 @@ def manifest_analysis(mfxml, man_data_dic):
         }
         return man_an_dic
     except:
-        PrintException("[ERROR] Performing Manifest Analysis")
+        PrintException("Performing Manifest Analysis")
 
 
 def read_manifest(app_dir, app_path, tools_dir, typ, apk):
@@ -866,7 +866,7 @@ def read_manifest(app_dir, app_path, tools_dir, typ, apk):
                 dat = file_pointer.read()
         return dat
     except:
-        PrintException("[ERROR] Reading Manifest file")
+        PrintException("Reading Manifest file")
 
 
 def get_manifest_file(app_path, app_dir, tools_dir):
@@ -888,4 +888,4 @@ def get_manifest_file(app_path, app_dir, tools_dir):
         subprocess.check_output(args)
         return manifest
     except:
-        PrintException("[ERROR]Getting Manifest file")
+        PrintException("Getting Manifest file")

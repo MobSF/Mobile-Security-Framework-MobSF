@@ -100,4 +100,4 @@ def code_analysis(app_dir, perms, typ):
         }
         return code_an_dic
     except:
-        PrintException("[ERROR] Performing Code Analysis")
+        PrintException("Performing Code Analysis")

@@ -28,7 +28,7 @@ def static_analysis_test():
         err_msg = '\033[91m \033[1m %s \033[0m'
     try:
         uploaded = []
-        logger.info("[INFO] Running Upload Test")
+        logger.info("Running Upload Test")
         http_client = Client()
         apk_dir = os.path.join(settings.BASE_DIR, "StaticAnalyzer/test_files/")
         for filename in os.listdir(apk_dir):
@@ -86,7 +86,7 @@ def static_analysis_test():
         logger.info("[OK] PDF Generation test completed")
 
         # Compare apps test
-        logger.info("[INFO] Running App Compare tests")
+        logger.info("Running App Compare tests")
         first_app = '3a552566097a8de588b8184b059b0158'
         second_app = '52c50ae824e329ba8b5b7a0f523efffe'
         url = '/compare/{}/{}/'.format(first_app, second_app)
@@ -99,7 +99,7 @@ def static_analysis_test():
             logger.info(resp.content)
             failed = True
 
-        logger.info("[INFO] Running Delete Scan Results test")
+        logger.info("Running Delete Scan Results test")
         # Deleting Scan Results
         if platform.system() in ['Darwin', 'Linux']:
             scan_md5s = ["3a552566097a8de588b8184b059b0158", "6c23c2970551be15f32bbab0b5db0c71",
@@ -120,15 +120,15 @@ def static_analysis_test():
             else:
                 logger.error(err_msg % " Deleting Scan: " + md5)
                 failed = True
-        logger.info("[INFO] Delete Scan Results test completed")
+        logger.info("Delete Scan Results test completed")
     except:
-        PrintException("[ERROR] Completing Static Analyzer Test")
+        PrintException("Completing Static Analyzer Test")
     return failed
 
 
 def api_test():
     """View for Handling REST API Test"""
-    logger.info("\n[INFO] Running REST API Unit test")
+    logger.info("\nRunning REST API Unit test")
     auth = api_key()
     failed = False
     err_msg = '%s'
@@ -136,7 +136,7 @@ def api_test():
         err_msg = '\033[91m \033[1m %s \033[0m'
     try:
         uploaded = []
-        logger.info("[INFO] Running Test on Upload API")
+        logger.info("Running Test on Upload API")
         http_client = Client()
         apk_dir = os.path.join(settings.BASE_DIR, "StaticAnalyzer/test_files/")
         for filename in os.listdir(apk_dir):
@@ -155,7 +155,7 @@ def api_test():
                     logger.error(err_msg % " Performing Upload" + filename)
                     failed = True
         logger.info("[OK] Completed Upload API test")
-        logger.info("[INFO] Running Static Analysis API Test")
+        logger.info("Running Static Analysis API Test")
         for upl in uploaded:
             resp = http_client.post(
                 '/api/v1/scan', upl, HTTP_AUTHORIZATION=auth)
@@ -165,7 +165,7 @@ def api_test():
                 logger.error(err_msg % " Performing Static Analysis: " + upl["file_name"])
                 failed = True
         logger.info("[OK] Static Analysis API test completed")
-        logger.info("[INFO] Running PDF Generation API Test")
+        logger.info("Running PDF Generation API Test")
         if platform.system() in ['Darwin', 'Linux']:
             pdfs = [
                 {"hash": "3a552566097a8de588b8184b059b0158", "scan_type": "apk"},
@@ -204,7 +204,7 @@ def api_test():
                 logger.error("{} Generating JSON Response: {}".format(err_msg, pdf["hash"]))
                 failed = True
         logger.info("[OK] JSON Report API test completed")
-        logger.info("[INFO] Running View Source API test")
+        logger.info("Running View Source API test")
         # View Source tests
         files = [{"file": "opensecurity/helloworld/MainActivity.java", "type": "apk", "hash": "3a552566097a8de588b8184b059b0158"},
                  {"file": "helloworld.app/Info.plist", "type": "ipa", "hash": "6c23c2970551be15f32bbab0b5db0c71"},
@@ -224,7 +224,7 @@ def api_test():
                 logger.error(err_msg % " Reading - " + sfile["file"])
                 failed = True
         logger.info("[OK] View Source API test completed")
-        logger.info("[INFO] Running Delete Scan API Results test")
+        logger.info("Running Delete Scan API Results test")
         # Deleting Scan Results
         if platform.system() in ['Darwin', 'Linux']:
             scan_md5s = ["3a552566097a8de588b8184b059b0158", "6c23c2970551be15f32bbab0b5db0c71",
@@ -248,9 +248,9 @@ def api_test():
             else:
                 logger.error(err_msg % " Deleting Scan: " + md5)
                 failed = True
-        logger.info("[INFO] Delete Scan Results API test completed")
+        logger.info("Delete Scan Results API test completed")
     except:
-        PrintException("[ERROR] Completing REST API Unit Test")
+        PrintException("Completing REST API Unit Test")
     return failed
 
 

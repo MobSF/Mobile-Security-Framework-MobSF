@@ -39,7 +39,7 @@ def get_hardcoded_cert_keystore(files):
             dat += "<tr><td>Hardcoded Keystore Found.</td><td>" + key_store + "</td><tr>"
         return dat
     except:
-        PrintException("[ERROR] Getting Hardcoded Certificates/Keystores")
+        PrintException("Getting Hardcoded Certificates/Keystores")
 
 
 def cert_info(app_dir, tools_dir):
@@ -88,4 +88,4 @@ def cert_info(app_dir, tools_dir):
         }
         return cert_dic
     except:
-        PrintException("[ERROR] Reading Code Signing Certificate")
+        PrintException("Reading Code Signing Certificate")

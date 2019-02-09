@@ -268,7 +268,7 @@ def res_analysis(app_dir):
         return res
 
     except:
-        PrintException("[ERROR] Performing Resourse Analysis")
+        PrintException("Performing Resourse Analysis")
 
 
 def elf_analysis(app_dir: str) -> list:
@@ -318,4 +318,4 @@ def elf_analysis(app_dir: str) -> list:
         return res
 
     except:
-        PrintException("[ERROR] Performing Binary Analysis")
+        PrintException("Performing Binary Analysis")
