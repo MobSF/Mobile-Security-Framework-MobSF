@@ -12,7 +12,8 @@ from django.utils.html import escape
 from MalwareAnalyzer.views.domain_check import malware_check
 
 from MobSF.utils import (
-    PrintException
+    PrintException,
+    filename_from_path
 )
 
 from StaticAnalyzer.views.shared_func import (
@@ -48,7 +49,7 @@ def code_analysis(app_dir, perms, typ):
             java_src = os.path.join(app_dir, 'app/src/main/java/')
         elif typ == "eclipse":
             java_src = os.path.join(app_dir, 'src/')
-        logger.info("Code Analysis Started on - " + java_src)
+        logger.info("Code Analysis Started on - " + filename_from_path(java_src))
         # pylint: disable=unused-variable
         # Needed by os.walk
         for dir_name, sub_dir, files in os.walk(java_src):

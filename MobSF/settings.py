@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 import imp
 import os
 import logging
+import colorlog
 from MobSF import utils
 from install.windows.setup import windows_config_local
 
@@ -470,6 +471,18 @@ LOGGING = {
             'format': "[%(levelname)s] %(asctime)-15s - %(message)s",
             'datefmt': "%d/%b/%Y %H:%M:%S"
         },
+        'color': {
+            '()': 'colorlog.ColoredFormatter',
+            'format': '%(log_color)s[%(levelname)s] %(asctime)-15s - %(message)s',
+            'datefmt': "%d/%b/%Y %H:%M:%S",
+            'log_colors': {
+                'DEBUG':    'cyan',
+                'INFO':     'green',
+                'WARNING':  'yellow',
+                'ERROR':    'red',
+                'CRITICAL': 'red,bg_white',
+            },
+        },
     },
     'handlers': {
         'logfile': {
@@ -481,39 +494,36 @@ LOGGING = {
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            'formatter': 'standard',
+            'formatter': 'color',
         },
     },
     'loggers': {
         'django': {
             'handlers': ['console', 'logfile'],
             'level': 'DEBUG',
-            'propagate': False,
+            'propagate': True,
         },
         'django.db.backends': {
             'handlers': ['console', 'logfile'],
-            'level': 'INFO',   # DEBUG will log all queries, so change it to WARNING.
+            # DEBUG will log all queries, so change it to WARNING.
+            'level': 'INFO',
             'propagate': False,   # Don't propagate to other handlers
         },
         'MobSF': {
             'handlers': ['console', 'logfile'],
             'level': 'DEBUG',
-            'propagate': False,
         },
         'StaticAnalyzer': {
             'handlers': ['console', 'logfile'],
             'level': 'DEBUG',
-            'propagate': False,
         },
         'MalwareAnalyzer': {
             'handlers': ['console', 'logfile'],
             'level': 'DEBUG',
-            'propagate': False,
         },
         'DynamicAnalyzer': {
             'handlers': ['console', 'logfile'],
             'level': 'DEBUG',
-            'propagate': False,
         },
     }
 }
