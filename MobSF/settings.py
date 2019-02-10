@@ -512,18 +512,22 @@ LOGGING = {
         'MobSF': {
             'handlers': ['console', 'logfile'],
             'level': 'DEBUG',
+            'propagate': False,
         },
         'StaticAnalyzer': {
             'handlers': ['console', 'logfile'],
             'level': 'DEBUG',
+            'propagate': False,
         },
         'MalwareAnalyzer': {
             'handlers': ['console', 'logfile'],
             'level': 'DEBUG',
+            'propagate': False,
         },
         'DynamicAnalyzer': {
             'handlers': ['console', 'logfile'],
             'level': 'DEBUG',
+            'propagate': False,
         },
     }
 }
