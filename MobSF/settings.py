@@ -488,7 +488,7 @@ LOGGING = {
         'django': {
             'handlers': ['console', 'logfile'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
         },
         'django.db.backends': {
             'handlers': ['console', 'logfile'],
@@ -498,18 +498,22 @@ LOGGING = {
         'MobSF': {
             'handlers': ['console', 'logfile'],
             'level': 'DEBUG',
+            'propagate': False,
         },
         'StaticAnalyzer': {
             'handlers': ['console', 'logfile'],
             'level': 'DEBUG',
+            'propagate': False,
         },
         'MalwareAnalyzer': {
             'handlers': ['console', 'logfile'],
             'level': 'DEBUG',
+            'propagate': False,
         },
         'DynamicAnalyzer': {
             'handlers': ['console', 'logfile'],
             'level': 'DEBUG',
+            'propagate': False,
         },
     }
 }
