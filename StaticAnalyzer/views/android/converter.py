@@ -12,7 +12,8 @@ from MobSF.utils import (
     PrintException,
     isFileExists,
     isDirExists,
-    get_python
+    get_python,
+    filename_from_path
 )
 from StaticAnalyzer.views.android.win_fixes import (
     win_fix_python3,
@@ -45,7 +46,8 @@ def dex_2_jar(app_path, app_dir, tools_dir):
             logger.info("Using JAR converter - dex2jar")
             dexes = get_dex_files(app_dir)
             for idx, dex in enumerate(dexes):
-                logger.info("Converting " + dex + " to JAR")
+                logger.info("Converting " +
+                            filename_from_path(dex) + " to JAR")
                 if len(settings.DEX2JAR_BINARY) > 0 and isFileExists(settings.DEX2JAR_BINARY):
                     d2j = settings.DEX2JAR_BINARY
                 else:
@@ -62,7 +64,7 @@ def dex_2_jar(app_path, app_dir, tools_dir):
                     dex,
                     '-f',
                     '-o',
-                    app_dir + 'classes'+str(idx)+'.jar'
+                    app_dir + 'classes' + str(idx) + '.jar'
                 ]
                 subprocess.call(args)
 
@@ -103,7 +105,8 @@ def dex_2_smali(app_dir, tools_dir):
         logger.info("DEX -> SMALI")
         dexes = get_dex_files(app_dir)
         for dex_path in dexes:
-            logger.info("Converting " + dex_path + " to Smali Code")
+            logger.info("Converting " +
+                        filename_from_path(dex_path) + " to Smali Code")
             if len(settings.BACKSMALI_BINARY) > 0 and isFileExists(settings.BACKSMALI_BINARY):
                 bs_path = settings.BACKSMALI_BINARY
             else:
@@ -125,7 +128,8 @@ def jar_2_java(app_dir, tools_dir):
         jar_files = get_jar_files(app_dir)
         output = os.path.join(app_dir, 'java_source/')
         for jar_path in jar_files:
-            logger.info("Decompiling {} to Java Code".format(jar_path))
+            logger.info("Decompiling {} to Java Code".format(
+                filename_from_path(jar_path)))
             if settings.DECOMPILER == 'jd-core':
                 if (
                         len(settings.JD_CORE_DECOMPILER_BINARY) > 0 and
