@@ -92,6 +92,16 @@ RUN git clone --recursive ${YARA_URL} yara-python && \
     rm -fr /tmp/yara-python && \
     sed -i 's/APKID_ENABLED.*/APKID_ENABLED = True/' /root/Mobile-Security-Framework-MobSF/MobSF/settings.py
 
+#update apkid rules
+WORKDIR /tmp
+RUN git clone https://github.com/rednaga/APKiD.git && \
+    cd APKiD && \
+    python3 prep-release.py && \
+    cp apkid/rules/rules.yarc /root/Mobile-Security-Framework-MobSF/MalwareAnalyzer/ && \
+    sed -i 's#RULES_DIR =.*#RULES_DIR =  "/root/Mobile-Security-Framework-MobSF/MalwareAnalyzer"#' /usr/local/lib/python3.6/dist-packages/apkid/rules.py && \
+    cd .. && \
+    rm -fr APKiD
+
 #Add apktool working path
 RUN mkdir -p /root/.local/share/apktool/framework
 
