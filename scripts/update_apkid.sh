@@ -23,6 +23,6 @@ cd ..
 if [[ "$unamestr" == 'Darwin' ]]; then
   sed -i ' ' "s#RULES_DIR =.*#RULES_DIR =  \"$rules_dir\"#" ./venv/lib/python3.6/site-packages/apkid/rules.py 
  else
-  sed "s#RULES_DIR =.*#RULES_DIR =  \"$rules_dir\"#" ./venv/lib/python3.6/site-packages/apkid/rules.py
+  sed -i "s#RULES_DIR =.*#RULES_DIR =  \"$rules_dir\"#" ./venv/lib/python3.6/site-packages/apkid/rules.py
 fi 
 rm -fr APKiD
