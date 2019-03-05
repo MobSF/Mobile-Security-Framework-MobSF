@@ -114,7 +114,7 @@ def dex_2_smali(app_dir, tools_dir):
             output = os.path.join(app_dir, 'smali_source/')
             args = [
                 settings.JAVA_PATH + 'java',
-                '-jar', bs_path, dex_path, '-o', output
+                '-jar', bs_path, 'd', dex_path, '-o', output
             ]
             subprocess.call(args)
     except:
