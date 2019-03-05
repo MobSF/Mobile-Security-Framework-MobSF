@@ -18,6 +18,8 @@ if [[ "$unamestr" == 'Darwin' ]]; then
 fi
 echo '[INSTALL] Installing Requirements'
 pip install -r requirements.txt
+echo '[INSTALL] Updating APKiD rules'
+bash scripts/update_apkid.sh
 echo '[INSTALL] Clean Up'
 bash scripts/clean.sh y
 echo '[INSTALL] Migrating Database'
