@@ -13,7 +13,7 @@ unamestr=`uname`
 git clone https://github.com/rednaga/APKiD.git 
 cd APKiD 
 python3 prep-release.py 
-cp apkid/rules/rules.yarc ${rules_dfir}  
+cp apkid/rules/rules.yarc ${rules_dir}  
 cd ..
 if [[ "$unamestr" == 'Darwin' ]]; then
   sed -i ' ' "s#RULES_DIR =.*#RULES_DIR =  \"$rules_dir\"#" ./venv/lib/python3.6/site-packages/apkid/rules.py 
