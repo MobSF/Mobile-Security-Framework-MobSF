@@ -4,6 +4,7 @@
 import os
 import logging
 import plistlib
+import biplist
 from MobSF.utils import (
     PrintException,
     isFileExists
@@ -17,11 +18,14 @@ logger = logging.getLogger(__name__)
 
 def convert_bin_xml(bin_xml_file):
     """Convert Binary XML to Readable XML"""
-    plist_obj = readPlist(bin_xml_file)
-    data = writePlistToString(plist_obj)
-    return data
-
-
+    try:
+      plist_obj = readPlist(bin_xml_file)
+      data = writePlistToString(plist_obj)
+      return data
+    except biplist.InvalidPlistException:
+      logger.warning("Failed to convert plist")
+    
+    
 def __check_permissions(p_list):
     """Check the permissions the app requests."""
     # List taken from
