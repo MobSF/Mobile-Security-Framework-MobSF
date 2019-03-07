@@ -5,7 +5,10 @@ if [ "$script_path" != "scripts" ] && [ "$script_path" != "./scripts" ]; then
     exit  1
 fi
 current_dir=$(pwd)
-rules_dir=${current_dir}/root/Mobile-Security-Framework-MobSF/MalwareAnalyzer/
+rules_dir=${current_dir}/MalwareAnalyzer/tools/rules/
+if [ ! -d ${rules_dir} ]; then 
+   mkdir -p ${rules_dir}
+fi    
 virtualenv venv -p python3
 source venv/bin/activate
 platform='unknown'
