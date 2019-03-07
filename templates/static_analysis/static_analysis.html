@@ -120,7 +120,7 @@
         <div class="box-body danger">
           <span class="label label-danger">Average CVSS</span> <b>{{ average_cvss }} </b></br>
           <span class="label label-danger">Security Score</span> <b>{{ security_score }}/100</b></br>
-        {% if VT_ENABLED %}
+        {% if VT_RESULT %}
           <span class="label label-danger">VirusTotal Detection</span> <b>{{ VT_RESULT.positives }}/{{ VT_RESULT.total }}</b>
         {% endif %}
         </div><!-- /.box-body -->
