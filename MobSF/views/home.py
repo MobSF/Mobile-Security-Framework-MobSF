@@ -10,6 +10,7 @@ import shutil
 from wsgiref.util import FileWrapper
 import logging
 from django.conf import settings
+from django.core.paginator import Paginator
 from django.http import (
     HttpResponse,
     HttpResponseRedirect,
@@ -311,7 +312,6 @@ def delete_scan(request, api=False):
             return print_n_send_error_response(request, msg, False, exp_doc)
 
 
-from django.core.paginator import Paginator
 class RecentScans(object):
 
     def __init__(self, request):
