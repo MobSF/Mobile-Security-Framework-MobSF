@@ -309,3 +309,26 @@ def delete_scan(request, api=False):
             return print_n_send_error_response(request, msg, True, exp_doc)
         else:
             return print_n_send_error_response(request, msg, False, exp_doc)
+
+
+from django.core.paginator import Paginator
+class RecentScans(object):
+
+    def __init__(self, request):
+        self.request = request
+    
+    def recent_scans(self):
+        page = self.request.GET.get('page', 1)
+        page_size = self.request.GET.get('page_size', 10)
+        result = RecentScansDB.objects.all().values().order_by('-TS')
+        paginator = Paginator(result, page_size)
+        content = paginator.page(page)
+        
+        data = {
+            "content": list(content),
+            "count": paginator.count,
+            "num_pages": paginator.num_pages
+        }
+
+        return JsonResponse(data)
+        

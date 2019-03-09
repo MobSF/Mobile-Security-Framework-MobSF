@@ -10,7 +10,8 @@ from django.views.decorators.csrf import csrf_exempt
 
 from MobSF.views.home import (
     Upload,
-    delete_scan
+    delete_scan,
+    RecentScans
 )
 from MobSF.utils import (
     api_key,
@@ -66,6 +67,14 @@ def api_upload(request):
     upload = Upload(request)
     resp, code = upload.upload_api()
     return make_api_response(resp, code)
+
+
+@request_method(['GET'])
+@csrf_exempt
+def api_recent_scans(request):
+    """GET - get recent scans"""
+    scans = RecentScans(request)
+    return scans.recent_scans()
 
 
 @request_method(['POST'])
