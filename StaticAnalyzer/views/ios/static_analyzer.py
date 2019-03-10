@@ -40,7 +40,8 @@ from StaticAnalyzer.views.shared_func import (
     file_size,
     hash_gen,
     unzip,
-    score
+    score,
+    update_scan_timestamp,
 )
 from StaticAnalyzer.models import StaticAnalyzerIPA, StaticAnalyzerIOSZIP
 
@@ -179,6 +180,7 @@ def static_analyzer_ios(request, api=False):
                         logger.info("Updating Database...")
                         update_db_entry_ipa(
                             app_dict, infoplist_dict, bin_analysis_dict, files, sfiles)
+                        update_scan_timestamp(app_dict["md5_hash"])
                     elif rescan == '0':
                         logger.info("Saving to Database")
                         create_db_entry_ipa(
@@ -228,6 +230,7 @@ def static_analyzer_ios(request, api=False):
                         logger.info("Updating Database...")
                         update_db_entry_ios(
                             app_dict, infoplist_dict, code_analysis_dic, files, sfiles)
+                        update_scan_timestamp(app_dict["md5_hash"])
                     elif rescan == '0':
                         logger.info("Saving to Database")
                         create_db_entry_ios(

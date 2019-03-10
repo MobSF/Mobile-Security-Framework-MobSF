@@ -27,7 +27,8 @@ from django.utils.html import escape
 from StaticAnalyzer.views.shared_func import (
     file_size,
     hash_gen,
-    unzip
+    unzip,
+    update_scan_timestamp,
 )
 
 from StaticAnalyzer.models import StaticAnalyzerWindows
@@ -154,6 +155,7 @@ def staticanalyzer_windows(request, api=False):
                             BIN_AN_RESULTS=bin_an_dic['results'],
                             BIN_AN_WARNINGS=bin_an_dic['warnings'],
                         )
+                        update_scan_timestamp(app_dic['md5'])
                     elif rescan == '0':
                         logger.info("Saving to Database")
                         db_item = StaticAnalyzerWindows(
