@@ -74,7 +74,11 @@ def api_upload(request):
 def api_recent_scans(request):
     """GET - get recent scans"""
     scans = RecentScans(request)
-    return scans.recent_scans()
+    resp = scans.recent_scans()
+    if "error" in resp:
+        return make_api_response(resp, 500)
+    else:
+        return make_api_response(resp, 200)
 
 
 @request_method(['POST'])
