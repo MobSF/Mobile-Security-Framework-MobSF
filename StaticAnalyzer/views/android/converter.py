@@ -110,11 +110,11 @@ def dex_2_smali(app_dir, tools_dir):
             if len(settings.BACKSMALI_BINARY) > 0 and isFileExists(settings.BACKSMALI_BINARY):
                 bs_path = settings.BACKSMALI_BINARY
             else:
-                bs_path = os.path.join(tools_dir, 'baksmali.jar')
+                bs_path = os.path.join(tools_dir, 'baksmali-2.2.6.jar')
             output = os.path.join(app_dir, 'smali_source/')
             args = [
                 settings.JAVA_PATH + 'java',
-                '-jar', bs_path, dex_path, '-o', output
+                '-jar', bs_path, 'd', dex_path, '-o', output
             ]
             subprocess.call(args)
     except:
