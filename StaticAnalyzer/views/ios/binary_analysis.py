@@ -282,19 +282,35 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
         PrintException('Performing Object Analysis of Binary')
 
 
-def class_dump_z(tools_dir, bin_path, app_dir):
+def detect_bin_type(libs):
+    '''Detect IPA binary type'''
+    if any("libswiftCore.dylib" in itm for itm in libs):
+        return "Swift"
+    else:
+        return "Objective C"
+
+
+def class_dump(tools_dir, bin_path, app_dir, bin_type):
     '''Running Classdumpz on binary'''
     try:
         webview = {}
         if platform.system() == 'Darwin':
-            logger.info(
-                'Running class-dump-z against the binary for dumping classes')
-            if len(settings.CLASSDUMPZ_BINARY) > 0 and isFileExists(settings.CLASSDUMPZ_BINARY):
-                class_dump_z_bin = settings.CLASSDUMPZ_BINARY
+            logger.info('Dumping classes')
+            if bin_type == "Swift":
+                logger.info("Running class-dump-swift aganst binary")
+                if len(settings.CLASSDUMP_SWIFT_BINARY) > 0 and isFileExists(settings.CLASSDUMP_SWIFT_BINARY):
+                    class_dump_bin = settings.CLASSDUMP_SWIFT_BINARY
+                else:
+                    class_dump_bin = os.path.join(
+                        tools_dir, 'class-dump-swift')
             else:
-                class_dump_z_bin = os.path.join(tools_dir, 'class-dump-z')
-            subprocess.call(['chmod', '777', class_dump_z_bin])
-            args = [class_dump_z_bin, bin_path]
+                logger.info("Running class-dump-z aganst binary")
+                if len(settings.CLASSDUMPZ_BINARY) > 0 and isFileExists(settings.CLASSDUMPZ_BINARY):
+                    class_dump_bin = settings.CLASSDUMPZ_BINARY
+                else:
+                    class_dump_bin = os.path.join(tools_dir, 'class-dump-z')
+            subprocess.call(['chmod', '777', class_dump_bin])
+            args = [class_dump_bin, bin_path]
         elif platform.system() == 'Linux':
             logger.info('Running jtool against the binary for dumping classes')
             if len(settings.JTOOL_BINARY) > 0 and isFileExists(settings.JTOOL_BINARY):
@@ -305,8 +321,15 @@ def class_dump_z(tools_dir, bin_path, app_dir):
             args = [jtool_bin, '-arch', 'arm', '-d', 'objc', '-v', bin_path]
         else:
             # Platform not supported
+            logger.warning('class-dump is not supported in this platform')
             return {}
         classdump = subprocess.check_output(args)
+        if b"Source: (null)" in classdump and platform.system() == 'Darwin':
+            logger.info('Running fail safe class-dump-swift')
+            class_dump_bin = os.path.join(
+                tools_dir, 'class-dump-swift')
+            args = [class_dump_bin, bin_path]
+            classdump = subprocess.check_output(args)
         dump_file = os.path.join(app_dir, 'classdump.txt')
         with open(dump_file, 'w') as flip:
             flip.write(classdump.decode('utf-8', 'ignore'))
@@ -319,9 +342,7 @@ def class_dump_z(tools_dir, bin_path, app_dir):
                        }
         return webview
     except:
-        logger.warning(
-            'class-dump-z does not work on iOS apps developed in Swift')
-        PrintException('Cannot perform class dump')
+        logger.error('class-dump-z/class-dump-swift failed on this binary')
 
 
 def strings_on_ipa(bin_path):
@@ -385,8 +406,8 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
         else:
             bin_info = get_bin_info(bin_path)
             otool_dict = otool_analysis(tools_dir, bin_name, bin_path, bin_dir)
-            cls_dump = class_dump_z(tools_dir, bin_path, app_dir)
-            # Classdumpz can fail on swift coded binaries
+            bin_type = detect_bin_type(otool_dict["libs"])
+            cls_dump = class_dump(tools_dir, bin_path, app_dir, bin_type)
             if not cls_dump:
                 cls_dump = {}
             strings_in_ipa = strings_on_ipa(bin_path)
@@ -396,6 +417,8 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
             binary_analysis_dict['bin_res'] = otool_dict['anal']
             binary_analysis_dict['strings'] = strings_in_ipa
             binary_analysis_dict['macho'] = bin_info
+            binary_analysis_dict['bin_type'] = bin_type
+
         return binary_analysis_dict
     except:
         PrintException('iOS Binary Analysis')
