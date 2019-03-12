@@ -64,6 +64,9 @@ from StaticAnalyzer.views.android.icon_analysis import (
     get_icon,
     find_icon_path_zip,
 )
+from StaticAnalyzer.views.android.playstore import (
+    get_app_details,
+)
 from MalwareAnalyzer.views.apkid import apkid_analysis
 import MalwareAnalyzer.views.VirusTotal as VirusTotal
 logger = logging.getLogger(__name__)
@@ -167,7 +170,8 @@ def static_analyzer(request, api=False):
                     app_dic['mani'] = '../ManifestView/?md5=' + \
                         app_dic['md5'] + '&type=apk&bin=1'
                     man_data_dic = manifest_data(app_dic['parsed_xml'])
-
+                    app_dic['playstore'] = get_app_details(
+                        man_data_dic['packagename'])
                     man_an_dic = manifest_analysis(
                         app_dic['parsed_xml'],
                         man_data_dic
@@ -314,12 +318,12 @@ def static_analyzer(request, api=False):
                         )
 
                         man_data_dic = manifest_data(app_dic['persed_xml'])
-
+                        app_dic['playstore'] = get_app_details(
+                            man_data_dic['packagename'])
                         man_an_dic = manifest_analysis(
                             app_dic['persed_xml'],
                             man_data_dic
                         )
-
                         # Get icon
                         eclipse_res_path = os.path.join(
                             app_dic['app_dir'], 'res')
@@ -402,7 +406,8 @@ def static_analyzer(request, api=False):
                 else:
                     return render(request, template, context)
             else:
-                logger.error("Only APK,IPA and Zipped Android/iOS Source code supported now!")
+                logger.error(
+                    "Only APK,IPA and Zipped Android/iOS Source code supported now!")
         else:
             msg = "Hash match failed or Invalid file extension or file type"
             if api:

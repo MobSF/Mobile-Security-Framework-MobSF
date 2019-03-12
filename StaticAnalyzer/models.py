@@ -57,6 +57,7 @@ class StaticAnalyzerAndroid(models.Model):
     E_BRO = models.CharField(max_length=50)
     E_CNT = models.CharField(max_length=50)
     APK_ID = models.TextField()
+    PLAY_DETAILS = models.TextField(default={})
 
 
 class StaticAnalyzerIPA(models.Model):
@@ -87,7 +88,7 @@ class StaticAnalyzerIPA(models.Model):
     BUNDLE_URL_TYPES = models.TextField()
     BUNDLE_SUPPORTED_PLATFORMS = models.CharField(max_length=50)
     BUNDLE_LOCALIZATIONS = models.TextField()
-    BINTYPE=models.CharField(max_length=20, default="")
+    BINTYPE = models.CharField(max_length=20, default="")
 
 
 class StaticAnalyzerIOSZIP(models.Model):

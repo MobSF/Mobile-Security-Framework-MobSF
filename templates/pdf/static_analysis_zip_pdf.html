@@ -95,6 +95,61 @@ body {
                         </div>
                     </div>
                     <hr>
+
+                     <div class="col-lg-5">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-phone"></span> PLAY STORE INFORMATION</h3><hr>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+
+                                   {% if not play_details.error %}
+                  <p>                                       
+                    <span class="label label-info"><b>Title: </b></span>
+                    {{ play_details.title }}
+                  </p>
+                  <p>                                       
+                    <span class="label label-info"><b>Score: </b></span>
+                  {{ play_details.score}}
+
+                   <span class="label label-info"><b>Installs: </b></span>
+                    {{ play_details.installs }}
+
+                   <span class="label label-info"><b>Price: </b></span>
+                      {{ play_details.price }}
+
+                  <span class="label label-info"><b>Android Version Support: </b></span>
+                    {{ play_details.required_android_version }}
+                   
+                    <span class="label label-info"><b>Category: </b></span>
+                    {% for cat in play_details.category %}
+                    {{ cat }}, 
+                    {% endfor %}
+
+                    <span class="label label-info"><b>Play Store URL: </b></span>
+                      <a target="_blank" href="{{ play_details.url }}"> {{ packagename }} </a>
+                  </p>
+                  
+                  <p>
+                  <span class="label label-info"><b>Developer Details: </b></span>
+                      {{play_details.developer}},  
+                      {{play_details.developer_id}}, 
+                      {{play_details.developer_address }},
+                      {{play_details.developer_url}}, 
+                      {{play_details.developer_email}}, 
+                  </p>
+                 <p>                                       
+                      <span class="label label-info"><b>Description: </b></span>
+                      <pre>{{ play_details.description }}</pre>
+                  </p>
+              {%  endif  %}
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
                     <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
