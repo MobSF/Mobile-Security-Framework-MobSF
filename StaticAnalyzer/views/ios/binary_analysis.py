@@ -205,12 +205,12 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
         weak_hash_algo = list(set(weak_hash_algo))
         weak_hash_algo_s = b', '.join(weak_hash_algo)
         if len(weak_hash_algo_s) > 1:
-            weak_hashe = {'issue': 'Binary make use of the following Weak HASH API(s)',
-                          'status': IN_SECURE,
-                          'description': 'The binary may use the following weak hash API(s) ' + weak_hash_algo_s.decode('utf-8', 'ignore') + '.',
-                          'cvss': 3,
-                          'cwe': 'CWE-327',
-                          }
+            weak_hashes = {'issue': 'Binary make use of the following Weak HASH API(s)',
+                           'status': IN_SECURE,
+                           'description': 'The binary may use the following weak hash API(s) ' + weak_hash_algo_s.decode('utf-8', 'ignore') + '.',
+                           'cvss': 3,
+                           'cwe': 'CWE-327',
+                           }
         hashes = {}
         hash_algo = re.findall(
             b'CC_SHA224_Init|CC_SHA224_Update|CC_SHA224_Final|CC_SHA224|' +
@@ -363,7 +363,6 @@ def get_bin_info(bin_file):
     logger.info('Getting Binary Information')
     m = MachO(bin_file)
     for header in m.headers:
-        seen = set()
         if header.MH_MAGIC == MH_MAGIC_64 or header.MH_MAGIC == MH_CIGAM_64:
             sz = '64-bit'
         else:
