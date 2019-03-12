@@ -42,6 +42,8 @@ def get_context_from_analysis_ipa(app_dict, info_dict, bin_dict, files, sfiles):
             'bundle_url_types': info_dict["bundle_url_types"],
             'bundle_supported_platforms': info_dict["bundle_supported_platforms"],
             'bundle_localizations': info_dict["bundle_localizations"],
+            'binary_info': bin_dict["macho"],
+            'bin_type': bin_dict["bin_type"],
 
         }
         return context
@@ -79,6 +81,8 @@ def get_context_from_db_entry_ipa(db_entry):
             'bundle_url_types': python_list(db_entry[0].BUNDLE_URL_TYPES),
             'bundle_supported_platforms': python_list(db_entry[0].BUNDLE_SUPPORTED_PLATFORMS),
             'bundle_localizations': python_list(db_entry[0].BUNDLE_LOCALIZATIONS),
+            'binary_info': python_dict(db_entry[0].MACHOINFO),
+            'bin_type': db_entry[0].BINTYPE,
 
         }
         return context
@@ -116,6 +120,8 @@ def update_db_entry_ipa(app_dict, info_dict, bin_dict, files, sfiles):
             BUNDLE_URL_TYPES=info_dict["bundle_url_types"],
             BUNDLE_SUPPORTED_PLATFORMS=info_dict["bundle_supported_platforms"],
             BUNDLE_LOCALIZATIONS=info_dict["bundle_localizations"],
+            MACHOINFO=bin_dict["macho"],
+            BINTYPE=bin_dict["bin_type"],
         )
 
     except:
@@ -151,6 +157,8 @@ def create_db_entry_ipa(app_dict, info_dict, bin_dict, files, sfiles):
             BUNDLE_URL_TYPES=info_dict["bundle_url_types"],
             BUNDLE_SUPPORTED_PLATFORMS=info_dict["bundle_supported_platforms"],
             BUNDLE_LOCALIZATIONS=info_dict["bundle_localizations"],
+            MACHOINFO=bin_dict["macho"],
+            BINTYPE=bin_dict["bin_type"],
         )
         static_db.save()
     except:

@@ -67,6 +67,7 @@ class StaticAnalyzerIPA(models.Model):
     SHA1 = models.CharField(max_length=40)
     SHA256 = models.CharField(max_length=64)
     INFOPLIST = models.TextField()
+    MACHOINFO = models.TextField(default={})
     # bundle_id
     BINNAME = models.CharField(max_length=160)
     IDF = models.TextField()
@@ -86,6 +87,7 @@ class StaticAnalyzerIPA(models.Model):
     BUNDLE_URL_TYPES = models.TextField()
     BUNDLE_SUPPORTED_PLATFORMS = models.CharField(max_length=50)
     BUNDLE_LOCALIZATIONS = models.TextField()
+    BINTYPE=models.CharField(max_length=20, default="")
 
 
 class StaticAnalyzerIOSZIP(models.Model):

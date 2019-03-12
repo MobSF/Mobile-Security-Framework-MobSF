@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
 
-MOBSF_VER = "v1.0.5 Beta"
+MOBSF_VER = "v1.0.6 Beta"
 BANNER = """
 
   __  __       _    ____  _____         _   ___  
@@ -328,6 +328,7 @@ else:
     OTOOL_BINARY = ""
     JTOOL_BINARY = ""
     CLASSDUMPZ_BINARY = ""
+    CLASSDUMP_SWIFT_BINARY = ""
 
     # COMMON
     JAVA_DIRECTORY = ""
