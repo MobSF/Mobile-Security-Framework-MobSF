@@ -67,6 +67,7 @@ class StaticAnalyzerIPA(models.Model):
     SHA1 = models.CharField(max_length=40)
     SHA256 = models.CharField(max_length=64)
     INFOPLIST = models.TextField()
+    MACHOINFO = models.TextField(default={})
     # bundle_id
     BINNAME = models.CharField(max_length=160)
     IDF = models.TextField()

@@ -194,7 +194,8 @@ def static_analyzer_ios(request, api=False):
                                      'md5_hash']) + '.ipa',
                         app_dict['md5_hash']
                     )
-
+                context["average_cvss"], context[
+                    "security_score"] = score(context["bin_anal"])
                 template = "static_analysis/ios_binary_analysis.html"
                 if api:
                     return context
