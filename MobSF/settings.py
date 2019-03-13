@@ -228,7 +228,7 @@ TEMPLATES = [
             }
     },
 ]
-STATICFILES_DIRS = (
+STATIC_ROOT = (
     os.path.join(BASE_DIR, 'static/'),
 )
 # Static files (CSS, JavaScript, Images)
