@@ -35,7 +35,9 @@ from StaticAnalyzer.views.ios.plist_analysis import (
     plist_analysis,
     convert_bin_xml
 )
-
+from StaticAnalyzer.views.ios.appstore import(
+    app_search,
+)
 from StaticAnalyzer.views.shared_func import (
     file_size,
     hash_gen,
@@ -171,6 +173,7 @@ def static_analyzer_ios(request, api=False):
                     files, sfiles = ios_list_files(
                         app_dict["bin_dir"], app_dict["md5_hash"], True, 'ipa')
                     infoplist_dict = plist_analysis(app_dict["bin_dir"], False)
+                    app_dict["appstore"] = app_search(infoplist_dict.get("id"))
                     bin_analysis_dict = binary_analysis(
                         app_dict["bin_dir"], tools_dir, app_dict["app_dir"], infoplist_dict.get("bin"))
                     # Saving to DB
@@ -221,6 +224,7 @@ def static_analyzer_ios(request, api=False):
                     files, sfiles = ios_list_files(
                         app_dict["app_dir"], app_dict["md5_hash"], False, 'ios')
                     infoplist_dict = plist_analysis(app_dict["app_dir"], True)
+                    app_dict["appstore"] = app_search(infoplist_dict.get("id"))
                     code_analysis_dic = ios_source_analysis(
                         app_dict["app_dir"])
                     # Saving to DB

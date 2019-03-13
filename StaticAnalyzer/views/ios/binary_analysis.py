@@ -323,7 +323,8 @@ def class_dump(tools_dir, bin_path, app_dir, bin_type):
             # Platform not supported
             logger.warning('class-dump is not supported in this platform')
             return {}
-        classdump = subprocess.check_output(args)
+        with open(os.devnull, 'w') as devnull:
+            classdump = subprocess.check_output(args, stderr=devnull)
         if b"Source: (null)" in classdump and platform.system() == 'Darwin':
             logger.info('Running fail safe class-dump-swift')
             class_dump_bin = os.path.join(
