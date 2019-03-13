@@ -65,6 +65,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'e_bro': db_entry[0].E_BRO,
             'e_cnt': db_entry[0].E_CNT,
             'apkid': python_dict(db_entry[0].APK_ID),
+            'play_details': python_dict(db_entry[0].PLAY_DETAILS)
         }
         return context
     except:
@@ -121,6 +122,7 @@ def get_context_from_analysis(app_dic, man_data_dic, man_an_dic, code_an_dic, ce
             'e_bro': man_an_dic['exported_cnt']["bro"],
             'e_cnt': man_an_dic['exported_cnt']["cnt"],
             'apkid': apk_id,
+            'play_details': app_dic['playstore'],
         }
         return context
     except:
@@ -179,6 +181,7 @@ def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bi
             E_BRO=man_an_dic['exported_cnt']["bro"],
             E_CNT=man_an_dic['exported_cnt']["cnt"],
             APK_ID=apk_id,
+            PLAY_DETAILS=app_dic['playstore'],
         )
     except:
         PrintException("Updating DB")
@@ -235,6 +238,7 @@ def create_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bi
             E_BRO=man_an_dic['exported_cnt']["bro"],
             E_CNT=man_an_dic['exported_cnt']["cnt"],
             APK_ID=apk_id,
+            PLAY_DETAILS=app_dic['playstore'],
         )
         static_db.save()
     except:
