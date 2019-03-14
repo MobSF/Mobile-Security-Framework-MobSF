@@ -229,7 +229,7 @@ TEMPLATES = [
     },
 ]
 STATIC_ROOT = (
-    os.path.join(BASE_DIR, 'static/'),
+    os.path.join(BASE_DIR, 'static/')
 )
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
