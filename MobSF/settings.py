@@ -174,7 +174,7 @@ except NameError:
 # ^ This is fine Do not turn it off until MobSF moves from Beta to Stable
 
 DEBUG = True
-ALLOWED_HOSTS = ['127.0.0.1', 'testserver', '*']
+ALLOWED_HOSTS = ['127.0.0.1', 'mobsf', '*']
 # Application definition
 INSTALLED_APPS = (
     #'django.contrib.admin',
@@ -189,6 +189,8 @@ INSTALLED_APPS = (
     'MalwareAnalyzer',
 )
 MIDDLEWARE_CLASSES = (
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -196,7 +198,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
 )
 
 MIDDLEWARE = (
@@ -227,13 +228,13 @@ TEMPLATES = [
             }
     },
 ]
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static/'),
+STATIC_ROOT = (
+    os.path.join(BASE_DIR, 'static/')
 )
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 STATIC_URL = '/static/'
-
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # 256MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 268435456
 

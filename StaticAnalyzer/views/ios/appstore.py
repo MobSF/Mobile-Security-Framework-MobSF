@@ -36,5 +36,5 @@ def app_search(app_id):
             'error': False,
         }
     except Exception as exp:
-        logger.warning('Unable to get app details')
+        logger.warning('Unable to get app details. %s', exp)
         return {'error': True}
