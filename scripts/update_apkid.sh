@@ -7,10 +7,10 @@ fi
 virtualenv venv -p python3
 source venv/bin/activate
 virtual_env=$(echo $VIRTUAL_ENV)
-apkid_dir="${virtual_env}/lib/python3.6/site-packages/apkid"
-rules_dir="${apkid_dir}/rules/"
-unamestr=`uname`
 if [ -e "$virtual_env" ]; then
+    apkid_dir="${virtual_env}/lib/python3.6/site-packages/apkid"
+    rules_dir="${apkid_dir}/rules/"
+    unamestr=`uname`
     git clone https://github.com/rednaga/APKiD.git 
     cd ./APKiD 
     python3 prep-release.py 
