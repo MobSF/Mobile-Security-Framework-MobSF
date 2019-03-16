@@ -9,6 +9,9 @@ source venv/bin/activate
 virtual_env=$(echo $VIRTUAL_ENV)
 if [ -e "$virtual_env" ]; then
     apkid_dir="${virtual_env}/lib/python3.6/site-packages/apkid"
+    if [ ! -d "$apkid_dir" ];then
+      pip install apkid
+    fi  
     rules_dir="${apkid_dir}/rules/"
     unamestr=`uname`
     git clone https://github.com/rednaga/APKiD.git 
@@ -17,9 +20,9 @@ if [ -e "$virtual_env" ]; then
     cp apkid/rules/rules.yarc ${rules_dir}  
     cd ..
     if [[ "$unamestr" == 'Darwin' ]]; then
-        sed -i ' ' "s#RULES_DIR =.*#RULES_DIR =  \"$rules_dir\"#" ${apkid_dir}/rules.py 
+        sed -i ' ' "s#RULES_DIR =.*#RULES_DIR =  \"$rules_dir\"#" "${apkid_dir}/rules.py"
     else
-        sed "s#RULES_DIR =.*#RULES_DIR =  \"$rules_dir\"#" ${apkid_dir}/rules.py
+        sed "s#RULES_DIR =.*#RULES_DIR =  \"$rules_dir\"#" "${apkid_dir}/rules.py"
     fi 
 rm -fr ./APKiD
 fi
