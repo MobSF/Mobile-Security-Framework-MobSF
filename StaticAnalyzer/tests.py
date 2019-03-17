@@ -22,7 +22,6 @@ RESCAN = False
 def static_analysis_test():
     """Test Static Analyzer"""
     logger.info("Running Static Analyzer Unit test")
-    failed = False
     err_msg = '%s'
     if platform.system() != "Windows":
         err_msg = '\033[91m \033[1m %s \033[0m'
@@ -41,7 +40,8 @@ def static_analysis_test():
                     uploaded.append(obj["url"])
                 else:
                     logger.error(err_msg % " Performing Upload: " + filename)
-                    failed = True
+                    return True
+                    break
         logger.info("[OK] Completed Upload test")
         logger.info("Running Static Analysis Test")
         for upl in uploaded:
@@ -54,7 +54,8 @@ def static_analysis_test():
                 logger.info("[OK] Static Analysis Complete: " + upl)
             else:
                 logger.error(err_msg % " Performing Static Analysis: " + upl)
-                failed = True
+                return True
+                break
         logger.info("[OK] Static Analysis test completed")
         logger.info("Running PDF Generation Test")
         if platform.system() in ['Darwin', 'Linux']:
@@ -82,7 +83,8 @@ def static_analysis_test():
             else:
                 logger.error(err_msg % " Generating PDF: " + pdf)
                 logger.info(resp.content)
-                failed = True
+                return True
+                break
         logger.info("[OK] PDF Generation test completed")
 
         # Compare apps test
@@ -97,8 +99,7 @@ def static_analysis_test():
         else:
             logger.error(err_msg % " App compare tests failed")
             logger.info(resp.content)
-            failed = True
-
+            return True
         logger.info("Running Delete Scan Results test")
         # Deleting Scan Results
         if platform.system() in ['Darwin', 'Linux']:
@@ -116,21 +117,20 @@ def static_analysis_test():
                     logger.info("[OK] Deleted Scan: " + md5)
                 else:
                     logger.error(err_msg % " Deleting Scan: " + md5)
-                    failed = True
+                    return True
             else:
                 logger.error(err_msg % " Deleting Scan: " + md5)
-                failed = True
+                return True
         logger.info("Delete Scan Results test completed")
     except:
         PrintException("Completing Static Analyzer Test")
-    return failed
+    return False
 
 
 def api_test():
     """View for Handling REST API Test"""
     logger.info("\nRunning REST API Unit test")
     auth = api_key()
-    failed = False
     err_msg = '%s'
     if platform.system() != "Windows":
         err_msg = '\033[91m \033[1m %s \033[0m'
@@ -153,7 +153,7 @@ def api_test():
                     uploaded.append(obj)
                 else:
                     logger.error(err_msg % " Performing Upload" + filename)
-                    failed = True
+                    return True
         logger.info("[OK] Completed Upload API test")
         logger.info("Running Static Analysis API Test")
         for upl in uploaded:
@@ -163,8 +163,24 @@ def api_test():
                 logger.info("[OK] Static Analysis Complete: " + upl["file_name"])
             else:
                 logger.error(err_msg % " Performing Static Analysis: " + upl["file_name"])
-                failed = True
+                return True
         logger.info("[OK] Static Analysis API test completed")
+        # Scan List API test
+        logger.info("Running Scan List API tests")
+        resp = http_client.get('/api/v1/scans', HTTP_AUTHORIZATION=auth)
+        if resp.status_code == 200:
+            logger.info("Scan List API Test 1 success")
+        else:
+            logger.error(err_msg % " Scan List API Test 1")
+            return True
+        resp = http_client.get('/api/v1/scans?page=1&page_size=10', HTTP_AUTHORIZATION=auth)
+        if resp.status_code == 200:
+            logger.info("Scan List API Test 2 success")
+        else:
+            logger.error(err_msg % " Scan List API Test 2")
+            return True
+        logger.info("[OK] Scan List API tests completed")
+        # PDF Tests
         logger.info("Running PDF Generation API Test")
         if platform.system() in ['Darwin', 'Linux']:
             pdfs = [
@@ -191,18 +207,18 @@ def api_test():
             else:
                 logger.error(err_msg % " Generating PDF: " + pdf["hash"])
                 logger.info(resp.content)
-                failed = True
+                return True
         logger.info("[OK] PDF Generation API test completed")
         logger.info("Running JSON Report API test")
         # JSON Report
-        for pdf in pdfs:
+        for jsn in pdfs:
             resp = http_client.post(
-                '/api/v1/report_json', pdf, HTTP_AUTHORIZATION=auth)
+                '/api/v1/report_json', jsn, HTTP_AUTHORIZATION=auth)
             if (resp.status_code == 200) and (resp._headers['content-type'][1] == "application/json; charset=utf-8"):
-                logger.info("[OK] JSON Report Generated: " + pdf["hash"])
+                logger.info("[OK] JSON Report Generated: " + jsn["hash"])
             else:
-                logger.error("{} Generating JSON Response: {}".format(err_msg, pdf["hash"]))
-                failed = True
+                logger.error("{} Generating JSON Response: {}".format(err_msg, jsn["hash"]))
+                return True
         logger.info("[OK] JSON Report API test completed")
         logger.info("Running View Source API test")
         # View Source tests
@@ -219,10 +235,10 @@ def api_test():
                     logger.info("[OK] Reading - " + sfile["file"])
                 else:
                     logger.error(err_msg % " Reading - " + sfile["file"])
-                    failed = True
+                    return True
             else:
                 logger.error(err_msg % " Reading - " + sfile["file"])
-                failed = True
+                return True
         logger.info("[OK] View Source API test completed")
         logger.info("Running Delete Scan API Results test")
         # Deleting Scan Results
@@ -244,14 +260,14 @@ def api_test():
                     logger.info("[OK] Deleted Scan: " + md5)
                 else:
                     logger.error(err_msg % " Deleting Scan: " + md5)
-                    failed = True
+                    return True
             else:
                 logger.error(err_msg % " Deleting Scan: " + md5)
-                failed = True
+                return True
         logger.info("Delete Scan Results API test completed")
     except:
         PrintException("Completing REST API Unit Test")
-    return failed
+    return False
 
 
 def start_test(request):

@@ -86,6 +86,7 @@ urlpatterns = [
     url(r'^api/v1/download_pdf$', rest_api.api_pdf_report),
     url(r'^api/v1/report_json$', rest_api.api_json_report),
     url(r'^api/v1/view_source$', rest_api.api_view_source),
+    url(r'^api/v1/scans$', rest_api.api_recent_scans),
 
     # Test
     url(r'^tests/$', tests.start_test),

@@ -10,6 +10,7 @@ import shutil
 from wsgiref.util import FileWrapper
 import logging
 from django.conf import settings
+from django.core.paginator import Paginator
 from django.http import (
     HttpResponse,
     HttpResponseRedirect,
@@ -109,7 +110,8 @@ class Upload(object):
 
         if self.file_type.is_ipa():
             if platform.system() not in LINUX_PLATFORM:
-                logger.error("Static Analysis of iOS IPA requires Mac or Linux")
+                logger.error(
+                    "Static Analysis of iOS IPA requires Mac or Linux")
                 response_data[
                     'description'] = 'Static Analysis of iOS IPA requires Mac or Linux'
                 response_data['status'] = 'success'
@@ -309,3 +311,25 @@ def delete_scan(request, api=False):
             return print_n_send_error_response(request, msg, True, exp_doc)
         else:
             return print_n_send_error_response(request, msg, False, exp_doc)
+
+
+class RecentScans(object):
+
+    def __init__(self, request):
+        self.request = request
+
+    def recent_scans(self):
+        page = self.request.GET.get('page', 1)
+        page_size = self.request.GET.get('page_size', 10)
+        result = RecentScansDB.objects.all().values().order_by('-TS')
+        try:
+            paginator = Paginator(result, page_size)
+            content = paginator.page(page)
+            data = {
+                "content": list(content),
+                "count": paginator.count,
+                "num_pages": paginator.num_pages
+            }
+        except Exception as exp:
+            data = {"error": str(exp)}
+        return data

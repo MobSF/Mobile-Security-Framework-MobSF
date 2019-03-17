@@ -30,7 +30,8 @@ from StaticAnalyzer.views.shared_func import (
     file_size,
     hash_gen,
     unzip,
-    score
+    score,
+    update_scan_timestamp,
 )
 
 from StaticAnalyzer.views.android.db_interaction import (
@@ -217,6 +218,7 @@ def static_analyzer(request, api=False):
                                 bin_an_buff,
                                 apkid_results,
                             )
+                            update_scan_timestamp(app_dic['md5'])
                         elif rescan == '0':
                             logger.info("Saving to Database")
                             create_db_entry(
@@ -369,6 +371,7 @@ def static_analyzer(request, api=False):
                                     bin_an_buff,
                                     {},
                                 )
+                                update_scan_timestamp(app_dic['md5'])
                             elif rescan == '0':
                                 logger.info("Saving to Database")
                                 create_db_entry(

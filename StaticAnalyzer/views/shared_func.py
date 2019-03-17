@@ -13,6 +13,7 @@ import logging
 from django.http import HttpResponse
 from django.template.loader import get_template
 from django.utils.html import escape
+from django.utils import timezone
 
 from MobSF.utils import (
     print_n_send_error_response,
@@ -21,11 +22,13 @@ from MobSF.utils import (
 )
 from MobSF import settings
 
-from StaticAnalyzer.models import StaticAnalyzerAndroid
-from StaticAnalyzer.models import StaticAnalyzerIPA
-from StaticAnalyzer.models import StaticAnalyzerIOSZIP
-from StaticAnalyzer.models import StaticAnalyzerWindows
-
+from StaticAnalyzer.models import(
+    RecentScansDB,
+    StaticAnalyzerAndroid,
+    StaticAnalyzerIOSZIP,
+    StaticAnalyzerIPA,
+    StaticAnalyzerWindows,
+)
 from StaticAnalyzer.views.android.db_interaction import (
     get_context_from_db_entry
 )
@@ -578,3 +581,8 @@ def score(findings):
         avg_cvss = round(sum(cvss_scores) / len(cvss_scores), 1)
         app_score = int((10 - avg_cvss) * 10)
     return avg_cvss, app_score
+
+
+def update_scan_timestamp(scan_hash, tms=timezone.now()):
+    # Update the last scan time.
+    RecentScansDB.objects.filter(MD5=scan_hash).update(TS=tms)

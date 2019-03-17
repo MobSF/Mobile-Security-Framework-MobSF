@@ -28,7 +28,8 @@
                     <thead>
                     <tr>
                         <th>Name</th>
-                        <th>MD5</th>
+                        <th>Hash</th>
+                        <th>Date</th>
                         <th>Report</th>
                     </tr>
                     </thead>
@@ -37,6 +38,7 @@
                         <tr>
                             <td>{{ e.NAME }}</td>
                             <td>{{ e.MD5 }}</td>
+                            <td>{{ e.TS }}</td>
                             <td><a href="../{{ e.URL }}"><i class="fa fa-eye"></i> View</a> |
                                 <!--<a class="diffButton" id="{{ e.MD5 }}_{{ e.NAME}}" onclick="diff_select(this)"><i class="fa fa-exchange"></i> Diff</a> |-->
                                 <a class="diffButton" id="{{ e.MD5 }}_{{ e.NAME }}"><i class="fa fa-exchange"></i> Diff</a>
