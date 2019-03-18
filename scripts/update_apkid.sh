@@ -4,8 +4,10 @@ if [ "$script_path" != "scripts" ] && [ "$script_path" != "./scripts" ]; then
     echo './scripts/update_apkid.sh '
     exit  1
 fi
-virtualenv venv -p python3
-source venv/bin/activate
+if [ ! -d venv/bin/ ]; then
+   virtualenv venv -p python3
+   source venv/bin/activate
+fi
 virtual_env=$(echo $VIRTUAL_ENV)
 if [ -e "$virtual_env" ]; then
     apkid_dir="${virtual_env}/lib/python3.6/site-packages/apkid"
