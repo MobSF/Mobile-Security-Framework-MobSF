@@ -16,6 +16,8 @@ if [[ "$unamestr" == 'Darwin' ]]; then
   export LDFLAGS="-L/usr/local/opt/openssl/lib"
   export CFLAGS="-I/usr/local/opt/openssl/include"  
 fi
+echo '[INSTALL] Updating APKiD rules'
+bash scripts/install-yara.sh
 echo '[INSTALL] Installing Requirements'
 pip install -r requirements.txt
 echo '[INSTALL] Updating APKiD rules'
