@@ -18,7 +18,7 @@ def app_search(app_id):
     except:
         PrintException("Setting upstream proxy")
     try:
-        req = requests.get(req_url, headers=headers,timeout=3, proxies=porxies, verify=verify)
+        req = requests.get(req_url, headers=headers, timeout=3, proxies=porxies, verify=verify)
         resp = req.json()
         if resp['results']:
             det = resp['results'][0]
