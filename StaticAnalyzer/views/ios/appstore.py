@@ -1,7 +1,7 @@
 # -*- coding: utf_8 -*-
 import requests
-
 import logging
+from MobSF.utils import PrintException, upstream_proxy
 logger = logging.getLogger(__name__)
 
 
@@ -14,7 +14,11 @@ def app_search(app_id):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
     try:
-        req = requests.get(req_url, headers=headers)
+        proxies, verify = upstream_proxy('https')
+    except:
+        PrintException("Setting upstream proxy")
+    try:
+        req = requests.get(req_url, headers=headers, proxies=porxies, verify=verify)
         resp = req.json()
         if resp['results']:
             det = resp['results'][0]
