@@ -29,6 +29,7 @@
               <a href="javascript::;"><i class="fa fa-plus"></i> Reconnaissance</a>
               <ul class="nav treeview-menu">
                 <li><a href="#url"><i class="glyphicon glyphicon-globe"></i> URLs</a></li>
+                <li><a href="#firebase"><i class="fa fa-database"></i> Firebase DB</a></li>   
                 <li><a href="#domain"><i class="glyphicon glyphicon-screenshot"></i> Malware Check</a></li>
                 <li><a href="#email"><i class="glyphicon glyphicon-envelope"></i> Emails</a></li>
               </ul>
@@ -767,6 +768,58 @@
 
 <!-- ============================================================= -->
 
+<section id="firebase">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-database"></i> Firebase Databases</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body no-padding">
+              <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                  {% if firebase %} 
+                  <thead>
+                  <tr>
+                     <th>Database URL</th>
+                     <th>Details</th>
+                  </tr>
+                 </thead>
+                  {% endif %}
+                 <tbody>
+                
+                
+                  {% for item in firebase %}
+                    <tr>
+                       <td>
+                       {{ item.url }}
+                        </td>
+
+                       <td>
+                         {% if item.open %}
+                          <span class="label label-danger">insecure</span></br>Firebase DB is exposed publically.
+                        {% else %}
+                         <span class="label label-primary">Info</span></br>App talks to a Firebase Database.
+                         {% endif %}
+                      
+                       </td>
+                    </tr>
+                  {% endfor %} 
+                    </tbody>
+                     
+                    </table>
+                                
+                            </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+
+<!-- ============================================================= -->
 
 <section id="domain">
   <h2 class="page-header"></h2>

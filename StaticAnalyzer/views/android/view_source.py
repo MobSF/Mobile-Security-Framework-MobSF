@@ -63,6 +63,14 @@ def run(request, api=False):
         elif fil.endswith('.smali'):
             src = os.path.join(settings.UPLD_DIR,
                                md5 + '/smali_source/')
+        else:
+            msg = "Not Found"
+            doc = "File not Found!"
+            is_api = False
+            if api:
+                is_api = True
+            return print_n_send_error_response(request, msg, is_api, doc)
+            # Unset SRC for any other case. Otherwise it will cause Directory Traversal
         sfile = os.path.join(src, fil)
         dat = ''
         with io.open(

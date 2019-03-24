@@ -433,7 +433,54 @@ body {
                         </div>
                     </div>
                     </div>
+
+
+                       <hr>
+              <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-globe"></span> FIREBASE DATABASES</h3><hr>
+                            </div>
+                            <div class="panel-body">
+                  <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                 {% if firebase %} 
+                  <thead>
+                  <tr>
+                     <th>URL</th>
+                     <th>Database URL</th>
+                  </tr>
+                 </thead>
+                    {% endif %}
+                                        <tbody>
+                
+                 
+                  {% for item in firebase %}
+                    <tr>
+                       <td>
+                       {{ item.url }}
+                        </td>
+
+                       <td>
+                         {% if item.open %}
+                          <span class="label label-danger">insecure</span></br>Firebase DB is exposed publically.
+                        {% else %}
+                         <span class="label label-primary">Info</span></br>App talks to a Firebase Database.
+                         {% endif %}
+                      
+                       </td>
+                    </tr>
+                  {% endfor %} 
+                    </tbody>
+                    </table>
+                                
+                            </div>
+                        </div>
+                    </div>
+          </div>
+          
                     <hr>
+
                     <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
