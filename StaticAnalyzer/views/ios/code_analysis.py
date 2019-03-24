@@ -56,14 +56,16 @@ def ios_source_analysis(src):
                     urls, urls_nf, emails_nf = url_n_email_extract(dat, relative_src_path)
                     url_list.extend(urls)
                     url_n_file.extend(urls_nf)
-                    email_n_file.extend(emails_nf)      
+                    email_n_file.extend(emails_nf)
+        urls_list = list(set(url_list))   
         # Domain Extraction and Malware Check
         logger.info("Performing Malware Check on extracted Domains")
-        domains = malware_check(list(set(url_list)))
+        domains = malware_check(urls_list)
         logger.info("Finished Code Analysis, Email and URL Extraction")
         code_analysis_dict = {
             'api': api_findings,
             'code_anal': code_findings,
+            'urls_list': urls_list,
             'urlnfile': url_n_file,
             'domains': domains,
             'emailnfile': email_n_file,

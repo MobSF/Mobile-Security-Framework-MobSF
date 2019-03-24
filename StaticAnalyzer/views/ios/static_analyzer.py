@@ -40,6 +40,7 @@ from StaticAnalyzer.views.ios.appstore import(
 )
 from StaticAnalyzer.views.shared_func import (
     file_size,
+    firebase_analysis,
     hash_gen,
     unzip,
     score,
@@ -229,6 +230,9 @@ def static_analyzer_ios(request, api=False):
                     app_dict["appstore"] = app_search(infoplist_dict.get("id"))
                     code_analysis_dic = ios_source_analysis(
                         app_dict["app_dir"])
+                    # Firebase DB Check
+                    code_analysis_dic['firebase'] = firebase_analysis(
+                           list(set(code_analysis_dic["urls_list"])))
                     # Saving to DB
                     logger.info("Connecting to DB")
                     if rescan == '1':

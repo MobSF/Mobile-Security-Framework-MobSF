@@ -117,6 +117,8 @@ RUN rm -rf /var/lib/apt/lists/* /tmp/* > /dev/null 2>&1
 EXPOSE 8000
 
 WORKDIR /root/Mobile-Security-Framework-MobSF
+RUN python3 manage.py makemigrations
+RUN python3 manage.py migrate
 
 #Run MobSF
 CMD ["gunicorn", "-b", "0.0.0.0:8000", "MobSF.wsgi:application", "--workers=1", "--timeout=1800"]
