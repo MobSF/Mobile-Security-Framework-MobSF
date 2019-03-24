@@ -28,6 +28,7 @@ from MobSF.utils import (
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 from StaticAnalyzer.views.shared_func import (
     file_size,
+    firebase_analysis,
     hash_gen,
     unzip,
     score,
@@ -50,7 +51,8 @@ from StaticAnalyzer.views.android.converter import (
 )
 from StaticAnalyzer.views.android.cert_analysis import (
     get_hardcoded_cert_keystore,
-    cert_info
+    cert_info,
+
 )
 from StaticAnalyzer.views.android.manifest_analysis import (
     manifest_data,
@@ -68,6 +70,7 @@ from StaticAnalyzer.views.android.icon_analysis import (
 from StaticAnalyzer.views.android.playstore import (
     get_app_details,
 )
+from MalwareAnalyzer.views.domain_check import malware_check
 from MalwareAnalyzer.views.apkid import apkid_analysis
 import MalwareAnalyzer.views.VirusTotal as VirusTotal
 logger = logging.getLogger(__name__)
@@ -181,7 +184,7 @@ def static_analyzer(request, api=False):
                     bin_an_buff += elf_analysis(app_dic['app_dir'])
                     bin_an_buff += res_analysis(app_dic['app_dir'])
                     cert_dic = cert_info(
-                        app_dic['app_dir'], app_dic['tools_dir'])
+                        app_dic['app_dir'], app_dic['app_file'], app_dic['tools_dir'])
                     apkid_results = apkid_analysis(app_dic[
                         'app_dir'], app_dic['app_path'], app_dic['app_name'])
                     dex_2_jar(app_dic['app_path'], app_dic[
@@ -193,15 +196,33 @@ def static_analyzer(request, api=False):
                         man_an_dic['permissons'],
                         "apk"
                     )
-                    logger.info("Generating Java and Smali Downloads")
-                    gen_downloads(app_dic['app_dir'], app_dic[
-                                  'md5'], app_dic['icon_path'])
 
                     # Get the strings
-                    app_dic['strings'] = strings_jar(
+                    string_res = strings_jar(
                         app_dic['app_file'],
                         app_dic['app_dir']
                     )
+                    if string_res:
+                        app_dic['strings'] = string_res['strings']
+                        code_an_dic["urls_list"].extend(
+                            string_res['urls_list'])
+                        code_an_dic["urls"].extend(string_res['url_nf'])
+                        code_an_dic["emails"].extend(string_res['emails_nf'])
+                    else:
+                        app_dic['strings'] = []
+
+                    # Firebase DB Check
+                    code_an_dic['firebase'] = firebase_analysis(
+                           list(set(code_an_dic["urls_list"])))
+                    # Domain Extraction and Malware Check
+                    logger.info(
+                        "Performing Malware Check on extracted Domains")
+                    code_an_dic["domains"] = malware_check(
+                        list(set(code_an_dic["urls_list"])))
+
+                    logger.info("Generating Java and Smali Downloads")
+                    gen_downloads(app_dic['app_dir'], app_dic[
+                                  'md5'], app_dic['icon_path'])
                     app_dic['zipped'] = '&type=apk'
 
                     logger.info("Connecting to Database")
@@ -254,7 +275,7 @@ def static_analyzer(request, api=False):
                                      app_dic['md5']) + '.apk',
                         app_dic['md5']
                     )
-                template = "static_analysis/static_analysis.html"
+                template = "static_analysis/android_binary_analysis.html"
                 if api:
                     return context
                 else:
@@ -357,6 +378,14 @@ def static_analyzer(request, api=False):
                             man_an_dic['permissons'],
                             pro_type
                         )
+                        # Firebase DB Check
+                        code_an_dic['firebase'] = firebase_analysis(
+                            list(set(code_an_dic["urls_list"])))
+                        # Domain Extraction and Malware Check
+                        logger.info(
+                            "Performing Malware Check on extracted Domains")
+                        code_an_dic["domains"] = malware_check(
+                            list(set(code_an_dic["urls_list"])))
                         logger.info("Connecting to Database")
                         try:
                             # SAVE TO DB
@@ -403,7 +432,7 @@ def static_analyzer(request, api=False):
                             return HttpResponseRedirect('/zip_format/')
                 context["average_cvss"], context[
                     "security_score"] = score(context["findings"])
-                template = "static_analysis/static_analysis_android_zip.html"
+                template = "static_analysis/android_source_analysis.html"
                 if api:
                     return context
                 else:

@@ -9,8 +9,6 @@ import os
 from django.conf import settings
 from django.utils.html import escape
 
-from MalwareAnalyzer.views.domain_check import malware_check
-
 from MobSF.utils import (
     PrintException,
     filename_from_path
@@ -88,15 +86,12 @@ def code_analysis(app_dir, perms, typ):
                     url_list.extend(urls)
                     url_n_file.extend(urls_nf)
                     email_n_file.extend(emails_nf)
-        # Domain Extraction and Malware Check
-        logger.info("Performing Malware Check on extracted Domains")
-        domains = malware_check(list(set(url_list)))
         logger.info("Finished Code Analysis, Email and URL Extraction")
         code_an_dic = {
             'api': api_findings,
             'findings': code_findings,
+            'urls_list': url_list,
             'urls': url_n_file,
-            'domains': domains,
             'emails': email_n_file,
         }
         return code_an_dic

@@ -58,6 +58,7 @@ class StaticAnalyzerAndroid(models.Model):
     E_CNT = models.CharField(max_length=50)
     APK_ID = models.TextField()
     PLAY_DETAILS = models.TextField(default={})
+    FIREBASE = models.TextField(default=[])
 
 
 class StaticAnalyzerIPA(models.Model):
@@ -123,6 +124,7 @@ class StaticAnalyzerIOSZIP(models.Model):
     BUNDLE_SUPPORTED_PLATFORMS = models.CharField(max_length=50)
     BUNDLE_LOCALIZATIONS = models.TextField()
     APPSTORE_DETAILS = models.TextField(default={})
+    FIREBASE = models.TextField(default=[])
 
 
 class StaticAnalyzerWindows(models.Model):

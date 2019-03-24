@@ -203,6 +203,7 @@ def get_context_from_analysis_ios(app_dict, info_dict,code_dict, files, sfiles):
             'bundle_supported_platforms': info_dict["bundle_supported_platforms"],
             'bundle_localizations': info_dict["bundle_localizations"],
             'appstore_details': app_dict['appstore'],
+            'firebase': code_dict["firebase"],
         }
         return context
     except:
@@ -242,6 +243,7 @@ def get_context_from_db_entry_ios(db_entry):
             'bundle_supported_platforms': python_list(db_entry[0].BUNDLE_SUPPORTED_PLATFORMS),
             'bundle_localizations': python_list(db_entry[0].BUNDLE_LOCALIZATIONS),
             'appstore_details': python_dict(db_entry[0].APPSTORE_DETAILS),
+            'firebase': python_list(db_entry[0].FIREBASE),
         }
         return context
     except:
@@ -281,6 +283,7 @@ def update_db_entry_ios(app_dict, info_dict, code_dict, files, sfiles):
             BUNDLE_SUPPORTED_PLATFORMS=info_dict["bundle_supported_platforms"],
             BUNDLE_LOCALIZATIONS=info_dict["bundle_localizations"],
             APPSTORE_DETAILS=app_dict["appstore"],
+            FIREBASE=code_dict["firebase"],
         )
 
     except:
@@ -320,6 +323,7 @@ def create_db_entry_ios(app_dict, info_dict, code_dict, files, sfiles):
             BUNDLE_SUPPORTED_PLATFORMS=info_dict["bundle_supported_platforms"],
             BUNDLE_LOCALIZATIONS=info_dict["bundle_localizations"],
             APPSTORE_DETAILS=app_dict["appstore"],
+            FIREBASE=code_dict["firebase"],
         )
         static_db.save()
     except:

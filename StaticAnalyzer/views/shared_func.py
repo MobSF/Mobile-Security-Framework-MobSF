@@ -10,6 +10,8 @@ import re
 import subprocess
 import zipfile
 import logging
+import requests
+from urllib.parse import urlparse
 from django.http import HttpResponse
 from django.template.loader import get_template
 from django.utils.html import escape
@@ -18,7 +20,8 @@ from django.utils import timezone
 from MobSF.utils import (
     print_n_send_error_response,
     PrintException,
-    python_list
+    python_list,
+    upstream_proxy,
 )
 from MobSF import settings
 
@@ -125,10 +128,11 @@ def pdf(request, api=False, json=False):
                     context["average_cvss"], context[
                         "security_score"] = score(context["findings"])
                     if scan_type.lower() == 'apk':
-                        template = get_template("pdf/static_analysis_pdf.html")
+                        template = get_template(
+                            "pdf/android_binary_analysis.pdf")
                     else:
                         template = get_template(
-                            "pdf/static_analysis_zip_pdf.html")
+                            "pdf/android_source_analysis_pdf.html")
                 else:
                     if api:
                         return {"report": "Report not Found"}
@@ -586,3 +590,33 @@ def score(findings):
 def update_scan_timestamp(scan_hash, tms=timezone.now()):
     # Update the last scan time.
     RecentScansDB.objects.filter(MD5=scan_hash).update(TS=tms)
+
+
+def open_firebase(url):
+    # Detect Open Firebase Database
+    try:
+        purl = urlparse(url)
+        base_url = "{}://{}/.json".format(purl.scheme, purl.netloc)
+        proxies, verify = upstream_proxy('https')
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+        resp = requests.get(base_url, headers=headers,
+                            proxies=proxies, verify=verify)
+        if resp.status_code == 200:
+            return base_url, True
+    except Exception as exp:
+        logger.warning('Open Firebase DB detection failed. %s', exp)
+    return url, False
+
+
+def firebase_analysis(urls):
+    # Detect Firebase URL
+    firebase_db = []
+    logger.info("Detecting Firebase URL(s)")
+    for url in urls:
+        if 'firebaseio.com' in url:
+            returl, is_open = open_firebase(url)
+            fbdic = {"url": returl, "open": is_open}
+            if fbdic not in firebase_db:
+                firebase_db.append(fbdic)
+    return firebase_db

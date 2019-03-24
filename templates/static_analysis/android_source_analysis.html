@@ -12,40 +12,26 @@
             <li class="header">Static Analysis</li>
             <li class="active"><a href="#information"><i class="glyphicon glyphicon-info-sign"></i> Information</a></li>
             <li><a href="#options"><i class="glyphicon glyphicon-tasks"></i> Scan Options</a></li>
-            <li><a href="#certificate"><i class="fa fa-certificate"></i> Signer Certificate</a></li>
             <li><a href="#permissions"><i class="fa fa-align-justify"></i> Permissions</a></li>
-            <li><a href="#binary_analysis"><i class="fa fa-flag"></i> Binary Analysis</a></li>
-            
             <li><a href="#android-api"><i class="fa fa-dot-circle-o"></i> Android API</a></li>
-            <li><a href="#browsable"><i class="fa fa-clone"></i> Browsable Activities</a></li>
+           <li><a href="#browsable"><i class="fa fa-clone"></i> Browsable Activities</a></li>
 
             <li class="treeview">
               <a href="javascript::;"><i class="fa fa-circle-o"></i> Security Analysis</a>
               <ul class="nav treeview-menu">
                 <li><a href="#manifest"><i class="fa fa-search"></i> Manifest Analysis</a></li>
-                 
                 <li><a href="#code"><i class="fa fa-code"></i> Code Analysis</a></li>
                 <li><a href="#file"><i class="fa fa-file-text-o"></i> File Analysis</a></li>
               </ul>
             </li>
 
             <li class="treeview">
-              <a href="javascript::;"><i class="fa fa-bug"></i> Malware Analysis</a>
-              <ul class="nav treeview-menu">
-                <li><a href="#apkid"><i class="fa fa-android"></i> APKiD Analysis</a></li>
-                {% if VT_RESULT %}
-                  <li><a href="#virus_total"><i class="fa fa-upload"></i>Virus Total</a></li>
-                {% endif %}
-                <li><a href="#domain"><i class="glyphicon glyphicon-screenshot"></i> Domain Malware Check</a></li>
-                </ul>
-            </li>
-
-            <li class="treeview">
               <a href="javascript::;"><i class="fa fa-plus"></i> Reconnaissance</a>
               <ul class="nav treeview-menu">
-                <li><a href="#url"><i class="glyphicon glyphicon-globe"></i> URLs</a></li>   
+                <li><a href="#url"><i class="glyphicon glyphicon-globe"></i> URLs</a></li>
+                <li><a href="#firebase"><i class="fa fa-database"></i> Firebase DB</a></li>   
+                <li><a href="#domain"><i class="glyphicon glyphicon-screenshot"></i> Malware Check</a></li>
                 <li><a href="#email"><i class="glyphicon glyphicon-envelope"></i> Emails</a></li>
-                <li><a href="#string"><i class="glyphicon glyphicon-sort-by-alphabet-alt"></i> Strings</a></li>
               </ul>
             </li>
 
@@ -60,12 +46,7 @@
                 <li><a href="#files"><i class="fa fa-files-o"></i> Files</a></li>
               </ul>
             </li>
-            <li><a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=APK"><i class="glyphicon glyphicon-list-alt"></i> Download Report</a></li>
-      {% if dynamic_analysis_done == False %}
-              <li><a href="javascript:document.getElementById('dynform').submit();"><i class="glyphicon glyphicon-play-circle""></i> <strong>Start Dynamic Analysis</strong></a></li>
-      {% else %}
-        <li><a href="/Report/?md5={{ md5 }}&pkg={{ packagename }}"><i class="glyphicon glyphicon-play-circle""></i> <strong>Dynamic Analysis Report</strong></a></li>
-      {% endif %}
+            <li><a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=ANDZIP"><i class="glyphicon glyphicon-list-alt"></i> Download Report</a></li>            
           </ul>
         </div>
         <!-- /.sidebar -->
@@ -75,13 +56,6 @@
       <div class="content-wrapper">
         <!-- Content Header (Page header) -->
      
-          <form id="dynform" action="../DynamicAnalyzer/" method="POST">
-           {% csrf_token %} 
-          <input type="hidden" name="md5" value="{{ md5 }}">
-          <input type="hidden" name="pkg" value="{{ packagename }}">
-          <input type="hidden" name="lng" value="{{ mainactivity }}">
-          </form>
-
 
         <!-- Main content -->
         <div class="content body">
@@ -93,10 +67,9 @@
     <div class="col-sm-3">
       <div class="box box-primary">
         <div class="box-header with-border">
-          <h3 class="box-title">App Icon</h3>
+          <h3 class="box-title">Icon</h3>
           <span class="label label-primary pull-right"><i class="glyphicon glyphicon-picture"></i></span>
         </div><!-- /.box-header -->
-         
         <div class="box-body center">
             <img id="app_icon" src="
             {% if icon_found %}
@@ -111,6 +84,7 @@
         </div><!-- /.box-body -->
       </div><!-- /.box -->
 
+
         <div class="box box-danger">
         <div class="box-header with-border">
           <h3 class="box-title">App Score</h3>
@@ -120,10 +94,6 @@
         <div class="box-body danger">
           <span class="label label-danger">Average CVSS</span> <b>{{ average_cvss }} </b></br>
           <span class="label label-danger">Security Score</span> <b>{{ security_score }}/100</b>
-        {% if VT_RESULT %}
-          </br>
-          <span class="label label-danger">VirusTotal Detection</span> <b>{{ VT_RESULT.positives }}/{{ VT_RESULT.total }}</b>
-        {% endif %}
         </div><!-- /.box-body -->
       </div><!-- /.box -->
 
@@ -199,8 +169,9 @@
         </div><!-- /.box-body -->
       </div><!-- /.box -->
     </div><!-- /.col -->
-   
-        <div class="col-sm-12">
+
+
+    <div class="col-sm-12">
       <div class="box box-info">
         <div class="box-header with-border">
           <h3 class="box-title">Play Store Information</h3>
@@ -253,8 +224,9 @@
         </div><!-- /.box-body -->
       </div><!-- /.box -->
     </div><!-- /.col -->
- <!---Components-->
 
+
+    <!---Components-->
   </div><!-- /.row -->
       <!-- Small boxes (Stat box) -->
       <div class="row">
@@ -389,43 +361,21 @@
 
 <section id="options">
   <h2 class="page-header"></h2>
-
   <div class="row">
-    <div class="col-sm-4">
-      <div class="box box-primary">
-        <div class="box-header with-border">
-          <h3 class="box-title">Scan Options</h3>
-          <span class="label label-primary pull-right"><i class="glyphicon glyphicon-tasks"></i></span>
-        </div><!-- /.box-header -->
-        <div align="center" class="box-body">
-         <div class="list-group">
-                 <p> <a href="../StaticAnalyzer/?checksum={{ md5 }}&amp;name={{ name }}&amp;type=apk&amp;rescan=1" class="btn btn-info btn-lg" role="button"><i class="glyphicon glyphicon-refresh"></i> Rescan</a></p>
-                 <p>
-                  <a href="javascript:document.getElementById('dynform').submit();" class="btn btn-success btn-lg" role="button"><i class="glyphicon glyphicon-play-circle"></i> Start Dynamic Analysis</a>
-                 </p>
-            </div>
-          </div><!-- /.box-body -->
-      </div><!-- /.box -->
-    </div><!-- /.col -->
-    <div class="col-sm-8">
+    <div class="col-sm-12">
       <div class="box box-danger">
         <div class="box-header with-border">
-          <h3 class="box-title">View Code</h3>
+          <h3 class="box-title">Scan Options</h3>
           <span class="label label-danger pull-right"><i class="fa fa-flash"></i></span>
         </div><!-- /.box-header -->
         <div align="center" class="box-body">
-          <a href="../Java/?md5={{ md5 }}{{ zipped }}" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Java</a>
-            <a href="../download/{{ md5 }}-java.zip" class="btn btn-warning" role="button"> <i class="glyphicon glyphicon-download"></i> Download Java Code</a>
-              </br>
-            <a href="../Smali/?md5={{ md5 }}" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Smali</a>
-            <a href="../download/{{ md5 }}-smali.zip" class="btn btn-warning"> <i class="glyphicon glyphicon-download"></i> Download Smali Code</a> 
-         </br></br>
-            
-             <a target="_blank" href="{{mani}}" role="button" class="btn btn-primary"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
           
-         
-        
-        </div><!-- /.box-body -->
+            <a target="_blank" href="{{mani}}" role="button" class="btn btn-info"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
+           <a href="../StaticAnalyzer/?checksum={{ md5 }}&amp;name={{ name }}&amp;type=zip&amp;rescan=1" class="btn btn-info" role="button"><i class="glyphicon glyphicon-refresh"></i> Rescan</a>
+
+
+
+               </div><!-- /.box-body -->
       </div><!-- /.box -->
     </div><!-- /.col -->
   </div><!-- /.row -->
@@ -433,34 +383,6 @@
 </section>
 
 
-<!-- ============================================================= -->
-
-<section id="certificate">
-  <h2 class="page-header"></h2>
-   <div class="box-header">
-             <!-- /.box-header -->
-              <h3 class="box-title"><i class="fa fa-certificate"></i> Signer Certificate</h3>
-            </div>
- <pre class="hierarchy bring-up"><code class="language-bash" data-lang="bash">
-{{ certinfo | safe}}
-{% if issued == "good" %} 
-<strong>Certicate Status: </strong><span class="label label-success">Good</span>
-{% elif issued == "bad" %}
-<strong>Certicate Status: </strong><span class="label label-danger">Bad</span>
-<strong>Description:</strong>App Signed by 'Android Debug' Certificate.
-Production ready applications should not be signed with 'Android Debug' Certificate.
-{% elif issued == "missing" %}
-<strong>Certicate Status: </strong><span class="label label-warning">Certificate not found</span>
-{% elif issued == "bad hash" and sha256Digest is True %}
-<strong>Certicate Status: </strong><span class="label label-warning">Warning</span>
-<strong>Description:</strong>The app is signed with `SHA1withRSA`. SHA1 hash algorithm is known to have collision issues.
-<strong>Note:</strong>The manifest indicates `SHA256withRSA` is in use. Be sure to manually confirm this issue.
-{% elif issued == "bad hash" %}
-<strong>Certicate Status: </strong><span class="label label-danger">Bad</span>
-<strong>Description:</strong>The app is signed with `SHA1withRSA`. SHA1 hash algorithm is known to have collision issues.
-{% endif %}
-</code></pre>
-</section>
 
 <!-- ============================================================= -->
 
@@ -475,7 +397,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
             </div>
   <div class="box-body no-padding">
              <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
+                                             <table class="table table-bordered table-hover table-striped">
                                         <thead>
                                             <tr>
                                                 <th>PERMISSION</th>
@@ -518,63 +440,6 @@ Production ready applications should not be signed with 'Android Debug' Certific
 
 <!-- ============================================================= -->
 
-<section id="binary_analysis">
-  <h2 class="page-header"></h2>
-  <!-- /.box -->
-
-          <div class="box">
-          <div class="box-header">
-             <!-- /.box-header -->
-              <h3 class="box-title"><i class="fa fa-flag"></i> Android Library Binary Analysis</h3>
-            </div>
-  <div class="box-body no-padding">
-             <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>ISSUE</th>
-                                                <th>SEVERITY</th>
-                                                <th>DESCRIPTION</th>
-                                                <th>FILES</th>
-                                                
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                    {% for item in binary_analysis %}
-                      <tr>
-                        <td>
-                        {{item|key:"title" | safe}}
-                        </td>
-                        <td>
-                          {% if item|key:"stat" == "high" %}
-                            <span class="label label-danger">high</span>
-                          {% elif item|key:"stat" == "info" %}
-                            <span class="label label-info">info</span>
-                          {% elif item|key:"stat" == "medium" %}
-                            <span class="label label-warning">medium</span>
-                          {% endif %}
-                         
-                        </td>
-                        <td>
-                        {{item|key:"desc" | safe}}
-                        </td>
-                        <td>
-                        {{item|key:"file"}}
-                        </td>
-   
-                       </tr>
-                     {% endfor %}
-                    </tbody>
-                    </table>
-                                
-                            </div>
-       
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-        </div>
-</section>
-<!-- ============================================================= -->
 
 
 <section id="android-api">
@@ -598,14 +463,14 @@ Production ready applications should not be signed with 'Android Debug' Certific
                                             </tr>
                                         </thead>
                                         <tbody>
-                   {% for desc, details in api.items %}
+                       {% for desc, details in api.items %}
                   <tr>
                   <td>
                   {{ desc }}
                   </td>
                   <td>
                   {% for path in details|key:"path" %}
-                   <a href="../ViewSource/?file={{ path }}&md5={{ md5 }}&type=apk"> {{ path }}</a>
+                   <a href="../ViewSource/?file={{ path }}&md5={{ md5 }}&type={{zipped}}"> {{ path }}</a>
                   </br>
                   {% endfor %}
                   </td>
@@ -623,6 +488,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
 
 
 <!-- ============================================================= -->
+
 <section id="browsable">
   <h2 class="page-header"></h2>
    <!-- /.box -->
@@ -724,8 +590,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                                             </tr>
                                         </thead>
                                         <tbody>
-                                      
-                    {% for item in manifest %}
+                          {% for item in manifest %}
                       <tr>
                         <td>
                         {{item|key:"title" | safe}}
@@ -759,7 +624,6 @@ Production ready applications should not be signed with 'Android Debug' Certific
 
 
 <!-- ============================================================= -->
-
 <section id="code">
    <h2 class="page-header"></h2>
    <!-- /.box -->
@@ -778,12 +642,11 @@ Production ready applications should not be signed with 'Android Debug' Certific
                                                 <th>SEVERITY</th>
                                                 <th>CVSS</th>
                                                 <th>CWE</th>
-                                                <th>FILES</th>
-                                                
+                                                <th>FILES</th>   
                                             </tr>
-                    </thead>
-                    <tbody>
-               {% for issue, details in findings.items %}
+                                        </thead>
+                                        <tbody>
+          {% for issue, details in findings.items %}
                   <tr>
                   <td>
                   {{ issue }}
@@ -803,13 +666,12 @@ Production ready applications should not be signed with 'Android Debug' Certific
                   <td><b>{{ details|key:"cwe" }}</b></td>
                   <td>
                   {% for path in details|key:"path" %}
-                   <a href="../ViewSource/?file={{ path }}&md5={{ md5 }}&type=apk"> {{ path }}</a>
+                   <a href="../ViewSource/?file={{ path }}&md5={{ md5 }}&type={{zipped}}"> {{ path }}</a>
                   </br>
                   {% endfor %}
                   </td>
                 </tr>    
               {% endfor %} 
-         
                     </tbody>
                     </table>
                                 
@@ -857,141 +719,107 @@ Production ready applications should not be signed with 'Android Debug' Certific
 
 <!-- ============================================================= -->
 
-
-<section id="apkid">
+<section id="url">
   <h2 class="page-header"></h2>
-  <!-- /.box -->
+       <!-- /.box -->
 
           <div class="box">
-          <div class="box-header">
-             <!-- /.box-header -->
-              <h3 class="box-title"><i class="fa fa-bug"></i> APKiD Analysis</h3>
+            <div class="box-header">
+              <h3 class="box-title"><i class="glyphicon glyphicon-globe"></i> URLs</h3>
             </div>
-          <div class="box-body no-padding">
-             <div class="table-responsive">
-              <table class="table table-bordered table-hover table-striped">
+            <!-- /.box-header -->
+            <div class="box-body no-padding">
+              <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                  {% if urls %} 
                   <thead>
-                      <tr>
-                          <th>FILE</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      {% if apkid %}
-                       {% for file, details in apkid.items %}
-                       <tr>
-                         <td>
-                             {{file}}
+                  <tr>
+                     <th>URL</th>
+                     <th>File</th>
+                  </tr>
+                 </thead>
+                    {% endif %}
+                                        <tbody>
+                
+                   {% for urldict in urls %}
+                    <tr>
+                       <td>
+                       {% for u in urldict|key:"urls" %}
+                         {{ u }} </br>
+                       {% endfor %}
                         </td>
-                        <td>
-                            <table class="table table-bordered table-hover table-striped">
-                              <thead>
-                                  <tr>
-                                      <th>FINDINGS</th>
-                                      <th>DETAILS</th>
-                                  </tr>
-                              </thead>
-                            <tbody>
-                            {% for detail, idens in details.items %}
-                            <tr>
-                              <td>
-                               {% if detail == "anti_vm" %}
-                               <span class="label label-warning">Anti-VM Code</span>
-                               {% elif detail == "anti_disassembly" %}
-                               <span class="label label-warning">Anti Disassembly Code</span>
-                               {% elif detail == "anti_debug" %}
-                               <span class="label label-warning">Anti Debug Code</span>
-                               {% elif detail == "compiler" %}
-                               <span class="label label-info">Compiler</span>
-                               {% elif detail == "abnormal" %}
-                               <span class="label label-warning">Abnormal Code</span>
-                               {% elif detail == "obfuscator" %}
-                               <span class="label label-warning">Obfuscator</span>
-                               {% elif detail == "protector" %}
-                               <span class="label label-info">Protector</span>
-                               {% elif detail == "packer" %}
-                               <span class="label label-danger">Packer Found</span>
-                               {% elif detail == "dropper" %}
-                               <span class="label label-danger">Dropper Found</span>
-                               {% elif detail == "manipulator" %}
-                               <span class="label label-warning">Manipulator Found</span>
-                               {% else %}
-                               <span class="label label-info">{{detail}}</span>
-                               {% endif %}
-                            </td>
-                              <td> {% for idn in idens %} {{ idn }}</br> {% endfor %}</td>
-                            </tr>
-                            {% endfor %}
-                           </tbody>
-                            </table>
-                        </td>
-                 
-                        </tr>
-                         {% endfor %}
-                      {% else %}
-                      <p align="center"><strong>APKiD not enabled.</strong></p>
-                      {% endif %}
+
+                       <td>
+                          <a href="../ViewSource/?file={{urldict|key:"path"}}&md5={{ md5}}&type={{zipped}}">{{urldict|key:"path"}}</a>
+                          
+                       </td>
+                    </tr>
+                  {% endfor %}
                     </tbody>
                     </table>
-                  </div>
-       
+                                
+                            </div>
+            </div>
             <!-- /.box-body -->
           </div>
           <!-- /.box -->
-        </div>
-</section>
+  </section>
+
 
 <!-- ============================================================= -->
 
-{% if VT_RESULT %}
-    <section id="virus_total">
-      <h2 class="page-header"></h2>
-      <!-- /.box -->
+<section id="firebase">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
 
-              <div class="box">
-              <div class="box-header">
-                 <!-- /.box-header -->
-                  <h3 class="box-title"><i class="fa fa-bug"></i> VirusTotal Report</h3>
-              </div>
-              <div class="box-body no-padding">
-                 <div class="table-responsive">
-                 {% if VT_RESULT.items|length < 9 %} {% comment %} Basic check to determine if the response is a msg or a result {% endcomment %}
-                    <p align="left">&nbsp;&nbsp;<strong>{{ VT_RESULT.verbose_msg }}</strong></p>
-                 {% else %}
-                    <p align="left">&nbsp;&nbsp;<strong> {{ VT_RESULT.positives }} / {{ VT_RESULT.total }}&nbsp; AVs found this file Malicious! </strong> &nbsp;&nbsp;<a href="{{ VT_RESULT.permalink }}" target="_blank" rel="noopener"><i class="glyphicon glyphicon-list-alt"></i> Full Report</a></p>
-                    {% if VT_RESULT.positives > 0 %}
-                        <table class="table table-bordered table-hover table-striped">
-                            <thead>
-                                <tr>
-                                    <th>AV</th>
-                                    <th>Detection</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            {% for av_name,av_result in VT_RESULT.scans.items %}
-                                {% if av_result.detected == True %}
-                                   <tr>
-                                        <td>
-                                            {{ av_name }}
-                                        </td>
-                                       <td>
-                                            <span class="label label-danger">{{ av_result.result }}</span>
-                                        </td>
-                                  </tr>
-                                {% endif %}
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                        {% endif %}{% comment %} if results.positive > 0 {% endcomment %}
-                     {% endif %}{% comment %} if this is the upload msg or a result {% endcomment %}
-                 </div>
-                <!-- /.box-body -->
-              </div>
-              <!-- /.box -->
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-database"></i> Firebase Databases</h3>
             </div>
-    </section>
-{% endif %}
-<!-- ============================================================= -->
+            <!-- /.box-header -->
+            <div class="box-body no-padding">
+              <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                  {% if firebase %} 
+                  <thead>
+                  <tr>
+                     <th>Database URL</th>
+                     <th>Details</th>
+                  </tr>
+                 </thead>
+                  {% endif %}
+                 <tbody>
+                
+                
+                  {% for item in firebase %}
+                    <tr>
+                       <td>
+                       {{ item.url }}
+                        </td>
 
+                       <td>
+                         {% if item.open %}
+                          <span class="label label-danger">insecure</span></br>Firebase DB is exposed publically.
+                        {% else %}
+                         <span class="label label-primary">Info</span></br>App talks to a Firebase Database.
+                         {% endif %}
+                      
+                       </td>
+                    </tr>
+                  {% endfor %} 
+                    </tbody>
+                     
+                    </table>
+                                
+                            </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+
+<!-- ============================================================= -->
 
 <section id="domain">
   <h2 class="page-header"></h2>
@@ -1046,58 +874,6 @@ Production ready applications should not be signed with 'Android Debug' Certific
 
 <!-- ============================================================= -->
 
-
-<section id="url">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="glyphicon glyphicon-globe"></i> URLs</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body no-padding">
-              <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
-                  {% if urls %} 
-                  <thead>
-                  <tr>
-                     <th>URL</th>
-                     <th>File</th>
-                  </tr>
-                 </thead>
-                  {% endif %}
-                 <tbody>
-                
-                
-                  {% for urldict in urls %}
-                    <tr>
-                       <td>
-                       {% for u in urldict|key:"urls" %}
-                         {{ u }} </br>
-                       {% endfor %}
-                        </td>
-
-                       <td>
-                          <a href="../ViewSource/?file={{urldict|key:"path"}}&md5={{ md5}}&type=apk">{{urldict|key:"path"}}</a>
-                          
-                       </td>
-                    </tr>
-                  {% endfor %} 
-                    </tbody>
-                     
-                    </table>
-                                
-                            </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
 <section id="email">
   <h2 class="page-header"></h2>
      <!-- /.box -->
@@ -1109,8 +885,8 @@ Production ready applications should not be signed with 'Android Debug' Certific
             <!-- /.box-header -->
             <div class="box-body no-padding">
               <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
-                 {% if emails %} 
+                  <table class="table table-bordered table-hover table-striped">
+                  {% if emails %} 
                   <thead>
                   <tr>
                      <th>Email</th>
@@ -1118,10 +894,9 @@ Production ready applications should not be signed with 'Android Debug' Certific
                   </tr>
                  </thead>
                  {% endif %}
-                 <tbody>
                                         <tbody>
                 
-                 {% for email_dict in emails %}
+                  {% for email_dict in emails %}
                     <tr>
                        <td>
                        {% for e in email_dict|key:"emails" %}
@@ -1130,7 +905,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                         </td>
 
                        <td>
-                          <a href="../ViewSource/?file={{email_dict|key:"path"}}&md5={{ md5}}&type=apk">{{email_dict|key:"path"}}</a>
+                          <a href="../ViewSource/?file={{email_dict|key:"path"}}&md5={{ md5}}&type={{zipped}}">{{email_dict|key:"path"}}</a>
                           
                        </td>
                     </tr>
@@ -1146,35 +921,6 @@ Production ready applications should not be signed with 'Android Debug' Certific
 </section>
 
 
-<!-- ============================================================= -->
-
-<section id="string">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="glyphicon glyphicon-sort-by-alphabet-alt"></i> Strings</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-          <div class="list-group">
-                  <p>  
-                  
-                    {% for val in strings %}
-                      
-                     {{ val }}<br>
-                    
-                    {% endfor %}                  
-                                
-                  
-                  </p>
-                                </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-</section>
 <!-- ============================================================= -->
 
 <section id="activities">
