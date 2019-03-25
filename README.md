@@ -103,7 +103,7 @@ Other docker options: [MobSF Docker Options](https://github.com/MobSF/Mobile-Sec
 * Bharadwaj Machiraju (@tunnelshade_) - For writing pyWebProxy from scratch
 * Dominik Schlecht - For the awesome work on adding Windows Phone App Static Analysis to MobSF
 * Esteban - Better Android Manifest Analysis and Static Analysis Improvement.
-* Matan Dobrushin - For adding Android ARM Emulator support to MobSF - Special thanks goes for cuckoo-droid, I got inspierd by their code and idea for this implementation.
+* Matan Dobrushin - For adding Android ARM Emulator support to MobSF - Special thanks goes for cuckoo-droid, I got inspired by their code and idea for this implementation.
 * MindMac - For writing Android Blue Pill
 * Rahul (@c0dist) - Kali Support
 * Shuxin - Android Binary Analysis
