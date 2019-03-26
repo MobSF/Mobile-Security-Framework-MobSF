@@ -27,7 +27,12 @@ RUN apt update -y && apt install -y \
     libssl-dev \
     libffi-dev \
     libxml2-dev \
-    libxslt1-dev
+    libxslt1-dev \
+    locales
+
+#set locales
+RUN locale-gen en_US.UTF-8
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 #Install Oracle JDK11 LTS
 RUN apt install -y software-properties-common && \
