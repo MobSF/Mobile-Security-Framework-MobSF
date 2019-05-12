@@ -17,7 +17,8 @@ body {
                             <div class="panel-body">
                                 <div class="list-group">
                   <p>                                       
-                     <span class="label label-primary"><b>Average CVSS Score: </b>{{ average_cvss }}</span></br>
+                     <span class="label label-primary"><b>Average CVSS Score: </b>{{ average_cvss }}</span></p>
+                  <p>
                      <span class="label label-primary"><b>App Security Score: </b>{{ security_score }}/100</span>
 
                   </p>
@@ -95,6 +96,68 @@ body {
                             </div>
                         </div>
                     </div>
+                   <hr>
+
+                <div class="col-lg-12">
+                  <div class="panel panel-default">
+                      <div class="panel-heading">
+                          <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-phone"></span> APP STORE INFORMATION</h3>
+                          <hr>
+                      </div>
+                      <div class="panel-body">
+                          <div class="list-group">
+            {% if not appstore_details.error %}
+                  <p>                                       
+                    <span class="label label-info"><b>Title: </b></span>
+                    {{ appstore_details.title }}
+                  </p>
+                  <p>                                       
+                    <span class="label label-info"><b>Score: </b></span>
+                  {{ appstore_details.score}}
+
+                   <span class="label label-info"><b>Features: </b></span>
+                    {% for fea in appstore_details.features %}
+                    {{ fea }}, 
+                    {% endfor %}
+
+                   <span class="label label-info"><b>Price: </b></span>
+                      {{ appstore_details.price }}
+                    <span class="label label-info"><b>Category: </b></span>
+                    {% for cat in appstore_details.category %}
+                    {{ cat }}, 
+                    {% endfor %}
+
+                    <span class="label label-info"><b>App Store URL: </b></span>
+                      <a target="_blank" href="{{ appstore_details.itunes_url }}"> {{ appstore_details.app_id }} </a>
+                  </p>
+                  
+                  <p>
+                  <span class="label label-info"><b>Developer: </b></span>
+                      {{appstore_details.developer}}
+                   <span class="label label-info"><b>Developer ID: </b></span>
+                    {{appstore_details.developer_id}} 
+                  </p>
+                  <p>
+                    <span class="label label-info"><b>Developer Website: </b></span>
+                      {{appstore_details.developer_website }}
+                    <span class="label label-info"><b>Developer URL: </b></span>
+                      {{appstore_details.developer_url}}, 
+                  </p>
+                  <p>
+                     <span class="label label-info"><b>Support Devices: </b></span>
+                    {% for dev in appstore_details.supported_devices %}
+                    {{ dev }}, 
+                    {% endfor %}
+                  </p>
+                 <p>                                       
+                      <span class="label label-info"><b>Description: </b></span>
+                      <pre>{{ appstore_details.description }}</pre>
+                  </p>
+              {%  endif  %}
+             </div>
+                            </div>
+                        </div>
+                    </div>
        <hr>
         <div class="col-lg-12">
          <div class="panel panel-default">
@@ -144,7 +207,7 @@ body {
        <div class="col-lg-12">
          <div class="panel panel-default">
            <div class="panel-heading">
-             <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="fa fa-mobile"></span> App Transport Security (ATS)</h3><hr>
+             <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="fa fa-mobile"></span> APP TRANSPORT SECURITY (ATS)</h3><hr>
            </div>
 
            <div class="panel-body">
@@ -324,12 +387,57 @@ body {
                             </div>
                         </div>
                     </div>
-          </div><hr>
+          </div>
+    <hr>
+              <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-globe"></span> FIREBASE DATABASES</h3><hr>
+                            </div>
+                            <div class="panel-body">
+                  <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                 {% if firebase %} 
+                  <thead>
+                  <tr>
+                     <th>URL</th>
+                     <th>Database URL</th>
+                  </tr>
+                 </thead>
+                    {% endif %}
+                                        <tbody>
+                
+                 
+                  {% for item in firebase %}
+                    <tr>
+                       <td>
+                       {{ item.url }}
+                        </td>
+
+                       <td>
+                         {% if item.open %}
+                          <span class="label label-danger">insecure</span></br>Firebase DB is exposed publically.
+                        {% else %}
+                         <span class="label label-primary">Info</span></br>App talks to a Firebase Database.
+                         {% endif %}
+                      
+                       </td>
+                    </tr>
+                  {% endfor %} 
+                    </tbody>
+                    </table>
+                                
+                            </div>
+                        </div>
+                    </div>
+          </div>
+          
+          <hr>
 
            <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-screenshot"></span> Malware Check</h3><hr>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-screenshot"></span> MALWARE CHECK</h3><hr>
                             </div>
                             <div class="panel-body">
                   <div class="table-responsive">

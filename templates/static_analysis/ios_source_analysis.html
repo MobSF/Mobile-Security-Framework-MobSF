@@ -20,6 +20,7 @@
               <a href="javascript::;"><i class="fa fa-plus"></i> Reconnaissance</a>
               <ul class="nav treeview-menu">
                 <li><a href="#url"><i class="glyphicon glyphicon-globe"></i> URLs</a></li>
+                <li><a href="#firebase"><i class="fa fa-database"></i> Firebase DB</a></li>
                 <li><a href="#domain"><i class="glyphicon glyphicon-screenshot"></i> Malware Check</a></li>
                 <li><a href="#email"><i class="glyphicon glyphicon-envelope"></i> Emails</a></li>
               </ul>
@@ -151,6 +152,75 @@
         </div><!-- /.box-body -->
       </div><!-- /.box -->
     </div><!-- /.col -->
+
+
+     <div class="col-sm-12">
+      <div class="box box-info">
+        <div class="box-header with-border">
+          <h3 class="box-title">App Store Information</h3>
+          <span class="label label-info pull-right"><i class="glyphicon glyphicon-th-large"></i></span>
+        </div><!-- /.box-header -->
+        <div class="box-body">
+           <div class="list-group">
+            {% if not appstore_details.error %}
+
+          <p>
+            <img id="app_icon" src="{{ appstore_details.icon }}">
+          </p>
+
+                  <p>                                       
+                    <span class="label label-info">Title</span>
+                    {{ appstore_details.title }}
+                  </p>
+                  <p>                                       
+                    <span class="label label-info">Score</span>
+                  {{ appstore_details.score}}
+
+                   <span class="label label-info">Features</span>
+                    {% for fea in appstore_details.features %}
+                    {{ fea }}, 
+                    {% endfor %}
+
+                   <span class="label label-info">Price</span>
+                      {{ appstore_details.price }}
+                    <span class="label label-info">Category</span>
+                    {% for cat in appstore_details.category %}
+                    {{ cat }}, 
+                    {% endfor %}
+
+                    <span class="label label-info">App Store URL</span>
+                      <a target="_blank" href="{{ appstore_details.itunes_url }}"> {{ appstore_details.app_id }} </a>
+                  </p>
+                  
+                  <p>
+                  <span class="label label-info">Developer</span>
+                      {{appstore_details.developer}}
+                   <span class="label label-info">Developer ID</span>
+                    {{appstore_details.developer_id}} 
+                  </p>
+                  <p>
+                    <span class="label label-info">Developer Website</span>
+                      {{appstore_details.developer_website }}
+                    <span class="label label-info">Developer URL</span>
+                      {{appstore_details.developer_url}}, 
+                  </p>
+                  <p>
+                     <span class="label label-info">Support Devices</span>
+                    {% for dev in appstore_details.supported_devices %}
+                    {{ dev }}, 
+                    {% endfor %}
+                  </p>
+                 <p>                                       
+                      <span class="label label-info">Description</span>
+                      <pre>{{ appstore_details.description }}</pre>
+                  </p>
+              {%  endif  %}
+             </div>
+        
+        </div><!-- /.box-body -->
+      </div><!-- /.box -->
+    </div><!-- /.col -->
+
   </div><!-- /.row -->
   </p>
 </section><!-- /#introduction -->
@@ -510,6 +580,59 @@
 
 <!-- ============================================================= -->
 
+
+<section id="firebase">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-database"></i> Firebase Databases</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body no-padding">
+              <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                  {% if firebase %} 
+                  <thead>
+                  <tr>
+                     <th>Database URL</th>
+                     <th>Details</th>
+                  </tr>
+                 </thead>
+                  {% endif %}
+                 <tbody>
+                
+                
+                  {% for item in firebase %}
+                    <tr>
+                       <td>
+                       {{ item.url }}
+                        </td>
+
+                       <td>
+                         {% if item.open %}
+                          <span class="label label-danger">insecure</span></br>Firebase DB is exposed publically.
+                        {% else %}
+                         <span class="label label-primary">Info</span></br>App talks to a Firebase Database.
+                         {% endif %}
+                      
+                       </td>
+                    </tr>
+                  {% endfor %} 
+                    </tbody>
+                     
+                    </table>
+                                
+                            </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+
+<!-- ============================================================= -->
 <section id="domain">
   <h2 class="page-header"></h2>
        <!-- /.box -->

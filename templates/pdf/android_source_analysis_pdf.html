@@ -1,0 +1,708 @@
+
+   {% block content %}
+<style>
+body {
+    font: normal 30px Verdana, Arial, sans-serif;
+}
+
+</style>
+<h1 align="center" class="page-header">Static Analysis - {{name}} </h1>
+<hr>
+    <div class="col-lg-2">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><span class="glyphicon glyphicon-file"></span> APP SCORE</h3><hr>
+                            </div>
+
+                            <div class="panel-body">
+                                <div class="list-group">
+                  <p>                                       
+                     <span class="label label-primary"><b>Average CVSS Score: </b>{{ average_cvss }}</span></p>
+                  <p>
+                     <span class="label label-primary"><b>App Security Score: </b>{{ security_score }}/100</span>
+
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <hr>
+                  <div class="col-lg-7">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-file"></span> FILE INFORMATION</h3><hr>
+                            </div>
+
+                            <div class="panel-body">
+                                <div class="list-group">
+                                    <p>                                       
+                                       <span class="label label-primary"><b>Name: </b></span>
+                                    {{ name }}
+                                    </p>
+                                    <p>
+                                       <span class="label label-primary"><b>Size: </b></span>
+                                    {{ size }}
+                                   </p><p>
+                                       <span class="label label-primary"><b>MD5: </b></span>
+                                    {{ md5 }}
+                                    
+                                   </p><p>
+                                     <span class="label label-primary"><b>SHA1: </b></span>
+                                    {{ sha1 }}
+                                  
+                                     </p><p>
+                                     <span class="label label-primary"><b>SHA256: </b></span>
+                                    {{ sha256 }}
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+<hr>
+                  <div class="col-lg-5">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-phone"></span> APP INFORMATION</h3><hr>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+                                    <p>                                       
+                                       <span class="label label-primary"><b>Package Name: </b></span>
+                                    {{ packagename }}
+                                    </p>
+                                    <p>
+                                       <span class="label label-primary"><b>Main Activity: </b></span>
+                                    {{ mainactivity }}
+                                   </p><p>
+                                       <span class="label label-primary"><b>Target SDK: </b></span>
+                                    {{ targetsdk }}
+                                    </p><p>
+                                     <span class="label label-primary"><b>Min SDK: </b></span>
+                                    {{ minsdk }}
+                                  </p><p>
+                                     <span class="label label-primary"><b>Max SDK: </b></span>
+                                    {{ maxsdk }}
+                                    </p><p>
+                                    <span class="label label-primary"><b>Android Version Name: </b></span>
+                                    {{ androvername }}
+                                    </p><p>
+                                    <span class="label label-primary"><b>Android Version Code: </b></span>
+                                    {{ androver }}
+                                    </p>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+
+                     <div class="col-lg-5">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-phone"></span> PLAY STORE INFORMATION</h3><hr>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+
+                                   {% if not play_details.error %}
+                  <p>                                       
+                    <span class="label label-info"><b>Title: </b></span>
+                    {{ play_details.title }}
+                  </p>
+                  <p>                                       
+                    <span class="label label-info"><b>Score: </b></span>
+                  {{ play_details.score}}
+
+                   <span class="label label-info"><b>Installs: </b></span>
+                    {{ play_details.installs }}
+
+                   <span class="label label-info"><b>Price: </b></span>
+                      {{ play_details.price }}
+
+                  <span class="label label-info"><b>Android Version Support: </b></span>
+                    {{ play_details.required_android_version }}
+                   
+                    <span class="label label-info"><b>Category: </b></span>
+                    {% for cat in play_details.category %}
+                    {{ cat }}, 
+                    {% endfor %}
+
+                    <span class="label label-info"><b>Play Store URL: </b></span>
+                      <a target="_blank" href="{{ play_details.url }}"> {{ packagename }} </a>
+                  </p>
+                  
+                  <p>
+                  <span class="label label-info"><b>Developer Details: </b></span>
+                      {{play_details.developer}},  
+                      {{play_details.developer_id}}, 
+                      {{play_details.developer_address }},
+                      {{play_details.developer_url}}, 
+                      {{play_details.developer_email}}, 
+                  </p>
+                 <p>                                       
+                      <span class="label label-info"><b>Description: </b></span>
+                      <pre>{{ play_details.description }}</pre>
+                  </p>
+              {%  endif  %}
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-ok"></span> PERMISSIONS</h3><hr>
+                            </div>
+                            <div class="panel-body">
+                                  <div class="table-responsive">
+                    <table>
+                      <thead>
+                    <tr>
+                        <th>PERMISSION</th>
+                        <th>STATUS</th>
+                        <th>INFO </th>
+                        <th>DESCRIPTION</th>
+                      </tr>
+                                        </thead>
+                                        <tbody>
+                    {% for perm,desc in permissions.items %}
+                    <tr>
+                    <td>{{ perm }}</td>
+                    <td>{{ desc.status }}</td>
+                    <td>{{ desc.info }}</td>
+                    <td>{{ desc.description }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                    </table>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+<hr>
+                      <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class=""></i><span class=""></span> BROWSABLE ACTIVITIES</h3><hr>
+                            </div>
+                            <div class="panel-body">
+                                  <div class="table-responsive">
+                                   <table class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>ACTIVITY</th>
+                                                <th>INTENT</th>   
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                      {% for activity,intent_details in browsable_activities.items %}
+                          <tr>
+                            <td>{{activity}}</td>
+                            <td>
+                                   {% if intent_details|key:"schemes" %}
+                                      <strong>Schemes</strong>: 
+                                      {% for scheme in intent_details|key:"schemes" %}
+                                        {{scheme}},
+                                      {% endfor %}
+                                       </br>
+                                   {% endif %}
+                                   {% if intent_details|key:"hosts" %}
+                                      <strong>Hosts:</strong> {% for host in intent_details|key:"hosts" %}
+                                        {{host}},
+                                      {% endfor %} 
+                                      </br>
+                                   {% endif %}
+                                   {% if intent_details|key:"ports" %}
+                                      <strong>Ports:</strong> {% for port in intent_details|key:"ports" %}
+                                        {{port}},
+                                      {% endfor %} 
+                                      </br>
+                                   {% endif %}
+                                   {% if intent_details|key:"mime_types" %}
+                                      <strong>Mime Types:</strong> {% for mime in intent_details|key:"mime_types" %}
+                                        {{mime}},
+                                      {% endfor %} 
+                                      </br>
+                                   {% endif %}
+                                   {% if intent_details|key:"paths" %}
+                                      <strong>Paths:</strong> {% for path in intent_details|key:"paths" %}
+                                        {{path}},
+                                      {% endfor %} 
+                                      </br>
+                                   {% endif %}
+                                   {% if intent_details|key:"path_prefixs" %}
+                                      <strong>Path Prefixes:</strong> {% for prefix in intent_details|key:"path_prefixs" %}
+                                        {{prefix}},
+                                      {% endfor %} 
+                                      </br>
+                                   {% endif %}
+                                   {% if intent_details|key:"path_patterns" %}
+                                      <strong>Path Patterns:</strong> {% for pattern in intent_details|key:"path_patterns" %}
+                                        {{pattern}},
+                                      {% endfor %} 
+                                      </br>
+                                   {% endif %}
+                              {% endfor %}
+                            </td>
+                          </tr>
+                    </tbody>
+                    </table>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+<hr>
+            <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-search"></span> MANIFEST ANALYSIS</h3><hr>
+
+                            </div>
+                            <div class="panel-body">
+                                  <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>ISSUE</th>
+                                                <th>SEVERITY</th>
+                                                <th>DESCRIPTION</th>
+                                                
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in manifest %}
+                      <tr>
+                        <td>
+                        {{item|key:"title" | safe}}
+                        </td>
+                        <td>
+
+                          {% if item|key:"stat" == "high" %}
+                            <span class="label label-danger">high</span>
+                          {% elif item|key:"stat" == "info" %}
+                            <span class="label label-info">info</span>
+                          {% elif item|key:"stat" == "medium" %}
+                            <span class="label label-warning">medium</span>
+                          {% endif %}
+                         
+                        </td>
+                        <td>
+                        {{item|key:"desc"}}
+                        </td>
+   
+                       </tr>
+                     {% endfor %}
+                                        </tbody>
+                                        </table>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+<hr>
+                        <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-warning-sign"></span> CODE ANALYSIS</h3><hr>
+                            </div>
+                            <div class="panel-body">
+                                  <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>ISSUE</th>
+                                                <th>SEVERITY</th>
+                                                <th>CVSS</th>
+                                                <th>CWE</th>
+                                                <th>FILES</th>
+                                                
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+              {% for issue, details in findings.items %}
+                  <tr>
+                  <td>
+                  {{ issue }}
+                  </td>
+                  <td>
+                    {% if details|key:"level" == "high" %}
+                      <span class="label label-danger">high</span>
+                      {% elif details|key:"level" == "good" %}
+                      <span class="label label-success">secure</span>
+                      {% elif details|key:"level" == "warning" %}
+                      <span class="label label-warning">warning</span>
+                      {% elif details|key:"level" == "info" %}
+                      <span class="label label-info">info</span>
+                      {% endif %}
+                  </td>
+                  <td><b>{{ details|key:"cvss" }}</b></td>
+                  <td><b>{{ details|key:"cwe" }}</b></td>
+                  <td>
+                  {% for path in details|key:"path" %}
+                   <a href="../ViewSource/?file={{ path }}&md5={{ md5 }}&type={{zipped}}"> {{ path }}</a>
+                  </br>
+                  {% endfor %}
+                  </td>
+                </tr>    
+              {% endfor %} 
+                                        </tbody>
+                                        </table>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    </div>      
+                    <hr>
+    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-tasks"></span> ANDROID API</h3><hr>
+                            </div>
+                            <div class="panel-body">
+                                  <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                            <tr>
+                                                
+                                                <th>API</th>
+                                                <th>FILES</th>
+                                                
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+             {% for desc, details in api.items %}
+                  <tr>
+                  <td>
+                  {{ desc }}
+                  </td>
+                  <td>
+                  {% for path in details|key:"path" %}
+                   <a href="../ViewSource/?file={{ path }}&md5={{ md5 }}&type={{zipped}}"> {{ path }}</a>
+                  </br>
+                  {% endfor %}
+                  </td>
+                </tr>    
+              {% endfor %} 
+                                        </tbody>
+                                        </table>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+    <hr> <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-globe"></span> URLS</h3><hr>
+                            </div>
+                            <div class="panel-body">
+                                  <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        {% if urls %} 
+                  <thead>
+                  <tr>
+                     <th>URL</th>
+                     <th>File</th>
+                  </tr>
+                 </thead>
+                    {% endif %}
+                                        <tbody>
+                                
+                                    {% for urldict in urls %}
+                    <tr>
+                       <td>
+                       {% for u in urldict|key:"urls" %}
+                         {{ u }} </br>
+                       {% endfor %}
+                        </td>
+
+                       <td>
+                          <a href="../ViewSource/?file={{urldict|key:"path"}}&md5={{ md5}}&type={{zipped}}">{{urldict|key:"path"}}</a>
+                          
+                       </td>
+                    </tr>
+                  {% endfor %} 
+                                        </tbody>
+                                        </table>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+
+
+                       <hr>
+              <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-globe"></span> FIREBASE DATABASES</h3><hr>
+                            </div>
+                            <div class="panel-body">
+                  <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                 {% if firebase %} 
+                  <thead>
+                  <tr>
+                     <th>URL</th>
+                     <th>Database URL</th>
+                  </tr>
+                 </thead>
+                    {% endif %}
+                                        <tbody>
+                
+                 
+                  {% for item in firebase %}
+                    <tr>
+                       <td>
+                       {{ item.url }}
+                        </td>
+
+                       <td>
+                         {% if item.open %}
+                          <span class="label label-danger">insecure</span></br>Firebase DB is exposed publically.
+                        {% else %}
+                         <span class="label label-primary">Info</span></br>App talks to a Firebase Database.
+                         {% endif %}
+                      
+                       </td>
+                    </tr>
+                  {% endfor %} 
+                    </tbody>
+                    </table>
+                                
+                            </div>
+                        </div>
+                    </div>
+          </div>
+          
+                    <hr>
+
+                    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-screenshot"></span> MALWARE CHECK</h3><hr>
+                            </div>
+                            <div class="panel-body">
+                                  <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        {% if urls %} 
+                  <thead>
+                  <tr>
+                     <th>Domain</th>
+                     <th>Status</th>
+                  </tr>
+                 </thead>
+                  {% endif %}
+                                      <tbody>
+                
+                  {% for domain, details in domains.items %}
+                  <tr><td>{{domain}}</td><td> 
+
+                    {% if details|key:"bad" == "yes" %}
+                    <span class="label label-danger">malware</span></br>
+<pre>
+<strong>URL: </strong>{{details|key:"domain_or_url"}}
+<strong>IP: </strong><span class="label label-danger">{{details|key:"ip"}}</span>
+<strong>Description: </strong>{{details|key:"desc"}}
+</pre>
+                  {% else %}
+                    <span class="label label-success">good</span></br>
+                  {% endif %}
+
+
+                  </td> </tr>
+                  {% endfor %}
+                   
+                    </tbody>
+                                        </table>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                    <hr>
+                                <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-envelope"></span> EMAILS</h3><hr>
+                            </div>
+                            <div class="panel-body">
+                                  <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        {% if emails %} 
+                  <thead>
+                  <tr>
+                     <th>Email</th>
+                     <th>File</th>
+                  </tr>
+                 </thead>
+                 {% endif %}
+                                        <tbody>
+                                
+                   {% for email_dict in emails %}
+                    <tr>
+                       <td>
+                       {% for e in email_dict|key:"emails" %}
+                         {{ e }} </br>
+                       {% endfor %}
+                        </td>
+
+                       <td>
+                          <a href="../ViewSource/?file={{email_dict|key:"path"}}&md5={{ md5}}&type=apk">{{email_dict|key:"path"}}</a>
+                          
+                       </td>
+                    </tr>
+                  {% endfor %}
+                                        </tbody>
+                                        </table>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                            <hr>            <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-lock"></span> FILE ANALYSIS</h3><hr>
+                            </div>
+                            <div class="panel-body">
+                                  <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                              <thead>
+                                            <tr>
+                                                <th>ISSUE</th>
+                                                <th>FILES</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                
+                                    {{ certz | safe}} 
+                                        </tbody>
+                                        </table>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+          
+           
+                    <hr>     <div class="col-lg-5">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-credit-card"></span> ACTIVITIES</h3><hr>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+                                    <p>  
+                                {% for act in activities %}
+                                    {{ act}} <br>
+                                {% endfor %}                                    
+                                    
+                                    </p>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+          <hr><div class="col-lg-5">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-hdd"></span> PROVIDERS</h3><hr>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+                                    <p>  
+                                {% for prv in providers %}
+                                    {{ prv}} <br>
+                                {% endfor %}                                    
+                                    
+                                    </p>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+            <hr>        <div class="col-lg-5">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-sort-by-attributes-alt"></span> RECEIVERS</h3><hr>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+                                    <p>  
+                                {% for rcv in receivers %}
+                                    {{ rcv}} <br>
+                                {% endfor %}                                    
+                                    
+                                    </p>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+            <hr>        <div class="col-lg-5">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-refresh"></span> SERVICES</h3><hr>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+                                    <p>  
+                                {% for srv in services %}
+                                    {{ srv}} <br>
+                                {% endfor %}                                    
+                                    
+                                    </p>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+            <hr>            <div class="col-lg-5">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-chevron-down"></span> LIBRARIES</h3><hr>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+                                    <p>  
+                                {% for lib in libraries %}
+                                    {{ lib }} <br>
+                                {% endfor %}                                    
+                                    
+                                    </p>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                     <hr>  <div class="col-lg-7">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-folder-open"></span> FILES</h3><hr>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+                                    <p>  
+                                {% for file in files %}
+                                    {{ file}} <br>
+                                {% endfor %}                                    
+                                    
+                                    </p>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+
+    <hr><hr>
+    <h3 align="center"> Report Generated by - MobSF | http://opensecurity.in</h3>
+           
+           
+       
+      
+   {% endblock %}

@@ -35,12 +35,16 @@ from StaticAnalyzer.views.ios.plist_analysis import (
     plist_analysis,
     convert_bin_xml
 )
-
+from StaticAnalyzer.views.ios.appstore import(
+    app_search,
+)
 from StaticAnalyzer.views.shared_func import (
     file_size,
+    firebase_analysis,
     hash_gen,
     unzip,
-    score
+    score,
+    update_scan_timestamp,
 )
 from StaticAnalyzer.models import StaticAnalyzerIPA, StaticAnalyzerIOSZIP
 
@@ -171,6 +175,7 @@ def static_analyzer_ios(request, api=False):
                     files, sfiles = ios_list_files(
                         app_dict["bin_dir"], app_dict["md5_hash"], True, 'ipa')
                     infoplist_dict = plist_analysis(app_dict["bin_dir"], False)
+                    app_dict["appstore"] = app_search(infoplist_dict.get("id"))
                     bin_analysis_dict = binary_analysis(
                         app_dict["bin_dir"], tools_dir, app_dict["app_dir"], infoplist_dict.get("bin"))
                     # Saving to DB
@@ -179,6 +184,7 @@ def static_analyzer_ios(request, api=False):
                         logger.info("Updating Database...")
                         update_db_entry_ipa(
                             app_dict, infoplist_dict, bin_analysis_dict, files, sfiles)
+                        update_scan_timestamp(app_dict["md5_hash"])
                     elif rescan == '0':
                         logger.info("Saving to Database")
                         create_db_entry_ipa(
@@ -194,7 +200,8 @@ def static_analyzer_ios(request, api=False):
                                      'md5_hash']) + '.ipa',
                         app_dict['md5_hash']
                     )
-
+                context["average_cvss"], context[
+                    "security_score"] = score(context["bin_anal"])
                 template = "static_analysis/ios_binary_analysis.html"
                 if api:
                     return context
@@ -220,14 +227,19 @@ def static_analyzer_ios(request, api=False):
                     files, sfiles = ios_list_files(
                         app_dict["app_dir"], app_dict["md5_hash"], False, 'ios')
                     infoplist_dict = plist_analysis(app_dict["app_dir"], True)
+                    app_dict["appstore"] = app_search(infoplist_dict.get("id"))
                     code_analysis_dic = ios_source_analysis(
                         app_dict["app_dir"])
+                    # Firebase DB Check
+                    code_analysis_dic['firebase'] = firebase_analysis(
+                           list(set(code_analysis_dic["urls_list"])))
                     # Saving to DB
                     logger.info("Connecting to DB")
                     if rescan == '1':
                         logger.info("Updating Database...")
                         update_db_entry_ios(
                             app_dict, infoplist_dict, code_analysis_dic, files, sfiles)
+                        update_scan_timestamp(app_dict["md5_hash"])
                     elif rescan == '0':
                         logger.info("Saving to Database")
                         create_db_entry_ios(

@@ -7,6 +7,25 @@ body {
 </style>
 <h1 align="center" class="page-header">Static Analysis - {{file_name}} </h1>
 <hr>
+ <div class="col-lg-2">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><span class="glyphicon glyphicon-file"></span> APP SCORE</h3><hr>
+                            </div>
+
+                            <div class="panel-body">
+                                <div class="list-group">
+                  <p>                                       
+                     <span class="label label-primary"><b>Average CVSS Score: </b>{{ average_cvss }}</span></p>
+                  <p>
+                     <span class="label label-primary"><b>App Security Score: </b>{{ security_score }}/100</span>
+
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+<hr>
 
                   <div class="col-lg-7">
                         <div class="panel panel-default">
@@ -19,6 +38,10 @@ body {
                                     <p>
                                        <span class="label label-primary"><b>File Name:</b> </span>
                                     {{ file_name }}
+                                    </p>
+                                    <p>
+                                      <span class="label label-primary"><b>App Type:</b></span>
+                                      {{ bin_type }}
                                     </p>
                                     <p>
                                        <span class="label label-primary"><b>Size: </b></span>
@@ -34,11 +57,29 @@ body {
                                      </p><p>
                                      <span class="label label-primary"><b>SHA256: </b></span>
                                     {{ sha256 }}
+                                  </p>
                                 </div>
                             </div>
                         </div>
                     </div>
-    <hr>
+                <hr>
+                 <div class="col-lg-7">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i></i> <span class="glyphicon glyphicon-file"></span> BINARY INFORMATION</h3>
+                                <hr>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+                                     <p><span class="label label-info"><b>Arch: </b></span>   {{ binary_info.arch }}</p>
+                                      <p><span class="label label-info"><b>Sub Arch: </b></span>   {{ binary_info.subarch }}</p>
+                                      <p><span class="label label-info"><b>Bit: </b></span>   {{ binary_info.bit }}
+                                      <p><span class="label label-info"><b>Endian: </b></span>   {{ binary_info.endian }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                  <hr>
                 <div class="col-lg-5">
                         <div class="panel panel-default">
                             <div class="panel-heading">
@@ -72,6 +113,70 @@ body {
                                     {{ min }}
                                     </p>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+       <hr>
+
+                <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-phone"></span> APP STORE INFORMATION</h3>
+                                <hr>
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+            {% if not appstore_details.error %}
+
+          
+                  <p>                                       
+                    <span class="label label-info"><b>Title: </b></span>
+                    {{ appstore_details.title }}
+                  </p>
+                  <p>                                       
+                    <span class="label label-info"><b>Score: </b></span>
+                  {{ appstore_details.score}}
+
+                   <span class="label label-info"><b>Features: </b></span>
+                    {% for fea in appstore_details.features %}
+                    {{ fea }}, 
+                    {% endfor %}
+
+                   <span class="label label-info"><b>Price: </b></span>
+                      {{ appstore_details.price }}
+                    <span class="label label-info"><b>Category: </b></span>
+                    {% for cat in appstore_details.category %}
+                    {{ cat }}, 
+                    {% endfor %}
+
+                    <span class="label label-info"><b>App Store URL: </b></span>
+                      <a target="_blank" href="{{ appstore_details.itunes_url }}"> {{ appstore_details.app_id }} </a>
+                  </p>
+                  
+                  <p>
+                  <span class="label label-info"><b>Developer: </b></span>
+                      {{appstore_details.developer}}
+                   <span class="label label-info"><b>Developer ID: </b></span>
+                    {{appstore_details.developer_id}} 
+                  </p>
+                  <p>
+                    <span class="label label-info"><b>Developer Website: </b></span>
+                      {{appstore_details.developer_website }}
+                    <span class="label label-info"><b>Developer URL: </b></span>
+                      {{appstore_details.developer_url}}, 
+                  </p>
+                  <p>
+                     <span class="label label-info"><b>Support Devices: </b></span>
+                    {% for dev in appstore_details.supported_devices %}
+                    {{ dev }}, 
+                    {% endfor %}
+                  </p>
+                 <p>                                       
+                      <span class="label label-info"><b>Description: </b></span>
+                      <pre>{{ appstore_details.description }}</pre>
+                  </p>
+              {%  endif  %}
+             </div>
                             </div>
                         </div>
                     </div>
@@ -126,7 +231,7 @@ body {
        <div class="col-lg-12">
          <div class="panel panel-default">
            <div class="panel-heading">
-             <h3 class="panel-title"> App Transport Security (ATS)</h3><hr>
+             <h3 class="panel-title"> APP TRANSPORT SECURITY (ATS)</h3><hr>
            </div>
 
            <div class="panel-body">
@@ -225,6 +330,8 @@ body {
                       <tr>
                           <th>ISSUE</th>
                           <th>STATUS</th>
+                          <th>CVSS</th>
+                          <th>CWE</th>
                           <th>DESCRIPTION</th>
 
                       </tr>
@@ -246,6 +353,8 @@ body {
                           <span class='label label-warning'>{{bin.status}}</span>
                         {% endif %}
                       </td>
+                       <td><b>{{ bin.cvss }}</b></td>
+                       <td><b>{{ bin.cwe }}</b></td>
                       <td>
                         {{ bin.description | safe}}
                       </td>

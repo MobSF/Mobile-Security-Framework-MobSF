@@ -20,6 +20,7 @@
 <ol>
 <li><code>api/v1/upload</code> - <a href="#upload-file-api">Upload a File</a></li>
 <li><code>api/v1/scan</code> - <a href="#scan-file-api">Scan a File</a></li>
+<li><code>api/v1/scans</code> - <a href="#recent-scans-api">Display Recent Scans</a></li>
 <li><code>api/v1/delete_scan</code> - <a href="#delete-scan-api">Delete a Scan</a></li>
 <li><code>api/v1/download_pdf</code> - <a href="#generate-pdf-report-api">Download PDF Report</a></li>
 <li><code>api/v1/report_json</code> - <a href="#generate-json-report-api">Generate JSON Report</a></li>
@@ -452,10 +453,94 @@ SNIPPED
 </ul>
 
 
+
+<hr/>
+<h2><a id="recent-scans-api"></a><strong>Display Recent Scans</strong></h2>
+<p>API to Display Recent Scans</p>
+<ul>
+<li>
+<p><strong>URL:</strong> <code>/api/v1/scans</code></p>
+</li>
+<li>
+<p><strong>Method:</strong> <code>GET</code></p>
+</li>
+<li>
+<p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code></p>
+</li>
+<li>
+<p><strong>Data Params</strong></p>
+</li>
+</ul>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>Param Name</th>
+<th>Param Value</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>page</td>
+<td>the number of page</td>
+<td>1</td>
+</tr>
+<tr>
+<td>page_size</td>
+<td>per page size</td>
+<td>10</td>
+</tr>
+</tbody>
+</table>
+<br>
+<ul>
+<li>
+<p><strong>Success Response:</strong></p>
+<ul>
+<li><strong>Code:</strong> <code>200</code><br>
+<strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code> <br>
+<strong>Content:</strong> <code>{
+    "content": [
+      {
+        "id": 1,
+        "NAME": "xxxxx.ipa",
+        "MD5": "xxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "URL": "StaticAnalyzer_iOS/?name=xxxxx.ipa&type=ipa&checksum=xxxxxxxxxxxxxxx",
+        "TS": "2019-03-09T08:08:51.813Z"
+      }
+    ],
+    "count": 1,
+    "num_pages": 1
+  }</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Error Response:</strong></p>
+<ul>
+<li><strong>Code:</strong>  <code>500 Internal Server Error</code> or  <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br>
+<strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code> <br>
+<strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code></li>
+</ul>
+<p>OR</p>
+<ul>
+<li><strong>Code:</strong> <code>401 Unauthorized</code> <br>
+<strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code> <br>
+<strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Sample Call:</strong></p>
+<pre><code>curl --url "http://localhost:8000/api/v1/scans" -H "Authorization:87e2ddf418b291d2e070496524d1b8599c31637f84055c5db632f49f1a613f5f5"
+</code></pre>
+<pre><code>curl --url "http://localhost:8000/api/v1/scans?page=1&page_size=10" -H "Authorization:87e2ddf418b291d2e070496524d1b8599c31637f84055c5db632f49f1a613f5f5"
+</code></pre>
+</li>
+</ul>
+
+
+
    </div>
-
           <!-- /.box-body -->
-
         </div>
 {% endblock %}
 
