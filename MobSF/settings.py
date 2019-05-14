@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 import imp
 import os
 import logging
-import colorlog
 from MobSF import utils
 from install.windows.setup import windows_config_local
 
@@ -24,7 +23,7 @@ logger = logging.getLogger(__name__)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
 
-MOBSF_VER = "v1.0.7 Beta"
+MOBSF_VER = "v1.0.8 Beta"
 BANNER = """
 
   __  __       _    ____  _____         _   ___  
@@ -443,12 +442,6 @@ else:
 
     #----------APKiD-------------------------------
     APKID_ENABLED = False
-    # Before setting APKID_ENABLED to True,
-    # Install rednaga fork of Yara Python
-    # git clone --recursive https://github.com/rednaga/yara-python-1 yara-python
-    # cd yara-python
-    # python3 setup.py build --enable-dex install
-    # pip install apkid
     #==============================================
 
     #^CONFIG-END^: Do not edit this line

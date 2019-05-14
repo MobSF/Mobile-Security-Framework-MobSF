@@ -32,10 +32,9 @@ before_install:
 - sudo apt update
 - echo oracle-java11-installer shared/accepted-oracle-license-v1-2 select true | sudo /usr/bin/debconf-set-selections
 - sudo apt install -y oracle-java11-installer
-- echo "apkid" >> requirements.txt
-- git clone --recursive ${YARA_URL} yara-python
-- cd ./yara-python && python setup.py build --enable-dex install && cd ..
-- sed -i 's/APKID_ENABLED.*/APKID_ENABLED = True/' MobSF/settings.py
+- pip3 install wheel
+- pip3 wheel --wheel-dir=/tmp/yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.10.0
+- pip3 install --no-index --find-links=/tmp/yara-python yara-python
 
 addons:
   apt:
