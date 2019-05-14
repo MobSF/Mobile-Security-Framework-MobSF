@@ -14,7 +14,6 @@ LABEL \
 ENV DEBIAN_FRONTEND="noninteractive"
 ENV PDFGEN_PKGFILE="wkhtmltox_0.12.5-1.bionic_amd64.deb" 
 ENV PDFGEN_URL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/${PDFGEN_PKGFILE}"
-ENV YARA_URL="https://github.com/rednaga/yara-python-1"
 
 #Update the repository sources list
 #Install Required Libs
@@ -60,7 +59,9 @@ RUN \
 #Install wkhtmltopdf for PDF Reports
 WORKDIR /tmp
 RUN wget ${PDFGEN_URL} && \
-    dpkg -i ${PDFGEN_PKGFILE}
+    dpkg -i ${PDFGEN_PKGFILE} && \
+    rm -rf ${PDFGEN_PKGFILE}
+
    
 #Add MobSF master
 COPY . /root/Mobile-Security-Framework-MobSF
@@ -72,34 +73,21 @@ RUN sed -i 's/USE_HOME = False/USE_HOME = True/g' MobSF/settings.py
 #Kali fix to support 32 bit execution
 RUN ./scripts/kali_fix.sh
 
-#Install Dependencies
-RUN pip3 install -r requirements.txt
-
 #Postgres support is set to false by default
 ARG POSTGRES=False
 #check if Postgres support needs to be enabled 
 RUN cd scripts && chmod +x postgres_support.sh; sync; ./postgres_support.sh $POSTGRES
 
-#Install apkid dependencies, and enable it 
-RUN git clone --recursive ${YARA_URL} yara-python && \
-    cd yara-python && \
-    python3 setup.py build --enable-dex install && \
-    pip3 install apkid && \
-    cd .. && \
-    rm -fr yara-python && \
-    sed -i 's/APKID_ENABLED.*/APKID_ENABLED = True/' /root/Mobile-Security-Framework-MobSF/MobSF/settings.py
-
-#update apkid rules
-RUN git clone https://github.com/rednaga/APKiD.git && \
-    cd APKiD && \
-    python3 prep-release.py && \
-    cp apkid/rules/rules.yarc /root/Mobile-Security-Framework-MobSF/MalwareAnalyzer/ && \
-    sed -i 's#RULES_DIR =.*#RULES_DIR =  "/root/Mobile-Security-Framework-MobSF/MalwareAnalyzer"#' /usr/local/lib/python3.6/dist-packages/apkid/rules.py && \
-    cd .. && \
-    rm -fr APKiD
-
 #Add apktool working path
 RUN mkdir -p /root/.local/share/apktool/framework
+
+#Install APKiD dependencies
+RUN pip3 install wheel
+RUN pip3 wheel --wheel-dir=/tmp/yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.10.0
+RUN pip3 install --no-index --find-links=/tmp/yara-python yara-python
+
+#Install Dependencies
+RUN pip3 install -r requirements.txt
 
 #Cleanup
 RUN \

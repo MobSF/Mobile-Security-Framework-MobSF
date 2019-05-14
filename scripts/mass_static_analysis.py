@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 def is_server_up(url):
     try:
-        response = urllib.request.urlopen(url, timeout=5)
+        urllib.request.urlopen(url, timeout=5)
         return True
     except urllib.error.URLError:
         pass
