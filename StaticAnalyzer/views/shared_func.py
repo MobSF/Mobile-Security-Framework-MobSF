@@ -7,6 +7,7 @@ import io
 import os
 import platform
 import re
+import json
 import subprocess
 import zipfile
 import logging
@@ -109,7 +110,7 @@ def unzip(app_path, ext_path):
                 PrintException("Unzipping Error")
 
 
-def pdf(request, api=False, json=False):
+def pdf(request, api=False, jsonres=False):
     try:
         if api:
             checksum = request.POST['hash']
@@ -228,7 +229,7 @@ def pdf(request, api=False, json=False):
                         checksum
                     )
             try:
-                if api and json:
+                if api and jsonres:
                     return {"report_dat": context}
                 else:
                     options = {
@@ -251,6 +252,7 @@ def pdf(request, api=False, json=False):
                         return {"pdf_dat": pdf_dat}
                     return HttpResponse(pdf_dat, content_type='application/pdf')
             except Exception as exp:
+                logger.error(exp)
                 if api:
                     return {"error": "Cannot Generate PDF/JSON", "err_details": str(exp)}
                 else:

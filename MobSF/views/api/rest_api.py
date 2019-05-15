@@ -171,7 +171,7 @@ def api_json_report(request):
     """Generate JSON Report"""
     params = ['scan_type', 'hash']
     if set(request.POST) == set(params):
-        resp = pdf(request, api=True, json=True)
+        resp = pdf(request, api=True, jsonres=True)
         if "error" in resp:
             if resp.get("error") == "Invalid scan hash":
                 response = make_api_response(resp, 400)
