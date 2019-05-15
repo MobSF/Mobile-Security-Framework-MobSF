@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
 
-MOBSF_VER = "v1.0.8 Beta"
+MOBSF_VER = "v1.0.9 Beta"
 BANNER = """
 
   __  __       _    ____  _____         _   ___  
@@ -441,7 +441,7 @@ else:
     #==============================================
 
     #----------APKiD-------------------------------
-    APKID_ENABLED = False
+    APKID_ENABLED = True
     #==============================================
 
     #^CONFIG-END^: Do not edit this line
