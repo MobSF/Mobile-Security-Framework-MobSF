@@ -1,4 +1,11 @@
-## Feature Requests
+---
+name: Feature request
+about: Suggest an idea for this project
+title: "[FEATURE]"
+labels: enhancement
+assignees: ajinabraham
+
+---
 
 If you're requesting a new feature/enhancement, explain why you'd like it to be added and it's importance.
 
