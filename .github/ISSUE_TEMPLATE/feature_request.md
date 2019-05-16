@@ -1,4 +1,6 @@
-- If you're requesting a new feature/enhancement, explain why you'd like it to be added and it's importance.
+## Feature Requests
+
+If you're requesting a new feature/enhancement, explain why you'd like it to be added and it's importance.
 
 **Is your feature request related to a problem? Please describe.**
 A clear and concise description of what the problem is.
