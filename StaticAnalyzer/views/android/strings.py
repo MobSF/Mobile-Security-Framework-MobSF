@@ -30,11 +30,10 @@ def strings_jar(app_file, app_dir):
         pkg = rsrc.get_packages_names()[0]
         rsrc.get_strings_resources()
         for i in rsrc.values[pkg].keys():
-            string = rsrc.values[pkg][i].get('string')
-            if string is None:
-                return dat
-            for duo in string:
-                dat.append('"' + duo[0] + '" : "' + duo[1] + '"')
+            res_string = rsrc.values[pkg][i].get('string')
+            if res_string:
+                for duo in res_string:
+                    dat.append('"' + duo[0] + '" : "' + duo[1] + '"')
         data_string = "".join(dat)
         urls, urls_nf, emails_nf = url_n_email_extract(
             data_string, "Android String Resource")
