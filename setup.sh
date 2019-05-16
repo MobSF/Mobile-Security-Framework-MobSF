@@ -4,10 +4,22 @@ if ! [ -x "$(command -v python3)" ]; then
   exit 1
 fi
 echo '[INSTALL] Found Python3'
+command
+status=$?
+cmd="python3 -m pip -V"
+$cmd
+status=$?
+if [ $status -eq 0 ]; then
+  echo "[INSTALL] Found pip"
+  python3 -m pip install --upgrade pip
+else
+  echo "[ERROR] The command ($cmd) failed. python3-pip not installed"
+  exit 1
+fi
 echo '[INSTALL] Installing Virtualenv'
 python3 -m pip install virtualenv
 echo '[INSTALL] Using Virtualenv'
-virtualenv venv -p python3
+python3 -m virtualenv venv -p python3
 source venv/bin/activate
 platform='unknown'
 unamestr=`uname`
