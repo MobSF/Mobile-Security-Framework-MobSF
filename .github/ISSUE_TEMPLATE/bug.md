@@ -1,13 +1,10 @@
 <!-- ## IMPORTANT -->
 <!-- Issues are ONLY for reporting BUGS. For support, feature requests, questions, queries, and discussions use our slack channel. Slack Channel: https://mobsf.slack.com/, Get Invitation: https://goo.gl/6cYU5a
 -->
+
 ## IMPORTANT READ THIS !!
 
-<!-- Reports without enough information will be closed without any response. -->
-
-## EXPLANATION OF THE ISSUE
-
-<!-- What happens, under which versions, under what conditions, when, and what were you expecting instead. -->
+Reports without enough information will be closed without any response.
 
 ## ENVIRONMENT
 
@@ -15,6 +12,12 @@
 OS and Version:
 Python Version:
 MobSF Version:
+```
+
+## EXPLANATION OF THE ISSUE
+
+```
+What happens, under which versions, under what conditions, when, and what were you expecting instead.
 ```
 
 
