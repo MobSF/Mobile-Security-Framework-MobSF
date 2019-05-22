@@ -1,6 +1,7 @@
 @echo off
 where python >nul 2>&1 && (
   echo [INSTALL] Found Python3
+
   pip3 >nul 2>&1 && (
     echo [INSTALL] Found pip3
     python -m pip install --upgrade pip
@@ -9,34 +10,41 @@ where python >nul 2>&1 && (
     pause
     exit /b
   )
-  if exist "C:\Program Files\OpenSSL-Win64\bin\openssl.exe" (
+
+  if exist "C:\\Program Files\\OpenSSL-Win64\\bin\\openssl.exe" (
     echo [INSTALL] Found OpenSSL executable
   ) else (
-   echo "[ERROR] OpenSSL executable not found in [C:\Program Files\OpenSSL-Win64\bin\openssl.exe]"
+   echo [ERROR] OpenSSL executable not found in [C:\\Program Files\\OpenSSL-Win64\\bin\\openssl.exe]
    echo [INFO] Install OpenSSL - https://slproweb.com/download/Win64OpenSSL-1_1_1b.exe
    pause
    exit /b
   )
-  if exist "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\BIN\\cl.exe" (
+
+  if exist "C:\\Program Files (x86)\\Microsoft Visual Studio" (
     echo [INSTALL] Found Visual Studio Build Tools
   ) else (
-    echo "[ERROR] Microsoft Visual C++ 14.0 not found in [C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\BIN\\cl.exe]"
-    echo [INFO] Install Microsoft Visual Studio Build Tools - https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools&rel=16
+    echo [ERROR] Microsoft Visual C++ 14.0 not found in [C:\\Program Files (x86^)\\Microsoft Visual Studio]
+    echo [INFO] Install Microsoft Visual Studio Build Tools - https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools^&rel=16
     pause
     exit /b
   )
-  echo [INSTALL] Installing Virtualenv
+
+  echo [INSTALL] Installing virtualenv
   pip3 install -U pip virtualenv
   python -m virtualenv -p python ./venv
   .\venv\Scripts\activate
+
   set LIB=C:\Program Files\OpenSSL-Win64\lib;%LIB%
   set INCLUDE=C:\Program Files\OpenSSL-Win64\include;%INCLUDE%
-  echo '[INSTALL] Installing APKiD requirements - yara-python'
+
+  echo [INSTALL] Installing APKiD requirements - yara-python
   pip install wheel
-  pip wheel --wheel-dir=/tmp/yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.10.0
-  pip install --no-index --find-links=/tmp/yara-python yara-python
+  pip wheel --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.10.0
+  pip install --no-index --find-links=yara-python yara-python
+
   echo [INSTALL] Installing Requirements
   pip install -r requirements.txt
+
   echo [INSTALL] Migrating Database
   python manage.py makemigrations
   python manage.py makemigrations StaticAnalyzer

@@ -104,4 +104,4 @@ RUN python3 manage.py makemigrations
 RUN python3 manage.py migrate
 
 #Run MobSF
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "MobSF.wsgi:application", "--workers=1", "--timeout=1800"]
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "MobSF.wsgi:application", "--workers=1", "--threads=4", "--timeout=1800"]

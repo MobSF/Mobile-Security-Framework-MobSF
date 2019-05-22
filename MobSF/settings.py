@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==============================================
 
-MOBSF_VER = "v1.0.9 Beta"
+MOBSF_VER = "v1.1.1 Beta"
 BANNER = """
 
   __  __       _    ____  _____         _   ___  
@@ -143,27 +143,24 @@ APPX_MIME = [
 
 #=====MOBSF SECRET GENERATION AND MIGRATION=====
 # Based on https://gist.github.com/ndarville/3452907#file-secret-key-gen-py
+SECRET_FILE = os.path.join(MobSF_HOME, "secret")
 try:
-    SECRET_KEY
-except NameError:
-    SECRET_FILE = os.path.join(MobSF_HOME, "secret")
+    SECRET_KEY = open(SECRET_FILE).read().strip()
+except IOError:
     try:
-        SECRET_KEY = open(SECRET_FILE).read().strip()
+        SECRET_KEY = utils.genRandom()
+        secret = open(SECRET_FILE, 'w')
+        secret.write(SECRET_KEY)
+        secret.close()
     except IOError:
-        try:
-            SECRET_KEY = utils.genRandom()
-            secret = open(SECRET_FILE, 'w')
-            secret.write(SECRET_KEY)
-            secret.close()
-        except IOError:
-            Exception('Please create a %s file with random characters \
-            to generate your secret key!' % SECRET_FILE)
-        # Run Once
-        utils.make_migrations(BASE_DIR)
-        utils.migrate(BASE_DIR)
-        utils.kali_fix(BASE_DIR)
-        # Windows Setup
-        windows_config_local(MobSF_HOME)
+        Exception('Please create a %s file with random characters \
+        to generate your secret key!' % SECRET_FILE)
+    # Run Once
+    utils.make_migrations(BASE_DIR)
+    utils.migrate(BASE_DIR)
+    utils.kali_fix(BASE_DIR)
+    # Windows Setup
+    windows_config_local(MobSF_HOME)
 
 #=============================================
 
@@ -425,6 +422,10 @@ else:
 
     DOMAIN_MALWARE_SCAN = True
 
+    #----------APKiD-------------------------------
+    APKID_ENABLED = True
+    #==============================================
+
     #========DISABLED COMPONENTS===================
 
     #----------VirusTotal--------------------------
@@ -438,10 +439,6 @@ else:
     # VT has a premium features but the free account is just enough for personal use
     # BE AWARE - if you enable VT, in case the file wasn't already uploaded to VirusTotal,
     # It will be uploaded if you set VT_UPLOAD to True!
-    #==============================================
-
-    #----------APKiD-------------------------------
-    APKID_ENABLED = True
     #==============================================
 
     #^CONFIG-END^: Do not edit this line
