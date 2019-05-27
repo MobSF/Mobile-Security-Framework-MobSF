@@ -147,7 +147,7 @@ def jar_2_java(app_dir, tools_dir):
                 ):
                     jd_path = settings.CFR_DECOMPILER_BINARY
                 else:
-                    jd_path = os.path.join(tools_dir, 'cfr_0_132.jar')
+                    jd_path = os.path.join(tools_dir, 'cfr_0_144.jar')
                 args = [settings.JAVA_PATH + 'java', '-jar',
                         jd_path, jar_path, '--outputdir', output, '--silent', 'true']
             elif settings.DECOMPILER == "procyon":
