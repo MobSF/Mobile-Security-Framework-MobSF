@@ -158,7 +158,7 @@ def jar_2_java(app_dir, tools_dir):
                     pd_path = settings.PROCYON_DECOMPILER_BINARY
                 else:
                     pd_path = os.path.join(
-                        tools_dir, 'procyon-decompiler-0.5.30.jar')
+                        tools_dir, 'procyon-decompiler-0.5.34.jar')
                 args = [settings.JAVA_PATH + 'java',
                         '-jar', pd_path, jar_path, '-o', output]
             subprocess.call(args)
