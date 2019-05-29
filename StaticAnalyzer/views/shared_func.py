@@ -130,7 +130,7 @@ def pdf(request, api=False, jsonres=False):
                         "security_score"] = score(context["findings"])
                     if scan_type.lower() == 'apk':
                         template = get_template(
-                            "pdf/android_binary_analysis.pdf")
+                            "pdf/android_binary_analysis.pdf.html")
                     else:
                         template = get_template(
                             "pdf/android_source_analysis_pdf.html")
