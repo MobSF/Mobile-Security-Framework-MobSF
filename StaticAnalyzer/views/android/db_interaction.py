@@ -21,6 +21,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
         context = {
             'title': db_entry[0].TITLE,
             'name': db_entry[0].APP_NAME,
+            'real_name': db_entry[0].REAL_NAME,
             'size': db_entry[0].SIZE,
             'md5': db_entry[0].MD5,
             'sha1': db_entry[0].SHA1,
@@ -79,6 +80,7 @@ def get_context_from_analysis(app_dic, man_data_dic, man_an_dic, code_an_dic, ce
         context = {
             'title': 'Static Analysis',
             'name': app_dic['app_name'],
+            'real_name': app_dic['real_name'],
             'size': app_dic['size'],
             'md5': app_dic['md5'],
             'sha1': app_dic['sha1'],
@@ -138,6 +140,7 @@ def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bi
         StaticAnalyzerAndroid.objects.filter(MD5=app_dic['md5']).update(
             TITLE='Static Analysis',
             APP_NAME=app_dic['app_name'],
+            REAL_NAME=app_dic['real_name'],
             SIZE=app_dic['size'],
             MD5=app_dic['md5'],
             SHA1=app_dic['sha1'],
@@ -196,6 +199,7 @@ def create_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bi
         static_db = StaticAnalyzerAndroid(
             TITLE='Static Analysis',
             APP_NAME=app_dic['app_name'],
+            REAL_NAME=app_dic['real_name'],
             SIZE=app_dic['size'],
             MD5=app_dic['md5'],
             SHA1=app_dic['sha1'],
