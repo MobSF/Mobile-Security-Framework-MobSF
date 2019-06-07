@@ -18,6 +18,8 @@ import shutil
 import requests
 import logging
 
+from install.windows.setup import windows_config_local
+
 from django.shortcuts import render
 from . import settings
 logger = logging.getLogger(__name__)
@@ -592,3 +594,24 @@ def check_basic_env():
                  JAVA_DIRECTORY = "/usr/bin/"
         ''')
         os.kill(os.getpid(), signal.SIGTERM)
+
+def first_run(secret_file, base_dir, mobsf_home):
+    # Based on https://gist.github.com/ndarville/3452907#file-secret-key-gen-py
+    
+    try:
+        secret_key = open(secret_file).read().strip()
+    except IOError:
+        try:
+            secret_key = genRandom()
+            secret = open(secret_file, 'w')
+            secret.write(secret_key)
+            secret.close()
+        except IOError:
+            Exception('Secret file generation failed' % secret_file)
+        # Run Once
+        make_migrations(base_dir)
+        migrate(base_dir)
+        kali_fix(base_dir)
+        # Windows Setup
+        windows_config_local(mobsf_home)
+    return secret_key

@@ -59,6 +59,7 @@ class StaticAnalyzerAndroid(models.Model):
     APK_ID = models.TextField()
     PLAY_DETAILS = models.TextField(default={})
     FIREBASE = models.TextField(default=[])
+    TRACKERS = models.TextField(default={})
 
 
 class StaticAnalyzerIPA(models.Model):

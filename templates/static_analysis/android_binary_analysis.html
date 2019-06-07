@@ -46,6 +46,7 @@
                 <li><a href="#url"><i class="glyphicon glyphicon-globe"></i> URLs</a></li>
                 <li><a href="#firebase"><i class="fa fa-database"></i> Firebase DB</a></li>   
                 <li><a href="#email"><i class="glyphicon glyphicon-envelope"></i> Emails</a></li>
+                <li><a href="#trackers"><i class="glyphicon glyphicon-eye-open"></i> Trackers</a></li>
                 <li><a href="#string"><i class="glyphicon glyphicon-sort-by-alphabet-alt"></i> Strings</a></li>
               </ul>
             </li>
@@ -1174,7 +1175,6 @@ Production ready applications should not be signed with 'Android Debug' Certific
                  </thead>
                  {% endif %}
                  <tbody>
-                                        <tbody>
                 
                  {% for email_dict in emails %}
                     <tr>
@@ -1203,6 +1203,52 @@ Production ready applications should not be signed with 'Android Debug' Certific
 
 <!-- ============================================================= -->
 
+<section id="trackers">
+  <h2 class="page-header"></h2>
+  <!-- /.box -->
+
+  <div class="box">
+    <div class="box-header">
+      <h3 class="box-title"><i class="glyphicon glyphicon-eye-open"></i> Trackers</h3>
+    </div>
+    <!-- /.box-header -->
+    <div class="box-body no-padding">
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover table-striped">
+          {% if trackers %}
+          <thead>
+            <tr>
+              <th>Tracker Name</th>
+              <th>URL</th>
+            </tr>
+          </thead>
+          {% endif %}
+          <tbody>
+
+            {% for trk in trackers|key:"trackers" %}
+            <tr>
+              {% for k, v in trk.items %}
+              <td>
+                {{k}}
+              </td>
+              <td>
+                {{v}}
+              </td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+    <!-- /.box-body -->
+  </div>
+  <!-- /.box -->
+</section>
+
+
+<!-- ============================================================= -->
 <section id="string">
   <h2 class="page-header"></h2>
        <!-- /.box -->

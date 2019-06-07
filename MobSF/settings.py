@@ -1,42 +1,38 @@
 """
 Django settings for MobSF project.
 
-For more information on this file, see
-https://docs.djangoproject.com/en/dev/topics/settings/
-
-For the full list of settings and their values, see
-https://docs.djangoproject.com/en/dev/ref/settings/
+MobSF and Django settings
 """
 
 import imp
 import os
 import logging
-from MobSF import utils
-from install.windows.setup import windows_config_local
+from MobSF.utils import (
+    first_run,
+    FindJava,
+    FindVbox,
+    getMobSFHome,
+    PrintException,
+)
 
 logger = logging.getLogger(__name__)
 
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#       MOBSF FRAMEWORK CONFIGURATIONS
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#       MOBSF CONFIGURATIONS
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-#==============================================
-
-MOBSF_VER = "v1.1.1 Beta"
+MOBSF_VER = "v1.1.2 Beta"
 BANNER = """
-
-  __  __       _    ____  _____         _   ___  
- |  \/  | ___ | |__/ ___||  ___| __   _/ | / _ \ 
- | |\/| |/ _ \| '_ \___ \| |_    \ \ / / || | | |
- | |  | | (_) | |_) |__) |  _|    \ V /| || |_| |
- |_|  |_|\___/|_.__/____/|_|       \_/ |_(_)___/ 
-        
+  __  __       _    ____  _____           _   _ 
+ |  \/  | ___ | |__/ ___||  ___| __   __ / | / |
+ | |\/| |/ _ \| '_ \___ \| |_    \ \ / / | | | |
+ | |  | | (_) | |_) |__) |  _|    \ V /  | |_| |
+ |_|  |_|\___/|_.__/____/|_|       \_/   |_(_)_|
 
 """
 # ASCII Standard
 #==============================================
-
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #==========MobSF Home Directory=================
 USE_HOME = False
 
@@ -45,7 +41,7 @@ USE_HOME = False
 # If you need multiple users to share the scan results set this to False
 #===============================================
 
-MobSF_HOME = utils.getMobSFHome(USE_HOME)
+MobSF_HOME = getMobSFHome(USE_HOME)
 # Logs Directory
 LOG_DIR = os.path.join(MobSF_HOME, 'logs/')
 # Download Directory
@@ -58,6 +54,8 @@ UPLD_DIR = os.path.join(MobSF_HOME, 'uploads/')
 DB_DIR = os.path.join(MobSF_HOME, 'db.sqlite3')
 # Tools Directory
 TOOLS_DIR = os.path.join(BASE_DIR, 'DynamicAnalyzer/tools/')
+# Secret File
+SECRET_FILE = os.path.join(MobSF_HOME, "secret")
 
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
@@ -99,9 +97,14 @@ try:
     else:
         CONFIG_HOME = False
 except:
-    utils.PrintException("Parsing Config")
+    PrintException("Reading Config")
     CONFIG_HOME = False
 #===============================================
+
+#===MOBSF SECRET GENERATION AND DB MIGRATION====
+SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MobSF_HOME)
+
+#=============================================
 
 #=============ALLOWED EXTENSIONS================
 ALLOWED_EXTENSIONS = {
@@ -141,35 +144,10 @@ APPX_MIME = [
 
 #===============================================
 
-#=====MOBSF SECRET GENERATION AND MIGRATION=====
-# Based on https://gist.github.com/ndarville/3452907#file-secret-key-gen-py
-SECRET_FILE = os.path.join(MobSF_HOME, "secret")
-try:
-    SECRET_KEY = open(SECRET_FILE).read().strip()
-except IOError:
-    try:
-        SECRET_KEY = utils.genRandom()
-        secret = open(SECRET_FILE, 'w')
-        secret.write(SECRET_KEY)
-        secret.close()
-    except IOError:
-        Exception('Please create a %s file with random characters \
-        to generate your secret key!' % SECRET_FILE)
-    # Run Once
-    utils.make_migrations(BASE_DIR)
-    utils.migrate(BASE_DIR)
-    utils.kali_fix(BASE_DIR)
-    # Windows Setup
-    windows_config_local(MobSF_HOME)
-
-#=============================================
-
 #============DJANGO SETTINGS =================
 
-# SECURITY WARNING: don't run with debug turned on in production!
-# ^ This is fine Do not turn it off until MobSF moves from Beta to Stable
-
 DEBUG = True
+DJANGO_LOG_LEVEL = DEBUG
 ALLOWED_HOSTS = ['127.0.0.1', 'mobsf', '*']
 # Application definition
 INSTALLED_APPS = (
@@ -374,6 +352,7 @@ else:
 
     #===========ANDROID EMULATOR SETTINGS ===========
     # Android-Studio 'emulator' binary path
+    # Not Supported any more
     AVD_EMULATOR = "/Users/[USERNAME]/Library/Android/sdk/tools/emulator"
     AVD_NAME = "MobSFAPI23armV1"
     AVD_ADB_PORT = 5554
@@ -436,23 +415,25 @@ else:
     # Make sure VT_API_KEY is set to your VirusTotal API key
     # register at: https://www.virustotal.com/#/join-us
     # You can get your API KEY from https://www.virustotal.com/en/user/<username>/apikey/
-    # VT has a premium features but the free account is just enough for personal use
     # BE AWARE - if you enable VT, in case the file wasn't already uploaded to VirusTotal,
     # It will be uploaded if you set VT_UPLOAD to True!
     #==============================================
+
+    #-----External URLS--------------------------
+    MALWARE_DB_URL = 'http://www.malwaredomainlist.com/mdlcsv.php'
+    VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/vtapi/v2/file/'
+    TRACKERS_DB_URL = 'https://reports.exodus-privacy.eu.org/api/trackers'
 
     #^CONFIG-END^: Do not edit this line
 
 # The below code should be loaded last.
 #============JAVA SETTINGS======================
-JAVA_PATH = utils.FindJava(False)
+JAVA_PATH = FindJava(False)
 #===============================================
 
 #================VirtualBox Settings============
-VBOX = utils.FindVbox(False)
+VBOX = FindVbox(False)
 #===============================================
-
-DJANGO_LOG_LEVEL = DEBUG
 
 # Better logging
 LOGGING = {
