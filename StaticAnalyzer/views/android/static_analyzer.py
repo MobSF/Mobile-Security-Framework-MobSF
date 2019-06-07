@@ -72,6 +72,7 @@ from StaticAnalyzer.views.android.playstore import (
 )
 from MalwareAnalyzer.views.domain_check import malware_check
 from MalwareAnalyzer.views.apkid import apkid_analysis
+import MalwareAnalyzer.views.Trackers as Trackers
 import MalwareAnalyzer.views.VirusTotal as VirusTotal
 logger = logging.getLogger(__name__)
 
@@ -187,6 +188,9 @@ def static_analyzer(request, api=False):
                         app_dic['app_dir'], app_dic['app_file'], app_dic['tools_dir'])
                     apkid_results = apkid_analysis(app_dic[
                         'app_dir'], app_dic['app_path'], app_dic['app_name'])
+                    tracker = Trackers.Trackers(
+                        app_dic['app_dir'], app_dic['tools_dir'])
+                    tracker_res = tracker.get_trackers()
                     dex_2_jar(app_dic['app_path'], app_dic[
                               'app_dir'], app_dic['tools_dir'])
                     dex_2_smali(app_dic['app_dir'], app_dic['tools_dir'])
@@ -238,6 +242,7 @@ def static_analyzer(request, api=False):
                                 cert_dic,
                                 bin_an_buff,
                                 apkid_results,
+                                tracker_res,
                             )
                             update_scan_timestamp(app_dic['md5'])
                         elif rescan == '0':
@@ -250,6 +255,7 @@ def static_analyzer(request, api=False):
                                 cert_dic,
                                 bin_an_buff,
                                 apkid_results,
+                                tracker_res,
                             )
                     except:
                         PrintException("Saving to Database Failed")
@@ -261,6 +267,7 @@ def static_analyzer(request, api=False):
                         cert_dic,
                         bin_an_buff,
                         apkid_results,
+                        tracker_res,
                     )
                 context["average_cvss"], context[
                     "security_score"] = score(context["findings"])
@@ -399,6 +406,7 @@ def static_analyzer(request, api=False):
                                     cert_dic,
                                     bin_an_buff,
                                     {},
+                                    {},
                                 )
                                 update_scan_timestamp(app_dic['md5'])
                             elif rescan == '0':
@@ -411,6 +419,7 @@ def static_analyzer(request, api=False):
                                     cert_dic,
                                     bin_an_buff,
                                     {},
+                                    {},
                                 )
                         except:
                             PrintException("Saving to Database Failed")
@@ -421,6 +430,7 @@ def static_analyzer(request, api=False):
                             code_an_dic,
                             cert_dic,
                             bin_an_buff,
+                            {},
                             {},
                         )
                     else:
