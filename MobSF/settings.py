@@ -179,15 +179,11 @@ MIDDLEWARE = (
 )
 ROOT_URLCONF = 'MobSF.urls'
 WSGI_APPLICATION = 'MobSF.wsgi.application'
-# Internationalization
-# https://docs.djangoproject.com/en/dev/topics/i18n/
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
-MEDIA_URL = '/uploads/'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -202,11 +198,9 @@ TEMPLATES = [
             }
     },
 ]
-STATIC_ROOT = (
-    os.path.join(BASE_DIR, 'static/')
-)
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/dev/howto/static-files/
+MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
+MEDIA_URL = '/uploads/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 STATIC_URL = '/static/'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # 256MB
