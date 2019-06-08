@@ -22,13 +22,16 @@ body {
                      <span class="label label-primary"><b>App Security Score: </b>{{ security_score }}/100</span>
                   </p>
                 {% if VT_RESULT and VT_RESULT.total %}
-	             <p>			    
+	          <p>			    
                     <span class="label label-primary"><b>VirusTotal Detection: </b>{{ VT_RESULT.positives }}/{{ VT_RESULT.total }}</span>
-                </p>
+                  </p>
                 {% endif %}
-
-                  
-                </div>
+                {% if trackers %}
+                     <p>
+                      <span class="label label-primary"><b>Trackers Detection: </b>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</span>
+                     </p>
+                {% endif %}
+               </div>
               </div>
             </div>
           </div>
