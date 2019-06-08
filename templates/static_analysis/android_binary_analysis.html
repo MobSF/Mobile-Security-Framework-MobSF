@@ -126,6 +126,10 @@
           </br>
           <span class="label label-danger">VirusTotal Detection</span> <b>{{ VT_RESULT.positives }}/{{ VT_RESULT.total }}</b>
         {% endif %}
+        {% if trackers %}
+          </br>
+          <span class="label label-danger">Trackers Detection</span> <b>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</b>
+        {% endif %}
         </div><!-- /.box-body -->
       </div><!-- /.box -->
 
