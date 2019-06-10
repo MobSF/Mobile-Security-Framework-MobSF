@@ -1,3 +1,4 @@
+#!/bin/bash
 echo 
 echo '=======================MobSF Clean Script for Unix======================='
 echo 'Running this script will delete the Scan database, all files uploaded and generated.'
