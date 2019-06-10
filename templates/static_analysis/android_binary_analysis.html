@@ -129,9 +129,12 @@
           </br>
           <span class="label label-success">VirusTotal Detection</span> <b>{{ VT_RESULT.positives }}/{{ VT_RESULT.total }}</b>
         {% endif %}
-        {% if trackers %}
+        {% if trackers.detected_trackers > 0 %}
           </br>
           <span class="label label-warning">Trackers Detection</span> <b>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</b>
+        {% else %}
+          </br>
+          <span class="label label-success">Trackers Detection</span> <b>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</b>
         {% endif %}
         </div><!-- /.box-body -->
       </div><!-- /.box -->
@@ -1239,7 +1242,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                 {{k}}
               </td>
               <td>
-                {{v}}
+                <a target="_blank" href="{{v}}">{{v}}</a>
               </td>
               {% endfor %}
             </tr>
