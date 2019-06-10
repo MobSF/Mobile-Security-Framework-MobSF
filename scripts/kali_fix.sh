@@ -1,3 +1,4 @@
+#!/bin/bash
 echo "Running Kali Fix to enable 32bit execution support"
 export DEBIAN_FRONTEND=noninteractive
 dpkg --add-architecture i386
