@@ -205,7 +205,7 @@
 
                             <div class="box box-default">
                                 <div class="box-header with-border">
-                                    <h3 class="box-title">Mutual</h3>
+                                    <h3 class="box-title">Common</h3>
                                 </div><!-- /.box-header -->
                                 <div class="box-body left">
                                     <div class="table-responsive">
@@ -218,7 +218,7 @@
                                             </tr>
                                             </thead>
                                             <tbody>
-                                            {% for perm, desc in permissions.mutual %}
+                                            {% for perm, desc in permissions.common %}
                                                 <tr>
                                                     <td>{{ perm }}</td>
                                                     <td>
@@ -328,8 +328,8 @@
                             <div class="box-body left">
                                 <div class="list-group">
                                     <p>
-                                        <span class="label label-primary">Total Mutual</span>
-                                        {{ permissions.mutual | length }}
+                                        <span class="label label-primary">Total Common</span>
+                                        {{ permissions.common | length }}
                                     </p>
                                     <p>
                                         <span class="label label-primary">Only in first</span>
@@ -373,55 +373,106 @@
                                                 <th>ABNORMAL PATTERN</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
+                                           <tr>
+                                            <td>
+                                              Common
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.common|key:"anti_vm" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.common|key:"compiler" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in apkid.common|key:"obfuscator" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.common|key:"packer" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in apkid.common|key:"dropper" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                             <td>
+                                              {% for cmp in apkid.common|key:"manipulator" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.common|key:"anti_disassembly" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.common|key:"anti_debug" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.common|key:"abnormal" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                          </tr>
                                            <tr>
                                             <td>
                                               {{ first_app.name_ver }}
                                             </td>
                                             <td>
-                                              {% for cmp in first_app.apkid|key:"anti_vm" %}
+                                              {% for cmp in apkid.only_first|key:"anti_vm" %}
                                                {{cmp}}</br>
                                               {% endfor %}
                                             </td>
                                             <td>
-                                              {% for cmp in first_app.apkid|key:"compiler" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-
-                                            <td>
-                                              {% for cmp in first_app.apkid|key:"obfuscator" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                            <td>
-                                              {% for cmp in first_app.apkid|key:"packer" %}
+                                              {% for cmp in apkid.only_first|key:"compiler" %}
                                                {{cmp}}</br>
                                               {% endfor %}
                                             </td>
 
                                             <td>
-                                              {% for cmp in first_app.apkid|key:"dropper" %}
+                                              {% for cmp in apkid.only_first|key:"obfuscator" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_first|key:"packer" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in apkid.only_first|key:"dropper" %}
                                                {{cmp}}</br>
                                               {% endfor %}
                                             </td>
                                              <td>
-                                              {% for cmp in first_app.apkid|key:"manipulator" %}
+                                              {% for cmp in apkid.only_first|key:"manipulator" %}
                                                {{cmp}}</br>
                                               {% endfor %}
                                             </td>
                                             <td>
-                                              {% for cmp in first_app.apkid|key:"anti_disassembly" %}
+                                              {% for cmp in apkid.only_first|key:"anti_disassembly" %}
                                                {{cmp}}</br>
                                               {% endfor %}
                                             </td>
                                             <td>
-                                              {% for cmp in first_app.apkid|key:"anti_debug" %}
+                                              {% for cmp in apkid.only_first|key:"anti_debug" %}
                                                {{cmp}}</br>
                                               {% endfor %}
                                             </td>
                                             <td>
-                                              {% for cmp in first_app.apkid|key:"abnormal" %}
+                                              {% for cmp in apkid.only_first|key:"abnormal" %}
                                                {{cmp}}</br>
                                               {% endfor %}
                                             </td>
@@ -431,49 +482,49 @@
                                               {{ second_app.name_ver }}
                                             </td>
                                             <td>
-                                              {% for cmp in second_app.apkid|key:"anti_vm" %}
+                                              {% for cmp in apkid.only_second|key:"anti_vm" %}
                                                {{cmp}}</br>
                                               {% endfor %}
                                             </td>
                                             <td>
-                                              {% for cmp in second_app.apkid|key:"compiler" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-
-                                            <td>
-                                              {% for cmp in second_app.apkid|key:"obfuscator" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                            <td>
-                                              {% for cmp in second_app.apkid|key:"packer" %}
+                                              {% for cmp in apkid.only_second|key:"compiler" %}
                                                {{cmp}}</br>
                                               {% endfor %}
                                             </td>
 
                                             <td>
-                                              {% for cmp in second_app.apkid|key:"dropper" %}
+                                              {% for cmp in apkid.only_second|key:"obfuscator" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_second|key:"packer" %}
+                                               {{cmp}}</br>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in apkid.only_second|key:"dropper" %}
                                                {{cmp}}</br>
                                               {% endfor %}
                                             </td>
                                              <td>
-                                              {% for cmp in second_app.apkid|key:"manipulator" %}
+                                              {% for cmp in apkid.only_second|key:"manipulator" %}
                                                {{cmp}}</br>
                                               {% endfor %}
                                             </td>
                                             <td>
-                                              {% for cmp in second_app.apkid|key:"anti_disassembly" %}
+                                              {% for cmp in apkid.only_second|key:"anti_disassembly" %}
                                                {{cmp}}</br>
                                               {% endfor %}
                                             </td>
                                             <td>
-                                              {% for cmp in second_app.apkid|key:"anti_debug" %}
+                                              {% for cmp in apkid.only_second|key:"anti_debug" %}
                                                {{cmp}}</br>
                                               {% endfor %}
                                             </td>
                                             <td>
-                                              {% for cmp in second_app.apkid|key:"abnormal" %}
+                                              {% for cmp in apkid.only_second|key:"abnormal" %}
                                                {{cmp}}</br>
                                               {% endfor %}
                                             </td>
@@ -500,13 +551,13 @@
                                 <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
                                         <tr>
-                                            <th>Mutual</th>
+                                            <th>Common</th>
                                             <th>Only in {{ first_app.name_ver }}</th>
                                             <th>Only in {{ second_app.name_ver }}</th>
                                         </tr>
                                         <tr>
                                             <td>
-                                                {% for desc, info in api.mutual %}
+                                                {% for desc, info in api.common %}
                                                     {{ desc }} <br/>
                                                 {% endfor %}
                                             </td>
@@ -539,13 +590,13 @@
                                 <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
                                         <tr>
-                                            <th>Mutual</th>
+                                            <th>Common</th>
                                             <th>Only in {{ first_app.name_ver }}</th>
                                             <th>Only in {{ second_app.name_ver }}</th>
                                         </tr>
                                         <tr>
                                             <td>
-                                                {% for url in urls.mutual %}
+                                                {% for url in urls.common %}
                                                     {{ url | safe }} <br/>
                                                 {% endfor %}
                                             </td>
