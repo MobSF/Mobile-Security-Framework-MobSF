@@ -122,12 +122,14 @@
         <div class="box-body danger">
           <span class="label label-danger">Average CVSS</span> <b>{{ average_cvss }} </b></br>
           <span class="label label-danger">Security Score</span> <b>{{ security_score }}/100</b>
-        {% if VT_RESULT and VT_RESULT.total and  VT_RESULT.positives > 0 or VT_RESULT.total == 0 %}
-          </br>
-          <span class="label label-danger">VirusTotal Detection</span> <b>{{ VT_RESULT.positives }}/{{ VT_RESULT.total }}</b>
-        {% else %}
-          </br>
-          <span class="label label-success">VirusTotal Detection</span> <b>{{ VT_RESULT.positives }}/{{ VT_RESULT.total }}</b>
+        {% if VT_RESULT %}
+          {% if VT_RESULT.positives > 0 %} 
+            </br>
+             <span class="label label-danger">VirusTotal Detection</span> <b>{{ VT_RESULT.positives }}/{{ VT_RESULT.total }}</b>
+          {% else %}
+            </br>
+            <span class="label label-success">VirusTotal Detection</span> <b>{{ VT_RESULT.positives }}/{{ VT_RESULT.total }}</b>
+          {% endif %}
         {% endif %}
         {% if trackers.detected_trackers > 0 %}
           </br>
