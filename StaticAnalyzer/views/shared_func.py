@@ -100,7 +100,7 @@ def unzip(app_path, ext_path):
             logger.info("Using the Default OS Unzip Utility.")
             try:
                 subprocess.call(
-                    ['unzip', '-o', '-I utf-8', '-q', app_path, '-d', ext_path])
+                    ['unzip', '-o', '-q', app_path, '-d', ext_path])
                 dat = subprocess.check_output(['unzip', '-qq', '-l', app_path])
                 dat = dat.decode('utf-8').split('\n')
                 files_det = ['Length   Date   Time   Name']
