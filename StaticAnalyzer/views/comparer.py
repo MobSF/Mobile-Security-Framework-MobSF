@@ -4,6 +4,7 @@ Module providing the shared functions for static analysis of iOS and Android
 """
 import re
 from copy import deepcopy
+from collections import defaultdict
 
 from django.shortcuts import render
 
@@ -18,6 +19,46 @@ from StaticAnalyzer.views.android.db_interaction import (
 )
 
 
+# The APKiD is pain because it really differs from the others
+def diff_apkid(context: dict) -> None:
+    apkid_keys = ['anti_vm', 'compiler', 'obfuscator',
+                  'packer', 'dropper', 'manipulator',
+                  'anti_disassembly', 'anti_debug', 'abnormal']
+
+    context['apkid'] = dict()
+    context['apkid']['common'] = dict()
+    context['apkid']['only_first'] = dict()
+    context['apkid']['only_second'] = dict()
+
+    first_apkid, second_apkid = context['first_app']['apkid'], context['second_app']['apkid']
+    first_error, second_error = first_apkid.get('error', False), second_apkid.get('error', False)
+    context['apkid_error'] = (first_error or second_error)
+    if context['apkid_error']:
+        return
+
+    tmp_flat_results = dict()
+    for curr_app_str in ['first_app', 'second_app']:
+        # Flatten the results per app (join all the dex files result into one)
+        flat_results = defaultdict(list)
+        for results in [dex_results for (dex_name, dex_results) in context[curr_app_str]['apkid'].items()]:
+            for apkid_key, key_results in results.items():
+                flat_results[apkid_key] += key_results
+                # Distinct list
+                flat_results[apkid_key] = list(set(flat_results[apkid_key]))
+        tmp_flat_results[curr_app_str] = deepcopy(flat_results)
+
+    for key in apkid_keys:
+        # The keys may be different between the two lists
+        context['apkid']['common'][key] = [x for x in tmp_flat_results['first_app'][key] if x in
+                                           tmp_flat_results['second_app'][key]]
+
+        context['apkid']['only_first'][key] = [x for x in tmp_flat_results['first_app'][key] if x not in
+                                               tmp_flat_results['second_app'][key]]
+
+        context['apkid']['only_second'][key] = [x for x in tmp_flat_results['second_app'][key] if x not in
+                                                tmp_flat_results['first_app'][key]]
+
+
 # suppose to get any 2 apps (android / ios / appx) and then figure out what to do with them
 def generic_compare(request, first_hash: str, second_hash: str, api: bool = False):
     # This context consists of specific lists and analysis that is done on the classic ones
@@ -28,7 +69,8 @@ def generic_compare(request, first_hash: str, second_hash: str, api: bool = Fals
         'second_app': dict(),
         'urls': dict(),
         'api': dict(),
-        'permissions': dict()
+        'permissions': dict(),
+        'apkid': dict()
     }
     static_fields = ['md5', 'name', 'size', 'icon_found', 'icon_hidden', 'act_count', 'e_act', 'serv_count', 'e_ser',
                      'bro_count', 'e_bro', 'prov_count', 'e_cnt', 'apkid']
@@ -48,7 +90,7 @@ def generic_compare(request, first_hash: str, second_hash: str, api: bool = Fals
     first_app = deepcopy(get_context_from_db_entry(db_entry))
     second_app = deepcopy(get_context_from_db_entry(db_entry2))
 
-    # Second, fill the mutual static parts that are missing in the classic analysis
+    # Second, fill the common static parts that are missing in the classic analysis
     for curr_app, db_context in [('first_app', first_app), ('second_app', second_app)]:
 
         # format informative title
@@ -84,13 +126,8 @@ def generic_compare(request, first_hash: str, second_hash: str, api: bool = Fals
         tmp_list.clear()
 
     # apkid check - we do it here just because its really ugly inside the template
-    # I split it into these lines just it to be really clear what I'm checking
-
-    first_error = context['first_app']['apkid'].get('error', False)
-    second_error = context['second_app']['apkid'].get('error', False)
-    first_has_version = context['first_app']['apkid'].get('apkid_version', False)
-    second_has_version = context['second_app']['apkid'].get('apkid_version', False)
-    context['apkid_error'] = (first_error or not first_has_version) or (second_error or not second_has_version)
+    # it has a dedicated function because the result is more complicated then the others...
+    diff_apkid(context)
 
     # Third, calculate some diffs
     for section, is_tuples in [
@@ -99,7 +136,7 @@ def generic_compare(request, first_hash: str, second_hash: str, api: bool = Fals
         ('urls', False)
     ]:
         if is_tuples:
-            context[section]['mutual'] = [(x, y) for (x, y) in first_app[section].items() if x in
+            context[section]['common'] = [(x, y) for (x, y) in first_app[section].items() if x in
                                           second_app[section].keys()]
 
             # Only first
@@ -110,7 +147,7 @@ def generic_compare(request, first_hash: str, second_hash: str, api: bool = Fals
             context[section]['only_second'] = [(x, y) for (x, y) in second_app[section].items() if x not in
                                                first_app[section].keys()]
         else:
-            context[section]['mutual'] = [x for x in first_app[section] if x in
+            context[section]['common'] = [x for x in first_app[section] if x in
                                           second_app[section]]
 
             context[section]['only_first'] = [x for x in first_app[section] if x not in
