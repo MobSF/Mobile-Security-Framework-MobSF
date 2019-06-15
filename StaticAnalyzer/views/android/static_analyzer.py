@@ -140,6 +140,13 @@ def static_analyzer(request, api=False):
 
                     app_dic['files'] = unzip(
                         app_dic['app_path'], app_dic['app_dir'])
+                    if not app_dic['files']:
+                        # Can't Analyze APK, bail out.
+                        msg = "APK file is invalid or corrupt"
+                        if api:
+                            return print_n_send_error_response(request, msg, True)
+                        else:
+                            return print_n_send_error_response(request, msg, False)
                     app_dic['certz'] = get_hardcoded_cert_keystore(app_dic[
                                                                    'files'])
 
