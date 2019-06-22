@@ -98,7 +98,7 @@ def check_update():
             proxies, verify = upstream_proxy('https')
         except Exception:
             PrintException("Setting upstream proxy")
-        response = requests.get(github_url, timeout=5,
+        response = requests.get(github_url, timeout=10,
                                 proxies=proxies, verify=verify)
         html = str(response.text).split("\n")
         for line in html:
@@ -467,12 +467,12 @@ def isInternetAvailable():
     except:
         PrintException("Setting upstream proxy")
     try:
-        requests.get('https://www.google.com', timeout=5,
+        requests.get('https://www.google.com', timeout=10,
                      proxies=proxies, verify=verify)
         return True
     except requests.exceptions.HTTPError as err:
         try:
-            requests.get('https://www.baidu.com/', timeout=5,
+            requests.get('https://www.baidu.com/', timeout=10,
                          proxies=proxies, verify=verify)
             return True
         except requests.exceptions.HTTPError as err1:
