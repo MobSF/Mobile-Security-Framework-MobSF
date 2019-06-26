@@ -15,8 +15,11 @@
 import zipfile
 import os
 import subprocess
+import logging
 from .main import read, translate, writeToJar
 from .jvm.optimization import options
+
+logger = logging.getLogger(__name__)
 
 
 def getStubs():
