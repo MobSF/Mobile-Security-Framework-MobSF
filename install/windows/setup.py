@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import sys
 
+from six.moves import input
 
 try:
     import urllib.request as urlrequest
@@ -310,12 +311,7 @@ def generate_secret():
         "\t(default: Mobile-Security-Framework-MobSF/MobSF/windows_vm_priv_key.asc)"
         .format(CONFIG['MobSF']['priv_key'])
     ))
-    if sys.version_info.major == 3:
-        # pylint: disable-msg=W0141
-        # For python3
-        input("Please press any key when done..")
-    elif sys.version_info.major == 2:
-        raw_input("Please press any key when done..")
+    input("Please press any key when done..")
 
 
 def autostart():
