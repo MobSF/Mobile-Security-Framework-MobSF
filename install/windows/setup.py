@@ -315,7 +315,7 @@ def generate_secret():
         # For python3
         input("Please press any key when done..")
     elif sys.version_info.major == 2:
-        raw_input("Please press any key when done..")
+        input("Please press any key when done..")
 
 
 def autostart():
