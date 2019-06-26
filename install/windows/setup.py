@@ -6,7 +6,7 @@ import re
 import shutil
 import subprocess
 import sys
-
+import logging
 from six.moves import input
 
 try:
@@ -15,6 +15,8 @@ except ImportError:
     import urllib as urlrequest
 
 import configparser
+
+logger = logging.getLogger(__name__)
 
 # pylint: disable=C0325,W0603
 

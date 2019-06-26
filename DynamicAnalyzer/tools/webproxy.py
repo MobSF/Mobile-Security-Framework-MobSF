@@ -2,9 +2,11 @@ import os
 import time
 import requests
 import subprocess
-
+import logging
 import capfuzz as cp
 
+
+logger = logging.getLogger(__name__)
 '''
 from capfuzz.__main__ import (
     CapFuzz
