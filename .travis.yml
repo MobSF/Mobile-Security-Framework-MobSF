@@ -54,6 +54,7 @@ install:
 - export PYTHONIOENCODING=UTF8
 - pip install coveralls
 before_script:
-  - pip install -r requirements.txt
+  - pip install flake8 -r requirements.txt
 script:
+  - flake8 . --count --select=E9,F63,F72,F82 --show-source --statistics
   - python manage.py test
