@@ -23,7 +23,6 @@ python3 -m pip install virtualenv
 python3 -m virtualenv venv -p python3
 source venv/bin/activate
 
-platform='unknown'
 unamestr=`uname`
 if [[ "$unamestr" == 'Darwin' ]]; then
   export ARCHFLAGS="-arch x86_64"

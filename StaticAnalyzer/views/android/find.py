@@ -12,7 +12,8 @@ from django.conf import settings
 from django.utils.html import escape
 
 from MobSF.utils import (
-    PrintException
+    PrintException,
+    print_n_send_error_response
 )
 logger = logging.getLogger(__name__)
 

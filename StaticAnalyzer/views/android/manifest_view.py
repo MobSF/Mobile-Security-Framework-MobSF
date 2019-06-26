@@ -9,7 +9,8 @@ from django.http import HttpResponseRedirect
 from django.conf import settings
 
 from MobSF.utils import (
-    PrintException
+    PrintException,
+    print_n_send_error_response
 )
 
 from StaticAnalyzer.views.android.manifest_analysis import read_manifest
