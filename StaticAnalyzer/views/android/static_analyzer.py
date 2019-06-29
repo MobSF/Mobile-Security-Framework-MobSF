@@ -551,10 +551,15 @@ def get_app_name(app_path, app_dir, tools_dir, is_apk):
         output_dir = os.path.join(app_dir, "apktool_out")
         strings_file = os.path.join(output_dir, "res/values/strings.xml")
     else:
-        if os.path.exists('app/src/main/res/values/strings.xml'):
-            strings_file = os.path.join(app_dir, 'app/src/main/res/values/strings.xml')
+        strings_path = os.path.join(app_dir, 'app/src/main/res/values/strings.xml')
+        eclipse_path = os.path.join(app_dir, 'res/values/strings.xml')
+        if os.path.exists(strings_path):
+            strings_file = strings_path
+        elif os.path.exists(eclipse_path):
+            strings_file = eclipse_path
         else:
-            strings_file = os.path.join(app_dir, 'res/values/strings.xml')
+            logger.warning('''can't find android name''')
+            return ''
 
     with open(strings_file, 'r', encoding='utf-8') as f:
         data = f.read()
