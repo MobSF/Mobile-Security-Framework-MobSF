@@ -557,9 +557,9 @@ def get_app_name(app_path, app_dir, tools_dir, is_apk):
             strings_file = strings_path
         elif os.path.exists(eclipse_path):
             strings_file = eclipse_path
-        else:
-            logger.warning('''can't find android name''')
-            return ''
+    if not os.path.exists(strings_file):
+        logger.warning('''Cannot find app name''')
+        return ''
 
     with open(strings_file, 'r', encoding='utf-8') as f:
         data = f.read()
