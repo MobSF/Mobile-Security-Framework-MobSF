@@ -74,6 +74,7 @@ from MalwareAnalyzer.views.domain_check import malware_check
 from MalwareAnalyzer.views.apkid import apkid_analysis
 import MalwareAnalyzer.views.Trackers as Trackers
 import MalwareAnalyzer.views.VirusTotal as VirusTotal
+from androguard.core.bytecodes import apk
 logger = logging.getLogger(__name__)
 
 
@@ -548,8 +549,9 @@ def get_app_name(app_path, app_dir, tools_dir, is_apk):
     
     data = ""
     if is_apk:
-        output_dir = os.path.join(app_dir, "apktool_out")
-        strings_file = os.path.join(output_dir, "res/values/strings.xml")
+        a = apk.APK(app_path)
+        real_name = a.get_app_name()
+        return real_name
     else:
         strings_path = os.path.join(app_dir, 'app/src/main/res/values/strings.xml')
         eclipse_path = os.path.join(app_dir, 'res/values/strings.xml')
