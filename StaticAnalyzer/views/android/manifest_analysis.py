@@ -11,7 +11,7 @@ from xml.dom import minidom
 
 from django.conf import settings
 
-from MobSF.utils import is_file_exists, log_exception
+from MobSF.utils import is_file_exists
 
 from StaticAnalyzer.views.android import android_manifest_desc
 
@@ -36,7 +36,7 @@ def get_manifest(app_path, app_dir, tools_dir, typ, binary):
         except Exception:
             err = ('apktool failed to extract '
                    'AndroidManifest.xml or parsing failed')
-            log_exception(err)
+            logger.exception(err)
             manifest = minidom.parseString(
                 (r'<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android='
                  r'"http://schemas.android.com/apk/res/android" '
@@ -47,7 +47,7 @@ def get_manifest(app_path, app_dir, tools_dir, typ, binary):
             logger.warning('Using Fake XML to continue the Analysis')
         return manifest
     except Exception:
-        log_exception('Parsing Manifest file')
+        logger.exception('Parsing Manifest file')
 
 
 def manifest_data(mfxml):
@@ -174,7 +174,7 @@ def manifest_data(mfxml):
 
         return man_data_dic
     except Exception:
-        log_exception('Extracting Manifest Data')
+        logger.exception('Extracting Manifest Data')
 
 
 def get_browsable_activities(node):
@@ -225,7 +225,7 @@ def get_browsable_activities(node):
         browse_dic['browsable'] = bool(browse_dic['schemes'])
         return browse_dic
     except Exception:
-        log_exception('Getting Browsable Activities')
+        logger.exception('Getting Browsable Activities')
 
 
 def manifest_analysis(mfxml, man_data_dic):
@@ -810,7 +810,7 @@ def manifest_analysis(mfxml, man_data_dic):
         }
         return man_an_dic
     except Exception:
-        log_exception('Performing Manifest Analysis')
+        logger.exception('Performing Manifest Analysis')
 
 
 def read_manifest(app_dir, app_path, tools_dir, typ, apk):
@@ -846,7 +846,7 @@ def read_manifest(app_dir, app_path, tools_dir, typ, apk):
                 dat = file_pointer.read()
         return dat
     except Exception:
-        log_exception('Reading Manifest file')
+        logger.exception('Reading Manifest file')
 
 
 def get_manifest_file(app_path, app_dir, tools_dir):
@@ -877,4 +877,4 @@ def get_manifest_file(app_path, app_dir, tools_dir):
         subprocess.check_output(args)
         return manifest
     except Exception:
-        log_exception('Getting Manifest file')
+        logger.exception('Getting Manifest file')

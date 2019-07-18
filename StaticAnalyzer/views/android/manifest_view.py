@@ -8,7 +8,7 @@ import re
 from django.conf import settings
 from django.shortcuts import render
 
-from MobSF.utils import log_exception, print_n_send_error_response
+from MobSF.utils import print_n_send_error_response
 
 from StaticAnalyzer.views.android.manifest_analysis import read_manifest
 
@@ -45,6 +45,6 @@ def run(request):
             template = 'static_analysis/view_mani.html'
             return render(request, template, context)
     except Exception:
-        log_exception('Viewing AndroidManifest.xml')
+        logger.exception('Viewing AndroidManifest.xml')
         return print_n_send_error_response(request,
                                            'Error Viewing AndroidManifest.xml')

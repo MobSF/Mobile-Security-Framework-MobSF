@@ -6,8 +6,6 @@ import os
 from django.conf import settings
 from django.utils import timezone
 
-from MobSF.utils import log_exception
-
 from StaticAnalyzer.models import RecentScansDB
 
 logger = logging.getLogger(__name__)
@@ -22,7 +20,7 @@ def add_to_recent_scan(name, md5, url):
                 NAME=name, MD5=md5, URL=url, TS=timezone.now())
             new_db_obj.save()
     except Exception:
-        log_exception('Adding Scan URL to Database')
+        logger.exception('Adding Scan URL to Database')
 
 
 def handle_uploaded_file(filecnt, typ):

@@ -11,7 +11,7 @@ from django.conf import settings
 from django.shortcuts import render
 from django.utils.html import escape
 
-from MobSF.utils import log_exception, print_n_send_error_response
+from MobSF.utils import print_n_send_error_response
 
 logger = logging.getLogger(__name__)
 
@@ -73,5 +73,5 @@ def run(request):
         template = 'general/search.html'
         return render(request, template, context)
     except Exception:
-        log_exception('Searching Failed')
+        logger.exception('Searching Failed')
         return print_n_send_error_response(request, 'Searching Failed')

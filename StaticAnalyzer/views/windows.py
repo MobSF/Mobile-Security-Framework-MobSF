@@ -21,7 +21,7 @@ from django.conf import settings
 from django.shortcuts import render
 from django.utils.html import escape
 
-from MobSF.utils import log_exception, print_n_send_error_response, python_list
+from MobSF.utils import print_n_send_error_response, python_list
 
 from StaticAnalyzer.models import StaticAnalyzerWindows
 from StaticAnalyzer.tools.strings import strings_util
@@ -224,6 +224,7 @@ def staticanalyzer_windows(request, api=False):
             else:
                 return print_n_send_error_response(request, msg, False)
     except Exception as exception:
+        logger.exception('Error Performing Static Analysis')
         msg = str(exception)
         exp_doc = exception.__doc__
         if api:
@@ -258,7 +259,7 @@ def _binary_analysis(app_dic):
             bin_an_dic['bin_name'] = file_name.replace('.exe', '')
             break
     if not bin_an_dic['bin_name']:
-        log_exception('No executeable in appx.')
+        logger.exception('No executeable in appx.')
 
     bin_path = os.path.join(app_dic['app_dir'], bin_an_dic['bin'])
 
@@ -578,7 +579,7 @@ def _parse_xml(app_dir):
                     and child.tag.endswith('}Metadata')):
                 xml_dic = parse_xml_metadata(xml_dic, child)
     except Exception:
-        log_exception('Reading from AppxManifest.xml')
+        logger.exception('Reading from AppxManifest.xml')
     return xml_dic
 
 

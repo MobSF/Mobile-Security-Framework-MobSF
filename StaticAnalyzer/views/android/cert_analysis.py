@@ -16,8 +16,6 @@ from asn1crypto import keys, x509
 from django.conf import settings
 from django.utils.html import escape
 
-from MobSF.utils import log_exception
-
 logger = logging.getLogger(__name__)
 
 
@@ -49,7 +47,7 @@ def get_hardcoded_cert_keystore(files):
             )
         return dat
     except Exception:
-        log_exception('Getting Hardcoded Certificates/Keystores')
+        logger.exception('Getting Hardcoded Certificates/Keystores')
 
 
 def cert_info(app_dir, app_file, tools_dir):
@@ -101,7 +99,7 @@ def cert_info(app_dir, app_file, tools_dir):
         }
         return cert_dic
     except Exception:
-        log_exception('Reading Code Signing Certificate')
+        logger.exception('Reading Code Signing Certificate')
 
 
 def androguard_certinfo(app_dir, app_file):

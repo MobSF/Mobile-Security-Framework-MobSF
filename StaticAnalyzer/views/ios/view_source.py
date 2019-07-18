@@ -15,7 +15,7 @@ from django.shortcuts import render
 from django.utils.html import escape
 
 from MobSF.forms import FormUtil
-from MobSF.utils import (is_file_exists, log_exception,
+from MobSF.utils import (is_file_exists,
                          print_n_send_error_response)
 
 from StaticAnalyzer.forms import ViewSourceIOSApiForm, ViewSourceIOSForm
@@ -121,6 +121,7 @@ def run(request, api=False):
             return context
         return render(request, template, context)
     except Exception as exp:
+        logger.exception('Error Viewing Source')
         msg = str(exp)
         exp = exp.__doc__
         if api:
@@ -158,4 +159,4 @@ def read_sqlite(sqlite_file):
                 data += dat + '\n'
         return data
     except Exception:
-        log_exception('Dumping SQLITE Database')
+        logger.exception('Dumping SQLITE Database')

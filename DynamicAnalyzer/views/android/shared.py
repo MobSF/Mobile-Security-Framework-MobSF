@@ -6,7 +6,7 @@ import time
 
 from django.conf import settings
 
-from MobSF.utils import get_adb, log_exception
+from MobSF.utils import get_adb
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ def get_res():
             # width, height
         return '', ''
     except Exception:
-        log_exception('Getting Screen Resolution')
+        logger.exception('Getting Screen Resolution')
         return '', ''
 
 
@@ -50,7 +50,7 @@ def get_identifier():
         else:
             return settings.VM_IP + ':' + str(settings.VM_ADB_PORT)
     except Exception:
-        log_exception(
+        logger.exception(
             'Getting ADB Connection Identifier for Device/VM')
 
 
@@ -70,7 +70,7 @@ def adb_command(cmd_list, shell=False, silent=False):
         return result
     except Exception:
         if not silent:
-            log_exception('Running ADB Command')
+            logger.exception('Running ADB Command')
         return None
 
 
@@ -100,7 +100,7 @@ def connect():
             adb_command(['mount', '-o', 'rw,remount', '-t', 'rfs',
                          '/dev/block/sda6', '/system'], True)
     except Exception:
-        log_exception('Connecting to VM/Device')
+        logger.exception('Connecting to VM/Device')
 
 
 def install_and_run(apk_path, package, launcher, is_activity):
@@ -118,4 +118,4 @@ def install_and_run(apk_path, package, launcher, is_activity):
             # Handle Service or Give Choice to Select in Future.
         logger.info('Testing Environment is Ready!')
     except Exception:
-        log_exception('Starting App for Dynamic Analysis')
+        logger.exception('Starting App for Dynamic Analysis')

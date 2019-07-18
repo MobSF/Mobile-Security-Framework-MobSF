@@ -8,7 +8,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.test import Client, TestCase
 
-from MobSF.utils import api_key, log_exception
+from MobSF.utils import api_key
 
 logger = logging.getLogger(__name__)
 
@@ -120,7 +120,7 @@ def static_analysis_test():
                 return True
         logger.info('Delete Scan Results test completed')
     except Exception:
-        log_exception('Completing Static Analyzer Test')
+        logger.exception('Completing Static Analyzer Test')
     return False
 
 
@@ -285,7 +285,7 @@ def api_test():
                 return True
         logger.info('Delete Scan Results API test completed')
     except Exception:
-        log_exception('Completing REST API Unit Test')
+        logger.exception('Completing REST API Unit Test')
     return False
 
 

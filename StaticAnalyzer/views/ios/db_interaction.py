@@ -1,7 +1,7 @@
 """Module holding the functions for the db."""
 import logging
 
-from MobSF.utils import log_exception, python_dict, python_list
+from MobSF.utils import python_dict, python_list
 
 from StaticAnalyzer.models import StaticAnalyzerIOSZIP, StaticAnalyzerIPA
 
@@ -50,7 +50,7 @@ def get_context_from_analysis_ipa(app_dict,
         }
         return context
     except Exception:
-        log_exception('Rendering to Template')
+        logger.exception('Rendering to Template')
 
 
 def get_context_from_db_entry_ipa(db_entry):
@@ -92,7 +92,7 @@ def get_context_from_db_entry_ipa(db_entry):
         }
         return context
     except Exception:
-        log_exception('Fetching from DB')
+        logger.exception('Fetching from DB')
 
 
 def update_db_entry_ipa(app_dict,
@@ -135,7 +135,7 @@ def update_db_entry_ipa(app_dict,
         )
 
     except Exception:
-        log_exception('Updating DB')
+        logger.exception('Updating DB')
 
 
 def create_db_entry_ipa(app_dict,
@@ -177,7 +177,7 @@ def create_db_entry_ipa(app_dict,
         )
         static_db.save()
     except Exception:
-        log_exception('Saving to DB')
+        logger.exception('Saving to DB')
 
 # IOS ZIP DB ENTRY
 
@@ -223,7 +223,7 @@ def get_context_from_analysis_ios(app_dict,
         }
         return context
     except Exception:
-        log_exception('Rendering to Template')
+        logger.exception('Rendering to Template')
 
 
 def get_context_from_db_entry_ios(db_entry):
@@ -265,7 +265,7 @@ def get_context_from_db_entry_ios(db_entry):
         }
         return context
     except Exception:
-        log_exception('Fetching from DB')
+        logger.exception('Fetching from DB')
 
 
 def update_db_entry_ios(app_dict,
@@ -309,7 +309,7 @@ def update_db_entry_ios(app_dict,
         )
 
     except Exception:
-        log_exception('Updating DB')
+        logger.exception('Updating DB')
 
 
 def create_db_entry_ios(app_dict, info_dict, code_dict, files, sfiles):
@@ -349,4 +349,4 @@ def create_db_entry_ios(app_dict, info_dict, code_dict, files, sfiles):
         )
         static_db.save()
     except Exception:
-        log_exception('Saving DB')
+        logger.exception('Saving DB')

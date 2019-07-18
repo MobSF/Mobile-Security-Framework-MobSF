@@ -17,7 +17,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.template.defaulttags import register
 
-from MobSF.utils import log_exception, print_n_send_error_response, zipdir
+from MobSF.utils import print_n_send_error_response, zipdir
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 from StaticAnalyzer.views.android.binary_analysis import (elf_analysis,
@@ -252,7 +252,7 @@ def static_analyzer(request, api=False):
                                 tracker_res,
                             )
                     except Exception:
-                        log_exception('Saving to Database Failed')
+                        logger.exception('Saving to Database Failed')
                     context = get_context_from_analysis(
                         app_dic,
                         man_data_dic,
@@ -428,7 +428,7 @@ def static_analyzer(request, api=False):
                                     {},
                                 )
                         except Exception:
-                            log_exception('Saving to Database Failed')
+                            logger.exception('Saving to Database Failed')
                         context = get_context_from_analysis(
                             app_dic,
                             man_data_dic,
@@ -468,6 +468,7 @@ def static_analyzer(request, api=False):
                 return print_n_send_error_response(request, msg, False)
 
     except Exception as excep:
+        logger.exception('Error Performing Static Analysis')
         msg = str(excep)
         exp = excep.__doc__
         if api:
@@ -498,7 +499,7 @@ def valid_android_zip(app_dir):
             return 'ios', True
         return '', False
     except Exception:
-        log_exception('Determining Upload type')
+        logger.exception('Determining Upload type')
 
 
 def gen_downloads(app_dir, md5, icon_path=''):
@@ -524,7 +525,7 @@ def gen_downloads(app_dir, md5, icon_path=''):
                 shutil.copy2(icon_path, os.path.join(
                     settings.DWD_DIR, md5 + '-icon.png'))
     except Exception:
-        log_exception('Generating Downloads')
+        logger.exception('Generating Downloads')
 
 
 def get_app_name(app_path, app_dir, tools_dir, is_apk):

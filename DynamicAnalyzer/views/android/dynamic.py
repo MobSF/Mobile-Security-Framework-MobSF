@@ -27,8 +27,9 @@ from DynamicAnalyzer.views.android.shared import (adb_command, connect,
                                                   install_and_run, wait)
 from DynamicAnalyzer.views.android.virtualbox_vm import refresh_vm
 
-from MobSF.utils import (get_adb, is_number, log_exception,
-                         print_n_send_error_response, python_list)
+from MobSF.utils import (get_adb, is_number,
+                         print_n_send_error_response,
+                         python_list)
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 
@@ -99,7 +100,7 @@ def android_dynamic_analyzer(request):
             return print_n_send_error_response(request,
                                                'Only POST allowed')
     except Exception:
-        log_exception('DynamicAnalyzer')
+        logger.exception('DynamicAnalyzer')
         return print_n_send_error_response(request,
                                            'Dynamic Analysis Failed.')
 # AJAX
@@ -151,7 +152,7 @@ def get_env(request):
                                                'Only POST allowed',
                                                True)
     except Exception:
-        log_exception('Setting up Dynamic Analysis Environment')
+        logger.exception('Setting up Dynamic Analysis Environment')
         return print_n_send_error_response(request,
                                            'Environment Setup Failed',
                                            True)
@@ -192,7 +193,7 @@ def take_screenshot(request):
                                                'Only POST allowed',
                                                True)
     except Exception:
-        log_exception('Taking Screenshot')
+        logger.exception('Taking Screenshot')
         return print_n_send_error_response(request,
                                            'Error Taking Screenshot',
                                            True)
@@ -230,7 +231,7 @@ def screen_cast(request):
                     screen_trd.setDaemon(True)
                     screen_trd.start()
                 except Exception:
-                    log_exception('Casting Screen')
+                    logger.exception('Casting Screen')
                     data = {'status': 'error'}
                     return HttpResponse(json.dumps(data),
                                         content_type='application/json')
@@ -241,7 +242,7 @@ def screen_cast(request):
         return HttpResponse(json.dumps(data),
                             content_type='application/json')
     except Exception:
-        log_exception('Casting Screen')
+        logger.exception('Casting Screen')
         return print_n_send_error_response(request,
                                            'Error Casting Screen',
                                            True)
@@ -261,14 +262,14 @@ def clip_dump(request):
                 adb_command(args, True)
                 data = {'status': 'success'}
             except Exception:
-                log_exception('Dumping Clipboard')
+                logger.exception('Dumping Clipboard')
                 data = {'status': 'error'}
         else:
             data = {'status': 'failed'}
         return HttpResponse(json.dumps(data),
                             content_type='application/json')
     except Exception:
-        log_exception('Dumping Clipboard')
+        logger.exception('Dumping Clipboard')
         return print_n_send_error_response(request,
                                            'Error Dumping Clipboard',
                                            True)
@@ -295,13 +296,13 @@ def touch(request):
                 adb_command(args, True)
             except Exception:
                 data = {'status': 'error'}
-                log_exception('Performing Touch Action')
+                logger.exception('Performing Touch Action')
         else:
             data = {'status': 'failed'}
         return HttpResponse(json.dumps(data),
                             content_type='application/json')
     except Exception:
-        log_exception('Sending Touch Events')
+        logger.exception('Sending Touch Events')
         return print_n_send_error_response(request,
                                            'Error Sending Touch Events',
                                            True)
@@ -319,7 +320,7 @@ def execute_adb(request):
             try:
                 resp = adb_command(cmd.split(' '))
             except Exception:
-                log_exception('Executing ADB Commands')
+                logger.exception('Executing ADB Commands')
             data = {'cmd': 'yes', 'resp': resp.decode('utf8', 'ignore')}
             return HttpResponse(json.dumps(data),
                                 content_type='application/json')
@@ -328,7 +329,7 @@ def execute_adb(request):
                                                'Only POST allowed',
                                                True)
     except Exception:
-        log_exception('Executing ADB Commands')
+        logger.exception('Executing ADB Commands')
         return print_n_send_error_response(request,
                                            'Error running ADB commands',
                                            True)
@@ -376,7 +377,7 @@ def mobsf_ca(request):
                                                'Only POST allowed',
                                                True)
     except Exception:
-        log_exception('MobSF RootCA Handler')
+        logger.exception('MobSF RootCA Handler')
         return print_n_send_error_response(request,
                                            'Error in RootCA Handler',
                                            True)
@@ -446,7 +447,7 @@ def final_test(request):
                                                True)
     except Exception:
         err = 'Data Collection & Clean Up failed'
-        log_exception(err)
+        logger.exception(err)
         return print_n_send_error_response(request,
                                            err,
                                            True)
@@ -513,7 +514,7 @@ def dump_data(request):
                                                'Only POST allowed',
                                                True)
     except Exception:
-        log_exception('Downloading Application Data from Device')
+        logger.exception('Downloading Application Data from Device')
         err = 'Application Data Dump from Device failed'
         return print_n_send_error_response(request,
                                            err,
@@ -579,8 +580,7 @@ def exported_activity_tester(request):
                                              package], True)
                                 logger.info('Stopping App')
                             except Exception:
-                                log_exception(
-                                    'Exported Activity Tester')
+                                logger.exception('Exported Activity Tester')
                         data = {'expacttest': 'done'}
                     else:
                         logger.info(
@@ -603,7 +603,7 @@ def exported_activity_tester(request):
                                                True)
     except Exception:
         err = 'Error Running Exported Activity Tests'
-        log_exception('ERROR] Exported Activity Tester')
+        logger.exception('ERROR] Exported Activity Tester')
         return print_n_send_error_response(request,
                                            err,
                                            True)
@@ -667,7 +667,7 @@ def activity_tester(request):
                                     ['am', 'force-stop', package], True)
                                 logger.info('Stopping App')
                             except Exception:
-                                log_exception('Activity Tester')
+                                logger.exception('Activity Tester')
                         data = {'acttest': 'done'}
                     else:
                         logger.info('Activity Tester - No Activity Found!')
@@ -688,7 +688,7 @@ def activity_tester(request):
                                                'Invalid Scan Hash',
                                                True)
     except Exception:
-        log_exception('Activity Tester')
+        logger.exception('Activity Tester')
         return print_n_send_error_response(request,
                                            'Error Running Activity Tester',
                                            True)
@@ -752,7 +752,7 @@ def report(request):
                         else:
                             logger.warning('Entry does not exists in the DB.')
                     except Exception:
-                        log_exception('Screenshot Sorting')
+                        logger.exception('Screenshot Sorting')
                 context = {'md5': md5_hash,
                            'emails': analysis_result['emails'],
                            'urls': analysis_result['urls'],
@@ -789,7 +789,7 @@ def report(request):
             return print_n_send_error_response(request,
                                                'Only GET allowed')
     except Exception:
-        log_exception('Dynamic Analysis Report Generation')
+        logger.exception('Dynamic Analysis Report Generation')
         err = 'Error Geneating Dynamic Analysis Report'
         return print_n_send_error_response(request, err)
 
@@ -826,7 +826,7 @@ def handle_sqlite(sfile):
                 data += dat + '\n'
         return data
     except Exception:
-        log_exception('SQLite DB Extraction')
+        logger.exception('SQLite DB Extraction')
 
 
 def view(request):
@@ -874,7 +874,7 @@ def view(request):
         else:
             return print_n_send_error_response(request, 'Invalid Scan Hash')
     except Exception:
-        log_exception('Viewing File')
+        logger.exception('Viewing File')
         return print_n_send_error_response(request, 'ERROR Viewing File')
 
 
@@ -896,7 +896,7 @@ def capfuzz_start(request):
                        project))
         return HttpResponseRedirect(url)
     except Exception:
-        log_exception('Starting CapFuzz Web UI')
+        logger.exception('Starting CapFuzz Web UI')
         err = 'Error Starting CapFuzz UI'
         return print_n_send_error_response(request, err)
 
@@ -942,4 +942,4 @@ def screencast_service():
             screen_socket.close()
     except Exception:
         screen_socket.close()
-        log_exception('ScreenCast Server')
+        logger.exception('ScreenCast Server')

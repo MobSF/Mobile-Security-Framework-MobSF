@@ -8,7 +8,7 @@ import plistlib
 import biplist
 from biplist import readPlist, writePlistToString
 
-from MobSF.utils import is_file_exists, log_exception
+from MobSF.utils import is_file_exists
 
 logger = logging.getLogger(__name__)
 
@@ -233,4 +233,4 @@ def plist_analysis(src, is_source):
             plist_info['inseccon'] = check_insecure_connections(plist_obj)
         return plist_info
     except Exception:
-        log_exception('Reading from Info.plist')
+        logger.exception('Reading from Info.plist')

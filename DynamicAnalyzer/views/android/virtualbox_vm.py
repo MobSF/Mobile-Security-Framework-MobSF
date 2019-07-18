@@ -4,8 +4,6 @@ import time
 
 from django.conf import settings
 
-from MobSF.utils import log_exception
-
 logger = logging.getLogger(__name__)
 
 
@@ -33,4 +31,4 @@ def refresh_vm(uuid, snapshot_uuid, vbox_exe):
         subprocess.call(args)
         logger.info('VM Starting')
     except Exception:
-        log_exception('Refreshing MobSF VM')
+        logger.exception('Refreshing MobSF VM')

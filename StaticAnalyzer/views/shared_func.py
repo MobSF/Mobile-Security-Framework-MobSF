@@ -25,8 +25,9 @@ from django.utils import timezone
 from django.utils.html import escape
 
 from MobSF import settings
-from MobSF.utils import (log_exception, print_n_send_error_response,
-                         python_list, upstream_proxy)
+from MobSF.utils import (print_n_send_error_response,
+                         python_list,
+                         upstream_proxy)
 
 from StaticAnalyzer.models import (RecentScansDB, StaticAnalyzerAndroid,
                                    StaticAnalyzerIOSZIP, StaticAnalyzerIPA,
@@ -69,7 +70,7 @@ def hash_gen(app_path) -> tuple:
         sha256val = sha256.hexdigest()
         return sha1val, sha256val
     except Exception:
-        log_exception('Generating Hashes')
+        logger.exception('Generating Hashes')
 
 
 def unzip(app_path, ext_path):
@@ -86,7 +87,7 @@ def unzip(app_path, ext_path):
                 zipptr.extract(filename, ext_path)
         return files
     except Exception:
-        log_exception('Unzipping Error')
+        logger.exception('Unzipping Error')
         if platform.system() == 'Windows':
             logger.info('Not yet Implemented.')
         else:
@@ -100,7 +101,7 @@ def unzip(app_path, ext_path):
                 files_det = files_det + dat
                 return files_det
             except Exception:
-                log_exception('Unzipping Error')
+                logger.exception('Unzipping Error')
 
 
 def pdf(request, api=False, jsonres=False):
@@ -261,7 +262,7 @@ def pdf(request, api=False, jsonres=False):
                     return HttpResponse(pdf_dat,
                                         content_type='application/pdf')
             except Exception as exp:
-                logger.error('Error Generating PDF Report')
+                logger.exception('Error Generating PDF Report')
                 if api:
                     return {
                         'error': 'Cannot Generate PDF/JSON',
@@ -281,6 +282,7 @@ def pdf(request, api=False, jsonres=False):
                     json.dumps({'md5': 'Invalid MD5'}),
                     content_type='application/json; charset=utf-8', status=500)
     except Exception as exp:
+        logger.exception('Error Generating PDF Report')
         msg = str(exp)
         exp = exp.__doc__
         if api:
@@ -426,7 +428,7 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
             else:
                 logger.error('Code Rule Error\n%s', rule)
     except Exception:
-        log_exception('Error in Code Rule Processing')
+        logger.exception('Error in Code Rule Processing')
 
 
 def add_apis(api_findings, desc, file_path):
@@ -534,7 +536,7 @@ def api_rule_matcher(api_findings, perms, data, file_path, api_rules):
             else:
                 logger.error('API Rule Error\n%s', api)
     except Exception:
-        log_exception('Error in API Rule Processing')
+        logger.exception('Error in API Rule Processing')
 
 
 def url_n_email_extract(dat, relative_path):
@@ -577,7 +579,7 @@ def url_n_email_extract(dat, relative_path):
 
 # This is just the first sanity check that triggers generic_compare
 def compare_apps(request, hash1: str, hash2: str):
-    if hash1 == hash1:
+    if hash1 == hash2:
         error_msg = 'Results with same hash cannot be compared'
         return print_n_send_error_response(request, error_msg, False)
     logger.info(

@@ -3,7 +3,7 @@ import logging
 
 from django.db.models import QuerySet
 
-from MobSF.utils import log_exception, python_dict, python_list
+from MobSF.utils import python_dict, python_list
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 
@@ -72,7 +72,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
         }
         return context
     except Exception:
-        log_exception('Fetching from DB')
+        logger.exception('Fetching from DB')
 
 
 def get_context_from_analysis(app_dic,
@@ -139,7 +139,7 @@ def get_context_from_analysis(app_dic,
         }
         return context
     except Exception:
-        log_exception('Rendering to Template')
+        logger.exception('Rendering to Template')
 
 
 def update_db_entry(app_dic,
@@ -207,7 +207,7 @@ def update_db_entry(app_dic,
             TRACKERS=trackers,
         )
     except Exception:
-        log_exception('Updating DB')
+        logger.exception('Updating DB')
 
 
 def create_db_entry(app_dic,
@@ -275,4 +275,4 @@ def create_db_entry(app_dic,
         )
         static_db.save()
     except Exception:
-        log_exception('Saving to DB')
+        logger.exception('Saving to DB')

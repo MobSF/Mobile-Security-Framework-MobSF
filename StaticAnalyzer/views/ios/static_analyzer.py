@@ -11,8 +11,7 @@ from django.conf import settings
 from django.shortcuts import render
 from django.utils.html import escape
 
-from MobSF.utils import (log_exception,
-                         print_n_send_error_response)
+from MobSF.utils import print_n_send_error_response
 
 from StaticAnalyzer.models import StaticAnalyzerIOSZIP, StaticAnalyzerIPA
 from StaticAnalyzer.views.ios.appstore import app_search
@@ -90,7 +89,7 @@ def ios_list_files(src, md5_hash, binary_form, mode):
                  'files': certz})
         return filez, sfiles
     except Exception:
-        log_exception('iOS List Files')
+        logger.exception('iOS List Files')
 
 
 def static_analyzer_ios(request, api=False):
@@ -267,6 +266,7 @@ def static_analyzer_ios(request, api=False):
             else:
                 return print_n_send_error_response(request, msg, False)
     except Exception as exp:
+        logger.exception('Error Perfroming Static Analysis')
         msg = str(exp)
         exp_doc = exp.__doc__
         if api:

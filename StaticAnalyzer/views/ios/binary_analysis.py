@@ -15,7 +15,7 @@ from macholib.mach_o import (CPU_TYPE_NAMES, MH_CIGAM_64, MH_MAGIC_64,
                              get_cpu_subtype)
 from macholib.MachO import MachO
 
-from MobSF.utils import is_file_exists, log_exception
+from MobSF.utils import is_file_exists
 
 from StaticAnalyzer.tools.strings import strings_util
 
@@ -340,7 +340,7 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
                               debug]
         return otool_dict
     except Exception:
-        log_exception('Performing Object Analysis of Binary')
+        logger.exception('Performing Object Analysis of Binary')
 
 
 def detect_bin_type(libs):
@@ -420,7 +420,7 @@ def strings_on_ipa(bin_path):
                       for ip_str in unique_str]  # Escape evil strings
         return unique_str
     except Exception:
-        log_exception('Running strings against the Binary')
+        logger.exception('Running strings against the Binary')
 
 
 def get_bin_info(bin_file):
@@ -485,4 +485,4 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
 
         return binary_analysis_dict
     except Exception:
-        log_exception('iOS Binary Analysis')
+        logger.exception('iOS Binary Analysis')

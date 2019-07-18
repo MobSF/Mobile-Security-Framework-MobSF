@@ -6,8 +6,6 @@ import os
 
 from django.conf import settings
 
-from MobSF.utils import log_exception
-
 logger = logging.getLogger(__name__)
 
 
@@ -24,7 +22,7 @@ def win_fix_java(tools_dir):
         with open(org, 'w') as file_pointer:
             file_pointer.write(dat)
     except Exception:
-        log_exception('Running JAVA path fix in Windows')
+        logger.exception('Running JAVA path fix in Windows')
 
 
 def win_fix_python3(tools_dir):
@@ -50,4 +48,4 @@ def win_fix_python3(tools_dir):
         with open(org, 'w') as file_pointer:
             file_pointer.write(dat)
     except Exception:
-        log_exception('Running Python 3 path fix in Windows')
+        logger.exception('Running Python 3 path fix in Windows')

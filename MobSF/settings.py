@@ -10,7 +10,7 @@ import logging
 import os
 
 from MobSF.utils import (find_java_binary, find_vboxmange_binary, first_run,
-                         get_mobsf_home, log_exception)
+                         get_mobsf_home)
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +95,7 @@ try:
     else:
         CONFIG_HOME = False
 except Exception:
-    log_exception('Reading Config')
+    logger.exception('Reading Config')
     CONFIG_HOME = False
 # ===============================================
 
@@ -270,7 +270,7 @@ else:
     # Private key
     WINDOWS_VM_SECRET = 'MobSF/windows_vm_priv_key.asc'
     # IP and Port of the MobSF Windows VM
-    # example: WINDOWS_VM_IP = '127.0.0.1'
+    # example: WINDOWS_VM_IP = '127.0.0.1'   ;noqa E800
     WINDOWS_VM_IP = None
     WINDOWS_VM_PORT = '8000'
     # ==================================================

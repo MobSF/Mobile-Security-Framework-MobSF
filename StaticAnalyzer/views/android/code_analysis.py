@@ -9,7 +9,7 @@ import shutil
 
 from django.conf import settings
 
-from MobSF.utils import filename_from_path, log_exception
+from MobSF.utils import filename_from_path
 
 from StaticAnalyzer.views.android import android_apis, android_rules
 from StaticAnalyzer.views.shared_func import (api_rule_matcher,
@@ -91,4 +91,4 @@ def code_analysis(app_dir, perms, typ):
         }
         return code_an_dic
     except Exception:
-        log_exception('Performing Code Analysis')
+        logger.exception('Performing Code Analysis')

@@ -189,9 +189,9 @@ def make_migrations(base_dir):
     """Create Database Migrations."""
     try:
         manage = os.path.join(base_dir, 'manage.py')
-        args = [sys.executable, manage, 'makemigrations']
+        args = [get_python(), manage, 'makemigrations']
         subprocess.call(args)
-        args = [sys.executable, manage, 'makemigrations', 'StaticAnalyzer']
+        args = [get_python(), manage, 'makemigrations', 'StaticAnalyzer']
         subprocess.call(args)
     except Exception:
         log_exception('Cannot Make Migrations')
@@ -201,9 +201,9 @@ def migrate(base_dir):
     """Migrate Database."""
     try:
         manage = os.path.join(base_dir, 'manage.py')
-        args = [sys.executable, manage, 'migrate']
+        args = [get_python(), manage, 'migrate']
         subprocess.call(args)
-        args = [sys.executable, manage, 'migrate', '--run-syncdb']
+        args = [get_python(), manage, 'migrate', '--run-syncdb']
         subprocess.call(args)
     except Exception:
         log_exception('Cannot Migrate')
@@ -360,6 +360,11 @@ def find_java_binary(debug=False):
         if debug:
             log_exception('Oracle Java (JDK >=1.7) is not found!')
         return 'java'
+
+
+def get_python():
+    """Get Python Executable."""
+    return get_python()
 
 
 def run_process(args):

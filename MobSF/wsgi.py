@@ -12,7 +12,7 @@ import os
 from django.core.wsgi import get_wsgi_application
 
 from whitenoise import WhiteNoise
-os.environ.setdefault('DJANGO_SETTINGS_MODUL', 'MobSF.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'MobSF.settings')
 
 application = WhiteNoise(get_wsgi_application(),
                          root='static', prefix='static/')

@@ -10,7 +10,7 @@ import subprocess
 from django.conf import settings
 
 from MobSF.utils import (filename_from_path, get_python, is_dir_exists,
-                         is_file_exists, log_exception)
+                         is_file_exists)
 
 from StaticAnalyzer.views.android.win_fixes import (win_fix_java,
                                                     win_fix_python3)
@@ -93,7 +93,7 @@ def dex_2_jar(app_path, app_dir, tools_dir):
                 ]
             subprocess.call(args, cwd=working_dir)
     except Exception:
-        log_exception('Converting Dex to JAR')
+        logger.exception('Converting Dex to JAR')
 
 
 def dex_2_smali(app_dir, tools_dir):
@@ -121,7 +121,7 @@ def dex_2_smali(app_dir, tools_dir):
             ]
             subprocess.call(args)
     except Exception:
-        log_exception('Converting DEX to SMALI')
+        logger.exception('Converting DEX to SMALI')
 
 
 def jar_2_java(app_dir, tools_dir):
@@ -177,4 +177,4 @@ def jar_2_java(app_dir, tools_dir):
                         output]
             subprocess.call(args)
     except Exception:
-        log_exception('Converting JAR to JAVA')
+        logger.exception('Converting JAR to JAVA')

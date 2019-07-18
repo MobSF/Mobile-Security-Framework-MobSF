@@ -5,8 +5,6 @@ import shutil
 
 from MalwareAnalyzer.views.domain_check import malware_check
 
-from MobSF.utils import log_exception
-
 from StaticAnalyzer.views.ios import ios_apis, ios_rules
 from StaticAnalyzer.views.shared_func import (api_rule_matcher,
                                               code_rule_matcher,
@@ -75,4 +73,4 @@ def ios_source_analysis(src):
         return code_analysis_dict
 
     except Exception:
-        log_exception('iOS Source Code Analysis')
+        logger.exception('iOS Source Code Analysis')

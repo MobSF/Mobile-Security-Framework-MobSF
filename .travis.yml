@@ -30,8 +30,8 @@ before_install:
 - sudo add-apt-repository ppa:linuxuprising/java -y
 - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 762E3157
 - sudo apt update
-- echo oracle-java11-installer shared/accepted-oracle-license-v1-2 select true | sudo /usr/bin/debconf-set-selections
-- sudo apt install -y oracle-java11-installer
+- echo oracle-java12-installer shared/accepted-oracle-license-v1-2 select true | sudo /usr/bin/debconf-set-selections
+- sudo apt install -y oracle-java12-installer
 - pip3 install wheel
 - pip3 wheel --wheel-dir=/tmp/yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.10.0
 - pip3 install --no-index --find-links=/tmp/yara-python yara-python

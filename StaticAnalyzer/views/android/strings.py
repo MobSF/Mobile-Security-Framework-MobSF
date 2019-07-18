@@ -5,8 +5,6 @@ import os
 
 from androguard.core.bytecodes import apk
 
-from MobSF.utils import log_exception
-
 from StaticAnalyzer.views.shared_func import url_n_email_extract
 
 logger = logging.getLogger(__name__)
@@ -36,5 +34,5 @@ def strings_jar(app_file, app_dir):
                 'emails_nf': emails_nf,
                 }
     except Exception:
-        log_exception('Extracting Strings from APK')
+        logger.exception('Extracting Strings from APK')
         return {}

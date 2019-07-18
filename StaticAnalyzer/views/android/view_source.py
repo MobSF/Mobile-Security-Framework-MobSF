@@ -84,6 +84,7 @@ def run(request, api=False):
             return context
         return render(request, template, context)
     except Exception as exp:
+        logger.exception('Error Viewing Source')
         msg = str(exp)
         exp = exp.__doc__
         if api:

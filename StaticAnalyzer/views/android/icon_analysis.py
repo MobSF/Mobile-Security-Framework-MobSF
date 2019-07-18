@@ -7,8 +7,6 @@ import os
 
 from androguard.core.bytecodes import apk
 
-from MobSF.utils import log_exception
-
 logger = logging.getLogger(__name__)
 
 
@@ -104,7 +102,7 @@ def find_icon_path_zip(res_dir, icon_paths_from_manifest):
         return guess_icon_path(res_dir)
 
     except Exception:
-        log_exception('Guessing icon path')
+        logger.exception('Guessing icon path')
 
 
 def get_icon(apk_path, res_dir):
@@ -134,4 +132,4 @@ def get_icon(apk_path, res_dir):
             'hidden': True,
         }
     except Exception:
-        log_exception('Fetching icon function')
+        logger.exception('Fetching icon function')

@@ -13,7 +13,7 @@ from django.utils.html import escape
 
 from MalwareAnalyzer.views.domain_check import malware_check
 
-from MobSF.utils import is_base64, log_exception, python_list
+from MobSF.utils import is_base64, python_list
 
 logger = logging.getLogger(__name__)
 
@@ -125,9 +125,9 @@ def api_analysis(package, location):
                                   'impl.client.AbstractHttpClient', clss):
                         api_net.append(call_data)
                 except Exception:
-                    log_exception('Parsing JSON Failed for: ' + value)
+                    logger.exception('Parsing JSON Failed for: %s', value)
     except Exception:
-        log_exception('Dynamic API Analysis')
+        logger.exception('Dynamic API Analysis')
     api_analysis_result['api_net'] = list(set(api_net))
     api_analysis_result['api_base64'] = list(set(api_base64))
     api_analysis_result['api_fileio'] = list(set(api_fileio))
@@ -208,7 +208,7 @@ def run_analysis(apk_dir, md5_hash, package):
             except Exception:
                 pass
     except Exception:
-        log_exception('TAR EXTRACTION FAILED')
+        logger.exception('TAR EXTRACTION FAILED')
     # Do Static Analysis on Data from Device
     xmlfiles = ''
     sqlite_db = ''
@@ -259,7 +259,7 @@ def run_analysis(apk_dir, md5_hash, package):
                                 typ,
                                 escape(fileparam))
     except Exception:
-        log_exception('Dynamic File Analysis')
+        logger.exception('Dynamic File Analysis')
     analysis_result['urls'] = urls
     analysis_result['domains'] = domains
     analysis_result['emails'] = emails
@@ -315,4 +315,4 @@ def download(md5_hash, download_dir, apk_dir, package):
         except Exception:
             pass
     except Exception:
-        log_exception('Generating Downloads')
+        logger.exception('Generating Downloads')
