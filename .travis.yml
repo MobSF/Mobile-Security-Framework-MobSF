@@ -26,6 +26,7 @@ before_install:
 - wget ${LIBSSL1}
 - sudo dpkg -i ${LIBSSL1_NAME}
 - sudo dpkg -i ${PDFGEN_PKGFILE}
+- sudo apt update
 - sudo apt install -y openjdk-12-jdk
 - pip3 install wheel
 - pip3 wheel --wheel-dir=/tmp/yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.10.0
