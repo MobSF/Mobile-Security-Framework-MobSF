@@ -140,6 +140,14 @@ def static_analyzer(request, api=False):
                         True,
                     )
 
+                    # get app_name
+                    app_dic['real_name'] = get_app_name(
+                        app_dic['app_path'],
+                        app_dic['app_dir'],
+                        app_dic['tools_dir'],
+                        True,
+                    )
+
                     # Get icon
                     res_path = os.path.join(app_dic['app_dir'], 'res')
                     app_dic['icon_hidden'] = True
@@ -327,6 +335,14 @@ def static_analyzer(request, api=False):
                             False,
                         )
 
+                        # get app_name
+                        app_dic['real_name'] = get_app_name(
+                            app_dic['app_path'],
+                            app_dic['app_dir'],
+                            app_dic['tools_dir'],
+                            False,
+                        )
+
                         # Set manifest view link
                         app_dic['mani'] = (
                             '../ManifestView/?md5='
@@ -507,6 +523,35 @@ def gen_downloads(app_dir, md5, icon_path=''):
             if os.path.exists(icon_path):
                 shutil.copy2(icon_path, os.path.join(
                     settings.DWD_DIR, md5 + '-icon.png'))
-
     except Exception:
         log_exception('Generating Downloads')
+
+
+def get_app_name(app_path, app_dir, tools_dir, is_apk):
+    """Get app name."""
+    data = ''
+    if is_apk:
+        output_dir = os.path.join(app_dir, 'apktool_out')
+        strings_file = os.path.join(output_dir, 'res/values/strings.xml')
+    else:
+        strings_path = os.path.join(app_dir,
+                                    'app/src/main/res/values/strings.xml')
+        eclipse_path = os.path.join(app_dir,
+                                    'res/values/strings.xml')
+        if os.path.exists(strings_path):
+            strings_file = strings_path
+        elif os.path.exists(eclipse_path):
+            strings_file = eclipse_path
+    if not os.path.exists(strings_file):
+        logger.warning('Cannot find app name')
+        return ''
+
+    with open(strings_file, 'r', encoding='utf-8') as f:
+        data = f.read()
+
+    app_name_match = re.search(r'<string name=\"app_name\">(.*)</string>',
+                               data)
+
+    if len(app_name_match.groups()) <= 0:
+        return ''
+    return app_name_match.group(app_name_match.lastindex)
