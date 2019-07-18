@@ -26,12 +26,7 @@ before_install:
 - wget ${LIBSSL1}
 - sudo dpkg -i ${LIBSSL1_NAME}
 - sudo dpkg -i ${PDFGEN_PKGFILE}
-- sudo apt install -y software-properties-common
-- sudo add-apt-repository ppa:linuxuprising/java -y
-- sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 762E3157
-- sudo apt update
-- echo oracle-java12-installer shared/accepted-oracle-license-v1-2 select true | sudo /usr/bin/debconf-set-selections
-- sudo apt install -y oracle-java12-installer
+- sudo apt install -y openjdk-12-jdk
 - pip3 install wheel
 - pip3 wheel --wheel-dir=/tmp/yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.10.0
 - pip3 install --no-index --find-links=/tmp/yara-python yara-python
