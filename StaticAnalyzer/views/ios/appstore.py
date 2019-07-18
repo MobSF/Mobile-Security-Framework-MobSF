@@ -1,23 +1,23 @@
 # -*- coding: utf_8 -*-
-import requests
-
 import logging
 
-from MobSF.utils import (
-    upstream_proxy,
-)
+import requests
+
+from MobSF.utils import upstream_proxy
 
 logger = logging.getLogger(__name__)
 
 
 def app_search(app_id):
-    '''iOS Get App Details from App Store'''
-    logger.info("Fetching Details from App Store: %s", app_id)
+    """IOS Get App Details from App Store."""
+    logger.info('Fetching Details from App Store: %s', app_id)
     lookup_url = 'https://itunes.apple.com/lookup'
     req_url = '{}?bundleId={}&country={}&entity=software'.format(
         lookup_url, app_id, 'us')
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+        'User-Agent': ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
+                       'AppleWebKit/537.36 (KHTML, like Gecko) '
+                       'Chrome/39.0.2171.95 Safari/537.36')}
     try:
         det = {}
         proxies, verify = upstream_proxy('https')
@@ -28,7 +28,9 @@ def app_search(app_id):
             det = resp['results'][0]
             return {
                 'features': det['features'] or [],
-                'icon': det['artworkUrl512'] or det['artworkUrl100'] or det['artworkUrl60'] or '',
+                'icon': (det['artworkUrl512']
+                         or det['artworkUrl100']
+                         or det['artworkUrl60'] or ''),
                 'developer_id': det['artistId'],
                 'developer': det['artistName'],
                 'developer_url': det['artistViewUrl'],
@@ -45,6 +47,6 @@ def app_search(app_id):
             }
         logger.warning('Unable to get app details.')
         return {'error': True}
-    except Exception as exp:
-        logger.warning('Unable to get app details. %s', exp)
+    except Exception:
+        logger.warning('Unable to get app details')
         return {'error': True}

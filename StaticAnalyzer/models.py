@@ -90,7 +90,7 @@ class StaticAnalyzerIPA(models.Model):
     BUNDLE_URL_TYPES = models.TextField()
     BUNDLE_SUPPORTED_PLATFORMS = models.CharField(max_length=50)
     BUNDLE_LOCALIZATIONS = models.TextField()
-    BINTYPE = models.CharField(max_length=20, default="")
+    BINTYPE = models.CharField(max_length=20, default='')
     APPSTORE_DETAILS = models.TextField(default={})
 
 

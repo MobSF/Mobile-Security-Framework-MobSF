@@ -52,9 +52,8 @@ addons:
       - sqlite3
 install:
 - export PYTHONIOENCODING=UTF8
-- pip install coveralls
 before_script:
-  - pip install flake8 -r requirements.txt
+  - pip install tox -r requirements.txt
 script:
-  - flake8 . --count --select=E9,F63,F72,F82 --exclude .git,__pycache__,venv --show-source --statistics
+  - tox -e lint
   - python manage.py test
