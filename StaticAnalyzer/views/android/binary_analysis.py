@@ -5,8 +5,6 @@ import logging
 import os
 import struct
 
-from MobSF.utils import log_exception
-
 logger = logging.getLogger(__name__)
 
 
@@ -280,7 +278,7 @@ def res_analysis(app_dir):
         return res
 
     except Exception:
-        log_exception('Performing Resourse Analysis')
+        logger.exception('Performing Resourse Analysis')
 
 
 def elf_analysis(app_dir: str) -> list:
@@ -334,4 +332,4 @@ def elf_analysis(app_dir: str) -> list:
         return res
 
     except Exception:
-        log_exception('Performing Binary Analysis')
+        logger.exception('Performing Binary Analysis')

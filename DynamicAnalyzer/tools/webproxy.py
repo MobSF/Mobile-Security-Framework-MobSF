@@ -1,57 +1,58 @@
-import os
-import time
-import requests
-import subprocess
 import logging
+import os
+import subprocess
+import time
+
 import capfuzz as cp
 
+import requests
 
 logger = logging.getLogger(__name__)
-'''
+"""
 from capfuzz.__main__ import (
     CapFuzz
 )
-'''
+"""
 
 
 def stop_capfuzz(port):
-    """CapFuzz Kill"""
+    """Capfuzz Kill."""
     # Invoke CapFuzz UI Kill Request
     try:
-        requests.get("http://127.0.0.1:" + str(port) + "/kill", timeout=5)
-        logger.info("Killing CapFuzz UI")
-    except:
+        requests.get('http://127.0.0.1:' + str(port) + '/kill', timeout=5)
+        logger.info('Killing CapFuzz UI')
+    except Exception:
         pass
 
     # Inkoke CapFuzz Proxy Kill Request
     try:
-        http_proxy = "http://127.0.0.1:" + str(port)
-        headers = {"capfuzz": "kill"}
-        url = "http://127.0.0.1"
+        http_proxy = 'http://127.0.0.1:' + str(port)
+        headers = {'capfuzz': 'kill'}
+        url = 'http://127.0.0.1'
         requests.get(url, headers=headers, proxies={
                      'http': http_proxy})
-        logger.info("Killing CapFuzz Proxy")
-    except:
+        logger.info('Killing CapFuzz Proxy')
+    except Exception:
         pass
 
 
 def start_proxy(port, project):
-    """Start CapFuzz in Proxy Mode"""
-    subprocess.Popen(["capfuzz",
-                      "-m", "capture", "-p", str(port), "-n", project])
+    """Start CapFuzz in Proxy Mode."""
+    subprocess.Popen(['capfuzz',
+                      '-m', 'capture', '-p', str(port), '-n', project])
     """
     capfuzz_obj = CapFuzz()
     proxy_trd = Thread(target=capfuzz_obj.start_proxy,
-                       args=(port, "capture", project,))
+                       args=(port, 'capture', project,))
     proxy_trd.daemon = True
     proxy_trd.start()
     """
 
 
 def start_fuzz_ui(port):
-    """Start Fuzz UI"""
-    subprocess.Popen(["capfuzz",
-                      "-m", "fuzz", "-p", str(port)])
+    """Start Fuzz UI."""
+    subprocess.Popen(['capfuzz',
+                      '-m', 'fuzz', '-p', str(port)])
     time.sleep(3)
     """
     capfuzz_obj = CapFuzz()
@@ -62,6 +63,6 @@ def start_fuzz_ui(port):
 
 
 def get_ca_dir():
-    """Get CA Dir"""
+    """Get CA Dir."""
     capfuzz_dir = os.path.dirname(cp.__file__)
-    return os.path.join(capfuzz_dir, "ca", "mitmproxy-ca-cert.cer")
+    return os.path.join(capfuzz_dir, 'ca', 'mitmproxy-ca-cert.cer')
