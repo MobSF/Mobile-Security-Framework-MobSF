@@ -411,7 +411,7 @@ else:
 
 # The below code should be loaded last.
 # ============JAVA SETTINGS======================
-JAVA_PATH = find_java_binary(False)
+JAVA_BINARY = find_java_binary()
 # ===============================================
 
 # ================VirtualBox Settings============

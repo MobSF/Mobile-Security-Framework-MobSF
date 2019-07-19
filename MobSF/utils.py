@@ -70,7 +70,7 @@ def api_key():
             _api_key = open(secret_file).read().strip()
             return gen_sha256_hash(_api_key)
         except Exception:
-            log_exception('Cannot Read API Key')
+            logger.exception('Cannot Read API Key')
 
 
 def print_version():
@@ -87,7 +87,7 @@ def print_version():
     logger.info('Platform: %s', platform.platform())
     if platform.dist()[0]:
         logger.info('Dist: %s', str(platform.dist()))
-    find_java_binary(True)
+    find_java_binary()
     find_vboxmange_binary(True)
     check_basic_env()
     adb_binary_or32bit_support()
@@ -103,7 +103,7 @@ def check_update():
         try:
             proxies, verify = upstream_proxy('https')
         except Exception:
-            log_exception('Setting upstream proxy')
+            logger.exception('Setting upstream proxy')
         response = requests.get(github_url, timeout=5,
                                 proxies=proxies, verify=verify)
         html = str(response.text).split('\n')
@@ -122,7 +122,7 @@ def check_update():
                        ' No Internet Connection Found.')
         return
     except Exception:
-        log_exception('Cannot Check for updates.')
+        logger.exception('Cannot Check for updates.')
 
 
 def create_user_conf(mobsf_home):
@@ -146,7 +146,7 @@ def create_user_conf(mobsf_home):
             with open(config_path, 'w') as f:
                 f.write(conf_str)
     except Exception:
-        log_exception('Cannot create config file')
+        logger.exception('Cannot create config file')
 
 
 def get_mobsf_home(use_home):
@@ -182,7 +182,7 @@ def get_mobsf_home(use_home):
             os.makedirs(upload_dir)
         return mobsf_home
     except Exception:
-        log_exception('Creating MobSF Home Directory')
+        logger.exception('Creating MobSF Home Directory')
 
 
 def make_migrations(base_dir):
@@ -194,7 +194,7 @@ def make_migrations(base_dir):
         args = [get_python(), manage, 'makemigrations', 'StaticAnalyzer']
         subprocess.call(args)
     except Exception:
-        log_exception('Cannot Make Migrations')
+        logger.exception('Cannot Make Migrations')
 
 
 def migrate(base_dir):
@@ -206,7 +206,7 @@ def migrate(base_dir):
         args = [get_python(), manage, 'migrate', '--run-syncdb']
         subprocess.call(args)
     except Exception:
-        log_exception('Cannot Migrate')
+        logger.exception('Cannot Migrate')
 
 
 def kali_fix(base_dir):
@@ -216,7 +216,7 @@ def kali_fix(base_dir):
             subprocess.call(['chmod', 'a+x', fix_path])
             subprocess.call([fix_path], shell=True)
     except Exception:
-        log_exception('Cannot run Kali Fix')
+        logger.exception('Cannot run Kali Fix')
 
 
 def find_vboxmange_binary(debug=False):
@@ -242,129 +242,36 @@ def find_vboxmange_binary(debug=False):
                 logger.warning('Could not find VirtualBox path')
     except Exception:
         if debug:
-            log_exception('Cannot find VirtualBox path.')
+            logger.exception('Cannot find VirtualBox path.')
 
 
-# Maintain JDK Version
-JAVA_VER = '1.7|1.8|1.9|2.0|2.1|2.2|2.3'
-
-
-def find_java_binary(debug=False):
+def find_java_binary():
     """Find Java."""
-    # Maintain JDK Version
-    java_versions = '1.7|1.8|1.9|2.0|2.1|2.2|2.3|8|9|10|11'
-    """
-    This code is needed because some people are not capable
-    of setting java path :-(
-    """
-    win_java_paths = [
-        'C:/Program Files/Java/',
-        'C:/Program Files (x86)/Java/',
-        'D:/Program Files/Java/',
-        'D:/Program Files (x86)/Java/',
-        'E:/Program Files/Java/',
-        'E:/Program Files (x86)/Java/',
-        'F:/Program Files/Java/',
-        'F:/Program Files (x86)/Java/',
-        'G:/Program Files/Java/',
-        'G:/Program Files (x86)/Java/',
-        'H:/Program Files/Java/',
-        'H:/Program Files (x86)/Java/',
-        'I:/Program Files/Java/',
-        'I:/Program Files (x86)/Java/',
-    ]
-    try:
-        err_msg1 = 'Oracle JDK 1.7 or above is not found!'
-        if is_dir_exists(settings.JAVA_DIRECTORY):
-            if settings.JAVA_DIRECTORY.endswith('/'):
-                return settings.JAVA_DIRECTORY
-            elif settings.JAVA_DIRECTORY.endswith('\\'):
-                return settings.JAVA_DIRECTORY
-            else:
-                return settings.JAVA_DIRECTORY + '/'
-        elif platform.system() == 'Windows':
-            if debug:
-                logger.info('Finding JDK Location in Windows....')
-            # JDK 7 jdk1.7.0_17/bin/
-            for java_path in win_java_paths:
-                if os.path.isdir(java_path):
-                    for dirname in os.listdir(java_path):
-                        if 'jdk' in dirname:
-                            win_java_path = java_path + dirname + '/bin/'
-                            args = [win_java_path + 'java', '-version']
-                            dat = run_process(args)
-                            if 'java' in dat:
-                                if debug:
-                                    logger.info(
-                                        'Oracle Java JDK is installed!')
-                                return win_java_path
-            for env in ['JDK_HOME', 'JAVA_HOME']:
-                java_home = os.environ.get(env)
-                if java_home and os.path.isdir(java_home):
-                    win_java_path = java_home + '/bin/'
-                    args = [win_java_path + 'java', '-version']
-                    dat = run_process(args)
-                    if 'java' in dat:
-                        if debug:
-                            logger.info('Oracle Java is installed!')
-                        return win_java_path
-
-            if debug:
-                logger.info(err_msg1)
-            return 'java'
+    # Respect user settings
+    if platform.system() == 'Windows':
+        jbin = 'java.exe'
+    else:
+        jbin = 'java'
+    if is_dir_exists(settings.JAVA_DIRECTORY):
+        if settings.JAVA_DIRECTORY.endswith('/'):
+            return settings.JAVA_DIRECTORY + jbin
+        elif settings.JAVA_DIRECTORY.endswith('\\'):
+            return settings.JAVA_DIRECTORY + jbin
         else:
-            if debug:
-                logger.info('Finding JDK Location in Linux/MAC....')
-            # Check in Environment Variables
-            for env in ['JDK_HOME', 'JAVA_HOME']:
-                java_home = os.environ.get(env)
-                if java_home and os.path.isdir(java_home):
-                    lm_java_path = java_home + '/bin/'
-                    args = [lm_java_path + 'java', '-version']
-                    dat = run_process(args)
-                    if 'oracle' in dat:
-                        if debug:
-                            logger.info('Oracle Java is installed!')
-                        return lm_java_path
-            mac_linux_java_dir = '/usr/bin/'
-            args = [mac_linux_java_dir + 'java']
-            dat = run_process(args)
-            if 'oracle' in dat:
-                args = [mac_linux_java_dir + 'java', '-version']
-                dat = run_process(args)
-                f_line = dat.split('\n')[0]
-                if re.findall(java_versions, f_line):
-                    if debug:
-                        logger.info('JDK 1.7 or above is available')
-                    return mac_linux_java_dir
-                else:
-                    err_msg = 'Please install Oracle JDK 1.7 or above'
-                    if debug:
-                        logger.error(err_msg)
-                    return 'java'
-            else:
-                args = [mac_linux_java_dir + 'java', '-version']
-                dat = run_process(args)
-                f_line = dat.split('\n')[0]
-                if re.findall(java_versions, f_line):
-                    if debug:
-                        logger.info('JDK 1.7 or above is available')
-                    return mac_linux_java_dir
-                else:
-                    err_msg = 'Please install Oracle JDK 1.7 or above'
-                    if debug:
-                        logger.error(err_msg)
-                    return 'java'
-
-    except Exception:
-        if debug:
-            log_exception('Oracle Java (JDK >=1.7) is not found!')
-        return 'java'
+            return settings.JAVA_DIRECTORY + '/' + jbin
+    if os.getenv('JAVA_HOME'):
+        java = os.path.join(
+            os.getenv('JAVA_HOME'),
+            'bin',
+            jbin)
+        if is_file_exists(java):
+            return java
+    return 'java'
 
 
 def get_python():
     """Get Python Executable."""
-    return get_python()
+    return sys.executable
 
 
 def run_process(args):
@@ -379,16 +286,8 @@ def run_process(args):
             dat += str(line)
         return dat
     except Exception:
-        log_exception('Finding Java path - Cannot Run Process')
+        logger.error('Finding Java path - Cannot Run Process')
         return ''
-
-
-def log_exception(msg, web=False):
-    """Log Exception verbose."""
-    if web:
-        logger.warning(msg)
-    else:
-        logger.error(msg)
 
 
 def print_n_send_error_response(request,
@@ -466,7 +365,7 @@ def is_internet_available():
     try:
         proxies, verify = upstream_proxy('https')
     except Exception:
-        log_exception('Setting upstream proxy')
+        logger.exception('Setting upstream proxy')
     try:
         requests.get('https://www.google.com', timeout=5,
                      proxies=proxies, verify=verify)
@@ -531,7 +430,7 @@ def zipdir(path, zip_file):
             for file_name in files:
                 zip_file.write(os.path.join(root, file_name))
     except Exception:
-        log_exception('Zipping')
+        logger.exception('Zipping')
 
 
 def get_adb():
@@ -554,7 +453,7 @@ def get_adb():
                 adb = os.path.join(settings.TOOLS_DIR, 'adb/windows/adb.exe')
             return adb
     except Exception:
-        log_exception('Getting ADB Location')
+        logger.exception('Getting ADB Location')
         return 'adb'
 
 
@@ -577,24 +476,25 @@ def check_basic_env():
     try:
         import capfuzz  # noqa F401
     except ImportError:
-        log_exception('CapFuzz not installed!')
+        logger.exception('CapFuzz not installed!')
         os.kill(os.getpid(), signal.SIGTERM)
     try:
         import lxml  # noqa F401
     except ImportError:
-        log_exception('lxml is not installed!')
+        logger.exception('lxml is not installed!')
         os.kill(os.getpid(), signal.SIGTERM)
     if platform.system() == 'Windows':
-        java = settings.JAVA_PATH + 'java.exe'
+        java = settings.JAVA_BINARY + '.exe'
     else:
-        java = settings.JAVA_PATH + 'java'
+        java = settings.JAVA_BINARY
     if not is_file_exists(java):
         logger.error(
-            'Oracle Java is not available '
-            'or JåAVA_DIRECTORY in MobSF/settings.py '
-            'is configured incorrectly!')
-        logger.info('JAVA_DIRECTORY=%s"', settings.JAVA_DIRECTORY)
-        logger.info('Example Confxiguration:'
+            'JDK 8+ is not available. '
+            'Set JAVA_HOME environment variable'
+            ' or JAVA_HOME in MobSF/settings.py')
+        logger.info('Current Configuration: '
+                    'JAVA_DIRECTORY=%s', settings.JAVA_DIRECTORY)
+        logger.info('Example Configuration:'
                     '\nJAVA_DIRECTORY = "C:/Program Files/'
                     'Java/jdk1.7.0_17/bin/"'
                     '\nJAVA_DIRECTORY = "/usr/bin/"')
@@ -604,9 +504,9 @@ def check_basic_env():
 def first_run(secret_file, base_dir, mobsf_home):
     # Based on https://gist.github.com/ndarville/3452907#file-secret-key-gen-py
 
-    try:
+    if is_file_exists(secret_file):
         secret_key = open(secret_file).read().strip()
-    except IOError:
+    else:
         try:
             secret_key = get_random()
             secret = open(secret_file, 'w')

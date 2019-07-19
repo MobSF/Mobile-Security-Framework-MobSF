@@ -18,7 +18,7 @@ def win_fix_java(tools_dir):
         dat = ''
         with open(dmy, 'r') as file_pointer:
             dat = file_pointer.read().replace(
-                '[xxx]', settings.JAVA_PATH + 'java')
+                '[xxx]', settings.JAVA_BINARY)
         with open(org, 'w') as file_pointer:
             file_pointer.write(dat)
     except Exception:

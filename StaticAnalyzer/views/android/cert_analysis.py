@@ -71,7 +71,7 @@ def cert_info(app_dir, app_file, tools_dir):
                 elif file_name.lower().endswith('.dsa'):
                     certfile = os.path.join(cert, file_name)
         if certfile:
-            args = [settings.JAVA_PATH + 'java', '-jar', cp_path, certfile]
+            args = [settings.JAVA_BINARY, '-jar', cp_path, certfile]
             issued = 'good'
             try:
                 dat = subprocess.check_output(args)

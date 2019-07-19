@@ -111,7 +111,7 @@ def dex_2_smali(app_dir, tools_dir):
                 bs_path = os.path.join(tools_dir, 'baksmali-2.2.7.jar')
             output = os.path.join(app_dir, 'smali_source/')
             args = [
-                settings.JAVA_PATH + 'java',
+                settings.JAVA_BINARY,
                 '-jar',
                 bs_path,
                 'd',
@@ -141,7 +141,7 @@ def jar_2_java(app_dir, tools_dir):
                     jd_path = ext_jdcore
                 else:
                     jd_path = os.path.join(tools_dir, 'jd-core.jar')
-                args = [settings.JAVA_PATH + 'java',
+                args = [settings.JAVA_BINARY,
                         '-jar',
                         jd_path,
                         jar_path,
@@ -153,7 +153,7 @@ def jar_2_java(app_dir, tools_dir):
                     jd_path = ext_cfr
                 else:
                     jd_path = os.path.join(tools_dir, 'cfr-0.144.jar')
-                args = [settings.JAVA_PATH + 'java',
+                args = [settings.JAVA_BINARY,
                         '-jar',
                         jd_path,
                         jar_path,
@@ -169,7 +169,7 @@ def jar_2_java(app_dir, tools_dir):
                 else:
                     pd_path = os.path.join(
                         tools_dir, 'procyon-decompiler-0.5.34.jar')
-                args = [settings.JAVA_PATH + 'java',
+                args = [settings.JAVA_BINARY,
                         '-jar',
                         pd_path,
                         jar_path,
