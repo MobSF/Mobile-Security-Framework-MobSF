@@ -1,46 +1,46 @@
 dist: xenial
 language: python
 python:
-- '3.6'
+  - '3.6'
 virtualenv:
   system_site_packages: false
 sudo: false
 cache:
-- apt
-- pip
+  - apt
+  - pip
+env:
+  - JAVA_HOME=/jdk-12
+  - PATH=$JAVA_HOME/bin:$PATH
 before_install:
-- export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
-- REPO=`pwd`
-- echo $REPO
-- echo $TRAVIS_TAG
-- pwd
-- export PDFGEN_PKGFILE="wkhtmltox_0.12.5-1.xenial_amd64.deb"
-- export PDFGEN_URL="https://downloads.wkhtmltopdf.org/0.12/0.12.5/${PDFGEN_PKGFILE}"
-- export YARA_URL="https://github.com/rednaga/yara-python-1"
-- export POSTGRES=False
-- export LIBSSL1="http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4.3_amd64.deb"
-- export LIBSSL1_NAME="libssl1.1_1.1.0g-2ubuntu4.3_amd64.deb"
-- sudo apt-get install -y libpng16-16 libssl-dev xfonts-75dpi xfonts-base libffi-dev libxml2-dev libxslt1-dev
-- sudo apt-get install -y openssl
-- wget ${PDFGEN_URL}
-- wget ${LIBSSL1}
-- sudo dpkg -i ${LIBSSL1_NAME}
-- sudo dpkg -i ${PDFGEN_PKGFILE}
-- sudo apt install -y software-properties-common
-- sudo add-apt-repository ppa:linuxuprising/java -y
-- sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 762E3157
-- sudo apt update
-- echo oracle-java12-installer shared/accepted-oracle-license-v1-2 select true | sudo /usr/bin/debconf-set-selections
-- sudo apt install -y oracle-java12-installer
-- pip3 install wheel
-- pip3 wheel --wheel-dir=/tmp/yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.10.0
-- pip3 install --no-index --find-links=/tmp/yara-python yara-python
+  - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
+  - REPO=`pwd`
+  - echo $REPO
+  - echo $TRAVIS_TAG
+  - pwd
+  - export PDFGEN_PKGFILE="wkhtmltox_0.12.5-1.xenial_amd64.deb"
+  - export PDFGEN_URL="https://downloads.wkhtmltopdf.org/0.12/0.12.5/${PDFGEN_PKGFILE}"
+  - export YARA_URL="https://github.com/rednaga/yara-python-1"
+  - export POSTGRES=False
+  - export LIBSSL1="http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4.3_amd64.deb"
+  - export LIBSSL1_NAME="libssl1.1_1.1.0g-2ubuntu4.3_amd64.deb"
+  - sudo apt-get install -y libpng16-16 libssl-dev xfonts-75dpi xfonts-base libffi-dev libxml2-dev libxslt1-dev
+  - sudo apt-get install -y openssl
+  - wget ${PDFGEN_URL}
+  - wget ${LIBSSL1}
+  - sudo dpkg -i ${LIBSSL1_NAME}
+  - sudo dpkg -i ${PDFGEN_PKGFILE}
+  - wget https://download.java.net/java/GA/jdk12/GPL/openjdk-12_linux-x64_bin.tar.gz
+  - tar zxvf openjdk-12_linux-x64_bin.tar.gz
+  - pip3 install wheel
+  - pip3 wheel --wheel-dir=/tmp/yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.10.0
+  - pip3 install --no-index --find-links=/tmp/yara-python yara-python
 
 addons:
   apt:
     packages:
       - python3-pip
       - git
+      - wget
       - unzip
       - python3-dev
       - libevent-dev
@@ -51,9 +51,8 @@ addons:
       - python3-setuptools
       - sqlite3
 install:
-- export PYTHONIOENCODING=UTF8
+  - export PYTHONIOENCODING=UTF8
 before_script:
   - pip install tox -r requirements.txt
 script:
-  - tox -e lint
-  - python manage.py test
+  - tox -e lint,test
