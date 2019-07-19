@@ -1,16 +1,11 @@
-"""
-Helpers
-"""
+"""Helpers."""
 import functools
-from django.conf import settings
 
-from django.http import (
-    HttpRequest,
-    HttpResponseNotAllowed,
-)
+from django.conf import settings
+from django.http import HttpRequest, HttpResponseNotAllowed
 
 ALLOW_METHODS = ['GET', 'POST', 'PUT', 'DELETE',
-                 'PATCH', 'OPTIONS', 'HEAD', 'TRACE', ]
+                 'PATCH', 'OPTIONS', 'HEAD', 'TRACE']
 
 
 class FileType(object):
@@ -21,6 +16,8 @@ class FileType(object):
 
     def is_allow_file(self):
         """
+        Is File Allowed.
+
         return bool
         """
         if self.is_apk() or self.is_zip() or self.is_ipa() or self.is_appx():
@@ -28,20 +25,26 @@ class FileType(object):
         return False
 
     def is_apk(self):
-        return (self.file_type in settings.APK_MIME) and self.file_name_lower.endswith('.apk')
+        return (self.file_type in settings.APK_MIME
+                and self.file_name_lower.endswith('.apk'))
 
     def is_zip(self):
-        return (self.file_type in settings.ZIP_MIME) and self.file_name_lower.endswith('.zip')
+        return (self.file_type in settings.ZIP_MIME
+                and self.file_name_lower.endswith('.zip'))
 
     def is_ipa(self):
-        return (self.file_type in settings.IPA_MIME) and self.file_name_lower.endswith('.ipa')
+        return (self.file_type in settings.IPA_MIME
+                and self.file_name_lower.endswith('.ipa'))
 
     def is_appx(self):
-        return (self.file_type in settings.APPX_MIME) and self.file_name_lower.endswith('.appx')
+        return (self.file_type in settings.APPX_MIME
+                and self.file_name_lower.endswith('.appx'))
 
 
 def request_method(methods):
     """
+    Request Method Checks.
+
     :param methods http method
     need django HttpRequest
     """
@@ -49,7 +52,8 @@ def request_method(methods):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
 
-            if not isinstance(methods, list) and not isinstance(methods, tuple):
+            if (not isinstance(methods, list)
+                    and not isinstance(methods, tuple)):
                 raise ValueError(
                     'the parameter methods is not a list or tuple')
 

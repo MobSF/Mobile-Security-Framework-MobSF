@@ -24,18 +24,18 @@ RUN apt update -y && apt install -y \
     libffi-dev \
     libxml2-dev \
     libxslt1-dev \
-    locales
+    locales \
+    wget
 
 #set locales
 RUN locale-gen en_US.UTF-8
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
-#Install Oracle JDK12
-RUN apt install -y software-properties-common && \
-    add-apt-repository ppa:linuxuprising/java -y && \
-    apt update && \
-    echo oracle-java12-installer shared/accepted-oracle-license-v1-2 select true | /usr/bin/debconf-set-selections && \
-    apt install -y oracle-java12-installer
+#Install OpenJDK12
+RUN wget https://download.java.net/java/GA/jdk12/GPL/openjdk-12_linux-x64_bin.tar.gz && \
+    tar zxvf openjdk-12_linux-x64_bin.tar.gz
+ENV JAVA_HOME=/jdk-12
+ENV PATH=$JAVA_HOME/bin:$PATH
 
 #Install Python 3
 RUN \

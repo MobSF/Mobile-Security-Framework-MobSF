@@ -1,22 +1,22 @@
 # -*- coding: utf_8 -*-
-from django.db.models import QuerySet
-"""Module holding the functions for the db."""
+import logging
 
-from MobSF.utils import (
-    PrintException,
-    python_list,
-    python_dict
-)
+from django.db.models import QuerySet
+
+from MobSF.utils import python_dict, python_list
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
-import logging
+
+"""Module holding the functions for the db."""
+
+
 logger = logging.getLogger(__name__)
 
 
 def get_context_from_db_entry(db_entry: QuerySet) -> dict:
-    """Return the context for APK/ZIP from DB"""
+    """Return the context for APK/ZIP from DB."""
     try:
-        logger.info("Analysis is already Done. Fetching data from the DB...")
+        logger.info('Analysis is already Done. Fetching data from the DB...')
 
         context = {
             'title': db_entry[0].TITLE,
@@ -71,12 +71,19 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'trackers': python_dict(db_entry[0].TRACKERS),
         }
         return context
-    except:
-        PrintException("Fetching from DB")
+    except Exception:
+        logger.exception('Fetching from DB')
 
 
-def get_context_from_analysis(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bin_anal, apk_id, trackers) -> dict:
-    """Get the context for APK/ZIP from analysis results"""
+def get_context_from_analysis(app_dic,
+                              man_data_dic,
+                              man_an_dic,
+                              code_an_dic,
+                              cert_dic,
+                              bin_anal,
+                              apk_id,
+                              trackers) -> dict:
+    """Get the context for APK/ZIP from analysis results."""
     try:
         context = {
             'title': 'Static Analysis',
@@ -121,22 +128,29 @@ def get_context_from_analysis(app_dic, man_data_dic, man_an_dic, code_an_dic, ce
             'strings': app_dic['strings'],
             'zipped': app_dic['zipped'],
             'mani': app_dic['mani'],
-            'e_act': man_an_dic['exported_cnt']["act"],
-            'e_ser': man_an_dic['exported_cnt']["ser"],
-            'e_bro': man_an_dic['exported_cnt']["bro"],
-            'e_cnt': man_an_dic['exported_cnt']["cnt"],
+            'e_act': man_an_dic['exported_cnt']['act'],
+            'e_ser': man_an_dic['exported_cnt']['ser'],
+            'e_bro': man_an_dic['exported_cnt']['bro'],
+            'e_cnt': man_an_dic['exported_cnt']['cnt'],
             'apkid': apk_id,
             'play_details': app_dic['playstore'],
             'firebase': code_an_dic['firebase'],
             'trackers': trackers,
         }
         return context
-    except:
-        PrintException("Rendering to Template")
+    except Exception:
+        logger.exception('Rendering to Template')
 
 
-def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bin_anal, apk_id, trackers) -> None:
-    """Update an APK/ZIP DB entry"""
+def update_db_entry(app_dic,
+                    man_data_dic,
+                    man_an_dic,
+                    code_an_dic,
+                    cert_dic,
+                    bin_anal,
+                    apk_id,
+                    trackers) -> None:
+    """Update an APK/ZIP DB entry."""
     try:
         # pylint: disable=E1101
         StaticAnalyzerAndroid.objects.filter(MD5=app_dic['md5']).update(
@@ -183,21 +197,28 @@ def update_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bi
             ZIPPED=app_dic['zipped'],
             MANI=app_dic['mani'],
             EXPORTED_ACT=man_an_dic['exported_act'],
-            E_ACT=man_an_dic['exported_cnt']["act"],
-            E_SER=man_an_dic['exported_cnt']["ser"],
-            E_BRO=man_an_dic['exported_cnt']["bro"],
-            E_CNT=man_an_dic['exported_cnt']["cnt"],
+            E_ACT=man_an_dic['exported_cnt']['act'],
+            E_SER=man_an_dic['exported_cnt']['ser'],
+            E_BRO=man_an_dic['exported_cnt']['bro'],
+            E_CNT=man_an_dic['exported_cnt']['cnt'],
             APK_ID=apk_id,
             PLAY_DETAILS=app_dic['playstore'],
             FIREBASE=code_an_dic['firebase'],
             TRACKERS=trackers,
         )
-    except:
-        PrintException("Updating DB")
+    except Exception:
+        logger.exception('Updating DB')
 
 
-def create_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bin_anal, apk_id, trackers) -> None:
-    """Create a new DB-Entry for APK/ZIP"""
+def create_db_entry(app_dic,
+                    man_data_dic,
+                    man_an_dic,
+                    code_an_dic,
+                    cert_dic,
+                    bin_anal,
+                    apk_id,
+                    trackers) -> None:
+    """Create a new DB-Entry for APK/ZIP."""
     try:
         static_db = StaticAnalyzerAndroid(
             TITLE='Static Analysis',
@@ -243,15 +264,15 @@ def create_db_entry(app_dic, man_data_dic, man_an_dic, code_an_dic, cert_dic, bi
             ZIPPED=app_dic['zipped'],
             MANI=app_dic['mani'],
             EXPORTED_ACT=man_an_dic['exported_act'],
-            E_ACT=man_an_dic['exported_cnt']["act"],
-            E_SER=man_an_dic['exported_cnt']["ser"],
-            E_BRO=man_an_dic['exported_cnt']["bro"],
-            E_CNT=man_an_dic['exported_cnt']["cnt"],
+            E_ACT=man_an_dic['exported_cnt']['act'],
+            E_SER=man_an_dic['exported_cnt']['ser'],
+            E_BRO=man_an_dic['exported_cnt']['bro'],
+            E_CNT=man_an_dic['exported_cnt']['cnt'],
             APK_ID=apk_id,
             PLAY_DETAILS=app_dic['playstore'],
             FIREBASE=code_an_dic['firebase'],
             TRACKERS=trackers,
         )
         static_db.save()
-    except:
-        PrintException("Saving to DB")
+    except Exception:
+        logger.exception('Saving to DB')

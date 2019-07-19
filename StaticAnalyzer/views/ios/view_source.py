@@ -1,58 +1,48 @@
 # -*- coding: utf_8 -*-
-"""
-iOS View Source
-"""
-import re
-import os
+"""iOS View Source."""
 import io
 import json
-import ntpath
-import sqlite3
 import logging
-from django.shortcuts import render
-from django.http import HttpResponseRedirect
-from django.utils.html import escape
+import ntpath
+import os
+import sqlite3
+
+import biplist
+
 from django.conf import settings
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
+from django.utils.html import escape
+
+from MobSF.forms import FormUtil
+from MobSF.utils import (is_file_exists,
+                         print_n_send_error_response)
+
+from StaticAnalyzer.forms import ViewSourceIOSApiForm, ViewSourceIOSForm
 
 logger = logging.getLogger(__name__)
 
-import biplist
-from MobSF.forms import (
-    FormUtil
-)
-
-from StaticAnalyzer.forms import (
-    ViewSourceIOSApiForm,
-    ViewSourceIOSForm
-)
-
-from MobSF.utils import (
-    print_n_send_error_response,
-    PrintException,
-    isFileExists
-)
 
 def set_ext_api(file_path):
-    """
-    Smart Function to set Extenstion
-    """
+    """Smart Function to set Extenstion."""
     ext = file_path.split('.')[-1]
-    if ext == "plist":
-        return "plist"
+    if ext == 'plist':
+        return 'plist'
     elif ext == 'xml':
         return 'xml'
-    elif ext in ["sqlitedb", "db", "sqlite"]:
-        return "db"
-    elif ext == "m":
-        return "m"
+    elif ext in ['sqlitedb', 'db', 'sqlite']:
+        return 'db'
+    elif ext == 'm':
+        return 'm'
     else:
-        return "txt"
+        return 'txt'
+
 
 def run(request, api=False):
-    """View iOS Files"""
+    """View iOS Files."""
     try:
-        logger.info("View iOS Source File")
-        file_format = "cpp"
+        logger.info('View iOS Source File')
+        file_format = 'cpp'
         if api:
             fil = request.POST['file']
             md5_hash = request.POST['hash']
@@ -71,9 +61,9 @@ def run(request, api=False):
             context = {
                 'title': 'Error',
                 'exp': 'Error Description',
-                'doc': err
+                'doc': err,
             }
-            template = "general/error.html"
+            template = 'general/error.html'
             return render(request, template, context, status=400)
         if mode == 'ipa':
             src = os.path.join(settings.UPLD_DIR,
@@ -84,48 +74,54 @@ def run(request, api=False):
         dat = ''
         if typ == 'm':
             file_format = 'cpp'
-            with io.open(sfile, mode='r', encoding="utf8", errors="ignore") as flip:
+            with io.open(sfile,
+                         mode='r',
+                         encoding='utf8',
+                         errors='ignore') as flip:
                 dat = flip.read()
         elif typ == 'xml':
             file_format = 'xml'
-            with io.open(sfile, mode='r', encoding="utf8", errors="ignore") as flip:
+            with io.open(sfile,
+                         mode='r',
+                         encoding='utf8',
+                         errors='ignore') as flip:
                 dat = flip.read()
         elif typ == 'plist':
             file_format = 'json'
             dat = biplist.readPlist(sfile)
             try:
                 dat = json.dumps(dat, indent=4, sort_keys=True)
-            except:
+            except Exception:
                 pass
         elif typ == 'db':
             file_format = 'asciidoc'
             dat = read_sqlite(sfile)
-        elif typ == 'txt' and fil == "classdump.txt":
+        elif typ == 'txt' and fil == 'classdump.txt':
             file_format = 'cpp'
             app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
-            cls_dump_file = os.path.join(app_dir, "classdump.txt")
-            if isFileExists(cls_dump_file):
+            cls_dump_file = os.path.join(app_dir, 'classdump.txt')
+            if is_file_exists(cls_dump_file):
                 with io.open(cls_dump_file,
                              mode='r',
-                             encoding="utf8",
-                             errors="ignore"
-                             ) as flip:
+                             encoding='utf8',
+                             errors='ignore') as flip:
                     dat = flip.read()
             else:
-                dat = "Class Dump result not Found"
+                dat = 'Class Dump result not Found'
         else:
             if api:
-                return {"error": "Invalid Parameters"}
+                return {'error': 'Invalid Parameters'}
             return HttpResponseRedirect('/error/')
         context = {'title': escape(ntpath.basename(fil)),
                    'file': escape(ntpath.basename(fil)),
                    'type': file_format,
                    'dat': dat}
-        template = "general/view.html"
+        template = 'general/view.html'
         if api:
             return context
         return render(request, template, context)
     except Exception as exp:
+        logger.exception('Error Viewing Source')
         msg = str(exp)
         exp = exp.__doc__
         if api:
@@ -135,31 +131,32 @@ def run(request, api=False):
 
 
 def read_sqlite(sqlite_file):
-    """Read SQlite File"""
+    """Read SQlite File."""
     try:
-        logger.info("Dumping SQLITE Database")
+        logger.info('Dumping SQLITE Database')
         data = ''
         con = sqlite3.connect(sqlite_file)
         cur = con.cursor()
-        cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        cur.execute('SELECT name FROM sqlite_master WHERE type=\'table\';')
         tables = cur.fetchall()
         for table in tables:
-            data += "\nTABLE: " + str(table[0]).decode('utf8', 'ignore') + \
-                " \n=====================================================\n"
-            cur.execute("PRAGMA table_info('%s')" % table)
+            data += ('\nTABLE: ' + str(table[0]).decode('utf8', 'ignore')
+                     + ' \n================================'
+                     + '=====================\n')
+            cur.execute('PRAGMA table_info(\'%s\')' % table)
             rows = cur.fetchall()
             head = ''
             for row in rows:
-                head += str(row[1]).decode('utf8', 'ignore') + " | "
-            data += head + " \n========================================" +\
-                "=============================\n"
-            cur.execute("SELECT * FROM '%s'" % table)
+                head += str(row[1]).decode('utf8', 'ignore') + ' | '
+            data += head + (' \n========================================'
+                            '=============================\n')
+            cur.execute('SELECT * FROM \'%s\'' % table)
             rows = cur.fetchall()
             for row in rows:
                 dat = ''
                 for item in row:
-                    dat += str(item).decode('utf8', 'ignore') + " | "
-                data += dat + "\n"
+                    dat += str(item).decode('utf8', 'ignore') + ' | '
+                data += dat + '\n'
         return data
-    except:
-        PrintException("Dumping SQLITE Database")
+    except Exception:
+        logger.exception('Dumping SQLITE Database')

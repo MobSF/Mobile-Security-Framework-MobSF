@@ -12,7 +12,8 @@ class FormUtil(object):
 
     @staticmethod
     def errors_message(form):
-        """
+        """Form Errors.
+
         :param form forms.Form
         form.errors.get_json_data() django 2.0 or higher
 
@@ -20,7 +21,7 @@ class FormUtil(object):
         example
         {
         "error": {
-            "file": "This field is required.", 
+            "file": "This field is required.",
             "test": "This field is required."
             }
         }
