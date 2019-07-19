@@ -55,7 +55,7 @@ textarea:focus {
 <div class="row">
     <p id="but">
       <a id="start" class="btn btn-primary" role="button">Create Environment</a>
-      <a id="screen" class="btn btn-primary" role="button" style="visibility: hidden" {% if AVD %}disabled{% endif %}>Show Screen</a>
+      <a id="screen" class="btn btn-primary" role="button" style="visibility: hidden" >Show Screen</a>
       <a id="rootca" class="btn btn-primary" role="button" style="visibility: hidden" >Remove MobSF RootCA</a>
       <a id="expactt" class="btn btn-primary" role="button" style="visibility: hidden" >Start Exported Activity Tester</a>
       <a id="actt" class="btn btn-primary" role="button" style="visibility: hidden" >Start Activity Tester</a>
@@ -197,12 +197,7 @@ textarea:focus {
                                     	$('#start').text("Environment Created");
                                     	$('#stat').append("\nRunning HTTPS Proxy");
 
-                                    {% comment %}
-                                        AVD throws error if we overwrite files
-                                    {% endcomment %}
-                                    {% if AVD == True %}
-                                      $('#stat').append("\nMobSF RootCA Installed Successfully");
-                                    {% else %}
+                              
                                       //Install MobSF RootCA
                                       $.ajax({
                                       url : "../MobSFCA/", 
@@ -222,7 +217,7 @@ textarea:focus {
                                               document.getElementById("er").srcdoc = xhr.responseText;
                                           }   
                                       });
-                                    {% endif %}
+                                 
 
                                     	$('#stat').append("\nConnecting to VM");
                                     	$('#stat').append("\nMounting");

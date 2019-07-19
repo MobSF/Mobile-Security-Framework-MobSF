@@ -1,15 +1,12 @@
 # -*- coding: utf_8 -*-
 """Module holding the functions for icon analysis."""
 
-import subprocess
-import re
-import os
-import platform
 import fnmatch
-import string
 import logging
-from django.conf import settings
+import os
+
 from androguard.core.bytecodes import apk
+
 logger = logging.getLogger(__name__)
 
 
@@ -21,7 +18,7 @@ KNOWN_PATHS = [
     'drawable-xhdpi',
     'mipmap-mdpi',
     'drawable-mdpi',
-    'mipmap-hdpi-v4'
+    'mipmap-hdpi-v4',
 ]
 
 KNOWN_MIPMAP_SIZES = [
@@ -30,12 +27,8 @@ KNOWN_MIPMAP_SIZES = [
     '-xhdpi',
     '-xhdpi-v4',
     '-mdpi',
-    '-mdpi-v4'
+    '-mdpi-v4',
 ]
-
-from MobSF.utils import (
-    PrintException
-)
 
 
 def search_folder(src, file_pattern):
@@ -50,7 +43,7 @@ def guess_icon_path(res_dir):
     icon_folders = [
         'mipmap-hdpi',
         'mipmap-hdpi-v4',
-        'drawable'
+        'drawable',
     ]
     for icon_path in icon_folders:
         guessed_icon_path = os.path.join(res_dir, icon_path, 'ic_launcher.png')
@@ -67,11 +60,16 @@ def guess_icon_path(res_dir):
 
 
 def find_icon_path_zip(res_dir, icon_paths_from_manifest):
-    """Tries to find an icon, based on paths fetched from the manifest and by global search
-        returns an empty string on fail or a full path"""
+    """
+    Find icon.
+
+    Tries to find an icon, based on paths
+    fetched from the manifest and by global search
+    returns an empty string on fail or a full path
+    """
     global KNOWN_MIPMAP_SIZES
     try:
-        logger.info("Guessing icon path")
+        logger.info('Guessing icon path')
         for icon_path in icon_paths_from_manifest:
             if icon_path.startswith('@'):
                 path_array = icon_path.strip('@').split(os.sep)
@@ -103,15 +101,18 @@ def find_icon_path_zip(res_dir, icon_paths_from_manifest):
         # If didn't find, try the default name.. returns empty if not find
         return guess_icon_path(res_dir)
 
-    except:
-        PrintException("Guessing icon path")
+    except Exception:
+        logger.exception('Guessing icon path')
 
 
 def get_icon(apk_path, res_dir):
-    """Returns a dict with isHidden boolean and a relative path
-        path is a full path (not relative to resource folder) """
+    """
+    Returns a dict with isHidden boolean and a relative path.
+
+    path is a full path (not relative to resource folder)
+    """
     try:
-        logger.info("Fetching icon path")
+        logger.info('Fetching icon path')
         a = apk.APK(apk_path)
         icon_resolution = 0xFFFE - 1
         icon_name = a.get_app_icon(max_dpi=icon_resolution)
@@ -119,16 +120,16 @@ def get_icon(apk_path, res_dir):
             if '.xml' in icon_name:
                 return {
                     'path': guess_icon_path(res_dir),
-                    'hidden': False
+                    'hidden': False,
                 }
             else:
                 return {
                     'path': os.path.join(os.path.dirname(apk_path), icon_name),
-                    'hidden': False
+                    'hidden': False,
                 }
         return {
             'path': guess_icon_path(res_dir),
-            'hidden': True
+            'hidden': True,
         }
-    except:
-        PrintException("Fetching icon function")
+    except Exception:
+        logger.exception('Fetching icon function')

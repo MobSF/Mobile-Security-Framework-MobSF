@@ -1,5 +1,5 @@
 """
-Rule Format
+Rule Format.
 
 1. desc - Description of the findings
 
@@ -11,14 +11,19 @@ Rule Format
    a. single_regex - if re.findall(regex1, input)
    b .regex_and - if re.findall(regex1, input) and re.findall(regex2, input)
    c. regex_or - if re.findall(regex1, input) or re.findall(regex2, input)
-   d. regex_and_perm - if re.findall(regex, input) and (permission in permission_list_from_manifest)
+   d. regex_and_perm - if re.findall(regex, input) and
+                       (permission in permission_list_from_manifest)
    e. single_string - if string1 in input
    f. string_and - if (string1 in input) and (string2 in input)
    g. string_or - if (string1 in input) or (string2 in input)
-   h. string_and_or -  if (string1 in input) and ((string_or1 in input) or (string_or2 in input))
-   i. string_or_and - if (string1 in input) or ((string_and1 in input) and (string_and2 in input))
-   j. string_and_perm - if (string1 in input) and (permission in permission_list_from_manifest)
-   k. string_or_and_perm - if ((string1 in input) or (string2 in input)) and (permission in permission_list_from_manifest)
+   h. string_and_or -  if (string1 in input) and ((string_or1 in input)
+                       or (string_or2 in input))
+   i. string_or_and - if (string1 in input) or ((string_and1 in input)
+                      and (string_and2 in input))
+   j. string_and_perm - if (string1 in input)
+                        and (permission in permission_list_from_manifest)
+   k. string_or_and_perm - if ((string1 in input) or (string2 in input))
+                           and (permission in permission_list_from_manifest)
 
 4. level
    a. high
@@ -39,14 +44,19 @@ Rule Format
 """
 RULES = [
     {
-        'desc': 'Files may contain hardcoded sensitive informations like usernames, passwords, keys etc.',
+        'desc': ('Files may contain hardcoded sensitive '
+                 'informations like usernames, passwords, keys etc.'),
         'type': 'regex',
-        'regex1': r'''(password\s*=\s*['|"].+['|"]\s{0,5})|(pass\s*=\s*['|"].+['|"]\s{0,5})|(username\s*=\s*['|"].+['|"]\s{0,5})|(secret\s*=\s*['|"].+['|"]\s{0,5})|(key\s*=\s*['|"].+['|"]\s{0,5})''',
+        'regex1': (r'(password\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
+                   r'(pass\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
+                   r'(username\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
+                   r'(secret\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
+                   r'(key\s*=\s*[\'|\"].+[\'|\"]\s{0,5})'),
         'level': 'high',
         'match': 'single_regex',
         'input_case': 'lower',
         'cvss': 7.4,
-        'cwe': 'CWE-312'
+        'cwe': 'CWE-312',
     },
     {
         'desc': 'IP Address disclosure',
@@ -56,51 +66,67 @@ RULES = [
         'match': 'single_regex',
         'input_case': 'exact',
         'cvss': 4.3,
-        'cwe': 'CWE-200'
+        'cwe': 'CWE-200',
     },
     {
-        'desc': 'Hidden elements in view can be used to hide data from user. But this data can be leaked',
+        'desc': ('Hidden elements in view can be used to hide'
+                 ' data from user. But this data can be leaked'),
         'type': 'regex',
-        'regex1': r'setVisibility\(View\.GONE\)|setVisibility\(View\.INVISIBLE\)',
+        'regex1': (r'setVisibility\(View\.GONE\)|'
+                   r'setVisibility\(View\.INVISIBLE\)'),
         'level': 'high',
         'match': 'single_regex',
         'input_case': 'exact',
         'cvss': 4.3,
-        'cwe': 'CWE-919'
+        'cwe': 'CWE-919',
     },
     {
-        'desc': 'The App uses ECB mode in Cryptographic encryption algorithm. ECB mode is known to be weak as it results in the same ciphertext for identical blocks of plaintext.',
+        'desc': ('The App uses ECB mode in Cryptographic encryption algorithm.'
+                 ' ECB mode is known to be weak as it results in the same'
+                 ' ciphertext for identical blocks of plaintext.'),
         'type': 'regex',
         'regex1': r'Cipher\.getInstance\(\s*"\s*AES\/ECB',
         'level': 'high',
         'match': 'single_regex',
         'input_case': 'exact',
         'cvss': 5.9,
-        'cwe': 'CWE-327'
+        'cwe': 'CWE-327',
     },
     {
-        'desc': 'This App uses RSA Crypto without OAEP padding. The purpose of the padding scheme is to prevent a number of attacks on RSA that only work when the encryption is performed without padding.',
+        'desc': ('This App uses RSA Crypto without OAEP padding. The purpose'
+                 ' of the padding scheme is to prevent a number of attacks on'
+                 ' RSA that only work when the encryption is performed'
+                 ' without padding.'),
         'type': 'regex',
         'regex1': r'cipher\.getinstance\(\s*"rsa/.+/nopadding',
         'level': 'high',
         'match': 'single_regex',
         'input_case': 'lower',
         'cvss': 5.9,
-        'cwe': 'CWE-780'
+        'cwe': 'CWE-780',
     },
     {
-        'desc': 'Insecure Implementation of SSL. Trusting all the certificates or accepting self signed certificates is a critical Security Hole. This application is vulnerable to MITM attacks',
+        'desc': ('Insecure Implementation of SSL. Trusting all the '
+                 'certificates or accepting self signed certificates'
+                 ' is a critical Security Hole. This application is'
+                 ' vulnerable to MITM attacks'),
         'type': 'regex',
         'regex1': r'javax\.net\.ssl',
-        'regex2': r'TrustAllSSLSocket-Factory|AllTrustSSLSocketFactory|NonValidatingSSLSocketFactory|net\.SSLCertificateSocketFactory|ALLOW_ALL_HOSTNAME_VERIFIER|\.setDefaultHostnameVerifier\(|NullHostnameVerifier\(',
+        'regex2': (r'TrustAllSSLSocket-Factory|AllTrustSSLSocketFactory|'
+                   r'NonValidatingSSLSocketFactory|'
+                   r'net\.SSLCertificateSocketFactory|'
+                   r'ALLOW_ALL_HOSTNAME_VERIFIER|'
+                   r'\.setDefaultHostnameVerifier\(|'
+                   r'NullHostnameVerifier\('),
         'level': 'high',
         'match': 'regex_and',
         'input_case': 'exact',
         'cvss': 7.4,
-        'cwe': 'CWE-295'
+        'cwe': 'CWE-295',
     },
     {
-        'desc': 'WebView load files from external storage. Files in external storage can be modified by any application.',
+        'desc': ('WebView load files from external storage. Files in external'
+                 ' storage can be modified by any application.'),
         'type': 'regex',
         'regex1': r'\.loadUrl\(.*getExternalStorageDirectory\(',
         'regex2': r'webkit\.WebView',
@@ -108,7 +134,7 @@ RULES = [
         'match': 'regex_and',
         'input_case': 'exact',
         'cvss': 5.0,
-        'cwe': 'CWE-919'
+        'cwe': 'CWE-919',
     },
     {
         'desc': 'The file is World Readable. Any App can read from the file',
@@ -119,7 +145,7 @@ RULES = [
         'match': 'regex_or',
         'input_case': 'exact',
         'cvss': 4.0,
-        'cwe': 'CWE-276'
+        'cwe': 'CWE-276',
 
     },
     {
@@ -131,57 +157,65 @@ RULES = [
         'match': 'regex_or',
         'input_case': 'exact',
         'cvss': 6.0,
-        'cwe': 'CWE-276'
+        'cwe': 'CWE-276',
     },
     {
-        'desc': 'The file is World Readable and Writable. Any App can read/write to the file',
+        'desc': ('The file is World Readable and Writable. '
+                 'Any App can read/write to the file'),
         'type': 'regex',
         'regex1': r'openFileOutput\(\s*".+"\s*,\s*3\s*\)',
         'level': 'high',
         'match': 'single_regex',
         'input_case': 'exact',
         'cvss': 6.0,
-        'cwe': 'CWE-276'
+        'cwe': 'CWE-276',
     },
     {
         'desc': 'Weak Hash algorithm used',
         'type': 'regex',
-        'regex1': r'getInstance(\"md4\")|getInstance(\"rc2\")|getInstance(\"rc4\")|getInstance(\"RC4\")|getInstance(\"RC2\")|getInstance(\"MD4\")',
+        'regex1': (r'getInstance(\"md4\")|getInstance(\"rc2\")|'
+                   r'getInstance(\"rc4\")|getInstance(\"RC4\")|'
+                   r'getInstance(\"RC2\")|getInstance(\"MD4\")'),
         'level': 'high',
         'match': 'single_regex',
         'input_case': 'exact',
         'cvss': 7.4,
-        'cwe': 'CWE-327'
+        'cwe': 'CWE-327',
     },
     {
         'desc': 'MD5 is a weak hash known to have hash collisions.',
         'type': 'regex',
-        'regex1': r'MessageDigest\.getInstance\(\"*MD5\"*\)|MessageDigest\.getInstance\(\"*md5\"*\)|DigestUtils\.md5\(',
+        'regex1': (r'MessageDigest\.getInstance\(\"*MD5\"*\)|'
+                   r'MessageDigest\.getInstance\(\"*md5\"*\)|'
+                   r'DigestUtils\.md5\('),
         'level': 'high',
         'match': 'single_regex',
         'input_case': 'exact',
         'cvss': 7.4,
-        'cwe': 'CWE-327'
+        'cwe': 'CWE-327',
     },
     {
         'desc': 'SHA-1 is a weak hash known to have hash collisions.',
         'type': 'regex',
-        'regex1': r'MessageDigest\.getInstance\(\"*SHA-1\"*\)|MessageDigest\.getInstance\(\"*sha-1\"*\)|DigestUtils\.sha\(',
+        'regex1': (r'MessageDigest\.getInstance\(\"*SHA-1\"*\)|'
+                   r'MessageDigest\.getInstance\(\"*sha-1\"*\)|'
+                   r'DigestUtils\.sha\('),
         'level': 'high',
         'match': 'single_regex',
         'input_case': 'exact',
         'cvss': 5.9,
-        'cwe': 'CWE-327'
+        'cwe': 'CWE-327',
     },
     {
-        'desc': 'App can write to App Directory. Sensitive Information should be encrypted.',
+        'desc': ('App can write to App Directory. '
+                 'Sensitive Information should be encrypted.'),
         'type': 'regex',
         'regex1': r'MODE_PRIVATE|Context\.MODE_PRIVATE',
         'level': 'info',
         'match': 'single_regex',
         'input_case': 'exact',
         'cvss': 3.9,
-        'cwe': 'CWE-276'
+        'cwe': 'CWE-276',
     },
     {
         'desc': 'The App uses an insecure Random Number Generator.',
@@ -191,37 +225,41 @@ RULES = [
         'match': 'single_regex',
         'input_case': 'exact',
         'cvss': 7.5,
-        'cwe': 'CWE-330'
+        'cwe': 'CWE-330',
     },
     {
-        'desc': 'The App logs information. Sensitive information should never be logged.',
+        'desc': ('The App logs information. '
+                 'Sensitive information should never be logged.'),
         'type': 'regex',
-        'regex1': r'Log\.(v|d|i|w|e|f|s)|System\.out\.print|System\.err\.print',
+        'regex1': (r'Log\.(v|d|i|w|e|f|s)|'
+                   r'System\.out\.print|System\.err\.print'),
         'level': 'info',
         'match': 'single_regex',
         'input_case': 'exact',
         'cvss': 7.5,
-        'cwe': 'CWE-532'
+        'cwe': 'CWE-532',
     },
     {
-        'desc': 'This App uses Java Hash Code. It\'s a weak hash function and should never be used in Secure Crypto Implementation.',
+        'desc': ('This App uses Java Hash Code. It\'s a weak hash function and'
+                 ' should never be used in Secure Crypto Implementation.'),
         'type': 'string',
         'string1': '.hashCode()',
         'level': 'high',
         'match': 'single_string',
         'input_case': 'exact',
         'cvss': 4.3,
-        'cwe': 'CWE-327'
+        'cwe': 'CWE-327',
     },
     {
-        'desc': 'These activities prevent screenshot when they go to background.',
+        'desc': ('These activities prevent '
+                 'screenshot when they go to background.'),
         'type': 'string',
         'string1': 'LayoutParams.FLAG_SECURE',
         'level': 'good',
         'match': 'single_string',
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': ''
+        'cwe': '',
     },
     {
         'desc': 'This App uses SQL Cipher. But the secret may be hardcoded.',
@@ -231,7 +269,7 @@ RULES = [
         'match': 'single_string',
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': ''
+        'cwe': '',
     },
     {
         'desc': 'This app has capabilities to prevent tapjacking attacks.',
@@ -241,10 +279,11 @@ RULES = [
         'match': 'single_string',
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': ''
+        'cwe': '',
     },
     {
-        'desc': 'App can read/write to External Storage. Any App can read data written to External Storage.',
+        'desc': ('App can read/write to External Storage. '
+                 'Any App can read data written to External Storage.'),
         'perm': 'android.permission.WRITE_EXTERNAL_STORAGE',
         'type': 'string',
         'string1': '.getExternalStorage',
@@ -253,10 +292,11 @@ RULES = [
         'match': 'string_or_and_perm',
         'input_case': 'exact',
         'cvss': 5.5,
-        'cwe': 'CWE-276'
+        'cwe': 'CWE-276',
     },
     {
-        'desc': 'App creates temp file. Sensitive information should never be written into a temp file.',
+        'desc': ('App creates temp file. Sensitive '
+                 'information should never be written into a temp file.'),
         'perm': 'android.permission.WRITE_EXTERNAL_STORAGE',
         'type': 'string',
         'string1': '.createTempFile(',
@@ -264,10 +304,11 @@ RULES = [
         'match': 'string_and_perm',
         'input_case': 'exact',
         'cvss': 5.5,
-        'cwe': 'CWE-276'
+        'cwe': 'CWE-276',
     },
     {
-        'desc': 'Insecure WebView Implementation. Execution of user controlled code in WebView is a critical Security Hole.',
+        'desc': ('Insecure WebView Implementation. Execution of user'
+                 ' controlled code in WebView is a critical Security Hole.'),
         'type': 'string',
         'string1': 'setJavaScriptEnabled(true)',
         'string2': '.addJavascriptInterface(',
@@ -275,10 +316,11 @@ RULES = [
         'match': 'string_and',
         'input_case': 'exact',
         'cvss': 8.8,
-        'cwe': 'CWE-749'
+        'cwe': 'CWE-749',
     },
     {
-        'desc': 'This App uses SQL Cipher. SQLCipher provides 256-bit AES encryption to sqlite database files.',
+        'desc': ('This App uses SQL Cipher. SQLCipher '
+                 'provides 256-bit AES encryption to sqlite database files.'),
         'type': 'string',
         'string1': 'SQLiteDatabase.loadLibs(',
         'string2': 'net.sqlcipher.',
@@ -286,7 +328,7 @@ RULES = [
         'match': 'string_and',
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': ''
+        'cwe': '',
     },
     {
         'desc': 'This App download files using Android Download Manager',
@@ -297,7 +339,7 @@ RULES = [
         'match': 'string_and',
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': ''
+        'cwe': '',
     },
     {
         'desc': 'This App use Realm Database with encryption.',
@@ -308,10 +350,15 @@ RULES = [
         'match': 'string_and',
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': ''
+        'cwe': '',
     },
     {
-        'desc': 'The App may use weak IVs like "0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00" or "0x01,0x02,0x03,0x04,0x05,0x06,0x07". Not using a random IV makes the resulting ciphertext much more predictable and susceptible to a dictionary attack.',
+        'desc': ('The App may use weak IVs like '
+                 '"0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00" or '
+                 '"0x01,0x02,0x03,0x04,0x05,0x06,0x07". '
+                 'Not using a random IV makes the resulting '
+                 'ciphertext much more predictable and '
+                 'susceptible to a dictionary attack.'),
         'type': 'string',
         'string1': '0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00',
         'string2': '0x01,0x02,0x03,0x04,0x05,0x06,0x07',
@@ -319,7 +366,7 @@ RULES = [
         'match': 'string_or',
         'input_case': 'exact',
         'cvss': 9.8,
-        'cwe': 'CWE-329'
+        'cwe': 'CWE-329',
     },
     {
         'desc': 'Remote WebView debugging is enabled.',
@@ -330,10 +377,11 @@ RULES = [
         'match': 'string_and',
         'input_case': 'exact',
         'cvss': 5.4,
-        'cwe': 'CWE-919'
+        'cwe': 'CWE-919',
     },
     {
-        'desc': 'This app listens to Clipboard changes. Some malwares also listen to Clipboard changes.',
+        'desc': ('This app listens to Clipboard changes.'
+                 ' Some malwares also listen to Clipboard changes.'),
         'type': 'string',
         'string1': 'content.ClipboardManager',
         'string2': 'OnPrimaryClipChangedListener',
@@ -341,10 +389,12 @@ RULES = [
         'match': 'string_and',
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': ''
+        'cwe': '',
     },
     {
-        'desc': 'This App copies data to clipboard. Sensitive data should not be copied to clipboard as other applications can access it.',
+        'desc': ('This App copies data to clipboard. Sensitive data should'
+                 ' not be copied to clipboard as other'
+                 ' applications can access it.'),
         'type': 'string',
         'string1': 'content.ClipboardManager',
         'string2': 'setPrimaryClip(',
@@ -352,10 +402,12 @@ RULES = [
         'match': 'string_and',
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': ''
+        'cwe': '',
     },
     {
-        'desc': 'Insecure WebView Implementation. WebView ignores SSL Certificate errors and accept any SSL Certificate. This application is vulnerable to MITM attacks',
+        'desc': ('Insecure WebView Implementation. WebView ignores SSL'
+                 ' Certificate errors and accept any SSL Certificate.'
+                 ' This application is vulnerable to MITM attacks'),
         'type': 'string',
         'string1': 'onReceivedSslError(WebView',
         'string2': '.proceed();',
@@ -363,10 +415,13 @@ RULES = [
         'match': 'string_and',
         'input_case': 'exact',
         'cvss': 7.4,
-        'cwe': 'CWE-295'
+        'cwe': 'CWE-295',
     },
     {
-        'desc': 'App uses SQLite Database and execute raw SQL query. Untrusted user input in raw SQL queries can cause SQL Injection. Also sensitive information should be encrypted and written to the database.',
+        'desc': ('App uses SQLite Database and execute raw SQL query. '
+                 'Untrusted user input in raw SQL queries can cause'
+                 ' SQL Injection. Also sensitive information should'
+                 ' be encrypted and written to the database.'),
         'type': 'string',
         'string1': 'android.database.sqlite',
         'string_or1': 'rawQuery(',
@@ -375,7 +430,7 @@ RULES = [
         'match': 'string_and_or',
         'input_case': 'exact',
         'cvss': 5.9,
-        'cwe': 'CWE-89'
+        'cwe': 'CWE-89',
     },
     {
         'desc': 'This App detects frida server.',
@@ -388,10 +443,13 @@ RULES = [
         'match': 'string_and_or',
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': ''
+        'cwe': '',
     },
     {
-        'desc': 'This App uses an SSL Pinning Library (org.thoughtcrime.ssl.pinning) to prevent MITM attacks in secure communication channel.',
+        'desc': ('This App uses an SSL Pinning Library '
+                 '(org.thoughtcrime.ssl.pinning) to '
+                 'prevent MITM attacks in secure'
+                 ' communication channel.'),
         'type': 'string',
         'string1': 'org.thoughtcrime.ssl.pinning',
         'string_or1': 'PinningHelper.getPinnedHttpsURLConnection',
@@ -401,10 +459,11 @@ RULES = [
         'match': 'string_and_or',
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': ''
+        'cwe': '',
     },
     {
-        'desc': 'This App has capabilities to prevent against Screenshots from Recent Task History/ Now On Tap etc.',
+        'desc': ('This App has capabilities to prevent against'
+                 ' Screenshots from Recent Task History/ Now On Tap etc.'),
         'type': 'string',
         'string1': '.FLAG_SECURE',
         'string_or1': 'getWindow().setFlags(',
@@ -413,10 +472,11 @@ RULES = [
         'match': 'string_and_or',
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': ''
+        'cwe': '',
     },
     {
-        'desc': 'DexGuard Debug Detection code to detect wheather an App is debuggable or not is identified.',
+        'desc': ('DexGuard Debug Detection code to detect'
+                 ' wheather an App is debuggable or not is identified.'),
         'type': 'string',
         'string1': 'import dexguard.util',
         'string2': 'DebugDetector.isDebuggable',
@@ -424,7 +484,7 @@ RULES = [
         'match': 'string_and',
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': ''
+        'cwe': '',
     },
     {
         'desc': 'DexGuard Debugger Detection code is identified.',
@@ -435,7 +495,7 @@ RULES = [
         'match': 'string_and',
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': ''
+        'cwe': '',
     },
     {
         'desc': 'DexGuard Emulator Detection code is identified.',
@@ -446,10 +506,11 @@ RULES = [
         'match': 'string_and',
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': ''
+        'cwe': '',
     },
     {
-        'desc': 'DecGuard code to detect wheather the App is signed with a debug key or not is identified.',
+        'desc': ('DexGuard code to detect wheather the App'
+                 ' is signed with a debug key or not is identified.'),
         'type': 'string',
         'string1': 'import dexguard.util',
         'string2': 'DebugDetector.isSignedWithDebugKey',
@@ -457,7 +518,7 @@ RULES = [
         'match': 'string_and',
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': ''
+        'cwe': '',
     },
     {
         'desc': 'DexGuard Root Detection code is identified.',
@@ -468,7 +529,7 @@ RULES = [
         'match': 'string_and',
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': ''
+        'cwe': '',
     },
     {
         'desc': 'DexGuard App Tamper Detection code is identified.',
@@ -479,10 +540,11 @@ RULES = [
         'match': 'string_and',
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': ''
+        'cwe': '',
     },
     {
-        'desc': 'DexGuard Signer Certificate Tamper Detection code is identified.',
+        'desc': ('DexGuard Signer Certificate'
+                 ' Tamper Detection code is identified.'),
         'type': 'string',
         'string1': 'import dexguard.util',
         'string2': 'TCertificateChecker.checkCertificate',
@@ -490,7 +552,7 @@ RULES = [
         'match': 'string_and',
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': ''
+        'cwe': '',
     },
     {
         'desc': 'The App may use package signature for tamper detection.',
@@ -501,7 +563,7 @@ RULES = [
         'match': 'string_and',
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': ''
+        'cwe': '',
     },
     {
         'desc': 'This App uses SafetyNet API.',
@@ -511,7 +573,7 @@ RULES = [
         'match': 'single_string',
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': ''
+        'cwe': '',
     },
     {
         'desc': 'This App may request root (Super User) privileges.',
@@ -525,7 +587,7 @@ RULES = [
         'match': 'string_or',
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': 'CWE-250'
+        'cwe': 'CWE-250',
     },
     {
         'desc': 'This App may have root detection capabilities.',
@@ -536,10 +598,10 @@ RULES = [
         'string4': '/system/bin/failsafe/su',
         'string5': '/system/sd/xbin/su',
         'string6': '"/system/xbin/which", "su"',
-        "string7": 'RootTools.isAccessGiven()',
+        'string7': 'RootTools.isAccessGiven()',
         'level': 'good',
         'match': 'string_or',
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': ''
+        'cwe': '',
     }]

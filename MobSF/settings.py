@@ -1,3 +1,4 @@
+# noqa: E800
 """
 Django settings for MobSF project.
 
@@ -5,43 +6,39 @@ MobSF and Django settings
 """
 
 import imp
-import os
 import logging
-from MobSF.utils import (
-    first_run,
-    FindJava,
-    FindVbox,
-    getMobSFHome,
-    PrintException,
-)
+import os
+
+from MobSF.utils import (find_java_binary, find_vboxmange_binary, first_run,
+                         get_mobsf_home)
 
 logger = logging.getLogger(__name__)
 
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #       MOBSF CONFIGURATIONS
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-MOBSF_VER = "v1.1.2 Beta"
+MOBSF_VER = 'v1.1.3 Beta'
 BANNER = """
-  __  __       _    ____  _____           _   _ 
+  __  __       _    ____  _____           _   _   
  |  \/  | ___ | |__/ ___||  ___| __   __ / | / |
  | |\/| |/ _ \| '_ \___ \| |_    \ \ / / | | | |
  | |  | | (_) | |_) |__) |  _|    \ V /  | |_| |
  |_|  |_|\___/|_.__/____/|_|       \_/   |_(_)_|
 
-"""
+"""  # noqa: W291
 # ASCII Standard
-#==============================================
+# ==============================================
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-#==========MobSF Home Directory=================
+# ==========MobSF Home Directory=================
 USE_HOME = False
 
 # True : All Uploads/Downloads will be stored in user's home directory
 # False : All Uploads/Downloads will be stored in MobSF root directory
 # If you need multiple users to share the scan results set this to False
-#===============================================
+# ===============================================
 
-MobSF_HOME = getMobSFHome(USE_HOME)
+MobSF_HOME = get_mobsf_home(USE_HOME)
 # Logs Directory
 LOG_DIR = os.path.join(MobSF_HOME, 'logs/')
 # Download Directory
@@ -55,7 +52,7 @@ DB_DIR = os.path.join(MobSF_HOME, 'db.sqlite3')
 # Tools Directory
 TOOLS_DIR = os.path.join(BASE_DIR, 'DynamicAnalyzer/tools/')
 # Secret File
-SECRET_FILE = os.path.join(MobSF_HOME, "secret")
+SECRET_FILE = os.path.join(MobSF_HOME, 'secret')
 
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
@@ -65,12 +62,12 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': DB_DIR,
-    }
+    },
 }
 # End Sqlite3 support
 
 # Postgres DB - Install psycopg2
-'''
+"""
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -82,40 +79,41 @@ DATABASES = {
     }
 }
 # End Postgres support
-'''
-#===============================================
+"""
+# ===============================================
 
-#==========LOAD CONFIG FROM MobSF HOME==========
+# ==========LOAD CONFIG FROM MobSF HOME==========
 try:
     # Update Config from MobSF Home Directory
     if USE_HOME:
         USER_CONFIG = os.path.join(MobSF_HOME, 'config.py')
         sett = imp.load_source('user_settings', USER_CONFIG)
         locals().update(
-            {k: v for k, v in list(sett.__dict__.items()) if not k.startswith("__")})
+            {k: v for k, v in list(sett.__dict__.items())
+                if not k.startswith('__')})
         CONFIG_HOME = True
     else:
         CONFIG_HOME = False
-except:
-    PrintException("Reading Config")
+except Exception:
+    logger.exception('Reading Config')
     CONFIG_HOME = False
-#===============================================
+# ===============================================
 
-#===MOBSF SECRET GENERATION AND DB MIGRATION====
+# ===MOBSF SECRET GENERATION AND DB MIGRATION====
 SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MobSF_HOME)
 
-#=============================================
+# =============================================
 
-#=============ALLOWED EXTENSIONS================
+# =============ALLOWED EXTENSIONS================
 ALLOWED_EXTENSIONS = {
-    ".txt": "text/plain",
-    ".png": "image/png",
-    ".zip": "application/zip",
-    ".tar": "application/x-tar"
+    '.txt': 'text/plain',
+    '.png': 'image/png',
+    '.zip': 'application/zip',
+    '.tar': 'application/x-tar',
 }
-#===============================================
+# ===============================================
 
-#=============ALLOWED MIMETYPES=================
+# =============ALLOWED MIMETYPES=================
 
 APK_MIME = [
     'application/octet-stream',
@@ -139,19 +137,18 @@ ZIP_MIME = [
 APPX_MIME = [
     'application/octet-stream',
     'application/vns.ms-appx',
-    'application/x-zip-compressed'
+    'application/x-zip-compressed',
 ]
 
-#===============================================
+# ===============================================
 
-#============DJANGO SETTINGS =================
-
+# ============DJANGO SETTINGS =================
 DEBUG = True
 DJANGO_LOG_LEVEL = DEBUG
 ALLOWED_HOSTS = ['127.0.0.1', 'mobsf', '*']
 # Application definition
 INSTALLED_APPS = (
-    #'django.contrib.admin',
+    # 'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -190,44 +187,46 @@ TEMPLATES = [
         'APP_DIRS': True,
         'DIRS':
             [
-                os.path.join(BASE_DIR, 'templates')
+                os.path.join(BASE_DIR, 'templates'),
             ],
         'OPTIONS':
             {
                 'debug': True,
-            }
+            },
     },
 ]
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
 MEDIA_URL = '/uploads/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_URL = '/static/'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # 256MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 268435456
 
-#===================
+# ===================
 # USER CONFIGURATION
-#===================
+# ===================
 
 if CONFIG_HOME:
-    logger.info("Loading User config from: {}".format(USER_CONFIG))
+    logger.info('Loading User config from: %s', USER_CONFIG)
 else:
-    '''
+    """
     IMPORTANT
-    If 'USE_HOME' is set to True, then below user configuration settings are not considered.
-    The user configuration will be loaded from config.py in MobSF Home directory.
-    '''
-    #^CONFIG-START^: Do not edit this line
-    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    If 'USE_HOME' is set to True,
+    then below user configuration settings are not considered.
+    The user configuration will be loaded from
+    config.py in MobSF Home directory.
+    """
+    # ^CONFIG-START^: Do not edit this line
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     #          MOBSF USER CONFIGURATIONS
-    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    #-------------------------
+    # -------------------------
     # STATIC ANALYZER SETTINGS
-    #-------------------------
+    # -------------------------
 
-    #==========ANDROID SKIP CLASSES==========================
+    # ==========ANDROID SKIP CLASSES==========================
     # Common third party classes that will be skipped during static analysis
     SKIP_CLASSES = [
         r'com[\\\/]{1}google[\\\/]{1}',
@@ -244,117 +243,106 @@ else:
         r'org[\\\/]{1}apache[\\\/]{1}',
         r'oauth[\\\/]{1}signpost[\\\/]{1}',
         r'org[\\\/]{1}chromium[\\\/]{1}',
-        r'com[\\\/]{1}facebook[\\\/]{1}'
+        r'com[\\\/]{1}facebook[\\\/]{1}',
     ]
 
-    #==========DECOMPILER SETTINGS=================
+    # ==========DECOMPILER SETTINGS=================
 
-    DECOMPILER = "cfr"
+    DECOMPILER = 'cfr'
 
     # Three Decompilers are available
     # 1. jd-core
     # 2. cfr
     # 3. procyon
 
-    #==============================================
+    # ==============================================
 
-    #==========Dex to Jar Converter================
-    JAR_CONVERTER = "d2j"
+    # ==========Dex to Jar Converter================
+    JAR_CONVERTER = 'd2j'
 
     # Two Dex to Jar converters are available
     # 1. d2j
     # 2. enjarify
-    #==============================================
+    # ==============================================
 
-    #======WINDOWS STATIC ANALYSIS SETTINGS ===========
+    # ======WINDOWS STATIC ANALYSIS SETTINGS ===========
 
     # Private key
     WINDOWS_VM_SECRET = 'MobSF/windows_vm_priv_key.asc'
     # IP and Port of the MobSF Windows VM
-    # eg: WINDOWS_VM_IP = '127.0.0.1'
+    # example: WINDOWS_VM_IP = '127.0.0.1'   ;noqa E800
     WINDOWS_VM_IP = None
     WINDOWS_VM_PORT = '8000'
-    #==================================================
+    # ==================================================
 
-    #==============3rd Party Tools=================
-    '''
+    # ==============3rd Party Tools=================
+    """
     If you want to use a different version of 3rd party tools used by MobSF.
     You can do that by specifying the path here. If specified, MobSF will run
     the tool from this location.
-    '''
+    """
 
     # Android 3P Tools
-    DEX2JAR_BINARY = ""
-    BACKSMALI_BINARY = ""
-    CFR_DECOMPILER_BINARY = ""
-    JD_CORE_DECOMPILER_BINARY = ""
-    PROCYON_DECOMPILER_BINARY = ""
-    APKTOOL_BINARY = ""
-    ADB_BINARY = ""
-    ENJARIFY_DIRECTORY = ""
+    DEX2JAR_BINARY = ''
+    BACKSMALI_BINARY = ''
+    CFR_DECOMPILER_BINARY = ''
+    JD_CORE_DECOMPILER_BINARY = ''
+    PROCYON_DECOMPILER_BINARY = ''
+    APKTOOL_BINARY = ''
+    ADB_BINARY = ''
+    ENJARIFY_DIRECTORY = ''
 
     # iOS 3P Tools
-    OTOOL_BINARY = ""
-    JTOOL_BINARY = ""
-    CLASSDUMPZ_BINARY = ""
-    CLASSDUMP_SWIFT_BINARY = ""
+    OTOOL_BINARY = ''
+    JTOOL_BINARY = ''
+    CLASSDUMPZ_BINARY = ''
+    CLASSDUMP_SWIFT_BINARY = ''
 
     # COMMON
-    JAVA_DIRECTORY = ""
-    VBOXMANAGE_BINARY = ""
-    PYTHON3_PATH = ""
+    JAVA_DIRECTORY = ''
+    VBOXMANAGE_BINARY = ''
+    PYTHON3_PATH = ''
 
-    '''
+    """
     Examples:
-    JAVA_DIRECTORY = "C:/Program Files/Java/jdk1.7.0_17/bin/"
-    JAVA_DIRECTORY = "/usr/bin/"
-    DEX2JAR_BINARY = "/Users/ajin/dex2jar/d2j-dex2jar.sh"
-    ENJARIFY_DIRECTORY = "D:/enjarify/"
-    VBOXMANAGE_BINARY = "/usr/bin/VBoxManage"
-    CFR_DECOMPILER_BINARY = "/home/ajin/tools/cfr.jar"
-    PYTHON3_PATH = "C:/Users/Ajin/AppData/Local/Programs/Python/Python35-32/"
-    '''
-    #===============================================
+    JAVA_DIRECTORY = 'C:/Program Files/Java/jdk1.7.0_17/bin/'
+    JAVA_DIRECTORY = '/usr/bin/'
+    DEX2JAR_BINARY = '/Users/ajin/dex2jar/d2j-dex2jar.sh'
+    ENJARIFY_DIRECTORY = 'D:/enjarify/'
+    VBOXMANAGE_BINARY = '/usr/bin/VBoxManage'
+    CFR_DECOMPILER_BINARY = '/home/ajin/tools/cfr.jar'
+    PYTHON3_PATH = 'C:/Users/Ajin/AppData/Local/Programs/Python/Python35-32/'
+    """
+    # ===============================================
 
-    #-------------------------
+    # -------------------------
     # DYNAMIC ANALYZER SETTINGS
-    #-------------------------
+    # -------------------------
 
-    #========ANDROID DYNAMIC ANALYSIS SETTINGS================================
+    # ========ANDROID DYNAMIC ANALYSIS SETTINGS================================
 
-    ANDROID_DYNAMIC_ANALYZER = "MobSF_VM"
+    ANDROID_DYNAMIC_ANALYZER = 'MobSF_VM'
 
     # You can choose any of the below
     # 1. MobSF_VM
-    # 2. MobSF_AVD
-    # 3. MobSF_REAL_DEVICE
+    # 2. MobSF_REAL_DEVICE
 
-    '''
-    MobSF_VM - x86 Android 4.4.2 running on VirtualBox (Fast, not all Apps work)
-    MobSF_AVD - ARM Android 6 running on Android Emulator (Slow, Most Apps work)
-    MobSF_REAL_DEVICE - Rooted Android 4.03 - 4.4 Device (Very Fast, All Apps work)
+    """
+    MobSF_VM x86 Android 4.4.2 running on VirtualBox(Fast, not all Apps work)
+    MobSF_REAL_DEVICE - Rooted Android 4.03 4.4 Device
+    (Very Fast, All Apps work)
     Supports Android 5+ for real device. Not tested!
-    '''
+    """
 
-    #=========================================================================
+    # =========================================================================
 
-    #=======ANDROID REAL DEVICE SETTINGS===========
+    # =======ANDROID REAL DEVICE SETTINGS===========
     DEVICE_IP = '192.168.1.18'
     DEVICE_ADB_PORT = 5555
     DEVICE_TIMEOUT = 300
-    #==============================================
+    # ==============================================
 
-    #===========ANDROID EMULATOR SETTINGS ===========
-    # Android-Studio 'emulator' binary path
-    # Not Supported any more
-    AVD_EMULATOR = "/Users/[USERNAME]/Library/Android/sdk/tools/emulator"
-    AVD_NAME = "MobSFAPI23armV1"
-    AVD_ADB_PORT = 5554
-    AVD_SNAPSHOT = ""
-    AVD_COLD_BOOT = True
-    #================================================
-
-    #====ANDROID MOBSF VIRTUALBOX VM SETTINGS =====
+    # ====ANDROID MOBSF VIRTUALBOX VM SETTINGS =====
     # VM UUID
     UUID = '408e1874-759f-4417-9453-53ef21dc2ade'
     # Snapshot UUID
@@ -364,70 +352,71 @@ else:
     VM_ADB_PORT = 5555
     VM_TIMEOUT = 100
     VBOX_HEADLESS = False
-    #==============================================
+    # ==============================================
 
-    #--------------------------
+    # --------------------------
     # MobSF MITM PROXY SETTINGS
-    #--------------------------
+    # --------------------------
 
-    #================HOST/PROXY SETTINGS ===============
+    # ================HOST/PROXY SETTINGS ===============
     PROXY_IP = '192.168.56.1'  # Host/Server/Proxy IP
     PORT = 1337  # Proxy Port
     ROOT_CA = '0026aabb.0'
     SCREEN_IP = PROXY_IP  # ScreenCast IP
     SCREEN_PORT = 9339  # ScreenCast Port(Do not Change)
-    #===================================================
+    # ===================================================
 
-    #========UPSTREAM PROXY SETTINGS ==============
+    # ========UPSTREAM PROXY SETTINGS ==============
     # If you are behind a Proxy
     UPSTREAM_PROXY_ENABLED = False
     UPSTREAM_PROXY_SSL_VERIFY = True
-    UPSTREAM_PROXY_TYPE = "http"
-    UPSTREAM_PROXY_IP = "127.0.0.1"
+    UPSTREAM_PROXY_TYPE = 'http'
+    UPSTREAM_PROXY_IP = '127.0.0.1'
     UPSTREAM_PROXY_PORT = 3128
-    UPSTREAM_PROXY_USERNAME = ""
-    UPSTREAM_PROXY_PASSWORD = ""
-    #==============================================
+    UPSTREAM_PROXY_USERNAME = ''
+    UPSTREAM_PROXY_PASSWORD = ''
+    # ==============================================
 
-    #--------------------------
+    # --------------------------
     # MALWARE ANALYZER SETTINGS
-    #--------------------------
+    # --------------------------
 
     DOMAIN_MALWARE_SCAN = True
 
-    #----------APKiD-------------------------------
+    # ----------APKiD-------------------------------
     APKID_ENABLED = True
-    #==============================================
+    # ==============================================
 
-    #========DISABLED COMPONENTS===================
+    # ========DISABLED COMPONENTS===================
 
-    #----------VirusTotal--------------------------
+    # ----------VirusTotal--------------------------
     VT_ENABLED = False
     VT_API_KEY = 'XXXXXXXXXXXXXX'
     VT_UPLOAD = False
     # Before setting VT_ENABLED to True,
     # Make sure VT_API_KEY is set to your VirusTotal API key
     # register at: https://www.virustotal.com/#/join-us
-    # You can get your API KEY from https://www.virustotal.com/en/user/<username>/apikey/
-    # BE AWARE - if you enable VT, in case the file wasn't already uploaded to VirusTotal,
-    # It will be uploaded if you set VT_UPLOAD to True!
-    #==============================================
+    # You can get your API KEY from:
+    # https://www.virustotal.com/en/user/<username>/apikey/
+    # Files will be uploaded to VirusTotal
+    # if VT_UPLOAD is set to True.
+    # ==============================================
 
-    #-----External URLS--------------------------
+    # -----External URLS--------------------------
     MALWARE_DB_URL = 'http://www.malwaredomainlist.com/mdlcsv.php'
     VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/vtapi/v2/file/'
     TRACKERS_DB_URL = 'https://reports.exodus-privacy.eu.org/api/trackers'
 
-    #^CONFIG-END^: Do not edit this line
+    # ^CONFIG-END^: Do not edit this line
 
 # The below code should be loaded last.
-#============JAVA SETTINGS======================
-JAVA_PATH = FindJava(False)
-#===============================================
+# ============JAVA SETTINGS======================
+JAVA_BINARY = find_java_binary()
+# ===============================================
 
-#================VirtualBox Settings============
-VBOX = FindVbox(False)
-#===============================================
+# ================VirtualBox Settings============
+VBOX = find_vboxmange_binary(False)
+# ===============================================
 
 # Better logging
 LOGGING = {
@@ -435,18 +424,19 @@ LOGGING = {
     'disable_existing_loggers': True,
     'formatters': {
         'standard': {
-            'format': "[%(levelname)s] %(asctime)-15s - %(message)s",
-            'datefmt': "%d/%b/%Y %H:%M:%S"
+            'format': '[%(levelname)s] %(asctime)-15s - %(message)s',
+            'datefmt': '%d/%b/%Y %H:%M:%S',
         },
         'color': {
             '()': 'colorlog.ColoredFormatter',
-            'format': '%(log_color)s[%(levelname)s] %(asctime)-15s - %(message)s',
-            'datefmt': "%d/%b/%Y %H:%M:%S",
+            'format':
+                '%(log_color)s[%(levelname)s] %(asctime)-15s - %(message)s',
+            'datefmt': '%d/%b/%Y %H:%M:%S',
             'log_colors': {
-                'DEBUG':    'cyan',
-                'INFO':     'green',
-                'WARNING':  'yellow',
-                'ERROR':    'red',
+                'DEBUG': 'cyan',
+                'INFO': 'green',
+                'WARNING': 'yellow',
+                'ERROR': 'red',
                 'CRITICAL': 'red,bg_white',
             },
         },
@@ -496,5 +486,5 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
-    }
+    },
 }

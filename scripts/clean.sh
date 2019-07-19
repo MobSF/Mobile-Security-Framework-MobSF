@@ -34,7 +34,7 @@ then
         find ./ | grep -E "(__pycache__|\.pyo$)" | xargs rm -rf
         echo 'Deleting temp and log files'
 	rm -rf ./logs/*
-	rm -rf ./classes-error.zip
+	rm -rf ./classes*
 	echo 'Deleting DB'
 	rm -rf ./db.sqlite3
 	echo 'Deleting Secret File'
