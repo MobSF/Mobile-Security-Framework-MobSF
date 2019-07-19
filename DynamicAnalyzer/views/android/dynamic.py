@@ -406,7 +406,7 @@ def final_test(request):
                 # Change to check output of subprocess when analysis is done
                 # Can't RCE
                 cmd = ('{} -s {} logcat -d dalvikvm:'
-                       'W ActivityManager:I > "{}logact.txt"').format(
+                       'W ActivityManager:I > "{}logcat.txt"').format(
                            adb,
                            get_identifier(),
                            apk_dir)
