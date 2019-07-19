@@ -41,6 +41,8 @@ from StaticAnalyzer.views.shared_func import (file_size, firebase_analysis,
                                               hash_gen, score, unzip,
                                               update_scan_timestamp)
 
+from androguard.core.bytecodes import apk
+
 try:
     import io
     StringIO = io.StringIO  # noqa F401
@@ -532,8 +534,9 @@ def get_app_name(app_path, app_dir, tools_dir, is_apk):
     """Get app name."""
     data = ''
     if is_apk:
-        output_dir = os.path.join(app_dir, 'apktool_out')
-        strings_file = os.path.join(output_dir, 'res/values/strings.xml')
+        a = apk.APK(app_path)
+        real_name = a.get_app_name()
+        return real_name
     else:
         strings_path = os.path.join(app_dir,
                                     'app/src/main/res/values/strings.xml')
