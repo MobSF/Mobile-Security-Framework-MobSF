@@ -37,10 +37,10 @@ from StaticAnalyzer.views.android.manifest_analysis import (get_manifest,
                                                             manifest_data)
 from StaticAnalyzer.views.android.playstore import get_app_details
 from StaticAnalyzer.views.android.strings import strings_jar
-from androguard.core.bytecodes import apk
 from StaticAnalyzer.views.shared_func import (file_size, firebase_analysis,
                                               hash_gen, score, unzip,
                                               update_scan_timestamp)
+from androguard.core.bytecodes import apk
 
 try:
     import io
