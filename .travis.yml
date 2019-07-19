@@ -9,8 +9,9 @@ cache:
   - apt
   - pip
 env:
-  - JAVA_HOME=/jdk-12
-  - PATH=$JAVA_HOME/bin:$PATH
+  global:
+    - JAVA_HOME=/jdk-12
+    - PATH=$JAVA_HOME/bin:$PATH
 before_install:
   - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
   - REPO=`pwd`
@@ -55,4 +56,5 @@ install:
 before_script:
   - pip install tox -r requirements.txt
 script:
-  - tox -e lint,test
+  - tox -e lint
+  - python manage.py test
