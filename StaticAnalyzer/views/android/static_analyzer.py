@@ -40,6 +40,7 @@ from StaticAnalyzer.views.android.strings import strings_jar
 from StaticAnalyzer.views.shared_func import (file_size, firebase_analysis,
                                               hash_gen, score, unzip,
                                               update_scan_timestamp)
+
 from androguard.core.bytecodes import apk
 
 try:
