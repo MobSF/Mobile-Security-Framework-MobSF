@@ -891,9 +891,9 @@ def capfuzz_start(request):
         else:
             project = ''
         url = ('http://localhost:{}'
-                '/dashboard/{}'.format(
-                    str(settings.PORT),
-                    project))
+               '/dashboard/{}'.format(
+                   str(settings.PORT),
+                   project))
         return HttpResponseRedirect(url)
     except Exception:
         logger.exception('Starting CapFuzz Web UI')
