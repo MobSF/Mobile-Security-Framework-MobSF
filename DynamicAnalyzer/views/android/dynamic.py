@@ -177,7 +177,7 @@ def take_screenshot(request):
                     ['screencap', '-p', '/data/local/screen.png'], True)
                 adb_command(['pull',
                              '/data/local/screen.png',
-                             '{}creenshot-{}.png'.fomat(
+                             '{}creenshot-{}.png'.format(
                                  screen_dir,
                                  str(rand_int))])
                 logger.info('Screenshot Taken')
@@ -807,7 +807,7 @@ def handle_sqlite(sfile):
             data += ('\nTABLE: {}'
                      ' \n==============='
                      '==================='
-                     '===================\n'.fomat(table[0]))
+                     '===================\n'.format(table[0]))
             cur.execute('PRAGMA table_info(\'%s\')' % table)
             rows = cur.fetchall()
             head = ''
@@ -890,8 +890,8 @@ def capfuzz_start(request):
             project = request.GET['project']
         else:
             project = ''
-            url = ('http://localhost:{}'
-                   '/dashboard/{}'.fomat(
+        url = ('http://localhost:{}'
+                   '/dashboard/{}'.format(
                        str(settings.PORT),
                        project))
         return HttpResponseRedirect(url)
