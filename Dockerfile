@@ -32,7 +32,7 @@ RUN locale-gen en_US.UTF-8
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 #Install OpenJDK12
-RUN wget https://download.java.net/java/GA/jdk12/GPL/openjdk-12_linux-x64_bin.tar.gz && \
+RUN wget --quiet https://download.java.net/java/GA/jdk12/GPL/openjdk-12_linux-x64_bin.tar.gz && \
     tar zxvf openjdk-12_linux-x64_bin.tar.gz
 ENV JAVA_HOME=/jdk-12
 ENV PATH=$JAVA_HOME/bin:$PATH
@@ -58,7 +58,7 @@ RUN \
 
 #Install wkhtmltopdf for PDF Reports
 WORKDIR /tmp
-RUN wget ${PDFGEN_URL} && \
+RUN wget --quiet ${PDFGEN_URL} && \
     dpkg -i ${PDFGEN_PKGFILE} && \
     rm -rf ${PDFGEN_PKGFILE}
 
