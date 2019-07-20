@@ -43,7 +43,7 @@ def start_scan(directory, server_url, apikey, rescan='0'):
                 files=files,
                 headers={'AUTHORIZATION': apikey})
             if response.status_code == 200 and 'hash' in response.json():
-                logger.info('[OK] Upload OK: %s'. filename)
+                logger.info('[OK] Upload OK: %s', filename)
                 uploaded.append(response.json())
             else:
                 logger.error('Performing Upload: %s', filename)
