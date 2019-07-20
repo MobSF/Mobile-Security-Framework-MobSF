@@ -13,6 +13,7 @@ import signal
 import subprocess
 import sys
 import unicodedata
+import threading
 
 import requests
 
@@ -91,7 +92,8 @@ def print_version():
     find_vboxmange_binary(True)
     check_basic_env()
     adb_binary_or32bit_support()
-    check_update()
+    thread = threading.Thread(target=check_update, name='check_update')
+    thread.start()
 
 
 def check_update():
