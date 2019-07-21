@@ -11,6 +11,7 @@ import logging
 import os
 import platform
 import re
+import shutil
 import subprocess
 import zipfile
 from urllib.parse import urlparse
@@ -93,9 +94,10 @@ def unzip(app_path, ext_path):
         else:
             logger.info('Using the Default OS Unzip Utility.')
             try:
+                unzip_b = shutil.which('unzip')
                 subprocess.call(
-                    ['unzip', '-o', '-q', app_path, '-d', ext_path])
-                dat = subprocess.check_output(['unzip', '-qq', '-l', app_path])
+                    [unzip_b, '-o', '-q', app_path, '-d', ext_path])
+                dat = subprocess.check_output([unzip_b, '-qq', '-l', app_path])
                 dat = dat.decode('utf-8').split('\n')
                 files_det = ['Length   Date   Time   Name']
                 files_det = files_det + dat

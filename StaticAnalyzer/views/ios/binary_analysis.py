@@ -372,7 +372,7 @@ def class_dump(tools_dir, bin_path, app_dir, bin_type):
                     class_dump_bin = settings.CLASSDUMPZ_BINARY
                 else:
                     class_dump_bin = os.path.join(tools_dir, 'class-dump-z')
-            subprocess.call(['chmod', '777', class_dump_bin])
+            os.chmod(class_dump_bin, 0o777)
             args = [class_dump_bin, bin_path]
         elif platform.system() == 'Linux':
             logger.info('Running jtool against the binary for dumping classes')
@@ -381,7 +381,7 @@ def class_dump(tools_dir, bin_path, app_dir, bin_type):
                 jtool_bin = settings.JTOOL_BINARY
             else:
                 jtool_bin = os.path.join(tools_dir, 'jtool.ELF64')
-            subprocess.call(['chmod', '777', jtool_bin])
+            os.chmod(jtool_bin, 0o777)
             args = [jtool_bin, '-arch', 'arm', '-d', 'objc', '-v', bin_path]
         else:
             # Platform not supported
