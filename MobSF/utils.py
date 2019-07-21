@@ -215,7 +215,7 @@ def kali_fix(base_dir):
     try:
         if platform.system() == 'Linux' and platform.dist()[0] == 'Kali':
             fix_path = os.path.join(base_dir, 'scripts/kali_fix.sh')
-            subprocess.call(['chmod', 'a+x', fix_path])
+            os.chmod(fix_path, 0o744)
             subprocess.call([fix_path], shell=True)
     except Exception:
         logger.exception('Cannot run Kali Fix')
