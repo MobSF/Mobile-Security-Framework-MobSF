@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 POSTGRES=$1
-echo 'Postgres support : ${POSTGRES}'
+echo "Postgres support : ${POSTGRES}"
 if [ "$POSTGRES" == True ]; then
  pip3 install psycopg2-binary
  #Enable postgres support
