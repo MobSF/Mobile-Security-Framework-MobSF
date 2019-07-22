@@ -358,7 +358,7 @@ def class_dump(tools_dir, bin_path, app_dir, bin_type):
         if platform.system() == 'Darwin':
             logger.info('Dumping classes')
             if bin_type == 'Swift':
-                logger.info('Running class-dump-swift aganst binary')
+                logger.info('Running class-dump-swift against binary')
                 if (len(settings.CLASSDUMP_SWIFT_BINARY) > 0
                         and is_file_exists(settings.CLASSDUMP_SWIFT_BINARY)):
                     class_dump_bin = settings.CLASSDUMP_SWIFT_BINARY
@@ -366,13 +366,13 @@ def class_dump(tools_dir, bin_path, app_dir, bin_type):
                     class_dump_bin = os.path.join(
                         tools_dir, 'class-dump-swift')
             else:
-                logger.info('Running class-dump-z aganst binary')
+                logger.info('Running class-dump-z against binary')
                 if (len(settings.CLASSDUMPZ_BINARY) > 0
                         and is_file_exists(settings.CLASSDUMPZ_BINARY)):
                     class_dump_bin = settings.CLASSDUMPZ_BINARY
                 else:
                     class_dump_bin = os.path.join(tools_dir, 'class-dump-z')
-            os.chmod(class_dump_bin, 0o777)
+            os.chmod(class_dump_bin, 0o744)
             args = [class_dump_bin, bin_path]
         elif platform.system() == 'Linux':
             logger.info('Running jtool against the binary for dumping classes')
@@ -381,7 +381,7 @@ def class_dump(tools_dir, bin_path, app_dir, bin_type):
                 jtool_bin = settings.JTOOL_BINARY
             else:
                 jtool_bin = os.path.join(tools_dir, 'jtool.ELF64')
-            os.chmod(jtool_bin, 0o777)
+            os.chmod(jtool_bin, 0o744)
             args = [jtool_bin, '-arch', 'arm', '-d', 'objc', '-v', bin_path]
         else:
             # Platform not supported

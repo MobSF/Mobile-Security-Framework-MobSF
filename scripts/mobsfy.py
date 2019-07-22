@@ -38,11 +38,11 @@ def get_adb():
         adb = 'adb'
         if platform.system() == 'Darwin':
             adb_dir = os.path.join(TOOLSDIR, 'adb/mac/')
-            subprocess.call(['chmod', '777', adb_dir])
+            os.chmod(adb_dir, 0o777)
             adb = os.path.join(TOOLSDIR, 'adb/mac/adb')
         elif platform.system() == 'Linux':
             adb_dir = os.path.join(TOOLSDIR, 'adb/linux/')
-            subprocess.call(['chmod', '777', adb_dir])
+            os.chmod(adb_dir, 0o777)
             adb = os.path.join(TOOLSDIR, 'adb/linux/adb')
         elif platform.system() == 'Windows':
             adb = os.path.join(TOOLSDIR, 'adb/windows/adb.exe')

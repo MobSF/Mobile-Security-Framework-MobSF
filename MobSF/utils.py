@@ -215,7 +215,7 @@ def kali_fix(base_dir):
     try:
         if platform.system() == 'Linux' and platform.dist()[0] == 'Kali':
             fix_path = os.path.join(base_dir, 'scripts/kali_fix.sh')
-            subprocess.call(['chmod', 'a+x', fix_path])
+            os.chmod(fix_path, 0o744)
             subprocess.call([fix_path], shell=True)
     except Exception:
         logger.exception('Cannot run Kali Fix')
@@ -445,11 +445,11 @@ def get_adb():
             adb = 'adb'
             if platform.system() == 'Darwin':
                 adb_dir = os.path.join(settings.TOOLS_DIR, 'adb/mac/')
-                subprocess.call(['chmod', '777', adb_dir])
+                os.chmod(adb_dir, 0o744)
                 adb = os.path.join(settings.TOOLS_DIR, 'adb/mac/adb')
             elif platform.system() == 'Linux':
                 adb_dir = os.path.join(settings.TOOLS_DIR, 'adb/linux/')
-                subprocess.call(['chmod', '777', adb_dir])
+                os.chmod(adb_dir, 0o744)
                 adb = os.path.join(settings.TOOLS_DIR, 'adb/linux/adb')
             elif platform.system() == 'Windows':
                 adb = os.path.join(settings.TOOLS_DIR, 'adb/windows/adb.exe')
