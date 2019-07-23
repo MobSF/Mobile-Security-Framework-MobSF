@@ -29,10 +29,12 @@ if [[ "$unamestr" == 'Darwin' ]]; then
   export LDFLAGS='-L/usr/local/opt/openssl/lib'
   export CFLAGS='-I/usr/local/opt/openssl/include'
   current_macos_version="$(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}')"
-  if [ "${current_macos_version}" == "10.14" ]; then 
+  major=$(echo "$current_macos_version" | cut -d'.' -f1)
+  minor=$(echo "$current_macos_version" | cut -d'.' -f2)
+  if [ "$major" -ge "10" ] && [ "$minor" -ge "14" ]; then 
       echo 'Please install MacoS headers to prevent apkid error 34'
-      echo 'sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /'
-  fi    
+      echo 'sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_${current_macos_version}.pkg -target /'
+  fi  
 fi
 
 echo '[INSTALL] Installing APKiD requirements - yara-python'
