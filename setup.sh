@@ -31,9 +31,13 @@ if [[ "$unamestr" == 'Darwin' ]]; then
   current_macos_version="$(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}')"
   major=$(echo "$current_macos_version" | cut -d'.' -f1)
   minor=$(echo "$current_macos_version" | cut -d'.' -f2)
-  if [ "$major" -ge "10" ] && [ "$minor" -ge "14" ]; then 
-      echo 'Please install MacoS headers to prevent apkid error 34'
-      echo 'sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_${current_macos_version}.pkg -target /'
+  is_installed=$(pkgutil --pkgs=com.apple.pkg.macOS_SDK_headers_for_macOS_${current_macos_version})
+  if [ -z "$is_installed" ]; then 
+      if [ "$major" -ge "10" ] && [ "$minor" -ge "14" ]; then 
+          echo 'Please install MacoS headers to prevent apkid error 34'
+          echo 'sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_${current_macos_version}.pkg -target /'
+          exit 1
+      fi    
   fi  
 fi
 
