@@ -27,7 +27,18 @@ unamestr=$(uname)
 if [[ "$unamestr" == 'Darwin' ]]; then
   export ARCHFLAGS='-arch x86_64'
   export LDFLAGS='-L/usr/local/opt/openssl/lib'
-  export CFLAGS='-I/usr/local/opt/openssl/include'  
+  export CFLAGS='-I/usr/local/opt/openssl/include'
+  current_macos_version="$(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}')"
+  major=$(echo "$current_macos_version" | cut -d'.' -f1)
+  minor=$(echo "$current_macos_version" | cut -d'.' -f2)
+  is_installed=$(pkgutil --pkgs=com.apple.pkg.macOS_SDK_headers_for_macOS_${current_macos_version})
+  if [ -z "$is_installed" ]; then 
+      if [ "$major" -ge "10" ] && [ "$minor" -ge "14" ]; then 
+          echo 'Please install macOS headers.'
+          echo 'sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_${current_macos_version}.pkg -target /'
+          exit 1
+      fi    
+  fi  
 fi
 
 echo '[INSTALL] Installing APKiD requirements - yara-python'
