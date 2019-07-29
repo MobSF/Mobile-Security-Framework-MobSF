@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 #       MOBSF CONFIGURATIONS
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-MOBSF_VER = 'v1.1.3 Beta'
+MOBSF_VER = 'v1.1.4 Beta'
 BANNER = """
   __  __       _    ____  _____           _   _   
  |  \/  | ___ | |__/ ___||  ___| __   __ / | / |
@@ -199,6 +199,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
 MEDIA_URL = '/uploads/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_URL = '/static/'
+STATIC_ROOT = '/static/'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # 256MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 268435456
