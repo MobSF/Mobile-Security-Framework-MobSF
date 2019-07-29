@@ -250,19 +250,21 @@ else:
 
     DECOMPILER = 'cfr'
 
-    # Three Decompilers are available
+    # Four Decompilers are available
     # 1. jd-core
     # 2. cfr
     # 3. procyon
+    # 4. jadx
 
     # ==============================================
 
     # ==========Dex to Jar Converter================
     JAR_CONVERTER = 'd2j'
 
-    # Two Dex to Jar converters are available
+    # Three Two Dex to Jar converters are available
     # 1. d2j
     # 2. enjarify
+    # 3. jadx
     # ==============================================
 
     # ======WINDOWS STATIC ANALYSIS SETTINGS ===========
@@ -283,6 +285,7 @@ else:
     """
 
     # Android 3P Tools
+    JADX_BINARY = ''
     DEX2JAR_BINARY = ''
     BACKSMALI_BINARY = ''
     CFR_DECOMPILER_BINARY = ''

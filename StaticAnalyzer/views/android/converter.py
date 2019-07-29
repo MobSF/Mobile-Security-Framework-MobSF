@@ -178,3 +178,34 @@ def jar_2_java(app_dir, tools_dir):
             subprocess.call(args)
     except Exception:
         logger.exception('Converting JAR to JAVA')
+
+
+def apk_2_java(app_path, app_dir, tools_dir):
+    """Run jadx."""
+    try:
+        logger.info('APK -> JAVA')
+        args = []
+        output = os.path.join(app_dir, 'java_source/')
+        logger.info('Using Apk converter - jadx')
+        if (len(settings.JADX_BINARY) > 0
+                and is_file_exists(settings.JADX_BINARY)):
+            jadx = settings.JADX_BINARY
+        else:
+            if platform.system() == 'Windows':
+                dex_2_jar(app_path, app_dir, tools_dir)
+                jar_2_java(app_dir, tools_dir)
+            else:
+                jadx = os.path.join(tools_dir, 'jadx/bin/jadx')
+                os.chmod(jadx, 0o744)
+            args = [
+                jadx,
+                '-ds',
+                output,
+                '-r',
+                '--show-bad-code',
+                '--deobf',
+                app_path,
+            ]
+            subprocess.call(args)
+    except Exception:
+        logger.exception('Converting APK to JAVA')
