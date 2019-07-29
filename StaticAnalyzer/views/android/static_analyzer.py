@@ -193,13 +193,13 @@ def static_analyzer(request, api=False):
                         dex_2_jar(app_dic['app_path'], app_dic[
                                   'app_dir'], app_dic['tools_dir'])
 
-                    if (settings.JAVA_DECOMPILER == 'jadx'):
+                    if (settings.JAR_CONVERTE == 'jadx'):
                         apk_2_java(app_dic['app_path'], app_dic['app_dir'],
                                    app_dic['tools_dir'])
 
                     dex_2_smali(app_dic['app_dir'], app_dic['tools_dir'])
 
-                    if (settings.JAVA_DECOMPILER != 'jadx'):
+                    if (settings.JAR_CONVERTER != 'jadx'):
                         jar_2_java(app_dic['app_dir'], app_dic['tools_dir'])
 
                     code_an_dic = code_analysis(
