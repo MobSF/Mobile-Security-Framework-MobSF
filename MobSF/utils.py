@@ -493,7 +493,7 @@ def check_basic_env():
         logger.error(
             'JDK 8+ is not available. '
             'Set JAVA_HOME environment variable'
-            ' or JAVA_HOME in MobSF/settings.py')
+            ' or JAVA_DIRECTORY in MobSF/settings.py')
         logger.info('Current Configuration: '
                     'JAVA_DIRECTORY=%s', settings.JAVA_DIRECTORY)
         logger.info('Example Configuration:'
