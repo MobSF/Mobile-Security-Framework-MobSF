@@ -193,7 +193,7 @@ def static_analyzer(request, api=False):
                         dex_2_jar(app_dic['app_path'], app_dic[
                                   'app_dir'], app_dic['tools_dir'])
 
-                    if (settings.JAR_CONVERTE == 'jadx'):
+                    if (settings.JAR_CONVERTER == 'jadx'):
                         apk_2_java(app_dic['app_path'], app_dic['app_dir'],
                                    app_dic['tools_dir'])
 
