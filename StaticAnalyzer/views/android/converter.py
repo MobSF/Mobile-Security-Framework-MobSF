@@ -5,6 +5,7 @@ import glob
 import logging
 import os
 import platform
+import shutil
 import subprocess
 
 from django.conf import settings
@@ -187,6 +188,10 @@ def apk_2_java(app_path, app_dir, tools_dir):
         args = []
         output = os.path.join(app_dir, 'java_source/')
         logger.info('Using Apk converter - jadx')
+
+        if os.path.exists(output):
+            shutil.rmtree(output)
+
         if (len(settings.JADX_BINARY) > 0
                 and is_file_exists(settings.JADX_BINARY)):
             jadx = settings.JADX_BINARY
