@@ -20,16 +20,22 @@ echo
 if [[ $VAL =~ ^[Yy]$ ]]
 then
 	echo 'Downloading Jadx'
-	curl -L --output /tmp/jadx.zip  https://github.com/skylot/jadx/releases/download/v1.0.0/jadx-1.0.0.zip
-	echo 'Installing JAdix in tools directory'
+	jadx_archive=$(curl -s https://api.github.com/repos/skylot/jadx/releases/latest | grep '.browser_download_url' | grep -v 'jadx-gui' |awk  -F'"' '{print $4}') 
+	base=$(basename $jadx_archive)
+	curl -L -f --output /tmp/${base} ${jadx_archive}
+	if [ "$?" -gt "0" ]; then
+            echo 'Download Failed'
+	    exit 1
+	fi    
+	echo 'Installing Jadx in tools directory'
 	mkdir -p ./StaticAnalyzer/tools/jadx
+	unzip -o /tmp/${base} -d ./StaticAnalyzer/tools/jadx
 	unamestr=$(uname)
         if [[ "$unamestr" == 'Darwin' ]]; then
            sed -i '' "s#DEFAULT_JVM_OPTS=.*#DEFAULT_JVM_OPTS='\"-Xms128M\" \"-Xmx4g\" \"-XX:+UseG1GC\" \"-Dlogback.configurationFile=${PWD}/jadx.xml\"'#" ./StaticAnalyzer/tools/jadx/bin/jadx
         else   
            sed -i "s#DEFAULT_JVM_OPTS=.*#DEFAULT_JVM_OPTS='\"-Xms128M\" \"-Xmx4g\" \"-XX:+UseG1GC\" \"-Dlogback.configurationFile=${PWD}/jadx.xml\"'#" ./StaticAnalyzer/tools/jadx/bin/jadx
 	fi
-        unzip -o /tmp/jadx.zip -d ./StaticAnalyzer/tools/jadx/
-	rm -f /tmp/jadx.zip
+	rm -f /tmp/${base}
 	echo 'Done'
 fi
