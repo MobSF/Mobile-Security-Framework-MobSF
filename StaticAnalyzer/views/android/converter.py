@@ -207,7 +207,6 @@ def apk_2_java(app_path, app_dir, tools_dir):
                 output,
                 '-r',
                 '--show-bad-code',
-                '--deobf',
                 app_path,
             ]
             subprocess.call(args)
