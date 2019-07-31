@@ -485,11 +485,7 @@ def check_basic_env():
     except ImportError:
         logger.exception('lxml is not installed!')
         os.kill(os.getpid(), signal.SIGTERM)
-    if platform.system() == 'Windows':
-        java = settings.JAVA_BINARY + '.exe'
-    else:
-        java = settings.JAVA_BINARY
-    if not is_file_exists(java):
+    if not is_file_exists(settings.JAVA_BINARY):
         logger.error(
             'JDK 8+ is not available. '
             'Set JAVA_HOME environment variable'
