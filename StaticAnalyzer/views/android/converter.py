@@ -152,7 +152,7 @@ def jar_2_java(app_dir, tools_dir):
                         and is_file_exists(ext_cfr)):
                     jd_path = ext_cfr
                 else:
-                    jd_path = os.path.join(tools_dir, 'cfr-0.144.jar')
+                    jd_path = os.path.join(tools_dir, 'cfr-0.146.jar')
                 args = [settings.JAVA_BINARY,
                         '-jar',
                         jd_path,
