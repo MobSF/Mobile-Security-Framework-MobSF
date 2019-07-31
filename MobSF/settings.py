@@ -315,6 +315,8 @@ else:
     VBOXMANAGE_BINARY = '/usr/bin/VBoxManage'
     CFR_DECOMPILER_BINARY = '/home/ajin/tools/cfr.jar'
     PYTHON3_PATH = 'C:/Users/Ajin/AppData/Local/Programs/Python/Python35-32/'
+    JADX_BINARY = 'C:/Users/Ajin/AppData/Local/Programs/jadx/bin/jadx.bat'
+    JADX_BINARY = '/Users/ajin/jadx/bin/jadx'
     """
     # ===============================================
 
