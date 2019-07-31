@@ -197,8 +197,7 @@ def apk_2_java(app_path, app_dir, tools_dir):
             jadx = settings.JADX_BINARY
         else:
             if platform.system() == 'Windows':
-                dex_2_jar(app_path, app_dir, tools_dir)
-                jar_2_java(app_dir, tools_dir)
+                jadx = os.path.join(tools_dir, 'jadx/bin/jadx.bat')
             else:
                 jadx = os.path.join(tools_dir, 'jadx/bin/jadx')
                 os.chmod(jadx, 0o744)
