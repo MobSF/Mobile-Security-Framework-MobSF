@@ -53,8 +53,8 @@ def dex_2_jar(app_path, app_dir, tools_dir):
                     else:
                         inv = os.path.join(tools_dir, 'd2j2/d2j_invoke.sh')
                         d2j = os.path.join(tools_dir, 'd2j2/d2j-dex2jar.sh')
-                        os.chmod(d2j, 0o777)
-                        os.chmod(inv, 0o777)
+                        os.chmod(d2j, 0o744)
+                        os.chmod(inv, 0o744)
                 args = [
                     d2j,
                     dex,
