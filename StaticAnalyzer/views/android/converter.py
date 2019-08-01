@@ -168,7 +168,7 @@ def jar_2_java(app_dir, tools_dir):
                     pd_path = ext_proc
                 else:
                     pd_path = os.path.join(
-                        tools_dir, 'procyon-decompiler-0.5.34.jar')
+                        tools_dir, 'procyon-decompiler-0.5.36.jar')
                 args = [settings.JAVA_BINARY,
                         '-jar',
                         pd_path,
