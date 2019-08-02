@@ -79,7 +79,9 @@ RUN ./scripts/kali_fix.sh
 #Postgres support is set to false by default
 ARG POSTGRES=False
 #check if Postgres support needs to be enabled 
-RUN cd scripts && chmod +x postgres_support.sh; sync; ./postgres_support.sh $POSTGRES
+WORKDIR /root/Mobile-Security-Framework-MobSF/scripts
+RUN chmod +x postgres_support.sh; sync; ./postgres_support.sh $POSTGRES
+WORKDIR /root/Mobile-Security-Framework-MobSF
 
 #Add apktool working path
 RUN mkdir -p /root/.local/share/apktool/framework
