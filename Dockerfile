@@ -14,6 +14,8 @@ LABEL \
 ENV DEBIAN_FRONTEND="noninteractive"
 ENV PDFGEN_PKGFILE="wkhtmltox_0.12.5-1.bionic_amd64.deb" 
 ENV PDFGEN_URL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/${PDFGEN_PKGFILE}"
+ENV JDK_FILE="openjdk-12_linux-x64_bin.tar.gz"
+ENV JDK_URL="https://download.java.net/java/GA/jdk12/GPL/${JDK_FILE}"
 
 #Update the repository sources list
 #Install Required Libs
@@ -32,8 +34,9 @@ RUN locale-gen en_US.UTF-8
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 #Install OpenJDK12
-RUN wget --quiet https://download.java.net/java/GA/jdk12/GPL/openjdk-12_linux-x64_bin.tar.gz && \
-    tar zxvf openjdk-12_linux-x64_bin.tar.gz
+RUN wget --quiet "${JDK_URL}" && \
+    tar zxvf "${JDK_FILE}" && \
+    rm -f "${JDK_FILE}"
 ENV JAVA_HOME=/jdk-12
 ENV PATH=$JAVA_HOME/bin:$PATH
 
