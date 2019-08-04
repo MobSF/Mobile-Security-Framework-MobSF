@@ -182,8 +182,7 @@ def static_analyzer(request, api=False):
                     bin_an_buff += res_analysis(app_dic['app_dir'])
                     cert_dic = cert_info(
                         app_dic['app_dir'],
-                        app_dic['app_file'],
-                        app_dic['tools_dir'])
+                        app_dic['app_file'])
                     apkid_results = apkid_analysis(app_dic[
                         'app_dir'], app_dic['app_path'], app_dic['app_name'])
                     tracker = Trackers.Trackers(
