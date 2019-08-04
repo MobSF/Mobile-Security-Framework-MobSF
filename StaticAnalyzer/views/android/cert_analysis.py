@@ -6,14 +6,12 @@ import hashlib
 import logging
 import os
 import re
-import subprocess
 
 from androguard.core.bytecodes.apk import APK
 from androguard.util import get_certificate_name_string
 
 from asn1crypto import keys, x509
 
-from django.conf import settings
 from django.utils.html import escape
 
 logger = logging.getLogger(__name__)
@@ -54,43 +52,20 @@ def cert_info(app_dir, app_file, tools_dir):
     """Return certificate information."""
     try:
         logger.info('Reading Code Signing Certificate')
-        cert = os.path.join(app_dir, 'META-INF/')
-        cp_path = tools_dir + 'CertPrint.jar'
-        files = [f for f in os.listdir(
-            cert) if os.path.isfile(os.path.join(cert, f))]
-        certfile = None
         dat = ''
         manidat = ''
-        manifestfile = None
-        if 'CERT.RSA' in files:
-            certfile = os.path.join(cert, 'CERT.RSA')
-        else:
-            for file_name in files:
-                if file_name.lower().endswith('.rsa'):
-                    certfile = os.path.join(cert, file_name)
-                elif file_name.lower().endswith('.dsa'):
-                    certfile = os.path.join(cert, file_name)
-        if certfile:
-            args = [settings.JAVA_BINARY, '-jar', cp_path, certfile]
+        issued = ''
+
+        dat = androguard_certinfo(app_dir, app_file)
+
+        if re.findall(r'Apk is signed', dat):
             issued = 'good'
-            try:
-                dat = subprocess.check_output(args)
-                unicode_output = str(dat, encoding='utf-8', errors='replace')
-                dat = escape(unicode_output).replace('\n', '</br>')
-            except Exception:
-                dat = androguard_certinfo(app_dir, app_file)
-        else:
-            dat = 'No Code Signing Certificate Found!'
+        if re.findall(r'Missing certificate', dat):
             issued = 'missing'
         if re.findall(r'CN=Android Debug', dat):
             issued = 'bad'
-        if re.findall(r'\[SHA1withRSA\]', dat):
+        if re.findall(r'Hash Algorithm: sha1', dat):
             issued = 'bad hash'
-        if 'MANIFEST.MF' in files:
-            manifestfile = os.path.join(cert, 'MANIFEST.MF')
-        if manifestfile:
-            with open(manifestfile, 'r', encoding='utf-8') as manifile:
-                manidat = manifile.read()
         sha256_digest = bool(re.findall(r'SHA-256-Digest', manidat))
         cert_dic = {
             'cert_info': dat,
@@ -112,14 +87,23 @@ def androguard_certinfo(app_dir, app_file):
         'sha256': hashlib.sha256,
         'sha512': hashlib.sha512,
     }
-    a = APK(apk_file)
-    certlist.append('v1: {}'.format(a.is_signed_v1()))
-    certlist.append('v2: {}'.format(a.is_signed_v2()))
-    certlist.append('v3: {}'.format(a.is_signed_v3()))
+    a = APK(apk_file, skip_analysis=True)
+    if a.is_signed():
+        certlist.append('Apk is signed')
+    else:
+        certlist.append('Missing certificate')
+        return '\n'.join(certlist)
+
+    certlist.append('v1 signature: {}'.format(a.is_signed_v1()))
+    certlist.append('v2 signature: {}'.format(a.is_signed_v2()))
+    certlist.append('v3 signature: {}'.format(a.is_signed_v3()))
 
     certs = set(a.get_certificates_der_v3() + a.get_certificates_der_v2()
                 + [a.get_certificate_der(x) for x in a.get_signature_names()])
     pkeys = set(a.get_public_keys_der_v3() + a.get_public_keys_der_v2())
+
+    if len(certs) > 0:
+        certlist.append('Found {} unique certificates'.format(len(certs)))
 
     for cert in certs:
         x509_cert = x509.Certificate.load(cert)
@@ -137,7 +121,7 @@ def androguard_certinfo(app_dir, app_file):
             hex(x509_cert.serial_number)))
         certlist.append('Hash Algorithm: {}'.format(x509_cert.hash_algo))
         for k, v in hashfunctions.items():
-            certlist.append('{} {}'.format(k, v(cert).hexdigest()))
+            certlist.append('{}: {}'.format(k, v(cert).hexdigest()))
 
     for public_key in pkeys:
         x509_public_key = keys.PublicKeyInfo.load(public_key)
