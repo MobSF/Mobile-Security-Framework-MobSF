@@ -111,7 +111,7 @@ def check_update():
         html = str(response.text).split('\n')
         for line in html:
             if line.startswith('MOBSF_VER'):
-                line = line.replace('MOBSF_VER', '').replace('"', '')
+                line = line.replace('MOBSF_VER', '').replace("'", '')
                 line = line.replace('=', '').strip()
                 if line != settings.MOBSF_VER:
                     logger.warning('A new version of MobSF is available, '
