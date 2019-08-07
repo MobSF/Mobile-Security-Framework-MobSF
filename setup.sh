@@ -18,9 +18,8 @@ else
   exit 1
 fi
 
-echo '[INSTALL] Installing virtualenv'
-python3 -m pip install virtualenv
-python3 -m virtualenv venv -p python3
+echo '[INSTALL] Using venv'
+python3 -m venv ./venv
 source venv/bin/activate
 
 unamestr=$(uname)
