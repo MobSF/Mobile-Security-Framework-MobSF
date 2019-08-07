@@ -68,7 +68,7 @@ def cert_info(app_dir, app_file):
             cert_path) if os.path.isfile(os.path.join(cert_path, f))]
         a = APK(apk_file)
         if a.is_signed():
-            certlist.append('Apk is signed')
+            certlist.append('APK is signed')
         else:
             certlist.append('Missing certificate')
 
