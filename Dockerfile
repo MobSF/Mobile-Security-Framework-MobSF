@@ -83,7 +83,7 @@ RUN mkdir -p /root/.local/share/apktool/framework
 
 #Install APKiD dependencies
 RUN pip3 install wheel
-RUN pip3 wheel --wheel-dir=/tmp/yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.10.0
+RUN pip3 wheel --wheel-dir=/tmp/yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git
 RUN pip3 install --no-index --find-links=/tmp/yara-python yara-python
 
 #Install Dependencies

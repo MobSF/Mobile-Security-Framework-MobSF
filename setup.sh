@@ -18,10 +18,6 @@ else
   exit 1
 fi
 
-echo '[INSTALL] Using venv'
-python3 -m venv ./venv
-source venv/bin/activate
-
 unamestr=$(uname)
 if [[ "$unamestr" == 'Darwin' ]]; then
   export ARCHFLAGS='-arch x86_64'
@@ -40,9 +36,14 @@ if [[ "$unamestr" == 'Darwin' ]]; then
   fi  
 fi
 
+echo '[INSTALL] Using venv'
+rm -rf ./venv
+python3 -m venv ./venv
+source venv/bin/activate
+
 echo '[INSTALL] Installing APKiD requirements - yara-python'
 pip install wheel
-pip wheel --wheel-dir=/tmp/yara-python --build-option='build' --build-option='--enable-dex' git+https://github.com/VirusTotal/yara-python.git@v3.10.0
+pip wheel --wheel-dir=/tmp/yara-python --build-option='build' --build-option='--enable-dex' git+https://github.com/VirusTotal/yara-python.git
 pip install --no-index --find-links=/tmp/yara-python yara-python
 
 echo '[INSTALL] Installing Requirements'
