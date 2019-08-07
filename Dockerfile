@@ -25,8 +25,6 @@ RUN apt update -y && apt install -y \
     libxml2-dev \
     libxslt1-dev \
     locales \
-    curl \
-    unzip \
     wget
 
 #set locales
