@@ -64,5 +64,5 @@ before_script:
 # 'python3' is a 'command not found' error on Windows but 'py' works on Windows only
 # TODO: Enable tests on windows. Currently tox doesn't work + tests are stuck while running
 script:
-  - then tox -e lint
+  - tox -e lint
   - python3 manage.py test
