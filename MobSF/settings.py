@@ -249,10 +249,6 @@ else:
         r'com[\\\/]{1}facebook[\\\/]{1}',
     ]
 
-    # ==========DECOMPILER SETTINGS=================
-
-    DECOMPILER = 'jadx'
-
     # ==============================================
 
     # ======WINDOWS STATIC ANALYSIS SETTINGS ===========

@@ -22,12 +22,6 @@ def get_dex_files(app_dir):
     return glob.glob(glob_pattern)
 
 
-def get_jar_files(app_dir):
-    """Get all Dex Files for analysis."""
-    glob_pattern = app_dir + '*.jar'
-    return glob.glob(glob_pattern)
-
-
 def dex_2_smali(app_dir, tools_dir):
     """Run dex2smali."""
     try:
@@ -62,7 +56,7 @@ def apk_2_java(app_path, app_dir, tools_dir):
         logger.info('APK -> JAVA')
         args = []
         output = os.path.join(app_dir, 'java_source/')
-        logger.info('Using Apk converter - jadx')
+        logger.info('Decompiling to Java with jadx')
 
         if os.path.exists(output):
             shutil.rmtree(output)
@@ -86,4 +80,4 @@ def apk_2_java(app_path, app_dir, tools_dir):
             ]
             subprocess.call(args)
     except Exception:
-        logger.exception('Converting APK to JAVA')
+        logger.exception('Decompiling to JAVA')
