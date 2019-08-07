@@ -111,7 +111,7 @@ def check_update():
         html = str(response.text).split('\n')
         for line in html:
             if line.startswith('MOBSF_VER'):
-                line = line.replace('MOBSF_VER', '').replace('"', '')
+                line = line.replace('MOBSF_VER', '').replace("'", '')
                 line = line.replace('=', '').strip()
                 if line != settings.MOBSF_VER:
                     logger.warning('A new version of MobSF is available, '
@@ -485,15 +485,11 @@ def check_basic_env():
     except ImportError:
         logger.exception('lxml is not installed!')
         os.kill(os.getpid(), signal.SIGTERM)
-    if platform.system() == 'Windows':
-        java = settings.JAVA_BINARY + '.exe'
-    else:
-        java = settings.JAVA_BINARY
-    if not is_file_exists(java):
+    if not is_file_exists(settings.JAVA_BINARY):
         logger.error(
             'JDK 8+ is not available. '
             'Set JAVA_HOME environment variable'
-            ' or JAVA_HOME in MobSF/settings.py')
+            ' or JAVA_DIRECTORY in MobSF/settings.py')
         logger.info('Current Configuration: '
                     'JAVA_DIRECTORY=%s', settings.JAVA_DIRECTORY)
         logger.info('Example Configuration:'

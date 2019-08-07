@@ -29,9 +29,8 @@ where python >nul 2>&1 && (
     exit /b
   )
 
-  echo [INSTALL] Installing virtualenv
-  pip3 install -U pip virtualenv
-  python -m virtualenv -p python ./venv
+  echo [INSTALL] Using venv
+  python -m venv ./venv
   .\venv\Scripts\activate
 
   set LIB=C:\Program Files\OpenSSL-Win64\lib;%LIB%
