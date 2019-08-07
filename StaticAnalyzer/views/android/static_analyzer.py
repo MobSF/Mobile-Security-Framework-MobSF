@@ -189,9 +189,8 @@ def static_analyzer(request, api=False):
                         app_dic['app_dir'], app_dic['tools_dir'])
                     tracker_res = tracker.get_trackers()
 
-                    if (settings.DECOMPILER == 'jadx'):
-                        apk_2_java(app_dic['app_path'], app_dic['app_dir'],
-                                   app_dic['tools_dir'])
+                    apk_2_java(app_dic['app_path'], app_dic['app_dir'],
+                               app_dic['tools_dir'])
 
                     dex_2_smali(app_dic['app_dir'], app_dic['tools_dir'])
 

@@ -38,9 +38,9 @@ fi
 
 echo '[CONFIG] Configure Jadx'
 if [[ "$unamestr" == 'Darwin' ]]; then
-    sed -i '' "s#DEFAULT_JVM_OPTS=.*#DEFAULT_JVM_OPTS='\"-Xms128M\" \"-Xmx4g\" \"-XX:+UseG1GC\" \"-Dlogback.configurationFile=${PWD}/jadx.xml\"'#" ./StaticAnalyzer/tools/jadx/bin/jadx
+    sed -i '' "s#DEFAULT_JVM_OPTS=.*#DEFAULT_JVM_OPTS='\"-Xms128M\" \"-Xmx4g\" \"-XX:+UseG1GC\" \"-Dlogback.configurationFile=./jadx.xml\"'#" ./StaticAnalyzer/tools/jadx/bin/jadx
 else
-    sed -i "s#DEFAULT_JVM_OPTS=.*#DEFAULT_JVM_OPTS='\"-Xms128M\" \"-Xmx4g\" \"-XX:+UseG1GC\" \"-Dlogback.configurationFile=${PWD}/jadx.xml\"'#" ./StaticAnalyzer/tools/jadx/bin/jadx
+    sed -i "s#DEFAULT_JVM_OPTS=.*#DEFAULT_JVM_OPTS='\"-Xms128M\" \"-Xmx4g\" \"-XX:+UseG1GC\" \"-Dlogback.configurationFile=./jadx.xml\"'#" ./StaticAnalyzer/tools/jadx/bin/jadx
 fi
 
 echo '[INSTALL] Using venv'
