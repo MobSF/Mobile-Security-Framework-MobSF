@@ -30,7 +30,7 @@ where python >nul 2>&1 && (
   )
 
   echo [INSTALL] Using venv
-  rmdir /q /s ./venv
+  rmdir /q /s venv
   python -m venv ./venv
   .\venv\Scripts\activate
 
