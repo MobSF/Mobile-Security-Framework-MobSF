@@ -36,18 +36,10 @@ if [[ "$unamestr" == 'Darwin' ]]; then
   fi  
 fi
 
-echo '[CONFIG] Configure Jadx'
-if [[ "$unamestr" == 'Darwin' ]]; then
-    sed -i '' "s#DEFAULT_JVM_OPTS=.*#DEFAULT_JVM_OPTS='\"-Xms128M\" \"-Xmx4g\" \"-XX:+UseG1GC\" \"-Dlogback.configurationFile=./jadx.xml\"'#" ./StaticAnalyzer/tools/jadx/bin/jadx
-else
-    sed -i "s#DEFAULT_JVM_OPTS=.*#DEFAULT_JVM_OPTS='\"-Xms128M\" \"-Xmx4g\" \"-XX:+UseG1GC\" \"-Dlogback.configurationFile=./jadx.xml\"'#" ./StaticAnalyzer/tools/jadx/bin/jadx
-fi
-
 echo '[INSTALL] Using venv'
 rm -rf ./venv
 python3 -m venv ./venv
 source venv/bin/activate
-
 
 echo '[INSTALL] Installing APKiD requirements - yara-python'
 pip install wheel

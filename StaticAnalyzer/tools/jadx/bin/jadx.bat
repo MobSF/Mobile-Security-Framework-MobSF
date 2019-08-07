@@ -14,7 +14,7 @@ set APP_BASE_NAME=%~n0
 set APP_HOME=%DIRNAME%..
 
 @rem Add default JVM options here. You can also use JAVA_OPTS and JADX_OPTS to pass JVM options to this script.
-set DEFAULT_JVM_OPTS="-Xms128M" "-Xmx4g" "-XX:+UseG1GC" "-Dlogback.configurationFile=./jadx.xml"
+set DEFAULT_JVM_OPTS="-Xms128M" "-Xmx4g" "-XX:+UseG1GC" "-Dlogback.configurationFile=%APP_HOME%/bin/jadx.xml"
 
 @rem Find java.exe
 if defined JAVA_HOME goto findJavaFromJavaHome
