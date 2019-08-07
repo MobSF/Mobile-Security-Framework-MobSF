@@ -23,6 +23,7 @@ matrix:
         - sudo dpkg -i wkhtmltox_0.12.5-1.xenial_amd64.deb
         - wget https://download.java.net/java/GA/jdk12/GPL/openjdk-12_linux-x64_bin.tar.gz
         - tar zxvf openjdk-12_linux-x64_bin.tar.gz
+        - ln -s /jdk-12/bin/java /usr/bin/java
     -
       name: "Python 3.7 on OSX, Xcode 11"
       os: osx
@@ -38,6 +39,7 @@ matrix:
         - sudo installer -pkg wkhtmltox-0.12.5-1.macos-cocoa.pkg -target /
         - wget https://download.java.net/java/GA/jdk12/GPL/openjdk-12_osx-x64_bin.tar.gz
         - tar zxvf openjdk-12_osx-x64_bin.tar.gz
+        - ln -s /jdk-12/bin/java /usr/bin/java
 #    -
 #      name: "Python 3.7 on Windows (no lint)"
 #      os: windows
