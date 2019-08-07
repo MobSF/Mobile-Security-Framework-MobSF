@@ -25,8 +25,7 @@ from StaticAnalyzer.views.android.binary_analysis import (elf_analysis,
 from StaticAnalyzer.views.android.cert_analysis import (
     cert_info, get_hardcoded_cert_keystore)
 from StaticAnalyzer.views.android.code_analysis import code_analysis
-from StaticAnalyzer.views.android.converter import (apk_2_java, dex_2_jar,
-                                                    dex_2_smali, jar_2_java)
+from StaticAnalyzer.views.android.converter import (apk_2_java, dex_2_smali)
 from StaticAnalyzer.views.android.db_interaction import (
     create_db_entry, get_context_from_analysis, get_context_from_db_entry,
     update_db_entry)
@@ -189,18 +188,12 @@ def static_analyzer(request, api=False):
                     tracker = Trackers.Trackers(
                         app_dic['app_dir'], app_dic['tools_dir'])
                     tracker_res = tracker.get_trackers()
-                    if (settings.DECOMPILER != 'jadx'):
-                        dex_2_jar(app_dic['app_path'], app_dic[
-                                  'app_dir'], app_dic['tools_dir'])
 
-                    if (settings.JAR_CONVERTER == 'jadx'):
+                    if (settings.DECOMPILER == 'jadx'):
                         apk_2_java(app_dic['app_path'], app_dic['app_dir'],
                                    app_dic['tools_dir'])
 
                     dex_2_smali(app_dic['app_dir'], app_dic['tools_dir'])
-
-                    if (settings.JAR_CONVERTER != 'jadx'):
-                        jar_2_java(app_dic['app_dir'], app_dic['tools_dir'])
 
                     code_an_dic = code_analysis(
                         app_dic['app_dir'],

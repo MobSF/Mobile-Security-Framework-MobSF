@@ -18,13 +18,13 @@ logger = logging.getLogger(__name__)
 #       MOBSF CONFIGURATIONS
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-MOBSF_VER = 'v1.1.3 Beta'
+MOBSF_VER = 'v1.2.0 Beta'
 BANNER = """
-  __  __       _    ____  _____           _   _   
- |  \/  | ___ | |__/ ___||  ___| __   __ / | / |
- | |\/| |/ _ \| '_ \___ \| |_    \ \ / / | | | |
- | |  | | (_) | |_) |__) |  _|    \ V /  | |_| |
- |_|  |_|\___/|_.__/____/|_|       \_/   |_(_)_|
+ __  __       _    ____  _____       _   ____
+|  \/  | ___ | |__/ ___||  ___|_   _/ | |___  |
+| |\/| |/ _ \| '_ \___ \| |_  \ \ / / |   __) |
+| |  | | (_) | |_) |__) |  _|  \ V /| |_ | __/
+|_|  |_|\___/|_.__/____/|_|     \_/ |_(_)_____|
 
 """  # noqa: W291
 # ASCII Standard
@@ -248,23 +248,8 @@ else:
 
     # ==========DECOMPILER SETTINGS=================
 
-    DECOMPILER = 'cfr'
+    DECOMPILER = 'jadx'
 
-    # Four Decompilers are available
-    # 1. jd-core
-    # 2. cfr
-    # 3. procyon
-    # 4. jadx
-
-    # ==============================================
-
-    # ==========Dex to Jar Converter================
-    JAR_CONVERTER = 'd2j'
-
-    # Three Two Dex to Jar converters are available
-    # 1. d2j
-    # 2. enjarify
-    # 3. jadx
     # ==============================================
 
     # ======WINDOWS STATIC ANALYSIS SETTINGS ===========
@@ -286,14 +271,9 @@ else:
 
     # Android 3P Tools
     JADX_BINARY = ''
-    DEX2JAR_BINARY = ''
     BACKSMALI_BINARY = ''
-    CFR_DECOMPILER_BINARY = ''
-    JD_CORE_DECOMPILER_BINARY = ''
-    PROCYON_DECOMPILER_BINARY = ''
     APKTOOL_BINARY = ''
     ADB_BINARY = ''
-    ENJARIFY_DIRECTORY = ''
 
     # iOS 3P Tools
     OTOOL_BINARY = ''
@@ -310,10 +290,7 @@ else:
     Examples:
     JAVA_DIRECTORY = 'C:/Program Files/Java/jdk1.7.0_17/bin/'
     JAVA_DIRECTORY = '/usr/bin/'
-    DEX2JAR_BINARY = '/Users/ajin/dex2jar/d2j-dex2jar.sh'
-    ENJARIFY_DIRECTORY = 'D:/enjarify/'
     VBOXMANAGE_BINARY = '/usr/bin/VBoxManage'
-    CFR_DECOMPILER_BINARY = '/home/ajin/tools/cfr.jar'
     PYTHON3_PATH = 'C:/Users/Ajin/AppData/Local/Programs/Python/Python35-32/'
     JADX_BINARY = 'C:/Users/Ajin/AppData/Local/Programs/jadx/bin/jadx.bat'
     JADX_BINARY = '/Users/ajin/jadx/bin/jadx'

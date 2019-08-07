@@ -41,6 +41,13 @@ if [[ "$unamestr" == 'Darwin' ]]; then
   fi  
 fi
 
+echo '[CONFIG] Configure Jadx'
+if [[ "$unamestr" == 'Darwin' ]]; then
+    sed -i '' "s#DEFAULT_JVM_OPTS=.*#DEFAULT_JVM_OPTS='\"-Xms128M\" \"-Xmx4g\" \"-XX:+UseG1GC\" \"-Dlogback.configurationFile=${PWD}/jadx.xml\"'#" ./StaticAnalyzer/tools/jadx/bin/jadx
+else
+    sed -i "s#DEFAULT_JVM_OPTS=.*#DEFAULT_JVM_OPTS='\"-Xms128M\" \"-Xmx4g\" \"-XX:+UseG1GC\" \"-Dlogback.configurationFile=${PWD}/jadx.xml\"'#" ./StaticAnalyzer/tools/jadx/bin/jadx
+fi
+
 echo '[INSTALL] Installing APKiD requirements - yara-python'
 pip install wheel
 pip wheel --wheel-dir=/tmp/yara-python --build-option='build' --build-option='--enable-dex' git+https://github.com/VirusTotal/yara-python.git@v3.10.0
