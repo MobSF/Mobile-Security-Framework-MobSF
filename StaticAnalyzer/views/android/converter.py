@@ -78,6 +78,7 @@ def apk_2_java(app_path, app_dir, tools_dir):
                 '--show-bad-code',
                 app_path,
             ]
-            subprocess.call(args)
+            my_env = os.environ.copy()
+            subprocess.call(args, env=my_env)
     except Exception:
         logger.exception('Decompiling to JAVA')
