@@ -11,9 +11,6 @@ matrix:
       dist: xenial
       python: 3.7
       sudo: false
-      env:
-        - JAVA_HOME=/jdk-12
-        - PATH=$JAVA_HOME/bin:$PATH
       before_install:
         - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
         - sudo apt-get install -y libpng16-16 libssl-dev xfonts-75dpi xfonts-base libffi-dev libxml2-dev libxslt1-dev openssl
@@ -21,23 +18,16 @@ matrix:
         - wget http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4.3_amd64.deb
         - sudo dpkg -i libssl1.1_1.1.0g-2ubuntu4.3_amd64.deb
         - sudo dpkg -i wkhtmltox_0.12.5-1.xenial_amd64.deb
-        - wget https://download.java.net/java/GA/jdk12/GPL/openjdk-12_linux-x64_bin.tar.gz
-        - tar zxvf openjdk-12_linux-x64_bin.tar.gz
     -
       name: "Python 3.7 on OSX, Xcode 11"
       os: osx
       language: minimal
       osx_image: xcode11
       sudo: false
-      env:
-        - JAVA_HOME=/jdk-12
-        - PATH=$JAVA_HOME/bin:$PATH
       before_install:
         - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
         - wget https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox-0.12.5-1.macos-cocoa.pkg
         - sudo installer -pkg wkhtmltox-0.12.5-1.macos-cocoa.pkg -target /
-        - wget https://download.java.net/java/GA/jdk12/GPL/openjdk-12_osx-x64_bin.tar.gz
-        - tar zxvf openjdk-12_osx-x64_bin.tar.gz
 #    -
 #      name: "Python 3.7 on Windows (no lint)"
 #      os: windows
@@ -60,6 +50,8 @@ before_script:
   - pip3 wheel --wheel-dir=/tmp/yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git
   - pip3 install --no-index --find-links=/tmp/yara-python yara-python
   - pip3 install -r requirements.txt
+  - python3 manage.py makemigrations
+  - python3 manage.py migrate
 # 'python' points to Python 2.7 on macOS but points to Python 3.7 on Linux and Windows
 # 'python3' is a 'command not found' error on Windows but 'py' works on Windows only
 # TODO: Enable tests on windows. Currently tox doesn't work + tests are stuck while running
