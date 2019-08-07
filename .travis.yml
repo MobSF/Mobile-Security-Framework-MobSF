@@ -1,60 +1,68 @@
-dist: xenial
 language: python
-python:
-  - '3.6'
-virtualenv:
-  system_site_packages: false
-sudo: false
-cache:
-  - apt
-  - pip
-env:
-  global:
-    - JAVA_HOME=/jdk-12
-    - PATH=$JAVA_HOME/bin:$PATH
-before_install:
-  - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
-  - REPO=`pwd`
-  - echo $REPO
-  - echo $TRAVIS_TAG
-  - pwd
-  - export PDFGEN_PKGFILE="wkhtmltox_0.12.5-1.xenial_amd64.deb"
-  - export PDFGEN_URL="https://downloads.wkhtmltopdf.org/0.12/0.12.5/${PDFGEN_PKGFILE}"
-  - export YARA_URL="https://github.com/rednaga/yara-python-1"
-  - export POSTGRES=False
-  - export LIBSSL1="http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4.3_amd64.deb"
-  - export LIBSSL1_NAME="libssl1.1_1.1.0g-2ubuntu4.3_amd64.deb"
-  - sudo apt-get install -y libpng16-16 libssl-dev xfonts-75dpi xfonts-base libffi-dev libxml2-dev libxslt1-dev
-  - sudo apt-get install -y openssl
-  - wget ${PDFGEN_URL}
-  - wget ${LIBSSL1}
-  - sudo dpkg -i ${LIBSSL1_NAME}
-  - sudo dpkg -i ${PDFGEN_PKGFILE}
-  - wget https://download.java.net/java/GA/jdk12/GPL/openjdk-12_linux-x64_bin.tar.gz
-  - tar zxvf openjdk-12_linux-x64_bin.tar.gz
-  - pip3 install wheel
-  - pip3 wheel --wheel-dir=/tmp/yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.10.0
-  - pip3 install --no-index --find-links=/tmp/yara-python yara-python
-
-addons:
-  apt:
-    packages:
-      - python3-pip
-      - git
-      - wget
-      - unzip
-      - python3-dev
-      - libevent-dev
-      - libxml2
-      - libxml2-dev
-      - libxml2-utils
-      - software-properties-common
-      - python3-setuptools
-      - sqlite3
+git:
+  depth: 25
+  quiet: true
+cache: pip
+matrix:
+  include:
+    -
+      name: "Python 3.7 on Xenial Linux"
+      os: linux
+      dist: xenial
+      python: 3.7
+      sudo: false
+      env:
+        - JAVA_HOME=/jdk-12
+        - PATH=$JAVA_HOME/bin:$PATH
+      before_install:
+        - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
+        - sudo apt-get install -y libpng16-16 libssl-dev xfonts-75dpi xfonts-base libffi-dev libxml2-dev libxslt1-dev openssl
+        - wget https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.xenial_amd64.deb
+        - wget http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4.3_amd64.deb
+        - sudo dpkg -i libssl1.1_1.1.0g-2ubuntu4.3_amd64.deb
+        - sudo dpkg -i wkhtmltox_0.12.5-1.xenial_amd64.deb
+        - wget https://download.java.net/java/GA/jdk12/GPL/openjdk-12_linux-x64_bin.tar.gz
+        - tar zxvf openjdk-12_linux-x64_bin.tar.gz
+    -
+      name: "Python 3.7 on OSX, Xcode 11"
+      os: osx
+      language: minimal
+      osx_image: xcode11
+      sudo: false
+      env:
+        - JAVA_HOME=/jdk-12
+        - PATH=$JAVA_HOME/bin:$PATH
+      before_install:
+        - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
+        - wget https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox-0.12.5-1.macos-cocoa.pkg
+        - sudo installer -pkg wkhtmltox-0.12.5-1.macos-cocoa.pkg -target /
+        - wget https://download.java.net/java/GA/jdk12/GPL/openjdk-12_osx-x64_bin.tar.gz
+        - tar zxvf openjdk-12_osx-x64_bin.tar.gz
+#    -
+#      name: "Python 3.7 on Windows (no lint)"
+#      os: windows
+#      language: shell
+#      env:
+#        - JAVA_HOME="C:\\Program Files\\OpenJDK\\jdk-12.0.2"
+#        - PDF="C:\\Program Files\\wkhtmltopdf\\bin"
+#        - PATH=/c/Python37:/c/Python37/Scripts:$PDF:$JAVA_HOME\\bin:$PATH
+#      before_install:
+#        - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
+#        - choco install wkhtmltopdf
+#        - choco install python
+#        - python -m pip install --upgrade pip
+#        - choco install openjdk --version 12.0.2
 install:
-  - export PYTHONIOENCODING=UTF8
+  - set PYTHONIOENCODING=UTF8
+  - pip3 install --upgrade pip
 before_script:
-  - pip install tox -r requirements.txt
+  - pip3 install wheel tox
+  - pip3 wheel --wheel-dir=/tmp/yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git
+  - pip3 install --no-index --find-links=/tmp/yara-python yara-python
+  - pip3 install -r requirements.txt
+# 'python' points to Python 2.7 on macOS but points to Python 3.7 on Linux and Windows
+# 'python3' is a 'command not found' error on Windows but 'py' works on Windows only
+# TODO: Enable tests on windows. Currently tox doesn't work + tests are stuck while running
 script:
   - tox -e lint
-  - python manage.py test
+  - python3 manage.py test
