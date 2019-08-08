@@ -134,12 +134,10 @@ body {
                       {{ play_details.price }}
 
                   <span class="label label-info"><b>Android Version Support: </b></span>
-                    {{ play_details.required_android_version }}
+                    {{ play_details.androidVersionText }}
                    
                     <span class="label label-info"><b>Category: </b></span>
-                    {% for cat in play_details.category %}
-                    {{ cat }}, 
-                    {% endfor %}
+		    {{ play_details.genre }}
 
                     <span class="label label-info"><b>Play Store URL: </b></span>
                       <a target="_blank" href="{{ play_details.url }}"> {{ packagename }} </a>
@@ -148,14 +146,18 @@ body {
                   <p>
                   <span class="label label-info"><b>Developer Details: </b></span>
                       {{play_details.developer}},  
-                      {{play_details.developer_id}}, 
-                      {{play_details.developer_address }},
-                      {{play_details.developer_url}}, 
-                      {{play_details.developer_email}}, 
+                      {{play_details.developerId}}, 
+                      {{play_details.developerAddress }},
+                      {{play_details.developerWebsite}}, 
+                      {{play_details.developerEmail}}, 
                   </p>
+		  <p>
+                  <span class="label label-info"><b>Release Date: </b></span>
+		   {{ play_details.released }}
+		  </p>
                  <p>                                       
                       <span class="label label-info"><b>Description: </b></span>
-                      <pre>{{ play_details.description }}</pre>
+                      <pre>{{ play_details.summary }}</pre>
                   </p>
               {%  endif  %}
                                 </div>
