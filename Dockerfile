@@ -87,26 +87,26 @@ WORKDIR /root/Mobile-Security-Framework-MobSF
 RUN mkdir -p /root/.local/share/apktool/framework
 
 #Install APKiD dependencies
-RUN pip3 install wheel
-RUN pip3 wheel --wheel-dir=/tmp/yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git
-RUN pip3 install --no-index --find-links=/tmp/yara-python yara-python
+RUN pip3 install --no-cache-dir wheel
+RUN pip3 wheel --no-cache-dir --wheel-dir=/tmp/yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git
+RUN pip3 install --no-cache-dir --no-index --find-links=/tmp/yara-python yara-python
 
 #Install Dependencies
-RUN pip3 install -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 #Cleanup
 RUN \
     apt remove -y git && \
     apt clean && \
     apt autoclean && \
-    apt autoremove -y
-RUN rm -rf /var/lib/apt/lists/* /tmp/* > /dev/null 2>&1
+    apt autoremove -y && \
+    rm -rf /var/lib/apt/lists/* /tmp/* > /dev/null 2>&1
 
 #Expose MobSF Port
 EXPOSE 8000
 
-RUN python3 manage.py makemigrations
-RUN python3 manage.py migrate
+RUN python3 manage.py makemigrations && \
+    python3 manage.py migrate
 
 #Run MobSF
 CMD ["gunicorn", "-b", "0.0.0.0:8000", "MobSF.wsgi:application", "--workers=1", "--threads=4", "--timeout=1800"]
