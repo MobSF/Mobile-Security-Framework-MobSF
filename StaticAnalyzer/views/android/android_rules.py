@@ -220,7 +220,7 @@ RULES = [
     {
         'desc': 'The App uses an insecure Random Number Generator.',
         'type': 'regex',
-        'regex1': r'java\.util\.Random',
+        'regex1': r'\bjava\.util\.Random\b',
         'level': 'high',
         'match': 'single_regex',
         'input_case': 'exact',
