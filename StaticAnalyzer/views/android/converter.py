@@ -78,9 +78,9 @@ def apk_2_java(app_path, app_dir, tools_dir):
                 '--show-bad-code',
                 app_path,
             ]
-            FNULL = open(os.devnull, 'w')
+            fnull = open(os.devnull, 'w')
             subprocess.call(args,
-                            stdout=FNULL,
+                            stdout=fnull,
                             stderr=subprocess.STDOUT)
     except Exception:
         logger.exception('Decompiling to JAVA')
