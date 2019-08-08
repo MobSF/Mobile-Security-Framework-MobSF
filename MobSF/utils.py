@@ -390,7 +390,17 @@ def sha256(file_path):
         while buf:
             hasher.update(buf)
             buf = afile.read(blocksize)
-    return (hasher.hexdigest())
+    return hasher.hexdigest()
+
+
+def sha256_object(file_obj):
+    blocksize = 65536
+    hasher = hashlib.sha256()
+    buf = file_obj.read(blocksize)
+    while buf:
+        hasher.update(buf)
+        buf = file_obj.read(blocksize)
+    return hasher.hexdigest()
 
 
 def gen_sha256_hash(msg):
@@ -519,3 +529,31 @@ def first_run(secret_file, base_dir, mobsf_home):
         # Windows Setup
         windows_config_local(mobsf_home)
     return secret_key
+
+def update_local_db(db_name, url, local_file):
+    """Update Local DBs."""
+    update = None
+    try:
+        proxies, verify = upstream_proxy('http')
+    except Exception:
+        logger.exception('[ERROR] Setting upstream proxy')
+    try:
+        response = requests.get(url,
+                                timeout=3,
+                                proxies=proxies,
+                                verify=verify)
+        resp = response.content
+        inmemoryfile = io.BytesIO(resp)
+        # Check1: SHA256 Change
+        if sha256_object(inmemoryfile) != sha256(local_file):
+            # Hash Changed
+            logger.info('%s Database is outdated!', db_name)
+            update = resp
+        else:
+            logger.info('%s Database is up-to-date', db_name)
+        return update
+    except Exception:
+        logger.exception('[ERROR] %s DB Update', db_name)
+        return update
+    finally:
+        inmemoryfile.truncate(0)
