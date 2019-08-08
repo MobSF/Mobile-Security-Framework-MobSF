@@ -242,12 +242,10 @@
                       {{ play_details.price }}
 
                   <span class="label label-info">Android Version Support</span>
-                    {{ play_details.required_android_version }}
+                    {{ play_details.androidVersionText }}
                    
                     <span class="label label-info">Category</span>
-                    {% for cat in play_details.category %}
-                    {{ cat }}, 
-                    {% endfor %}
+		    {{ play_details.genre }}
 
                     <span class="label label-info">Play Store URL</span>
                       <a target="_blank" href="{{ play_details.url }}"> {{ packagename }} </a>
@@ -256,11 +254,14 @@
                   <p>
                   <span class="label label-info">Developer Details</span>
                       {{play_details.developer}},  
-                      {{play_details.developer_id}}, 
-                      {{play_details.developer_address }},
-                      {{play_details.developer_url}}, 
-                      {{play_details.developer_email}}, 
+                      {{play_details.developerId}}, 
+                      {{play_details.developerAddress}},
+                      {{play_details.developerWebsite}}, 
+                      {{play_details.developerEmail}}, 
                   </p>
+		  <p>
+		  <span class="label label-info">Release Date</span>
+		      {{ play_details.released }}
                  <p>                                       
                       <span class="label label-info">Description</span>
                       <pre>{{ play_details.description }}</pre>
