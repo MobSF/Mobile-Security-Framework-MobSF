@@ -12,6 +12,7 @@ def get_app_details(package_id):
         logger.info('Fetching Details from Play Store: %s', package_id)
         det = app(package_id)
         det.pop('descriptionHTML', None)
+        det.pop('comments', None)
         det['error'] = False
     except Exception:
         logger.warning('Unable to get app details.')
