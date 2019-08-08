@@ -30,7 +30,7 @@ if [[ "$unamestr" == 'Darwin' ]]; then
   if [ -z "$is_installed" ]; then 
       if [ "$major" -ge "10" ] && [ "$minor" -ge "14" ]; then 
           echo 'Please install macOS headers.'
-          echo 'sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_${current_macos_version}.pkg -target /'
+          echo "sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_${current_macos_version}.pkg -target /"
           exit 1
       fi    
   fi  
