@@ -1,5 +1,6 @@
 # -*- coding: utf_8 -*-
 from google_play_scraper import app
+
 from bs4 import BeautifulSoup
 
 import logging
@@ -14,7 +15,7 @@ def get_app_details(package_id):
         det = app(package_id)
         det.pop('descriptionHTML', None)
         det.pop('comments', None)
-        description = BeautifulSoup(det['description'], features="lxml") 
+        description = BeautifulSoup(det['description'], features='lxml')
         det['description'] = description.get_text()
         det['error'] = False
     except Exception:
