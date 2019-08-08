@@ -49,7 +49,7 @@ def code_analysis(app_dir, perms, typ):
                                        jfile.replace('+', 'x'))
                     shutil.move(jfile_path, p_2)
                     jfile_path = p_2
-                repath = dir_name.replace(java_src, '')
+                repath = dir_name.replace(java_src, '') + '/'
                 if (
                         jfile.endswith('.java')
                         and any(re.search(cls, repath)
