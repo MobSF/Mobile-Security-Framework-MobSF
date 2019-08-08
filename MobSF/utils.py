@@ -530,6 +530,7 @@ def first_run(secret_file, base_dir, mobsf_home):
         windows_config_local(mobsf_home)
     return secret_key
 
+
 def update_local_db(db_name, url, local_file):
     """Update Local DBs."""
     update = None
@@ -556,4 +557,5 @@ def update_local_db(db_name, url, local_file):
         logger.exception('[ERROR] %s DB Update', db_name)
         return update
     finally:
-        inmemoryfile.truncate(0)
+        if inmemoryfile:
+            inmemoryfile.truncate(0)

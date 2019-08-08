@@ -232,15 +232,17 @@ def api_test():
         files = [{'file': 'opensecurity/helloworld/MainActivity.java',
                   'type': 'apk',
                   'hash': '3a552566097a8de588b8184b059b0158'},
-                 {'file': 'helloworld.app/Info.plist',
-                  'type': 'ipa',
-                  'hash': '6c23c2970551be15f32bbab0b5db0c71'},
                  {'file': 'opensecurity/webviewignoressl/MainActivity.java',
                   'type': 'studio',
                   'hash': '52c50ae824e329ba8b5b7a0f523efffe'},
                  {'file': 'DamnVulnerableIOSApp/AppDelegate.m',
                   'type': 'ios',
                   'hash': '57bb5be0ea44a755ada4a93885c3825e'}]
+        if platform.system() in ['Darwin', 'Linux']:
+            files.append({
+                'file': 'helloworld.app/Info.plist',
+                'type': 'ipa',
+                'hash': '6c23c2970551be15f32bbab0b5db0c71'})
         for sfile in files:
             resp = http_client.post(
                 '/api/v1/view_source', sfile, HTTP_AUTHORIZATION=auth)
