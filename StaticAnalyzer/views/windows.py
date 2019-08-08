@@ -394,26 +394,27 @@ def binskim(name, bin_an_dic, run_local=False, app_dir=None):
 def parse_binskim(bin_an_dic, output):
     """Parse output to results and warnings."""
     current_run = output['runs'][0]
-
     if 'results' in current_run:
-        rules = output['runs'][0]['rules']
+        rules = output['runs'][0]['resources']['rules']
         for res in current_run['results']:
             if res['level'] != 'pass':
+                if len(res['message']['arguments']) > 2:
+                    info = (res['message']['arguments'][1] + ', '
+                            + res['message']['arguments'][2])
+                else:
+                    info = ''
                 result = {
                     'rule_id': res['ruleId'],
                     'status': 'Insecure',
-                    'desc': rules[res['ruleId']]['shortDescription'],
+                    'info': info,
+                    'desc': rules[res['ruleId']]['fullDescription']['text'],
                 }
-                if len(res['formattedRuleMessage']['arguments']) > 2:
-                    result['info'] = res[
-                        'formattedRuleMessage']['arguments'][2]
-                else:
-                    result['info'] = ''
             else:
                 result = {
                     'rule_id': res['ruleId'],
                     'status': 'Secure',
-                    'desc': rules[res['ruleId']]['shortDescription'],
+                    'info': '',
+                    'desc': rules[res['ruleId']]['fullDescription']['text'],
                 }
             bin_an_dic['results'].append(result)
     else:
@@ -422,6 +423,7 @@ def parse_binskim(bin_an_dic, output):
         warning = {
             'rule_id': 'No Binskim-Results',
             'status': 'Info',
+            'info': '',
             'desc': 'No results from Binskim.',
         }
         bin_an_dic['warnings'].append(warning)
@@ -431,6 +433,7 @@ def parse_binskim(bin_an_dic, output):
             warning = {
                 'rule_id': warn['ruleId'],
                 'status': 'Info',
+                'info': '',
                 'desc': warn['message'],
             }
             bin_an_dic['warnings'].append(warning)
@@ -528,6 +531,7 @@ def binscope(name, bin_an_dic, run_local=False, app_dir=None):
             result = {
                 'rule_id': item.find('issueType').text,
                 'status': status,
+                'info': '',
                 'desc': desc,
             }
             bin_an_dic['results'].append(result)
