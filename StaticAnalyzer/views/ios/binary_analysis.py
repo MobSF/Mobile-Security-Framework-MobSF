@@ -158,11 +158,14 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
 
         banned_apis = {}
         baned = re.findall(
-            rb'\b_alloca\b|\b_gets\b|\b_memcpy\b|\b_printf\b|\b_scanf\b|\b_sprintf\b|\b_sscanf\b|\b_strcat\b|\b'
-            rb'StrCat\b|\b_strcpy\b|\bStrCpy\b|\b_strlen\b|\bStrLen\b|\b_strncat\b|\bStrNCat\b|\b_strncpy\b|\b'
-            rb'StrNCpy\b|\b_strtok\b|\b_swprintf\b|\b_vsnprintf\b|\b_vsprintf\b|\b_vswprintf\b|\b'
-            rb'_wcscat\b|\b_wcscpy\b|\b_wcslen\b|\b_wcsncat\b|\b_wcsncpy\b|\b_wcstok\b|\b_wmemcpy\b|\b'
-            rb'_fopen\b|\b_chmod\b|\b_chown\b|\b_stat\b|\b_mktemp\b', dat)
+            rb'\b_alloca\b|\b_gets\b|\b_memcpy\b|\b_printf\b|\b_scanf\b|'
+            rb'\b_sprintf\b|\b_sscanf\b|\b_strcat\b|'
+            rb'\bStrCat\b|\b_strcpy\b|\bStrCpy\b|\b_strlen\b|\bStrLen\b|'
+            rb'\b_strncat\b|\bStrNCat\b|\b_strncpy\b|'
+            rb'\bStrNCpy\b|\b_strtok\b|\b_swprintf\b|\b_vsnprintf\b|'
+            rb'\b_vsprintf\b|\b_vswprintf\b|\b_wcscat\b|\b_wcscpy\b|'
+            rb'\b_wcslen\b|\b_wcsncat\b|\b_wcsncpy\b|\b_wcstok\b|\b_wmemcpy\b|'
+            rb'\b_fopen\b|\b_chmod\b|\b_chown\b|\b_stat\b|\b_mktemp\b', dat)
         baned = list(set(baned))
         baned_s = b', '.join(baned)
         if len(baned_s) > 1:
@@ -177,8 +180,12 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
 
         weak_cryptos = {}
         weak_algo = re.findall(
-            rb'\bkCCAlgorithmDES\b|\bkCCAlgorithm3DES\b|\bkCCAlgorithmRC2\b|\b'
-            rb'kCCAlgorithmRC4\b|\bkCCOptionECBMode\b|\bkCCOptionCBCMode\b', dat)
+            rb'\bkCCAlgorithmDES\b|'
+            rb'\bkCCAlgorithm3DES\b|'
+            rb'\bkCCAlgorithmRC2\b|'
+            rb'\bkCCAlgorithmRC4\b|'
+            rb'\bkCCOptionECBMode\b|'
+            rb'\bkCCOptionCBCMode\b', dat)
         weak_algo = list(set(weak_algo))
         weak_algo_s = b', '.join(weak_algo)
         if len(weak_algo_s) > 1:
@@ -193,30 +200,42 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
 
         crypto = {}
         crypto_algo = re.findall(
-            rb'\bCCKeyDerivationPBKDF\b|\bCCCryptorCreate\b|\bCCCryptorCreateFromData\b|\b'
+            rb'\bCCKeyDerivationPBKDF\b|\bCCCryptorCreate\b|\b'
+            rb'CCCryptorCreateFromData\b|\b'
             rb'CCCryptorRelease\b|\bCCCryptorUpdate\b|\bCCCryptorFinal\b|\b'
-            rb'CCCryptorGetOutputLength\b|\bCCCryptorReset\b|\bCCCryptorRef\b|\bkCCEncrypt\b|\b'
-            rb'kCCDecrypt\b|\bkCCAlgorithmAES128\b|\bkCCKeySizeAES128\b|\bkCCKeySizeAES192\b|\b'
-            rb'kCCKeySizeAES256\b|\bkCCAlgorithmCAST\b|\bSecCertificateGetTypeID\b|\b'
-            rb'SecIdentityGetTypeID\b|\bSecKeyGetTypeID\b|\bSecPolicyGetTypeID\b|\b'
+            rb'CCCryptorGetOutputLength\b|\bCCCryptorReset\b|\b'
+            rb'CCCryptorRef\b|\bkCCEncrypt\b|\b'
+            rb'kCCDecrypt\b|\bkCCAlgorithmAES128\b|\bkCCKeySizeAES128\b|\b'
+            rb'kCCKeySizeAES192\b|\b'
+            rb'kCCKeySizeAES256\b|\bkCCAlgorithmCAST\b|\b'
+            rb'SecCertificateGetTypeID\b|\b'
+            rb'SecIdentityGetTypeID\b|\bSecKeyGetTypeID\b|\b'
+            rb'SecPolicyGetTypeID\b|\b'
             rb'SecTrustGetTypeID\b|\bSecCertificateCreateWithData\b|\b'
             rb'SecCertificateCreateFromData\b|\bSecCertificateCopyData\b|\b'
             rb'SecCertificateAddToKeychain\b|\bSecCertificateGetData\b|\b'
-            rb'SecCertificateCopySubjectSummary\b|\bSecIdentityCopyCertificate\b|\b'
-            rb'SecIdentityCopyPrivateKey\b|\bSecPKCS12Import\b|\bSecKeyGeneratePair\b|\b'
-            rb'SecKeyEncrypt\b|\bSecKeyDecrypt\b|\bSecKeyRawSign\b|\bSecKeyRawVerify\b|\b'
+            rb'SecCertificateCopySubjectSummary\b|\b'
+            rb'SecIdentityCopyCertificate\b|\b'
+            rb'SecIdentityCopyPrivateKey\b|\bSecPKCS12Import\b|\b'
+            rb'SecKeyGeneratePair\b|\b'
+            rb'SecKeyEncrypt\b|\bSecKeyDecrypt\b|\bSecKeyRawSign\b|\b'
+            rb'SecKeyRawVerify\b|\b'
             rb'SecKeyGetBlockSize\b|\bSecPolicyCopyProperties\b|\b'
             rb'SecPolicyCreateBasicX509\b|\bSecPolicyCreateSSL\b|\b'
-            rb'SecTrustCopyCustomAnchorCertificates\b|\bSecTrustCopyExceptions\b|\b'
+            rb'SecTrustCopyCustomAnchorCertificates\b|\b'
+            rb'SecTrustCopyExceptions\b|\b'
             rb'SecTrustCopyProperties\b|\bSecTrustCopyPolicies\b|\b'
             rb'SecTrustCopyPublicKey\b|\bSecTrustCreateWithCertificates\b|\b'
             rb'SecTrustEvaluate\b|\bSecTrustEvaluateAsync\b|\b'
-            rb'SecTrustGetCertificateCount\b|\bSecTrustGetCertificateAtIndex\b|\b'
+            rb'SecTrustGetCertificateCount\b|\b'
+            rb'SecTrustGetCertificateAtIndex\b|\b'
             rb'SecTrustGetTrustResult\b|\bSecTrustGetVerifyTime\b|\b'
-            rb'SecTrustSetAnchorCertificates\b|\bSecTrustSetAnchorCertificatesOnly\b|\b'
+            rb'SecTrustSetAnchorCertificates\b|\b'
+            rb'SecTrustSetAnchorCertificatesOnly\b|\b'
             rb'SecTrustSetExceptions\b|\bSecTrustSetPolicies\b|\b'
             rb'SecTrustSetVerifyDate\b|\bSecCertificateRef\b|\b'
-            rb'SecIdentityRef\b|\bSecKeyRef\b|\bSecPolicyRef\b|\bSecTrustRef\b', dat)
+            rb'SecIdentityRef\b|\bSecKeyRef\b|\bSecPolicyRef\b|\b'
+            rb'SecTrustRef\b', dat)
         crypto_algo = list(set(crypto_algo))
         crypto_algo_s = b', '.join(crypto_algo)
         if len(crypto_algo_s) > 1:
@@ -231,12 +250,18 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
 
         weak_hashes = {}
         weak_hash_algo = re.findall(
-            rb'\bCC_MD2_Init\b|\bCC_MD2_Update\b|\bCC_MD2_Final\b|\bCC_MD2\b|\bMD2_Init\b|\b'
-            rb'MD2_Update\b|\bMD2_Final\b|\bCC_MD4_Init\b|\bCC_MD4_Update\b|\bCC_MD4_Final\b|\b'
-            rb'CC_MD4\b|\bMD4_Init\b|\bMD4_Update\b|\bMD4_Final\b|\bCC_MD5_Init\b|\bCC_MD5_Update'
-            rb'\b|\bCC_MD5_Final\b|\bCC_MD5\b|\bMD5_Init\b|\bMD5_Update\b|\bMD5_Final\b|\bMD5Init\b|\b'
-            rb'MD5Update\b|\bMD5Final\b|\bCC_SHA1_Init\b|\bCC_SHA1_Update\b|\b'
-            rb'CC_SHA1_Final\b|\bCC_SHA1\b|\bSHA1_Init\b|\bSHA1_Update\b|\bSHA1_Final\b', dat)
+            rb'\bCC_MD2_Init\b|\bCC_MD2_Update\b|\b'
+            rb'CC_MD2_Final\b|\bCC_MD2\b|\bMD2_Init\b|\b'
+            rb'MD2_Update\b|\bMD2_Final\b|\bCC_MD4_Init\b|\b'
+            rb'CC_MD4_Update\b|\bCC_MD4_Final\b|\b'
+            rb'CC_MD4\b|\bMD4_Init\b|\bMD4_Update\b|\b'
+            rb'MD4_Final\b|\bCC_MD5_Init\b|\bCC_MD5_Update'
+            rb'\b|\bCC_MD5_Final\b|\bCC_MD5\b|\bMD5_Init\b|\b'
+            rb'MD5_Update\b|\bMD5_Final\b|\bMD5Init\b|\b'
+            rb'MD5Update\b|\bMD5Final\b|\bCC_SHA1_Init\b|\b'
+            rb'CC_SHA1_Update\b|\b'
+            rb'CC_SHA1_Final\b|\bCC_SHA1\b|\bSHA1_Init\b|\b'
+            rb'SHA1_Update\b|\bSHA1_Final\b', dat)
         weak_hash_algo = list(set(weak_hash_algo))
         weak_hash_algo_s = b', '.join(weak_hash_algo)
         if len(weak_hash_algo_s) > 1:
@@ -252,13 +277,20 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
 
         hashes = {}
         hash_algo = re.findall(
-            rb'\bCC_SHA224_Init\b|\bCC_SHA224_Update\b|\bCC_SHA224_Final\b|\bCC_SHA224\b|\b'
-            rb'SHA224_Init\b|\bSHA224_Update\b|\bSHA224_Final\b|\bCC_SHA256_Init\b|\b'
-            rb'CC_SHA256_Update\b|\bCC_SHA256_Final\b|\bCC_SHA256\b|\bSHA256_Init\b|\b'
-            rb'SHA256_Update\b|\bSHA256_Final\b|\bCC_SHA384_Init\b|\bCC_SHA384_Update\b|\b'
-            rb'CC_SHA384_Final\b|\bCC_SHA384\b|\bSHA384_Init\b|\bSHA384_Update\b|\b'
-            rb'SHA384_Final\b|\bCC_SHA512_Init\b|\bCC_SHA512_Update\b|\bCC_SHA512_Final\b|\b'
-            rb'CC_SHA512\b|\bSHA512_Init\b|\bSHA512_Update\b|\bSHA512_Final\b', dat)
+            rb'\bCC_SHA224_Init\b|\bCC_SHA224_Update\b|\b'
+            rb'CC_SHA224_Final\b|\bCC_SHA224\b|\b'
+            rb'SHA224_Init\b|\bSHA224_Update\b|\b'
+            rb'SHA224_Final\b|\bCC_SHA256_Init\b|\b'
+            rb'CC_SHA256_Update\b|\bCC_SHA256_Final\b|\b'
+            rb'CC_SHA256\b|\bSHA256_Init\b|\b'
+            rb'SHA256_Update\b|\bSHA256_Final\b|\b'
+            rb'CC_SHA384_Init\b|\bCC_SHA384_Update\b|\b'
+            rb'CC_SHA384_Final\b|\bCC_SHA384\b|\b'
+            rb'SHA384_Init\b|\bSHA384_Update\b|\b'
+            rb'SHA384_Final\b|\bCC_SHA512_Init\b|\b'
+            rb'CC_SHA512_Update\b|\bCC_SHA512_Final\b|\b'
+            rb'CC_SHA512\b|\bSHA512_Init\b|\b'
+            rb'SHA512_Update\b|\bSHA512_Final\b', dat)
         hash_algo = list(set(hash_algo))
         hash_algo_s = b', '.join(hash_algo)
         if len(hash_algo_s) > 1:
