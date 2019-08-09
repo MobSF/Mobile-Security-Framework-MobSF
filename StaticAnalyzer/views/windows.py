@@ -359,7 +359,7 @@ def binskim(name, bin_an_dic, run_local=False, app_dir=None):
         path = bin_path
         output_p = '-o'
         output_d = bin_path + '_binskim'
-        verbose = '-v'
+        verbose = '--verbose'
         policy_p = '--config'
         policy_d = 'default'  # TODO(Other policies?)
 
@@ -368,8 +368,8 @@ def binskim(name, bin_an_dic, run_local=False, app_dir=None):
             binskim_path,
             command,
             path,
-            output_p, output_d,
             verbose,
+            output_p, output_d,
             policy_p, policy_d,
         ]
 
@@ -395,26 +395,27 @@ def parse_binskim(bin_an_dic, output):
     """Parse output to results and warnings."""
     current_run = output['runs'][0]
     if 'results' in current_run:
-        rules = output['runs'][0]['resources']['rules']
+        rules = output['runs'][0]['rules']
         for res in current_run['results']:
             if res['level'] != 'pass':
-                if len(res['message']['arguments']) > 2:
-                    info = (res['message']['arguments'][1] + ', '
-                            + res['message']['arguments'][2])
+                if len(res['formattedRuleMessage']['arguments']) > 2:
+                    info = ('{}, {}').format(
+                        res['formattedRuleMessage']['arguments'][1],
+                        res['formattedRuleMessage']['arguments'][2])
                 else:
                     info = ''
                 result = {
                     'rule_id': res['ruleId'],
                     'status': 'Insecure',
                     'info': info,
-                    'desc': rules[res['ruleId']]['fullDescription']['text'],
+                    'desc': rules[res['ruleId']]['shortDescription'],
                 }
             else:
                 result = {
                     'rule_id': res['ruleId'],
                     'status': 'Secure',
                     'info': '',
-                    'desc': rules[res['ruleId']]['fullDescription']['text'],
+                    'desc': rules[res['ruleId']]['shortDescription'],
                 }
             bin_an_dic['results'].append(result)
     else:
