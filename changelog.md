@@ -1,4 +1,4 @@
-### v1.1.5 Beta Changelog
+### v1.1.6 Beta Changelog
 - Features or Enhancements
    - 70x performance improvements for large APKs
    - CVSS, CWE tagging with results
