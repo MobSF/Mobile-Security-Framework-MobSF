@@ -35,7 +35,6 @@ def static_analysis_test():
                 else:
                     logger.error('Performing Upload: %s', filename)
                     return True
-                    break
         logger.info('[OK] Completed Upload test')
         logger.info('Running Static Analysis Test')
         for upl in uploaded:
@@ -49,7 +48,6 @@ def static_analysis_test():
             else:
                 logger.error('Performing Static Analysis: %s', upl)
                 return True
-                break
         logger.info('[OK] Static Analysis test completed')
         logger.info('Running PDF Generation Test')
         if platform.system() in ['Darwin', 'Linux']:
@@ -77,7 +75,6 @@ def static_analysis_test():
                 logger.error('Generating PDF: %s', pdf)
                 logger.info(resp.content)
                 return True
-                break
         logger.info('[OK] PDF Generation test completed')
 
         # Compare apps test
