@@ -1,5 +1,5 @@
 # Mobile Security Framework (MobSF)
-Version: v1.0 beta
+Version: v1.1 beta
 ![](https://cloud.githubusercontent.com/assets/4301109/20019521/cc61f7fc-a2f2-11e6-95f3-407030d9fdde.png)
 
 Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing framework capable of performing static, dynamic and malware analysis. It can be used for effective and fast security analysis of Android, iOS and Windows mobile applications and support both binaries (APK, IPA & APPX ) and zipped source code. MobSF can do dynamic application testing at runtime for Android apps and has Web API fuzzing capabilities powered by [CapFuzz](https://github.com/MobSF/CapFuzz), a Web API specific security scanner. MobSF is designed to make your CI/CD or DevSecOps pipeline integration seamless.
@@ -9,10 +9,10 @@ Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82
 [![python](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/)
 [![platform](https://img.shields.io/badge/platform-osx%2Flinux%2Fwindows-green.svg)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/)
 [![License](https://img.shields.io/:license-gpl3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e05e96c6cecc48139dd2d67563a93805)](https://www.codacy.com/app/ajinabraham/Mobile-Security-Framework-MobSF?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=MobSF/Mobile-Security-Framework-MobSF&amp;utm_campaign=Badge_Grade)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=MobSF_Mobile-Security-Framework-MobSF&metric=alert_status)](https://sonarcloud.io/dashboard?id=MobSF_Mobile-Security-Framework-MobSF)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/cefbfb063c044b069e38af3501c1ee8e)](https://www.codacy.com/app/ajinabraham/Mobile-Security-Framework-MobSF?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=MobSF/Mobile-Security-Framework-MobSF&amp;utm_campaign=Badge_Grade)
 [![Build Status](https://travis-ci.com/MobSF/Mobile-Security-Framework-MobSF.svg?branch=master)](https://travis-ci.com/MobSF/Mobile-Security-Framework-MobSF)
 [![Requirements Status](https://requires.io/github/MobSF/Mobile-Security-Framework-MobSF/requirements.svg?branch=master)](https://requires.io/github/MobSF/Mobile-Security-Framework-MobSF/requirements/?branch=master)
-[![support](https://baikal.io/badges/ajinabraham/mobsf)](https://baikal.io/ajinabraham/mobsf)
 [![ToolsWatch Best Security Tools 2017](https://img.shields.io/badge/ToolsWatch-Rank%209%20%7C%20Year%202017-red.svg)](http://www.toolswatch.org/2018/01/black-hat-arsenal-top-10-security-tools/)
 [![ToolsWatch Best Security Tools 2016](https://img.shields.io/badge/ToolsWatch-Rank%205%20%7C%20Year%202016-red.svg)](http://www.toolswatch.org/2017/02/2016-top-security-tools-as-voted-by-toolswatch-org-readers/)
 [![Blackhat Arsenal Asia 2018](https://img.shields.io/badge/Black%20Hat%20Arsenal-Asia%202018-blue.svg)](https://www.blackhat.com/asia-18/arsenal.html#mobile-security-framework-mobsf)
@@ -52,7 +52,6 @@ Other docker options: [MobSF Docker Options](https://github.com/MobSF/Mobile-Sec
 * OWASP APPSEC EU 2016 - [Slides](http://www.slideshare.net/ajin25/automated-mobile-application-security-assessment-with-mobsf), [Video](https://www.youtube.com/watch?v=h00v1euuFXg)
 * NULLCON 2016 - [Slides](https://www.slideshare.net/ajin25/nullcon-goa-2016-automated-mobile-application-security-testing-with-mobile-security-framework-mobsf)
 * c0c0n 2015 - [Slides](https://www.slideshare.net/ajin25/automated-security-analysis-of-android-ios-applications-with-mobile-security-framework-c0c0n-2015)
-*  OWASP AppSec EU 2016 - [Video](https://www.youtube.com/watch?v=h00v1euuFXg)
 *  G4H Webcast 2015 - [Video](https://www.youtube.com/watch?v=CysfO6AZmo8)
 
 ## Video Course
@@ -103,7 +102,7 @@ Other docker options: [MobSF Docker Options](https://github.com/MobSF/Mobile-Sec
 * Bharadwaj Machiraju (@tunnelshade_) - For writing pyWebProxy from scratch
 * Dominik Schlecht - For the awesome work on adding Windows Phone App Static Analysis to MobSF
 * Esteban - Better Android Manifest Analysis and Static Analysis Improvement.
-* Matan Dobrushin - For adding Android ARM Emulator support to MobSF - Special thanks goes for cuckoo-droid, I got inspierd by their code and idea for this implementation.
+* Matan Dobrushin - For adding Android ARM Emulator support to MobSF - Special thanks goes for cuckoo-droid, I got inspired by their code and idea for this implementation.
 * MindMac - For writing Android Blue Pill
 * Rahul (@c0dist) - Kali Support
 * Shuxin - Android Binary Analysis
