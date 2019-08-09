@@ -276,6 +276,16 @@ Production ready applications should not be signed with 'Android Debug' Certific
    
                        </tr>
                      {% endfor %}
+                    {% if not binary_analysis  %}
+                      <tr>
+                         <td>
+                             <p> No issue found </p>
+                         </td>
+                         <td>
+                             <span class="label label-info">info</span>
+                         </td>
+                      </tr>
+                    {% endif %}
                     </tbody>
                     </table>
 
