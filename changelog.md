@@ -1,3 +1,38 @@
+### v1.1.5 Beta Changelog
+- Features or Enhancements
+   - 70x performance improvements for large APKs
+   - CVSS, CWE tagging with results
+   - Trackers Detection
+   - App Store/ Playstore Details of supported packages
+   - Added Security Score, Average CVSS Score, VirusTotal & Tracker Detection
+   - Coloured logging
+   - Better Logging and Exception Handling
+   - Travis CI/CD integration
+   - Optimized & Updated Dockerfile
+   - Super fast java decompiling with JADX
+   - Large scale Code QA
+   - Enforced mandatory code linting
+   - Integrated automated travis tests in Linux and OSX
+   - Moved to proper production servers Gunicorn & Waitress
+   - Improved icon detection
+   - Android APK app real name
+   - Moved from Oracle JDK to OpenJDK
+   - Reduce False Positives
+   - Enforced Least privilege mode
+   - Improved Setup scripts
+   - Moved to androguard based certificate printing
+   - File less local db updates for better cross platform support
+   - Static Analyzer rule updates and accuracy improvement
+   - REST API - Recent Scans
+   - classdump support for iOS swift binaries
+   - Updated dependencies
+
+- Bug Fixes
+  - Fixed bug in Appx Analysis
+  - Dynamic Analysis Bug Fix
+  - Fix plist bug in iOS SCA
+  - Performance Improvements
+  
 ### v1.0.3 Beta Changelog
 - Features or Enhancements
    - Android APK Scan Results Diffing Support
