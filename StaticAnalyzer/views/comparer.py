@@ -120,10 +120,10 @@ def generic_compare(request,
             context[curr_app][static_attr] = db_context[static_attr]
 
         # Get only the subject of the cert
-        subject_regex = re.compile(r'.*Subject:([^<]+)</br>.*', re.DOTALL)
-        match = subject_regex.match(db_context['certinfo'])
+        subject_regex = re.compile(r'Subject: .*')
+        match = subject_regex.search(db_context['certinfo'])
         if match:
-            context[curr_app]['cert_subject'] = match.group(1)
+            context[curr_app]['cert_subject'] = match.group()
         else:
             context[curr_app]['cert_subject'] = 'No subject'
 
