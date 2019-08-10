@@ -39,9 +39,8 @@ RUN apt update -y && apt install -y \
     xfonts-75dpi \
     python3.6 \
     python3-dev \
-    python3-setuptools \
-    wget && \
-    python3 /usr/lib/python3/dist-packages/easy_install.py pip
+    python3-pip \
+    wget
      
 #set locales
 RUN locale-gen en_US.UTF-8
@@ -59,7 +58,7 @@ WORKDIR /tmp
 RUN wget --quiet "${WKH_URL}" && \
     tar xJf "${WKH_FILE}"
 WORKDIR /tmp/wkhtmltox/bin
-RUN cp * /usr/bin
+RUN cp ./* /usr/bin
 WORKDIR /tmp
 RUN rm -rf ./wkhtmltox && \
     rm -f "${WKH_FILE}"
@@ -96,6 +95,11 @@ RUN pip3 install --quiet --no-cache-dir -r requirements.txt
 RUN \
     apt remove -y \
         git \
+        libssl-dev \
+        libffi-dev \
+        libxml2-dev \
+        libxslt1-dev \
+        python3-dev \
         wget && \
     apt clean && \
     apt autoclean && \
