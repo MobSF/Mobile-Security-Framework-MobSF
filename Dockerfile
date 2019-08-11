@@ -12,9 +12,11 @@ LABEL \
 
 #Environment vars
 ENV DEBIAN_FRONTEND="noninteractive" \
-    JDK_FILE="openjdk-12_linux-x64_bin.tar.gz"
+    JDK_FILE="openjdk-12_linux-x64_bin.tar.gz" \
+    WKH_FILE="wkhtmltox-0.12.5-dev-163e124_linux-generic-amd64.tar.xz"
 
-ENV JDK_URL="https://download.java.net/java/GA/jdk12/GPL/${JDK_FILE}" 
+ENV JDK_URL="https://download.java.net/java/GA/jdk12/GPL/${JDK_FILE}" \
+    WKH_URL="http://www.ajvg.com/downloads/${WKH_FILE}"
 
 #Update the repository sources list
 #Install Required Libs
@@ -44,6 +46,11 @@ RUN apt update -y && apt install -y \
 RUN locale-gen en_US.UTF-8
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
+#Install Wkhtmltopdf
+RUN wget --quiet -O /tmp/wkhtmltox.tar.xz "${WKH_URL}" && \
+    tar xJf /tmp/wkhtmltox.tar.xz -C /usr/bin/ --strip-component=2 wkhtmltox/bin/wkhtmltopdf && \
+    rm -f /tmp/wkhtmltox.tar.xz
+
 #Install OpenJDK12
 RUN wget --quiet "${JDK_URL}" && \
     tar zxf "${JDK_FILE}" && \
@@ -54,10 +61,6 @@ ENV PATH="$JAVA_HOME/bin:$PATH"
 #Add MobSF master
 COPY . /root/Mobile-Security-Framework-MobSF
 WORKDIR /root/Mobile-Security-Framework-MobSF
-
-#Symlink wkhtml tools
-RUN ln -s /root/Mobile-Security-Framework-MobSF/StaticAnalyzer/tools/wkhtmltox/bin/wkhtmltopdf /usr/bin/ \
-    ln -s /root/Mobile-Security-Framework-MobSF/StaticAnalyzer/tools/wkhtmltox/bin/wkhtmltoimage /usr/bin/
 
 #Enable Use Home Directory
 RUN sed -i 's/USE_HOME = False/USE_HOME = True/g' MobSF/settings.py
