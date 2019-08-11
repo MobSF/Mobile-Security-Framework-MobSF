@@ -32,8 +32,7 @@ matrix:
     language: shell
     env:
     - JAVA_HOME="C:\\Program Files\\OpenJDK\\jdk-12.0.2"
-    - PDF="C:\\Program Files\\wkhtmltopdf\\bin"
-    - PATH=/c/Python37:/c/Python37/Scripts:$PDF:$JAVA_HOME\\bin:$PATH
+    - PATH=/c/Python37:/c/Python37/Scripts:$JAVA_HOME\\bin:$PATH
     before_install:
     - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
     - choco install wkhtmltopdf
