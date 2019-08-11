@@ -286,7 +286,7 @@ def _binary_analysis(app_dic):
             bin_an_dic['results'].append(result)
 
     # Execute binskim analysis if vm is available
-    if platform.system() != 'Windows':
+    if platform.system() != 'Windows' or 'CI' in os.environ:
         if settings.WINDOWS_VM_IP:
             logger.info('Windows VM configured.')
             global proxy
