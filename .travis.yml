@@ -27,6 +27,18 @@ matrix:
     - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
     - wget https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox-0.12.5-1.macos-cocoa.pkg
     - sudo installer -pkg wkhtmltox-0.12.5-1.macos-cocoa.pkg -target /
+  - name: "Python 3.7 on Windows (no lint)"
+    os: windows
+    language: shell
+    env:
+    - JAVA_HOME="C:\\Program Files\\OpenJDK\\jdk-12.0.2"
+    - PDF="C:\\Program Files\\wkhtmltopdf\\bin"
+    - PATH=/c/Python37:/c/Python37/Scripts:$PDF:$JAVA_HOME\\bin:$PATH
+    before_install:
+    - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
+    - choco install wkhtmltopdf
+    - choco install python
+    - choco install openjdk --version 12.0.2
 install:
 - set PYTHONIOENCODING=UTF8
 - pip3 install --upgrade pip
@@ -36,11 +48,11 @@ before_script:
   git+https://github.com/VirusTotal/yara-python.git
 - pip3 install --no-index --find-links=/tmp/yara-python yara-python
 - pip3 install -r requirements.txt
-- python3 manage.py makemigrations
-- python3 manage.py migrate
+- python3 manage.py makemigrations || python manage.py makemigrations
+- python3 manage.py migrate || python manage.py makemigrations
 script:
-- tox -e lint
-- python3 manage.py test
+- if [ "$TRAVIS_OS_NAME" != "windows" ]; then tox -e lint; fi
+- python3 manage.py test || python manage.py test
 notifications:
   slack:
     secure: KekrDpZlflLPw6qU9wD3Rg6D7z2Nvl/Tt+CoeQS6PaIMgzS6x6lG2gefjLUpWja3x4qGBxXm54DXw5tfd+TrjJxg4a2qV4B2WsyjOnRrX83dIK/Ku5u6eEFrBW1NvGPbVllIxuN7xxhVrIQ0OxXwFIoefSLPfxntqaJEooZPRLPGhLqE0dVsp4DyuF4fmyJULkf7q3yRyocFTwWok6Wv1lk/Z0FCjQ8MeZMw1jvbGeptJZq06RzSKnFHDJnAYRwLFdARB1qBNVNsjsTRbCgM0QvDdcdoKkJ2b3A/13i9urb9imQ7+QlPS6E3zpyixJiZ67+fHoh6cebTNTR30SCGBrY3nIRi4sKu6UqWETQAFtvf/XarNBGLF0zxrg3bYAdVysRvWEtWybTAc757+LEShwIh3HVyC+H51QVB9zFtwaTOdqXuanwEL9qoiO6OrWINtZR3Wbp0846yHCWoQR3Ffz4VHuDrctMicacH6Fi3FT60q2gx7yCCUfrZ2mzu4ipS6o4Cz56MJ3+/+43vVkI046AO2qbRrTL6PUkFgMq5Z52lBde08zSZe7ojytyJh5eRl/DHabfMTcmrHG2pQgPP6o0SNsl+vZXxmBEAZNsud2satcrRiKQUrPq8dGDQtXjRmg4QmyzC/ZVAfaQtL7hTMk09uUSpzmucKRpLttpBlKc=

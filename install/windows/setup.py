@@ -51,7 +51,8 @@ def windows_config_local(path):
     # Path to lock-file (so setup is only run once)
     path_to_lock_file = os.path.join(path, 'setup_done.txt')
     if (os.path.isfile(path_to_lock_file) is False
-            and platform.system() == 'Windows'):
+            and platform.system() == 'Windows'
+            and 'CI' not in os.environ):
         logger.info('Running first time setup for windows.')
         # Setup is to-be-executed
         install_locally(path)
