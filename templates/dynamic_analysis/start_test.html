@@ -255,57 +255,45 @@ textarea:focus {
                     return false;  
                 }); 
       //Screen
-
+     var screenfunc;
       $("#screen").click(function() {
-                  
-                       var stext = $("#screen").text();
-                       var md;
-                       if (stext === "Show Screen")
-                       {
-                        $("#screen").text("Stop Screen");
-                        md = "on";
-                       }
-                       else
-                       {
-                        $("#screen").text("Show Screen");
-                        md = "off";
-                       }
-              
 
-                        $.ajax({
-                                url : "../ScreenCast/", 
-                                type : "POST",
-                                dataType: "json", 
-                                data : {
-                                    mode: md,
-                                    csrfmiddlewaretoken: '{{ csrf_token }}',
-                                    },
-                                    success : function(json) {
-                                      if (json.status==="on"){
-                                        touch = "on";
-                                        refresh = true;
-                                      $('#stat').append("\nScreen sharing started");
-                                       screenfunc = setInterval(function(){
-                                        if (refresh === true)
-                                        $('#my').attr('src', '../download/screen/screen.png?'+new Date().getTime());
-                                      },300);
-                                    }
-                                    else if (json.status==="off"){
-                                      touch = "off;"
-                                      refresh = false;
-                                      $('#stat').append("\nScreen sharing stopped");
-                                      $('#my').attr('src', '/static/img/loading.jpg');
-
-                                    }
-                                      $('#stat').scrollTop($('#stat')[0].scrollHeight);
-                                      
-                                    },
-                                    error : function(xhr,errmsg,err) {
-                                        document.getElementById("er").srcdoc = xhr.responseText;
-                                    }   
+            var stext = $("#screen").text();
+            var md;
+            if (stext === "Show Screen")
+            {
+              $("#screen").text("Stop Screen");
+                $('#stat').append("\nScreen sharing started");
+                  screenfunc = setInterval(function(){
+                    // Capture Screen
+                    $.ajax({
+                      url : "../ScreenCast/", 
+                      type : "POST",
+                      dataType: "json", 
+                      data : {
+                          csrfmiddlewaretoken: '{{ csrf_token }}',
+                          },
+                          success : function(json) {
+                             //Load Screen
+                            $('#my').attr('src', '../download/screen/screen.png?'+new Date().getTime());
+                          },
+                          error : function(xhr,errmsg,err) {
+                              document.getElementById("er").srcdoc = xhr.responseText;
+                          }   
                       });
-                    return false;  
-                }); 
+
+                  },7000);
+            }
+            else
+            {
+              $("#screen").text("Show Screen");
+              clearInterval(screenfunc); 
+              $('#stat').append("\nScreen sharing stopped");
+              $('#my').attr('src', '/static/img/loading.jpg');
+            }
+             $('#stat').scrollTop($('#stat')[0].scrollHeight);
+            return false;  
+      }); 
 //Screenshot
  			$("#ss").click(function() {
                     	$('#stat').append("\nTaking a Scrennshot....");
