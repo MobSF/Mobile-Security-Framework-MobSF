@@ -1,0 +1,722 @@
+{% extends "base.html" %}
+   {% block content %}
+    <script src="/static/js/jquery.min.js"></script>
+  <script type="text/javascript" src="/static/js/highlight.min.js"></script>
+  <link type="text/css" rel="stylesheet" href="/static/css/xcode.min.css"/>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <style type="text/css" media="print">
+  @page { size: landscape; }
+</style>
+
+
+   <!-- Left side column. contains the logo and sidebar -->
+      <aside class="main-sidebar">
+        <!-- sidebar: style can be found in sidebar.less -->
+        <div class="sidebar" id="scrollspy">
+
+          <!-- sidebar menu: : style can be found in sidebar.less -->
+          <ul class="nav sidebar-menu">
+            <li class="header">Dynamic Analysis</li>
+            <li class="active"><a href="#general"><i class="fa fa-rocket"></i> Information</a></li>
+             <li class="treeview">
+              <a href="javascript::;"><i class="glyphicon glyphicon-phone"></i> API Monitor</a>
+              <ul class="nav treeview-menu">
+                <li><a href="#fileio"><i class="glyphicon glyphicon-file"></i> File IO</a></li>
+                <li><a href="#networkcalls"><i class="fa fa-plug"></i> Network Calls</a></li>
+                <li><a href="#bindercalls"><i class="fa fa-cubes"></i> Binder Calls</a></li>
+                <li><a href="#crypto"><i class="fa fa-flash"></i> Crypto</a></li>
+                <li><a href="#deviceinfo"><i class="fa fa-info"></i> Device Info</a></li>
+                <li><a href="#base64"><i class="fa fa-puzzle-piece"></i> Base64</a></li>
+                <li><a href="#content"><i class="fa fa-reorder"></i> Content</a></li>
+                <li><a href="#sms"><i class="fa fa-comments"></i> SMS</a></li>
+                <li><a href="#devicedata"><i class="fa fa-phone"></i> Device Data</a></li>
+                <li><a href="#dexclassloader"><i class="fa fa-asterisk"></i> Dex Class Loader</a></li>
+                <li><a href="#reflection"><i class="fa fa-object-ungroup"></i> Reflection</a></li>
+                <li><a href="#systemmanager"><i class="fa fa-cogs"></i> System Manager</a></li>
+                <li><a href="#process"><i class="fa fa-bar-chart-o"></i> Process</a></li>
+              </ul>
+            </li>
+
+            <li><a href="#exportedactivitytester"><i class="glyphicon glyphicon-search"></i> Exported Activity Tester</a></li>
+            <li><a href="#activitytester"><i class="glyphicon glyphicon-search"></i> Activity Tester</a></li>
+            <li><a href="#screenshots"><i class="fa fa-camera"></i> Screenshots</a></li>
+            <li><a href="#httpstraffic"><i class="fa fa-exchange"></i> HTTPs Traffic</a></li>
+
+           
+
+            <li class="treeview">
+              <a href="javascript::;"><i class="fa fa-plus"></i> Reconnaissance</a>
+              <ul class="nav treeview-menu">
+              <li><a href="#clipboard"><i class="fa fa-clipboard"></i> Clipboard Dump</a></li>
+              <li><a href="#url"><i class="glyphicon glyphicon-globe"></i> URLs</a></li>
+              <li><a href="#domain"><i class="glyphicon glyphicon-screenshot"></i> Malware Check</a></li>
+              <li><a href="#email"><i class="glyphicon glyphicon-envelope"></i> Emails</a></li>
+              </ul>
+            </li>
+
+            <li class="treeview">
+              <a href="javascript::;"><i class="fa fa-files-o"></i> File Analysis</a>
+              <ul class="nav treeview-menu">
+                <li><a href="#sqlitedatabase"><i class="fa fa-database"></i> SQLite Database</a></li>
+                <li><a href="#xmlfiles"><i class="fa fa-file-excel-o"></i> XML Files</a></li>
+                <li><a href="#otherfiles"><i class="fa fa-file-o"></i> Other Files</a></li>
+              </ul>
+            </li>
+            <li><a href="javascript:window.print()"><i class="fa fa-cloud-download"></i> Download / Print</a></li>
+            
+          </ul>
+        </div>
+        <!-- /.sidebar -->
+      </aside>
+
+      <!-- Content Wrapper. Contains page content -->
+      <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <!-- Main content -->
+        <div class="content body">
+
+
+
+
+<section id="general">
+  <h2 class="page-header"><strong>Dynamic Analysis Result </strong> - {{pkg}} </h2>
+  <div align="center"><a class="btn btn-success btn-lg" target="_blank" role="button" href="../capfuzz?project={{pkg}}">Start CapFuzz</a></div>
+  <p class="lead">
+    <div class="row">
+    <div class="col-sm-12">
+      <div class="box box-danger">
+        <div class="box-header with-border">
+          <h3 class="box-title">Downloads</h3>
+          <span class="label label-danger pull-right"><i class="fa fa-cloud-download"></i></span>
+        </div><!-- /.box-header -->
+        <div class="box-body">
+        <div class="list-group">
+            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-WebTraffic.txt">HTTP(S) Traffic</a>
+            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-logcat.txt">Logcat Logs</a>
+            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-x_logcat.txt">Droidmon API Monitor Logs</a>
+            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-dump.txt">Dumpsys Logs</a> 
+            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-AppData.tar">Application Data</a>
+            
+            <!--<a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-pcap.cap">Packet Capture</a>-->
+       </div>
+        
+        </div><!-- /.box-body -->
+      </div><!-- /.box -->
+    </div><!-- /.col -->
+  </div><!-- /.row -->
+  </p>
+</section><!-- /#introduction -->
+
+
+<!-- ============================================================= -->
+
+<section id="fileio">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="glyphicon glyphicon-file"></i> File IO</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+           <div class="alert alert-info" role="alert">
+          {% for i in fileio %} {{i | safe}}</br> {% endfor %}</div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+
+<!-- ============================================================= -->
+
+
+
+<section id="networkcalls">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-plug"></i> Network Calls</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+        <div class="alert alert-success" role="alert">
+     {% for i in net %} {{i | safe}}</br> {% endfor %}</div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+
+<!-- ============================================================= -->
+
+
+
+<section id="bindercalls">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-cubes"></i> Binder Calls</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+      
+             <div class="alert alert-warning" role="alert">
+             {% for i in binder %} {{i | safe}}</br> {% endfor %}</div>
+
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+
+<!-- ============================================================= -->
+
+
+<section id="crypto">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-flash"></i> Crypto</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+      
+            <div class="alert alert-danger" role="alert">
+    {% for i in crypto %} {{i | safe}}</br> {% endfor %}</div>
+
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+
+<!-- ============================================================= -->
+<section id="deviceinfo">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-info"></i> Device Info</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+
+        <div class="alert alert-info" role="alert">
+    {% for i in divinfo %} {{i | safe}}</br> {% endfor %}</div>
+
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+
+<!-- ============================================================= -->
+<section id="base64">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-puzzle-piece"></i> Base64</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+
+  
+<div class="alert alert-success" role="alert">
+     {% for i in base64 %} {{i | safe}}</br> {% endfor %}</div>
+
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+
+<!-- ============================================================= -->
+
+<section id="content">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-reorder"></i> Content</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+
+<div class="alert alert-warning" role="alert">
+     {% for i in cntval %} {{i | safe}}</br> {% endfor %}</div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+
+<!-- ============================================================= -->
+
+<section id="sms">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-comments"></i> SMS</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+<div class="alert alert-danger" role="alert">
+     {% for i in sms %} {{i | safe}}</br> {% endfor %}</div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+
+<!-- ============================================================= -->
+
+<section id="devicedata">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-phone"></i> Device Data</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+<div class="alert alert-success" role="alert">
+     {% for i in sysprop %} {{i | safe}}</br> {% endfor %}</div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+
+<!-- ============================================================= -->
+
+
+<section id="dexclassloader">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-asterisk"></i> Dex Class Loader</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+<div class="alert alert-warning" role="alert">
+    {% for i in dexload %} {{i | safe}}</br> {% endfor %}</div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+
+<!-- ============================================================= -->
+
+
+<section id="reflection">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-object-ungroup"></i> Reflection</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+<div class="alert alert-info" role="alert">
+     {% for i in reflect %} {{i | safe}}</br> {% endfor %}</div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+
+<!-- ============================================================= -->
+
+
+
+<section id="systemmanager">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-cogs"></i> System Manager</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+<div class="alert alert-danger" role="alert">
+     {% for i in sysman %} {{i | safe}}</br> {% endfor %}</div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+
+<!-- ============================================================= -->
+
+
+
+<section id="process">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-bar-chart-o"></i> Process</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+
+<div class="alert alert-success" role="alert">
+     {% for i in process %} {{i | safe}}</br> {% endfor %}</div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+
+<!-- ============================================================= -->
+
+
+<section id="exportedactivitytester">
+  <h2 class="page-header"></h2>
+     <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="glyphicon glyphicon-search"></i> EXPORTED ACTIVITY TESTER</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body no-padding">
+              <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                      
+                                    {% for img, desc in expacttest.items %}
+                                        <tr>
+                                         <td><img alt="{{desc}}" src="../download/{{ md5 }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
+                                        <td>{{ desc }}</td>
+                                        </tr>
+                                    {% endfor %}
+                    </table>
+                                
+                            </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+</section>
+<!-- ============================================================= -->
+
+<section id="activitytester">
+  <h2 class="page-header"></h2>
+     <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="glyphicon glyphicon-search"></i> ACTIVITY TESTER</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body no-padding">
+              <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                       {% for img, desc in acttest.items %}
+                                        <tr>
+                                         <td><img alt="{{desc}}" src="../download/{{ md5 }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
+                                        <td>{{ desc }}</td>
+                                        </tr>
+                                    {% endfor %}
+                    </table>
+                                
+                            </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+</section>
+
+<!-- ============================================================= -->
+
+
+<section id="screenshots">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-camera"></i> SCREENSHOTS</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+
+                            <div class="list-group">
+                
+                                        {% for i in imgs %}
+                                         <img alt="Screenshot" src="../download/{{ md5 }}-screenshots-apk/{{ i}}" class="img-thumbnail" height="600" width="350">
+                                        {% endfor %}
+                                   
+
+                                </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+<!-- ============================================================= -->
+
+
+<section id="httpstraffic">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-exchange"></i> HTTP(s) Traffic</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+
+                            <div class="list-group">
+<pre><code class="http">{{ http }}</code></pre>
+                                </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+
+<!-- ============================================================= -->
+
+<section id="clipboard">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-clipboard"></i> Clipboard Dump</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+
+                            <div class="list-group">
+                                  {% for f in clipboard %}
+                                      {{ f}} <br>
+                                  {% endfor %}
+
+                                </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+  <!-- ============================================================= -->
+
+<section id="url">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="glyphicon glyphicon-globe"></i> URLs</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+
+                            <div class="list-group">
+                                    {% for f in urls %}
+                                        {{ f}} <br>
+                                        {% endfor %}
+
+                                </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+
+<!-- ============================================================= -->
+
+<!-- ============================================================= -->
+
+<section id="domain">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="glyphicon glyphicon-screenshot"></i> Malware Check</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body no-padding">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped">
+                  {% if urls|length > 1 %} 
+                  <thead>
+                  <tr>
+                     <th>Domain</th>
+                     <th>Status</th>
+                  </tr>
+                 </thead>
+                  {% endif %}
+                 <tbody>
+                
+                  {% for domain, details in domains.items %}
+                  <tr><td>{{domain}}</td><td> 
+
+                    {% if details|key:"bad" == "yes" %}
+                    <span class="label label-danger">malware</span></br>
+<pre>
+<strong>URL: </strong>{{details|key:"domain_or_url"}}
+<strong>IP: </strong><span class="label label-danger">{{details|key:"ip"}}</span>
+<strong>Description: </strong>{{details|key:"desc"}}
+</pre>
+                  {% else %}
+                    <span class="label label-success">good</span></br>
+                  {% endif %}
+
+
+                  </td> </tr>
+                  {% endfor %}
+                   
+                    </tbody>
+                    </table>
+                                
+             </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+<section id="email">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="glyphicon glyphicon-envelope"></i> EMAILs</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+
+                            <div class="list-group">
+                                  {% for f in emails %}
+                                        {{ f}} <br>
+                                        {% endfor %}
+
+                                </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+  <!-- ============================================================= -->
+
+
+<section id="sqlitedatabase">
+  <h2 class="page-header"></h2>
+     <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-database"></i> SQLite Databases</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+              <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-striped">
+                      {{ sqlite | safe}}
+                    </table>
+                                
+                            </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+</section>
+
+<!-- ============================================================= -->
+
+<section id="xmlfiles">
+  <h2 class="page-header"></h2>
+     <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-file-excel-o"></i> XML Files</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+              <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-striped">
+                        {{ xml | safe}}
+                    </table>
+                                
+                            </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+</section>
+
+<!-- ============================================================= -->
+	
+<section id="otherfiles">
+  <h2 class="page-header"></h2>
+     <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-file-o"></i> Other Files</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+              <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-striped">
+                         {{ others | safe}}
+                    </table>
+                                
+                            </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+</section>
+
+<!-- ============================================================= -->
+
+ </div><!-- /.content -->
+      </div><!-- /.content-wrapper -->
+
+       
+{% endblock %}
