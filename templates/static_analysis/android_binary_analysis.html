@@ -64,7 +64,7 @@
             </li>
             <li><a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=APK"><i class="glyphicon glyphicon-list-alt"></i> Download Report</a></li>
       {% if dynamic_analysis_done == False %}
-              <li><a href="javascript:document.getElementById('dynform').submit();"><i class="glyphicon glyphicon-play-circle""></i> <strong>Start Dynamic Analysis</strong></a></li>
+              <li><a href="../android_dynamic/?hash={{md5}}&amp;package={{packagename}}&amp;mainactivity={{mainactivity}}"><i class="glyphicon glyphicon-play-circle""></i> <strong>Start Dynamic Analysis</strong></a></li>
       {% else %}
         <li><a href="/Report/?md5={{ md5 }}&pkg={{ packagename }}"><i class="glyphicon glyphicon-play-circle""></i> <strong>Dynamic Analysis Report</strong></a></li>
       {% endif %}
@@ -76,15 +76,6 @@
       <!-- Content Wrapper. Contains page content -->
       <div class="content-wrapper">
         <!-- Content Header (Page header) -->
-     
-          <form id="dynform" action="../DynamicAnalyzer/" method="POST">
-           {% csrf_token %} 
-          <input type="hidden" name="md5" value="{{ md5 }}">
-          <input type="hidden" name="pkg" value="{{ packagename }}">
-          <input type="hidden" name="lng" value="{{ mainactivity }}">
-          </form>
-
-
         <!-- Main content -->
         <div class="content body">
 
@@ -423,7 +414,7 @@
          <div class="list-group">
                  <p> <a href="../StaticAnalyzer/?checksum={{ md5 }}&amp;name={{ name }}&amp;type=apk&amp;rescan=1" class="btn btn-info btn-lg" role="button"><i class="glyphicon glyphicon-refresh"></i> Rescan</a></p>
                  <p>
-                  <a href="javascript:document.getElementById('dynform').submit();" class="btn btn-success btn-lg" role="button"><i class="glyphicon glyphicon-play-circle"></i> Start Dynamic Analysis</a>
+                  <a href="../android_dynamic/?hash={{md5}}&amp;package={{packagename}}&amp;mainactivity={{mainactivity}}" class="btn btn-success btn-lg" role="button"><i class="glyphicon glyphicon-play-circle"></i> Start Dynamic Analysis</a>
                  </p>
             </div>
           </div><!-- /.box-body -->

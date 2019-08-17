@@ -1,6 +1,8 @@
 from django.conf.urls import url
 
-from DynamicAnalyzer.views.android import dynamic
+from DynamicAnalyzer.views.android import dynamic_analyzer as dz
+from DynamicAnalyzer.views.android import dynamic_tests
+from DynamicAnalyzer.views.android import reporting
 
 from MobSF import utils
 from MobSF.views import home
@@ -49,22 +51,30 @@ urlpatterns = [
         shared_func.compare_apps),
 
     # Android Dynamic Analysis
-    url(r'^DynamicAnalyzer/$', dynamic.android_dynamic_analyzer),
-    url(r'^GetEnv/$', dynamic.get_env),
-    url(r'^GetRes/$', dynamic.get_res),
-    url(r'^MobSFCA/$', dynamic.mobsf_ca),
-    url(r'^TakeScreenShot/$', dynamic.take_screenshot),
-    url(r'^ClipDump/$', dynamic.clip_dump),
-    url(r'^ExportedActivityTester/$', dynamic.exported_activity_tester),
-    url(r'^ActivityTester/$', dynamic.activity_tester),
-    url(r'^FinalTest/$', dynamic.final_test),
-    url(r'^DumpData/$', dynamic.dump_data),
-    url(r'^ExecuteADB/$', dynamic.execute_adb),
-    url(r'^Report/$', dynamic.report),
-    url(r'^View/$', dynamic.view),
-    url(r'^ScreenCast/$', dynamic.screen_cast),
-    url(r'^Touch/$', dynamic.touch),
-    url(r'^capfuzz$', dynamic.capfuzz_start),
+    url(r'^dynamic_analysis/$',
+        dz.dynamic_analysis,
+        name='dynamic'),
+    url(r'^android_dynamic/$',
+        dz.dynamic_analyzer,
+        name='dynamic_analyzer'),
+    url(r'^mobsfy/$', dz.mobsfy, name='mobsfy'),
+
+    url(r'^capfuzz$', dz.capfuzz_start),
+    url(r'^Report/$', reporting.report),
+    url(r'^View/$', reporting.view),
+
+    url(r'^execute_adb/$', dynamic_tests.execute_adb),
+    url(r'^screen_cast/$', dynamic_tests.screen_cast),
+    url(r'^touch_events/$', dynamic_tests.touch),
+    url(r'^get_component/$', dynamic_tests.get_component),
+
+
+    url(r'^MobSFCA/$', dynamic_tests.mobsf_ca),
+    url(r'^TakeScreenShot/$', dynamic_tests.take_screenshot),
+    url(r'^ExportedActivityTester/$', dynamic_tests.exported_activity_tester),
+    url(r'^ActivityTester/$', dynamic_tests.activity_tester),
+    url(r'^FinalTest/$', dynamic_tests.final_test),
+    url(r'^DumpData/$', dynamic_tests.dump_data),
 
     # REST API
     url(r'^api/v1/upload$', rest_api.api_upload),
