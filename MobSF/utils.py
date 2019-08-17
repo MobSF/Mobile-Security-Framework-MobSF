@@ -89,7 +89,6 @@ def print_version():
     if platform.dist()[0]:
         logger.info('Dist: %s', str(platform.dist()))
     find_java_binary()
-    find_vboxmange_binary(True)
     check_basic_env()
     adb_binary_or32bit_support()
     thread = threading.Thread(target=check_update, name='check_update')
@@ -221,32 +220,6 @@ def kali_fix(base_dir):
         logger.exception('Cannot run Kali Fix')
 
 
-def find_vboxmange_binary(debug=False):
-    try:
-        vpt = ['C:\\Program Files\\Oracle\\VirtualBox\\VBoxManage.exe',
-               'C:\\Program Files (x86)\\Oracle\\VirtualBox\\VBoxManage.exe']
-        if settings.ANDROID_DYNAMIC_ANALYZER == 'MobSF_VM':
-            if (len(settings.VBOXMANAGE_BINARY) > 0
-                    and is_file_exists(settings.VBOXMANAGE_BINARY)):
-                return settings.VBOXMANAGE_BINARY
-            if platform.system() == 'Windows':
-                for path in vpt:
-                    if os.path.isfile(path):
-                        return path
-            else:
-                # Path to VBoxManage in Linux/Mac
-                vpt = ['/usr/bin/VBoxManage',
-                       '/usr/local/bin/VBoxManage']
-                for path in vpt:
-                    if os.path.isfile(path):
-                        return path
-            if debug:
-                logger.warning('Could not find VirtualBox path')
-    except Exception:
-        if debug:
-            logger.exception('Cannot find VirtualBox path.')
-
-
 def find_java_binary():
     """Find Java."""
     # Respect user settings
@@ -295,7 +268,7 @@ def run_process(args):
 def print_n_send_error_response(request,
                                 msg,
                                 api=False,
-                                exp='Error Description'):
+                                exp='Description'):
     """Print and log errors."""
     logger.error(msg)
     if api:

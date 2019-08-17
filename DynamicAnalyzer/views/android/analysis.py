@@ -1,3 +1,4 @@
+# -*- coding: utf_8 -*-
 """Perform Analysis on Dynamic Analysis Data."""
 import base64
 import io
@@ -159,6 +160,7 @@ def run_analysis(apk_dir, md5_hash, package):
     logcat_data = []
     clipboard = []
     clip_tag = 'I/CLIPDUMP-INFO-LOG'
+    clip_tag2 = 'I CLIPDUMP-INFO-LOG'
     try:
         with io.open(web, mode='r', encoding='utf8', errors='ignore') as flip:
             web_data = flip.read()
@@ -171,8 +173,11 @@ def run_analysis(apk_dir, md5_hash, package):
         xlg = flip.read()
     traffic = web_data + traffic + xlg
     for log_line in logcat_data:
-        if log_line.startswith(clip_tag):
+        if clip_tag in log_line:
             clipboard.append(log_line.replace(clip_tag, 'Process ID '))
+        if clip_tag2 in log_line:
+            log_line = log_line.split(clip_tag2)[1]
+            clipboard.append(log_line)
     urls = []
     # URLs My Custom regex
     url_pattern = re.compile(
@@ -238,7 +243,9 @@ def run_analysis(apk_dir, md5_hash, package):
                             typ,
                             escape(fileparam))
                     else:
-                        with open(file_path, 'r') as flip:
+                        with io.open(file_path,
+                                     mode='r',
+                                     encoding='ISO-8859-1') as flip:
                             file_cnt_sig = flip.read(6)
                         if file_cnt_sig == 'SQLite':
                             typ = 'db'

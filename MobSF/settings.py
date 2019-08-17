@@ -9,7 +9,7 @@ import imp
 import logging
 import os
 
-from MobSF.utils import (find_java_binary, find_vboxmange_binary, first_run,
+from MobSF.utils import (find_java_binary, first_run,
                          get_mobsf_home)
 
 logger = logging.getLogger(__name__)
@@ -273,7 +273,7 @@ else:
     JADX_BINARY = ''
     BACKSMALI_BINARY = ''
     APKTOOL_BINARY = ''
-    ADB_BINARY = ''
+    ADB_BINARY = '/Applications/Genymotion.app/Contents/MacOS/tools/adb'
 
     # iOS 3P Tools
     OTOOL_BINARY = ''
@@ -295,57 +295,18 @@ else:
     JADX_BINARY = 'C:/Users/Ajin/AppData/Local/Programs/jadx/bin/jadx.bat'
     JADX_BINARY = '/Users/ajin/jadx/bin/jadx'
     """
-    # ===============================================
-
+    # ==========================================================
     # -------------------------
     # DYNAMIC ANALYZER SETTINGS
     # -------------------------
 
-    # ========ANDROID DYNAMIC ANALYSIS SETTINGS================================
-
-    ANDROID_DYNAMIC_ANALYZER = 'MobSF_VM'
-
-    # You can choose any of the below
-    # 1. MobSF_VM
-    # 2. MobSF_REAL_DEVICE
-
-    """
-    MobSF_VM x86 Android 4.4.2 running on VirtualBox(Fast, not all Apps work)
-    MobSF_REAL_DEVICE - Rooted Android 4.03 4.4 Device
-    (Very Fast, All Apps work)
-    Supports Android 5+ for real device. Not tested!
-    """
-
-    # =========================================================================
-
-    # =======ANDROID REAL DEVICE SETTINGS===========
-    DEVICE_IP = '192.168.1.18'
-    DEVICE_ADB_PORT = 5555
-    DEVICE_TIMEOUT = 300
+    # =======ANDROID DYNAMIC ANALYSIS SETTINGS===========
+    ANALYZER_IDENTIFIER = '192.168.56.117:5555'
     # ==============================================
 
-    # ====ANDROID MOBSF VIRTUALBOX VM SETTINGS =====
-    # VM UUID
-    UUID = '408e1874-759f-4417-9453-53ef21dc2ade'
-    # Snapshot UUID
-    SUUID = '5c9deb28-def6-49c0-9233-b5e03edd85c6'
-    # IP of the MobSF VM
-    VM_IP = '192.168.56.101'
-    VM_ADB_PORT = 5555
-    VM_TIMEOUT = 100
-    VBOX_HEADLESS = False
-    # ==============================================
-
-    # --------------------------
-    # MobSF MITM PROXY SETTINGS
-    # --------------------------
-
-    # ================HOST/PROXY SETTINGS ===============
-    PROXY_IP = '192.168.56.1'  # Host/Server/Proxy IP
-    PORT = 1337  # Proxy Port
-    ROOT_CA = '0026aabb.0'
-    SCREEN_IP = PROXY_IP  # ScreenCast IP
-    SCREEN_PORT = 9339  # ScreenCast Port(Do not Change)
+    # ================HTTPS PROXY ===============
+    PROXY_PORT = 1337  # Proxy Port
+    ROOT_CA = '0025aabb.0'
     # ===================================================
 
     # ========UPSTREAM PROXY SETTINGS ==============
@@ -362,12 +323,14 @@ else:
     # --------------------------
     # MALWARE ANALYZER SETTINGS
     # --------------------------
-
     DOMAIN_MALWARE_SCAN = True
-
-    # ----------APKiD-------------------------------
     APKID_ENABLED = True
     # ==============================================
+
+    # -----External URLS--------------------------
+    MALWARE_DB_URL = 'http://www.malwaredomainlist.com/mdlcsv.php'
+    VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/vtapi/v2/file/'
+    TRACKERS_DB_URL = 'https://reports.exodus-privacy.eu.org/api/trackers'
 
     # ========DISABLED COMPONENTS===================
 
@@ -383,21 +346,11 @@ else:
     # Files will be uploaded to VirusTotal
     # if VT_UPLOAD is set to True.
     # ==============================================
-
-    # -----External URLS--------------------------
-    MALWARE_DB_URL = 'http://www.malwaredomainlist.com/mdlcsv.php'
-    VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/vtapi/v2/file/'
-    TRACKERS_DB_URL = 'https://reports.exodus-privacy.eu.org/api/trackers'
-
     # ^CONFIG-END^: Do not edit this line
 
-# The below code should be loaded last.
+
 # ============JAVA SETTINGS======================
 JAVA_BINARY = find_java_binary()
-# ===============================================
-
-# ================VirtualBox Settings============
-VBOX = find_vboxmange_binary(False)
 # ===============================================
 
 # Better logging

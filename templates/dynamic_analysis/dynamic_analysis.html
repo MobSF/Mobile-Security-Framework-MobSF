@@ -2,12 +2,226 @@
 {% extends "base_top_only.html" %}
 {% load staticfiles %}
 {% block content %}
+<style>
+   textarea {
+ 
+  width: 100%;
+  height: 500px;
+  -moz-border-bottom-colors: none;
+  -moz-border-left-colors: none;
+  -moz-border-right-colors: none;
+  -moz-border-top-colors: none;
+  background: none repeat scroll 0 0 rgba(0, 0, 0, 0.07);
+  border-color: -moz-use-text-color #FFFFFF #FFFFFF -moz-use-text-color;
+  border-image: none;
+  border-radius: 6px 6px 6px 6px;
+  border-style: none solid solid none;
+  border-width: medium 1px 1px medium;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12) inset;
+  color: #555555;
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size: 1em;
+  line-height: 1.4em;
+  padding: 5px 8px;
+  transition: background-color 0.2s ease 0s;
+}
 
+
+textarea:focus {
+    background: none repeat scroll 0 0 #FFFFFF;
+    outline-width: 0;
+}
+
+/* Loading */
+
+*.hidden {
+  display: none !important;
+}
+
+div.loading{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(16, 16, 16, 0.5);
+}
+
+@-webkit-keyframes uil-ring-anim {
+  0% {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@-webkit-keyframes uil-ring-anim {
+  0% {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@-moz-keyframes uil-ring-anim {
+  0% {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@-ms-keyframes uil-ring-anim {
+  0% {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@-moz-keyframes uil-ring-anim {
+  0% {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@-webkit-keyframes uil-ring-anim {
+  0% {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@-o-keyframes uil-ring-anim {
+  0% {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@keyframes uil-ring-anim {
+  0% {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+.uil-ring-css {
+  margin: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  width: 200px;
+  height: 200px;
+}
+.uil-ring-css > div {
+  position: absolute;
+  display: block;
+  width: 160px;
+  height: 160px;
+  top: 20px;
+  left: 20px;
+  border-radius: 80px;
+  box-shadow: 0 6px 0 0 #ffffff;
+  -ms-animation: uil-ring-anim 1s linear infinite;
+  -moz-animation: uil-ring-anim 1s linear infinite;
+  -webkit-animation: uil-ring-anim 1s linear infinite;
+  -o-animation: uil-ring-anim 1s linear infinite;
+  animation: uil-ring-anim 1s linear infinite;
+}
+</style>
+
+
+
+    <div class="row">
+        <div class="callout callout-warning">
+        <h4>Reminder!</h4>
+            Before doing dynamic analysis, MobSFy the Android Runtime once and make sure that the instance is already running. See <a href="">Documentation</a> .
+         </div>
+    </div>
+     <div class="row" align="center">
+      <a class="btn btn-info" role="button"  data-toggle="modal" data-target="#modal-mobsfy">MobSFy Android Runtime</a>
+     <br /> <br />
+      </div>
+
+     <div class="row">
+       
     <div class="box box-default">
         <div class="box-header with-border">
             <h3 class="box-title"><i class="fa fa-rocket"></i> Avaiable Binaries</h3>
         </div>
-
+  
         <div class="box-body">
 
             <div class="table-responsive">
@@ -33,12 +247,11 @@
                               {% endif %}
                               "/><br /><b>{{ e.REAL_NAME }}</b>
                               </td>
-                            <td>{{ e.APP_NAME }}<br/>Hash: {{e.MD5}} </td>
+                            <td>{{ e.APP_NAME }}<br/><br/>Hash: {{e.MD5}} </td>
                             <td>{{ e.PACKAGENAME }}</td>
-                            <td><a href="#"><i class="fa fa-eye"></i> Start Dynamic Analysis</a> |
-                                <a class="diffButton" id="{{ e.MD5 }}"><i class="fa fa-exchange"></i> View Report</a>
-                                |
-                                <a id="{{ e.MD5 }}" onclick="delete_scan(this)"><i class="fa fa-trash"></i> Delete Report</a>
+                            <td><a onclick="dynamic_loader()" href="../android_dynamic/?hash={{e.MD5}}&amp;package={{e.PACKAGENAME}}&amp;mainactivity={{e.MAINACTIVITY}}"><i class="fa fa-eye"></i> Start Dynamic Analysis</a> |
+                                <a href=""><i class="fa fa-exchange"></i> View Report</a>|
+                                <a onclick="javascript:alert('make delete in recent work')"><i class="fa fa-trash"></i> Delete Report</a>
                             </td>
                         </tr>
                     {% endfor %}
@@ -50,153 +263,95 @@
         </div>
         <!-- /.box-body -->
     </div>
+     </div>
+     <!-- Modal -->
+          <div class="modal fade" id="modal-mobsfy">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">MobSFy Android Runtime</h4>
+              </div>
+              <div class="modal-body">
+               <div class="box-body">
+              <form role="form">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>IP &amp; Port</label>
+                     <input id="identifier" type="text" class="form-control" value="{{ identifier }}">
+                </div>
+
+                <div class="form-group">
+                  <label>Runtime Instrumentation</label>
+                  <select id="runtime" class="form-control">
+                    <option value="xposed">Xposed Framework</option>
+                    <option value="frida">Frida</option>
+                  </select>
+                </div>
+            
+                <div class="form-group">
+                  <label>Status</label>
+                  <textarea id="stat" class="form-control" rows="10" placeholder="" disabled=""></textarea>
+                </div>
+
+              </form>
+            </div>
+              </div>
+              <div class="modal-footer">
+                <button id="mobsfy" type="button" class="btn btn-primary">MobSFy!</button>
+              </div>
+            </div>
+            <!-- /.modal-content -->
+          </div>
+          <!-- /.modal-dialog -->
+        </div>
+        <!-- /.modal -->
 {% endblock %}
 
 {% block extra_footer %}
-<script src="/static/dash/js/sweetalert2.min.js"></script>
+<div class="hidden loading">
+    <div class='uil-ring-css' style='transform:scale(0.79);'>
+    <div>
+</div>
 <script>
-    var diff_first_md5 = '';
-    var diff_first_name = '';
-
-    // When a row is clicked, we check if we already have first scan, if so, ask for confirmation
-    function enable_partner_select() {
-        $('table tr').on('click', function (e) {
-            e.preventDefault();
-            if (diff_first_md5 == '') {
-                return;
-            }
-            diff_confirmation($(this));
-        })
-    }
 
 
-    function enable_diff_button(){
-        $(".diffButton").on('click', function(e){
-            e.stopPropagation();
-            diff_select($(this));
+function dynamic_loader(){
+    var loadingOverlay = document.querySelector('.loading');
+    loadingOverlay.classList.remove('hidden');
+}
+
+//MobSFy AJAX
+ $("#mobsfy").one( "click", function() {
+        $('#stat').append("\nMobSFying Android Runtime");
+        $.ajax({
+                url : "../mobsfy/", 
+                type : "POST",
+                dataType: "json", 
+                data : {
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    identifier: $('#identifier').val() ,
+                    runtime: $("#runtime option:selected").val(),
+                    },
+                    success : function(json) {
+                        if (json.status==="ok"){
+                            $('#stat').append("\nSucessfully created MobSF Dynamic Analysis environment.");
+                            $('#stat').append("\n* Download & Install Xposed Framework\n* Restart the device");
+                            $('#stat').append("\n* Enable all the Xposed modules");
+                        }
+                        else if(json.status=="failed"){
+                            $('#stat').append("\nFailed to create MobSF Dynamic Analysis environment.");
+                        }
+                         $('#stat').scrollTop($('#stat')[0].scrollHeight);
+                    },
+                    error : function(xhr, errmsg, err) {
+                        $('#stat').append("\nERROR!!! \n\n"+ err);
+                        $('#stat').scrollTop($('#stat')[0].scrollHeight);
+                    }   
         });
-    }
-
-    function disable_diff_button() {
-        $('.diffButton').off('click');
-    }
-
-    // First pop up only saves the first scan to diff and tells the user to select a partner
-    function diff_select(item) {
-
-        swal({
-            title: '<strong>Select App to Compare</strong>',
-            type: 'info',
-            html:
-                'Please select the second scan result for comparison',
-            timer: 10000
-        });
-        diff_first_md5 = item.attr('id').slice(0, 32);
-        diff_first_name = item.attr('id').slice(33);
-        item.closest("tr").addClass("selected");
-        item.closest("tbody").addClass("selectable_table");
-
-        // Enable the second partner selection
-        enable_partner_select();
-        disable_diff_button();
-    }
-
-    function diff_cleanup() {
-        first_td_id = diff_first_md5 + '_' + diff_first_name;
-        $('[id="' + first_td_id + '"]').closest("tr").removeClass("selected");
-        $('[id="' + first_td_id + '"]').closest("tbody").removeClass("selectable_table");
-        diff_first_md5 = "";
-        diff_first_name = "";
-        enable_diff_button();
-    }
-
-    // Here we get jquery row
-    function diff_confirmation(item) {
-        // First we need the id which has the md5 and name
-        rows_tds = item.find('td');
-        selected_md5 = rows_tds[1].innerText;
-        if (diff_first_md5 == selected_md5) {
-            return;
-        }
-        diff_second_md5 = selected_md5;
-        diff_second_name = rows_tds[0].innerText;
-
-        swal({
-            title: '<strong>Diff confirmation</strong>',
-            type: 'info',
-            html:
-                '<strong>Do you want to diff - </strong><br />' + diff_first_name +
-                '<br /> <strong>with - <br /> </strong>' + diff_second_name + ' <br /> <strong>?</strong>',
-
-            showCancelButton: true,
-            cancelButtonText: 'cancel',
-            confirmButtonText: 'Start Diffing!',
-        }).then(function (json_data) {
-            window.location = '/compare/' + diff_first_md5 + '/' + diff_second_md5 + '/';
-        }, function (dismiss) {
-            if (dismiss === 'cancel') {
-                diff_cleanup();
-            } else {
-                diff_cleanup();
-            }
-        })
-
-    }
-
-    function delete_scan(item){
-      swal({
-      title: 'Are you sure?',
-      text: "This will permanently remove the scan results from MobSF",
-      type: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes',
-      cancelButtonText: 'No',
-      confirmButtonClass: 'btn btn-success',
-      cancelButtonClass: 'btn btn-danger',
-      buttonsStyling: false
-    }).then(function () {
-      var md5_hash = item.id;
-      $.ajax({
-          url: '../delete_scan/',
-              type : 'POST',
-          dataType: 'json',
-              data : {
-                      csrfmiddlewaretoken: '{{ csrf_token }}',
-                      md5: md5_hash,
-                      },
-                  success : function(json) {
-                      if (json.deleted==='yes'){
-                        swal(
-                            'Deleted!',
-                            'The scan result is deleted!',
-                            'success'
-                          ).then(function () {
-                             location.reload();
-                            })
-                      }
-                      else {
-                        swal(
-                          'Delete Failed',
-                          'Cannot delete the scan result!',
-                          'error'
-                        )
-                      }
-                  },
-                  error : function(xhr,errmsg,err) {
-                      swal(
-                          'Delete Failed',
-                          errmsg,
-                          'error'
-                        )
-                  }
-      });
-    })
-    }
-
-    enable_diff_button();
-
+    return false;  
+}); 
 </script>
 
 {% endblock %}

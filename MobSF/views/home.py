@@ -217,8 +217,10 @@ def download(request):
                     wrapper, content_type=allowed_exts[ext])
                 response['Content-Length'] = os.path.getsize(dwd_file)
                 return response
-    msg += filename
-    return print_n_send_error_response(request, msg)
+    if 'screen/screen.png' not in filename:
+        msg += filename
+        return print_n_send_error_response(request, msg)
+    return HttpResponse('')
 
 
 def delete_scan(request, api=False):
