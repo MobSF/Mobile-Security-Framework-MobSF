@@ -1,8 +1,10 @@
 from django.conf.urls import url
 
 from DynamicAnalyzer.views.android import dynamic_analyzer as dz
-from DynamicAnalyzer.views.android import dynamic_tests
-from DynamicAnalyzer.views.android import reporting
+from DynamicAnalyzer.views.android import (
+    operations,
+    report,
+    tests_common)
 
 from MobSF import utils
 from MobSF.views import home
@@ -17,7 +19,7 @@ from StaticAnalyzer.views.ios import static_analyzer as ios_sa
 from StaticAnalyzer.views.ios import view_source as io_view_source
 
 urlpatterns = [
-    # Examples:
+    # General
     url(r'^$', home.index, name='home'),
     url(r'^upload/$', home.Upload.as_view),
     url(r'^download/', home.download),
@@ -46,35 +48,35 @@ urlpatterns = [
     url(r'^StaticAnalyzer_Windows/$', windows.staticanalyzer_windows),
     # Shared
     url(r'^PDF/$', shared_func.pdf),
-    # We validate the hash sanity in the URL already
+    # App Compare
     url(r'^compare/(?P<hash1>[0-9a-f]{32})/(?P<hash2>[0-9a-f]{32})/$',
         shared_func.compare_apps),
 
-    # Android Dynamic Analysis
+    # Dynamic Analysis
     url(r'^dynamic_analysis/$',
         dz.dynamic_analysis,
         name='dynamic'),
     url(r'^android_dynamic/$',
         dz.dynamic_analyzer,
         name='dynamic_analyzer'),
-    url(r'^mobsfy/$', dz.mobsfy, name='mobsfy'),
-
-    url(r'^capfuzz$', dz.capfuzz_start),
-    url(r'^Report/$', reporting.report),
-    url(r'^View/$', reporting.view),
-
-    url(r'^execute_adb/$', dynamic_tests.execute_adb),
-    url(r'^screen_cast/$', dynamic_tests.screen_cast),
-    url(r'^touch_events/$', dynamic_tests.touch),
-    url(r'^get_component/$', dynamic_tests.get_component),
-
-
-    url(r'^MobSFCA/$', dynamic_tests.mobsf_ca),
-    url(r'^TakeScreenShot/$', dynamic_tests.take_screenshot),
-    url(r'^ExportedActivityTester/$', dynamic_tests.exported_activity_tester),
-    url(r'^ActivityTester/$', dynamic_tests.activity_tester),
-    url(r'^FinalTest/$', dynamic_tests.final_test),
-    url(r'^DumpData/$', dynamic_tests.dump_data),
+    url(r'^capfuzz$',
+        dz.capfuzz_start,
+        name='capfuzz'),
+    # Android Operations
+    url(r'^mobsfy/$', operations.mobsfy),
+    url(r'^screenshot/$', operations.take_screenshot),
+    url(r'^execute_adb/$', operations.execute_adb),
+    url(r'^screen_cast/$', operations.screen_cast),
+    url(r'^touch_events/$', operations.touch),
+    url(r'^get_component/$', operations.get_component),
+    url(r'^mobsf_ca/$', operations.mobsf_ca),
+    url(r'^exported_activity_tester/$', tests_common.exported_activity_tester),
+    url(r'^activity_tester/$', tests_common.activity_tester),
+    url(r'^download_data/$', tests_common.download_data),
+    url(r'^collect_logs/$', tests_common.collect_logs),
+    # Report
+    url(r'^dynamic_report/$', report.view_report),
+    url(r'^dynamic_view_file/$', report.view_file),
 
     # REST API
     url(r'^api/v1/upload$', rest_api.api_upload),

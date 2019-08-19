@@ -3,7 +3,6 @@
    {% block content %}
     
     <script src="/static/js/jquery.min.js"></script>
-    <script src="/static/terminal/terminal.js"></script>
     <script>
 
 // Terminal
@@ -85,11 +84,13 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
         return encodedStr;
     }
 
-    function output(html, escape_=false, pre=false) {
+    function output(html, escape_=false, pre=false, error=false) {
         if (escape_)
             html = escape(html);
         if (pre)
          output_.insertAdjacentHTML('beforeEnd', '<pre class="clean-text">' + html + '</pre>');
+        else if (error)
+          output_.insertAdjacentHTML('beforeEnd', '<pre>' + html + '</pre>');
         else
          output_.insertAdjacentHTML('beforeEnd', '<p>' + html + '</p>');
     }
@@ -115,7 +116,9 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
                 },
                 success : function(json) {
                     if (json.status==="ok"){
-                      output(json.resp, true, true);
+                      output(json.message, true, true);
+                    } else {
+                       output(json.message, true, true, true);
                     }
                 },
                 error : function(xhr,errmsg,err) {
@@ -194,11 +197,11 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
                                 dataType: "json", 
                                 data : {
                                     csrfmiddlewaretoken: '{{ csrf_token }}',
-                                    cmd: DOMXSSSafeJS(exec_cmd),
+                                    cmd: exec_cmd,
                                     },
                                     success : function(json) {
-                                        if (json.cmd==="yes"){
-                                          output(json.resp, true, true);
+                                        if (json.status==="ok"){
+                                          output(json.message, true, true);
                                         }
                                     },
                                     error : function(xhr,errmsg,err) {
@@ -386,7 +389,7 @@ $('#my').click(function(e) {
                         y: y,
                         },
                     success : function(json) {
-                        if (json.status==='success'){
+                        if (json.status==='ok'){
                         console.log('Clicked!');
                         }
                     },
@@ -419,8 +422,11 @@ $("#screen").click(function() {
                     csrfmiddlewaretoken: '{{ csrf_token }}',
                     },
                     success : function(json) {
-                        //Load Screen
-                      $('#my').attr('src', '../download/screen/screen.png?'+new Date().getTime());
+                      if (json.status == 'ok')
+                        $('#my').attr('src', '../download/screen/screen.png?'+new Date().getTime());
+                      else
+                         $('#stat').append(json.message);
+                      $('#stat').scrollTop($('#stat')[0].scrollHeight);
                     },
                     error : function(xhr,errmsg,err) {
                         document.getElementById("er").srcdoc = xhr.responseText;
@@ -443,27 +449,30 @@ $("#screen").click(function() {
 
 //Screenshot
  			$("#ss").click(function() {
-                    	$('#stat').append("\nTaking a Scrennshot....");
-                    		$.ajax({
-                                url : "../TakeScreenShot/", 
-                                type : "POST",
-                                dataType: "json", 
-                                data : {
-                                    csrfmiddlewaretoken: '{{ csrf_token }}',
-                                    md5: '{{ md5 }}',
-                                    },
-                                    success : function(json) {
-                                    	if (json.screenshot==="yes"){
-                                    	$('#stat').append("\nScreenshot Taken!");
-                                    	$('#stat').scrollTop($('#stat')[0].scrollHeight);
-										}
-                                    },
-                                    error : function(xhr,errmsg,err) {
-                                        document.getElementById("er").srcdoc = xhr.responseText;
-                                    }   
-                      });
-                    return false;  
-                }); 
+        $('#stat').append("\nTaking Screenshot....");
+          $.ajax({
+                  url : "../screenshot/", 
+                  type : "POST",
+                  dataType: "json", 
+                  data : {
+                      csrfmiddlewaretoken: '{{ csrf_token }}',
+                      hash: '{{ md5 }}',
+                      },
+                      success : function(json) {
+                        if (json.status==="ok"){
+                        $('#stat').append("\nScreenshot Taken!");
+                        
+                      } else{
+                          $('#stat').append("\nFailed to Take Screenshot!");
+                      }
+                      $('#stat').scrollTop($('#stat')[0].scrollHeight);
+                      },
+                      error : function(xhr,errmsg,err) {
+                          document.getElementById("er").srcdoc = xhr.responseText;
+                      }   
+        });
+      return false;  
+  }); 
 
     //MobSF CA
 
@@ -483,7 +492,7 @@ $("#screen").click(function() {
                        }
 
                         $.ajax({
-                                url : "../MobSFCA/", 
+                                url : "../mobsf_ca/", 
                                 type : "POST",
                                 dataType: "json", 
                                 data : {
@@ -491,11 +500,14 @@ $("#screen").click(function() {
                                     csrfmiddlewaretoken: '{{ csrf_token }}',
                                     },
                                     success : function(json) {
-                                      if (json.ca==="installed"){
+                                      if (json.message === "installed"){
                                       $('#stat').append("\nMobSF RootCA Installed Successfully");
                                     }
-                                    else if (json.ca==="removed"){
+                                    else if (json.message === "removed"){
                                       $('#stat').append("\nMobSF RootCA Removed Successfully");
+                                    }
+                                    else if (json.status === "failed"){
+                                      $('#stat').append(json.message);
                                     }
                                     $('#stat').scrollTop($('#stat')[0].scrollHeight);
                                     },
@@ -505,60 +517,52 @@ $("#screen").click(function() {
                       });
                     return false;  
                 }); 
+ 
 
        //Start ExportedActivity Tester
      $("#expactt").click(function()  {
                         $('#stat').append("\nStarting Exported Activity Tester...");
                         $.ajax({
-                                url : "../ExportedActivityTester/", 
+                                url : "../exported_activity_tester/", 
                                 type : "POST",
                                 dataType: "json", 
                                 data : {
                                     csrfmiddlewaretoken: '{{ csrf_token }}',
-                                    md5: '{{ md5 }}',
-                                    pkg: '{{ package }}',
+                                    hash: '{{ md5 }}',
+                                    package: '{{ package }}',
                                     },
-                                    success : function(json) {
-                                      if (json.expacttest==="done"){
-                                  $('#stat').append("\nExported Activity Testing Completed.");
+                                success : function(json) {
+                                  if (json.status === "ok")
+                                      $('#stat').append("\nExported Activity Testing Completed.");
+                                  else
+                                      $('#stat').append(json.message);
                                   $('#stat').scrollTop($('#stat')[0].scrollHeight);
-                                    }
-                                    else if(json.expacttest=="noact"){
-                                      $('#stat').append("\nNo Activities Found!");
-                                  $('#stat').scrollTop($('#stat')[0].scrollHeight);
-                                    }
-
-                                    },
-                                    error : function(xhr,errmsg,err) {
-                                       document.getElementById("er").srcdoc = xhr.responseText;
-                                    }   
+                                },
+                                error : function(xhr,errmsg,err) {
+                                    document.getElementById("er").srcdoc = xhr.responseText;
+                                }  
                       });
                     return false;  
-                }); 
-
+                });
 
       //Start Activity Tester
      $("#actt").click(function()  {
                         $('#stat').append("\nStarting Activity Tester...");
                         $.ajax({
-                                url : "../ActivityTester/", 
+                                url : "../activity_tester/", 
                                 type : "POST",
                                 dataType: "json", 
                                 data : {
                                     csrfmiddlewaretoken: '{{ csrf_token }}',
-                                    md5: '{{ md5 }}',
-                                    pkg: '{{ package }}',
+                                    hash: '{{ md5 }}',
+                                    package: '{{ package }}',
                                     },
                                     success : function(json) {
-                                      if (json.acttest==="done"){
-                                  $('#stat').append("\nActivity Testing Completed.");
-                                  $('#stat').scrollTop($('#stat')[0].scrollHeight);
-                                    }
-                                    else if(json.acttest=="noact"){
-                                      $('#stat').append("\nNo Activities Found!");
-                                  $('#stat').scrollTop($('#stat')[0].scrollHeight);
-                                    }
-
+                                       if (json.status === "ok")
+                                        $('#stat').append("\nExported Activity Testing Completed.");
+                                    else
+                                        $('#stat').append(json.message);
+                                    $('#stat').scrollTop($('#stat')[0].scrollHeight);
                                     },
                                     error : function(xhr,errmsg,err) {
                                        document.getElementById("er").srcdoc = xhr.responseText;
@@ -572,56 +576,28 @@ $("#screen").click(function() {
                     	$('#stat').append("\nCollecting Data...");
 
                       //Stop Screen Casting if it's running
-			
                        var stext = $("#screen").text();
                        var md;
                        if (stext === "Stop Screen")
                        {
-                        $("#screen").text("Show Screen");
-                        md = "off";
-                        $.ajax({
-                          url : "../ScreenCast/", 
-                          type : "POST",
-                          dataType: "json", 
-                          data : {
-                              mode: md,
-                              csrfmiddlewaretoken: '{{ csrf_token }}',
-                              },
-                              success : function(json) {
-                                
-                                if (json.status==="off"){
-                                touch = "off;"
-                                refresh = false;
-                                $('#stat').append("\nScreen sharing stopped");
-                                $('#my').attr('src', '/static/img/loading.jpg');
-
-                              }
-                                $('#stat').scrollTop($('#stat')[0].scrollHeight);
-                                
-                              },
-                              error : function(xhr,errmsg,err) {
-                                  document.getElementById("er").srcdoc = xhr.responseText;
-                              }   
-                        });
-                      }
+                         $("#screen").click();
+                       }
                         //
                     		$.ajax({
-                                url : "../FinalTest/", 
+                                url : "../collect_logs/", 
                                 type : "POST",
                                 dataType: "json", 
                                 data : {
                                     csrfmiddlewaretoken: '{{ csrf_token }}',
-                                    md5: '{{ md5 }}',
-                                    pkg: '{{ package }}',
+                                    hash: '{{ md5 }}',
+                                    package: '{{ package }}',
                                     },
                                     success : function(json) {
-                                    	if (json.final==="yes"){
+                                    	if (json.status==="ok"){
                                     	$('#stop').addClass("btn btn-success");
                                     	$('#stop').text("Testing Completed");
-                                    	$('#stat').append("\nDownloading Logcat logs");
-                             			$('#stat').append("\nDownloading Droidmon API Monitor Logcat logs");
-                             			$('#stat').append("\nDownloading Dumpsys logs");
-                             			$('#stat').append("\nStopping Application");
+                                    	$('#stat').append("\nDownloading logs");
+                             		    	$('#stat').append("\nStopping Application");
                                     	$('#stat').scrollTop($('#stat')[0].scrollHeight);
                                     	dump();
                                     }
@@ -636,59 +612,27 @@ $("#screen").click(function() {
 
                 //end doc.ready
 			});
-function DOMXSSSafeJS(data)
-{
-  return data
-      .replace(/</g, "\u003c")
-      .replace(/>/g, "\u003e")
-      .replace(/"/g, "\u0022")
-      .replace(/'/g, "\u0027")
-      .replace(/`/g, "\u0060")
-      .replace(/\(/g, "\u0028")
-      .replace(/\)/g, "\u0029")
-      .replace(/{/g, "\u007b")
-      .replace(/}/g, "\u007d")
-      .replace(/-/g, "\u002d")
-      .replace(/\+/g, "\u002b")
-      .replace(/\//g, "\u002f")
-      .replace(/\$/g, "\u0024");
 
-}
-function DOMXSSSafeHTML(data)
-{
-  return data
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#x27;")
-      .replace(/`/g, "&#x60;")
-      .replace(/\(/g, "&#x28;")
-      .replace(/\)/g, "&#x29;")
-      .replace(/{/g, "&#x7B;")
-      .replace(/}/g, "&#x7D;")
-      .replace(/-/g, "&#x2D;")
-      .replace(/\+/g, "&#x2B;");
-}
 		function dump()
 		{
 			$('#stat').append("\nDumping Application Data from the device. Please Wait....");
 			$('#stat').scrollTop($('#stat')[0].scrollHeight);
                     		$.ajax({
-                                url : "../DumpData/", 
+                                url : "../download_data/", 
                                 type : "POST",
                                 dataType: "json", 
                                 data : {
                                     csrfmiddlewaretoken: '{{ csrf_token }}',
-                                    md5: '{{ md5 }}',
-                                    pkg: '{{ package }}',
+                                    hash: '{{ md5 }}',
+                                    package: '{{ package }}',
                                     },
                                     success : function(json) {
-                                    	if (json.dump==="yes"){
+                                    	if (json.status==="ok"){
                                     	$('#stat').append("\nApplication Data Dumped!");
-                             			$('#stat').append("\nGenerating Report...Please Wait!");
+                             			    $('#stat').append("\nGenerating Report...Please Wait!");
                                     	$('#stat').scrollTop($('#stat')[0].scrollHeight);
                                     	//Call reporting
-                                      location.href="//"+location.host+"/Report/?md5={{ md5 }}&pkg={{ package }}";
+                                      location.href="//"+location.host+"/dynamic_report/?hash={{ md5 }}&package={{ package }}&version={{ version }}";
                                     }
 
                                     },
@@ -699,6 +643,41 @@ function DOMXSSSafeHTML(data)
                
 
 		}
+
+    function DOMXSSSafeJS(data)
+    {
+      return data
+          .replace(/</g, "\u003c")
+          .replace(/>/g, "\u003e")
+          .replace(/"/g, "\u0022")
+          .replace(/'/g, "\u0027")
+          .replace(/`/g, "\u0060")
+          .replace(/\(/g, "\u0028")
+          .replace(/\)/g, "\u0029")
+          .replace(/{/g, "\u007b")
+          .replace(/}/g, "\u007d")
+          .replace(/-/g, "\u002d")
+          .replace(/\+/g, "\u002b")
+          .replace(/\//g, "\u002f")
+          .replace(/\$/g, "\u0024");
+
+    }
+    function DOMXSSSafeHTML(data)
+    {
+      return data
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#x27;")
+          .replace(/`/g, "&#x60;")
+          .replace(/\(/g, "&#x28;")
+          .replace(/\)/g, "&#x29;")
+          .replace(/{/g, "&#x7B;")
+          .replace(/}/g, "&#x7D;")
+          .replace(/-/g, "&#x2D;")
+          .replace(/\+/g, "&#x2B;");
+    }
+
       </script>
   
 		

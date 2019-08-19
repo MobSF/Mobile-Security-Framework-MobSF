@@ -5,7 +5,6 @@ import json
 import logging
 import ntpath
 import os
-import sqlite3
 
 import biplist
 
@@ -16,7 +15,8 @@ from django.utils.html import escape
 
 from MobSF.forms import FormUtil
 from MobSF.utils import (is_file_exists,
-                         print_n_send_error_response)
+                         print_n_send_error_response,
+                         read_sqlite)
 
 from StaticAnalyzer.forms import ViewSourceIOSApiForm, ViewSourceIOSForm
 
@@ -72,6 +72,7 @@ def run(request, api=False):
             src = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         sfile = os.path.join(src, fil)
         dat = ''
+        sql_dump = {}
         if typ == 'm':
             file_format = 'cpp'
             with io.open(sfile,
@@ -95,7 +96,7 @@ def run(request, api=False):
                 pass
         elif typ == 'db':
             file_format = 'asciidoc'
-            dat = read_sqlite(sfile)
+            sql_dump = read_sqlite(sfile)
         elif typ == 'txt' and fil == 'classdump.txt':
             file_format = 'cpp'
             app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
@@ -108,6 +109,13 @@ def run(request, api=False):
                     dat = flip.read()
             else:
                 dat = 'Class Dump result not Found'
+        elif typ == 'txt':
+            file_format = 'text'
+            with io.open(sfile,
+                         mode='r',
+                         encoding='utf8',
+                         errors='ignore') as flip:
+                dat = flip.read()
         else:
             if api:
                 return {'error': 'Invalid Parameters'}
@@ -115,7 +123,8 @@ def run(request, api=False):
         context = {'title': escape(ntpath.basename(fil)),
                    'file': escape(ntpath.basename(fil)),
                    'type': file_format,
-                   'dat': dat}
+                   'dat': dat,
+                   'sql': sql_dump}
         template = 'general/view.html'
         if api:
             return context
@@ -128,35 +137,3 @@ def run(request, api=False):
             return print_n_send_error_response(request, msg, True, exp)
         else:
             return print_n_send_error_response(request, msg, False, exp)
-
-
-def read_sqlite(sqlite_file):
-    """Read SQlite File."""
-    try:
-        logger.info('Dumping SQLITE Database')
-        data = ''
-        con = sqlite3.connect(sqlite_file)
-        cur = con.cursor()
-        cur.execute('SELECT name FROM sqlite_master WHERE type=\'table\';')
-        tables = cur.fetchall()
-        for table in tables:
-            data += ('\nTABLE: ' + str(table[0]).decode('utf8', 'ignore')
-                     + ' \n================================'
-                     + '=====================\n')
-            cur.execute('PRAGMA table_info(\'%s\')' % table)
-            rows = cur.fetchall()
-            head = ''
-            for row in rows:
-                head += str(row[1]).decode('utf8', 'ignore') + ' | '
-            data += head + (' \n========================================'
-                            '=============================\n')
-            cur.execute('SELECT * FROM \'%s\'' % table)
-            rows = cur.fetchall()
-            for row in rows:
-                dat = ''
-                for item in row:
-                    dat += str(item).decode('utf8', 'ignore') + ' | '
-                data += dat + '\n'
-        return data
-    except Exception:
-        logger.exception('Dumping SQLITE Database')
