@@ -63,7 +63,7 @@ def ios_list_files(src, md5_hash, binary_form, mode):
                             'hash': None,
                         })
 
-                    if re.search('db|sqlitedb|sqlite', ext):
+                    if re.search(r'^db$|^sqlitedb$|^sqlite$', ext):
                         database.append({
                             'file_path': escape(fileparam),
                             'type': mode,

@@ -1,17 +1,17 @@
 # -*- coding: utf_8 -*-
-"""Core Functions of Android Dynamic Analysis."""
-import json
+"""Android Dynamic Analysis."""
 import logging
 import os
-import re
 import time
 
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
-from DynamicAnalyzer.views.android.analyzer_setup import AnalyzerSetup
 from DynamicAnalyzer.views.android.environment import Environment
+from DynamicAnalyzer.views.android.operations import (
+    is_attack_pattern,
+    is_md5)
 from DynamicAnalyzer.tools.webproxy import (
     start_fuzz_ui,
     stop_capfuzz)
@@ -33,31 +33,6 @@ def dynamic_analysis(request):
     template = 'dynamic_analysis/dynamic_analysis.html'
     return render(request, template, context)
 
-# AJAX
-
-
-def mobsfy(request):
-    """Configure Instance for Dynamic Analysis."""
-    if request.method != 'POST':
-        return HttpResponse(json.dumps({'status': 'Method not supported!'}),
-                            content_type='application/json')
-    try:
-        identifier = request.POST['identifier']
-        env = Environment(identifier)
-        if not env.connect_n_mount():
-            msg = 'Cannot Connect to ' + identifier
-            # TO DO: HTML Resp won't wotk with AJAX
-            return print_n_send_error_response(request, msg)
-        analyzer = AnalyzerSetup(identifier)
-        analyzer.setup()
-        return HttpResponse(json.dumps({'status': 'ok'}),
-                            content_type='application/json')
-    except Exception:
-        # TO DO: HTML Resp won't wotk with AJAX
-        return print_n_send_error_response(request,
-                                           'MobSFying Android'
-                                           ' instance failed')
-
 
 def dynamic_analyzer(request):
     """Android Dynamic Analyzer Environment."""
@@ -67,24 +42,24 @@ def dynamic_analyzer(request):
         package = request.GET['package']
         launcher = request.GET['mainactivity']
         identifier = settings.ANALYZER_IDENTIFIER
-        atk_pattern = r';|\$\(|\|\||&&'
-        if (re.findall(atk_pattern, package)
-                or re.findall(atk_pattern, launcher)):
+        if (is_attack_pattern(package)
+                or is_attack_pattern(launcher)
+                or not is_md5(bin_hash)):
             return print_n_send_error_response(request,
-                                               'Possible RCE Attack')
-        if not re.match('^[0-9a-f]{32}$', bin_hash):
-            return print_n_send_error_response(request,
-                                               'Invalid Scan bin_hash')
+                                               'Invalid Parameters')
         env = Environment(identifier)
         if not env.connect_n_mount():
             msg = 'Cannot Connect to ' + identifier
             return print_n_send_error_response(request, msg)
         android_version = env.get_android_version()
         if not env.is_mobsfyied(android_version):
-            msg = ('This Android Instance is not MobSfyed. '
-                   'Please MobSFy the android runtime environment '
-                   'before performing dynamic analysis.')
-            return print_n_send_error_response(request, msg)
+            msg = ('This Android instance is not MobSfyed. '
+                   'MobSFying the android runtime environment')
+            logger.warning(msg)
+            if not env.mobsfy_init():
+                return print_n_send_error_response(
+                    request,
+                    'Failed to MobSFy the instance')
         # Clean up previous analysis
         env.dz_cleanup(bin_hash)
         # Configure Web Proxy
@@ -114,6 +89,7 @@ def dynamic_analyzer(request):
                    'screen_height': screen_height,
                    'package': package,
                    'md5': bin_hash,
+                   'version': android_version,
                    'title': 'Dynamic Analyzer'}
         template = 'dynamic_analysis/android/dynamic_analyzer.html'
         return render(request, template, context)

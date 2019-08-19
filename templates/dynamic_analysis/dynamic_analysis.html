@@ -340,8 +340,8 @@ function dynamic_loader(){
                             $('#stat').append("\n* Download & Install Xposed Framework\n* Restart the device");
                             $('#stat').append("\n* Enable all the Xposed modules");
                         }
-                        else if(json.status=="failed"){
-                            $('#stat').append("\nFailed to create MobSF Dynamic Analysis environment.");
+                        else if(json.status === "failed"){
+                            $('#stat').append(json.message);
                         }
                          $('#stat').scrollTop($('#stat')[0].scrollHeight);
                     },

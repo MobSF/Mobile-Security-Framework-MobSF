@@ -13,7 +13,37 @@
 
 
         <h3>{{file}} </h3>
-     <pre><code class="{{ type }}">{{ dat }}</code></pre>
+        <br />
+        {% if sql %}
+        {% for table, data in sql.items %}
+        <div class="box">
+            <div class="box-header">
+              <h3 class="box-title">Table: <b>{{table}}</b></h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body no-padding">
+              <table class="table table-striped">
+                <tbody><tr>
+                 {% for head in data|key:"head" %}
+                  <th>{{ head }}</th>
+                {% endfor %}
+                </tr>
+                {% for dat in data|key:"data" %}
+                  <tr>
+                    {% for item in dat %}
+                      <td style="word-wrap: break-word;min-width: 160px;max-width: 160px;">{{ item }}</td>
+                    {% endfor %}
+                   </tr>
+                {% endfor %}
+            
+              </tbody></table>
+            </div>
+            <!-- /.box-body -->
+          </div>
+        {% endfor %}
+        {% else %}
+          <pre><code class="{{ type }}">{{ dat }}</code></pre>
+        {% endif %}
           </div>
           <!-- /.box-body -->
         </div>

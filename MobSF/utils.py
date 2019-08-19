@@ -12,6 +12,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import sqlite3
 import unicodedata
 import threading
 
@@ -532,3 +533,30 @@ def update_local_db(db_name, url, local_file):
     finally:
         if inmemoryfile:
             inmemoryfile.truncate(0)
+
+
+def read_sqlite(sqlite_file):
+    """Sqlite Dump - Readable Text."""
+    logger.info('Reading SQLite db')
+    table_dict = {}
+    try:
+        con = sqlite3.connect(sqlite_file)
+        cur = con.cursor()
+        cur.execute('SELECT name FROM sqlite_master WHERE type=\'table\';')
+        tables = cur.fetchall()
+        for table in tables:
+            table_dict[table[0]] = {'head': [], 'data': []}
+            cur.execute('PRAGMA table_info(\'%s\')' % table)
+            rows = cur.fetchall()
+            for sq_row in rows:
+                table_dict[table[0]]['head'].append(sq_row[1])
+            cur.execute('SELECT * FROM \'%s\'' % table)
+            rows = cur.fetchall()
+            for sq_row in rows:
+                tmp_row = []
+                for each_row in sq_row:
+                    tmp_row.append(str(each_row))
+                table_dict[table[0]]['data'].append(tmp_row)
+    except Exception:
+        logger.exception('Reading SQLite db')
+    return table_dict

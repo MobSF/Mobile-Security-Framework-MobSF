@@ -1,3 +1,5 @@
+# -*- coding: utf_8 -*-
+"""Dynamic Analyzer Helpers."""
 import logging
 import os
 import re
@@ -8,7 +10,9 @@ import threading
 
 from django.conf import settings
 
-from DynamicAnalyzer.tools.webproxy import (start_proxy, stop_capfuzz)
+from DynamicAnalyzer.tools.webproxy import (get_ca_dir,
+                                            start_proxy,
+                                            stop_capfuzz)
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 
@@ -21,6 +25,7 @@ class Environment:
 
     def __init__(self, identifier):
         self.identifier = identifier
+        self.tools_dir = settings.TOOLS_DIR
 
     def wait(self, sec):
         """Wait in Seconds."""
@@ -61,28 +66,6 @@ class Environment:
                 logger.exception('Error Running ADB Command')
             return None
 
-    def is_mobsfyied(self, android_version):
-        """Check is Device is MobSFyed."""
-        logger.info('Environment MobSFyed Check')
-        if android_version < 5:
-            agent_file = '.mobsf-x'
-            agent_str = b'MobSF-Xposed'
-        else:
-            agent_file = '.mobsf-f'
-            agent_str = b'MobSF-Frida'
-        try:
-            out = subprocess.check_output(
-                [get_adb(),
-                 '-s', self.identifier,
-                 'shell',
-                 'cat',
-                 '/system/' + agent_file])
-            if agent_str not in out:
-                return False
-        except Exception:
-            return False
-        return True
-
     def dz_cleanup(self, bin_hash):
         """Clean up before Dynamic Analysis."""
         # Delete ScreenStream Cache
@@ -103,6 +86,20 @@ class Environment:
         logger.info('Starting HTTPs Proxy on %s', proxy_port)
         stop_capfuzz(proxy_port)
         start_proxy(proxy_port, project)
+
+    def install_mobsf_ca(self, action):
+        """Install or Remove MobSF Root CA."""
+        ca_file = os.path.join('/system/etc/security/cacerts/',
+                               settings.ROOT_CA)
+        if action == 'install':
+            logger.info('Installing MobSF RootCA')
+            self.adb_command(['push', get_ca_dir(), ca_file])
+            self.adb_command(['chmod',
+                              '644',
+                              ca_file], True)
+        elif action == 'remove':
+            logger.info('Removing MobSF RootCA')
+            self.adb_command(['rm', ca_file], True)
 
     def enable_adb_reverse_tcp(self):
         """Enable ADB Reverse TCP for Proxy."""
@@ -155,6 +152,15 @@ class Environment:
             logger.exception('Getting screen resolution')
         return '', ''
 
+    def screen_shot(self, outfile):
+        """Take Screenshot."""
+        self.adb_command(['screencap',
+                          '-p',
+                          '/data/local/screen.png'], True)
+        self.adb_command(['pull',
+                          '/data/local/screen.png',
+                          outfile])
+
     def screen_stream(self):
         """Screen Stream."""
         self.adb_command(['screencap',
@@ -198,6 +204,146 @@ class Environment:
         if and_version.count('.') > 1:
             and_version = and_version.split('.', 1)[0]
         return float(and_version)
+
+    def launch_n_capture(self, package, activity, outfile):
+        """Launch and Capture Activity."""
+        self.adb_command(['am',
+                          'start',
+                          '-n',
+                          package + '/' + activity], True)
+        self.wait(3)
+        self.screen_shot(outfile)
+        logger.info('Activity screenshot captured')
+        logger.info('Stopping app')
+        self.adb_command(['am', 'force-stop', package], True)
+
+    def is_mobsfyied(self, android_version):
+        """Check is Device is MobSFyed."""
+        logger.info('Environment MobSFyed Check')
+        if android_version < 5:
+            agent_file = '.mobsf-x'
+            agent_str = b'MobSF-Xposed'
+        else:
+            agent_file = '.mobsf-f'
+            agent_str = b'MobSF-Frida'
+        try:
+            out = subprocess.check_output(
+                [get_adb(),
+                 '-s', self.identifier,
+                 'shell',
+                 'cat',
+                 '/system/' + agent_file])
+            if agent_str not in out:
+                return False
+        except Exception:
+            return False
+        return True
+
+    def mobsfy_init(self):
+        """Init MobSFy."""
+        version = self.get_android_version()
+        try:
+            if not self.connect_n_mount():
+                logger.error('Cannot Connect to %s', self.identifier)
+            if version < 5:
+                self.xposed_setup(version)
+                self.mobsf_agents_setup('xposed')
+            else:
+                self.frida_setup()
+                self.mobsf_agents_setup('frida')
+            logger.info('MobSFying Completed!')
+            return True
+        except Exception:
+            logger.exception('Failed to MobSFy Android Instance')
+            return False
+
+    def mobsf_agents_setup(self, agent):
+        """Setup MobSF agents."""
+        # Install MITM RootCA
+        self.install_mobsf_ca('install')
+        # Install MobSF Agents
+        mobsf_agents = 'onDevice/mobsf_agents/'
+        clip_dump = os.path.join(self.tools_dir,
+                                 mobsf_agents,
+                                 'ClipDump.apk')
+        logger.info('Installing MobSF Clipboard Dumper')
+        self.adb_command(['install', '-r', clip_dump])
+        if agent == 'frida':
+            agent_file = '.mobsf-f'
+        else:
+            agent_file = '.mobsf-x'
+        mobsf_env = os.path.join(self.tools_dir,
+                                 mobsf_agents,
+                                 agent_file)
+        self.adb_command(['push', mobsf_env, '/system/' + agent_file])
+
+    def xposed_setup(self, android_version):
+        """Setup Xposed."""
+        xposed_dir = 'onDevice/xposed/'
+        xposed_modules = xposed_dir + 'modules/'
+        if android_version < 5:
+            logger.info('Installing Xposed for Kitkat and below')
+            xposed_apk = os.path.join(self.tools_dir,
+                                      xposed_dir,
+                                      'Xposed.apk')
+            hooks = os.path.join(self.tools_dir,
+                                 xposed_modules,
+                                 'hooks.json')
+            droidmon = os.path.join(self.tools_dir,
+                                    xposed_modules,
+                                    'Droidmon.apk')
+            logger.info('Installing Droidmon API Analyzer')
+            self.adb_command(['install', '-r', droidmon])
+            logger.info('Copying Droidmon hooks config')
+            self.adb_command(['push', hooks, '/data/local/tmp/'])
+        else:
+            logger.info('Installing Xposed for Lollipop and above')
+            xposed_apk = os.path.join(self.tools_dir,
+                                      xposed_dir,
+                                      'XposedInstaller_3.1.5.apk')
+        self.adb_command(['install', '-r', xposed_apk])
+        # Xposed Modules and Support Files
+        justrustme = os.path.join(self.tools_dir,
+                                  xposed_modules,
+                                  'JustTrustMe.apk')
+        rootcloak = os.path.join(self.tools_dir,
+                                 xposed_modules,
+                                 'RootCloak.apk')
+        proxyon = os.path.join(self.tools_dir,
+                               xposed_modules,
+                               'mobi.acpm.proxyon_v1_419b04.apk')
+        sslunpin = os.path.join(self.tools_dir,
+                                xposed_modules,
+                                'mobi.acpm.sslunpinning_v2_37f44f.apk')
+        bluepill = os.path.join(self.tools_dir,
+                                xposed_modules,
+                                'AndroidBluePill.apk')
+        logger.info('Installing JustTrustMe')
+        self.adb_command(['install', '-r', justrustme])
+        logger.info('Installing SSLUnpinning')
+        self.adb_command(['install', '-r', sslunpin])
+        logger.info('Installing ProxyOn')
+        self.adb_command(['install', '-r', proxyon])
+        logger.info('Installing RootCloak')
+        self.adb_command(['install', '-r', rootcloak])
+        logger.info('Installing Android BluePill')
+        self.adb_command(['install', '-r', bluepill])
+        logger.info('Launching Xposed Framework.')
+        xposed_installer = ('de.robv.android.xposed.installer/'
+                            'de.robv.android.xposed.installer.'
+                            'WelcomeActivity')
+        self.adb_command(['am', 'start', '-n',
+                          xposed_installer], True)
+
+    def frida_setup(self):
+        """Setup Frida."""
+        frida_dir = 'onDevice/frida/'
+        frida_bin = os.path.join(self.tools_dir,
+                                 frida_dir,
+                                 'frida-server-12.6.14-android-x86')
+        logger.info('Copying frida server')
+        self.adb_command(['push', frida_bin, '/system/fd_server'])
+        self.adb_command(['chmod', '755', '/system/fd_server'], True)
 
     def run_frida_server(self):
         """Start Frida Server."""
