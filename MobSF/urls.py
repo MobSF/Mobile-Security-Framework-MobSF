@@ -74,6 +74,9 @@ urlpatterns = [
     url(r'^activity_tester/$', tests_common.activity_tester),
     url(r'^download_data/$', tests_common.download_data),
     url(r'^collect_logs/$', tests_common.collect_logs),
+    url(r'^logcat/$', tests_common.logcat),
+    url(r'^load/$', tests_common.load),
+
     # Report
     url(r'^dynamic_report/$', report.view_report),
     url(r'^dynamic_view_file/$', report.view_file),

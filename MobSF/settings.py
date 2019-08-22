@@ -273,7 +273,7 @@ else:
     JADX_BINARY = ''
     BACKSMALI_BINARY = ''
     APKTOOL_BINARY = ''
-    ADB_BINARY = '/Applications/Genymotion.app/Contents/MacOS/tools/adb'
+    ADB_BINARY = ''
 
     # iOS 3P Tools
     OTOOL_BINARY = ''
@@ -301,7 +301,7 @@ else:
     # -------------------------
 
     # =======ANDROID DYNAMIC ANALYSIS SETTINGS===========
-    ANALYZER_IDENTIFIER = '192.168.56.119:5555'
+    ANALYZER_IDENTIFIER = '192.168.56.113:5555'
     # ==============================================
 
     # ================HTTPS PROXY ===============
