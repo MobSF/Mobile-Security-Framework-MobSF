@@ -11,10 +11,13 @@ import re
 import shutil
 import signal
 import subprocess
+import stat
 import sys
 import sqlite3
 import unicodedata
 import threading
+
+import psutil
 
 import requests
 
@@ -25,6 +28,7 @@ from install.windows.setup import windows_config_local
 from . import settings
 
 logger = logging.getLogger(__name__)
+ADB_PATH = None
 
 
 class Color(object):
@@ -91,7 +95,6 @@ def print_version():
         logger.info('Dist: %s', str(platform.dist()))
     find_java_binary()
     check_basic_env()
-    adb_binary_or32bit_support()
     thread = threading.Thread(target=check_update, name='check_update')
     thread.start()
 
@@ -419,41 +422,48 @@ def zipdir(path, zip_file):
         logger.exception('Zipping')
 
 
+def find_process_by(name):
+    """Return a set of process path matching name."""
+    proc = set()
+    for p in psutil.process_iter(attrs=['name', 'exe', 'cmdline']):
+        if (name == p.info['name'] or p.info['exe']
+            and os.path.basename(p.info['exe']) == name
+                or p.info['cmdline'] and p.info['cmdline'][0] == name):
+            proc.add(p.info['exe'])
+    return proc
+
+
 def get_adb():
     """Get ADB binary path."""
     try:
+        global ADB_PATH
         if (len(settings.ADB_BINARY) > 0
                 and is_file_exists(settings.ADB_BINARY)):
+            ADB_PATH = settings.ADB_BINARY
             return settings.ADB_BINARY
+        if ADB_PATH:
+            return ADB_PATH
+        if platform.system() == 'Windows':
+            adb_loc = find_process_by('adb.exe')
         else:
-            adb = 'adb'
-            if platform.system() == 'Darwin':
-                adb_dir = os.path.join(settings.TOOLS_DIR, 'adb/mac/')
-                os.chmod(adb_dir, 0o744)
-                adb = os.path.join(settings.TOOLS_DIR, 'adb/mac/adb')
-            elif platform.system() == 'Linux':
-                adb_dir = os.path.join(settings.TOOLS_DIR, 'adb/linux/')
-                os.chmod(adb_dir, 0o744)
-                adb = os.path.join(settings.TOOLS_DIR, 'adb/linux/adb')
-            elif platform.system() == 'Windows':
-                adb = os.path.join(settings.TOOLS_DIR, 'adb/windows/adb.exe')
-            return adb
+            adb_loc = find_process_by('adb')
+        if len(adb_loc) > 1:
+            logger.warning('Multiple ADB locations found. '
+                           'Set adb path, ADB_BINARY in MobSF/settings.py'
+                           ' with same adb binary location used'
+                           ' by Genymotion VM/Android VM.')
+            logger.warning(adb_loc)
+        if adb_loc:
+            ADB_PATH = adb_loc.pop()
+            return ADB_PATH
     except Exception:
         logger.exception('Getting ADB Location')
-        return 'adb'
-
-
-def adb_binary_or32bit_support():
-    """Check if 32bit is supported. Also if the binary works."""
-    adb_path = get_adb()
-    try:
-        fnull = open(os.devnull, 'w')
-        subprocess.call([adb_path], stdout=fnull, stderr=fnull)
-    except Exception:
-        msg = ('\nYou don\'t have 32 bit execution support enabled'
-               ' or MobSF shipped ADB binary is not compatible with your OS.'
-               '\nPlease set the ADB_BINARY path in MobSF/settings.py')
-        logger.warning(msg)
+    finally:
+        if ADB_PATH:
+            os.environ['MOBSF_ADB'] = ADB_PATH
+        else:
+            os.environ['MOBSF_ADB'] = 'ADB_PATH'
+    return 'adb'
 
 
 def check_basic_env():
@@ -560,3 +570,8 @@ def read_sqlite(sqlite_file):
     except Exception:
         logger.exception('Reading SQLite db')
     return table_dict
+
+
+def is_pipe_or_link(path):
+    """Check for named pipe."""
+    return os.path.islink(path) or stat.S_ISFIFO(os.stat(path).st_mode)

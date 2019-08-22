@@ -59,7 +59,6 @@ def view_report(request):
                    'urls': analysis_result['urls'],
                    'domains': analysis_result['domains'],
                    'clipboard': analysis_result['clipboard'],
-                   'http': analysis_result['web_data'],
                    'xml': analysis_result['xml'],
                    'sqlite': analysis_result['sqlite'],
                    'others': analysis_result['other_files'],

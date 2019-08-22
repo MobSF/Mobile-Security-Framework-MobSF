@@ -256,6 +256,10 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
     }
 </style>
 <script>
+//Logcat Redirect
+function logcat_redirect(){
+  setTimeout(function(){ window.open('https://127.0.0.1:1338/logcat', '_blank');}, 3000);   
+}
 //Screen Stream
 function imgloading(){
     $('#my').attr('src','/static/img/loading.jpg');
@@ -274,6 +278,7 @@ function imgloading(){
       <a id="expactt" class="btn btn-primary" role="button" style="visibility: hidden" >Start Exported Activity Tester</a>
       <a id="actt" class="btn btn-primary" role="button" style="visibility: hidden" >Start Activity Tester</a>
       <a id="ss" class="btn btn-primary" role="button" style="visibility: hidden" >Take a Screenshot</a>
+      <a id="logstream" onclick="logcat_redirect()" class="btn btn-primary" role="button" style="visibility: hidden" >Logcat Stream</a>
       <a id="stop" class="btn btn-primary" role="button" style="visibility: hidden" >Finish</a>
 
     </p>
@@ -357,6 +362,7 @@ $('#expactt').css("visibility","visible");
 $('#actt').css("visibility","visible");
 //show mobsf rootca installer
 $('#rootca').css("visibility","visible");
+$('#logstream').css("visibility","visible");
 
 
 // Touch Events
@@ -570,6 +576,42 @@ $("#screen").click(function() {
                       });
                     return false;  
                 }); 
+// Logcat Stream
+
+$("#logstream").one( "click", function() {
+                      //Stop Screen Casting if it's running
+                       var stext = $("#screen").text();
+                       var md;
+                       if (stext === "Stop Screen")
+                       {
+                         $("#screen").click();
+                       }
+                        //
+                    		$.ajax({
+                                url : "../logcat/", 
+                                type : "POST",
+                                dataType: "json", 
+                                data : {
+                                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                                    },
+                                    success : function(json) {
+                                    	if (json.status==="ok"){
+                                    	
+                             		    	$('#stat').append("\nLogcat Steaming Started");
+                                    	$('#stat').scrollTop($('#stat')[0].scrollHeight);
+                                    
+                                    }
+
+                                    },
+                                    error : function(xhr,errmsg,err) {
+                                       document.getElementById("er").srcdoc = xhr.responseText;
+                                    }   
+                      });
+                    return false;  
+                }); 
+
+                //end doc.ready
+	
 
 //Finish Testing
      $("#stop").one( "click", function() {

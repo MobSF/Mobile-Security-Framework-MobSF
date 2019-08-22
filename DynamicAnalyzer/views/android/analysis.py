@@ -8,7 +8,9 @@ import shutil
 import tarfile
 from pathlib import Path
 
-from MobSF.utils import (is_file_exists, python_list)
+from MobSF.utils import (is_file_exists,
+                         is_pipe_or_link,
+                         python_list)
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 
@@ -50,7 +52,7 @@ def run_analysis(apk_dir, md5_hash, package):
 
     # Email Etraction Regex
     emails = []
-    regex = re.compile(r'[\w.-]+@[\w-]+\.[\w.]+')
+    regex = re.compile(r'[\w.-]+@[\w-]+\.[\w]{2,}')
     for email in regex.findall(datas['traffic'].lower()):
         if (email not in emails) and (not email.startswith('//')):
             emails.append(email)
@@ -60,7 +62,6 @@ def run_analysis(apk_dir, md5_hash, package):
     analysis_result['domains'] = domains
     analysis_result['emails'] = emails
     analysis_result['clipboard'] = clipboard
-    analysis_result['web_data'] = datas['web']
     analysis_result['xml'] = all_files['xml']
     analysis_result['sqlite'] = all_files['sqlite']
     analysis_result['other_files'] = all_files['others']
@@ -109,7 +110,6 @@ def get_log_data(apk_dir, package):
     """Get Data for analysis."""
     logcat_data = []
     droidmon_data = ''
-    web_data = ''
     traffic = ''
     capfuzz_home = os.path.join(str(Path.home()), '.capfuzz')
     web = os.path.join(capfuzz_home, 'flows', package + '.flows.txt')
@@ -136,8 +136,7 @@ def get_log_data(apk_dir, package):
             droidmon_data = flip.read()
     traffic = web_data + traffic + droidmon_data
     return {'logcat': logcat_data,
-            'traffic': traffic,
-            'web': web_data}
+            'traffic': traffic}
 
 
 def get_app_files(apk_dir, md5_hash, package):
@@ -150,8 +149,10 @@ def get_app_files(apk_dir, md5_hash, package):
     if not is_file_exists(tar_loc):
         return all_files
     try:
-        with tarfile.open(tar_loc) as tar:
+        with tarfile.open(tar_loc, errorlevel=1) as tar:
             tar.extractall(untar_dir)
+    except FileExistsError:
+        pass
     except Exception:
         logger.exception('Tar extraction failed')
     # Do Static Analysis on Data from Device
@@ -161,10 +162,9 @@ def get_app_files(apk_dir, md5_hash, package):
         for dir_name, _, files in os.walk(untar_dir):
             for jfile in files:
                 file_path = os.path.join(untar_dir, dir_name, jfile)
-                if '+' in file_path:
-                    shutil.move(file_path, file_path.replace('+', 'x'))
-                    file_path = file_path.replace('+', 'x')
                 fileparam = file_path.replace(untar_dir, '')
+                if is_pipe_or_link(file_path):
+                    continue
                 if jfile == 'lib':
                     pass
                 else:
@@ -172,9 +172,9 @@ def get_app_files(apk_dir, md5_hash, package):
                         all_files['xml'].append(
                             {'type': 'xml', 'file': fileparam})
                     else:
-                        with io.open(file_path,
-                                     mode='r',
-                                     encoding='ISO-8859-1') as flip:
+                        with open(file_path,
+                                  'r',
+                                  encoding='ISO-8859-1') as flip:
                             file_cnt_sig = flip.read(6)
                         if file_cnt_sig == 'SQLite':
                             all_files['sqlite'].append(
