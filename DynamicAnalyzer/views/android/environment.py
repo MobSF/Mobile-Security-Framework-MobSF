@@ -150,7 +150,7 @@ class Environment:
                 logger.error('Error getting screen resolution')
         except Exception:
             logger.exception('Getting screen resolution')
-        return '', ''
+        return '1440', '2560'
 
     def screen_shot(self, outfile):
         """Take Screenshot."""
@@ -347,6 +347,10 @@ class Environment:
 
     def run_frida_server(self):
         """Start Frida Server."""
+        check = self.adb_command(['ps'], True)
+        if b'/system/fd_server' in check:
+            logger.info('Frida Server is already running')
+            return
         fda = [get_adb(),
                '-s',
                self.identifier,

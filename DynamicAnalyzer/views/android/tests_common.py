@@ -191,36 +191,3 @@ def collect_logs(request):
         logger.exception('Data Collection & Clean Up failed')
         data = {'status': 'failed', 'message': str(exp)}
     return json_response(data)
-# AJAX
-
-
-# @require_http_methods(['POST'])
-def logcat(request):
-    from django.http import StreamingHttpResponse
-    from shelljob import proc
-    adb = os.environ['MOBSF_ADB'] if 'MOBSF_ADB' in os.environ else 'adb'
-    g = proc.Group()
-    g.run([adb, 'logcat'])
-
-    def read_process():
-        while g.is_pending():
-            lines = g.readlines()
-            for _, line in lines:
-                yield 'data:{}\n\n'.format(line)
-    return StreamingHttpResponse(read_process(),
-                                 content_type='text/event-stream')
-
-
-def load(request):
-    from django.http import HttpResponse
-    html = """
-    <div id="messages"></div>
-    <script type="text/javascript">
-    var source = new EventSource('/logcat/');
-    source.onmessage = function(message) {
-        var div = document.getElementById("messages");
-        div.innerHTML = message.data + "<br>" + div.innerHTML;
-        window.scrollTo(0,document.body.scrollHeight);
-    };
-    </script>"""
-    return HttpResponse(html, content_type='text/html')

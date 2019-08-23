@@ -62,6 +62,7 @@ urlpatterns = [
     url(r'^capfuzz$',
         dz.capfuzz_start,
         name='capfuzz'),
+    url(r'^logcat/$', dz.logcat),
     # Android Operations
     url(r'^mobsfy/$', operations.mobsfy),
     url(r'^screenshot/$', operations.take_screenshot),
@@ -70,12 +71,12 @@ urlpatterns = [
     url(r'^touch_events/$', operations.touch),
     url(r'^get_component/$', operations.get_component),
     url(r'^mobsf_ca/$', operations.mobsf_ca),
+    url(r'^restart_frida/$', operations.frida_restart),
+    # Dynamic Tests
     url(r'^exported_activity_tester/$', tests_common.exported_activity_tester),
     url(r'^activity_tester/$', tests_common.activity_tester),
     url(r'^download_data/$', tests_common.download_data),
     url(r'^collect_logs/$', tests_common.collect_logs),
-    url(r'^logcat/$', tests_common.logcat),
-    url(r'^load/$', tests_common.load),
 
     # Report
     url(r'^dynamic_report/$', report.view_report),

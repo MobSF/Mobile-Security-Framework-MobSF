@@ -227,3 +227,17 @@ def mobsf_ca(request):
         logger.exception('MobSF RootCA Handler')
         data = {'status': 'failed', 'message': str(exp)}
     return json_response(data)
+# AJAX
+
+
+@require_http_methods(['POST'])
+def frida_restart(request):
+    """Restart Frida Server."""
+    data = {}
+    try:
+        env.run_frida_server()
+        data = {'status': 'ok'}
+    except Exception as exp:
+        logger.exception('Restarting Frida server')
+        data = {'status': 'failed', 'message': str(exp)}
+    return json_response(data)
