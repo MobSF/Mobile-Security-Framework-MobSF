@@ -4,8 +4,11 @@ import logging
 import os
 import time
 
+from shelljob import proc
+
+from django.http import (HttpResponseRedirect,
+                         StreamingHttpResponse)
 from django.conf import settings
-from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
 from DynamicAnalyzer.views.android.environment import Environment
@@ -119,4 +122,29 @@ def capfuzz_start(request):
     except Exception:
         logger.exception('Starting CapFuzz Web UI')
         err = 'Error Starting CapFuzz UI'
+        return print_n_send_error_response(request, err)
+
+
+def logcat(request):
+    logger.info('Starting Logcat streaming')
+    try:
+        view = request.GET.get('view')
+        if view:
+            template = 'dynamic_analysis/android/logcat.html'
+            return render(request, template, None)
+        adb = os.environ['MOBSF_ADB'] if 'MOBSF_ADB' in os.environ else 'adb'
+        g = proc.Group()
+        g.run([adb, 'logcat'])
+
+        def read_process():
+            while g.is_pending():
+                lines = g.readlines()
+                for _, line in lines:
+                    time.sleep(.2)
+                    yield 'data:{}\n\n'.format(line)
+        return StreamingHttpResponse(read_process(),
+                                     content_type='text/event-stream')
+    except Exception:
+        logger.exception('Logcat Streaming')
+        err = 'Error in Logcat streaming'
         return print_n_send_error_response(request, err)
