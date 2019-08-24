@@ -15,8 +15,6 @@ matrix:
     - sudo apt-get install -y libpng16-16 libssl-dev xfonts-75dpi xfonts-base libffi-dev
       libxml2-dev libxslt1-dev openssl
     - wget https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.xenial_amd64.deb
-    - wget http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4.3_amd64.deb
-    - sudo dpkg -i libssl1.1_1.1.0g-2ubuntu4.3_amd64.deb
     - sudo dpkg -i wkhtmltox_0.12.5-1.xenial_amd64.deb
   - name: Python 3.7 on OSX, Xcode 11
     os: osx
