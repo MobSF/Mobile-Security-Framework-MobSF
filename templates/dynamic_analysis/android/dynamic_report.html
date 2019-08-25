@@ -25,7 +25,7 @@
             <li class="active"><a href="#general"><i class="fa fa-rocket"></i> Information</a></li>
               {% if apimon %}
               <li class="treeview">
-              <a href="javascript::;"><i class="glyphicon glyphicon-phone"></i> API Monitor</a>
+              <a href="javascript::;"><i class="glyphicon glyphicon-phone"></i>Frida API Monitor</a>
               <ul class="nav treeview-menu">
               {% for api, details in apimon.items %}
                 <li><a href="#{{ api | slugify }}"><i class=""></i> {{api}}</a></li>
@@ -35,7 +35,7 @@
               {% endif %}
               {% if droidmon %}
              <li class="treeview">
-              <a href="javascript::;"><i class="glyphicon glyphicon-phone"></i> API Monitor</a>
+              <a href="javascript::;"><i class="glyphicon glyphicon-phone"></i> Xposed API Monitor</a>
               <ul class="nav treeview-menu">
               {% for api, details in droidmon.items %}
                 <li><a href="#{{ api }}"><i class="{{details|key:"icon"}}"></i> {{details|key:"name"}}</a></li>
@@ -97,14 +97,15 @@
         </div><!-- /.box-header -->
         <div class="box-body">
         <div class="list-group">
-            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-web_traffic.txt">HTTP(S) Traffic</a>
-            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-logcat.txt">Logcat Logs</a>
-            {% if droidmon %}
-            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-x_logcat.txt">Droidmon API Monitor Logs</a>
-            {% elif apimon %}
-            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-api_monitor.txt">Frida API Monitor Logs</a>
+           {% if droidmon %}
+            <a target="_blank" class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-x_logcat.txt">Droidmon API Monitor Logs</a>
+            {% endif %}
+            {% if apimon %}
+            <a target="_blank" class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-api_monitor.txt">Frida API Monitor Logs</a>
            {% endif %}
-            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-dump.txt">Dumpsys Logs</a> 
+            <a target="_blank" class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-web_traffic.txt">HTTP(S) Traffic</a>
+            <a target="_blank" class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-logcat.txt">Logcat Logs</a>
+            <a target="_blank" class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-dump.txt">Dumpsys Logs</a> 
             <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-app_data.tar">Application Data</a>
             
             <!--<a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-pcap.cap">Packet Capture</a>-->

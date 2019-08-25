@@ -336,7 +336,7 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
                 default:
                     if (cmd === 'shell' && args.length === 0)
                         output("Incomplete command. expecting shell &lt;cmd&gt;");
-                    else
+                    else if (exec_cmd.length > 0)
                         execute_adb(exec_cmd)
             };
             window.scrollTo(0, getDocHeight_());

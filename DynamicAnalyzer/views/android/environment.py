@@ -145,7 +145,6 @@ class Environment:
                 return width, height
             match = scn_rgx2.search(resp.decode('utf-8'))
             if match:
-                print(match.group())
                 res = match.group().split('][')[1].replace(']', '')
                 width, height = res.split(',', 1)
                 return width, height
