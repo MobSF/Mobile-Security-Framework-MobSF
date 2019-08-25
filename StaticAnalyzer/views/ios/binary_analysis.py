@@ -487,10 +487,11 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
                 break
         # Bin Dir - Dir/Payload/x.app/
         bin_dir = os.path.join(src, dot_app_dir)
-        if executable_name is None:
-            bin_name = dot_app_dir.replace('.app', '')
-        else:
+        if (executable_name
+                and is_file_exists(executable_name)):
             bin_name = executable_name
+        else:
+            bin_name = dot_app_dir.replace('.app', '')
         # Bin Path - Dir/Payload/x.app/x
         bin_path = os.path.join(bin_dir, bin_name)
         binary_analysis_dict['libs'] = []
