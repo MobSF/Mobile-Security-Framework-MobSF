@@ -52,7 +52,7 @@ def view_report(request):
                                                'Dynamic Analysis report'
                                                ' is not available.')
         droidmon = droidmon_api_analysis(app_dir, package)
-        apimon = apimon_analysis(app_dir, package)
+        apimon = apimon_analysis(app_dir)
         analysis_result = run_analysis(app_dir, md5_hash, package)
         generate_download(app_dir, md5_hash, download_dir, package)
         images = get_screenshots(md5_hash, download_dir)

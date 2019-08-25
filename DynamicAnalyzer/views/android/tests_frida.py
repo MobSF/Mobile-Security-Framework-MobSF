@@ -96,7 +96,7 @@ def decode_base64(data, altchars=b'+/'):
     return base64.b64decode(data, altchars)
 
 
-def apimon_analysis(app_dir, package):
+def apimon_analysis(app_dir):
     """API Analysis."""
     api_details = {}
     try:
