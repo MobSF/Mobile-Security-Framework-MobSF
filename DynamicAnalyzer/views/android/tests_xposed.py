@@ -6,13 +6,9 @@ import json
 import os
 import re
 
-from django.conf import settings
-
 from DynamicAnalyzer.views.android.environment import Environment
 
 from MobSF.utils import (is_base64, python_list)
-
-env = Environment(settings.ANALYZER_IDENTIFIER)
 
 logger = logging.getLogger(__name__)
 
@@ -179,6 +175,7 @@ def base64_decode(args):
 
 def download_xposed_log(apk_dir):
     """Download Xposed Output."""
+    env = Environment()
     xposed_out = ('/data/data/'
                   'de.robv.android.xposed.installer'
                   '/log/error.log')

@@ -18,7 +18,16 @@
           <ul class="nav sidebar-menu">
             <li class="header">Dynamic Analysis</li>
             <li class="active"><a href="#general"><i class="fa fa-rocket"></i> Information</a></li>
-             
+              {% if apimon %}
+              <li class="treeview">
+              <a href="javascript::;"><i class="glyphicon glyphicon-phone"></i> API Monitor</a>
+              <ul class="nav treeview-menu">
+              {% for api, details in apimon.items %}
+                <li><a href="#{{ api | slugify }}"><i class=""></i> {{api}}</a></li>
+              {% endfor %}
+              </ul>
+            </li>
+              {% endif %}
               {% if droidmon %}
              <li class="treeview">
               <a href="javascript::;"><i class="glyphicon glyphicon-phone"></i> API Monitor</a>
@@ -87,6 +96,8 @@
             <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-logcat.txt">Logcat Logs</a>
             {% if xposed == 1 %}
             <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-x_logcat.txt">Droidmon API Monitor Logs</a>
+            {% elif apimon %}
+            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-api_monitor.txt">Frida API Monitor Logs</a>
            {% endif %}
             <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-dump.txt">Dumpsys Logs</a> 
             <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-app_data.tar">Application Data</a>
@@ -101,9 +112,50 @@
   </p>
 </section><!-- /#introduction -->
 
-
 <!-- ============================================================= -->
+             {% for api, details in apimon.items %}
+               <section id="{{api | slugify}}">
+                <h2 class="page-header"></h2>
+                    <!-- /.box -->
+                        <div class="box">
+                          <div class="box-header">
+                            <h3 class="box-title"><i class=""></i> {{api}}</h3>
+                          </div>
+                          <!-- /.box-header -->
+                          <div class="box-body no-padding">
+                              <table class="table table-striped">
+                                <tbody><tr>
+                                  <th>Class</th>
+                                  <th>Method</th>
+                                </tr>
+                                 {% for call in details %}
+                                      <tr>
+                                      <td>{{ call|key:"class" }}</td>
+                                      <td style="word-wrap: break-word;min-width: 160px;max-width: 160px;">
+                                          <b>{{ call|key:"method" }}</b>
+                                          <p> <br /><b><i>Arguments:</i></b> {{ call|key:"arguments" }} </p>
+                                           {% if call|key:"result" %}
+                                          <p><b><i>Result: </i></b>{{ call|key:"result"}} </p>
+                                           {% endif %}
+                                           {% if call|key:"returnValue" %}
+                                          <p><b><i>Return Value: </i></b>{{ call|key:"returnValue"}} </p>
+                                          {% endif %}
+                                          {% if call|key:"decoded" %}
+                                            <p> <b><i>Decoded String: </i></b>{{ call|key:"decoded" }} </p>
+                                          {% endif %}
+                                          <p> <b><i>Called From: </i></b>{{ call|key:"calledFrom" }} </p>
+                                      </td>
+                                    </tr>
+                              {% endfor %}
+                              </tbody></table>
+                            </div>
+                      
+                         
+                    </div>
+                </section>
 
+             {% endfor %}
+<!-- ============================================================= -->
              {% for api, details in droidmon.items %}
              
              

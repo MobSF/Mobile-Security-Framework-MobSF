@@ -203,11 +203,18 @@ div.loading{
 </style>
 
 
-
-    <div class="row">
+    {% if not identifier %}
+    <div class="callout callout-danger">
+     <div class="row">
+        <h4>Android Runtime not found!</h4>
+           MobSF cannot find android instance identifier. Make sure that an android instance is running and refresh this page. If this error persists, Please set <i>ANALYZER_IDENTIFIER</i> in <b>MobSF/settings.py</b>
+         </div>
+    </div>
+    {% endif %}
         <div class="callout callout-warning">
+    <div class="row">
         <h4>Reminder!</h4>
-            Before doing dynamic analysis, MobSFy the Android Runtime once and make sure that the instance is already running. See <a href="">Documentation</a> .
+            Before starting dynamic analysis, MobSFy the Android Runtime atleast once. See <a href="">Documentation</a> .
          </div>
     </div>
      <div class="row" align="center">

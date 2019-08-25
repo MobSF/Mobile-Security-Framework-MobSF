@@ -17,6 +17,7 @@ from DynamicAnalyzer.views.android.operations import (is_attack_pattern,
                                                       is_md5,
                                                       is_path_traversal)
 from DynamicAnalyzer.views.android.tests_xposed import droidmon_api_analysis
+from DynamicAnalyzer.views.android.tests_frida import apimon_analysis
 
 from MobSF.utils import (print_n_send_error_response,
                          read_sqlite)
@@ -39,6 +40,7 @@ def view_report(request):
         package = request.GET['package']
         android_ver = request.GET['version']
         droidmon = {}
+        apimon = {}
         if (is_attack_pattern(package)
                 or is_attack_pattern(android_ver)
                 or not is_md5(md5_hash)):
@@ -51,6 +53,7 @@ def view_report(request):
             droidmon = droidmon_api_analysis(app_dir, package)
         else:
             xposed = 0
+            apimon = apimon_analysis(app_dir, package)
         analysis_result = run_analysis(app_dir, md5_hash, package)
         generate_download(app_dir, md5_hash, download_dir, package)
         images = get_screenshots(md5_hash, download_dir)
@@ -66,6 +69,7 @@ def view_report(request):
                    'acttest': images['activities'],
                    'expacttest': images['exported_activities'],
                    'droidmon': droidmon,
+                   'apimon': apimon,
                    'package': package,
                    'xposed': xposed,
                    'title': 'Dynamic Analysis'}

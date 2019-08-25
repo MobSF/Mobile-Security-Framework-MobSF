@@ -4,7 +4,8 @@ from DynamicAnalyzer.views.android import dynamic_analyzer as dz
 from DynamicAnalyzer.views.android import (
     operations,
     report,
-    tests_common)
+    tests_common,
+    tests_frida)
 
 from MobSF import utils
 from MobSF.views import home
@@ -71,12 +72,14 @@ urlpatterns = [
     url(r'^touch_events/$', operations.touch),
     url(r'^get_component/$', operations.get_component),
     url(r'^mobsf_ca/$', operations.mobsf_ca),
-    url(r'^restart_frida/$', operations.frida_restart),
     # Dynamic Tests
     url(r'^exported_activity_tester/$', tests_common.exported_activity_tester),
     url(r'^activity_tester/$', tests_common.activity_tester),
     url(r'^download_data/$', tests_common.download_data),
     url(r'^collect_logs/$', tests_common.collect_logs),
+    # Frida
+    url(r'^frida_instrument/$', tests_frida.instrument),
+    url(r'^live_api/$', tests_frida.live_api),
 
     # Report
     url(r'^dynamic_report/$', report.view_report),
