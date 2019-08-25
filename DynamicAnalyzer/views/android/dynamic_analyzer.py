@@ -30,7 +30,8 @@ logger = logging.getLogger(__name__)
 
 def dynamic_analysis(request):
     """Android Dynamic Analysis Entry point."""
-    apks = StaticAnalyzerAndroid.objects.filter(ZIPPED='&type=apk')
+    apks = StaticAnalyzerAndroid.objects.filter(
+        ZIPPED='&type=apk').order_by('-id')
     context = {'apks': apks,
                'identifier': get_device(),
                'title': 'MobSF Dynamic Analysis'}
