@@ -8,7 +8,7 @@ import re
 
 from DynamicAnalyzer.views.android.environment import Environment
 
-from MobSF.utils import (is_base64, python_list)
+from MobSF.utils import (is_base64, is_file_exists, python_list)
 
 logger = logging.getLogger(__name__)
 
@@ -109,13 +109,15 @@ def get_hooked_apis():
 
 def droidmon_api_analysis(app_dir, package):
     """API Analysis."""
-    logger.info('Droidmon API Analysis')
     try:
         dat = ''
         hooked_apis = get_hooked_apis()
         api_details = {}
         hooks = []
         location = os.path.join(app_dir, 'x_logcat.txt')
+        if not is_file_exists(location):
+            return {}
+        logger.info('Xposed Droidmon API Analysis')
         with open(location, 'r', encoding='utf-8') as flip:
             dat = flip.readlines()
         res_id = 'Droidmon-apimonitor-' + package + ':'

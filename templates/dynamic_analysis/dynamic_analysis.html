@@ -200,27 +200,43 @@ div.loading{
   -o-animation: uil-ring-anim 1s linear infinite;
   animation: uil-ring-anim 1s linear infinite;
 }
+
+/* disable button */
+{% if not identifier %}
+.btn {
+    background-color: #7b7b7b;
+    pointer-events: none;
+    cursor: default;
+}
+{% endif %}
 </style>
 
 
     {% if not identifier %}
     <div class="callout callout-danger">
      <div class="row">
+         <div class="container">
         <h4>Android Runtime not found!</h4>
-           MobSF cannot find android instance identifier. Make sure that an android instance is running and refresh this page. If this error persists, Please set <i>ANALYZER_IDENTIFIER</i> in <b>MobSF/settings.py</b>
+          <p> MobSF cannot find android instance identifier. Make sure that an android instance is running and refresh this page.</p><p> If this error persists, Please set <i>ANALYZER_IDENTIFIER</i> in <b>MobSF/settings.py</b>
+          </p>
+         </div>
          </div>
     </div>
     {% endif %}
-        <div class="callout callout-warning">
+  <div class="callout callout-warning">
     <div class="row">
-        <h4>Reminder!</h4>
-            Before starting dynamic analysis, MobSFy the Android Runtime atleast once. See <a href="">Documentation</a> .
+     <div class="container">
+        <h4>Information</h4>
+            <p><b>MobSF Dynamic Analysis supports Genymotion Android x86 VMs version 4.1 to 8.0</b></p>
+            <p>For Android versions less than <b>5</b>, MobSFy the Android Runtime prior to Dynamic Analysis.</p>
+            <p>For HTTPS traffic interception, set device proxy as <i>127.0.0.1:1337</i> for Android version <b>&gt; 4</b> and <i>&lt;Host IP&gt;:1337</i> for Android version <b>&lt; 5</b>. For more information, see <a href="">Documentation</a>.
+            </p>
+              <button class="btn btn-primary" role="button"  data-toggle="modal" data-target="#modal-mobsfy">MobSFy Android Runtime</button>
+
          </div>
-    </div>
-     <div class="row" align="center">
-      <a class="btn btn-info" role="button"  data-toggle="modal" data-target="#modal-mobsfy">MobSFy Android Runtime</a>
-     <br /> <br />
       </div>
+    </div>
+    
 
      <div class="row">
        
@@ -256,9 +272,10 @@ div.loading{
                               </td>
                             <td>{{ e.APP_NAME }}<br/><br/>Hash: {{e.MD5}} </td>
                             <td>{{ e.PACKAGENAME }}</td>
-                            <td><a onclick="dynamic_loader()" href="../android_dynamic/?hash={{e.MD5}}&amp;package={{e.PACKAGENAME}}&amp;mainactivity={{e.MAINACTIVITY}}"><i class="fa fa-eye"></i> Start Dynamic Analysis</a> |
-                                <a href=""><i class="fa fa-exchange"></i> View Report</a>|
-                                <a onclick="javascript:alert('make delete in recent work')"><i class="fa fa-trash"></i> Delete Report</a>
+                            <td>
+                            <a class="btn btn-success" onclick="dynamic_loader()" href="../android_dynamic/?hash={{e.MD5}}&amp;package={{e.PACKAGENAME}}&amp;mainactivity={{e.MAINACTIVITY}}"><i class="fa fa-android"></i> Start Dynamic Analysis</a>
+                              <p align="center"><br /><a href="../dynamic_report/?hash={{ e.MD5 }}&amp;package={{ e.PACKAGENAME }}"><i class="fa fa-file-text-o"></i> View Report </a>
+                              </p>
                             </td>
                         </tr>
                     {% endfor %}
@@ -288,15 +305,6 @@ div.loading{
                     <label>IP &amp; Port</label>
                      <input id="identifier" type="text" class="form-control" value="{{ identifier }}">
                 </div>
-
-                <div class="form-group">
-                  <label>Runtime Instrumentation</label>
-                  <select id="runtime" class="form-control">
-                    <option value="xposed">Xposed Framework</option>
-                    <option value="frida">Frida</option>
-                  </select>
-                </div>
-            
                 <div class="form-group">
                   <label>Status</label>
                   <textarea id="stat" class="form-control" rows="10" placeholder="" disabled=""></textarea>
@@ -339,13 +347,12 @@ function dynamic_loader(){
                 data : {
                     csrfmiddlewaretoken: '{{ csrf_token }}',
                     identifier: $('#identifier').val() ,
-                    runtime: $("#runtime option:selected").val(),
                     },
                     success : function(json) {
                         if (json.status==="ok"){
                             $('#stat').append("\nSucessfully created MobSF Dynamic Analysis environment.");
                             $('#stat').append("\n* Download & Install Xposed Framework\n* Restart the device");
-                            $('#stat').append("\n* Enable all the Xposed modules");
+                            $('#stat').append("\n* Enable all the Xposed modules\n* Restart the device once more");
                         }
                         else if(json.status === "failed"){
                             $('#stat').append(json.message);

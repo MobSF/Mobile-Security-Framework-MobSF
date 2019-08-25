@@ -1,6 +1,21 @@
 
   {% extends "base.html" %}
    {% block content %}
+      <style type="text/css" media="print">
+      #mobsf_header{
+        visibility: hidden;
+      }
+      @page { size: landscape; }
+      @media print {
+        .btn, #scan_opts  {
+          display: none;
+        }
+         #mobsf_header {
+          visibility: visible;
+        }
+      }
+    </style>
+
       <!-- Left side column. contains the logo and sidebar -->
       <aside class="main-sidebar">
         <!-- sidebar: style can be found in sidebar.less -->
@@ -13,16 +28,18 @@
             <li><a href="#options"><i class="fa fa-gears"></i> Options</a></li>
             <li><a href="#binary"><i class="fa fa-mobile"></i> Binary Analysis</a></li>
             <li><a href="#files"><i class="fa fa-files-o"></i> Files</a></li>
-            <li><a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=APPX"><i class="glyphicon glyphicon-list-alt"></i> Download Report</a></li>
+            <li><a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=APPX"><i class="glyphicon glyphicon-list-alt"></i> PDF Report</a></li>
+            <li><a href="javascript:window.print()"><i class="fa fa-print"></i> Print Report</a></li>
           </ul>
         </div>
         <!-- /.sidebar -->
       </aside>
-
+        <div id="mobsf_header" align="center">
+          <h4>MobSF Static Analysis Report - {%if bin_name %} {{ bin_name }}  {% else %} {{ name }} {% endif %}</h4>
+        </div>
       <!-- Content Wrapper. Contains page content -->
       <div class="content-wrapper">
         <!-- Content Header (Page header) -->
-
 
 
 <!-- Modal -->
@@ -180,7 +197,7 @@
   <div class="row">
 
     <div class="col-sm-12">
-      <div class="box box-danger">
+      <div class="box box-danger" id="scan_opts">
         <div class="box-header with-border">
           <h3 class="box-title">Options</h3>
           <span class="label label-danger pull-right"><i class="fa fa-flash"></i></span>

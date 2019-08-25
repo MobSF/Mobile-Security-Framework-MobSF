@@ -17,7 +17,9 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.template.defaulttags import register
 
-from MobSF.utils import print_n_send_error_response, zipdir
+from MobSF.utils import (is_file_exists,
+                         print_n_send_error_response,
+                         zipdir)
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 from StaticAnalyzer.views.android.binary_analysis import (elf_analysis,
@@ -267,7 +269,7 @@ def static_analyzer(request, api=False):
                     )
                 context['average_cvss'], context[
                     'security_score'] = score(context['findings'])
-                context['dynamic_analysis_done'] = os.path.exists(
+                context['dynamic_analysis_done'] = is_file_exists(
                     os.path.join(app_dic['app_dir'], 'logcat.txt'))
 
                 context['VT_RESULT'] = None

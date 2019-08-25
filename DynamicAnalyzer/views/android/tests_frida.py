@@ -98,12 +98,12 @@ def decode_base64(data, altchars=b'+/'):
 
 def apimon_analysis(app_dir, package):
     """API Analysis."""
-    logger.info('API Monitor Analysis')
     api_details = {}
     try:
         location = os.path.join(app_dir, 'mobsf_api_monitor.txt')
         if not is_file_exists(location):
             return {}
+        logger.info('Frida API Monitor Analysis')
         with open(location, 'r') as flip:
             apis = json.loads('[{}]'.format(
                 flip.read()[:-1]))

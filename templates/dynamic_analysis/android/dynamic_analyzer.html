@@ -77,7 +77,7 @@
               <div class="tab-pane active" id="tab_1">
                 <textarea id="stat"></textarea>
                 <!--box-->
-                <div class="box box-primary">
+                <div id="frida_options" class="box box-primary">
                     <div class="box-header with-border">
                       <h3 class="box-title">Frida Options</h3>
                     </div>
@@ -360,6 +360,9 @@ var term = new Terminal('#input-line .cmdline', '#shell output');
 term.init();
 
 // Start up
+{% if version < 5 %}
+  $('#frida_options').hide() 
+{% endif %}
 //Print Status
 function print_status(message){
   $('#stat').append(message + '\n');
@@ -521,7 +524,7 @@ function dump(){
       print_status("Application data dumped!");
       print_status("Generating Report...Please Wait!");
       //Call reporting
-      location.href="//"+location.host+"/dynamic_report/?hash={{ md5 }}&package={{ package }}&version={{ version }}";
+      location.href="//"+location.host+"/dynamic_report/?hash={{ md5 }}&package={{ package }}";
     } else {
       print_status(json.message);
     }
