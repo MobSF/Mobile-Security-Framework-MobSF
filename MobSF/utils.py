@@ -118,8 +118,7 @@ def check_update():
                 line = line.replace('=', '').strip()
                 if line != settings.MOBSF_VER:
                     logger.warning('A new version of MobSF is available, '
-                                   'Please update from master branch or check '
-                                   'for new releases.')
+                                   'Please update from master branch.')
                 else:
                     logger.info('No updates available.')
     except requests.exceptions.HTTPError:
@@ -431,6 +430,20 @@ def find_process_by(name):
                 or p.info['cmdline'] and p.info['cmdline'][0] == name):
             proc.add(p.info['exe'])
     return proc
+
+
+def get_device():
+    """Get Device."""
+    if settings.ANALYZER_IDENTIFIER:
+        return settings.ANALYZER_IDENTIFIER
+    else:
+        dev_id = ''
+        out = subprocess.check_output([get_adb(), 'devices']).splitlines()
+        if len(out) > 2:
+            dev_id = out[1].decode('utf-8').split('\t')[0]
+            return dev_id
+        logger.error('Cannot identify device id. Please set '
+                     'ANALYZER_IDENTIFIER in MobSF/settings.py')
 
 
 def get_adb():

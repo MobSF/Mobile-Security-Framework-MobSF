@@ -43,7 +43,7 @@
       <a id="actt" class="btn btn-primary" role="button" >Start Activity Tester</a>
       <a id="ss" class="btn btn-primary" role="button">Take a Screenshot</a>
       <a id="logstream" class="btn btn-primary">Logcat Stream</a>
-      <a id="frida_server" class="btn btn-primary">Restart Frida</a>
+      <a id="apimon" target="_blank" href="../live_api/?hash={{ md5 }}&amp;package={{ package }}" class="btn btn-primary" style='display: none'>Live API Monitor</a>
       <a id="stop" class="btn btn-info" role="button" >Generate Report</a>
 
     </p>
@@ -86,30 +86,30 @@
                     <form role="form">
                       <div class="box-body">
                         <div class="form-group">
+                        <h4> Frida Default Scripts </h4>
                           <label>
-                              <input type="checkbox" checked>
+                              <input name="default_hooks" type="checkbox" value="api_monitor" checked>
                               API Monitoring 
                             </label>
                              <label>
-                              <input type="checkbox" checked>
+                              <input name="default_hooks" type="checkbox" value="ssl_pinning_bypass" checked>
                               SSL Pinning Bypass 
                             </label>
                              <label>
-                             <input type="checkbox" checked>
+                             <input name="default_hooks" type="checkbox"  value="root_bypass" checked>
                               Root Detection Bypass 
                             </label>
                              <label>
-                            <input type="checkbox" checked>
-                              Anti VM Bypass
+                            <input name="default_hooks" type="checkbox" value="debugger_check_bypass" checked>
+                              Debugger Check Bypass
                             </label>
                         </div>
-                  
                       </div>
                       <!-- /.box-body -->
 
                       <div class="box-footer">
-                      <button type="submit" class="btn btn-primary">Attach to {{ package }}</button> <br />
-                        <button type="submit" class="btn btn-primary">Spawn {{ package }} with Frida</button>
+                     
+                      <button id="frida_spawn" type="submit" class="btn btn-primary">Start Instrumentation</button> 
                       </div>
                     </form>
                   </div>
@@ -367,10 +367,6 @@ function print_status(message){
 }
 print_status("Setting up Dynamic Analysis environment");
 print_status("Running HTTPS intercepting proxy");
-{% if version < 5 %}
-  $('#frida_server').css("visibility","hidden");
-  print_status("Running Frida Server.");
-{% endif %}
 print_status("Invoking MobSF agents");
 print_status("Environment is ready for user assisted dynamic analysis.");
 print_status("Navigate through all the flows of the app manually.");
@@ -446,19 +442,6 @@ $("#ss").click(function() {
   return false;  
 });
 
-//Frida Restart
-$("#frida_server").click(function() {
-  print_status("Restarting Frida server....");
-  action('../restart_frida/', {}, function(json) {
-    if (json.status==="ok"){
-      print_status("Frida server is running.");
-    } else{
-      print_status("Failed to start Frida server");
-      print_status(json.message);
-    }
-  });
-  return false;  
-}); 
 //MobSF CA
 
 $("#rootca").click(function() {
@@ -512,6 +495,23 @@ $("#logstream").click(function() {
     print_status("Logcat Steaming started");
     setTimeout(function(){ window.open('../logcat/?view=1', '_blank');}, 500);   
     return false;  
+}); 
+
+// Frida Spawn
+$("#frida_spawn").click(function() {
+    print_status("Instrumenting app with frida");
+    $('#apimon').show();
+    var default_hooks = [];
+    $.each($("input[name='default_hooks']:checked"), function(){            
+        default_hooks.push($(this).val());
+    });
+    action('../frida_instrument/', {hash: '{{ md5 }}', package: '{{ package }}', default_hooks: default_hooks.join(",")}, function(json) {
+    if (json.status === "ok")
+      print_status("Successfully attached");
+    else
+      print_status(json.message);
+  });
+  return false;  
 }); 
 
 //Dump App data

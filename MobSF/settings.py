@@ -300,7 +300,8 @@ else:
     # -------------------------
 
     # =======ANDROID DYNAMIC ANALYSIS SETTINGS===========
-    ANALYZER_IDENTIFIER = '192.168.56.120:5555'
+    ANALYZER_IDENTIFIER = ''
+    FRIDA_TIMEOUT = 4
     # ==============================================
 
     # ================HTTPS PROXY ===============

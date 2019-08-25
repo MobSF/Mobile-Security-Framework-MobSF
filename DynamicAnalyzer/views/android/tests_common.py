@@ -21,8 +21,6 @@ from StaticAnalyzer.models import StaticAnalyzerAndroid
 
 logger = logging.getLogger(__name__)
 
-env = Environment(settings.ANALYZER_IDENTIFIER)
-
 # AJAX
 
 
@@ -32,6 +30,7 @@ def exported_activity_tester(request):
     logger.info('Exported activity tester')
     data = {}
     try:
+        env = Environment()
         md5_hash = request.POST['hash']
         package = request.POST['package']
         if is_attack_pattern(package) or not is_md5(md5_hash):
@@ -83,6 +82,7 @@ def activity_tester(request):
     logger.info('Activity tester')
     data = {}
     try:
+        env = Environment()
         md5_hash = request.POST['hash']
         package = request.POST['package']
         if is_attack_pattern(package) or not is_md5(md5_hash):
@@ -134,6 +134,7 @@ def download_data(request):
     logger.info('Downloading app data')
     data = {}
     try:
+        env = Environment()
         package = request.POST['package']
         md5_hash = request.POST['hash']
         if is_attack_pattern(package) or not is_md5(md5_hash):
@@ -164,6 +165,7 @@ def collect_logs(request):
     logger.info('Collecting Data and Cleaning Up')
     data = {}
     try:
+        env = Environment()
         md5_hash = request.POST['hash']
         package = request.POST['package']
         if is_attack_pattern(package) or not is_md5(md5_hash):

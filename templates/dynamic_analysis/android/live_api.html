@@ -1,0 +1,86 @@
+{% extends "base_no_scripts.html" %}
+{% block content %}
+
+<link rel='stylesheet' href='/static/datatables/jquery.dataTables.min.css' type='text/css'>
+<script src="/static/datatables/jquery-3.3.1.js"></script>
+<script src="/static/datatables/jquery.dataTables.min.js"></script>
+<div class="content-wrapper">
+    <div class="container">
+    <br />
+            <h3 class="page-header"><strong>API Monitor </strong>- {{ package }}</h3>
+             <div id="messages"></br>Data refreshed in every 10 seconds.</div>
+    </div>
+    <div align="right">Data Snip:  <input type="text" value="100" oninput="change_snip(this.value)"></div><br />
+   
+  </div>
+
+<table id="autotbl" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Class</th>
+                <th>Method</th>
+                <th>Arguments</th>
+                <th>Result</th>
+                <th>Return Value</th>
+                <th>Called From</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <th>Name</th>
+                <th>Class</th>
+                <th>Method</th>
+                <th>Arguments</th>
+                <th>Result</th>
+                <th>Return Value</th>
+                <th>Called From</th>
+            </tr>
+        </tfoot>
+    </table>
+
+<script type="text/javascript">
+var snip = 100;
+var tbl;
+
+function change_snip(val){
+    snip = parseInt(val);
+    tbl.ajax.reload();
+}
+
+$(document).ready( function () {
+        // $.fn.dataTable.ext.errMode = 'none';
+        tbl = $('#autotbl').DataTable( {
+        ajax: '/live_api/?hash={{ hash }}&stream=1',
+        deferRender:    true,
+        scroller:       true,
+        scrollX:        true,
+        searching:      true,
+        paging:         false,
+        info:           true,
+        columns: [
+            { data: "name" },
+            { data: "class" },
+            { data: "method" },
+            { data: "arguments" },
+            { data: "result" },
+            { data: "returnValue" },
+            { data: "calledFrom" }
+        ],
+        columnDefs: [ {
+            targets: [3,4, 5],
+            render: function ( data, type, row ) {
+                if (data && JSON.stringify(data).length > snip )
+                    return JSON.stringify(data).slice(0, snip) + "...";
+                return JSON.stringify(data)
+            }
+        }]
+    });
+    setInterval( function () {
+        tbl.ajax.reload();
+    }, 10000 );
+});
+
+</script>
+		
+{% endblock %}

@@ -16,15 +16,18 @@ from DynamicAnalyzer.tools.webproxy import (get_ca_dir,
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 
-from MobSF.utils import (get_adb, python_list)
+from MobSF.utils import (get_adb, get_device, python_list)
 
 logger = logging.getLogger(__name__)
 
 
 class Environment:
 
-    def __init__(self, identifier):
-        self.identifier = identifier
+    def __init__(self, identifier=None):
+        if identifier:
+            self.identifier = identifier
+        else:
+            self.identifier = get_device()
         self.tools_dir = settings.TOOLS_DIR
 
     def wait(self, sec):

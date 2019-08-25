@@ -19,7 +19,8 @@ from DynamicAnalyzer.tools.webproxy import (
     start_fuzz_ui,
     stop_capfuzz)
 
-from MobSF.utils import print_n_send_error_response
+from MobSF.utils import (get_device,
+                         print_n_send_error_response)
 
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
@@ -31,7 +32,7 @@ def dynamic_analysis(request):
     """Android Dynamic Analysis Entry point."""
     apks = StaticAnalyzerAndroid.objects.filter(ZIPPED='&type=apk')
     context = {'apks': apks,
-               'identifier': settings.ANALYZER_IDENTIFIER,
+               'identifier': get_device(),
                'title': 'MobSF Dynamic Analysis'}
     template = 'dynamic_analysis/dynamic_analysis.html'
     return render(request, template, context)
@@ -44,12 +45,16 @@ def dynamic_analyzer(request):
         bin_hash = request.GET['hash']
         package = request.GET['package']
         launcher = request.GET['mainactivity']
-        identifier = settings.ANALYZER_IDENTIFIER
         if (is_attack_pattern(package)
                 or is_attack_pattern(launcher)
                 or not is_md5(bin_hash)):
             return print_n_send_error_response(request,
                                                'Invalid Parameters')
+        identifier = get_device()
+        if not identifier:
+            msg = ('MobSF cannot find android instance identifier. '
+                   'Please set ANALYZER_IDENTIFIER in MobSF/settings.py')
+            return print_n_send_error_response(request, msg)
         env = Environment(identifier)
         if not env.connect_n_mount():
             msg = 'Cannot Connect to ' + identifier
@@ -71,8 +76,6 @@ def dynamic_analyzer(request):
         if android_version >= 5:
             # ADB Reverse TCP
             env.enable_adb_reverse_tcp()
-            # Start Frida Server
-            env.run_frida_server()
         # Start Clipboard monitor
         env.start_clipmon()
         # Get Screen Resolution

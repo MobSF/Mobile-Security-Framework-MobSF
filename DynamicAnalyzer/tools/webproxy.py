@@ -38,8 +38,10 @@ def stop_capfuzz(port):
 
 def start_proxy(port, project):
     """Start CapFuzz in Proxy Mode."""
+    fnull = open(os.devnull, 'w')
     subprocess.Popen(['capfuzz',
-                      '-m', 'capture', '-p', str(port), '-n', project])
+                      '-m', 'capture', '-p', str(port), '-n', project],
+                     stdout=fnull, stderr=subprocess.STDOUT)
     """
     capfuzz_obj = CapFuzz()
     proxy_trd = Thread(target=capfuzz_obj.start_proxy,

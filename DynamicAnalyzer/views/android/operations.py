@@ -14,11 +14,10 @@ from django.views.decorators.http import require_http_methods
 
 from DynamicAnalyzer.views.android.environment import Environment
 
-from MobSF.utils import (get_adb, is_number)
+from MobSF.utils import (get_adb, get_device, is_number)
 
 logger = logging.getLogger(__name__)
 
-env = Environment(settings.ANALYZER_IDENTIFIER)
 
 # Helpers
 
@@ -97,7 +96,7 @@ def execute_adb(request):
     if cmd:
         args = [get_adb(),
                 '-s',
-                settings.ANALYZER_IDENTIFIER]
+                get_device()]
         try:
             proc = subprocess.Popen(args + cmd.split(' '),
                                     stdout=subprocess.PIPE,
@@ -121,6 +120,7 @@ def get_component(request):
     """Get Android Component."""
     data = {}
     try:
+        env = Environment()
         comp = request.POST['component']
         bin_hash = request.POST['hash']
         if is_attack_pattern(comp) or not is_md5(bin_hash):
@@ -141,6 +141,7 @@ def take_screenshot(request):
     logger.info('Taking screenshot')
     data = {}
     try:
+        env = Environment()
         bin_hash = request.POST['hash']
         if not is_md5(bin_hash):
             return invalid_params()
@@ -168,6 +169,7 @@ def screen_cast(request):
     """ScreenCast."""
     data = {}
     try:
+        env = Environment()
         trd = threading.Thread(target=env.screen_stream)
         trd.daemon = True
         trd.start()
@@ -185,6 +187,7 @@ def touch(request):
     """Sending Touch Events."""
     data = {}
     try:
+        env = Environment()
         x_axis = request.POST['x']
         y_axis = request.POST['y']
         if not is_number(x_axis) and not is_number(y_axis):
@@ -213,6 +216,7 @@ def mobsf_ca(request):
     """Install and Remove MobSF Proxy RootCA."""
     data = {}
     try:
+        env = Environment()
         action = request.POST['action']
         if action == 'install':
             env.install_mobsf_ca(action)
@@ -225,19 +229,5 @@ def mobsf_ca(request):
                     'message': 'Action not supported'}
     except Exception as exp:
         logger.exception('MobSF RootCA Handler')
-        data = {'status': 'failed', 'message': str(exp)}
-    return json_response(data)
-# AJAX
-
-
-@require_http_methods(['POST'])
-def frida_restart(request):
-    """Restart Frida Server."""
-    data = {}
-    try:
-        env.run_frida_server()
-        data = {'status': 'ok'}
-    except Exception as exp:
-        logger.exception('Restarting Frida server')
         data = {'status': 'failed', 'message': str(exp)}
     return json_response(data)
