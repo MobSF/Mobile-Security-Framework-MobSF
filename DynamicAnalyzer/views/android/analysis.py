@@ -156,6 +156,9 @@ def get_app_files(apk_dir, md5_hash, package):
     untar_dir = os.path.join(apk_dir, 'DYNAMIC_DeviceData/')
     if not is_file_exists(tar_loc):
         return all_files
+    if os.path.exists(untar_dir):
+        # fix for permission errors
+        shutil.rmtree(untar_dir)
     try:
         with tarfile.open(tar_loc, errorlevel=1) as tar:
             tar.extractall(untar_dir)

@@ -1,11 +1,16 @@
 {% extends "base.html" %}
    {% block content %}
-    <script src="/static/js/jquery.min.js"></script>
-  <script type="text/javascript" src="/static/js/highlight.min.js"></script>
-  <link type="text/css" rel="stylesheet" href="/static/css/xcode.min.css"/>
-  <script>hljs.initHighlightingOnLoad();</script>
-  <style type="text/css" media="print">
+<script src="/static/js/jquery.min.js"></script>
+<script type="text/javascript" src="/static/js/highlight.min.js"></script>
+<link type="text/css" rel="stylesheet" href="/static/css/xcode.min.css"/>
+<script>hljs.initHighlightingOnLoad();</script>
+<style type="text/css" media="print">
   @page { size: landscape; }
+  @media print {
+  .btn, #dwd_box {
+    display: none;
+  }
+}
 </style>
 
 
@@ -63,7 +68,7 @@
                 <li><a href="#otherfiles"><i class="fa fa-file-o"></i> Other Files</a></li>
               </ul>
             </li>
-            <li><a href="javascript:window.print()"><i class="fa fa-cloud-download"></i> Download / Print</a></li>
+            <li><a href="javascript:window.print()"><i class="fa fa-cloud-download"></i> Download / Print Report</a></li>
             
           </ul>
         </div>
@@ -80,12 +85,12 @@
 
 
 <section id="general">
-  <h2 class="page-header"><strong>Dynamic Analysis Result </strong> - {{package}} </h2>
+  <h2 class="page-header"><strong>MobSF Dynamic Analysis Report </strong> - {{package}} </h2>
   <div align="center"><a class="btn btn-success btn-lg" target="_blank" role="button" href="../capfuzz?project={{package}}">Start CapFuzz</a></div>
   <p class="lead">
     <div class="row">
     <div class="col-sm-12">
-      <div class="box box-danger">
+      <div id="dwd_box" class="box box-danger">
         <div class="box-header with-border">
           <h3 class="box-title">Downloads</h3>
           <span class="label label-danger pull-right"><i class="fa fa-cloud-download"></i></span>
@@ -94,7 +99,7 @@
         <div class="list-group">
             <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-web_traffic.txt">HTTP(S) Traffic</a>
             <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-logcat.txt">Logcat Logs</a>
-            {% if xposed == 1 %}
+            {% if droidmon %}
             <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-x_logcat.txt">Droidmon API Monitor Logs</a>
             {% elif apimon %}
             <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-api_monitor.txt">Frida API Monitor Logs</a>

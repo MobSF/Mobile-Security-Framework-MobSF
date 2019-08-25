@@ -19,7 +19,8 @@ from DynamicAnalyzer.views.android.operations import (is_attack_pattern,
 from DynamicAnalyzer.views.android.tests_xposed import droidmon_api_analysis
 from DynamicAnalyzer.views.android.tests_frida import apimon_analysis
 
-from MobSF.utils import (print_n_send_error_response,
+from MobSF.utils import (is_file_exists,
+                         print_n_send_error_response,
                          read_sqlite)
 
 
@@ -38,22 +39,20 @@ def view_report(request):
     try:
         md5_hash = request.GET['hash']
         package = request.GET['package']
-        android_ver = request.GET['version']
         droidmon = {}
         apimon = {}
         if (is_attack_pattern(package)
-                or is_attack_pattern(android_ver)
                 or not is_md5(md5_hash)):
             return print_n_send_error_response(request,
                                                'Invalid Parameters')
         app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         download_dir = settings.DWD_DIR
-        if float(android_ver) < 5:
-            xposed = 1
-            droidmon = droidmon_api_analysis(app_dir, package)
-        else:
-            xposed = 0
-            apimon = apimon_analysis(app_dir, package)
+        if not is_file_exists(os.path.join(app_dir, 'logcat.txt')):
+            return print_n_send_error_response(request,
+                                               'Dynamic Analysis report'
+                                               ' is not available.')
+        droidmon = droidmon_api_analysis(app_dir, package)
+        apimon = apimon_analysis(app_dir, package)
         analysis_result = run_analysis(app_dir, md5_hash, package)
         generate_download(app_dir, md5_hash, download_dir, package)
         images = get_screenshots(md5_hash, download_dir)
@@ -71,7 +70,6 @@ def view_report(request):
                    'droidmon': droidmon,
                    'apimon': apimon,
                    'package': package,
-                   'xposed': xposed,
                    'title': 'Dynamic Analysis'}
         template = 'dynamic_analysis/android/dynamic_report.html'
         return render(request, template, context)
