@@ -111,6 +111,7 @@ def get_log_data(apk_dir, package):
     logcat_data = []
     droidmon_data = ''
     apimon_data = ''
+    web_data = ''
     traffic = ''
     capfuzz_home = os.path.join(str(Path.home()), '.capfuzz')
     web = os.path.join(capfuzz_home, 'flows', package + '.flows.txt')
