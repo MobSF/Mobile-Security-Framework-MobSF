@@ -243,6 +243,9 @@ class Environment:
 
     def mobsfy_init(self):
         """Init MobSFy."""
+        if os.getenv('ANALYZER_IDENTIFIER'):
+            cmd = 'adb connect ' + os.getenv('ANALYZER_IDENTIFIER')
+            os.system(cmd)
         version = self.get_android_version()
         try:
             if not self.connect_n_mount():
