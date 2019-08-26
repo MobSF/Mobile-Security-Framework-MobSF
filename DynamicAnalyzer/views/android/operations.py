@@ -74,6 +74,10 @@ def mobsfy(request):
     try:
         identifier = request.POST['identifier']
         create_env = Environment(identifier)
+        if not create_env.connect_n_mount():
+            msg = 'Connection failed'
+            data = {'status': 'failed', 'message': msg}
+            return json_response(data)
         version = create_env.mobsfy_init()
         if not version:
             msg = 'Connection failed'

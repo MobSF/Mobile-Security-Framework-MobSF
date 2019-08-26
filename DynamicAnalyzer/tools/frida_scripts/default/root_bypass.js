@@ -19,6 +19,8 @@ Java.performNow(function () {
     for (var k in RootProperties) RootPropertiesKeys.push(k);
  
     // Patch Native functions early
+
+    // File.exists check
     var NativeFile = Java.use('java.io.File');
     NativeFile.exists.implementation = function () {
         var name = NativeFile.getName.call(this);
@@ -29,7 +31,8 @@ Java.performNow(function () {
             return this.exists.call(this);
         }
     };
-    // String Contains check
+
+    // String.contains check
     var String = Java.use('java.lang.String');
     String.contains.implementation = function (name) {
         if (name == "test-keys") {
@@ -39,7 +42,7 @@ Java.performNow(function () {
         return this.contains.call(this, name);
     };
 
-    //Runtime
+    // Runtime.exec check
     function isRootCheck(cmd) {
         if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id" || cmd == "sh") {
             var fakeCmd = "grep";
@@ -53,7 +56,7 @@ Java.performNow(function () {
         }
         return false;
     }
-    //Get all implementations
+    // Get all implementations
     function get_implementations(toHook) {
         var imp_args = []
         toHook.overloads.forEach(function (impl, _) {
@@ -112,7 +115,7 @@ Java.performNow(function () {
         }
         return text;
     }
-   
+
     // ProcessBuilder.start check
     var ProcessBuilder = Java.use('java.lang.ProcessBuilder');
     ProcessBuilder.start.implementation = function () {
@@ -137,7 +140,7 @@ Java.performNow(function () {
 
         return this.start.call(this);
     }
-    
+
     // Patch other libraries after the above ones
     var RootBypass = [{
         class: 'android.security.keystore.KeyInfo',

@@ -18,6 +18,9 @@ ENV DEBIAN_FRONTEND="noninteractive" \
 ENV JDK_URL="https://download.java.net/java/GA/jdk12/GPL/${JDK_FILE}" \
     WKH_URL="http://www.ajvg.com/downloads/${WKH_FILE}"
 
+ENV ANALYZER_IDENTIFIER="192.168.56.102:5555" \
+    ADB_PATH="/usr/bin/adb"
+
 #Update the repository sources list
 #Install Required Libs
 #see https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
@@ -40,7 +43,8 @@ RUN apt update -y && apt install -y \
     python3.6 \
     python3-dev \
     python3-pip \
-    wget
+    wget \
+    android-tools-adb
      
 #set locales
 RUN locale-gen en_US.UTF-8
@@ -62,8 +66,9 @@ ENV PATH="$JAVA_HOME/bin:$PATH"
 COPY . /root/Mobile-Security-Framework-MobSF
 WORKDIR /root/Mobile-Security-Framework-MobSF
 
-#Enable Use Home Directory
-RUN sed -i 's/USE_HOME = False/USE_HOME = True/g' MobSF/settings.py
+#Enable Use Home Directory and set adb path
+RUN sed -i 's/USE_HOME = False/USE_HOME = True/g' MobSF/settings.py && \
+    sed -i "s#ADB_BINARY = ''#ADB_BINARY = '/usr/bin/adb'#" MobSF/settings.py
 
 #Kali fix to support 32 bit execution
 RUN ./scripts/kali_fix.sh
