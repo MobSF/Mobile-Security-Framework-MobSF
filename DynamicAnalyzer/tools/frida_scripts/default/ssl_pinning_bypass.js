@@ -103,7 +103,7 @@ setTimeout(function () {
                 return
             }
             if (bypass.arguments) {
-                toHook.overload.apply(null, bypass.arg_list).implementation = bypass.func;
+                toHook.overload.apply(null, bypass.arguments).implementation = bypass.func;
             } else {
                 toHook.overload.implementation = bypass.func;
             }

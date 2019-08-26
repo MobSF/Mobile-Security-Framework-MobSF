@@ -247,8 +247,6 @@ class Environment:
         """Init MobSFy."""
         version = self.get_android_version()
         try:
-            if not self.connect_n_mount():
-                logger.error('Cannot Connect to %s', self.identifier)
             if version < 5:
                 self.xposed_setup(version)
                 self.mobsf_agents_setup('xposed')
