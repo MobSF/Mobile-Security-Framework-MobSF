@@ -511,16 +511,15 @@ function hook(api, callback) {
         var name = api.name;
         try{
             if (api.target && parseInt(Java.androidVersion) < api.target){
-                send('[WARNING] Not Hooking unavailable class/method -' + clazz + '.' + method)
+                send('[API Monitor] Not Hooking unavailable class/method - ' + clazz + '.' + method)
                 return
             }
-            var is_defined = Java.use(clazz)[method]
-            if (!is_defined){
-                send('[WARNING] Cannot find ' + clazz + '.' + method);
+            if (!Java.use(clazz)[method]){
+                send('[API Monitor] Cannot find ' + clazz + '.' + method);
                 return
             }
         } catch (err) {
-            send('[WARNING] Cannot find '+ clazz + '.' + method);
+            send('[API Monitor] Cannot find '+ clazz + '.' + method);
             return 
         }
         var arglist = get_implementations(clazz, method)
@@ -544,9 +543,8 @@ function hook(api, callback) {
                 return result;
             };
         });
-
     } catch (err) {
-        send('ERROR: ' +clazz + "." + method + "[\"Error\"] => " + err);
+        send('[API Monitor] - ERROR: ' +clazz + "." + method + "[\"Error\"] => " + err);
     }
 }
 
