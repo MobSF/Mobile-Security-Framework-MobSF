@@ -40,7 +40,8 @@ RUN apt update -y && apt install -y \
     python3.6 \
     python3-dev \
     python3-pip \
-    wget
+    wget \
+    android-tools-adb
      
 #set locales
 RUN locale-gen en_US.UTF-8
