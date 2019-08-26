@@ -538,6 +538,7 @@ def first_run(secret_file, base_dir, mobsf_home):
 def update_local_db(db_name, url, local_file):
     """Update Local DBs."""
     update = None
+    inmemoryfile = None
     try:
         proxies, verify = upstream_proxy('http')
     except Exception:

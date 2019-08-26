@@ -1,8 +1,8 @@
 Java.perform(function () {
-        send("Debugger Check Bypass: active");
+        // send("[Debugger Check Bypass]  Activated");
         var Debug = Java.use('android.os.Debug');
         Debug.isDebuggerConnected.implementation = function () {
-            // console.log('isDebuggerConnected Bypassed !');
+            send('[Debugger Check Bypass] isDebuggerConnected() bypassed');
             return false;
         }
 });
