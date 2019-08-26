@@ -16,7 +16,10 @@ from DynamicAnalyzer.tools.webproxy import (get_ca_dir,
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 
-from MobSF.utils import (get_adb, get_device, python_list)
+from MobSF.utils import (get_adb,
+                         get_device,
+                         get_proxy_ip,
+                         python_list)
 
 logger = logging.getLogger(__name__)
 
@@ -104,13 +107,40 @@ class Environment:
             logger.info('Removing MobSF RootCA')
             self.adb_command(['rm', ca_file], True)
 
-    def enable_adb_reverse_tcp(self):
+    def set_global_proxy(self, version):
+        """Set Global Proxy on device."""
+        # Android 4.4+ supported
+        proxy_ip = None
+        proxy_port = settings.PROXY_PORT
+        if version < 5:
+            proxy_ip = get_proxy_ip(self.identifier)
+        else:
+            proxy_ip = '127.0.0.1'
+        if proxy_ip:
+            if version < 4.4:
+                logger.warning('Please set Android VM proxy as %s:%s',
+                               proxy_ip, proxy_port)
+                return
+            logger.info('Setting Global Proxy for Android VM')
+            self.adb_command(
+                ['settings',
+                 'put',
+                 'global',
+                 'http_proxy',
+                 '{}:{}'.format(proxy_ip, proxy_port)], True)
+
+    def enable_adb_reverse_tcp(self, version):
         """Enable ADB Reverse TCP for Proxy."""
+        # Androd 5+ supported
+        if not version >= 5:
+            return
         proxy_port = settings.PROXY_PORT
         logger.info('Enabling ADB Reverse TCP on %s', proxy_port)
         tcp = 'tcp:{}'.format(proxy_port)
         try:
-            proc = subprocess.Popen([get_adb(), 'reverse', tcp, tcp],
+            proc = subprocess.Popen([get_adb(),
+                                     '-s', self.identifier,
+                                     'reverse', tcp, tcp],
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
             _, stderr = proc.communicate()
@@ -196,7 +226,6 @@ class Environment:
         out = self.adb_command(['getprop',
                                 'ro.build.version.release'], True)
         and_version = out.decode('utf-8').rstrip()
-        logger.info('Android Version identified as %s', and_version)
         if and_version.count('.') > 1:
             and_version = and_version.rsplit('.', 1)[0]
         if and_version.count('.') > 1:
@@ -245,13 +274,9 @@ class Environment:
 
     def mobsfy_init(self):
         """Init MobSFy."""
-        if os.getenv('ANALYZER_IDENTIFIER'):
-            cmd = 'adb connect ' + os.getenv('ANALYZER_IDENTIFIER')
-            os.system(cmd)
         version = self.get_android_version()
+        logger.info('Android Version identified as %s', version)
         try:
-            if not self.connect_n_mount():
-                logger.error('Cannot Connect to %s', self.identifier)
             if version < 5:
                 self.xposed_setup(version)
                 self.mobsf_agents_setup('xposed')
@@ -347,7 +372,7 @@ class Environment:
         frida_dir = 'onDevice/frida/'
         frida_bin = os.path.join(self.tools_dir,
                                  frida_dir,
-                                 'frida-server-12.6.14-android-x86')
+                                 'frida-server-12.6.18-android-x86')
         arch = self.get_android_arch()
         logger.info('Android instance architecture identified as %s', arch)
         if 'x86' not in arch:
