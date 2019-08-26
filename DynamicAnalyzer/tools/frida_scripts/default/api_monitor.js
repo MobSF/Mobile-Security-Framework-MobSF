@@ -56,7 +56,8 @@ var apis = [{
 }, {
     class: 'android.webkit.WebView',
     method: 'postWebMessage',
-    name: 'WebView'
+    name: 'WebView',
+    target: 6
 }, {
     class: 'android.webkit.WebView',
     method: 'savePassword',
@@ -342,6 +343,23 @@ var apis = [{
     method: 'isDebuggerConnected',
     name: 'Device Info'
 }, {
+    class: 'android.content.pm.PackageManager',
+    method: 'getInstallerPackageName',
+    name: 'Device Info'
+}, {
+    class: 'android.content.pm.PackageManager',
+    method: 'getInstalledApplications',
+    name: 'Device Info'
+}, {
+    class: 'android.content.pm.PackageManager',
+    method: 'getInstalledModules',
+    name: 'Device Info',
+    target: 10,
+}, {
+    class: 'android.content.pm.PackageManager',
+    method: 'getInstalledPackages',
+    name: 'Device Info'
+},{
     class: 'java.net.URL',
     method: 'openConnection',
     name: 'Network'
@@ -484,14 +502,26 @@ function get_implementations(clazz, method) {
 }
 
 // Dynamic Hooks
-function hook(clazz, method, name, callback) {
+function hook(api, callback) {
     var Exception = Java.use('java.lang.Exception');
     try {
-        //Check if class is available
+        //Check if class and method is available
+        var clazz = api.class;
+        var method = api.method;
+        var name = api.name;
         try{
-            Java.use(clazz)
-        } catch (e) {
-             return 
+            if (api.target && parseInt(Java.androidVersion) < api.target){
+                send('[WARNING] Not Hooking unavailable class/method -' + clazz + '.' + method)
+                return
+            }
+            var is_defined = Java.use(clazz)[method]
+            if (!is_defined){
+                send('[WARNING] Cannot find ' + clazz + '.' + method);
+                return
+            }
+        } catch (err) {
+            send('[WARNING] Cannot find '+ clazz + '.' + method);
+            return 
         }
         var arglist = get_implementations(clazz, method)
         arglist.forEach(function (args, _) {
@@ -523,7 +553,7 @@ function hook(clazz, method, name, callback) {
 
 Java.performNow(function () {
     apis.forEach(function (api, _) {
-        hook(api.class, api.method, api.name, function (originalResult, message) {
+        hook(api, function (originalResult, message) {
             /*if (!message.name.includes('Database') &&
                 !message.name.includes('Crypto - Hash') &&
                 !message.name.includes('File IO - Shared Preferences') &&
