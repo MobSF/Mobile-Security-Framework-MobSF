@@ -350,9 +350,14 @@ function dynamic_loader(){
                     },
                     success : function(json) {
                         if (json.status==="ok"){
-                            $('#stat').append("\nSucessfully created MobSF Dynamic Analysis environment.");
-                            $('#stat').append("\n* Download & Install Xposed Framework\n* Restart the device");
-                            $('#stat').append("\n* Enable all the Xposed modules\n* Restart the device once more");
+                              $('#stat').append("\nSucessfully created MobSF Dynamic Analysis environment.");
+                            if (json.version  < 5){
+                              $('#stat').append("\n* Download & Install Xposed Framework.\n* Restart the device.");
+                              $('#stat').append("\n* Enable all the Xposed modules.\n* Restart the device once more.");
+                            } else{
+                               $('#stat').append("\nMobSF agents and Frida server installed.");
+                            }
+                           
                         }
                         else if(json.status === "failed"){
                             $('#stat').append(json.message);
