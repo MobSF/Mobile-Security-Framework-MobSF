@@ -434,14 +434,17 @@ def find_process_by(name):
 
 def get_device():
     """Get Device."""
-    if settings.ANALYZER_IDENTIFIER:
-        return settings.ANALYZER_IDENTIFIER
+    if os.getenv('ANALYZER_IDENTIFIER'):
+        return os.getenv('ANALYZER_IDENTIFIER')
     else:
-        dev_id = ''
-        out = subprocess.check_output([get_adb(), 'devices']).splitlines()
-        if len(out) > 2:
-            dev_id = out[1].decode('utf-8').split('\t')[0]
-            return dev_id
+        if settings.ANALYZER_IDENTIFIER:
+            return settings.ANALYZER_IDENTIFIER
+        else:
+            dev_id = ''
+            out = subprocess.check_output([get_adb(), 'devices']).splitlines()
+            if len(out) > 2:
+                dev_id = out[1].decode('utf-8').split('\t')[0]
+                return dev_id
         logger.error('Cannot identify device id. Please set '
                      'ANALYZER_IDENTIFIER in MobSF/settings.py')
 
