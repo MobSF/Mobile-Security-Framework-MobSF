@@ -45,9 +45,7 @@ def dynamic_analyzer(request):
     try:
         bin_hash = request.GET['hash']
         package = request.GET['package']
-        launcher = request.GET['mainactivity']
         if (is_attack_pattern(package)
-                or is_attack_pattern(launcher)
                 or not is_md5(bin_hash)):
             return print_n_send_error_response(request,
                                                'Invalid Parameters')
@@ -86,11 +84,6 @@ def dynamic_analyzer(request):
                                bin_hash + '/')  # APP DIRECTORY
         apk_path = app_dir + bin_hash + '.apk'  # APP PATH
         env.adb_command(['install', '-r', apk_path], False, True)
-        if launcher:
-            run_app = package + '/' + launcher
-            logger.info('Launching APK Main Activity')
-            env.adb_command(['am', 'start', '-n', run_app],
-                            True, True)
         logger.info('Testing Environment is Ready!')
         context = {'screen_witdth': screen_width,
                    'screen_height': screen_height,

@@ -78,10 +78,10 @@
             </li>
             <li><a target="_blank" href="../PDF/?md5={{ md5 }}&amp;type=APK"><i class="glyphicon glyphicon-list-alt"></i> PDF Report</a></li>
             <li><a href="javascript:window.print()"><i class="fa fa-print"></i> Print Report</a></li>
-      {% if dynamic_analysis_done == False %}
-              <li><a href="../android_dynamic/?hash={{md5}}&amp;package={{packagename}}&amp;mainactivity={{mainactivity}}"><i class="glyphicon glyphicon-play-circle""></i> <strong>Start Dynamic Analysis</strong></a></li>
+      {% if dynamic_analysis_done %}
+          <li><a href="../dynamic_report/?hash={{ md5 }}&amp;package={{ packagename }}"><i class="glyphicon glyphicon-play-circle"></i> <strong>Dynamic Analysis Report</strong></a></li>
       {% else %}
-            <li><a href="../dynamic_report/?hash={{ md5 }}&amp;package={{ packagename }}"><i class="glyphicon glyphicon-play-circle""></i> <strong>Dynamic Analysis Report</strong></a></li>
+          <li><a href="../android_dynamic/?hash={{md5}}&amp;package={{packagename}}"><i class="glyphicon glyphicon-play-circle""></i> <strong>Start Dynamic Analysis</strong></a></li>
       {% endif %}
           </ul>
         </div>
@@ -431,7 +431,7 @@
          <div class="list-group">
                  <p> <a href="../StaticAnalyzer/?checksum={{ md5 }}&amp;name={{ name }}&amp;type=apk&amp;rescan=1" class="btn btn-info btn-lg" role="button"><i class="glyphicon glyphicon-refresh"></i> Rescan</a></p>
                  <p>
-                  <a href="../android_dynamic/?hash={{md5}}&amp;package={{packagename}}&amp;mainactivity={{mainactivity}}" class="btn btn-success btn-lg" role="button"><i class="glyphicon glyphicon-play-circle"></i> Start Dynamic Analysis</a>
+                  <a href="../android_dynamic/?hash={{md5}}&amp;package={{packagename}}" class="btn btn-success btn-lg" role="button"><i class="glyphicon glyphicon-play-circle"></i> Start Dynamic Analysis</a>
                  </p>
             </div>
           </div><!-- /.box-body -->
