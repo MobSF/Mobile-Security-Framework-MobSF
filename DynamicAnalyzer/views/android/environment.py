@@ -193,12 +193,8 @@ class Environment:
 
     def get_android_version(self):
         """Get Android version."""
-        out = subprocess.check_output([get_adb(),
-                                       '-s',
-                                       self.identifier,
-                                       'shell',
-                                       'getprop',
-                                       'ro.build.version.release'])
+        out = self.adb_command(['getprop',
+                                'ro.build.version.release'], True)
         and_version = out.decode('utf-8').rstrip()
         logger.info('Android Version identified as %s', and_version)
         if and_version.count('.') > 1:
@@ -206,6 +202,12 @@ class Environment:
         if and_version.count('.') > 1:
             and_version = and_version.split('.', 1)[0]
         return float(and_version)
+
+    def get_android_arch(self):
+        """Get Android Architecture."""
+        out = self.adb_command(['getprop',
+                                'ro.product.cpu.abi'], True)
+        return out.decode('utf-8').rstrip()
 
     def launch_n_capture(self, package, activity, outfile):
         """Launch and Capture Activity."""
@@ -254,7 +256,7 @@ class Environment:
                 self.frida_setup()
                 self.mobsf_agents_setup('frida')
             logger.info('MobSFying Completed!')
-            return True
+            return version
         except Exception:
             logger.exception('Failed to MobSFy Android Instance')
             return False
@@ -343,6 +345,12 @@ class Environment:
         frida_bin = os.path.join(self.tools_dir,
                                  frida_dir,
                                  'frida-server-12.6.14-android-x86')
+        arch = self.get_android_arch()
+        logger.info('Android instance architecture identified as %s', arch)
+        if 'x86' not in arch:
+            logger.error('Make sure a Genymotion Android x86'
+                         'instance is running')
+            return
         logger.info('Copying frida server')
         self.adb_command(['push', frida_bin, '/system/fd_server'])
         self.adb_command(['chmod', '755', '/system/fd_server'], True)

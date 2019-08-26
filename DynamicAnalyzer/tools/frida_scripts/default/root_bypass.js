@@ -1,5 +1,5 @@
-//Credits: https://codeshare.frida.re/@dzonerzy/fridantiroot/
-Java.perform(function () {
+// Based on  https://codeshare.frida.re/@dzonerzy/fridantiroot/
+Java.performNow(function () {
     var RootPackages = ["com.noshufou.android.su", "com.noshufou.android.su.elite", "eu.chainfire.supersu",
         "com.koushikdutta.superuser", "com.thirdparty.superuser", "com.yellowes.su", "com.koushikdutta.rommanager",
         "com.koushikdutta.rommanager.license", "com.dimonvideo.luckypatcher", "com.chelpus.lackypatch",
@@ -8,7 +8,7 @@ Java.perform(function () {
         "com.amphoras.hidemyrootadfree", "com.formyhm.hiderootPremium", "com.formyhm.hideroot", "me.phh.superuser",
         "eu.chainfire.supersu.pro", "com.kingouser.com"
     ];
-    var RootBinaries = ["su", "busybox", "supersu", "Superuser.apk", "KingoUser.apk", "SuperSu.apk"];
+    var RootBinaries = ["mu", ".su", "su", "busybox", "supersu", "Superuser.apk", "KingoUser.apk", "SuperSu.apk"];
     var RootProperties = {
         "ro.build.selinux": "1",
         "ro.debuggable": "0",
@@ -17,156 +17,20 @@ Java.perform(function () {
     };
     var RootPropertiesKeys = [];
     for (var k in RootProperties) RootPropertiesKeys.push(k);
-
-    var PackageManager = Java.use("android.app.ApplicationPackageManager");
-    var Runtime = Java.use('java.lang.Runtime');
+ 
+    // Patch Native functions early
     var NativeFile = Java.use('java.io.File');
-    var String = Java.use('java.lang.String');
-    var SystemProperties = Java.use('android.os.SystemProperties');
-    var BufferedReader = Java.use('java.io.BufferedReader');
-    var ProcessBuilder = Java.use('java.lang.ProcessBuilder');
-    var StringBuffer = Java.use('java.lang.StringBuffer');
-    var loaded_classes = Java.enumerateLoadedClassesSync();
-
-    var useKeyInfo = false;
-    var useProcessManager = false;
-
-    if (loaded_classes.indexOf('java.lang.ProcessManager') != -1) {
-        try {
-            //useProcessManager = true;
-            //var ProcessManager = Java.use('java.lang.ProcessManager');
-        } catch (err) {
-            send("[RootDetection Bypass] ProcessManager Hook failed: " + err);
-        }
-    } else {
-        send("[RootDetection Bypass] ProcessManager hook not loaded");
-    }
-    var KeyInfo = null;
-    if (loaded_classes.indexOf('android.security.keystore.KeyInfo') != -1) {
-        try {
-            //useKeyInfo = true;
-            //var KeyInfo = Java.use('android.security.keystore.KeyInfo');
-        } catch (err) {
-            send("[RootDetection Bypass] KeyInfo Hook failed: " + err);
-        }
-    } else {
-       // send("[RootDetection Bypass] KeyInfo hook not loaded");
-    }
-    PackageManager.getPackageInfo.overload('java.lang.String', 'int').implementation = function (pname, flags) {
-        var shouldFakePackage = (RootPackages.indexOf(pname) > -1);
-        if (shouldFakePackage) {
-            send("[RootDetection Bypass] root check for package: " + pname);
-            pname = "set.package.name.to.a.fake.one.so.we.can.bypass.it";
-        }
-        return this.getPackageInfo.call(this, pname, flags);
-    };
     NativeFile.exists.implementation = function () {
         var name = NativeFile.getName.call(this);
-        var shouldFakeReturn = (RootBinaries.indexOf(name) > -1);
-        if (shouldFakeReturn) {
+        if (RootBinaries.indexOf(name) > -1) {
             send("[RootDetection Bypass] return value for binary: " + name);
             return false;
         } else {
             return this.exists.call(this);
         }
     };
-    var exec = Runtime.exec.overload('[Ljava.lang.String;');
-    var exec1 = Runtime.exec.overload('java.lang.String');
-    var exec2 = Runtime.exec.overload('java.lang.String', '[Ljava.lang.String;');
-    var exec3 = Runtime.exec.overload('[Ljava.lang.String;', '[Ljava.lang.String;');
-    var exec4 = Runtime.exec.overload('[Ljava.lang.String;', '[Ljava.lang.String;', 'java.io.File');
-    var exec5 = Runtime.exec.overload('java.lang.String', '[Ljava.lang.String;', 'java.io.File');
-    exec5.implementation = function (cmd, env, dir) {
-        if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id" || cmd == "sh") {
-            var fakeCmd = "grep";
-            send("[RootDetection Bypass]  " + cmd + " command");
-            return exec1.call(this, fakeCmd);
-        }
-        if (cmd == "su") {
-            var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
-            send("[RootDetection Bypass]  " + cmd + " command");
-            return exec1.call(this, fakeCmd);
-        }
-        return exec5.call(this, cmd, env, dir);
-    };
-    exec4.implementation = function (cmdarr, env, file) {
-        for (var i = 0; i < cmdarr.length; i = i + 1) {
-            var tmp_cmd = cmdarr[i];
-            if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id" || tmp_cmd == "sh") {
-                var fakeCmd = "grep";
-                send("[RootDetection Bypass] " + cmdarr + " command");
-                return exec1.call(this, fakeCmd);
-            }
-
-            if (tmp_cmd == "su") {
-                var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
-                send("[RootDetection Bypass] " + cmdarr + " command");
-                return exec1.call(this, fakeCmd);
-            }
-        }
-        return exec4.call(this, cmdarr, env, file);
-    };
-    exec3.implementation = function (cmdarr, envp) {
-        for (var i = 0; i < cmdarr.length; i = i + 1) {
-            var tmp_cmd = cmdarr[i];
-            if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id" || tmp_cmd == "sh") {
-                var fakeCmd = "grep";
-                send("[RootDetection Bypass] " + cmdarr + " command");
-                return exec1.call(this, fakeCmd);
-            }
-
-            if (tmp_cmd == "su") {
-                var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
-                send("[RootDetection Bypass] " + cmdarr + " command");
-                return exec1.call(this, fakeCmd);
-            }
-        }
-        return exec3.call(this, cmdarr, envp);
-    };
-    exec2.implementation = function (cmd, env) {
-        if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id" || cmd == "sh") {
-            var fakeCmd = "grep";
-            send("[RootDetection Bypass] " + cmd + " command");
-            return exec1.call(this, fakeCmd);
-        }
-        if (cmd == "su") {
-            var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
-            send("[RootDetection Bypass] " + cmd + " command");
-            return exec1.call(this, fakeCmd);
-        }
-        return exec2.call(this, cmd, env);
-    };
-    exec.implementation = function (cmd) {
-        for (var i = 0; i < cmd.length; i = i + 1) {
-            var tmp_cmd = cmd[i];
-            if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id" || tmp_cmd == "sh") {
-                var fakeCmd = "grep";
-                send("[RootDetection Bypass] " + cmd + " command");
-                return exec1.call(this, fakeCmd);
-            }
-
-            if (tmp_cmd == "su") {
-                var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
-                send("[RootDetection Bypass] " + cmd + " command");
-                return exec1.call(this, fakeCmd);
-            }
-        }
-
-        return exec.call(this, cmd);
-    };
-    exec1.implementation = function (cmd) {
-        if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id" || cmd == "sh") {
-            var fakeCmd = "grep";
-            send("[RootDetection Bypass] " + cmd + " command");
-            return exec1.call(this, fakeCmd);
-        }
-        if (cmd == "su") {
-            var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
-            send("[RootDetection Bypass] " + cmd + " command");
-            return exec1.call(this, fakeCmd);
-        }
-        return exec1.call(this, cmd);
-    };
+    // String Contains check
+    var String = Java.use('java.lang.String');
     String.contains.implementation = function (name) {
         if (name == "test-keys") {
             send("[RootDetection Bypass] test-keys check");
@@ -174,14 +38,166 @@ Java.perform(function () {
         }
         return this.contains.call(this, name);
     };
-    var get = SystemProperties.get.overload('java.lang.String');
-    get.implementation = function (name) {
-        if (RootPropertiesKeys.indexOf(name) != -1) {
-            send("[RootDetection Bypass] " + name);
-            return RootProperties[name];
+
+    //Runtime
+    function isRootCheck(cmd) {
+        if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id" || cmd == "sh") {
+            var fakeCmd = "grep";
+            send("[RootDetection Bypass] " + cmd + " command");
+            return fakeCmd;
         }
-        return this.get.call(this, name);
-    };
+        if (cmd == "su") {
+            var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
+            send("[RootDetection Bypass] " + cmd + " command");
+            return fakeCmd;
+        }
+        return false;
+    }
+    //Get all implementations
+    function get_implementations(toHook) {
+        var imp_args = []
+        toHook.overloads.forEach(function (impl, _) {
+            if (impl.hasOwnProperty('argumentTypes')) {
+                var args = [];
+                var argTypes = impl.argumentTypes
+                argTypes.forEach(function (arg_type, _) {
+                    args.push(arg_type.className)
+                });
+                imp_args.push(args);
+            }
+        });
+        return imp_args;
+    }
+
+    var Runtime = Java.use('java.lang.Runtime');
+    var execImplementations = get_implementations(Runtime.exec)
+    var exec = Runtime.exec.overload('java.lang.String')
+
+    execImplementations.forEach(function (args, _) {
+        Runtime.exec.overload.apply(null, args).implementation = function () {
+            var argz = [].slice.call(arguments);
+            var cmd = argz[0]
+            if (typeof cmd === 'string'){
+                var fakeCmd = isRootCheck(cmd);
+                if (fakeCmd) {
+                    send("[RootDetection Bypass] " + cmd + " command");
+                    return exec.call(this, fakeCmd);
+                }
+            } else if (typeof cmd === 'object') {
+                for (var i = 0; i < cmd.length; i = i + 1) {
+                    var tmp_cmd = cmd[i];
+                    var fakeCmd = isRootCheck(tmp_cmd);
+                    if (fakeCmd){
+                        send("[RootDetection Bypass] " + cmd + " command");
+                        return exec.call(this, '');
+                    }
+                }
+            }
+            return this['exec'].apply(this, argz);
+        };
+    });
+
+    // BufferedReader checkLine check
+    var BufferedReader = Java.use('java.io.BufferedReader');
+    BufferedReader.readLine.implementation = function () {
+        var text = this.readLine.call(this);
+        if (text === null) {
+            // just pass , i know it's ugly as hell but test != null won't work :(
+        } else {
+            var shouldFakeRead = (text.indexOf("ro.build.tags=test-keys") > -1);
+            if (shouldFakeRead) {
+                send("[RootDetection Bypass] build.prop file read");
+                text = text.replace("ro.build.tags=test-keys", "ro.build.tags=release-keys");
+            }
+        }
+        return text;
+    }
+   
+    // ProcessBuilder.start check
+    var ProcessBuilder = Java.use('java.lang.ProcessBuilder');
+    ProcessBuilder.start.implementation = function () {
+        var cmd = this.command.call(this);
+        var shouldModifyCommand = false;
+        for (var i = 0; i < cmd.size(); i = i + 1) {
+            var tmp_cmd = cmd.get(i).toString();
+            if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd.indexOf("mount") != -1 || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd.indexOf("id") != -1) {
+                shouldModifyCommand = true;
+            }
+        }
+        if (shouldModifyCommand) {
+            send("[RootDetection Bypass] ProcessBuilder " + cmd);
+            this.command.call(this, ["grep"]);
+            return this.start.call(this);
+        }
+        if (cmd.indexOf("su") != -1) {
+            send("[RootDetection Bypass] ProcessBuilder " + cmd);
+            this.command.call(this, ["justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled"]);
+            return this.start.call(this);
+        }
+
+        return this.start.call(this);
+    }
+    
+    // Patch other libraries after the above ones
+    var RootBypass = [{
+        class: 'android.security.keystore.KeyInfo',
+        method: 'isInsideSecureHardware',
+        func: function () {
+            send("[RootDetection Bypass] isInsideSecureHardware");
+            return true;
+        },
+        target: 6
+    }, {
+        class: 'android.app.ApplicationPackageManager',
+        method: 'getPackageInfo',
+        arguments: ['java.lang.String', 'int'],
+        func: function (pname, flags) {
+            var shouldFakePackage = (RootPackages.indexOf(pname) > -1);
+            if (shouldFakePackage) {
+                send("[RootDetection Bypass] root check for package: " + pname);
+                pname = "set.package.name.to.a.fake.one.so.we.can.bypass.it";
+            }
+            return this.getPackageInfo.call(this, pname, flags);
+        }
+    },  {
+        class: 'android.os.SystemProperties',
+        method: 'get',
+        arguments: ['java.lang.String'],
+        func: function (name) {
+            if (RootPropertiesKeys.indexOf(name) != -1) {
+                send("[RootDetection Bypass] " + name);
+                return RootProperties[name];
+            }
+            return this.get.call(this, name);
+        }
+    }
+    ]
+
+    RootBypass.forEach(function (bypass, _) {
+        var toHook;
+        try {
+            if (bypass.target && parseInt(Java.androidVersion) < bypass.target) {
+                send('[RootDetection Bypass] Not Hooking unavailable class/method - ' + bypass.class + '.' + bypass.method)
+                return
+            }
+            toHook = Java.use(bypass.class)[bypass.method];
+            if (!toHook) {
+                send('[RootDetection Bypass] Cannot find ' + bypass.class + '.' + bypass.method);
+                return
+            }
+        } catch (err) {
+            send('[RootDetection Bypass] Error ' + bypass.class + '.' + bypass.method + err);
+            return
+        }
+        if (bypass.arguments) {
+            toHook.overload.apply(null, bypass.arguments).implementation = bypass.func;
+        } else {
+            toHook.overload.implementation = bypass.func;
+        }
+    })
+
+    // Native Root Check Bypass
+
     Interceptor.attach(Module.findExportByName("libc.so", "fopen"), {
         onEnter: function (args) {
             var path = Memory.readCString(args[0]);
@@ -213,6 +229,7 @@ Java.perform(function () {
         onLeave: function (retval) {
 
         }
+        
     });
     /*
 
@@ -230,83 +247,4 @@ Java.perform(function () {
     int execvpe(const char *file, char *const argv[], char *const envp[]);
 
     */
-    BufferedReader.readLine.overload().implementation = function () {
-        var text = this.readLine.call(this);
-        if (text === null) {
-            // just pass , i know it's ugly as hell but test != null won't work :(
-        } else {
-            var shouldFakeRead = (text.indexOf("ro.build.tags=test-keys") > -1);
-            if (shouldFakeRead) {
-                send("[RootDetection Bypass] build.prop file read");
-                text = text.replace("ro.build.tags=test-keys", "ro.build.tags=release-keys");
-            }
-        }
-        return text;
-    };
-    var executeCommand = ProcessBuilder.command.overload('java.util.List');
-    ProcessBuilder.start.implementation = function () {
-        var cmd = this.command.call(this);
-        var shouldModifyCommand = false;
-        for (var i = 0; i < cmd.size(); i = i + 1) {
-            var tmp_cmd = cmd.get(i).toString();
-            if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd.indexOf("mount") != -1 || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd.indexOf("id") != -1) {
-                shouldModifyCommand = true;
-            }
-        }
-        if (shouldModifyCommand) {
-            send("[RootDetection Bypass] ProcessBuilder " + cmd);
-            this.command.call(this, ["grep"]);
-            return this.start.call(this);
-        }
-        if (cmd.indexOf("su") != -1) {
-            send("[RootDetection Bypass] ProcessBuilder " + cmd);
-            this.command.call(this, ["justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled"]);
-            return this.start.call(this);
-        }
-
-        return this.start.call(this);
-    };
-    if (useProcessManager) {
-        var ProcManExec = ProcessManager.exec.overload('[Ljava.lang.String;', '[Ljava.lang.String;', 'java.io.File', 'boolean');
-        var ProcManExecVariant = ProcessManager.exec.overload('[Ljava.lang.String;', '[Ljava.lang.String;', 'java.lang.String', 'java.io.FileDescriptor', 'java.io.FileDescriptor', 'java.io.FileDescriptor', 'boolean');
-
-        ProcManExec.implementation = function (cmd, env, workdir, redirectstderr) {
-            var fake_cmd = cmd;
-            for (var i = 0; i < cmd.length; i = i + 1) {
-                var tmp_cmd = cmd[i];
-                if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id") {
-                    var fake_cmd = ["grep"];
-                    send("[RootDetection Bypass] " + cmdarr + " command");
-                }
-
-                if (tmp_cmd == "su") {
-                    var fake_cmd = ["justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled"];
-                    send("[RootDetection Bypass] " + cmdarr + " command");
-                }
-            }
-            return ProcManExec.call(this, fake_cmd, env, workdir, redirectstderr);
-        };
-        ProcManExecVariant.implementation = function (cmd, env, directory, stdin, stdout, stderr, redirect) {
-            var fake_cmd = cmd;
-            for (var i = 0; i < cmd.length; i = i + 1) {
-                var tmp_cmd = cmd[i];
-                if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id") {
-                    var fake_cmd = ["grep"];
-                    send("[RootDetection Bypass] " + cmdarr + " command");
-                }
-
-                if (tmp_cmd == "su") {
-                    var fake_cmd = ["justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled"];
-                    send("[RootDetection Bypass] " + cmdarr + " command");
-                }
-            }
-            return ProcManExecVariant.call(this, fake_cmd, env, directory, stdin, stdout, stderr, redirect);
-        };
-    }
-    if (useKeyInfo) {
-        KeyInfo.isInsideSecureHardware.implementation = function () {
-            send("[RootDetection Bypass] isInsideSecureHardware");
-            return true;
-        }
-    }
 });

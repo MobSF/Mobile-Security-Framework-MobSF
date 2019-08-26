@@ -486,9 +486,9 @@ var apis = [{
 }];
 
 // Get All Method Implementations
-function get_implementations(clazz, method) {
+function get_implementations(toHook) {
     var imp_args = []
-    Java.use(clazz)[method].overloads.forEach(function (impl, _) {
+    toHook.overloads.forEach(function (impl, _) {
         if (impl.hasOwnProperty('argumentTypes')) {
             var args = [];
             var argTypes = impl.argumentTypes
@@ -504,17 +504,19 @@ function get_implementations(clazz, method) {
 // Dynamic Hooks
 function hook(api, callback) {
     var Exception = Java.use('java.lang.Exception');
+    var toHook;
     try {
-        //Check if class and method is available
         var clazz = api.class;
         var method = api.method;
         var name = api.name;
         try{
             if (api.target && parseInt(Java.androidVersion) < api.target){
-                send('[API Monitor] Not Hooking unavailable class/method - ' + clazz + '.' + method)
+                // send('[API Monitor] Not Hooking unavailable class/method - ' + clazz + '.' + method)
                 return
             }
-            if (!Java.use(clazz)[method]){
+            // Check if class and method is available
+            toHook = Java.use(clazz)[method];
+            if (!toHook){
                 send('[API Monitor] Cannot find ' + clazz + '.' + method);
                 return
             }
@@ -522,9 +524,9 @@ function hook(api, callback) {
             send('[API Monitor] Cannot find '+ clazz + '.' + method);
             return 
         }
-        var arglist = get_implementations(clazz, method)
+        var arglist = get_implementations(toHook)
         arglist.forEach(function (args, _) {
-            Java.use(clazz)[method].overload.apply(null, args).implementation = function () {
+            toHook.overload.apply(null, args).implementation = function () {
                 var args = [].slice.call(arguments);
                 // Call original function
                 var result = this[method].apply(this, args);

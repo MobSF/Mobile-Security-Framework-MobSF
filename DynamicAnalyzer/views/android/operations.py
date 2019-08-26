@@ -74,12 +74,13 @@ def mobsfy(request):
     try:
         identifier = request.POST['identifier']
         create_env = Environment(identifier)
-        if not create_env.mobsfy_init():
+        version = create_env.mobsfy_init()
+        if not version:
             msg = 'Connection failed'
             data = {'status': 'failed', 'message': msg}
             return json_response(data)
         else:
-            data = {'status': 'ok'}
+            data = {'status': 'ok', 'version': version}
     except Exception as exp:
         logger.exception('MobSFying Android instance failed')
         data = {'status': 'failed', 'message': str(exp)}
