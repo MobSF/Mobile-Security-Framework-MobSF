@@ -79,6 +79,7 @@ var apis = [{
     method: 'open',
     name: 'File IO'
 },/* {
+    // so much calls
     class: 'java.io.FileOutputStream',
     method: 'write',
     name: 'File IO'
@@ -98,7 +99,8 @@ var apis = [{
     class: 'android.content.ContextWrapper',
     method: 'deleteFile',
     name: 'File IO'
-}, {
+}, /* {
+    // crashes app on android 7
     class: 'android.app.SharedPreferencesImpl',
     method: 'getString',
     name: 'File IO - Shared Preferences'
@@ -134,7 +136,7 @@ var apis = [{
     class: 'android.app.SharedPreferencesImpl$EditorImpl',
     method: 'putStringSet',
     name: 'File IO - Shared Preferences'
-}, {
+},  {
     class: 'android.app.SharedPreferencesImpl$EditorImpl',
     method: 'putInt',
     name: 'File IO - Shared Preferences'
@@ -154,7 +156,7 @@ var apis = [{
     class: 'android.app.SharedPreferencesImpl$EditorImpl',
     method: 'remove',
     name: 'File IO - Shared Preferences'
-}, {
+}, */ {
     class: 'android.content.ContextWrapper',
     method: 'openOrCreateDatabase',
     name: 'Database'
@@ -359,7 +361,7 @@ var apis = [{
     class: 'android.content.pm.PackageManager',
     method: 'getInstalledPackages',
     name: 'Device Info'
-},{
+}, {
     class: 'java.net.URL',
     method: 'openConnection',
     name: 'Network'
@@ -492,7 +494,7 @@ function get_implementations(toHook) {
         if (impl.hasOwnProperty('argumentTypes')) {
             var args = [];
             var argTypes = impl.argumentTypes
-            argTypes.forEach(function (arg_type, _) {
+            argTypes.forEach(function (arg_type, __) {
                 args.push(arg_type.className)
             });
             imp_args.push(args);
@@ -509,34 +511,34 @@ function hook(api, callback) {
         var clazz = api.class;
         var method = api.method;
         var name = api.name;
-        try{
-            if (api.target && parseInt(Java.androidVersion) < api.target){
+        try {
+            if (api.target && parseInt(Java.androidVersion, 10) < api.target) {
                 // send('[API Monitor] Not Hooking unavailable class/method - ' + clazz + '.' + method)
                 return
             }
             // Check if class and method is available
             toHook = Java.use(clazz)[method];
-            if (!toHook){
+            if (!toHook) {
                 send('[API Monitor] Cannot find ' + clazz + '.' + method);
                 return
             }
         } catch (err) {
-            send('[API Monitor] Cannot find '+ clazz + '.' + method);
-            return 
+            send('[API Monitor] Cannot find ' + clazz + '.' + method);
+            return
         }
         var arglist = get_implementations(toHook)
         arglist.forEach(function (args, _) {
             toHook.overload.apply(null, args).implementation = function () {
-                var args = [].slice.call(arguments);
+                var argz = [].slice.call(arguments);
                 // Call original function
-                var result = this[method].apply(this, args);
+                var result = this[method].apply(this, argz);
                 if (callback) {
                     var calledFrom = Exception.$new().getStackTrace().toString().split(',')[1];
                     var message = {
                         name: name,
                         class: clazz,
                         method: method,
-                        arguments: args,
+                        arguments: argz,
                         result: result,
                         calledFrom: calledFrom
                     };
@@ -546,7 +548,7 @@ function hook(api, callback) {
             };
         });
     } catch (err) {
-        send('[API Monitor] - ERROR: ' +clazz + "." + method + "[\"Error\"] => " + err);
+        send('[API Monitor] - ERROR: ' + clazz + "." + method + "[\"Error\"] => " + err);
     }
 }
 
@@ -561,8 +563,8 @@ Java.performNow(function () {
                 !message.name.includes('IPC')) {
             */
             message.returnValue = originalResult
-            if (originalResult && originalResult != null) {
-                if (typeof originalResult === 'object'){
+            if (originalResult) {
+                if (typeof originalResult === 'object') {
                     message.returnValue = '' + message.returnValue
                 }
             }
@@ -577,4 +579,3 @@ Java.performNow(function () {
         });
     });
 });
-

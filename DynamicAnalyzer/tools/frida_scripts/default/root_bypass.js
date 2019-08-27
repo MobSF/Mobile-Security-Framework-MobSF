@@ -17,8 +17,10 @@ Java.performNow(function () {
     };
     var RootPropertiesKeys = [];
     for (var k in RootProperties) RootPropertiesKeys.push(k);
- 
+
     // Patch Native functions early
+
+    // File.exists check
     var NativeFile = Java.use('java.io.File');
     NativeFile.exists.implementation = function () {
         var name = NativeFile.getName.call(this);
@@ -29,7 +31,8 @@ Java.performNow(function () {
             return this.exists.call(this);
         }
     };
-    // String Contains check
+
+    // String.contains check
     var String = Java.use('java.lang.String');
     String.contains.implementation = function (name) {
         if (name == "test-keys") {
@@ -39,28 +42,29 @@ Java.performNow(function () {
         return this.contains.call(this, name);
     };
 
-    //Runtime
+    // Runtime.exec check
     function isRootCheck(cmd) {
+        var fakeCmd;
         if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id" || cmd == "sh") {
-            var fakeCmd = "grep";
+            fakeCmd = "grep";
             send("[RootDetection Bypass] " + cmd + " command");
             return fakeCmd;
         }
         if (cmd == "su") {
-            var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
+            fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
             send("[RootDetection Bypass] " + cmd + " command");
             return fakeCmd;
         }
         return false;
     }
-    //Get all implementations
+    // Get all implementations
     function get_implementations(toHook) {
         var imp_args = []
         toHook.overloads.forEach(function (impl, _) {
             if (impl.hasOwnProperty('argumentTypes')) {
                 var args = [];
                 var argTypes = impl.argumentTypes
-                argTypes.forEach(function (arg_type, _) {
+                argTypes.forEach(function (arg_type, __) {
                     args.push(arg_type.className)
                 });
                 imp_args.push(args);
@@ -75,10 +79,11 @@ Java.performNow(function () {
 
     execImplementations.forEach(function (args, _) {
         Runtime.exec.overload.apply(null, args).implementation = function () {
+            var fakeCmd;
             var argz = [].slice.call(arguments);
             var cmd = argz[0]
-            if (typeof cmd === 'string'){
-                var fakeCmd = isRootCheck(cmd);
+            if (typeof cmd === 'string') {
+                fakeCmd = isRootCheck(cmd);
                 if (fakeCmd) {
                     send("[RootDetection Bypass] " + cmd + " command");
                     return exec.call(this, fakeCmd);
@@ -86,8 +91,8 @@ Java.performNow(function () {
             } else if (typeof cmd === 'object') {
                 for (var i = 0; i < cmd.length; i = i + 1) {
                     var tmp_cmd = cmd[i];
-                    var fakeCmd = isRootCheck(tmp_cmd);
-                    if (fakeCmd){
+                    fakeCmd = isRootCheck(tmp_cmd);
+                    if (fakeCmd) {
                         send("[RootDetection Bypass] " + cmd + " command");
                         return exec.call(this, '');
                     }
@@ -99,7 +104,7 @@ Java.performNow(function () {
 
     // BufferedReader checkLine check
     var BufferedReader = Java.use('java.io.BufferedReader');
-    BufferedReader.readLine.implementation = function () {
+    BufferedReader.readLine.overload().implementation = function () {
         var text = this.readLine.call(this);
         if (text === null) {
             // just pass , i know it's ugly as hell but test != null won't work :(
@@ -112,7 +117,7 @@ Java.performNow(function () {
         }
         return text;
     }
-   
+
     // ProcessBuilder.start check
     var ProcessBuilder = Java.use('java.lang.ProcessBuilder');
     ProcessBuilder.start.implementation = function () {
@@ -137,7 +142,7 @@ Java.performNow(function () {
 
         return this.start.call(this);
     }
-    
+
     // Patch other libraries after the above ones
     var RootBypass = [{
         class: 'android.security.keystore.KeyInfo',
@@ -159,7 +164,7 @@ Java.performNow(function () {
             }
             return this.getPackageInfo.call(this, pname, flags);
         }
-    },  {
+    }, {
         class: 'android.os.SystemProperties',
         method: 'get',
         arguments: ['java.lang.String'],
@@ -176,7 +181,7 @@ Java.performNow(function () {
     RootBypass.forEach(function (bypass, _) {
         var toHook;
         try {
-            if (bypass.target && parseInt(Java.androidVersion) < bypass.target) {
+            if (bypass.target && parseInt(Java.androidVersion, 10) < bypass.target) {
                 send('[RootDetection Bypass] Not Hooking unavailable class/method - ' + bypass.class + '.' + bypass.method)
                 return
             }
@@ -229,7 +234,7 @@ Java.performNow(function () {
         onLeave: function (retval) {
 
         }
-        
+
     });
     /*
 
