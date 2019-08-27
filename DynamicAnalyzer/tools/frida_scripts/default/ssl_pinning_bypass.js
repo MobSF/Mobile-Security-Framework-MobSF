@@ -89,7 +89,7 @@ setTimeout(function () {
         SSLPinningBypass.forEach(function (bypass, _) {
             var toHook;
             try {
-                if (bypass.target && parseInt(Java.androidVersion) < bypass.target) {
+                if (bypass.target && parseInt(Java.androidVersion, 10) < bypass.target) {
                     send('[SSL Pinning Bypass] Not Hooking unavailable class/method - ' + bypass.class + '.' + bypass.method)
                     return
                 }

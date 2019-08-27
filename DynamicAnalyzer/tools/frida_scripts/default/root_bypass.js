@@ -44,13 +44,14 @@ Java.performNow(function () {
 
     // Runtime.exec check
     function isRootCheck(cmd) {
+        var fakeCmd ;
         if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id" || cmd == "sh") {
-            var fakeCmd = "grep";
+            fakeCmd = "grep";
             send("[RootDetection Bypass] " + cmd + " command");
             return fakeCmd;
         }
         if (cmd == "su") {
-            var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
+            fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
             send("[RootDetection Bypass] " + cmd + " command");
             return fakeCmd;
         }
@@ -63,7 +64,7 @@ Java.performNow(function () {
             if (impl.hasOwnProperty('argumentTypes')) {
                 var args = [];
                 var argTypes = impl.argumentTypes
-                argTypes.forEach(function (arg_type, _) {
+                argTypes.forEach(function (arg_type, __) {
                     args.push(arg_type.className)
                 });
                 imp_args.push(args);
@@ -78,10 +79,11 @@ Java.performNow(function () {
 
     execImplementations.forEach(function (args, _) {
         Runtime.exec.overload.apply(null, args).implementation = function () {
+            var fakeCmd;
             var argz = [].slice.call(arguments);
             var cmd = argz[0]
             if (typeof cmd === 'string'){
-                var fakeCmd = isRootCheck(cmd);
+                fakeCmd = isRootCheck(cmd);
                 if (fakeCmd) {
                     send("[RootDetection Bypass] " + cmd + " command");
                     return exec.call(this, fakeCmd);
@@ -89,7 +91,7 @@ Java.performNow(function () {
             } else if (typeof cmd === 'object') {
                 for (var i = 0; i < cmd.length; i = i + 1) {
                     var tmp_cmd = cmd[i];
-                    var fakeCmd = isRootCheck(tmp_cmd);
+                    fakeCmd = isRootCheck(tmp_cmd);
                     if (fakeCmd){
                         send("[RootDetection Bypass] " + cmd + " command");
                         return exec.call(this, '');
@@ -102,7 +104,7 @@ Java.performNow(function () {
 
     // BufferedReader checkLine check
     var BufferedReader = Java.use('java.io.BufferedReader');
-    BufferedReader.readLine.implementation = function () {
+    BufferedReader.readLine.overload().implementation = function () {
         var text = this.readLine.call(this);
         if (text === null) {
             // just pass , i know it's ugly as hell but test != null won't work :(
@@ -179,7 +181,7 @@ Java.performNow(function () {
     RootBypass.forEach(function (bypass, _) {
         var toHook;
         try {
-            if (bypass.target && parseInt(Java.androidVersion) < bypass.target) {
+            if (bypass.target && parseInt(Java.androidVersion, 10) < bypass.target) {
                 send('[RootDetection Bypass] Not Hooking unavailable class/method - ' + bypass.class + '.' + bypass.method)
                 return
             }

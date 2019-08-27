@@ -492,7 +492,7 @@ function get_implementations(toHook) {
         if (impl.hasOwnProperty('argumentTypes')) {
             var args = [];
             var argTypes = impl.argumentTypes
-            argTypes.forEach(function (arg_type, _) {
+            argTypes.forEach(function (arg_type, __) {
                 args.push(arg_type.className)
             });
             imp_args.push(args);
@@ -510,7 +510,7 @@ function hook(api, callback) {
         var method = api.method;
         var name = api.name;
         try{
-            if (api.target && parseInt(Java.androidVersion) < api.target){
+            if (api.target && parseInt(Java.androidVersion, 10) < api.target){
                 // send('[API Monitor] Not Hooking unavailable class/method - ' + clazz + '.' + method)
                 return
             }
@@ -527,16 +527,16 @@ function hook(api, callback) {
         var arglist = get_implementations(toHook)
         arglist.forEach(function (args, _) {
             toHook.overload.apply(null, args).implementation = function () {
-                var args = [].slice.call(arguments);
+                var argz = [].slice.call(arguments);
                 // Call original function
-                var result = this[method].apply(this, args);
+                var result = this[method].apply(this, argz);
                 if (callback) {
                     var calledFrom = Exception.$new().getStackTrace().toString().split(',')[1];
                     var message = {
                         name: name,
                         class: clazz,
                         method: method,
-                        arguments: args,
+                        arguments: argz,
                         result: result,
                         calledFrom: calledFrom
                     };
@@ -561,7 +561,7 @@ Java.performNow(function () {
                 !message.name.includes('IPC')) {
             */
             message.returnValue = originalResult
-            if (originalResult && originalResult != null) {
+            if (originalResult) {
                 if (typeof originalResult === 'object'){
                     message.returnValue = '' + message.returnValue
                 }
