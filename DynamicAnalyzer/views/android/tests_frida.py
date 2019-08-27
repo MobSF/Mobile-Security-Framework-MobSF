@@ -7,6 +7,7 @@ import glob
 import json
 import sys
 import time
+import threading
 from pathlib import Path
 import logging
 
@@ -73,7 +74,9 @@ def instrument(request):
                 or is_attack_pattern(package) or not is_md5(md5_hash)):
             return invalid_params()
         frida = Frida(md5_hash, package, default_hooks.split(','))
-        frida.connect()
+        trd = threading.Thread(target=frida.connect)
+        trd.daemon = True
+        trd.start()
         data = {'status': 'ok'}
     except Exception as exp:
         logger.exception('Instrumentation failed')
@@ -152,7 +155,9 @@ class Frida:
                 header.append('send("Loaded Frida Script - {}");'.format(
                     script.stem))
                 combined_script.append(script.read_text())
-        return '\n'.join(header) + '\n'.join(combined_script)
+        final = 'setTimeout(function() {{ {} }}, 0)'.format(
+            '\n'.join(header) + '\n'.join(combined_script))
+        return final
 
     def get_script(self):
         """Get final script."""
@@ -183,7 +188,7 @@ class Frida:
             logger.info('Spawning %s', self.package)
             pid = device.spawn([self.package])
             device.resume(pid)
-            time.sleep(1)
+            time.sleep(2)
             session = device.attach(pid)
         except frida.ServerNotRunningError:
             logger.warning('Frida server is not running')
