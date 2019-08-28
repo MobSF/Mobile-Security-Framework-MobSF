@@ -503,11 +503,14 @@ $("#logstream").click(function() {
 // Frida Spawn
 $("#frida_spawn").click(function() {
     print_status("Instrumenting app with frida");
-    $('#apimon').show();
     var default_hooks = [];
     $.each($("input[name='default_hooks']:checked"), function(){            
         default_hooks.push($(this).val());
     });
+    if(default_hooks.includes("api_monitor"))
+      $('#apimon').show();
+    else
+      $('#apimon').hide();
     action('../frida_instrument/', {hash: '{{ md5 }}', package: '{{ package }}', default_hooks: default_hooks.join(",")}, function(json) {
     if (json.status === "ok")
       print_status("Successfully attached");
