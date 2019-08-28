@@ -37,6 +37,15 @@ def is_attack_pattern(user_input):
     return stat
 
 
+def strict_package_check(user_input):
+    """Strict package name check."""
+    pat = re.compile(r'^\w+\.*[\w\.]+$')
+    resp = re.match(pat, user_input)
+    if not resp:
+        logger.error('Invalid package name')
+    return resp
+
+
 def is_path_traversal(user_input):
     """Check for path traversal."""
     if (('../' in user_input)
@@ -50,7 +59,7 @@ def is_path_traversal(user_input):
 
 def is_md5(user_input):
     """Check if string is valid MD5."""
-    stat = re.match('^[0-9a-f]{32}$', user_input)
+    stat = re.match(r'^[0-9a-f]{32}$', user_input)
     if not stat:
         logger.error('Invalid scan hash')
     return stat

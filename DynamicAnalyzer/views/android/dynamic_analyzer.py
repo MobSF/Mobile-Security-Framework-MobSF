@@ -14,7 +14,8 @@ from django.shortcuts import render
 from DynamicAnalyzer.views.android.environment import Environment
 from DynamicAnalyzer.views.android.operations import (
     is_attack_pattern,
-    is_md5)
+    is_md5,
+    strict_package_check)
 from DynamicAnalyzer.tools.webproxy import (
     start_fuzz_ui,
     stop_capfuzz)
@@ -51,8 +52,11 @@ def dynamic_analyzer(request):
                                                'Invalid Parameters')
         identifier = get_device()
         if not identifier:
-            msg = ('MobSF cannot find android instance identifier. '
-                   'Please set ANALYZER_IDENTIFIER in MobSF/settings.py')
+            msg = ('Is the android instance running? MobSF cannot'
+                   ' find android instance identifier. '
+                   'Please run an android instance and refresh'
+                   ' this page. If this error persists,'
+                   ' set ANALYZER_IDENTIFIER in MobSF/settings.py')
             return print_n_send_error_response(request, msg)
         env = Environment(identifier)
         if not env.connect_n_mount():
@@ -125,22 +129,35 @@ def capfuzz_start(request):
 def logcat(request):
     logger.info('Starting Logcat streaming')
     try:
-        view = request.GET.get('view')
-        if view:
+        pkg = request.GET.get('package')
+        if pkg:
+            if not strict_package_check(pkg):
+                return print_n_send_error_response(
+                    request,
+                    'Invalid package name')
             template = 'dynamic_analysis/android/logcat.html'
-            return render(request, template, None)
-        adb = os.environ['MOBSF_ADB'] if 'MOBSF_ADB' in os.environ else 'adb'
-        g = proc.Group()
-        g.run([adb, 'logcat'])
+            return render(request, template, {'package': pkg})
+        app_pkg = request.GET.get('app_package')
+        if app_pkg:
+            if not strict_package_check(app_pkg):
+                return print_n_send_error_response(
+                    request,
+                    'Invalid package name')
+            adb = os.environ['MOBSF_ADB']
+            g = proc.Group()
+            g.run([adb, 'logcat', app_pkg + ':V', '*:*'])
 
-        def read_process():
-            while g.is_pending():
-                lines = g.readlines()
-                for _, line in lines:
-                    time.sleep(.2)
-                    yield 'data:{}\n\n'.format(line)
-        return StreamingHttpResponse(read_process(),
-                                     content_type='text/event-stream')
+            def read_process():
+                while g.is_pending():
+                    lines = g.readlines()
+                    for _, line in lines:
+                        time.sleep(.01)
+                        yield 'data:{}\n\n'.format(line)
+            return StreamingHttpResponse(read_process(),
+                                         content_type='text/event-stream')
+        return print_n_send_error_response(
+            request,
+            'Invalid parameters')
     except Exception:
         logger.exception('Logcat Streaming')
         err = 'Error in Logcat streaming'

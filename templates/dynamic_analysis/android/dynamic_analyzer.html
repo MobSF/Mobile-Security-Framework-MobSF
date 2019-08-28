@@ -496,7 +496,7 @@ $("#actt").click(function()  {
 // Logcat Stream
 $("#logstream").click(function() {
     print_status("Logcat Steaming started");
-    setTimeout(function(){ window.open('../logcat/?view=1', '_blank');}, 500);   
+    setTimeout(function(){ window.open('../logcat/?package={{ package }}', '_blank');}, 500);   
     return false;  
 }); 
 
