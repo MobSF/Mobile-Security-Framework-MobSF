@@ -45,6 +45,7 @@ before_script:
   git+https://github.com/VirusTotal/yara-python.git
 - pip3 install --no-index --find-links=/tmp/yara-python yara-python
 - pip3 install -r requirements.txt
+- pip3 install capfuzz==0.0.1
 - python3 manage.py makemigrations || python manage.py makemigrations
 - python3 manage.py migrate || python manage.py migrate
 script:
