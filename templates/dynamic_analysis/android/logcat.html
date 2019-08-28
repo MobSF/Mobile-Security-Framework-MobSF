@@ -1,7 +1,7 @@
 <div id="messages"></div>
 <button id="tgl" onclick="toggle()">Stop Streaming</button>
 <script type="text/javascript">
-var source = new EventSource('/logcat/');
+var source = new EventSource('/logcat/?app_package={{package}}');
 var i = 0;
 var stream = true;
 var div = document.getElementById("messages");

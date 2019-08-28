@@ -10,7 +10,8 @@ from DynamicAnalyzer.views.android.operations import (
     invalid_params,
     is_attack_pattern,
     is_md5,
-    json_response)
+    json_response,
+    strict_package_check)
 from DynamicAnalyzer.views.android.environment import Environment
 from DynamicAnalyzer.views.android.tests_xposed import download_xposed_log
 from DynamicAnalyzer.tools.webproxy import stop_capfuzz
@@ -168,7 +169,8 @@ def collect_logs(request):
         env = Environment()
         md5_hash = request.POST['hash']
         package = request.POST['package']
-        if is_attack_pattern(package) or not is_md5(md5_hash):
+        if (not strict_package_check(package)
+                or not is_md5(md5_hash)):
             return invalid_params()
         apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         lout = os.path.join(apk_dir, 'logcat.txt')
@@ -176,8 +178,8 @@ def collect_logs(request):
         logger.info('Downloading logcat logs')
         logcat = env.adb_command(['logcat',
                                   '-d',
-                                  'dalvikvm:W',
-                                  'ActivityManager:I'])
+                                  package + ':V',
+                                  '*:*'])
         with open(lout, 'wb') as flip:
             flip.write(logcat)
         logger.info('Downloading dumpsys logs')
