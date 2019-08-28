@@ -49,6 +49,7 @@ pip install --no-cache-dir --no-index --find-links=/tmp/yara-python yara-python
 
 echo '[INSTALL] Installing Requirements'
 pip install --no-cache-dir -r requirements.txt
+pip install --no-cache-dir capfuzz==0.0.1
 
 echo '[INSTALL] Clean Up'
 bash scripts/clean.sh y
