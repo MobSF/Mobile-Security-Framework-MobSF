@@ -31,13 +31,27 @@ logger = logging.getLogger(__name__)
 
 def dynamic_analysis(request):
     """Android Dynamic Analysis Entry point."""
-    apks = StaticAnalyzerAndroid.objects.filter(
-        ZIPPED='&type=apk').order_by('-id')
-    context = {'apks': apks,
-               'identifier': get_device(),
-               'title': 'MobSF Dynamic Analysis'}
-    template = 'dynamic_analysis/dynamic_analysis.html'
-    return render(request, template, context)
+    try:
+        apks = StaticAnalyzerAndroid.objects.filter(
+            ZIPPED='&type=apk').order_by('-id')
+        try:
+            identifier = get_device()
+        except Exception:
+            msg = ('Is the android instance running? MobSF cannot'
+                   ' find android instance identifier. '
+                   'Please run an android instance and refresh'
+                   ' this page. If this error persists,'
+                   ' set ANALYZER_IDENTIFIER in MobSF/settings.py')
+            return print_n_send_error_response(request, msg)
+        context = {'apks': apks,
+                   'identifier': identifier,
+                   'title': 'MobSF Dynamic Analysis'}
+        template = 'dynamic_analysis/dynamic_analysis.html'
+        return render(request, template, context)
+    except Exception as exp:
+        logger.exception('Dynamic Analysis')
+        return print_n_send_error_response(request,
+                                           exp)
 
 
 def dynamic_analyzer(request):
@@ -50,8 +64,9 @@ def dynamic_analyzer(request):
                 or not is_md5(bin_hash)):
             return print_n_send_error_response(request,
                                                'Invalid Parameters')
-        identifier = get_device()
-        if not identifier:
+        try:
+            identifier = get_device()
+        except Exception:
             msg = ('Is the android instance running? MobSF cannot'
                    ' find android instance identifier. '
                    'Please run an android instance and refresh'
@@ -98,7 +113,7 @@ def dynamic_analyzer(request):
         template = 'dynamic_analysis/android/dynamic_analyzer.html'
         return render(request, template, context)
     except Exception:
-        logger.exception('DynamicAnalyzer')
+        logger.exception('Dynamic Analyzer')
         return print_n_send_error_response(request,
                                            'Dynamic Analysis Failed.')
 
