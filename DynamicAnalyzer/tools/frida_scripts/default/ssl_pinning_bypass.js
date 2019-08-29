@@ -21,6 +21,15 @@ Java.perform(function() {
         } catch (err) {
             send('[SSL Pinning Bypass] TrustManagerImpl.verifyChain() not found');
         }
+        try {
+            var ConscryptFileDescriptorSocket = Java.use('com.android.org.conscrypt.ConscryptFileDescriptorSocket');
+            ConscryptFileDescriptorSocket.verifyCertificateChain.implementation = function (certChain, authMethod) {
+                send('[SSL Pinning Bypass] verifyCertificateChain() bypassed');
+                return;
+            }
+        } catch (err) {
+            send('[SSL Pinning Bypass] TrustManagerImpl.verifyChain() not found');
+        }
     } else if (androidVersion > 4 && androidVersion < 7) {
         // Generic SSL Pinning Bypass tested on Android 5, 5,1, 6
         // https://codeshare.frida.re/@akabe1/frida-universal-pinning-bypasser/
