@@ -16,6 +16,7 @@ import sys
 import sqlite3
 import unicodedata
 import threading
+from distutils.version import LooseVersion
 
 import psutil
 
@@ -114,18 +115,14 @@ def check_update():
         html = str(response.text).split('\n')
         for line in html:
             if line.startswith('MOBSF_VER'):
-                line = line.replace('MOBSF_VER', '').replace("'", '')
-                line = line.replace('=', '').strip()
-                web_version = line
-                w_ver = line.replace('v', '').replace('.', '').rsplit(' ', 1)
-                c_line = settings.MOBSF_VER.replace('v', '').replace('.', '')
-                c_ver = c_line.rsplit(' ', 1)
-                if c_ver < w_ver:
-                    logger.warning('A new version %s of MobSF is available, '
-                                   'Please update from master branch or check '
-                                   'for new releases.', web_version)
+                remote_version = line.split('= ',1)[1].replace('\'', '')
+                if LooseVersion(settings.MOBSF_VER) < LooseVersion(remote_version):
+                    logger.warning('A new version of MobSF is available, '
+                                   'Please update to %s from master branch.',
+                                   remote_version)
                 else:
                     logger.info('No updates available.')
+                break
     except requests.exceptions.HTTPError:
         logger.warning('\nCannot check for updates..'
                        ' No Internet Connection Found.')
@@ -484,10 +481,9 @@ def get_adb():
             os.environ['MOBSF_ADB'] = ADB_PATH
         else:
             os.environ['MOBSF_ADB'] = 'adb'
-            logger.warning('Cannot find adb path. '
-                           'Dynamic Analysis related '
+            logger.warning('Dynamic Analysis related '
                            'functions will not work. '
-                           '\nMake sure a Genymotion Android VM'
+                           'Make sure a Genymotion Android VM'
                            ' is running before performing Dynamic Analyis.')
     return 'adb'
 
