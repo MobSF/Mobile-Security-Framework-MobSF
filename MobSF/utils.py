@@ -486,9 +486,8 @@ def get_adb():
             logger.warning('Cannot find adb path. '
                            'Dynamic Analysis related '
                            'functions will not work. '
-                           '\nDynamic Analysis is not supported with Docker.'
                            '\nMake sure a Genymotion Android VM'
-                           ' is running before perfroming Dynamic Analyis.')
+                           ' is running before performing Dynamic Analyis.')
     return 'adb'
 
 
