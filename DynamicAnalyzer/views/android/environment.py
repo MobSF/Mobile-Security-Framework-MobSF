@@ -16,7 +16,10 @@ from DynamicAnalyzer.tools.webproxy import (get_ca_dir,
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 
-from MobSF.utils import (get_adb, get_device, python_list)
+from MobSF.utils import (get_adb,
+                         get_device,
+                         get_proxy_ip,
+                         python_list)
 
 logger = logging.getLogger(__name__)
 
@@ -104,13 +107,40 @@ class Environment:
             logger.info('Removing MobSF RootCA')
             self.adb_command(['rm', ca_file], True)
 
-    def enable_adb_reverse_tcp(self):
+    def set_global_proxy(self, version):
+        """Set Global Proxy on device."""
+        # Android 4.4+ supported
+        proxy_ip = None
+        proxy_port = settings.PROXY_PORT
+        if version < 5:
+            proxy_ip = get_proxy_ip(self.identifier)
+        else:
+            proxy_ip = '127.0.0.1'
+        if proxy_ip:
+            if version < 4.4:
+                logger.warning('Please set Android VM proxy as %s:%s',
+                               proxy_ip, proxy_port)
+                return
+            logger.info('Setting Global Proxy for Android VM')
+            self.adb_command(
+                ['settings',
+                 'put',
+                 'global',
+                 'http_proxy',
+                 '{}:{}'.format(proxy_ip, proxy_port)], True)
+
+    def enable_adb_reverse_tcp(self, version):
         """Enable ADB Reverse TCP for Proxy."""
+        # Androd 5+ supported
+        if not version >= 5:
+            return
         proxy_port = settings.PROXY_PORT
         logger.info('Enabling ADB Reverse TCP on %s', proxy_port)
         tcp = 'tcp:{}'.format(proxy_port)
         try:
-            proc = subprocess.Popen([get_adb(), 'reverse', tcp, tcp],
+            proc = subprocess.Popen([get_adb(),
+                                     '-s', self.identifier,
+                                     'reverse', tcp, tcp],
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
             _, stderr = proc.communicate()
@@ -368,15 +398,3 @@ class Environment:
         trd.daemon = True
         trd.start()
         logger.info('Frida Server is running')
-
-    def set_global_proxy(self):
-        """Set Wifi Proxy on device."""
-        version = self.get_android_version()
-        if version > 6:
-            logger.info('Setting Global Proxy to android instance')
-            self.adb_command(
-                ['settings',
-                 'put',
-                 'global',
-                 'http_proxy',
-                 '127.0.0.1:{}'.format(settings.PROXY_PORT)], True)

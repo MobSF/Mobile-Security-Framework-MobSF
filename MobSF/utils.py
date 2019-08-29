@@ -113,10 +113,11 @@ def check_update():
         response = requests.get(github_url, timeout=5,
                                 proxies=proxies, verify=verify)
         html = str(response.text).split('\n')
+        local_version = settings.MOBSF_VER
         for line in html:
             if line.startswith('MOBSF_VER'):
-                remote_version = line.split('= ',1)[1].replace('\'', '')
-                if LooseVersion(settings.MOBSF_VER) < LooseVersion(remote_version):
+                remote_version = line.split('= ', 1)[1].replace('\'', '')
+                if LooseVersion(local_version) < LooseVersion(remote_version):
                     logger.warning('A new version of MobSF is available, '
                                    'Please update to %s from master branch.',
                                    remote_version)
@@ -598,3 +599,37 @@ def read_sqlite(sqlite_file):
 def is_pipe_or_link(path):
     """Check for named pipe."""
     return os.path.islink(path) or stat.S_ISFIFO(os.stat(path).st_mode)
+
+
+def get_network():
+    """Get Network IPs."""
+    ips = []
+    try:
+        for det in psutil.net_if_addrs().values():
+            ips.append(det[0].address)
+    except Exception:
+        logger.exception('Failed to enumerate network interfaces')
+    return ips
+
+
+def get_proxy_ip(identifier):
+    """Get Proxy IP."""
+    proxy_ip = None
+    try:
+        if not identifier:
+            return proxy_ip
+        ips = get_network()
+        if ':' not in identifier or not ips:
+            return proxy_ip
+        device_ip = identifier.split(':', 1)[0]
+        ip_range = device_ip.rsplit('.', 1)[0]
+        guess_ip = ip_range + '.1'
+        if guess_ip in ips:
+            return guess_ip
+        for ip_addr in ips:
+            to_check = ip_addr.rsplit('.', 1)[0]
+            if to_check == ip_range:
+                return ip_addr
+    except Exception:
+        logger.error('Error getting Proxy IP')
+    return proxy_ip

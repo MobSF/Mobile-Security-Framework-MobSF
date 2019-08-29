@@ -21,6 +21,7 @@ from DynamicAnalyzer.tools.webproxy import (
     stop_capfuzz)
 
 from MobSF.utils import (get_device,
+                         get_proxy_ip,
                          print_n_send_error_response)
 
 
@@ -38,13 +39,16 @@ def dynamic_analysis(request):
             identifier = get_device()
         except Exception:
             msg = ('Is the android instance running? MobSF cannot'
-                   ' find android instance identifier. '
-                   'Please run an android instance and refresh'
+                   ' find android instance identifier.'
+                   ' Please run an android instance and refresh'
                    ' this page. If this error persists,'
                    ' set ANALYZER_IDENTIFIER in MobSF/settings.py')
             return print_n_send_error_response(request, msg)
+        proxy_ip = get_proxy_ip(identifier)
         context = {'apks': apks,
                    'identifier': identifier,
+                   'proxy_ip': proxy_ip,
+                   'proxy_port': settings.PROXY_PORT,
                    'title': 'MobSF Dynamic Analysis'}
         template = 'dynamic_analysis/dynamic_analysis.html'
         return render(request, template, context)
@@ -60,6 +64,7 @@ def dynamic_analyzer(request):
     try:
         bin_hash = request.GET['hash']
         package = request.GET['package']
+        no_device = False
         if (is_attack_pattern(package)
                 or not is_md5(bin_hash)):
             return print_n_send_error_response(request,
@@ -67,6 +72,8 @@ def dynamic_analyzer(request):
         try:
             identifier = get_device()
         except Exception:
+            no_device = True
+        if no_device or not identifier:
             msg = ('Is the android instance running? MobSF cannot'
                    ' find android instance identifier. '
                    'Please run an android instance and refresh'
@@ -79,25 +86,33 @@ def dynamic_analyzer(request):
             return print_n_send_error_response(request, msg)
         version = env.get_android_version()
         logger.info('Android Version identified as %s', version)
+        xposed_first_run = False
         if not env.is_mobsfyied(version):
-            msg = ('This Android instance is not MobSfyed. '
+            msg = ('This Android instance is not MobSfyed.\n'
                    'MobSFying the android runtime environment')
             logger.warning(msg)
             if not env.mobsfy_init():
                 return print_n_send_error_response(
                     request,
                     'Failed to MobSFy the instance')
+            if version < 5:
+                xposed_first_run = True
+        if xposed_first_run:
+            msg = ('Have you MobSFyed the instance before'
+                   ' attempting Dynamic Analysis?'
+                   ' Install Framework for Xposed.'
+                   ' Restart the device and enable'
+                   ' all Xposed modules. And finally'
+                   ' restart the device once again.')
+            return print_n_send_error_response(request, msg)
         # Clean up previous analysis
         env.dz_cleanup(bin_hash)
         # Configure Web Proxy
         env.configure_proxy(package)
-        # Identify Emvironment
-        if version >= 5:
-            # Supported in Android 5+
-            env.enable_adb_reverse_tcp()
-        if version > 6:
-            # Supported in Android 7+
-            env.set_global_proxy()
+        # Supported in Android 5+
+        env.enable_adb_reverse_tcp(version)
+        # Apply Global Proxy to device
+        env.set_global_proxy(version)
         # Start Clipboard monitor
         env.start_clipmon()
         # Get Screen Resolution
