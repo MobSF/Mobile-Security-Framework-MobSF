@@ -117,9 +117,9 @@ def check_update():
                 line = line.replace('MOBSF_VER', '').replace("'", '')
                 line = line.replace('=', '').strip()
                 web_version = line
-                w_ver, w_type = line.replace('v', '').replace('.', '').split()
+                w_ver = line.replace('v', '').replace('.', '').rsplit(' ', 1)
                 c_line = settings.MOBSF_VER.replace('v', '').replace('.', '')
-                c_ver, c_type = c_line.split()
+                c_ver = c_line.rsplit(' ', 1)
                 if c_ver < w_ver:
                     logger.warning('A new version %s of MobSF is available, '
                                    'Please update from master branch or check '
