@@ -398,15 +398,3 @@ class Environment:
         trd.daemon = True
         trd.start()
         logger.info('Frida Server is running')
-
-    def set_global_proxy(self):
-        """Set Wifi Proxy on device."""
-        version = self.get_android_version()
-        if version > 6:
-            logger.info('Setting Global Proxy to android instance')
-            self.adb_command(
-                ['settings',
-                 'put',
-                 'global',
-                 'http_proxy',
-                 '127.0.0.1:{}'.format(settings.PROXY_PORT)], True)
