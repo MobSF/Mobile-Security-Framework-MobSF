@@ -8,7 +8,8 @@ assignees: ''
 ---
 
 <!-- ## IMPORTANT -->
-<!-- Issues are ONLY for reporting BUGS. For support, feature requests, questions, queries, and discussions use our slack channel. Slack Channel: https://mobsf.slack.com/, Get Invitation: https://goo.gl/6cYU5a
+<!-- Issues are ONLY for reporting BUGS. For support, feature requests, questions, queries, and discussions use our slack channel. Slack Channel: https://mobsf.slack.com/.
+Join MobSF Slack Channel: https://mobsf.slack.com/join/shared_invite/enQtNzM2NTAyNzA1MjgxLTdjMzkzNDc3ZjdiMjkwZTZhMmFhNDlkZmMwZDhjNDNmYTAzYWE5NGZlMDIzYzliNTdiMDQ2MTRlYjU1MjkyNGM
 -->
 
 
