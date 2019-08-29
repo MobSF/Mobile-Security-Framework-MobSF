@@ -79,6 +79,7 @@ var apis = [{
     method: 'open',
     name: 'File IO'
 },/* {
+    // so much calls
     class: 'java.io.FileOutputStream',
     method: 'write',
     name: 'File IO'
@@ -98,7 +99,8 @@ var apis = [{
     class: 'android.content.ContextWrapper',
     method: 'deleteFile',
     name: 'File IO'
-}, {
+}, /* {
+    // crashes app on android 7
     class: 'android.app.SharedPreferencesImpl',
     method: 'getString',
     name: 'File IO - Shared Preferences'
@@ -134,7 +136,7 @@ var apis = [{
     class: 'android.app.SharedPreferencesImpl$EditorImpl',
     method: 'putStringSet',
     name: 'File IO - Shared Preferences'
-}, {
+},  {
     class: 'android.app.SharedPreferencesImpl$EditorImpl',
     method: 'putInt',
     name: 'File IO - Shared Preferences'
@@ -154,7 +156,7 @@ var apis = [{
     class: 'android.app.SharedPreferencesImpl$EditorImpl',
     method: 'remove',
     name: 'File IO - Shared Preferences'
-}, {
+}, */ {
     class: 'android.content.ContextWrapper',
     method: 'openOrCreateDatabase',
     name: 'Database'
