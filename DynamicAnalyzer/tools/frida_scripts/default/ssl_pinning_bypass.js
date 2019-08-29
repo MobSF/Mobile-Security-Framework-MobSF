@@ -23,7 +23,7 @@ Java.perform(function() {
             // https://android.googlesource.com/platform/external/conscrypt/+/1186465/src/platform/java/org/conscrypt/TrustManagerImpl.java#391
             var TrustManagerImpl = Java.use('com.android.org.conscrypt.TrustManagerImpl');
             TrustManagerImpl.checkTrustedRecursive.implementation = function(certs, host, clientAuth, untrustedChain, trustedChain, used) {
-                send('[SSL Pinning Bypass] checkTrustedRecursive() bypassed for: ' + host);
+                send('[SSL Pinning Bypass] checkTrustedRecursive() bypassed');
                 return Java.use("java.util.ArrayList").$new();
             }
         }catch (err) {
