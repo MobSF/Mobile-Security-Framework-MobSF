@@ -77,8 +77,9 @@ def dynamic_analyzer(request):
         if not env.connect_n_mount():
             msg = 'Cannot Connect to ' + identifier
             return print_n_send_error_response(request, msg)
-        android_version = env.get_android_version()
-        if not env.is_mobsfyied(android_version):
+        version = env.get_android_version()
+        logger.info('Android Version identified as %s', version)
+        if not env.is_mobsfyied(version):
             msg = ('This Android instance is not MobSfyed. '
                    'MobSFying the android runtime environment')
             logger.warning(msg)
@@ -91,9 +92,12 @@ def dynamic_analyzer(request):
         # Configure Web Proxy
         env.configure_proxy(package)
         # Identify Emvironment
-        if android_version >= 5:
-            # ADB Reverse TCP
+        if version >= 5:
+            # Supported in Android 5+
             env.enable_adb_reverse_tcp()
+        if version > 6:
+            # Supported in Android 7+
+            env.set_global_proxy()
         # Start Clipboard monitor
         env.start_clipmon()
         # Get Screen Resolution
@@ -108,7 +112,7 @@ def dynamic_analyzer(request):
                    'screen_height': screen_height,
                    'package': package,
                    'md5': bin_hash,
-                   'version': android_version,
+                   'version': version,
                    'title': 'Dynamic Analyzer'}
         template = 'dynamic_analysis/android/dynamic_analyzer.html'
         return render(request, template, context)

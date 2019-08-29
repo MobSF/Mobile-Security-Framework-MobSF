@@ -196,7 +196,6 @@ class Environment:
         out = self.adb_command(['getprop',
                                 'ro.build.version.release'], True)
         and_version = out.decode('utf-8').rstrip()
-        logger.info('Android Version identified as %s', and_version)
         if and_version.count('.') > 1:
             and_version = and_version.rsplit('.', 1)[0]
         if and_version.count('.') > 1:
@@ -246,6 +245,7 @@ class Environment:
     def mobsfy_init(self):
         """Init MobSFy."""
         version = self.get_android_version()
+        logger.info('Android Version identified as %s', version)
         try:
             if version < 5:
                 self.xposed_setup(version)
@@ -368,3 +368,15 @@ class Environment:
         trd.daemon = True
         trd.start()
         logger.info('Frida Server is running')
+
+    def set_global_proxy(self):
+        """Set Wifi Proxy on device."""
+        version = self.get_android_version()
+        if version > 6:
+            logger.info('Setting Global Proxy to android instance')
+            self.adb_command(
+                ['settings',
+                 'put',
+                 'global',
+                 'http_proxy',
+                 '127.0.0.1:{}'.format(settings.PROXY_PORT)], True)

@@ -226,10 +226,10 @@ div.loading{
   <div class="callout callout-warning">
     <div class="row">
      <div class="container">
-        <h4>Information</h4>
-            <p><b>MobSF Dynamic Analysis supports Genymotion Android x86 VMs version 4.1 to 8.0</b></p>
-            <p>For Android versions less than <b>5</b>, MobSFy the Android Runtime prior to Dynamic Analysis.</p>
-            <p>For HTTPS traffic interception, set device proxy as <i>127.0.0.1:1337</i> for Android version <b>&gt; 4</b> and <i>&lt;Host IP&gt;:1337</i> for Android version <b>&lt; 5</b>. For more information, see <a href="">Documentation</a>.
+            <p><b>MobSF Dynamic Analysis supports Genymotion Android x86 VMs version 4.1 to 9.0. We recommend using Android 7.0 and above.</b></p>
+            <p>For Android versions less than <b>5</b>, we use Xposed Framework and therefore, you must MobSFy the Android Runtime prior to Dynamic Analysis.<br /> Other versions use Frida and are automatically MobSFyed on the go.</p>
+            <p><b> HTTPS Traffic Interception</b></p>
+            <p>For Android version <b>4.1, 4.2, 4.3 &amp; 4.4</b>, set device proxy as <i>&lt;Host IP&gt;:1337</i>. <br />For Android version <b>5, 5.1 and 6</b>, set device proxy as <i>127.0.0.1:1337</i>.<br/>For Android versions <b>7, 7.1, 8 &amp; 9</b>, global proxy settings are automatically applied. For more information, please refer <a href="">Documentation</a>.
             </p>
               <button class="btn btn-primary" role="button"  data-toggle="modal" data-target="#modal-mobsfy">MobSFy Android Runtime</button>
 
