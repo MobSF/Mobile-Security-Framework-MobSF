@@ -31,14 +31,14 @@ matrix:
     env:
     - JAVA_HOME="C:\\Program Files\\OpenJDK\\jdk-12.0.2"
     - PATH=/c/Python37:/c/Python37/Scripts:$JAVA_HOME\\bin:$PATH
-    - LIB=C:\OpenSSL-win64\lib;%LIB%
-    - INCLUDE=C:\OpenSSL-win64\include;%INCLUDE%
+    - LIB=C:\\OpenSSL-win64\\lib;%LIB%
+    - INCLUDE=C:\\OpenSSL-win64\\include;%INCLUDE%
     before_install:
     - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
     - choco install wkhtmltopdf
     - choco install python
     - choco install openjdk --version 12.0.2
-    - choco install openssl.light --params "/InstallDir:C:\OpenSSL-win64\"
+    - choco install openssl.light --params "/InstallDir:C:\\OpenSSL-win64\\"
 install:
 - set PYTHONIOENCODING=UTF8
 - pip3 install --upgrade pip || python -m pip install --upgrade pip
