@@ -31,14 +31,11 @@ matrix:
     env:
     - JAVA_HOME="C:\\Program Files\\OpenJDK\\jdk-12.0.2"
     - PATH=/c/Python37:/c/Python37/Scripts:$JAVA_HOME\\bin:$PATH
-    - LIB=C:\\OpenSSL-win64\\lib;%LIB%
-    - INCLUDE=C:\\OpenSSL-win64\\include;%INCLUDE%
     before_install:
     - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
     - choco install wkhtmltopdf
     - choco install python
     - choco install openjdk --version 12.0.2
-    - choco install openssl.light --params "/InstallDir:C:\\OpenSSL-win64\\"
 install:
 - set PYTHONIOENCODING=UTF8
 - pip3 install --upgrade pip || python -m pip install --upgrade pip
@@ -47,6 +44,7 @@ before_script:
 - pip3 wheel --wheel-dir=/tmp/yara-python --build-option="build" --build-option="--enable-dex"
   git+https://github.com/VirusTotal/yara-python.git
 - pip3 install --no-index --find-links=/tmp/yara-python yara-python
+- pip3 install cryptography
 - pip3 install -r requirements.txt
 - python3 manage.py makemigrations || python manage.py makemigrations
 - python3 manage.py migrate || python manage.py migrate
