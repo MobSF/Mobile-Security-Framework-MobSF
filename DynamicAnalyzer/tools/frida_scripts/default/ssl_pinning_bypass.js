@@ -64,8 +64,8 @@ Java.perform(function() {
         send('[SSL Pinning Bypass] okhttp CertificatePinner not found');
     }
     try {
-        var CertificatePinner = Java.use('okhttp3.CertificatePinner');
-        CertificatePinner.check.overload('java.lang.String', 'java.util.List').implementation = function (str) {
+        var CertificatePinner2 = Java.use('okhttp3.CertificatePinner');
+        CertificatePinner2.check.overload('java.lang.String', 'java.util.List').implementation = function (str) {
             send('[SSL Pinning Bypass] okhttp3.CertificatePinner.check() bypassed for ' + str);
             return;
         };
