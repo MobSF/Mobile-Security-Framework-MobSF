@@ -468,28 +468,28 @@ $("#rootca").click(function() {
     return false;  
 }); 
  
-
-//Start ExportedActivity Tester
-$("#expactt").click(function()  {
- print_status("Starting Exported Activity tester...");
- action('../exported_activity_tester/', {hash: '{{ md5 }}', package: '{{ package }}'}, function(json) {
+function activity_tester(test){
+  action('../activity_tester/', {hash: '{{ md5 }}', package: '{{ package }}', 'test': test}, function(json) {
     if (json.status === "ok")
-      print_status("Exported Activity testing completed.");
+      if (test === 'exported')
+        print_status("Exported Activity testing completed.");
+      else
+        print_status("Activity testing completed.");
     else
       print_status(json.message);
   });
+}
+//Start ExportedActivity Tester
+$("#expactt").click(function()  {
+  print_status("Starting Exported Activity tester...")
+  activity_tester('exported')
   return false;  
 });
 
 //Start Activity Tester
 $("#actt").click(function()  {
-  print_status("Starting Activity tester...");
-  action('../activity_tester/', {hash: '{{ md5 }}', package: '{{ package }}'}, function(json) {
-    if (json.status === "ok")
-      print_status("Activity testing completed.");
-    else
-      print_status(json.message);
-  });
+  print_status("Starting Activity tester...")
+  activity_tester('all_activities')
   return false;  
 }); 
 

@@ -73,7 +73,6 @@ urlpatterns = [
     url(r'^get_component/$', operations.get_component),
     url(r'^mobsf_ca/$', operations.mobsf_ca),
     # Dynamic Tests
-    url(r'^exported_activity_tester/$', tests_common.exported_activity_tester),
     url(r'^activity_tester/$', tests_common.activity_tester),
     url(r'^download_data/$', tests_common.download_data),
     url(r'^collect_logs/$', tests_common.collect_logs),
