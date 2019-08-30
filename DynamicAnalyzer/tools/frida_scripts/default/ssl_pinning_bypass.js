@@ -28,7 +28,7 @@ Java.perform(function() {
                 return;
             }
         } catch (err) {
-            send('[SSL Pinning Bypass] TrustManagerImpl.verifyChain() not found');
+            send('[SSL Pinning Bypass] ConscryptFileDescriptorSocket.verifyCertificateChain() not found');
         }
     } else if (androidVersion > 4 && androidVersion < 7) {
         // Generic SSL Pinning Bypass tested on Android 5, 5,1, 6
