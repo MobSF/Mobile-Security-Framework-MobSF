@@ -44,7 +44,6 @@ where python >nul 2>&1 && (
 
   echo [INSTALL] Installing Requirements
   pip install -r requirements.txt
-  pip install capfuzz==0.0.1
 
   echo [INSTALL] Migrating Database
   python manage.py makemigrations
