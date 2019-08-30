@@ -483,7 +483,7 @@ def get_adb():
             os.environ['MOBSF_ADB'] = 'adb'
             logger.warning('Dynamic Analysis related '
                            'functions will not work. '
-                           '\nMake sure a Genymotion Android VM'
+                           'Make sure a Genymotion Android VM'
                            ' is running before performing Dynamic Analyis.')
     return 'adb'
 
