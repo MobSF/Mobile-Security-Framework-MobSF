@@ -9,8 +9,8 @@ Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82
 [![python](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/)
 [![platform](https://img.shields.io/badge/platform-osx%2Flinux%2Fwindows-green.svg)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/)
 [![License](https://img.shields.io/:license-gpl3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/cefbfb063c044b069e38af3501c1ee8e)](https://www.codacy.com/app/ajinabraham/Mobile-Security-Framework-MobSF)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=MobSF_Mobile-Security-Framework-MobSF&metric=alert_status)](https://sonarcloud.io/dashboard?id=MobSF_Mobile-Security-Framework-MobSF)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/cefbfb063c044b069e38af3501c1ee8e)](https://www.codacy.com/app/ajinabraham/Mobile-Security-Framework-MobSF?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=MobSF/Mobile-Security-Framework-MobSF&amp;utm_campaign=Badge_Grade)
 [![Build Status](https://travis-ci.com/MobSF/Mobile-Security-Framework-MobSF.svg?branch=master)](https://travis-ci.com/MobSF/Mobile-Security-Framework-MobSF)
 [![Requirements Status](https://requires.io/github/MobSF/Mobile-Security-Framework-MobSF/requirements.svg?branch=master)](https://requires.io/github/MobSF/Mobile-Security-Framework-MobSF/requirements/?branch=master)
 [![ToolsWatch Best Security Tools 2017](https://img.shields.io/badge/ToolsWatch-Rank%209%20%7C%20Year%202017-red.svg)](http://www.toolswatch.org/2018/01/black-hat-arsenal-top-10-security-tools/)
@@ -55,7 +55,7 @@ Other docker options: [MobSF Docker Options](https://github.com/MobSF/Mobile-Sec
 *  G4H Webcast 2015 - [Video](https://www.youtube.com/watch?v=CysfO6AZmo8)
 
 ## Video Course
-* [Automated Mobile Application Security Assessment with MobSF](https://opsecx.com/index.php/product/automated-mobile-application-security-assessment-with-mobsf/)
+
 * [Android Security Tools Expert](https://opsecx.com/index.php/product/android-security-tools-expert-atx/)
 
 ## What's New?
@@ -65,7 +65,7 @@ Other docker options: [MobSF Docker Options](https://github.com/MobSF/Mobile-Sec
 
 * Read [CONTRIBUTING.md](https://github.com/MobSF/Mobile-Security-Framework-MobSF/blob/master/.github/CONTRIBUTING.md) before opening bugs, feature requests and pull request.
 * Feature Requests: [@ajinabraham](https://twitter.com/ajinabraham) or [@OpenSecurity_IN](https://twitter.com/OpenSecurity_IN). 
-* For discussions use our Slack Channel: [https://mobsf.slack.com/](https://mobsf.slack.com/) , Get Invitation: [https://goo.gl/6cYU5a](https://goo.gl/6cYU5a)
+* For discussions, questions and support, use our Slack Channel mobsf.slack.com: [Join MobSF Channel](https://mobsf.slack.com/join/shared_invite/enQtNzM2NTAyNzA1MjgxLTdjMzkzNDc3ZjdiMjkwZTZhMmFhNDlkZmMwZDhjNDNmYTAzYWE5NGZlMDIzYzliNTdiMDQ2MTRlYjU1MjkyNGM)
 * Open Bugs after reading [Guidelines to Report a Bug](https://github.com/MobSF/Mobile-Security-Framework-MobSF/blob/master/.github/CONTRIBUTING.md#using-the-issue-tracker)
 
 ## Screenshots
