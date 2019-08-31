@@ -55,7 +55,7 @@ Other docker options: [MobSF Docker Options](https://github.com/MobSF/Mobile-Sec
 *  G4H Webcast 2015 - [Video](https://www.youtube.com/watch?v=CysfO6AZmo8)
 
 ## Video Course
-* [Automated Mobile Application Security Assessment with MobSF](https://opsecx.com/index.php/product/automated-mobile-application-security-assessment-with-mobsf/)
+
 * [Android Security Tools Expert](https://opsecx.com/index.php/product/android-security-tools-expert-atx/)
 
 ## What's New?
