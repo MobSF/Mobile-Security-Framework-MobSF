@@ -20,8 +20,9 @@ ENV JDK_URL="https://download.java.net/java/GA/jdk12/GPL/${JDK_FILE}" \
 
 #Environment vars for dynamic Analysis
 # DOCKER_HOST_IP must be set to the IP of your computer which run docker
+# ANALYZER_IDENTIFIER must be set to the ip and port of your geny vm like: 192.168.56.102:5555
 ENV DOCKER_HOST_IP="" \
-    ANALYZER_IDENTIFIER="192.168.56.102:5555" \
+    ANALYZER_IDENTIFIER="" \
     ADB_PATH="/usr/bin/adb"
 
 #Update the repository sources list
