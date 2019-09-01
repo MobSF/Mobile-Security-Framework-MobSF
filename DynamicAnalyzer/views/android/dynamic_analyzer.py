@@ -17,8 +17,8 @@ from DynamicAnalyzer.views.android.operations import (
     is_md5,
     strict_package_check)
 from DynamicAnalyzer.tools.webproxy import (
-    start_fuzz_ui,
-    stop_capfuzz)
+    start_httptools_ui,
+    stop_httptools)
 
 from MobSF.utils import (get_device,
                          get_proxy_ip,
@@ -137,14 +137,14 @@ def dynamic_analyzer(request):
                                            'Dynamic Analysis Failed.')
 
 
-def capfuzz_start(request):
-    """Start CapFuzz UI."""
-    logger.info('Starting CapFuzz Web UI')
+def httptools_start(request):
+    """Start httprools UI."""
+    logger.info('Starting httptools Web UI')
     try:
-        stop_capfuzz(settings.PROXY_PORT)
-        start_fuzz_ui(settings.PROXY_PORT)
+        stop_httptools(settings.PROXY_PORT)
+        start_httptools_ui(settings.PROXY_PORT)
         time.sleep(3)
-        logger.info('CapFuzz UI Started')
+        logger.info('httptools UI started')
         if request.GET['project']:
             project = request.GET['project']
         else:
@@ -155,8 +155,8 @@ def capfuzz_start(request):
                    project))
         return HttpResponseRedirect(url)
     except Exception:
-        logger.exception('Starting CapFuzz Web UI')
-        err = 'Error Starting CapFuzz UI'
+        logger.exception('Starting httptools Web UI')
+        err = 'Error Starting httptools UI'
         return print_n_send_error_response(request, err)
 
 

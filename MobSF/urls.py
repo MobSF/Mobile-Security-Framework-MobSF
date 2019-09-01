@@ -60,9 +60,9 @@ urlpatterns = [
     url(r'^android_dynamic/$',
         dz.dynamic_analyzer,
         name='dynamic_analyzer'),
-    url(r'^capfuzz$',
-        dz.capfuzz_start,
-        name='capfuzz'),
+    url(r'^httptools$',
+        dz.httptools_start,
+        name='httptools'),
     url(r'^logcat/$', dz.logcat),
     # Android Operations
     url(r'^mobsfy/$', operations.mobsfy),

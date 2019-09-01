@@ -113,8 +113,8 @@ def get_log_data(apk_dir, package):
     apimon_data = ''
     web_data = ''
     traffic = ''
-    capfuzz_home = os.path.join(str(Path.home()), '.capfuzz')
-    web = os.path.join(capfuzz_home, 'flows', package + '.flows.txt')
+    httptools = os.path.join(str(Path.home()), '.httptools')
+    web = os.path.join(httptools, 'flows', package + '.flow.txt')
     logcat = os.path.join(apk_dir, 'logcat.txt')
     xlogcat = os.path.join(apk_dir, 'x_logcat.txt')
     apimon = os.path.join(apk_dir, 'mobsf_api_monitor.txt')
@@ -203,13 +203,13 @@ def generate_download(apk_dir, md5_hash, download_dir, package):
     """Generating Downloads."""
     logger.info('Generating Downloads')
     try:
-        capfuzz_home = os.path.join(str(Path.home()), '.capfuzz')
+        httptools = os.path.join(str(Path.home()), '.httptools')
         logcat = os.path.join(apk_dir, 'logcat.txt')
         xlogcat = os.path.join(apk_dir, 'x_logcat.txt')
         apimon = os.path.join(apk_dir, 'mobsf_api_monitor.txt')
         dumpsys = os.path.join(apk_dir, 'dump.txt')
         sshot = os.path.join(apk_dir, 'screenshots-apk/')
-        web = os.path.join(capfuzz_home, 'flows', package + '.flows.txt')
+        web = os.path.join(httptools, 'flows', package + '.flow.txt')
         star = os.path.join(apk_dir, package + '.tar')
 
         dlogcat = os.path.join(download_dir, md5_hash + '-logcat.txt')

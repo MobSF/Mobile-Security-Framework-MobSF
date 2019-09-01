@@ -12,8 +12,6 @@ matrix:
     sudo: false
     before_install:
     - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
-    - sudo apt-get install -y libpng16-16 libssl-dev xfonts-75dpi xfonts-base libffi-dev
-      libxml2-dev libxslt1-dev openssl
     - wget https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.xenial_amd64.deb
     - sudo dpkg -i wkhtmltox_0.12.5-1.xenial_amd64.deb
   - name: Python 3.7 on OSX, Xcode 11
@@ -45,7 +43,6 @@ before_script:
   git+https://github.com/VirusTotal/yara-python.git
 - pip3 install --no-index --find-links=/tmp/yara-python yara-python
 - pip3 install -r requirements.txt
-- if [ "$TRAVIS_OS_NAME" == "windows" ]; then pip3 install cryptography==2.7; fi
 - python3 manage.py makemigrations || python manage.py makemigrations
 - python3 manage.py migrate || python manage.py migrate
 script:

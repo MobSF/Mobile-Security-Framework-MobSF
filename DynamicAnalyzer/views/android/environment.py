@@ -12,7 +12,7 @@ from django.conf import settings
 
 from DynamicAnalyzer.tools.webproxy import (get_ca_dir,
                                             start_proxy,
-                                            stop_capfuzz)
+                                            stop_httptools)
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 
@@ -90,7 +90,7 @@ class Environment:
         """HTTPS Proxy."""
         proxy_port = settings.PROXY_PORT
         logger.info('Starting HTTPs Proxy on %s', proxy_port)
-        stop_capfuzz(proxy_port)
+        stop_httptools(proxy_port)
         start_proxy(proxy_port, project)
 
     def install_mobsf_ca(self, action):

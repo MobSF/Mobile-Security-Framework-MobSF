@@ -14,7 +14,7 @@ from DynamicAnalyzer.views.android.operations import (
     strict_package_check)
 from DynamicAnalyzer.views.android.environment import Environment
 from DynamicAnalyzer.views.android.tests_xposed import download_xposed_log
-from DynamicAnalyzer.tools.webproxy import stop_capfuzz
+from DynamicAnalyzer.tools.webproxy import stop_httptools
 
 from MobSF.utils import python_list
 
@@ -102,7 +102,7 @@ def download_data(request):
         if is_attack_pattern(package) or not is_md5(md5_hash):
             return invalid_params()
         apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
-        stop_capfuzz(settings.PROXY_PORT)
+        stop_httptools(settings.PROXY_PORT)
         files_loc = '/data/local/'
         logger.info('Archiving files created by app')
         env.adb_command(['tar', '-cvf', files_loc + package + '.tar',

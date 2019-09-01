@@ -2,7 +2,7 @@
 Version: v1.1 beta
 ![](https://cloud.githubusercontent.com/assets/4301109/20019521/cc61f7fc-a2f2-11e6-95f3-407030d9fdde.png)
 
-Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing framework capable of performing static, dynamic and malware analysis. It can be used for effective and fast security analysis of Android, iOS and Windows mobile applications and support both binaries (APK, IPA & APPX ) and zipped source code. MobSF can do dynamic application testing at runtime for Android apps and has Web API fuzzing capabilities powered by [CapFuzz](https://github.com/MobSF/CapFuzz), a Web API specific security scanner. MobSF is designed to make your CI/CD or DevSecOps pipeline integration seamless.
+Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing framework capable of performing static, dynamic and malware analysis. It can be used for effective and fast security analysis of Android, iOS and Windows mobile applications and support both binaries (APK, IPA & APPX ) and zipped source code. MobSF can do dynamic application testing at runtime for Android apps. MobSF is designed to make your CI/CD or DevSecOps pipeline integration seamless.
 
 Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82e3a63c-4813-11e6-9430-6015d98aeaab.png) in India
 
@@ -89,10 +89,8 @@ Other docker options: [MobSF Docker Options](https://github.com/MobSF/Mobile-Sec
 ![android-dynamic-report2](https://cloud.githubusercontent.com/assets/4301109/13615767/f04e5c1e-e59c-11e5-9ad1-b31598024ad4.png)
 ![android-dynamic-expact](https://cloud.githubusercontent.com/assets/4301109/13615882/6f4d9f16-e59d-11e5-9ec9-3b4c47e37389.png)
 
-### Web API Fuzzer
+### Web API Viewer
 
-![capfuzz](https://user-images.githubusercontent.com/4301109/37251800-af620840-253c-11e8-89ed-ce3594e243e9.png)
-![capfuzz-scan](https://user-images.githubusercontent.com/4301109/37564069-561cef7a-2ab4-11e8-9048-bdf405d078ce.png)
 
 ## Credits
 * Abhinav Sejpal (@Abhinav_Sejpal) - For poking me with bugs, feature requests, and UI & UX suggestions.

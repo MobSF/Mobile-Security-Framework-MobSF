@@ -93,8 +93,7 @@ RUN pip3 install --quiet --no-cache-dir wheel==0.33.4 && \
     pip3 install --quiet --no-cache-dir --no-index --find-links=/tmp/yara-python yara-python
 
 #Install Dependencies
-RUN pip3 install --quiet --no-cache-dir -r requirements.txt && \
-    pip3 install --quiet --no-cache-dir capfuzz==0.0.1
+RUN pip3 install --quiet --no-cache-dir -r requirements.txt
 
 #Cleanup
 RUN \
