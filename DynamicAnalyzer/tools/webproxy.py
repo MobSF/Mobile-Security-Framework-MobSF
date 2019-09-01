@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def stop_httptools(port):
-    """HTTPtools Kill."""
+    """Kill httptools."""
     # Invoke HTTPtools UI Kill Request
     try:
         requests.get('http://127.0.0.1:' + str(port) + '/kill', timeout=5)
@@ -30,6 +30,7 @@ def stop_httptools(port):
         logger.info('Killing httptools Proxy')
     except Exception:
         pass
+
 
 def start_proxy(port, project):
     """Start HTTPtools in Proxy Mode."""
