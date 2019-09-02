@@ -111,6 +111,7 @@ def get_log_data(apk_dir, package):
     logcat_data = []
     droidmon_data = ''
     apimon_data = ''
+    frida_logs = ''
     web_data = ''
     traffic = ''
     httptools = os.path.join(str(Path.home()), '.httptools')
@@ -118,6 +119,7 @@ def get_log_data(apk_dir, package):
     logcat = os.path.join(apk_dir, 'logcat.txt')
     xlogcat = os.path.join(apk_dir, 'x_logcat.txt')
     apimon = os.path.join(apk_dir, 'mobsf_api_monitor.txt')
+    fd_logs = os.path.join(apk_dir, 'mobsf_frida_out.txt')
     if is_file_exists(web):
         with io.open(web,
                      mode='r',
@@ -143,7 +145,14 @@ def get_log_data(apk_dir, package):
                      encoding='utf8',
                      errors='ignore') as flip:
             apimon_data = flip.read()
-    traffic = web_data + traffic + droidmon_data + apimon_data
+    if is_file_exists(fd_logs):
+        with io.open(apimon,
+                     mode='r',
+                     encoding='utf8',
+                     errors='ignore') as flip:
+            frida_logs = flip.read()
+    traffic = (web_data + traffic + droidmon_data
+               + apimon_data + frida_logs)
     return {'logcat': logcat_data,
             'traffic': traffic}
 
@@ -207,6 +216,7 @@ def generate_download(apk_dir, md5_hash, download_dir, package):
         logcat = os.path.join(apk_dir, 'logcat.txt')
         xlogcat = os.path.join(apk_dir, 'x_logcat.txt')
         apimon = os.path.join(apk_dir, 'mobsf_api_monitor.txt')
+        fd_logs = os.path.join(apk_dir, 'mobsf_frida_out.txt')
         dumpsys = os.path.join(apk_dir, 'dump.txt')
         sshot = os.path.join(apk_dir, 'screenshots-apk/')
         web = os.path.join(httptools, 'flows', package + '.flow.txt')
@@ -215,13 +225,16 @@ def generate_download(apk_dir, md5_hash, download_dir, package):
         dlogcat = os.path.join(download_dir, md5_hash + '-logcat.txt')
         dxlogcat = os.path.join(download_dir, md5_hash + '-x_logcat.txt')
         dapimon = os.path.join(download_dir, md5_hash + '-api_monitor.txt')
+        dfd_logs = os.path.join(download_dir, md5_hash + '-frida_out.txt')
         ddumpsys = os.path.join(download_dir, md5_hash + '-dump.txt')
         dsshot = os.path.join(download_dir, md5_hash + '-screenshots-apk/')
         dweb = os.path.join(download_dir, md5_hash + '-web_traffic.txt')
         dstar = os.path.join(download_dir, md5_hash + '-app_data.tar')
 
         # Delete existing data
-        dellist = [dlogcat, dxlogcat, dapimon, ddumpsys, dsshot, dweb, dstar]
+        dellist = [dlogcat, dxlogcat, dapimon,
+                   dfd_logs, ddumpsys, dsshot,
+                   dweb, dstar]
         for item in dellist:
             if os.path.isdir(item):
                 shutil.rmtree(item)
@@ -234,6 +247,8 @@ def generate_download(apk_dir, md5_hash, download_dir, package):
             shutil.copyfile(xlogcat, dxlogcat)
         if is_file_exists(apimon):
             shutil.copyfile(apimon, dapimon)
+        if is_file_exists(fd_logs):
+            shutil.copyfile(fd_logs, dfd_logs)
         try:
             shutil.copytree(sshot, dsshot)
         except Exception:

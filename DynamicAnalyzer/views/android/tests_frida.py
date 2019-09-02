@@ -3,32 +3,69 @@
 import base64
 import os
 import re
-import glob
 import json
-import sys
-import time
 import threading
-from pathlib import Path
 import logging
-
-import frida
 
 from django.shortcuts import render
 from django.conf import settings
 from django.views.decorators.http import require_http_methods
 
-from DynamicAnalyzer.views.android.environment import Environment
+from DynamicAnalyzer.views.android.frida_core import Frida
 from DynamicAnalyzer.views.android.operations import (
     invalid_params,
     is_attack_pattern,
     is_md5,
-    json_response)
+    json_response,
+    strict_package_check)
 
-from MobSF.utils import (get_device,
-                         is_file_exists,
-                         print_n_send_error_response)
+from MobSF.utils import (
+    is_file_exists,
+    print_n_send_error_response)
 
 logger = logging.getLogger(__name__)
+
+# AJAX
+
+
+@require_http_methods(['POST'])
+def instrument(request):
+    """Instrument app with frida."""
+    data = {}
+    try:
+        logger.info('Starting Instrumentation')
+        package = request.POST['package']
+        md5_hash = request.POST['hash']
+        default_hooks = request.POST['default_hooks']
+        auxiliary_hooks = request.POST['auxiliary_hooks']
+        # Fill extras
+        extras = {}
+        class_name = request.POST.get('cls_name')
+        if class_name:
+            extras['cls_name'] = class_name.strip()
+        class_search = request.POST.get('cls_search')
+        if class_search:
+            extras['cls_search'] = class_search.strip()
+        cls_trace = request.POST.get('cls_trace')
+        if cls_trace:
+            extras['cls_trace'] = cls_trace.strip()
+        if (is_attack_pattern(default_hooks)
+                or not strict_package_check(package)
+                or not is_md5(md5_hash)):
+            return invalid_params()
+        frida_obj = Frida(md5_hash,
+                          package,
+                          default_hooks.split(','),
+                          auxiliary_hooks.split(','),
+                          extras)
+        trd = threading.Thread(target=frida_obj.connect)
+        trd.daemon = True
+        trd.start()
+        data = {'status': 'ok'}
+    except Exception as exp:
+        logger.exception('Instrumentation failed')
+        data = {'status': 'failed', 'message': str(exp)}
+    return json_response(data)
 
 
 def live_api(request):
@@ -58,30 +95,33 @@ def live_api(request):
         logger.exception('API monitor streaming')
         err = 'Error in API monitor streaming'
         return print_n_send_error_response(request, err)
-# AJAX
 
 
-@require_http_methods(['POST'])
-def instrument(request):
-    """Instrument app with frida."""
-    data = {}
+def frida_logs(request):
     try:
-        logger.info('Starting Instrumentation')
-        package = request.POST['package']
-        md5_hash = request.POST['hash']
-        default_hooks = request.POST['default_hooks']
-        if (is_attack_pattern(default_hooks)
-                or is_attack_pattern(package) or not is_md5(md5_hash)):
+        apphash = request.GET.get('hash', '')
+        stream = request.GET.get('stream', '')
+        if not is_md5(apphash):
             return invalid_params()
-        frida = Frida(md5_hash, package, default_hooks.split(','))
-        trd = threading.Thread(target=frida.connect)
-        trd.daemon = True
-        trd.start()
-        data = {'status': 'ok'}
-    except Exception as exp:
-        logger.exception('Instrumentation failed')
-        data = {'status': 'failed', 'message': str(exp)}
-    return json_response(data)
+        if stream:
+            apk_dir = os.path.join(settings.UPLD_DIR, apphash + '/')
+            frida_logs = os.path.join(apk_dir, 'mobsf_frida_out.txt')
+            data = {}
+            if is_file_exists(frida_logs):
+                with open(frida_logs, 'r') as flip:
+                    data = {'data': flip.read()}
+                return json_response(data)
+        logger.info('Frida Logs live streaming')
+        template = 'dynamic_analysis/android/frida_logs.html'
+        return render(request,
+                      template,
+                      {'hash': apphash,
+                       'package': request.GET.get('package', ''),
+                       'title': 'Live Frida logs'})
+    except Exception:
+        logger.exception('Frida log streaming')
+        err = 'Error in Frida log streaming'
+        return print_n_send_error_response(request, err)
 
 
 def decode_base64(data, altchars=b'+/'):
@@ -130,89 +170,3 @@ def apimon_analysis(app_dir):
     except Exception:
         logger.exception('API Monitor Analysis')
     return api_details
-
-
-class Frida:
-
-    def __init__(self, app_hash, package, defaults):
-        self.hash = app_hash
-        self.package = package
-        self.defaults = defaults
-        self.frida_dir = os.path.join(settings.TOOLS_DIR,
-                                      'frida_scripts')
-        self.apk_dir = os.path.join(settings.UPLD_DIR, self.hash + '/')
-
-    def get_default_scripts(self):
-        """Get default Frida Scripts."""
-        combined_script = []
-        header = []
-        def_scripts = os.path.join(self.frida_dir, 'default')
-        files = [f for f in glob.glob(
-            def_scripts + '**/*.js', recursive=True)]
-        for item in files:
-            script = Path(item)
-            if script.stem in self.defaults:
-                header.append('send("Loaded Frida Script - {}");'.format(
-                    script.stem))
-                combined_script.append(script.read_text())
-        final = 'setTimeout(function() {{ {} }}, 0)'.format(
-            '\n'.join(header) + '\n'.join(combined_script))
-        return final
-
-    def get_script(self):
-        """Get final script."""
-        return self.get_default_scripts()
-
-    def frida_response(self, message, data):
-        """Function to handle frida responses."""
-        if 'payload' in message:
-            msg = message['payload']
-            api_mon = 'MobSF-API-Monitor: '
-            api_mon_log = os.path.join(self.apk_dir, 'mobsf_api_monitor.txt')
-            if msg.startswith(api_mon):
-                with open(api_mon_log, 'a') as flip:
-                    flip.write(msg.replace(api_mon, ''))
-            else:
-                logger.debug('[Frida] %s', message['payload'])
-        else:
-            logger.error('[Frida] %s', message)
-
-    def connect(self):
-        """Connect to Frida Server."""
-        session = None
-        try:
-            env = Environment()
-            self.clean_up()
-            env.run_frida_server()
-            device = frida.get_device(get_device(), settings.FRIDA_TIMEOUT)
-            pid = device.spawn([self.package])
-            device.resume(pid)
-            logger.info('Spawning %s', self.package)
-            time.sleep(2)
-            session = device.attach(pid)
-        except frida.ServerNotRunningError:
-            logger.warning('Frida server is not running')
-            self.connect()
-        except frida.TimedOutError:
-            logger.error('Timed out while waiting for device to appear')
-        except (frida.ProcessNotFoundError,
-                frida.TransportError,
-                frida.InvalidOperationError):
-            pass
-        except Exception:
-            logger.exception('Error Connecting to Frida')
-        try:
-            if session:
-                script = session.create_script(self.get_script())
-                script.on('message', self.frida_response)
-                script.load()
-                sys.stdin.read()
-                script.unload()
-                session.detach()
-        except Exception:
-            logger.exception('Error Connecting to Frida')
-
-    def clean_up(self):
-        apimon_file = os.path.join(self.apk_dir, 'mobsf_api_monitor.txt')
-        if is_file_exists(apimon_file):
-            os.remove(apimon_file)

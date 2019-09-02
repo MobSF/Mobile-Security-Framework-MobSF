@@ -85,8 +85,15 @@
 
 
 <section id="general">
-  <h2 class="page-header"><strong>MobSF Dynamic Analysis Report </strong> - {{package}} </h2>
-  <div align="center"><a class="btn btn-success btn-lg" target="_blank" role="button" href="../httptools?project={{package}}">Start HTTPTools</a></div>
+  <h2 class="page-header"><strong>MobSF Dynamic Analysis Report </strong> - {{ package }} </h2>
+  <div align="center">
+      {% if apimon %}
+            <a target="_blank" class="btn btn-info" role="button" href="../live_api/?hash={{ md5 }}&amp;package={{ package }}">API Monitor View</a>
+      {% endif %}
+      {% if fdlog %}
+          <a target="_blank" class="btn btn-info" role="button" href="../frida_logs/?hash={{ md5 }}&amp;package={{ package }}">Frida Logs View</a>
+       {% endif %}
+           <a class="btn btn-success" target="_blank" role="button" href="../httptools?project={{package}}">Start HTTPTools</a></div>
   <p class="lead">
     <div class="row">
     <div class="col-sm-12">
@@ -97,18 +104,21 @@
         </div><!-- /.box-header -->
         <div class="box-body">
         <div class="list-group">
+           <div align="center">
            {% if droidmon %}
-            <a target="_blank" class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-x_logcat.txt">Droidmon API Monitor Logs</a>
+            <a target="_blank" class="btn btn-info btn-sm" role="button" href="../download/{{ md5 }}-x_logcat.txt">Droidmon API Monitor Logs</a>
             {% endif %}
             {% if apimon %}
-            <a target="_blank" class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-api_monitor.txt">Frida API Monitor Logs</a>
-           {% endif %}
-            <a target="_blank" class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-web_traffic.txt">HTTP(S) Traffic</a>
-            <a target="_blank" class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-logcat.txt">Logcat Logs</a>
-            <a target="_blank" class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-dump.txt">Dumpsys Logs</a> 
-            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-app_data.tar">Application Data</a>
-            
-            <!--<a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-pcap.cap">Packet Capture</a>-->
+            <a target="_blank" class="btn btn-info btn-sm" role="button" href="../download/{{ md5 }}-api_monitor.txt">Frida API Monitor Logs</a>
+             {% endif %}
+             {% if fdlog %}
+             <a target="_blank" class="btn btn-info btn-sm" role="button" href="../download/{{ md5 }}-frida_out.txt">Frida Logs</a>
+              {% endif %}
+            <a target="_blank" class="btn btn-info btn-sm" role="button" href="../download/{{ md5 }}-web_traffic.txt">HTTP(S) Traffic</a>
+            <a target="_blank" class="btn btn-info btn-sm" role="button" href="../download/{{ md5 }}-logcat.txt">Logcat Logs</a>
+            <a target="_blank" class="btn btn-info btn-sm" role="button" href="../download/{{ md5 }}-dump.txt">Dumpsys Logs</a> 
+            <a class="btn btn-info btn-sm" role="button" href="../download/{{ md5 }}-app_data.tar">Application Data</a>
+            </div>
        </div>
         
         </div><!-- /.box-body -->

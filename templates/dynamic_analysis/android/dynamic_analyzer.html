@@ -29,6 +29,7 @@
         background: none repeat scroll 0 0 #FFFFFF;
         outline-width: 0;
     }
+    .highlight { border: solid 2px #1e6dff;}
   </style>
   <script src="/static/js/jquery.min.js"></script>
 <br/>
@@ -79,14 +80,14 @@
                 <!--box-->
                 <div id="frida_options" class="box box-primary">
                     <div class="box-header with-border">
-                      <h3 class="box-title">Frida Options</h3>
+                      <h3 class="box-title">Frida Scripts</h3>
                     </div>
                     <!-- /.box-header -->
                     <!-- form start -->
                     <form role="form">
                       <div class="box-body">
                         <div class="form-group">
-                        <h4> Frida Default Scripts </h4>
+                        <h4> Default </h4>
                           <label>
                               <input name="default_hooks" type="checkbox" value="api_monitor" checked>
                               API Monitoring 
@@ -104,12 +105,48 @@
                               Debugger Check Bypass
                             </label>
                         </div>
+                                           <hr/>
+                        <div class="form-group">
+                        <h4> Auxiliary </h4>
+                            <label>
+                            <input name="auxiliary" type="checkbox" value="enum_class" id="enum_class">
+                              Enumerate Loaded Classes
+                            </label> 
+                             <label>
+                            <input name="auxiliary" type="checkbox" value="string_catch" id="string_catch">
+                               Capture Strings
+                            </label>
+                             <label>
+                            <input name="auxiliary" type="checkbox" value="string_compare" id="string_compare">
+                                Capture String Comparisons
+                            </label>
+                            <br />
+                             <label>
+                              <input onclick="aux_click(this)" name="auxiliary" type="checkbox" value="enum_methods" id="enum_methods">
+                              Enumerate Class methods
+                            </label>
+                             <input type="text" class="form-control" id="cls_name" placeholder="java.io.File">
+
+                             <label>
+                              <input onclick="aux_click(this)" name="auxiliary" type="checkbox" value="search_class" id="search_class">
+                              Search Class Pattern
+                            </label>
+                             <input type="text" class="form-control" id="cls_search" placeholder="ssl\.Trust*">
+                             <label>
+                             <input onclick="aux_click(this)" name="auxiliary" type="checkbox"  value="trace_class" id="trace_class">
+                              Trace Class Methods
+                            </label>
+                             <input type="text" class="form-control" id="cls_trace" placeholder="java.net.Socket,java.io.File,java.lang.String">
+                        </div>
+     
+
+
                       </div>
                       <!-- /.box-body -->
 
                       <div class="box-footer">
                      
-                      <button id="frida_spawn" type="submit" class="btn btn-primary">Start Instrumentation</button> 
+                      <button id="frida_spawn" type="submit" class="btn btn-primary">Start Instrumentation</button> <button id="fd_log" type="button" class="btn btn-info" disabled>Frida Logs</button>
                       </div>
                     </form>
                   </div>
@@ -140,6 +177,23 @@
     </div>
     
 <script>
+// Frida Auxiliary actions
+
+function aux_click(cb) {
+  if (cb.checked && cb.value==='search_class')
+    $('#cls_search').addClass('highlight')
+  else if (!cb.checked && cb.value==='search_class')
+    $('#cls_search').removeClass('highlight')
+  else if (cb.checked && cb.value==='enum_methods')
+    $('#cls_name').addClass('highlight')
+  else if (!cb.checked && cb.value==='enum_methods')
+    $('#cls_name').removeClass('highlight')
+  else if (cb.checked && cb.value==='trace_class')
+    $('#cls_trace').addClass('highlight')
+  else if (!cb.checked && cb.value==='trace_class')
+    $('#cls_trace').removeClass('highlight')
+}
+
 //For All Ajax
 function action(url, data, on_success){
   //Add CSRF
@@ -499,10 +553,16 @@ $("#logstream").click(function() {
     setTimeout(function(){ window.open('../logcat/?package={{ package }}', '_blank');}, 500);   
     return false;  
 }); 
-
+// Frida logs
+$("#fd_log").click(function() {
+    print_status("Streaming Frida logs");
+    setTimeout(function(){ window.open('../frida_logs/?hash={{ md5 }}&package={{ package }}', '_blank');}, 100);   
+    return false;  
+}); 
 // Frida Spawn
 $("#frida_spawn").click(function() {
     print_status("Instrumenting app with frida");
+    $('#fd_log').removeAttr('disabled');
     var default_hooks = [];
     $.each($("input[name='default_hooks']:checked"), function(){            
         default_hooks.push($(this).val());
@@ -511,7 +571,21 @@ $("#frida_spawn").click(function() {
       $('#apimon').show();
     else
       $('#apimon').hide();
-    action('../frida_instrument/', {hash: '{{ md5 }}', package: '{{ package }}', default_hooks: default_hooks.join(",")}, function(json) {
+
+    var auxiliary_hooks = [];
+    $.each($("input[name='auxiliary']:checked"), function(){            
+        auxiliary_hooks.push($(this).val());
+    });
+
+    action('../frida_instrument/', {
+      hash: '{{ md5 }}',
+      package: '{{ package }}',
+      default_hooks: default_hooks.join(","),
+      auxiliary_hooks: auxiliary_hooks.join(","),
+      cls_name: $('#cls_name').val(),
+      cls_search:  $('#cls_search').val(),
+      cls_trace:  $('#cls_trace').val(),
+    }, function(json) {
     if (json.status === "ok")
       print_status("Successfully attached");
     else
@@ -555,6 +629,7 @@ $("#stop").one( "click", function() {
   });
   return false;  
 }); 
+
 
 //end document.ready
 });

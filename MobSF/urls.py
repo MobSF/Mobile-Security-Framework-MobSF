@@ -79,6 +79,7 @@ urlpatterns = [
     # Frida
     url(r'^frida_instrument/$', tests_frida.instrument),
     url(r'^live_api/$', tests_frida.live_api),
+    url(r'^frida_logs/$', tests_frida.frida_logs),
 
     # Report
     url(r'^dynamic_report/$', report.view_report),

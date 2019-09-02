@@ -39,10 +39,10 @@ def is_attack_pattern(user_input):
 
 def strict_package_check(user_input):
     """Strict package name check."""
-    pat = re.compile(r'^\w+\.*[\w\.]+$')
+    pat = re.compile(r'^\w+\.*[\w\.\$]+$')
     resp = re.match(pat, user_input)
     if not resp:
-        logger.error('Invalid package name')
+        logger.error('Invalid package/class name')
     return resp
 
 

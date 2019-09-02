@@ -52,6 +52,7 @@ def view_report(request):
                    'for this app. Perform Dynamic Analysis '
                    'and generate the report.')
             return print_n_send_error_response(request, msg)
+        fd_log = os.path.join(app_dir, 'mobsf_frida_out.txt')
         droidmon = droidmon_api_analysis(app_dir, package)
         apimon = apimon_analysis(app_dir)
         analysis_result = run_analysis(app_dir, md5_hash, package)
@@ -70,6 +71,7 @@ def view_report(request):
                    'expacttest': images['exported_activities'],
                    'droidmon': droidmon,
                    'apimon': apimon,
+                   'fdlog': is_file_exists(fd_log),
                    'package': package,
                    'title': 'Dynamic Analysis'}
         template = 'dynamic_analysis/android/dynamic_report.html'
