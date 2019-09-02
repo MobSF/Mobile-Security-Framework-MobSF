@@ -392,12 +392,16 @@ class Environment:
         if b'/system/fd_server' in check:
             logger.info('Frida Server is already running')
             return
-        fda = [get_adb(),
-               '-s',
-               self.identifier,
-               'shell',
-               '/system/fd_server']
-        trd = threading.Thread(target=subprocess.call, args=(fda,))
+
+        def start_frida():
+            fnull = open(os.devnull, 'w')
+            argz = [get_adb(),
+                    '-s',
+                    self.identifier,
+                    'shell',
+                    '/system/fd_server']
+            subprocess.call(argz, stdout=fnull, stderr=subprocess.STDOUT)
+        trd = threading.Thread(target=start_frida)
         trd.daemon = True
         trd.start()
         logger.info('Frida Server is running')

@@ -185,9 +185,9 @@ class Frida:
             self.clean_up()
             env.run_frida_server()
             device = frida.get_device(get_device(), settings.FRIDA_TIMEOUT)
-            logger.info('Spawning %s', self.package)
             pid = device.spawn([self.package])
             device.resume(pid)
+            logger.info('Spawning %s', self.package)
             time.sleep(2)
             session = device.attach(pid)
         except frida.ServerNotRunningError:
@@ -195,6 +195,10 @@ class Frida:
             self.connect()
         except frida.TimedOutError:
             logger.error('Timed out while waiting for device to appear')
+        except (frida.ProcessNotFoundError,
+                frida.TransportError,
+                frida.InvalidOperationError):
+            pass
         except Exception:
             logger.exception('Error Connecting to Frida')
         try:

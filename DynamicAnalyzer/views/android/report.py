@@ -48,9 +48,10 @@ def view_report(request):
         app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         download_dir = settings.DWD_DIR
         if not is_file_exists(os.path.join(app_dir, 'logcat.txt')):
-            return print_n_send_error_response(request,
-                                               'Dynamic Analysis report'
-                                               ' is not available.')
+            msg = ('Dynamic Analysis report is not available '
+                   'for this app. Perform Dynamic Analysis '
+                   'and generate the report.')
+            return print_n_send_error_response(request, msg)
         droidmon = droidmon_api_analysis(app_dir, package)
         apimon = apimon_analysis(app_dir)
         analysis_result = run_analysis(app_dir, md5_hash, package)
