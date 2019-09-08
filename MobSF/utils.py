@@ -447,8 +447,9 @@ def get_device():
         if len(out) > 2:
             dev_id = out[1].decode('utf-8').split('\t')[0]
             return dev_id
-    logger.error('Cannot identify device id. Please set '
-                 'ANALYZER_IDENTIFIER in MobSF/settings.py')
+    logger.error('Is the Android VM running?\n'
+                 'MobSF cannot identify device id.\n'
+                 'Please set ANALYZER_IDENTIFIER in MobSF/settings.py')
 
 
 def get_adb():
@@ -633,3 +634,9 @@ def get_proxy_ip(identifier):
     except Exception:
         logger.error('Error getting Proxy IP')
     return proxy_ip
+
+
+def is_safe_path(safe_root, check_path):
+    """Detect Path Traversal."""
+    return os.path.commonprefix(
+        (os.path.realpath(check_path), safe_root)) == safe_root

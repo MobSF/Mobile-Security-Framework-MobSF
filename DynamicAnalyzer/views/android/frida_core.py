@@ -10,7 +10,7 @@ from django.conf import settings
 import frida
 
 from DynamicAnalyzer.views.android.environment import Environment
-from DynamicAnalyzer.views.android.frida_auxiliary import (
+from DynamicAnalyzer.views.android.frida_scripts import (
     class_pattern,
     class_trace,
     get_loaded_classes,
@@ -26,12 +26,13 @@ logger = logging.getLogger(__name__)
 
 class Frida:
 
-    def __init__(self, app_hash, package, defaults, auxiliary, extras):
+    def __init__(self, app_hash, package, defaults, auxiliary, extras, code):
         self.hash = app_hash
         self.package = package
         self.defaults = defaults
         self.auxiliary = auxiliary
         self.extras = extras
+        self.code = code
         self.frida_dir = os.path.join(settings.TOOLS_DIR,
                                       'frida_scripts')
         self.apk_dir = os.path.join(settings.UPLD_DIR, self.hash + '/')
@@ -75,6 +76,7 @@ class Frida:
         """Get final script."""
         scripts = self.get_default_scripts()
         scripts.extend(self.get_auxiliary())
+        scripts.extend([self.code])
         final = 'setTimeout(function() {{ {} }}, 0)'.format(
             '\n'.join(scripts))
         return final

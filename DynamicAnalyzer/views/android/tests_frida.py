@@ -1,9 +1,11 @@
 # -*- coding: utf_8 -*-
 """Frida tests."""
 import base64
+import glob
 import os
 import re
 import json
+from pathlib import Path
 import threading
 import logging
 
@@ -21,10 +23,50 @@ from DynamicAnalyzer.views.android.operations import (
 
 from MobSF.utils import (
     is_file_exists,
+    is_safe_path,
     print_n_send_error_response)
 
 logger = logging.getLogger(__name__)
 
+# AJAX
+
+
+@require_http_methods(['GET'])
+def list_frida_scripts(request):
+    """Get frida scripts from others."""
+    scripts = []
+    others = os.path.join(settings.TOOLS_DIR,
+                          'frida_scripts',
+                          'others')
+    files = [f for f in glob.glob(
+        others + '**/*.js', recursive=True)]
+    for item in files:
+        scripts.append(Path(item).stem)
+    return json_response({'status': 'ok',
+                          'files': scripts})
+# AJAX
+
+
+@require_http_methods(['POST'])
+def get_script(request):
+    """Get frida scripts from others."""
+    data = {'status': 'ok', 'content': ''}
+    try:
+        scripts = request.POST.getlist('scripts[]')
+        others = os.path.join(settings.TOOLS_DIR,
+                              'frida_scripts',
+                              'others')
+        script_ct = []
+        for script in scripts:
+            script_file = os.path.join(others, script + '.js')
+            if not is_safe_path(others, script_file):
+                return json_response(data)
+            if is_file_exists(script_file):
+                script_ct.append(Path(script_file).read_text())
+        data['content'] = '\n'.join(script_ct)
+    except Exception:
+        pass
+    return json_response(data)
 # AJAX
 
 
@@ -38,6 +80,7 @@ def instrument(request):
         md5_hash = request.POST['hash']
         default_hooks = request.POST['default_hooks']
         auxiliary_hooks = request.POST['auxiliary_hooks']
+        code = request.POST['frida_code']
         # Fill extras
         extras = {}
         class_name = request.POST.get('cls_name')
@@ -57,7 +100,8 @@ def instrument(request):
                           package,
                           default_hooks.split(','),
                           auxiliary_hooks.split(','),
-                          extras)
+                          extras,
+                          code)
         trd = threading.Thread(target=frida_obj.connect)
         trd.daemon = True
         trd.start()

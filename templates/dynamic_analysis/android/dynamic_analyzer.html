@@ -1,8 +1,16 @@
 
-  {% extends "base_top_only.html" %}
+  {% extends "base_no_scripts.html" %}
    {% block content %}
   <link rel='stylesheet' href='/static/terminal/terminal.css' type='text/css'>
   <link rel='stylesheet' href='/static/css/devices.min.css' type='text/css'>
+
+<link rel="stylesheet" href="/static/codemirror/codemirror.css">
+<link rel="stylesheet" href="/static/codemirror/lint.css">
+<script src="/static/codemirror/codemirror.js"></script>
+<script src="/static/codemirror/javascript.js"></script>
+<script src="/static/codemirror/jshint.js"></script>
+<script src="/static/codemirror/lint.js"></script>
+<script src="/static/codemirror/javascript-lint.js"></script>
    <style>
       textarea {
         width: 100%;
@@ -30,12 +38,19 @@
         outline-width: 0;
     }
     .highlight { border: solid 2px #1e6dff;}
+    .CodeMirror {
+        font-size: 13px;
+        border: 1px solid #eee;
+        height: 545px;
+      }
   </style>
   <script src="/static/js/jquery.min.js"></script>
+<div class="container-fluid">
 <br/>
 <h2 class="page-header"><strong>Dynamic Analyzer </strong>- {{ package }}</h2>
 <input type="hidden" id="screen_width" value="{{ screen_witdth }}">
 <input type="hidden" id="screen_height" value="{{ screen_height }}">
+<div class="container">
 <div class="row">
     <p id="but">
       <a id="screen" class="btn btn-primary" role="button">Show Screen</a>
@@ -48,10 +63,11 @@
       <a id="stop" class="btn btn-info" role="button" >Generate Report</a>
 
     </p>
+    </div>
   </div>
 
       <div class="row">
-        <div class="col-md-5">
+        <div class="col-md-3">
           <!-- Custom Tabs -->
         
         <div class="marvel-device htc-one">
@@ -67,7 +83,7 @@
         </div>
         <!-- /.col -->
 
-        <div class="col-md-7">
+        <div class="col-md-5">
           <!-- Custom Tabs (Pulled to the right) -->
       <div class="nav-tabs-custom">
             <ul class="nav nav-tabs">
@@ -146,7 +162,7 @@
 
                       <div class="box-footer">
                      
-                      <button id="frida_spawn" type="submit" class="btn btn-primary">Start Instrumentation</button> <button id="fd_log" type="button" class="btn btn-info" disabled>Frida Logs</button>
+                      <button id="frida_spawn" type="submit" class="btn btn-primary">Start Instrumentation</button> <button id="fd_log" type="button" class="btn btn-info" disabled>Frida Live Logs</button>
                       </div>
                     </form>
                   </div>
@@ -163,6 +179,32 @@
           <!-- nav-tabs-custom -->
         </div>
         <!-- /.col -->
+         <div class="col-md-4" id="codeedit">
+
+  <div class="box box-primary">
+        <div class="box-header with-border">
+          <h3 class="box-title">Frida Code Editor  </h3>
+          <span class="label label-primary pull-right"><i class="fa fa-code"></i></span>
+        </div><!-- /.box-header -->
+        <div class="box-body">
+        <p>
+          <textarea id="code-js" rows="50">
+Java.perform(function() {
+  // Use send() for logging
+});
+        </textarea>
+        </p>
+        </div><!-- /.box-body -->
+               <div class="form-group">
+                 <span class="box-title">&nbsp;&nbsp; Available Scripts (Use CTRL to choose multiple)  </span>
+                  <button id="loadscript" type="submit" class="btn btn-primary btn-sm">Load</button>
+                  <select id="fd_scs" multiple="" class="form-control">
+                  </select>
+                </p>
+                </div>
+      </div><!-- /.box -->
+
+        </div>
       </div>
       <!-- /.row -->
 
@@ -175,7 +217,7 @@
         <div class="prompt"></div><div><input class="cmdline" autofocus /></div>
       </div>
     </div>
-    
+</div>
 <script>
 // Frida Auxiliary actions
 
@@ -194,6 +236,8 @@ function aux_click(cb) {
     $('#cls_trace').removeClass('highlight')
 }
 
+
+
 //For All Ajax
 function action(url, data, on_success){
   //Add CSRF
@@ -209,6 +253,26 @@ function action(url, data, on_success){
     }
   });
 }
+
+// Frida load other scripts
+function load_frida_others(){
+  $.get('../list_frida_scripts/', function(json, status){
+      if (json.status == 'ok'){
+        json.files.forEach(function(script) {
+          $('#fd_scs').append('<option value=' + escape(script) + '>' + escape(script) + '</option>');
+        });
+      }
+  });
+}
+
+// Code Editor
+var editor = CodeMirror.fromTextArea(document.getElementById("code-js"), {
+    lineNumbers: true,
+    mode: "javascript",
+    gutters: ["CodeMirror-lint-markers"],
+    lint: true,
+    lineWrapping: true,
+  });
 
 // Terminal
 var util = util || {};
@@ -409,14 +473,20 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
 $(document).ready(function() {
 
 //Terminal
-$('.prompt').html('[root@android_x86] # ');
+$('.prompt').html('[root@android] # ');
 var term = new Terminal('#input-line .cmdline', '#shell output');
 term.init();
 
 // Start up
 {% if version < 5 %}
-  $('#frida_options').hide() 
+  $('#frida_options').hide()
+  $('#codeedit').hide()
+{% else %}
+   load_frida_others();
 {% endif %}
+
+
+
 //Print Status
 function print_status(message){
   $('#stat').append(message + '\n');
@@ -558,7 +628,20 @@ $("#fd_log").click(function() {
     print_status("Streaming Frida logs");
     setTimeout(function(){ window.open('../frida_logs/?hash={{ md5 }}&package={{ package }}', '_blank');}, 100);   
     return false;  
-}); 
+});
+
+
+// Load Frida Scripts
+$("#loadscript").click(function() {
+   var scripts = $('#fd_scs').val();
+   action('../get_script/', {scripts: scripts}, function(json) {
+    if (json.status==="ok"){
+        editor.getDoc().setValue(json.content);
+    }
+  });
+  return false;  
+});
+
 // Frida Spawn
 $("#frida_spawn").click(function() {
     print_status("Instrumenting app with frida");
@@ -585,6 +668,7 @@ $("#frida_spawn").click(function() {
       cls_name: $('#cls_name').val(),
       cls_search:  $('#cls_search').val(),
       cls_trace:  $('#cls_trace').val(),
+      frida_code: editor.getDoc().getValue(),
     }, function(json) {
     if (json.status === "ok")
       print_status("Successfully attached");
@@ -593,6 +677,7 @@ $("#frida_spawn").click(function() {
   });
   return false;  
 }); 
+
 
 //Dump App data
 function dump(){
