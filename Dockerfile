@@ -50,7 +50,7 @@ ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 #Install Wkhtmltopdf
 RUN wget --quiet -O /tmp/${WKH_FILE} "${WKH_URL}" && \
     dpkg -i /tmp/${WKH_FILE} && \
-    apt-get install -f && \
+    apt-get install -f -y --no-install-recommends && \
     ln -s /usr/local/bin/wkhtmltopdf /usr/bin && \
     rm -f /tmp/${WKH_FILE}
 
