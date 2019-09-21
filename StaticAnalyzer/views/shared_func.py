@@ -556,7 +556,7 @@ def url_n_email_extract(dat, relative_path):
             r'[\w().=/;,#:@?&~*+!$%\'{}-]+)'
         ),
         re.UNICODE)
-    urllist = re.findall(pattern, dat.lower())
+    urllist = re.findall(pattern, dat)
     uflag = 0
     for url in urllist:
         if url not in urls:
