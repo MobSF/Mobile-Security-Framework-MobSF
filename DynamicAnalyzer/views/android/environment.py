@@ -115,10 +115,7 @@ class Environment:
         if version < 5:
             proxy_ip = get_proxy_ip(self.identifier)
         else:
-            if os.getenv('DOCKER_HOST_IP'):
-                proxy_ip = os.getenv('DOCKER_HOST_IP')
-            else:
-                proxy_ip = '127.0.0.1'
+            proxy_ip = '127.0.0.1'
         if proxy_ip:
             if version < 4.4:
                 logger.warning('Please set Android VM proxy as %s:%s',
