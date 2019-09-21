@@ -54,8 +54,8 @@ Other docker options: [MobSF Docker Options](https://github.com/MobSF/Mobile-Sec
 * c0c0n 2015 - [Slides](https://www.slideshare.net/ajin25/automated-security-analysis-of-android-ios-applications-with-mobile-security-framework-c0c0n-2015)
 *  G4H Webcast 2015 - [Video](https://www.youtube.com/watch?v=CysfO6AZmo8)
 
-## Video Course
-* [Automated Mobile Application Security Assessment with MobSF](https://opsecx.com/index.php/product/automated-mobile-application-security-assessment-with-mobsf/)
+## e-Learning Courses
+* [Automated Mobile Application Security Assessment with MobSF (Currently being updated)](https://opsecx.com/index.php/product/automated-mobile-application-security-assessment-with-mobsf/)
 * [Android Security Tools Expert](https://opsecx.com/index.php/product/android-security-tools-expert-atx/)
 
 ## What's New?
