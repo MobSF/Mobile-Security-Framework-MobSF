@@ -6,7 +6,7 @@ import time
 
 import requests
 
-from MobSF.utils import upstream_proxy
+from MobSF.utils import is_file_exists, upstream_proxy
 
 logger = logging.getLogger(__name__)
 
@@ -51,8 +51,22 @@ def start_httptools_ui(port):
     time.sleep(3)
 
 
+def create_ca():
+    """Generate CA on first run."""
+    argz = ['mitmdump', '-n']
+    subprocess.Popen(argz,
+                     stdin=None,
+                     stdout=None,
+                     stderr=None,
+                     close_fds=True)
+    time.sleep(2)
+
+
 def get_ca_dir():
     """Get CA Dir."""
     from mitmproxy import ctx
     ca_dir = Path(ctx.mitmproxy.options.CONF_DIR).expanduser()
-    return os.path.join(str(ca_dir), 'mitmproxy-ca-cert.cer')
+    ca_file = os.path.join(str(ca_dir), 'mitmproxy-ca-cert.cer')
+    if not is_file_exists(ca_file):
+        create_ca()
+    return ca_file
