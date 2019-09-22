@@ -12,6 +12,7 @@ from django.conf import settings
 from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
+from django.template.defaulttags import register
 
 from MobSF.forms import FormUtil, UploadFileForm
 from MobSF.utils import (api_key, is_dir_exists, is_file_exists,
@@ -26,6 +27,12 @@ from StaticAnalyzer.models import (RecentScansDB, StaticAnalyzerAndroid,
 LINUX_PLATFORM = ['Darwin', 'Linux']
 HTTP_BAD_REQUEST = 400
 logger = logging.getLogger(__name__)
+
+
+@register.filter
+def key(d, key_name):
+    """To get dict element by key name in template."""
+    return d.get(key_name)
 
 
 def index(request):
@@ -180,8 +187,19 @@ def not_found(request):
 
 def recent_scans(request):
     """Show Recent Scans Route."""
-    db_obj = RecentScansDB.objects.all().order_by('-TS')
-    context = {'title': 'Recent Scans', 'entries': db_obj}
+    entries = []
+    db_obj = RecentScansDB.objects.all().order_by('-TS').values()
+    android = StaticAnalyzerAndroid.objects.all()
+    package_mapping = {}
+    for item in android:
+        package_mapping[item.MD5] = item.PACKAGENAME
+    for entry in db_obj:
+        if entry['MD5'] in package_mapping.keys():
+            entry['PACKAGE'] = package_mapping[entry['MD5']]
+        else:
+            entry['PACKAGE'] = ''
+        entries.append(entry)
+    context = {'title': 'Recent Scans', 'entries': entries}
     template = 'general/recent.html'
     return render(request, template, context)
 
@@ -217,8 +235,11 @@ def download(request):
                     wrapper, content_type=allowed_exts[ext])
                 response['Content-Length'] = os.path.getsize(dwd_file)
                 return response
-    msg += filename
-    return print_n_send_error_response(request, msg)
+    if ('screen/screen.png' not in filename
+            and '-icon.png' not in filename):
+        msg += filename
+        return print_n_send_error_response(request, msg)
+    return HttpResponse('')
 
 
 def delete_scan(request, api=False):

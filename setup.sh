@@ -45,10 +45,10 @@ source venv/bin/activate
 echo '[INSTALL] Installing APKiD requirements - yara-python'
 pip install wheel
 pip wheel --wheel-dir=/tmp/yara-python --build-option='build' --build-option='--enable-dex' git+https://github.com/VirusTotal/yara-python.git
-pip install --no-index --find-links=/tmp/yara-python yara-python
+pip install --no-cache-dir --no-index --find-links=/tmp/yara-python yara-python
 
 echo '[INSTALL] Installing Requirements'
-pip install -r requirements.txt
+pip install --no-cache-dir -r requirements.txt
 
 echo '[INSTALL] Clean Up'
 bash scripts/clean.sh y

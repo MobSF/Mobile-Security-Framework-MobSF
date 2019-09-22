@@ -31,7 +31,7 @@
     <![endif]-->
   </head>
 
-  <body class="skin-blue fixed" data-spy="scroll" data-target="#scrollspy">
+  <body class="skin-purple fixed" data-spy="scroll" data-target="#scrollspy">
     <div class="wrapper">
 
    <header class="main-header">
@@ -56,6 +56,8 @@
           <!--Menu Items-->
           <ul class="nav navbar-nav">
             <li><a href="{% url 'recent' %}">Recent Scans</a></li>
+            <li><a href="{% url 'home' %}">Static Analysis</a></li>
+            <li><a href="{% url 'dynamic' %}">Dynamic Analysis</a></li>
             <li><a href="{% url 'api_docs' %}">API Docs</a></li>
             <li><a href="{% url 'about' %}">About</a></li>
           </ul>

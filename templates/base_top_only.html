@@ -34,7 +34,7 @@
       {% endblock %}
   </head>
 
-  <body class="hold-transition skin-blue layout-top-nav" data-spy="scroll" data-target="#scrollspy">
+  <body class="hold-transition skin-purple layout-top-nav" data-spy="scroll" data-target="#scrollspy">
     <div class="wrapper">
 
    <header class="main-header">
@@ -55,9 +55,11 @@
 
           <!--Menu Items-->
           <ul class="nav navbar-nav">
-            <li><a href="../recent_scans/">Recent Scans</a></li>
-            <li><a href="../api_docs">API Docs</a></li>
-            <li><a href="../about">About</a></li>
+            <li><a href="{% url 'recent' %}">Recent Scans</a></li>
+            <li><a href="{% url 'home' %}">Static Analysis</a></li>
+            <li><a href="{% url 'dynamic' %}">Dynamic Analysis</a></li>
+            <li><a href="{% url 'api_docs' %}">API Docs</a></li>
+            <li><a href="{% url 'about' %}">About</a></li>
           </ul>
 
        <form class="navbar-form navbar-left" role="search" action="/search" method="GET">

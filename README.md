@@ -1,8 +1,8 @@
 # Mobile Security Framework (MobSF)
-Version: v1.1 beta
+Version: v2.0 beta
 ![](https://cloud.githubusercontent.com/assets/4301109/20019521/cc61f7fc-a2f2-11e6-95f3-407030d9fdde.png)
 
-Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing framework capable of performing static, dynamic and malware analysis. It can be used for effective and fast security analysis of Android, iOS and Windows mobile applications and support both binaries (APK, IPA & APPX ) and zipped source code. MobSF can do dynamic application testing at runtime for Android apps and has Web API fuzzing capabilities powered by [CapFuzz](https://github.com/MobSF/CapFuzz), a Web API specific security scanner. MobSF is designed to make your CI/CD or DevSecOps pipeline integration seamless.
+Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis. MobSF support mobile app binaries (APK, IPA & APPX) along with zipped source code and provides REST APIs for seamless integration with your CI/CD or DevSecOps pipeline.The Dynamic Analyzer helps you to perform runtime security assesment and interactive instrumented testing.
 
 Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82e3a63c-4813-11e6-9430-6015d98aeaab.png) in India
 
@@ -54,9 +54,9 @@ Other docker options: [MobSF Docker Options](https://github.com/MobSF/Mobile-Sec
 * c0c0n 2015 - [Slides](https://www.slideshare.net/ajin25/automated-security-analysis-of-android-ios-applications-with-mobile-security-framework-c0c0n-2015)
 *  G4H Webcast 2015 - [Video](https://www.youtube.com/watch?v=CysfO6AZmo8)
 
-## Video Course
-
-* [Android Security Tools Expert](https://opsecx.com/index.php/product/android-security-tools-expert-atx/)
+## e-Learning Courses & Certifications
+* [Automated Mobile Application Security Assessment with MobSF -MAS (Currently being updated)](https://opsecx.com/index.php/product/automated-mobile-application-security-assessment-with-mobsf/)
+* [Android Security Tools Expert -ATX](https://opsecx.com/index.php/product/android-security-tools-expert-atx/)
 
 ## What's New?
 * [See Changelog](https://mobsf.github.io/Mobile-Security-Framework-MobSF/changelog.html)
@@ -72,27 +72,24 @@ Other docker options: [MobSF Docker Options](https://github.com/MobSF/Mobile-Sec
 
 ### Static Analysis - Android APK 
 
-![android-static-analysis-apk](https://cloud.githubusercontent.com/assets/4301109/13614857/7a39189c-e598-11e5-90ff-6357b6c320bd.png)
-![android-static-analysis-apk2](https://cloud.githubusercontent.com/assets/4301109/13614896/b7b7b53e-e598-11e5-84b5-e69c56c230a3.png)
+![android-static-analysis-apk](https://user-images.githubusercontent.com/4301109/65378793-5136b880-dcdb-11e9-890a-6a5148e6ab25.png)
+![android-static-analysis-apk2](https://user-images.githubusercontent.com/4301109/65378792-4e3bc800-dcdb-11e9-91b0-74d8c1a3a452.png)
+![compare-result](https://user-images.githubusercontent.com/4301109/65378790-454af680-dcdb-11e9-927c-af94cd97359f.png)
 
 ### Static Analysis - iOS IPA
 
-![ios-static-analysis-ipa](https://cloud.githubusercontent.com/assets/4301109/13614950/e8174ac8-e598-11e5-8e03-d40ad7d9e5a4.png)
-
-### Static Analysis - Windows APPX
-![windows-static-analysis-appx](https://cloud.githubusercontent.com/assets/4301109/20524598/1e139a1e-b0e1-11e6-8489-ee38c4392b4b.png)
+![ios-static-analysis-ipa](https://user-images.githubusercontent.com/4301109/65378791-4aa84100-dcdb-11e9-963b-927ca669d6e1.png)
 
 ### Dynamic Analysis - Android APK
 
-![android-dynamic-analysis](https://cloud.githubusercontent.com/assets/4301109/13615043/6fe62028-e599-11e5-9c50-e44adbba114a.png)
-![android-dynamic-report](https://cloud.githubusercontent.com/assets/4301109/13615800/104cc424-e59d-11e5-9a98-2e3b2aff7222.png)
-![android-dynamic-report2](https://cloud.githubusercontent.com/assets/4301109/13615767/f04e5c1e-e59c-11e5-9ad1-b31598024ad4.png)
-![android-dynamic-expact](https://cloud.githubusercontent.com/assets/4301109/13615882/6f4d9f16-e59d-11e5-9ec9-3b4c47e37389.png)
+![android-dynamic-analysis](https://user-images.githubusercontent.com/4301109/65378800-5d227a80-dcdb-11e9-820b-b688ae6cfd5d.png)
+![android-dynamic-frida-live](https://user-images.githubusercontent.com/4301109/65378803-614e9800-dcdb-11e9-88e7-3ca54ec0b0dd.png)
+![android-dynamic-expact](https://user-images.githubusercontent.com/4301109/65378854-387ad280-dcdc-11e9-9a69-3ef4d1d28cb9.png)
 
-### Web API Fuzzer
+### Web API Viewer
 
-![capfuzz](https://user-images.githubusercontent.com/4301109/37251800-af620840-253c-11e8-89ed-ce3594e243e9.png)
-![capfuzz-scan](https://user-images.githubusercontent.com/4301109/37564069-561cef7a-2ab4-11e8-9048-bdf405d078ce.png)
+![android-dynamic-http-tools](https://user-images.githubusercontent.com/4301109/65378797-57c53000-dcdb-11e9-84e9-d5acf887f3aa.png)
+
 
 ## Credits
 * Abhinav Sejpal (@Abhinav_Sejpal) - For poking me with bugs, feature requests, and UI & UX suggestions.

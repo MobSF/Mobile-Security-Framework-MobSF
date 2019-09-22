@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{{title}}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Mobile Security Framework - MobSF">
+    <meta name="author" content="Ajin">
+    <link rel="icon" href="/static/favicon.ico">
+
+
+
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+     <!-- Bootstrap 3.3.5 -->
+    <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="/static/css/font-awesome.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="/static/css/ionicons.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="/static/dash/css/AdminLTE.min.css">
+    <link rel="stylesheet" href="/static/dash/css/skins/_all-skins.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+        <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+      {% block extra_header %}
+      {% endblock %}
+  </head>
+
+  <body class="hold-transition skin-purple layout-top-nav" data-spy="scroll" data-target="#scrollspy">
+    <div class="wrapper">
+
+   <header class="main-header">
+    <!-- Logo -->
+   
+    <!-- Header Navbar: style can be found in header.less -->
+    <nav class="navbar navbar-static-top" role="navigation">
+      <!-- Sidebar toggle button-->
+       <a href="{% url 'home' %}" class="logo">
+      <!-- mini logo for sidebar mini 50x50 pixels -->
+      <span class="logo-mini"><b>Mob</b>SF</span>
+      <!-- logo for regular state and mobile devices -->
+      <span class="logo-lg"><b>Mob</b>SF</span>
+    </a>
+
+      <div class="navbar-custom-menu">
+        <ul class="nav navbar-nav">
+
+          <!--Menu Items-->
+          <ul class="nav navbar-nav">
+            <li><a href="{% url 'recent' %}">Recent Scans</a></li>
+            <li><a href="{% url 'home' %}">Static Analysis</a></li>
+            <li><a href="{% url 'dynamic' %}">Dynamic Analysis</a></li>
+            <li><a href="{% url 'api_docs' %}">API Docs</a></li>
+            <li><a href="{% url 'about' %}">About</a></li>
+          </ul>
+
+       <form class="navbar-form navbar-left" role="search" action="/search" method="GET">
+            <div class="form-group">
+              <input type="text" name="md5" class="form-control" id="navbar-search-input" placeholder="Search MD5">
+            </div>
+          </form>
+                    <!-- Control Sidebar Toggle Button -->
+          <!--
+          <li>
+            <a href="#" data-toggle="control-sidebar"><i class="fa fa-gears"></i> Console</a>
+          </li>
+        -->
+        </ul>
+      </div>
+    </nav>
+  </header>
+
+
+<!-- Full Width Column -->
+  <div class="content-wrapper">
+    {% block content %}
+         {% endblock %}
+    <!-- /.container -->
+  </div>
+  <!-- /.content-wrapper -->
+
+
+
+
+     <footer class="main-footer">
+        <strong>© {% now "Y" %} Mobile Security Framework - MobSF | <a href="https://ajinabraham.com">Ajin Abraham</a> | <a href="https://opensecurity.in">OpenSecurity</a>.</strong>
+
+      </footer>
+
+      <!-- Control Sidebar -->
+      <aside class="control-sidebar control-sidebar-dark">
+        <!-- Create the tabs -->
+        <div class="pad">
+          Console logs will be shown here.
+        </div>
+      </aside><!-- /.control-sidebar -->
+      <!-- Add the sidebar's background. This div must be placed
+           immediately after the control sidebar -->
+      <div class="control-sidebar-bg"></div>
+
+    </div><!-- ./wrapper -->
+
+
+    <!-- Bootstrap 3.3.5 -->
+    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
+    <!-- Growl -->
+    <script src="/static/js/jquery.bootstrap-growl.min.js"></script>
+    <!-- FastClick -->
+    <script src="/static/plugins/fastclick/fastclick.min.js"></script>
+    <!-- AdminLTE App -->
+    <script src="/static/dash/js/app.min.js"></script>
+    <!-- SlimScroll 1.3.0 -->
+    <script src="/static/plugins/slimScroll/jquery.slimscroll.min.js"></script>
+    <!--<script src="/static/js/run_prettify.js"></script>-->
+    <script src="/static/js/docs.js"></script>
+
+    {% block extra_footer %}
+    {% endblock %}
+  </body>
+</html>
+

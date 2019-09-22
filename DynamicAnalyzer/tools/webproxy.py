@@ -1,68 +1,72 @@
 import logging
 import os
+from pathlib import Path
 import subprocess
 import time
 
-import capfuzz as cp
-
 import requests
 
+from MobSF.utils import is_file_exists, upstream_proxy
+
 logger = logging.getLogger(__name__)
-"""
-from capfuzz.__main__ import (
-    CapFuzz
-)
-"""
 
 
-def stop_capfuzz(port):
-    """Capfuzz Kill."""
-    # Invoke CapFuzz UI Kill Request
+def stop_httptools(port):
+    """Kill httptools."""
+    # Invoke HTTPtools UI Kill Request
     try:
         requests.get('http://127.0.0.1:' + str(port) + '/kill', timeout=5)
-        logger.info('Killing CapFuzz UI')
+        logger.info('Killing httptools UI')
     except Exception:
         pass
 
-    # Inkoke CapFuzz Proxy Kill Request
+    # Inkoke HTTPtools Proxy Kill Request
     try:
         http_proxy = 'http://127.0.0.1:' + str(port)
-        headers = {'capfuzz': 'kill'}
+        headers = {'httptools': 'kill'}
         url = 'http://127.0.0.1'
         requests.get(url, headers=headers, proxies={
                      'http': http_proxy})
-        logger.info('Killing CapFuzz Proxy')
+        logger.info('Killing httptools Proxy')
     except Exception:
         pass
 
 
 def start_proxy(port, project):
-    """Start CapFuzz in Proxy Mode."""
-    subprocess.Popen(['capfuzz',
-                      '-m', 'capture', '-p', str(port), '-n', project])
-    """
-    capfuzz_obj = CapFuzz()
-    proxy_trd = Thread(target=capfuzz_obj.start_proxy,
-                       args=(port, 'capture', project,))
-    proxy_trd.daemon = True
-    proxy_trd.start()
-    """
+    """Start HTTPtools in Proxy Mode."""
+    argz = ['httptools',
+            '-m', 'capture',
+            '-p', str(port), '-n', project]
+    proxies, _ = upstream_proxy('http')
+    if proxies['http']:
+        argz.extend(['-u', proxies['http']])
+    fnull = open(os.devnull, 'w')
+    subprocess.Popen(argz, stdout=fnull, stderr=subprocess.STDOUT)
 
 
-def start_fuzz_ui(port):
-    """Start Fuzz UI."""
-    subprocess.Popen(['capfuzz',
-                      '-m', 'fuzz', '-p', str(port)])
+def start_httptools_ui(port):
+    """Start Server UI."""
+    subprocess.Popen(['httptools',
+                      '-m', 'server', '-p', str(port)])
     time.sleep(3)
-    """
-    capfuzz_obj = CapFuzz()
-    ui_trd = Thread(target=capfuzz_obj.run_fuzz_server, args=(port,))
-    ui_trd.daemon = True
-    ui_trd.start()
-    """
+
+
+def create_ca():
+    """Generate CA on first run."""
+    argz = ['mitmdump', '-n']
+    subprocess.Popen(argz,
+                     stdin=None,
+                     stdout=None,
+                     stderr=None,
+                     close_fds=True)
+    time.sleep(2)
 
 
 def get_ca_dir():
     """Get CA Dir."""
-    capfuzz_dir = os.path.dirname(cp.__file__)
-    return os.path.join(capfuzz_dir, 'ca', 'mitmproxy-ca-cert.cer')
+    from mitmproxy import ctx
+    ca_dir = Path(ctx.mitmproxy.options.CONF_DIR).expanduser()
+    ca_file = os.path.join(str(ca_dir), 'mitmproxy-ca-cert.cer')
+    if not is_file_exists(ca_file):
+        create_ca()
+    return ca_file

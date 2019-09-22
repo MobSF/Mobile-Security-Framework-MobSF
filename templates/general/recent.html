@@ -1,6 +1,6 @@
 
   {% extends "base_top_only.html" %}
-
+{% load staticfiles %}
 {% block extra_header %}
     <link href="/static/dash/css/sweetalert2.min.css" rel="stylesheet">
     <style>
@@ -16,35 +16,50 @@
 
 {% block content %}
 
-    <div class="box box-default">
+    <div class="box">
         <div class="box-header with-border">
             <h3 class="box-title"><i class="fa fa-rocket"></i> Recent Scans</h3>
         </div>
 
         <div class="box-body">
-
             <div class="table-responsive">
                 <table class="table table-bordered table-hover table-striped">
                     <thead>
                     <tr>
-                        <th>Name</th>
+                        <th>App</th>
+                        <th>File</th>
+                        <th>Type</th>
                         <th>Hash</th>
-                        <th>Date</th>
-                        <th>Report</th>
+                        <th style="width: 120px;">Date</th>
+                        <th>View</th>
+                        <th>Delete</th>
                     </tr>
                     </thead>
                     <tbody>
                     {% for e in entries %}
                         <tr>
+                            <td>
+                                <img id="app_icon" src="/download/{{ e.MD5 }}-icon.png" onerror="this.src='{% static 'img/no_icon.png' %}'">
+                            </td>
                             <td>{{ e.NAME }}</td>
+                            <td>
+                                {% if '.apk' == e.NAME|slice:"-4:"%}<i class="fa fa-android fa-2x"></i>
+                                {% elif '.ipa' == e.NAME|slice:"-4:"%}<i class="fa fa-apple fa-2x"></i>
+                                {% elif '.zip' == e.NAME|slice:"-4:"%}<i class="fa fa-file-zip-o fa-2x"></i>
+                                {% elif '.appx' == e.NAME|slice:"-5:"%}<i class="fa fa-windows fa-2x"></i>
+                                {% endif %}
+                            </td>
                             <td>{{ e.MD5 }}</td>
                             <td>{{ e.TS }}</td>
-                            <td><a href="../{{ e.URL }}"><i class="fa fa-eye"></i> View</a> |
-                                <!--<a class="diffButton" id="{{ e.MD5 }}_{{ e.NAME}}" onclick="diff_select(this)"><i class="fa fa-exchange"></i> Diff</a> |-->
-                                <a class="diffButton" id="{{ e.MD5 }}_{{ e.NAME }}"><i class="fa fa-exchange"></i> Diff</a>
-                                |
-                                <a id="{{ e.MD5 }}" onclick="delete_scan(this)"><i class="fa fa-trash"></i> Delete</a>
+                            <td><p><a class="btn btn-info" href="../{{ e.URL }}"><i class="fa fa-eye"></i> Static Report</a>
+                                </p>
+                            {% if '.apk' == e.NAME|slice:"-4:"%}
+                                <p><a class="btn btn-success" href="../dynamic_report/?hash={{ e.MD5  }}&amp;package={{e.PACKAGE}}"><i class="fa fa-mobile"></i> Dynamic Report</a> 
+                                </p><p><a class="diffButton btn btn-warning" id="{{ e.MD5 }}_{{ e.NAME }}"><i class="fa fa-exchange"></i> Diff or Compare</a>
+                                </p>
+                            {% endif %}
                             </td>
+                            <td> <a class="btn btn-danger" id="{{ e.MD5 }}" onclick="delete_scan(this)"><i class="fa fa-trash"></i> Delete</a></td>
                         </tr>
                     {% endfor %}
                     </tbody>
@@ -59,6 +74,7 @@
 {% block extra_footer %}
 <script src="/static/dash/js/sweetalert2.min.js"></script>
 <script>
+    // Diff functions
     var diff_first_md5 = '';
     var diff_first_name = '';
 
@@ -118,12 +134,12 @@
     function diff_confirmation(item) {
         // First we need the id which has the md5 and name
         rows_tds = item.find('td');
-        selected_md5 = rows_tds[1].innerText;
+        selected_md5 = rows_tds[3].innerText;
         if (diff_first_md5 == selected_md5) {
             return;
         }
         diff_second_md5 = selected_md5;
-        diff_second_name = rows_tds[0].innerText;
+        diff_second_name = rows_tds[1].innerText;
 
         swal({
             title: '<strong>Diff confirmation</strong>',

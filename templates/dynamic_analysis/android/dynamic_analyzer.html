@@ -1,0 +1,724 @@
+
+  {% extends "base_no_scripts.html" %}
+   {% block content %}
+  <link rel='stylesheet' href='/static/terminal/terminal.css' type='text/css'>
+  <link rel='stylesheet' href='/static/css/devices.min.css' type='text/css'>
+
+<link rel="stylesheet" href="/static/codemirror/codemirror.css">
+<link rel="stylesheet" href="/static/codemirror/lint.css">
+<script src="/static/codemirror/codemirror.js"></script>
+<script src="/static/codemirror/javascript.js"></script>
+<script src="/static/codemirror/jshint.js"></script>
+<script src="/static/codemirror/lint.js"></script>
+<script src="/static/codemirror/javascript-lint.js"></script>
+   <style>
+      textarea {
+        width: 100%;
+        height: {% if version < 5 %} 650px; {% else %} 170px; {% endif %}
+        -moz-border-bottom-colors: none;
+        -moz-border-left-colors: none;
+        -moz-border-right-colors: none;
+        -moz-border-top-colors: none;
+        background: none repeat scroll 0 0 rgba(0, 0, 0, 0.07);
+        border-color: -moz-use-text-color #FFFFFF #FFFFFF -moz-use-text-color;
+        border-image: none;
+        border-radius: 6px 6px 6px 6px;
+        border-style: none solid solid none;
+        border-width: medium 1px 1px medium;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12) inset;
+        color: #555555;
+        font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+        font-size: 1em;
+        line-height: 1.4em;
+        padding: 5px 8px;
+        transition: background-color 0.2s ease 0s;
+    }
+    textarea:focus {
+        background: none repeat scroll 0 0 #FFFFFF;
+        outline-width: 0;
+    }
+    .highlight { border: solid 2px #1e6dff;}
+    .CodeMirror {
+        font-size: 13px;
+        border: 1px solid #eee;
+        height: 545px;
+      }
+  </style>
+  <script src="/static/js/jquery.min.js"></script>
+<div class="container-fluid">
+<br/>
+<h2 class="page-header"><strong>Dynamic Analyzer </strong>- {{ package }}</h2>
+<input type="hidden" id="screen_width" value="{{ screen_witdth }}">
+<input type="hidden" id="screen_height" value="{{ screen_height }}">
+<div class="container">
+<div class="row">
+    <p id="but">
+      <a id="screen" class="btn btn-primary" role="button">Show Screen</a>
+      <a id="rootca" class="btn btn-primary" role="button">Remove MobSF RootCA</a>
+      <a id="expactt" class="btn btn-primary" role="button">Start Exported Activity Tester</a>
+      <a id="actt" class="btn btn-primary" role="button" >Start Activity Tester</a>
+      <a id="ss" class="btn btn-primary" role="button">Take a Screenshot</a>
+      <a id="logstream" class="btn btn-primary">Logcat Stream</a>
+      <a id="apimon" target="_blank" href="../live_api/?hash={{ md5 }}&amp;package={{ package }}" class="btn btn-primary" style='display: none'>Live API Monitor</a>
+      <a id="stop" class="btn btn-info" role="button" >Generate Report</a>
+
+    </p>
+    </div>
+  </div>
+
+      <div class="row">
+        <div class="col-md-3">
+          <!-- Custom Tabs -->
+        
+        <div class="marvel-device htc-one">
+        <div class="top-bar"></div>
+        <div class="camera"></div>
+        <div class="sensor"></div>
+        <div class="speaker"></div>
+        <div class="screen" id="container">
+        <img width="320" height="580" src="../download/screen/screen.png" id="my" onerror="$('#my').attr('src','/static/img/loading.jpg')" style="background-color:black;">
+        </div>
+        </div>
+          <!-- nav-tabs-custom -->
+        </div>
+        <!-- /.col -->
+
+        <div class="col-md-5">
+          <!-- Custom Tabs (Pulled to the right) -->
+      <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#tab_1" data-toggle="tab">VM Status</a></li>
+              <li><a href="#tab_2" data-toggle="tab">Errors</a></li>
+            </ul>
+            <div class="tab-content">
+              <div class="tab-pane active" id="tab_1">
+                <textarea id="stat"></textarea>
+                <!--box-->
+                <div id="frida_options" class="box box-primary">
+                    <div class="box-header with-border">
+                      <h3 class="box-title">Frida Scripts</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <!-- form start -->
+                    <form role="form">
+                      <div class="box-body">
+                        <div class="form-group">
+                        <h4> Default </h4>
+                          <label>
+                              <input name="default_hooks" type="checkbox" value="api_monitor" checked>
+                              API Monitoring 
+                            </label>
+                             <label>
+                              <input name="default_hooks" type="checkbox" value="ssl_pinning_bypass" checked>
+                              SSL Pinning Bypass 
+                            </label>
+                             <label>
+                             <input name="default_hooks" type="checkbox"  value="root_bypass" checked>
+                              Root Detection Bypass 
+                            </label>
+                             <label>
+                            <input name="default_hooks" type="checkbox" value="debugger_check_bypass" checked>
+                              Debugger Check Bypass
+                            </label>
+                        </div>
+                                           <hr/>
+                        <div class="form-group">
+                        <h4> Auxiliary </h4>
+                            <label>
+                            <input name="auxiliary" type="checkbox" value="enum_class" id="enum_class">
+                              Enumerate Loaded Classes
+                            </label> 
+                             <label>
+                            <input name="auxiliary" type="checkbox" value="string_catch" id="string_catch">
+                               Capture Strings
+                            </label>
+                             <label>
+                            <input name="auxiliary" type="checkbox" value="string_compare" id="string_compare">
+                                Capture String Comparisons
+                            </label>
+                            <br />
+                             <label>
+                              <input onclick="aux_click(this)" name="auxiliary" type="checkbox" value="enum_methods" id="enum_methods">
+                              Enumerate Class methods
+                            </label>
+                             <input type="text" class="form-control" id="cls_name" placeholder="java.io.File">
+
+                             <label>
+                              <input onclick="aux_click(this)" name="auxiliary" type="checkbox" value="search_class" id="search_class">
+                              Search Class Pattern
+                            </label>
+                             <input type="text" class="form-control" id="cls_search" placeholder="ssl\.Trust*">
+                             <label>
+                             <input onclick="aux_click(this)" name="auxiliary" type="checkbox"  value="trace_class" id="trace_class">
+                              Trace Class Methods
+                            </label>
+                             <input type="text" class="form-control" id="cls_trace" placeholder="java.net.Socket,java.io.File,java.lang.String">
+                        </div>
+     
+
+
+                      </div>
+                      <!-- /.box-body -->
+
+                      <div class="box-footer">
+                     
+                      <button id="frida_spawn" type="submit" class="btn btn-primary">Start Instrumentation</button> <button id="fd_log" type="button" class="btn btn-info" disabled>Frida Live Logs</button>
+                      </div>
+                    </form>
+                  </div>
+           
+          <!--tab end-->
+              </div>
+              <!-- /.tab-pane -->
+              <div class="tab-pane" id="tab_2"> 
+              <iframe sandbox frameborder="0" width="100%" height="650px" id="er"></iframe>
+              </div>
+            </div>
+            <!-- /.tab-content -->
+          </div>
+          <!-- nav-tabs-custom -->
+        </div>
+        <!-- /.col -->
+         <div class="col-md-4" id="codeedit">
+
+  <div class="box box-primary">
+        <div class="box-header with-border">
+          <h3 class="box-title">Frida Code Editor  </h3>
+          <span class="label label-primary pull-right"><i class="fa fa-code"></i></span>
+        </div><!-- /.box-header -->
+        <div class="box-body">
+        <p>
+          <textarea id="code-js" rows="50">
+Java.perform(function() {
+  // Use send() for logging
+});
+        </textarea>
+        </p>
+        </div><!-- /.box-body -->
+               <div class="form-group">
+                 <span class="box-title">&nbsp;&nbsp; Available Scripts (Use CTRL to choose multiple)  </span>
+                  <button id="loadscript" type="submit" class="btn btn-primary btn-sm">Load</button>
+                  <select id="fd_scs" multiple="" class="form-control">
+                  </select>
+                </p>
+                </div>
+      </div><!-- /.box -->
+
+        </div>
+      </div>
+      <!-- /.row -->
+
+  <br/>
+  <br/>
+              
+    <div id="shell">
+      <output></output>
+      <div id="input-line" class="input-line">
+        <div class="prompt"></div><div><input class="cmdline" autofocus /></div>
+      </div>
+    </div>
+</div>
+<script>
+// Frida Auxiliary actions
+
+function aux_click(cb) {
+  if (cb.checked && cb.value==='search_class')
+    $('#cls_search').addClass('highlight')
+  else if (!cb.checked && cb.value==='search_class')
+    $('#cls_search').removeClass('highlight')
+  else if (cb.checked && cb.value==='enum_methods')
+    $('#cls_name').addClass('highlight')
+  else if (!cb.checked && cb.value==='enum_methods')
+    $('#cls_name').removeClass('highlight')
+  else if (cb.checked && cb.value==='trace_class')
+    $('#cls_trace').addClass('highlight')
+  else if (!cb.checked && cb.value==='trace_class')
+    $('#cls_trace').removeClass('highlight')
+}
+
+
+
+//For All Ajax
+function action(url, data, on_success){
+  //Add CSRF
+  data.csrfmiddlewaretoken ='{{ csrf_token }}';
+  $.ajax({
+    url : url, 
+    type : "POST",
+    dataType: "json", 
+    data : data,
+    success : function(json){ on_success(json) },
+    error : function(xhr, ajaxOptions, thrownError) {
+      document.getElementById("er").srcdoc = xhr.responseText;
+    }
+  });
+}
+
+// Frida load other scripts
+function load_frida_others(){
+  $.get('../list_frida_scripts/', function(json, status){
+      if (json.status == 'ok'){
+        json.files.forEach(function(script) {
+          $('#fd_scs').append('<option value=' + escape(script) + '>' + escape(script) + '</option>');
+        });
+      }
+  });
+}
+
+// Code Editor
+var editor = CodeMirror.fromTextArea(document.getElementById("code-js"), {
+    lineNumbers: true,
+    mode: "javascript",
+    gutters: ["CodeMirror-lint-markers"],
+    lint: true,
+    lineWrapping: true,
+  });
+
+// Terminal
+var util = util || {};
+util.toArray = function (list) {
+    return Array.prototype.slice.call(list || [], 0);
+};
+
+var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
+    window.URL = window.URL || window.webkitURL;
+    window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
+
+    var cmdLine_ = document.querySelector(cmdLineContainer);
+    var output_ = document.querySelector(outputContainer);
+
+    const CMDS_ = [
+        'activities', 'exported_activities', 'services', 'receivers', 'providers', 'libraries',
+        'clear', 'date', 'echo', 'help', 'shell', 'pull', 'push',
+        'devices', 'forward', 'start-server', 'kill-server', 'wait-for-device',
+        'connect', 'reconnect', 'disconnect', 'usb', 'install', 'uninstall',
+        'logcat', 'root', 'sideload', 'tcpip', 'unroot',
+        'reboot', 'remount', 'get-devpath', 'get-serialno', 'get-state',
+        'keygen', 'enable-verity', 'disable-verity', 'jdwp', 'bugreport',
+        'backup', 'restore', 'install-multi-package', 'install-multiple',
+        'sync', 'reverse', 'ppp', 'version',
+
+    ];
+
+    var history_ = [];
+    var histpos_ = 0;
+    var histtemp_ = 0;
+    var intro = '<h3 style="letter-spacing: 2px">Shell Access</h3><p>' + new Date() + '</p><p>Enter "help" for more information.</p>';
+    var shell = document.getElementById('shell');
+    shell.addEventListener('click', function (e) {
+        cmdLine_.focus();
+    }, false);
+
+    cmdLine_.addEventListener('click', inputTextClick_, false);
+    cmdLine_.addEventListener('keydown', historyHandler_, false);
+    cmdLine_.addEventListener('keydown', processNewCommand_, false);
+
+    function inputTextClick_(e) {
+        this.value = this.value;
+    }
+
+    function historyHandler_(e) {
+        if (history_.length) {
+            if (e.keyCode == 38 || e.keyCode == 40) {
+                if (history_[histpos_]) {
+                    history_[histpos_] = this.value;
+                } else {
+                    histtemp_ = this.value;
+                }
+            }
+
+            if (e.keyCode == 38) { // up
+                histpos_--;
+                if (histpos_ < 0) {
+                    histpos_ = 0;
+                }
+            } else if (e.keyCode == 40) { // down
+                histpos_++;
+                if (histpos_ > history_.length) {
+                    histpos_ = history_.length;
+                }
+            }
+
+            if (e.keyCode == 38 || e.keyCode == 40) {
+                this.value = history_[histpos_] ? history_[histpos_] : histtemp_;
+                this.value = this.value; // Sets cursor to end of input.
+            }
+        }
+    }
+
+    function escape(data) {
+        var encodedStr = data.replace(/[\u00A0-\u9999<>\&]/gim, function (i) {
+            return '&#' + i.charCodeAt(0) + ';';
+        });
+        return encodedStr;
+    }
+
+    function output(html, escape_=false, pre=false, error=false) {
+        if (escape_)
+            html = escape(html);
+        if (pre)
+         output_.insertAdjacentHTML('beforeEnd', '<pre class="clean-text">' + html + '</pre>');
+        else if (error)
+          output_.insertAdjacentHTML('beforeEnd', '<pre>' + html + '</pre>');
+        else
+         output_.insertAdjacentHTML('beforeEnd', '<p>' + html + '</p>');
+    }
+
+    // Cross-browser impl to get document's height.
+    function getDocHeight_() {
+        var d = document;
+        return Math.max(
+            Math.max(d.body.scrollHeight, d.documentElement.scrollHeight),
+            Math.max(d.body.offsetHeight, d.documentElement.offsetHeight),
+            Math.max(d.body.clientHeight, d.documentElement.clientHeight)
+        );
+    }
+    function get_comp(comp){
+      action('../get_component/', { component: comp, hash: '{{ md5 }}'}, function(json) {
+          if (json.status==="ok")
+            output(json.message, true, true);
+          else
+            output(json.message, true, true, true);
+      });
+    }
+
+    function execute_adb(exec_cmd){
+      action('../execute_adb/', { cmd: exec_cmd }, function(json) {
+          if (json.status==="ok")
+            output(json.message, true, true);
+      });
+    }
+    function processNewCommand_(e) {
+
+        if (e.keyCode == 9) { // tab
+            e.preventDefault();
+            // Implement tab suggest.
+        } else if (e.keyCode == 13) { // enter
+            // Save shell history.
+            if (this.value) {
+                history_[history_.length] = this.value;
+                histpos_ = history_.length;
+            }
+
+            // Duplicate current input and append to output section.
+            var line = this.parentNode.parentNode.cloneNode(true);
+            line.removeAttribute('id')
+            line.classList.add('line');
+            var input = line.querySelector('input.cmdline');
+            input.autofocus = false;
+            input.readOnly = true;
+            output_.appendChild(line);
+
+            if (this.value && this.value.trim()) {
+                var args = this.value.split(' ').filter(function (val, i) {
+                    return val;
+                });
+                var cmd = args[0].toLowerCase();
+                var exec_cmd = args.join(' ');
+                args = args.splice(1); // Remove cmd from arg list.
+            }
+
+            switch (cmd) {
+                case 'clear':
+                    output_.innerHTML = '';
+                    this.value = '';
+                    output(intro);
+                    return;
+                case 'date':
+                    output(new Date());
+                    break;
+                case 'echo':
+                    output(exec_cmd, true);
+                    break;
+                case 'activities':
+                    get_comp('activities')
+                    break;
+                case 'exported_activities':
+                    get_comp('exported_activities')
+                    break;
+                case 'services':
+                    get_comp('services')
+                    break;
+                case 'receivers':
+                    get_comp('receivers')
+                    break;
+                case 'providers':
+                    get_comp('providers')
+                    break;
+                case 'libraries':
+                    get_comp('libraries')
+                    break;
+                case 'help':
+                    output('<div class="ls-files">' + CMDS_.join('<br>') + '</div>');
+                    break;                      
+                default:
+                    if (cmd === 'shell' && args.length === 0)
+                        output("Incomplete command. expecting shell &lt;cmd&gt;");
+                    else if (exec_cmd.length > 0)
+                        execute_adb(exec_cmd)
+            };
+            window.scrollTo(0, getDocHeight_());
+            this.value = ''; // Clear/setup line for next input.
+        }
+    }
+
+    return {
+        init: function () {
+            output(intro);
+        },
+        output: output
+    }
+};
+
+$(document).ready(function() {
+
+//Terminal
+$('.prompt').html('[root@android] # ');
+var term = new Terminal('#input-line .cmdline', '#shell output');
+term.init();
+
+// Start up
+{% if version < 5 %}
+  $('#frida_options').hide()
+  $('#codeedit').hide()
+{% else %}
+   load_frida_others();
+{% endif %}
+
+
+
+//Print Status
+function print_status(message){
+  $('#stat').append(message + '\n');
+  $('#stat').scrollTop($('#stat')[0].scrollHeight);
+}
+print_status("Setting up Dynamic Analysis environment");
+print_status("Running HTTPS intercepting proxy");
+print_status("Invoking MobSF agents");
+print_status("Environment is ready for user assisted dynamic analysis.");
+print_status("Navigate through all the flows of the app manually.");
+
+
+// Touch Events
+var touch = "off";
+
+$('#my').click(function(e) {
+  if (touch === "on")
+  {
+    var res=[$('#screen_width').val(),$('#screen_height').val()];
+    var width = res[0];
+    var height =res[1];
+    if (width.length > 0 && height.length > 0)
+    {
+        width = parseInt(width);
+        height = parseInt(height);
+        var offset = $(this).offset();
+        var x = e.pageX - offset.left;
+        var y = e.pageY - offset.top;
+        x = x * (width/320); 
+        y = y * (height/580);
+        console.log('X Axis: '+ x + " Y Axis: "+ y);
+        action('../touch_events/', {x: x, y: y}, function(json) {
+            if (json.status==='ok')
+              console.log('Clicked!');
+            else
+              console.log(json.message)
+          });
+      }
+  }
+});
+
+// View Screen
+var screenfunc;
+$("#screen").click(function() {
+      var stext = $("#screen").text();
+      if (stext === "Show Screen"){
+          $("#screen").text("Stop Screen");
+          print_status('Screen streaming started')
+          touch = "on";
+          screenfunc = setInterval(function(){
+              // Capture Screen
+              action('../screen_cast/', {}, function(json) {
+                if (json.status == 'ok')
+                  $('#my').attr('src', '../download/screen/screen.png?'+ new Date().getTime());
+                else
+                  console.log(json.message)
+               });
+          },3000);
+      } else {
+          $("#screen").text("Show Screen");
+          print_status("Screen streaming stopped");
+          $('#my').attr('src', '/static/img/loading.jpg');
+          clearInterval(screenfunc);
+          touch = "off";
+      }
+      return false;  
+}); 
+
+//Screenshot
+$("#ss").click(function() {
+  print_status("Taking a screenshot");
+  action('../screenshot/', {hash: '{{ md5 }}'}, function(json) {
+    if (json.status==="ok"){
+        print_status("Screenshot taken!");
+    } else {
+        print_status("Failed to take screenshot!");
+        print_status(json.message);
+    }
+  });
+  return false;  
+});
+
+//MobSF CA
+
+$("#rootca").click(function() {
+  var stext = $("#rootca").text();
+  var act;
+  if (stext === "Remove MobSF RootCA"){
+    $("#rootca").text("Install MobSF RootCA");
+    act = "remove";
+  } else {
+    $("#rootca").text("Remove MobSF RootCA");
+    act = "install";
+  }
+  action('../mobsf_ca/', {action: act}, function(json) {
+      if (json.message === "installed")
+        print_status("MobSF RootCA installed successfully");
+      else if (json.message === "removed")
+        print_status("MobSF RootCA removed successfully");
+      else
+        print_status(json.message);
+    });
+    return false;  
+}); 
+ 
+function activity_tester(test){
+  action('../activity_tester/', {hash: '{{ md5 }}', package: '{{ package }}', 'test': test}, function(json) {
+    if (json.status === "ok")
+      if (test === 'exported')
+        print_status("Exported Activity testing completed.");
+      else
+        print_status("Activity testing completed.");
+    else
+      print_status(json.message);
+  });
+}
+//Start ExportedActivity Tester
+$("#expactt").click(function()  {
+  print_status("Starting Exported Activity tester...")
+  activity_tester('exported')
+  return false;  
+});
+
+//Start Activity Tester
+$("#actt").click(function()  {
+  print_status("Starting Activity tester...")
+  activity_tester('all_activities')
+  return false;  
+}); 
+
+// Logcat Stream
+$("#logstream").click(function() {
+    print_status("Logcat Steaming started");
+    setTimeout(function(){ window.open('../logcat/?package={{ package }}', '_blank');}, 500);   
+    return false;  
+}); 
+// Frida logs
+$("#fd_log").click(function() {
+    print_status("Streaming Frida logs");
+    setTimeout(function(){ window.open('../frida_logs/?hash={{ md5 }}&package={{ package }}', '_blank');}, 100);   
+    return false;  
+});
+
+
+// Load Frida Scripts
+$("#loadscript").click(function() {
+   var scripts = $('#fd_scs').val();
+   action('../get_script/', {scripts: scripts}, function(json) {
+    if (json.status==="ok"){
+        editor.getDoc().setValue(json.content);
+    }
+  });
+  return false;  
+});
+
+// Frida Spawn
+$("#frida_spawn").click(function() {
+    print_status("Instrumenting app with frida");
+    $('#fd_log').removeAttr('disabled');
+    var default_hooks = [];
+    $.each($("input[name='default_hooks']:checked"), function(){            
+        default_hooks.push($(this).val());
+    });
+    if(default_hooks.includes("api_monitor"))
+      $('#apimon').show();
+    else
+      $('#apimon').hide();
+
+    var auxiliary_hooks = [];
+    $.each($("input[name='auxiliary']:checked"), function(){            
+        auxiliary_hooks.push($(this).val());
+    });
+
+    action('../frida_instrument/', {
+      hash: '{{ md5 }}',
+      package: '{{ package }}',
+      default_hooks: default_hooks.join(","),
+      auxiliary_hooks: auxiliary_hooks.join(","),
+      cls_name: $('#cls_name').val(),
+      cls_search:  $('#cls_search').val(),
+      cls_trace:  $('#cls_trace').val(),
+      frida_code: editor.getDoc().getValue(),
+    }, function(json) {
+    if (json.status === "ok")
+      print_status("Successfully attached");
+    else
+      print_status(json.message);
+  });
+  return false;  
+}); 
+
+
+//Dump App data
+function dump(){
+  action('../download_data/', { hash: '{{ md5 }}', package: '{{ package }}'}, function(json) {
+    if (json.status==="ok"){
+      print_status("Application data dumped!");
+      print_status("Generating Report...Please Wait!");
+      //Call reporting
+      location.href="//"+location.host+"/dynamic_report/?hash={{ md5 }}&package={{ package }}";
+    } else {
+      print_status(json.message);
+    }
+  });
+}
+  
+//Finish & Generate Report
+$("#stop").one( "click", function() {
+  print_status("Collecting data...");
+  //Stop Screen Casting if it's running
+  var stext = $("#screen").text();
+  if (stext === "Stop Screen")
+    $("#screen").click();
+  action('../collect_logs/', { hash: '{{ md5 }}', package: '{{ package }}'}, function(json) {
+    if (json.status==="ok"){
+      $('#stop').addClass("btn btn-success");
+      $('#stop').text("Please Wait...");
+      print_status("Downloading logs");
+      print_status("Stopping Application");
+    } else{
+      print_status('Failed to collect all data')
+      print_status(json.message)
+    }
+    dump();
+  });
+  return false;  
+}); 
+
+
+//end document.ready
+});
+</script>
+  
+		
+   {% endblock %}

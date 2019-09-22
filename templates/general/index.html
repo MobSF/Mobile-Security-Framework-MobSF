@@ -126,7 +126,7 @@ progress::-webkit-progress-value {
                 </form>
 
             <div class="inner">
-              <h5><strong><a href="/recent_scans/">Recent Scans</a> | <a href="api_docs">API Docs</a>  | <a href="about">About</a></strong></h5></br>
+              <h5><strong> <a href="{% url 'recent' %}">Recent Scans</a> | <a href="{% url 'home' %}">Static Analysis</a> | <a href="{% url 'dynamic' %}">Dynamic Analysis</a> | <a href="{% url 'api_docs' %}">API Docs</a>  | <a href="{% url 'about' %}">About</a></strong></h5></br>
              <p>&copy; {% now "Y" %}  Mobile Security Framework - MobSF {{ version }}. All Rights Reserved</p>
             </div>
           </div>

@@ -8,18 +8,17 @@ LABEL \
     maintainer="Ajin Abraham <ajin25@gmail.com>" \
     contributor_1="OscarAkaElvis <oscar.alfonso.diaz@gmail.com>" \
     contributor_2="Vincent Nadal <vincent.nadal@orange.fr>" \
-    description="Mobile Security Framework is an intelligent, all-in-one open source mobile application (Android/iOS/Windows) automated pen-testing framework capable of performing static, dynamic analysis and web API testing"
+    description="Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis."
 
 #Environment vars
 ENV DEBIAN_FRONTEND="noninteractive" \
+    ANALYZER_IDENTIFIER="" \
     JDK_FILE="openjdk-12_linux-x64_bin.tar.gz" \
-    WKH_FILE="wkhtmltox-0.12.5-dev-163e124_linux-generic-amd64.tar.xz"
+    WKH_FILE="wkhtmltox_0.12.1.4-1.bionic_amd64.deb"
 
 ENV JDK_URL="https://download.java.net/java/GA/jdk12/GPL/${JDK_FILE}" \
-    WKH_URL="http://www.ajvg.com/downloads/${WKH_FILE}"
+    WKH_URL="https://builds.wkhtmltopdf.org/0.12.1.4/${WKH_FILE}"
 
-#Update the repository sources list
-#Install Required Libs
 #see https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
 RUN apt update -y && apt install -y \
     build-essential \
@@ -37,19 +36,23 @@ RUN apt update -y && apt install -y \
     libxext6 \
     fontconfig \
     xfonts-75dpi \
+    xfonts-base \
     python3.6 \
     python3-dev \
     python3-pip \
-    wget
+    wget \
+    android-tools-adb
      
 #set locales
 RUN locale-gen en_US.UTF-8
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 #Install Wkhtmltopdf
-RUN wget --quiet -O /tmp/wkhtmltox.tar.xz "${WKH_URL}" && \
-    tar xJf /tmp/wkhtmltox.tar.xz -C /usr/bin/ --strip-component=2 wkhtmltox/bin/wkhtmltopdf && \
-    rm -f /tmp/wkhtmltox.tar.xz
+RUN wget --quiet -O /tmp/${WKH_FILE} "${WKH_URL}" && \
+    dpkg -i /tmp/${WKH_FILE} && \
+    apt-get install -f -y --no-install-recommends && \
+    ln -s /usr/local/bin/wkhtmltopdf /usr/bin && \
+    rm -f /tmp/${WKH_FILE}
 
 #Install OpenJDK12
 RUN wget --quiet "${JDK_URL}" && \
@@ -62,8 +65,9 @@ ENV PATH="$JAVA_HOME/bin:$PATH"
 COPY . /root/Mobile-Security-Framework-MobSF
 WORKDIR /root/Mobile-Security-Framework-MobSF
 
-#Enable Use Home Directory
-RUN sed -i 's/USE_HOME = False/USE_HOME = True/g' MobSF/settings.py
+#Enable Use Home Directory and set adb path
+RUN sed -i 's/USE_HOME = False/USE_HOME = True/g' MobSF/settings.py && \
+    sed -i "s#ADB_BINARY = ''#ADB_BINARY = '/usr/bin/adb'#" MobSF/settings.py
 
 #Kali fix to support 32 bit execution
 RUN ./scripts/kali_fix.sh
@@ -103,10 +107,12 @@ RUN \
 
 #Expose MobSF Port
 EXPOSE 8000
+# MobSF Proxy
+EXPOSE 1337
 
 RUN python3 manage.py makemigrations && \
     python3 manage.py makemigrations StaticAnalyzer && \
     python3 manage.py migrate
 
 #Run MobSF
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "MobSF.wsgi:application", "--workers=1", "--threads=4", "--timeout=1800"]
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "MobSF.wsgi:application", "--workers=1", "--threads=10", "--timeout=1800"]

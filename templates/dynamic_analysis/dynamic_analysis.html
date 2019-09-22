@@ -1,722 +1,376 @@
-{% extends "base.html" %}
-   {% block content %}
-    <script src="/static/js/jquery.min.js"></script>
-  <script type="text/javascript" src="/static/js/highlight.min.js"></script>
-  <link type="text/css" rel="stylesheet" href="/static/css/xcode.min.css"/>
-  <script>hljs.initHighlightingOnLoad();</script>
-  <style type="text/css" media="print">
-  @page { size: landscape; }
+
+{% extends "base_top_only.html" %}
+{% load staticfiles %}
+{% block content %}
+<style>
+   textarea {
+ 
+  width: 100%;
+  height: 500px;
+  -moz-border-bottom-colors: none;
+  -moz-border-left-colors: none;
+  -moz-border-right-colors: none;
+  -moz-border-top-colors: none;
+  background: none repeat scroll 0 0 rgba(0, 0, 0, 0.07);
+  border-color: -moz-use-text-color #FFFFFF #FFFFFF -moz-use-text-color;
+  border-image: none;
+  border-radius: 6px 6px 6px 6px;
+  border-style: none solid solid none;
+  border-width: medium 1px 1px medium;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12) inset;
+  color: #555555;
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size: 1em;
+  line-height: 1.4em;
+  padding: 5px 8px;
+  transition: background-color 0.2s ease 0s;
+}
+
+
+textarea:focus {
+    background: none repeat scroll 0 0 #FFFFFF;
+    outline-width: 0;
+}
+
+/* Loading */
+
+*.hidden {
+  display: none !important;
+}
+
+div.loading{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(16, 16, 16, 0.5);
+}
+
+@-webkit-keyframes uil-ring-anim {
+  0% {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@-webkit-keyframes uil-ring-anim {
+  0% {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@-moz-keyframes uil-ring-anim {
+  0% {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@-ms-keyframes uil-ring-anim {
+  0% {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@-moz-keyframes uil-ring-anim {
+  0% {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@-webkit-keyframes uil-ring-anim {
+  0% {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@-o-keyframes uil-ring-anim {
+  0% {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@keyframes uil-ring-anim {
+  0% {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+.uil-ring-css {
+  margin: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  width: 200px;
+  height: 200px;
+}
+.uil-ring-css > div {
+  position: absolute;
+  display: block;
+  width: 160px;
+  height: 160px;
+  top: 20px;
+  left: 20px;
+  border-radius: 80px;
+  box-shadow: 0 6px 0 0 #ffffff;
+  -ms-animation: uil-ring-anim 1s linear infinite;
+  -moz-animation: uil-ring-anim 1s linear infinite;
+  -webkit-animation: uil-ring-anim 1s linear infinite;
+  -o-animation: uil-ring-anim 1s linear infinite;
+  animation: uil-ring-anim 1s linear infinite;
+}
+
+/* disable button */
+{% if not identifier %}
+.btn {
+    background-color: #7b7b7b;
+    pointer-events: none;
+    cursor: default;
+}
+{% endif %}
 </style>
 
 
-   <!-- Left side column. contains the logo and sidebar -->
-      <aside class="main-sidebar">
-        <!-- sidebar: style can be found in sidebar.less -->
-        <div class="sidebar" id="scrollspy">
-
-          <!-- sidebar menu: : style can be found in sidebar.less -->
-          <ul class="nav sidebar-menu">
-            <li class="header">Dynamic Analysis</li>
-            <li class="active"><a href="#general"><i class="fa fa-rocket"></i> Information</a></li>
-             <li class="treeview">
-              <a href="javascript::;"><i class="glyphicon glyphicon-phone"></i> API Monitor</a>
-              <ul class="nav treeview-menu">
-                <li><a href="#fileio"><i class="glyphicon glyphicon-file"></i> File IO</a></li>
-                <li><a href="#networkcalls"><i class="fa fa-plug"></i> Network Calls</a></li>
-                <li><a href="#bindercalls"><i class="fa fa-cubes"></i> Binder Calls</a></li>
-                <li><a href="#crypto"><i class="fa fa-flash"></i> Crypto</a></li>
-                <li><a href="#deviceinfo"><i class="fa fa-info"></i> Device Info</a></li>
-                <li><a href="#base64"><i class="fa fa-puzzle-piece"></i> Base64</a></li>
-                <li><a href="#content"><i class="fa fa-reorder"></i> Content</a></li>
-                <li><a href="#sms"><i class="fa fa-comments"></i> SMS</a></li>
-                <li><a href="#devicedata"><i class="fa fa-phone"></i> Device Data</a></li>
-                <li><a href="#dexclassloader"><i class="fa fa-asterisk"></i> Dex Class Loader</a></li>
-                <li><a href="#reflection"><i class="fa fa-object-ungroup"></i> Reflection</a></li>
-                <li><a href="#systemmanager"><i class="fa fa-cogs"></i> System Manager</a></li>
-                <li><a href="#process"><i class="fa fa-bar-chart-o"></i> Process</a></li>
-              </ul>
-            </li>
-
-            <li><a href="#exportedactivitytester"><i class="glyphicon glyphicon-search"></i> Exported Activity Tester</a></li>
-            <li><a href="#activitytester"><i class="glyphicon glyphicon-search"></i> Activity Tester</a></li>
-            <li><a href="#screenshots"><i class="fa fa-camera"></i> Screenshots</a></li>
-            <li><a href="#httpstraffic"><i class="fa fa-exchange"></i> HTTPs Traffic</a></li>
-
-           
-
-            <li class="treeview">
-              <a href="javascript::;"><i class="fa fa-plus"></i> Reconnaissance</a>
-              <ul class="nav treeview-menu">
-              <li><a href="#clipboard"><i class="fa fa-clipboard"></i> Clipboard Dump</a></li>
-              <li><a href="#url"><i class="glyphicon glyphicon-globe"></i> URLs</a></li>
-              <li><a href="#domain"><i class="glyphicon glyphicon-screenshot"></i> Malware Check</a></li>
-              <li><a href="#email"><i class="glyphicon glyphicon-envelope"></i> Emails</a></li>
-              </ul>
-            </li>
-
-            <li class="treeview">
-              <a href="javascript::;"><i class="fa fa-files-o"></i> File Analysis</a>
-              <ul class="nav treeview-menu">
-                <li><a href="#sqlitedatabase"><i class="fa fa-database"></i> SQLite Database</a></li>
-                <li><a href="#xmlfiles"><i class="fa fa-file-excel-o"></i> XML Files</a></li>
-                <li><a href="#otherfiles"><i class="fa fa-file-o"></i> Other Files</a></li>
-              </ul>
-            </li>
-            <li><a href="javascript:window.print()"><i class="fa fa-cloud-download"></i> Download / Print</a></li>
-            
-          </ul>
-        </div>
-        <!-- /.sidebar -->
-      </aside>
-
-      <!-- Content Wrapper. Contains page content -->
-      <div class="content-wrapper">
-        <!-- Content Header (Page header) -->
-        <!-- Main content -->
-        <div class="content body">
-
-
-
-
-<section id="general">
-  <h2 class="page-header"><strong>Dynamic Analysis Result </strong> - {{pkg}} </h2>
-  <div align="center"><a class="btn btn-success btn-lg" target="_blank" role="button" href="../capfuzz?project={{pkg}}">Start CapFuzz</a></div>
-  <p class="lead">
+    {% if not identifier %}
+    <div class="callout callout-danger">
+     <div class="row">
+         <div class="container">
+        <h4>Android Runtime not found!</h4>
+          <p> MobSF cannot find android instance identifier. Make sure that an android instance is running and refresh this page.</p><p> If this error persists, Please set <i>ANALYZER_IDENTIFIER</i> in <b>MobSF/settings.py</b>
+          </p>
+         </div>
+         </div>
+    </div>
+    {% endif %}
+  <div class="callout callout-info">
     <div class="row">
-    <div class="col-sm-12">
-      <div class="box box-danger">
-        <div class="box-header with-border">
-          <h3 class="box-title">Downloads</h3>
-          <span class="label label-danger pull-right"><i class="fa fa-cloud-download"></i></span>
-        </div><!-- /.box-header -->
-        <div class="box-body">
-        <div class="list-group">
-            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-WebTraffic.txt">HTTP(S) Traffic</a>
-            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-logcat.txt">Logcat Logs</a>
-            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-x_logcat.txt">Droidmon API Monitor Logs</a>
-            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-dump.txt">Dumpsys Logs</a> 
-            <a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-AppData.tar">Application Data</a>
-            
-            <!--<a class="btn btn-info btn-lg" role="button" href="../download/{{ md5 }}-pcap.cap">Packet Capture</a>-->
-       </div>
-        
-        </div><!-- /.box-body -->
-      </div><!-- /.box -->
-    </div><!-- /.col -->
-  </div><!-- /.row -->
-  </p>
-</section><!-- /#introduction -->
-
-
-<!-- ============================================================= -->
-
-<section id="fileio">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="glyphicon glyphicon-file"></i> File IO</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-           <div class="alert alert-info" role="alert">
-          {% for i in fileio %} {{i | safe}}</br> {% endfor %}</div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-
-
-<section id="networkcalls">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-plug"></i> Network Calls</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-        <div class="alert alert-success" role="alert">
-     {% for i in net %} {{i | safe}}</br> {% endfor %}</div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-
-
-<section id="bindercalls">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-cubes"></i> Binder Calls</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-      
-             <div class="alert alert-warning" role="alert">
-             {% for i in binder %} {{i | safe}}</br> {% endfor %}</div>
-
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-
-<section id="crypto">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-flash"></i> Crypto</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-      
-            <div class="alert alert-danger" role="alert">
-    {% for i in crypto %} {{i | safe}}</br> {% endfor %}</div>
-
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-<section id="deviceinfo">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-info"></i> Device Info</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-
-        <div class="alert alert-info" role="alert">
-    {% for i in divinfo %} {{i | safe}}</br> {% endfor %}</div>
-
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-<section id="base64">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-puzzle-piece"></i> Base64</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-
-  
-<div class="alert alert-success" role="alert">
-     {% for i in base64 %} {{i | safe}}</br> {% endfor %}</div>
-
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-<section id="content">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-reorder"></i> Content</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-
-<div class="alert alert-warning" role="alert">
-     {% for i in cntval %} {{i | safe}}</br> {% endfor %}</div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-<section id="sms">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-comments"></i> SMS</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-<div class="alert alert-danger" role="alert">
-     {% for i in sms %} {{i | safe}}</br> {% endfor %}</div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-<section id="devicedata">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-phone"></i> Device Data</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-<div class="alert alert-success" role="alert">
-     {% for i in sysprop %} {{i | safe}}</br> {% endfor %}</div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-
-<section id="dexclassloader">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-asterisk"></i> Dex Class Loader</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-<div class="alert alert-warning" role="alert">
-    {% for i in dexload %} {{i | safe}}</br> {% endfor %}</div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-
-<section id="reflection">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-object-ungroup"></i> Reflection</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-<div class="alert alert-info" role="alert">
-     {% for i in reflect %} {{i | safe}}</br> {% endfor %}</div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-
-
-<section id="systemmanager">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-cogs"></i> System Manager</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-<div class="alert alert-danger" role="alert">
-     {% for i in sysman %} {{i | safe}}</br> {% endfor %}</div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-
-
-<section id="process">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-bar-chart-o"></i> Process</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-
-<div class="alert alert-success" role="alert">
-     {% for i in process %} {{i | safe}}</br> {% endfor %}</div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-
-<section id="exportedactivitytester">
-  <h2 class="page-header"></h2>
-     <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="glyphicon glyphicon-search"></i> EXPORTED ACTIVITY TESTER</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body no-padding">
-              <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
-                      
-                                    {% for img, desc in expacttest.items %}
-                                        <tr>
-                                         <td><img alt="{{desc}}" src="../download/{{ md5 }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
-                                        <td>{{ desc }}</td>
-                                        </tr>
-                                    {% endfor %}
-                    </table>
-                                
-                            </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-</section>
-<!-- ============================================================= -->
-
-<section id="activitytester">
-  <h2 class="page-header"></h2>
-     <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="glyphicon glyphicon-search"></i> ACTIVITY TESTER</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body no-padding">
-              <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
-                       {% for img, desc in acttest.items %}
-                                        <tr>
-                                         <td><img alt="{{desc}}" src="../download/{{ md5 }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
-                                        <td>{{ desc }}</td>
-                                        </tr>
-                                    {% endfor %}
-                    </table>
-                                
-                            </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-</section>
-
-<!-- ============================================================= -->
-
-
-<section id="screenshots">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-camera"></i> SCREENSHOTS</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-
-                            <div class="list-group">
-                
-                                        {% for i in imgs %}
-                                         <img alt="Screenshot" src="../download/{{ md5 }}-screenshots-apk/{{ i}}" class="img-thumbnail" height="600" width="350">
-                                        {% endfor %}
-                                   
-
-                                </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-<!-- ============================================================= -->
-
-
-<section id="httpstraffic">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-exchange"></i> HTTP(s) Traffic</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-
-                            <div class="list-group">
-<pre><code class="http">{{ http }}</code></pre>
-                                </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-<section id="clipboard">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-clipboard"></i> Clipboard Dump</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-
-                            <div class="list-group">
-                                  {% for f in clipboard %}
-                                      {{ f}} <br>
-                                  {% endfor %}
-
-                                </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-  <!-- ============================================================= -->
-
-<section id="url">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="glyphicon glyphicon-globe"></i> URLs</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-
-                            <div class="list-group">
-                                    {% for f in urls %}
-                                        {{ f}} <br>
-                                        {% endfor %}
-
-                                </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-
-<!-- ============================================================= -->
-
-<!-- ============================================================= -->
-
-<section id="domain">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="glyphicon glyphicon-screenshot"></i> Malware Check</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body no-padding">
-              <div class="table-responsive">
-                <table class="table table-bordered table-hover table-striped">
-                  {% if urls|length > 1 %} 
-                  <thead>
-                  <tr>
-                     <th>Domain</th>
-                     <th>Status</th>
-                  </tr>
-                 </thead>
-                  {% endif %}
-                 <tbody>
-                
-                  {% for domain, details in domains.items %}
-                  <tr><td>{{domain}}</td><td> 
-
-                    {% if details|key:"bad" == "yes" %}
-                    <span class="label label-danger">malware</span></br>
-<pre>
-<strong>URL: </strong>{{details|key:"domain_or_url"}}
-<strong>IP: </strong><span class="label label-danger">{{details|key:"ip"}}</span>
-<strong>Description: </strong>{{details|key:"desc"}}
-</pre>
-                  {% else %}
-                    <span class="label label-success">good</span></br>
-                  {% endif %}
-
-
-                  </td> </tr>
-                  {% endfor %}
-                   
-                    </tbody>
-                    </table>
-                                
-             </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-<section id="email">
-  <h2 class="page-header"></h2>
-       <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="glyphicon glyphicon-envelope"></i> EMAILs</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-
-                            <div class="list-group">
-                                  {% for f in emails %}
-                                        {{ f}} <br>
-                                        {% endfor %}
-
-                                </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-  </section>
-
-  <!-- ============================================================= -->
-
-
-<section id="sqlitedatabase">
-  <h2 class="page-header"></h2>
-     <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-database"></i> SQLite Databases</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-              <div class="table-responsive">
-                    <table class="table table-bordered table-hover table-striped">
-                      {{ sqlite | safe}}
-                    </table>
-                                
-                            </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-</section>
-
-<!-- ============================================================= -->
-
-<section id="xmlfiles">
-  <h2 class="page-header"></h2>
-     <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-file-excel-o"></i> XML Files</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-              <div class="table-responsive">
-                    <table class="table table-bordered table-hover table-striped">
-                        {{ xml | safe}}
-                    </table>
-                                
-                            </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-</section>
-
-<!-- ============================================================= -->
-	
-<section id="otherfiles">
-  <h2 class="page-header"></h2>
-     <!-- /.box -->
-
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title"><i class="fa fa-file-o"></i> Other Files</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-              <div class="table-responsive">
-                    <table class="table table-bordered table-hover table-striped">
-                         {{ others | safe}}
-                    </table>
-                                
-                            </div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
-</section>
-
-<!-- ============================================================= -->
-
- </div><!-- /.content -->
-      </div><!-- /.content-wrapper -->
-
+     <div class="container">
+            <p><b>MobSF Dynamic Analysis supports Genymotion Android x86 VMs version 4.1 to 9.0. We recommend using Android 7.0 and above.</b></p>
+            <p>For Android versions less than <b>5</b>, we use Xposed Framework and therefore, you must MobSFy the Android Runtime prior to Dynamic Analysis.<br /> Other versions use Frida and are automatically MobSFyed on the go.</p>
+            <p><b> HTTPS Traffic Interception</b></p>
+            <p>For Android version <b>4.1 - 4.3</b>, set Android VM proxy as <b>{% if proxy_ip %} {{ proxy_ip }}{% else %} <i>&lt;Host IP&gt;</i>{% endif %}:{{proxy_port}}</b><br/ >For Android versions <b>4.4 - 9</b>, global proxy settings are automatically applied. For more information, please refer <a href="">Documentation</a>.
+            </p>
+             
+         </div>
+         <div align="right"> <button class="btn btn-primary" role="button"  data-toggle="modal" data-target="#modal-mobsfy">MobSFy Android Runtime</button> <p>Android instance: <b>{{ identifier }}</b></p></div>
+      </div>
+    </div>
+    
+
+     <div class="row">
        
+    <div class="box box-default">
+        <div class="box-header with-border">
+            <h3 class="box-title"><i class="fa fa-rocket"></i> Avaiable Binaries</h3>
+        </div>
+  
+        <div class="box-body">
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th>App</th>
+                        <th>File Name</th>
+                        <th>Package</th>
+                        <th>Scan</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% if apks %}
+                    {% for e in apks %}
+                        <tr>
+                            <td>
+                             <img id="app_icon" src="
+                              {% if e.ICON_FOUND %}
+                                /download/{{ e.MD5 }}-icon.png
+                              {% else %}
+                                  {% static 'img/no_icon.png' %}
+                              {% endif %}
+                              "/><br /><b>{{ e.REAL_NAME }}</b>
+                              </td>
+                            <td>{{ e.APP_NAME }}<br/><br/>Hash: {{e.MD5}} </td>
+                            <td>{{ e.PACKAGENAME }}</td>
+                            <td>
+                            <a class="btn btn-success" onclick="dynamic_loader()" href="../android_dynamic/?hash={{e.MD5}}&amp;package={{e.PACKAGENAME}}"><i class="fa fa-android"></i> Start Dynamic Analysis</a>
+                              <p align="center"><br /><a href="../dynamic_report/?hash={{ e.MD5 }}&amp;package={{ e.PACKAGENAME }}"><i class="fa fa-file-text-o"></i> View Report </a>
+                              </p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+        <!-- /.box-body -->
+    </div>
+     </div>
+     <!-- Modal -->
+          <div class="modal fade" id="modal-mobsfy">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">MobSFy Android Runtime</h4>
+              </div>
+              <div class="modal-body">
+               <div class="box-body">
+              <form role="form">
+                <!-- text input -->
+                <div class="form-group">
+                    <label>IP &amp; Port</label>
+                     <input id="identifier" type="text" class="form-control" value="{{ identifier }}">
+                </div>
+                <div class="form-group">
+                  <label>Status</label>
+                  <textarea id="stat" class="form-control" rows="10" placeholder="" disabled=""></textarea>
+                </div>
+
+              </form>
+            </div>
+              </div>
+              <div class="modal-footer">
+                <button id="mobsfy" type="button" class="btn btn-primary">MobSFy!</button>
+              </div>
+            </div>
+            <!-- /.modal-content -->
+          </div>
+          <!-- /.modal-dialog -->
+        </div>
+        <!-- /.modal -->
+{% endblock %}
+
+{% block extra_footer %}
+<div class="hidden loading">
+    <div class='uil-ring-css' style='transform:scale(0.79);'>
+    <div>
+</div>
+<script>
+
+
+function dynamic_loader(){
+    var loadingOverlay = document.querySelector('.loading');
+    loadingOverlay.classList.remove('hidden');
+}
+
+//MobSFy AJAX
+ $("#mobsfy").one( "click", function() {
+        $('#stat').append("\nMobSFying Android Runtime");
+        $.ajax({
+                url : "../mobsfy/", 
+                type : "POST",
+                dataType: "json", 
+                data : {
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    identifier: $('#identifier').val() ,
+                    },
+                    success : function(json) {
+                        if (json.status==="ok"){
+                              $('#stat').append("\nSucessfully created MobSF Dynamic Analysis environment.");
+                            if (json.version  < 5){
+                              $('#stat').append("\n* Download & Install Xposed Framework.\n* Restart the device.");
+                              $('#stat').append("\n* Enable all the Xposed modules.\n* Restart the device once more.");
+                            } else{
+                               $('#stat').append("\nMobSF agents and Frida server installed.");
+                            }
+                           
+                        }
+                        else if(json.status === "failed"){
+                            $('#stat').append(json.message);
+                        }
+                         $('#stat').scrollTop($('#stat')[0].scrollHeight);
+                    },
+                    error : function(xhr, errmsg, err) {
+                        $('#stat').append("\nERROR!!! \n\n"+ err);
+                        $('#stat').scrollTop($('#stat')[0].scrollHeight);
+                    }   
+        });
+    return false;  
+}); 
+</script>
+
 {% endblock %}

@@ -1,0 +1,519 @@
+{% extends "base.html" %}
+   {% block content %}
+<script src="/static/js/jquery.min.js"></script>
+<script type="text/javascript" src="/static/js/highlight.min.js"></script>
+<link type="text/css" rel="stylesheet" href="/static/css/xcode.min.css"/>
+<script>hljs.initHighlightingOnLoad();</script>
+<style type="text/css" media="print">
+  @page { size: landscape; }
+  @media print {
+  .btn, #dwd_box {
+    display: none;
+  }
+}
+</style>
+
+
+   <!-- Left side column. contains the logo and sidebar -->
+      <aside class="main-sidebar">
+        <!-- sidebar: style can be found in sidebar.less -->
+        <div class="sidebar" id="scrollspy">
+
+          <!-- sidebar menu: : style can be found in sidebar.less -->
+          <ul class="nav sidebar-menu">
+            <li class="header">Dynamic Analysis</li>
+            <li class="active"><a href="#general"><i class="fa fa-rocket"></i> Information</a></li>
+              {% if apimon %}
+              <li class="treeview">
+              <a href="javascript::;"><i class="glyphicon glyphicon-phone"></i>Frida API Monitor</a>
+              <ul class="nav treeview-menu">
+              {% for api, details in apimon.items %}
+                <li><a href="#{{ api | slugify }}"><i class=""></i> {{api}}</a></li>
+              {% endfor %}
+              </ul>
+            </li>
+              {% endif %}
+              {% if droidmon %}
+             <li class="treeview">
+              <a href="javascript::;"><i class="glyphicon glyphicon-phone"></i> Xposed API Monitor</a>
+              <ul class="nav treeview-menu">
+              {% for api, details in droidmon.items %}
+                <li><a href="#{{ api }}"><i class="{{details|key:"icon"}}"></i> {{details|key:"name"}}</a></li>
+              {% endfor %}
+              </ul>
+            </li>
+             {% endif %}
+
+            <li><a href="#exportedactivitytester"><i class="glyphicon glyphicon-search"></i> Exported Activity Tester</a></li>
+            <li><a href="#activitytester"><i class="glyphicon glyphicon-search"></i> Activity Tester</a></li>
+            <li><a href="#screenshots"><i class="fa fa-camera"></i> Screenshots</a></li>
+
+           
+
+            <li class="treeview">
+              <a href="javascript::;"><i class="fa fa-plus"></i> Reconnaissance</a>
+              <ul class="nav treeview-menu">
+              <li><a href="#clipboard"><i class="fa fa-clipboard"></i> Clipboard Dump</a></li>
+              <li><a href="#url"><i class="glyphicon glyphicon-globe"></i> URLs</a></li>
+              <li><a href="#domain"><i class="glyphicon glyphicon-screenshot"></i> Malware Check</a></li>
+              <li><a href="#email"><i class="glyphicon glyphicon-envelope"></i> Emails</a></li>
+              </ul>
+            </li>
+
+            <li class="treeview">
+              <a href="javascript::;"><i class="fa fa-files-o"></i> File Analysis</a>
+              <ul class="nav treeview-menu">
+                <li><a href="#sqlitedatabase"><i class="fa fa-database"></i> SQLite Database</a></li>
+                <li><a href="#xmlfiles"><i class="fa fa-file-excel-o"></i> XML Files</a></li>
+                <li><a href="#otherfiles"><i class="fa fa-file-o"></i> Other Files</a></li>
+              </ul>
+            </li>
+            <li><a href="javascript:window.print()"><i class="fa fa-cloud-download"></i> Download / Print Report</a></li>
+            
+          </ul>
+        </div>
+        <!-- /.sidebar -->
+      </aside>
+
+      <!-- Content Wrapper. Contains page content -->
+      <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <!-- Main content -->
+        <div class="content body">
+
+
+
+
+<section id="general">
+  <h2 class="page-header"><strong>MobSF Dynamic Analysis Report </strong> - {{ package }} </h2>
+  <div align="center">
+      {% if apimon %}
+            <a target="_blank" class="btn btn-info" role="button" href="../live_api/?hash={{ md5 }}&amp;package={{ package }}">API Monitor View</a>
+      {% endif %}
+      {% if fdlog %}
+          <a target="_blank" class="btn btn-info" role="button" href="../frida_logs/?hash={{ md5 }}&amp;package={{ package }}">Frida Logs View</a>
+       {% endif %}
+           <a class="btn btn-success" target="_blank" role="button" href="../httptools?project={{package}}">Start HTTPTools</a></div>
+  <p class="lead">
+    <div class="row">
+    <div class="col-sm-12">
+      <div id="dwd_box" class="box box-danger">
+        <div class="box-header with-border">
+          <h3 class="box-title">Downloads</h3>
+          <span class="label label-danger pull-right"><i class="fa fa-cloud-download"></i></span>
+        </div><!-- /.box-header -->
+        <div class="box-body">
+        <div class="list-group">
+           <div align="center">
+           {% if droidmon %}
+            <a target="_blank" class="btn btn-info btn-sm" role="button" href="../download/{{ md5 }}-x_logcat.txt">Droidmon API Monitor Logs</a>
+            {% endif %}
+            {% if apimon %}
+            <a target="_blank" class="btn btn-info btn-sm" role="button" href="../download/{{ md5 }}-api_monitor.txt">Frida API Monitor Logs</a>
+             {% endif %}
+             {% if fdlog %}
+             <a target="_blank" class="btn btn-info btn-sm" role="button" href="../download/{{ md5 }}-frida_out.txt">Frida Logs</a>
+              {% endif %}
+            <a target="_blank" class="btn btn-info btn-sm" role="button" href="../download/{{ md5 }}-web_traffic.txt">HTTP(S) Traffic</a>
+            <a target="_blank" class="btn btn-info btn-sm" role="button" href="../download/{{ md5 }}-logcat.txt">Logcat Logs</a>
+            <a target="_blank" class="btn btn-info btn-sm" role="button" href="../download/{{ md5 }}-dump.txt">Dumpsys Logs</a> 
+            <a class="btn btn-info btn-sm" role="button" href="../download/{{ md5 }}-app_data.tar">Application Data</a>
+            </div>
+       </div>
+        
+        </div><!-- /.box-body -->
+      </div><!-- /.box -->
+    </div><!-- /.col -->
+  </div><!-- /.row -->
+  </p>
+</section><!-- /#introduction -->
+
+<!-- ============================================================= -->
+             {% for api, details in apimon.items %}
+               <section id="{{api | slugify}}">
+                <h2 class="page-header"></h2>
+                    <!-- /.box -->
+                        <div class="box">
+                          <div class="box-header">
+                            <h3 class="box-title"><i class=""></i> {{api}}</h3>
+                          </div>
+                          <!-- /.box-header -->
+                          <div class="box-body no-padding">
+                              <table class="table table-striped">
+                                <tbody><tr>
+                                  <th>Class</th>
+                                  <th>Method</th>
+                                </tr>
+                                 {% for call in details %}
+                                      <tr>
+                                      <td>{{ call|key:"class" }}</td>
+                                      <td style="word-wrap: break-word;min-width: 160px;max-width: 160px;">
+                                          <b>{{ call|key:"method" }}</b>
+                                          <p> <br /><b><i>Arguments:</i></b> {{ call|key:"arguments" }} </p>
+                                           {% if call|key:"result" %}
+                                          <p><b><i>Result: </i></b>{{ call|key:"result"}} </p>
+                                           {% endif %}
+                                           {% if call|key:"returnValue" %}
+                                          <p><b><i>Return Value: </i></b>{{ call|key:"returnValue"}} </p>
+                                          {% endif %}
+                                          {% if call|key:"decoded" %}
+                                            <p> <b><i>Decoded String: </i></b>{{ call|key:"decoded" }} </p>
+                                          {% endif %}
+                                          <p> <b><i>Called From: </i></b>{{ call|key:"calledFrom" }} </p>
+                                      </td>
+                                    </tr>
+                              {% endfor %}
+                              </tbody></table>
+                            </div>
+                      
+                         
+                    </div>
+                </section>
+
+             {% endfor %}
+<!-- ============================================================= -->
+             {% for api, details in droidmon.items %}
+             
+             
+              <section id="{{api}}">
+                <h2 class="page-header"></h2>
+                    <!-- /.box -->
+                        <div class="box">
+                          <div class="box-header">
+                            <h3 class="box-title"><i class="{{details|key:"icon"}}"></i> {{details|key:"name"}}</h3>
+                          </div>
+                          <!-- /.box-header -->
+                          <div class="box-body no-padding">
+                              <table class="table table-striped">
+                                <tbody><tr>
+                                  <th>Class</th>
+                                  <th>Method</th>
+                                </tr>
+                                 {% for call in details|key:"calls" %}
+                                      <tr>
+                                      <td>{{ call|key:"class" }}</td>
+                                      <td style="word-wrap: break-word;min-width: 160px;max-width: 160px;">
+                                          <b>{{ call|key:"method" }}</b>
+                                          {% if call|key:"args" %}
+                                          <br/><p> <b><i>Arguments:</i></b> {{ call|key:"args" }} </p>
+                                          {% endif %}
+                                          {% if call|key:"decoded" %}
+                                            <p> <b><i>Decoded String: </i></b>{{ call|key:"decoded" }} </p>
+                                          {% endif %}
+                                           {% if call|key:"return" %}
+                                            <br/><p><b><i>Return: </i></b>{{ call|key:"return" }} </p>
+                                           {% endif %}
+                                      </td>
+                                    </tr>
+                              {% endfor %}
+                              </tbody></table>
+                            </div>
+                      
+                         
+                    </div>
+                </section>
+
+              {% endfor %}
+
+
+<!-- ============================================================= -->
+
+
+<section id="exportedactivitytester">
+  <h2 class="page-header"></h2>
+     <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="glyphicon glyphicon-search"></i> EXPORTED ACTIVITY TESTER</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body no-padding">
+              <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                      
+                                    {% for img, desc in expacttest.items %}
+                                        <tr>
+                                         <td><img alt="{{desc}}" src="../download/{{ md5 }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
+                                        <td>{{ desc }}</td>
+                                        </tr>
+                                    {% endfor %}
+                    </table>
+                                
+                            </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+</section>
+<!-- ============================================================= -->
+
+<section id="activitytester">
+  <h2 class="page-header"></h2>
+     <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="glyphicon glyphicon-search"></i> ACTIVITY TESTER</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body no-padding">
+              <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                       {% for img, desc in acttest.items %}
+                                        <tr>
+                                         <td><img alt="{{desc}}" src="../download/{{ md5 }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
+                                        <td>{{ desc }}</td>
+                                        </tr>
+                                    {% endfor %}
+                    </table>
+                                
+                            </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+</section>
+
+<!-- ============================================================= -->
+
+
+<section id="screenshots">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-camera"></i> SCREENSHOTS</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+
+                            <div class="list-group">
+                
+                                        {% for i in screenshots %}
+                                         <img alt="Screenshot" src="../download/{{ md5 }}-screenshots-apk/{{ i}}" class="img-thumbnail" height="600" width="350">
+                                        {% endfor %}
+                                   
+
+                                </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+<!-- ============================================================= -->
+
+<section id="clipboard">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-clipboard"></i> Clipboard Dump</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+
+                            <div class="list-group">
+                                  {% for f in clipboard %}
+                                      {{ f}} <br>
+                                  {% endfor %}
+
+                                </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+  <!-- ============================================================= -->
+
+<section id="url">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="glyphicon glyphicon-globe"></i> URLs</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+
+                            <div class="list-group">
+                                    {% for f in urls %}
+                                        {{ f}} <br>
+                                        {% endfor %}
+
+                                </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+
+<!-- ============================================================= -->
+
+<!-- ============================================================= -->
+
+<section id="domain">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="glyphicon glyphicon-screenshot"></i> Malware Check</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body no-padding">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped">
+                  {% if urls|length > 1 %} 
+                  <thead>
+                  <tr>
+                     <th>Domain</th>
+                     <th>Status</th>
+                  </tr>
+                 </thead>
+                  {% endif %}
+                 <tbody>
+                
+                  {% for domain, details in domains.items %}
+                  <tr><td>{{domain}}</td><td> 
+
+                    {% if details|key:"bad" == "yes" %}
+                    <span class="label label-danger">malware</span></br>
+<pre>
+<strong>URL: </strong>{{details|key:"domain_or_url"}}
+<strong>IP: </strong><span class="label label-danger">{{details|key:"ip"}}</span>
+<strong>Description: </strong>{{details|key:"desc"}}
+</pre>
+                  {% else %}
+                    <span class="label label-success">good</span></br>
+                  {% endif %}
+
+
+                  </td> </tr>
+                  {% endfor %}
+                   
+                    </tbody>
+                    </table>
+                                
+             </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+<section id="email">
+  <h2 class="page-header"></h2>
+       <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="glyphicon glyphicon-envelope"></i> EMAILs</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+
+                            <div class="list-group">
+                                  {% for f in emails %}
+                                        {{ f}} <br>
+                                        {% endfor %}
+
+                                </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+  </section>
+
+  <!-- ============================================================= -->
+
+
+<section id="sqlitedatabase">
+  <h2 class="page-header"></h2>
+     <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-database"></i> SQLite Databases</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+              <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-striped">
+                     {% for file in sqlite %}
+                     <tr><td><a href="../dynamic_view_file/?file={{file|key:"file"}}&amp;md5={{md5}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td><tr>
+                    {% endfor %}
+                    </table>
+                                
+                            </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+</section>
+
+<!-- ============================================================= -->
+
+<section id="xmlfiles">
+  <h2 class="page-header"></h2>
+     <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-file-excel-o"></i> XML Files</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+              <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-striped">
+                     {% for file in xml %}
+                     <tr><td><a href="../dynamic_view_file/?file={{file|key:"file"}}&amp;md5={{md5}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td><tr>
+                    {% endfor %}
+                    </table>
+                                
+                            </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+</section>
+
+<!-- ============================================================= -->
+	
+<section id="otherfiles">
+  <h2 class="page-header"></h2>
+     <!-- /.box -->
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title"><i class="fa fa-file-o"></i> Other Files</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+              <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-striped">
+                     {% for file in others %}
+                     <tr><td><a href="../dynamic_view_file/?file={{file|key:"file"}}&amp;md5={{md5}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td><tr>
+                    {% endfor %}
+                    </table>
+                                
+                            </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+</section>
+
+<!-- ============================================================= -->
+
+ </div><!-- /.content -->
+      </div><!-- /.content-wrapper -->
+
+       
+{% endblock %}
