@@ -1,3 +1,27 @@
+### v2.0.0 Beta Changelog
+- Features or Enhancements
+   - Dynamic Analysis Support for Genymotion Android VMs 4.1 -9.0 x86
+   - Improved Recent Scan
+   - Replaced CapFuzz with HTTPtools
+   - Automatic MobSFy with Xposed and Frida
+   - Streaming logcat
+   - Live API Monitor
+   - Better SQlite DB View
+   - Inbuilt Frida scripts for basic tasks
+   - Custom Frida Script support
+   - Frida Log Viewer
+   - UI Changes
+   - Browser PDF print support
+   - Updated Tools
+   - Baksmali performance improvements
+   - Improved malware domain check
+   - Multi OS Travis Support
+   - Code QA
+
+- Bug Fixes
+  - Typo Fix
+  - Reduce False positives 
+
 ### v1.1.6 Beta Changelog
 - Features or Enhancements
    - 70x performance improvements for large APKs
