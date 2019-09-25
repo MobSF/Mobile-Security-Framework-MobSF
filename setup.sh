@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 if ! [ -x "$(command -v python3)" ]; then
   echo '[ERROR] python3 is not installed.' >&2
   exit 1
@@ -20,21 +21,21 @@ fi
 
 unamestr=$(uname)
 if [[ "$unamestr" == 'Darwin' ]]; then
-  export ARCHFLAGS='-arch x86_64'
-  export LDFLAGS='-L/usr/local/opt/openssl/lib'
-  export CFLAGS='-I/usr/local/opt/openssl/include'
-  current_macos_version="$(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}')"
-  major=$(echo "$current_macos_version" | cut -d'.' -f1)
-  minor=$(echo "$current_macos_version" | cut -d'.' -f2)
-  is_installed=$(pkgutil --pkgs=com.apple.pkg.macOS_SDK_headers_for_macOS_${current_macos_version})
-  if [ -z "$is_installed" ]; then 
-      if [ "$major" -ge "10" ] && [ "$minor" -ge "14" ]; then 
-          echo 'Please install command-line tools and macOS headers.'
-          echo 'xcode-select --install'
-          echo "sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_${current_macos_version}.pkg -target /"
-          exit 1
-      fi    
-  fi  
+    export ARCHFLAGS='-arch x86_64'
+    export LDFLAGS='-L/usr/local/opt/openssl/lib'
+    export CFLAGS='-I/usr/local/opt/openssl/include'
+    current_macos_version="$(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}')"
+    major=$(echo "$current_macos_version" | cut -d'.' -f1)
+    minor=$(echo "$current_macos_version" | cut -d'.' -f2)
+    is_installed=$(pkgutil --pkgs=com.apple.pkg.macOS_SDK_headers_for_macOS_${current_macos_version})
+    if [ -z "$is_installed" ]; then
+        if [ "$major" -ge "10" ] && [ "$minor" -ge "14" ]; then
+            echo 'Please install command-line tools and macOS headers.'
+            echo 'xcode-select --install'
+            echo "sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_${current_macos_version}.pkg -target /"
+            exit 1
+        fi
+    fi
 fi
 
 echo '[INSTALL] Using venv'
@@ -57,5 +58,7 @@ echo '[INSTALL] Migrating Database'
 python manage.py makemigrations
 python manage.py makemigrations StaticAnalyzer
 python manage.py migrate
-echo 'Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html'
+if ! [ -x "$(command -v wkhtmltopdf)" ]; then
+    echo 'Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html'
+fi
 echo '[INSTALL] Installation Complete'
