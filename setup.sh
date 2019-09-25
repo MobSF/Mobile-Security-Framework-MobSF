@@ -1,21 +1,16 @@
 #!/bin/bash
-set -e
 if ! [ -x "$(command -v python3)" ]; then
   echo '[ERROR] python3 is not installed.' >&2
   exit 1
 fi
 echo '[INSTALL] Found Python3'
 
-command
-status=$?
-cmd='python3 -m pip -V'
-$cmd
-status=$?
-if [ $status -eq 0 ]; then
+python3 -m pip -V
+if [ $? -eq 0 ]; then
   echo '[INSTALL] Found pip'
   python3 -m pip install --upgrade pip
 else
-  echo "[ERROR] The command ($cmd) failed. python3-pip not installed"
+  echo '[ERROR] python3-pip not installed'
   exit 1
 fi
 
@@ -38,15 +33,17 @@ if [[ "$unamestr" == 'Darwin' ]]; then
     fi
 fi
 
-echo '[INSTALL] Using venv'
+echo '[INSTALL] Using python virtualenv'
 rm -rf ./venv
 python3 -m venv ./venv
-source venv/bin/activate
-
-echo '[INSTALL] Installing APKiD requirements - yara-python'
-pip install wheel
-pip wheel --wheel-dir=/tmp/yara-python --build-option='build' --build-option='--enable-dex' git+https://github.com/VirusTotal/yara-python.git
-pip install --no-cache-dir --no-index --find-links=/tmp/yara-python yara-python
+if [ $? -eq 0 ]; then
+    echo '[INSTALL] Activating virtualenv'
+    source venv/bin/activate
+    pip install --upgrade pip
+else
+    echo '[ERROR] Failed to create virtualenv. Please install MobSF requirements mentioned in Documentation.'
+    exit 1
+fi
 
 echo '[INSTALL] Installing Requirements'
 pip install --no-cache-dir -r requirements.txt
@@ -58,7 +55,8 @@ echo '[INSTALL] Migrating Database'
 python manage.py makemigrations
 python manage.py makemigrations StaticAnalyzer
 python manage.py migrate
-if ! [ -x "$(command -v wkhtmltopdf)" ]; then
+wkhtmltopdf -V
+if ! [ $? -eq 0 ]; then
     echo 'Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html'
 fi
 echo '[INSTALL] Installation Complete'
