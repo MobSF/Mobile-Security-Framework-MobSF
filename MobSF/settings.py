@@ -324,7 +324,7 @@ else:
     # MALWARE ANALYZER SETTINGS
     # --------------------------
     DOMAIN_MALWARE_SCAN = True
-    APKID_ENABLED = True
+    APKID_ENABLED = False
     # ==============================================
 
     # -----External URLS--------------------------
