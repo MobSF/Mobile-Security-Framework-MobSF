@@ -82,11 +82,6 @@ WORKDIR /root/Mobile-Security-Framework-MobSF
 #Add apktool working path
 RUN mkdir -p /root/.local/share/apktool/framework
 
-#Install APKiD dependencies
-RUN pip3 install --quiet --no-cache-dir wheel==0.33.4 && \
-    pip3 wheel --quiet --no-cache-dir --wheel-dir=/tmp/yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git && \
-    pip3 install --quiet --no-cache-dir --no-index --find-links=/tmp/yara-python yara-python
-
 #Install Dependencies
 RUN pip3 install --quiet --no-cache-dir -r requirements.txt
 

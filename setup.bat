@@ -37,11 +37,6 @@ where python >nul 2>&1 && (
   set LIB=C:\Program Files\OpenSSL-Win64\lib;%LIB%
   set INCLUDE=C:\Program Files\OpenSSL-Win64\include;%INCLUDE%
 
-  echo [INSTALL] Installing APKiD requirements - yara-python
-  pip install wheel
-  pip wheel --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git
-  pip install --no-index --find-links=yara-python yara-python
-
   echo [INSTALL] Installing Requirements
   pip install -r requirements.txt
 
