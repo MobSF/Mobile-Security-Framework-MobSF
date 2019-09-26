@@ -69,9 +69,6 @@ WORKDIR /root/Mobile-Security-Framework-MobSF
 RUN sed -i 's/USE_HOME = False/USE_HOME = True/g' MobSF/settings.py && \
     sed -i "s#ADB_BINARY = ''#ADB_BINARY = '/usr/bin/adb'#" MobSF/settings.py
 
-#Kali fix to support 32 bit execution
-RUN ./scripts/kali_fix.sh
-
 #Postgres support is set to false by default
 ARG POSTGRES=False
 #check if Postgres support needs to be enabled 
