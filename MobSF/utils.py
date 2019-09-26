@@ -216,16 +216,6 @@ def migrate(base_dir):
         logger.exception('Cannot Migrate')
 
 
-def kali_fix(base_dir):
-    try:
-        if platform.system() == 'Linux' and platform.dist()[0] == 'Kali':
-            fix_path = os.path.join(base_dir, 'scripts/kali_fix.sh')
-            os.chmod(fix_path, 0o744)
-            subprocess.call([fix_path], shell=True)
-    except Exception:
-        logger.exception('Cannot run Kali Fix')
-
-
 def find_java_binary():
     """Find Java."""
     # Respect user settings
@@ -533,7 +523,6 @@ def first_run(secret_file, base_dir, mobsf_home):
         # Run Once
         make_migrations(base_dir)
         migrate(base_dir)
-        kali_fix(base_dir)
         # Windows Setup
         windows_config_local(mobsf_home)
     return secret_key
