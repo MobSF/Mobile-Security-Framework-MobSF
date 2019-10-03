@@ -10,7 +10,9 @@ import re
 from androguard.core.bytecodes.apk import APK
 from androguard.util import get_certificate_name_string
 
-from asn1crypto import keys, x509
+from asn1crypto import x509
+
+from oscrypto import asymmetric
 
 from django.utils.html import escape
 
@@ -71,7 +73,6 @@ def cert_info(app_dir, app_file):
             certlist.append('APK is signed')
         else:
             certlist.append('Missing certificate')
-
         certlist.append('v1 signature: {}'.format(a.is_signed_v1()))
         certlist.append('v2 signature: {}'.format(a.is_signed_v2()))
         certlist.append('v3 signature: {}'.format(a.is_signed_v3()))
@@ -103,17 +104,12 @@ def cert_info(app_dir, app_file):
                 certlist.append('{}: {}'.format(k, v(cert).hexdigest()))
 
         for public_key in pkeys:
-            x509_public_key = keys.PublicKeyInfo.load(public_key)
+            x509_public_key = asymmetric.load_public_key(public_key)
             certlist.append('PublicKey Algorithm: {}'.format(
                 x509_public_key.algorithm))
             certlist.append('Bit Size: {}'.format(x509_public_key.bit_size))
             certlist.append('Fingerprint: {}'.format(
                 binascii.hexlify(x509_public_key.fingerprint).decode('utf-8')))
-            try:
-                certlist.append('Hash Algorithm: {}'.format(
-                    x509_public_key.hash_algo))
-            except ValueError:
-                pass
         certlist = '\n'.join(certlist)
         if a.is_signed():
             issued = 'good'
