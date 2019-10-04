@@ -57,6 +57,7 @@ RULES = [
         'input_case': 'lower',
         'cvss': 7.4,
         'cwe': 'CWE-312',
+        'owasp': 'M9: Reverse Engineering',
     },
     {
         'desc': 'IP Address disclosure',
@@ -67,6 +68,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 4.3,
         'cwe': 'CWE-200',
+        'owasp': '',
     },
     {
         'desc': ('Hidden elements in view can be used to hide'
@@ -79,6 +81,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 4.3,
         'cwe': 'CWE-919',
+        'owasp': 'M1: Improper Platform Usage',
     },
     {
         'desc': ('The App uses ECB mode in Cryptographic encryption algorithm.'
@@ -91,6 +94,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 5.9,
         'cwe': 'CWE-327',
+        'owasp': 'M5: Insufficient Cryptography',
     },
     {
         'desc': ('This App uses RSA Crypto without OAEP padding. The purpose'
@@ -104,6 +108,7 @@ RULES = [
         'input_case': 'lower',
         'cvss': 5.9,
         'cwe': 'CWE-780',
+        'owasp': 'M5: Insufficient Cryptography',
     },
     {
         'desc': ('Insecure Implementation of SSL. Trusting all the '
@@ -123,6 +128,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 7.4,
         'cwe': 'CWE-295',
+        'owasp': 'M3: Insecure Communication',
     },
     {
         'desc': ('WebView load files from external storage. Files in external'
@@ -135,6 +141,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 5.0,
         'cwe': 'CWE-919',
+        'owasp': 'M1: Improper Platform Usage',
     },
     {
         'desc': 'The file is World Readable. Any App can read from the file',
@@ -146,6 +153,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 4.0,
         'cwe': 'CWE-276',
+        'owasp': 'M2: Insecure Data Storage',
 
     },
     {
@@ -158,6 +166,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 6.0,
         'cwe': 'CWE-276',
+        'owasp': 'M2: Insecure Data Storage',
     },
     {
         'desc': ('The file is World Readable and Writable. '
@@ -169,6 +178,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 6.0,
         'cwe': 'CWE-276',
+        'owasp': 'M2: Insecure Data Storage',
     },
     {
         'desc': 'Weak Hash algorithm used',
@@ -181,6 +191,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 7.4,
         'cwe': 'CWE-327',
+        'owasp': 'M5: Insufficient Cryptography',
     },
     {
         'desc': 'MD5 is a weak hash known to have hash collisions.',
@@ -193,6 +204,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 7.4,
         'cwe': 'CWE-327',
+        'owasp': 'M5: Insufficient Cryptography',
     },
     {
         'desc': 'SHA-1 is a weak hash known to have hash collisions.',
@@ -205,6 +217,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 5.9,
         'cwe': 'CWE-327',
+        'owasp': 'M5: Insufficient Cryptography',
     },
     {
         'desc': ('App can write to App Directory. '
@@ -216,6 +229,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 3.9,
         'cwe': 'CWE-276',
+        'owasp': '',
     },
     {
         'desc': 'The App uses an insecure Random Number Generator.',
@@ -226,6 +240,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 7.5,
         'cwe': 'CWE-330',
+        'owasp': 'M5: Insufficient Cryptography',
     },
     {
         'desc': ('The App logs information. '
@@ -238,6 +253,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 7.5,
         'cwe': 'CWE-532',
+        'owasp': '',
     },
     {
         'desc': ('This App uses Java Hash Code. It\'s a weak hash function and'
@@ -249,6 +265,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 2.3,
         'cwe': 'CWE-327',
+        'owasp': '',
     },
     {
         'desc': ('These activities prevent '
@@ -260,6 +277,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': 'This App uses SQL Cipher. But the secret may be hardcoded.',
@@ -270,6 +288,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': 'This app has capabilities to prevent tapjacking attacks.',
@@ -280,6 +299,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': ('App can read/write to External Storage. '
@@ -293,6 +313,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 5.5,
         'cwe': 'CWE-276',
+        'owasp': 'M2: Insecure Data Storage',
     },
     {
         'desc': ('App creates temp file. Sensitive '
@@ -305,6 +326,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 5.5,
         'cwe': 'CWE-276',
+        'owasp': 'M2: Insecure Data Storage',
     },
     {
         'desc': ('Insecure WebView Implementation. Execution of user'
@@ -317,6 +339,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 8.8,
         'cwe': 'CWE-749',
+        'owasp': 'M1: Improper Platform Usage',
     },
     {
         'desc': ('This App uses SQL Cipher. SQLCipher '
@@ -329,6 +352,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': 'This App download files using Android Download Manager',
@@ -340,6 +364,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': 'This App use Realm Database with encryption.',
@@ -351,6 +376,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': ('The App may use weak IVs like '
@@ -367,6 +393,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 9.8,
         'cwe': 'CWE-329',
+        'owasp': 'M5: Insufficient Cryptography',
     },
     {
         'desc': 'Remote WebView debugging is enabled.',
@@ -378,6 +405,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 5.4,
         'cwe': 'CWE-919',
+        'owasp': 'M1: Improper Platform Usage',
     },
     {
         'desc': ('This app listens to Clipboard changes.'
@@ -390,6 +418,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': ('This App copies data to clipboard. Sensitive data should'
@@ -403,6 +432,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': ('Insecure WebView Implementation. WebView ignores SSL'
@@ -416,6 +446,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 7.4,
         'cwe': 'CWE-295',
+        'owasp': 'M3: Insecure Communication',
     },
     {
         'desc': ('App uses SQLite Database and execute raw SQL query. '
@@ -431,6 +462,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 5.9,
         'cwe': 'CWE-89',
+        'owasp': 'M7: Client Code Quality',
     },
     {
         'desc': 'This App detects frida server.',
@@ -444,6 +476,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': ('This App uses an SSL Pinning Library '
@@ -460,6 +493,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': ('This App has capabilities to prevent against'
@@ -473,6 +507,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': ('DexGuard Debug Detection code to detect'
@@ -485,6 +520,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': 'DexGuard Debugger Detection code is identified.',
@@ -496,6 +532,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': 'DexGuard Emulator Detection code is identified.',
@@ -507,6 +544,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': ('DexGuard code to detect wheather the App'
@@ -519,6 +557,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': 'DexGuard Root Detection code is identified.',
@@ -530,6 +569,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': 'DexGuard App Tamper Detection code is identified.',
@@ -541,6 +581,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': ('DexGuard Signer Certificate'
@@ -553,6 +594,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': 'The App may use package signature for tamper detection.',
@@ -564,6 +606,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': 'This App uses SafetyNet API.',
@@ -574,6 +617,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': 'This App may request root (Super User) privileges.',
@@ -588,6 +632,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': 'CWE-250',
+        'owasp': '',
     },
     {
         'desc': 'This App may have root detection capabilities.',
@@ -604,4 +649,5 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     }]

@@ -321,7 +321,8 @@ def add_findings(findings, desc, file_path, rule):
         findings[desc] = {'path': [escape(file_path)],
                           'level': rule['level'],
                           'cvss': rule['cvss'],
-                          'cwe': rule['cwe']}
+                          'cwe': rule['cwe'],
+                          'owasp': rule['owasp']}
 
 
 def code_rule_matcher(findings, perms, data, file_path, code_rules):
@@ -599,14 +600,29 @@ def score(findings):
             if 'cvss' in finding:
                 if finding['cvss'] != 0:
                     cvss_scores.append(finding['cvss'])
+            if finding['level'] == 'high':
+                app_score = app_score - 15
+            elif finding['level'] == 'warning':
+                app_score = app_score - 10
+            elif finding['level'] == 'good':
+                app_score = app_score + 5
     else:
         for _, finding in findings.items():
             if 'cvss' in finding:
                 if finding['cvss'] != 0:
                     cvss_scores.append(finding['cvss'])
+            if finding['level'] == 'high':
+                app_score = app_score - 15
+            elif finding['level'] == 'warning':
+                app_score = app_score - 10
+            elif finding['level'] == 'good':
+                app_score = app_score + 5
     if cvss_scores:
         avg_cvss = round(sum(cvss_scores) / len(cvss_scores), 1)
-        app_score = int((10 - avg_cvss) * 10)
+    if app_score < 0:
+        app_score = 10
+    elif app_score > 100:
+        app_score = 100
     return avg_cvss, app_score
 
 

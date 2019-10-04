@@ -455,6 +455,7 @@
                                                 <th>SEVERITY</th>
                                                 <th>CVSS</th>
                                                 <th>CWE</th>
+                                                <th>OWASP</th>
                                                 <th>FILES</th>
 
                                             </tr>
@@ -478,9 +479,10 @@
                   </td>
                   <td><b>{{ details|key:"cvss" }}</b></td>
                   <td><b>{{ details|key:"cwe" }}</b></td>
+                  <td><b>{{ details|key:"owasp" }}</b></td>
                   <td>
                   {% for path in details|key:"path" %}
-                   <a href="../ViewFile/?file={{ path }}&md5={{ md5 }}&type=ios"> {{ path }}</a>
+                   <a href="../ViewFile/?file={{ path }}&amp;md5={{ md5 }}&amp;type=ios"> {{ path }}</a>
                   </br>
                   {% endfor %}
                   </td>
