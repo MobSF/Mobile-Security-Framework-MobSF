@@ -334,9 +334,10 @@ body {
                   <thead>
                       <tr>
                           <th>ISSUE</th>
-                          <th>STATUS</th>
+                          <th>SEVERITY</th>
                           <th>CVSS</th>
                           <th>CWE</th>
+                          <th>OWASP</th>
                           <th>DESCRIPTION</th>
 
                       </tr>
@@ -348,18 +349,19 @@ body {
                         {{ bin.issue }}
                       </td>
                       <td>
-                        {% if bin.status == 'Info' %}
-                          <span class='label label-info'>{{bin.status}}</span>
-                        {% elif bin.status == 'Secure' %}
-                          <span class='label label-success'>{{bin.status}}</span>
-                        {% elif bin.status == 'Insecure' %}
-                          <span class='label label-danger'>{{bin.status}}</span>
-                        {% elif bin.status == 'Warning' %}
-                          <span class='label label-warning'>{{bin.status}}</span>
+                        {% if bin.level == 'info' %}
+                          <span class='label label-info'>{{bin.level}}</span>
+                        {% elif bin.level == 'good' %}
+                          <span class='label label-success'>{{bin.level}}</span>
+                        {% elif bin.level == 'high' %}
+                          <span class='label label-danger'>{{bin.level}}</span>
+                        {% elif bin.level == 'warning' %}
+                          <span class='label label-warning'>{{bin.level}}</span>
                         {% endif %}
                       </td>
                        <td><b>{{ bin.cvss }}</b></td>
                        <td><b>{{ bin.cwe }}</b></td>
+                       <td><b>{{ bin.owasp }}</b></td>
                       <td>
                         {{ bin.description | safe}}
                       </td>

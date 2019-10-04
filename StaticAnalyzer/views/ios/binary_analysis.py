@@ -20,10 +20,10 @@ from MobSF.utils import is_file_exists
 from StaticAnalyzer.tools.strings import strings_util
 
 logger = logging.getLogger(__name__)
-SECURE = 'Secure'
-IN_SECURE = 'Insecure'
-INFO = 'Info'
-WARNING = 'Warning'
+SECURE = 'good'
+IN_SECURE = 'high'
+INFO = 'info'
+WARNING = 'warning'
 
 
 def get_otool_out(tools_dir, cmd_type, bin_path, bin_dir):
@@ -88,7 +88,7 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
         if b'PIE' in pie_dat:
             pie_flag = {
                 'issue': 'fPIE -pie flag is Found',
-                'status': SECURE,
+                'level': SECURE,
                 'description': ('App is compiled with Position Independent '
                                 'Executable (PIE) flag. This enables Address'
                                 ' Space Layout Randomization (ASLR), a memory'
@@ -96,11 +96,12 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
                                 ' exploit mitigation.'),
                 'cvss': 0,
                 'cwe': '',
+                'owasp': '',
             }
         else:
             pie_flag = {
                 'issue': 'fPIE -pie flag is not Found',
-                'status': IN_SECURE,
+                'level': IN_SECURE,
                 'description': ('with Position Independent Executable (PIE) '
                                 'flag. So Address Space Layout Randomization '
                                 '(ASLR) is missing. ASLR is a memory '
@@ -108,33 +109,38 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
                                 'exploit mitigation.'),
                 'cvss': 2,
                 'cwe': 'CWE-119',
+                'owasp': 'M1: Improper Platform Usage',
             }
         # Stack Smashing Protection & ARC
         dat = get_otool_out(tools_dir, 'symbols', bin_path, bin_dir)
         if b'stack_chk_guard' in dat:
             ssmash = {
                 'issue': 'fstack-protector-all flag is Found',
-                'status': SECURE,
+                'level': SECURE,
                 'description': ('App is compiled with Stack Smashing Protector'
                                 ' (SSP) flag and is having protection against'
                                 ' Stack Overflows/Stack Smashing Attacks.'),
                 'cvss': 0,
-                'cwe': ''}
+                'cwe': '',
+                'owasp': '',
+            }
         else:
             ssmash = {
                 'issue': 'fstack-protector-all flag is not Found',
-                'status': IN_SECURE,
+                'level': IN_SECURE,
                 'description': ('App is not compiled with Stack Smashing '
                                 'Protector (SSP) flag. It is vulnerable to'
                                 'Stack Overflows/Stack Smashing Attacks.'),
                 'cvss': 2,
-                'cwe': 'CWE-119'}
+                'cwe': 'CWE-119',
+                'owasp': 'M1: Improper Platform Usage',
+            }
 
         # ARC
         if b'_objc_release' in dat:
             arc_flag = {
                 'issue': 'fobjc-arc flag is Found',
-                'status': SECURE,
+                'level': SECURE,
                 'description': ('App is compiled with Automatic Reference '
                                 'Counting (ARC) flag. ARC is a compiler '
                                 'feature that provides automatic memory '
@@ -142,11 +148,13 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
                                 'exploit mitigation mechanism against memory '
                                 'corruption vulnerabilities.'),
                 'cvss': 0,
-                'cwe': ''}
+                'cwe': '',
+                'owasp': '',
+            }
         else:
             arc_flag = {
                 'issue': 'fobjc-arc flag is not Found',
-                'status': IN_SECURE,
+                'level': IN_SECURE,
                 'description': ('App is not compiled with Automatic Reference '
                                 'Counting (ARC) flag. ARC is a compiler '
                                 'feature that provides automatic memory '
@@ -154,7 +162,9 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
                                 'protects from memory corruption '
                                 'vulnerabilities.'),
                 'cvss': 2,
-                'cwe': 'CWE-119'}
+                'cwe': 'CWE-119',
+                'owasp': 'M1: Improper Platform Usage',
+            }
 
         banned_apis = {}
         baned = re.findall(
@@ -171,12 +181,14 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
         if len(baned_s) > 1:
             banned_apis = {
                 'issue': 'Binary make use of banned API(s)',
-                'status': IN_SECURE,
+                'level': IN_SECURE,
                 'description': ('The binary may contain'
                                 ' the following banned API(s) {}.').format(
                                     baned_s.decode('utf-8', 'ignore')),
                 'cvss': 6,
-                'cwe': 'CWE-676'}
+                'cwe': 'CWE-676',
+                'owasp': 'M7: Client Code Quality',
+            }
 
         weak_cryptos = {}
         weak_algo = re.findall(
@@ -191,12 +203,14 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
         if len(weak_algo_s) > 1:
             weak_cryptos = {
                 'issue': 'Binary make use of some Weak Crypto API(s)',
-                'status': IN_SECURE,
+                'level': IN_SECURE,
                 'description': ('The binary may use the'
                                 ' following weak crypto API(s) {}.').formnat(
                                     weak_algo_s.decode('utf-8', 'ignore')),
                 'cvss': 3,
-                'cwe': 'CWE-327'}
+                'cwe': 'CWE-327',
+                'owasp': 'M5: Insufficient Cryptography',
+            }
 
         crypto = {}
         crypto_algo = re.findall(
@@ -241,12 +255,14 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
         if len(crypto_algo_s) > 1:
             crypto = {
                 'issue': 'Binary make use of the following Crypto API(s)',
-                'status': 'Info',
+                'level': INFO,
                 'description': ('The binary may use '
                                 'the following crypto API(s) {}.').format(
                                     crypto_algo_s.decode('utf-8', 'ignore')),
                 'cvss': 0,
-                'cwe': ''}
+                'cwe': '',
+                'owasp': '',
+            }
 
         weak_hashes = {}
         weak_hash_algo = re.findall(
@@ -266,14 +282,16 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
         weak_hash_algo_s = b', '.join(weak_hash_algo)
         if len(weak_hash_algo_s) > 1:
             weak_hashes = {
-                'issue': 'Binary make use of the following Weak HASH API(s)',
-                'status': IN_SECURE,
+                'issue': 'Binary make use of the following Weak Hash API(s)',
+                'level': IN_SECURE,
                 'description': (
                     'The binary may use the '
                     'following weak hash API(s) {}.').format(
                         weak_hash_algo_s.decode('utf-8', 'ignore')),
                 'cvss': 3,
-                'cwe': 'CWE-327'}
+                'cwe': 'CWE-327',
+                'owasp': 'M5: Insufficient Cryptography',
+            }
 
         hashes = {}
         hash_algo = re.findall(
@@ -295,13 +313,15 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
         hash_algo_s = b', '.join(hash_algo)
         if len(hash_algo_s) > 1:
             hashes = {
-                'issue': 'Binary make use of the following HASH API(s)',
-                'status': INFO,
+                'issue': 'Binary make use of the following Hash API(s)',
+                'level': INFO,
                 'description': ('The binary may use the'
                                 ' following hash API(s) {}.').format(
                                     hash_algo_s.decode('utf-8', 'ignore')),
                 'cvss': 0,
-                'cwe': ''}
+                'cwe': '',
+                'owasp': '',
+            }
 
         randoms = {}
         rand_algo = re.findall(rb'\b_srand\b|\b_random\b', dat)
@@ -310,12 +330,14 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
         if len(rand_algo_s) > 1:
             randoms = {
                 'issue': 'Binary make use of the insecure Random Function(s)',
-                'status': IN_SECURE,
+                'level': IN_SECURE,
                 'description': ('The binary may use the following '
                                 'insecure Random Function(s) {}.').format(
                                     rand_algo_s.decode('utf-8', 'ignore')),
                 'cvss': 3,
-                'cwe': 'CWE-338'}
+                'cwe': 'CWE-338',
+                'owasp': 'M5: Insufficient Cryptography',
+            }
 
         logging = {}
         log = re.findall(rb'\b_NSLog\b', dat)
@@ -324,11 +346,13 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
         if len(log_s) > 1:
             logging = {
                 'issue': 'Binary make use of Logging Function',
-                'status': INFO,
+                'level': INFO,
                 'description': ('The binary may use NSLog'
                                 ' function for logging.'),
                 'cvss': 7.5,
-                'cwe': 'CWE-532'}
+                'cwe': 'CWE-532',
+                'owasp': '',
+            }
 
         malloc = {}
         mal = re.findall(rb'\b_malloc\b', dat)
@@ -337,11 +361,13 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
         if len(mal_s) > 1:
             malloc = {
                 'issue': 'Binary make use of malloc Function',
-                'status': IN_SECURE,
+                'level': IN_SECURE,
                 'description': ('The binary may use malloc'
                                 ' function instead of calloc.'),
                 'cvss': 2,
-                'cwe': 'CWE-789'}
+                'cwe': 'CWE-789',
+                'owasp': 'M7: Client Code Quality',
+            }
 
         debug = {}
         ptrace = re.findall(rb'\b_ptrace\b', dat)
@@ -350,14 +376,16 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
         if len(ptrace_s) > 1:
             debug = {
                 'issue': 'Binary calls ptrace Function for anti-debugging.',
-                'status': WARNING,
+                'level': WARNING,
                 'description': ('The binary may use ptrace function. It can be'
                                 ' used to detect and prevent debuggers.'
                                 'Ptrace is not a public API and Apps that use'
                                 ' non-public APIs will be rejected'
                                 ' from AppStore.'),
                 'cvss': 0,
-                'cwe': ''}
+                'cwe': '',
+                'owasp': 'M7: Client Code Quality',
+            }
         otool_dict['anal'] = [pie_flag,
                               ssmash,
                               arc_flag,
@@ -432,10 +460,11 @@ def class_dump(tools_dir, bin_path, app_dir, bin_type):
             flip.write(classdump.decode('utf-8', 'ignore'))
         if b'UIWebView' in classdump:
             webview = {'issue': 'Binary uses WebView Component.',
-                       'status': INFO,
+                       'level': INFO,
                        'description': 'The binary may use WebView Component.',
                        'cvss': 0,
                        'cwe': '',
+                       'owasp': '',
                        }
         return webview
     except Exception:
