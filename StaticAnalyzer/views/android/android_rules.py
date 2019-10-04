@@ -418,6 +418,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': ('This App copies data to clipboard. Sensitive data should'
@@ -431,6 +432,7 @@ RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': ('Insecure WebView Implementation. WebView ignores SSL'
