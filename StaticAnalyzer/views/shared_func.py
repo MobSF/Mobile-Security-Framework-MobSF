@@ -321,7 +321,8 @@ def add_findings(findings, desc, file_path, rule):
         findings[desc] = {'path': [escape(file_path)],
                           'level': rule['level'],
                           'cvss': rule['cvss'],
-                          'cwe': rule['cwe']}
+                          'cwe': rule['cwe'],
+                          'owasp': rule['owasp']}
 
 
 def code_rule_matcher(findings, perms, data, file_path, code_rules):

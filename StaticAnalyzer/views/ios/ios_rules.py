@@ -47,6 +47,7 @@ CODE_RULES = [
         'input_case': 'exact',
         'cvss': 2.2,
         'cwe': 'CWE-676',
+        'owasp': 'M7: Client Code Quality',
     },
     {
         'desc': ('App allows self signed or invalid '
@@ -64,6 +65,7 @@ CODE_RULES = [
         'input_case': 'exact',
         'cvss': 7.4,
         'cwe': 'CWE-295',
+        'owasp': 'M3: Insecure Communication',
     },
     {
         'desc': ('UIWebView in App ignore SSL errors and accept'
@@ -77,6 +79,7 @@ CODE_RULES = [
         'input_case': 'exact',
         'cvss': 7.4,
         'cwe': 'CWE-295',
+        'owasp': 'M3: Insecure Communication',
     },
     {
         'desc': ('Files may contain hardcoded sensitive'
@@ -92,6 +95,7 @@ CODE_RULES = [
         'input_case': 'lower',
         'cvss': 7.4,
         'cwe': 'CWE-312',
+        'owasp': 'M9: Reverse Engineering',
     },
     {
         'desc': 'IP Address disclosure',
@@ -102,6 +106,7 @@ CODE_RULES = [
         'input_case': 'exact',
         'cvss': 4.3,
         'cwe': 'CWE-200',
+        'owasp': '',
     },
     {
         'desc': ('The App logs information. '
@@ -113,6 +118,7 @@ CODE_RULES = [
         'input_case': 'exact',
         'cvss': 7.5,
         'cwe': 'CWE-532',
+        'owasp': '',
     },
     {
         'desc': ('This app listens to Clipboard changes. '
@@ -125,6 +131,7 @@ CODE_RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': ('App uses SQLite Database. '
@@ -136,6 +143,7 @@ CODE_RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': ('Untrusted user input to "NSTemporaryDirectory()"'
@@ -147,6 +155,7 @@ CODE_RULES = [
         'input_case': 'exact',
         'cvss': 7.5,
         'cwe': 'CWE-22',
+        'owasp': 'M10: Extraneous Functionality',
     },
     {
         'desc': ('User input in "loadHTMLString" '
@@ -159,6 +168,7 @@ CODE_RULES = [
         'input_case': 'exact',
         'cvss': 8.8,
         'cwe': 'CWE-95',
+        'owasp': 'M7: Client Code Quality',
     },
     {
         'desc': 'SFAntiPiracy Jailbreak checks found',
@@ -171,6 +181,7 @@ CODE_RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': 'SFAntiPiracy Piracy checks found',
@@ -183,6 +194,7 @@ CODE_RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': 'MD5 is a weak hash known to have hash collisions.',
@@ -194,6 +206,7 @@ CODE_RULES = [
         'input_case': 'exact',
         'cvss': 7.4,
         'cwe': 'CWE-327',
+        'owasp': 'M5: Insufficient Cryptography',
     },
     {
         'desc': 'SHA1 is a weak hash known to have hash collisions.',
@@ -205,6 +218,7 @@ CODE_RULES = [
         'input_case': 'exact',
         'cvss': 5.9,
         'cwe': 'CWE-327',
+        'owasp': 'M5: Insufficient Cryptography',
     },
     {
         'desc': ('The App uses ECB mode in Cryptographic encryption algorithm.'
@@ -218,6 +232,7 @@ CODE_RULES = [
         'input_case': 'exact',
         'cvss': 5.9,
         'cwe': 'CWE-327',
+        'owasp': 'M5: Insufficient Cryptography',
     },
     {
         'desc': 'The App has ant-debugger code using ptrace() ',
@@ -229,6 +244,7 @@ CODE_RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': 'This App has anti-debugger code using Mach Exception Ports.',
@@ -241,6 +257,7 @@ CODE_RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': ('This App copies data to clipboard. Sensitive data should'
@@ -255,6 +272,7 @@ CODE_RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
     {
         'desc': 'This App may have Jailbreak detection capabilities.',
@@ -300,5 +318,6 @@ CODE_RULES = [
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
+        'owasp': '',
     },
 ]
