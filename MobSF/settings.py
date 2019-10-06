@@ -330,7 +330,8 @@ else:
     # -----External URLS--------------------------
     MALWARE_DB_URL = 'http://www.malwaredomainlist.com/mdlcsv.php'
     VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/vtapi/v2/file/'
-    TRACKERS_DB_URL = 'https://reports.exodus-privacy.eu.org/api/trackers'
+    TRACKERS_URL = 'https://reports.exodus-privacy.eu.org'
+    TRACKERS_DB_URL = '{}/api/trackers'.format(TRACKERS_URL)
 
     # ========DISABLED COMPONENTS===================
 
