@@ -426,12 +426,12 @@ def class_dump(tools_dir, bin_path, app_dir, bin_type):
                     class_dump_bin = os.path.join(
                         tools_dir, 'class-dump-swift')
             else:
-                logger.info('Running class-dump-z against binary')
-                if (len(settings.CLASSDUMPZ_BINARY) > 0
-                        and is_file_exists(settings.CLASSDUMPZ_BINARY)):
-                    class_dump_bin = settings.CLASSDUMPZ_BINARY
+                logger.info('Running class-dump against binary')
+                if (len(settings.CLASSDUMP_BINARY) > 0
+                        and is_file_exists(settings.CLASSDUMP_BINARY)):
+                    class_dump_bin = settings.CLASSDUMP_BINARY
                 else:
-                    class_dump_bin = os.path.join(tools_dir, 'class-dump-z')
+                    class_dump_bin = os.path.join(tools_dir, 'class-dump')
             os.chmod(class_dump_bin, 0o744)
             args = [class_dump_bin, bin_path]
         elif platform.system() == 'Linux':
@@ -468,7 +468,7 @@ def class_dump(tools_dir, bin_path, app_dir, bin_type):
                        }
         return webview
     except Exception:
-        logger.error('class-dump-z/class-dump-swift failed on this binary')
+        logger.error('class-dump/class-dump-swift failed on this binary')
 
 
 def strings_on_ipa(bin_path):
