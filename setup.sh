@@ -24,12 +24,19 @@ if [[ "$unamestr" == 'Darwin' ]]; then
     minor=$(echo "$current_macos_version" | cut -d'.' -f2)
     is_installed=$(pkgutil --pkgs=com.apple.pkg.macOS_SDK_headers_for_macOS_${current_macos_version})
     if [ -z "$is_installed" ]; then
-        if [ "$major" -ge "10" ] && [ "$minor" -ge "14" ]; then
+        if [ "$major" -ge "10" ] && [ "$minor" -lt "15" ]; then
             echo 'Please install command-line tools and macOS headers.'
             echo 'xcode-select --install'
             echo "sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_${current_macos_version}.pkg -target /"
             exit 1
-        fi
+        else    
+            xcode-select -v		
+	    if ! [ $? -eq 0 ]; then
+               echo 'Please install command-line tools'
+               echo 'xcode-select --install' 
+               exit 1
+	    fi    
+        fi    
     fi
 fi
 
