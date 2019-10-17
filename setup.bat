@@ -15,7 +15,8 @@ where python >nul 2>&1 && (
     echo [INSTALL] Found OpenSSL executable
   ) else (
    echo [ERROR] OpenSSL executable not found in [C:\\Program Files\\OpenSSL-Win64\\bin\\openssl.exe]
-   echo [INFO] Install OpenSSL - https://slproweb.com/download/Win64OpenSSL-1_1_1c.exe
+   echo [INFO] Download OpenSSL - https://indy.fulgan.com/SSL/openssl-1.0.2r-x64_86-win64.zip
+   echo [INFO] Extract zip to C:\\Program Files\\OpenSSL-Win64\\bin\\ directory
    pause
    exit /b
   )
