@@ -92,7 +92,7 @@ def print_version():
         print('REST API Key: ' + Color.BOLD + api_key() + Color.END)
     logger.info('OS: %s', platform.system())
     logger.info('Platform: %s', platform.platform())
-    if platform.dist()[0]:
+    if platform.linux_distribution()[0]:
         logger.info('Dist: %s', str(platform.dist()))
     find_java_binary()
     check_basic_env()
