@@ -93,7 +93,7 @@ def print_version():
     logger.info('OS: %s', platform.system())
     logger.info('Platform: %s', platform.platform())
     if platform.linux_distribution()[0]:
-        logger.info('Dist: %s', str(platform.dist()))
+        logger.info('Dist: %s', str(platform.linux_distribution()))
     find_java_binary()
     check_basic_env()
     thread = threading.Thread(target=check_update, name='check_update')
