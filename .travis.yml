@@ -14,11 +14,11 @@ matrix:
     before_install:
     - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
     - choco install wkhtmltopdf
-    - choco install python
+    - choco install python --version 3.7.5
     - choco install openjdk --version 12.0.2
 install:
 - set PYTHONIOENCODING=UTF8
-- python3 -m pip install --upgrade pip
+- python -m pip install --upgrade pip
 before_script:
 - pip3 install wheel tox
 - pip3 install -r requirements.txt
