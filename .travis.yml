@@ -5,26 +5,6 @@ git:
 cache: pip
 matrix:
   include:
-  - name: Python 3.7 on Xenial Linux
-    os: linux
-    dist: xenial
-    python: 3.7
-    sudo: false
-    before_install:
-    - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
-    - sudo apt-get install -y libpng16-16 xfonts-75dpi xfonts-base libffi-dev	
-      libxml2-dev libxslt1-dev 
-    - wget https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.xenial_amd64.deb
-    - sudo dpkg -i wkhtmltox_0.12.5-1.xenial_amd64.deb
-  - name: Python 3.7 on OSX, Xcode 11
-    os: osx
-    language: minimal
-    osx_image: xcode11
-    sudo: false
-    before_install:
-    - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
-    - wget https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox-0.12.5-1.macos-cocoa.pkg
-    - sudo installer -pkg wkhtmltox-0.12.5-1.macos-cocoa.pkg -target /
   - name: "Python 3.7 on Windows (no lint)"
     os: windows
     language: shell
@@ -38,7 +18,7 @@ matrix:
     - choco install openjdk --version 12.0.2
 install:
 - set PYTHONIOENCODING=UTF8
-- pip3 install --upgrade pip || python -m pip install --upgrade pip
+- python3 -m pip install --upgrade pip
 before_script:
 - pip3 install wheel tox
 - pip3 install -r requirements.txt
@@ -47,5 +27,3 @@ before_script:
 script:
 - if [ "$TRAVIS_OS_NAME" != "windows" ]; then tox -e lint; fi
 - python3 manage.py test || python manage.py test
-notifications:
-  slack: mobsf:4Ce13XOnMRzFG3bqQ0Hap7OP
