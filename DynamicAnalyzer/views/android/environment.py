@@ -372,7 +372,7 @@ class Environment:
         frida_dir = 'onDevice/frida/'
         frida_bin = os.path.join(self.tools_dir,
                                  frida_dir,
-                                 'frida-server-12.7.5-android-x86')
+                                 'frida-server-12.7.11-android-x86')
         arch = self.get_android_arch()
         logger.info('Android instance architecture identified as %s', arch)
         if 'x86' not in arch:
