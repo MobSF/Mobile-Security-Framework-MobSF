@@ -1,16 +1,16 @@
 #!/bin/bash
-if ! [ -x "$(command -v python3)" ]; then
-  echo '[ERROR] python3 is not installed.' >&2
+if ! [ -x "$(command -v python3.7)" ]; then
+  echo '[ERROR] python3.7 is not installed.' >&2
   exit 1
 fi
-echo '[INSTALL] Found Python3'
+echo '[INSTALL] Found Python3.7'
 
-python3 -m pip -V
+python3.7 -m pip -V
 if [ $? -eq 0 ]; then
   echo '[INSTALL] Found pip'
-  python3 -m pip install --upgrade pip
+  python3.7 -m pip install --upgrade pip
 else
-  echo '[ERROR] python3-pip not installed'
+  echo '[ERROR] python3.7-pip not installed'
   exit 1
 fi
 
@@ -42,7 +42,7 @@ fi
 
 echo '[INSTALL] Using python virtualenv'
 rm -rf ./venv
-python3 -m venv ./venv
+python3.7 -m venv ./venv
 if [ $? -eq 0 ]; then
     echo '[INSTALL] Activating virtualenv'
     source venv/bin/activate
