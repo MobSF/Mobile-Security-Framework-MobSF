@@ -8,6 +8,7 @@ import platform
 import shutil
 import subprocess
 import threading
+import stat
 
 from django.conf import settings
 
@@ -72,7 +73,9 @@ def apk_2_java(app_path, app_dir, tools_dir):
                 jadx = os.path.join(tools_dir, 'jadx/bin/jadx.bat')
             else:
                 jadx = os.path.join(tools_dir, 'jadx/bin/jadx')
-                os.chmod(jadx, 0o744)
+                # Set write permission, if JADX is not executable
+                if not os.access(jadx, os.X_OK):
+                    os.chmod(jadx, stat.S_IEXEC)
             args = [
                 jadx,
                 '-ds',
