@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 def run(request):
     """Show the java code."""
     try:
-        logger.debug('showing java code for request : %s', request)
+        logger.info('Listing Java files')
         match = re.match('^[0-9a-f]{32}$', request.GET['md5'])
         typ = request.GET['type']
         if match:

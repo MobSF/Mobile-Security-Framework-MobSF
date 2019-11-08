@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 def run(request):
     """Show the smali code."""
     try:
+        logger.info('Listing Smali files')
         match = re.match('^[0-9a-f]{32}$', request.GET['md5'])
         if match:
             md5 = request.GET['md5']

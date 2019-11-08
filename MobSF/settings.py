@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-MOBSF_VER = 'v2.0.4 Beta'
+MOBSF_VER = 'v2.0.5 Beta'
 
 BANNER = """
   __  __       _    ____  _____         ____    ___  
@@ -50,6 +50,8 @@ SCREEN_DIR = os.path.join(MobSF_HOME, 'downloads/screen/')
 UPLD_DIR = os.path.join(MobSF_HOME, 'uploads/')
 # Database Directory
 DB_DIR = os.path.join(MobSF_HOME, 'db.sqlite3')
+# Signatures used by modules
+SIGNATURE_DIR = os.path.join(MobSF_HOME, 'signatures/')
 # Tools Directory
 TOOLS_DIR = os.path.join(BASE_DIR, 'DynamicAnalyzer/tools/')
 # Secret File
@@ -111,6 +113,7 @@ ALLOWED_EXTENSIONS = {
     '.png': 'image/png',
     '.zip': 'application/zip',
     '.tar': 'application/x-tar',
+    '.apk': 'application/octet-stream',
 }
 # ===============================================
 

@@ -5,10 +5,10 @@ git:
 cache: pip
 matrix:
   include:
-  - name: Python 3.7 on Xenial Linux
+  - name: Python 3.8 on Xenial Linux
     os: linux
     dist: xenial
-    python: 3.7
+    python: 3.8
     sudo: false
     before_install:
     - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
@@ -16,7 +16,7 @@ matrix:
       libxml2-dev libxslt1-dev 
     - wget https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.xenial_amd64.deb
     - sudo dpkg -i wkhtmltox_0.12.5-1.xenial_amd64.deb
-  - name: Python 3.7 on OSX, Xcode 11
+  - name: Python 3.8 on OSX, Xcode 11
     os: osx
     language: minimal
     osx_image: xcode11
@@ -25,16 +25,16 @@ matrix:
     - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
     - wget https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox-0.12.5-1.macos-cocoa.pkg
     - sudo installer -pkg wkhtmltox-0.12.5-1.macos-cocoa.pkg -target /
-  - name: "Python 3.7 on Windows (no lint)"
+  - name: "Python 3.8 on Windows (no lint)"
     os: windows
     language: shell
     env:
     - JAVA_HOME="C:\\Program Files\\OpenJDK\\jdk-12.0.2"
-    - PATH=/c/Python37:/c/Python37/Scripts:$JAVA_HOME\\bin:$PATH
+    - PATH=/c/Python38:/c/Python38/Scripts:$JAVA_HOME\\bin:$PATH
     before_install:
     - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
     - choco install wkhtmltopdf
-    - choco install python --version 3.7.5
+    - choco install python --version 3.8.0
     - choco install openjdk --version 12.0.2
 install:
 - set PYTHONIOENCODING=UTF8
