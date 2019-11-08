@@ -129,6 +129,25 @@ class Environment:
                  'http_proxy',
                  '{}:{}'.format(proxy_ip, proxy_port)], True)
 
+    def unset_global_proxy(self):
+        """Unset Global Proxy on device."""
+        logger.info('Removing Global Proxy for Android VM')
+        self.adb_command(
+            ['settings',
+             'delete',
+             'global',
+             'http_proxy'], True)
+        self.adb_command(
+            ['settings',
+             'delete',
+             'global',
+             'global_http_proxy_host'], True)
+        self.adb_command(
+            ['settings',
+             'delete',
+             'global',
+             'global_http_proxy_port'], True)
+
     def enable_adb_reverse_tcp(self, version):
         """Enable ADB Reverse TCP for Proxy."""
         # Androd 5+ supported
