@@ -429,9 +429,9 @@
         </div><!-- /.box-header -->
         <div align="center" class="box-body">
          <div class="list-group">
-                 <p> <a href="../StaticAnalyzer/?checksum={{ md5 }}&amp;name={{ name }}&amp;type=apk&amp;rescan=1" class="btn btn-info btn-lg" role="button"><i class="glyphicon glyphicon-refresh"></i> Rescan</a></p>
+                 <p> <a href="../StaticAnalyzer/?checksum={{ md5 }}&amp;name={{ name }}&amp;type=apk&amp;rescan=1" class="btn btn-info" role="button"><i class="glyphicon glyphicon-refresh"></i> Rescan</a></p>
                  <p>
-                  <a href="../android_dynamic/?hash={{md5}}&amp;package={{packagename}}" class="btn btn-success btn-lg" role="button"><i class="glyphicon glyphicon-play-circle"></i> Start Dynamic Analysis</a>
+                  <a href="../android_dynamic/?hash={{md5}}&amp;package={{packagename}}" class="btn btn-success" role="button"><i class="glyphicon glyphicon-play-circle"></i> Start Dynamic Analysis</a>
                  </p>
             </div>
           </div><!-- /.box-body -->
@@ -444,17 +444,16 @@
           <span class="label label-danger pull-right"><i class="fa fa-flash"></i></span>
         </div><!-- /.box-header -->
         <div align="center" class="box-body">
-          <a href="../Java/?md5={{ md5 }}{{ zipped }}" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Java</a>
-            <a href="../download/{{ md5 }}-java.zip" class="btn btn-warning" role="button"> <i class="glyphicon glyphicon-download"></i> Download Java Code</a>
-              </br>
+          <p>
+            <a target="_blank" href="{{mani}}" role="button" class="btn btn-primary"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
+            <a href="../Java/?md5={{ md5 }}{{ zipped }}" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Java</a>
             <a href="../Smali/?md5={{ md5 }}" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Smali</a>
-            <a href="../download/{{ md5 }}-smali.zip" class="btn btn-warning"> <i class="glyphicon glyphicon-download"></i> Download Smali Code</a> 
-         </br></br>
-            
-             <a target="_blank" href="{{mani}}" role="button" class="btn btn-primary"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
-          
-         
-        
+            </p>
+            <p>
+            <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type=java" class="btn btn-warning" role="button"> <i class="glyphicon glyphicon-download"></i> Download Java Code</a>
+            <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type=smali" class="btn btn-warning"> <i class="glyphicon glyphicon-download"></i> Download Smali Code</a> 
+            <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type=apk" class="btn btn-warning"> <i class="glyphicon glyphicon-download"></i> Download APK</a> 
+            </p>
         </div><!-- /.box-body -->
       </div><!-- /.box -->
     </div><!-- /.col -->

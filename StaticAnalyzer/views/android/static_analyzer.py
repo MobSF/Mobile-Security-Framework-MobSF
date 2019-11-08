@@ -5,7 +5,6 @@ import logging
 import os
 import re
 import shutil
-import zipfile
 
 import MalwareAnalyzer.views.Trackers as Trackers
 import MalwareAnalyzer.views.VirusTotal as VirusTotal
@@ -18,8 +17,7 @@ from django.shortcuts import render
 from django.template.defaulttags import register
 
 from MobSF.utils import (is_file_exists,
-                         print_n_send_error_response,
-                         zipdir)
+                         print_n_send_error_response)
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 from StaticAnalyzer.views.android.binary_analysis import (elf_analysis,
@@ -221,10 +219,8 @@ def static_analyzer(request, api=False):
                         'Performing Malware Check on extracted Domains')
                     code_an_dic['domains'] = malware_check(
                         list(set(code_an_dic['urls_list'])))
-
-                    logger.info('Generating Java and Smali Downloads')
-                    gen_downloads(app_dic['app_dir'], app_dic[
-                                  'md5'], app_dic['icon_path'])
+                    # Copy App icon
+                    copy_icon(app_dic['md5'], app_dic['icon_path'])
                     app_dic['zipped'] = '&type=apk'
 
                     logger.info('Connecting to Database')
@@ -506,22 +502,9 @@ def valid_android_zip(app_dir):
         logger.exception('Determining Upload type')
 
 
-def gen_downloads(app_dir, md5, icon_path=''):
-    """Generate downloads for java and smali."""
+def copy_icon(md5, icon_path=''):
+    """Copy app icon."""
     try:
-        logger.info('Generating Downloads')
-        # For Java
-        directory = os.path.join(app_dir, 'java_source/')
-        dwd_dir = os.path.join(settings.DWD_DIR, md5 + '-java.zip')
-        zipf = zipfile.ZipFile(dwd_dir, 'w')
-        zipdir(directory, zipf)
-        zipf.close()
-        # For Smali
-        directory = os.path.join(app_dir, 'smali_source/')
-        dwd_dir = os.path.join(settings.DWD_DIR, md5 + '-smali.zip')
-        zipf = zipfile.ZipFile(dwd_dir, 'w')
-        zipdir(directory, zipf)
-        zipf.close()
         # Icon
         icon_path = icon_path.encode('utf-8')
         if icon_path:

@@ -146,7 +146,7 @@ def get_log_data(apk_dir, package):
                      errors='ignore') as flip:
             apimon_data = flip.read()
     if is_file_exists(fd_logs):
-        with io.open(apimon,
+        with io.open(fd_logs,
                      mode='r',
                      encoding='utf8',
                      errors='ignore') as flip:

@@ -13,9 +13,15 @@ from MobSF.views.api import rest_api
 
 from StaticAnalyzer import tests
 from StaticAnalyzer.views import shared_func, windows
-from StaticAnalyzer.views.android import find, java, manifest_view, smali
+from StaticAnalyzer.views.android import (
+    find,
+    generate_downloads,
+    java,
+    manifest_view,
+    smali,
+    view_source,
+)
 from StaticAnalyzer.views.android import static_analyzer as android_sa
-from StaticAnalyzer.views.android import view_source
 from StaticAnalyzer.views.ios import static_analyzer as ios_sa
 from StaticAnalyzer.views.ios import view_source as io_view_source
 
@@ -41,6 +47,7 @@ urlpatterns = [
     url(r'^Smali/$', smali.run),
     url(r'^Java/$', java.run),
     url(r'^Find/$', find.run),
+    url(r'^generate_downloads/$', generate_downloads.run),
     url(r'^ManifestView/$', manifest_view.run),
     # IOS
     url(r'^StaticAnalyzer_iOS/$', ios_sa.static_analyzer_ios),

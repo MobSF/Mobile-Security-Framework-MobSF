@@ -151,6 +151,8 @@ def collect_logs(request):
             download_xposed_log(apk_dir)
         env.adb_command(['am', 'force-stop', package], True)
         logger.info('Stopping app')
+        # Unset Global Proxy
+        env.unset_global_proxy()
         data = {'status': 'ok'}
     except Exception as exp:
         logger.exception('Data Collection & Clean Up failed')

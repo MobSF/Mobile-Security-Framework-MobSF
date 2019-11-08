@@ -190,6 +190,10 @@ def get_mobsf_home(use_home):
         upload_dir = os.path.join(mobsf_home, 'uploads/')
         if not os.path.exists(upload_dir):
             os.makedirs(upload_dir)
+        # Signature Directory
+        sig_dir = os.path.join(mobsf_home, 'signatures/')
+        if not os.path.exists(sig_dir):
+            os.makedirs(sig_dir)
         return mobsf_home
     except Exception:
         logger.exception('Creating MobSF Home Directory')
@@ -404,19 +408,6 @@ def get_random():
     return ''.join([random.SystemRandom().choice(choice) for i in range(50)])
 
 
-def zipdir(path, zip_file):
-    """Zip a directory."""
-    try:
-        logger.info('Zipping')
-        # pylint: disable=unused-variable
-        # Needed by os.walk
-        for root, _sub_dir, files in os.walk(path):
-            for file_name in files:
-                zip_file.write(os.path.join(root, file_name))
-    except Exception:
-        logger.exception('Zipping')
-
-
 def find_process_by(name):
     """Return a set of process path matching name."""
     proc = set()
@@ -546,6 +537,9 @@ def update_local_db(db_name, url, local_file):
                                 verify=verify)
         resp = response.content
         inmemoryfile = io.BytesIO(resp)
+        # Create on first run
+        if not is_file_exists(local_file):
+            return resp
         # Check1: SHA256 Change
         if sha256_object(inmemoryfile) != sha256(local_file):
             # Hash Changed

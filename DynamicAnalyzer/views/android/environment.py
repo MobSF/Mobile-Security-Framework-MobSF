@@ -129,6 +129,25 @@ class Environment:
                  'http_proxy',
                  '{}:{}'.format(proxy_ip, proxy_port)], True)
 
+    def unset_global_proxy(self):
+        """Unset Global Proxy on device."""
+        logger.info('Removing Global Proxy for Android VM')
+        self.adb_command(
+            ['settings',
+             'delete',
+             'global',
+             'http_proxy'], True)
+        self.adb_command(
+            ['settings',
+             'delete',
+             'global',
+             'global_http_proxy_host'], True)
+        self.adb_command(
+            ['settings',
+             'delete',
+             'global',
+             'global_http_proxy_port'], True)
+
     def enable_adb_reverse_tcp(self, version):
         """Enable ADB Reverse TCP for Proxy."""
         # Androd 5+ supported
@@ -372,7 +391,7 @@ class Environment:
         frida_dir = 'onDevice/frida/'
         frida_bin = os.path.join(self.tools_dir,
                                  frida_dir,
-                                 'frida-server-12.7.11-android-x86')
+                                 'frida-server-12.7.20-android-x86')
         arch = self.get_android_arch()
         logger.info('Android instance architecture identified as %s', arch)
         if 'x86' not in arch:
