@@ -12,7 +12,7 @@ Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/cefbfb063c044b069e38af3501c1ee8e)](https://www.codacy.com/app/ajinabraham/Mobile-Security-Framework-MobSF)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=MobSF_Mobile-Security-Framework-MobSF&metric=alert_status)](https://sonarcloud.io/dashboard?id=MobSF_Mobile-Security-Framework-MobSF)
 [![Build Status](https://travis-ci.com/MobSF/Mobile-Security-Framework-MobSF.svg?branch=master)](https://travis-ci.com/MobSF/Mobile-Security-Framework-MobSF)
-[![Requirements Status](https://requires.io/github/MobSF/Mobile-Security-Framework-MobSF/requirements.svg?branch=master)](https://requires.io/github/MobSF/Mobile-Security-Framework-MobSF/requirements/?branch=master)
+[![Requirements Status](https://pyup.io/repos/github/MobSF/Mobile-Security-Framework-MobSF/shield.svg)](https://pyup.io/repos/github/MobSF/Mobile-Security-Framework-MobSF/)
 [![ToolsWatch Best Security Tools 2017](https://img.shields.io/badge/ToolsWatch-Rank%209%20%7C%20Year%202017-red.svg)](http://www.toolswatch.org/2018/01/black-hat-arsenal-top-10-security-tools/)
 [![ToolsWatch Best Security Tools 2016](https://img.shields.io/badge/ToolsWatch-Rank%205%20%7C%20Year%202016-red.svg)](http://www.toolswatch.org/2017/02/2016-top-security-tools-as-voted-by-toolswatch-org-readers/)
 [![Blackhat Arsenal Asia 2018](https://img.shields.io/badge/Black%20Hat%20Arsenal-Asia%202018-blue.svg)](https://www.blackhat.com/asia-18/arsenal.html#mobile-security-framework-mobsf)
