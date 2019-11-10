@@ -215,6 +215,16 @@ DVM_PERMISSIONS = {
         'USE_FINGERPRINT': ['normal', '', 'This constant was deprecated in API level 28. Applications should request USE_BIOMETRIC instead'],
         'WRITE_CALL_LOG': ['dangerous', '', 'Allows an application to write (but not read) the user\'s call log data.'],
         'WRITE_VOICEMAIL': ['signature', '', 'Allows an application to modify and remove existing voicemails in the system.'],
+        'ACCESS_BACKGROUND_LOCATION': ['dangerous', 'access location in background', 'Allows an app to access location in the background. If you\'re requesting this permission, you must also request either'],
+        'ACCESS_MEDIA_LOCATION': ['dangerous', 'access any geographic locations', 'Allows an application to access any geographic locations persisted in the user\'s shared collection.'],
+        'ACTIVITY_RECOGNITION': ['dangerous', 'allow application to recognize physical activity', 'Allows an application to recognize physical activity.'],
+        'BIND_CALL_REDIRECTION_SERVICE': ['signature', '', 'Must be required by a CallRedirectionService, to ensure that only the system can bind to it.'],
+        'BIND_CARRIER_MESSAGING_CLIENT_SERVICE': ['signature', '', 'A subclass of CarrierMessagingClientService must be protected with this permission.'],
+        'CALL_COMPANION_APP': ['normal', '', 'Allows an app which implements the InCallService API to be eligible to be enabled as a calling companion app. This means that the Telecom framework will bind to the app\'s InCallService implementation when there are calls active. The app can use the InCallService API to view information about calls on the system and control these calls.'],
+        'REQUEST_PASSWORD_COMPLEXITY': ['normal', '', 'Allows an application to request the screen lock complexity and prompt users to update the screen lock to a certain complexity level.'],
+        'SMS_FINANCIAL_TRANSACTIONS': ['signature', 'Allows financial apps to read filtered sms messages', 'Allows financial apps to read filtered sms messages. Protection level: signature|appop'],
+        'START_VIEW_PERMISSION_USAGE': ['signature', '', 'Allows the holder to start the permission usage screen for an app.'],
+        'USE_FULL_SCREEN_INTENT': ['normal', '', 'Required for apps targeting Build.VERSION_CODES.Q that want to use notification full screen intents.'],
 
     },
 
