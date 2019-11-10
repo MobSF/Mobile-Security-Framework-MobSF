@@ -50,6 +50,16 @@ class Environment:
             logger.error('%s', out.decode('utf-8').replace('\n', ''))
             return False
         else:
+            # start adb as root
+            out = subprocess.check_output([get_adb(), 'root'])
+            if b'unable to connect' in out or b'failed to connect' in out:
+                logger.error('%s', out.decode('utf-8').replace('\n', ''))
+                return False
+            # connect again with root adb
+            out = subprocess.check_output([get_adb(), 'connect', self.identifier])
+            if b'unable to connect' in out or b'failed to connect' in out:
+                logger.error('%s', out.decode('utf-8').replace('\n', ''))
+                return False
             logger.info('Remounting /system')
             self.adb_command(['mount', '-o',
                               'rw,remount', '/system'], True)
