@@ -41,5 +41,5 @@ MANIFEST_PERMISSIONS = DVM_PERMISSIONS['MANIFEST_PERMISSION']
 for permission_name in online_permissions:
     if permission_name in MANIFEST_PERMISSIONS.keys():
         continue
-    print('"{}": {},'.format(permission_name, str(
+    print('\'{}\': {},'.format(permission_name, str(
         online_permissions[permission_name])))
