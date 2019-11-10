@@ -192,7 +192,7 @@ DVM_PERMISSIONS = {
         'CAPTURE_AUDIO_OUTPUT': ['normal', '', 'Allows an application to capture audio output.'],
         'CAPTURE_SECURE_VIDEO_OUTPUT': ['normal', '', 'Allows an application to capture secure video output.'],
         'CAPTURE_VIDEO_OUTPUT': ['normal', '', 'Allows an application to capture video output.'],
-        'FOREGROUND_SERVICE': ['normal', '', 'Allows a regular application to use'],
+        'FOREGROUND_SERVICE': ['normal', '', 'Allows a regular application to use Service.startForeground'],
         'GET_ACCOUNTS_PRIVILEGED': ['normal', '', 'Allows access to the list of accounts in the Accounts Service.'],
         'INSTALL_SHORTCUT': ['normal', '', 'Allows an application to install a shortcut in Launcher.'],
         'INSTANT_APP_FOREGROUND_SERVICE': ['normal', '', 'Allows an instant app to create foreground services.'],
@@ -212,7 +212,7 @@ DVM_PERMISSIONS = {
         'TRANSMIT_IR': ['normal', '', 'Allows using the device\'s IR transmitter, if available.'],
         'UNINSTALL_SHORTCUT': ['normal', '', 'Don\'t use this permission in your app. This permission is no longer supported.'],
         'USE_BIOMETRIC': ['normal', '', 'Allows an app to use device supported biometric modalities.'],
-        'USE_FINGERPRINT': ['normal', '', 'This constant was deprecated in API level 28. Applications should request USE_BIOMETRIC instead'],
+        'USE_FINGERPRINT': ['normal', 'allow use of fingerprint', 'This constant was deprecated in API level 28. Applications should request USE_BIOMETRIC instead'],
         'WRITE_CALL_LOG': ['dangerous', '', 'Allows an application to write (but not read) the user\'s call log data.'],
         'WRITE_VOICEMAIL': ['signature', '', 'Allows an application to modify and remove existing voicemails in the system.'],
         'ACCESS_BACKGROUND_LOCATION': ['dangerous', 'access location in background', 'Allows an app to access location in the background. If you\'re requesting this permission, you must also request either'],
@@ -225,6 +225,7 @@ DVM_PERMISSIONS = {
         'SMS_FINANCIAL_TRANSACTIONS': ['signature', 'Allows financial apps to read filtered sms messages', 'Allows financial apps to read filtered sms messages. Protection level: signature|appop'],
         'START_VIEW_PERMISSION_USAGE': ['signature', '', 'Allows the holder to start the permission usage screen for an app.'],
         'USE_FULL_SCREEN_INTENT': ['normal', '', 'Required for apps targeting Build.VERSION_CODES.Q that want to use notification full screen intents.'],
+        'com.google.android.c2dm.permission.RECEIVE': ['signature', 'C2DM permissions', 'Permission for Cloud to device messaging.'],
 
     },
 
