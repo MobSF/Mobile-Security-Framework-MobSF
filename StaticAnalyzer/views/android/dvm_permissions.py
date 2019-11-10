@@ -161,6 +161,7 @@ DVM_PERMISSIONS = {
         'ACCESS_CACHE_FILESYSTEM': ['signatureOrSystem', 'access the cache file system', 'Allows an application to read and write the cache file system.'],
         'COPY_PROTECTED_DATA': ['signature', 'Allows to invoke default container service to copy content. Not for use by common applications.', 'Allows to invoke default container service to copy content. Not for use by common applications.'],
         'C2D_MESSAGE': ['signature', 'Allows cloud to device messaging', 'Allows the application to receive push notifications.'],
+        'RECEIVE': ['signature', 'C2DM permissions', 'Permission for cloud to device messaging.'],
         'ADD_VOICEMAIL': ['dangerous', 'add voicemails into the system', 'Allows an application to add voicemails into the system.'],
         'ACCEPT_HANDOVER': ['dangerous', '', 'Allows a calling app to continue a call which was started in another app.  An example is a video calling app that wants to continue a voice call on the user\'s mobile network.'],
         'ACCESS_NOTIFICATION_POLICY': ['normal', '', 'Marker permission for applications that wish to access notification policy.'],
@@ -225,8 +226,6 @@ DVM_PERMISSIONS = {
         'SMS_FINANCIAL_TRANSACTIONS': ['signature', 'Allows financial apps to read filtered sms messages', 'Allows financial apps to read filtered sms messages. Protection level: signature|appop'],
         'START_VIEW_PERMISSION_USAGE': ['signature', '', 'Allows the holder to start the permission usage screen for an app.'],
         'USE_FULL_SCREEN_INTENT': ['normal', '', 'Required for apps targeting Build.VERSION_CODES.Q that want to use notification full screen intents.'],
-        'com.google.android.c2dm.permission.RECEIVE': ['signature', 'C2DM permissions', 'Permission for Cloud to device messaging.'],
-
     },
 
     'MANIFEST_PERMISSION_GROUP':
