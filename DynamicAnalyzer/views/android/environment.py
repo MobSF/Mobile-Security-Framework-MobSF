@@ -405,7 +405,7 @@ class Environment:
     def run_frida_server(self):
         """Start Frida Server."""
         check = self.adb_command(['ps'], True)
-        if b'/system/fd_server' in check:
+        if b'fd_server' in check:
             logger.info('Frida Server is already running')
             return
 
