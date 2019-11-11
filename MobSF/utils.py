@@ -33,7 +33,6 @@ from . import settings
 logger = logging.getLogger(__name__)
 ADB_PATH = None
 
-
 class Color(object):
     GREEN = '\033[92m'
     ORANGE = '\033[33m'
@@ -503,8 +502,9 @@ def check_basic_env():
 
 def first_run(secret_file, base_dir, mobsf_home):
     # Based on https://gist.github.com/ndarville/3452907#file-secret-key-gen-py
-
-    if is_file_exists(secret_file):
+    if 'MOBSF_SECRET_KEY' in os.environ:
+        secret_key = os.environ['MOBSF_SECRET_KEY']
+    elif is_file_exists(secret_file):
         secret_key = open(secret_file).read().strip()
     else:
         try:
