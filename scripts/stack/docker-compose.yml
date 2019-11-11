@@ -1,0 +1,15 @@
+version: "3"
+services:
+  web:
+    image: opensecurity/mobile-security-framework-mobsf:latest
+    hostname: mobsfhost
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "8000:8000"
+    networks:
+      - webnet
+networks:
+  webnet:
