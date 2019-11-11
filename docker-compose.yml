@@ -6,7 +6,7 @@ services:
     volumes:
       - /Postgres_data/var/lib/postgresql:/var/lib/postgresql
     environment:
-      - PSOTGRES_USER=postgres
+      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=mobsf
   mobsf:
@@ -19,4 +19,3 @@ services:
       - /MobSF_data:/root/.MobSF
     ports:
      - "8000:8000"
-  
