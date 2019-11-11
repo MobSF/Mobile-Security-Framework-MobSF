@@ -240,7 +240,7 @@ else:
         r'android[\\\/]{1}support[\\\/]{1}',
         r'android[\\\/]{1}arch[\\\/]{1}',
         r'kotlin[\\\/]{1}',
-
+        r'androidx[\\\/]{1}',
         r'okhttp2[\\\/]{1}', r'okhttp3[\\\/]{1}',
         r'com[\\\/]{1}squareup[\\\/]{1}okhttp[\\\/]{1}',
         r'com[\\\/]{1}twitter[\\\/]{1}',
