@@ -33,6 +33,7 @@ from . import settings
 logger = logging.getLogger(__name__)
 ADB_PATH = None
 
+
 class Color(object):
     GREEN = '\033[92m'
     ORANGE = '\033[33m'
