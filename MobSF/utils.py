@@ -348,12 +348,12 @@ def is_internet_available():
         requests.get('https://www.google.com', timeout=5,
                      proxies=proxies, verify=verify)
         return True
-    except requests.exceptions.HTTPError:
+    except Exception:
         try:
             requests.get('https://www.baidu.com/', timeout=5,
                          proxies=proxies, verify=verify)
             return True
-        except requests.exceptions.HTTPError:
+        except Exception:
             return False
     return False
 
