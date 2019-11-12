@@ -64,7 +64,11 @@ ENV PATH="$JAVA_HOME/bin:$PATH"
 WORKDIR /root/Mobile-Security-Framework-MobSF
 COPY ./requirements.txt .
 
-# Install Dependencies
+# Install Requirements
+RUN pip3 install --upgrade wheel && \
+    pip3 wheel --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.10.0 && \
+    pip3 install --no-index --find-links=yara-python yara-python && \
+    rm -rf yara-python
 RUN pip3 install --quiet --no-cache-dir -r requirements.txt
 
 # Cleanup

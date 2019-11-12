@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-MOBSF_VER = 'v2.0.5 Beta'
+MOBSF_VER = 'v2.0.6 Beta'
 
 BANNER = """
   __  __       _    ____  _____         ____    ___  
@@ -240,7 +240,7 @@ else:
         r'android[\\\/]{1}support[\\\/]{1}',
         r'android[\\\/]{1}arch[\\\/]{1}',
         r'kotlin[\\\/]{1}',
-
+        r'androidx[\\\/]{1}',
         r'okhttp2[\\\/]{1}', r'okhttp3[\\\/]{1}',
         r'com[\\\/]{1}squareup[\\\/]{1}okhttp[\\\/]{1}',
         r'com[\\\/]{1}twitter[\\\/]{1}',
@@ -327,7 +327,7 @@ else:
     # MALWARE ANALYZER SETTINGS
     # --------------------------
     DOMAIN_MALWARE_SCAN = True
-    APKID_ENABLED = False
+    APKID_ENABLED = True
     # ==============================================
 
     # -----External URLS--------------------------
