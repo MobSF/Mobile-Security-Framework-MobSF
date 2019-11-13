@@ -250,6 +250,11 @@ else:
         r'org[\\\/]{1}chromium[\\\/]{1}',
         r'com[\\\/]{1}facebook[\\\/]{1}',
         r'org[\\\/]{1}spongycastle[\\\/]{1}',
+        r'com[\\\/]{1}amazon[\\\/]{1}identity[\\\/]{1}',
+        r'io[\\\/]{1}fabric[\\\/]{1}sdk[\\\/]{1}',
+        r'com[\\\/]{1}instabug[\\\/]{1}',
+        r'io[\\\/]{1}fabric[\\\/]{1}sdk[\\\/]{1}',
+        r'com[\\\/]{1}crashlytics[\\\/]{1}android[\\\/]{1}',
     ]
 
     # ==============================================
