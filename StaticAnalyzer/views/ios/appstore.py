@@ -3,6 +3,8 @@ import logging
 
 import requests
 
+from django.conf import settings
+
 from MobSF.utils import upstream_proxy
 
 logger = logging.getLogger(__name__)
@@ -11,7 +13,7 @@ logger = logging.getLogger(__name__)
 def app_search(app_id):
     """IOS Get App Details from App Store."""
     logger.info('Fetching Details from App Store: %s', app_id)
-    lookup_url = 'https://itunes.apple.com/lookup'
+    lookup_url = settings.ITUNES_URL
     req_url = '{}?bundleId={}&country={}&entity=software'.format(
         lookup_url, app_id, 'us')
     headers = {

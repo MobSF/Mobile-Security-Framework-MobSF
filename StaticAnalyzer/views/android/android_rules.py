@@ -650,4 +650,18 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+    },
+    {
+        'desc': ('The app uses jackson deserialization library'
+                 'Deserialization of untrusted input can result in'
+                 'arbitary code execution'),
+        'type': 'string',
+        'string1': 'com.fasterxml.jackson.databind.ObjectMapper',
+        'string2': '.enableDefaultTyping(',
+        'level': 'high',
+        'match': 'string_and',
+        'input_case': 'exact',
+        'cvss': 7.5,
+        'cwe': 'CWE-502',
+        'owasp': 'M7: Client Code Quality',
     }]
