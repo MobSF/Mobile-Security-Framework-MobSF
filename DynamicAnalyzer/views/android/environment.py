@@ -46,20 +46,27 @@ class Environment:
         self.wait(2)
         logger.info('Connecting to Android %s', self.identifier)
         out = subprocess.check_output([get_adb(), 'connect', self.identifier])
+        self.wait(2)
         if b'unable to connect' in out or b'failed to connect' in out:
             logger.error('%s', out.decode('utf-8').replace('\n', ''))
             return False
         else:
+            #TODO: proof if not already connected as admin and not already FS is mounted
             # start adb as root
+            logger.info('Restarting ADB Daemon as root')
             out = subprocess.check_output([get_adb(), 'root'])
+            self.wait(2)
             if b'unable to connect' in out or b'failed to connect' in out:
                 logger.error('%s', out.decode('utf-8').replace('\n', ''))
                 return False
+            logger.info('Reconnect to Android Device')
             # connect again with root adb
             out = subprocess.check_output([get_adb(), 'connect', self.identifier])
+            self.wait(2)
             if b'unable to connect' in out or b'failed to connect' in out:
                 logger.error('%s', out.decode('utf-8').replace('\n', ''))
                 return False
+            # mount system
             logger.info('Remounting /system')
             self.adb_command(['mount', '-o',
                               'rw,remount', '/system'], True)
