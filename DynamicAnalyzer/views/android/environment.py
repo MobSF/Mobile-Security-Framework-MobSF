@@ -105,17 +105,25 @@ class Environment:
 
     def install_mobsf_ca(self, action):
         """Install or Remove MobSF Root CA."""
+        ca_construct = '{}.0'
+        ca_file_hash = subprocess.check_output(['openssl', 
+                                 'x509', '-subject_hash_old', 
+                                 '-inform', 'PEM', '-in', get_ca_dir()]).splitlines()[0].decode('ascii')
         ca_file = os.path.join('/system/etc/security/cacerts/',
-                               settings.ROOT_CA)
+                               ca_construct.format(ca_file_hash))
         if action == 'install':
             logger.info('Installing MobSF RootCA')
-            self.adb_command(['push', get_ca_dir(), ca_file])
+            self.adb_command(['push', 
+                              get_ca_dir(), 
+                              ca_file])
             self.adb_command(['chmod',
                               '644',
                               ca_file], True)
         elif action == 'remove':
             logger.info('Removing MobSF RootCA')
-            self.adb_command(['rm', ca_file], True)
+            self.adb_command(['rm', 
+                              ca_file], True)
+        #TODO: determine if an 'adb restart' is needed with a high timeout afterwards
 
     def set_global_proxy(self, version):
         """Set Global Proxy on device."""
@@ -125,7 +133,8 @@ class Environment:
         if version < 5:
             proxy_ip = get_proxy_ip(self.identifier)
         else:
-            proxy_ip = '127.0.0.1'
+            proxy_ip = settings.PROXY_IP
+        print("Proxy IP:", proxy_ip)
         if proxy_ip:
             if version < 4.4:
                 logger.warning('Please set Android VM proxy as %s:%s',
