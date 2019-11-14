@@ -141,7 +141,6 @@ class Environment:
             proxy_ip = get_proxy_ip(self.identifier)
         else:
             proxy_ip = settings.PROXY_IP
-        print("Proxy IP:", proxy_ip)
         if proxy_ip:
             if version < 4.4:
                 logger.warning('Please set Android VM proxy as %s:%s',
