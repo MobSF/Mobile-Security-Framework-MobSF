@@ -44,8 +44,7 @@ class Frida:
         combined_script = []
         header = []
         def_scripts = os.path.join(self.frida_dir, 'default')
-        files = [f for f in glob.glob(
-            def_scripts + '**/*.js', recursive=True)]
+        files = glob.glob(def_scripts + '**/*.js', recursive=True)
         for item in files:
             script = Path(item)
             if script.stem in self.defaults:
