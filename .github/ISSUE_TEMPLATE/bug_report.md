@@ -46,7 +46,7 @@ Paste the contents of logs/debug.log here or attach the log file.
 BEFORE POSTING YOUR ISSUE/BUG
 - These comments won't show up when you submit the issue.
 - GitHub issues ARE NOT FOR FEATURE REQUESTS, SUPPORT, DISCUSSIONS AND QUESTIONS! 
-- If you have questions, use our slack channel. Request invitation here https://goo.gl/6cYU5a.
+- If you have questions, use our slack channel. Join MobSF Slack channel: http://tiny.cc/mobsf
 - Reproduce issue in the latest master and try to add as much detail as possible.
 - Search this repository (top of the page) for the issue and it has not been fixed or reported already.
 - Once you open a bug, you should also provide additional information if requested. 
