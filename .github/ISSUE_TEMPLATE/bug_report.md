@@ -10,7 +10,7 @@ assignees: ''
 <!-- ## IMPORTANT -->
 <!-- Issues are ONLY for reporting BUGS. For support, feature requests, questions, queries, and discussions use our slack channel for limited support. Join MobSF Slack channel: http://tiny.cc/mobsf
 -->
-<!-- If you see errors while running setup/run scripts, it is mostly beacuse you haven't installed the required dependencies correctly. You will have to look into the errors and figure out what is causing them and solve them accordingly. Make sure you have installed all the required dependencies and their correct versions as per the latest documentation. If you still find yourself at a deadend, join MobSF Slack channel: http://tiny.cc/mobsf Please do not post support/help request in GitHub issues, doing so will definitely waste our time get them closed without further response. -->
+<!-- If you see errors while running setup/run scripts, it is mostly because you haven't installed the required dependencies correctly. You will have to look into the errors and figure out what is causing them and solve them accordingly. Make sure you have installed all the required dependencies and their correct versions as per the latest documentation. If you still find yourself at a dead end, join MobSF Slack channel: http://tiny.cc/mobsf Please do not post support/help request in GitHub issues, doing so will definitely waste our time get them closed without further response. -->
 
 ## ENVIRONMENT
 
