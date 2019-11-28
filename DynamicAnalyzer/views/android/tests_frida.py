@@ -38,8 +38,7 @@ def list_frida_scripts(request):
     others = os.path.join(settings.TOOLS_DIR,
                           'frida_scripts',
                           'others')
-    files = [f for f in glob.glob(
-        others + '**/*.js', recursive=True)]
+    files = glob.glob(others + '**/*.js', recursive=True)
     for item in files:
         scripts.append(Path(item).stem)
     return json_response({'status': 'ok',

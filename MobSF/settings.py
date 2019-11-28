@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-MOBSF_VER = 'v2.0.5 Beta'
+MOBSF_VER = 'v2.0.7 Beta'
 
 BANNER = """
   __  __       _    ____  _____         ____    ___  
@@ -240,7 +240,7 @@ else:
         r'android[\\\/]{1}support[\\\/]{1}',
         r'android[\\\/]{1}arch[\\\/]{1}',
         r'kotlin[\\\/]{1}',
-
+        r'androidx[\\\/]{1}',
         r'okhttp2[\\\/]{1}', r'okhttp3[\\\/]{1}',
         r'com[\\\/]{1}squareup[\\\/]{1}okhttp[\\\/]{1}',
         r'com[\\\/]{1}twitter[\\\/]{1}',
@@ -250,6 +250,11 @@ else:
         r'org[\\\/]{1}chromium[\\\/]{1}',
         r'com[\\\/]{1}facebook[\\\/]{1}',
         r'org[\\\/]{1}spongycastle[\\\/]{1}',
+        r'com[\\\/]{1}amazon[\\\/]{1}identity[\\\/]{1}',
+        r'io[\\\/]{1}fabric[\\\/]{1}sdk[\\\/]{1}',
+        r'com[\\\/]{1}instabug[\\\/]{1}',
+        r'io[\\\/]{1}fabric[\\\/]{1}sdk[\\\/]{1}',
+        r'com[\\\/]{1}crashlytics[\\\/]{1}android[\\\/]{1}',
     ]
 
     # ==============================================
@@ -327,14 +332,18 @@ else:
     # MALWARE ANALYZER SETTINGS
     # --------------------------
     DOMAIN_MALWARE_SCAN = True
-    APKID_ENABLED = False
+    APKID_ENABLED = True
     # ==============================================
 
     # -----External URLS--------------------------
     MALWARE_DB_URL = 'http://www.malwaredomainlist.com/mdlcsv.php'
     VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/vtapi/v2/file/'
-    TRACKERS_URL = 'https://reports.exodus-privacy.eu.org'
-    TRACKERS_DB_URL = '{}/api/trackers'.format(TRACKERS_URL)
+    EXODUS_URL = 'https://reports.exodus-privacy.eu.org'
+    APPMONSTA_URL = 'https://api.appmonsta.com/v1/stores/android/details/'
+    ITUNES_URL = 'https://itunes.apple.com/lookup'
+    # -------External -----------------------------
+    # Get AppMonsta API from https://appmonsta.com/dashboard/get_api_key/
+    APPMONSTA_API = ''
 
     # ========DISABLED COMPONENTS===================
 

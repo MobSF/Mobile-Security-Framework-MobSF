@@ -348,12 +348,12 @@ def is_internet_available():
         requests.get('https://www.google.com', timeout=5,
                      proxies=proxies, verify=verify)
         return True
-    except requests.exceptions.HTTPError:
+    except Exception:
         try:
             requests.get('https://www.baidu.com/', timeout=5,
                          proxies=proxies, verify=verify)
             return True
-        except requests.exceptions.HTTPError:
+        except Exception:
             return False
     return False
 
@@ -503,8 +503,9 @@ def check_basic_env():
 
 def first_run(secret_file, base_dir, mobsf_home):
     # Based on https://gist.github.com/ndarville/3452907#file-secret-key-gen-py
-
-    if is_file_exists(secret_file):
+    if 'MOBSF_SECRET_KEY' in os.environ:
+        secret_key = os.environ['MOBSF_SECRET_KEY']
+    elif is_file_exists(secret_file):
         secret_key = open(secret_file).read().strip()
     else:
         try:

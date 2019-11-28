@@ -6,7 +6,7 @@ Mobile Security Framework (MobSF) is an automated, all-in-one mobile application
 
 Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82e3a63c-4813-11e6-9430-6015d98aeaab.png) in India
 
-[![python](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/)
+[![python](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/)
 [![platform](https://img.shields.io/badge/platform-osx%2Flinux%2Fwindows-green.svg)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/)
 [![License](https://img.shields.io/:license-gpl3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/cefbfb063c044b069e38af3501c1ee8e)](https://www.codacy.com/app/ajinabraham/Mobile-Security-Framework-MobSF)
@@ -37,16 +37,18 @@ Automated prebuilt docker image of MobSF Static Analyzer is available from [Dock
 docker pull opensecurity/mobile-security-framework-mobsf
 docker run -it -p 8000:8000 opensecurity/mobile-security-framework-mobsf:latest
 ```
+[![Try in PWD](https://raw.githubusercontent.com/play-with-docker/stacks/master/assets/images/button.png)](https://labs.play-with-docker.com/?stack=https://raw.githubusercontent.com/MobSF/Mobile-Security-Framework-MobSF/master/scripts/stack/docker-compose.yml)
+
 Other docker options: [MobSF Docker Options](https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/7.-Docker-Container-for-MobSF-Static-Analysis)
 
 
 ## Collaborators
 
-* [Ajin Abraham](https://in.linkedin.com/in/ajinabraham) ![india](https://user-images.githubusercontent.com/4301109/37564171-6549d678-2ab6-11e8-9b9d-21327c7f5d5b.png) 
+* [Ajin Abraham](https://in.linkedin.com/in/ajinabraham) ![india](https://user-images.githubusercontent.com/4301109/37564171-6549d678-2ab6-11e8-9b9d-21327c7f5d5b.png)
 * [Dominik Schlecht](https://github.com/DominikSchlecht) ![germany](https://user-images.githubusercontent.com/4301109/37564176-743238ba-2ab6-11e8-9666-5d98f0a1d127.png)
 * [Magaofei](https://github.com/magaofei) ![china](https://user-images.githubusercontent.com/4301109/44515364-00bbe880-a6e0-11e8-944d-5b48a86427da.png)
 * [Matan Dobrushin](https://github.com/matandobr) ![israel](https://user-images.githubusercontent.com/4301109/37564177-782f1758-2ab6-11e8-91e5-c76bde37b330.png)
-* [Vincent Nadal](https://github.com/superpoussin22) ![france](https://user-images.githubusercontent.com/4301109/37564175-71d6d92c-2ab6-11e8-89d7-d21f5aa0bda8.png) 
+* [Vincent Nadal](https://github.com/superpoussin22) ![france](https://user-images.githubusercontent.com/4301109/37564175-71d6d92c-2ab6-11e8-89d7-d21f5aa0bda8.png)
 
 ## Presentations
 * OWASP APPSEC EU 2016 - [Slides](http://www.slideshare.net/ajin25/automated-mobile-application-security-assessment-with-mobsf), [Video](https://www.youtube.com/watch?v=h00v1euuFXg)
@@ -64,13 +66,13 @@ Other docker options: [MobSF Docker Options](https://github.com/MobSF/Mobile-Sec
 ## Contribution, Feature Requests & Bugs
 
 * Read [CONTRIBUTING.md](https://github.com/MobSF/Mobile-Security-Framework-MobSF/blob/master/.github/CONTRIBUTING.md) before opening bugs, feature requests and pull request.
-* Feature Requests: [@ajinabraham](https://twitter.com/ajinabraham) or [@OpenSecurity_IN](https://twitter.com/OpenSecurity_IN). 
+* Feature Requests: [@ajinabraham](https://twitter.com/ajinabraham) or [@OpenSecurity_IN](https://twitter.com/OpenSecurity_IN).
 * For discussions, questions and support, use our Slack Channel mobsf.slack.com: [Join MobSF Channel](https://mobsf.slack.com/join/shared_invite/enQtNzM2NTAyNzA1MjgxLTdjMzkzNDc3ZjdiMjkwZTZhMmFhNDlkZmMwZDhjNDNmYTAzYWE5NGZlMDIzYzliNTdiMDQ2MTRlYjU1MjkyNGM)
 * Open Bugs after reading [Guidelines to Report a Bug](https://github.com/MobSF/Mobile-Security-Framework-MobSF/blob/master/.github/CONTRIBUTING.md#using-the-issue-tracker)
 
 ## Screenshots
 
-### Static Analysis - Android APK 
+### Static Analysis - Android APK
 
 ![android-static-analysis-apk](https://user-images.githubusercontent.com/4301109/65378793-5136b880-dcdb-11e9-890a-6a5148e6ab25.png)
 ![android-static-analysis-apk2](https://user-images.githubusercontent.com/4301109/65378792-4e3bc800-dcdb-11e9-91b0-74d8c1a3a452.png)
