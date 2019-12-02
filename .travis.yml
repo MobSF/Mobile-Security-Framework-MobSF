@@ -33,8 +33,8 @@ matrix:
     - PATH=/c/Python37:/c/Python37/Scripts:$JAVA_HOME\\bin:$PATH
     before_install:
     - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
-    - choco install wkhtmltopdf
     - choco install python --version 3.7.5
+    - choco install wkhtmltopdf --version 0.12.5
     - choco install openjdk --version 12.0.2
 install:
 - set PYTHONIOENCODING=UTF8
