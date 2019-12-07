@@ -133,6 +133,7 @@ def live_api(request):
                       template,
                       {'hash': apphash,
                        'package': request.GET.get('package', ''),
+                       'version': settings.MOBSF_VER,
                        'title': 'Live API Monitor'})
     except Exception:
         logger.exception('API monitor streaming')
@@ -160,6 +161,7 @@ def frida_logs(request):
                       template,
                       {'hash': apphash,
                        'package': request.GET.get('package', ''),
+                       'version': settings.MOBSF_VER,
                        'title': 'Live Frida logs'})
     except Exception:
         logger.exception('Frida log streaming')

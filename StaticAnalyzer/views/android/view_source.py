@@ -78,8 +78,11 @@ def run(request, api=False):
             'title': escape(ntpath.basename(fil)),
             'file': escape(ntpath.basename(fil)),
             'dat': dat,
+            'type': 'java',
+            'sql': {},
+            'version': settings.MOBSF_VER,
         }
-        template = 'static_analysis/view_source.html'
+        template = 'general/view.html'
         if api:
             return context
         return render(request, template, context)

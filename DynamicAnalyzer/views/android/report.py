@@ -73,6 +73,7 @@ def view_report(request):
                    'apimon': apimon,
                    'fdlog': is_file_exists(fd_log),
                    'package': package,
+                   'version': settings.MOBSF_VER,
                    'title': 'Dynamic Analysis'}
         template = 'dynamic_analysis/android/dynamic_report.html'
         return render(request, template, context)
@@ -117,11 +118,14 @@ def view_file(request):
             err = 'File type not supported'
             return print_n_send_error_response(request, err)
         fil = escape(ntpath.basename(fil))
-        context = {'title': fil,
-                   'file': fil,
-                   'dat': dat,
-                   'sql': sql_dump,
-                   'type': rtyp}
+        context = {
+            'title': fil,
+            'file': fil,
+            'dat': dat,
+            'sql': sql_dump,
+            'type': rtyp,
+            'version': settings.MOBSF_VER,
+        }
         template = 'general/view.html'
         return render(request, template, context)
     except Exception:
