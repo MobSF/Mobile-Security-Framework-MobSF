@@ -1,6 +1,7 @@
 # -*- coding: utf_8 -*-
 import logging
 
+from django.conf import settings
 from django.db.models import QuerySet
 
 from MobSF.utils import python_dict, python_list
@@ -19,6 +20,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
         logger.info('Analysis is already Done. Fetching data from the DB...')
 
         context = {
+            'version': settings.MOBSF_VER,
             'title': db_entry[0].TITLE,
             'name': db_entry[0].APP_NAME,
             'real_name': db_entry[0].REAL_NAME,
@@ -37,7 +39,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'permissions': python_dict(db_entry[0].PERMISSIONS),
             'binary_analysis': python_list(db_entry[0].BIN_ANALYSIS),
             'files': python_list(db_entry[0].FILES),
-            'certz': db_entry[0].CERTZ,
+            'certz': python_list(db_entry[0].CERTZ),
             'icon_hidden': db_entry[0].ICON_HIDDEN,
             'icon_found': db_entry[0].ICON_FOUND,
             'activities': python_list(db_entry[0].ACTIVITIES),
@@ -86,6 +88,7 @@ def get_context_from_analysis(app_dic,
     """Get the context for APK/ZIP from analysis results."""
     try:
         context = {
+            'version': settings.MOBSF_VER,
             'title': 'Static Analysis',
             'name': app_dic['app_name'],
             'real_name': app_dic['real_name'],
