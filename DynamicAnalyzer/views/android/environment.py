@@ -445,4 +445,4 @@ class Environment:
         trd = threading.Thread(target=start_frida)
         trd.daemon = True
         trd.start()
-        logger.info('Frida Server is running')
+        logger.info('Frida Server is going to start')
