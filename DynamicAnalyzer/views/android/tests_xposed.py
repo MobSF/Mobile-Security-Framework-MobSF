@@ -17,7 +17,7 @@ def get_hooked_apis():
     """Hooked APIs Regex."""
     apis = {
         'api_fileio': {
-            'name': 'File I/O',
+            'name': 'File IO',
             'regex': r'libcore.io|android.app.Shared'
                     r'PreferencesImpl\\$EditorImpl',
             'icon': 'fas fa-file-signature',
@@ -37,7 +37,7 @@ def get_hooked_apis():
             'icon': 'fas fa-phone',
         },
         'api_binder': {
-            'name': 'Binder Calls',
+            'name': 'Binder',
             'regex': r'android.app.Activity|'
                      r'android.app.ContextImpl|'
                      r'android.app.ActivityThread',
@@ -93,7 +93,7 @@ def get_hooked_apis():
             'icon': 'fas fa-comment-alt',
         },
         'api_net': {
-            'name': 'Network Calls',
+            'name': 'Network',
             'regex': r'java.net.URL|org.apache.http.'
                      r'impl.client.AbstractHttpClient',
             'icon': 'fas fa-wifi',
