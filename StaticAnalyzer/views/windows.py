@@ -83,7 +83,7 @@ def staticanalyzer_windows(request, api=False):
                         'sha1': db_entry[0].SHA1,
                         'sha256': db_entry[0].SHA256,
                         'bin_name': db_entry[0].BINNAME,
-                        'version': db_entry[0].VERSION,
+                        'app_version': db_entry[0].VERSION,
                         'arch': db_entry[0].ARCH,
                         'compiler_version': db_entry[0].COMPILER_VERSION,
                         'visual_studio_version':
@@ -101,6 +101,7 @@ def staticanalyzer_windows(request, api=False):
                             python_list(db_entry[0].BIN_AN_RESULTS),
                         'bin_an_warnings':
                             python_list(db_entry[0].BIN_AN_WARNINGS),
+                        'version': settings.MOBSF_VER,
                     }
                 else:
                     logger.info('Windows Binary Analysis Started')
@@ -189,7 +190,7 @@ def staticanalyzer_windows(request, api=False):
                         'sha1': app_dic['sha1'],
                         'sha256': app_dic['sha256'],
                         'bin_name': bin_an_dic['bin_name'],
-                        'version': xml_dic['version'],
+                        'app_version': xml_dic['version'],
                         'arch': xml_dic['arch'],
                         'compiler_version': xml_dic['compiler_version'],
                         'visual_studio_version':
@@ -205,6 +206,7 @@ def staticanalyzer_windows(request, api=False):
                         'strings': bin_an_dic['strings'],
                         'bin_an_results': bin_an_dic['results'],
                         'bin_an_warnings': bin_an_dic['warnings'],
+                        'version': settings.MOBSF_VER,
                     }
                 template = 'static_analysis/windows_binary_analysis.html'
                 if api:

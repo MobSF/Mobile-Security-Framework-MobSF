@@ -19,14 +19,14 @@ logger = logging.getLogger(__name__)
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-MOBSF_VER = 'v2.0.7 Beta'
+MOBSF_VER = 'v3.0.0 Beta'
 
 BANNER = """
-  __  __       _    ____  _____         ____    ___  
- |  \/  | ___ | |__/ ___||  ___| __   _|___ \  / _ \ 
- | |\/| |/ _ \| '_ \___ \| |_    \ \ / / __) || | | |
- | |  | | (_) | |_) |__) |  _|    \ V / / __/ | |_| |
- |_|  |_|\___/|_.__/____/|_|       \_/ |_____(_)___/ 
+  __  __       _    ____  _____       _____  ___  
+ |  \/  | ___ | |__/ ___||  ___|_   _|___ / / _ \ 
+ | |\/| |/ _ \| '_ \___ \| |_  \ \ / / |_ \| | | |
+ | |  | | (_) | |_) |__) |  _|  \ V / ___) | |_| |
+ |_|  |_|\___/|_.__/____/|_|     \_/ |____(_)___/
 """  # noqa: W291
 # ASCII Standard
 # ==============================================
@@ -107,7 +107,7 @@ SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MobSF_HOME)
 
 # =============================================
 
-# =============ALLOWED EXTENSIONS================
+# =============ALLOWED DOWNLOAD EXTENSIONS=====
 ALLOWED_EXTENSIONS = {
     '.txt': 'text/plain',
     '.png': 'image/png',
@@ -341,6 +341,7 @@ else:
     EXODUS_URL = 'https://reports.exodus-privacy.eu.org'
     APPMONSTA_URL = 'https://api.appmonsta.com/v1/stores/android/details/'
     ITUNES_URL = 'https://itunes.apple.com/lookup'
+
     # -------External -----------------------------
     # Get AppMonsta API from https://appmonsta.com/dashboard/get_api_key/
     APPMONSTA_API = ''
@@ -349,7 +350,7 @@ else:
 
     # ----------VirusTotal--------------------------
     VT_ENABLED = False
-    VT_API_KEY = 'XXXXXXXXXXXXXX'
+    VT_API_KEY = ''
     VT_UPLOAD = False
     # Before setting VT_ENABLED to True,
     # Make sure VT_API_KEY is set to your VirusTotal API key

@@ -37,8 +37,15 @@ def key(d, key_name):
 
 def index(request):
     """Index Route."""
-    context = {'version': settings.MOBSF_VER}
-    template = 'general/index.html'
+    mimes = (settings.APK_MIME
+             + settings.IPA_MIME
+             + settings.ZIP_MIME
+             + settings.APPX_MIME)
+    context = {
+        'version': settings.MOBSF_VER,
+        'mimes': mimes,
+    }
+    template = 'general/home.html'
     return render(request, template, context)
 
 
@@ -145,42 +152,61 @@ class Upload(object):
 
 def api_docs(request):
     """Api Docs Route."""
-    context = {'title': 'REST API Docs', 'api_key': api_key()}
+    context = {
+        'title': 'REST API Docs',
+        'api_key': api_key(),
+        'version': settings.MOBSF_VER,
+    }
     template = 'general/apidocs.html'
     return render(request, template, context)
 
 
 def about(request):
     """About Route."""
-    context = {'title': 'About'}
+    context = {
+        'title': 'About',
+        'version': settings.MOBSF_VER,
+    }
     template = 'general/about.html'
     return render(request, template, context)
 
 
 def error(request):
     """Error Route."""
-    context = {'title': 'Error'}
+    context = {
+        'title': 'Error',
+        'version': settings.MOBSF_VER,
+    }
     template = 'general/error.html'
     return render(request, template, context)
 
 
 def zip_format(request):
     """Zip Format Message Route."""
-    context = {'title': 'Zipped Source Instruction'}
+    context = {
+        'title': 'Zipped Source Instruction',
+        'version': settings.MOBSF_VER,
+    }
     template = 'general/zip.html'
     return render(request, template, context)
 
 
 def mac_only(request):
     """Mac Ony Message Route."""
-    context = {'title': 'Supports OSX Only'}
+    context = {
+        'title': 'Supports OSX Only',
+        'version': settings.MOBSF_VER,
+    }
     template = 'general/ios.html'
     return render(request, template, context)
 
 
 def not_found(request):
     """Not Found Route."""
-    context = {'title': 'Not Found'}
+    context = {
+        'title': 'Not Found',
+        'version': settings.MOBSF_VER,
+    }
     template = 'general/not_found.html'
     return render(request, template, context)
 
@@ -199,7 +225,11 @@ def recent_scans(request):
         else:
             entry['PACKAGE'] = ''
         entries.append(entry)
-    context = {'title': 'Recent Scans', 'entries': entries}
+    context = {
+        'title': 'Recent Scans',
+        'entries': entries,
+        'version': settings.MOBSF_VER,
+    }
     template = 'general/recent.html'
     return render(request, template, context)
 
@@ -212,7 +242,7 @@ def search(request):
         if db_obj.exists():
             return HttpResponseRedirect('/' + db_obj[0].URL)
         else:
-            return HttpResponseRedirect('/not_found')
+            return HttpResponseRedirect('/not_found/')
     return print_n_send_error_response(request, 'Invalid Scan Hash')
 
 
