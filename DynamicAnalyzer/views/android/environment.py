@@ -51,7 +51,8 @@ class Environment:
             logger.error('%s', out.decode('utf-8').replace('\n', ''))
             return False
         else:
-            #TODO: proof if not already connected as admin and not already FS is mounted
+            # TODO: proof if not already connected as admin 
+            # and not already FS is mounted
             # start adb as root
             logger.info('Restarting ADB Daemon as root')
             out = subprocess.check_output([get_adb(), 'root'])
@@ -113,15 +114,15 @@ class Environment:
     def install_mobsf_ca(self, action):
         """Install or Remove MobSF Root CA."""
         ca_construct = '{}.0'
-        ca_file_hash = subprocess.check_output(['openssl', 
+        ca_file_hash = subprocess.check_output(['openssl',
                                  'x509', '-subject_hash_old', 
                                  '-inform', 'PEM', '-in', get_ca_dir()]).splitlines()[0].decode('ascii')
         ca_file = os.path.join('/system/etc/security/cacerts/',
                                ca_construct.format(ca_file_hash))
         if action == 'install':
             logger.info('Installing MobSF RootCA')
-            self.adb_command(['push', 
-                              get_ca_dir(), 
+            self.adb_command(['push',
+                              get_ca_dir(),
                               ca_file])
             self.adb_command(['chmod',
                               '644',
@@ -130,7 +131,8 @@ class Environment:
             logger.info('Removing MobSF RootCA')
             self.adb_command(['rm', 
                               ca_file], True)
-        #TODO: determine if an 'adb restart' is needed with a high timeout afterwards
+        # TODO: determine if an 'adb restart' is needed 
+        # with a high timeout afterwards
 
     def set_global_proxy(self, version):
         """Set Global Proxy on device."""
