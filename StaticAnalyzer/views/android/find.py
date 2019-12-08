@@ -69,6 +69,7 @@ def run(request):
             'matches': matches,
             'term': query,
             'found': str(flz),
+            'version': settings.MOBSF_VER,
         }
         template = 'general/search.html'
         return render(request, template, context)

@@ -198,7 +198,7 @@ def pdf(request, api=False, jsonres=False):
                             'sha1': db_entry[0].SHA1,
                             'sha256': db_entry[0].SHA256,
                             'bin_name': db_entry[0].BINNAME,
-                            'version': db_entry[0].VERSION,
+                            'app_version': db_entry[0].VERSION,
                             'arch': db_entry[0].ARCH,
                             'compiler_version': db_entry[0].COMPILER_VERSION,
                             'visual_studio_version':
@@ -326,7 +326,7 @@ def add_findings(findings, desc, file_path, rule):
 
 
 def code_rule_matcher(findings, perms, data, file_path, code_rules):
-    """Android Static Analysis Rule Matcher."""
+    """Static Analysis Rule Matcher."""
     try:
         for rule in code_rules:
 

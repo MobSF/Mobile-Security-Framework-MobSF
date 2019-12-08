@@ -17,15 +17,15 @@ def get_hooked_apis():
     """Hooked APIs Regex."""
     apis = {
         'api_fileio': {
-            'name': 'File I/O',
+            'name': 'File IO',
             'regex': r'libcore.io|android.app.Shared'
                     r'PreferencesImpl\\$EditorImpl',
-            'icon': 'glyphicon glyphicon-file',
+            'icon': 'fas fa-file-signature',
         },
         'api_reflect': {
             'name': 'Reflection',
             'regex': r'java.lang.reflect',
-            'icon': 'fa fa-object-ungroup',
+            'icon': 'fas fa-object-ungroup',
         },
         'api_sysprop': {
             'name': 'Device Data',
@@ -34,21 +34,21 @@ def get_hooked_apis():
                      r'android.media.AudioRecord|'
                      r'android.media.MediaRecorder|'
                      r'android.os.SystemProperties',
-            'icon': 'fa fa-phone',
+            'icon': 'fas fa-phone',
         },
         'api_binder': {
-            'name': 'Binder Calls',
+            'name': 'Binder',
             'regex': r'android.app.Activity|'
                      r'android.app.ContextImpl|'
                      r'android.app.ActivityThread',
-            'icon': 'fa fa-cubes',
+            'icon': 'fas fa-cubes',
         },
         'api_crypto': {
             'name': 'Crypto',
             'regex': r'javax.crypto.spec.SecretKeySpec|'
                      r'javax.crypto.Cipher|'
                      r'javax.crypto.Mac',
-            'icon': 'fa fa-flash',
+            'icon': 'fas fa-lock',
         },
         'api_acntmnger': {
             'name': 'System Managers',
@@ -57,14 +57,14 @@ def get_hooked_apis():
                      r'android.app.NotificationManager|'
                      r'android.net.ConnectivityManager|'
                      r'android.content.BroadcastReceiver',
-            'icon': 'fa fa-cogs',
+            'icon': 'fas fa-cogs',
         },
         'api_deviceinfo': {
             'name': 'Device Info',
             'regex': r'android.telephony.TelephonyManager|'
                      r'android.net.wifi.WifiInfo|'
                      r'android.os.Debug',
-            'icon': 'fa fa-info',
+            'icon': 'fas fa-info',
         },
         'api_dexloader': {
             'name': 'Dex Class Loader',
@@ -72,7 +72,7 @@ def get_hooked_apis():
                      r'dalvik.system.DexFile|'
                      r'dalvik.system.DexClassLoader|'
                      r'dalvik.system.PathClassLoader',
-            'icon': 'fa fa-asterisk',
+            'icon': 'fas fa-asterisk',
         },
         'api_cmd': {
             'name': 'Process',
@@ -80,28 +80,28 @@ def get_hooked_apis():
                      r'java.io.FileOutputStream|'
                      r'java.io.FileInputStream|'
                      r'android.os.Process',
-            'icon': 'fa fa-bar-chart-o',
+            'icon': 'fas fa-chart-bar',
         },
         'api_cntvl': {
             'name': 'Content Values',
             'regex': r'android.content.ContentValues',
-            'icon': 'fa fa-reorder',
+            'icon': 'fas fa-bars',
         },
         'api_sms': {
             'name': 'SMS Manager',
             'regex': r'android.telephony.SmsManager',
-            'icon': 'fa fa-comments',
+            'icon': 'fas fa-comment-alt',
         },
         'api_net': {
-            'name': 'Network Calls',
+            'name': 'Network',
             'regex': r'java.net.URL|org.apache.http.'
                      r'impl.client.AbstractHttpClient',
-            'icon': 'fa fa-plug',
+            'icon': 'fas fa-wifi',
         },
         'api_base64': {
             'name': 'Base64',
             'regex': r'android.util.Base64',
-            'icon': 'fa fa-puzzle-piece',
+            'icon': 'fas fa-puzzle-piece',
         },
     }
     return apis

@@ -41,8 +41,11 @@ def run(request):
                 'title': 'AndroidManifest.xml',
                 'file': 'AndroidManifest.xml',
                 'dat': manifest,
+                'type': 'xml',
+                'sql': {},
+                'version': settings.MOBSF_VER,
             }
-            template = 'static_analysis/view_mani.html'
+            template = 'general/view.html'
             return render(request, template, context)
     except Exception:
         logger.exception('Viewing AndroidManifest.xml')

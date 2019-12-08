@@ -1,18 +1,27 @@
-{% extends "base_no_scripts.html" %}
+{% extends "base/base_layout.html" %}
+ {% block sidebar_option %}
+      sidebar-collapse
+{% endblock %}
 {% block content %}
-
-<script src="/static/js/jquery.min.js"></script>
 <div class="content-wrapper">
-    <div class="container">
-    <br />
-            <h3 class="page-header"><strong>Frida Logs </strong>- {{ package }}</h3>
-             <div id="messages"></br>Data refreshed in every 10 seconds.</div>
-    <pre id="logs"></pre>
-    </div>
-   
+  <div class="content-header">
   </div>
-
-
+   <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h3 class="page-header"><strong>Frida Logs </strong>- {{ package }}</h3>
+                   <div id="messages"></br>Data refreshed in every 10 seconds.</div>
+                  <pre id="logs"></pre>
+          </div>
+        </div>
+       </div>
+     </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
 <script type="text/javascript">
 
 $(document).ready( function () {
@@ -36,5 +45,4 @@ $(document).ready( function () {
 });
 
 </script>
-		
 {% endblock %}

@@ -9,6 +9,7 @@ from collections import defaultdict
 from copy import deepcopy
 
 from django.shortcuts import render
+from django.conf import settings
 
 from MobSF.utils import print_n_send_error_response
 
@@ -91,12 +92,14 @@ def generic_compare(request,
     db_entry2 = StaticAnalyzerAndroid.objects.filter(MD5=second_hash)
 
     if not (db_entry.exists() and db_entry2.exists()):
-        return print_n_send_error_response(request,
-                                           'One of the Hashes wasn\'t found '
-                                           'in the Android - results DB, make '
-                                           'sure both of the apps finished '
-                                           'analysis & they are both Android',
-                                           False)
+        return print_n_send_error_response(
+            request,
+            'One of the Hashes is not found '
+            'in the Android scan database. Make '
+            'sure both of the apps finished '
+            'analysis and they are both Android.',
+            False,
+        )
 
     # First fetch the already done analysis on each of the apps
     # We don't want to return this whole context back to the user
@@ -182,7 +185,7 @@ def generic_compare(request,
             context[section]['only_second'] = [
                 x for x in second_app[section] if x not in
                 first_app[section]]
-
+    context['version'] = settings.MOBSF_VER
     template = 'static_analysis/compare.html'
     if api:
         return context

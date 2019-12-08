@@ -1,5 +1,5 @@
 # Mobile Security Framework (MobSF)
-Version: v2.0 beta
+Version: v3.0 beta
 ![](https://cloud.githubusercontent.com/assets/4301109/20019521/cc61f7fc-a2f2-11e6-95f3-407030d9fdde.png)
 
 Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis. MobSF support mobile app binaries (APK, IPA & APPX) along with zipped source code and provides REST APIs for seamless integration with your CI/CD or DevSecOps pipeline.The Dynamic Analyzer helps you to perform runtime security assessment and interactive instrumented testing.
@@ -72,21 +72,22 @@ Other docker options: [MobSF Docker Options](https://github.com/MobSF/Mobile-Sec
 
 ## Screenshots
 
-### Static Analysis - Android APK
+### Static Analysis - Android
 
-![android-static-analysis-apk](https://user-images.githubusercontent.com/4301109/65378793-5136b880-dcdb-11e9-890a-6a5148e6ab25.png)
-![android-static-analysis-apk2](https://user-images.githubusercontent.com/4301109/65378792-4e3bc800-dcdb-11e9-91b0-74d8c1a3a452.png)
-![compare-result](https://user-images.githubusercontent.com/4301109/65378790-454af680-dcdb-11e9-927c-af94cd97359f.png)
+![android-static-analysis-apk](https://user-images.githubusercontent.com/4301109/70381680-c732df00-191c-11ea-86dc-fc2ce93af9df.png)
+![android-static-analysis-apk2](https://user-images.githubusercontent.com/4301109/70381695-095c2080-191d-11ea-8254-e2a0c3eef708.png)
+![compare-result](https://user-images.githubusercontent.com/4301109/70381729-92735780-191d-11ea-8671-c72f54f3a4be.png)
 
-### Static Analysis - iOS IPA
+### Static Analysis - iOS
 
-![ios-static-analysis-ipa](https://user-images.githubusercontent.com/4301109/65378791-4aa84100-dcdb-11e9-963b-927ca669d6e1.png)
+![ios-static-analysis-ipa](https://user-images.githubusercontent.com/4301109/70381758-20e7d900-191e-11ea-9d68-8bb2a3bfcffd.png)
+![ios-static-analysis-source](https://user-images.githubusercontent.com/4301109/70381767-5d1b3980-191e-11ea-8adc-20f54554bf5b.png)
 
 ### Dynamic Analysis - Android APK
 
-![android-dynamic-analysis](https://user-images.githubusercontent.com/4301109/65378800-5d227a80-dcdb-11e9-820b-b688ae6cfd5d.png)
-![android-dynamic-frida-live](https://user-images.githubusercontent.com/4301109/65378803-614e9800-dcdb-11e9-88e7-3ca54ec0b0dd.png)
-![android-dynamic-expact](https://user-images.githubusercontent.com/4301109/65378854-387ad280-dcdc-11e9-9a69-3ef4d1d28cb9.png)
+![android-dynamic-analysis](https://user-images.githubusercontent.com/4301109/70381806-03673f00-191f-11ea-87e4-dee316212101.png)
+![android-dynamic-frida-live](https://user-images.githubusercontent.com/4301109/70381835-72dd2e80-191f-11ea-8f94-2255c9f605d9.png)
+![android-dynamic-report](https://user-images.githubusercontent.com/4301109/70381853-c18ac880-191f-11ea-8cf4-2ce44521509c.png)
 
 ### Web API Viewer
 

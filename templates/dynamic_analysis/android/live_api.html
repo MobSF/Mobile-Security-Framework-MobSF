@@ -1,44 +1,62 @@
-{% extends "base_no_scripts.html" %}
+{% extends "base/base_layout.html" %}
+{% load static %}
+ {% block sidebar_option %}
+      sidebar-collapse
+{% endblock %}
+{% block extra_css %}
+<!-- DataTables -->
+<link rel="stylesheet" href="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.css" %}">
+{% endblock %}
 {% block content %}
-
-<link rel='stylesheet' href='/static/datatables/jquery.dataTables.min.css' type='text/css'>
-<script src="/static/datatables/jquery-3.3.1.js"></script>
-<script src="/static/datatables/jquery.dataTables.min.js"></script>
 <div class="content-wrapper">
-    <div class="container">
-    <br />
-            <h3 class="page-header"><strong>API Monitor </strong>- {{ package }}</h3>
-             <div id="messages"></br>Data refreshed in every 10 seconds.</div>
-    </div>
-    <div align="right">Data Snip:  <input type="text" value="100" oninput="change_snip(this.value)"></div><br />
-   
+  <div class="content-header">
   </div>
+   <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h3 class="page-header"><strong>API Monitor </strong>- {{ package }}</h3>
+                <div id="messages"></br>Data refreshed in every 10 seconds.</div>
+                <div align="right">Data Snip:  <input type="text" value="100" oninput="change_snip(this.value)"></div><br />
+                <div class="table-responsive">
+                <table id="autotbl" class="table table-bordered table-hover table-striped" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>NAME</th>
+                                <th>CLASS</th>
+                                <th>METHOD</th>
+                                <th>ARGUMENTS</th>
+                                <th>RESULT</th>
+                                <th>RETURN VALUE</th>
+                                <th>CALLED FROM</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <th>NAME</th>
+                                <th>CLASS</th>
+                                <th>METHOD</th>
+                                <th>ARGUMENTS</th>
+                                <th>RESULT</th>
+                                <th>RETURN VALUE</th>
+                                <th>CALLED FROM</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
 
-<table id="autotbl" class="display" style="width:100%">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Class</th>
-                <th>Method</th>
-                <th>Arguments</th>
-                <th>Result</th>
-                <th>Return Value</th>
-                <th>Called From</th>
-            </tr>
-        </thead>
-        <tfoot>
-            <tr>
-                <th>Name</th>
-                <th>Class</th>
-                <th>Method</th>
-                <th>Arguments</th>
-                <th>Result</th>
-                <th>Return Value</th>
-                <th>Called From</th>
-            </tr>
-        </tfoot>
-    </table>
-
+          </div>
+        </div>
+       </div>
+     </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<!-- DataTables -->
+<script src="{% static "adminlte/plugins/datatables/jquery.dataTables.min.js" %} "></script>
+<script src="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.js" %}"></script>
 <script type="text/javascript">
 var snip = 100;
 var tbl;
@@ -82,5 +100,4 @@ $(document).ready( function () {
 });
 
 </script>
-		
 {% endblock %}

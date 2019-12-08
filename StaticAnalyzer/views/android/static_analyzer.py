@@ -221,7 +221,7 @@ def static_analyzer(request, api=False):
                         list(set(code_an_dic['urls_list'])))
                     # Copy App icon
                     copy_icon(app_dic['md5'], app_dic['icon_path'])
-                    app_dic['zipped'] = '&type=apk'
+                    app_dic['zipped'] = 'apk'
 
                     logger.info('Connecting to Database')
                     try:
@@ -448,7 +448,12 @@ def static_analyzer(request, api=False):
                                 True)
                         else:
                             print_n_send_error_response(request, msg, False)
-                            return HttpResponseRedirect('/zip_format/')
+                            ctx = {
+                                'title': 'Invalid ZIP archive',
+                                'version': settings.MOBSF_VER,
+                            }
+                            template = 'general/zip.html'
+                            return render(request, template, ctx)
                 context['average_cvss'], context[
                     'security_score'] = score(context['findings'])
                 template = 'static_analysis/android_source_analysis.html'

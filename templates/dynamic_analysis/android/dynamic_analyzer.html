@@ -1,20 +1,18 @@
 
-  {% extends "base_no_scripts.html" %}
-   {% block content %}
-  <link rel='stylesheet' href='/static/terminal/terminal.css' type='text/css'>
-  <link rel='stylesheet' href='/static/css/devices.min.css' type='text/css'>
-
-<link rel="stylesheet" href="/static/codemirror/codemirror.css">
-<link rel="stylesheet" href="/static/codemirror/lint.css">
-<script src="/static/codemirror/codemirror.js"></script>
-<script src="/static/codemirror/javascript.js"></script>
-<script src="/static/codemirror/jshint.js"></script>
-<script src="/static/codemirror/lint.js"></script>
-<script src="/static/codemirror/javascript-lint.js"></script>
-   <style>
-      textarea {
+{% extends "base/base_layout.html" %}
+{% load static %}
+{% block sidebar_option %}
+    sidebar-collapse
+{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static "others/css/terminal.css" %}" type="text/css">
+<link rel="stylesheet" href="{% static "others/css/devices.min.css" %}" type="text/css">
+<link rel="stylesheet" href="{% static "codemirror/codemirror.css" %}" type="text/css">
+<link rel="stylesheet" href="{% static "codemirror/lint.css" %}" type="text/css">
+<style>
+     textarea {
         width: 100%;
-        height: {% if version < 5 %} 650px; {% else %} 170px; {% endif %}
+        height: {% if android_version < 5 %} 630px; {% else %} 170px; {% endif %}
         -moz-border-bottom-colors: none;
         -moz-border-left-colors: none;
         -moz-border-right-colors: none;
@@ -39,60 +37,98 @@
     }
     .highlight { border: solid 2px #1e6dff;}
     .CodeMirror {
+        height: 610px;
         font-size: 13px;
         border: 1px solid #eee;
-        height: 545px;
       }
-  </style>
-  <script src="/static/js/jquery.min.js"></script>
-<div class="container-fluid">
-<br/>
-<h2 class="page-header"><strong>Dynamic Analyzer </strong>- {{ package }}</h2>
-<input type="hidden" id="screen_width" value="{{ screen_witdth }}">
-<input type="hidden" id="screen_height" value="{{ screen_height }}">
-<div class="container">
-<div class="row">
-    <p id="but">
-      <a id="screen" class="btn btn-primary" role="button">Show Screen</a>
-      <a id="rootca" class="btn btn-primary" role="button">Remove MobSF RootCA</a>
-      <a id="expactt" class="btn btn-primary" role="button">Start Exported Activity Tester</a>
-      <a id="actt" class="btn btn-primary" role="button" >Start Activity Tester</a>
-      <a id="ss" class="btn btn-primary" role="button">Take a Screenshot</a>
-      <a id="logstream" class="btn btn-primary">Logcat Stream</a>
-      <a id="apimon" target="_blank" href="../live_api/?hash={{ md5 }}&amp;package={{ package }}" class="btn btn-primary" style='display: none'>Live API Monitor</a>
-      <a id="stop" class="btn btn-info" role="button" >Generate Report</a>
+</style>
 
-    </p>
+{% endblock %}
+
+{% block content %}
+<script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
+
+<div class="content-wrapper">
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div id="mobsf_header">
+            <h2><strong>Dynamic Analyzer </strong>- {{ package }}</h2>
+          <input type="hidden" id="screen_width" value="{{ screen_witdth }}">
+          <input type="hidden" id="screen_height" value="{{ screen_height }}">
+        </div>
+      </div>
     </div>
   </div>
+   <div class="container-fluid">
 
-      <div class="row">
-        <div class="col-md-3">
-          <!-- Custom Tabs -->
-        
-        <div class="marvel-device htc-one">
-        <div class="top-bar"></div>
-        <div class="camera"></div>
-        <div class="sensor"></div>
-        <div class="speaker"></div>
-        <div class="screen" id="container">
-        <img width="320" height="580" src="../download/screen/screen.png" id="my" onerror="$('#my').attr('src','/static/img/loading.jpg')" style="background-color:black;">
-        </div>
-        </div>
-          <!-- nav-tabs-custom -->
-        </div>
-        <!-- /.col -->
+   
+   <div class="row">
+          <div class="col-md-12">
+            <div class="card card-default">
+              <!-- /.card-header -->
+              <div class="card-body">
+                 <div id="but" align="center">
+                  <a href="#" id="screen" class="btn btn-primary" role="button">Show Screen</a>
+                  <a href="#" id="rootca" class="btn btn-primary" role="button">Remove MobSF RootCA</a>
+                  <a href="#" id="expactt" class="btn btn-primary" role="button">Start Exported Activity Tester</a>
+                  <a href="#" id="actt" class="btn btn-primary" role="button" >Start Activity Tester</a>
+                  <a href="#" id="ss" class="btn btn-primary" role="button">Take a Screenshot</a>
+                  <a href="#" id="logstream" class="btn btn-primary">Logcat Stream</a>
+                  <a href="../live_api/?hash={{ md5 }}&amp;package={{ package }}" id="apimon" target="_blank" class="btn btn-primary" style='display: none'>Live API Monitor</a>
+                  <a href="#" id="stop" class="btn btn-info" role="button" >Generate Report</a>
+                </div>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
 
-        <div class="col-md-5">
-          <!-- Custom Tabs (Pulled to the right) -->
-      <div class="nav-tabs-custom">
-            <ul class="nav nav-tabs">
-              <li class="active"><a href="#tab_1" data-toggle="tab">VM Status</a></li>
-              <li><a href="#tab_2" data-toggle="tab">Errors</a></li>
-            </ul>
-            <div class="tab-content">
-              <div class="tab-pane active" id="tab_1">
-                <textarea id="stat"></textarea>
+
+          <div class="col-md-4">
+            <div class="card card-default">
+              <!-- /.card-header -->
+              <div class="card-body">
+                <div align="center">
+                  <div class="marvel-device htc-one">
+                  <div class="top-bar"></div>
+                  <div class="camera"></div>
+                  <div class="sensor"></div>
+                  <div class="speaker"></div>
+                  <div class="screen" id="container">
+                  <img width="320" height="580" src="../download/screen/screen.png" id="my" onerror="$('#my').attr('src','/static/img/loading.jpg')" style="background-color:black;">
+                  </div>
+                  </div>
+                </div>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+
+           <div class="col-md-{% if android_version < 5 %}8{% else %}4{% endif %}">
+            <div class="card card-default">
+              <!-- /.card-header -->
+              <div class="card-body">
+
+            <div class="card card-primary card-outline card-outline-tabs">
+              <div class="card-header p-0 border-bottom-0">
+                <ul class="nav nav-tabs" id="tabnav" role="tablist">
+                  <li class="nav-item">
+                    <a class="nav-link active" id="dm-tab" data-toggle="pill" href="#dm" role="tab" aria-controls="dm" aria-selected="true">Dynamic Analyzer</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" id="errors-tab" data-toggle="pill" href="#errors" role="tab" aria-controls="errors" aria-selected="false">Errors</a>
+                  </li>
+                </ul>
+              </div>
+              <div class="card-body">
+                <div class="tab-content" id="tabs">
+                  <div class="tab-pane fade active show" id="dm" role="tabpanel" aria-labelledby="dm-tab">
+                     
+                              <textarea id="stat"></textarea>
                 <!--box-->
                 <div id="frida_options" class="box box-primary">
                     <div class="box-header with-border">
@@ -103,6 +139,7 @@
                     <form role="form">
                       <div class="box-body">
                         <div class="form-group">
+                            <hr/>
                         <h4> Default </h4>
                           <label>
                               <input name="default_hooks" type="checkbox" value="api_monitor" checked>
@@ -162,62 +199,105 @@
 
                       <div class="box-footer">
                      
-                      <button id="frida_spawn" type="submit" class="btn btn-primary">Start Instrumentation</button> <button id="fd_log" type="button" class="btn btn-info" disabled>Frida Live Logs</button>
+                      <button id="frida_spawn" type="submit" class="btn btn-success">Start Instrumentation</button> <button id="fd_log" type="button" class="btn btn-primary" disabled>Frida Live Logs</button>
                       </div>
                     </form>
                   </div>
            
           <!--tab end-->
-              </div>
-              <!-- /.tab-pane -->
-              <div class="tab-pane" id="tab_2"> 
-              <iframe sandbox frameborder="0" width="100%" height="650px" id="er"></iframe>
-              </div>
-            </div>
-            <!-- /.tab-content -->
-          </div>
-          <!-- nav-tabs-custom -->
-        </div>
-        <!-- /.col -->
-         <div class="col-md-4" id="codeedit">
 
-  <div class="box box-primary">
-        <div class="box-header with-border">
-          <h3 class="box-title">Frida Code Editor  </h3>
-          <span class="label label-primary pull-right"><i class="fa fa-code"></i></span>
-        </div><!-- /.box-header -->
-        <div class="box-body">
-        <p>
-          <textarea id="code-js" rows="50">
+                  </div>
+                  <div class="tab-pane fade" id="errors" role="tabpanel" aria-labelledby="errors-tab">
+                    
+                    
+                    <iframe sandbox frameborder="0" width="100%" height="650px" id="er"></iframe>
+                    
+                    
+                  </div>
+                </div>
+              </div>
+              <!-- /.card -->
+            </div>
+
+
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+
+           <div class="col-md-4" id="codeedit">
+            <div class="card card-default">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fa fa-code"></i> Frida Code Editor </h3>
+                <!-- /.card-tools -->
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body">
+              <div class="row">
+                  <div class="col-12">
+<textarea id="code-js" rows="100">
 Java.perform(function() {
   // Use send() for logging
 });
-        </textarea>
-        </p>
-        </div><!-- /.box-body -->
-               <div class="form-group">
-                 <span class="box-title">&nbsp;&nbsp; Available Scripts (Use CTRL to choose multiple)  </span>
-                  <button id="loadscript" type="submit" class="btn btn-primary btn-sm">Load</button>
-                  <select id="fd_scs" multiple="" class="form-control">
-                  </select>
-                </p>
+</textarea>
+                  </div>
+                  <div class="col-12">
+                    <br/>
+                    <div class="form-group">
+                      <span class="box-title">Available Scripts (Use CTRL to choose multiple)  </span>
+                      <button id="loadscript" type="submit" class="btn btn-primary btn-sm">Load</button>
+                    </div>
+                    <div class="form-group">
+                         <select id="fd_scs" multiple="" class="form-control">
+                          </select>
+                    </div>
+                  </div>
                 </div>
-      </div><!-- /.box -->
+                <!-- end row-->
+              
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+
+            <div class="col-md-12">
+            <div class="card card-default">
+              <!-- /.card-header -->
+              <div class="card-body">
+                   
+                   <div id="shell">
+                    <output></output>
+                    <div id="input-line" class="input-line">
+                      <div class="prompt"></div><div><input class="cmdline" autofocus /></div>
+                    </div>
+                  </div>
+              
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        
+        </div>
 
         </div>
-      </div>
-      <!-- /.row -->
-
-  <br/>
-  <br/>
-              
-    <div id="shell">
-      <output></output>
-      <div id="input-line" class="input-line">
-        <div class="prompt"></div><div><input class="cmdline" autofocus /></div>
-      </div>
+       </div>
+     </div>
     </div>
 </div>
+
+{% endblock %}
+{% block extra_scripts %}
+<script src="{% static "codemirror/codemirror.js" %}"></script>
+<script src="{% static "codemirror/javascript.js" %}"></script>
+<script src="{% static "codemirror/jshint.js" %}"></script>
+<script src="{% static "codemirror/lint.js" %}"></script>
+<script src="{% static "codemirror/javascript-lint.js" %}"></script>
 <script>
 // Frida Auxiliary actions
 
@@ -478,7 +558,7 @@ var term = new Terminal('#input-line .cmdline', '#shell output');
 term.init();
 
 // Start up
-{% if version < 5 %}
+{% if android_version < 5 %}
   $('#frida_options').hide()
   $('#codeedit').hide()
 {% else %}
@@ -719,6 +799,4 @@ $("#stop").one( "click", function() {
 //end document.ready
 });
 </script>
-  
-		
-   {% endblock %}
+{% endblock %}
