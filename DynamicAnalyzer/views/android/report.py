@@ -20,6 +20,7 @@ from DynamicAnalyzer.views.android.tests_xposed import droidmon_api_analysis
 from DynamicAnalyzer.views.android.tests_frida import apimon_analysis
 
 from MobSF.utils import (is_file_exists,
+                         is_safe_path,
                          print_n_send_error_response,
                          read_sqlite)
 
@@ -97,14 +98,14 @@ def view_file(request):
         if not is_md5(md5_hash):
             return print_n_send_error_response(request,
                                                'Invalid Parameters')
-        if is_path_traversal(fil):
-            err = 'Path Traversal Attack Detected'
-            return print_n_send_error_response(request, err)
         src = os.path.join(
             settings.UPLD_DIR,
             md5_hash,
             'DYNAMIC_DeviceData/')
         sfile = os.path.join(src, fil)
+        if not is_safe_path(src, sfile) or is_path_traversal(fil):
+            err = 'Path Traversal Attack Detected'
+            return print_n_send_error_response(request, err)
         with io.open(sfile, mode='r', encoding='ISO-8859-1') as flip:
             dat = flip.read()
         if fil.endswith('.xml') and typ == 'xml':
