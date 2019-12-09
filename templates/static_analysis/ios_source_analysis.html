@@ -59,6 +59,14 @@
               </p>
             </a>
           </li>
+           <li class="nav-item">
+            <a href="#url_schemes" class="nav-link">
+              <i class="nav-icon fas fa-hashtag"></i>
+              <p>
+                URL Schemes
+              </p>
+            </a>
+          </li>
           <li class="nav-item">
             <a href="#permissions" class="nav-link">
               <i class="nav-icon fas fa-list"></i>
@@ -232,19 +240,23 @@
                 <div class="col-5">
                   <p><strong><i class="fas fa-info"></i> APP INFORMATION </strong></p>                                       
                   <span class="badge bg-primary">App Name</span>
-                  {{ bin_name }}<br/>              
+                  {{ app_name }}<br/>              
                   <span class="badge bg-primary">Identifier</span>
-                  {{ id }}<br/>
+                  {{ bundle_id }}<br/>
                   <span class="badge bg-primary">SDK Name</span>
-                  {{ sdk }}<br/>
+                  {{ sdk_name }}<br/>
                   <span class="badge bg-primary">Version</span>
-                  {{ bundle_version }}
+                  {{ app_version }}
                   <span class="badge bg-primary">Build</span>
                   {{ build }}
                   <span class="badge bg-primary">Platform Version</span>
-                  {{ pltfm }}
+                  {{ platform }}
                   <span class="badge bg-primary">Min OS Version</span>
-                  {{ min }}
+                  {{ min_os_version }} <br/>
+                  <span class="badge bg-primary">Supported Platforms</span>
+                  {% for pl in bundle_supported_platforms %}
+                    {{pl}},
+                  {% endfor %}
                 </div> 
           
 
@@ -328,6 +340,60 @@
         </div>
 </section>
   <!-- ===========================end scan options================================== -->
+  <a id="url_schemes" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-hashtag"></i> CUSTOM URL SCHEMES</strong>
+             <p>
+             {% if bundle_url_types|length > 0 %}
+             <div class="table-responsive">
+                  <table class="table table-bordered table-hover table-striped">
+
+                  <thead>
+                      <tr>
+                          <th>URL NAME</th>
+                          <th>SCHEMES</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+
+                    {% for scheme in bundle_url_types %}
+                    <tr>
+                      <td>
+                           {{scheme | key:"CFBundleURLName" }}
+                        {% if scheme|key:"CFBundleTypeRole" %}
+                           <br>
+                            {{scheme | key:"CFBundleTypeRole" }}
+                        {% endif %}
+                      </td>
+                      <td>
+                        {% for ul in scheme.CFBundleURLSchemes %}
+                           {{ul}} <br/>
+                        {% endfor %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+              </table>
+           </div>
+            {% else %}
+              <p>
+                No URL Schemes found.
+            </p>
+            {% endif %}
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end url schemes ================================== -->
 <a id="permissions" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
@@ -351,7 +417,7 @@
                   </thead>
                   <tbody>
 
-                    {%for  perm in permissions%}
+                    {% for  perm in permissions %}
                     <tr>
                       <td>
                         {{ perm.name }}
@@ -369,7 +435,7 @@
            </div>
             {% else %}
               <p>
-                No permissions required.
+                No Permissions required.
             </p>
             {% endif %}
           </div>
@@ -400,7 +466,7 @@
                       </tr>
                     </thead>
                     <tbody>
-                     {% for desc, details in api.items %}
+                  {% for desc, details in ios_api.items %}
                   <tr>
                   <td>
                   {{ desc }}
@@ -425,7 +491,7 @@
     </div>
 </section>
  <!-- ===========================end ios api analysis ================================== -->
-  <a id="transport_security" class="anchor"></a>
+   <a id="transport_security" class="anchor"></a>
  <section class="content">
   <div class="container-fluid">
     <div class="row">
@@ -446,23 +512,23 @@
                       </tr>
                   </thead>
                   <tbody>
-                    {% if insecure_connections|length > 0 %}
-                      {% for con in insecure_connections %}
+                    {% if ats_analysis|length > 0 %}
+                      {% for findings in ats_analysis %}
                       <tr>
                         <td>
-                          Exception in NSAppTransportSecurity found.
+                         {{findings.issue}}
                         <td>
-                          <span class="badge bg-danger">insecure</span>
+                          <span class="badge bg-danger"> {{findings.status}}</span>
                         </td>
                         <td>
-                          App Transport Security (ATS) is disabled on the domain <strong>{{ con }}</strong>. Disabling ATS can allow insecure communication with particular servers or allow insecure loads for web views or for media, while maintaining ATS protections elsewhere in your app.
+                         {{findings.description}}
                         </td>
                       </tr>
                       {% endfor %}
                     {% else %}
                     <tr>
                       <td>
-                        None
+                        No ATS exceptions found.
                       <td>
                         <span class="badge bg-success">secure</span>
                       </td>
@@ -508,7 +574,7 @@
                       </tr>
                   </thead>
                   <tbody>
-                     {% for issue, details in insecure.items %}
+                     {% for issue, details in code_analysis.items %}
                   <tr>
                   <td>
                   {{ issue }}
@@ -697,7 +763,7 @@
              <strong><i class="fas fa-database"></i> FIREBASE DATABASE</strong>
              </p>
               <div class="table-responsive">
-               {% if firebase %} 
+               {% if firebase_urls %} 
              <table id="table_firebase" class="table table-bordered table-hover table-striped">
                   <thead>
                   <tr>
@@ -707,7 +773,7 @@
                  </thead>
                
                  <tbody>
-                  {% for item in firebase %}
+                  {% for item in firebase_urls %}
                     <tr>
                        <td>
                        {{ item.url }}
@@ -818,7 +884,7 @@
           </div>
           <div class="modal-body">
            <pre><code>
-            {{ plist }}
+            {{ info_plist }}
           </code></pre>
           </div>
         </div>

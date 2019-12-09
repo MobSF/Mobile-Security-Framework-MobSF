@@ -13,7 +13,7 @@ from StaticAnalyzer.views.android.static_analyzer import static_analyzer
 from StaticAnalyzer.views.ios import view_source as ios_view_source
 from StaticAnalyzer.views.ios.static_analyzer import static_analyzer_ios
 from StaticAnalyzer.views.shared_func import pdf
-from StaticAnalyzer.views.windows import staticanalyzer_windows
+from StaticAnalyzer.views.windows import windows
 
 BAD_REQUEST = 400
 OK = 200
@@ -85,7 +85,7 @@ def api_scan(request):
                 response = make_api_response(resp, 200)
         # APPX
         elif scan_type == 'appx':
-            resp = staticanalyzer_windows(request, True)
+            resp = windows.staticanalyzer_windows(request, True)
             if 'error' in resp:
                 response = make_api_response(resp, 500)
             else:

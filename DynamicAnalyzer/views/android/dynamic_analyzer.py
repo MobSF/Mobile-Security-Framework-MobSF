@@ -34,7 +34,7 @@ def dynamic_analysis(request):
     """Android Dynamic Analysis Entry point."""
     try:
         apks = StaticAnalyzerAndroid.objects.filter(
-            ZIPPED='apk').order_by('-id')
+            APP_TYPE='apk').order_by('-id')
         try:
             identifier = get_device()
         except Exception:

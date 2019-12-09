@@ -95,7 +95,7 @@ pre {
                   </li>
                   <li>
                   <p><strong>Sample Call:</strong></p>
-                  <pre><code>curl -F 'file=@/Users/ajin/Desktop/diva-beta.apk' http://localhost:8000/api/v1/upload -H &quot;Authorization:563d64fc5054d3b239ac0419f1d6b2378465f5c80e1778c283eb1e3265bdd7ae&quot;
+                  <pre><code>curl -F 'file=@/Users/ajin/Desktop/diva-beta.apk' http://localhost:8000/api/v1/upload -H &quot;Authorization:{{ api_key}}&quot;
                   </code></pre>
                   </li>
                   </ul>
@@ -182,7 +182,7 @@ pre {
                   </li>
                   <li>
                   <p><strong>Sample Call:</strong></p>
-                  <pre><code>curl -X POST --url http://localhost:8000/api/v1/scan --data &quot;scan_type=apk&amp;file_name=diva-beta.apk&amp;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization:563d64fc5054d3b239ac0419f1d6b2378465f5c80e1778c283eb1e3265bdd7ae&quot;
+                  <pre><code>curl -X POST --url http://localhost:8000/api/v1/scan --data &quot;scan_type=apk&amp;file_name=diva-beta.apk&amp;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization:{{ api_key}}&quot;
                   </code></pre>
                   </li>
                   </ul>
@@ -245,7 +245,7 @@ pre {
                   </li>
                   <li>
                   <p><strong>Sample Call:</strong></p>
-                  <pre><code>curl -X POST --url http://localhost:8000/api/v1/delete_scan --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization:563d64fc5054d3b239ac0419f1d6b2378465f5c80e1778c283eb1e3265bdd7ae&quot;
+                  <pre><code>curl -X POST --url http://localhost:8000/api/v1/delete_scan --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization:{{ api_key}}&quot;
                   </code></pre>
                   </li>
                   </ul>
@@ -313,7 +313,7 @@ pre {
                   </li>
                   <li>
                   <p><strong>Sample Call:</strong></p>
-                  <pre><code>curl -X POST --url http://localhost:8000/api/v1/download_pdf --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&amp;scan_type=apk&quot; -H &quot;Authorization:563d64fc5054d3b239ac0419f1d6b2378465f5c80e1778c283eb1e3265bdd7ae&quot;
+                  <pre><code>curl -X POST --url http://localhost:8000/api/v1/download_pdf --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&amp;scan_type=apk&quot; -H &quot;Authorization:{{ api_key}}&quot;
                   </code></pre>
                   </li>
                   </ul>
@@ -382,7 +382,7 @@ pre {
                   </li>
                   <li>
                   <p><strong>Sample Call:</strong></p>
-                  <pre><code>curl -X POST --url http://localhost:8000/api/v1/report_json --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&amp;scan_type=apk&quot; -H &quot;Authorization:563d64fc5054d3b239ac0419f1d6b2378465f5c80e1778c283eb1e3265bdd7ae&quot;
+                  <pre><code>curl -X POST --url http://localhost:8000/api/v1/report_json --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&amp;scan_type=apk&quot; -H &quot;Authorization:{{ api_key}}&quot;
                   </code></pre>
                   </li>
                   </ul>
@@ -456,9 +456,9 @@ pre {
                   </li>
                   <li>
                   <p><strong>Sample Call:</strong></p>
-                  <pre><code>curl -X POST --url http://localhost:8000/api/v1/view_source --data "hash=18e244926da1e49c5b8ffc1c30de8abc&amp;type=apk&amp;file=b/a/a/a/a/a.java" -H "Authorization:7e2ddf418b291d2e070496524d1b8599c31637f84055c5db632f49f1a613f5f5"
+                  <pre><code>curl -X POST --url http://localhost:8000/api/v1/view_source --data "hash=18e244926da1e49c5b8ffc1c30de8abc&amp;type=apk&amp;file=b/a/a/a/a/a.java" -H "Authorization:{{ api_key}}"
                   </code></pre>
-                  <pre><code>curl -X POST --url http://localhost:8000/api/v1/view_source --data "hash=6c23c2970551be15f32bbab0b5db0c71&amp;type=ipa&amp;file=classdump.txt" -H "Authorization:87e2ddf418b291d2e070496524d1b8599c31637f84055c5db632f49f1a613f5f5"
+                  <pre><code>curl -X POST --url http://localhost:8000/api/v1/view_source --data "hash=6c23c2970551be15f32bbab0b5db0c71&amp;type=ipa&amp;file=classdump.txt" -H "Authorization:{{ api_key}}"
                   </code></pre>
                   </li>
                   </ul>
@@ -541,9 +541,9 @@ pre {
                   </li>
                   <li>
                   <p><strong>Sample Call:</strong></p>
-                  <pre><code>curl --url "http://localhost:8000/api/v1/scans" -H "Authorization:87e2ddf418b291d2e070496524d1b8599c31637f84055c5db632f49f1a613f5f5"
+                  <pre><code>curl --url "http://localhost:8000/api/v1/scans" -H "Authorization:{{ api_key}}"
                   </code></pre>
-                  <pre><code>curl --url "http://localhost:8000/api/v1/scans?page=1&page_size=10" -H "Authorization:87e2ddf418b291d2e070496524d1b8599c31637f84055c5db632f49f1a613f5f5"
+                  <pre><code>curl --url "http://localhost:8000/api/v1/scans?page=1&page_size=10" -H "Authorization:{{ api_key}}"
                   </code></pre>
                   </li>
                   </ul>

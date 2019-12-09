@@ -15,6 +15,7 @@ from django.utils.html import escape
 
 from MobSF.forms import FormUtil
 from MobSF.utils import (is_file_exists,
+                         is_safe_path,
                          print_n_send_error_response,
                          read_sqlite)
 
@@ -42,6 +43,7 @@ def run(request, api=False):
     """View iOS Files."""
     try:
         logger.info('View iOS Source File')
+        exp = 'Error Description'
         file_format = 'cpp'
         if api:
             fil = request.POST['file']
@@ -58,19 +60,18 @@ def run(request, api=False):
             err = FormUtil.errors_message(viewsource_form)
             if api:
                 return err
-            context = {
-                'title': 'Error',
-                'exp': 'Error Description',
-                'doc': err,
-            }
-            template = 'general/error.html'
-            return render(request, template, context, status=400)
+            return print_n_send_error_response(request, err, False, exp)
         if mode == 'ipa':
             src = os.path.join(settings.UPLD_DIR,
                                md5_hash + '/Payload/')
         elif mode == 'ios':
             src = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         sfile = os.path.join(src, fil)
+        if not is_safe_path(src, sfile):
+            msg = 'Path Traversal Detected!'
+            if api:
+                return {'error': 'Path Traversal Detected!'}
+            return print_n_send_error_response(request, msg, False, exp)
         dat = ''
         sql_dump = {}
         if typ == 'm':
@@ -138,5 +139,4 @@ def run(request, api=False):
         exp = exp.__doc__
         if api:
             return print_n_send_error_response(request, msg, True, exp)
-        else:
-            return print_n_send_error_response(request, msg, False, exp)
+        return print_n_send_error_response(request, msg, False, exp)
