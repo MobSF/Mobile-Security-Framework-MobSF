@@ -796,16 +796,18 @@ def manifest_analysis(mfxml, man_data_dic):
                     'description': permisson[2],
                 })
         # Prepare return dict
+        exported_comp = {
+            'exported_activities': exp_count['act'],
+            'exported_services': exp_count['ser'],
+            'exported_receivers': exp_count['bro'],
+            'exported_providers': exp_count['cnt'],
+        }
         man_an_dic = {
             'manifest_anal': ret_value,
             'exported_act': exported,
-            'exported_cnt': exp_count,
+            'exported_cnt': exported_comp,
             'browsable_activities': browsable_activities,
             'permissons': permissons,
-            'cnt_act': len(man_data_dic['activities']),
-            'cnt_pro': len(man_data_dic['providers']),
-            'cnt_ser': len(man_data_dic['services']),
-            'cnt_bro': len(man_data_dic['receivers']),
             'icon_hidden': icon_hidden,
         }
         return man_an_dic

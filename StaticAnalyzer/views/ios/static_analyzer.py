@@ -11,14 +11,14 @@ from django.shortcuts import render
 
 from MobSF.utils import print_n_send_error_response
 
-from StaticAnalyzer.models import StaticAnalyzerIOSZIP, StaticAnalyzerIPA
+from StaticAnalyzer.models import StaticAnalyzerIOS
 from StaticAnalyzer.views.ios.appstore import app_search
 from StaticAnalyzer.views.ios.binary_analysis import binary_analysis
 from StaticAnalyzer.views.ios.code_analysis import ios_source_analysis
 from StaticAnalyzer.views.ios.db_interaction import (
-    create_db_entry_ios, create_db_entry_ipa, get_context_from_analysis_ios,
-    get_context_from_analysis_ipa, get_context_from_db_entry_ios,
-    get_context_from_db_entry_ipa, update_db_entry_ios, update_db_entry_ipa)
+    get_context_from_analysis,
+    get_context_from_db_entry,
+    save_or_update)
 from StaticAnalyzer.views.ios.file_analysis import ios_list_files
 from StaticAnalyzer.views.ios.plist_analysis import plist_analysis
 from StaticAnalyzer.views.shared_func import (file_size, firebase_analysis,
@@ -62,10 +62,10 @@ def static_analyzer_ios(request, api=False):
                 app_dict['directory'], 'StaticAnalyzer/tools/mac/')
             if file_type == 'ipa':
                 # DB
-                ipa_db = StaticAnalyzerIPA.objects.filter(
+                ipa_db = StaticAnalyzerIOS.objects.filter(
                     MD5=app_dict['md5_hash'])
                 if ipa_db.exists() and rescan == '0':
-                    context = get_context_from_db_entry_ipa(ipa_db)
+                    context = get_context_from_db_entry(ipa_db)
                 else:
                     logger.info('iOS Binary (IPA) Analysis Started')
                     app_dict['app_file'] = app_dict[
@@ -92,51 +92,63 @@ def static_analyzer_ios(request, api=False):
                         tools_dir,
                         app_dict['app_dir'],
                         infoplist_dict.get('bin'))
+                    fake_code_dict = {
+                        'api': {},
+                        'code_anal': {},
+                        'urlnfile': [],
+                        'domains': {},
+                        'emailnfile': [],
+                        'firebase': [],
+                    }
                     # Saving to DB
                     logger.info('Connecting to DB')
                     if rescan == '1':
                         logger.info('Updating Database...')
-                        update_db_entry_ipa(
+                        save_or_update(
+                            'update',
                             app_dict,
                             infoplist_dict,
+                            fake_code_dict,
                             bin_analysis_dict,
                             files,
                             sfiles)
                         update_scan_timestamp(app_dict['md5_hash'])
                     elif rescan == '0':
                         logger.info('Saving to Database')
-                        create_db_entry_ipa(
+                        save_or_update(
+                            'save',
                             app_dict,
                             infoplist_dict,
+                            fake_code_dict,
                             bin_analysis_dict,
                             files,
                             sfiles)
-                    context = get_context_from_analysis_ipa(
+                    context = get_context_from_analysis(
                         app_dict,
                         infoplist_dict,
+                        fake_code_dict,
                         bin_analysis_dict,
                         files,
                         sfiles)
-                context['VT_RESULT'] = None
+                context['virus_total'] = None
                 if settings.VT_ENABLED:
                     vt = VirusTotal.VirusTotal()
-                    context['VT_RESULT'] = vt.get_result(
+                    context['virus_total'] = vt.get_result(
                         os.path.join(app_dict['app_dir'], app_dict[
                                      'md5_hash']) + '.ipa',
                         app_dict['md5_hash'])
-                context['version'] = settings.MOBSF_VER
                 context['average_cvss'], context[
-                    'security_score'] = score(context['bin_anal'])
+                    'security_score'] = score(context['binary_analysis'])
                 template = 'static_analysis/ios_binary_analysis.html'
                 if api:
                     return context
                 else:
                     return render(request, template, context)
             elif file_type == 'ios':
-                ios_zip_db = StaticAnalyzerIOSZIP.objects.filter(
+                ios_zip_db = StaticAnalyzerIOS.objects.filter(
                     MD5=app_dict['md5_hash'])
                 if ios_zip_db.exists() and rescan == '0':
-                    context = get_context_from_db_entry_ios(ios_zip_db)
+                    context = get_context_from_db_entry(ios_zip_db)
                 else:
                     logger.info('iOS Source Code Analysis Started')
                     app_dict['app_file'] = app_dict[
@@ -161,34 +173,45 @@ def static_analyzer_ios(request, api=False):
                     # Firebase DB Check
                     code_analysis_dic['firebase'] = firebase_analysis(
                         list(set(code_analysis_dic['urls_list'])))
+                    fake_bin_dict = {
+                        'bin_type': '',
+                        'macho': {},
+                        'bin_res': [],
+                        'libs': [],
+                        'strings': [],
+                    }
                     # Saving to DB
                     logger.info('Connecting to DB')
                     if rescan == '1':
                         logger.info('Updating Database...')
-                        update_db_entry_ios(
+                        save_or_update(
+                            'update',
                             app_dict,
                             infoplist_dict,
                             code_analysis_dic,
+                            fake_bin_dict,
                             files,
                             sfiles)
                         update_scan_timestamp(app_dict['md5_hash'])
                     elif rescan == '0':
                         logger.info('Saving to Database')
-                        create_db_entry_ios(
+                        save_or_update(
+                            'save',
                             app_dict,
                             infoplist_dict,
                             code_analysis_dic,
+                            fake_bin_dict,
                             files,
                             sfiles)
-                    context = get_context_from_analysis_ios(
+                    context = get_context_from_analysis(
                         app_dict,
                         infoplist_dict,
                         code_analysis_dic,
+                        fake_bin_dict,
                         files,
                         sfiles)
-                context['version'] = settings.MOBSF_VER
                 context['average_cvss'], context[
-                    'security_score'] = score(context['insecure'])
+                    'security_score'] = score(context['code_analysis'])
                 template = 'static_analysis/ios_source_analysis.html'
                 if api:
                     return context

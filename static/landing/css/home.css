@@ -211,7 +211,63 @@ div#textnode {
     vertical-align: middle;
     transition: font-size 175ms;
 }
+/* TOP NAV */
+/* Add a black background color to the top navigation */
+.topnav {
+  overflow: hidden;
+  background-color: #312f2f;
+  position: fixed;
+  top: 0;
+  width: 100%;
+}
 
+/* Style the links inside the navigation bar */
+.topnav a {
+  float: left;
+  color: #a7a6a6;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 20px;
+}
+
+/* Change the color of links on hover */
+.topnav a:hover {
+  color: #fff;
+}
+
+/* Centered section inside the top navigation */
+.topnav-centered a {
+  float: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.topnav-centered a:hover {
+  background-color: #312f2f;
+}
+
+/* Right-aligned section inside the top navigation */
+.topnav-right {
+  float: right;
+}
+
+/* Responsive navigation menu - display links on top of each other instead of next to each other (for mobile devices) */
+@media screen and (max-width: 600px) {
+  .topnav a, .topnav-right {
+    float: none;
+    display: block;
+  }
+
+  .topnav-centered a {
+    position: relative;
+    top: 0;
+    left: 0;
+    transform: none;
+  }
+}
 /* PROGRESS BAR */
 
 progress {

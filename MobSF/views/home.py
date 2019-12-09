@@ -20,8 +20,9 @@ from MobSF.utils import (api_key, is_dir_exists, is_file_exists,
 from MobSF.views.helpers import FileType
 from MobSF.views.scanning import Scanning
 
-from StaticAnalyzer.models import (RecentScansDB, StaticAnalyzerAndroid,
-                                   StaticAnalyzerIOSZIP, StaticAnalyzerIPA,
+from StaticAnalyzer.models import (RecentScansDB,
+                                   StaticAnalyzerAndroid,
+                                   StaticAnalyzerIOS,
                                    StaticAnalyzerWindows)
 
 LINUX_PLATFORM = ['Darwin', 'Linux']
@@ -218,7 +219,7 @@ def recent_scans(request):
     android = StaticAnalyzerAndroid.objects.all()
     package_mapping = {}
     for item in android:
-        package_mapping[item.MD5] = item.PACKAGENAME
+        package_mapping[item.MD5] = item.PACKAGE_NAME
     for entry in db_obj:
         if entry['MD5'] in package_mapping.keys():
             entry['PACKAGE'] = package_mapping[entry['MD5']]
@@ -287,8 +288,7 @@ def delete_scan(request, api=False):
                 if scan.exists():
                     RecentScansDB.objects.filter(MD5=md5_hash).delete()
                     StaticAnalyzerAndroid.objects.filter(MD5=md5_hash).delete()
-                    StaticAnalyzerIPA.objects.filter(MD5=md5_hash).delete()
-                    StaticAnalyzerIOSZIP.objects.filter(MD5=md5_hash).delete()
+                    StaticAnalyzerIOS.objects.filter(MD5=md5_hash).delete()
                     StaticAnalyzerWindows.objects.filter(MD5=md5_hash).delete()
                     # Delete Upload Dir Contents
                     app_upload_dir = os.path.join(settings.UPLD_DIR, md5_hash)

@@ -27,8 +27,7 @@ from StaticAnalyzer.views.android.cert_analysis import (
 from StaticAnalyzer.views.android.code_analysis import code_analysis
 from StaticAnalyzer.views.android.converter import (apk_2_java, dex_2_smali)
 from StaticAnalyzer.views.android.db_interaction import (
-    create_db_entry, get_context_from_analysis, get_context_from_db_entry,
-    update_db_entry)
+    get_context_from_analysis, get_context_from_db_entry, save_or_update)
 from StaticAnalyzer.views.android.icon_analysis import (find_icon_path_zip,
                                                         get_icon)
 from StaticAnalyzer.views.android.manifest_analysis import (get_manifest,
@@ -228,7 +227,8 @@ def static_analyzer(request, api=False):
                         # SAVE TO DB
                         if rescan == '1':
                             logger.info('Updating Database...')
-                            update_db_entry(
+                            save_or_update(
+                                'update',
                                 app_dic,
                                 man_data_dic,
                                 man_an_dic,
@@ -241,7 +241,8 @@ def static_analyzer(request, api=False):
                             update_scan_timestamp(app_dic['md5'])
                         elif rescan == '0':
                             logger.info('Saving to Database')
-                            create_db_entry(
+                            save_or_update(
+                                'save',
                                 app_dic,
                                 man_data_dic,
                                 man_an_dic,
@@ -264,14 +265,14 @@ def static_analyzer(request, api=False):
                         tracker_res,
                     )
                 context['average_cvss'], context[
-                    'security_score'] = score(context['findings'])
+                    'security_score'] = score(context['code_analysis'])
                 context['dynamic_analysis_done'] = is_file_exists(
                     os.path.join(app_dic['app_dir'], 'logcat.txt'))
 
-                context['VT_RESULT'] = None
+                context['virus_total'] = None
                 if settings.VT_ENABLED:
                     vt = VirusTotal.VirusTotal()
-                    context['VT_RESULT'] = vt.get_result(
+                    context['virus_total'] = vt.get_result(
                         os.path.join(app_dic['app_dir'],
                                      app_dic['md5']) + '.apk',
                         app_dic['md5'])
@@ -283,10 +284,11 @@ def static_analyzer(request, api=False):
             elif typ == 'zip':
                 # Check if in DB
                 # pylint: disable=E1101
-                cert_dic = {}
-                cert_dic['cert_info'] = ''
-                cert_dic['issued'] = ''
-                cert_dic['sha256Digest'] = False
+                cert_dic = {
+                    'certificate_info': '',
+                    'certificate_status': '',
+                    'description': '',
+                }
                 bin_an_buff = []
                 app_dic['strings'] = ''
                 app_dic['zipped'] = ''
@@ -404,7 +406,8 @@ def static_analyzer(request, api=False):
                             # SAVE TO DB
                             if rescan == '1':
                                 logger.info('Updating Database...')
-                                update_db_entry(
+                                save_or_update(
+                                    'update',
                                     app_dic,
                                     man_data_dic,
                                     man_an_dic,
@@ -417,7 +420,8 @@ def static_analyzer(request, api=False):
                                 update_scan_timestamp(app_dic['md5'])
                             elif rescan == '0':
                                 logger.info('Saving to Database')
-                                create_db_entry(
+                                save_or_update(
+                                    'save',
                                     app_dic,
                                     man_data_dic,
                                     man_an_dic,
@@ -455,7 +459,7 @@ def static_analyzer(request, api=False):
                             template = 'general/zip.html'
                             return render(request, template, ctx)
                 context['average_cvss'], context[
-                    'security_score'] = score(context['findings'])
+                    'security_score'] = score(context['code_analysis'])
                 template = 'static_analysis/android_source_analysis.html'
                 if api:
                     return context

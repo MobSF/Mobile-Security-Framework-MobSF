@@ -158,6 +158,58 @@ CODE_RULES = [
         'owasp': 'M10: Extraneous Functionality',
     },
     {
+        'desc': ('File is stored in an encrypted format on '
+                 'disk and cannot be read from or written to '
+                 'while the device is locked or booting.'),
+        'type': 'string',
+        'string1': 'NSFileProtectionComplete',
+        'level': 'good',
+        'match': 'single_string',
+        'input_case': 'exact',
+        'cvss': 0,
+        'cwe': '',
+        'owasp': '',
+    },
+    {
+        'desc': ('File is stored in an encrypted format '
+                 'on disk after it is closed.'),
+        'type': 'string',
+        'string1': 'NSFileProtectionCompleteUnlessOpen',
+        'level': 'good',
+        'match': 'single_string',
+        'input_case': 'exact',
+        'cvss': 0,
+        'cwe': '',
+        'owasp': '',
+    },
+    {
+        'desc': ('File is stored in an encrypted format '
+                 'on disk and cannot be accessed until after '
+                 'the device has booted.'),
+        'type': 'string',
+        'string1': (
+            'NSFileProtectionComplete'
+            'UntilFirstUserAuthentication'),
+        'level': 'good',
+        'match': 'single_string',
+        'input_case': 'exact',
+        'cvss': 0,
+        'cwe': '',
+        'owasp': '',
+    },
+    {
+        'desc': ('The file has no special protections '
+                 'associated with it.'),
+        'type': 'string',
+        'string1': 'NSFileProtectionNone',
+        'level': 'warning',
+        'match': 'single_string',
+        'input_case': 'exact',
+        'cvss': 4.3,
+        'cwe': 'CWE-311',
+        'owasp': 'M1: Improper Platform Usage',
+    },
+    {
         'desc': ('User input in "loadHTMLString" '
                  'will result in JavaScript Injection.'),
         'type': 'string',

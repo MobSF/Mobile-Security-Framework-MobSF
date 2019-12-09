@@ -27,17 +27,19 @@ from django.utils.html import escape
 
 from MobSF import settings
 from MobSF.utils import (print_n_send_error_response,
-                         python_list,
                          upstream_proxy)
 
-from StaticAnalyzer.models import (RecentScansDB, StaticAnalyzerAndroid,
-                                   StaticAnalyzerIOSZIP, StaticAnalyzerIPA,
+from StaticAnalyzer.models import (RecentScansDB,
+                                   StaticAnalyzerAndroid,
+                                   StaticAnalyzerIOS,
                                    StaticAnalyzerWindows)
-from StaticAnalyzer.views.android.db_interaction import (
-    get_context_from_db_entry)
 from StaticAnalyzer.views.comparer import generic_compare
+from StaticAnalyzer.views.android.db_interaction import (
+    get_context_from_db_entry as adb)
 from StaticAnalyzer.views.ios.db_interaction import (
-    get_context_from_db_entry_ios, get_context_from_db_entry_ipa)
+    get_context_from_db_entry as idb)
+from StaticAnalyzer.views.windows.db_interaction import (
+    get_context_from_db_entry as wdb)
 
 logger = logging.getLogger(__name__)
 try:
@@ -122,9 +124,9 @@ def pdf(request, api=False, jsonres=False):
                     logger.info(
                         'Fetching data from DB for '
                         'PDF Report Generation (Android)')
-                    context = get_context_from_db_entry(static_db)
+                    context = adb(static_db)
                     context['average_cvss'], context[
-                        'security_score'] = score(context['findings'])
+                        'security_score'] = score(context['code_analysis'])
                     if scan_type.lower() == 'apk':
                         template = get_template(
                             'pdf/android_binary_analysis.pdf.html')
@@ -141,14 +143,15 @@ def pdf(request, api=False, jsonres=False):
                             status=500)
             elif scan_type.lower() in ['ipa', 'ioszip']:
                 if scan_type.lower() == 'ipa':
-                    static_db = StaticAnalyzerIPA.objects.filter(MD5=checksum)
+                    static_db = StaticAnalyzerIOS.objects.filter(MD5=checksum)
                     if static_db.exists():
                         logger.info(
                             'Fetching data from DB for '
                             'PDF Report Generation (IOS IPA)')
-                        context = get_context_from_db_entry_ipa(static_db)
+                        context = idb(static_db)
                         context['average_cvss'], context[
-                            'security_score'] = score(context['bin_anal'])
+                            'security_score'] = score(
+                                context['binary_analysis'])
                         template = get_template(
                             'pdf/ios_binary_analysis_pdf.html')
                     else:
@@ -160,15 +163,15 @@ def pdf(request, api=False, jsonres=False):
                                 content_type='application/json; charset=utf-8',
                                 status=500)
                 elif scan_type.lower() == 'ioszip':
-                    static_db = StaticAnalyzerIOSZIP.objects.filter(
+                    static_db = StaticAnalyzerIOS.objects.filter(
                         MD5=checksum)
                     if static_db.exists():
                         logger.info(
                             'Fetching data from DB for '
                             'PDF Report Generation (IOS ZIP)')
-                        context = get_context_from_db_entry_ios(static_db)
+                        context = idb(static_db)
                         context['average_cvss'], context[
-                            'security_score'] = score(context['insecure'])
+                            'security_score'] = score(context['code_analysis'])
                         template = get_template(
                             'pdf/ios_source_analysis_pdf.html')
                     else:
@@ -188,35 +191,7 @@ def pdf(request, api=False, jsonres=False):
                         logger.info(
                             'Fetching data from DB for '
                             'PDF Report Generation (APPX)')
-
-                        context = {
-                            'title': db_entry[0].TITLE,
-                            'name': db_entry[0].APP_NAME,
-                            'pub_name': db_entry[0].PUB_NAME,
-                            'size': db_entry[0].SIZE,
-                            'md5': db_entry[0].MD5,
-                            'sha1': db_entry[0].SHA1,
-                            'sha256': db_entry[0].SHA256,
-                            'bin_name': db_entry[0].BINNAME,
-                            'app_version': db_entry[0].VERSION,
-                            'arch': db_entry[0].ARCH,
-                            'compiler_version': db_entry[0].COMPILER_VERSION,
-                            'visual_studio_version':
-                                db_entry[0].VISUAL_STUDIO_VERSION,
-                            'visual_studio_edition':
-                                db_entry[0].VISUAL_STUDIO_EDITION,
-                            'target_os': db_entry[0].TARGET_OS,
-                            'appx_dll_version': db_entry[0].APPX_DLL_VERSION,
-                            'proj_guid': db_entry[0].PROJ_GUID,
-                            'opti_tool': db_entry[0].OPTI_TOOL,
-                            'target_run': db_entry[0].TARGET_RUN,
-                            'files': python_list(db_entry[0].FILES),
-                            'strings': python_list(db_entry[0].STRINGS),
-                            'bin_an_results':
-                                python_list(db_entry[0].BIN_AN_RESULTS),
-                            'bin_an_warnings':
-                                python_list(db_entry[0].BIN_AN_WARNINGS),
-                        }
+                        context = wdb(db_entry)
                         template = get_template(
                             'pdf/windows_binary_analysis_pdf.html')
             else:
@@ -228,14 +203,14 @@ def pdf(request, api=False, jsonres=False):
                         content_type='application/json; charset=utf-8',
                         status=500)
 
-            context['VT_RESULT'] = None
+            context['virus_total'] = None
             if settings.VT_ENABLED:
                 app_dir = os.path.join(settings.UPLD_DIR, checksum + '/')
                 vt = VirusTotal.VirusTotal()
                 if 'zip' in scan_type.lower():
-                    context['VT_RESULT'] = None
+                    context['virus_total'] = None
                 else:
-                    context['VT_RESULT'] = vt.get_result(
+                    context['virus_total'] = vt.get_result(
                         os.path.join(app_dir, checksum)
                         + '.' + scan_type.lower(),
                         checksum)

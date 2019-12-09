@@ -90,7 +90,7 @@ def get_screenshots(md5_hash, download_dir):
                         expact_imgs.append(img)
                     else:
                         imgs.append(img)
-            exported_act = python_list(sadb[0].EXPORTED_ACT)
+            exported_act = python_list(sadb[0].EXPORTED_ACTIVITIES)
             act_desc = python_list(sadb[0].ACTIVITIES)
             if act_imgs:
                 if len(act_imgs) == len(act_desc):
