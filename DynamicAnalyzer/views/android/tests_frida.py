@@ -133,6 +133,7 @@ def live_api(request):
                       template,
                       {'hash': apphash,
                        'package': request.GET.get('package', ''),
+                       'version': settings.MOBSF_VER,
                        'title': 'Live API Monitor'})
     except Exception:
         logger.exception('API monitor streaming')
@@ -160,6 +161,7 @@ def frida_logs(request):
                       template,
                       {'hash': apphash,
                        'package': request.GET.get('package', ''),
+                       'version': settings.MOBSF_VER,
                        'title': 'Live Frida logs'})
     except Exception:
         logger.exception('Frida log streaming')
@@ -180,6 +182,32 @@ def decode_base64(data, altchars=b'+/'):
     if missing_padding:
         data += b'=' * (4 - missing_padding)
     return base64.b64decode(data, altchars)
+
+
+def get_icon_map(name):
+    """Get icon mapping."""
+    mapping = {
+        'Process': 'fas fa-chart-bar',
+        'Command': 'fas fa-terminal',
+        'Java Native Interface': 'fab fa-cuttlefish',
+        'WebView': 'far fa-window-maximize',
+        'File IO': 'fas fa-file-signature',
+        'Database': 'fas fa-database',
+        'IPC': 'fas fa-broadcast-tower',
+        'Binder': 'fas fa-cubes',
+        'Crypto': 'fas fa-lock',
+        'Crypto - Hash': 'fas fa-hashtag',
+        'Device Info': 'fas fa-info',
+        'Network': 'fas fa-wifi',
+        'Dex Class Loader': 'fas fa-asterisk',
+        'Base64': 'fas fa-puzzle-piece',
+        'System Manager': 'fas fa-cogs',
+        'SMS': 'fas fa-comment-alt',
+        'Device Data': 'fas fa-phone',
+    }
+    if name in mapping:
+        return mapping[name]
+    return 'far fa-dot-circle'
 
 
 def apimon_analysis(app_dir):
@@ -206,6 +234,7 @@ def apimon_analysis(app_dir):
                     api['decoded'] = decode_base64(to_decode)
             except Exception:
                 pass
+            api['icon'] = get_icon_map(api['name'])
             if api['name'] in api_details:
                 api_details[api['name']].append(api)
             else:

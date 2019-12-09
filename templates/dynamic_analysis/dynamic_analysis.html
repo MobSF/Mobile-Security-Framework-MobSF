@@ -1,8 +1,18 @@
 
-{% extends "base_top_only.html" %}
-{% load staticfiles %}
-{% block content %}
+{% extends "base/base_layout.html" %}
+{% load static %}
+{% block sidebar_option %}
+    sidebar-collapse
+{% endblock %}
+{% block extra_css %}
+ <!-- DataTables -->
+<link rel="stylesheet" href="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.css" %}">
 <style>
+   #app_icon{
+            width: 64px;
+            height: 64px;
+          }
+
    textarea {
  
   width: 100%;
@@ -210,51 +220,75 @@ div.loading{
 }
 {% endif %}
 </style>
+{% endblock %}
+{% block content %}
+<div class="content-wrapper">
+  <div class="content-header">
+  </div>
+   <div class="container-fluid">
 
 
-    {% if not identifier %}
-    <div class="callout callout-danger">
-     <div class="row">
-         <div class="container">
-        <h4>Android Runtime not found!</h4>
-          <p> MobSF cannot find android instance identifier. Make sure that an android instance is running and refresh this page.</p><p> If this error persists, Please set <i>ANALYZER_IDENTIFIER</i> in <b>MobSF/settings.py</b>
-          </p>
-         </div>
-         </div>
-    </div>
-    {% endif %}
-  <div class="callout callout-info">
-    <div class="row">
-     <div class="container">
-            <p><b>MobSF Dynamic Analysis supports Genymotion Android x86 VMs version 4.1 to 9.0. We recommend using Android 7.0 and above.</b></p>
-            <p>For Android versions less than <b>5</b>, we use Xposed Framework and therefore, you must MobSFy the Android Runtime prior to Dynamic Analysis.<br /> Other versions use Frida and are automatically MobSFyed on the go.</p>
-            <p><b> HTTPS Traffic Interception</b></p>
-            <p>For Android version <b>4.1 - 4.3</b>, set Android VM proxy as <b>{% if proxy_ip %} {{ proxy_ip }}{% else %} <i>&lt;Host IP&gt;</i>{% endif %}:{{proxy_port}}</b><br/ >For Android versions <b>4.4 - 9</b>, global proxy settings are automatically applied. For more information, please refer <a href="">Documentation</a>.
-            </p>
-             
-         </div>
-         <div align="right"> <button class="btn btn-primary" role="button"  data-toggle="modal" data-target="#modal-mobsfy">MobSFy Android Runtime</button> <p>Android instance: <b>{{ identifier }}</b></p></div>
-      </div>
-    </div>
-    
-
-     <div class="row">
-       
-    <div class="box box-default">
-        <div class="box-header with-border">
-            <h3 class="box-title"><i class="fa fa-rocket"></i> Avaiable Binaries</h3>
-        </div>
-  
-        <div class="box-body">
-
-            <div class="table-responsive">
+   <div class="row">
+          {% if not identifier %}
+          <div class="col-md-12">
+            <div class="card bg-gradient-danger">
+              <div class="card-header">
+                <h3 class="card-title">Android Runtime not found!</h3>
+                <!-- /.card-tools -->
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body">
+                 <p> MobSF cannot find android instance identifier. Make sure that an android instance is running and refresh this page.</p><p> If this error persists, Please set <i>ANALYZER_IDENTIFIER</i> in <strong>MobSF/settings.py</strong>
+                      </p>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+          {% endif %}
+          <div class="col-md-12">
+            <div class="card bg-gradient-primary">
+              <!-- /.card-header -->
+              <div class="card-body">
+                  <div class="row">
+                     <div class="col-md-9">
+                        <h5>MobSF Dynamic Analysis supports Genymotion Android x86 VMs version 4.1 to 9.0. <br/>We recommend using Android 7.0 and above.</h5>
+                        <p>For Android versions less than <strong>5</strong>, we use Xposed Framework and therefore, you must MobSFy the Android Runtime prior to Dynamic Analysis.<br /> Other versions use Frida and are automatically MobSFyed on the go.</p>
+                        <p><h5> HTTPS Traffic Interception</h5>
+                        <p>For Android version <strong>4.1 - 4.3</strong>, set Android VM proxy as <strong>{% if proxy_ip %} {{ proxy_ip }}{% else %} <i>&lt;Host IP&gt;</i>{% endif %}:{{proxy_port}}</strong><br/ >For Android versions <strong>4.4 - 9</strong>, global proxy settings are automatically applied. For more information, please refer Documentation.
+                        </p>
+                      </div>   
+                     <div class="col-md-3">
+                     <br/>
+                     <br/>
+                     <br/>
+                     <p>
+                        <button class="btn btn-info" role="button"  data-toggle="modal" data-target="#mmobsfy">MobSFy Android Runtime</button> <p>Android instance: <strong>{{ identifier }}</strong></p></div>
+                      </p>
+                    </div>
+                     </div>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        
+          <div class="col-md-12">
+            <div class="card card-default">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fa fa-rocket"></i> Apps Avaiable for Dynamic Analysis</h3>
+              </div>
+              <div class="card-body">
+                 <div class="table-responsive">
                 <table class="table table-bordered table-hover table-striped">
                     <thead>
                     <tr>
-                        <th>App</th>
-                        <th>File Name</th>
-                        <th>Package</th>
-                        <th>Scan</th>
+                        <th>APP</th>
+                        <th>FILE NAME</th>
+                        <th>PACKAGE</th>
+                        <th>ACTION</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -262,19 +296,19 @@ div.loading{
                     {% for e in apks %}
                         <tr>
                             <td>
-                             <img id="app_icon" src="
-                              {% if e.ICON_FOUND %}
-                                /download/{{ e.MD5 }}-icon.png
-                              {% else %}
-                                  {% static 'img/no_icon.png' %}
-                              {% endif %}
-                              "/><br /><b>{{ e.REAL_NAME }}</b>
-                              </td>
-                            <td>{{ e.APP_NAME }}<br/><br/>Hash: {{e.MD5}} </td>
-                            <td>{{ e.PACKAGENAME }}</td>
+                              <img id="app_icon" src="{% if e.ICON_FOUND %}/download/{{ e.MD5 }}-icon.png{% else %}{% static 'img/no_icon.png' %}{% endif %}"/><br/><strong>{{ e.REAL_NAME }}</strong>
+                            </td>
                             <td>
-                            <a class="btn btn-success" onclick="dynamic_loader()" href="../android_dynamic/?hash={{e.MD5}}&amp;package={{e.PACKAGENAME}}"><i class="fa fa-android"></i> Start Dynamic Analysis</a>
-                              <p align="center"><br /><a href="../dynamic_report/?hash={{ e.MD5 }}&amp;package={{ e.PACKAGENAME }}"><i class="fa fa-file-text-o"></i> View Report </a>
+                                {{ e.APP_NAME }}<br/><br/>Hash: {{e.MD5}}
+                            </td>
+                            <td>
+                                {{ e.PACKAGENAME }}
+                           </td>
+                            <td> 
+                            <p align="center">
+                              <a class="btn btn-success" onclick="dynamic_loader()" href="../android_dynamic/?hash={{e.MD5}}&amp;package={{e.PACKAGENAME}}"><i class="fab fa-android"></i> Start Dynamic Analysis</a>
+                              <br/> <br/>
+                                 <a class="btn btn-info" href="../dynamic_report/?hash={{ e.MD5 }}&amp;package={{ e.PACKAGENAME }}"><i class="fa fa-mobile"></i> View Report </a>
                               </p>
                             </td>
                         </tr>
@@ -283,24 +317,34 @@ div.loading{
                     </tbody>
                 </table>
             </div>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        </div>
 
         </div>
-        <!-- /.box-body -->
-    </div>
+       </div>
      </div>
-     <!-- Modal -->
-          <div class="modal fade" id="modal-mobsfy">
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title">MobSFy Android Runtime</h4>
-              </div>
-              <div class="modal-body">
-               <div class="box-body">
-              <form role="form">
-                <!-- text input -->
+    </div>
+</div>
+
+<!--Modal-->
+
+
+<div class="modal" id="mmobsfy" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">MobSFy Android Runtime</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form role="form">
                 <div class="form-group">
                     <label>IP &amp; Port</label>
                      <input id="identifier" type="text" class="form-control" value="{{ identifier }}">
@@ -311,27 +355,28 @@ div.loading{
                 </div>
 
               </form>
-            </div>
-              </div>
-              <div class="modal-footer">
-                <button id="mobsfy" type="button" class="btn btn-primary">MobSFy!</button>
-              </div>
-            </div>
-            <!-- /.modal-content -->
           </div>
-          <!-- /.modal-dialog -->
+           <div class="modal-footer">
+            <button id="mobsfy" type="button" class="btn btn-primary">MobSFy!</button>
+          </div>
         </div>
-        <!-- /.modal -->
-{% endblock %}
+        <!-- /.modal-content -->
+      </div>
+      <!-- /.modal-dialog -->
+    </div>
 
-{% block extra_footer %}
+<!--Loader-->
 <div class="hidden loading">
-    <div class='uil-ring-css' style='transform:scale(0.79);'>
-    <div>
+<div class='uil-ring-css' style='transform:scale(0.79);'>
+  <div></div>
 </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<!-- DataTables -->
+<script src="{% static "adminlte/plugins/datatables/jquery.dataTables.min.js" %} "></script>
+<script src="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.js" %}"></script>
 <script>
-
-
 function dynamic_loader(){
     var loadingOverlay = document.querySelector('.loading');
     loadingOverlay.classList.remove('hidden');
@@ -371,6 +416,21 @@ function dynamic_loader(){
         });
     return false;  
 }); 
-</script>
 
+
+//Datatables
+  $(function () {
+    // Datatable
+    $('table').DataTable({
+      "paging": true,
+      "lengthChange": false,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": true,
+      "responsive": true,
+    });
+  });
+
+</script>
 {% endblock %}

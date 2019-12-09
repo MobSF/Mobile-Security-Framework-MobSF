@@ -23,29 +23,22 @@ def get_hardcoded_cert_keystore(files):
     """Returns the hardcoded certificate keystore."""
     try:
         logger.info('Getting Hardcoded Certificates/Keystores')
-        dat = ''
-        certz = ''
-        key_store = ''
+        findings = []
+        certz = []
+        key_store = []
         for file_name in files:
             ext = file_name.split('.')[-1]
             if re.search('cer|pem|cert|crt|pub|key|pfx|p12', ext):
-                certz += escape(file_name) + '</br>'
+                certz.append(escape(file_name))
             if re.search('jks|bks', ext):
-                key_store += escape(file_name) + '</br>'
-        if len(certz) > 1:
-            dat += (
-                '<tr><td>Certificate/Key Files Hardcoded'
-                + ' inside the App.</td><td>'
-                + certz
-                + '</td><tr>'
-            )
-        if len(key_store) > 1:
-            dat += (
-                '<tr><td>Hardcoded Keystore Found.</td><td>'
-                + key_store
-                + '</td><tr>'
-            )
-        return dat
+                key_store.append(escape(file_name))
+        if certz:
+            desc = 'Certificate/Key files hardcoded inside the app.'
+            findings.append({'finding': desc, 'files': certz})
+        if key_store:
+            desc = 'Hardcoded Keystore found.'
+            findings.append({'finding': desc, 'files': key_store})
+        return findings
     except Exception:
         logger.exception('Getting Hardcoded Certificates/Keystores')
 

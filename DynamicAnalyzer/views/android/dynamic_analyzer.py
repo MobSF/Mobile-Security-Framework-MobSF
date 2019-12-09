@@ -34,7 +34,7 @@ def dynamic_analysis(request):
     """Android Dynamic Analysis Entry point."""
     try:
         apks = StaticAnalyzerAndroid.objects.filter(
-            ZIPPED='&type=apk').order_by('-id')
+            ZIPPED='apk').order_by('-id')
         try:
             identifier = get_device()
         except Exception:
@@ -49,7 +49,8 @@ def dynamic_analysis(request):
                    'identifier': identifier,
                    'proxy_ip': proxy_ip,
                    'proxy_port': settings.PROXY_PORT,
-                   'title': 'MobSF Dynamic Analysis'}
+                   'title': 'MobSF Dynamic Analysis',
+                   'version': settings.MOBSF_VER}
         template = 'dynamic_analysis/dynamic_analysis.html'
         return render(request, template, context)
     except Exception as exp:
@@ -127,7 +128,8 @@ def dynamic_analyzer(request):
                    'screen_height': screen_height,
                    'package': package,
                    'md5': bin_hash,
-                   'version': version,
+                   'android_version': version,
+                   'version': settings.MOBSF_VER,
                    'title': 'Dynamic Analyzer'}
         template = 'dynamic_analysis/android/dynamic_analyzer.html'
         return render(request, template, context)

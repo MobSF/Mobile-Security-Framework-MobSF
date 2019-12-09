@@ -1,50 +1,79 @@
-  {% extends "base_top_only.html" %}
-   {% block content %}
 
-
-  <script type="text/javascript" src="/static/js/highlight.min.js"></script>
-    <script type="text/javascript" src="/static/js/asciidoc.min.js"></script>
-  <link type="text/css" rel="stylesheet" href="/static/css/xcode.min.css"/>
-  <script>hljs.initHighlightingOnLoad();</script>
-
-<div class="box box-default">
-     
-          <div class="box-body">
-
-
-        <h3>{{file}} </h3>
-        <br />
-        {% if sql %}
-        {% for table, data in sql.items %}
-        <div class="box">
-            <div class="box-header">
-              <h3 class="box-title">Table: <b>{{table}}</b></h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body no-padding">
-              <table class="table table-striped">
-                <tbody><tr>
-                 {% for head in data|key:"head" %}
-                  <th>{{ head }}</th>
-                {% endfor %}
-                </tr>
-                {% for dat in data|key:"data" %}
-                  <tr>
-                    {% for item in dat %}
-                      <td style="word-wrap: break-word;min-width: 160px;max-width: 160px;">{{ item }}</td>
-                    {% endfor %}
-                   </tr>
-                {% endfor %}
-            
-              </tbody></table>
-            </div>
-            <!-- /.box-body -->
+{% extends "base/base_layout.html" %}
+{% load static %}
+{% block sidebar_option %}
+      sidebar-collapse
+{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static "others/css/xcode.min.css" %}">
+<style>
+pre {
+  white-space: pre-wrap;       /* css-3 */
+  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+  white-space: -pre-wrap;      /* Opera 4-6 */
+  white-space: -o-pre-wrap;    /* Opera 7 */
+  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div class="content-wrapper">
+  <div class="content-header">
+  </div>
+   <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                 <div class="box box-default">
+                   <div class="box-body">
+                      <h3>{{file}} </h3>
+                      <br />
+                      {% if sql %}
+                      {% for table, data in sql.items %}
+                      <div class="box">
+                          <div class="box-header">
+                            <h4 class="box-title"><b>{{table}}</b></h4>
+                          </div>
+                          <!-- /.box-header -->
+                          <div class="box-body no-padding">
+                            <div class="table-responsive">
+                            <table class="table table-striped">
+                              <tbody><tr>
+                              {% for head in data|key:"head" %}
+                                <th>{{ head }}</th>
+                              {% endfor %}
+                              </tr>
+                              {% for dat in data|key:"data" %}
+                                <tr>
+                                  {% for item in dat %}
+                                    <td style="word-wrap: break-word;min-width: 160px;max-width: 160px;">{{ item }}</td>
+                                  {% endfor %}
+                                </tr>
+                              {% endfor %}
+                          
+                            </tbody></table>
+                            </div>
+                          </div>
+                          <!-- /.box-body -->
+                        </div>
+                      {% endfor %}
+                      {% else %}
+                        <pre><code class="{{ type }}">{{ dat }}</code></pre>
+                      {% endif %}
+                        </div>
+                        <!-- /.box-body -->
+                      </div>
           </div>
-        {% endfor %}
-        {% else %}
-          <pre><code class="{{ type }}">{{ dat }}</code></pre>
-        {% endif %}
-          </div>
-          <!-- /.box-body -->
         </div>
+       </div>
+     </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script type="text/javascript" src="{% static "others/js/highlight.min.js" %}"></script>
+<script type="text/javascript" src="{% static "others/js/asciidoc.min.js" %}"></script>
+<script>hljs.initHighlightingOnLoad();</script>
 {% endblock %}

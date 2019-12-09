@@ -1,43 +1,104 @@
-{% extends "base.html" %}
-{% load staticfiles %}
+{% extends "base/base_layout.html" %}
+   {% load static %}
+     {% block sidebar_option %}
+      sidebar-mini
+     {% endblock %}
+    {% block extra_css %}
+    <style>
+          #app_icon{
+            width: 64px;
+            height: 64px;
+          }
+    </style>
+    {% endblock %}
+    {% block sidebar %}
+    <!-- Main Sidebar Container -->
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+      <!-- Sidebar Menu -->
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" role="menu" data-accordion="false">
+          
+          <li class="nav-item">
+            <a href="#information" class="nav-link">
+              <i class="nav-icon fas fa-info-circle"></i>
+              <p>
+                Information
+              </p>
+            </a>
+          </li>
+           <li class="nav-item">
+            <a href="#components" class="nav-link">
+              <i class="nav-icon fas fa-th-large"></i>
+              <p>
+                Components
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#permissions" class="nav-link">
+              <i class="nav-icon fas fa-list"></i>
+              <p>
+                Permissions
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#android_api" class="nav-link">
+              <i class="nav-icon fab fa-java"></i>
+              <p>
+                Android API
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#apkid" class="nav-link">
+              <i class="nav-icon fas fa-bug"></i>
+              <p>
+                APKiD
+              </p>
+            </a>
+          </li>
+           <li class="nav-item">
+              <a href="#urls" class="nav-link">
+                <i class="nav-icon fas fa-globe"></i>
+                <p>URLs</p>
+                </a>
+            </li>
+        </ul>
+      </nav>
+      <!-- /.sidebar-menu -->
+    </div>
+    <!-- /.sidebar -->
+{% endblock %}
 {% block content %}
-    <!-- Left side column. contains the logo and sidebar -->
-    <aside class="main-sidebar">
-        <!-- sidebar: style can be found in sidebar.less -->
-        <div class="sidebar" id="scrollspy">
+  <!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <div class="content-header">
 
-            <!-- sidebar menu: : style can be found in sidebar.less -->
-            <ul class="nav sidebar-menu">
-                <li class="header">Static Analysis</li>
-                <li class="active"><a href="#information"><i class="glyphicon glyphicon-info-sign"></i> Information</a>
-                </li>
-                <li><a href="#components"><i class="glyphicon glyphicon-tasks"></i> Components</a></li>
-                <li><a href="#permissions"><i class="fa fa-align-justify"></i> Permissions</a></li>
-                <li><a href="#android-api"><i class="fa fa-dot-circle-o"></i> Android API</a></li>
-                <li><a href="#apkid"><i class="fa fa-bug"></i> APKiD</a></li>
-                <li><a href="#urls"><i class="fa fa-plus"></i> URLs</a></li>
-            </ul>
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col" align="center">
+         <h2 class="page-header">Comparing {{ first_app.name_ver }} and {{ second_app.name_ver }}</h2>
         </div>
-        <!-- /.sidebar -->
-    </aside>
+      </div>
+    </div>
+  </div>
+  <!-- /.content-header -->
 
-    <!-- Content Wrapper. Contains page content -->
-    <div class="content-wrapper">
-        <!-- Content Header (Page header) -->
-        <!-- Main content -->
-        <div class="content body">
-            <section id="information">
-                <h2 class="page-header">Comparing {{ first_app.name_ver }} and {{ second_app.name_ver }}</h2>
-
-                <div class="row">
-                    <div class="col-sm-8">
-                        <div class="box box-primary">
-                            <div class="box-header with-border">
-                                <h3 class="box-title">App information</h3>
-
-                            </div><!-- /.box-header -->
-                            <div class="box-body center">
-                                <div class="table-responsive">
+<a id="information" class="anchor"></a>
+<section class="content">
+      <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-8">
+            <div class="card">
+              <div class="card-body">
+               <p>
+                <strong><i class="fas fa-info-circle"></i> APP INFORMATION</strong>
+                </p>
+                     <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
                                         <thead>
                                         <tr>
@@ -48,41 +109,37 @@
                                         </thead>
                                         <tbody>
                                         <tr>
-                                            <td>File name</td>
+                                            <td><span class="badge bg-primary">File name</span></td>
                                             <td>{{ first_app.name }}</td>
                                             <td>{{ second_app.name }}</td>
                                         </tr>
                                         <tr>
-                                            <td>MD5</td>
+                                            <td><span class="badge bg-primary">MD5</span></td>
                                             <td>{{ first_app.md5 }}</td>
                                             <td>{{ second_app.md5 }}</td>
                                         </tr>
                                         <tr>
-                                            <td>Size</td>
+                                            <td><span class="badge bg-primary">Size</span></td>
                                             <td>{{ first_app.size }}</td>
                                             <td>{{ second_app.size }}</td>
                                         </tr>
                                         <tr>
-                                            <td>Certificate</td>
+                                            <td><span class="badge bg-primary">Certificate</span></td>
                                             <td>{{ first_app.cert_subject }}</td>
                                             <td>{{ second_app.cert_subject }}</td>
                                         </tr>
                                         </tbody>
                                     </table>
                                 </div> <!-- dic table -->
-                            </div>   <!-- /.box-body -->
-                        </div> <!-- /.box -->
-                    </div> <!-- div col> -->
-
-                    <div class="col-sm-4">
-                        <div class="box box-primary">
-                            <div class="box-header with-border">
-                                <h3 class="box-title">Icon</h3>
-
-                            </div><!-- /.box-header -->
-                            <div class="box-body left">
-
-                                <div class="table-responsive">
+              </div>
+            </div><!-- /.card -->
+            </div>
+            <div class="col-lg-4">
+              <div class="card">
+                <div class="card-body">
+                    <p>
+                <strong><i class="fas fa-icons"></i> ICON</strong>
+                 <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
                                         <thead>
                                         <tr>
@@ -121,34 +178,40 @@
                                         </tbody>
                                     </table>
                                 </div> <!-- dic table -->
-                            </div> <!-- box body -->
-                        </div> <!-- box -->
-                    </div> <!-- col -->
-                </div> <!-- row -->
+                </p>
+                </div>
+              </div>
+            </div>
+            <!-- end row -->
+            </div>
+        </div>
+</section>
 
-                <div class="row" id="components">
-                    <div class="col-sm-10">
-                        <div class="box box-primary">
-                            <div class="box-header with-border">
-                                <h3 class="box-title">Components</h3>
-
-                            </div><!-- /.box-header -->
-                            <div class="box-body left">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
+<a id="components" class="anchor"></a>
+<section class="content">
+      <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+               <p>
+                <strong><i class="fas fa-th-large"></i> COMPONENTS</strong>
+                </p>
+                     <div class="table-responsive">
+                             <table class="table table-bordered table-hover table-striped">
                                         <tr>
                                             <th></th>
-                                            <th>Activities</th>
-                                            <th>Exported Activities</th>
-                                            <th>Services</th>
-                                            <th>Exported Services</th>
-                                            <th>Receivers</th>
-                                            <th>Exported Rceivers</th>
-                                            <th>Providers</th>
-                                            <th>Exported Providers</th>
+                                            <th>ACTIVITIES</th>
+                                            <th>EXPORTED ACTIVITIES</th>
+                                            <th>SERVICES</th>
+                                            <th>EXPORTED SERVICES</th>
+                                            <th>RECEIVERS</th>
+                                            <th>EXPORTED RECEIVERS</th>
+                                            <th>PROVIDERS</th>
+                                            <th>EXPORTED PROVIDERS</th>
                                         </tr>
                                         <tr>
-                                            <td>{{ first_app.name_ver }}</td>
+                                            <td><strong>{{ first_app.name_ver }}</strong></td>
                                             <td>{{ first_app.act_count }}</td>
                                             <td>{{ first_app.e_act }}</td>
                                             <td>{{ first_app.serv_count }}</td>
@@ -159,7 +222,7 @@
                                             <td>{{ first_app.e_cnt }}</td>
                                         </tr>
                                         <tr>
-                                            <td>{{ second_app.name_ver }}</td>
+                                            <td><strong>{{ second_app.name_ver }}</strong></td>
                                             <td>{{ second_app.act_count }}</td>
                                             <td>{{ second_app.e_act }}</td>
                                             <td>{{ second_app.serv_count }}</td>
@@ -169,84 +232,62 @@
                                             <td>{{ second_app.prov_count }}</td>
                                             <td>{{ second_app.e_cnt }}</td>
                                         </tr>
-                                    </table>
-                                </div> <!-- dic table -->
-                            </div> <!-- box body -->
-                        </div> <!-- box -->
-                    </div> <!-- col -->
+                                    </table>           
+                     </div> <!-- dic table -->
+              </div>
+            </div><!-- /.card -->
+            </div>
+      
+            <!-- end row -->
+            </div>
+        </div>
+</section>
 
-                    <!-- Code diff
-                    <div class="col-sm-4">
-                        <div class="box box-primary">
-                            <div class="box-header with-border">
-                                <h3 class="box-title">Code Diff</h3>
 
-                            </div>
-                            <div class="box-body left">
-                                <div class="table-responsive">
-                                    <strong>
-                                        Soon to come!
-                                    </strong>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    -->
+<a id="permissions" class="anchor"></a>
+<section class="content">
+      <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-8">
+            <div class="card">
+              <div class="card-body">
+               <p>
+                <strong><i class="fas fa-list"></i> PERMISSIONS</strong>
+                </p>
+                 <h4 class="box-title">Common</h4>
+                     <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped">
+                                <thead>
+                                <tr>
+                                    <th>PERMISSION</th>
+                                    <th>STATUS</th>
+                                    <th>INFO</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for perm, desc in permissions.common %}
+                                    <tr>
+                                        <td>{{ perm }}</td>
+                                        <td>
+                                            {% if desc.status == 'dangerous' %}
+                                                <span class="badge bg-danger">dangerous</span>
+                                            {% elif desc.status == 'normal' %}
+                                                <span class="badge bg-info">normal</span>
+                                            {% elif desc.status == 'signatureOrSystem' %}
+                                                <span class="badge bg-warning">SignatureOrSystem</span>
+                                            {% elif desc.status == 'signature' %}
+                                                <span class="badge bg-success">signature</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ desc.info }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>         
+                     </div> <!-- dic table -->
 
-                </div> <!-- row -->
-
-                <div class="row" id="permissions">
-                    <div class="col-sm-8">
-                        <div class="box box-primary">
-                            <div class="box-header with-border">
-                                <h3 class="box-title">Permissions</h3>
-
-                            </div><!-- /.box-header -->
-
-                            <div class="box box-default">
-                                <div class="box-header with-border">
-                                    <h3 class="box-title">Common</h3>
-                                </div><!-- /.box-header -->
-                                <div class="box-body left">
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered table-hover table-striped">
-                                            <thead>
-                                            <tr>
-                                                <th>PERMISSION</th>
-                                                <th>STATUS</th>
-                                                <th>INFO</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            {% for perm, desc in permissions.common %}
-                                                <tr>
-                                                    <td>{{ perm }}</td>
-                                                    <td>
-                                                        {% if desc.status == 'dangerous' %}
-                                                            <span class="label label-danger">dangerous</span>
-                                                        {% elif desc.status == 'normal' %}
-                                                            <span class="label label-info">normal</span>
-                                                        {% elif desc.status == 'signatureOrSystem' %}
-                                                            <span class="label label-warning">SignatureOrSystem</span>
-                                                        {% elif desc.status == 'signature' %}
-                                                            <span class="label label-success">signature</span>
-                                                        {% endif %}
-                                                    </td>
-                                                    <td>{{ desc.info }}</td>
-                                                </tr>
-                                            {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div> <!-- dic table -->
-                                </div> <!-- box body -->
-                            </div>
-
-                            <div class="box box-default">
-                                <div class="box-header with-border">
-                                    <h3 class="box-title">Only in {{ first_app.name_ver }}</h3>
-                                </div><!-- /.box-header -->
-                                <div class="box-body left">
-                                    <div class="table-responsive">
+                      <h4 class="box-title">Only in {{ first_app.name_ver }}</h4>
+                      <div class="table-responsive">
                                         <table class="table table-bordered table-hover table-striped">
                                             <thead>
                                             <tr>
@@ -261,13 +302,13 @@
                                                     <td>{{ perm }}</td>
                                                     <td>
                                                         {% if desc.status == 'dangerous' %}
-                                                            <span class="label label-danger">dangerous</span>
+                                                            <span class="badge bg-danger">dangerous</span>
                                                         {% elif desc.status == 'normal' %}
-                                                            <span class="label label-info">normal</span>
+                                                            <span class="badge bg-info">normal</span>
                                                         {% elif desc.status == 'signatureOrSystem' %}
-                                                            <span class="label label-warning">SignatureOrSystem</span>
+                                                            <span class="badge bg-warning">SignatureOrSystem</span>
                                                         {% elif desc.status == 'signature' %}
-                                                            <span class="label label-success">signature</span>
+                                                            <span class="badge bg-success">signature</span>
                                                         {% endif %}
                                                     </td>
                                                     <td>{{ desc.info }}</td>
@@ -276,15 +317,8 @@
                                             </tbody>
                                         </table>
                                     </div> <!-- dic table -->
-                                </div> <!-- box body -->
-                            </div>
-
-                            <div class="box box-default">
-                                <div class="box-header with-border">
-                                    <h3 class="box-title">Only in {{ second_app.name_ver }}</h3>
-                                </div><!-- /.box-header -->
-                                <div class="box-body left">
-                                    <div class="table-responsive">
+                    <h4 class="box-title">Only in {{ second_app.name_ver }}</h4>
+                     <div class="table-responsive">
                                         <table class="table table-bordered table-hover table-striped">
                                             <thead>
                                             <tr>
@@ -299,13 +333,13 @@
                                                     <td>{{ perm }}</td>
                                                     <td>
                                                         {% if desc.status == 'dangerous' %}
-                                                            <span class="label label-danger">dangerous</span>
+                                                            <span class="badge bg-danger">dangerous</span>
                                                         {% elif desc.status == 'normal' %}
-                                                            <span class="label label-info">normal</span>
+                                                            <span class="badge bg-info">normal</span>
                                                         {% elif desc.status == 'signatureOrSystem' %}
-                                                            <span class="label label-warning">SignatureOrSystem</span>
+                                                            <span class="badge bg-warning">SignatureOrSystem</span>
                                                         {% elif desc.status == 'signature' %}
-                                                            <span class="label label-success">signature</span>
+                                                            <span class="badge bg-success">signature</span>
                                                         {% endif %}
                                                     </td>
                                                     <td>{{ desc.info }}</td>
@@ -314,242 +348,49 @@
                                             </tbody>
                                         </table>
                                     </div> <!-- dic table -->
-                                </div> <!-- box body -->
-                            </div>
+              </div>
+            </div><!-- /.card -->
+            </div>
+            <div class="col-lg-4">
+              <div class="card">
+                <div class="card-body">
+                    <p>
+                <strong><i class="fas fa-less-than-equal"></i> PERMISSION SUMMARY</strong>
+                  <div class="list-group">
+                    <p>
+                        <span class="badge bg-primary">Total Common</span>
+                        {{ permissions.common | length }}
+                    </p>
+                    <p>
+                        <span class="badge bg-primary">Only in {{ first_app.name_ver }}</span>
+                        {{ permissions.only_first | length }}
+                    </p>
+                    <p>
+                        <span class="badge bg-primary">Only in {{ second_app.name_ver }}</span>
+                        {{ permissions.only_second | length }}
+                    </p>
+                </div>
+                </p>
+                </div>
+              </div>
+            </div>
+            <!-- end row -->
+            </div>
+        </div>
+</section>
 
-                        </div> <!--containing box -->
-                    </div> <!-- col -->
-
-                    <div class="col-sm-4">
-                        <div class="box box-primary">
-                            <div class="box-header with-border">
-                                <h3 class="box-title">Permission summary</h3>
-                            </div><!-- /.box-header -->
-                            <div class="box-body left">
-                                <div class="list-group">
-                                    <p>
-                                        <span class="label label-primary">Total Common</span>
-                                        {{ permissions.common | length }}
-                                    </p>
-                                    <p>
-                                        <span class="label label-primary">Only in first</span>
-                                        {{ permissions.only_first | length }}
-                                    </p>
-                                    <p>
-                                        <span class="label label-primary">Only in second</span>
-                                        {{ permissions.only_second | length }}
-                                    </p>
-                                </div>
-                            </div> <!-- box body -->
-                        </div> <!-- box -->
-                    </div> <!-- col -->
-
-                </div> <!-- row -->
-
-            <div class="row" id="apkid"> <!--apkid  row -->
-                <div class="col-sm-12">
-                     <div class="box">
-                              <div class="box-header">
-                                 <!-- /.box-header -->
-                                  <h3 class="box-title"><i class="fa fa-bug"></i> APKiD </h3>
-                              </div>
-
-                          {% if not apkid_error %}
-
-                              <div class="box-body no-padding">
-                                 <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th></th>
-                                                <th>ANTI-VM</th>
-                                                <th>COMPILER</th>
-                                                <th>OBFUSCATOR</th>
-                                                <th>PACKER</th>
-                                                <th>DROPPER</th>
-                                                <th>MANIPULATOR</th>
-                                                <th>ANTI-ASSEMBLY</th>
-                                                <th>ANTI-DEBUG</th>
-                                                <th>ABNORMAL PATTERN</th>
-                                            </tr>
-                                        </thead>
-                                           <tr>
-                                            <td>
-                                              Common
-                                            </td>
-                                            <td>
-                                              {% for cmp in apkid.common|key:"anti_vm" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                            <td>
-                                              {% for cmp in apkid.common|key:"compiler" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-
-                                            <td>
-                                              {% for cmp in apkid.common|key:"obfuscator" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                            <td>
-                                              {% for cmp in apkid.common|key:"packer" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-
-                                            <td>
-                                              {% for cmp in apkid.common|key:"dropper" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                             <td>
-                                              {% for cmp in apkid.common|key:"manipulator" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                            <td>
-                                              {% for cmp in apkid.common|key:"anti_disassembly" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                            <td>
-                                              {% for cmp in apkid.common|key:"anti_debug" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                            <td>
-                                              {% for cmp in apkid.common|key:"abnormal" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                          </tr>
-                                           <tr>
-                                            <td>
-                                              {{ first_app.name_ver }}
-                                            </td>
-                                            <td>
-                                              {% for cmp in apkid.only_first|key:"anti_vm" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                            <td>
-                                              {% for cmp in apkid.only_first|key:"compiler" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-
-                                            <td>
-                                              {% for cmp in apkid.only_first|key:"obfuscator" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                            <td>
-                                              {% for cmp in apkid.only_first|key:"packer" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-
-                                            <td>
-                                              {% for cmp in apkid.only_first|key:"dropper" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                             <td>
-                                              {% for cmp in apkid.only_first|key:"manipulator" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                            <td>
-                                              {% for cmp in apkid.only_first|key:"anti_disassembly" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                            <td>
-                                              {% for cmp in apkid.only_first|key:"anti_debug" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                            <td>
-                                              {% for cmp in apkid.only_first|key:"abnormal" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                          </tr>
-                                            <tr>
-                                            <td>
-                                              {{ second_app.name_ver }}
-                                            </td>
-                                            <td>
-                                              {% for cmp in apkid.only_second|key:"anti_vm" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                            <td>
-                                              {% for cmp in apkid.only_second|key:"compiler" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-
-                                            <td>
-                                              {% for cmp in apkid.only_second|key:"obfuscator" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                            <td>
-                                              {% for cmp in apkid.only_second|key:"packer" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-
-                                            <td>
-                                              {% for cmp in apkid.only_second|key:"dropper" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                             <td>
-                                              {% for cmp in apkid.only_second|key:"manipulator" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                            <td>
-                                              {% for cmp in apkid.only_second|key:"anti_disassembly" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                            <td>
-                                              {% for cmp in apkid.only_second|key:"anti_debug" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                            <td>
-                                              {% for cmp in apkid.only_second|key:"abnormal" %}
-                                               {{cmp}}</br>
-                                              {% endfor %}
-                                            </td>
-                                          </tr>
-                                        </tbody>
-                                        </table>
-                                  </div><!-- table -->
-                              </div><!-- /.box-body -->
-                          {% else %}
-                             <p align="center"><strong>APKiD ERROR / No result for one of the apps</strong></p>
-                          {% endif %}
-                     </div> <!-- /.box -->
-                </div><!-- col -->
-            </div><!-- row -->
-
-
-                <div class="row" id="android-api">
-                    <div class="col-sm-12">
-                        <div class="box box-primary">
-                            <div class="box-header with-border">
-                                <h3 class="box-title">API</h3>
-                            </div><!-- /.box-header -->
-                            <div class="box-body left">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
+<a id="android_api" class="anchor"></a>
+<section class="content">
+      <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+               <p>
+                <strong><i class="fab fa-java"></i> ANDROID API</strong>
+                </p>
+                     <div class="table-responsive">
+                             <table class="table table-bordered table-hover table-striped">
                                         <tr>
                                             <th>Common</th>
                                             <th>Only in {{ first_app.name_ver }}</th>
@@ -573,22 +414,228 @@
                                             </td>
                                         </tr>
                                     </table>
-                                </div> <!-- dic table -->
-                            </div> <!-- box body -->
-                        </div> <!-- box -->
-                    </div> <!-- col -->
+                     </div> <!-- dic table -->
+              </div>
+            </div><!-- /.card -->
+            </div>
+      
+            <!-- end row -->
+            </div>
+        </div>
+</section>
 
-                </div> <!-- row -->
 
-                <div class="row" id="urls">
-                    <div class="col-sm-12">
-                        <div class="box box-primary">
-                            <div class="box-header with-border">
-                                <h3 class="box-title">URLs</h3>
-                            </div><!-- /.box-header -->
-                            <div class="box-body left">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
+<a id="apkid" class="anchor"></a>
+<section class="content">
+      <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+               <p>
+                <strong><i class="fas fa-bug"></i> APKiD</strong>
+                </p>
+
+                    {% if not apkid_error %}
+                     <div class="table-responsive">
+                            <table class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th></th>
+                                                <th>ANTI-VM</th>
+                                                <th>COMPILER</th>
+                                                <th>OBFUSCATOR</th>
+                                                <th>PACKER</th>
+                                                <th>DROPPER</th>
+                                                <th>MANIPULATOR</th>
+                                                <th>ANTI-ASSEMBLY</th>
+                                                <th>ANTI-DEBUG</th>
+                                                <th>ABNORMAL PATTERN</th>
+                                            </tr>
+                                        </thead>
+                                           <tr>
+                                            <td>
+                                             <strong>Common</strong>
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.common|key:"anti_vm" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.common|key:"compiler" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in apkid.common|key:"obfuscator" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.common|key:"packer" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in apkid.common|key:"dropper" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                             <td>
+                                              {% for cmp in apkid.common|key:"manipulator" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.common|key:"anti_disassembly" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.common|key:"anti_debug" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.common|key:"abnormal" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                          </tr>
+                                           <tr>
+                                            <td>
+                                              <strong>{{ first_app.name_ver }}</strong>
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_first|key:"anti_vm" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_first|key:"compiler" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in apkid.only_first|key:"obfuscator" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_first|key:"packer" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in apkid.only_first|key:"dropper" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                             <td>
+                                              {% for cmp in apkid.only_first|key:"manipulator" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_first|key:"anti_disassembly" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_first|key:"anti_debug" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_first|key:"abnormal" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                          </tr>
+                                            <tr>
+                                            <td>
+                                              <strong>{{ second_app.name_ver }}</strong>
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_second|key:"anti_vm" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_second|key:"compiler" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in apkid.only_second|key:"obfuscator" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_second|key:"packer" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in apkid.only_second|key:"dropper" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                             <td>
+                                              {% for cmp in apkid.only_second|key:"manipulator" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_second|key:"anti_disassembly" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_second|key:"anti_debug" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_second|key:"abnormal" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                          </tr>
+                                        </tbody>
+                                        </table>
+                     </div> <!-- dic table -->
+                    {% else %}
+                        <p align="center"><strong>Error/ No APKiD result for one of the apps</strong></p>
+                    {% endif %}
+              </div>
+            </div><!-- /.card -->
+            </div>
+      
+            <!-- end row -->
+            </div>
+        </div>
+</section>
+
+<a id="urls" class="anchor"></a>
+<section class="content">
+      <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+               <p>
+                <strong><i class="fas fa-globe"></i> URLs</strong>
+                </p>
+                     <div class="table-responsive">
+                              <table class="table table-bordered table-hover table-striped">
                                         <tr>
                                             <th>Common</th>
                                             <th>Only in {{ first_app.name_ver }}</th>
@@ -612,16 +659,25 @@
                                             </td>
                                         </tr>
                                     </table>
-                                </div> <!-- dic table -->
-                            </div> <!-- box body -->
-                        </div> <!-- box -->
-                    </div> <!-- col -->
-                </div><!--row-->
-
-
-            </section>
-        </div><!-- /.content body -->
-    </div><!-- /.content-wrapper -->
-
-
+                     </div> <!-- dic table -->
+              </div>
+            </div><!-- /.card -->
+            </div>
+      
+            <!-- end row -->
+            </div>
+        </div>
+</section>
+<!-- end of contents -->
+</div>
+{% endblock %}
+<!--end new UI-->
+{% block extra_scripts %}
+<script>
+  // Navbar Active
+    $(".nav-link").on("click", function() {
+    $(".nav-link").removeClass("active");
+    $(this).addClass("active");
+  });
+</script>
 {% endblock %}

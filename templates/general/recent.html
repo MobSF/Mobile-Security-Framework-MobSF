@@ -1,22 +1,37 @@
 
-  {% extends "base_top_only.html" %}
-{% load staticfiles %}
-{% block extra_header %}
-    <link href="/static/dash/css/sweetalert2.min.css" rel="stylesheet">
-    <style>
-        .selected {
-            background-color: lightgreen !important;
-        }
-
-        .selectable_table tr:hover {
-            background-color: lightgreen !important;
-        }
-    </style>
+{% extends "base/base_layout.html" %}
+{% load static %}
+ {% block sidebar_option %}
+      sidebar-collapse
 {% endblock %}
+ {% block extra_css %}
+<link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
+<style>
+#app_icon{
+        width: 64px;
+        height: 64px;
+    }
+.selected {
+    background-color: lightgreen !important;
+}
 
+.selectable_table tr:hover {
+    background-color: lightgreen !important;
+}
+</style>
+{% endblock %}
 {% block content %}
+<div class="content-wrapper">
+  <div class="content-header">
+  </div>
+   <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                
 
-    <div class="box">
+                 <div class="box">
         <div class="box-header with-border">
             <h3 class="box-title"><i class="fa fa-rocket"></i> Recent Scans</h3>
         </div>
@@ -30,7 +45,7 @@
                         <th>File</th>
                         <th>Type</th>
                         <th>Hash</th>
-                        <th style="width: 120px;">Date</th>
+                        <th>Date</th>
                         <th>View</th>
                         <th>Delete</th>
                     </tr>
@@ -43,23 +58,23 @@
                             </td>
                             <td>{{ e.NAME }}</td>
                             <td>
-                                {% if '.apk' == e.NAME|slice:"-4:"%}<i class="fa fa-android fa-2x"></i>
-                                {% elif '.ipa' == e.NAME|slice:"-4:"%}<i class="fa fa-apple fa-2x"></i>
-                                {% elif '.zip' == e.NAME|slice:"-4:"%}<i class="fa fa-file-zip-o fa-2x"></i>
-                                {% elif '.appx' == e.NAME|slice:"-5:"%}<i class="fa fa-windows fa-2x"></i>
+                                {% if '.apk' == e.NAME|slice:"-4:"%}<i class="fab fa-android fa-3x"></i>
+                                {% elif '.ipa' == e.NAME|slice:"-4:"%}<i class="fab fa-apple fa-3x"></i>
+                                {% elif '.zip' == e.NAME|slice:"-4:"%}<i class="fas fa-file-archive fa-3x"></i>
+                                {% elif '.appx' == e.NAME|slice:"-5:"%}<i class="fab fa-windows fa-3x"></i>
                                 {% endif %}
                             </td>
                             <td>{{ e.MD5 }}</td>
                             <td>{{ e.TS }}</td>
-                            <td><p><a class="btn btn-info" href="../{{ e.URL }}"><i class="fa fa-eye"></i> Static Report</a>
+                            <td><p><a class="btn btn-primary" href="../{{ e.URL }}"><i class="fas fa-eye"></i> Static Report</a>
                                 </p>
                             {% if '.apk' == e.NAME|slice:"-4:"%}
                                 <p><a class="btn btn-success" href="../dynamic_report/?hash={{ e.MD5  }}&amp;package={{e.PACKAGE}}"><i class="fa fa-mobile"></i> Dynamic Report</a> 
-                                </p><p><a class="diffButton btn btn-warning" id="{{ e.MD5 }}_{{ e.NAME }}"><i class="fa fa-exchange"></i> Diff or Compare</a>
+                                </p><p><a class="diffButton btn btn-warning" id="{{ e.MD5 }}_{{ e.NAME }}"><i class="fas fa-not-equal"></i> Diff or Compare</a>
                                 </p>
                             {% endif %}
                             </td>
-                            <td> <a class="btn btn-danger" id="{{ e.MD5 }}" onclick="delete_scan(this)"><i class="fa fa-trash"></i> Delete</a></td>
+                            <td> <a class="btn btn-danger" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="#"><i class="fa fa-trash"></i> Delete</a></td>
                         </tr>
                     {% endfor %}
                     </tbody>
@@ -69,10 +84,17 @@
         </div>
         <!-- /.box-body -->
     </div>
-{% endblock %}
 
-{% block extra_footer %}
-<script src="/static/dash/js/sweetalert2.min.js"></script>
+
+          </div>
+        </div>
+       </div>
+     </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
 <script>
     // Diff functions
     var diff_first_md5 = '';
@@ -104,11 +126,10 @@
     // First pop up only saves the first scan to diff and tells the user to select a partner
     function diff_select(item) {
 
-        swal({
+        Swal.fire({
             title: '<strong>Select App to Compare</strong>',
             type: 'info',
-            html:
-                'Please select the second scan result for comparison',
+            text: 'Please select the second scan result for comparison',
             timer: 10000
         });
         diff_first_md5 = item.attr('id').slice(0, 32);
@@ -141,7 +162,7 @@
         diff_second_md5 = selected_md5;
         diff_second_name = rows_tds[1].innerText;
 
-        swal({
+        Swal.fire({
             title: '<strong>Diff confirmation</strong>',
             type: 'info',
             html:
@@ -149,73 +170,73 @@
                 '<br /> <strong>with - <br /> </strong>' + diff_second_name + ' <br /> <strong>?</strong>',
 
             showCancelButton: true,
-            cancelButtonText: 'cancel',
+            cancelButtonText: 'Cancel',
             confirmButtonText: 'Start Diffing!',
-        }).then(function (json_data) {
-            window.location = '/compare/' + diff_first_md5 + '/' + diff_second_md5 + '/';
-        }, function (dismiss) {
-            if (dismiss === 'cancel') {
-                diff_cleanup();
+        }).then((result) => {
+            if (result.value) {
+                window.location = '/compare/' + diff_first_md5 + '/' + diff_second_md5 + '/';
             } else {
-                diff_cleanup();
+                 diff_cleanup();
             }
         })
-
     }
 
     function delete_scan(item){
-      swal({
+      Swal.fire({
       title: 'Are you sure?',
       text: "This will permanently remove the scan results from MobSF",
       type: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
       confirmButtonText: 'Yes',
       cancelButtonText: 'No',
-      confirmButtonClass: 'btn btn-success',
-      cancelButtonClass: 'btn btn-danger',
-      buttonsStyling: false
-    }).then(function () {
-      var md5_hash = item.id;
-      $.ajax({
-          url: '../delete_scan/',
-              type : 'POST',
-          dataType: 'json',
-              data : {
-                      csrfmiddlewaretoken: '{{ csrf_token }}',
-                      md5: md5_hash,
-                      },
-                  success : function(json) {
-                      if (json.deleted==='yes'){
-                        swal(
-                            'Deleted!',
-                            'The scan result is deleted!',
-                            'success'
-                          ).then(function () {
-                             location.reload();
-                            })
-                      }
-                      else {
-                        swal(
-                          'Delete Failed',
-                          'Cannot delete the scan result!',
-                          'error'
-                        )
-                      }
-                  },
-                  error : function(xhr,errmsg,err) {
-                      swal(
-                          'Delete Failed',
-                          errmsg,
-                          'error'
-                        )
-                  }
-      });
-    })
-    }
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#2da532',
+    }).then((result) => {
+        if (result.value) {
+            var md5_hash = item.id;
+            $.ajax({
+                    url: '../delete_scan/',
+                        type : 'POST',
+                    dataType: 'json',
+                        data : {
+                                csrfmiddlewaretoken: '{{ csrf_token }}',
+                                md5: md5_hash,
+                                },
+                            success : function(json) {
+                                if (json.deleted==='yes'){
+                                    Swal.fire(
+                                        'Deleted!',
+                                        'The scan result is deleted!',
+                                        'success'
+                                    ).then(function () {
+                                        location.reload();
+                                    })
+                                }
+                                else {
+                                    Swal.fire(
+                                    'Delete Failed',
+                                    'Cannot delete the scan result!',
+                                    'error'
+                                    )
+                                }
+                            },
+                            error : function(xhr,errmsg,err) {
+                                Swal.fire(
+                                    'Delete Failed',
+                                    errmsg,
+                                    'error'
+                                    )
+                            }
+                });
+               
+        } else {
+                diff_cleanup();
+        }
+        });
+}
+    
 
-    enable_diff_button();
+enable_diff_button();
 
 </script>
 

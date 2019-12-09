@@ -589,8 +589,18 @@ body {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                
-                                    {{ certz | safe}} 
+                                        {% for item in certz %}
+                                            <tr>
+                                            <td>
+                                            {{ item|key:"finding" }}
+                                            </td>
+                                            <td>
+                                            {% for cert_f in item|key:"files" %}
+                                            {{ cert_f }}<br />
+                                            {% endfor %} 
+                                            </td>
+                                        </tr>    
+                                        {% endfor %} 
                                         </tbody>
                                         </table>
                                 

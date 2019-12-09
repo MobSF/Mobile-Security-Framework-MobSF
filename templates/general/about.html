@@ -1,23 +1,30 @@
-
-  {% extends "base_top_only.html" %}
-   {% block content %}
-    
-
-<div class="box box-default">
-     
-          <div class="box-body">
-
-
-        <h1>About Mobile Security Framework</h1>
-      
-          <p class="lead">
-          Mobile Security Framework (MobSF) is an intelligent, all-in-one open source mobile application (Android/iOS/Windows) automated pen-testing framework capable of performing static and dynamic analysis. It can be used for effective and fast security analysis of Android, iOS and Windows mobile Applications and supports both binaries (APK, IPA & APPX ) and zipped source code.<br/><br/> MobSF can also perform Web API Security testing with it's API Fuzzer that can do Information Gathering, analyze Security Headers, identify Mobile API specific vulnerabilities like XXE, SSRF, Path Traversal, IDOR, and other logical issues related to Session and API Rate Limiting.</p>
-          <p> Author: <a href="//twitter.com/ajinabraham">Ajin Abraham</a> </p>      
-          <h2>Core Developers</h2>
-            <p><a href="//github.com/DominikSchlecht">Dominik Schlecht</a></p>
-            <p><a href="//github.com/matandobr">Matan Dobrushin</a></p>
-            <p><a href="//github.com/superpoussin22">Vincent Nadal</a></p>
+{% extends "base/base_layout.html" %}
+ {% block sidebar_option %}
+      sidebar-collapse
+{% endblock %}
+{% block content %}
+<div class="content-wrapper">
+  <div class="content-header">
+  </div>
+   <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h1>About Mobile Security Framework</h1>
+              
+                  <p class="lead">
+                  Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis. MobSF support mobile app binaries (APK, IPA & APPX) along with zipped source code and provides REST APIs for seamless integration with your CI/CD or DevSecOps pipeline.The Dynamic Analyzer helps you to perform runtime security assesment and interactive instrumented testing.
+                 </p>
+                  <p> <strong>Author:</strong> <a href="//twitter.com/ajinabraham">Ajin Abraham</a> </p>      
+                  <h2>Active Collaborators</h2>
+                    <p><a href="//github.com/magaofei">Magaofei</a></p>
+                    <p><a href="//github.com/matandobr">Matan Dobrushin</a></p>
+                    <p><a href="//github.com/superpoussin22">Vincent Nadal</a></p>
           </div>
-          <!-- /.box-body -->
         </div>
+       </div>
+     </div>
+    </div>
+</div>
 {% endblock %}
