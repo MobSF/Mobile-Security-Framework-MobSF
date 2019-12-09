@@ -75,6 +75,7 @@ def generic_compare(request,
     # it will be filled during the different diff analysis
     context = {
         'title': 'Compare report',
+        'version': settings.MOBSF_VER,
         'first_app': {},
         'second_app': {},
         'urls': {},
@@ -185,7 +186,6 @@ def generic_compare(request,
             context[section]['only_second'] = [
                 x for x in second_app[section] if x not in
                 first_app[section]]
-    context['version'] = settings.MOBSF_VER
     template = 'static_analysis/compare.html'
     if api:
         return context
