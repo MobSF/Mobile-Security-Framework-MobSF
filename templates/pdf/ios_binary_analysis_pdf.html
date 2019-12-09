@@ -20,9 +20,9 @@ body {
                   <p>
                      <span class="label label-primary"><b>App Security Score: </b>{{ security_score }}/100</span>
                   </p>
-                  {% if VT_RESULT and VT_RESULT.total %}
+                  {% if virus_total and virus_total.total %}
                    <p>
-                     <span class="label label-primary"><b>VirusTotal Detection: </b>{{ VT_RESULT.positives }}/{{ VT_RESULT.total }}</span>
+                     <span class="label label-primary"><b>VirusTotal Detection: </b>{{ virus_total.positives }}/{{ virus_total.total }}</span>
                   </p>
                   {% endif %}
                   
@@ -46,7 +46,7 @@ body {
                                     </p>
                                     <p>
                                       <span class="label label-primary"><b>App Type:</b></span>
-                                      {{ bin_type }}
+                                      {{ app_type }}
                                     </p>
                                     <p>
                                        <span class="label label-primary"><b>Size: </b></span>
@@ -95,26 +95,32 @@ body {
                                 <div class="list-group">
                                     <p>
                                     <span class="label label-primary"><b>App Name: </b></span>
-                                    {{ bin_name }}
+                                    {{ app_name }}
                                     </p>
                                      <p>
                                     <span class="label label-primary"><b>Identifier: </b></span>
-                                    {{ id }}</p>
+                                    {{ bundle_id }}</p>
                                     <p>
                                     <span class="label label-primary"><b>Version: </b></span>
-                                    {{ bundle_version }}
+                                    {{ app_version }}
                                     </p>
                                     <p>
                                       <span class="label label-primary"><b>Build: </b></span>
-                                          {{ build }}
+                                      {{ build }}
                                      </p>
                                       <p>
                                     <span class="label label-primary"><b>SDK Name: </b></span>
-                                    {{ sdk }}</p><p>
+                                    {{ sdk_name }}</p><p>
                                     <span class="label label-primary"><b>Platform Version: </b></span>
-                                    {{ pltfm }}</p><p>
+                                    {{ platform }}</p><p>
                                    <span class="label label-primary"><b>Min OS Version: </b></span>
-                                    {{ min }}
+                                    {{ min_os_version }}
+                                    </p>
+                                    <p>
+                                     <span class="badge bg-primary">Supported Platforms</span>
+                                    {% for pl in bundle_supported_platforms %}
+                                      {{pl}},
+                                    {% endfor %}
                                     </p>
                                 </div>
                             </div>
@@ -185,7 +191,53 @@ body {
                         </div>
                     </div>
        <hr>
+  <div class="col-lg-12">
+         <div class="panel panel-default">
+           <div class="panel-heading">
+             <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="fa fa-mobile"></span> URL SCHEMES</h3><hr>
+           </div>
+           <div class="panel-body">
+             {% if bundle_url_types|length > 0 %}
+             <div class="table-responsive">
+                  <table class="table table-bordered table-hover table-striped">
 
+                  <thead>
+                      <tr>
+                          <th>URL NAME</th>
+                          <th>SCHEMES</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+
+                    {% for scheme in bundle_url_types %}
+                    <tr>
+                      <td>
+                           {{scheme | key:"CFBundleURLName" }}
+                        {% if scheme|key:"CFBundleTypeRole" %}
+                           <br>
+                            {{scheme | key:"CFBundleTypeRole" }}
+                        {% endif %}
+                      </td>
+                      <td>
+                        {% for ul in scheme.CFBundleURLSchemes %}
+                           {{ul}} <br/>
+                        {% endfor %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+              </table>
+           </div>
+            {% else %}
+              <p>
+                No URL Schemes found.
+            </p>
+            {% endif %}
+           </div>
+         </div>
+       </div> 
+
+       <hr>
        <div class="col-lg-12">
          <div class="panel panel-default">
            <div class="panel-heading">
@@ -203,7 +255,7 @@ body {
                    </tr>
                  </thead>
                  <tbody>
-                   {%for  perm in permissions%}
+                   {% for  perm in permissions %}
                     <tr>
                       <td>
                         {{ perm.name }}
@@ -240,42 +292,43 @@ body {
 
            <div class="panel-body">
              <div class="table-responsive">
-               <table class="table table-bordered table-hover table-striped">
-                 <thead>
-                   <tr>
-                     <th>ISSUE</th>
-                     <th>STATUS</th>
-                     <th>DESCRIPTION</th>
-                   </tr>
-                 </thead>
-                 <tbody>
-                   {% if insecure_connections|length > 0 %}
-                     {%for con in insecure_connections%}
-                     <tr>
-                       <td>
-                         Exception in NSAppTransportSecurity found.
-                       <td>
-                         Insecure
-                       </td>
-                       <td>
-                         App Transport Security (ATS) is disabled on the domain '{{ con }}'. Disabling ATS can allow insecure communication with particular servers or allow insecure loads for web views or for media, while maintaining ATS protections elsewhere in your app.
-                       </td>
-                     </tr>
-                     {% endfor %}
-                   {% else %}
-                   <tr>
-                     <td>
-                       None
-                     <td>
-                       Secure
-                     </td>
-                     <td>
-                       No insecure connections configured. App Transport Security (ATS) is enabled.
-                     </td>
-                   </tr>
-                   {% endif %}
-                 </tbody>
-                     </table>
+              <table class="table table-bordered table-hover table-striped">
+
+                  <thead>
+                      <tr>
+                        <th>ISSUE</th>
+                        <th>STATUS</th>
+                        <th>DESCRIPTION</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                    {% if ats_analysis|length > 0 %}
+                      {% for findings in ats_analysis %}
+                      <tr>
+                        <td>
+                         {{findings.issue}}
+                        <td>
+                          <span class="badge bg-danger"> {{findings.status}}</span>
+                        </td>
+                        <td>
+                         {{findings.description}}
+                        </td>
+                      </tr>
+                      {% endfor %}
+                    {% else %}
+                    <tr>
+                      <td>
+                        No ATS exceptions found.
+                      <td>
+                        <span class="badge bg-success">secure</span>
+                      </td>
+                      <td>
+                        No insecure connections configured. App Transport Security (ATS) is enabled.
+                      </td>
+                    </tr>
+                    {% endif %}
+                  </tbody>
+              </table>
                      </div>
                    <!-- /.box-body -->
                  </div>
@@ -283,15 +336,15 @@ body {
              </div><hr>
 
                     <!-- ============================================================= -->
-        {% if VT_RESULT %}
+        {% if virus_total %}
                 <div class="col-lg-12">
                     <div class="panel panel-default">
                         <div class="panel-heading">
                              <h3 class="panel-title"><i class="fa fa-bug"></i>VirusTotal Report</h3><hr>
                         </div>
                         <div class="panel-body">
-                        <p> {{ VT_RESULT.positives }} / {{ VT_RESULT.total }}&nbsp; AVs found this file Malicious! </p>
-                        {% if VT_RESULT.positives %}
+                        <p> {{ virus_total.positives }} / {{ virus_total.total }}&nbsp; AVs found this file Malicious! </p>
+                        {% if virus_total.positives %}
                           <div class="table-responsive">
                                 <table class="table table-bordered table-hover table-striped">
                                                 <thead>
@@ -301,7 +354,7 @@ body {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                {% for av_name,av_result in VT_RESULT.scans.items %}
+                                                {% for av_name,av_result in virus_total.scans.items %}
                                                     {% if av_result.detected == True %}
                                                        <tr>
                                                             <td>
@@ -342,7 +395,7 @@ body {
                       </tr>
                   </thead>
                    <tbody>
-                   {%for  bin in bin_anal%}
+                   {% for  bin in binary_analysis %}
                     <tr>
                       <td>
                         {{ bin.issue }}
@@ -393,7 +446,7 @@ body {
                           </thead>
                           <tbody>
 
-                            {%for item in file_analysis %}
+                            {% for item in file_analysis %}
                             <tr>
                               <td>
                                 {{ item.issue }}
@@ -423,48 +476,10 @@ body {
                             <div class="panel-body">
                                 <div class="list-group">
                   <p>
-                    {% for lib in libs %}
+                    {% for lib in libraries %}
                     {{ lib }}
                     </br>
                     {% endfor %}
-                  </p>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-<hr>
-
-                <div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-sort-by-alphabet-alt"></span> STRINGS</h3><hr>
-                            </div>
-                            <div class="panel-body">
-                                <div class="list-group">
-                  <p>
-            {% for string in strings %}
-           {{string | safe}} </br>
-           {% endfor %}
-                  </p>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-<hr>
-              <div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-folder-open"></span> FILES</h3><hr>
-                            </div>
-                            <div class="panel-body">
-                                <div class="list-group">
-                  <p>
-                {% for file in files %}
-                  {{ file}} <br>
-                {% endfor %}
-
                   </p>
                                 </div>
 

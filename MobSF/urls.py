@@ -12,7 +12,7 @@ from MobSF.views import home
 from MobSF.views.api import rest_api
 
 from StaticAnalyzer import tests
-from StaticAnalyzer.views import shared_func, windows
+from StaticAnalyzer.views import shared_func
 from StaticAnalyzer.views.android import (
     find,
     generate_downloads,
@@ -21,6 +21,7 @@ from StaticAnalyzer.views.android import (
     smali,
     view_source,
 )
+from StaticAnalyzer.views.windows import windows
 from StaticAnalyzer.views.android import static_analyzer as android_sa
 from StaticAnalyzer.views.ios import static_analyzer as ios_sa
 from StaticAnalyzer.views.ios import view_source as io_view_source

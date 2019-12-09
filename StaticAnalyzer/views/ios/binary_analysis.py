@@ -180,10 +180,10 @@ def otool_analysis(tools_dir, bin_name, bin_path, bin_dir):
         baned_s = b', '.join(baned)
         if len(baned_s) > 1:
             banned_apis = {
-                'issue': 'Binary make use of banned API(s)',
+                'issue': 'Binary make use of insecure API(s)',
                 'level': IN_SECURE,
                 'description': ('The binary may contain'
-                                ' the following banned API(s) {}.').format(
+                                ' the following insecure API(s) {}.').format(
                                     baned_s.decode('utf-8', 'ignore')),
                 'cvss': 6,
                 'cwe': 'CWE-676',
@@ -477,8 +477,6 @@ def strings_on_ipa(bin_path):
         logger.info('Running strings against the Binary')
         unique_str = []
         unique_str = list(set(strings_util(bin_path)))  # Make unique
-        unique_str = [escape(ip_str)
-                      for ip_str in unique_str]  # Escape evil strings
         return unique_str
     except Exception:
         logger.exception('Running strings against the Binary')

@@ -10,6 +10,7 @@ from copy import deepcopy
 
 from django.shortcuts import render
 from django.conf import settings
+from django.utils.html import escape
 
 from MobSF.utils import print_n_send_error_response
 
@@ -78,14 +79,13 @@ def generic_compare(request,
         'first_app': {},
         'second_app': {},
         'urls': {},
-        'api': {},
+        'android_api': {},
         'permissions': {},
         'apkid': {},
     }
-    static_fields = ['md5', 'name', 'size', 'icon_found',
-                     'icon_hidden', 'act_count', 'e_act', 'serv_count',
-                     'e_ser', 'bro_count', 'e_bro', 'prov_count',
-                     'e_cnt', 'apkid']
+    static_fields = ['md5', 'file_name', 'size', 'icon_found',
+                     'icon_hidden', 'activities', 'services', 'providers',
+                     'receivers', 'exported_count', 'apkid']
 
     # For now - support only android
     db_entry = StaticAnalyzerAndroid.objects.filter(MD5=first_hash)
@@ -94,10 +94,9 @@ def generic_compare(request,
     if not (db_entry.exists() and db_entry2.exists()):
         return print_n_send_error_response(
             request,
-            'One of the Hashes is not found '
-            'in the Android scan database. Make '
-            'sure both of the apps finished '
-            'analysis and they are both Android.',
+            'Currently you can only diff android apps.'
+            'One of the app has not finished static analysis or'
+            'they are not both android APK/ZIP.',
             False,
         )
 
@@ -115,8 +114,8 @@ def generic_compare(request,
 
         # format informative title
         context[curr_app]['name_ver'] = '{0} - {1}'.format(
-            db_context['packagename'],
-            db_context['androvername'])
+            db_context['package_name'],
+            db_context['version_name'])
 
         # Fill all the static information
         for static_attr in static_fields:
@@ -124,7 +123,8 @@ def generic_compare(request,
 
         # Get only the subject of the cert
         subject_regex = re.compile(r'Subject: .*')
-        match = subject_regex.search(db_context['certinfo'])
+        match = subject_regex.search(
+            db_context['certificate_analysis']['certificate_info'])
         if match:
             context[curr_app]['cert_subject'] = match.group()
         else:
@@ -137,6 +137,8 @@ def generic_compare(request,
             for url in url_obj['urls']:
                 # urls can mess up the table because they can be really long,
                 # so let's cut them
+                # escape url
+                url = escape(url)
                 tmp_url = url[:70]
                 while len(url) > 70:
                     url = url[70:]
@@ -156,7 +158,7 @@ def generic_compare(request,
     # Third, calculate some diffs
     for section, is_tuples in [
         ('permissions', True),
-        ('api', True),
+        ('android_api', True),
         ('urls', False),
     ]:
         if is_tuples:
