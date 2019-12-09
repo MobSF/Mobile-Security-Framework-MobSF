@@ -80,6 +80,7 @@ def apk_2_java(app_path, app_dir, tools_dir):
                 jadx,
                 '-ds',
                 output,
+                '-q',
                 '-r',
                 '--show-bad-code',
                 app_path,
