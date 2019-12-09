@@ -267,7 +267,7 @@
                 <div class="col-6">
                   <p><strong><i class="fas fa-box-open"></i> FILE INFORMATION </strong></p>                         
                   <span class="badge bg-primary">File Name</span>
-                  {{ name }}<br/>
+                  {{ file_name }}<br/>
                   <span class="badge bg-primary">Size</span>
                   {{ size }}<br/>
                   <span class="badge bg-primary">MD5</span>
@@ -280,21 +280,21 @@
                 <div class="col-4">
                   <p><strong><i class="fas fa-info"></i> APP INFORMATION </strong></p>                                       
                   <span class="badge bg-primary">App Name</span>
-                  {{ real_name }}<br/>                                   
+                  {{ app_name }}<br/>                                   
                   <span class="badge bg-primary">Package Name</span>
-                  {{ packagename }}<br/>
+                  {{ package_name }}<br/>
                   <span class="badge bg-primary">Main Activity</span>
-                  {{ mainactivity }}<br/>
+                  {{ main_activity }}<br/>
                   <span class="badge bg-primary">Target SDK</span>
-                  {{ targetsdk }}           
+                  {{ target_sdk }}           
                   <span class="badge bg-primary">Min SDK</span>
-                    {{ minsdk }}
+                    {{ min_sdk }}
                   <span class="badge bg-primary">Max SDK</span>
-                    {{ maxsdk }}<br/>
+                    {{ max_sdk }}<br/>
                   <span class="badge bg-primary">Android Version Name</span>
-                  {{ androvername }}
+                  {{ version_name }}
                 <span class="badge bg-primary">Android Version Code</span>
-                {{ androver }}
+                {{ version_code }}
                 </div>    
               </div>
 
@@ -302,7 +302,7 @@
           </div>
           </div>
           <!-- Play Store -->
-          {% if not play_details.error %}
+          {% if not playstore_details.error %}
           <div class="col-lg-12">
           <div class="card">
             <div class="card-body">
@@ -310,34 +310,34 @@
                 <strong><i class="fab fa-google-play"></i> PLAYSTORE INFORMATION</strong>
                 </p>
                     <span class="badge bg-info">Title</span>
-                      {{ play_details.title }} <br/>                                     
+                      {{ playstore_details.title }} <br/>                                     
                     <span class="badge bg-info">Score</span>
-                      {{ play_details.score}}
+                      {{ playstore_details.score}}
                     <span class="badge bg-info">Installs</span>
-                      {{ play_details.installs }}
+                      {{ playstore_details.installs }}
                     <span class="badge bg-info">Price</span>
-                        {{ play_details.price }}
+                        {{ playstore_details.price }}
                     <span class="badge bg-info">Android Version Support</span>
-                      {{ play_details.androidVersionText }}
+                      {{ playstore_details.androidVersionText }}
                       <span class="badge bg-info">Category</span>
-                      {{ play_details.genre }}
+                      {{ playstore_details.genre }}
                       <span class="badge bg-info">Play Store URL</span>
-                        <a target="_blank" href="{{ play_details.url }}"> {{ packagename }} </a>
+                        <a target="_blank" href="{{ playstore_details.url }}"> {{ package_name }} </a>
                     <br/>
                     <span class="badge bg-info">Developer Details</span>
-                        {{play_details.developer}},  
-                        {{play_details.developerId}}, 
-                        {{play_details.developerAddress}},
-                        {{play_details.developerWebsite}}, 
-                        {{play_details.developerEmail}}, 
+                        {{playstore_details.developer}},  
+                        {{playstore_details.developerId}}, 
+                        {{playstore_details.developerAddress}},
+                        {{playstore_details.developerWebsite}}, 
+                        {{playstore_details.developerEmail}}, 
                   <br/>
                   <span class="badge bg-info">Release Date</span>
-                      {{ play_details.released }}
+                      {{ playstore_details.released }}
                   <span class="badge bg-info">Privacy Policy</span>
-                  <a target="_blank" href="{{ play_details.privacyPolicy }}">Privacy link</a>
+                  <a target="_blank" href="{{ playstore_details.privacyPolicy }}">Privacy link</a>
                   <br/>                                     
                       <span class="badge bg-info">Description</span>
-                      <pre id="pre-wrap">{{ play_details.description }}</pre>
+                      <pre id="pre-wrap">{{ playstore_details.description }}</pre>
             </div>
           </div><!-- /.card -->
           </div>
@@ -361,7 +361,7 @@
                         <!-- small box -->
                         <div class="small-box bg-info">
                           <div class="inner">
-                            <h3>{{ act_count }}</h3>
+                            <h3>{{ activities | length }}</h3>
 
                             <p>ACTIVITIES</p>
                           </div>
@@ -376,7 +376,7 @@
                         <!-- small box -->
                         <div class="small-box bg-success">
                           <div class="inner">
-                            <h3>{{ serv_count }}</h3>
+                            <h3>{{ services | length }}</h3>
 
                             <p>SERVICES</p>
                           </div>
@@ -391,7 +391,7 @@
                         <!-- small box -->
                         <div class="small-box bg-warning">
                           <div class="inner">
-                            <h3>{{ bro_count }}</h3>
+                            <h3>{{ receivers | length }}</h3>
 
                             <p>RECEIVERS</p>
                           </div>
@@ -406,7 +406,7 @@
                         <!-- small box -->
                         <div class="small-box bg-danger">
                           <div class="inner">
-                            <h3>{{ prov_count }}</h3>
+                            <h3>{{ providers | length }}</h3>
 
                             <p>PROVIDERS</p>
                           </div>
@@ -424,7 +424,7 @@
                           <div class="info-box-content">
                             <span class="info-box-text">Exported <br/>Activities</span>
                             <span class="info-box-number">
-                              {{ e_act }}
+                              {{  exported_count.exported_activities }}
                             </span>
                           </div>
                           <!-- /.info-box-content -->
@@ -438,7 +438,7 @@
 
                           <div class="info-box-content">
                             <span class="info-box-text">Exported <br/>Services</span>
-                            <span class="info-box-number">{{ e_ser }}</span>
+                            <span class="info-box-number">{{  exported_count.exported_services }}</span>
                           </div>
                           <!-- /.info-box-content -->
                         </div>
@@ -455,7 +455,7 @@
 
                           <div class="info-box-content">
                             <span class="info-box-text">Exported <br/>Receivers</span>
-                            <span class="info-box-number">{{e_bro}}</span>
+                            <span class="info-box-number">{{ exported_count.exported_receivers}}</span>
                           </div>
                           <!-- /.info-box-content -->
                         </div>
@@ -468,7 +468,7 @@
 
                           <div class="info-box-content">
                             <span class="info-box-text">Exported <br/>Providers</span>
-                            <span class="info-box-number">{{e_cnt}}</span>
+                            <span class="info-box-number">{{ exported_count.exported_providers }}</span>
                           </div>
                           <!-- /.info-box-content -->
                         </div>
@@ -496,8 +496,8 @@
                 <strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong>
                 </p>
                 <p align="center">
-                  <a href="../StaticAnalyzer/?checksum={{ md5 }}&amp;name={{ name }}&amp;type=zip&amp;rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
-                  <a target="_blank" href="{{mani}}" role="button" class="btn btn-primary"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
+                  <a href="../StaticAnalyzer/?checksum={{ md5 }}&amp;name={{ file_name }}&amp;type=zip&amp;rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
+                  <a target="_blank" href="../ManifestView/?md5={{ md5 }}&amp;type={{ app_type }}&amp;bin=0" role="button" class="btn btn-primary"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
                 </p>
               </div>
             </div><!-- /.card -->
@@ -578,14 +578,14 @@
                       </tr>
                     </thead>
                     <tbody>
-                   {% for desc, details in api.items %}
+                   {% for desc, details in android_api.items %}
                   <tr>
                     <td>
                     {{ desc }}
                     </td>
                     <td>
                     {% for path in details|key:"path" %}
-                    <a href="../ViewSource/?file={{ path }}&amp;md5={{ md5 }}&amp;type={{zipped}}"> {{ path }}</a>
+                    <a href="../ViewSource/?file={{ path }}&amp;md5={{ md5 }}&amp;type={{app_type}}"> {{ path }}</a>
                     <br/>
                     {% endfor %}
                     </td>
@@ -703,7 +703,7 @@
                     </thead>
                     <tbody>
                                       
-                    {% for item in manifest %}
+                    {% for item in manifest_analysis %}
                       <tr>
                         <td>
                         {{item|key:"title" | safe}}
@@ -759,7 +759,7 @@
                   </tr>
                     </thead>
                     <tbody>
-               {% for issue, details in findings.items %}
+               {% for issue, details in code_analysis.items %}
                   <tr>
                   <td>
                   {{ issue }}
@@ -780,7 +780,7 @@
                    <td><b>{{ details|key:"owasp" }}</b></td>
                   <td>
                   {% for path in details|key:"path" %}
-                   <a href="../ViewSource/?file={{ path }}&amp;md5={{ md5 }}&amp;type={{zipped}}"> {{ path }}</a>
+                   <a href="../ViewSource/?file={{ path }}&amp;md5={{ md5 }}&amp;type={{app_type}}"> {{ path }}</a>
                   <br/>
                   {% endfor %}
                   </td>
@@ -816,10 +816,10 @@
                         </tr>
                     </thead>
                     <tbody>
-                  {% for item in certz %}
+                  {% for item in file_analysis %}
                     <tr>
                     <td>
-                    {{ item|key:"finding" }}
+                    {{ item|key:"findings" }}
                     </td>
                      <td>
                      {% for cert_f in item|key:"files" %}
@@ -915,7 +915,7 @@
                         </td>
 
                        <td>
-                          <a href="../ViewSource/?file={{urldict|key:"path"}}&amp;md5={{ md5}}&amp;type={{zipped}}">{{urldict|key:"path"}}</a>
+                          <a href="../ViewSource/?file={{urldict|key:"path"}}&amp;md5={{ md5}}&amp;type={{app_type}}">{{urldict|key:"path"}}</a>
                        </td>
                     </tr>
                   {% endfor %} 
@@ -942,7 +942,7 @@
              <strong><i class="fas fa-database"></i> FIREBASE DATABASE</strong>
              </p>
               <div class="table-responsive">
-               {% if firebase %} 
+               {% if firebase_urls %} 
              <table id="table_firebase" class="table table-bordered table-hover table-striped">
                   <thead>
                   <tr>
@@ -952,7 +952,7 @@
                  </thead>
                
                  <tbody>
-                  {% for item in firebase %}
+                  {% for item in firebase_urls %}
                     <tr>
                        <td>
                        {{ item.url }}
@@ -1006,7 +1006,7 @@
                        {% endfor %}
                         </td>
                        <td>
-                          <a href="../ViewSource/?file={{email_dict|key:"path"}}&amp;md5={{ md5}}&amp;type={{zipped}}">{{email_dict|key:"path"}}</a>
+                          <a href="../ViewSource/?file={{email_dict|key:"path"}}&amp;md5={{ md5}}&amp;type={{app_type}}">{{email_dict|key:"path"}}</a>
                        </td>
                     </tr>
                   {% endfor %} 

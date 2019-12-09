@@ -110,8 +110,8 @@
                                         <tbody>
                                         <tr>
                                             <td><span class="badge bg-primary">File name</span></td>
-                                            <td>{{ first_app.name }}</td>
-                                            <td>{{ second_app.name }}</td>
+                                            <td>{{ first_app.file_name }}</td>
+                                            <td>{{ second_app.file_name }}</td>
                                         </tr>
                                         <tr>
                                             <td><span class="badge bg-primary">MD5</span></td>
@@ -212,25 +212,25 @@
                                         </tr>
                                         <tr>
                                             <td><strong>{{ first_app.name_ver }}</strong></td>
-                                            <td>{{ first_app.act_count }}</td>
-                                            <td>{{ first_app.e_act }}</td>
-                                            <td>{{ first_app.serv_count }}</td>
-                                            <td>{{ first_app.e_ser }}</td>
-                                            <td>{{ first_app.bro_count }}</td>
-                                            <td>{{ first_app.e_bro }}</td>
-                                            <td>{{ first_app.prov_count }}</td>
-                                            <td>{{ first_app.e_cnt }}</td>
+                                            <td>{{ first_app.activities | length }}</td>
+                                            <td>{{ first_app.exported_count.exported_activities }}</td>
+                                            <td>{{ first_app.services | length }}</td>
+                                            <td>{{ first_app.exported_count.exported_services }}</td>
+                                            <td>{{ first_app.receivers | length }}</td>
+                                            <td>{{ first_app.exported_count.exported_receivers }}</td>
+                                            <td>{{ first_app.providers | length }}</td>
+                                            <td>{{ first_app.exported_count.exported_providers }}</td>
                                         </tr>
                                         <tr>
                                             <td><strong>{{ second_app.name_ver }}</strong></td>
-                                            <td>{{ second_app.act_count }}</td>
-                                            <td>{{ second_app.e_act }}</td>
-                                            <td>{{ second_app.serv_count }}</td>
-                                            <td>{{ second_app.e_ser }}</td>
-                                            <td>{{ second_app.bro_count }}</td>
-                                            <td>{{ second_app.e_bro }}</td>
-                                            <td>{{ second_app.prov_count }}</td>
-                                            <td>{{ second_app.e_cnt }}</td>
+                                            <td>{{ second_app.activities | length }}</td>
+                                            <td>{{ second_app.exported_count.exported_activities }}</td>
+                                            <td>{{ second_app.services | length }}</td>
+                                            <td>{{ second_app.exported_count.exported_services }}</td>
+                                            <td>{{ second_app.receivers | length }}</td>
+                                            <td>{{ second_app.exported_count.exported_receivers }}</td>
+                                            <td>{{ second_app.providers | length }}</td>
+                                            <td>{{ second_app.exported_count.exported_providers }}</td>
                                         </tr>
                                     </table>           
                      </div> <!-- dic table -->
@@ -398,17 +398,17 @@
                                         </tr>
                                         <tr>
                                             <td>
-                                                {% for desc, info in api.common %}
+                                                {% for desc, info in android_api.common %}
                                                     {{ desc }} <br/>
                                                 {% endfor %}
                                             </td>
                                             <td>
-                                                {% for desc, info in api.only_first %}
+                                                {% for desc, info in android_api.only_first %}
                                                     {{ desc }} <br/>
                                                 {% endfor %}
                                             </td>
                                             <td>
-                                                {% for desc, info in api.only_second %}
+                                                {% for desc, info in android_api.only_second %}
                                                     {{ desc }} <br/>
                                                 {% endfor %}
                                             </td>
@@ -644,17 +644,17 @@
                                         <tr>
                                             <td>
                                                 {% for url in urls.common %}
-                                                    {{ url | safe }} <br/>
+                                                    {{ url | safe}} <br/>
                                                 {% endfor %}
                                             </td>
                                             <td>
                                                 {% for url in urls.only_first %}
-                                                    {{ url }} <br/>
+                                                    {{ url | safe }} <br/>
                                                 {% endfor %}
                                             </td>
                                             <td>
                                                 {% for url in urls.only_second %}
-                                                    {{ url }} <br/>
+                                                    {{ url | safe}} <br/>
                                                 {% endfor %}
                                             </td>
                                         </tr>

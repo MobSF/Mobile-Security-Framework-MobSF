@@ -237,7 +237,7 @@ class Environment:
         elif comp == 'libraries':
             resp = python_list(anddb[0].LIBRARIES)
         elif comp == 'exported_activities':
-            resp = python_list(anddb[0].EXPORTED_ACT)
+            resp = python_list(anddb[0].EXPORTED_ACTIVITIES)
         return '\n'.join(resp)
 
     def get_android_version(self):

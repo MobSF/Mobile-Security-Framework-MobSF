@@ -6,7 +6,7 @@ body {
 }
 
 </style>
-<h1 align="center" class="page-header">Static Analysis - {{name}} </h1>
+<h1 align="center" class="page-header">Static Analysis - {{file_name}} </h1>
 <hr>  
                 <div class="col-lg-2">
                         <div class="panel panel-default">
@@ -21,9 +21,9 @@ body {
                   <p>
                      <span class="label label-primary"><b>App Security Score: </b>{{ security_score }}/100</span>
                   </p>
-                {% if VT_RESULT and VT_RESULT.total %}
+                {% if virus_total and virus_total.total %}
 	          <p>			    
-                    <span class="label label-primary"><b>VirusTotal Detection: </b>{{ VT_RESULT.positives }}/{{ VT_RESULT.total }}</span>
+                    <span class="label label-primary"><b>VirusTotal Detection: </b>{{ virus_total.positives }}/{{ virus_total.total }}</span>
                   </p>
                 {% endif %}
                 {% if trackers %}
@@ -45,8 +45,8 @@ body {
                             <div class="panel-body">
                                 <div class="list-group">
 									<p>                                       
-									   <span class="label label-primary"><b>Name: </b></span>
-                                    {{ name }}
+									   <span class="label label-primary"><b>File Name: </b></span>
+                                    {{ file_name }}
                                     </p>
 									<p>
                                        <span class="label label-primary"><b>Size:</b></span>
@@ -76,32 +76,32 @@ body {
                             <div class="panel-body">
                                 <div class="list-group">
                                     <p>                                       
-					    <span class="label label-primary"><b>Name: </b></span>
-                                        {{ real_name }}
+					                <span class="label label-primary"><b>App Name: </b></span>
+                                        {{ app_name }}
                                     </p>
 									<p>                                       
 									   <span class="label label-primary"><b>Package Name: </b></span>
-                                    {{ packagename }}
+                                    {{ package_name }}
                                     </p>
 									<p>
                                        <span class="label label-primary"><b>Main Activity: </b></span>
-                                    {{ mainactivity }}
+                                    {{ main_activity }}
                                    </p><p>
                                        <span class="label label-primary"><b>Target SDK: </b></span>
-                                    {{ targetsdk }}
+                                    {{ target_sdk }}
                                     </p><p>
 								     <span class="label label-primary"><b>Min SDK: </b></span>
-                                    {{ minsdk }}
+                                    {{ min_sdk }}
                                   </p><p>
 									
 								     <span class="label label-primary"><b>Max SDK: </b></span>
-                                    {{ maxsdk }}
+                                    {{ max_sdk }}
 									</p><p>
 									<span class="label label-primary"><b>Android Version Name: </b></span>
-                                    {{ androvername }}
+                                    {{ version_name }}
 									</p><p>
 									<span class="label label-primary"><b>Android Version Code: </b></span>
-                                    {{ androver }}
+                                    {{ version_code }}
 									</p>
                                 </div>
                                 
@@ -118,50 +118,50 @@ body {
                             <div class="panel-body">
                                 <div class="list-group">
 
-                                   {% if not play_details.error %}
+                                   {% if not playstore_details.error %}
                   <p>                                       
                     <span class="label label-info"><b>Title: </b></span>
-                    {{ play_details.title }}
+                    {{ playstore_details.title }}
                   </p>
                   <p>                                       
                     <span class="label label-info"><b>Score: </b></span>
-                  {{ play_details.score}}
+                  {{ playstore_details.score}}
 
                    <span class="label label-info"><b>Installs: </b></span>
-                    {{ play_details.installs }}
+                    {{ playstore_details.installs }}
 
                    <span class="label label-info"><b>Price: </b></span>
-                      {{ play_details.price }}
+                      {{ playstore_details.price }}
 
                   <span class="label label-info"><b>Android Version Support: </b></span>
-                    {{ play_details.androidVersionText }}
+                    {{ playstore_details.androidVersionText }}
                    
                     <span class="label label-info"><b>Category: </b></span>
-		    {{ play_details.genre }}
+		    {{ playstore_details.genre }}
 
                     <span class="label label-info"><b>Play Store URL: </b></span>
-                      <a target="_blank" href="{{ play_details.url }}"> {{ packagename }} </a>
+                      <a target="_blank" href="{{ playstore_details.url }}"> {{ packagename }} </a>
                   </p>
                   
                   <p>
                   <span class="label label-info"><b>Developer Details: </b></span>
-                      {{play_details.developer}},  
-                      {{play_details.developerId}}, 
-                      {{play_details.developerAddress }},
-                      {{play_details.developerWebsite}}, 
-                      {{play_details.developerEmail}}, 
+                      {{playstore_details.developer}},  
+                      {{playstore_details.developerId}}, 
+                      {{playstore_details.developerAddress }},
+                      {{playstore_details.developerWebsite}}, 
+                      {{playstore_details.developerEmail}}, 
                   </p>
 		  <p>
                   <span class="label label-info"><b>Release Date: </b></span>
-		   {{ play_details.released }}
+		   {{ playstore_details.released }}
 		   <span class="label label-info"><b>Privacy Policy: </b></span>
-                   <a target="_blank" href="{{ play_details.privacyPolicy }}">Privacy link</a>
+                   <a target="_blank" href="{{ playstore_details.privacyPolicy }}">Privacy link</a>
 		  </p>
                  <p>                                       
                       <span class="label label-info"><b>Description: </b></span>
-                      <pre>{{ play_details.description }}</pre>
+                      <pre>{{ playstore_details.description }}</pre>
                   </p>
-              {%  endif  %}
+              {%  endif %}
                                 </div>
                                 
                             </div>
@@ -174,29 +174,25 @@ body {
                   		  <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-eye-close"></span> CERTIFICATE</h3><hr>
+                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i> <span class="glyphicon glyphicon-eye-close"></span> SIGNER CERTIFICATE</h3><hr>
                             </div>
                             <div class="panel-body">
-                            <pre>
-                              {{ certinfo | safe}}
-
-{% if issued == "good" %} 
-<strong>Certificate Status: </strong><span class="label label-success">Good</span>
-{% elif issued == "bad" %}
-<strong>Certificate Status: </strong><span class="label label-danger">Bad</span>
-<strong>Description:</strong>App Signed by 'Android Debug' Certificate.
-Production ready applications should not be signed with 'Android Debug' Certificate.
-{% elif issued == "missing" %}
-<strong>Certificate Status: </strong><span class="label label-warning">Certificate not found</span>
-{% elif issued == "bad hash" and sha256Digest is True %}
-<strong>Certificate Status: </strong><span class="label label-warning">Warning</span>
-<strong>Description:</strong>The app is signed with `SHA1withRSA`. SHA1 hash algorithm is known to have collision issues.
-<strong>Note:</strong>The manifest indicates `SHA256withRSA` is in use. Be sure to manually confirm this issue.
-{% elif issued == "bad hash" %}
-<strong>Certificate Status: </strong><span class="label label-danger">Bad</span>
-<strong>Description:</strong>The app is signed with `SHA1withRSA`. SHA1 hash algorithm is known to have collision issues.
-{% endif %}
-                            </pre>
+              <pre><code>{{ certificate_analysis.certificate_info }}</code></pre>
+              <!--Cert status-->
+              {% if certificate_analysis.certificate_status == "good" %}
+                <strong>Certificate Status: </strong><span class="badge bg-success">Good</span><br />
+                <strong>Description: </strong>{{ certificate_analysis.description }}<br />
+              {% elif certificate_analysis.certificate_status == "bad" %}
+                <strong>Certificate Status: </strong><span class="badge bg-danger">Bad</span><br />
+                <strong>Description:</strong>{{ certificate_analysis.description }}<br />
+              {% elif  certificate_analysis.certificate_status == "missing" %}
+                <strong>Certificate Status: </strong><span class="badge bg-warning">Certificate missing</span><br />
+                <strong>Description:</strong>{{ certificate_analysis.description }}<br />
+              {% elif certificate_analysis.certificate_status == "warning" %}
+                <strong>Certificate Status: </strong><span class="badge bg-warning">Warning</span><br />
+                <strong>Description:</strong>{{ certificate_analysis.description }}<br />
+              {% endif %}
+              
                             </div>
                         </div>
                     </div> 
@@ -296,15 +292,15 @@ Production ready applications should not be signed with 'Android Debug' Certific
                     <hr>
 
                     <!-- ============================================================= -->
-        {% if VT_RESULT %}
+        {% if virus_total %}
                 <div class="col-lg-12">
                     <div class="panel panel-default">
                         <div class="panel-heading">
                              <h3 class="panel-title"><i class="fa fa-bug"></i>VirusTotal Report</h3><hr>
                         </div>
                         <div class="panel-body">
-                        <p> {{ VT_RESULT.positives }} / {{ VT_RESULT.total }}&nbsp; AVs found this file Malicious! </p>
-                        {% if VT_RESULT.positives %}
+                        <p> {{ virus_total.positives }} / {{ virus_total.total }}&nbsp; AVs found this file Malicious! </p>
+                        {% if virus_total.positives %}
                           <div class="table-responsive">
                                 <table class="table table-bordered table-hover table-striped">
                                                 <thead>
@@ -314,7 +310,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                {% for av_name,av_result in VT_RESULT.scans.items %}
+                                                {% for av_name,av_result in virus_total.scans.items %}
                                                     {% if av_result.detected == True %}
                                                        <tr>
                                                             <td>
@@ -507,7 +503,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                                             </tr>
                                         </thead>
                                         <tbody>
-									  {% for item in manifest %}
+									  {% for item in manifest_analysis %}
                       <tr>
                         <td>
                         {{item|key:"title" | safe}}
@@ -560,7 +556,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                                             </tr>
                                         </thead>
                                         <tbody>
-										{% for issue, details in findings.items %}
+										{% for issue, details in code_analysis.items %}
                   <tr>
                   <td>
                   {{ issue }}
@@ -612,7 +608,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                                             </tr>
                                         </thead>
                                         <tbody>
-										{% for desc, details in api.items %}
+										{% for desc, details in android_api.items %}
                   <tr>
                   <td>
                   {{ desc }}
@@ -681,7 +677,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                             <div class="panel-body">
                   <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
-                 {% if firebase %} 
+                 {% if firebase_urls %} 
                   <thead>
                   <tr>
                      <th>URL</th>
@@ -692,7 +688,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                                         <tbody>
                 
                  
-                  {% for item in firebase %}
+                  {% for item in firebase_urls %}
                     <tr>
                        <td>
                        {{ item.url }}
@@ -847,7 +843,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                             </div>
                             <div class="panel-body">
 								  <div class="table-responsive">
-                                    {% if certz %}
+                                    {% if file_analysis %}
                                     <table class="table table-bordered table-hover table-striped">
                                               <thead>
                                             <tr>
@@ -856,7 +852,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                                             </tr>
                                         </thead>
                                         <tbody>
-								         {% for item in certz %}
+								         {% for item in file_analysis %}
                                             <tr>
                                             <td>
                                             {{ item|key:"finding" }}
@@ -875,28 +871,7 @@ Production ready applications should not be signed with 'Android Debug' Certific
                         </div>
                     </div>
 					</div>
-  			<hr><div class="col-lg-12">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-sort-by-alphabet-alt"></span> STRINGS</h3><hr>
-                            </div>
-                            <div class="panel-body">
-                                <div class="list-group">
-									<p>  
-								  
-										{% for val in strings %}
-									    
-										 {{ val }}<br>
-										
-										{% endfor %}									
-																
-									
-									</p>
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div>
+  			
 							<hr>
                    <div class="col-lg-5">
                         <div class="panel panel-default">
@@ -983,23 +958,6 @@ Production ready applications should not be signed with 'Android Debug' Certific
 								{% endfor %}									
 									
 									</p>
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div><hr>  <div class="col-lg-7">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-folder-open"></span> FILES</h3><hr>
-                            </div>
-                            <div class="panel-body">
-                                <div class="list-group">
-                                    <p>  
-                                {% for file in files %}
-                                    {{ file}} <br>
-                                {% endfor %}                                    
-                                    
-                                    </p>
                                 </div>
                                 
                             </div>

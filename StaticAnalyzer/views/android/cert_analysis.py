@@ -47,8 +47,9 @@ def cert_info(app_dir, app_file):
     """Return certificate information."""
     try:
         logger.info('Reading Code Signing Certificate')
-        issued = ''
+        status = ''
         manidat = ''
+        cert_info = ''
         certlist = []
         cert_path = os.path.join(app_dir, 'META-INF/')
 
@@ -103,25 +104,36 @@ def cert_info(app_dir, app_file):
             certlist.append('Bit Size: {}'.format(x509_public_key.bit_size))
             certlist.append('Fingerprint: {}'.format(
                 binascii.hexlify(x509_public_key.fingerprint).decode('utf-8')))
-        certlist = '\n'.join(certlist)
-        if a.is_signed():
-            issued = 'good'
-        else:
-            issued = 'missing'
-        if re.findall(r'CN=Android Debug', certlist):
-            issued = 'bad'
-        if re.findall(r'Hash Algorithm: sha1', certlist):
-            issued = 'bad hash'
+        cert_info = '\n'.join(certlist)
         if 'MANIFEST.MF' in files:
             manifestfile = os.path.join(cert_path, 'MANIFEST.MF')
         if manifestfile:
             with open(manifestfile, 'r', encoding='utf-8') as manifile:
                 manidat = manifile.read()
         sha256_digest = bool(re.findall(r'SHA-256-Digest', manidat))
+        if a.is_signed():
+            status = 'good'
+            desc = 'Certificate looks good.'
+        else:
+            status = 'missing'
+            desc = 'Certificate is not found'
+        if re.findall(r'CN=Android Debug', cert_info):
+            status = 'bad'
+            desc = ('This is a debug certificate. Production application'
+                    ' must not be shipped with a debug certificate.')
+        if re.findall(r'Hash Algorithm: sha1', cert_info):
+            status = 'bad'
+            desc = ('The app is signed with SHA1withRSA. SHA1 hash algorithm'
+                    ' is known to have collision issues.')
+            if sha256_digest:
+                status = 'warning'
+                desc += ('The manifest indicates SHA256withRSA is in use. '
+                         'Please verify this manually.')
+
         cert_dic = {
-            'cert_info': certlist,
-            'issued': issued,
-            'sha256Digest': sha256_digest,
+            'certificate_info': cert_info,
+            'certificate_status': status,
+            'description': desc,
         }
         return cert_dic
     except Exception:

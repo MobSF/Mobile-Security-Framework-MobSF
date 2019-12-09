@@ -7,7 +7,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <meta name="description" content="Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis.">
       <meta name="author" content="Ajin Abraham">
-      <link rel="icon" href="{% static "favicon.ico" %}">
+      <link rel="icon" href="{% static "img/favicon.ico" %}">
       <title>Mobile Security Framework - MobSF</title>
       <link rel="stylesheet" href="{% static "adminlte/dashboard/css/adminlte.min.css" %}">
       <link rel="stylesheet" href="{% static "adminlte/plugins/fontawesome-free/css/all.min.css" %}">
@@ -16,12 +16,30 @@
       <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
    </head>
    <body>
+   <div class="topnav">
+
+        <!-- Centered link -->
+        <div class="topnav-centered">
+         <a>
+            <img src="{% static "img/mobsf_logo.png" %}" width="20%" height="20%"/>
+        </a>
+        </div>
+        <!-- Left-aligned links (default) -->
+        <a href="{% url 'recent' %}">RECENT SCANS</a>
+        <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>
+
+        <!-- Right-aligned links -->
+        <div class="topnav-right">
+            <a href="{% url 'api_docs' %}">API DOCS</a>
+            <a href="{% url 'about' %}">ABOUT</a>
+        </div>
+
+        </div>
       <div class="site-wrapper">
          <div class="site-wrapper-inner">
             <div class="cover-container">
                <div class="masthead clearfix">
                   <div align="center" class="inner">
-                     <h3 class="masthead-brand"><img src="{% static "img/mobsf_logo.png" %}" width="45%" height="45%"></h3>
                   </div>
                </div>
                <div class="inner cover">
@@ -47,7 +65,7 @@
                      <input name="md5" type="text" class="form-control" placeholder="Search MD5">
                   </form>
                   <div class="inner">
-                     <h5><strong> <a href="{% url 'recent' %}">RECENT SCANS</a>  |  <a href="{% url 'dynamic' %}">DYNAMIC ANALYSIS</a>  |  <a href="{% url 'api_docs' %}">API DOCS</a>   |  <a href="{% url 'about' %}">ABOUT</a></strong></h5>
+                     <h6> <a href="{% url 'recent' %}">RECENT SCANS</a>  |  <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>  |  <a href="{% url 'api_docs' %}">API DOCS</a>   |  <a href="{% url 'about' %}">ABOUT</a></h6>
                      </br>
                      <p>&copy; {% now "Y" %}  Mobile Security Framework - MobSF {{ version }}</p>
                   </div>

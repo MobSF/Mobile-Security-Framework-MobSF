@@ -120,18 +120,18 @@
                 <div class="col-2">
                   <p><strong><i class="fas fa-info"></i> APP INFORMATION </strong></p>
                     <span class="badge bg-primary">App Name</span>
-                    {{ bin_name }} <br/>
+                    {{ app_name }} <br/>
                     <span class="badge bg-primary">Publisher</span>
-                    {{ pub_name }} <br/>
+                    {{ publisher_name }} <br/>
                     <span class="badge bg-primary">Version</span>
                     {{ app_version }} <br/>
                     <span class="badge bg-primary">Arch</span>
-                    {{ arch }}
+                    {{ architecture }}
                 </div>
                 <div class="col-5">
                   <p><strong><i class="fas fa-box-open"></i> FILE INFORMATION </strong></p>                         
-                      <span class="badge bg-primary">Name</span>
-                      {{ name }} <br/>
+                      <span class="badge bg-primary">File Name</span>
+                      {{ file_name }} <br/>
                       <span class="badge bg-primary">Size</span>
                       {{ size }} <br/>
                       <span class="badge bg-primary">MD5</span>
@@ -139,7 +139,7 @@
                      <span class="badge bg-primary">SHA1</span>
                       {{ sha1 }} <br/>
                      <span class="badge bg-primary">SHA256</span>
-                    {{ sha256 }}
+                      {{ sha256 }}
                 </p>
                 </div>
                 <div class="col-5">
@@ -188,7 +188,7 @@
                 <strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong>
                 </p>
                 <p align="center">
-                   <a href="../StaticAnalyzer_Windows/?checksum={{ md5 }}&amp;name={{ name }}&amp;type=appx&amp;rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
+                   <a href="../StaticAnalyzer_Windows/?checksum={{ md5 }}&amp;name={{ file_name }}&amp;type=appx&amp;rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
                    <a href="#" data-target="#mstrings" role="button" class="btn btn-primary" data-toggle="modal"><i class="fa fa-list"></i> View Strings</a>
                </p>
               </div>
@@ -220,7 +220,7 @@
                       </tr>
                   </thead>
                   <tbody>
-                    {% for result in bin_an_results %}
+                    {% for result in binary_analysis %}
                       <tr>
                         <td>{{ result.rule_id }}</td>
                         <td>
@@ -240,7 +240,7 @@
                         <td>{{ result.info }}</td>
                       </tr>
                     {% endfor %}
-                    {% for warn in bin_an_warnings %}
+                    {% for warn in binary_warnings %}
                     <tr>
                       <td>{{ warn.rule_id }}</td>
                       <td>

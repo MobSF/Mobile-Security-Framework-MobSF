@@ -50,7 +50,7 @@ def activity_tester(request):
         if test == 'exported':
             iden = 'Exported '
             logger.info('Exported activity tester')
-            activities = python_list(static_android_db[0].EXPORTED_ACT)
+            activities = python_list(static_android_db[0].EXPORTED_ACTIVITIES)
         else:
             logger.info('Activity tester')
             activities = python_list(static_android_db[0].ACTIVITIES)
