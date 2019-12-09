@@ -12,7 +12,7 @@ class RecentScansDB(models.Model):
 class StaticAnalyzerAndroid(models.Model):
     FILE_NAME = models.CharField(max_length=260)
     APP_NAME = models.CharField(max_length=255)
-    APP_TYPE = models.TextField()
+    APP_TYPE = models.CharField(max_length=20, default='')
     SIZE = models.CharField(max_length=50)
     MD5 = models.CharField(max_length=32)
     SHA1 = models.CharField(max_length=40)
