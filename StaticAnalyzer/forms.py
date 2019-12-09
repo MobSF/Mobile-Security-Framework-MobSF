@@ -23,7 +23,7 @@ class IOSChecks(forms.Form):
             ('ipa', 'ipa'),
             ('ios', 'ios')))
 
-    def clean_ext(self):
+    def clean_file(self):
         """Safe Extension."""
         file = self.cleaned_data['file']
         ext = file.split('.')[-1]
@@ -48,7 +48,7 @@ class APIChecks(forms.Form):
 class WebChecks(forms.Form):
     md5 = forms.CharField(min_length=32, max_length=32)
 
-    def clean_hash(self):
+    def clean_md5(self):
         """Hash is valid."""
         md5 = self.cleaned_data['md5']
         md5_match = re.match('^[0-9a-f]{32}$', md5)
@@ -64,7 +64,7 @@ class AndroidChecks(forms.Form):
             ('studio', 'studio'),
             ('apk', 'apk')))
 
-    def clean_ext(self):
+    def clean_file(self):
         """Safe Extension."""
         file = self.cleaned_data['file']
         ext = file.split('.')[-1]
