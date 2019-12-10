@@ -274,7 +274,7 @@ def tools_binscope():
     # Execute the installer
     print(('[*] Installing BinScope to {}'.format(binscope_path)))
     cmd = ('msiexec INSTALLLOCATION='
-           '"{}" /i "{}" /passive /quiet'.format(
+           '"{}" /i "{}" /passive'.format(
                binscope_path,
                binscope_installer_path))
     os.system(cmd)
