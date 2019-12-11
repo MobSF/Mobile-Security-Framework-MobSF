@@ -80,7 +80,7 @@ Other docker options: [MobSF Docker Options](https://github.com/MobSF/Mobile-Sec
 
 ### Static Analysis - iOS
 
-![ios-static-analysis-ipa](https://user-images.githubusercontent.com/4301109/70381758-20e7d900-191e-11ea-9d68-8bb2a3bfcffd.png)
+![ios-static-analysis-ipa](https://user-images.githubusercontent.com/4301109/70666043-dd51df80-1c3b-11ea-9b24-4048fad552fb.png)
 ![ios-static-analysis-source](https://user-images.githubusercontent.com/4301109/70381767-5d1b3980-191e-11ea-8adc-20f54554bf5b.png)
 
 ### Dynamic Analysis - Android APK
