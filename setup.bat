@@ -1,7 +1,7 @@
 @echo off
 where python >nul 2>&1 && (
+  deactivate
   echo [INSTALL] Found Python3
-
   pip3 >nul 2>&1 && (
     echo [INSTALL] Found pip3
     python -m pip install --upgrade pip
@@ -30,7 +30,7 @@ where python >nul 2>&1 && (
   )
 
   echo [INSTALL] Using venv
-  rmdir /q /s venv
+  rmdir "venv" /q /s
   python -m venv ./venv
   .\venv\Scripts\activate
 
@@ -46,6 +46,9 @@ where python >nul 2>&1 && (
 
   echo [INSTALL] Installing Requirements
   pip install -r requirements.txt
+  
+  echo [INSTALL] Clean Up
+  CALL scripts/clean.bat y
 
   echo [INSTALL] Migrating Database
   python manage.py makemigrations
