@@ -29,18 +29,10 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 *Bitcoin:* [![Donate Bitcoin](https://user-images.githubusercontent.com/4301109/30631105-cb8063c8-9e00-11e7-95df-43c20b840e52.png)](https://mobsf.github.io/Mobile-Security-Framework-MobSF/donate.html)
 
 ## Documentation
-* [See MobSF Documentation](https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/1.-Documentation)
+[![See MobSF Documentation](https://user-images.githubusercontent.com/4301109/70684711-0e9ad180-1c75-11ea-8cf9-db2c28d15fe6.png)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/1.-Documentation)
 
-## MobSF Static Analyzer Docker Image
-Automated prebuilt docker image of MobSF Static Analyzer is available from [DockerHub](https://hub.docker.com/r/opensecurity/mobile-security-framework-mobsf/)
-```
-docker pull opensecurity/mobile-security-framework-mobsf
-docker run -it -p 8000:8000 opensecurity/mobile-security-framework-mobsf:latest
-```
+## Try MobSF Static Analyzer Online
 [![Try in PWD](https://raw.githubusercontent.com/play-with-docker/stacks/master/assets/images/button.png)](https://labs.play-with-docker.com/?stack=https://raw.githubusercontent.com/MobSF/Mobile-Security-Framework-MobSF/master/scripts/stack/docker-compose.yml)
-
-Other docker options: [MobSF Docker Options](https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/7.-Docker-Container-for-MobSF-Static-Analysis)
-
 
 ## Collaborators
 
@@ -60,6 +52,10 @@ Other docker options: [MobSF Docker Options](https://github.com/MobSF/Mobile-Sec
 * [Automated Mobile Application Security Assessment with MobSF -MAS (Currently being updated)](https://opsecx.com/index.php/product/automated-mobile-application-security-assessment-with-mobsf/)
 * [Android Security Tools Expert -ATX](https://opsecx.com/index.php/product/android-security-tools-expert-atx/)
 
+## MobSF Support Packages
+* For free limited support, use our Slack Channel: [mobsf.slack.com](https://mobsf.slack.com/join/shared_invite/enQtNzM2NTAyNzA1MjgxLTdjMzkzNDc3ZjdiMjkwZTZhMmFhNDlkZmMwZDhjNDNmYTAzYWE5NGZlMDIzYzliNTdiMDQ2MTRlYjU1MjkyNGM)
+* For enterprise support, priority feature requests and live training, see [MobSF Support Packages](https://mobsf.github.io/Mobile-Security-Framework-MobSF/support.html)
+
 ## What's New?
 * [See Changelog](https://mobsf.github.io/Mobile-Security-Framework-MobSF/changelog.html)
 
@@ -67,7 +63,7 @@ Other docker options: [MobSF Docker Options](https://github.com/MobSF/Mobile-Sec
 
 * Read [CONTRIBUTING.md](https://github.com/MobSF/Mobile-Security-Framework-MobSF/blob/master/.github/CONTRIBUTING.md) before opening bugs, feature requests and pull request.
 * Feature Requests: [@ajinabraham](https://twitter.com/ajinabraham) or [@OpenSecurity_IN](https://twitter.com/OpenSecurity_IN).
-* For discussions, questions and support, use our Slack Channel mobsf.slack.com: [Join MobSF Channel](https://mobsf.slack.com/join/shared_invite/enQtNzM2NTAyNzA1MjgxLTdjMzkzNDc3ZjdiMjkwZTZhMmFhNDlkZmMwZDhjNDNmYTAzYWE5NGZlMDIzYzliNTdiMDQ2MTRlYjU1MjkyNGM)
+* For discussions, questions and limited support, use our Slack Channel mobsf.slack.com: [Join MobSF Channel](https://mobsf.slack.com/join/shared_invite/enQtNzM2NTAyNzA1MjgxLTdjMzkzNDc3ZjdiMjkwZTZhMmFhNDlkZmMwZDhjNDNmYTAzYWE5NGZlMDIzYzliNTdiMDQ2MTRlYjU1MjkyNGM)
 * Open Bugs after reading [Guidelines to Report a Bug](https://github.com/MobSF/Mobile-Security-Framework-MobSF/blob/master/.github/CONTRIBUTING.md#using-the-issue-tracker)
 
 ## Screenshots
