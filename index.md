@@ -29,7 +29,7 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 *Bitcoin:* [![Donate Bitcoin](https://user-images.githubusercontent.com/4301109/30631105-cb8063c8-9e00-11e7-95df-43c20b840e52.png)](https://mobsf.github.io/Mobile-Security-Framework-MobSF/donate.html)
 
 ## Documentation
-[![See MobSF Documentation](https://user-images.githubusercontent.com/4301109/70684711-0e9ad180-1c75-11ea-8cf9-db2c28d15fe6.png)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/1.-Documentation)
+[![See MobSF Documentation](https://user-images.githubusercontent.com/4301109/70686099-3855f780-1c79-11ea-8141-899e39459da2.png)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/1.-Documentation)
 
 ## Try MobSF Static Analyzer Online
 [![Try in PWD](https://raw.githubusercontent.com/play-with-docker/stacks/master/assets/images/button.png)](https://labs.play-with-docker.com/?stack=https://raw.githubusercontent.com/MobSF/Mobile-Security-Framework-MobSF/master/scripts/stack/docker-compose.yml)
