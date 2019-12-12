@@ -1,3 +1,31 @@
+### v3.0.0 Beta Changelog
+- Features or Enhancements
+   - OWASP Mobile Top 10 2016 is supported
+   - Major UI Update for MobSF
+   - Major Schema changes to rest API
+   - iOS URLs Scheme
+   - iOS ATS Analysis improved
+   - New iOS Static Analysis Rules
+   - New iOS Static Analysis Rules
+   - New Android Manifest Analysis Rules
+   - Updated dependencies
+   - Optimized Windows Setup
+   - Updated Scoring mechanisms
+   - Improved Tracker detection
+   - Remove Global Proxy after dynamic analysis
+   - Android Permission database update
+   - Added Play with Docker support 
+   - AppMonsta support
+   - Code QA
+
+- Bug Fixes
+  - Fix Security issue #1197 (Directory Traversal)
+  - iOS Static Analyzer fixes
+  - Typo Fix
+  - Moved to oscrypto and distro
+  - Windows binscope bug fix
+  - Reduce False positives 
+
 ### v2.0.0 Beta Changelog
 - Features or Enhancements
    - Dynamic Analysis Support for Genymotion Android VMs 4.1 -9.0 x86
