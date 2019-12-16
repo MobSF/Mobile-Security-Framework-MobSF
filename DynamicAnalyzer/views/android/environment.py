@@ -8,6 +8,8 @@ import subprocess
 import time
 import threading
 
+from OpenSSL import crypto
+
 from django.conf import settings
 
 from DynamicAnalyzer.tools.webproxy import (get_ca_dir,
@@ -116,15 +118,9 @@ class Environment:
     def install_mobsf_ca(self, action):
         """Install or Remove MobSF Root CA."""
         ca_construct = '{}.0'
-        ca_file_hash = subprocess.check_output(['openssl',
-                                                'x509',
-                                                '-subject_hash_old',
-                                                '-inform',
-                                                'PEM',
-                                                '-in',
-                                                get_ca_dir()]) \
-                                 .splitlines()[0] \
-                                 .decode('ascii')
+        pem = open(get_ca_dir(), 'rb').read()
+        ca_file = crypto.load_certificate(crypto.FILETYPE_PEM, pem)
+        ca_file_hash = hex(ca_file.subject_name_hash()).lstrip('0x')
         ca_file = os.path.join('/system/etc/security/cacerts/',
                                ca_construct.format(ca_file_hash))
         if action == 'install':
@@ -426,7 +422,7 @@ class Environment:
         frida_dir = 'onDevice/frida/'
         frida_bin = os.path.join(self.tools_dir,
                                  frida_dir,
-                                 'frida-server-12.7.25-android-x86')
+                                 'frida-server-12.7.26-android-x86')
         arch = self.get_android_arch()
         logger.info('Android instance architecture identified as %s', arch)
         if 'x86' not in arch:
