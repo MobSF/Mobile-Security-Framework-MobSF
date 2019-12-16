@@ -455,6 +455,6 @@ class Environment:
         trd = threading.Thread(target=start_frida)
         trd.daemon = True
         trd.start()
-        logger.info('Frida Server is going to start')
+        logger.info('Starting Frida Server')
         logger.info('Waiting for 2 seconds...')
         time.sleep(2)
