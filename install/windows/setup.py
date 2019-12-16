@@ -165,7 +165,6 @@ def tools_binskim():
     nuget = mobsf_subdir_tools + CONFIG['nuget']['file']
 
     print('[*] Downloading and installing Binskim...')
-
     # Execute nuget to get binkim
     output = subprocess.check_output(
         [
@@ -272,14 +271,13 @@ def tools_binscope():
 
     # Aaaand close
     binscope_installer_file.close()
-
     # Execute the installer
     print(('[*] Installing BinScope to {}'.format(binscope_path)))
-    os.system(
-        'msiexec' + ' '
-        'INSTALLLOCATION='' + binscope_path + '' '
-        + '/i '' + binscope_installer_path + '' '
-        + '/passive')
+    cmd = ('msiexec INSTALLLOCATION='
+           '"{}" /i "{}" /passive'.format(
+               binscope_path,
+               binscope_installer_path))
+    os.system(cmd)
 
     CONFIG['binscope']['file'] = binscope_path + '\\Binscope.exe'
 

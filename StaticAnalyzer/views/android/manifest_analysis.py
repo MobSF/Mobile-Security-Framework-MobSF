@@ -278,6 +278,12 @@ def manifest_analysis(mfxml, man_data_dic):
             else:
                 perm_appl_level_exists = False
             # End
+            if application.getAttribute('android:usesCleartextTraffic') == 'true':
+                ret_list.append(('a_clear_text', (), ()))
+            if application.getAttribute('android:directBootAware') == 'true':
+                ret_list.append(('a_boot_aware', (), ()))
+            if application.getAttribute('android:networkSecurityConfig'):
+                ret_list.append(('a_network_sec', (), ()))
             if application.getAttribute('android:debuggable') == 'true':
                 ret_list.append(('a_debuggable', (), ()))
             if application.getAttribute('android:allowBackup') == 'true':

@@ -1,3 +1,19 @@
+@rem
+@rem Copyright 2015 the original author or authors.
+@rem
+@rem Licensed under the Apache License, Version 2.0 (the "License");
+@rem you may not use this file except in compliance with the License.
+@rem You may obtain a copy of the License at
+@rem
+@rem      https://www.apache.org/licenses/LICENSE-2.0
+@rem
+@rem Unless required by applicable law or agreed to in writing, software
+@rem distributed under the License is distributed on an "AS IS" BASIS,
+@rem WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+@rem See the License for the specific language governing permissions and
+@rem limitations under the License.
+@rem
+
 @if "%DEBUG%" == "" @echo off
 @rem ##########################################################################
 @rem
@@ -63,7 +79,7 @@ set CMD_LINE_ARGS=%*
 :execute
 @rem Setup the command line
 
-set CLASSPATH=%APP_HOME%\lib\jadx-gui-1.0.0.jar;%APP_HOME%\lib\jfontchooser-1.0.5.jar;%APP_HOME%\lib\jadx-cli-1.0.0.jar;%APP_HOME%\lib\jadx-core-1.0.0.jar;%APP_HOME%\lib\dx-1.16.jar;%APP_HOME%\lib\android-5.1.jar;%APP_HOME%\lib\logback-classic-1.2.3.jar;%APP_HOME%\lib\slf4j-api-1.7.26.jar;%APP_HOME%\lib\rsyntaxtextarea-3.0.2.jar;%APP_HOME%\lib\image-viewer-1.2.3.jar;%APP_HOME%\lib\commons-text-1.6.jar;%APP_HOME%\lib\commons-lang3-3.8.1.jar;%APP_HOME%\lib\rxjava2-swing-0.3.4.jar;%APP_HOME%\lib\rxjava-2.2.7.jar;%APP_HOME%\lib\apksig-3.3.2.jar;%APP_HOME%\lib\asm-7.1.jar;%APP_HOME%\lib\annotations-17.0.0.jar;%APP_HOME%\lib\cloning-1.9.12.jar;%APP_HOME%\lib\gson-2.8.5.jar;%APP_HOME%\lib\baksmali-2.2.7.jar;%APP_HOME%\lib\smali-2.2.7.jar;%APP_HOME%\lib\util-2.2.7.jar;%APP_HOME%\lib\dexlib2-2.2.7.jar;%APP_HOME%\lib\guava-27.1-jre.jar;%APP_HOME%\lib\jcommander-1.74.jar;%APP_HOME%\lib\reactive-streams-1.0.2.jar;%APP_HOME%\lib\objenesis-3.0.1.jar;%APP_HOME%\lib\antlr-runtime-3.5.2.jar;%APP_HOME%\lib\stringtemplate-3.2.1.jar;%APP_HOME%\lib\failureaccess-1.0.1.jar;%APP_HOME%\lib\listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar;%APP_HOME%\lib\jsr305-3.0.2.jar;%APP_HOME%\lib\checker-qual-2.5.2.jar;%APP_HOME%\lib\error_prone_annotations-2.2.0.jar;%APP_HOME%\lib\j2objc-annotations-1.1.jar;%APP_HOME%\lib\animal-sniffer-annotations-1.17.jar;%APP_HOME%\lib\logback-core-1.2.3.jar;%APP_HOME%\lib\antlr-2.7.7.jar
+set CLASSPATH=%APP_HOME%\lib\jadx-gui-1.1.0.jar;%APP_HOME%\lib\jfontchooser-1.0.5.jar;%APP_HOME%\lib\jadx-cli-1.1.0.jar;%APP_HOME%\lib\jadx-core-1.1.0.jar;%APP_HOME%\lib\dx-1.16.jar;%APP_HOME%\lib\android-29-clst.jar;%APP_HOME%\lib\android-29-res.jar;%APP_HOME%\lib\logback-classic-1.2.3.jar;%APP_HOME%\lib\slf4j-api-1.7.29.jar;%APP_HOME%\lib\rsyntaxtextarea-3.0.4.jar;%APP_HOME%\lib\image-viewer-1.2.3.jar;%APP_HOME%\lib\commons-text-1.8.jar;%APP_HOME%\lib\commons-lang3-3.9.jar;%APP_HOME%\lib\rxjava2-swing-0.3.7.jar;%APP_HOME%\lib\rxjava-2.2.15.jar;%APP_HOME%\lib\apksig-3.5.2.jar;%APP_HOME%\lib\asm-7.2.jar;%APP_HOME%\lib\annotations-18.0.0.jar;%APP_HOME%\lib\gson-2.8.6.jar;%APP_HOME%\lib\baksmali-2.3.4.jar;%APP_HOME%\lib\smali-2.3.4.jar;%APP_HOME%\lib\util-2.3.4.jar;%APP_HOME%\lib\dexlib2-2.3.4.jar;%APP_HOME%\lib\guava-28.1-jre.jar;%APP_HOME%\lib\jcommander-1.78.jar;%APP_HOME%\lib\reactive-streams-1.0.3.jar;%APP_HOME%\lib\antlr-runtime-3.5.2.jar;%APP_HOME%\lib\stringtemplate-3.2.1.jar;%APP_HOME%\lib\failureaccess-1.0.1.jar;%APP_HOME%\lib\listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar;%APP_HOME%\lib\jsr305-3.0.2.jar;%APP_HOME%\lib\checker-qual-2.8.1.jar;%APP_HOME%\lib\error_prone_annotations-2.3.2.jar;%APP_HOME%\lib\j2objc-annotations-1.3.jar;%APP_HOME%\lib\animal-sniffer-annotations-1.18.jar;%APP_HOME%\lib\logback-core-1.2.3.jar;%APP_HOME%\lib\antlr-2.7.7.jar
 
 @rem Execute jadx-gui
 start "jadx-gui" /B "%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %JADX_GUI_OPTS%  -classpath "%CLASSPATH%" jadx.gui.JadxGUI %CMD_LINE_ARGS%

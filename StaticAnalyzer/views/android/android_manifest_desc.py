@@ -1,6 +1,48 @@
 MANIFEST_DESC = {
+    'a_clear_text': {
+        'title': ('Clear text traffic is Enabled For App'
+                  '<br>[android:usesCleartextTraffic=true]'),
+        'level': 'high',
+        'description': ('The app intends to use cleartext network traffic,'
+                        ' such as cleartext HTTP, FTP stacks, DownloadManager,'
+                        ' and MediaPlayer. The default value for'
+                        ' apps that target API level 27 or lower is "true". '
+                        'Apps that target API level 28 or higher default to'
+                        ' "false". The key reason for avoiding cleartext'
+                        ' traffic is the lack of confidentiality, '
+                        'authenticity, and protections against tampering; '
+                        'a network attacker can eavesdrop on transmitted '
+                        'data and also modify it without being detected.'),
+        'name': ('Clear text traffic is Enabled For App '
+                 '[android:usesCleartextTraffic=true]'),
+    },
+    'a_boot_aware': {
+        'title': 'App is direct-boot aware <br>[android:directBootAware=true]',
+        'level': 'info',
+        'description': ('This app can run before the user unlocks the device. '
+                        'If you\'re using a custom subclass of Application, '
+                        'and if any component inside your application is '
+                        'direct - boot aware, then your entire custom '
+                        'application is considered to be direct - boot aware.'
+                        'During Direct Boot, your application can only access'
+                        ' the data that is stored'
+                        ' in device protected storage.'),
+        'name': 'App is direct-boot aware [android:directBootAware=true]',
+    },
+    'a_network_sec': {
+        'title': ('App has a Network Security Configuration'
+                  '<br>[android:networkSecurityConfig]'),
+        'level': 'info',
+        'description': ('The Network Security Configuration feature lets apps'
+                        ' customize their network security settings in a safe,'
+                        ' declarative configuration file without modifying '
+                        'app code. These settings can be configured for '
+                        'specific domains and for a specific app. '),
+        'name': ('App has a Network Security Configuration '
+                 '[android:networkSecurityConfig]'),
+    },
     'a_debuggable': {
-        'title': 'Debug Enabled For App <br>[android:debuggable=true]',
+        'title': 'Debug Enabled For App<br>[android:debuggable=true]',
         'level': 'high',
         'description': ('Debugging was enabled on the app which makes it '
                         'easier for reverse engineers to hook a debugger to'
