@@ -50,7 +50,7 @@ def check_transport_security(p_list):
         if exception_domain:
             domain_exp = 'NSTemporaryExceptionAllowsInsecureHTTPLoads'
             for domain, config in exception_domain.items():
-                if type(config) is dict and config.get(domain_exp):
+                if isinstance(config, dict) and config.get(domain_exp):
                     findings = {
                         'issue': ('Insecure communication'
                                   ' to {} is allowed'.format(domain)),
