@@ -51,7 +51,7 @@ class Environment:
     def run_subprocess_verify_output(self, command):
         out = subprocess.check_output(command)
         self.wait(2)
-        if not proof_connect(out):
+        if not self.proof_connect(out):
             return False
         else:
             return True
@@ -63,21 +63,21 @@ class Environment:
         logger.info('ADB Restarted')
         self.wait(2)
         logger.info('Connecting to Android %s', self.identifier)
-        if not run_subprocess_verify_output([get_adb(),
-                                            'connect',
-                                             self.identifier]):
+        if not self.run_subprocess_verify_output([get_adb(),
+                                                 'connect',
+                                                  self.identifier]):
             return False
         # TODO: proof if not already connected as admin
         # and not already FS is mounted
         # start adb as root
         logger.info('Restarting ADB Daemon as root')
-        if not run_subprocess_verify_output([get_adb(), 'root']):
+        if not self.run_subprocess_verify_output([get_adb(), 'root']):
             return False
         logger.info('Reconnect to Android Device')
         # connect again with root adb
-        if not run_subprocess_verify_output([get_adb(),
-                                            'connect',
-                                             self.identifier]):
+        if not self.run_subprocess_verify_output([get_adb(),
+                                                 'connect',
+                                                  self.identifier]):
             return False
         # mount system
         logger.info('Remounting /system')
