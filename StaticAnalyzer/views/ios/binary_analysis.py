@@ -37,13 +37,13 @@ def get_otool_out(tools_dir, cmd_type, bin_path, bin_dir):
             and is_file_exists(settings.JTOOL_BINARY)):
         jtool_bin = settings.JTOOL_BINARY
     else:
-        jtool_bin = os.path.join(tools_dir, 'jtool.ELF64')
+        jtool_bin = os.path.join(tools_dir, 'jtool2.ELF64')
     plat = platform.system()
     if cmd_type == 'libs':
         if plat == 'Darwin':
             args = [otool_bin, '-L', bin_path]
         elif plat == 'Linux':
-            args = [jtool_bin, '-arch', 'arm', '-L', '-v', bin_path]
+            args = [jtool_bin, '-L', '-v', bin_path]
         else:
             # Platform Not Supported
             return None
@@ -54,7 +54,7 @@ def get_otool_out(tools_dir, cmd_type, bin_path, bin_dir):
         if plat == 'Darwin':
             args = [otool_bin, '-hv', bin_path]
         elif plat == 'Linux':
-            args = [jtool_bin, '-arch', 'arm', '-h', '-v', bin_path]
+            args = [jtool_bin, '-h', '-v', bin_path]
         else:
             # Platform Not Supported
             return None
@@ -64,8 +64,8 @@ def get_otool_out(tools_dir, cmd_type, bin_path, bin_dir):
             args = [otool_bin, '-Iv', bin_path]
             return subprocess.check_output(args)
         elif plat == 'Linux':
-            arg1 = [jtool_bin, '-arch', 'arm', '-bind', '-v', bin_path]
-            arg2 = [jtool_bin, '-arch', 'arm', '-lazy_bind', '-v', bin_path]
+            arg1 = [jtool_bin, '-bind', '-v', bin_path]
+            arg2 = [jtool_bin, '-lazy_bind', '-v', bin_path]
             return (subprocess.check_output(arg1)
                     + subprocess.check_output(arg2))
         else:
@@ -440,9 +440,9 @@ def class_dump(tools_dir, bin_path, app_dir, bin_type):
                     and is_file_exists(settings.JTOOL_BINARY)):
                 jtool_bin = settings.JTOOL_BINARY
             else:
-                jtool_bin = os.path.join(tools_dir, 'jtool.ELF64')
+                jtool_bin = os.path.join(tools_dir, 'jtool2.ELF64')
             os.chmod(jtool_bin, 0o744)
-            args = [jtool_bin, '-arch', 'arm', '-d', 'objc', '-v', bin_path]
+            args = [jtool_bin, '-d', 'objc', '-v', bin_path]
         else:
             # Platform not supported
             logger.warning('class-dump is not supported in this platform')
