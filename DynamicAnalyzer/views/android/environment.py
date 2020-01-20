@@ -135,7 +135,6 @@ class Environment:
             logger.info('Removing MobSF RootCA')
             self.adb_command(['rm',
                               ca_file], True)
-        # TODO: determine if an 'adb restart' is needed
         # with a high timeout afterwards
 
     def set_global_proxy(self, version):
