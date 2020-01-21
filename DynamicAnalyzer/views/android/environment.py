@@ -41,14 +41,14 @@ class Environment:
         time.sleep(sec)
 
     def check_connect_error(self, output):
-        """Check if connect failed"""
+        """Check if connect failed."""
         if b'unable to connect' in output or b'failed to connect' in output:
             logger.error('%s', output.decode('utf-8').replace('\n', ''))
             return False
         return True
 
     def run_subprocess_verify_output(self, command):
-        """Run subprocess and verify execution"""
+        """Run subprocess and verify execution."""
         out = subprocess.check_output(command)
         self.wait(2)
         return self.check_connect_error(out)
