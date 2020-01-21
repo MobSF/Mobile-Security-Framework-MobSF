@@ -542,9 +542,7 @@ def get_app_name(app_path, app_dir, tools_dir, is_apk):
     if not os.path.exists(strings_dir):
         logger.warning('Cannot find values folder.')
         return ''
-
-    # Return found app_name or 'None' if it didn't find it.
-    return get_app_name_from_values_folder(strings_dir) or 'None'
+    return get_app_name_from_values_folder(strings_dir)
 
 
 def get_app_name_from_values_folder(values_dir):
