@@ -45,7 +45,7 @@ class Environment:
         if b'unable to connect' in output or b'failed to connect' in output:
             logger.error('%s', output.decode('utf-8').replace('\n', ''))
             return False
-            return True
+        return True
 
     def run_subprocess_verify_output(self, command):
         """Run subprocess and verify execution"""
@@ -64,9 +64,6 @@ class Environment:
                                                  'connect',
                                                   self.identifier]):
             return False
-        # TODO: proof if not already connected as admin
-        # and not already FS is mounted
-        # start adb as root
         logger.info('Restarting ADB Daemon as root')
         if not self.run_subprocess_verify_output([get_adb(), 'root']):
             return False
