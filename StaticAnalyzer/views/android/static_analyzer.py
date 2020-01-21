@@ -548,7 +548,7 @@ def get_app_name(app_path, app_dir, tools_dir, is_apk):
 
 
 def get_app_name_from_values_folder(values_dir):
-    """Get all the files in values folder and checks them for app_name"""
+    """Get all the files in values folder and checks them for app_name."""
     files = [f for f in os.listdir(values_dir) if
              (os.path.isfile(os.path.join(values_dir, f)))
              and (f.endswith('.xml'))]
@@ -557,11 +557,11 @@ def get_app_name_from_values_folder(values_dir):
         app_name = get_app_name_from_file(os.path.join(values_dir, f))
         if app_name:
             return app_name  # we found an app_name, lets return it.
-    return ''  # Didn't find app_name, returning empty string
+    return ''  # Didn't find app_name, returning empty string.
 
 
 def get_app_name_from_file(file_path):
-    """Looks for app_name in specific file"""
+    """Looks for app_name in specific file."""
     with open(file_path, 'r', encoding='utf-8') as f:
         data = f.read()
 
@@ -569,7 +569,7 @@ def get_app_name_from_file(file_path):
                                data)
 
     if (not app_name_match) or (len(app_name_match.group()) <= 0):
-        # Did not find app_name in current file
+        # Did not find app_name in current file.
         return ''
 
     # Found app_name!
