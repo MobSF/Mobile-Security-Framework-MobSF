@@ -280,11 +280,6 @@ pre {
                   <td>hash of the scan</td>
                   <td>Yes</td>
                   </tr>
-                  <tr>
-                  <td>scan_type</td>
-                  <td>apk, andzip, ioszip, ipa, or appx</td>
-                  <td>Yes</td>
-                  </tr>
                   </tbody>
                   </table>
                   <br>
@@ -313,7 +308,7 @@ pre {
                   </li>
                   <li>
                   <p><strong>Sample Call:</strong></p>
-                  <pre><code>curl -X POST --url http://localhost:8000/api/v1/download_pdf --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&amp;scan_type=apk&quot; -H &quot;Authorization:{{ api_key}}&quot;
+                  <pre><code>curl -X POST --url http://localhost:8000/api/v1/download_pdf --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization:{{ api_key}}&quot;
                   </code></pre>
                   </li>
                   </ul>
@@ -348,12 +343,7 @@ pre {
                   <td>hash</td>
                   <td>hash of the scan</td>
                   <td>Yes</td>
-                  </tr>
-                  <tr>
-                  <td>scan_type</td>
-                  <td>apk, andzip, ioszip, ipa, or appx</td>
-                  <td>Yes</td>
-                  </tr>
+                  </tr>                
                   </tbody>
                   </table>
                   <br>
@@ -382,7 +372,7 @@ pre {
                   </li>
                   <li>
                   <p><strong>Sample Call:</strong></p>
-                  <pre><code>curl -X POST --url http://localhost:8000/api/v1/report_json --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&amp;scan_type=apk&quot; -H &quot;Authorization:{{ api_key}}&quot;
+                  <pre><code>curl -X POST --url http://localhost:8000/api/v1/report_json --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization:{{ api_key}}&quot;
                   </code></pre>
                   </li>
                   </ul>

@@ -116,7 +116,7 @@ def api_delete_scan(request):
 @csrf_exempt
 def api_pdf_report(request):
     """Generate and Download PDF."""
-    params = ['scan_type', 'hash']
+    params = ['hash']
     if set(request.POST) == set(params):
         resp = pdf(request, api=True)
         if 'error' in resp:
@@ -130,8 +130,6 @@ def api_pdf_report(request):
             response['Access-Control-Allow-Origin'] = '*'
         elif resp.get('report') == 'Report not Found':
             response = make_api_response(resp, 404)
-        elif resp.get('scan_type') == 'Type is not Allowed':
-            response = make_api_response(resp, 400)
         else:
             response = make_api_response(
                 {'error': 'PDF Generation Error'}, 500)
@@ -145,7 +143,7 @@ def api_pdf_report(request):
 @csrf_exempt
 def api_json_report(request):
     """Generate JSON Report."""
-    params = ['scan_type', 'hash']
+    params = ['hash']
     if set(request.POST) == set(params):
         resp = pdf(request, api=True, jsonres=True)
         if 'error' in resp:
@@ -157,8 +155,6 @@ def api_json_report(request):
             response = make_api_response(resp['report_dat'], 200)
         elif resp.get('report') == 'Report not Found':
             response = make_api_response(resp, 404)
-        elif resp.get('scan_type') == 'Type is not Allowed':
-            response = make_api_response(resp, 400)
         else:
             response = make_api_response(
                 {'error': 'JSON Generation Error'}, 500)

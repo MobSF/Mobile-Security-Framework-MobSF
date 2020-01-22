@@ -52,18 +52,18 @@ def static_analysis_test():
         logger.info('Running PDF Generation Test')
         if platform.system() in ['Darwin', 'Linux']:
             pdfs = [
-                '/PDF/?md5=3a552566097a8de588b8184b059b0158&type=APK',
-                '/PDF/?md5=6c23c2970551be15f32bbab0b5db0c71&type=IPA',
-                '/PDF/?md5=52c50ae824e329ba8b5b7a0f523efffe&type=ANDZIP',
-                '/PDF/?md5=57bb5be0ea44a755ada4a93885c3825e&type=IOSZIP',
-                '/PDF/?md5=8179b557433835827a70510584f3143e&type=APPX',
+                '/PDF/?md5=3a552566097a8de588b8184b059b0158',
+                '/PDF/?md5=6c23c2970551be15f32bbab0b5db0c71',
+                '/PDF/?md5=52c50ae824e329ba8b5b7a0f523efffe',
+                '/PDF/?md5=57bb5be0ea44a755ada4a93885c3825e',
+                '/PDF/?md5=8179b557433835827a70510584f3143e',
             ]
         else:
             pdfs = [
-                '/PDF/?md5=3a552566097a8de588b8184b059b0158&type=APK',
-                '/PDF/?md5=52c50ae824e329ba8b5b7a0f523efffe&type=ANDZIP',
-                '/PDF/?md5=57bb5be0ea44a755ada4a93885c3825e&type=IOSZIP',
-                '/PDF/?md5=8179b557433835827a70510584f3143e&type=APPX',
+                '/PDF/?md5=3a552566097a8de588b8184b059b0158',
+                '/PDF/?md5=52c50ae824e329ba8b5b7a0f523efffe',
+                '/PDF/?md5=57bb5be0ea44a755ada4a93885c3825e',
+                '/PDF/?md5=8179b557433835827a70510584f3143e',
             ]
 
         for pdf in pdfs:
@@ -178,27 +178,18 @@ def api_test():
         logger.info('Running PDF Generation API Test')
         if platform.system() in ['Darwin', 'Linux']:
             pdfs = [
-                {'hash': '3a552566097a8de588b8184b059b0158',
-                 'scan_type': 'apk'},
-                {'hash': '6c23c2970551be15f32bbab0b5db0c71',
-                 'scan_type': 'ipa'},
-                {'hash': '52c50ae824e329ba8b5b7a0f523efffe',
-                 'scan_type': 'andzip'},
-                {'hash': '57bb5be0ea44a755ada4a93885c3825e',
-                 'scan_type': 'ioszip'},
-                {'hash': '8179b557433835827a70510584f3143e',
-                 'scan_type': 'appx'},
+                {'hash': '3a552566097a8de588b8184b059b0158'},
+                {'hash': '6c23c2970551be15f32bbab0b5db0c71'},
+                {'hash': '52c50ae824e329ba8b5b7a0f523efffe'},
+                {'hash': '57bb5be0ea44a755ada4a93885c3825e'},
+                {'hash': '8179b557433835827a70510584f3143e'},
             ]
         else:
             pdfs = [
-                {'hash': '3a552566097a8de588b8184b059b0158',
-                 'scan_type': 'apk'},
-                {'hash': '52c50ae824e329ba8b5b7a0f523efffe',
-                 'scan_type': 'andzip'},
-                {'hash': '57bb5be0ea44a755ada4a93885c3825e',
-                 'scan_type': 'ioszip'},
-                {'hash': '8179b557433835827a70510584f3143e',
-                 'scan_type': 'appx'},
+                {'hash': '3a552566097a8de588b8184b059b0158'},
+                {'hash': '52c50ae824e329ba8b5b7a0f523efffe'},
+                {'hash': '57bb5be0ea44a755ada4a93885c3825e'},
+                {'hash': '8179b557433835827a70510584f3143e'},
             ]
         for pdf in pdfs:
             resp = http_client.post(
