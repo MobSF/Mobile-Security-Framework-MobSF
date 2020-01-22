@@ -139,8 +139,8 @@ def pdf(request, api=False, jsonres=False):
                         status=500)
             context['virus_total'] = None
             if settings.VT_ENABLED:
-                file_name, file_extension = os.path.splitext(
-                    context['file_name'].lower)
+                file_extension = os.path.splitext(
+                    context['file_name'].lower)[1]
                 app_dir = os.path.join(settings.UPLD_DIR, checksum + '/')
                 vt = VirusTotal.VirusTotal()
                 if file_extension.lower() == '.zip':
