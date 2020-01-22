@@ -196,9 +196,11 @@ body {
                         {% endif %}
                       </td>
                       <td>
+                        {% if scheme|key:"CFBundleURLSchemes" %}
                         {% for ul in scheme.CFBundleURLSchemes %}
                            {{ul}} <br/>
                         {% endfor %}
+                        {% endif %}
                       </td>
                     </tr>
                     {% endfor %}
