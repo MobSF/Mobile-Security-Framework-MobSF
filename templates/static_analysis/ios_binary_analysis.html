@@ -135,7 +135,7 @@
             </a>
           </li>
             <li class="nav-item">
-              <a href="../PDF/?md5={{ md5 }}&amp;type=IPA" class="nav-link">
+              <a href="../PDF/?md5={{ md5 }}" class="nav-link">
               <i class="nav-icon fas fa-file-pdf"></i>
               <p>
                 PDF Report
@@ -360,9 +360,11 @@
                         {% endif %}
                       </td>
                       <td>
+                        {% if scheme|key:"CFBundleURLSchemes" %}
                         {% for ul in scheme.CFBundleURLSchemes %}
                            {{ul}} <br/>
                         {% endfor %}
+                        {% endif %}
                       </td>
                     </tr>
                     {% endfor %}

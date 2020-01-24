@@ -8,6 +8,8 @@ import subprocess
 import time
 import threading
 
+from OpenSSL import crypto
+
 from django.conf import settings
 
 from DynamicAnalyzer.tools.webproxy import (get_ca_dir,
@@ -38,6 +40,19 @@ class Environment:
         logger.info('Waiting for %s seconds...', str(sec))
         time.sleep(sec)
 
+    def check_connect_error(self, output):
+        """Check if connect failed."""
+        if b'unable to connect' in output or b'failed to connect' in output:
+            logger.error('%s', output.decode('utf-8').replace('\n', ''))
+            return False
+        return True
+
+    def run_subprocess_verify_output(self, command):
+        """Run subprocess and verify execution."""
+        out = subprocess.check_output(command)
+        self.wait(2)
+        return self.check_connect_error(out)
+
     def connect_n_mount(self):
         """Test ADB Connection."""
         self.adb_command(['kill-server'])
@@ -45,14 +60,23 @@ class Environment:
         logger.info('ADB Restarted')
         self.wait(2)
         logger.info('Connecting to Android %s', self.identifier)
-        out = subprocess.check_output([get_adb(), 'connect', self.identifier])
-        if b'unable to connect' in out or b'failed to connect' in out:
-            logger.error('%s', out.decode('utf-8').replace('\n', ''))
+        if not self.run_subprocess_verify_output([get_adb(),
+                                                 'connect',
+                                                  self.identifier]):
             return False
-        else:
-            logger.info('Remounting /system')
-            self.adb_command(['mount', '-o',
-                              'rw,remount', '/system'], True)
+        logger.info('Restarting ADB Daemon as root')
+        if not self.run_subprocess_verify_output([get_adb(), 'root']):
+            return False
+        logger.info('Reconnect to Android Device')
+        # connect again with root adb
+        if not self.run_subprocess_verify_output([get_adb(),
+                                                 'connect',
+                                                  self.identifier]):
+            return False
+        # mount system
+        logger.info('Remounting /system')
+        self.adb_command(['mount', '-o',
+                          'rw,remount', '/system'], True)
         return True
 
     def adb_command(self, cmd_list, shell=False, silent=False):
@@ -95,17 +119,25 @@ class Environment:
 
     def install_mobsf_ca(self, action):
         """Install or Remove MobSF Root CA."""
+        ca_construct = '{}.0'
+        pem = open(get_ca_dir(), 'rb').read()
+        ca_file = crypto.load_certificate(crypto.FILETYPE_PEM, pem)
+        ca_file_hash = hex(ca_file.subject_name_hash()).lstrip('0x')
         ca_file = os.path.join('/system/etc/security/cacerts/',
-                               settings.ROOT_CA)
+                               ca_construct.format(ca_file_hash))
         if action == 'install':
             logger.info('Installing MobSF RootCA')
-            self.adb_command(['push', get_ca_dir(), ca_file])
+            self.adb_command(['push',
+                              get_ca_dir(),
+                              ca_file])
             self.adb_command(['chmod',
                               '644',
                               ca_file], True)
         elif action == 'remove':
             logger.info('Removing MobSF RootCA')
-            self.adb_command(['rm', ca_file], True)
+            self.adb_command(['rm',
+                              ca_file], True)
+        # with a high timeout afterwards
 
     def set_global_proxy(self, version):
         """Set Global Proxy on device."""
@@ -115,7 +147,7 @@ class Environment:
         if version < 5:
             proxy_ip = get_proxy_ip(self.identifier)
         else:
-            proxy_ip = '127.0.0.1'
+            proxy_ip = settings.PROXY_IP
         if proxy_ip:
             if version < 4.4:
                 logger.warning('Please set Android VM proxy as %s:%s',
@@ -405,7 +437,7 @@ class Environment:
     def run_frida_server(self):
         """Start Frida Server."""
         check = self.adb_command(['ps'], True)
-        if b'/system/fd_server' in check:
+        if b'fd_server' in check:
             logger.info('Frida Server is already running')
             return
 
@@ -420,4 +452,6 @@ class Environment:
         trd = threading.Thread(target=start_frida)
         trd.daemon = True
         trd.start()
-        logger.info('Frida Server is running')
+        logger.info('Starting Frida Server')
+        logger.info('Waiting for 2 seconds...')
+        time.sleep(2)

@@ -526,30 +526,49 @@ def copy_icon(md5, icon_path=''):
 
 def get_app_name(app_path, app_dir, tools_dir, is_apk):
     """Get app name."""
-    data = ''
     if is_apk:
         a = apk.APK(app_path)
         real_name = a.get_app_name()
         return real_name
     else:
         strings_path = os.path.join(app_dir,
-                                    'app/src/main/res/values/strings.xml')
+                                    'app/src/main/res/values/')
         eclipse_path = os.path.join(app_dir,
-                                    'res/values/strings.xml')
+                                    'res/values/')
         if os.path.exists(strings_path):
-            strings_file = strings_path
+            strings_dir = strings_path
         elif os.path.exists(eclipse_path):
-            strings_file = eclipse_path
-    if not os.path.exists(strings_file):
-        logger.warning('Cannot find app name')
+            strings_dir = eclipse_path
+    if not os.path.exists(strings_dir):
+        logger.warning('Cannot find values folder.')
         return ''
+    return get_app_name_from_values_folder(strings_dir)
 
-    with open(strings_file, 'r', encoding='utf-8') as f:
+
+def get_app_name_from_values_folder(values_dir):
+    """Get all the files in values folder and checks them for app_name."""
+    files = [f for f in os.listdir(values_dir) if
+             (os.path.isfile(os.path.join(values_dir, f)))
+             and (f.endswith('.xml'))]
+    for f in files:
+        # Look through each file, searching for app_name.
+        app_name = get_app_name_from_file(os.path.join(values_dir, f))
+        if app_name:
+            return app_name  # we found an app_name, lets return it.
+    return ''  # Didn't find app_name, returning empty string.
+
+
+def get_app_name_from_file(file_path):
+    """Looks for app_name in specific file."""
+    with open(file_path, 'r', encoding='utf-8') as f:
         data = f.read()
 
     app_name_match = re.search(r'<string name=\"app_name\">(.*)</string>',
                                data)
 
-    if len(app_name_match.groups()) <= 0:
+    if (not app_name_match) or (len(app_name_match.group()) <= 0):
+        # Did not find app_name in current file.
         return ''
+
+    # Found app_name!
     return app_name_match.group(app_name_match.lastindex)

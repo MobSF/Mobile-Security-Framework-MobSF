@@ -112,107 +112,43 @@ def pdf(request, api=False, jsonres=False):
     try:
         if api:
             checksum = request.POST['hash']
-            scan_type = request.POST['scan_type']
         else:
             checksum = request.GET['md5']
-            scan_type = request.GET['type']
         hash_match = re.match('^[0-9a-f]{32}$', checksum)
         if hash_match:
-            if scan_type.lower() in ['apk', 'andzip']:
-                static_db = StaticAnalyzerAndroid.objects.filter(MD5=checksum)
-                if static_db.exists():
-                    logger.info(
-                        'Fetching data from DB for '
-                        'PDF Report Generation (Android)')
-                    context = adb(static_db)
-                    context['average_cvss'], context[
-                        'security_score'] = score(context['code_analysis'])
-                    if scan_type.lower() == 'apk':
-                        template = get_template(
-                            'pdf/android_binary_analysis.pdf.html')
-                    else:
-                        template = get_template(
-                            'pdf/android_source_analysis_pdf.html')
-                else:
-                    if api:
-                        return {'report': 'Report not Found'}
-                    else:
-                        return HttpResponse(
-                            json.dumps({'report': 'Report not Found'}),
-                            content_type='application/json; charset=utf-8',
-                            status=500)
-            elif scan_type.lower() in ['ipa', 'ioszip']:
-                if scan_type.lower() == 'ipa':
-                    static_db = StaticAnalyzerIOS.objects.filter(MD5=checksum)
-                    if static_db.exists():
-                        logger.info(
-                            'Fetching data from DB for '
-                            'PDF Report Generation (IOS IPA)')
-                        context = idb(static_db)
-                        context['average_cvss'], context[
-                            'security_score'] = score(
-                                context['binary_analysis'])
-                        template = get_template(
-                            'pdf/ios_binary_analysis_pdf.html')
-                    else:
-                        if api:
-                            return {'report': 'Report not Found'}
-                        else:
-                            return HttpResponse(
-                                json.dumps({'report': 'Report not Found'}),
-                                content_type='application/json; charset=utf-8',
-                                status=500)
-                elif scan_type.lower() == 'ioszip':
-                    static_db = StaticAnalyzerIOS.objects.filter(
-                        MD5=checksum)
-                    if static_db.exists():
-                        logger.info(
-                            'Fetching data from DB for '
-                            'PDF Report Generation (IOS ZIP)')
-                        context = idb(static_db)
-                        context['average_cvss'], context[
-                            'security_score'] = score(context['code_analysis'])
-                        template = get_template(
-                            'pdf/ios_source_analysis_pdf.html')
-                    else:
-                        if api:
-                            return {'report': 'Report not Found'}
-                        else:
-                            return HttpResponse(
-                                json.dumps({'report': 'Report not Found'}),
-                                content_type='application/json; charset=utf-8',
-                                status=500)
-            elif 'appx' == scan_type.lower():
-                if scan_type.lower() == 'appx':
-                    db_entry = StaticAnalyzerWindows.objects.filter(
-                        MD5=checksum,
-                    )
-                    if db_entry.exists():
-                        logger.info(
-                            'Fetching data from DB for '
-                            'PDF Report Generation (APPX)')
-                        context = wdb(db_entry)
-                        template = get_template(
-                            'pdf/windows_binary_analysis_pdf.html')
+            android_static_db = StaticAnalyzerAndroid.objects.filter(
+                MD5=checksum)
+            ios_static_db = StaticAnalyzerIOS.objects.filter(
+                MD5=checksum)
+            win_static_db = StaticAnalyzerWindows.objects.filter(
+                MD5=checksum)
+
+            if android_static_db.exists():
+                context, template = handle_pdf_android(android_static_db)
+            elif ios_static_db.exists():
+                context, template = handle_pdf_ios(ios_static_db)
+            elif win_static_db.exists():
+                context, template = handle_pdf_win(win_static_db)
             else:
                 if api:
-                    return {'scan_type': 'Type is not Allowed'}
+                    return {'report': 'Report not Found'}
                 else:
                     return HttpResponse(
-                        json.dumps({'type': 'Type is not Allowed'}),
+                        json.dumps({'report': 'Report not Found'}),
                         content_type='application/json; charset=utf-8',
                         status=500)
-
             context['virus_total'] = None
             if settings.VT_ENABLED:
+                file_extension = os.path.splitext(
+                    context['file_name'].lower())[1]
                 app_dir = os.path.join(settings.UPLD_DIR, checksum + '/')
                 vt = VirusTotal.VirusTotal()
-                if 'zip' in scan_type.lower():
+                if file_extension.lower() == '.zip':
                     context['virus_total'] = None
                 else:
                     context['virus_total'] = vt.get_result(
                         os.path.join(app_dir, checksum)
-                        + '.' + scan_type.lower(),
+                        + file_extension.lower(),
                         checksum)
             try:
                 if api and jsonres:
@@ -266,6 +202,54 @@ def pdf(request, api=False, jsonres=False):
             return print_n_send_error_response(request, msg, True, exp)
         else:
             return print_n_send_error_response(request, msg, False, exp)
+
+
+def handle_pdf_android(static_db):
+    logger.info(
+        'Fetching data from DB for '
+        'PDF Report Generation (Android)')
+    context = adb(static_db)
+    context['average_cvss'], context[
+        'security_score'] = score(context['code_analysis'])
+    if context['file_name'].lower().endswith('.zip'):
+        logger.info('Report covers android source')
+        template = get_template(
+            'pdf/android_source_analysis_pdf.html')
+    else:
+        logger.info('Report covers android binary')
+        template = get_template(
+            'pdf/android_binary_analysis.pdf.html')
+    return context, template
+
+
+def handle_pdf_ios(static_db):
+    logger.info('Fetching data from DB for '
+                'PDF Report Generation (IOS)')
+    context = idb(static_db)
+    if context['file_name'].lower().endswith('.zip'):
+        logger.info('Report covers IOS source')
+        context['average_cvss'], context[
+            'security_score'] = score(context['code_analysis'])
+        template = get_template(
+            'pdf/ios_source_analysis_pdf.html')
+    else:
+        logger.info('Report covers IOS binary')
+        context['average_cvss'], context[
+            'security_score'] = score(
+                context['binary_analysis'])
+        template = get_template(
+            'pdf/ios_binary_analysis_pdf.html')
+    return context, template
+
+
+def handle_pdf_win(static_db):
+    logger.info(
+        'Fetching data from DB for '
+        'PDF Report Generation (APPX)')
+    context = wdb(static_db)
+    template = get_template(
+        'pdf/windows_binary_analysis_pdf.html')
+    return context, template
 
 
 def get_list_match_items(ruleset):
