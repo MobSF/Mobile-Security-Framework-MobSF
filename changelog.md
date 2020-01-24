@@ -1,3 +1,16 @@
+### v3.0.1 Beta Changelog
+- Features or Enhancements
+   - Simplified REST API
+   - Improved Android App Name detection
+   - Dynamic Analysis proper Root CA naming
+   - Changes to Support Android x86 Docker
+   - Dependency updates
+   - Code QA
+
+- Bug Fixes
+  - Handle Invalid ATS domain entries iOS
+  - Fixes a Template Bug
+
 ### v3.0.0 Beta Changelog
 - Features or Enhancements
    - OWASP Mobile Top 10 2016 is supported
