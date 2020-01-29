@@ -109,7 +109,7 @@ def save_or_update(update_type,
                    info_dict,
                    code_dict,
                    bin_dict,
-                   all_files) -> None:
+                   all_files):
     """Save/Update an IPA/ZIP DB entry."""
     try:
         values = {
