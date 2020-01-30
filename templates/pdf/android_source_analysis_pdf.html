@@ -497,37 +497,47 @@ body {
                             </div>
                             <div class="panel-body">
                                   <div class="table-responsive">
-                                    <table class="table table-bordered table-hover table-striped">
-                                        {% if urls %} 
+                                    <table id="table_malware" class="table table-bordered table-hover table-striped">
                   <thead>
                   <tr>
-                     <th>Domain</th>
-                     <th>Status</th>
+                     <th>DOMAIN</th>
+                     <th>STATUS</th>
+                     <th>GEOLOCATION</th>
                   </tr>
                  </thead>
-                  {% endif %}
-                                      <tbody>
-                
-                  {% for domain, details in domains.items %}
+                 <tbody>
+                 {% for domain, details in domains.items %}
                   <tr><td>{{domain}}</td><td> 
 
                     {% if details|key:"bad" == "yes" %}
-                    <span class="label label-danger">malware</span></br>
-<pre>
-<strong>URL: </strong>{{details|key:"domain_or_url"}}
-<strong>IP: </strong><span class="label label-danger">{{details|key:"ip"}}</span>
-<strong>Description: </strong>{{details|key:"desc"}}
-</pre>
+                    <span class="badge bg-danger">malware</span><br/>
+                      <pre>
+                      <strong>URL: </strong>{{details|key:"domain_or_url"}}
+                      <strong>IP: </strong><span class="badge bg-danger">{{details|key:"ip"}}</span>
+                      <strong>Description: </strong>{{details|key:"desc"}}
+                      </pre>
                   {% else %}
-                    <span class="label label-success">good</span></br>
+                    <span class="badge bg-success">good</span><br/>
                   {% endif %}
+                  </td>
+                  <td>
+                    {% if details|key:"geolocation" %}
+                      <strong>IP: </strong>{{details|key:"geolocation"|key:"ip"}}  <br/>
+                      <strong>Country: </strong>{{details|key:"geolocation"|key:"country_long"}} <br/>
+                      <strong>Region: </strong>{{details|key:"geolocation"|key:"region"}} <br/>
+                      <strong>City: </strong>{{details|key:"geolocation"|key:"city"}} <br/>
+                      <strong>Latitude: </strong>{{details|key:"geolocation"|key:"latitude"}} <br/>
+                      <strong>Longitude: </strong>{{details|key:"geolocation"|key:"longitude"}} <br/>
+                      <strong>View: <a target="_blank" href="http://maps.google.com/maps?q={{details|key:"geolocation"|key:"latitude"}},{{details|key:"geolocation"|key:"longitude"}}">Google Map</a>
 
-
-                  </td> </tr>
+                    {% else %}
+                    No Geolocation information available.
+                    {% endif %}
+                  </td>
+                  </tr>
                   {% endfor %}
-                   
-                    </tbody>
-                                        </table>
+                </tbody>
+            </table>
                                 
                             </div>
                         </div>

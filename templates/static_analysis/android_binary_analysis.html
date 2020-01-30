@@ -1201,6 +1201,7 @@
                   <tr>
                      <th>DOMAIN</th>
                      <th>STATUS</th>
+                     <th>GEOLOCATION</th>
                   </tr>
                  </thead>
                  <tbody>
@@ -1217,7 +1218,21 @@
                   {% else %}
                     <span class="badge bg-success">good</span><br/>
                   {% endif %}
-                  </td></tr>
+                  </td>
+                  <td>
+                    {% if details|key:"geolocation" %}
+                      <strong>IP: </strong>{{details|key:"geolocation"|key:"ip"}}  <br/>
+                      <strong>Country: </strong>{{details|key:"geolocation"|key:"country_long"}} <br/>
+                      <strong>Region: </strong>{{details|key:"geolocation"|key:"region"}} <br/>
+                      <strong>City: </strong>{{details|key:"geolocation"|key:"city"}} <br/>
+                      <strong>Latitude: </strong>{{details|key:"geolocation"|key:"latitude"}} <br/>
+                      <strong>Longitude: </strong>{{details|key:"geolocation"|key:"longitude"}} <br/>
+                      <strong>View: <a target="_blank" href="http://maps.google.com/maps?q={{details|key:"geolocation"|key:"latitude"}},{{details|key:"geolocation"|key:"longitude"}}">Google Map</a>
+                    {% else %}
+                    No Geolocation information available.
+                    {% endif %}
+                  </td>
+                  </tr>
                   {% endfor %}
                 </tbody>
             </table>
