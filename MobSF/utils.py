@@ -106,9 +106,7 @@ def print_version():
 def check_update():
     try:
         logger.info('Checking for Update.')
-        github_url = ('https://raw.githubusercontent.com/'
-                      'MobSF/Mobile-Security-Framework-MobSF/'
-                      'master/MobSF/settings.py')
+        github_url = settings.GITHUB_URL
         try:
             proxies, verify = upstream_proxy('https')
         except Exception:
@@ -346,13 +344,17 @@ def is_internet_available():
     except Exception:
         logger.exception('Setting upstream proxy')
     try:
-        requests.get('https://www.google.com', timeout=5,
-                     proxies=proxies, verify=verify)
+        requests.get(settings.GOOGLE,
+                     timeout=5,
+                     proxies=proxies,
+                     verify=verify)
         return True
     except Exception:
         try:
-            requests.get('https://www.baidu.com/', timeout=5,
-                         proxies=proxies, verify=verify)
+            requests.get(settings.BAIDU,
+                         timeout=5,
+                         proxies=proxies,
+                         verify=verify)
             return True
         except Exception:
             return False

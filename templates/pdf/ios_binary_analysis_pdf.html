@@ -428,9 +428,186 @@ body {
                         </div>
                     </div>
           </div> <hr>
+          <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-globe"></span> URLS</h3><hr>
+                        </div>
+                        <div class="panel-body">
+              <div class="table-responsive">
+                                <table class="table table-bordered table-hover table-striped">
+                                      {% if urls %} 
+              <thead>
+              <tr>
+                  <th>URL</th>
+                  <th>File</th>
+              </tr>
+              </thead>
+              {% endif %}
+              <tbody>
+            
+            
+              {% for urldict in urls %}
+                <tr>
+                    <td>
+                    {% for u in urldict|key:"urls" %}
+                      {{ u }}
+                    {% endfor %}
+                    </td>
 
+                    <td>
+                      <a href="../ViewFile/?file={{urldict|key:"path"}}&md5={{ md5}}&type=m&mode=ipa">{{urldict|key:"path"}}</a>
+                      
+                    </td>
+                </tr>
+              {% endfor %} 
+                </tbody>
+                </table>
 
+                        </div>
+                    </div>
+                </div>
+      </div>
+<hr>
+          <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-globe"></span> FIREBASE DATABASES</h3><hr>
+                        </div>
+                        <div class="panel-body">
+              <div class="table-responsive">
+                                <table class="table table-bordered table-hover table-striped">
+              {% if firebase_urls %} 
+              <thead>
+              <tr>
+                  <th>URL</th>
+                  <th>Database URL</th>
+              </tr>
+              </thead>
+                {% endif %}
+                                    <tbody>
+            
+              
+              {% for item in firebase_urls %}
+                <tr>
+                    <td>
+                    {{ item.url }}
+                    </td>
 
+                    <td>
+                      {% if item.open %}
+                      <span class="label label-danger">insecure</span></br>Firebase DB is exposed publically.
+                    {% else %}
+                      <span class="label label-primary">Info</span></br>App talks to a Firebase Database.
+                      {% endif %}
+                  
+                    </td>
+                </tr>
+              {% endfor %} 
+                </tbody>
+                </table>
+                            
+                        </div>
+                    </div>
+                </div>
+      </div>
+      
+      <hr>
+
+        <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-screenshot"></span> MALWARE CHECK</h3><hr>
+                        </div>
+                        <div class="panel-body">
+              <div class="table-responsive">
+                                <table id="table_malware" class="table table-bordered table-hover table-striped">
+                  <thead>
+                  <tr>
+                     <th>DOMAIN</th>
+                     <th>STATUS</th>
+                     <th>GEOLOCATION</th>
+                  </tr>
+                 </thead>
+                 <tbody>
+                 {% for domain, details in domains.items %}
+                  <tr><td>{{domain}}</td><td> 
+
+                    {% if details|key:"bad" == "yes" %}
+                    <span class="badge bg-danger">malware</span><br/>
+                      <pre>
+                      <strong>URL: </strong>{{details|key:"domain_or_url"}}
+                      <strong>IP: </strong><span class="badge bg-danger">{{details|key:"ip"}}</span>
+                      <strong>Description: </strong>{{details|key:"desc"}}
+                      </pre>
+                  {% else %}
+                    <span class="badge bg-success">good</span><br/>
+                  {% endif %}
+                  </td>
+                  <td>
+                    {% if details|key:"geolocation" %}
+                      <strong>IP: </strong>{{details|key:"geolocation"|key:"ip"}}  <br/>
+                      <strong>Country: </strong>{{details|key:"geolocation"|key:"country_long"}} <br/>
+                      <strong>Region: </strong>{{details|key:"geolocation"|key:"region"}} <br/>
+                      <strong>City: </strong>{{details|key:"geolocation"|key:"city"}} <br/>
+                      <strong>Latitude: </strong>{{details|key:"geolocation"|key:"latitude"}} <br/>
+                      <strong>Longitude: </strong>{{details|key:"geolocation"|key:"longitude"}} <br/>
+                      <strong>View: <a target="_blank" href="http://maps.google.com/maps?q={{details|key:"geolocation"|key:"latitude"}},{{details|key:"geolocation"|key:"longitude"}}">Google Map</a>
+
+                    {% else %}
+                    No Geolocation information available.
+                    {% endif %}
+                  </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+            </table>
+
+                        </div>
+                    </div>
+                </div>
+      </div><hr>
+
+              <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"><i class="fa fa-clock-o fa-fw"></i><span class="glyphicon glyphicon-envelope"></span> EMAILS</h3><hr>
+                        </div>
+                        <div class="panel-body">
+              <div class="table-responsive">
+                                <table class="table table-bordered table-hover table-striped">
+                                      {% if emails %} 
+              <thead>
+              <tr>
+                  <th>Email</th>
+                  <th>File</th>
+              </tr>
+              </thead>
+              {% endif %}
+              <tbody>
+                                    <tbody>
+            
+              {% for email_dict in emails %}
+                <tr>
+                    <td>
+                    {% for e in email_dict|key:"emails" %}
+                      {{ e }}
+                    {% endfor %}
+                    </td>
+
+                    <td>
+                      <a href="../ViewFile/?file={{email_dict|key:"path"}}&md5={{ md5}}&type=m&mode=ipa">{{email_dict|key:"path"}}</a>   
+                    </td>
+                </tr>
+              {% endfor %} 
+                </tbody>
+                </table>
+
+                        </div>
+                    </div>
+                </div>
+      </div>
+          <hr>
   <div class="col-lg-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">

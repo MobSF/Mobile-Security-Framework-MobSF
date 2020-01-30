@@ -110,16 +110,62 @@
              </li>
             </ul>
           </li>
-          {% if virus_total %}
-          <li class="nav-item">
-            <a href="#virus_total" class="nav-link">
-              <i class="nav-icon fas fa-spider"></i>
+          <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fa fa-bug"></i>
               <p>
-                VirusTotal
+                Malware Analysis
+                <i class="fas fa-angle-left right"></i>
               </p>
             </a>
+            <ul class="nav nav-treeview">
+              {% if virus_total %}
+                <li class="nav-item">
+                  <a href="#virus_total" class="nav-link">
+                    <i class="nav-icon fas fa-spider"></i>
+                    <p>
+                      VirusTotal
+                    </p>
+                  </a>
+                </li>
+              {% endif %}
+              <li class="nav-item">
+                <a href="#malware_check" class="nav-link">
+                  <i class="fab fa-searchengin nav-icon"></i>
+                  <p>Domain Malware Check</p>
+                </a>
+              </li>
+            </ul>
           </li>
-         {% endif %}
+          <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fa fa-plus"></i>
+              <p>
+                Reconnaissance
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="#urls" class="nav-link">
+                  <i class="fas fa-globe nav-icon"></i>
+                  <p>URLs</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#firebase" class="nav-link">
+                  <i class="fas fa-database nav-icon"></i>
+                  <p>Firebase DB</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#emails" class="nav-link">
+                  <i class="fas fa-envelope nav-icon"></i>
+                  <p>Emails</p>
+                </a>
+              </li>
+            </ul>
+          </li>
           <li class="nav-item">
             <a href="#libraries" class="nav-link">
               <i class="fab fa-buffer nav-icon"></i>
@@ -655,6 +701,204 @@
 </section>
 {% endif %}
 <!-- ===========================end virus total ================================== -->
+<a id="malware_check" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <p>
+             <strong><i class="fab fa-searchengin"></i> DOMAIN MALWARE CHECK</strong>
+             </p>
+              <div class="table-responsive">
+              {% if domains %} 
+             <table id="table_malware" class="table table-bordered table-hover table-striped">
+                  <thead>
+                  <tr>
+                     <th>DOMAIN</th>
+                     <th>STATUS</th>
+                     <th>GEOLOCATION</th>
+                  </tr>
+                 </thead>
+                 <tbody>
+                 {% for domain, details in domains.items %}
+                  <tr><td>{{domain}}</td><td> 
+
+                    {% if details|key:"bad" == "yes" %}
+                    <span class="badge bg-danger">malware</span><br/>
+                      <pre>
+                      <strong>URL: </strong>{{details|key:"domain_or_url"}}
+                      <strong>IP: </strong><span class="badge bg-danger">{{details|key:"ip"}}</span>
+                      <strong>Description: </strong>{{details|key:"desc"}}
+                      </pre>
+                  {% else %}
+                    <span class="badge bg-success">good</span><br/>
+                  {% endif %}
+                  </td>
+                  <td>
+                    {% if details|key:"geolocation" %}
+                      <strong>IP: </strong>{{details|key:"geolocation"|key:"ip"}}  <br/>
+                      <strong>Country: </strong>{{details|key:"geolocation"|key:"country_long"}} <br/>
+                      <strong>Region: </strong>{{details|key:"geolocation"|key:"region"}} <br/>
+                      <strong>City: </strong>{{details|key:"geolocation"|key:"city"}} <br/>
+                      <strong>Latitude: </strong>{{details|key:"geolocation"|key:"latitude"}} <br/>
+                      <strong>Longitude: </strong>{{details|key:"geolocation"|key:"longitude"}} <br/>
+                      <strong>View: <a target="_blank" href="http://maps.google.com/maps?q={{details|key:"geolocation"|key:"latitude"}},{{details|key:"geolocation"|key:"longitude"}}">Google Map</a>
+
+                    {% else %}
+                    No Geolocation information available.
+                    {% endif %}
+                  </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+            </table>
+             {% endif %}
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end domain malware check ================================== -->
+  <a id="urls" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <p>
+             <strong><i class="fas fa-globe"></i> URLS</strong>
+             </p>
+              <div class="table-responsive">
+              {% if urls %} 
+             <table id="table_urls" class="table table-bordered table-hover table-striped">
+                  <thead>
+                  <tr>
+                     <th>URL</th>
+                     <th>FILE</th>
+                  </tr>
+                 </thead>
+                 <tbody>
+                  {% for urldict in urls %}
+                    <tr>
+                       <td>
+                       {% for u in urldict|key:"urls" %}
+                         {{ u }} <br/>
+                       {% endfor %}
+                        </td>
+                       <td>
+                          <a href="../ViewFile/?file={{urldict|key:"path"}}&amp;md5={{ md5}}&amp;type=ipa">{{urldict|key:"path"}}</a>
+                       </td>
+                    </tr>
+                  {% endfor %} 
+                </tbody>
+            </table>
+            {% endif %}
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end urls ================================== -->
+ <a id="firebase" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <p>
+             <strong><i class="fas fa-database"></i> FIREBASE DATABASE</strong>
+             </p>
+              <div class="table-responsive">
+               {% if firebase_urls %} 
+             <table id="table_firebase" class="table table-bordered table-hover table-striped">
+                  <thead>
+                  <tr>
+                     <th>FIREBASE URL</th>
+                     <th>DETAILS</th>
+                  </tr>
+                 </thead>
+               
+                 <tbody>
+                  {% for item in firebase_urls %}
+                    <tr>
+                       <td>
+                       {{ item.url }}
+                        </td>
+                       <td>
+                         {% if item.open %}
+                          <span class="badge bg-danger">insecure</span><br/>Firebase Database is exposed publicly.
+                        {% else %}
+                         <span class="badge bg-primary">Info</span><br/>App talks to a Firebase database.
+                         {% endif %}
+                       </td>
+                    </tr>
+                  {% endfor %} 
+               </tbody>
+            </table>
+             {% endif %}
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end firebase db ================================== -->
+ <a id="emails" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-envelope"></i> EMAILS</strong>
+             </p>
+              <div class="table-responsive">
+                {% if emails %} 
+             <table id="table_emails" class="table table-bordered table-hover table-striped">
+                  <thead>
+                  <tr>
+                     <th>EMAIL</th>
+                     <th>FILE</th>
+                  </tr>
+                 </thead>
+                 <tbody>
+                 {% for email_dict in emails %}
+                    <tr>
+                       <td>
+                       {% for e in email_dict|key:"emails" %}
+                         {{ e }} <br/>
+                       {% endfor %}
+                        </td>
+                       <td>
+                          <a href="../ViewFile/?file={{email_dict|key:"path"}}&amp;md5={{ md5}}&amp;type=ipa">{{email_dict|key:"path"}}</a>   
+                       </td>
+                    </tr>
+                  {% endfor %} 
+                  </tbody>
+            </table>
+              {% endif %}
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end emails ================================== -->
  <a id="libraries" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">

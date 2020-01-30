@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-MOBSF_VER = 'v3.0.1 Beta'
+MOBSF_VER = 'v3.0.2 Beta'
 
 BANNER = """
   __  __       _    ____  _____       _____  ___  
@@ -340,6 +340,11 @@ else:
     EXODUS_URL = 'https://reports.exodus-privacy.eu.org'
     APPMONSTA_URL = 'https://api.appmonsta.com/v1/stores/android/details/'
     ITUNES_URL = 'https://itunes.apple.com/lookup'
+    GITHUB_URL = ('https://raw.githubusercontent.com/'
+                  'MobSF/Mobile-Security-Framework-MobSF/'
+                  'master/MobSF/settings.py')
+    GOOGLE = 'https://www.google.com'
+    BAIDU = 'https://www.baidu.com/'
 
     # -------External -----------------------------
     # Get AppMonsta API from https://appmonsta.com/dashboard/get_api_key/

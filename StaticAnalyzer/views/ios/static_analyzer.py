@@ -20,6 +20,7 @@ from StaticAnalyzer.views.ios.db_interaction import (
     get_context_from_db_entry,
     save_or_update)
 from StaticAnalyzer.views.ios.file_analysis import ios_list_files
+from StaticAnalyzer.views.ios.file_recon import extract_urls_n_email
 from StaticAnalyzer.views.ios.plist_analysis import plist_analysis
 from StaticAnalyzer.views.shared_func import (file_size, firebase_analysis,
                                               hash_gen, score, unzip,
@@ -28,7 +29,7 @@ from StaticAnalyzer.views.shared_func import (file_size, firebase_analysis,
 logger = logging.getLogger(__name__)
 
 ##############################################################
-# Code to support iOS Static Code Analysis
+# iOS Static Code Analysis IPA and Source Code
 ##############################################################
 
 
@@ -83,7 +84,7 @@ def static_analyzer_ios(request, api=False):
                     unzip(app_dict['app_path'], app_dict['app_dir'])
                     # Get Files, normalize + to x,
                     # and convert binary plist -> xml
-                    files, sfiles = ios_list_files(
+                    all_files = ios_list_files(
                         app_dict['bin_dir'], app_dict['md5_hash'], True, 'ipa')
                     infoplist_dict = plist_analysis(app_dict['bin_dir'], False)
                     app_dict['appstore'] = app_search(infoplist_dict.get('id'))
@@ -92,13 +93,17 @@ def static_analyzer_ios(request, api=False):
                         tools_dir,
                         app_dict['app_dir'],
                         infoplist_dict.get('bin'))
-                    fake_code_dict = {
+                    # IPA URL and Email Extract
+                    recon = extract_urls_n_email(app_dict['bin_dir'],
+                                                 all_files['files_long'],
+                                                 bin_analysis_dict['strings'])
+                    code_dict = {
                         'api': {},
                         'code_anal': {},
-                        'urlnfile': [],
-                        'domains': {},
-                        'emailnfile': [],
-                        'firebase': [],
+                        'urlnfile': recon['urlnfile'],
+                        'domains': recon['domains'],
+                        'emailnfile': recon['emailnfile'],
+                        'firebase': firebase_analysis(recon['urls_list']),
                     }
                     # Saving to DB
                     logger.info('Connecting to DB')
@@ -108,10 +113,9 @@ def static_analyzer_ios(request, api=False):
                             'update',
                             app_dict,
                             infoplist_dict,
-                            fake_code_dict,
+                            code_dict,
                             bin_analysis_dict,
-                            files,
-                            sfiles)
+                            all_files)
                         update_scan_timestamp(app_dict['md5_hash'])
                     elif rescan == '0':
                         logger.info('Saving to Database')
@@ -119,17 +123,15 @@ def static_analyzer_ios(request, api=False):
                             'save',
                             app_dict,
                             infoplist_dict,
-                            fake_code_dict,
+                            code_dict,
                             bin_analysis_dict,
-                            files,
-                            sfiles)
+                            all_files)
                     context = get_context_from_analysis(
                         app_dict,
                         infoplist_dict,
-                        fake_code_dict,
+                        code_dict,
                         bin_analysis_dict,
-                        files,
-                        sfiles)
+                        all_files)
                 context['virus_total'] = None
                 if settings.VT_ENABLED:
                     vt = VirusTotal.VirusTotal()
@@ -161,7 +163,7 @@ def static_analyzer_ios(request, api=False):
                         file_size(app_dict['app_path'])) + 'MB'  # FILE SIZE
                     app_dict['sha1'], app_dict['sha256'] = hash_gen(
                         app_dict['app_path'])  # SHA1 & SHA256 HASHES
-                    files, sfiles = ios_list_files(
+                    all_files = ios_list_files(
                         app_dict['app_dir'],
                         app_dict['md5_hash'],
                         False,
@@ -190,8 +192,7 @@ def static_analyzer_ios(request, api=False):
                             infoplist_dict,
                             code_analysis_dic,
                             fake_bin_dict,
-                            files,
-                            sfiles)
+                            all_files)
                         update_scan_timestamp(app_dict['md5_hash'])
                     elif rescan == '0':
                         logger.info('Saving to Database')
@@ -201,15 +202,13 @@ def static_analyzer_ios(request, api=False):
                             infoplist_dict,
                             code_analysis_dic,
                             fake_bin_dict,
-                            files,
-                            sfiles)
+                            all_files)
                     context = get_context_from_analysis(
                         app_dict,
                         infoplist_dict,
                         code_analysis_dic,
                         fake_bin_dict,
-                        files,
-                        sfiles)
+                        all_files)
                 context['average_cvss'], context[
                     'security_score'] = score(context['code_analysis'])
                 template = 'static_analysis/ios_source_analysis.html'

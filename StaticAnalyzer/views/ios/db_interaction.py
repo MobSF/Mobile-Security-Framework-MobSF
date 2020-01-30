@@ -60,8 +60,7 @@ def get_context_from_analysis(app_dict,
                               info_dict,
                               code_dict,
                               bin_dict,
-                              files,
-                              sfiles):
+                              all_files):
     """Get the context for IPA/ZIP from analysis results."""
     try:
         context = {
@@ -90,9 +89,9 @@ def get_context_from_analysis(app_dict,
             'binary_analysis': bin_dict['bin_res'],
             'ios_api': code_dict['api'],
             'code_analysis': code_dict['code_anal'],
-            'file_analysis': sfiles,
+            'file_analysis': all_files['special_files'],
             'libraries': bin_dict['libs'],
-            'files': files,
+            'files': all_files['files_short'],
             'urls': code_dict['urlnfile'],
             'domains': code_dict['domains'],
             'emails': code_dict['emailnfile'],
@@ -110,8 +109,7 @@ def save_or_update(update_type,
                    info_dict,
                    code_dict,
                    bin_dict,
-                   files,
-                   sfiles) -> None:
+                   all_files):
     """Save/Update an IPA/ZIP DB entry."""
     try:
         values = {
@@ -138,9 +136,9 @@ def save_or_update(update_type,
             'BINARY_ANALYSIS': bin_dict['bin_res'],
             'IOS_API': code_dict['api'],
             'CODE_ANALYSIS': code_dict['code_anal'],
-            'FILE_ANALYSIS': sfiles,
+            'FILE_ANALYSIS': all_files['special_files'],
             'LIBRARIES': bin_dict['libs'],
-            'FILES': files,
+            'FILES': all_files['files_short'],
             'URLS': code_dict['urlnfile'],
             'DOMAINS': code_dict['domains'],
             'EMAILS': code_dict['emailnfile'],

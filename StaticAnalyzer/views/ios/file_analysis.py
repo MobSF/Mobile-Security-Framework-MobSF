@@ -21,6 +21,7 @@ def ios_list_files(src, md5_hash, binary_form, mode):
         filez = []
         certz = []
         sfiles = []
+        full_paths = []
         database = []
         plist = []
         for dirname, _, files in os.walk(src):
@@ -37,6 +38,7 @@ def ios_list_files(src, md5_hash, binary_form, mode):
                         file_path = plus2x
                     fileparam = file_path.replace(src, '')
                     filez.append(fileparam)
+                    full_paths.append(file_path)
                     ext = jfile.split('.')[-1]
                     if re.search(r'cer|pem|cert|crt|pub|key|pfx|p12', ext):
                         certz.append({
@@ -76,6 +78,8 @@ def ios_list_files(src, md5_hash, binary_form, mode):
                 'issue': 'Certificate/Key Files Hardcoded inside the App.',
                 'files': certz,
             })
-        return filez, sfiles
+        return {'files_short': filez,
+                'files_long': full_paths,
+                'special_files': sfiles}
     except Exception:
         logger.exception('iOS List Files')
