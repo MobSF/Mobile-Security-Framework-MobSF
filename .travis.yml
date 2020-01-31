@@ -41,7 +41,7 @@ install:
 - pip3 install --upgrade pip || python -m pip install --upgrade pip
 before_script:
 - pip3 install --upgrade wheel tox
-- pip3 wheel --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.10.0
+- pip3 wheel --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.11.0
 - pip3 install --no-index --find-links=yara-python yara-python
 - pip3 install -r requirements.txt
 - python3 manage.py makemigrations || python manage.py makemigrations
