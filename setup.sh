@@ -55,7 +55,7 @@ fi
 echo '[INSTALL] Installing dex enabled yara-python'
 pip install --upgrade wheel
 rm -rf yara-python
-pip wheel --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.10.0
+pip wheel --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.11.0
 pip install --no-index --find-links=yara-python yara-python
 rm -rf yara-python
 

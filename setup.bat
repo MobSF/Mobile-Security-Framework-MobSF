@@ -40,7 +40,7 @@ where python >nul 2>&1 && (
   echo [INSTALL] Installing dex enabled yara-python
   pip install --upgrade wheel
   rmdir /q /s yara-python
-  pip wheel --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.10.0
+  pip wheel --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.11.0
   pip install --no-index --find-links=yara-python yara-python
   rmdir /q /s yara-python
 
