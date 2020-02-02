@@ -52,11 +52,6 @@ logger = logging.getLogger(__name__)
 ctype = 'application/json; charset=utf-8'
 
 
-def file_size(app_path):
-    """Return the size of the file."""
-    return round(float(os.path.getsize(app_path)) / (1024 * 1024), 2)
-
-
 def hash_gen(app_path) -> tuple:
     """Generate and return sha1 and sha256 as a tuple."""
     try:

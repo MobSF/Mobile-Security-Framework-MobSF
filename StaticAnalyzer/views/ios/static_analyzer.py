@@ -9,7 +9,10 @@ import MalwareAnalyzer.views.VirusTotal as VirusTotal
 from django.conf import settings
 from django.shortcuts import render
 
-from MobSF.utils import print_n_send_error_response
+from MobSF.utils import (
+    file_size,
+    print_n_send_error_response,
+)
 
 from StaticAnalyzer.models import StaticAnalyzerIOS
 from StaticAnalyzer.views.ios.appstore import app_search
@@ -27,7 +30,7 @@ from StaticAnalyzer.views.ios.icon_analysis import (
 )
 from StaticAnalyzer.views.ios.plist_analysis import plist_analysis
 from StaticAnalyzer.views.shared_func import (
-    file_size, firebase_analysis,
+    firebase_analysis,
     hash_gen, score, unzip,
     update_scan_timestamp,
 )

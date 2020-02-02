@@ -23,12 +23,14 @@ from django.conf import settings
 from django.shortcuts import render
 from django.utils.html import escape
 
-from MobSF.utils import print_n_send_error_response
+from MobSF.utils import (
+    file_size,
+    print_n_send_error_response,
+)
 
 from StaticAnalyzer.models import StaticAnalyzerWindows
 from StaticAnalyzer.tools.strings import strings_util
 from StaticAnalyzer.views.shared_func import (
-    file_size,
     hash_gen,
     unzip,
     update_scan_timestamp)

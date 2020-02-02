@@ -16,8 +16,11 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.template.defaulttags import register
 
-from MobSF.utils import (is_file_exists,
-                         print_n_send_error_response)
+from MobSF.utils import (
+    file_size,
+    is_file_exists,
+    print_n_send_error_response,
+)
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 from StaticAnalyzer.views.android.binary_analysis import (elf_analysis,
@@ -35,7 +38,7 @@ from StaticAnalyzer.views.android.manifest_analysis import (get_manifest,
                                                             manifest_data)
 from StaticAnalyzer.views.android.playstore import get_app_details
 from StaticAnalyzer.views.android.strings import strings_jar
-from StaticAnalyzer.views.shared_func import (file_size, firebase_analysis,
+from StaticAnalyzer.views.shared_func import (firebase_analysis,
                                               hash_gen, score, unzip,
                                               update_scan_timestamp)
 
