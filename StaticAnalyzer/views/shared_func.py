@@ -49,6 +49,7 @@ except ImportError:
         'wkhtmltopdf is not installed/configured properly.'
         ' PDF Report Generation is disabled')
 logger = logging.getLogger(__name__)
+ctype = 'application/json; charset=utf-8'
 
 
 def file_size(app_path):
@@ -121,7 +122,7 @@ def pdf(request, api=False, jsonres=False):
             else:
                 return HttpResponse(
                     json.dumps({'md5': 'Invalid scan hash'}),
-                    content_type='application/json; charset=utf-8', status=500)
+                    content_type=ctype, status=500)
         # Do Lookups
         android_static_db = StaticAnalyzerAndroid.objects.filter(
             MD5=checksum)
@@ -142,7 +143,7 @@ def pdf(request, api=False, jsonres=False):
             else:
                 return HttpResponse(
                     json.dumps({'report': 'Report not Found'}),
-                    content_type='application/json; charset=utf-8',
+                    content_type=ctype,
                     status=500)
         # Do VT Scan only on binaries
         context['virus_total'] = None
@@ -194,7 +195,7 @@ def pdf(request, api=False, jsonres=False):
                 return HttpResponse(
                     json.dumps({'pdf_error': 'Cannot Generate PDF',
                                 'err_details': str(exp)}),
-                    content_type='application/json; charset=utf-8',
+                    content_type=ctype,
                     status=500)
     except Exception as exp:
         logger.exception('Error Generating PDF Report')
