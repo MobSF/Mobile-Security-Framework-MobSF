@@ -42,7 +42,7 @@
       <img class="center" id="icon" src="{{base_url}}{% static 'img/no_icon.png' %}" alt="app_icon"/>
      </div>
       <div class="center">
-        <h1><i class="fab fa-apple"></i> {{ app_name }} ({{app_version}}) </h1>
+        <h1><i class="fab fa-apple"></i> {{ app_name }} {% if app_version %} ({{app_version}}) {% endif %}</h1>
       </div>
      </br></br></br></br></br>
       <div class="container">

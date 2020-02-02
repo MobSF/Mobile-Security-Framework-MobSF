@@ -154,10 +154,8 @@ def pdf(request, api=False, jsonres=False):
                 checksum + ext)
             vt = VirusTotal.VirusTotal()
             context['virus_total'] = vt.get_result(app_bin, checksum)
-        # Get Fully Qualified URL of App Icon
-        proto = 'https' if request.is_secure() else 'http'
-        base_url = proto + '://' + request.get_host()
-        context['base_url'] = base_url
+        # Get Local Base URL
+        context['base_url'] = 'file://' + settings.BASE_DIR
         try:
             if api and jsonres:
                 return {'report_dat': context}

@@ -39,10 +39,10 @@
       </div>
       </br></br></br>
      <div class="app">
-      <img class="center" id="icon" src="{% if not appstore_details.error %}{{appstore_details.icon}}{% elif icon_found %}{{base_url}}/download/{{ md5 }}-icon.png{% else %}{{base_url}}{% static 'img/no_icon.png' %}{% endif %}" alt="app_icon"/>
+      <img class="center" id="icon" src="{% if not appstore_details.error %}{{appstore_details.icon}}{% elif icon_found %}{{base_url}}/downloads/{{ md5 }}-icon.png{% else %}{{base_url}}{% static 'img/no_icon.png' %}{% endif %}" alt="app_icon"/>
      </div>
       <div class="center">
-        <h1><i class="fab fa-apple"></i> {{ app_name }} ({{app_version}}) </h1>
+        <h1><i class="fab fa-apple"></i> {{ app_name }} {% if app_version %} ({{app_version}}) {% endif %}</h1>
       </div>
      </br></br></br></br></br>
       <div class="container">
