@@ -29,13 +29,11 @@ def get_icon(md5, bin_dir, binary):
             return False
         icon_file = icons.pop()
         outfile = os.path.join(settings.DWD_DIR, md5 + '-icon.png')
-        if platform.system() in ['Darwin', 'Linux']:
-            args = ['pngcrush', '-q',
+        if platform.system() == 'Darwin':
+            args = ['xcrun', '-sdk', 'iphoneos', 'pngcrush', '-q',
                     '-revert-iphone-optimizations',
                     icon_file, outfile]
-            if platform.system() == 'Darwin':
-                args = ['xcrun', '-sdk', 'iphoneos'] + args
-            # Uncrush PNG. CgBI -> PNG, Mac/Linux only
+            # Uncrush PNG. CgBI -> PNG, Mac only
             # https://iphonedevwiki.net/index.php/CgBI_file_format
             try:
                 out = subprocess.run(args, capture_output=True)
