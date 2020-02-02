@@ -6,6 +6,10 @@
     <meta charset="utf-8">
     <title>MobSF Static Analysis Report</title>
     <meta name="description" content="MobSF Report">
+    {% if 'file:///' in base_url %}
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+        <link href='https://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
+    {% else %}
     <style>
     
       /* latin */
@@ -27,6 +31,7 @@
       }
      
   </style>
+  {% endif %}
   <link rel="stylesheet" href="{{base_url}}{% static "others/css/pdf_report.css" %}">
   <link rel="stylesheet" href="{{base_url}}{% static "adminlte/plugins/fontawesome-free/css/all.min.css" %}">
   </head>

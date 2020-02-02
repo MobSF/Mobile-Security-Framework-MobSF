@@ -155,7 +155,11 @@ def pdf(request, api=False, jsonres=False):
             vt = VirusTotal.VirusTotal()
             context['virus_total'] = vt.get_result(app_bin, checksum)
         # Get Local Base URL
-        context['base_url'] = 'file://' + settings.BASE_DIR
+        if platform.system() == 'Windows':
+            proto = 'file:///'
+        else:
+            proto = 'file://'
+        context['base_url'] = proto + settings.BASE_DIR
         try:
             if api and jsonres:
                 return {'report_dat': context}
