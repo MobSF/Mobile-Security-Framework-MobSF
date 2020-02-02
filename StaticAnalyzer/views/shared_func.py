@@ -156,6 +156,7 @@ def pdf(request, api=False, jsonres=False):
         else:
             proto = 'file://'
         context['base_url'] = proto + settings.BASE_DIR
+        context['dwd_dir'] = proto + settings.DWD_DIR
         try:
             if api and jsonres:
                 return {'report_dat': context}
