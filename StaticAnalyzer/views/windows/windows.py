@@ -17,6 +17,8 @@ import rsa
 
 from lxml import etree
 
+import MalwareAnalyzer.views.VirusTotal as VirusTotal
+
 from django.conf import settings
 from django.shortcuts import render
 from django.utils.html import escape
@@ -116,6 +118,13 @@ def staticanalyzer_windows(request, api=False):
                     context = get_context_from_analysis(app_dic,
                                                         xml_dic,
                                                         bin_an_dic)
+                context['virus_total'] = None
+                if settings.VT_ENABLED:
+                    vt = VirusTotal.VirusTotal()
+                    context['virus_total'] = vt.get_result(
+                        os.path.join(app_dic['app_dir'], app_dic[
+                                     'md5']) + '.appx',
+                        app_dic['md5'])
                 template = 'static_analysis/windows_binary_analysis.html'
                 if api:
                     return context

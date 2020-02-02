@@ -33,6 +33,7 @@ def get_context_from_db_entry(db_entry):
             'bundle_url_types': python_list(db_entry[0].BUNDLE_URL_TYPES),
             'bundle_supported_platforms':
                 python_list(db_entry[0].BUNDLE_SUPPORTED_PLATFORMS),
+            'icon_found': db_entry[0].ICON_FOUND,
             'info_plist': db_entry[0].INFO_PLIST,
             'binary_info': python_dict(db_entry[0].MACHO_INFO),
             'permissions': python_list(db_entry[0].PERMISSIONS),
@@ -82,6 +83,7 @@ def get_context_from_analysis(app_dict,
             'bundle_url_types': info_dict['bundle_url_types'],
             'bundle_supported_platforms':
                 info_dict['bundle_supported_platforms'],
+            'icon_found': app_dict['icon_found'],
             'info_plist': info_dict['plist_xml'],
             'binary_info': bin_dict['macho'],
             'permissions': info_dict['permissions'],
@@ -129,6 +131,7 @@ def save_or_update(update_type,
             'BUNDLE_URL_TYPES': info_dict['bundle_url_types'],
             'BUNDLE_SUPPORTED_PLATFORMS':
                 info_dict['bundle_supported_platforms'],
+            'ICON_FOUND': app_dict['icon_found'],
             'INFO_PLIST': info_dict['plist_xml'],
             'MACHO_INFO': bin_dict['macho'],
             'PERMISSIONS': info_dict['permissions'],

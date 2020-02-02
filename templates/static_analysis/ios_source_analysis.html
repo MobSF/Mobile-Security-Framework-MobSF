@@ -219,7 +219,7 @@
                 <div class="row">
                 <div class="col-2">
                   <p><strong><i class="fas fa-check-double"></i> APP SCORES</strong></p>
-                  <img id="app_icon" src="{% if not appstore_details.error %}{{appstore_details.icon}}{% else %}{% static 'img/no_icon.png' %}{% endif %}"/>
+                  <img id="app_icon" src="{% if not appstore_details.error %}{{appstore_details.icon}}{% elif icon_found %}/download/{{ md5 }}-icon.png{% else %}{% static 'img/no_icon.png' %}{% endif %}"/>
                   <br/>
                   <span class="badge bg-info">Average CVSS</span> <strong>{{ average_cvss }} </strong><br/>
                   <span class="badge bg-{% if security_score < 50 %}danger{% elif security_score == 100 %}success{% else %}warning{% endif %}">Security Score</span> <strong>{{ security_score }}/100 </strong><br/>
@@ -240,7 +240,9 @@
                 <div class="col-5">
                   <p><strong><i class="fas fa-info"></i> APP INFORMATION </strong></p>                                       
                   <span class="badge bg-primary">App Name</span>
-                  {{ app_name }}<br/>              
+                  {{ app_name }}<br/>
+                  <span class="badge bg-primary">App Type</span>
+                  {{ app_type }}<br/>                               
                   <span class="badge bg-primary">Identifier</span>
                   {{ bundle_id }}<br/>
                   <span class="badge bg-primary">SDK Name</span>
