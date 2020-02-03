@@ -49,11 +49,7 @@ except ImportError:
         'wkhtmltopdf is not installed/configured properly.'
         ' PDF Report Generation is disabled')
 logger = logging.getLogger(__name__)
-
-
-def file_size(app_path):
-    """Return the size of the file."""
-    return round(float(os.path.getsize(app_path)) / (1024 * 1024), 2)
+ctype = 'application/json; charset=utf-8'
 
 
 def hash_gen(app_path) -> tuple:
@@ -115,85 +111,88 @@ def pdf(request, api=False, jsonres=False):
         else:
             checksum = request.GET['md5']
         hash_match = re.match('^[0-9a-f]{32}$', checksum)
-        if hash_match:
-            android_static_db = StaticAnalyzerAndroid.objects.filter(
-                MD5=checksum)
-            ios_static_db = StaticAnalyzerIOS.objects.filter(
-                MD5=checksum)
-            win_static_db = StaticAnalyzerWindows.objects.filter(
-                MD5=checksum)
-
-            if android_static_db.exists():
-                context, template = handle_pdf_android(android_static_db)
-            elif ios_static_db.exists():
-                context, template = handle_pdf_ios(ios_static_db)
-            elif win_static_db.exists():
-                context, template = handle_pdf_win(win_static_db)
-            else:
-                if api:
-                    return {'report': 'Report not Found'}
-                else:
-                    return HttpResponse(
-                        json.dumps({'report': 'Report not Found'}),
-                        content_type='application/json; charset=utf-8',
-                        status=500)
-            context['virus_total'] = None
-            if settings.VT_ENABLED:
-                file_extension = os.path.splitext(
-                    context['file_name'].lower())[1]
-                app_dir = os.path.join(settings.UPLD_DIR, checksum + '/')
-                vt = VirusTotal.VirusTotal()
-                if file_extension.lower() == '.zip':
-                    context['virus_total'] = None
-                else:
-                    context['virus_total'] = vt.get_result(
-                        os.path.join(app_dir, checksum)
-                        + file_extension.lower(),
-                        checksum)
-            try:
-                if api and jsonres:
-                    return {'report_dat': context}
-                else:
-                    options = {
-                        'page-size': 'A4',
-                        'quiet': '',
-                        'no-collate': '',
-                        'margin-top': '0.50in',
-                        'margin-right': '0.50in',
-                        'margin-bottom': '0.50in',
-                        'margin-left': '0.50in',
-                        'encoding': 'UTF-8',
-                        'custom-header': [
-                            ('Accept-Encoding', 'gzip'),
-                        ],
-                        'no-outline': None,
-                    }
-                    html = template.render(context)
-                    pdf_dat = pdfkit.from_string(html, False, options=options)
-                    if api:
-                        return {'pdf_dat': pdf_dat}
-                    return HttpResponse(pdf_dat,
-                                        content_type='application/pdf')
-            except Exception as exp:
-                logger.exception('Error Generating PDF Report')
-                if api:
-                    return {
-                        'error': 'Cannot Generate PDF/JSON',
-                        'err_details': str(exp)}
-                else:
-                    return HttpResponse(
-                        json.dumps({'pdf_error': 'Cannot Generate PDF',
-                                    'err_details': str(exp)}),
-                        content_type='application/json; charset=utf-8',
-                        status=500)
-
-        else:
+        if not hash_match:
             if api:
                 return {'error': 'Invalid scan hash'}
             else:
                 return HttpResponse(
-                    json.dumps({'md5': 'Invalid MD5'}),
-                    content_type='application/json; charset=utf-8', status=500)
+                    json.dumps({'md5': 'Invalid scan hash'}),
+                    content_type=ctype, status=500)
+        # Do Lookups
+        android_static_db = StaticAnalyzerAndroid.objects.filter(
+            MD5=checksum)
+        ios_static_db = StaticAnalyzerIOS.objects.filter(
+            MD5=checksum)
+        win_static_db = StaticAnalyzerWindows.objects.filter(
+            MD5=checksum)
+
+        if android_static_db.exists():
+            context, template = handle_pdf_android(android_static_db)
+        elif ios_static_db.exists():
+            context, template = handle_pdf_ios(ios_static_db)
+        elif win_static_db.exists():
+            context, template = handle_pdf_win(win_static_db)
+        else:
+            if api:
+                return {'report': 'Report not Found'}
+            else:
+                return HttpResponse(
+                    json.dumps({'report': 'Report not Found'}),
+                    content_type=ctype,
+                    status=500)
+        # Do VT Scan only on binaries
+        context['virus_total'] = None
+        ext = os.path.splitext(context['file_name'].lower())[1]
+        if settings.VT_ENABLED and ext != '.zip':
+            app_bin = os.path.join(
+                settings.UPLD_DIR,
+                checksum + '/',
+                checksum + ext)
+            vt = VirusTotal.VirusTotal()
+            context['virus_total'] = vt.get_result(app_bin, checksum)
+        # Get Local Base URL
+        if platform.system() == 'Windows':
+            proto = 'file:///'
+        else:
+            proto = 'file://'
+        context['base_url'] = proto + settings.BASE_DIR
+        context['dwd_dir'] = proto + settings.DWD_DIR
+        try:
+            if api and jsonres:
+                return {'report_dat': context}
+            else:
+                options = {
+                    'page-size': 'Letter',
+                    'quiet': '',
+                    'no-collate': '',
+                    'margin-top': '0.50in',
+                    'margin-right': '0.50in',
+                    'margin-bottom': '0.50in',
+                    'margin-left': '0.50in',
+                    'encoding': 'UTF-8',
+                    'custom-header': [
+                        ('Accept-Encoding', 'gzip'),
+                    ],
+                    'no-outline': None,
+                }
+                html = template.render(context)
+                pdf_dat = pdfkit.from_string(html, False, options=options)
+                if api:
+                    return {'pdf_dat': pdf_dat}
+                return HttpResponse(pdf_dat,
+                                    content_type='application/pdf')
+        except Exception as exp:
+            logger.exception('Error Generating PDF Report')
+            if api:
+                return {
+                    'error': 'Cannot Generate PDF/JSON',
+                    'err_details': str(exp)}
+            else:
+                return HttpResponse(
+                    json.dumps({'pdf_error': 'Cannot Generate PDF',
+                                'err_details': str(exp)}),
+                    content_type=ctype,
+                    status=500)
     except Exception as exp:
         logger.exception('Error Generating PDF Report')
         msg = str(exp)
@@ -212,13 +211,13 @@ def handle_pdf_android(static_db):
     context['average_cvss'], context[
         'security_score'] = score(context['code_analysis'])
     if context['file_name'].lower().endswith('.zip'):
-        logger.info('Report covers android source')
+        logger.info('Generating PDF report for android zip')
         template = get_template(
-            'pdf/android_source_analysis_pdf.html')
+            'pdf/android_report.html')
     else:
-        logger.info('Report covers android binary')
+        logger.info('Generating PDF report for android apk')
         template = get_template(
-            'pdf/android_binary_analysis.pdf.html')
+            'pdf/android_report.html')
     return context, template
 
 
@@ -227,18 +226,18 @@ def handle_pdf_ios(static_db):
                 'PDF Report Generation (IOS)')
     context = idb(static_db)
     if context['file_name'].lower().endswith('.zip'):
-        logger.info('Report covers IOS source')
+        logger.info('Generating PDF report for IOS zip')
         context['average_cvss'], context[
             'security_score'] = score(context['code_analysis'])
         template = get_template(
-            'pdf/ios_source_analysis_pdf.html')
+            'pdf/ios_report.html')
     else:
-        logger.info('Report covers IOS binary')
+        logger.info('Generating PDF report for IOS ipa')
         context['average_cvss'], context[
             'security_score'] = score(
                 context['binary_analysis'])
         template = get_template(
-            'pdf/ios_binary_analysis_pdf.html')
+            'pdf/ios_report.html')
     return context, template
 
 
@@ -248,7 +247,7 @@ def handle_pdf_win(static_db):
         'PDF Report Generation (APPX)')
     context = wdb(static_db)
     template = get_template(
-        'pdf/windows_binary_analysis_pdf.html')
+        'pdf/windows_report.html')
     return context, template
 
 

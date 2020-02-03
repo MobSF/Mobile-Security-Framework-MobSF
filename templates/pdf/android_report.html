@@ -1,0 +1,766 @@
+{% block content %}
+{% load static %}
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>MobSF Static Analysis Report</title>
+    <meta name="description" content="MobSF Report">
+    {% if 'file:///' in base_url %}
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+        <link href='https://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
+    {% else %}
+    <style>
+    
+      /* latin */
+      @font-face {
+        font-family: 'Open Sans';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: local('Open Sans Regular'), local('OpenSans-Regular'), url('{{base_url}}{% static 'fonts/Open_Sans/OpenSans-Regular.ttf' %}') format('truetype');
+      }
+
+      /* latin */
+      @font-face {
+        font-family: 'Oswald';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: local('Oswald'), local('Oswald'), url('{{base_url}}{% static 'fonts/Oswald/Oswald-Regular.ttf' %}') format('truetype');
+      }
+     
+  </style>
+  {% endif %}
+  <link rel="stylesheet" href="{{base_url}}{% static "others/css/pdf_report.css" %}">
+  <link rel="stylesheet" href="{{base_url}}{% static "adminlte/plugins/fontawesome-free/css/all.min.css" %}">
+  </head>
+
+  <body>
+    <article id="cover">
+      <div class="header">
+        <img src="{{base_url}}{% static "img/mobsf_logo.png" %}" class="center logo" alt="MobSF Logo"/>
+        <div class="htext">ANDROID STATIC ANALYSIS REPORT </div>
+      </div>
+      </br></br></br>
+     <div class="app">
+      <img class="center" id="icon" src="{% if icon_found %}{{dwd_dir}}{{ md5 }}-icon.png{% else %}{{base_url}}{% static 'img/no_icon.png' %}{% endif %}" alt="app_icon"/>
+     </div>
+      <div class="center">
+        <h1><i class="fab fa-android"></i> {{ app_name }} {% if version_name %}  ({{version_name}}) {% endif %}</h1>
+      </div>
+     </br></br></br></br></br>
+      <div class="container">
+      <table class="basic no_border">
+      <tr class="no_border">
+        <td class="no_border"><h3>File Name:</h3></td>
+        <td class="no_border"><h3>{{file_name}}</h3></td>
+      </tr>
+      <tr>
+        <td class="no_border"><h3>Package Name:</h3></td>
+        <td class="no_border"><h3>{{ package_name }}</h3></td>
+      </tr>
+      <tr>
+        <td class="no_border"><h3>Average CVSS Score:</h3></td>
+        <td class="no_border"><h3>
+  
+        {% if average_cvss > 6 %}
+        <span class="danger">{{ average_cvss }} </span>
+        {% elif average_cvss == 0 %}
+        {{ average_cvss }}
+        {% elif average_cvss >= 4 %}
+        <span class="warning">{{ average_cvss }}</span>
+        {% elif average_cvss < 4 %}
+        <span class="success">{{ average_cvss }}</span>
+        {% endif %}
+        </h3></td>
+      </tr>
+      <tr>
+        <td class="no_border"><h3>App Security Score:</h3></td>
+        <td class="no_border">
+        <h3> 
+          {% if security_score < 40 %}
+            <span class="danger">{{ security_score }}/100 (HIGH RISK)</span>
+          {% elif security_score < 70 %}
+            <span class="warning">{{ security_score }}/100 (MEDIUM RISK)</span>
+          {% else %}
+            <span class="success">{{ security_score }}/100 (LOW RISK)</span>
+          {% endif %}
+        </h3>
+        </td>
+      </tr>
+      {% if trackers|key:"trackers" %}
+        <tr>
+          <td class="no_border"><h3>Trackers Detection:</h3></td>
+          <td class="no_border"><h3><span {% if trackers.detected_trackers > 0 %} class="warning" {% endif %}>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</span></h3></td>
+        </tr>
+      {% endif %}
+      {% if virus_total and virus_total.items|length > 9 and 'request successfully queued' not in virus_total.verbose_msg %}
+        <tr>
+        <td class="no_border"><h3>VirusTotal Detection:</h3></td>
+        <td class="no_border"><h3><span class="{% if virus_total.positives > 0 %}danger{% else %}success{% endif %}"> {{ virus_total.positives }}/{{ virus_total.total }}</span></h3></td>
+      </tr>
+      {% endif %}
+    </table>
+      </div>
+      </br></br>
+      </br></br>
+      </br></br>
+      </br></br>
+      </br></br>
+      </br></br>
+      </br></br>
+      </br></br>
+    </article>
+    
+    <article id="contents">
+
+      
+      <h2><i class="fas fa-box-open"></i> FILE INFORMATION</h2>
+
+      <h5>File Name:</h5> {{ file_name }}</br>
+      <h5>Size: </h5> {{ size }}</br>
+      <h5>MD5:</h5> {{ md5 }}</br>
+      <h5>SHA1:</h5> {{ sha1 }}</br>
+      <h5>SHA256:</h5> {{ sha256 }}</br>
+     
+
+      <h2><i class="fas fa-info"></i> APP INFORMATION</h2>
+
+      <h5>App Name:</h5> {{ app_name }}</br>
+      <h5>Package Name:</h5> {{ package_name }}</br>
+      <h5>Main Activity:</h5> {{ main_activity }}</br>
+      <h5>Target SDK:</h5> {{ target_sdk }}</br>
+      <h5>Min SDK:</h5> {{ min_sdk }}</br>
+      <h5>Max SDK:</h5> {{ max_sdk }}</br>
+      <h5>Android Version Name:</h5> {{ version_name }}</br>
+      <h5>Android Version Code:</h5> {{ version_code }}</br>
+
+      <h2><i class="fas fa-th-large"></i> APP COMPONENTS </h2>
+
+        <h5>Activities:</h5> {{ activities | length }}</br>
+        <h5>Services:</h5> {{ services | length }}</br>
+        <h5>Receivers:</h5> {{ receivers | length }}</br>
+        <h5>Providers:</h5> {{ providers | length }}</br>
+        <h5>Exported Activities:</h5> <span {% if exported_count.exported_activities > 0 %} class="danger" {% endif %}> {{ exported_count.exported_activities }}</span></br>
+        <h5>Exported Services:</h5> <span {% if exported_count.exported_services > 0 %} class="danger" {% endif %}> {{ exported_count.exported_services }}</span></br>
+        <h5>Exported Receivers:</h5> <span {% if exported_count.exported_receivers > 0 %} class="danger" {% endif %}> {{ exported_count.exported_receivers }}</span></br>
+        <h5>Exported Providers:</h5> <span {% if exported_count.exported_providers > 0 %} class="danger" {% endif %}> {{ exported_count.exported_providers }}</span></br>
+
+        {% if certificate_analysis.certificate_info %}
+         <h2><i class="fa fa-certificate"></i> CERTIFICATE INFORMATION</h2>
+        <div class="panel-body">
+              <p class="wrapped-text">{{ certificate_analysis.certificate_info }}</p>
+              <!--Cert status-->
+              {% if certificate_analysis.certificate_status == "good" %}
+                <h5>Certificate Status:</h5> <span class="success">Good</span><br />
+                <h5>Description: </h5> {{ certificate_analysis.description }}<br />
+              {% elif certificate_analysis.certificate_status == "bad" %}
+                <h5>Certificate Status: </h5> <span class="danger">Bad</span><br />
+                <h5>Description:</h5> {{ certificate_analysis.description }}<br />
+              {% elif  certificate_analysis.certificate_status == "missing" %}
+                <h5>Certificate Status: </h5> <span class="warning">Certificate missing</span><br />
+                <h5>Description:</h5> {{ certificate_analysis.description }}<br />
+              {% elif certificate_analysis.certificate_status == "warning" %}
+                <h5>Certificate Status: </h5> <span class="warning">Warning</span><br />
+                <h5>Description:</h5> {{ certificate_analysis.description }}<br />
+              {% endif %}
+              
+        </div>
+      {% endif %}
+      {% if permissions %}
+      <h2><i class="fa fa-list"></i> APPLICATION PERMISSIONS</h2>
+
+            <table class="basic">
+              <thead>
+            <tr>
+                <th>PERMISSION</th>
+                <th>STATUS</th>
+                <th>INFO </th>
+                <th>DESCRIPTION</th>
+              </tr>
+                                </thead>
+                                <tbody>
+            {% for perm,desc in permissions.items %}
+            <tr>
+            <td>{{ perm }}</td>
+            <td>{{ desc.status }}</td>
+            <td>{{ desc.info }}</td>
+            <td>{{ desc.description }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+            </table>
+      {% endif %}
+
+       {% if binary_analysis  %}
+      <h2><i class="fa fa-flag"></i> SHARED LIBRARY BINARY ANALYSIS</h2>
+
+       <table class="basic">
+                    <thead>
+                        <tr>
+                            <th>ISSUE</th>
+                            <th>SEVERITY</th>
+                            <th>DESCRIPTION</th>
+                            <th>FILES</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in binary_analysis %}
+                      <tr>
+                        <td>
+                        {{item|key:"title" | safe}}
+                        </td>
+                        <td>
+                          {% if item|key:"stat" == "high" %}
+                            <span class="danger">high</span>
+                          {% elif item|key:"stat" == "info" %}
+                            <span class="info">info</span>
+                          {% elif item|key:"stat" == "medium" %}
+                            <span class="warning">medium</span>
+                          {% endif %}
+                         
+                        </td>
+                        <td>
+                        {{item|key:"desc"}}
+                        </td>
+                        <td>
+                        {{item|key:"file"}}
+                        </td>
+   
+                       </tr>
+                     {% endfor %}
+                   
+                    
+                    </tbody>
+                    </table>
+        {% endif %}
+
+       {% if virus_total and virus_total.items|length > 9 and 'request successfully queued' not in virus_total.verbose_msg %}
+       <h2><i class="fas fa-spider"></i> VIRUSTOTAL SCAN</h2>
+       <p> <h5>{{ virus_total.positives }} / {{ virus_total.total }}</h5> &nbsp; AVs found this file Malicious! </p>
+            {% if virus_total.positives %}
+          
+                    <table class="basic">
+                                    <thead>
+                                        <tr>
+                                            <th>AV</th>
+                                            <th>DETECTION</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for av_name,av_result in virus_total.scans.items %}
+                                        {% if av_result.detected == True %}
+                                            <tr>
+                                                <td>
+                                                    {{ av_name }}
+                                                </td>
+                                                <td>
+                                                    <span class="danger">{{ av_result.result }}</span>
+                                                </td>
+                                          </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                               </tbody>
+                    </table>
+            {% endif %}
+      {% endif %}
+      {% if apkid %}
+      <h2><i class="fas fa-fingerprint"></i> APKID ANALYSIS</h2>
+
+       <table class="basic">
+                  <thead>
+                      <tr>
+                          <th>FILE</th>
+                          <th>DETAILS</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      {% if apkid %}
+                       {% for file, details in apkid.items %}
+                       <tr>
+                         <td>
+                             {{file}}
+                        </td>
+                        <td>
+                            <table class="basic">
+                              <thead>
+                                  <tr>
+                                      <th>FINDINGS</th>
+                                      <th>DETAILS</th>
+                                  </tr>
+                              </thead>
+                            <tbody>
+                            {% for detail, idens in details.items %}
+                            <tr>
+                              <td>
+                               {% if detail == "anti_vm" %}
+                               <span class="warning">Anti-VM Code</span>
+                               {% elif detail == "anti_disassembly" %}
+                               <span class="warning">Anti Disassembly Code</span>
+                               {% elif detail == "anti_debug" %}
+                               <span class="warning">Anti Debug Code</span>
+                               {% elif detail == "compiler" %}
+                               <span class="info">Compiler</span>
+                               {% elif detail == "abnormal" %}
+                               <span class="warning">Abnormal Code</span>
+                               {% elif detail == "obfuscator" %}
+                               <span class="warning">Obfuscator</span>
+                               {% elif detail == "protector" %}
+                               <span class="info">Protector</span>
+                               {% elif detail == "packer" %}
+                               <span class="danger">Packer Found</span>
+                               {% elif detail == "dropper" %}
+                               <span class="danger">Dropper Found</span>
+                               {% elif detail == "manipulator" %}
+                               <span class="warning">Manipulator Found</span>
+                               {% else %}
+                               <span class="info">{{detail}}</span>
+                               {% endif %}
+                            </td>
+                              <td> {% for idn in idens %} {{ idn }}</br> {% endfor %}</td>
+                            </tr>
+                            {% endfor %}
+                           </tbody>
+                            </table>
+                        </td>
+                 
+                        </tr>
+                         {% endfor %}
+                      {% else %}
+                      <p align="center"><strong>APKiD not enabled.</strong></p>
+                      {% endif %}
+                    </tbody>
+                    </table>
+      {% endif %}
+      {% if browsable_activities %}
+      <h2><i class="fas fa-clone"></i> BROWSABLE ACTIVITIES</h2>
+       <table class="basic">
+                                        <thead>
+                                            <tr>
+                                                <th>ACTIVITY</th>
+                                                <th>INTENT</th>   
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                      {% for activity,intent_details in browsable_activities.items %}
+                          <tr>
+                            <td>{{activity}}</td>
+                            <td>
+                                   {% if intent_details|key:"schemes" %}
+                                      <strong>Schemes</strong>: 
+                                      {% for scheme in intent_details|key:"schemes" %}
+                                        {{scheme}},
+                                      {% endfor %}
+                                       </br>
+                                   {% endif %}
+                                   {% if intent_details|key:"hosts" %}
+                                      <strong>Hosts:</strong> {% for host in intent_details|key:"hosts" %}
+                                        {{host}},
+                                      {% endfor %} 
+                                      </br>
+                                   {% endif %}
+                                   {% if intent_details|key:"ports" %}
+                                      <strong>Ports:</strong> {% for port in intent_details|key:"ports" %}
+                                        {{port}},
+                                      {% endfor %} 
+                                      </br>
+                                   {% endif %}
+                                   {% if intent_details|key:"mime_types" %}
+                                      <strong>Mime Types:</strong> {% for mime in intent_details|key:"mime_types" %}
+                                        {{mime}},
+                                      {% endfor %} 
+                                      </br>
+                                   {% endif %}
+                                   {% if intent_details|key:"paths" %}
+                                      <strong>Paths:</strong> {% for path in intent_details|key:"paths" %}
+                                        {{path}},
+                                      {% endfor %} 
+                                      </br>
+                                   {% endif %}
+                                   {% if intent_details|key:"path_prefixs" %}
+                                      <strong>Path Prefixes:</strong> {% for prefix in intent_details|key:"path_prefixs" %}
+                                        {{prefix}},
+                                      {% endfor %} 
+                                      </br>
+                                   {% endif %}
+                                   {% if intent_details|key:"path_patterns" %}
+                                      <strong>Path Patterns:</strong> {% for pattern in intent_details|key:"path_patterns" %}
+                                        {{pattern}},
+                                      {% endfor %} 
+                                      </br>
+                                   {% endif %}
+                              {% endfor %}
+                            </td>
+                          </tr>
+                    </tbody>
+                    </table>
+      {% endif %}
+
+    <h2><i class="fas fa-search"></i> MANIFEST ANALYSIS</h2>
+     <table class="basic">
+                    <thead>
+                        <tr>
+                            <th>ISSUE</th>
+                            <th>SEVERITY</th>
+												<th>DESCRIPTION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+									  {% for item in manifest_analysis %}
+                      <tr>
+                        <td>
+                        {{item|key:"title" | safe}}
+                        </td>
+                        <td>
+
+                          {% if item|key:"stat" == "high" %}
+                            <span class="danger">high</span>
+                          {% elif item|key:"stat" == "info" %}
+                            <span class="info">info</span>
+                          {% elif item|key:"stat" == "medium" %}
+                            <span class="warning">medium</span>
+                          {% endif %}
+                         
+                        </td>
+                        <td>
+                        {{item|key:"desc"}}
+                        </td>
+   
+                       </tr>
+                     {% endfor %}
+
+
+										</tbody>
+										</table>
+
+      <h2><i class="fas fa-code"></i> CODE ANALYSIS</h2>
+       <table class="basic">
+                <thead>
+                    <tr>
+                        <th>ISSUE</th>
+                        <th>SEVERITY</th>
+                        <th>CVSS</th>
+                        <th>CWE</th>
+                        <th>OWASP</th>
+                        <th>FILES</th>
+                    </tr>
+                </thead>
+                <tbody>
+										{% for issue, details in code_analysis.items %}
+                  <tr>
+                  <td width="25%">
+                  {{ issue }}
+                  </td>
+                  <td>
+                    {% if details|key:"level" == "high" %}
+                      <span class="danger">high</span>
+                      {% elif details|key:"level" == "good" %}
+                      <span class="success">secure</span>
+                      {% elif details|key:"level" == "warning" %}
+                      <span class="warning">warning</span>
+                      {% elif details|key:"level" == "info" %}
+                      <span class="info">info</span>
+                      {% endif %}
+                  </td>
+                  <td><b>
+                  
+                  {% if details|key:"cvss" > 6 %}
+                  <span class="danger">{{ details|key:"cvss" }}</br> high</span>
+                  {% elif details|key:"cvss" == 0 %}
+                  <span class="info">{{ details|key:"cvss" }}</br>  info</span>
+                  {% elif details|key:"cvss" >= 4 %}
+                  <span class="warning">{{ details|key:"cvss" }}</br>  medium</span>
+                  {% elif details|key:"cvss" < 4 %}
+                  <span class="success">{{ details|key:"cvss" }}</br>  low</span>
+                  {% endif %}
+                  </b></td>
+                  <td><b>{{ details|key:"cwe" }}</b></td>
+                  <td><b>{{ details|key:"owasp" }}</b></td>
+                  <td style="word-break:break-all;">
+                  {% for path in details|key:"path" %}
+                   {{ path }}
+                  </br>
+                  {% endfor %}
+                  </td>
+                </tr>    
+              {% endfor %} 
+										</tbody>
+										</table>
+
+        <!--
+        <h2><i class="fab fa-android"></i> ANDROID API</h2>
+            <table class="basic">
+                      <thead>
+                          <tr>
+                        <th>API</th>
+												<th>FILES</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+										{% for desc, details in android_api.items %}
+                  <tr>
+                  <td width="25%">
+                  {{ desc }}
+                  </td>
+                  <td style="word-break:break-all;">
+                  {% for path in details|key:"path" %}
+                   {{ path }}
+                  </br>
+                  {% endfor %}
+                  </td>
+                </tr>    
+              {% endfor %} 
+										</tbody>
+										</table>
+    
+
+       {% if file_analysis %}
+      <h2><i class="fa fa-file"></i> FILE ANALYSIS</h2>
+                <table class="basic">
+                      <thead>
+                    <tr>
+                        <th>ISSUE</th>
+                        <th>FILES</th>
+                    </tr>
+                </thead>
+                <tbody>
+              {% for item in file_analysis %}
+                    <tr>
+                    <td>
+                    {{ item|key:"finding" }}
+                    </td>
+                    <td>
+                    {% for cert_f in item|key:"files" %}
+                    {{ cert_f }}<br />
+                    {% endfor %} 
+                    </td>
+                </tr>    
+                {% endfor %} 
+										</tbody>
+										</table>
+      {% endif %}
+      -->
+
+      {% if domains  %}
+      <h2><i class="fab fa-searchengin"></i> DOMAIN MALWARE CHECK</h2>
+         <table  class="basic">
+                  <thead>
+                  <tr>
+                     <th>DOMAIN</th>
+                     <th>STATUS</th>
+                     <th>GEOLOCATION</th>
+                  </tr>
+                 </thead>
+                 <tbody>
+                 {% for domain, details in domains.items %}
+                  <tr><td>{{domain}}</td><td> 
+
+                    {% if details|key:"bad" == "yes" %}
+                    <span class="danger">malware</span><br/>
+             
+                      <h5>URL: </h5> {{details|key:"domain_or_url"}}
+                      <h5>IP: </h5> <span class="danger">{{details|key:"ip"}}</span>
+                      <h5>Description: </h5> {{details|key:"desc"}}
+                   
+                  {% else %}
+                    <span class="success">good</span><br/>
+                  {% endif %}
+                  </td>
+                  <td>
+                    {% if details|key:"geolocation" %}
+                
+                      <h5>IP: </h5> {{details|key:"geolocation"|key:"ip"}}  <br/>
+                      <h5>Country: </h5> {{details|key:"geolocation"|key:"country_long"}} <br/>
+                      <h5>Region: </h5> {{details|key:"geolocation"|key:"region"}} <br/>
+                      <h5>City: </h5> {{details|key:"geolocation"|key:"city"}} <br/>
+                      <h5>Latitude: </h5> {{details|key:"geolocation"|key:"latitude"}} <br/>
+                      <h5>Longitude: </h5> {{details|key:"geolocation"|key:"longitude"}} <br/>
+                      <h5>View: </h5> <a target="_blank" href="http://maps.google.com/maps?q={{details|key:"geolocation"|key:"latitude"}},{{details|key:"geolocation"|key:"longitude"}}">Google Map</a>
+                    {% else %}
+                    No Geolocation information available.
+                    {% endif %}
+                  </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+            </table>
+      {% endif %}
+
+       {% if urls %} 
+      <h2><i class="fas fa-globe"></i> URLS </h2>
+      <table class="basic">
+                  <thead>
+                  <tr>
+                     <th>URL</th>
+                     <th>FILE</th>
+                  </tr>
+                 </thead>
+                  <tbody>
+									{% for urldict in urls %}
+                    <tr>
+                       <td style="word-break:break-all;">
+                       {% for u in urldict|key:"urls" %}
+                         {{ u }} </br>
+                       {% endfor %}
+                        </td>
+                       <td style="word-break:break-all;">
+                         {{urldict|key:"path"}}
+                       </td>
+                    </tr>
+                  {% endfor %} 
+										</tbody>
+										</table>
+        {% endif %}
+
+       {% if firebase_urls %} 
+      <h2><i class="fas fa-database"></i> FIREBASE DATABASES</h2>
+            <table class="basic">
+                  <thead>
+                  <tr>
+                     <th>FIREBASE URL</th>
+                     <th>DETAILS</th>
+                  </tr>
+                 </thead>
+             <tbody>
+                  {% for item in firebase_urls %}
+                    <tr>
+                       <td>
+                       {{ item.url }}
+                        </td>
+                       <td>
+                         {% if item.open %}
+                          <span class="danger">insecure</span></br>Firebase DB is exposed publically.
+                        {% else %}
+                         <span class="info">info</span></br>App talks to a Firebase Database.
+                         {% endif %}
+                      
+                       </td>
+                    </tr>
+                  {% endfor %} 
+                    </tbody>
+                    </table>
+         {% endif %}
+
+      
+
+      {% if emails %}
+      <h2><i class="fas fa-envelope"></i> EMAILS</h2>
+          <table class="basic">
+                  <thead>
+                  <tr>
+                     <th>EMAIL</th>
+                     <th>FILE</th>
+                  </tr>
+                 </thead>
+                  <tbody>
+									{% for email_dict in emails %}
+                    <tr>
+                       <td style="word-break:break-all;">
+                       {% for em in email_dict|key:"emails" %}
+                         {{ em }} </br>
+                       {% endfor %}
+                        </td>
+
+                       <td style="word-break:break-all;">
+                         {{email_dict|key:"path"}}
+                       </td>
+                    </tr>
+                  {% endfor %} 
+										</tbody>
+										</table>
+      {% endif %}
+  
+      {% if trackers|key:"trackers" %}
+      <h2><i class="fas fa-user-secret"></i> TRACKERS</h2>
+       <table class="basic">
+            <thead>
+                <tr>
+                    <th>TRACKER</th>
+                    <th>URL</th>
+                </tr>
+            </thead>
+          
+            <tbody>
+
+                {% for trk in trackers|key:"trackers" %}
+                <tr>
+                    {% for k, v in trk.items %}
+                    <td>
+                        {{k}}
+                    </td>
+                    <td>
+                        <a target="_blank" href="{{v}}">{{v}}</a>
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+         {% endif %}
+     {% if not playstore_details.error %}
+    <h2><i class="fab fa-google-play"></i> PLAYSTORE INFORMATION </h2>
+
+                  <p>                                       
+                    <h5>Title:</h5> 
+                    {{ playstore_details.title }}
+                  </p>
+                  <p>                                       
+                    <h5>Score:</h5> 
+                  {{ playstore_details.score}}
+
+                   <h5>Installs:</h5> 
+                    {{ playstore_details.installs }}
+
+                   <h5>Price:</h5> 
+                      {{ playstore_details.price }}
+
+                   <h5>Android Version Support:</h5> 
+                    {{ playstore_details.androidVersionText }}
+                   
+                    <h5>Category:</h5> 
+		                {{ playstore_details.genre }}
+
+                    <h5>Play Store URL:</h5> 
+                      <a target="_blank" href="{{ playstore_details.url }}"> {{ package_name }} </a>
+                  </p>
+                  
+                  <p>
+                  <h5>Developer Details:</h5> 
+                      {{playstore_details.developer}},  
+                      {{playstore_details.developerId}}, 
+                      {{playstore_details.developerAddress }},
+                      {{playstore_details.developerWebsite}}, 
+                      {{playstore_details.developerEmail}}, 
+                  </p>
+		              <p>
+                  <h5>Release Date:</h5> 
+                   {{ playstore_details.released }}
+		               <h5>Privacy Policy:</h5> 
+                   <a target="_blank" href="{{ playstore_details.privacyPolicy }}">Privacy link</a>
+		            </p>
+                 <p>                                       
+                      <h5>Description:</h5> 
+                      <p>{{ playstore_details.description }}</p>
+                  </p>
+             
+       {% endif %}
+    </article>
+
+    <article id="columns">
+      </br>
+      <hr>
+      <h3>Report Generated by - MobSF {{ version }} </h3>
+      <section>
+        <p>
+          Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis.
+        </p>
+        <p>
+        <strong>© {% now "Y" %} Mobile Security Framework - MobSF | <a href="https://ajinabraham.com">Ajin Abraham</a> | <a href="https://opensecurity.in">OpenSecurity</a>.</strong>
+      </p>
+      </section>
+    </article>
+  </body>
+</html>
+{% endblock %}

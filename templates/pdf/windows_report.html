@@ -1,0 +1,207 @@
+{% block content %}
+{% load static %}
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>MobSF Static Analysis Report</title>
+    <meta name="description" content="MobSF Report">
+    {% if 'file:///' in base_url %}
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+        <link href='https://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
+    {% else %}
+    <style>
+    
+      /* latin */
+      @font-face {
+        font-family: 'Open Sans';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: local('Open Sans Regular'), local('OpenSans-Regular'), url('{{base_url}}{% static 'fonts/Open_Sans/OpenSans-Regular.ttf' %}') format('truetype');
+      }
+
+      /* latin */
+      @font-face {
+        font-family: 'Oswald';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: local('Oswald'), local('Oswald'), url('{{base_url}}{% static 'fonts/Oswald/Oswald-Regular.ttf' %}') format('truetype');
+      }
+     
+  </style>
+  {% endif %}
+  <link rel="stylesheet" href="{{base_url}}{% static "others/css/pdf_report.css" %}">
+  <link rel="stylesheet" href="{{base_url}}{% static "adminlte/plugins/fontawesome-free/css/all.min.css" %}">
+  </head>
+
+  <body>
+    <article id="cover">
+      <div class="header">
+        <img src="{{base_url}}{% static "img/mobsf_logo.png" %}" class="center logo" alt="MobSF Logo"/>
+        <div class="htext">WINDOWS STATIC ANALYSIS REPORT </div>
+      </div>
+      </br></br></br>
+     <div class="app">
+      <img class="center" id="icon" src="{{base_url}}{% static 'img/no_icon.png' %}" alt="app_icon"/>
+     </div>
+      <div class="center">
+        <h1><i class="fab fa-apple"></i> {{ app_name }} {% if app_version %} ({{app_version}}) {% endif %}</h1>
+      </div>
+     </br></br></br></br></br>
+      <div class="container">
+      <table class="basic no_border">
+      <tr class="no_border">
+        <td class="no_border"><h3>File Name:</h3></td>
+        <td class="no_border"><h3>{{file_name}}</h3></td>
+      </tr>
+      <tr>
+        <td class="no_border"><h3>Publisher:</h3></td>
+        <td class="no_border"><h3>{{ publisher_name }}</h3></td>
+      </tr>
+     
+     {% if virus_total and virus_total.items|length > 9 and 'request successfully queued' not in virus_total.verbose_msg %}
+        <tr>
+        <td class="no_border"><h3>VirusTotal Detection:</h3></td>
+        <td class="no_border"><h3><span class="{% if virus_total.positives > 0 %}danger{% else %}success{% endif %}"> {{ virus_total.positives }}/{{ virus_total.total }}</span></h3></td>
+      </tr>
+      {% endif %}
+    </table>
+      </div>
+      </br></br>
+      </br></br>
+      </br></br>
+      </br></br>
+      </br></br>
+      </br></br>
+      </br></br>
+    </article>
+    
+    <article id="contents">
+
+      
+      <h2><i class="fas fa-box-open"></i> FILE INFORMATION</h2>
+
+      <h5>File Name:</h5> {{ file_name }}</br>
+      <h5>Size: </h5> {{ size }}</br>
+      <h5>MD5:</h5> {{ md5 }}</br>
+      <h5>SHA1:</h5> {{ sha1 }}</br>
+      <h5>SHA256:</h5> {{ sha256 }}</br>
+     
+
+      <h2><i class="fas fa-info"></i> APP INFORMATION</h2>
+
+      <h5>App Name:</h5> {{ app_name }}</br>
+      <h5>Publisher:</h5> {{ publisher_name }}</br>
+      <h5>Version:</h5> {{ app_version }}</br>
+      <h5>Arch:</h5> {{ architecture }}</br>
+     
+
+      <h2><i class="fas fa-file-code"></i> XML INFORMATION </h2>
+
+      <h5>Compiler Version:</h5> {{ compiler_version }}</br>
+      <h5>Visual Studio Version:</h5> {{ visual_studio_version }}</br>
+      <h5>Visual Studio Edition:</h5> {{ visual_studio_edition }}</br>
+      <h5>Target OS:</h5> {{ target_os }}</br>
+      <h5>APPX DLL Version:</h5> {{ appx_dll_version }}</br>
+      <h5>Proj GUID:</h5> {{ proj_guid }}</br>
+      <h5>Opti Tool:</h5> {{ opti_tool }}</br>
+      <h5>Target Run:</h5> {{ target_run }}</br>
+
+
+        {% if virus_total and virus_total.items|length > 9 and 'request successfully queued' not in virus_total.verbose_msg %}
+       <h2><i class="fas fa-spider"></i> VIRUSTOTAL SCAN</h2>
+       <p> <h5>{{ virus_total.positives }} / {{ virus_total.total }}</h5> &nbsp; AVs found this file Malicious! </p>
+            {% if virus_total.positives %}
+          
+                    <table class="basic">
+                                    <thead>
+                                        <tr>
+                                            <th>AV</th>
+                                            <th>DETECTION</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for av_name,av_result in virus_total.scans.items %}
+                                        {% if av_result.detected == True %}
+                                            <tr>
+                                                <td>
+                                                    {{ av_name }}
+                                                </td>
+                                                <td>
+                                                    <span class="danger">{{ av_result.result }}</span>
+                                                </td>
+                                          </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                               </tbody>
+                    </table>
+            {% endif %}
+      {% endif %}
+      
+      <h2><i class="fas fa-flag"></i> APPX BINARY ANALYSIS</h2>
+       <table class="basic">
+                  <thead>
+                      <tr>
+                          <th>ISSUE</th>
+                          <th>STATUS</th>
+                          <th>DESCRIPTION</th>
+                          <th>INFO</th>
+
+                      </tr>
+                  </thead>
+                  <tbody>
+                    {% for result in binary_analysis %}
+                      <tr>
+                        <td>{{ result.rule_id }}</td>
+                        <td>
+                          {% if result.status == "Insecure" %}
+                            <span class='danger'>
+                          {% endif %}
+                          {% if result.status == "Secure" %}
+                            <span class='success'>
+                          {% endif %}
+                          {% if result.status == "Info" %}
+                            <span class='info'>
+                          {% endif %}
+                              {{ result.status }}
+                          </span>
+                        </td>
+                        <td>{{ result.desc }}</td>
+                        <td>{{ result.info }}</td>
+                      </tr>
+                    {% endfor %}
+                    {% for warn in binary_warnings %}
+                    <tr>
+                      <td>{{ warn.rule_id }}</td>
+                      <td>
+                          <span class='info'>
+                            {{ warn.status }}
+                        </span>
+                      </td>
+                      <td>{{ warn.desc }}</td>
+                      <td>{{ warn.info }}
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                    </table>
+    
+    </article>
+
+    <article id="columns">
+      </br>
+      <hr>
+      <h3>Report Generated by - MobSF {{ version }} </h3>
+      <section>
+        <p>
+          Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis.
+        </p>
+        <p>
+        <strong>© {% now "Y" %} Mobile Security Framework - MobSF | <a href="https://ajinabraham.com">Ajin Abraham</a> | <a href="https://opensecurity.in">OpenSecurity</a>.</strong>
+      </p>
+      </section>
+    </article>
+  </body>
+</html>
+{% endblock %}

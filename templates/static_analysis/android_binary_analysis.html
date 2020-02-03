@@ -331,7 +331,7 @@
                   {% else %}
                     <span class="badge bg-success">Trackers Detection</span> <strong>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</strong><br/>
                   {% endif %}
-                  {% if virus_total %}
+                  {% if virus_total and virus_total.items|length > 9 %}
                     {% if virus_total.positives > 0 %} 
                       <span class="badge bg-danger">VirusTotal Detection</span> <strong>{{ virus_total.positives }}/{{ virus_total.total }}</strong><br/>
                     {% else %}
@@ -1014,7 +1014,7 @@
         <div class="card">
           <div class="card-body">
             <p>
-             <strong><i class="fas fa-code"></i> FILE ANALYSIS</strong>
+             <strong><i class="fa fa-file"></i> FILE ANALYSIS</strong>
              </p>
               <div class="table-responsive">
                 <table id="table_file" class="table table-bordered table-hover table-striped">

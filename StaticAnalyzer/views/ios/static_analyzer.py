@@ -9,7 +9,10 @@ import MalwareAnalyzer.views.VirusTotal as VirusTotal
 from django.conf import settings
 from django.shortcuts import render
 
-from MobSF.utils import print_n_send_error_response
+from MobSF.utils import (
+    file_size,
+    print_n_send_error_response,
+)
 
 from StaticAnalyzer.models import StaticAnalyzerIOS
 from StaticAnalyzer.views.ios.appstore import app_search
@@ -21,10 +24,16 @@ from StaticAnalyzer.views.ios.db_interaction import (
     save_or_update)
 from StaticAnalyzer.views.ios.file_analysis import ios_list_files
 from StaticAnalyzer.views.ios.file_recon import extract_urls_n_email
+from StaticAnalyzer.views.ios.icon_analysis import (
+    get_icon,
+    get_icon_source,
+)
 from StaticAnalyzer.views.ios.plist_analysis import plist_analysis
-from StaticAnalyzer.views.shared_func import (file_size, firebase_analysis,
-                                              hash_gen, score, unzip,
-                                              update_scan_timestamp)
+from StaticAnalyzer.views.shared_func import (
+    firebase_analysis,
+    hash_gen, score, unzip,
+    update_scan_timestamp,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +101,11 @@ def static_analyzer_ios(request, api=False):
                         app_dict['bin_dir'],
                         tools_dir,
                         app_dict['app_dir'],
+                        infoplist_dict.get('bin'))
+                    # Get Icon
+                    app_dict['icon_found'] = get_icon(
+                        app_dict['md5_hash'],
+                        app_dict['bin_dir'],
                         infoplist_dict.get('bin'))
                     # IPA URL and Email Extract
                     recon = extract_urls_n_email(app_dict['bin_dir'],
@@ -172,11 +186,15 @@ def static_analyzer_ios(request, api=False):
                     app_dict['appstore'] = app_search(infoplist_dict.get('id'))
                     code_analysis_dic = ios_source_analysis(
                         app_dict['app_dir'])
+                    # Get App Icon
+                    app_dict['icon_found'] = get_icon_source(
+                        app_dict['md5_hash'],
+                        app_dict['app_dir'])
                     # Firebase DB Check
                     code_analysis_dic['firebase'] = firebase_analysis(
                         list(set(code_analysis_dic['urls_list'])))
                     fake_bin_dict = {
-                        'bin_type': '',
+                        'bin_type': code_analysis_dic['source_type'],
                         'macho': {},
                         'bin_res': [],
                         'libs': [],

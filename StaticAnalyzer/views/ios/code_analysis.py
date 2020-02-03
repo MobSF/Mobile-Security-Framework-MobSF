@@ -17,6 +17,7 @@ def ios_source_analysis(src):
     """IOS Objective-C Code Analysis."""
     try:
         logger.info('Starting iOS Source Code and PLIST Analysis')
+        source_type = 'Swift'
         api_rules = ios_apis.CODE_APIS
         code_rules = ios_rules.CODE_RULES
         code_findings = {}
@@ -29,7 +30,7 @@ def ios_source_analysis(src):
         for dirname, _, files in os.walk(src):
             for jfile in files:
                 if jfile.endswith('.m'):
-
+                    source_type = 'Objective C'
                     jfile_path = os.path.join(src, dirname, jfile)
                     if '+' in jfile:
                         new_path = os.path.join(
@@ -69,6 +70,7 @@ def ios_source_analysis(src):
             'urlnfile': url_n_file,
             'domains': domains,
             'emailnfile': email_n_file,
+            'source_type': source_type,
         }
         return code_analysis_dict
 

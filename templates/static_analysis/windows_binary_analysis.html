@@ -60,6 +60,14 @@
               </p>
             </a>
           </li>
+           {% if virus_total %}
+              <li class="nav-item">
+                <a href="#virus_total" class="nav-link">
+                  <i class="fas fa-spider nav-icon"></i>
+                  <p>VirusTotal</p>
+                </a>
+              </li>
+            {% endif %}
            <li class="nav-item">
             <a href="#files" class="nav-link">
               <i class="nav-icon far fa-copy"></i>
@@ -127,6 +135,13 @@
                     {{ app_version }} <br/>
                     <span class="badge bg-primary">Arch</span>
                     {{ architecture }}
+                    {% if virus_total and virus_total.items|length > 9 %}
+                      {% if virus_total.positives > 0 %} 
+                        <span class="badge bg-danger">VirusTotal Detection</span> <strong>{{ virus_total.positives }}/{{ virus_total.total }}</strong><br/>
+                      {% else %}
+                        <span class="badge bg-success">VirusTotal Detection</span> <strong>{{ virus_total.positives }}/{{ virus_total.total }}</strong><br/>
+                      {% endif %}
+                    {% endif %}
                 </div>
                 <div class="col-5">
                   <p><strong><i class="fas fa-box-open"></i> FILE INFORMATION </strong></p>                         
@@ -264,6 +279,57 @@
     </div>
 </section>
  <!-- ===========================end binary analysis ================================== -->
+ {% if virus_total %}
+<a id="virus_total" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <p>
+             <strong><i class="fas fa-spider"></i> VIRUSTOTAL SCAN</strong>
+             </p>
+               <div class="table-responsive">
+                 {% if virus_total.items|length < 9 %} {% comment %} Basic check to determine if the response is a msg or a result {% endcomment %}
+                    <p align="left">&nbsp;&nbsp;<strong>{{ virus_total.verbose_msg }}</strong></p>
+                 {% else %}
+                    <p align="left">&nbsp;&nbsp;<strong> {{ virus_total.positives }} / {{ virus_total.total }}&nbsp; AVs found this file Malicious! </strong> &nbsp;&nbsp;<a href="{{ virus_total.permalink }}" target="_blank" rel="noopener"><i class="fas fa-th-list"></i> Full Report</a></p>
+                    {% if virus_total.positives > 0 %}
+                        <table id="table_vt" class="table table-bordered table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th>AV</th>
+                                    <th>DETECTION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for av_name,av_result in virus_total.scans.items %}
+                                {% if av_result.detected == True %}
+                                   <tr>
+                                        <td>
+                                            {{ av_name }}
+                                        </td>
+                                       <td>
+                                            <span class="badge bg-danger">{{ av_result.result }}</span>
+                                        </td>
+                                  </tr>
+                                {% endif %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                        {% endif %}{% comment %} if results.positive > 0 {% endcomment %}
+                     {% endif %}{% comment %} if this is the upload msg or a result {% endcomment %}
+                 </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+{% endif %}
+<!-- ===========================end virus total ================================== -->
  <a id="files" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
