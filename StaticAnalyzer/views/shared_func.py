@@ -177,6 +177,10 @@ def pdf(request, api=False, jsonres=False):
                     ],
                     'no-outline': None,
                 }
+                # Added proxy support to wkhtmltopdf
+                proxies, _ = upstream_proxy('https')
+                if proxies['https']:
+                    options['proxy'] = proxies['https']
                 html = template.render(context)
                 pdf_dat = pdfkit.from_string(html, False, options=options)
                 if api:
