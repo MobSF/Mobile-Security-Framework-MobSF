@@ -79,9 +79,11 @@
         <td class="no_border"><h3>App Security Score:</h3></td>
         <td class="no_border">
         <h3> 
-          {% if security_score < 40 %}
-            <span class="danger">{{ security_score }}/100 (HIGH RISK)</span>
-          {% elif security_score < 70 %}
+          {% if security_score < 16 %}
+            <span class="danger">{{ security_score }}/100 (CRITICAL RISK)</span>
+          {% elif security_score < 41 %}
+            <span class="high">{{ security_score }}/100 (HIGH RISK)</span>
+          {% elif security_score < 71 %}
             <span class="warning">{{ security_score }}/100 (MEDIUM RISK)</span>
           {% else %}
             <span class="success">{{ security_score }}/100 (LOW RISK)</span>
@@ -746,6 +748,47 @@
                   </p>
              
        {% endif %}
+    </article>
+    <article>
+    </br>
+    <h3> App Security Score Calculation </h3>
+    <p>
+    Every app is given an ideal score of 100 to begin with.</br>
+    For every findings with severity <span class="danger">high</span> we reduce 15 from the score.</br>
+    For every findings with severity <span class="warning">warning</span> we reduce 10 from the score.</br>
+    For every findings with severity <span class="success">good</span> we add 5 to the score.</br>
+    If the calculated score is greater than 100, then the app security score is considered as 100.</br>
+    And if the calculated score is less than 0, then the app security score is considered as 10.</br>
+    </p>
+  <h3> Risk Calculation </h3>
+  <p>
+        <table class="basic">
+            <thead>
+                <tr>
+                    <th>APP SECURITY SCORE</th>
+                    <th>RISK</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td width="50%">0 - 15</td>
+                    <td><span class="danger">CRITICAL</span></td>
+                </tr>
+                <tr>
+                    <td>16 - 40</td>
+                    <td><span class="high">HIGH</span></td>
+                </tr>
+                <tr>
+                    <td>41 - 70</td>
+                    <td><span class="warning">MEDIUM</span></td>
+                </tr>
+                <tr>
+                    <td>71 - 100</td>
+                    <td><span class="success">LOW</span></td>
+                </tr>
+            </tbody>
+        </table>
+  </p>
     </article>
 
     <article id="columns">
