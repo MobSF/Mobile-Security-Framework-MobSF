@@ -36,7 +36,7 @@ def dex_2_smali(app_dir, tools_dir):
                     and is_file_exists(settings.BACKSMALI_BINARY)):
                 bs_path = settings.BACKSMALI_BINARY
             else:
-                bs_path = os.path.join(tools_dir, 'baksmali-2.3.4.jar')
+                bs_path = os.path.join(tools_dir, 'baksmali-2.4.0.jar')
             output = os.path.join(app_dir, 'smali_source/')
             smali = [
                 settings.JAVA_BINARY,
