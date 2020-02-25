@@ -157,10 +157,11 @@ def save_or_update(update_type,
                 MD5=app_dict['md5_hash']).update(**values)
     except Exception:
         logger.exception('Updating DB')
+    #Update RecentScansDB with Package-Name and Version
     try:
         values = {
             'MD5': app_dict['md5_hash'],
-            'PACKAGE_NAME': info_dict['bin_name'],
+            'PACKAGE_NAME': info_dict['id'],
             'VERSION_NAME': info_dict['bundle_version_name'],
         }
 
