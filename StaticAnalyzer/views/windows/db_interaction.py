@@ -116,7 +116,7 @@ def save_or_update(update_type,
                 MD5=app_dic['md5']).update(**values)
     except Exception:
         logger.exception('Updating DB')
-    #Update RecentScansDB with Package-Name and Version
+    """Update RecentScansDB with Package-Name and Version"""
     try:
         values = {
             'MD5': app_dic['md5'],
