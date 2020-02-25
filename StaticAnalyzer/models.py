@@ -7,6 +7,8 @@ class RecentScansDB(models.Model):
     MD5 = models.CharField(max_length=32)
     URL = models.URLField()
     TS = models.DateTimeField()
+    PACKAGE_NAME = models.CharField(max_length=260)
+    VERSION_NAME = models.CharField(max_length=50)
 
 
 class StaticAnalyzerAndroid(models.Model):
