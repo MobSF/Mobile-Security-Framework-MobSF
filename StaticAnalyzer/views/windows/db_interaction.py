@@ -124,6 +124,6 @@ def save_or_update(update_type,
             'VERSION_NAME': xml_dic['version'],
         }
         RecentScansDB.objects.filter(
-                MD5=app_dic['md5']).update(**values)
+            MD5=app_dic['md5']).update(**values)
     except Exception:
         logger.exception('Updating RecentScansDB')

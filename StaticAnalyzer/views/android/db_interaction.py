@@ -197,6 +197,6 @@ def save_or_update(update_type,
             'VERSION_NAME': man_data_dic['androvername'],
         }
         RecentScansDB.objects.filter(
-                MD5=app_dic['md5']).update(**values)
+            MD5=app_dic['md5']).update(**values)
     except Exception:
         logger.exception('Updating RecentScansDB')

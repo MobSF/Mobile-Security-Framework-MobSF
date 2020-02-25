@@ -165,6 +165,6 @@ def save_or_update(update_type,
             'VERSION_NAME': info_dict['bundle_version_name'],
         }
         RecentScansDB.objects.filter(
-                MD5=app_dict['md5_hash']).update(**values)
+            MD5=app_dict['md5_hash']).update(**values)
     except Exception:
         logger.exception('Updating RecentScansDB')
