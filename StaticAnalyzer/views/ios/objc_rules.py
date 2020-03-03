@@ -200,6 +200,30 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'owasp': '',
     },
     {
+        'desc': 'MD5 is a weak hash known to have hash collisions.',
+        'type': 'string',
+        'string1': 'CommonDigest.h',
+        'string2': 'CC_MD5',
+        'level': 'high',
+        'match': 'string_and',
+        'input_case': 'exact',
+        'cvss': 7.4,
+        'cwe': 'CWE-327',
+        'owasp': 'M5: Insufficient Cryptography',
+    },
+    {
+        'desc': 'SHA1 is a weak hash known to have hash collisions.',
+        'type': 'string',
+        'string1': 'CommonDigest.h',
+        'string2': 'CC_SHA1',
+        'level': 'high',
+        'match': 'string_and',
+        'input_case': 'exact',
+        'cvss': 5.9,
+        'cwe': 'CWE-327',
+        'owasp': 'M5: Insufficient Cryptography',
+    },
+    {
         'desc': ('The App uses ECB mode in Cryptographic encryption algorithm.'
                  ' ECB mode is known to be weak as it results in the same'
                  ' ciphertext for identical blocks of plaintext.'),
