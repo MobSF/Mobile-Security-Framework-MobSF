@@ -54,7 +54,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     {
         'desc': 'SHA1 is a weak hash known to have hash collisions.',
         'type': 'regex',
-        'regex1': r'(?i)SHA1(',
+        'regex1': r'(?i)SHA1\(',
         'regex2': r'CC_SHA1',
         'level': 'high',
         'match': 'regex_or',
@@ -66,7 +66,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     {
         'desc': 'MD2 is a weak hash known to have hash collisions.',
         'type': 'regex',
-        'regex1': r'(?i)MD2(',
+        'regex1': r'(?i)MD2\(',
         'regex2': r'CC_MD2',
         'level': 'high',
         'match': 'regex_or',
@@ -78,7 +78,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     {
         'desc': 'MD4 is a weak hash known to have hash collisions.',
         'type': 'regex',
-        'regex1': r'(?i)MD4(',
+        'regex1': r'(?i)MD4\(',
         'regex2': r'CC_MD4',
         'level': 'high',
         'match': 'regex_or',
@@ -90,7 +90,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     {
         'desc': 'MD5 is a weak hash known to have hash collisions.',
         'type': 'regex',
-        'regex1': r'(?i)MD5(',
+        'regex1': r'(?i)MD5\(',
         'regex2': r'CC_MD5',
         'level': 'high',
         'match': 'regex_or',
@@ -102,7 +102,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     {
         'desc': 'MD6 is a weak hash known to have hash collisions.',
         'type': 'regex',
-        'regex1': r'(?i)MD6(',
+        'regex1': r'(?i)MD6\(',
         'regex2': r'CC_MD6',
         'level': 'high',
         'match': 'regex_or',
