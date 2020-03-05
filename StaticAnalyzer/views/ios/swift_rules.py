@@ -240,4 +240,16 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'owasp': 'M1 — Improper Platform usage',
         'owasp-mstg': 'MSTG-PLATFORM-3',
     },
+    {
+        'desc': 'Some of UI controls have secure text entry configured.',
+        'type': 'string',
+        'string1': '.secureTextEntry = true',
+        'level': 'warning',
+        'match': 'single_string',
+        'input_case': 'exact',
+        'cvss': 0.0,
+        'cwe': '',
+        'owasp': '',
+        'owasp-mstg': 'MSTG-STORAGE-5',
+    },
 ]
