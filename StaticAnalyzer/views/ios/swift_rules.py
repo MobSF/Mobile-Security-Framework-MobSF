@@ -50,6 +50,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'cvss': 7.5,
         'cwe': 'CWE-532',
         'owasp': '',
+        'owasp-mstg': 'MSTG-STORAGE-3',
     },
     {
         'desc': 'SHA1 is a weak hash known to have hash collisions.',
@@ -62,6 +63,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'cvss': 5.9,
         'cwe': 'CWE-327',
         'owasp': 'M5: Insufficient Cryptography',
+        'owasp-mstg': 'MSTG-CRYPTO-4',
     },
     {
         'desc': 'MD2 is a weak hash known to have hash collisions.',
@@ -74,6 +76,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'cvss': 5.9,
         'cwe': 'CWE-327',
         'owasp': 'M5: Insufficient Cryptography',
+        'owasp-mstg': 'MSTG-CRYPTO-4',
     },
     {
         'desc': 'MD4 is a weak hash known to have hash collisions.',
@@ -86,6 +89,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'cvss': 5.9,
         'cwe': 'CWE-327',
         'owasp': 'M5: Insufficient Cryptography',
+        'owasp-mstg': 'MSTG-CRYPTO-4',
     },
     {
         'desc': 'MD5 is a weak hash known to have hash collisions.',
@@ -98,6 +102,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'cvss': 5.9,
         'cwe': 'CWE-327',
         'owasp': 'M5: Insufficient Cryptography',
+        'owasp-mstg': 'MSTG-CRYPTO-4',
     },
     {
         'desc': 'MD6 is a weak hash known to have hash collisions.',
@@ -110,6 +115,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'cvss': 5.9,
         'cwe': 'CWE-327',
         'owasp': 'M5: Insufficient Cryptography',
+        'owasp-mstg': 'MSTG-CRYPTO-4',
     },
     {
         'desc': 'This App may have custom keyboards disabled.',

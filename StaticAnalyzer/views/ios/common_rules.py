@@ -46,6 +46,7 @@ COMMON_RULES = [
         'cvss': 4.3,
         'cwe': 'CWE-200',
         'owasp': '',
+        'owasp-mstg': 'MSTG-CODE-2',
     },
     {
         'desc': ('Files may contain hardcoded sensitive'
@@ -62,6 +63,7 @@ COMMON_RULES = [
         'cvss': 7.4,
         'cwe': 'CWE-312',
         'owasp': 'M9: Reverse Engineering',
+        'owasp-mstg': 'MSTG-STORAGE-14',
     },
     {
         'desc': ('App uses SQLite Database. '
@@ -74,6 +76,7 @@ COMMON_RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+        'owasp-mstg': 'MSTG-STORAGE-2',
     },
     {
         'desc': ('User input in "loadHTMLString" '
@@ -87,6 +90,7 @@ COMMON_RULES = [
         'cvss': 8.8,
         'cwe': 'CWE-95',
         'owasp': 'M7: Client Code Quality',
+        'owasp-mstg': 'MSTG-PLATFORM-5',
     },
     {
         'desc': 'This App may have Jailbreak detection capabilities.',
