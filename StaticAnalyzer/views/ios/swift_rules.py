@@ -226,4 +226,18 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'owasp': 'M1 — Improper Platform usage',
         'owasp-mstg': 'MSTG-PLATFORM-4',
     },
+    {
+        'desc': ('The app should not export sensitive functionality via '
+                 'custom URL schemes, unless these '
+                 'mechanisms are properly protected.'),
+        'type': 'string',
+        'string1': 'CFBundleURLSchemes',
+        'level': 'warning',
+        'match': 'single_string',
+        'input_case': 'exact',
+        'cvss': 0.0,
+        'cwe': '',
+        'owasp': 'M1 — Improper Platform usage',
+        'owasp-mstg': 'MSTG-PLATFORM-3',
+    },
 ]
