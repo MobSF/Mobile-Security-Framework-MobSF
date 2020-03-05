@@ -176,4 +176,17 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'owasp': '',
         'owasp-mstg': 'MSTG-RESILIENCE-5',
     },
+    {
+        'desc': ('Biometric authentication should be based '
+                 'on Keychain, not based on bool.'),
+        'type': 'regex',
+        'regex1': r'\.evaluatePolicy\(.deviceOwnerAuthentication',
+        'level': 'warning',
+        'match': 'single_regex',
+        'input_case': 'exact',
+        'cvss': 0.0,
+        'cwe': '',
+        'owasp': '',
+        'owasp-mstg': 'MSTG-AUTH-8',
+    },
 ]
