@@ -136,4 +136,17 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'owasp': '',
         'owasp-mstg': 'MSTG-STORAGE-5',
     },
+    {
+        'desc': ('It is recommended to use WKWebView instead '
+                 'of SFSafariViewController or UIViewView.'),
+        'type': 'regex',
+        'regex1': r'UIViewView|SFSafariViewController',
+        'level': 'warning',
+        'match': 'regex',
+        'input_case': 'exact',
+        'cvss': 0.0,
+        'cwe': '',
+        'owasp': '',
+        'owasp-mstg': 'MSTG-PLATFORM-5',
+    },
 ]
