@@ -203,7 +203,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     },
     {
         'desc': ('This application uses UIPasteboard, improper use '
-                'of this class can lead to security issues.'),
+                 'of this class can lead to security issues.'),
         'type': 'string',
         'string1': 'UIPasteboard',
         'level': 'warning',
