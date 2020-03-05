@@ -182,6 +182,7 @@
               <thead>
               <tr>
                 <th>PERMISSIONS</th>
+                <th>STATUS</th>
                 <th>DESCRIPTION</th>
                 <th>REASON IN MANIFEST</th>
               </tr>
@@ -191,6 +192,9 @@
                     <tr>
                       <td>
                         {{ perm.name }}
+                      </td>
+                      <td>
+                      {{ perm.status }}
                       </td>
                       <td>
                         {{ perm.description}}
