@@ -189,4 +189,16 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'owasp': '',
         'owasp-mstg': 'MSTG-AUTH-8',
     },
+    {
+        'desc': 'The file has no special protections associated with it.',
+        'type': 'regex',
+        'regex1': r'(?i)\.noFileProtection',
+        'level': 'high',
+        'match': 'single_regex',
+        'input_case': 'exact',
+        'cvss': 4.3,
+        'cwe': 'CWE-311',
+        'owasp': 'M1: Improper Platform Usage',
+        'owasp-mstg': 'MSTG-STORAGE-1',
+    },
 ]
