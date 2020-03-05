@@ -164,4 +164,16 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'owasp': '',
         'owasp-mstg': 'MSTG-RESILIENCE-4',
     },
+    {
+        'desc': 'This App may have Emulator detection capabilities.',
+        'type': 'string',
+        'string1': '\"SIMULATOR_DEVICE_NAME\"',
+        'level': 'good',
+        'match': 'single_string',
+        'input_case': 'exact',
+        'cvss': 0.0,
+        'cwe': '',
+        'owasp': '',
+        'owasp-mstg': 'MSTG-RESILIENCE-5',
+    },
 ]
