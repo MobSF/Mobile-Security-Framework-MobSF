@@ -18,6 +18,7 @@ class _SourceType(Enum):
     swift = 'Swift'
     objc = 'Objective-C'
     swift_and_objc = 'Swift, Objective-C'
+    nocode = 'No Code'
 
 
 def ios_source_analysis(src):
@@ -76,7 +77,9 @@ def ios_source_analysis(src):
                 url_n_file.extend(urls_nf)
                 email_n_file.extend(emails_nf)
 
-        if len(source_types) > 1:
+        if not source_types:
+            source_type = _SourceType.nocode.value
+        elif len(source_types) > 1:
             source_type = _SourceType.swift_and_objc.value
         else:
             source_type = source_types.pop().value

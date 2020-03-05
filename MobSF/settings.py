@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-MOBSF_VER = 'v3.0.4 Beta'
+MOBSF_VER = 'v3.0.5 Beta'
 
 BANNER = """
   __  __       _    ____  _____       _____  ___  
