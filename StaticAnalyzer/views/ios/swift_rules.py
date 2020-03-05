@@ -43,7 +43,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'desc': ('The App logs information. '
                  'Sensitive information should never be logged.'),
         'type': 'regex',
-        'regex1': r'print|NSLog|os_log|OSLog|os_signpost',
+        'regex1': r'(print|NSLog|os_log|OSLog|os_signpost)\(.*\)',
         'level': 'info',
         'match': 'single_regex',
         'input_case': 'exact',
