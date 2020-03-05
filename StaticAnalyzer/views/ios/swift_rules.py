@@ -123,4 +123,17 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'owasp': '',
         'owasp-mstg': 'MSTG-PLATFORM-11',
     },
+    {
+        'desc': ('Keyboard cache should be disabled for all '
+                 'sensitve data inputs.'),
+        'type': 'regex',
+        'regex1': r'.autocorrectionType = .no',
+        'level': 'good',
+        'match': 'regex',
+        'input_case': 'exact',
+        'cvss': 0.0,
+        'cwe': '',
+        'owasp': '',
+        'owasp-mstg': 'MSTG-STORAGE-5',
+    },
 ]
