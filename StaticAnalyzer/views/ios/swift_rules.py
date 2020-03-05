@@ -111,4 +111,16 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'cwe': 'CWE-327',
         'owasp': 'M5: Insufficient Cryptography',
     },
+    {
+        'desc': 'This App may have custom keyboards disabled.',
+        'type': 'regex',
+        'regex1': r'extensionPointIdentifier == .*\.keyboard',
+        'level': 'good',
+        'match': 'regex',
+        'input_case': 'exact',
+        'cvss': 0.0,
+        'cwe': '',
+        'owasp': '',
+        'owasp-mstg': 'MSTG-PLATFORM-11',
+    },
 ]
