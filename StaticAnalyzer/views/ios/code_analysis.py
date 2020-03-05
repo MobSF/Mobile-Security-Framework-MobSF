@@ -2,6 +2,7 @@ import io
 import logging
 import os
 import shutil
+from enum import Enum
 
 from MalwareAnalyzer.views.domain_check import malware_check
 
@@ -11,6 +12,12 @@ from StaticAnalyzer.views.shared_func import (api_rule_matcher,
                                               url_n_email_extract)
 
 logger = logging.getLogger(__name__)
+
+
+class _SourceType(Enum):
+    swift = 'Swift'
+    objc = 'Objective-C'
+    swift_and_objc = 'Swift, Objective-C'
 
 
 def ios_source_analysis(src):
@@ -24,6 +31,8 @@ def ios_source_analysis(src):
         url_n_file = []
         url_list = []
         domains = {}
+        source_type = ''
+        source_types = set()
 
         for dirname, _, files in os.walk(src):
             for jfile in files:
@@ -31,9 +40,11 @@ def ios_source_analysis(src):
                 if jfile.endswith('.m'):
                     api_rules = ios_apis.CODE_APIS
                     code_rules = objc_rules.OBJC_RULES
+                    source_types.add(_SourceType.objc)
                 elif jfile.endswith('.swift'):
                     api_rules = ios_apis.CODE_APIS
                     code_rules = swift_rules.SWIFT_RULES
+                    source_types.add(_SourceType.swift)
                 else:
                     continue
 
@@ -64,6 +75,12 @@ def ios_source_analysis(src):
                 url_list.extend(urls)
                 url_n_file.extend(urls_nf)
                 email_n_file.extend(emails_nf)
+
+        if len(source_types) > 1:
+            source_type = _SourceType.swift_and_objc.value
+        else:
+            source_type = source_types.pop().value
+
         urls_list = list(set(url_list))
         # Domain Extraction and Malware Check
         logger.info('Performing Malware Check on extracted Domains')
@@ -76,6 +93,7 @@ def ios_source_analysis(src):
             'urlnfile': url_n_file,
             'domains': domains,
             'emailnfile': email_n_file,
+            'source_type': source_type,
         }
         return code_analysis_dict
 

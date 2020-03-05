@@ -194,7 +194,7 @@ def static_analyzer_ios(request, api=False):
                     code_analysis_dic['firebase'] = firebase_analysis(
                         list(set(code_analysis_dic['urls_list'])))
                     fake_bin_dict = {
-                        'bin_type': 'Swift/Objc',
+                        'bin_type': code_analysis_dic['source_type'],
                         'macho': {},
                         'bin_res': [],
                         'libs': [],
