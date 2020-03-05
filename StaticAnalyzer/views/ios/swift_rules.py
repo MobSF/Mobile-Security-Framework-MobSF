@@ -201,4 +201,17 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'owasp': 'M1: Improper Platform Usage',
         'owasp-mstg': 'MSTG-STORAGE-1',
     },
+    {
+        'desc': ('This application uses UIPasteboard, improper use '
+                'of this class can lead to security issues.'),
+        'type': 'string',
+        'string1': 'UIPasteboard',
+        'level': 'warning',
+        'match': 'single_string',
+        'input_case': 'exact',
+        'cvss': 0.0,
+        'cwe': '',
+        'owasp': 'M1 — Improper Platform usage',
+        'owasp-mstg': 'MSTG-PLATFORM-4',
+    },
 ]
