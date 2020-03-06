@@ -41,6 +41,7 @@ from StaticAnalyzer.views.standards import (
     OWASP,
     OWASP_MSTG,
 )
+from StaticAnalyzer.views.rules_properties import Match
 
 COMMON_RULES = [
     {
@@ -48,7 +49,7 @@ COMMON_RULES = [
         'type': 'regex',
         'regex1': r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}',
         'level': 'warning',
-        'match': 'single_regex',
+        'match': Match.single_regex,
         'input_case': 'exact',
         'cvss': 4.3,
         'cwe': CWE['CWE-200'],
@@ -65,7 +66,7 @@ COMMON_RULES = [
                    r'(secret\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
                    r'(key\s*=\s*[\'|\"].+[\'|\"]\s{0,5})'),
         'level': 'high',
-        'match': 'single_regex',
+        'match': Match.single_regex,
         'input_case': 'lower',
         'cvss': 7.4,
         'cwe': CWE['CWE-312'],
@@ -79,7 +80,7 @@ COMMON_RULES = [
         'string1': 'sqlite3_exec',
         'string2': 'sqlite3_finalize',
         'level': 'info',
-        'match': 'string_or',
+        'match': Match.string_or,
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
@@ -93,7 +94,7 @@ COMMON_RULES = [
         'string1': 'loadHTMLString',
         'string2': 'webView',
         'level': 'warning',
-        'match': 'string_and',
+        'match': Match.string_and,
         'input_case': 'exact',
         'cvss': 8.8,
         'cwe': CWE['CWE-95'],
@@ -153,7 +154,7 @@ COMMON_RULES = [
         'string46': '/private/var/cache/apt/',
         'string47': '/Library/MobileSubstrate/CydiaSubstrate.dylib',
         'level': 'good',
-        'match': 'string_or',
+        'match': Match.string_or,
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
