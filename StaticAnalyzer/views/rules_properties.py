@@ -32,6 +32,11 @@ Level - It defines level of the rule.
              It won't decrease security result.
    4. good - Rule increase app security.
              It will increase security result by 5 points.
+
+InputCase - It is an Enum that defines how we should match pattern.
+   1. upper
+   2. lower
+   3. exact
 """
 from enum import Enum
 
@@ -60,3 +65,9 @@ class Level(Enum):
     warning = 'warning'
     info = 'info'
     good = 'good'
+
+
+class InputCase(Enum):
+    upper = 'upper'
+    lower = 'lower'
+    exact = 'exact'

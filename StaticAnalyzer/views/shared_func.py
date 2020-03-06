@@ -41,6 +41,7 @@ from StaticAnalyzer.views.ios.db_interaction import (
 from StaticAnalyzer.views.windows.db_interaction import (
     get_context_from_db_entry as wdb)
 from StaticAnalyzer.views.rules_properties import (
+    InputCase,
     Level,
     Match,
     MatchType,
@@ -300,11 +301,11 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
         for rule in code_rules:
 
             # CASE CHECK
-            if rule['input_case'] == 'lower':
+            if rule['input_case'] == InputCase.lower:
                 tmp_data = data.lower()
-            elif rule['input_case'] == 'upper':
+            elif rule['input_case'] == InputCase.upper:
                 tmp_data = data.upper()
-            elif rule['input_case'] == 'exact':
+            elif rule['input_case'] == InputCase.exact:
                 tmp_data = data
 
             # MATCH TYPE
@@ -420,11 +421,11 @@ def api_rule_matcher(api_findings, perms, data, file_path, api_rules):
         for api in api_rules:
 
             # CASE CHECK
-            if api['input_case'] == 'lower':
+            if api['input_case'] == InputCase.lower:
                 tmp_data = data.lower()
-            elif api['input_case'] == 'upper':
+            elif api['input_case'] == InputCase.upper:
                 tmp_data = data.upper()
-            elif api['input_case'] == 'exact':
+            elif api['input_case'] == InputCase.exact:
                 tmp_data = data
 
             # MATCH TYPE
