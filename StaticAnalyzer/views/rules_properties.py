@@ -2,7 +2,7 @@
 Match is an Enum used in static code analysis to run proper rule detection.
 
     1. single_regex - if re.findall(regex1, input)
-    2.regex_and - if re.findall(regex1, input) and re.findall(regex2, input)
+    2. regex_and - if re.findall(regex1, input) and re.findall(regex2, input)
     3. regex_or - if re.findall(regex1, input) or re.findall(regex2, input)
     4. single_string - if string1 in input
     5. string_and - if (string1 in input) and (string2 in input)
