@@ -191,7 +191,7 @@ def save_or_update(update_type,
         logger.exception('Updating DB')
     try:
         values = {
-            'MD5': app_dic['md5'],
+            'APP_NAME': app_dic['real_name'],
             'PACKAGE_NAME': man_data_dic['packagename'],
             'VERSION_NAME': man_data_dic['androvername'],
         }

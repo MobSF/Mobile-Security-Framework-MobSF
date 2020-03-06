@@ -215,7 +215,7 @@ def not_found(request):
 def recent_scans(request):
     """Show Recent Scans Route."""
     entries = []
-    db_obj = RecentScansDB.objects.all().order_by('-TS').values()
+    db_obj = RecentScansDB.objects.all().order_by('-TIMESTAMP').values()
     android = StaticAnalyzerAndroid.objects.all()
     package_mapping = {}
     for item in android:
@@ -328,7 +328,7 @@ class RecentScans(object):
     def recent_scans(self):
         page = self.request.GET.get('page', 1)
         page_size = self.request.GET.get('page_size', 10)
-        result = RecentScansDB.objects.all().values().order_by('-TS')
+        result = RecentScansDB.objects.all().values().order_by('-TIMESTAMP')
         try:
             paginator = Paginator(result, page_size)
             content = paginator.page(page)
