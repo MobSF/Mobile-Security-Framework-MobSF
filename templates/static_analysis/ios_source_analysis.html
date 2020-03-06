@@ -415,6 +415,7 @@
                   <thead>
                       <tr>
                           <th>PERMISSIONS</th>
+                          <th>STATUS</th>
                           <th>DESCRIPTION</th>
                           <th>REASON IN MANIFEST</th>
                       </tr>
@@ -425,6 +426,13 @@
                     <tr>
                       <td>
                         {{ perm.name }}
+                      </td>
+                      <td>
+                        {% if perm.status == 'dangerous' %}
+                            <span class="badge bg-danger">dangerous</span>
+                          {% else %}
+                            <span class="badge bg-info">normal</span>
+                        {% endif %}
                       </td>
                       <td>
                         {{ perm.description}}
