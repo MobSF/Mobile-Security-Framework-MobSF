@@ -35,6 +35,13 @@ Rule Format.
    b. regex<no> - regex1, regex2, regex3
 
 """
+
+from StaticAnalyzer.views.standards import (
+    CWE,
+    OWASP,
+    OWASP_MSTG,
+)
+
 COMMON_RULES = [
     {
         'desc': 'IP Address disclosure',
@@ -44,9 +51,9 @@ COMMON_RULES = [
         'match': 'single_regex',
         'input_case': 'exact',
         'cvss': 4.3,
-        'cwe': 'CWE-200',
+        'cwe': CWE['CWE-200'],
         'owasp': '',
-        'owasp-mstg': 'MSTG-CODE-2',
+        'owasp-mstg': OWASP_MSTG['code-2'],
     },
     {
         'desc': ('Files may contain hardcoded sensitive'
@@ -61,9 +68,9 @@ COMMON_RULES = [
         'match': 'single_regex',
         'input_case': 'lower',
         'cvss': 7.4,
-        'cwe': 'CWE-312',
-        'owasp': 'M9: Reverse Engineering',
-        'owasp-mstg': 'MSTG-STORAGE-14',
+        'cwe': CWE['CWE-312'],
+        'owasp': OWASP['m9'],
+        'owasp-mstg': OWASP_MSTG['storage-14'],
     },
     {
         'desc': ('App uses SQLite Database. '
@@ -76,7 +83,7 @@ COMMON_RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': 'MSTG-STORAGE-2',
+        'owasp-mstg': OWASP_MSTG['storage-2'],
     },
     {
         'desc': ('User input in "loadHTMLString" '
@@ -88,9 +95,9 @@ COMMON_RULES = [
         'match': 'string_and',
         'input_case': 'exact',
         'cvss': 8.8,
-        'cwe': 'CWE-95',
-        'owasp': 'M7: Client Code Quality',
-        'owasp-mstg': 'MSTG-PLATFORM-5',
+        'cwe': CWE['CWE-95'],
+        'owasp': OWASP['m7'],
+        'owasp-mstg': OWASP_MSTG['platform-5'],
     },
     {
         'desc': 'This App may have Jailbreak detection capabilities.',
@@ -150,6 +157,6 @@ COMMON_RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': 'MSTG-RESILIENCE-1',
+        'owasp-mstg': OWASP_MSTG['resilience-1'],
     },
 ]

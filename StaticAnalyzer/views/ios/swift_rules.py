@@ -35,7 +35,11 @@ Rule Format.
    b. regex<no> - regex1, regex2, regex3
 
 """
-
+from StaticAnalyzer.views.standards import (
+    CWE,
+    OWASP,
+    OWASP_MSTG,
+)
 from StaticAnalyzer.views.ios import common_rules
 
 SWIFT_RULES = common_rules.COMMON_RULES + [
@@ -48,9 +52,9 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'match': 'single_regex',
         'input_case': 'exact',
         'cvss': 7.5,
-        'cwe': 'CWE-532',
+        'cwe': CWE['CWE-532'],
         'owasp': '',
-        'owasp-mstg': 'MSTG-STORAGE-3',
+        'owasp-mstg': OWASP_MSTG['storage-3'],
     },
     {
         'desc': 'SHA1 is a weak hash known to have hash collisions.',
@@ -61,9 +65,9 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'match': 'regex_or',
         'input_case': 'exact',
         'cvss': 5.9,
-        'cwe': 'CWE-327',
-        'owasp': 'M5: Insufficient Cryptography',
-        'owasp-mstg': 'MSTG-CRYPTO-4',
+        'cwe': CWE['CWE-327'],
+        'owasp': OWASP['m5'],
+        'owasp-mstg': OWASP_MSTG['crypto-4'],
     },
     {
         'desc': 'MD2 is a weak hash known to have hash collisions.',
@@ -74,9 +78,9 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'match': 'regex_or',
         'input_case': 'exact',
         'cvss': 5.9,
-        'cwe': 'CWE-327',
-        'owasp': 'M5: Insufficient Cryptography',
-        'owasp-mstg': 'MSTG-CRYPTO-4',
+        'cwe': CWE['CWE-327'],
+        'owasp': OWASP['m5'],
+        'owasp-mstg': OWASP_MSTG['crypto-4'],
     },
     {
         'desc': 'MD4 is a weak hash known to have hash collisions.',
@@ -87,9 +91,9 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'match': 'regex_or',
         'input_case': 'exact',
         'cvss': 5.9,
-        'cwe': 'CWE-327',
-        'owasp': 'M5: Insufficient Cryptography',
-        'owasp-mstg': 'MSTG-CRYPTO-4',
+        'cwe': CWE['CWE-327'],
+        'owasp': OWASP['m5'],
+        'owasp-mstg': OWASP_MSTG['crypto-4'],
     },
     {
         'desc': 'MD5 is a weak hash known to have hash collisions.',
@@ -100,9 +104,9 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'match': 'regex_or',
         'input_case': 'exact',
         'cvss': 5.9,
-        'cwe': 'CWE-327',
-        'owasp': 'M5: Insufficient Cryptography',
-        'owasp-mstg': 'MSTG-CRYPTO-4',
+        'cwe': CWE['CWE-327'],
+        'owasp': OWASP['m5'],
+        'owasp-mstg': OWASP_MSTG['crypto-4'],
     },
     {
         'desc': 'MD6 is a weak hash known to have hash collisions.',
@@ -113,9 +117,9 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'match': 'regex_or',
         'input_case': 'exact',
         'cvss': 5.9,
-        'cwe': 'CWE-327',
-        'owasp': 'M5: Insufficient Cryptography',
-        'owasp-mstg': 'MSTG-CRYPTO-4',
+        'cwe': CWE['CWE-327'],
+        'owasp': OWASP['m5'],
+        'owasp-mstg': OWASP_MSTG['crypto-4'],
     },
     {
         'desc': 'This App may have custom keyboards disabled.',
@@ -127,7 +131,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'cvss': 0.0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': 'MSTG-PLATFORM-11',
+        'owasp-mstg': OWASP_MSTG['platform-11'],
     },
     {
         'desc': ('Keyboard cache should be disabled for all '
@@ -140,7 +144,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'cvss': 0.0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': 'MSTG-STORAGE-5',
+        'owasp-mstg': OWASP_MSTG['storage-5'],
     },
     {
         'desc': ('It is recommended to use WKWebView instead '
@@ -152,8 +156,8 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'input_case': 'exact',
         'cvss': 0.0,
         'cwe': '',
-        'owasp': '',
-        'owasp-mstg': 'MSTG-PLATFORM-5',
+        'owasp': OWASP['m1'],
+        'owasp-mstg': OWASP_MSTG['platform-5'],
     },
     {
         'desc': 'This App may have Reverse enginering detection capabilities.',
@@ -168,7 +172,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'cvss': 0.0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': 'MSTG-RESILIENCE-4',
+        'owasp-mstg': OWASP_MSTG['resilience-4'],
     },
     {
         'desc': 'This App may have Emulator detection capabilities.',
@@ -180,7 +184,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'cvss': 0.0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': 'MSTG-RESILIENCE-5',
+        'owasp-mstg': OWASP_MSTG['resilience-5'],
     },
     {
         'desc': ('Biometric authentication should be based '
@@ -192,8 +196,8 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'input_case': 'exact',
         'cvss': 0.0,
         'cwe': '',
-        'owasp': '',
-        'owasp-mstg': 'MSTG-AUTH-8',
+        'owasp': OWASP['m1'],
+        'owasp-mstg': OWASP_MSTG['auth-8'],
     },
     {
         'desc': 'The file has no special protections associated with it.',
@@ -203,9 +207,9 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'match': 'single_regex',
         'input_case': 'exact',
         'cvss': 4.3,
-        'cwe': 'CWE-311',
-        'owasp': 'M1: Improper Platform Usage',
-        'owasp-mstg': 'MSTG-STORAGE-1',
+        'cwe': CWE['CWE-311'],
+        'owasp': OWASP['m2'],
+        'owasp-mstg': OWASP_MSTG['storage-1'],
     },
     {
         'desc': ('This application uses UIPasteboard, improper use '
@@ -217,8 +221,8 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'input_case': 'exact',
         'cvss': 0.0,
         'cwe': '',
-        'owasp': 'M1 — Improper Platform usage',
-        'owasp-mstg': 'MSTG-PLATFORM-4',
+        'owasp': OWASP['m1'],
+        'owasp-mstg': OWASP_MSTG['platform-4'],
     },
     {
         'desc': 'Usage of generalPasteboard should be avoided.',
@@ -229,8 +233,8 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'input_case': 'exact',
         'cvss': 0.0,
         'cwe': '',
-        'owasp': 'M1 — Improper Platform usage',
-        'owasp-mstg': 'MSTG-PLATFORM-4',
+        'owasp': OWASP['m1'],
+        'owasp-mstg': OWASP_MSTG['platform-4'],
     },
     {
         'desc': ('The app should not export sensitive functionality via '
@@ -243,19 +247,19 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'input_case': 'exact',
         'cvss': 0.0,
         'cwe': '',
-        'owasp': 'M1 — Improper Platform usage',
-        'owasp-mstg': 'MSTG-PLATFORM-3',
+        'owasp': OWASP['m1'],
+        'owasp-mstg': OWASP_MSTG['platform-3'],
     },
     {
-        'desc': 'Some of UI controls have secure text entry configured.',
+        'desc': 'Some UI controls have secure text entry configured.',
         'type': 'string',
         'string1': '.secureTextEntry = true',
-        'level': 'warning',
+        'level': 'good',
         'match': 'single_string',
         'input_case': 'exact',
         'cvss': 0.0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': 'MSTG-STORAGE-5',
+        'owasp-mstg': OWASP_MSTG['storage-5'],
     },
 ]

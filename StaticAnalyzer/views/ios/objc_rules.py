@@ -35,7 +35,11 @@ Rule Format.
    b. regex<no> - regex1, regex2, regex3
 
 """
-
+from StaticAnalyzer.views.standards import (
+    CWE,
+    OWASP,
+    OWASP_MSTG,
+)
 from StaticAnalyzer.views.ios import common_rules
 
 OBJC_RULES = common_rules.COMMON_RULES + [
@@ -49,9 +53,9 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'match': 'single_regex',
         'input_case': 'exact',
         'cvss': 2.2,
-        'cwe': 'CWE-676',
-        'owasp': 'M7: Client Code Quality',
-        'owasp-mstg': 'MSTG-CODE-8',
+        'cwe': CWE['CWE-676'],
+        'owasp': OWASP['m7'],
+        'owasp-mstg': OWASP_MSTG['code-8'],
     },
     {
         'desc': ('App allows self signed or invalid '
@@ -68,9 +72,9 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'match': 'single_regex',
         'input_case': 'exact',
         'cvss': 7.4,
-        'cwe': 'CWE-295',
-        'owasp': 'M3: Insecure Communication',
-        'owasp-mstg': 'MSTG-NETWORK-3',
+        'cwe': CWE['CWE-295'],
+        'owasp': OWASP['m3'],
+        'owasp-mstg': OWASP_MSTG['network-3'],
     },
     {
         'desc': ('UIWebView in App ignore SSL errors and accept'
@@ -83,9 +87,9 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'match': 'single_regex',
         'input_case': 'exact',
         'cvss': 7.4,
-        'cwe': 'CWE-295',
-        'owasp': 'M3: Insecure Communication',
-        'owasp-mstg': 'MSTG-NETWORK-3',
+        'cwe': CWE['CWE-295'],
+        'owasp': OWASP['m3'],
+        'owasp-mstg': OWASP_MSTG['network-3'],
     },
     {
         'desc': ('The App logs information. '
@@ -96,9 +100,9 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'match': 'single_regex',
         'input_case': 'exact',
         'cvss': 7.5,
-        'cwe': 'CWE-532',
+        'cwe': CWE['CWE-532'],
         'owasp': '',
-        'owasp-mstg': 'MSTG-STORAGE-3',
+        'owasp-mstg': OWASP_MSTG['storage-3'],
     },
     {
         'desc': ('This app listens to Clipboard changes. '
@@ -112,7 +116,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': 'MSTG-PLATFORM-4',
+        'owasp-mstg': OWASP_MSTG['platform-4'],
     },
     {
         'desc': ('Untrusted user input to "NSTemporaryDirectory()"'
@@ -123,9 +127,9 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'match': 'single_string',
         'input_case': 'exact',
         'cvss': 7.5,
-        'cwe': 'CWE-22',
-        'owasp': 'M10: Extraneous Functionality',
-        'owasp-mstg': 'MSTG-PLATFORM-2',
+        'cwe': CWE['CWE-22'],
+        'owasp': OWASP['m10'],
+        'owasp-mstg': OWASP_MSTG['platform-2'],
     },
     {
         'desc': ('File is stored in an encrypted format on '
@@ -139,7 +143,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': 'MSTG-STORAGE-14',
+        'owasp-mstg': OWASP_MSTG['storage-14'],
     },
     {
         'desc': ('File is stored in an encrypted format '
@@ -152,7 +156,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': 'MSTG-STORAGE-14',
+        'owasp-mstg': OWASP_MSTG['storage-14'],
     },
     {
         'desc': ('File is stored in an encrypted format '
@@ -168,7 +172,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': 'MSTG-STORAGE-14',
+        'owasp-mstg': OWASP_MSTG['storage-14'],
     },
     {
         'desc': ('The file has no special protections '
@@ -179,9 +183,9 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'match': 'single_string',
         'input_case': 'exact',
         'cvss': 4.3,
-        'cwe': 'CWE-311',
-        'owasp': 'M1: Improper Platform Usage',
-        'owasp-mstg': 'MSTG-STORAGE-2',
+        'cwe': CWE['CWE-311'],
+        'owasp': OWASP['m1'],
+        'owasp-mstg': OWASP_MSTG['storage-2'],
     },
     {
         'desc': 'SFAntiPiracy Jailbreak checks found',
@@ -195,7 +199,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': 'MSTG-RESILIENCE-1',
+        'owasp-mstg': OWASP_MSTG['resilience-1'],
     },
     {
         'desc': 'SFAntiPiracy Piracy checks found',
@@ -209,7 +213,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': 'MSTG-RESILIENCE-3',
+        'owasp-mstg': OWASP_MSTG['resilience-3'],
     },
     {
         'desc': 'MD5 is a weak hash known to have hash collisions.',
@@ -220,9 +224,9 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'match': 'string_and',
         'input_case': 'exact',
         'cvss': 7.4,
-        'cwe': 'CWE-327',
-        'owasp': 'M5: Insufficient Cryptography',
-        'owasp-mstg': 'MSTG-CRYPTO-4',
+        'cwe': CWE['CWE-327'],
+        'owasp': OWASP['m5'],
+        'owasp-mstg': OWASP_MSTG['crypto-4'],
     },
     {
         'desc': 'SHA1 is a weak hash known to have hash collisions.',
@@ -233,9 +237,9 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'match': 'string_and',
         'input_case': 'exact',
         'cvss': 5.9,
-        'cwe': 'CWE-327',
-        'owasp': 'M5: Insufficient Cryptography',
-        'owasp-mstg': 'MSTG-CRYPTO-4',
+        'cwe': CWE['CWE-327'],
+        'owasp': OWASP['m5'],
+        'owasp-mstg': OWASP_MSTG['crypto-4'],
     },
     {
         'desc': ('The App uses ECB mode in Cryptographic encryption algorithm.'
@@ -248,9 +252,9 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'match': 'string_and',
         'input_case': 'exact',
         'cvss': 5.9,
-        'cwe': 'CWE-327',
-        'owasp': 'M5: Insufficient Cryptography',
-        'owasp-mstg': 'MSTG-CRYPTO-3',
+        'cwe': CWE['CWE-327'],
+        'owasp': OWASP['m5'],
+        'owasp-mstg': OWASP_MSTG['crypto-3'],
     },
     {
         'desc': 'The App has ant-debugger code using ptrace() ',
@@ -263,7 +267,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': 'MSTG-RESILIENCE-2',
+        'owasp-mstg': OWASP_MSTG['resilience-2'],
     },
     {
         'desc': 'This App has anti-debugger code using Mach Exception Ports.',
@@ -277,7 +281,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': 'MSTG-RESILIENCE-2',
+        'owasp-mstg': OWASP_MSTG['resilience-2'],
     },
     {
         'desc': ('This App copies data to clipboard. Sensitive data should'
@@ -293,6 +297,6 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': 'MSTG-STORAGE-10',
+        'owasp-mstg': OWASP_MSTG['storage-10'],
     },
 ]
