@@ -77,13 +77,14 @@ COMMON_RULES = [
                  'Sensitive Information should be encrypted.'),
         'type': 'string',
         'string1': 'sqlite3_exec',
+        'string2': 'sqlite3_finalize',
         'level': 'info',
-        'match': 'single_string',
+        'match': 'string_or',
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['storage-2'],
+        'owasp-mstg': OWASP_MSTG['storage-14'],
     },
     {
         'desc': ('User input in "loadHTMLString" '

@@ -299,4 +299,17 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'owasp': '',
         'owasp-mstg': OWASP_MSTG['storage-10'],
     },
+    {
+        'desc': ('App uses Realm Database. '
+                 'Sensitive Information should be encrypted.'),
+        'type': 'string',
+        'string1': '[realm transactionWithBlock:',
+        'level': 'info',
+        'match': 'single_string',
+        'input_case': 'exact',
+        'cvss': 0,
+        'cwe': '',
+        'owasp': '',
+        'owasp-mstg': OWASP_MSTG['storage-14'],
+    },
 ]
