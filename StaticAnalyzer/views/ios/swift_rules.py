@@ -269,7 +269,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'owasp-mstg': OWASP_MSTG['storage-5'],
     },
     {
-        'desc': 'This App may have Certificate Pinning mechanizm.',
+        'desc': 'This App may have Certificate Pinning mechanism.',
         'type': MatchType.string,
         'string1': 'PinnedCertificatesTrustEvaluator',
         'string2': 'TrustKit.initSharedInstance',
@@ -343,7 +343,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'input_case': InputCase.exact,
         'cvss': 0.0,
         'cwe': CWE['CWE-939'],
-        'owasp': '',
+        'owasp': OWASP['m1'],
         'owasp-mstg': OWASP_MSTG['platform-3'],
     },
 ]

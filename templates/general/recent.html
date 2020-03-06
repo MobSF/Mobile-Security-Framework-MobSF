@@ -6,6 +6,7 @@
 {% endblock %}
  {% block extra_css %}
 <link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
+
 <style>
 #app_icon{
         width: 64px;
@@ -41,41 +42,47 @@
                 <table class="table table-bordered table-hover table-striped">
                     <thead>
                     <tr>
-                        <th>App</th>
-                        <th>File</th>
-                        <th>Type</th>
-                        <th>Hash</th>
-                        <th>Date</th>
-                        <th>View</th>
-                        <th>Delete</th>
+                        <th>APP</th>
+                        <th>FILE</th>
+                        <th>TYPE</th>
+                        <th>HASH</th>
+                        <th>SCAN DATE</th>
+                        <th>ACTIONS</th>
                     </tr>
                     </thead>
                     <tbody>
                     {% for e in entries %}
                         <tr>
-                            <td>
+                            <td align="center">
                                 <img id="app_icon" src="/download/{{ e.MD5 }}-icon.png" onerror="this.src='{% static 'img/no_icon.png' %}'">
+                                {% if e.PACKAGE_NAME %}
+                                  <br/><strong>{{ e.APP_NAME }} {% if e.VERSION_NAME %} - {{ e.VERSION_NAME }} {% endif %}</strong>
+                                  </br>{{ e.PACKAGE_NAME }}
+                                {% else %}
+                                </br><span class="badge bg-warning">scan not completed</span>
+                                {% endif %}
                             </td>
-                            <td>{{ e.NAME }}</td>
-                            <td>
-                                {% if '.apk' == e.NAME|slice:"-4:"%}<i class="fab fa-android fa-3x"></i>
-                                {% elif '.ipa' == e.NAME|slice:"-4:"%}<i class="fab fa-apple fa-3x"></i>
-                                {% elif '.zip' == e.NAME|slice:"-4:"%}<i class="fas fa-file-archive fa-3x"></i>
-                                {% elif '.appx' == e.NAME|slice:"-5:"%}<i class="fab fa-windows fa-3x"></i>
+                            <td>{{ e.FILE_NAME }}
+                            </td>
+                            <td align="center">
+                                {% if '.apk' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-android fa-3x"></i>
+                                {% elif '.ipa' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-apple fa-3x"></i>
+                                {% elif '.zip' == e.FILE_NAME|slice:"-4:"%}<i class="fas fa-file-archive fa-3x"></i>
+                                {% elif '.appx' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-windows fa-3x"></i>
                                 {% endif %}
                             </td>
                             <td>{{ e.MD5 }}</td>
-                            <td>{{ e.TS }}</td>
+                            <td>{{ e.TIMESTAMP }}</td>
                             <td><p><a class="btn btn-primary" href="../{{ e.URL }}"><i class="fas fa-eye"></i> Static Report</a>
                                    <a class="btn btn-primary" href="../PDF/?md5={{ e.MD5 }}"><i class="fas fa-file-pdf"></i></a>
                                 </p>
-                            {% if '.apk' == e.NAME|slice:"-4:"%}
+                            {% if '.apk' == e.FILE_NAME|slice:"-4:"%}
                                 <p><a class="btn btn-success" href="../dynamic_report/?hash={{ e.MD5  }}&amp;package={{e.PACKAGE}}"><i class="fa fa-mobile"></i> Dynamic Report</a> 
-                                </p><p><a class="diffButton btn btn-warning" id="{{ e.MD5 }}_{{ e.NAME }}"><i class="fas fa-not-equal"></i> Diff or Compare</a>
+                                </p><p><a class="diffButton btn btn-warning" id="{{ e.MD5 }}_{{ e.FILE_NAME }}"><i class="fas fa-not-equal"></i> Diff or Compare</a>
                                 </p>
+                                 <p> <a class="btn btn-danger" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="#"><i class="fa fa-trash"></i> Delete Scan</a> </p>
                             {% endif %}
                             </td>
-                            <td> <a class="btn btn-danger" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="#"><i class="fa fa-trash"></i> Delete</a></td>
                         </tr>
                     {% endfor %}
                     </tbody>

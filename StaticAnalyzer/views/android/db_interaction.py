@@ -7,6 +7,7 @@ from django.db.models import QuerySet
 from MobSF.utils import python_dict, python_list
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
+from StaticAnalyzer.models import RecentScansDB
 
 """Module holding the functions for the db."""
 
@@ -188,3 +189,13 @@ def save_or_update(update_type,
                 MD5=app_dic['md5']).update(**values)
     except Exception:
         logger.exception('Updating DB')
+    try:
+        values = {
+            'APP_NAME': app_dic['real_name'],
+            'PACKAGE_NAME': man_data_dic['packagename'],
+            'VERSION_NAME': man_data_dic['androvername'],
+        }
+        RecentScansDB.objects.filter(
+            MD5=app_dic['md5']).update(**values)
+    except Exception:
+        logger.exception('Updating RecentScansDB')
