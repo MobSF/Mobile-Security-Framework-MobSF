@@ -328,4 +328,16 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'owasp': '',
         'owasp-mstg': '',
     },
+    {
+        'desc': 'Opening App with URLs can lead to potencial security leaks.',
+        'type': 'regex',
+        'regex1': r'func application\(.*open url: URL',
+        'level': 'warning',
+        'match': 'single_regex',
+        'input_case': 'exact',
+        'cvss': 0.0,
+        'cwe': CWE['CWE-939'],
+        'owasp': '',
+        'owasp-mstg': OWASP_MSTG['platform-3'],
+    },
 ]
