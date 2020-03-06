@@ -17,7 +17,7 @@ def add_to_recent_scan(name, md5, url):
         db_obj = RecentScansDB.objects.filter(MD5=md5)
         if not db_obj.exists():
             new_db_obj = RecentScansDB(
-                NAME=name, MD5=md5, URL=url, TS=timezone.now())
+                FILE_NAME=name, MD5=md5, URL=url, TIMESTAMP=timezone.now())
             new_db_obj.save()
     except Exception:
         logger.exception('Adding Scan URL to Database')
