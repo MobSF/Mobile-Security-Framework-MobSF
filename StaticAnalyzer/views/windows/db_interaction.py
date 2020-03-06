@@ -6,6 +6,7 @@ from django.conf import settings
 from MobSF.utils import python_list
 
 from StaticAnalyzer.models import StaticAnalyzerWindows
+from StaticAnalyzer.models import RecentScansDB
 
 logger = logging.getLogger(__name__)
 
@@ -115,3 +116,13 @@ def save_or_update(update_type,
                 MD5=app_dic['md5']).update(**values)
     except Exception:
         logger.exception('Updating DB')
+    try:
+        values = {
+            'APP_NAME': bin_an_dic['bin_name'],
+            'PACKAGE_NAME': xml_dic['pub_name'],
+            'VERSION_NAME': xml_dic['version'],
+        }
+        RecentScansDB.objects.filter(
+            MD5=app_dic['md5']).update(**values)
+    except Exception:
+        logger.exception('Updating RecentScansDB')
