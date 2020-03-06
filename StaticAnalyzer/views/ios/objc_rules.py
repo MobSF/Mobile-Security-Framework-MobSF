@@ -41,13 +41,16 @@ from StaticAnalyzer.views.standards import (
     OWASP_MSTG,
 )
 from StaticAnalyzer.views.ios import common_rules
-from StaticAnalyzer.views.rules_properties import Match
+from StaticAnalyzer.views.rules_properties import (
+    Match,
+    MatchType,
+)
 
 OBJC_RULES = common_rules.COMMON_RULES + [
     {
         'desc': ('The App may contain banned API(s). '
                  'These API(s) are insecure and must not be used.'),
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': (r'strcpy|memcpy|strcat|strncat|'
                    r'strncpy|sprintf|vsprintf|gets'),
         'level': 'high',
@@ -61,7 +64,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
     {
         'desc': ('App allows self signed or invalid '
                  'SSL certificates. App is vulnerable to MITM attacks.'),
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': (r'canAuthenticateAgainstProtectionSpace|'
                    r'continueWithoutCredentialForAuthenticationChallenge|'
                    r'kCFStreamSSLAllowsExpiredCertificates|'
@@ -80,7 +83,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
     {
         'desc': ('UIWebView in App ignore SSL errors and accept'
                  ' any SSL Certificate. App is vulnerable to MITM attacks.'),
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': (r'setAllowsAnyHTTPSCertificate:\s*YES|'
                    r'allowsAnyHTTPSCertificateForHost|'
                    r'loadingUnvalidatedHTTPSPage\s*=\s*(YES|yes)'),
@@ -95,7 +98,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
     {
         'desc': ('The App logs information. '
                  'Sensitive information should never be logged.'),
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'NSLog|NSAssert|fprintf|fprintf|Logging',
         'level': 'info',
         'match': Match.single_regex,
@@ -108,7 +111,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
     {
         'desc': ('This app listens to Clipboard changes. '
                  'Some malwares also listen to Clipboard changes.'),
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': (r'UIPasteboardChangedNotification|'
                    r'generalPasteboard\]\.string'),
         'level': 'warning',
@@ -122,7 +125,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
     {
         'desc': ('Untrusted user input to "NSTemporaryDirectory()"'
                  ' will result in path traversal vulnerability.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'NSTemporaryDirectory(),',
         'level': 'warning',
         'match': Match.single_string,
@@ -136,7 +139,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'desc': ('File is stored in an encrypted format on '
                  'disk and cannot be read from or written to '
                  'while the device is locked or booting.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'NSFileProtectionComplete',
         'level': 'good',
         'match': Match.single_string,
@@ -149,7 +152,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
     {
         'desc': ('File is stored in an encrypted format '
                  'on disk after it is closed.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'NSFileProtectionCompleteUnlessOpen',
         'level': 'good',
         'match': Match.single_string,
@@ -163,7 +166,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'desc': ('File is stored in an encrypted format '
                  'on disk and cannot be accessed until after '
                  'the device has booted.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': (
             'NSFileProtectionComplete'
             'UntilFirstUserAuthentication'),
@@ -178,7 +181,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
     {
         'desc': ('The file has no special protections '
                  'associated with it.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'NSFileProtectionNone',
         'level': 'warning',
         'match': Match.single_string,
@@ -190,7 +193,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
     },
     {
         'desc': 'SFAntiPiracy Jailbreak checks found',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'SFAntiPiracy.h',
         'string2': 'SFAntiPiracy',
         'string3': 'isJailbroken',
@@ -204,7 +207,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
     },
     {
         'desc': 'SFAntiPiracy Piracy checks found',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'SFAntiPiracy.h',
         'string2': 'SFAntiPiracy',
         'string3': 'isPirated',
@@ -218,7 +221,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
     },
     {
         'desc': 'MD5 is a weak hash known to have hash collisions.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'CommonDigest.h',
         'string2': 'CC_MD5',
         'level': 'high',
@@ -231,7 +234,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
     },
     {
         'desc': 'SHA1 is a weak hash known to have hash collisions.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'CommonDigest.h',
         'string2': 'CC_SHA1',
         'level': 'high',
@@ -246,7 +249,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'desc': ('The App uses ECB mode in Cryptographic encryption algorithm.'
                  ' ECB mode is known to be weak as it results in the same'
                  ' ciphertext for identical blocks of plaintext.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'kCCOptionECBMode',
         'string2': 'kCCAlgorithmAES',
         'level': 'high',
@@ -259,7 +262,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
     },
     {
         'desc': 'The App has ant-debugger code using ptrace() ',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'ptrace_ptr',
         'string2': 'PT_DENY_ATTACH',
         'level': 'info',
@@ -272,7 +275,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
     },
     {
         'desc': 'This App has anti-debugger code using Mach Exception Ports.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'mach/mach_init.h',
         'string_or1': 'MACH_PORT_VALID',
         'string_or2': 'mach_task_self()',
@@ -288,7 +291,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'desc': ('This App copies data to clipboard. Sensitive data should'
                  ' not be copied to clipboard as other applications'
                  ' can access it.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'UITextField',
         'string_or1': '@select(cut:)',
         'string_or2': '@select(copy:)',
@@ -303,7 +306,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
     {
         'desc': ('App uses Realm Database. '
                  'Sensitive Information should be encrypted.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': '[realm transactionWithBlock:',
         'level': 'info',
         'match': Match.single_string,

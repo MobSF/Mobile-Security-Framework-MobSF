@@ -40,7 +40,10 @@ from StaticAnalyzer.views.ios.db_interaction import (
     get_context_from_db_entry as idb)
 from StaticAnalyzer.views.windows.db_interaction import (
     get_context_from_db_entry as wdb)
-from StaticAnalyzer.views.rules_properties import Match
+from StaticAnalyzer.views.rules_properties import (
+    Match,
+    MatchType,
+)
 
 logger = logging.getLogger(__name__)
 try:
@@ -304,7 +307,7 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                 tmp_data = data
 
             # MATCH TYPE
-            if rule['type'] == 'regex':
+            if rule['type'] == MatchType.regex:
                 if rule['match'] == Match.single_regex:
                     if re.findall(rule['regex1'], tmp_data):
                         add_findings(findings, rule[
@@ -334,7 +337,7 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                 else:
                     logger.error('Code Regex Rule Match Error\n %s', rule)
 
-            elif rule['type'] == 'string':
+            elif rule['type'] == MatchType.string:
                 if rule['match'] == Match.single_string:
                     if rule['string1'] in tmp_data:
                         add_findings(findings, rule[
@@ -424,7 +427,7 @@ def api_rule_matcher(api_findings, perms, data, file_path, api_rules):
                 tmp_data = data
 
             # MATCH TYPE
-            if api['type'] == 'regex':
+            if api['type'] == MatchType.regex:
                 if api['match'] == Match.single_regex:
                     if re.findall(api['regex1'], tmp_data):
                         add_apis(api_findings, api['desc'], file_path)
@@ -450,7 +453,7 @@ def api_rule_matcher(api_findings, perms, data, file_path, api_rules):
                 else:
                     logger.error('API Regex Rule Match Error\n %s', api)
 
-            elif api['type'] == 'string':
+            elif api['type'] == MatchType.string:
                 if api['match'] == Match.single_string:
                     if api['string1'] in tmp_data:
                         add_apis(api_findings, api['desc'], file_path)

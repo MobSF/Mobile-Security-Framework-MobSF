@@ -41,12 +41,15 @@ from StaticAnalyzer.views.standards import (
     OWASP,
     OWASP_MSTG,
 )
-from StaticAnalyzer.views.rules_properties import Match
+from StaticAnalyzer.views.rules_properties import (
+    Match,
+    MatchType,
+)
 
 COMMON_RULES = [
     {
         'desc': 'IP Address disclosure',
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}',
         'level': 'warning',
         'match': Match.single_regex,
@@ -59,7 +62,7 @@ COMMON_RULES = [
     {
         'desc': ('Files may contain hardcoded sensitive'
                  ' informations like usernames, passwords, keys etc.'),
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': (r'(password\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
                    r'(pass\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
                    r'(username\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
@@ -76,7 +79,7 @@ COMMON_RULES = [
     {
         'desc': ('App uses SQLite Database. '
                  'Sensitive Information should be encrypted.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'sqlite3_exec',
         'string2': 'sqlite3_finalize',
         'level': 'info',
@@ -90,7 +93,7 @@ COMMON_RULES = [
     {
         'desc': ('User input in "loadHTMLString" '
                  'will result in JavaScript Injection.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'loadHTMLString',
         'string2': 'webView',
         'level': 'warning',
@@ -103,7 +106,7 @@ COMMON_RULES = [
     },
     {
         'desc': 'This App may have Jailbreak detection capabilities.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': '/Applications/Cydia.app',
         'string2': '/Library/MobileSubstrate/MobileSubstrate.dylib',
         'string3': '/usr/sbin/sshd',

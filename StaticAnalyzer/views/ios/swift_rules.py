@@ -40,14 +40,17 @@ from StaticAnalyzer.views.standards import (
     OWASP,
     OWASP_MSTG,
 )
-from StaticAnalyzer.views.rules_properties import Match
+from StaticAnalyzer.views.rules_properties import (
+    Match,
+    MatchType,
+)
 from StaticAnalyzer.views.ios import common_rules
 
 SWIFT_RULES = common_rules.COMMON_RULES + [
     {
         'desc': ('The App logs information. '
                  'Sensitive information should never be logged.'),
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'(print|NSLog|os_log|OSLog|os_signpost)\(.*\)',
         'level': 'info',
         'match': Match.single_regex,
@@ -59,7 +62,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     },
     {
         'desc': 'SHA1 is a weak hash known to have hash collisions.',
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'(?i)SHA1\(',
         'regex2': r'CC_SHA1\(',
         'level': 'high',
@@ -72,7 +75,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     },
     {
         'desc': 'MD2 is a weak hash known to have hash collisions.',
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'(?i)MD2\(',
         'regex2': r'CC_MD2\(',
         'level': 'high',
@@ -85,7 +88,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     },
     {
         'desc': 'MD4 is a weak hash known to have hash collisions.',
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'(?i)MD4\(',
         'regex2': r'CC_MD4\(',
         'level': 'high',
@@ -98,7 +101,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     },
     {
         'desc': 'MD5 is a weak hash known to have hash collisions.',
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'(?i)MD5\(',
         'regex2': r'CC_MD5\(',
         'level': 'high',
@@ -111,7 +114,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     },
     {
         'desc': 'MD6 is a weak hash known to have hash collisions.',
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'(?i)MD6\(',
         'regex2': r'CC_MD6\(',
         'level': 'high',
@@ -124,7 +127,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     },
     {
         'desc': 'This App may have custom keyboards disabled.',
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'extensionPointIdentifier == .*\.keyboard',
         'level': 'good',
         'match': Match.single_regex,
@@ -137,7 +140,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     {
         'desc': ('Keyboard cache should be disabled for all '
                  'sensitve data inputs.'),
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'.autocorrectionType = .no',
         'level': 'good',
         'match': Match.single_regex,
@@ -150,7 +153,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     {
         'desc': ('It is recommended to use WKWebView instead '
                  'of SFSafariViewController or UIViewView.'),
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'UIViewView|SFSafariViewController',
         'level': 'warning',
         'match': Match.single_regex,
@@ -162,7 +165,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     },
     {
         'desc': 'This App may have Reverse enginering detection capabilities.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': '\"FridaGadget\"',
         'string2': '\"cynject\"',
         'string3': '\"libcycript\"',
@@ -177,7 +180,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     },
     {
         'desc': 'This App may have Emulator detection capabilities.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': '\"SIMULATOR_DEVICE_NAME\"',
         'level': 'good',
         'match': Match.single_string,
@@ -190,7 +193,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     {
         'desc': ('Biometric authentication should be based '
                  'on Keychain, not based on bool.'),
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'\.evaluatePolicy\(.deviceOwnerAuthentication',
         'level': 'warning',
         'match': Match.single_regex,
@@ -202,7 +205,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     },
     {
         'desc': 'The file has no special protections associated with it.',
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'(?i)\.noFileProtection',
         'level': 'high',
         'match': Match.single_regex,
@@ -215,7 +218,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     {
         'desc': ('This application uses UIPasteboard, improper use '
                  'of this class can lead to security issues.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'UIPasteboard',
         'level': 'warning',
         'match': Match.single_string,
@@ -227,7 +230,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     },
     {
         'desc': 'Usage of generalPasteboard should be avoided.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'UIPasteboard.generalPasteboard',
         'level': 'warning',
         'match': Match.single_string,
@@ -241,7 +244,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'desc': ('The app should not export sensitive functionality via '
                  'custom URL schemes, unless these '
                  'mechanisms are properly protected.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'CFBundleURLSchemes',
         'level': 'warning',
         'match': Match.single_string,
@@ -253,7 +256,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     },
     {
         'desc': 'Some UI controls have secure text entry configured.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': '.secureTextEntry = true',
         'level': 'good',
         'match': Match.single_string,
@@ -265,7 +268,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     },
     {
         'desc': 'This App may have Certificate Pinning mechanizm.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'PinnedCertificatesTrustEvaluator',
         'string2': 'TrustKit.initSharedInstance',
         'level': 'good',
@@ -279,7 +282,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     {
         'desc': ('App uses Realm Database. '
                  'Sensitive Information should be encrypted.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'realm.write',
         'level': 'info',
         'match': Match.single_string,
@@ -292,7 +295,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     {
         'desc': ('App uses CoreData Database. '
                  'Sensitive Information should be encrypted.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'NSManagedObjectContext',
         'string2': '.save()',
         'level': 'info',
@@ -305,7 +308,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     },
     {
         'desc': 'Used Realm database has configured encryption.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'Realm.Configuration(encryptionKey:',
         'string2': 'Realm(configuration:',
         'level': 'good',
@@ -318,7 +321,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     },
     {
         'desc': 'Copy feature may be disabled in some UI controls.',
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'canPerformAction',
         'regex2': r'UIResponderStandardEditActions\.copy|\.copy',
         'level': 'info',
@@ -331,7 +334,7 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
     },
     {
         'desc': 'Opening App with URLs can lead to potencial security leaks.',
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'func application\(.*open url: URL',
         'level': 'warning',
         'match': Match.single_regex,

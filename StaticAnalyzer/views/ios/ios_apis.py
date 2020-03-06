@@ -30,19 +30,22 @@ Rule Format.
 
 """
 
-from StaticAnalyzer.views.rules_properties import Match
+from StaticAnalyzer.views.rules_properties import (
+    Match,
+    MatchType,
+)
 
 CODE_APIS = [
     {
         'desc': 'Network Calls',
-        'type': 'regex',
+        'type': MatchType.regex,
         'match': Match.single_regex,
         'regex1': r'NSURL|CFStream|NSStream',
         'input_case': 'exact',
     },
     {
         'desc': 'Local File I/O Operations.',
-        'type': 'regex',
+        'type': MatchType.regex,
         'match': Match.single_regex,
         'regex1': (r'Keychain|kSecAttrAccessibleWhenUnlocked|'
                    r'kSecAttrAccessibleAfterFirstUnlock|SecItemAdd|'
@@ -51,28 +54,28 @@ CODE_APIS = [
     },
     {
         'desc': 'WebView Component',
-        'type': 'regex',
+        'type': MatchType.regex,
         'match': Match.single_regex,
         'regex1': r'UIWebView',
         'input_case': 'exact',
     },
     {
         'desc': 'Encryption API',
-        'type': 'regex',
+        'type': MatchType.regex,
         'match': Match.single_regex,
         'regex1': r'RNEncryptor|RNDecryptor|AESCrypt',
         'input_case': 'exact',
     },
     {
         'desc': 'Keychain Access',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.single_string,
         'string1': 'PDKeychainBindings',
         'input_case': 'exact',
     },
     {
         'desc': 'WebView Load Request',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'loadRequest',
         'string2': 'webView',
@@ -80,7 +83,7 @@ CODE_APIS = [
     },
     {
         'desc': 'WebView Load HTML String',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'loadHTMLString',
         'string2': 'webView',
@@ -88,7 +91,7 @@ CODE_APIS = [
     },
     {
         'desc': 'Cookie Storage',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'NSHTTPCookieStorage',
         'string2': 'sharedHTTPCookieStorage',
@@ -96,7 +99,7 @@ CODE_APIS = [
     },
     {
         'desc': 'Set or Read Clipboard',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'UIPasteboard',
         'string2': 'generalPasteboard',

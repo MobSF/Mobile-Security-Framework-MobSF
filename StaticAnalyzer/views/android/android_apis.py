@@ -37,26 +37,29 @@ Rule Format.
 
 """
 
-from StaticAnalyzer.views.rules_properties import Match
+from StaticAnalyzer.views.rules_properties import (
+    Match,
+    MatchType,
+)
 
 APIS = [
     {
         'desc': 'Loading Native Code (Shared Library) ',
-        'type': 'regex',
+        'type': MatchType.regex,
         'match': Match.single_regex,
         'regex1': r'System\.loadLibrary\(|System\.load\(',
         'input_case': 'exact',
     },
     {
         'desc': 'Get System Service',
-        'type': 'regex',
+        'type': MatchType.regex,
         'match': Match.single_regex,
         'regex1': r'getSystemService',
         'input_case': 'exact',
     },
     {
         'desc': 'Dynamic Class and Dexloading',
-        'type': 'regex',
+        'type': MatchType.regex,
         'match': Match.single_regex,
         'regex1': (r'dalvik\.system\.DexClassLoader|'
                    r'java\.security\.ClassLoader|'
@@ -66,7 +69,7 @@ APIS = [
     },
     {
         'desc': 'Java Reflection',
-        'type': 'regex',
+        'type': MatchType.regex,
         'match': Match.single_regex,
         'regex1': (r'java\.lang\.reflect\.Method|'
                    r'java\.lang\.reflect\.Field|Class\.forName'),
@@ -74,28 +77,28 @@ APIS = [
     },
     {
         'desc': 'Crypto',
-        'type': 'regex',
+        'type': MatchType.regex,
         'match': Match.single_regex,
         'regex1': r'javax\.crypto|kalium\.crypto|bouncycastle\.crypto',
         'input_case': 'exact',
     },
     {
         'desc': 'Starting Activity',
-        'type': 'regex',
+        'type': MatchType.regex,
         'match': Match.single_regex,
         'regex1': r'startActivity\(|startActivityForResult\(',
         'input_case': 'exact',
     },
     {
         'desc': 'Starting Service',
-        'type': 'regex',
+        'type': MatchType.regex,
         'match': Match.single_regex,
         'regex1': r'startService\(|bindService\(',
         'input_case': 'exact',
     },
     {
         'desc': 'Sending Broadcast',
-        'type': 'regex',
+        'type': MatchType.regex,
         'match': Match.single_regex,
         'regex1': (r'sendBroadcast\(|'
                    r'sendOrderedBroadcast\(|sendStickyBroadcast\('),
@@ -103,7 +106,7 @@ APIS = [
     },
     {
         'desc': 'Local File I/O Operations',
-        'type': 'regex',
+        'type': MatchType.regex,
         'match': Match.single_regex,
         'regex1': (r'OpenFileOutput|getSharedPreferences|'
                    r'SharedPreferences\.Editor|getCacheDir|'
@@ -112,14 +115,14 @@ APIS = [
     },
     {
         'desc': 'Inter Process Communication',
-        'type': 'regex',
+        'type': MatchType.regex,
         'match': Match.single_regex,
         'regex1': r'IRemoteService|IRemoteService\.Stub|IBinder|Intent',
         'input_case': 'exact',
     },
     {
         'desc': 'HTTP Requests, Connections and Sessions',
-        'type': 'regex',
+        'type': MatchType.regex,
         'match': Match.single_regex,
         'regex1': (r'http\.client\.HttpClient|net\.http\.AndroidHttpClient|'
                    r'http\.impl\.client\.AbstractHttpClient'),
@@ -127,7 +130,7 @@ APIS = [
     },
     {
         'desc': 'HTTP Connection',
-        'type': 'regex',
+        'type': MatchType.regex,
         'match': Match.regex_and,
         'regex1': r'HttpURLConnection|org\.apache\.http',
         'regex2': r'openConnection|connect|HttpRequest',
@@ -135,7 +138,7 @@ APIS = [
     },
     {
         'desc': 'Load and Manipulate Dex Files',
-        'type': 'regex',
+        'type': MatchType.regex,
         'match': Match.regex_and,
         'regex1': (r'dalvik\.system\.PathClassLoader|'
                    r'dalvik\.system\.DexFile|dalvik\.system\.DexPathList'),
@@ -144,14 +147,14 @@ APIS = [
     },
     {
         'desc': 'Content Provider',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.single_string,
         'string1': 'android.content.ContentProvider',
         'input_case': 'exact',
     },
     {
         'desc': 'Obfuscation',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'utils.AESObfuscator',
         'string2': 'getObfuscator',
@@ -159,7 +162,7 @@ APIS = [
     },
     {
         'desc': 'Execute OS Command',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'getRuntime().exec(',
         'string2': 'getRuntime(',
@@ -167,7 +170,7 @@ APIS = [
     },
     {
         'desc': 'Android Keystore',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'security.KeyStore',
         'string2': 'Keystore.getInstance(',
@@ -175,7 +178,7 @@ APIS = [
     },
     {
         'desc': 'TCP Server Socket',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'ServerSocket',
         'string2': 'net.ServerSocket',
@@ -183,7 +186,7 @@ APIS = [
     },
     {
         'desc': 'TCP Socket',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'Socket',
         'string2': 'net.Socket',
@@ -191,7 +194,7 @@ APIS = [
     },
     {
         'desc': 'UDP Datagram Packet',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'DatagramPacket',
         'string2': 'net.DatagramPacket',
@@ -199,7 +202,7 @@ APIS = [
     },
     {
         'desc': 'UDP Datagram Socket',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'DatagramSocket',
         'string2': 'net.DatagramSocket',
@@ -207,7 +210,7 @@ APIS = [
     },
     {
         'desc': 'WebView JavaScript Interface',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'addJavascriptInterface',
         'string2': 'WebView',
@@ -216,7 +219,7 @@ APIS = [
     },
     {
         'desc': 'WebView GET Request',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'WebView',
         'string2': 'loadData',
@@ -225,7 +228,7 @@ APIS = [
     },
     {
         'desc': 'WebView POST Request',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'WebView',
         'string2': 'postUrl',
@@ -234,7 +237,7 @@ APIS = [
     },
     {
         'desc': 'Android Notifications',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'app.NotificationManager',
         'string2': 'notify',
@@ -242,7 +245,7 @@ APIS = [
     },
     {
         'desc': 'Get Cell Information',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'telephony.TelephonyManager',
         'string2': 'getAllCellInfo',
@@ -250,7 +253,7 @@ APIS = [
     },
     {
         'desc': 'Get Cell Location',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'telephony.TelephonyManager',
         'string2': 'getCellLocation',
@@ -258,7 +261,7 @@ APIS = [
     },
     {
         'desc': 'Get Subscriber ID',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'telephony.TelephonyManager',
         'string2': 'getSubscriberId',
@@ -266,7 +269,7 @@ APIS = [
     },
     {
         'desc': 'Get Device ID, IMEI,MEID/ESN etc.',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'telephony.TelephonyManager',
         'string2': 'getDeviceId',
@@ -274,7 +277,7 @@ APIS = [
     },
     {
         'desc': 'Get Software Version, IMEI/SV etc.',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'telephony.TelephonyManager',
         'string2': 'getDeviceSoftwareVersion',
@@ -282,7 +285,7 @@ APIS = [
     },
     {
         'desc': 'Get SIM Serial Number',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'telephony.TelephonyManager',
         'string2': 'getSimSerialNumber',
@@ -290,7 +293,7 @@ APIS = [
     },
     {
         'desc': 'Get SIM Provider Details',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'telephony.TelephonyManager',
         'string2': 'getSimOperator',
@@ -298,7 +301,7 @@ APIS = [
     },
     {
         'desc': 'Get SIM Operator Name',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'telephony.TelephonyManager',
         'string2': 'getSimOperatorName',
@@ -306,7 +309,7 @@ APIS = [
     },
     {
         'desc': 'Query Database of SMS, Contacts etc.',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'content.ContentResolver',
         'string2': 'query',
@@ -314,7 +317,7 @@ APIS = [
     },
     {
         'desc': 'Query Database of SMS, Contacts etc.',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'content.ContentResolver',
         'string2': 'query',
@@ -322,7 +325,7 @@ APIS = [
     },
     {
         'desc': 'Base64 Decode',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and,
         'string1': 'android.util.Base64',
         'string2': '.decode',
@@ -330,7 +333,7 @@ APIS = [
     },
     {
         'desc': 'Send SMS',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and_or,
         'string1': 'telephony.SmsManager',
         'string_or1': 'sendMultipartTextMessage',
@@ -340,7 +343,7 @@ APIS = [
     },
     {
         'desc': 'URL Connection to file/http/https/ftp/jar',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and_or,
         'string1': 'net.URLConnection',
         'string_or1': 'openConnection',
@@ -350,7 +353,7 @@ APIS = [
     },
     {
         'desc': 'JAR URL Connection',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and_or,
         'string1': 'net.JarURLConnection',
         'string_or1': 'JarURLConnection',
@@ -359,7 +362,7 @@ APIS = [
     },
     {
         'desc': 'HTTPS Connection',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and_or,
         'string1': 'javax.net.ssl.HttpsURLConnection',
         'string_or1': 'HttpsURLConnection',
@@ -368,7 +371,7 @@ APIS = [
     },
     {
         'desc': 'URL Connection supports file,http,https,ftp and jar',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and_or,
         'string1': 'net.URL',
         'string_or1': 'openConnection',
@@ -377,7 +380,7 @@ APIS = [
     },
     {
         'desc': 'Set or Read Clipboard data',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and_or,
         'string1': 'content.ClipboardManager',
         'string_or1': 'CLIPBOARD_SERVICE',
@@ -386,7 +389,7 @@ APIS = [
     },
     {
         'desc': 'Base64 Encode',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and_or,
         'string1': 'android.util.Base64',
         'string_or1': '.encodeToString',
@@ -395,7 +398,7 @@ APIS = [
     },
     {
         'desc': 'Base64 Encode',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and_or,
         'string1': 'android.util.Base64',
         'string_or1': '.encodeToString',
@@ -404,7 +407,7 @@ APIS = [
     },
     {
         'desc': 'Message Digest',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and_or,
         'string1': 'java.security.MessageDigest',
         'string_or1': 'MessageDigestSpi',
@@ -413,7 +416,7 @@ APIS = [
     },
     {
         'desc': 'GPS Location',
-        'type': 'string',
+        'type': MatchType.string,
         'match': Match.string_and_or,
         'string1': 'android.location',
         'string_or1': 'getLastKnownLocation(',

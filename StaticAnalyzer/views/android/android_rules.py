@@ -43,13 +43,16 @@ Rule Format.
 
 """
 
-from StaticAnalyzer.views.rules_properties import Match
+from StaticAnalyzer.views.rules_properties import (
+    Match,
+    MatchType,
+)
 
 RULES = [
     {
         'desc': ('Files may contain hardcoded sensitive '
                  'informations like usernames, passwords, keys etc.'),
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': (r'(password\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
                    r'(pass\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
                    r'(username\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
@@ -64,7 +67,7 @@ RULES = [
     },
     {
         'desc': 'IP Address disclosure',
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}',
         'level': 'warning',
         'match': Match.single_regex,
@@ -76,7 +79,7 @@ RULES = [
     {
         'desc': ('Hidden elements in view can be used to hide'
                  ' data from user. But this data can be leaked'),
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': (r'setVisibility\(View\.GONE\)|'
                    r'setVisibility\(View\.INVISIBLE\)'),
         'level': 'high',
@@ -90,7 +93,7 @@ RULES = [
         'desc': ('The App uses ECB mode in Cryptographic encryption algorithm.'
                  ' ECB mode is known to be weak as it results in the same'
                  ' ciphertext for identical blocks of plaintext.'),
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'Cipher\.getInstance\(\s*"\s*AES\/ECB',
         'level': 'high',
         'match': Match.single_regex,
@@ -104,7 +107,7 @@ RULES = [
                  ' of the padding scheme is to prevent a number of attacks on'
                  ' RSA that only work when the encryption is performed'
                  ' without padding.'),
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'cipher\.getinstance\(\s*"rsa/.+/nopadding',
         'level': 'high',
         'match': Match.single_regex,
@@ -118,7 +121,7 @@ RULES = [
                  'certificates or accepting self signed certificates'
                  ' is a critical Security Hole. This application is'
                  ' vulnerable to MITM attacks'),
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'javax\.net\.ssl',
         'regex2': (r'TrustAllSSLSocket-Factory|AllTrustSSLSocketFactory|'
                    r'NonValidatingSSLSocketFactory|'
@@ -136,7 +139,7 @@ RULES = [
     {
         'desc': ('WebView load files from external storage. Files in external'
                  ' storage can be modified by any application.'),
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'\.loadUrl\(.*getExternalStorageDirectory\(',
         'regex2': r'webkit\.WebView',
         'level': 'high',
@@ -148,7 +151,7 @@ RULES = [
     },
     {
         'desc': 'The file is World Readable. Any App can read from the file',
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'MODE_WORLD_READABLE|Context\.MODE_WORLD_READABLE',
         'regex2': r'openFileOutput\(\s*".+"\s*,\s*1\s*\)',
         'level': 'high',
@@ -161,7 +164,7 @@ RULES = [
     },
     {
         'desc': 'The file is World Writable. Any App can write to the file',
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'MODE_WORLD_WRITABLE|Context\.MODE_WORLD_WRITABLE',
         'regex2': r'openFileOutput\(\s*".+"\s*,\s*2\s*\)',
         'level': 'high',
@@ -174,7 +177,7 @@ RULES = [
     {
         'desc': ('The file is World Readable and Writable. '
                  'Any App can read/write to the file'),
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'openFileOutput\(\s*".+"\s*,\s*3\s*\)',
         'level': 'high',
         'match': Match.single_regex,
@@ -185,7 +188,7 @@ RULES = [
     },
     {
         'desc': 'Weak Hash algorithm used',
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': (r'getInstance(\"md4\")|getInstance(\"rc2\")|'
                    r'getInstance(\"rc4\")|getInstance(\"RC4\")|'
                    r'getInstance(\"RC2\")|getInstance(\"MD4\")'),
@@ -198,7 +201,7 @@ RULES = [
     },
     {
         'desc': 'MD5 is a weak hash known to have hash collisions.',
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': (r'MessageDigest\.getInstance\(\"*MD5\"*\)|'
                    r'MessageDigest\.getInstance\(\"*md5\"*\)|'
                    r'DigestUtils\.md5\('),
@@ -211,7 +214,7 @@ RULES = [
     },
     {
         'desc': 'SHA-1 is a weak hash known to have hash collisions.',
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': (r'MessageDigest\.getInstance\(\"*SHA-1\"*\)|'
                    r'MessageDigest\.getInstance\(\"*sha-1\"*\)|'
                    r'DigestUtils\.sha\('),
@@ -225,7 +228,7 @@ RULES = [
     {
         'desc': ('App can write to App Directory. '
                  'Sensitive Information should be encrypted.'),
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'MODE_PRIVATE|Context\.MODE_PRIVATE',
         'level': 'info',
         'match': Match.single_regex,
@@ -236,7 +239,7 @@ RULES = [
     },
     {
         'desc': 'The App uses an insecure Random Number Generator.',
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'\bjava\.util\.Random\b',
         'level': 'high',
         'match': Match.single_regex,
@@ -248,7 +251,7 @@ RULES = [
     {
         'desc': ('The App logs information. '
                  'Sensitive information should never be logged.'),
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': (r'Log\.(v|d|i|w|e|f|s)|'
                    r'System\.out\.print|System\.err\.print'),
         'level': 'info',
@@ -261,7 +264,7 @@ RULES = [
     {
         'desc': ('This App uses Java Hash Code. It\'s a weak hash function and'
                  ' should never be used in Secure Crypto Implementation.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': '.hashCode()',
         'level': 'warning',
         'match': Match.single_string,
@@ -273,7 +276,7 @@ RULES = [
     {
         'desc': ('These activities prevent '
                  'screenshot when they go to background.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'LayoutParams.FLAG_SECURE',
         'level': 'good',
         'match': Match.single_string,
@@ -284,7 +287,7 @@ RULES = [
     },
     {
         'desc': 'This App uses SQL Cipher. But the secret may be hardcoded.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'SQLiteOpenHelper.getWritableDatabase(',
         'level': 'warning',
         'match': Match.single_string,
@@ -295,7 +298,7 @@ RULES = [
     },
     {
         'desc': 'This app has capabilities to prevent tapjacking attacks.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'setFilterTouchesWhenObscured(true)',
         'level': 'good',
         'match': Match.single_string,
@@ -308,7 +311,7 @@ RULES = [
         'desc': ('App can read/write to External Storage. '
                  'Any App can read data written to External Storage.'),
         'perm': 'android.permission.WRITE_EXTERNAL_STORAGE',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': '.getExternalStorage',
         'string2': '.getExternalFilesDir(',
         'level': 'high',
@@ -322,7 +325,7 @@ RULES = [
         'desc': ('App creates temp file. Sensitive '
                  'information should never be written into a temp file.'),
         'perm': 'android.permission.WRITE_EXTERNAL_STORAGE',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': '.createTempFile(',
         'level': 'high',
         'match': Match.string_and_perm,
@@ -334,7 +337,7 @@ RULES = [
     {
         'desc': ('Insecure WebView Implementation. Execution of user'
                  ' controlled code in WebView is a critical Security Hole.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'setJavaScriptEnabled(true)',
         'string2': '.addJavascriptInterface(',
         'level': 'warning',
@@ -347,7 +350,7 @@ RULES = [
     {
         'desc': ('This App uses SQL Cipher. SQLCipher '
                  'provides 256-bit AES encryption to sqlite database files.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'SQLiteDatabase.loadLibs(',
         'string2': 'net.sqlcipher.',
         'level': 'info',
@@ -359,7 +362,7 @@ RULES = [
     },
     {
         'desc': 'This App download files using Android Download Manager',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'android.app.DownloadManager',
         'string2': 'getSystemService(DOWNLOAD_SERVICE)',
         'level': 'high',
@@ -371,7 +374,7 @@ RULES = [
     },
     {
         'desc': 'This App use Realm Database with encryption.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'io.realm.Realm',
         'string2': '.encryptionKey(',
         'level': 'good',
@@ -388,7 +391,7 @@ RULES = [
                  'Not using a random IV makes the resulting '
                  'ciphertext much more predictable and '
                  'susceptible to a dictionary attack.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': '0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00',
         'string2': '0x01,0x02,0x03,0x04,0x05,0x06,0x07',
         'level': 'high',
@@ -400,7 +403,7 @@ RULES = [
     },
     {
         'desc': 'Remote WebView debugging is enabled.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': '.setWebContentsDebuggingEnabled(true)',
         'string2': 'WebView',
         'level': 'high',
@@ -413,7 +416,7 @@ RULES = [
     {
         'desc': ('This app listens to Clipboard changes.'
                  ' Some malwares also listen to Clipboard changes.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'content.ClipboardManager',
         'string2': 'OnPrimaryClipChangedListener',
         'level': 'warning',
@@ -427,7 +430,7 @@ RULES = [
         'desc': ('This App copies data to clipboard. Sensitive data should'
                  ' not be copied to clipboard as other'
                  ' applications can access it.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'content.ClipboardManager',
         'string2': 'setPrimaryClip(',
         'level': 'info',
@@ -441,7 +444,7 @@ RULES = [
         'desc': ('Insecure WebView Implementation. WebView ignores SSL'
                  ' Certificate errors and accept any SSL Certificate.'
                  ' This application is vulnerable to MITM attacks'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'onReceivedSslError(WebView',
         'string2': '.proceed();',
         'level': 'high',
@@ -456,7 +459,7 @@ RULES = [
                  'Untrusted user input in raw SQL queries can cause'
                  ' SQL Injection. Also sensitive information should'
                  ' be encrypted and written to the database.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'android.database.sqlite',
         'string_or1': 'rawQuery(',
         'string_or2': 'execSQL(',
@@ -469,7 +472,7 @@ RULES = [
     },
     {
         'desc': 'This App detects frida server.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'fridaserver',
         'string_or1': '27047',
         'string_or2': 'REJECT',
@@ -486,7 +489,7 @@ RULES = [
                  '(org.thoughtcrime.ssl.pinning) to '
                  'prevent MITM attacks in secure'
                  ' communication channel.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'org.thoughtcrime.ssl.pinning',
         'string_or1': 'PinningHelper.getPinnedHttpsURLConnection',
         'string_or2': 'PinningHelper.getPinnedHttpClient',
@@ -501,7 +504,7 @@ RULES = [
     {
         'desc': ('This App has capabilities to prevent against'
                  ' Screenshots from Recent Task History/ Now On Tap etc.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': '.FLAG_SECURE',
         'string_or1': 'getWindow().setFlags(',
         'string_or2': 'getWindow().addFlags(',
@@ -515,7 +518,7 @@ RULES = [
     {
         'desc': ('DexGuard Debug Detection code to detect'
                  ' wheather an App is debuggable or not is identified.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'import dexguard.util',
         'string2': 'DebugDetector.isDebuggable',
         'level': 'good',
@@ -527,7 +530,7 @@ RULES = [
     },
     {
         'desc': 'DexGuard Debugger Detection code is identified.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'import dexguard.util',
         'string2': 'DebugDetector.isDebuggerConnected',
         'level': 'good',
@@ -539,7 +542,7 @@ RULES = [
     },
     {
         'desc': 'DexGuard Emulator Detection code is identified.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'import dexguard.util',
         'string2': 'EmulatorDetector.isRunningInEmulator',
         'level': 'good',
@@ -552,7 +555,7 @@ RULES = [
     {
         'desc': ('DexGuard code to detect wheather the App'
                  ' is signed with a debug key or not is identified.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'import dexguard.util',
         'string2': 'DebugDetector.isSignedWithDebugKey',
         'level': 'good',
@@ -564,7 +567,7 @@ RULES = [
     },
     {
         'desc': 'DexGuard Root Detection code is identified.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'import dexguard.util',
         'string2': 'RootDetector.isDeviceRooted',
         'level': 'good',
@@ -576,7 +579,7 @@ RULES = [
     },
     {
         'desc': 'DexGuard App Tamper Detection code is identified.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'import dexguard.util',
         'string2': 'TamperDetector.checkApk',
         'level': 'good',
@@ -589,7 +592,7 @@ RULES = [
     {
         'desc': ('DexGuard Signer Certificate'
                  ' Tamper Detection code is identified.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'import dexguard.util',
         'string2': 'TCertificateChecker.checkCertificate',
         'level': 'good',
@@ -601,7 +604,7 @@ RULES = [
     },
     {
         'desc': 'The App may use package signature for tamper detection.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'PackageManager.GET_SIGNATURES',
         'string2': 'getPackageName(',
         'level': 'good',
@@ -613,7 +616,7 @@ RULES = [
     },
     {
         'desc': 'This App uses SafetyNet API.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'com.google.android.gms.safetynet.SafetyNetApi',
         'level': 'good',
         'match': Match.single_string,
@@ -624,7 +627,7 @@ RULES = [
     },
     {
         'desc': 'This App may request root (Super User) privileges.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'com.noshufou.android.su',
         'string2': 'com.thirdparty.superuser',
         'string3': 'eu.chainfire.supersu',
@@ -639,7 +642,7 @@ RULES = [
     },
     {
         'desc': 'This App may have root detection capabilities.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': '.contains("test-keys")',
         'string2': '/system/app/Superuser.apk',
         'string3': 'isDeviceRooted()',
@@ -658,7 +661,7 @@ RULES = [
         'desc': ('The app uses jackson deserialization library'
                  'Deserialization of untrusted input can result in'
                  'arbitary code execution'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'com.fasterxml.jackson.databind.ObjectMapper',
         'string2': '.enableDefaultTyping(',
         'level': 'high',

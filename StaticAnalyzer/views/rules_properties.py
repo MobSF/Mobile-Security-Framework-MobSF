@@ -1,6 +1,7 @@
 """
-Match is an Enum used in static code analysis to run proper rule detection.
+This file contains enums used to define static source code analysis rules.
 
+Match is an Enum used to run proper rule detection.
     1. single_regex - if re.findall(regex1, input)
     2.regex_and - if re.findall(regex1, input) and re.findall(regex2, input)
     3. regex_or - if re.findall(regex1, input) or re.findall(regex2, input)
@@ -17,6 +18,10 @@ Match is an Enum used in static code analysis to run proper rule detection.
                         and (permission in permission_list_from_manifest)
     11. string_or_and_perm - if ((string1 in input) or (string2 in input))
                            and (permission in permission_list_from_manifest)
+
+MatchType is an Enum used to define match type.
+   1. string
+   2. regex
 """
 from enum import Enum
 
@@ -33,3 +38,8 @@ class Match(Enum):
     regex_and_perm = 9
     string_and_perm = 10
     string_or_and_perm = 11
+
+
+class MatchType(Enum):
+    string = 1
+    regex = 2
