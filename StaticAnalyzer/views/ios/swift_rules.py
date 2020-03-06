@@ -288,4 +288,17 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'owasp': '',
         'owasp-mstg': OWASP_MSTG['storage-2'],
     },
+    {
+        'desc': 'Used Realm database has configured encryption.',
+        'type': 'string',
+        'string1': 'Realm.Configuration(encryptionKey:',
+        'string2': 'Realm(configuration:',
+        'level': 'good',
+        'match': 'string_and',
+        'input_case': 'exact',
+        'cvss': 0.0,
+        'cwe': 'CWE-311',
+        'owasp': OWASP['m2'],
+        'owasp-mstg': OWASP_MSTG['storage-2'],
+    },
 ]
