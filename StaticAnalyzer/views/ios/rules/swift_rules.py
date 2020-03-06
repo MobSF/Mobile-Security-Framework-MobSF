@@ -348,4 +348,17 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'owasp': OWASP['m1'],
         'owasp-mstg': OWASP_MSTG['platform-3'],
     },
+    {
+        'desc': ('Sensitive data shouldn\'t be included in backups generated '
+                 'by the mobile operating system.'),
+        'type': 'regex',
+        'regex1': r'kSecAttrAccessible[a-zA-Z]*ThisDeviceOnly',
+        'level': 'good',
+        'match': 'single_regex',
+        'input_case': 'exact',
+        'cvss': 0.0,
+        'cwe': '',
+        'owasp': '',
+        'owasp-mstg': 'MSTG-STORAGE-8',
+    },
 ]
