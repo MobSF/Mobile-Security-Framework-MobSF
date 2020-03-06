@@ -41,5 +41,5 @@ class Match(Enum):
 
 
 class MatchType(Enum):
-    string = 1
-    regex = 2
+    string = 'string'
+    regex = 'regex'

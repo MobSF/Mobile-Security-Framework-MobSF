@@ -265,7 +265,7 @@ def get_list_match_items(ruleset):
     """Get List of Match item."""
     match_list = []
     i = 1
-    identifier = ruleset['type']
+    identifier = ruleset['type'].value
     if ruleset['match'] == Match.string_and_or:
         identifier = 'string_or'
     elif ruleset['match'] == Match.string_or_and:
