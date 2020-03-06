@@ -275,4 +275,17 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'owasp': OWASP['m3'],
         'owasp-mstg': OWASP_MSTG['network-4'],
     },
+    {
+        'desc': ('App uses Realm Database. '
+                 'Sensitive Information should be encrypted.'),
+        'type': 'string',
+        'string1': 'realm.write',
+        'level': 'info',
+        'match': 'single_string',
+        'input_case': 'exact',
+        'cvss': 0,
+        'cwe': '',
+        'owasp': '',
+        'owasp-mstg': OWASP_MSTG['storage-2'],
+    },
 ]
