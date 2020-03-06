@@ -1,6 +1,7 @@
 """
-Match is an Enum used in static code analysis to run proper rule detection.
+This file contains enums used to define static source code analysis rules.
 
+Match - It is an Enum used to run proper rule detection.
     1. single_regex - if re.findall(regex1, input)
     2. regex_and - if re.findall(regex1, input) and re.findall(regex2, input)
     3. regex_or - if re.findall(regex1, input) or re.findall(regex2, input)
@@ -17,6 +18,25 @@ Match is an Enum used in static code analysis to run proper rule detection.
                         and (permission in permission_list_from_manifest)
     11. string_or_and_perm - if ((string1 in input) or (string2 in input))
                            and (permission in permission_list_from_manifest)
+
+MatchType - It is an Enum used to define match type.
+   1. string
+   2. regex
+
+Level - It defines level of the rule.
+   1. high - Rule has a high security impact.
+             It will decrease security result by 15 points.
+   2. warning - Rule warns about potencial security leaks.
+                It will decrease security result by 10 points.
+   3. info - Rule informs about best practice in some posible cases.
+             It won't decrease security result.
+   4. good - Rule increase app security.
+             It will increase security result by 5 points.
+
+InputCase - It is an Enum that defines how we should match pattern.
+   1. upper
+   2. lower
+   3. exact
 """
 from enum import Enum
 
@@ -33,3 +53,21 @@ class Match(Enum):
     regex_and_perm = 9
     string_and_perm = 10
     string_or_and_perm = 11
+
+
+class MatchType(Enum):
+    string = 'string'
+    regex = 'regex'
+
+
+class Level(Enum):
+    high = 'high'
+    warning = 'warning'
+    info = 'info'
+    good = 'good'
+
+
+class InputCase(Enum):
+    upper = 'upper'
+    lower = 'lower'
+    exact = 'exact'

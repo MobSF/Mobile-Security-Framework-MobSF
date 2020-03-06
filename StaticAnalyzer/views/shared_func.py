@@ -40,7 +40,12 @@ from StaticAnalyzer.views.ios.db_interaction import (
     get_context_from_db_entry as idb)
 from StaticAnalyzer.views.windows.db_interaction import (
     get_context_from_db_entry as wdb)
-from StaticAnalyzer.views.rules_properties import Match
+from StaticAnalyzer.views.rules_properties import (
+    InputCase,
+    Level,
+    Match,
+    MatchType,
+)
 
 logger = logging.getLogger(__name__)
 try:
@@ -262,7 +267,7 @@ def get_list_match_items(ruleset):
     """Get List of Match item."""
     match_list = []
     i = 1
-    identifier = ruleset['type']
+    identifier = ruleset['type'].value
     if ruleset['match'] == Match.string_and_or:
         identifier = 'string_or'
     elif ruleset['match'] == Match.string_or_and:
@@ -284,7 +289,7 @@ def add_findings(findings, desc, file_path, rule):
             findings[desc]['path'] = tmp_list
     else:
         findings[desc] = {'path': [escape(file_path)],
-                          'level': rule['level'],
+                          'level': rule['level'].value,
                           'cvss': rule['cvss'],
                           'cwe': rule['cwe'],
                           'owasp': rule['owasp']}
@@ -296,15 +301,15 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
         for rule in code_rules:
 
             # CASE CHECK
-            if rule['input_case'] == 'lower':
+            if rule['input_case'] == InputCase.lower:
                 tmp_data = data.lower()
-            elif rule['input_case'] == 'upper':
+            elif rule['input_case'] == InputCase.upper:
                 tmp_data = data.upper()
-            elif rule['input_case'] == 'exact':
+            elif rule['input_case'] == InputCase.exact:
                 tmp_data = data
 
             # MATCH TYPE
-            if rule['type'] == 'regex':
+            if rule['type'] == MatchType.regex:
                 if rule['match'] == Match.single_regex:
                     if re.findall(rule['regex1'], tmp_data):
                         add_findings(findings, rule[
@@ -334,7 +339,7 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                 else:
                     logger.error('Code Regex Rule Match Error\n %s', rule)
 
-            elif rule['type'] == 'string':
+            elif rule['type'] == MatchType.string:
                 if rule['match'] == Match.single_string:
                     if rule['string1'] in tmp_data:
                         add_findings(findings, rule[
@@ -416,15 +421,15 @@ def api_rule_matcher(api_findings, perms, data, file_path, api_rules):
         for api in api_rules:
 
             # CASE CHECK
-            if api['input_case'] == 'lower':
+            if api['input_case'] == InputCase.lower:
                 tmp_data = data.lower()
-            elif api['input_case'] == 'upper':
+            elif api['input_case'] == InputCase.upper:
                 tmp_data = data.upper()
-            elif api['input_case'] == 'exact':
+            elif api['input_case'] == InputCase.exact:
                 tmp_data = data
 
             # MATCH TYPE
-            if api['type'] == 'regex':
+            if api['type'] == MatchType.regex:
                 if api['match'] == Match.single_regex:
                     if re.findall(api['regex1'], tmp_data):
                         add_apis(api_findings, api['desc'], file_path)
@@ -450,7 +455,7 @@ def api_rule_matcher(api_findings, perms, data, file_path, api_rules):
                 else:
                     logger.error('API Regex Rule Match Error\n %s', api)
 
-            elif api['type'] == 'string':
+            elif api['type'] == MatchType.string:
                 if api['match'] == Match.single_string:
                     if api['string1'] in tmp_data:
                         add_apis(api_findings, api['desc'], file_path)
@@ -565,22 +570,22 @@ def score(findings):
             if 'cvss' in finding:
                 if finding['cvss'] != 0:
                     cvss_scores.append(finding['cvss'])
-            if finding['level'] == 'high':
+            if finding['level'] == Level.high:
                 app_score = app_score - 15
-            elif finding['level'] == 'warning':
+            elif finding['level'] == Level.warning:
                 app_score = app_score - 10
-            elif finding['level'] == 'good':
+            elif finding['level'] == Level.good:
                 app_score = app_score + 5
     else:
         for _, finding in findings.items():
             if 'cvss' in finding:
                 if finding['cvss'] != 0:
                     cvss_scores.append(finding['cvss'])
-            if finding['level'] == 'high':
+            if finding['level'] == Level.high:
                 app_score = app_score - 15
-            elif finding['level'] == 'warning':
+            elif finding['level'] == Level.warning:
                 app_score = app_score - 10
-            elif finding['level'] == 'good':
+            elif finding['level'] == Level.good:
                 app_score = app_score + 5
     if cvss_scores:
         avg_cvss = round(sum(cvss_scores) / len(cvss_scores), 1)

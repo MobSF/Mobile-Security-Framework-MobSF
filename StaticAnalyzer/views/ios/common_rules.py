@@ -41,16 +41,21 @@ from StaticAnalyzer.views.standards import (
     OWASP,
     OWASP_MSTG,
 )
-from StaticAnalyzer.views.rules_properties import Match
+from StaticAnalyzer.views.rules_properties import (
+    InputCase,
+    Level,
+    Match,
+    MatchType,
+)
 
 COMMON_RULES = [
     {
         'desc': 'IP Address disclosure',
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}',
-        'level': 'warning',
+        'level': Level.warning,
         'match': Match.single_regex,
-        'input_case': 'exact',
+        'input_case': InputCase.exact,
         'cvss': 4.3,
         'cwe': CWE['CWE-200'],
         'owasp': '',
@@ -59,15 +64,15 @@ COMMON_RULES = [
     {
         'desc': ('Files may contain hardcoded sensitive'
                  ' informations like usernames, passwords, keys etc.'),
-        'type': 'regex',
+        'type': MatchType.regex,
         'regex1': (r'(password\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
                    r'(pass\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
                    r'(username\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
                    r'(secret\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
                    r'(key\s*=\s*[\'|\"].+[\'|\"]\s{0,5})'),
-        'level': 'high',
+        'level': Level.high,
         'match': Match.single_regex,
-        'input_case': 'lower',
+        'input_case': InputCase.lower,
         'cvss': 7.4,
         'cwe': CWE['CWE-312'],
         'owasp': OWASP['m9'],
@@ -76,12 +81,12 @@ COMMON_RULES = [
     {
         'desc': ('App uses SQLite Database. '
                  'Sensitive Information should be encrypted.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'sqlite3_exec',
         'string2': 'sqlite3_finalize',
-        'level': 'info',
+        'level': Level.info,
         'match': Match.string_or,
-        'input_case': 'exact',
+        'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
         'owasp': '',
@@ -90,12 +95,12 @@ COMMON_RULES = [
     {
         'desc': ('User input in "loadHTMLString" '
                  'will result in JavaScript Injection.'),
-        'type': 'string',
+        'type': MatchType.string,
         'string1': 'loadHTMLString',
         'string2': 'webView',
-        'level': 'warning',
+        'level': Level.warning,
         'match': Match.string_and,
-        'input_case': 'exact',
+        'input_case': InputCase.exact,
         'cvss': 8.8,
         'cwe': CWE['CWE-95'],
         'owasp': OWASP['m7'],
@@ -103,7 +108,7 @@ COMMON_RULES = [
     },
     {
         'desc': 'This App may have Jailbreak detection capabilities.',
-        'type': 'string',
+        'type': MatchType.string,
         'string1': '/Applications/Cydia.app',
         'string2': '/Library/MobileSubstrate/MobileSubstrate.dylib',
         'string3': '/usr/sbin/sshd',
@@ -153,9 +158,9 @@ COMMON_RULES = [
         'string45': '/usr/libexec/cydia/firmware.sh',
         'string46': '/private/var/cache/apt/',
         'string47': '/Library/MobileSubstrate/CydiaSubstrate.dylib',
-        'level': 'good',
+        'level': Level.good,
         'match': Match.string_or,
-        'input_case': 'exact',
+        'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
         'owasp': '',
