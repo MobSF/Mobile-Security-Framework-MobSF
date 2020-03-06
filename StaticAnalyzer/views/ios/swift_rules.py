@@ -315,4 +315,17 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'owasp': OWASP['m2'],
         'owasp-mstg': OWASP_MSTG['storage-14'],
     },
+    {
+        'desc': 'Copy feature may be disabled in some UI controls.',
+        'type': 'regex',
+        'regex1': r'canPerformAction',
+        'regex2': r'UIResponderStandardEditActions\.copy|\.copy',
+        'level': 'info',
+        'match': 'regex_and',
+        'input_case': 'exact',
+        'cvss': 0.0,
+        'cwe': '',
+        'owasp': '',
+        'owasp-mstg': '',
+    },
 ]
