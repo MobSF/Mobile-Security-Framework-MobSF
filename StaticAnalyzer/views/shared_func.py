@@ -40,6 +40,7 @@ from StaticAnalyzer.views.ios.db_interaction import (
     get_context_from_db_entry as idb)
 from StaticAnalyzer.views.windows.db_interaction import (
     get_context_from_db_entry as wdb)
+from StaticAnalyzer.views.rules_properties import Match
 
 logger = logging.getLogger(__name__)
 try:
@@ -262,9 +263,9 @@ def get_list_match_items(ruleset):
     match_list = []
     i = 1
     identifier = ruleset['type']
-    if ruleset['match'] == 'string_and_or':
+    if ruleset['match'] == Match.string_and_or:
         identifier = 'string_or'
-    elif ruleset['match'] == 'string_or_and':
+    elif ruleset['match'] == Match.string_or_and:
         identifier = 'string_and'
     while identifier + str(i) in ruleset:
         match_list.append(ruleset[identifier + str(i)])
@@ -304,11 +305,11 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
 
             # MATCH TYPE
             if rule['type'] == 'regex':
-                if rule['match'] == 'single_regex':
+                if rule['match'] == Match.single_regex:
                     if re.findall(rule['regex1'], tmp_data):
                         add_findings(findings, rule[
                                      'desc'], file_path, rule)
-                elif rule['match'] == 'regex_and':
+                elif rule['match'] == Match.regex_and:
                     and_match_rgx = True
                     match_list = get_list_match_items(rule)
                     for match in match_list:
@@ -318,14 +319,14 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                     if and_match_rgx:
                         add_findings(findings, rule[
                                      'desc'], file_path, rule)
-                elif rule['match'] == 'regex_or':
+                elif rule['match'] == Match.regex_or:
                     match_list = get_list_match_items(rule)
                     for match in match_list:
                         if re.findall(match, tmp_data):
                             add_findings(findings, rule[
                                          'desc'], file_path, rule)
                             break
-                elif rule['match'] == 'regex_and_perm':
+                elif rule['match'] == Match.regex_and_perm:
                     if (rule['perm'] in perms
                             and re.findall(rule['regex1'], tmp_data)):
                         add_findings(findings, rule[
@@ -334,11 +335,11 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                     logger.error('Code Regex Rule Match Error\n %s', rule)
 
             elif rule['type'] == 'string':
-                if rule['match'] == 'single_string':
+                if rule['match'] == Match.single_string:
                     if rule['string1'] in tmp_data:
                         add_findings(findings, rule[
                                      'desc'], file_path, rule)
-                elif rule['match'] == 'string_and':
+                elif rule['match'] == Match.string_and:
                     and_match_str = True
                     match_list = get_list_match_items(rule)
                     for match in match_list:
@@ -348,14 +349,14 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                     if and_match_str:
                         add_findings(findings, rule[
                                      'desc'], file_path, rule)
-                elif rule['match'] == 'string_or':
+                elif rule['match'] == Match.string_or:
                     match_list = get_list_match_items(rule)
                     for match in match_list:
                         if match in tmp_data:
                             add_findings(findings, rule[
                                          'desc'], file_path, rule)
                             break
-                elif rule['match'] == 'string_and_or':
+                elif rule['match'] == Match.string_and_or:
                     match_list = get_list_match_items(rule)
                     string_or_stat = False
                     for match in match_list:
@@ -365,7 +366,7 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                     if string_or_stat and (rule['string1'] in tmp_data):
                         add_findings(findings, rule[
                                      'desc'], file_path, rule)
-                elif rule['match'] == 'string_or_and':
+                elif rule['match'] == Match.string_or_and:
                     match_list = get_list_match_items(rule)
                     string_and_stat = True
                     for match in match_list:
@@ -375,12 +376,12 @@ def code_rule_matcher(findings, perms, data, file_path, code_rules):
                     if string_and_stat or (rule['string1'] in tmp_data):
                         add_findings(findings, rule[
                                      'desc'], file_path, rule)
-                elif rule['match'] == 'string_and_perm':
+                elif rule['match'] == Match.string_and_perm:
                     if (rule['perm'] in perms
                             and rule['string1'] in tmp_data):
                         add_findings(findings, rule[
                                      'desc'], file_path, rule)
-                elif rule['match'] == 'string_or_and_perm':
+                elif rule['match'] == Match.string_or_and_perm:
                     match_list = get_list_match_items(rule)
                     string_or_ps = False
                     for match in match_list:
@@ -424,10 +425,10 @@ def api_rule_matcher(api_findings, perms, data, file_path, api_rules):
 
             # MATCH TYPE
             if api['type'] == 'regex':
-                if api['match'] == 'single_regex':
+                if api['match'] == Match.single_regex:
                     if re.findall(api['regex1'], tmp_data):
                         add_apis(api_findings, api['desc'], file_path)
-                elif api['match'] == 'regex_and':
+                elif api['match'] == Match.regex_and:
                     and_match_rgx = True
                     match_list = get_list_match_items(api)
                     for match in match_list:
@@ -436,13 +437,13 @@ def api_rule_matcher(api_findings, perms, data, file_path, api_rules):
                             break
                     if and_match_rgx:
                         add_apis(api_findings, api['desc'], file_path)
-                elif api['match'] == 'regex_or':
+                elif api['match'] == Match.regex_or:
                     match_list = get_list_match_items(api)
                     for match in match_list:
                         if re.findall(match, tmp_data):
                             add_apis(api_findings, api['desc'], file_path)
                             break
-                elif api['match'] == 'regex_and_perm':
+                elif api['match'] == Match.regex_and_perm:
                     if (api['perm'] in perms
                             and re.findall(api['regex1'], tmp_data)):
                         add_apis(api_findings, api['desc'], file_path)
@@ -450,10 +451,10 @@ def api_rule_matcher(api_findings, perms, data, file_path, api_rules):
                     logger.error('API Regex Rule Match Error\n %s', api)
 
             elif api['type'] == 'string':
-                if api['match'] == 'single_string':
+                if api['match'] == Match.single_string:
                     if api['string1'] in tmp_data:
                         add_apis(api_findings, api['desc'], file_path)
-                elif api['match'] == 'string_and':
+                elif api['match'] == Match.string_and:
                     and_match_str = True
                     match_list = get_list_match_items(api)
                     for match in match_list:
@@ -462,13 +463,13 @@ def api_rule_matcher(api_findings, perms, data, file_path, api_rules):
                             break
                     if and_match_str:
                         add_apis(api_findings, api['desc'], file_path)
-                elif api['match'] == 'string_or':
+                elif api['match'] == Match.string_or:
                     match_list = get_list_match_items(api)
                     for match in match_list:
                         if match in tmp_data:
                             add_apis(api_findings, api['desc'], file_path)
                             break
-                elif api['match'] == 'string_and_or':
+                elif api['match'] == Match.string_and_or:
                     match_list = get_list_match_items(api)
                     string_or_stat = False
                     for match in match_list:
@@ -477,7 +478,7 @@ def api_rule_matcher(api_findings, perms, data, file_path, api_rules):
                             break
                     if string_or_stat and (api['string1'] in tmp_data):
                         add_apis(api_findings, api['desc'], file_path)
-                elif api['match'] == 'string_or_and':
+                elif api['match'] == Match.string_or_and:
                     match_list = get_list_match_items(api)
                     string_and_stat = True
                     for match in match_list:
@@ -486,10 +487,10 @@ def api_rule_matcher(api_findings, perms, data, file_path, api_rules):
                             break
                     if string_and_stat or (api['string1'] in tmp_data):
                         add_apis(api_findings, api['desc'], file_path)
-                elif api['match'] == 'string_and_perm':
+                elif api['match'] == Match.string_and_perm:
                     if (api['perm'] in perms) and (api['string1'] in tmp_data):
                         add_apis(api_findings, api['desc'], file_path)
-                elif api['match'] == 'string_or_and_perm':
+                elif api['match'] == Match.string_or_and_perm:
                     match_list = get_list_match_items(api)
                     string_or_ps = False
                     for match in match_list:
