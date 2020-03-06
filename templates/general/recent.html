@@ -56,7 +56,7 @@
                             <td align="center">
                                 <img id="app_icon" src="/download/{{ e.MD5 }}-icon.png" onerror="this.src='{% static 'img/no_icon.png' %}'">
                                 {% if e.PACKAGE_NAME %}
-                                  <br/><strong>{{ e.APP_NAME }} - {{ e.VERSION_NAME }}</strong>
+                                  <br/><strong>{{ e.APP_NAME }} {% if e.VERSION_NAME %} - {{ e.VERSION_NAME }} {% endif %}</strong>
                                   </br>{{ e.PACKAGE_NAME }}
                                 {% else %}
                                 </br><span class="badge bg-warning">scan not completed</span>
