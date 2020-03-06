@@ -22,11 +22,8 @@ Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82
 MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-release) and [BlackArch](https://blackarch.org/mobile.html)
 
 ## Buy us a Coffee!
-**Your generous donations will keep us motivated.**
 
-*Paypal:* [![Donate via Paypal](https://user-images.githubusercontent.com/4301109/28491754-14774f54-6f14-11e7-9975-8a5faeda7e30.gif)](https://mobsf.github.io/Mobile-Security-Framework-MobSF/paypal.html)
-
-*Bitcoin:* [![Donate Bitcoin](https://user-images.githubusercontent.com/4301109/30631105-cb8063c8-9e00-11e7-95df-43c20b840e52.png)](https://mobsf.github.io/Mobile-Security-Framework-MobSF/donate.html)
+*Donate via Paypal:* [![Donate via Paypal](https://user-images.githubusercontent.com/4301109/28491754-14774f54-6f14-11e7-9975-8a5faeda7e30.gif)](https://mobsf.github.io/Mobile-Security-Framework-MobSF/paypal.html)   *Send Bitcoins:* [![Donate Bitcoin](https://user-images.githubusercontent.com/4301109/30631105-cb8063c8-9e00-11e7-95df-43c20b840e52.png)](https://mobsf.github.io/Mobile-Security-Framework-MobSF/donate.html)
 
 ## Documentation
 [![See MobSF Documentation](https://user-images.githubusercontent.com/4301109/70686099-3855f780-1c79-11ea-8141-899e39459da2.png)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/1.-Documentation)
@@ -36,25 +33,21 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 
 ## Collaborators
 
-* [Ajin Abraham](https://in.linkedin.com/in/ajinabraham) ![india](https://user-images.githubusercontent.com/4301109/37564171-6549d678-2ab6-11e8-9b9d-21327c7f5d5b.png)
-* [Dominik Schlecht](https://github.com/DominikSchlecht) ![germany](https://user-images.githubusercontent.com/4301109/37564176-743238ba-2ab6-11e8-9666-5d98f0a1d127.png)
-* [Magaofei](https://github.com/magaofei) ![china](https://user-images.githubusercontent.com/4301109/44515364-00bbe880-a6e0-11e8-944d-5b48a86427da.png)
-* [Matan Dobrushin](https://github.com/matandobr) ![israel](https://user-images.githubusercontent.com/4301109/37564177-782f1758-2ab6-11e8-91e5-c76bde37b330.png)
-* [Vincent Nadal](https://github.com/superpoussin22) ![france](https://user-images.githubusercontent.com/4301109/37564175-71d6d92c-2ab6-11e8-89d7-d21f5aa0bda8.png)
+[Ajin Abraham](https://in.linkedin.com/in/ajinabraham) ![india](https://user-images.githubusercontent.com/4301109/37564171-6549d678-2ab6-11e8-9b9d-21327c7f5d5b.png) | [Dominik Schlecht](https://github.com/DominikSchlecht) ![germany](https://user-images.githubusercontent.com/4301109/37564176-743238ba-2ab6-11e8-9666-5d98f0a1d127.png) | [Magaofei](https://github.com/magaofei) ![china](https://user-images.githubusercontent.com/4301109/44515364-00bbe880-a6e0-11e8-944d-5b48a86427da.png) | [Matan Dobrushin](https://github.com/matandobr) ![israel](https://user-images.githubusercontent.com/4301109/37564177-782f1758-2ab6-11e8-91e5-c76bde37b330.png) | [Vincent Nadal](https://github.com/superpoussin22) ![france](https://user-images.githubusercontent.com/4301109/37564175-71d6d92c-2ab6-11e8-89d7-d21f5aa0bda8.png)
+
+## e-Learning Courses & Certifications
+* [Automated Mobile Application Security Assessment with MobSF -MAS](https://opsecx.com/index.php/product/automated-mobile-application-security-assessment-with-mobsf/)
+* [Android Security Tools Expert -ATX](https://opsecx.com/index.php/product/android-security-tools-expert-atx/)
+
+## MobSF Support Packages
+* For free limited support, use our Slack Channel: [mobsf.slack.com](https://mobsf.slack.com/join/shared_invite/enQtNzM2NTAyNzA1MjgxLTdjMzkzNDc3ZjdiMjkwZTZhMmFhNDlkZmMwZDhjNDNmYTAzYWE5NGZlMDIzYzliNTdiMDQ2MTRlYjU1MjkyNGM)
+* For enterprise support, priority feature requests and live training, see [MobSF Support Packages](https://mobsf.github.io/Mobile-Security-Framework-MobSF/support.html)
 
 ## Presentations
 * OWASP APPSEC EU 2016 - [Slides](http://www.slideshare.net/ajin25/automated-mobile-application-security-assessment-with-mobsf), [Video](https://www.youtube.com/watch?v=h00v1euuFXg)
 * NULLCON 2016 - [Slides](https://www.slideshare.net/ajin25/nullcon-goa-2016-automated-mobile-application-security-testing-with-mobile-security-framework-mobsf)
 * c0c0n 2015 - [Slides](https://www.slideshare.net/ajin25/automated-security-analysis-of-android-ios-applications-with-mobile-security-framework-c0c0n-2015)
 *  G4H Webcast 2015 - [Video](https://www.youtube.com/watch?v=CysfO6AZmo8)
-
-## e-Learning Courses & Certifications
-* [Automated Mobile Application Security Assessment with MobSF -MAS (Currently being updated)](https://opsecx.com/index.php/product/automated-mobile-application-security-assessment-with-mobsf/)
-* [Android Security Tools Expert -ATX](https://opsecx.com/index.php/product/android-security-tools-expert-atx/)
-
-## MobSF Support Packages
-* For free limited support, use our Slack Channel: [mobsf.slack.com](https://mobsf.slack.com/join/shared_invite/enQtNzM2NTAyNzA1MjgxLTdjMzkzNDc3ZjdiMjkwZTZhMmFhNDlkZmMwZDhjNDNmYTAzYWE5NGZlMDIzYzliNTdiMDQ2MTRlYjU1MjkyNGM)
-* For enterprise support, priority feature requests and live training, see [MobSF Support Packages](https://mobsf.github.io/Mobile-Security-Framework-MobSF/support.html)
 
 ## What's New?
 * [See Changelog](https://mobsf.github.io/Mobile-Security-Framework-MobSF/changelog.html)

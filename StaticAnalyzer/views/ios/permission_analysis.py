@@ -108,5 +108,11 @@ def check_permissions(p_list):
             'description': 'Access the user’s TV provider account.',
             'reason': p_list['NSVideoSubscriberAccountUsageDescription'],
         })
+    if 'NSFaceIDUsageDescription' in p_list:
+        permissions.append({
+            'name': 'NSFaceIDUsageDescription',
+            'description': 'Access the ability to authenticate with Face ID.',
+            'reason': p_list['NSFaceIDUsageDescription'],
+        })
 
     return permissions
