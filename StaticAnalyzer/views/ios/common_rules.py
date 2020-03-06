@@ -84,7 +84,7 @@ COMMON_RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['storage-2'],
+        'owasp-mstg': OWASP_MSTG['storage-14'],
     },
     {
         'desc': ('User input in "loadHTMLString" '
