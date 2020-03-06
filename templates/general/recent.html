@@ -44,6 +44,8 @@
                         <th>App</th>
                         <th>File</th>
                         <th>Type</th>
+                        <th>Package-Name</th>
+                        <th>Version</th>
                         <th>Hash</th>
                         <th>Date</th>
                         <th>View</th>
@@ -64,6 +66,8 @@
                                 {% elif '.appx' == e.NAME|slice:"-5:"%}<i class="fab fa-windows fa-3x"></i>
                                 {% endif %}
                             </td>
+                            <td>{{ e.PACKAGE_NAME }}</td>
+                            <td>{{ e.VERSION_NAME }}</td>
                             <td>{{ e.MD5 }}</td>
                             <td>{{ e.TS }}</td>
                             <td><p><a class="btn btn-primary" href="../{{ e.URL }}"><i class="fas fa-eye"></i> Static Report</a>
