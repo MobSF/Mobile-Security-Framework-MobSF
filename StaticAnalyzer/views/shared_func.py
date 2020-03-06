@@ -41,6 +41,7 @@ from StaticAnalyzer.views.ios.db_interaction import (
 from StaticAnalyzer.views.windows.db_interaction import (
     get_context_from_db_entry as wdb)
 from StaticAnalyzer.views.rules_properties import (
+    Level,
     Match,
     MatchType,
 )
@@ -287,7 +288,7 @@ def add_findings(findings, desc, file_path, rule):
             findings[desc]['path'] = tmp_list
     else:
         findings[desc] = {'path': [escape(file_path)],
-                          'level': rule['level'],
+                          'level': rule['level'].value,
                           'cvss': rule['cvss'],
                           'cwe': rule['cwe'],
                           'owasp': rule['owasp']}
@@ -568,22 +569,22 @@ def score(findings):
             if 'cvss' in finding:
                 if finding['cvss'] != 0:
                     cvss_scores.append(finding['cvss'])
-            if finding['level'] == 'high':
+            if finding['level'] == Level.high:
                 app_score = app_score - 15
-            elif finding['level'] == 'warning':
+            elif finding['level'] == Level.warning:
                 app_score = app_score - 10
-            elif finding['level'] == 'good':
+            elif finding['level'] == Level.good:
                 app_score = app_score + 5
     else:
         for _, finding in findings.items():
             if 'cvss' in finding:
                 if finding['cvss'] != 0:
                     cvss_scores.append(finding['cvss'])
-            if finding['level'] == 'high':
+            if finding['level'] == Level.high:
                 app_score = app_score - 15
-            elif finding['level'] == 'warning':
+            elif finding['level'] == Level.warning:
                 app_score = app_score - 10
-            elif finding['level'] == 'good':
+            elif finding['level'] == Level.good:
                 app_score = app_score + 5
     if cvss_scores:
         avg_cvss = round(sum(cvss_scores) / len(cvss_scores), 1)
