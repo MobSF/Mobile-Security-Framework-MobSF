@@ -361,4 +361,17 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'owasp': '',
         'owasp-mstg': 'MSTG-STORAGE-8',
     },
+    {
+        'desc': ('JavaScript should be disabled in WebViews unless '
+                 'explicitly required.'),
+        'type': 'string',
+        'string1': 'WKWebView',
+        'level': 'info',
+        'match': 'single_string',
+        'input_case': 'exact',
+        'cvss': 0.0,
+        'cwe': '',
+        'owasp': '',
+        'owasp-mstg': 'MSTG-PLATFORM-5',
+    },
 ]
