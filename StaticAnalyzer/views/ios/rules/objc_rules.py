@@ -1,4 +1,6 @@
 """
+This file contains Objective-C security rules used in source code analysis.
+
 Rule Format.
 
 1. desc - Description of the findings
@@ -40,7 +42,7 @@ from StaticAnalyzer.views.standards import (
     OWASP,
     OWASP_MSTG,
 )
-from StaticAnalyzer.views.ios import common_rules
+from StaticAnalyzer.views.ios.rules import common_rules
 from StaticAnalyzer.views.rules_properties import (
     InputCase,
     Level,

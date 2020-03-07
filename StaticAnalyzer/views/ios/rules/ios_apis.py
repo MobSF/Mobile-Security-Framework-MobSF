@@ -1,4 +1,6 @@
 """
+This files contains rules that detects usage of API.
+
 Rule Format.
 
 1. desc - Description of the findings
