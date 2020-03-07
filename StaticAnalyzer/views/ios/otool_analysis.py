@@ -39,6 +39,7 @@ def get_otool_out(tools_dir, cmd_type, bin_path, bin_dir):
     if cmd_type == 'libs':
         if plat == 'Darwin':
             args = [otool_bin, '-L', bin_path]
+            args2 = args
         elif plat == 'Linux':
             args = [jtool_bin, '-arch', 'arm', '-L', '-v', bin_path]
             args2 = [jtool2_bin, '-L', '-v', '-q', bin_path]
@@ -48,14 +49,13 @@ def get_otool_out(tools_dir, cmd_type, bin_path, bin_dir):
         try:
             libs = subprocess.check_output(args2).decode('utf-8', 'ignore')
         except Exception:
-            logger.warning('extract libraries: jvtool2 failed,'
-                           ' switching back to jtoolv1')
             libs = subprocess.check_output(args).decode('utf-8', 'ignore')
         libs = smart_text(escape(libs.replace(bin_dir + '/', '')))
         return libs.split('\n')
     elif cmd_type == 'header':
         if plat == 'Darwin':
             args = [otool_bin, '-hv', bin_path]
+            args2 = args
         elif plat == 'Linux':
             args = [jtool_bin, '-arch', 'arm', '-h', '-v', bin_path]
             args2 = [jtool2_bin, '-h', '-v', '-q', bin_path]
@@ -65,23 +65,20 @@ def get_otool_out(tools_dir, cmd_type, bin_path, bin_dir):
         try:
             return subprocess.check_output(args2)
         except Exception:
-            logger.warning('extract header: jtoolv2 failed,'
-                           ' switching back to jtoolv1')
             return subprocess.check_output(args)
     elif cmd_type == 'symbols':
         if plat == 'Darwin':
             args = [otool_bin, '-Iv', bin_path]
+            args2 = args
             return subprocess.check_output(args)
         elif plat == 'Linux':
-            arg1 = [jtool_bin, '-arch', 'arm', '-S', bin_path]
+            args = [jtool_bin, '-arch', 'arm', '-S', bin_path]
             arg2 = [jtool2_bin, '-S', bin_path]
             try:
                 with open(os.devnull, 'w') as devnull:
                     return subprocess.check_output(arg2, stderr=devnull)
             except Exception:
-                logger.warning('extract symbols: jtoolv2 failed,'
-                               ' switching back to jtoolv1')
-                return subprocess.check_output(arg1)
+                return subprocess.check_output(args)
         else:
             # Platform Not Supported
             return None
