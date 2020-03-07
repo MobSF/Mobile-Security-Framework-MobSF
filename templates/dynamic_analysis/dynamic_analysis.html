@@ -297,7 +297,7 @@ div.loading{
                         <tr>
                             <td align="center">
                               <img id="app_icon" src="{% if e.ICON_FOUND %}/download/{{ e.MD5 }}-icon.png{% else %}{% static 'img/no_icon.png' %}{% endif %}"/>
-                              <br/><strong>{{ e.APP_NAME }}</strong>
+                              <br/><strong>{{ e.APP_NAME }} - {{ e.VERSION_NAME }}</strong>
                             </td>
                             <td>
                                 {{ e.FILE_NAME }}
