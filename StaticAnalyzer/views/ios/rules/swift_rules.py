@@ -46,7 +46,7 @@ from StaticAnalyzer.views.rules_properties import (
     Match,
     MatchType,
 )
-from StaticAnalyzer.views.ios import common_rules
+from StaticAnalyzer.views.ios.rules import common_rules
 
 SWIFT_RULES = common_rules.COMMON_RULES + [
     {

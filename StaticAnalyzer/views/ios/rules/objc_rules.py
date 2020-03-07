@@ -40,7 +40,7 @@ from StaticAnalyzer.views.standards import (
     OWASP,
     OWASP_MSTG,
 )
-from StaticAnalyzer.views.ios import common_rules
+from StaticAnalyzer.views.ios.rules import common_rules
 from StaticAnalyzer.views.rules_properties import (
     InputCase,
     Level,
