@@ -1,4 +1,6 @@
 """
+This file contains Swift security rules used in source code analysis.
+
 Rule Format.
 
 1. desc - Description of the findings
