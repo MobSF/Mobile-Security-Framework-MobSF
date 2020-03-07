@@ -326,10 +326,10 @@ def autostart():
     autostart_file = open(batch_file, 'wb')
 
     # Define bat-text
-    text = '''
+    text = """
     @echo off
     python "{}" %*
-    pause'''.format(mobsf_subdir_tools + rpc_file)
+    pause""".format(mobsf_subdir_tools + rpc_file)
     autostart_file.write(bytes(text, 'utf8'))
 
     # Close handle
