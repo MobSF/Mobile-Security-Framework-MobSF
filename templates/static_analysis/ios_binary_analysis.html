@@ -566,9 +566,7 @@
                       <tr>
                           <th>ISSUE</th>
                           <th>SEVERITY</th>
-                          <th>CVSS</th>
-                          <th>CWE</th>
-                          <th>OWASP</th>
+                          <th>STANDARDS</th>
                           <th>DESCRIPTION</th>
 
                       </tr>
@@ -590,9 +588,22 @@
                           <span class='badge bg-warning'>{{bin.level}}</span>
                         {% endif %}
                       </td>
-                      <td><strong>{{bin.cvss}}</strong></td>
-                      <td><strong>{{bin.cwe}}</strong></td>
-                      <td><strong>{{bin.owasp}}</strong></td>
+                      <td>
+                        <strong>CVSS V2:</strong>
+                        {{ bin.cvss }}
+                        {% if bin.cvss > 6 %}
+                          (high)
+                        {% elif bin.cvss == 0 %}
+                          (info)
+                        {% elif bin.cvss >= 4 %}
+                          (medium)
+                        {% elif bin.cvss < 4 %}
+                          (low)
+                        {% endif %}
+                        {% if bin.cwe %}</br> <strong>CWE: </strong>{{ bin.cwe }}{% endif %}
+                        {% if bin.owasp %}</br> <strong>OWASP Top 10: </strong>{{ bin.owasp }}{% endif %}
+                        {% if bin|key:"owasp-mstg" %}</br> <strong>OWASP MASVS: </strong>{{ bin|key:"owasp-mstg" }}{% endif %}
+                      </td>
                       <td>
                         {{ bin.description}}
                       </td>

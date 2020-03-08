@@ -42,7 +42,11 @@ Rule Format.
    c. perm - Permission
 
 """
-
+from StaticAnalyzer.views.standards import (
+    CWE,
+    OWASP,
+    OWASP_MSTG,
+)
 from StaticAnalyzer.views.rules_properties import (
     InputCase,
     Level,
@@ -64,8 +68,9 @@ RULES = [
         'match': Match.single_regex,
         'input_case': InputCase.lower,
         'cvss': 7.4,
-        'cwe': 'CWE-312',
-        'owasp': 'M9: Reverse Engineering',
+        'cwe': CWE['CWE-312'],
+        'owasp': OWASP['m9'],
+        'owasp-mstg': OWASP_MSTG['storage-14'],
     },
     {
         'desc': 'IP Address disclosure',
@@ -75,8 +80,9 @@ RULES = [
         'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 4.3,
-        'cwe': 'CWE-200',
+        'cwe': CWE['CWE-200'],
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['code-2'],
     },
     {
         'desc': ('Hidden elements in view can be used to hide'
@@ -88,8 +94,9 @@ RULES = [
         'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 4.3,
-        'cwe': 'CWE-919',
-        'owasp': 'M1: Improper Platform Usage',
+        'cwe': CWE['CWE-919'],
+        'owasp': OWASP['m1'],
+        'owasp-mstg': OWASP_MSTG['storage-7'],
     },
     {
         'desc': ('The App uses ECB mode in Cryptographic encryption algorithm.'
@@ -101,8 +108,9 @@ RULES = [
         'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 5.9,
-        'cwe': 'CWE-327',
-        'owasp': 'M5: Insufficient Cryptography',
+        'cwe': CWE['CWE-327'],
+        'owasp': OWASP['m5'],
+        'owasp-mstg': OWASP_MSTG['crypto-2'],
     },
     {
         'desc': ('This App uses RSA Crypto without OAEP padding. The purpose'
@@ -115,8 +123,9 @@ RULES = [
         'match': Match.single_regex,
         'input_case': InputCase.lower,
         'cvss': 5.9,
-        'cwe': 'CWE-780',
-        'owasp': 'M5: Insufficient Cryptography',
+        'cwe': CWE['CWE-780'],
+        'owasp': OWASP['m5'],
+        'owasp-mstg': OWASP_MSTG['crypto-3'],
     },
     {
         'desc': ('Insecure Implementation of SSL. Trusting all the '
@@ -135,8 +144,9 @@ RULES = [
         'match': Match.regex_and,
         'input_case': InputCase.exact,
         'cvss': 7.4,
-        'cwe': 'CWE-295',
-        'owasp': 'M3: Insecure Communication',
+        'cwe': CWE['CWE-295'],
+        'owasp': OWASP['m3'],
+        'owasp-mstg': OWASP_MSTG['network-3'],
     },
     {
         'desc': ('WebView load files from external storage. Files in external'
@@ -148,8 +158,9 @@ RULES = [
         'match': Match.regex_and,
         'input_case': InputCase.exact,
         'cvss': 5.0,
-        'cwe': 'CWE-919',
-        'owasp': 'M1: Improper Platform Usage',
+        'cwe': CWE['CWE-919'],
+        'owasp': OWASP['m1'],
+        'owasp-mstg': OWASP_MSTG['platform-6'],
     },
     {
         'desc': 'The file is World Readable. Any App can read from the file',
@@ -160,9 +171,9 @@ RULES = [
         'match': Match.regex_or,
         'input_case': InputCase.exact,
         'cvss': 4.0,
-        'cwe': 'CWE-276',
-        'owasp': 'M2: Insecure Data Storage',
-
+        'cwe': CWE['CWE-276'],
+        'owasp': OWASP['m2'],
+        'owasp-mstg': OWASP_MSTG['storage-2'],
     },
     {
         'desc': 'The file is World Writable. Any App can write to the file',
@@ -173,8 +184,9 @@ RULES = [
         'match': Match.regex_or,
         'input_case': InputCase.exact,
         'cvss': 6.0,
-        'cwe': 'CWE-276',
-        'owasp': 'M2: Insecure Data Storage',
+        'cwe': CWE['CWE-276'],
+        'owasp': OWASP['m2'],
+        'owasp-mstg': OWASP_MSTG['storage-2'],
     },
     {
         'desc': ('The file is World Readable and Writable. '
@@ -185,8 +197,9 @@ RULES = [
         'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 6.0,
-        'cwe': 'CWE-276',
-        'owasp': 'M2: Insecure Data Storage',
+        'cwe': CWE['CWE-276'],
+        'owasp': OWASP['m2'],
+        'owasp-mstg': OWASP_MSTG['storage-2'],
     },
     {
         'desc': 'Weak Hash algorithm used',
@@ -198,8 +211,9 @@ RULES = [
         'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 7.4,
-        'cwe': 'CWE-327',
-        'owasp': 'M5: Insufficient Cryptography',
+        'cwe': CWE['CWE-327'],
+        'owasp': OWASP['m5'],
+        'owasp-mstg': OWASP_MSTG['crypto-4'],
     },
     {
         'desc': 'MD5 is a weak hash known to have hash collisions.',
@@ -211,8 +225,9 @@ RULES = [
         'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 7.4,
-        'cwe': 'CWE-327',
-        'owasp': 'M5: Insufficient Cryptography',
+        'cwe': CWE['CWE-327'],
+        'owasp': OWASP['m5'],
+        'owasp-mstg': OWASP_MSTG['crypto-4'],
     },
     {
         'desc': 'SHA-1 is a weak hash known to have hash collisions.',
@@ -224,8 +239,9 @@ RULES = [
         'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 5.9,
-        'cwe': 'CWE-327',
-        'owasp': 'M5: Insufficient Cryptography',
+        'cwe': CWE['CWE-327'],
+        'owasp': OWASP['m5'],
+        'owasp-mstg': OWASP_MSTG['crypto-4'],
     },
     {
         'desc': ('App can write to App Directory. '
@@ -236,7 +252,7 @@ RULES = [
         'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 3.9,
-        'cwe': 'CWE-276',
+        'cwe': CWE['CWE-276'],
         'owasp': '',
     },
     {
@@ -247,8 +263,9 @@ RULES = [
         'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 7.5,
-        'cwe': 'CWE-330',
-        'owasp': 'M5: Insufficient Cryptography',
+        'cwe': CWE['CWE-330'],
+        'owasp': OWASP['m5'],
+        'owasp-mstg': OWASP_MSTG['crypto-6'],
     },
     {
         'desc': ('The App logs information. '
@@ -260,8 +277,9 @@ RULES = [
         'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 7.5,
-        'cwe': 'CWE-532',
+        'cwe': CWE['CWE-532'],
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['storage-3'],
     },
     {
         'desc': ('This App uses Java Hash Code. It\'s a weak hash function and'
@@ -272,8 +290,9 @@ RULES = [
         'match': Match.single_string,
         'input_case': InputCase.exact,
         'cvss': 2.3,
-        'cwe': 'CWE-327',
+        'cwe': CWE['CWE-327'],
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['crypto-4'],
     },
     {
         'desc': ('These activities prevent '
@@ -286,6 +305,7 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['storage-9'],
     },
     {
         'desc': 'This App uses SQL Cipher. But the secret may be hardcoded.',
@@ -297,6 +317,7 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['crypto-1'],
     },
     {
         'desc': 'This app has capabilities to prevent tapjacking attacks.',
@@ -308,6 +329,7 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['platform-9'],
     },
     {
         'desc': ('App can read/write to External Storage. '
@@ -320,8 +342,9 @@ RULES = [
         'match': Match.string_or_and_perm,
         'input_case': InputCase.exact,
         'cvss': 5.5,
-        'cwe': 'CWE-276',
-        'owasp': 'M2: Insecure Data Storage',
+        'cwe': CWE['CWE-276'],
+        'owasp': OWASP['m2'],
+        'owasp-mstg': OWASP_MSTG['storage-2'],
     },
     {
         'desc': ('App creates temp file. Sensitive '
@@ -333,8 +356,9 @@ RULES = [
         'match': Match.string_and_perm,
         'input_case': InputCase.exact,
         'cvss': 5.5,
-        'cwe': 'CWE-276',
-        'owasp': 'M2: Insecure Data Storage',
+        'cwe': CWE['CWE-276'],
+        'owasp': OWASP['m2'],
+        'owasp-mstg': OWASP_MSTG['storage-2'],
     },
     {
         'desc': ('Insecure WebView Implementation. Execution of user'
@@ -346,8 +370,9 @@ RULES = [
         'match': Match.string_and,
         'input_case': InputCase.exact,
         'cvss': 8.8,
-        'cwe': 'CWE-749',
-        'owasp': 'M1: Improper Platform Usage',
+        'cwe': CWE['CWE-749'],
+        'owasp': OWASP['m1'],
+        'owasp-mstg': OWASP_MSTG['platform-7'],
     },
     {
         'desc': ('This App uses SQL Cipher. SQLCipher '
@@ -361,6 +386,7 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['crypto-1'],
     },
     {
         'desc': 'This App download files using Android Download Manager',
@@ -373,6 +399,7 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+        'owasp-mstg': '',
     },
     {
         'desc': 'This App use Realm Database with encryption.',
@@ -385,6 +412,7 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['crypto-1'],
     },
     {
         'desc': ('The App may use weak IVs like '
@@ -400,8 +428,9 @@ RULES = [
         'match': Match.string_or,
         'input_case': InputCase.exact,
         'cvss': 9.8,
-        'cwe': 'CWE-329',
-        'owasp': 'M5: Insufficient Cryptography',
+        'cwe': CWE['CWE-329'],
+        'owasp': OWASP['m5'],
+        'owasp-mstg': OWASP_MSTG['crypto-3'],
     },
     {
         'desc': 'Remote WebView debugging is enabled.',
@@ -412,8 +441,9 @@ RULES = [
         'match': Match.string_and,
         'input_case': InputCase.exact,
         'cvss': 5.4,
-        'cwe': 'CWE-919',
-        'owasp': 'M1: Improper Platform Usage',
+        'cwe': CWE['CWE-919'],
+        'owasp': OWASP['m1'],
+        'owasp-mstg': OWASP_MSTG['resilience-2'],
     },
     {
         'desc': ('This app listens to Clipboard changes.'
@@ -427,6 +457,7 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['platform-4'],
     },
     {
         'desc': ('This App copies data to clipboard. Sensitive data should'
@@ -441,6 +472,7 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['storage-10'],
     },
     {
         'desc': ('Insecure WebView Implementation. WebView ignores SSL'
@@ -453,8 +485,9 @@ RULES = [
         'match': Match.string_and,
         'input_case': InputCase.exact,
         'cvss': 7.4,
-        'cwe': 'CWE-295',
-        'owasp': 'M3: Insecure Communication',
+        'cwe': CWE['CWE-295'],
+        'owasp': OWASP['m3'],
+        'owasp-mstg': OWASP_MSTG['network-3'],
     },
     {
         'desc': ('App uses SQLite Database and execute raw SQL query. '
@@ -469,8 +502,9 @@ RULES = [
         'match': Match.string_and_or,
         'input_case': InputCase.exact,
         'cvss': 5.9,
-        'cwe': 'CWE-89',
-        'owasp': 'M7: Client Code Quality',
+        'cwe': CWE['CWE-89'],
+        'owasp': OWASP['m7'],
+        'owasp-mstg': '',
     },
     {
         'desc': 'This App detects frida server.',
@@ -485,6 +519,7 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['resilience-4'],
     },
     {
         'desc': ('This App uses an SSL Pinning Library '
@@ -502,6 +537,7 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['network-4'],
     },
     {
         'desc': ('This App has capabilities to prevent against'
@@ -516,10 +552,11 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['storage-9'],
     },
     {
         'desc': ('DexGuard Debug Detection code to detect'
-                 ' wheather an App is debuggable or not is identified.'),
+                 ' whether an App is debuggable or not is identified.'),
         'type': MatchType.string,
         'string1': 'import dexguard.util',
         'string2': 'DebugDetector.isDebuggable',
@@ -529,6 +566,7 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['resilience-2'],
     },
     {
         'desc': 'DexGuard Debugger Detection code is identified.',
@@ -541,6 +579,7 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['resilience-2'],
     },
     {
         'desc': 'DexGuard Emulator Detection code is identified.',
@@ -553,9 +592,10 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['resilience-5'],
     },
     {
-        'desc': ('DexGuard code to detect wheather the App'
+        'desc': ('DexGuard code to detect whether the App'
                  ' is signed with a debug key or not is identified.'),
         'type': MatchType.string,
         'string1': 'import dexguard.util',
@@ -566,6 +606,7 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['code-2'],
     },
     {
         'desc': 'DexGuard Root Detection code is identified.',
@@ -578,6 +619,7 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['resilience-1'],
     },
     {
         'desc': 'DexGuard App Tamper Detection code is identified.',
@@ -590,6 +632,7 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['resilience-3'],
     },
     {
         'desc': ('DexGuard Signer Certificate'
@@ -603,6 +646,7 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['resilience-3'],
     },
     {
         'desc': 'The App may use package signature for tamper detection.',
@@ -615,6 +659,7 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['resilience-3'],
     },
     {
         'desc': 'This App uses SafetyNet API.',
@@ -626,6 +671,7 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['resilience-7'],
     },
     {
         'desc': 'This App may request root (Super User) privileges.',
@@ -639,8 +685,9 @@ RULES = [
         'match': Match.string_or,
         'input_case': InputCase.exact,
         'cvss': 0,
-        'cwe': 'CWE-250',
+        'cwe': CWE['CWE-250'],
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['resilience-1'],
     },
     {
         'desc': 'This App may have root detection capabilities.',
@@ -658,6 +705,7 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['resilience-1'],
     },
     {
         'desc': ('The app uses jackson deserialization library'
@@ -670,6 +718,7 @@ RULES = [
         'match': Match.string_and,
         'input_case': InputCase.exact,
         'cvss': 7.5,
-        'cwe': 'CWE-502',
-        'owasp': 'M7: Client Code Quality',
+        'cwe': CWE['CWE-502'],
+        'owasp': OWASP['m7'],
+        'owasp-mstg': OWASP_MSTG['platform-8'],
     }]

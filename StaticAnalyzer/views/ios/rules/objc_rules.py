@@ -265,7 +265,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'owasp-mstg': OWASP_MSTG['crypto-3'],
     },
     {
-        'desc': 'The App has ant-debugger code using ptrace() ',
+        'desc': 'The App has anti-debugger code using ptrace() ',
         'type': MatchType.string,
         'string1': 'ptrace_ptr',
         'string2': 'PT_DENY_ATTACH',

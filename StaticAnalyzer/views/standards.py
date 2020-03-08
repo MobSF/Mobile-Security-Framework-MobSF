@@ -116,14 +116,31 @@ OWASP_MSTG = {
 # Common Weakness Enumeration (CWE)
 # https://cwe.mitre.org/data/index.html
 CWE = {
-    'CWE-200': 'CWE-200',
-    'CWE-312': 'CWE-312',
-    'CWE-95': 'CWE-95',
-    'CWE-676': 'CWE-676',
-    'CWE-295': 'CWE-295',
-    'CWE-532': 'CWE-532',
-    'CWE-22': 'CWE-22',
-    'CWE-311': 'CWE-311',
-    'CWE-327': 'CWE-327',
-    'CWE-939': 'CWE-939',
+    'CWE-22': ('CWE-22 - Improper Limitation of a Pathname'
+               ' to a Restricted Directory (\'Path Traversal\')'),
+    'CWE-89': ('CWE-89 - Improper Neutralization of Special '
+               'Elements used in an SQL Command (\'SQL Injection\')'),
+    'CWE-95': ('CWE-95 - Improper Neutralization of Directives'
+               ' in Dynamically Evaluated Code (\'Eval Injection\')'),
+    'CWE-119': ('CWE-119 - Improper Restriction of Operations '
+                'within the Bounds of a Memory Buffer'),
+    'CWE-200': ('CWE-200 - Exposure of Sensitive Information'
+                ' to an Unauthorized Actor'),
+    'CWE-250': 'CWE-250 - Execution with Unnecessary Privileges',
+    'CWE-276': 'CWE-276 - Incorrect Default Permissions',
+    'CWE-295': 'CWE-295 - Improper Certificate Validation',
+    'CWE-311': 'CWE-311 - Missing Encryption of Sensitive Data',
+    'CWE-312': 'CWE-312 - Cleartext Storage of Sensitive Information',
+    'CWE-327': 'CWE-327 - Use of a Broken or Risky Cryptographic Algorithm',
+    'CWE-329': 'CWE-329 - Not Using a Random IV with CBC Mode',
+    'CWE-330': 'CWE-330 - Use of Insufficiently Random Values',
+    'CWE-502': 'CWE-502 - Deserialization of Untrusted Data',
+    'CWE-532': 'CWE-532 - Insertion of Sensitive Information into Log File',
+    'CWE-676': 'CWE-676 - Use of Potentially Dangerous Function',
+    'CWE-749': 'CWE-749 - Exposed Dangerous Method or Function',
+    'CWE-780': 'CWE-780 - Use of RSA Algorithm without OAEP',
+    'CWE-789': 'CWE-789 - Uncontrolled Memory Allocation',
+    'CWE-919': 'CWE-919 - Weaknesses in Mobile Applications',
+    'CWE-939': ('CWE-939 - Improper Authorization in Handler for'
+                ' Custom URL Scheme'),
 }

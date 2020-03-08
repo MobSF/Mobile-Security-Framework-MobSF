@@ -6,10 +6,15 @@ from enum import Enum
 
 from MalwareAnalyzer.views.domain_check import malware_check
 
-from StaticAnalyzer.views.ios.rules import ios_apis, objc_rules, swift_rules
-from StaticAnalyzer.views.shared_func import (api_rule_matcher,
-                                              code_rule_matcher,
-                                              url_n_email_extract)
+from StaticAnalyzer.views.ios.rules import (
+    ios_apis, objc_rules,
+    swift_rules,
+)
+from StaticAnalyzer.views.shared_func import (
+    api_rule_matcher,
+    code_rule_matcher,
+    url_n_email_extract,
+)
 
 logger = logging.getLogger(__name__)
 

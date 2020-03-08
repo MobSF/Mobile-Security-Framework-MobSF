@@ -83,6 +83,7 @@ def class_dump(tools_dir, bin_path, app_dir, bin_type):
                        'cvss': 0,
                        'cwe': '',
                        'owasp': '',
+                       'owasp-mstg': '',
                        }
         return webview
     except Exception:
