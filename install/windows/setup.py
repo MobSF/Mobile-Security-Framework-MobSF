@@ -37,8 +37,8 @@ CONFIG_FILE = 'config.txt'
 
 # Static path to autostart
 AUTOSTART = (
-    'C:\\Users\\{}\\AppData\\Roaming\\Microsoft\\'
-    'Windows\\Start Menu\\Programs\\Startup\\'.format(os.getenv('username'))
+    expanduser('~') + '\\AppData\\Roaming\\Microsoft\\'
+    'Windows\\Start Menu\\Programs\\Startup\\'
 )
 
 # Global var so we don't have to pass it every time..
@@ -315,6 +315,8 @@ def generate_secret():
 
 def autostart():
     """Create the autostart binary and run it."""
+    mobsf_subdir_tools = CONFIG['MobSF']['tools']
+    rpc_file = CONFIG['rpc']['file']
     autostart_file = CONFIG['autostart']['file']
     batch_file = AUTOSTART + autostart_file
 
@@ -326,8 +328,8 @@ def autostart():
     # Define bat-text
     text = """
     @echo off
-    python {} %*
-    pause""".format(""" + mobsf_subdir_tools + rpc_file + """)
+    python "{}" %*
+    pause""".format(mobsf_subdir_tools + rpc_file)
     autostart_file.write(bytes(text, 'utf8'))
 
     # Close handle
@@ -336,7 +338,7 @@ def autostart():
     print('[*] Done. Start the server.')
 
     # Execute. Beware the ' ' because of windows strange paths..
-    os.system(""" + batch_file + """)
+    os.system('"{}"'.format(batch_file))
 
 
 def _place_lockfile(mobsf_home):

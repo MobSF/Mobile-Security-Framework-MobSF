@@ -118,8 +118,8 @@ def save_or_update(update_type,
         logger.exception('Updating DB')
     try:
         values = {
-            'MD5': app_dic['md5'],
-            'PACKAGE_NAME': bin_an_dic['bin_name'],
+            'APP_NAME': bin_an_dic['bin_name'],
+            'PACKAGE_NAME': xml_dic['pub_name'],
             'VERSION_NAME': xml_dic['version'],
         }
         RecentScansDB.objects.filter(
