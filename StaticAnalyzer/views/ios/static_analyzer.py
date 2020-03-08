@@ -69,7 +69,7 @@ def static_analyzer_ios(request, api=False):
             app_dict['app_dir'] = os.path.join(
                 settings.UPLD_DIR, app_dict['md5_hash'] + '/')  # APP DIRECTORY
             tools_dir = os.path.join(
-                app_dict['directory'], 'StaticAnalyzer/tools/mac/')
+                app_dict['directory'], 'StaticAnalyzer/tools/ios/')
             if file_type == 'ipa':
                 # DB
                 ipa_db = StaticAnalyzerIOS.objects.filter(
