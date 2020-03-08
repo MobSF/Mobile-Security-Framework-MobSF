@@ -4,6 +4,7 @@
 import logging
 import os
 import platform
+import stat
 import subprocess
 
 from django.conf import settings
@@ -14,7 +15,10 @@ from macholib.MachO import MachO
 
 from MobSF.utils import is_file_exists
 
-from StaticAnalyzer.views.ios.otool_analysis import otool_analysis
+from StaticAnalyzer.views.ios.otool_analysis import (
+    get_otool_out,
+    otool_analysis,
+)
 from StaticAnalyzer.tools.strings import strings_util
 
 logger = logging.getLogger(__name__)
@@ -50,23 +54,22 @@ def class_dump(tools_dir, bin_path, app_dir, bin_type):
                     class_dump_bin = settings.CLASSDUMP_BINARY
                 else:
                     class_dump_bin = os.path.join(tools_dir, 'class-dump')
-            os.chmod(class_dump_bin, 0o744)
+            # Execute permission check
+            if not os.access(class_dump_bin, os.X_OK):
+                os.chmod(class_dump_bin, stat.S_IEXEC)
             args = [class_dump_bin, bin_path]
         elif platform.system() == 'Linux':
             logger.info('Running jtool against the binary for dumping classes')
-            if (len(settings.JTOOL_BINARY) > 0
-                    and is_file_exists(settings.JTOOL_BINARY)):
-                jtool_bin = settings.JTOOL_BINARY
-            else:
-                jtool_bin = os.path.join(tools_dir, 'jtool.ELF64')
-            os.chmod(jtool_bin, 0o744)
-            args = [jtool_bin, '-arch', 'arm', '-d', 'objc', '-v', bin_path]
+            args = get_otool_out(tools_dir, 'classdump', bin_path, '')
         else:
             # Platform not supported
             logger.warning('class-dump is not supported in this platform')
             return {}
         with open(os.devnull, 'w') as devnull:
-            classdump = subprocess.check_output(args, stderr=devnull)
+            # timeout to handle possible deadlock from jtool1
+            classdump = subprocess.check_output(args,
+                                                stderr=devnull,
+                                                timeout=30)
         if b'Source: (null)' in classdump and platform.system() == 'Darwin':
             logger.info('Running fail safe class-dump-swift')
             class_dump_bin = os.path.join(
