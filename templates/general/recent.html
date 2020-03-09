@@ -80,8 +80,8 @@
                                 <p><a class="btn btn-success" href="../dynamic_report/?hash={{ e.MD5  }}&amp;package={{e.PACKAGE}}"><i class="fa fa-mobile"></i> Dynamic Report</a> 
                                 </p><p><a class="diffButton btn btn-warning" id="{{ e.MD5 }}_{{ e.FILE_NAME }}"><i class="fas fa-not-equal"></i> Diff or Compare</a>
                                 </p>
-                                 <p> <a class="btn btn-danger" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="#"><i class="fa fa-trash"></i> Delete Scan</a> </p>
                             {% endif %}
+                            <p> <a class="btn btn-danger" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="#"><i class="fa fa-trash"></i> Delete Scan</a> </p>
                             </td>
                         </tr>
                     {% endfor %}

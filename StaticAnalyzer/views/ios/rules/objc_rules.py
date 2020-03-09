@@ -1,4 +1,6 @@
 """
+This file contains Objective-C security rules used in source code analysis.
+
 Rule Format.
 
 1. desc - Description of the findings
@@ -40,7 +42,7 @@ from StaticAnalyzer.views.standards import (
     OWASP,
     OWASP_MSTG,
 )
-from StaticAnalyzer.views.ios import common_rules
+from StaticAnalyzer.views.ios.rules import common_rules
 from StaticAnalyzer.views.rules_properties import (
     InputCase,
     Level,
@@ -263,7 +265,7 @@ OBJC_RULES = common_rules.COMMON_RULES + [
         'owasp-mstg': OWASP_MSTG['crypto-3'],
     },
     {
-        'desc': 'The App has ant-debugger code using ptrace() ',
+        'desc': 'The App has anti-debugger code using ptrace() ',
         'type': MatchType.string,
         'string1': 'ptrace_ptr',
         'string2': 'PT_DENY_ATTACH',

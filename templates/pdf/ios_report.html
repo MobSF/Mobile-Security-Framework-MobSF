@@ -315,47 +315,45 @@
                       <tr>
                           <th>ISSUE</th>
                           <th>SEVERITY</th>
-                          <th>CVSS</th>
-                          <th>CWE</th>
-                          <th>OWASP</th>
+                          <th>STANDARDS</th>
                           <th>DESCRIPTION</th>
 
                       </tr>
                   </thead>
                      <tbody>
-                   {% for bin in binary_analysis %}
+                   {% for issue, details in binary_analysis.items %}
                     <tr>
                       <td>
-                        {{ bin.issue }}
+                        {{ issue }}
                       </td>
                       <td>
-                        {% if bin.level == 'info' %}
-                          <span class='info'>{{bin.level}}</span>
-                        {% elif bin.level == 'good' %}
-                          <span class='success'>{{bin.level}}</span>
-                        {% elif bin.level == 'high' %}
-                          <span class='danger'>{{bin.level}}</span>
-                        {% elif bin.level == 'warning' %}
-                          <span class='warning'>{{bin.level}}</span>
+                        {% if details|key:"level" == 'info' %}
+                          <span class='info'>info</span>
+                        {% elif details|key:"level" == 'good' %}
+                          <span class='success'>secure</span>
+                        {% elif details|key:"level" == 'high' %}
+                          <span class='danger'>high</span>
+                        {% elif details|key:"level" == 'warning' %}
+                          <span class='warning'>warning</span>
                         {% endif %}
                       </td>
-                      <td><strong>
-                       {% if bin.cvss > 6 %}
-                        <span class="danger">{{ bin.cvss }}</br> high</span>
-                        {% elif bin.cvss == 0 %}
-                        <span class="info">{{ bin.cvss }}</br>  info</span>
-                        {% elif bin.cvss >= 4 %}
-                        <span class="warning">{{ bin.cvss }}</br>  medium</span>
-                        {% elif bin.cvss < 4 %}
-                        <span class="success">{{ bin.cvss }}</br>  low</span>
-                        </strong>
-                     {% endif %}
-                      
-                      </strong></td>
-                      <td><strong>{{bin.cwe}}</strong></td>
-                      <td><strong>{{bin.owasp}}</strong></td>
                       <td>
-                        {{ bin.description}}
+                        <h5>CVSS V2:</h5>
+                        {% if details|key:"cvss" > 6 %}
+                        <span class="danger">{{ details|key:"cvss" }} (high)</span>
+                        {% elif details|key:"cvss" == 0 %}
+                        <span class="info">{{ details|key:"cvss" }} (info)</span>
+                        {% elif details|key:"cvss" >= 4 %}
+                        <span class="warning">{{ details|key:"cvss" }} (medium)</span>
+                        {% elif details|key:"cvss" < 4 %}
+                        <span class="success">{{ details|key:"cvss" }} (low)</span>
+                        {% endif %}
+                        {% if details|key:"cwe" %}</br> <h5>CWE: </h5>{{ details|key:"cwe" }}{% endif %}
+                        {% if details|key:"owasp" %}</br> <h5>OWASP Top 10: </h5>{{ details|key:"owasp" }}{% endif %}
+                        {% if details|key:"owasp-mstg" %}</br> <h5>OWASP MASVS: </h5>{{ details|key:"owasp-mstg" }}{% endif %}
+                       </td>
+                      <td>
+                        {{ details|key:"detailed_desc" }}
                       </td>
                     </tr>
                     {% endfor %}
@@ -370,9 +368,7 @@
                     <tr>
                         <th>ISSUE</th>
                         <th>SEVERITY</th>
-                        <th>CVSS</th>
-                        <th>CWE</th>
-                        <th>OWASP</th>
+                        <th>STANDARDS</th>
                         <th>FILES</th>
                     </tr>
                 </thead>
@@ -393,20 +389,21 @@
                       <span class="info">info</span>
                       {% endif %}
                   </td>
-                  <td><b>
-                  
-                  {% if details|key:"cvss" > 6 %}
-                  <span class="danger">{{ details|key:"cvss" }}</br> high</span>
-                  {% elif details|key:"cvss" == 0 %}
-                  <span class="info">{{ details|key:"cvss" }}</br>  info</span>
-                  {% elif details|key:"cvss" >= 4 %}
-                  <span class="warning">{{ details|key:"cvss" }}</br>  medium</span>
-                  {% elif details|key:"cvss" < 4 %}
-                  <span class="success">{{ details|key:"cvss" }}</br>  low</span>
-                  {% endif %}
-                  </b></td>
-                  <td><b>{{ details|key:"cwe" }}</b></td>
-                  <td><b>{{ details|key:"owasp" }}</b></td>
+                  <td>
+                    <h5>CVSS V2:</h5>
+                    {% if details|key:"cvss" > 6 %}
+                    <span class="danger">{{ details|key:"cvss" }} (high)</span>
+                    {% elif details|key:"cvss" == 0 %}
+                    <span class="info">{{ details|key:"cvss" }} (info)</span>
+                    {% elif details|key:"cvss" >= 4 %}
+                    <span class="warning">{{ details|key:"cvss" }} (medium)</span>
+                    {% elif details|key:"cvss" < 4 %}
+                    <span class="success">{{ details|key:"cvss" }} (low)</span>
+                    {% endif %}
+                    {% if details|key:"cwe" %}</br> <h5>CWE: </h5>{{ details|key:"cwe" }}{% endif %}
+                    {% if details|key:"owasp" %}</br> <h5>OWASP Top 10: </h5>{{ details|key:"owasp" }}{% endif %}
+                    {% if details|key:"owasp-mstg" %}</br> <h5>OWASP MASVS: </h5>{{ details|key:"owasp-mstg" }}{% endif %}
+                  </td>
                   <td style="word-break:break-all;">
                   {% for path in details|key:"path" %}
                    {{ path }}
