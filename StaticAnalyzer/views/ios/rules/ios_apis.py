@@ -108,11 +108,10 @@ CODE_APIS = [
         'input_case': InputCase.exact,
     },
     {
-        'desc': 'Set or Read Clipboard',
+        'desc': 'UIPasteboard',
         'type': MatchType.string,
-        'match': Match.string_and,
+        'match': Match.single_string,
         'string1': 'UIPasteboard',
-        'string2': 'generalPasteboard',
         'input_case': InputCase.exact,
     },
 ]
