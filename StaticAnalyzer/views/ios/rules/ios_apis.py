@@ -63,6 +63,13 @@ CODE_APIS = [
         'input_case': InputCase.exact,
     },
     {
+        'desc': 'SFSafariViewController Component',
+        'type': MatchType.regex,
+        'match': Match.single_regex,
+        'regex1': r'SFSafariViewController',
+        'input_case': InputCase.exact,
+    },
+    {
         'desc': 'Encryption API',
         'type': MatchType.regex,
         'match': Match.single_regex,
