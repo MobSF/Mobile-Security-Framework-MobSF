@@ -45,6 +45,9 @@ before_script:
 - python3 manage.py makemigrations || python manage.py makemigrations
 - python3 manage.py migrate || python manage.py migrate
 script:
+- if [ "$TRAVIS_OS_NAME" == "windows" ]; dir "C:\\Program Files\\OpenJDK\\"; fi
+- if [ "$TRAVIS_OS_NAME" == "windows" ]; ls "C:\\Program Files\\OpenJDK\\"; fi
+- if [ "$TRAVIS_OS_NAME" == "windows" ]; ls "/c/Program Files/OpenJDK/"; fi
 - if [ "$TRAVIS_OS_NAME" != "windows" ]; then tox -e lint; fi
 - python3 manage.py test || python manage.py test
 notifications:
