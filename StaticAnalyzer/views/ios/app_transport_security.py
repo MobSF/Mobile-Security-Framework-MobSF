@@ -52,7 +52,8 @@ def check_transport_security(p_list):
                 'status': 'insecure',
                 'description': (
                     'App Transport Security restrictions are disabled for '
-                    'requests made from local networking without affecting your '
+                    'requests made from local networking '
+                    'without affecting your '
                     'URLSession connections. This setting is not applicable '
                     'to domains listed in NSExceptionDomains.'),
             })
@@ -68,71 +69,92 @@ def check_transport_security(p_list):
                                   ' to {} is allowed'.format(domain)),
                         'status': 'insecure',
                         'description': (
-                            'NSExceptionAllowsInsecureHTTPLoads allows insecure HTTP loads to {}, ' 
-                            'or to be able to loosen the server trust evaluation ' 
-                            'requirements for HTTPS connections to the domain.'.format(domain)
-                            ),
+                            'NSExceptionAllowsInsecureHTTPLoads allows '
+                            'insecure HTTP loads to {}, '
+                            'or to be able to loosen the '
+                            'server trust evaluation '
+                            'requirements for HTTPS '
+                            'connections to the domain.'.format(domain)
+                        ),
                     }
                     ats.append(findings)
 
                 includes_subdomains = config.get('NSIncludesSubdomains', False)
-                if includes_subdomains == True:
+                if includes_subdomains is True:
                     findings = {
                         'issue': ('NSIncludesSubdomains set to TRUE'
                                   ' for {}'.format(domain)),
                         'status': 'insecure',
                         'description': (
-                            'NSIncludesSubdomains applies the ATS exceptions for the given domain to all '
+                            'NSIncludesSubdomains applies the ATS exceptions '
+                            'for the given domain to all '
                             'subdomains as well. '
-                            'For example, the ATS exceptions in the domain exception dictionary apply to {}, '
+                            'For example, the ATS exceptions in the '
+                            'domain exception dictionary apply to {}, '
                             'as well as math.{}, history.{}, and so on. '
-                            'Otherwise, if the value is NO, the exceptions apply only to {}.'.format(domain, domain, domain, domain)
+                            'Otherwise, if the value is NO, the exceptions '
+                            'apply only to '
+                            '{}.'.format(domain, domain, domain, domain)
                         ),
                     }
                     ats.append(findings)
 
-                includes_min_tls = config.get('NSExceptionMinimumTLSVersion', None)
-                if includes_min_tls is not None:  
+                inc_min_tls = config.get('NSExceptionMinimumTLSVersion', None)
+                if inc_min_tls is not None:
                     findings = {
                         'issue': ('NSExceptionMinimumTLSVersion set to {}'
-                                ' on {}'.format(includes_min_tls, domain)),
+                                  ' on {}'.format(inc_min_tls, domain)),
                         'status': 'info',
                         'description': (
-                            'The minimum Transport Layer Security (TLS) version '
-                            'for network connections sent to {} is set to {}.'.format(domain, includes_min_tls)
+                            'The minimum Transport Layer '
+                            'Security (TLS) version '
+                            'for network connections sent to {} '
+                            'is set to {}.'.format(domain, inc_min_tls)
                         ),
                     }
                     ats.append(findings)
 
-                includes_forward_secrecy = config.get('NSExceptionRequiresForwardSecrecy', False)
-                if includes_forward_secrecy == True:
+                sec = config.get('NSExceptionRequiresForwardSecrecy', False)
+                if sec is True:
                     findings = {
-                        'issue': ('NSExceptionRequiresForwardSecrecy set to YES'
-                                  ' for {}'.format(domain)),        
+                        'issue': ('NSExceptionRequiresForwardSecrecy '
+                                  'set to YES'
+                                  ' for {}'.format(domain)),
                         'status': 'info',
                         'description': (
-                            'NSExceptionRequiresForwardSecrecy limits the accepted ciphers to ' 
-                            'those that support perfect forward secrecy (PFS) through the '
-                            'Elliptic Curve Diffie-Hellman Ephemeral (ECDHE) key exchange. '
-                            'Set the value for this key to NO to override the requirement that a server must support ' 
+                            'NSExceptionRequiresForwardSecrecy '
+                            'limits the accepted ciphers to '
+                            'those that support perfect '
+                            'forward secrecy (PFS) through the '
+                            'Elliptic Curve Diffie-Hellman '
+                            'Ephemeral (ECDHE) key exchange. '
+                            'Set the value for this key to NO to override '
+                            'the requirement that a server must support '
                             'PFS for the given domain. This key is optional. '
-                            'The default value is YES, which limits the accepted ciphers to those that support '
-                            'PFS through Elliptic Curve Diffie-Hellman Ephemeral (ECDHE) key exchange.'),
+                            'The default value is YES, which limits the '
+                            'accepted ciphers to those that support '
+                            'PFS through Elliptic Curve Diffie-Hellman '
+                            'Ephemeral (ECDHE) key exchange.'),
                     }
                     ats.append(findings)
 
-                includes_certificate_transparency = config.get('NSRequiresCertificateTransparency', False) 
-                if includes_certificate_transparency == True:
+                cert = config.get('NSRequiresCertificateTransparency', False)
+                if cert is True:
                     findings = {
-                        'issue': ('NSRequiresCertificateTransparency set to YES'
-                                  ' for {}'.format(domain)),
+                        'issue': ('NSRequiresCertificateTransparency'
+                                  ' set to YES for {}'.format(domain)),
                         'status': 'secure',
                         'description': (
-                            'Certificate Transparency (CT) is a protocol that ATS can use to identify ' 
-                            'mistakenly or maliciously issued X.509 certificates. '
-                            'Set the value for the NSRequiresCertificateTransparency key to YES to '
-                            'require that for a given domain, server certificates are supported by valid, '
-                            'signed CT timestamps from at least two CT logs trusted by Apple. '
+                            'Certificate Transparency (CT) is a protocol '
+                            'that ATS can use to identify '
+                            'mistakenly or maliciously '
+                            'issued X.509 certificates. '
+                            'Set the value for the '
+                            'NSRequiresCertificateTransparency '
+                            'key to YES to require that for a given domain, '
+                            'server certificates are supported by valid, '
+                            'signed CT timestamps from at least '
+                            'two CT logs trusted by Apple. '
                             'This key is optional. The default value is NO.'),
                     }
                     ats.append(findings)
