@@ -69,7 +69,7 @@ def class_dump(tools_dir, bin_path, app_dir, bin_type):
         else:
             # Platform not supported
             logger.warning('class-dump is not supported in this platform')
-            return {}
+            return classdump
         with open(os.devnull, 'w') as devnull:
             # timeout to handle possible deadlock from jtool1
             classdump = subprocess.check_output(args,
@@ -140,7 +140,7 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
         # Bin Path - Dir/Payload/x.app/x
         bin_path = os.path.join(bin_dir, bin_name)
         binary_analysis_dict['libs'] = []
-        binary_analysis_dict['bin_res'] = []
+        binary_analysis_dict['bin_res'] = {}
         binary_analysis_dict['strings'] = []
         if not is_file_exists(bin_path):
             logger.warning('MobSF Cannot find binary in %s', bin_path)
