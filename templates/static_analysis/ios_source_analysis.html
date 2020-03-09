@@ -518,17 +518,43 @@
                   <tbody>
                     {% if ats_analysis|length > 0 %}
                       {% for findings in ats_analysis %}
-                      <tr>
-                        <td>
-                         {{findings.issue}}
-                        <td>
-                          <span class="badge bg-danger"> {{findings.status}}</span>
-                        </td>
-                        <td>
-                         {{findings.description}}
-                        </td>
-                      </tr>
-                      {% endfor %}
+                        {% if findings.status == "insecure" %}
+                        <tr>
+                          <td>
+                          {{findings.issue}}
+                          <td>
+                            <span class="badge bg-danger"> {{findings.status}}</span>
+                          </td>
+                          <td>
+                          {{findings.description}}
+                          </td>
+                        </tr>
+                        {% endif %}
+                        {% if findings.status == "info" %}
+                        <tr>
+                          <td>
+                          {{findings.issue}}
+                          <td>
+                            <span class="badge bg-info"> {{findings.status}}</span>
+                          </td>
+                          <td>
+                          {{findings.description}}
+                          </td>
+                        </tr>
+                        {% endif %}
+                        {% if findings.status == "secure" %}
+                        <tr>
+                          <td>
+                          {{findings.issue}}
+                          <td>
+                            <span class="badge bg-success"> {{findings.status}}</span>
+                          </td>
+                          <td>
+                          {{findings.description}}
+                          </td>
+                        </tr>
+                        {% endif %}
+                      (% endfor %)
                     {% else %}
                     <tr>
                       <td>
