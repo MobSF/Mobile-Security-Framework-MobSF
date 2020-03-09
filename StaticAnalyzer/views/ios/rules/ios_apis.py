@@ -59,7 +59,7 @@ CODE_APIS = [
         'desc': 'WebView Component',
         'type': MatchType.regex,
         'match': Match.single_regex,
-        'regex1': r'UIWebView',
+        'regex1': r'UIWebView|WKWebView',
         'input_case': InputCase.exact,
     },
     {
