@@ -114,4 +114,11 @@ CODE_APIS = [
         'string1': 'UIPasteboard',
         'input_case': InputCase.exact,
     },
+    {
+        'desc': 'UserDefaults',
+        'type': MatchType.string,
+        'match': Match.single_string,
+        'string1': 'UserDefaults',
+        'input_case': InputCase.exact,
+    },
 ]
