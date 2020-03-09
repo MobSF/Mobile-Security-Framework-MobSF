@@ -506,7 +506,7 @@
                   <tbody>
                     {% if ats_analysis|length > 0 %}
                       {% for findings in ats_analysis %}
-                        {% if findings.status == "insecure" %}
+                        {% if "insecure" in findings.status %}
                         <tr>
                           <td>
                           {{findings.issue}}
@@ -517,8 +517,7 @@
                           {{findings.description}}
                           </td>
                         </tr>
-                        {% endif %}
-                        {% if findings.status == "info" %}
+                        {% elif "info" in findings.status %}
                         <tr>
                           <td>
                           {{findings.issue}}
@@ -529,8 +528,7 @@
                           {{findings.description}}
                           </td>
                         </tr>
-                        {% endif %}
-                        {% if findings.status == "secure" %}
+                        {% elif "secure" in findings.status %}
                         <tr>
                           <td>
                           {{findings.issue}}
