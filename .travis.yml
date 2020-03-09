@@ -27,8 +27,8 @@ jobs:
     os: windows
     language: shell
     env:
-    - JAVA_HOME=C:\\Program Files\\OpenJDK\\jdk-13.0.2
-    - PATH=/c/Python37:/c/Python37/Scripts:$JAVA_HOME\\bin:$PATH
+    - JAVA_HOME="/c/Program Files/OpenJDK/jdk-13.0.2"
+    - PATH=/c/Python37:/c/Python37/Scripts:$JAVA_HOME/bin:$PATH
     before_install:
     - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
     - choco install python --version 3.7.5
@@ -42,7 +42,7 @@ before_script:
 - pip3 wheel --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.11.0
 - pip3 install --no-index --find-links=yara-python yara-python
 - pip3 install -r requirements.txt
-- echo ls $JAVA_HOME\\bin
+- echo ls $JAVA_HOME/bin
 - python3 manage.py makemigrations || python manage.py makemigrations
 - python3 manage.py migrate || python manage.py migrate
 script:
