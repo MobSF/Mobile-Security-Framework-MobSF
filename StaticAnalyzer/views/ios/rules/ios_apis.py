@@ -43,7 +43,7 @@ CODE_APIS = [
         'desc': 'Network Calls',
         'type': MatchType.regex,
         'match': Match.single_regex,
-        'regex1': r'NSURLSession|CFStream|NSStream',
+        'regex1': r'URLSession|CFStream|NSStream',
         'input_case': InputCase.exact,
     },
     {
