@@ -19,6 +19,12 @@ from StaticAnalyzer.views.ios.otool_analysis import (
     get_otool_out,
     otool_analysis,
 )
+from StaticAnalyzer.views.ios.rules import (
+    ipa_rules,
+)
+from StaticAnalyzer.views.rule_matchers import (
+    binary_rule_matcher,
+)
 from StaticAnalyzer.tools.strings import strings_util
 
 logger = logging.getLogger(__name__)
@@ -35,8 +41,7 @@ def detect_bin_type(libs):
 def class_dump(tools_dir, bin_path, app_dir, bin_type):
     """Running Classdumpz on binary."""
     try:
-        webview = {}
-        classdump = ''
+        classdump = b''
         if platform.system() == 'Darwin':
             logger.info('Dumping classes')
             if bin_type == 'Swift':
@@ -76,19 +81,9 @@ def class_dump(tools_dir, bin_path, app_dir, bin_type):
                 tools_dir, 'class-dump-swift')
             args = [class_dump_bin, bin_path]
             classdump = subprocess.check_output(args)
-        dump_file = os.path.join(app_dir, 'classdump.txt')
-        with open(dump_file, 'w') as flip:
-            flip.write(classdump.decode('utf-8', 'ignore'))
-        if b'UIWebView' in classdump:
-            webview = {'issue': 'Binary uses WebView Component.',
-                       'level': 'info',
-                       'description': 'The binary may use WebView Component.',
-                       'cvss': 0,
-                       'cwe': '',
-                       'owasp': '',
-                       'owasp-mstg': '',
-                       }
-        return webview
+        with open(os.path.join(app_dir, 'classdump.txt'), 'wb') as flip:
+            flip.write(classdump)
+        return classdump
     except Exception:
         logger.error('class-dump/class-dump-swift failed on this binary')
 
@@ -127,6 +122,7 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
     """Binary Analysis of IPA."""
     try:
         binary_analysis_dict = {}
+        binary_findings = {}
         logger.info('Starting Binary Analysis')
         dirs = os.listdir(src)
         dot_app_dir = ''
@@ -151,16 +147,20 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
             logger.warning('Skipping Otool, Classdump and Strings')
         else:
             bin_info = get_bin_info(bin_path)
-            otool_dict = otool_analysis(tools_dir, bin_name, bin_path, bin_dir)
-            bin_type = detect_bin_type(otool_dict['libs'])
-            api = class_dump(tools_dir, bin_path, app_dir, bin_type)
-            if not api:
-                api = {}
+            object_data = otool_analysis(
+                tools_dir,
+                bin_name,
+                bin_path,
+                bin_dir)
+            bin_type = detect_bin_type(object_data['libs'])
+            cdump = class_dump(tools_dir, bin_path, app_dir, bin_type)
+            binary_rule_matcher(
+                binary_findings,
+                object_data['bindata'] + cdump,
+                ipa_rules.IPA_RULES)
             strings_in_ipa = strings_on_ipa(bin_path)
-            otool_dict['anal'] = list(
-                filter(None, otool_dict['anal'] + [api]))
-            binary_analysis_dict['libs'] = otool_dict['libs']
-            binary_analysis_dict['bin_res'] = otool_dict['anal']
+            binary_analysis_dict['libs'] = object_data['libs']
+            binary_analysis_dict['bin_res'] = binary_findings
             binary_analysis_dict['strings'] = strings_in_ipa
             binary_analysis_dict['macho'] = bin_info
             binary_analysis_dict['bin_type'] = bin_type

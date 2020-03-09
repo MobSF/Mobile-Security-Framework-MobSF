@@ -11,9 +11,11 @@ from StaticAnalyzer.views.ios.rules import (
     swift_rules,
 )
 from StaticAnalyzer.views.shared_func import (
+    url_n_email_extract,
+)
+from StaticAnalyzer.views.rule_matchers import (
     api_rule_matcher,
     code_rule_matcher,
-    url_n_email_extract,
 )
 
 logger = logging.getLogger(__name__)
