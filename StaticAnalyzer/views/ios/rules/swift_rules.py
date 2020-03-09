@@ -348,4 +348,30 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'owasp': OWASP['m1'],
         'owasp-mstg': OWASP_MSTG['platform-3'],
     },
+    {
+        'desc': ('Sensitive data shouldn\'t be included in backups generated '
+                 'by the mobile operating system.'),
+        'type': MatchType.regex,
+        'regex1': r'kSecAttrAccessible[a-zA-Z]*ThisDeviceOnly',
+        'level': Level.good,
+        'match': Match.single_regex,
+        'input_case': InputCase.exact,
+        'cvss': 0.0,
+        'cwe': '',
+        'owasp': '',
+        'owasp-mstg': OWASP_MSTG['storage-8'],
+    },
+    {
+        'desc': ('JavaScript should be disabled in WebViews unless '
+                 'explicitly required.'),
+        'type': MatchType.string,
+        'string1': 'WKWebView',
+        'level': Level.info,
+        'match': Match.single_string,
+        'input_case': InputCase.exact,
+        'cvss': 0.0,
+        'cwe': '',
+        'owasp': '',
+        'owasp-mstg': OWASP_MSTG['platform-5'],
+    },
 ]
