@@ -73,7 +73,7 @@ CODE_APIS = [
         'desc': 'Encryption API',
         'type': MatchType.regex,
         'match': Match.single_regex,
-        'regex1': r'RNEncryptor|RNDecryptor|AESCrypt',
+        'regex1': r'CommonCrypto|CryptoKit',
         'input_case': InputCase.exact,
     },
     {
