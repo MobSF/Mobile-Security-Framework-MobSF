@@ -101,10 +101,10 @@ CODE_APIS = [
     },
     {
         'desc': 'Cookie Storage',
-        'type': MatchType.string,
-        'match': Match.string_and,
-        'string1': 'NSHTTPCookieStorage',
-        'string2': 'sharedHTTPCookieStorage',
+        'type': MatchType.regex,
+        'match': Match.regex_and,
+        'regex1': r'HTTPCookieStorage',
+        'regex2': r'shared|sharedHTTPCookieStorage',
         'input_case': InputCase.exact,
     },
     {
