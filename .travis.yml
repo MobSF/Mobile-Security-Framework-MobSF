@@ -27,7 +27,7 @@ jobs:
     os: windows
     language: shell
     env:
-    - JAVA_HOME="C:\\Program Files\\OpenJDK\\jdk-13.0.2"
+    - JAVA_HOME=C:\\Program Files\\OpenJDK\\jdk-13.0.2
     - PATH=/c/Python37:/c/Python37/Scripts:$JAVA_HOME\\bin:$PATH
     before_install:
     - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
