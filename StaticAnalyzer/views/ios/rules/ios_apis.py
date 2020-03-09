@@ -47,12 +47,11 @@ CODE_APIS = [
         'input_case': InputCase.exact,
     },
     {
-        'desc': 'Local File I/O Operations.',
+        'desc': 'Keychain Access.',
         'type': MatchType.regex,
         'match': Match.single_regex,
-        'regex1': (r'Keychain|kSecAttrAccessibleWhenUnlocked|'
-                   r'kSecAttrAccessibleAfterFirstUnlock|SecItemAdd|'
-                   r'SecItemUpdate|NSDataWritingFileProtectionComplete'),
+        'regex1': (r'Keychain|SecItemAdd|SecItemUpdate'
+                   r'SecItemCopy| kSecAttr'),
         'input_case': InputCase.exact,
     },
     {
@@ -74,13 +73,6 @@ CODE_APIS = [
         'type': MatchType.regex,
         'match': Match.single_regex,
         'regex1': r'CommonCrypto|CryptoKit',
-        'input_case': InputCase.exact,
-    },
-    {
-        'desc': 'Keychain Access',
-        'type': MatchType.string,
-        'match': Match.single_string,
-        'string1': 'PDKeychainBindings',
         'input_case': InputCase.exact,
     },
     {
