@@ -518,40 +518,24 @@
                   <tbody>
                     {% if ats_analysis|length > 0 %}
                       {% for findings in ats_analysis %}
-                        {% if "insecure" in findings.status %}
-                        <tr>
-                          <td>
-                          {{findings.issue}}
-                          <td>
-                            <span class="badge bg-danger"> {{findings.status}}</span>
+                      <tr>
+                        <td>
+                        {{findings.issue}}
+                        <td>
+                          {% if findings.status == "insecure" %}
+                          <span class="badge bg-danger"> {{findings.status}}</span>
+                          {% elif findings.status == "secure" %}
+                          <span class="badge bg-success"> {{findings.status}}</span>
+                          {% elif findings.status == "warning" %}
+                          <span class="badge bg-warning"> {{findings.status}}</span>
+                          {% elif findings.status == "info" %}
+                          <span class="badge bg-info"> {{findings.status}}</span>
+                          {% endif %}
                           </td>
-                          <td>
-                          {{findings.description}}
-                          </td>
-                        </tr>
-                        {% elif "info" in findings.status %}
-                        <tr>
-                          <td>
-                          {{findings.issue}}
-                          <td>
-                            <span class="badge bg-info"> {{findings.status}}</span>
-                          </td>
-                          <td>
-                          {{findings.description}}
-                          </td>
-                        </tr>
-                        {% elif "secure" in findings.status %}
-                        <tr>
-                          <td>
-                          {{findings.issue}}
-                          <td>
-                            <span class="badge bg-success"> {{findings.status}}</span>
-                          </td>
-                          <td>
-                          {{findings.description}}
-                          </td>
-                        </tr>
-                        {% endif %}
+                        <td>
+                        {{findings.description}}
+                        </td>
+                      </tr>
                       {% endfor %}
                     {% else %}
                     <tr>

@@ -79,8 +79,7 @@ def check_transport_security(p_list):
                     }
                     ats.append(findings)
 
-                includes_subdomains = config.get('NSIncludesSubdomains', False)
-                if includes_subdomains is True:
+                if config.get('NSIncludesSubdomains', False):
                     findings = {
                         'issue': ('NSIncludesSubdomains set to TRUE'
                                   ' for {}'.format(domain)),
@@ -100,11 +99,44 @@ def check_transport_security(p_list):
                     ats.append(findings)
 
                 inc_min_tls = config.get('NSExceptionMinimumTLSVersion', None)
-                if inc_min_tls is not None:
+                logger.info(inc_min_tls)
+                if inc_min_tls == 'TLSv1.0' or inc_min_tls == 'TLSv1.1':
                     findings = {
                         'issue': ('NSExceptionMinimumTLSVersion set to {}'
                                   ' on {}'.format(inc_min_tls, domain)),
-                        'status': 'info',
+                        'status': 'insecure',
+                        'description': (
+                            'The minimum Transport Layer '
+                            'Security (TLS) version '
+                            'for network connections sent to {} '
+                            'is set to {}. This version is deemed'
+                            'to be insecure'.format(domain, inc_min_tls)
+                        ),
+                    }
+                    ats.append(findings)
+
+                elif inc_min_tls == 'TLSv1.2':
+                    findings = {
+                        'issue': ('NSExceptionMinimumTLSVersion set to {}'
+                                  ' on {}'.format(inc_min_tls, domain)),
+                        'status': 'warning',
+                        'description': (
+                            'The minimum Transport Layer '
+                            'Security (TLS) version '
+                            'for network connections sent to {} '
+                            'is set to {}. '
+                            'This version is vulnerable to '
+                            'attacks such as POODLE, FREAK, '
+                            'or CurveSwap.'.format(domain, inc_min_tls)
+                        ),
+                    }
+                    ats.append(findings)
+
+                elif inc_min_tls == 'TLSv1.3':
+                    findings = {
+                        'issue': ('NSExceptionMinimumTLSVersion set to {}'
+                                  ' on {}'.format(inc_min_tls, domain)),
+                        'status': 'secure',
                         'description': (
                             'The minimum Transport Layer '
                             'Security (TLS) version '
@@ -114,13 +146,12 @@ def check_transport_security(p_list):
                     }
                     ats.append(findings)
 
-                sec = config.get('NSExceptionRequiresForwardSecrecy', False)
-                if sec is True:
+                if config.get('NSExceptionRequiresForwardSecrecy', False):
                     findings = {
                         'issue': ('NSExceptionRequiresForwardSecrecy '
                                   'set to YES'
                                   ' for {}'.format(domain)),
-                        'status': 'info',
+                        'status': 'secure',
                         'description': (
                             'NSExceptionRequiresForwardSecrecy '
                             'limits the accepted ciphers to '
@@ -138,8 +169,7 @@ def check_transport_security(p_list):
                     }
                     ats.append(findings)
 
-                cert = config.get('NSRequiresCertificateTransparency', False)
-                if cert is True:
+                if config.get('NSRequiresCertificateTransparency', False):
                     findings = {
                         'issue': ('NSRequiresCertificateTransparency'
                                   ' set to YES for {}'.format(domain)),
