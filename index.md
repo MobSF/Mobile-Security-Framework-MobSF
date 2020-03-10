@@ -8,7 +8,6 @@
   gtag('config', 'UA-160159852-1');
 </script>
 
-
 # Mobile Security Framework (MobSF)
 Version: v3.0 beta
 ![](https://cloud.githubusercontent.com/assets/4301109/20019521/cc61f7fc-a2f2-11e6-95f3-407030d9fdde.png)
@@ -39,36 +38,34 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 ## Documentation
 [![See MobSF Documentation](https://user-images.githubusercontent.com/4301109/70686099-3855f780-1c79-11ea-8141-899e39459da2.png)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/wiki/1.-Documentation)
 
-## Try MobSF Static Analyzer Online
-[![Try in PWD](https://raw.githubusercontent.com/play-with-docker/stacks/master/assets/images/button.png)](https://labs.play-with-docker.com/?stack=https://raw.githubusercontent.com/MobSF/Mobile-Security-Framework-MobSF/master/scripts/stack/docker-compose.yml)
+* Try MobSF Static Analyzer Online:
+[![Try in PWD](https://user-images.githubusercontent.com/4301109/76351696-494bee80-62e4-11ea-894a-cb1cd07c86fc.png)](https://labs.play-with-docker.com/?stack=https://raw.githubusercontent.com/MobSF/Mobile-Security-Framework-MobSF/master/scripts/stack/docker-compose.yml)
+* Conference Presentations: [Slides & Videos](https://mobsf.github.io/Mobile-Security-Framework-MobSF/presentations.html)
+* MobSF Online Course: [OpSecX MAS](https://opsecx.com/index.php/product/automated-mobile-application-security-assessment-with-mobsf/)
+* What's New: [See Changelog](https://mobsf.github.io/Mobile-Security-Framework-MobSF/changelog.html)
 
 ## Collaborators
 
-[Ajin Abraham](https://in.linkedin.com/in/ajinabraham) ![india](https://user-images.githubusercontent.com/4301109/37564171-6549d678-2ab6-11e8-9b9d-21327c7f5d5b.png) | [Dominik Schlecht](https://github.com/DominikSchlecht) ![germany](https://user-images.githubusercontent.com/4301109/37564176-743238ba-2ab6-11e8-9666-5d98f0a1d127.png) | [Magaofei](https://github.com/magaofei) ![china](https://user-images.githubusercontent.com/4301109/44515364-00bbe880-a6e0-11e8-944d-5b48a86427da.png) | [Matan Dobrushin](https://github.com/matandobr) ![israel](https://user-images.githubusercontent.com/4301109/37564177-782f1758-2ab6-11e8-91e5-c76bde37b330.png) | [Vincent Nadal](https://github.com/superpoussin22) ![france](https://user-images.githubusercontent.com/4301109/37564175-71d6d92c-2ab6-11e8-89d7-d21f5aa0bda8.png)
+[Ajin Abraham](https://in.linkedin.com/in/ajinabraham) ![india](https://user-images.githubusercontent.com/4301109/37564171-6549d678-2ab6-11e8-9b9d-21327c7f5d5b.png) | [Dominik Schlecht](https://github.com/sn0b4ll) ![germany](https://user-images.githubusercontent.com/4301109/37564176-743238ba-2ab6-11e8-9666-5d98f0a1d127.png) | [Magaofei](https://github.com/magaofei) ![china](https://user-images.githubusercontent.com/4301109/44515364-00bbe880-a6e0-11e8-944d-5b48a86427da.png) | [Matan Dobrushin](https://github.com/matandobr) ![israel](https://user-images.githubusercontent.com/4301109/37564177-782f1758-2ab6-11e8-91e5-c76bde37b330.png) | [Vincent Nadal](https://github.com/superpoussin22) ![france](https://user-images.githubusercontent.com/4301109/37564175-71d6d92c-2ab6-11e8-89d7-d21f5aa0bda8.png)
 
 ## e-Learning Courses & Certifications
-* [Automated Mobile Application Security Assessment with MobSF -MAS](https://opsecx.com/index.php/product/automated-mobile-application-security-assessment-with-mobsf/)
-* [Android Security Tools Expert -ATX](https://opsecx.com/index.php/product/android-security-tools-expert-atx/)
+![MobSF Course](https://user-images.githubusercontent.com/4301109/76344880-ad68b580-62d8-11ea-8cde-9e3475fc92f6.png) [Automated Mobile Application Security Assessment with MobSF -MAS](https://opsecx.com/index.php/product/automated-mobile-application-security-assessment-with-mobsf/)
 
-## MobSF Support Packages
-* For free limited support, use our Slack Channel: [mobsf.slack.com](https://mobsf.slack.com/join/shared_invite/enQtNzM2NTAyNzA1MjgxLTdjMzkzNDc3ZjdiMjkwZTZhMmFhNDlkZmMwZDhjNDNmYTAzYWE5NGZlMDIzYzliNTdiMDQ2MTRlYjU1MjkyNGM)
-* For enterprise support, priority feature requests and live training, see [MobSF Support Packages](https://mobsf.github.io/Mobile-Security-Framework-MobSF/support.html)
+![Android Security Tools Course](https://user-images.githubusercontent.com/4301109/76344939-c709fd00-62d8-11ea-8208-774f1d5a7c52.png) [Android Security Tools Expert -ATX](https://opsecx.com/index.php/product/android-security-tools-expert-atx/)
 
-## Presentations
-* OWASP APPSEC EU 2016 - [Slides](http://www.slideshare.net/ajin25/automated-mobile-application-security-assessment-with-mobsf), [Video](https://www.youtube.com/watch?v=h00v1euuFXg)
-* NULLCON 2016 - [Slides](https://www.slideshare.net/ajin25/nullcon-goa-2016-automated-mobile-application-security-testing-with-mobile-security-framework-mobsf)
-* c0c0n 2015 - [Slides](https://www.slideshare.net/ajin25/automated-security-analysis-of-android-ios-applications-with-mobile-security-framework-c0c0n-2015)
-*  G4H Webcast 2015 - [Video](https://www.youtube.com/watch?v=CysfO6AZmo8)
+## MobSF Support
 
-## What's New?
-* [See Changelog](https://mobsf.github.io/Mobile-Security-Framework-MobSF/changelog.html)
+* **Free Support:** For free limited support, questions and help, join our Slack channel [mobsf.slack.com](https://mobsf.slack.com/join/shared_invite/enQtNzM2NTAyNzA1MjgxLTdjMzkzNDc3ZjdiMjkwZTZhMmFhNDlkZmMwZDhjNDNmYTAzYWE5NGZlMDIzYzliNTdiMDQ2MTRlYjU1MjkyNGM)
+* **Enterprise Support:** For enterprise support, priority feature requests and live training, see [MobSF Support Packages](https://mobsf.github.io/Mobile-Security-Framework-MobSF/support.html)
+
 
 ## Contribution, Feature Requests & Bugs
 
 * Read [CONTRIBUTING.md](https://github.com/MobSF/Mobile-Security-Framework-MobSF/blob/master/.github/CONTRIBUTING.md) before opening bugs, feature requests and pull request.
-* Feature Requests: [@ajinabraham](https://twitter.com/ajinabraham) or [@OpenSecurity_IN](https://twitter.com/OpenSecurity_IN).
-* For discussions, questions and limited support, use our Slack Channel mobsf.slack.com: [Join MobSF Channel](https://mobsf.slack.com/join/shared_invite/enQtNzM2NTAyNzA1MjgxLTdjMzkzNDc3ZjdiMjkwZTZhMmFhNDlkZmMwZDhjNDNmYTAzYWE5NGZlMDIzYzliNTdiMDQ2MTRlYjU1MjkyNGM)
 * Open Bugs after reading [Guidelines to Report a Bug](https://github.com/MobSF/Mobile-Security-Framework-MobSF/blob/master/.github/CONTRIBUTING.md#using-the-issue-tracker)
+* Feature Requests, Announcements: [@ajinabraham](https://twitter.com/ajinabraham) or [@OpenSecurity_IN](https://twitter.com/OpenSecurity_IN).
+* For discussions, questions and limited support, use our Slack channel mobsf.slack.com: [Join MobSF Channel](https://mobsf.slack.com/join/shared_invite/enQtNzM2NTAyNzA1MjgxLTdjMzkzNDc3ZjdiMjkwZTZhMmFhNDlkZmMwZDhjNDNmYTAzYWE5NGZlMDIzYzliNTdiMDQ2MTRlYjU1MjkyNGM)
+
 
 ## Screenshots
 
@@ -94,19 +91,24 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 ![android-dynamic-http-tools](https://user-images.githubusercontent.com/4301109/65378797-57c53000-dcdb-11e9-84e9-d5acf887f3aa.png)
 
 
-## Credits
-* Abhinav Sejpal (@Abhinav_Sejpal) - For poking me with bugs, feature requests, and UI & UX suggestions.
+## Honorable Contributors
+
 * Amrutha VC (@amruthavc) - For the new MobSF logo
-* Anant Srivastava (@anantshri) - For Activity Tester Idea
-* Anto Joseph (@antojosep007) - For the help with SuperSU.
-* Bharadwaj Machiraju (@tunnelshade_) - For writing pyWebProxy from scratch
 * Dominik Schlecht - For the awesome work on adding Windows Phone App Static Analysis to MobSF
 * Esteban - Better Android Manifest Analysis and Static Analysis Improvement.
 * Matan Dobrushin - For adding Android ARM Emulator support to MobSF - Special thanks goes for cuckoo-droid, I got inspired by their code and idea for this implementation.
-* MindMac - For writing Android Blue Pill
 * Rahul (@c0dist) - Kali Support
 * Shuxin - Android Binary Analysis
-* Thomas Abraham - For JS Hacks on UI.
-* Tim Brown (@timb_machine) - For the iOS Binary Analysis Ruleset.
 * Oscar Alfonso Diaz - (@OscarAkaElvis) - For Dockerfile contributions
 * Abhinav Saxena - (@xandfury) - For Travis CI and Logging integration
+* ![netguru](https://user-images.githubusercontent.com/4301109/76340877-a3dc4f00-62d2-11ea-8631-b4cc8d9e42ed.png) [Netguru](https://www.netguru.com/) (@karolpiateknet, @mtbrzeski) - For iOS Swift support, Rule contributions and SAST refactoring.
+
+## Shoutouts
+
+* Abhinav Sejpal (@Abhinav_Sejpal) - For poking me with bugs, feature requests, and UI & UX suggestions.
+* Anant Srivastava (@anantshri) - For Activity Tester Idea
+* Anto Joseph (@antojosep007) - For the help with SuperSU.
+* Bharadwaj Machiraju (@tunnelshade_) - For writing pyWebProxy from scratch
+* MindMac - For writing Android Blue Pill
+* Thomas Abraham - For JS Hacks on UI.
+* Tim Brown (@timb_machine) - For the iOS Binary Analysis Ruleset.
