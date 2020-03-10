@@ -1,0 +1,617 @@
+
+
+<html lang="en" class=""><head>
+<style>
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+main,
+nav,
+section,
+summary {
+  display: block;
+}
+
+/* Body Styles
+*********************************************
+*/
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: 'Noto Sans', sans-serif;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+}
+@media (max-width: 1024px) {
+  body {
+    font-size: 20px;
+  }
+}
+@media (max-width: 480px) {
+  body {
+    font-size: 16px;
+  }
+}
+
+figure {
+  margin: 0;
+  padding: 0;
+}
+
+p,
+ol {
+  width: 70%;
+  margin: 2.5% auto;
+  padding-left: 20px;
+}
+@media (max-width: 1024px) {
+  p,
+  ol {
+    width: 90%;
+  }
+}
+@media (max-width: 480px) {
+  p,
+  ol {
+    width: 100%;
+  }
+}
+
+ul li,
+ol li {
+  margin: 20px 0;
+}
+
+p, ul {
+  padding-left: 0;
+}
+
+/* Typography
+***********************************************
+*/
+header {
+  margin-bottom: 5%;
+}
+
+h1 {
+  font-size: 48px;
+  font-weight: 400;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: center;
+  margin: 0;
+}
+@media (max-width: 1024px) {
+  h1 {
+    font-size: 36px;
+  }
+}
+@media (max-width: 480px) {
+  h1 {
+    font-size: 28px;
+  }
+}
+
+h2 {
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.25;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: center;
+  padding: 15px 8px;
+  margin: 0;
+  white-space: nowrap;
+}
+@media (max-width: 1200px) {
+  h2 {
+    font-size: 15px;
+  }
+}
+
+pre, code {
+  font-family: Monaco, Consolas, "Lucida Console", monospace;
+  font-size: 16px;
+  line-height: 2;
+  overflow: auto;
+  width: 75%;
+  margin: 0 auto;
+  padding: 10px;
+  border-radius: 10px;
+}
+@media (max-width: 1024px) {
+  pre, code {
+    width: 100%;
+    font-size: 14px;
+  }
+}
+
+code {
+  padding: 5px;
+  vertical-align: 3px;
+  white-space: nowrap;
+}
+
+a {
+  color: #fff;
+  text-decoration: none;
+  border-bottom: dotted 2px #fff;
+}
+a:hover, a:active, a:focus {
+  color: #fff;
+  border-bottom: solid 2px #fff;
+}
+
+/* Sections
+**********************************************
+*/
+section {
+  padding: 10% 5%;
+  width: 100%;
+}
+
+
+/* Second Section */
+.second {
+  background: #EEE9E9;
+}
+.second h1 {
+  color: #555;
+}
+
+
+/* Video Gallery
+********************************************
+*/
+.video {
+  background: #fff;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+  width: 23%;
+  margin: 1%;
+  float: left;
+  transition: all, 0.3s, ease;
+}
+@media (max-width: 1024px) {
+  .video {
+    width: 31.333%;
+  }
+}
+@media (max-width: 768px) {
+  .video {
+    width: 48%;
+  }
+}
+@media (max-width: 480px) {
+  .video {
+    display: block;
+    width: 96%;
+    margin: 2%;
+    float: none;
+  }
+}
+.video figure {
+  height: 0;
+  padding-bottom: 56.25%;
+  overflow: hidden;
+}
+.video figure a {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: none;
+  line-height: 0;
+}
+.video img {
+  width: 100%;
+  opacity: 1;
+}
+.video img:hover, .video img:active, .video img:focus {
+  opacity: 0.75;
+}
+
+/* Images 
+********************************************
+*/
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Clearfix 
+********************************************
+*/
+.clearfix {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+
+/* Smooth Scrolling Back to Top
+********************************************
+*/
+.scroll-top:hover {
+  color: #fff !important;
+  background-color: #333;
+  text-decoration: none;
+  border-bottom: none;
+}
+
+.scroll-top {
+  display: none;
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  width: 3.2rem;
+  height: 3.2rem;
+  line-height: 2;
+  font-size: 1.4rem;
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.5);
+  text-decoration: none;
+  border-radius: 5px;
+  border-bottom: none;
+  text-align: center;
+  cursor: pointer;
+}
+
+/* Remove border from Francybox close
+*****************************************
+*/
+.fancybox-close {
+  border-bottom: none;
+}
+.fancybox-close:hover, .fancybox-close:active, .fancybox-close:focus {
+  border-bottom: none;
+}
+
+/* fancyBox v2.1.5 fancyapps.com | fancyapps.com/fancybox/#license */
+.fancybox-wrap,
+.fancybox-skin,
+.fancybox-outer,
+.fancybox-inner,
+.fancybox-image,
+.fancybox-wrap iframe,
+.fancybox-wrap object,
+.fancybox-nav,
+.fancybox-nav span,
+.fancybox-tmp {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  outline: none;
+  vertical-align: top;
+}
+
+.fancybox-wrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 8020;
+}
+
+.fancybox-skin {
+  position: relative;
+  background: #f9f9f9;
+  color: #444;
+  text-shadow: none;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+}
+
+.fancybox-opened {
+  z-index: 8030;
+}
+
+.fancybox-opened .fancybox-skin {
+  -webkit-box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  -moz-box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.fancybox-outer, .fancybox-inner {
+  position: relative;
+}
+
+.fancybox-inner {
+  overflow: hidden !important;
+}
+
+.fancybox-type-iframe .fancybox-inner {
+  -webkit-overflow-scrolling: touch;
+}
+
+.fancybox-error {
+  color: #444;
+  font: 14px/20px "Helvetica Neue",Helvetica,Arial,sans-serif;
+  margin: 0;
+  padding: 15px;
+  white-space: nowrap;
+}
+
+.fancybox-image, .fancybox-iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.fancybox-image {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+#fancybox-loading, .fancybox-close, .fancybox-prev span, .fancybox-next span {
+  background-image: url("../images/fb/fancybox_sprite.png");
+}
+
+#fancybox-loading {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  margin-top: -22px;
+  margin-left: -22px;
+  background-position: 0 -108px;
+  opacity: 0.8;
+  cursor: pointer;
+  z-index: 8060;
+}
+
+#fancybox-loading div {
+  width: 44px;
+  height: 44px;
+  background: url("../images/fb/fancybox_loading.gif") center center no-repeat;
+}
+
+.fancybox-close {
+  position: absolute;
+  top: -18px;
+  right: -18px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  z-index: 8040;
+}
+
+.fancybox-nav {
+  position: absolute;
+  top: 0;
+  width: 40%;
+  height: 100%;
+  cursor: pointer;
+  text-decoration: none;
+  background: transparent url("../images/fb/blank.gif");
+  /* helps IE */
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  z-index: 8040;
+}
+
+.fancybox-prev {
+  left: 0;
+}
+
+.fancybox-next {
+  right: 0;
+}
+
+.fancybox-nav span {
+  position: absolute;
+  top: 50%;
+  width: 36px;
+  height: 34px;
+  margin-top: -18px;
+  cursor: pointer;
+  z-index: 8040;
+  visibility: hidden;
+}
+
+.fancybox-prev span {
+  left: 10px;
+  background-position: 0 -36px;
+}
+
+.fancybox-next span {
+  right: 10px;
+  background-position: 0 -72px;
+}
+
+.fancybox-nav:hover span {
+  visibility: visible;
+}
+
+.fancybox-tmp {
+  position: absolute;
+  top: -99999px;
+  left: -99999px;
+  max-width: 99999px;
+  max-height: 99999px;
+  overflow: visible !important;
+}
+
+/* Overlay helper */
+.fancybox-lock {
+  overflow: hidden !important;
+  width: auto;
+}
+
+.fancybox-lock body {
+  overflow: hidden !important;
+}
+
+.fancybox-lock-test {
+  overflow-y: hidden !important;
+}
+
+.fancybox-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  display: none;
+  z-index: 8010;
+  background: url("../images/fb/fancybox_overlay.png");
+}
+
+.fancybox-overlay-fixed {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+}
+
+.fancybox-lock .fancybox-overlay {
+  overflow: auto;
+  overflow-y: scroll;
+}
+
+/* Title helper */
+.fancybox-title {
+  visibility: hidden;
+  font: normal 13px/20px "Helvetica Neue",Helvetica,Arial,sans-serif;
+  position: relative;
+  text-shadow: none;
+  z-index: 8050;
+}
+
+.fancybox-opened .fancybox-title {
+  visibility: visible;
+}
+
+.fancybox-title-float-wrap {
+  position: absolute;
+  bottom: 0;
+  right: 50%;
+  margin-bottom: -35px;
+  z-index: 8050;
+  text-align: center;
+}
+
+.fancybox-title-float-wrap .child {
+  display: inline-block;
+  margin-right: -100%;
+  padding: 2px 20px;
+  background: transparent;
+  /* Fallback for web browsers that doesn't support RGBa */
+  background: rgba(0, 0, 0, 0.8);
+  -webkit-border-radius: 15px;
+  -moz-border-radius: 15px;
+  border-radius: 15px;
+  text-shadow: 0 1px 2px #222;
+  color: #FFF;
+  font-weight: bold;
+  line-height: 24px;
+  white-space: nowrap;
+}
+
+.fancybox-title-outside-wrap {
+  position: relative;
+  margin-top: 10px;
+  color: #fff;
+}
+
+.fancybox-title-inside-wrap {
+  padding-top: 10px;
+}
+
+.fancybox-title-over-wrap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  color: #fff;
+  padding: 10px;
+  background: #000;
+  background: rgba(0, 0, 0, 0.8);
+}
+
+/* Retina graphics */
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (min--moz-device-pixel-ratio: 1.5), only screen and (min-device-pixel-ratio: 1.5) {
+  #fancybox-loading, .fancybox-close, .fancybox-prev span, .fancybox-next span {
+    background-image: url("../images/fb/fancybox_sprite@2x.png");
+    background-size: 44px 152px;
+    /*The size of the normal image, half the size of the hi-res image*/
+  }
+
+  #fancybox-loading div {
+    background-image: url("../images/fb/fancybox_loading@2x.gif");
+    background-size: 24px 24px;
+    /*The size of the normal image, half the size of the hi-res image*/
+  }
+}
+
+</style>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="author" href="//plus.google.com/u/0/+AngelaHoldenDesign/posts">
+    <meta name="description" content="MobSF Presentations">
+    <title>MobSF Presentations</title>
+    <link href="https://fonts.googleapis.com/css?family=Noto+Sans:400,700" rel="stylesheet" type="text/css">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  <style type="text/css">.fancybox-margin{margin-right:0px;}</style></head>
+  <body>
+    <section class="second clearfix">
+      <header>
+        <h1>MobSF Presentations</h1>
+      </header>
+      <article class="video">
+        <figure>
+        <a class="fancybox fancybox.iframe" href="https://www.youtube.com/embed/h00v1euuFXg"><img class="videoThumb" src="https://i1.ytimg.com/vi/h00v1euuFXg/mqdefault.jpg"></a>
+        </figure>
+        <h2 class="videoTitle">OWASP APPSEC EU 2016 Video</h2>
+      </article>
+      <article class="video">
+        <figure>
+        <a class="fancybox fancybox.iframe" href="https://www.youtube.com/embed/CysfO6AZmo8"><img class="videoThumb" src="https://i1.ytimg.com/vi/CysfO6AZmo8/mqdefault.jpg"></a>
+        </figure>
+        <h2 class="videoTitle">G4H Webcast 2015 Video</h2>
+      </article>
+      <article class="video">
+        <figure>
+        <a class="fancybox fancybox.iframe" href="https://www.slideshare.net/ajin25/automated-mobile-application-security-assessment-with-mobsf"><img class="videoThumb" src="https://image.slidesharecdn.com/appseceu-160719025651/95/appsec-eu-2016-automated-mobile-application-security-assessment-with-mobsf-1-638.jpg?cb=1481100344"></a>
+        </figure>
+        <h2 class="videoTitle">OWASP APPSEC EU 2016 Slides</h2>
+      </article>
+           <article class="video">
+        <figure>
+        <a class="fancybox fancybox.iframe" href="https://www.slideshare.net/ajin25/nullcon-goa-2016-automated-mobile-application-security-testing-with-mobile-security-framework-mobsf"><img class="videoThumb" src="https://image.slidesharecdn.com/nullcon-160312201930/95/nullcon-goa-2016-automated-mobile-application-security-testing-with-mobile-security-framework-mobsf-1-638.jpg?cb=1457837238"></a>
+        </figure>
+        <h2 class="videoTitle">NULLCON 2016 Slides</h2>
+      </article>
+           <article class="video">
+        <figure>
+        <a class="fancybox fancybox.iframe" href="https://www.slideshare.net/ajin25/automated-security-analysis-of-android-ios-applications-with-mobile-security-framework-c0c0n-2015"><img class="videoThumb" src="https://image.slidesharecdn.com/c0c0n1-151009122711-lva1-app6892/95/automated-security-analysis-of-android-ios-applications-with-mobile-security-framework-c0c0n-2015-1-638.jpg?cb=1444393733"></a>
+        </figure>
+        <h2 class="videoTitle">c0c0n 2015 Slides</h2>
+      </article>
+    </section>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-160159852-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-160159852-1');
+    </script>
+</body></html>
