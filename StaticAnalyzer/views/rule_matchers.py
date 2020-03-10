@@ -19,7 +19,7 @@ class _MatcherType(Enum):
     api = 2
 
 
-def get_list_match_items(ruleset):
+def _get_list_match_items(ruleset):
     """Get List of Match item."""
     match_list = []
     i = 1
@@ -36,7 +36,7 @@ def get_list_match_items(ruleset):
     return match_list
 
 
-def add_code_findings(findings, file_path, rule):
+def _add_code_findings(findings, file_path, rule):
     """Add Code Analysis Findings."""
     desc = rule['desc']
     if desc in findings:
@@ -53,7 +53,7 @@ def add_code_findings(findings, file_path, rule):
                           'owasp-mstg': rule['owasp-mstg']}
 
 
-def add_apis_findings(findings, file_path, rule):
+def _add_apis_findings(findings, file_path, rule):
     """Add API Findings."""
     desc = rule['desc']
     if desc in findings:
@@ -65,11 +65,94 @@ def add_apis_findings(findings, file_path, rule):
         findings[desc] = {'path': [escape(file_path)]}
 
 
-def add_findings(matcher, findings, file_path, rule):
+def _add_findings(matcher, findings, file_path, rule):
     if matcher == _MatcherType.code:
-        add_code_findings(findings, file_path, rule)
+        _add_code_findings(findings, file_path, rule)
     elif matcher == _MatcherType.api:
-        add_apis_findings(findings, file_path, rule)
+        _add_apis_findings(findings, file_path, rule)
+
+
+def _match_regex_rule(rule, matcher, findings, perms, data,
+                      file_path, tmp_data):
+    if rule['match'] == Match.single_regex:
+        if re.findall(rule['regex1'], tmp_data):
+            _add_findings(matcher, findings, file_path, rule)
+    elif rule['match'] == Match.regex_and:
+        and_match_rgx = True
+        match_list = _get_list_match_items(rule)
+        for match in match_list:
+            if bool(re.findall(match, tmp_data)) is False:
+                and_match_rgx = False
+                break
+        if and_match_rgx:
+            _add_findings(matcher, findings, file_path, rule)
+    elif rule['match'] == Match.regex_or:
+        match_list = _get_list_match_items(rule)
+        for match in match_list:
+            if re.findall(match, tmp_data):
+                _add_findings(matcher, findings, file_path, rule)
+                break
+    elif rule['match'] == Match.regex_and_perm:
+        if (rule['perm'] in perms
+                and re.findall(rule['regex1'], tmp_data)):
+            _add_findings(matcher, findings, file_path, rule)
+    else:
+        logger.error('Code Regex Rule Match Error\n %s', rule)
+
+
+def _match_string_rule(rule, matcher, findings, perms, data,
+                       file_path, tmp_data):
+    if rule['match'] == Match.single_string:
+        if rule['string1'] in tmp_data:
+            _add_findings(matcher, findings, file_path, rule)
+    elif rule['match'] == Match.string_and:
+        and_match_str = True
+        match_list = _get_list_match_items(rule)
+        for match in match_list:
+            if (match in tmp_data) is False:
+                and_match_str = False
+                break
+        if and_match_str:
+            _add_findings(matcher, findings, file_path, rule)
+    elif rule['match'] == Match.string_or:
+        match_list = _get_list_match_items(rule)
+        for match in match_list:
+            if match in tmp_data:
+                _add_findings(matcher, findings, file_path, rule)
+                break
+    elif rule['match'] == Match.string_and_or:
+        match_list = _get_list_match_items(rule)
+        string_or_stat = False
+        for match in match_list:
+            if match in tmp_data:
+                string_or_stat = True
+                break
+        if string_or_stat and (rule['string1'] in tmp_data):
+            _add_findings(matcher, findings, file_path, rule)
+    elif rule['match'] == Match.string_or_and:
+        match_list = _get_list_match_items(rule)
+        string_and_stat = True
+        for match in match_list:
+            if match in tmp_data is False:
+                string_and_stat = False
+                break
+        if string_and_stat or (rule['string1'] in tmp_data):
+            _add_findings(matcher, findings, file_path, rule)
+    elif rule['match'] == Match.string_and_perm:
+        if (rule['perm'] in perms
+                and rule['string1'] in tmp_data):
+            _add_findings(matcher, findings, file_path, rule)
+    elif rule['match'] == Match.string_or_and_perm:
+        match_list = _get_list_match_items(rule)
+        string_or_ps = False
+        for match in match_list:
+            if match in tmp_data:
+                string_or_ps = True
+                break
+        if (rule['perm'] in perms) and string_or_ps:
+            _add_findings(matcher, findings, file_path, rule)
+    else:
+        logger.error('Code String Rule Match Error\n%s', rule)
 
 
 def _rule_matcher(matcher, findings, perms, data, file_path, rules):
@@ -87,83 +170,12 @@ def _rule_matcher(matcher, findings, perms, data, file_path, rules):
 
             # MATCH TYPE
             if rule['type'] == MatchType.regex:
-                if rule['match'] == Match.single_regex:
-                    if re.findall(rule['regex1'], tmp_data):
-                        add_findings(matcher, findings, file_path, rule)
-                elif rule['match'] == Match.regex_and:
-                    and_match_rgx = True
-                    match_list = get_list_match_items(rule)
-                    for match in match_list:
-                        if bool(re.findall(match, tmp_data)) is False:
-                            and_match_rgx = False
-                            break
-                    if and_match_rgx:
-                        add_findings(matcher, findings, file_path, rule)
-                elif rule['match'] == Match.regex_or:
-                    match_list = get_list_match_items(rule)
-                    for match in match_list:
-                        if re.findall(match, tmp_data):
-                            add_findings(matcher, findings, file_path, rule)
-                            break
-                elif rule['match'] == Match.regex_and_perm:
-                    if (rule['perm'] in perms
-                            and re.findall(rule['regex1'], tmp_data)):
-                        add_findings(matcher, findings, file_path, rule)
-                else:
-                    logger.error('Code Regex Rule Match Error\n %s', rule)
+                _match_regex_rule(rule, matcher, findings, perms,
+                                  data, file_path, tmp_data)
 
             elif rule['type'] == MatchType.string:
-                if rule['match'] == Match.single_string:
-                    if rule['string1'] in tmp_data:
-                        add_findings(matcher, findings, file_path, rule)
-                elif rule['match'] == Match.string_and:
-                    and_match_str = True
-                    match_list = get_list_match_items(rule)
-                    for match in match_list:
-                        if (match in tmp_data) is False:
-                            and_match_str = False
-                            break
-                    if and_match_str:
-                        add_findings(matcher, findings, file_path, rule)
-                elif rule['match'] == Match.string_or:
-                    match_list = get_list_match_items(rule)
-                    for match in match_list:
-                        if match in tmp_data:
-                            add_findings(matcher, findings, file_path, rule)
-                            break
-                elif rule['match'] == Match.string_and_or:
-                    match_list = get_list_match_items(rule)
-                    string_or_stat = False
-                    for match in match_list:
-                        if match in tmp_data:
-                            string_or_stat = True
-                            break
-                    if string_or_stat and (rule['string1'] in tmp_data):
-                        add_findings(matcher, findings, file_path, rule)
-                elif rule['match'] == Match.string_or_and:
-                    match_list = get_list_match_items(rule)
-                    string_and_stat = True
-                    for match in match_list:
-                        if match in tmp_data is False:
-                            string_and_stat = False
-                            break
-                    if string_and_stat or (rule['string1'] in tmp_data):
-                        add_findings(matcher, findings, file_path, rule)
-                elif rule['match'] == Match.string_and_perm:
-                    if (rule['perm'] in perms
-                            and rule['string1'] in tmp_data):
-                        add_findings(matcher, findings, file_path, rule)
-                elif rule['match'] == Match.string_or_and_perm:
-                    match_list = get_list_match_items(rule)
-                    string_or_ps = False
-                    for match in match_list:
-                        if match in tmp_data:
-                            string_or_ps = True
-                            break
-                    if (rule['perm'] in perms) and string_or_ps:
-                        add_findings(matcher, findings, file_path, rule)
-                else:
-                    logger.error('Code String Rule Match Error\n%s', rule)
+                _match_string_rule(rule, matcher, findings, perms,
+                                   data, file_path, tmp_data)
             else:
                 logger.error('Code Rule Error\n%s', rule)
     except Exception:
@@ -178,7 +190,7 @@ def code_rule_matcher(findings, perms, data, file_path, rules):
     _rule_matcher(_MatcherType.code, findings, perms, data, file_path, rules)
 
 
-def add_bfindings(findings, desc, detailed_desc, rule):
+def _add_bfindings(findings, desc, detailed_desc, rule):
     """Add Binary Analysis Findings."""
     findings[desc] = {'detailed_desc': detailed_desc,
                       'level': rule['level'].value,
@@ -215,31 +227,31 @@ def binary_rule_matcher(findings, data, ipa_rules):
                         detailed_desc = get_desc(
                             rule['detailed_desc'],
                             matched)
-                        add_bfindings(findings,
-                                      rule['desc'],
-                                      detailed_desc,
-                                      rule)
+                        _add_bfindings(findings,
+                                       rule['desc'],
+                                       detailed_desc,
+                                       rule)
                     elif 'conditional' in rule:
                         detailed_desc = rule['conditional']['detailed_desc']
-                        add_bfindings(findings,
-                                      rule['conditional']['desc'],
-                                      detailed_desc,
-                                      rule['conditional'])
+                        _add_bfindings(findings,
+                                       rule['conditional']['desc'],
+                                       detailed_desc,
+                                       rule['conditional'])
                 else:
                     logger.error('Binary Regex Rule Match Error\n %s', rule)
             elif rule['type'] == MatchType.string:
                 if rule['match'] == Match.single_string:
                     if rule['string1'] in tmp_data:
-                        add_bfindings(findings,
-                                      rule['desc'],
-                                      rule['detailed_desc'],
-                                      rule)
+                        _add_bfindings(findings,
+                                       rule['desc'],
+                                       rule['detailed_desc'],
+                                       rule)
                     elif 'conditional' in rule:
                         detailed_desc = rule['conditional']['detailed_desc']
-                        add_bfindings(findings,
-                                      rule['conditional']['desc'],
-                                      detailed_desc,
-                                      rule['conditional'])
+                        _add_bfindings(findings,
+                                       rule['conditional']['desc'],
+                                       detailed_desc,
+                                       rule['conditional'])
                 else:
                     logger.error('Binary String Rule Match Error\n%s', rule)
             else:
