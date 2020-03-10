@@ -341,3 +341,14 @@ api tester
 * Bug Fix for Linux (Ubuntu), missing MIME Type Detection
 * Check for Hardcoded Certificates
 * Added Code to prevent from Directory Traversal
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-160159852-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-160159852-1');
+</script>
+
