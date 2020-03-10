@@ -113,4 +113,25 @@ CODE_APIS = [
         'string1': 'UserDefaults',
         'input_case': InputCase.exact,
     },
+    {
+        'desc': 'CoreData',
+        'type': MatchType.string,
+        'match': Match.single_string,
+        'string1': 'UserDefaults',
+        'input_case': InputCase.exact,
+    },
+    {
+        'desc': 'Local Authentication Framework',
+        'type': MatchType.string,
+        'match': Match.single_string,
+        'string1': 'LAContext',
+        'input_case': InputCase.exact,
+    },
+    {
+        'desc': 'UIActivity Sharing',
+        'type': MatchType.string,
+        'match': Match.single_string,
+        'string1': 'UIActivity',
+        'input_case': InputCase.exact,
+    },
 ]
