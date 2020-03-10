@@ -18,6 +18,7 @@ Match - It is an Enum used to run proper rule detection.
                         and (permission in permission_list_from_manifest)
     11. string_or_and_perm - if ((string1 in input) or (string2 in input))
                            and (permission in permission_list_from_manifest)
+    12. string_and_not - if ((string1 in input) and (string2 not in input))
 
 MatchType - It is an Enum used to define match type.
    1. string
@@ -53,6 +54,7 @@ class Match(Enum):
     regex_and_perm = 9
     string_and_perm = 10
     string_or_and_perm = 11
+    string_and_not = 12
 
 
 class MatchType(Enum):
