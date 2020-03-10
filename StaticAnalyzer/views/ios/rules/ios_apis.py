@@ -117,7 +117,7 @@ CODE_APIS = [
         'desc': 'CoreData',
         'type': MatchType.string,
         'match': Match.single_string,
-        'string1': 'UserDefaults',
+        'string1': 'CoreData',
         'input_case': InputCase.exact,
     },
     {
