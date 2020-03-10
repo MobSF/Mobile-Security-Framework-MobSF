@@ -99,7 +99,6 @@ def check_transport_security(p_list):
                     ats.append(findings)
 
                 inc_min_tls = config.get('NSExceptionMinimumTLSVersion', None)
-                logger.info(inc_min_tls)
                 if inc_min_tls == 'TLSv1.0' or inc_min_tls == 'TLSv1.1':
                     findings = {
                         'issue': ('NSExceptionMinimumTLSVersion set to {}'
