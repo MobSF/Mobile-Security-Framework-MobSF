@@ -162,6 +162,10 @@ def _rule_matcher(matcher, findings, perms, data, file_path, rules):
                             break
                     if (rule['perm'] in perms) and string_or_ps:
                         add_findings(matcher, findings, file_path, rule)
+                elif rule['match'] == Match.string_and_not:
+                    if (rule['string1'] in tmp_data
+                            and rule['string2'] not in tmp_data):
+                        add_findings(matcher, findings, file_path, rule)
                 else:
                     logger.error('Code String Rule Match Error\n%s', rule)
             else:
