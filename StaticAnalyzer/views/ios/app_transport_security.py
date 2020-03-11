@@ -12,7 +12,8 @@ def check_transport_security(p_list):
         ats_dict = p_list['NSAppTransportSecurity']
         if ats_dict.get('NSAllowsArbitraryLoads'):
             ats.append({
-                'issue': 'App Transport Security is allowed',
+                'issue': ('App Transport Security '
+                          'AllowsArbitraryLoads is allowed'),
                 'status': 'insecure',
                 'description': (
                     'App Transport Security restrictions are disabled '
