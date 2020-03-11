@@ -221,16 +221,24 @@
                   <tbody>
                     {% if ats_analysis|length > 0 %}
                       {% for findings in ats_analysis %}
-                      <tr>
-                        <td>
-                         {{findings.issue}}
-                        <td>
-                          <span class="danger"> {{findings.status}}</span>
-                        </td>
-                        <td>
-                         {{findings.description}}
-                        </td>
-                      </tr>
+                        <tr>
+                          <td>
+                          {{findings.issue}}
+                          <td>
+                            {% if findings.status == "insecure" %}
+                            <span class="danger"> {{findings.status}}</span>
+                            {% elif findings.status == "secure" %}
+                            <span class="success"> {{findings.status}}</span>
+                            {% elif findings.status == "warning" %}
+                            <span class="warning"> {{findings.status}}</span>
+                            {% elif findings.status == "info" %}
+                            <span class="info"> {{findings.status}}</span>
+                            {% endif %}
+                            </td>
+                          <td>
+                          {{findings.description}}
+                          </td>
+                        </tr>
                       {% endfor %}
                     {% else %}
                     <tr>

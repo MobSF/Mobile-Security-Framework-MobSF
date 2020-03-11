@@ -516,12 +516,20 @@
                       {% for findings in ats_analysis %}
                       <tr>
                         <td>
-                         {{findings.issue}}
+                        {{findings.issue}}
                         <td>
+                          {% if findings.status == "insecure" %}
                           <span class="badge bg-danger"> {{findings.status}}</span>
-                        </td>
+                          {% elif findings.status == "secure" %}
+                          <span class="badge bg-success"> {{findings.status}}</span>
+                          {% elif findings.status == "warning" %}
+                          <span class="badge bg-warning"> {{findings.status}}</span>
+                          {% elif findings.status == "info" %}
+                          <span class="badge bg-info"> {{findings.status}}</span>
+                          {% endif %}
+                          </td>
                         <td>
-                         {{findings.description}}
+                        {{findings.description}}
                         </td>
                       </tr>
                       {% endfor %}
