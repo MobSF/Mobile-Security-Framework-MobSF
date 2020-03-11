@@ -64,7 +64,9 @@ def check_transport_security(p_list):
         exception_domains = ats_dict.get('NSExceptionDomains')
         if exception_domains:
             for domain, config in exception_domains.items():
-                if config.get('NSExceptionAllowsInsecureHTTPLoads', False):
+                old_exp = 'NSTemporaryExceptionAllowsInsecureHTTPLoads'
+                if (config.get('NSExceptionAllowsInsecureHTTPLoads', False)
+                        or config.get(old_exp, False)):
                     findings = {
                         'issue': ('Insecure communication'
                                   ' to {} is allowed'.format(domain)),
@@ -98,8 +100,9 @@ def check_transport_security(p_list):
                         ),
                     }
                     ats.append(findings)
-
-                inc_min_tls = config.get('NSExceptionMinimumTLSVersion', None)
+                old_tls = 'NSTemporaryExceptionMinimumTLSVersion'
+                inc_min_tls = (config.get('NSExceptionMinimumTLSVersion', None)
+                               or config.get(old_tls, None))
                 if inc_min_tls in ['TLSv1.0', 'TLSv1.1']:
                     findings = {
                         'issue': ('NSExceptionMinimumTLSVersion set to {}'
@@ -109,7 +112,7 @@ def check_transport_security(p_list):
                             'The minimum Transport Layer '
                             'Security (TLS) version '
                             'for network connections sent to {} '
-                            'is set to {}. This version is deemed'
+                            'is set to {}. This version is deemed '
                             'to be insecure'.format(domain, inc_min_tls)
                         ),
                     }
@@ -127,7 +130,7 @@ def check_transport_security(p_list):
                             'is set to {}. '
                             'This version is vulnerable to '
                             'attacks such as POODLE, FREAK, '
-                            'or CurveSwap.'.format(domain, inc_min_tls)
+                            'or CurveSwap etc.'.format(domain, inc_min_tls)
                         ),
                     }
                     ats.append(findings)
@@ -146,6 +149,9 @@ def check_transport_security(p_list):
                     }
                     ats.append(findings)
 
+                elif inc_min_tls is None:
+                    pass
+
                 else:
                     findings = {
                         'issue': ('NSExceptionMinimumTLSVersion set to {}'
@@ -159,8 +165,9 @@ def check_transport_security(p_list):
                         ),
                     }
                     ats.append(findings)
-
-                if config.get('NSExceptionRequiresForwardSecrecy', False):
+                old_fwd = 'NSTemporaryExceptionRequiresForwardSecrecy'
+                if (config.get('NSExceptionRequiresForwardSecrecy', False)
+                        or config.get(old_fwd, False)):
                     findings = {
                         'issue': ('NSExceptionRequiresForwardSecrecy '
                                   'set to YES'
