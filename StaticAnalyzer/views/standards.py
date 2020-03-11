@@ -129,6 +129,7 @@ CWE = {
     'CWE-250': 'CWE-250 - Execution with Unnecessary Privileges',
     'CWE-276': 'CWE-276 - Incorrect Default Permissions',
     'CWE-295': 'CWE-295 - Improper Certificate Validation',
+    'CWE-310': 'CWE-310 - Cryptographic Issues',
     'CWE-311': 'CWE-311 - Missing Encryption of Sensitive Data',
     'CWE-312': 'CWE-312 - Cleartext Storage of Sensitive Information',
     'CWE-327': 'CWE-327 - Use of a Broken or Risky Cryptographic Algorithm',
