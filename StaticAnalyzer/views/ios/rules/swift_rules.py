@@ -375,4 +375,74 @@ SWIFT_RULES = common_rules.COMMON_RULES + [
         'owasp': '',
         'owasp-mstg': OWASP_MSTG['platform-5'],
     },
+    {
+        'desc': ('TLS 1.3 should be used. '
+                 'Detected old version - TLS 1.0.'),
+        'type': MatchType.string,
+        'string1': ('.TLSMinimumSupportedProtocolVersion = '
+                    'tls_protocol_version_t.TLSv10'),
+        'level': Level.high,
+        'match': Match.single_string,
+        'input_case': InputCase.exact,
+        'cvss': 4.3,
+        'cwe': CWE['CWE-310'],
+        'owasp': OWASP['m3'],
+        'owasp-mstg': OWASP_MSTG['network-2'],
+    },
+    {
+        'desc': ('TLS 1.3 should be used. '
+                 'Detected old version - TLS 1.1.'),
+        'type': MatchType.string,
+        'string1': ('.TLSMinimumSupportedProtocolVersion = '
+                    'tls_protocol_version_t.TLSv11'),
+        'level': Level.high,
+        'match': Match.single_string,
+        'input_case': InputCase.exact,
+        'cvss': 4.3,
+        'cwe': CWE['CWE-310'],
+        'owasp': OWASP['m3'],
+        'owasp-mstg': OWASP_MSTG['network-2'],
+    },
+    {
+        'desc': ('TLS 1.3 should be used. '
+                 'Detected old version - TLS 1.2.'),
+        'type': MatchType.string,
+        'string1': ('.TLSMinimumSupportedProtocolVersion = '
+                    'tls_protocol_version_t.TLSv12'),
+        'level': Level.warning,
+        'match': Match.single_string,
+        'input_case': InputCase.exact,
+        'cvss': 0.0,
+        'cwe': '',
+        'owasp': OWASP['m3'],
+        'owasp-mstg': OWASP_MSTG['network-2'],
+    },
+    {
+        'desc': ('DTLS 1.2 should be used. '
+                 'Detected old version - DTLS 1.0.'),
+        'type': MatchType.string,
+        'string1': ('.TLSMinimumSupportedProtocolVersion = '
+                    'tls_protocol_version_t.DTLSv10'),
+        'level': Level.high,
+        'match': Match.single_string,
+        'input_case': InputCase.exact,
+        'cvss': 4.3,
+        'cwe': CWE['CWE-310'],
+        'owasp': OWASP['m3'],
+        'owasp-mstg': OWASP_MSTG['network-2'],
+    },
+    {
+        'desc': ('Use of deprecated property tlsMinimumSupportedProtocol. '
+                 'To avoid potential security risks, use '
+                 'tlsMinimumSupportedProtocolVersion'),
+        'type': MatchType.string,
+        'string1': '.tlsMinimumSupportedProtocol =',
+        'level': Level.info,
+        'match': Match.single_string,
+        'input_case': InputCase.exact,
+        'cvss': 0.0,
+        'cwe': '',
+        'owasp': OWASP['m3'],
+        'owasp-mstg': OWASP_MSTG['network-2'],
+    },
 ]
