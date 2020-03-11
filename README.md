@@ -83,13 +83,11 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 
 ## Honorable Contributors
 
-* Amrutha VC (@amruthavc) - For the new MobSF logo
+* Amrutha VC - For the new MobSF logo
 * Dominik Schlecht - For the awesome work on adding Windows Phone App Static Analysis to MobSF
 * Esteban - Better Android Manifest Analysis and Static Analysis Improvement.
-* Matan Dobrushin - For adding Android ARM Emulator support to MobSF - Special thanks goes for cuckoo-droid, I got inspired by their code and idea for this implementation.
-* Rahul (@c0dist) - Kali Support
+* Matan Dobrushin - For adding Android ARM Emulator support to MobSF - Special thanks goes for cuckoo-droid
 * Shuxin - Android Binary Analysis
-* Oscar Alfonso Diaz - (@OscarAkaElvis) - For Dockerfile contributions
 * Abhinav Saxena - (@xandfury) - For Travis CI and Logging integration
 * ![netguru](https://user-images.githubusercontent.com/4301109/76340877-a3dc4f00-62d2-11ea-8631-b4cc8d9e42ed.png) [Netguru](https://www.netguru.com/) (@karolpiateknet, @mtbrzeski) - For iOS Swift support, Rule contributions and SAST refactoring.
 
@@ -99,6 +97,8 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 * Anant Srivastava (@anantshri) - For Activity Tester Idea
 * Anto Joseph (@antojosep007) - For the help with SuperSU.
 * Bharadwaj Machiraju (@tunnelshade_) - For writing pyWebProxy from scratch
+* Rahul (@c0dist) - Kali Support
 * MindMac - For writing Android Blue Pill
+* Oscar Alfonso Diaz - (@OscarAkaElvis) - For Dockerfile contributions
 * Thomas Abraham - For JS Hacks on UI.
 * Tim Brown (@timb_machine) - For the iOS Binary Analysis Ruleset.
