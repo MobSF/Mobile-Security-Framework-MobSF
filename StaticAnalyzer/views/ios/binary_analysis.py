@@ -86,7 +86,7 @@ def class_dump(tools_dir, bin_path, app_dir, bin_type):
         return classdump
     except Exception:
         logger.error('class-dump/class-dump-swift failed on this binary')
-
+    return classdump
 
 def strings_on_ipa(bin_path):
     """Extract Strings from IPA."""
