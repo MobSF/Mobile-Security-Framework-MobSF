@@ -3,11 +3,6 @@
 
 import logging
 import os
-import platform
-import stat
-import subprocess
-
-from django.conf import settings
 
 from macholib.mach_o import (CPU_TYPE_NAMES, MH_CIGAM_64, MH_MAGIC_64,
                              get_cpu_subtype)
@@ -15,8 +10,8 @@ from macholib.MachO import MachO
 
 from MobSF.utils import is_file_exists
 
+from StaticAnalyzer.views.ios.classdump import get_class_dump
 from StaticAnalyzer.views.ios.otool_analysis import (
-    get_otool_out,
     otool_analysis,
 )
 from StaticAnalyzer.views.ios.rules import (
@@ -37,56 +32,6 @@ def detect_bin_type(libs):
     else:
         return 'Objective C'
 
-
-def class_dump(tools_dir, bin_path, app_dir, bin_type):
-    """Running Classdumpz on binary."""
-    try:
-        classdump = b''
-        if platform.system() == 'Darwin':
-            logger.info('Dumping classes')
-            if bin_type == 'Swift':
-                logger.info('Running class-dump-swift against binary')
-                if (len(settings.CLASSDUMP_SWIFT_BINARY) > 0
-                        and is_file_exists(settings.CLASSDUMP_SWIFT_BINARY)):
-                    class_dump_bin = settings.CLASSDUMP_SWIFT_BINARY
-                else:
-                    class_dump_bin = os.path.join(
-                        tools_dir, 'class-dump-swift')
-            else:
-                logger.info('Running class-dump against binary')
-                if (len(settings.CLASSDUMP_BINARY) > 0
-                        and is_file_exists(settings.CLASSDUMP_BINARY)):
-                    class_dump_bin = settings.CLASSDUMP_BINARY
-                else:
-                    class_dump_bin = os.path.join(tools_dir, 'class-dump')
-            # Execute permission check
-            if not os.access(class_dump_bin, os.X_OK):
-                os.chmod(class_dump_bin, stat.S_IEXEC)
-            args = [class_dump_bin, bin_path]
-        elif platform.system() == 'Linux':
-            logger.info('Running jtool against the binary for dumping classes')
-            args = get_otool_out(tools_dir, 'classdump', bin_path, '')
-        else:
-            # Platform not supported
-            logger.warning('class-dump is not supported in this platform')
-            return classdump
-        with open(os.devnull, 'w') as devnull:
-            # timeout to handle possible deadlock from jtool1
-            classdump = subprocess.check_output(args,
-                                                stderr=devnull,
-                                                timeout=30)
-        if b'Source: (null)' in classdump and platform.system() == 'Darwin':
-            logger.info('Running fail safe class-dump-swift')
-            class_dump_bin = os.path.join(
-                tools_dir, 'class-dump-swift')
-            args = [class_dump_bin, bin_path]
-            classdump = subprocess.check_output(args)
-        with open(os.path.join(app_dir, 'classdump.txt'), 'wb') as flip:
-            flip.write(classdump)
-        return classdump
-    except Exception:
-        logger.error('class-dump/class-dump-swift failed on this binary')
-    return classdump
 
 def strings_on_ipa(bin_path):
     """Extract Strings from IPA."""
@@ -153,7 +98,7 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
                 bin_path,
                 bin_dir)
             bin_type = detect_bin_type(object_data['libs'])
-            cdump = class_dump(tools_dir, bin_path, app_dir, bin_type)
+            cdump = get_class_dump(tools_dir, bin_path, app_dir, bin_type)
             binary_rule_matcher(
                 binary_findings,
                 object_data['bindata'] + cdump,
