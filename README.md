@@ -68,7 +68,7 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 
 ### Static Analysis - iOS
 
-![ios-static-analysis-ipa](https://user-images.githubusercontent.com/4301109/70666043-dd51df80-1c3b-11ea-9b24-4048fad552fb.png)
+![ios-static-analysis-ipa](https://user-images.githubusercontent.com/4301109/76475349-eede8b00-63d4-11ea-9843-360ffa63cefa.png)
 ![ios-binary-analysis-ipa](https://user-images.githubusercontent.com/4301109/76473161-0ebe8080-63ce-11ea-9427-4ddbfb41c2ab.png)
 ![ios-static-analysis-source](https://user-images.githubusercontent.com/4301109/76473316-783e8f00-63ce-11ea-8b30-df35fb06e2bd.png)
 
