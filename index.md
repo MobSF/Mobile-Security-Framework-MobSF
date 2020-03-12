@@ -23,17 +23,19 @@ Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=MobSF_Mobile-Security-Framework-MobSF&metric=alert_status)](https://sonarcloud.io/dashboard?id=MobSF_Mobile-Security-Framework-MobSF)
 [![Build Status](https://travis-ci.com/MobSF/Mobile-Security-Framework-MobSF.svg?branch=master)](https://travis-ci.com/MobSF/Mobile-Security-Framework-MobSF)
 [![Requirements Status](https://pyup.io/repos/github/MobSF/Mobile-Security-Framework-MobSF/shield.svg)](https://pyup.io/repos/github/MobSF/Mobile-Security-Framework-MobSF/)
-[![ToolsWatch Best Security Tools 2017](https://img.shields.io/badge/ToolsWatch-Rank%209%20%7C%20Year%202017-red.svg)](http://www.toolswatch.org/2018/01/black-hat-arsenal-top-10-security-tools/)
 [![ToolsWatch Best Security Tools 2016](https://img.shields.io/badge/ToolsWatch-Rank%205%20%7C%20Year%202016-red.svg)](http://www.toolswatch.org/2017/02/2016-top-security-tools-as-voted-by-toolswatch-org-readers/)
-[![Blackhat Arsenal Asia 2018](https://img.shields.io/badge/Black%20Hat%20Arsenal-Asia%202018-blue.svg)](https://www.blackhat.com/asia-18/arsenal.html#mobile-security-framework-mobsf)
+[![ToolsWatch Best Security Tools 2017](https://img.shields.io/badge/ToolsWatch-Rank%209%20%7C%20Year%202017-red.svg)](http://www.toolswatch.org/2018/01/black-hat-arsenal-top-10-security-tools/)
 [![Blackhat Arsenal Asia 2015](https://img.shields.io/badge/Black%20Hat%20Arsenal-Asia%202015-blue.svg)](https://www.blackhat.com/asia-15/arsenal.html#yso-mobile-security-framework)
+[![Blackhat Arsenal Asia 2018](https://img.shields.io/badge/Black%20Hat%20Arsenal-Asia%202018-blue.svg)](https://www.blackhat.com/asia-18/arsenal.html#mobile-security-framework-mobsf)
 
 
 MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-release) and [BlackArch](https://blackarch.org/mobile.html)
 
-## Buy us a Coffee!
+## Support MobSF
 
-*Donate via Paypal:* [![Donate via Paypal](https://user-images.githubusercontent.com/4301109/28491754-14774f54-6f14-11e7-9975-8a5faeda7e30.gif)](https://mobsf.github.io/Mobile-Security-Framework-MobSF/paypal.html)   *Send Bitcoins:* [![Donate Bitcoin](https://user-images.githubusercontent.com/4301109/30631105-cb8063c8-9e00-11e7-95df-43c20b840e52.png)](https://mobsf.github.io/Mobile-Security-Framework-MobSF/donate.html)
+**Donate via Paypal:** [![Donate via Paypal](https://user-images.githubusercontent.com/4301109/76471686-c43b0500-63c9-11ea-8225-2a305efb3d87.gif)](https://paypal.me/ajinabraham)
+
+**Send Bitcoins:** [![Donate Bitcoin](https://user-images.githubusercontent.com/4301109/30631105-cb8063c8-9e00-11e7-95df-43c20b840e52.png)](https://mobsf.github.io/Mobile-Security-Framework-MobSF/donate.html)
 
 ## Documentation
 [![See MobSF Documentation](https://user-images.githubusercontent.com/4301109/70686099-3855f780-1c79-11ea-8141-899e39459da2.png)](https://mobsf.github.io/docs)
@@ -55,36 +57,36 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 
 ## MobSF Support
 
-* **Free Support:** For free limited support, questions and help, join our Slack channel [mobsf.slack.com](https://mobsf.slack.com/join/shared_invite/enQtNzM2NTAyNzA1MjgxLTdjMzkzNDc3ZjdiMjkwZTZhMmFhNDlkZmMwZDhjNDNmYTAzYWE5NGZlMDIzYzliNTdiMDQ2MTRlYjU1MjkyNGM)
+* **Free Support:** For free limited support, questions and help, join our Slack channel ![MobSF Slack Channel](https://user-images.githubusercontent.com/4301109/76471928-6e1a9180-63ca-11ea-88fb-b43d75153f74.png) [mobsf.slack.com](https://mobsf.slack.com/join/shared_invite/enQtNzM2NTAyNzA1MjgxLTdjMzkzNDc3ZjdiMjkwZTZhMmFhNDlkZmMwZDhjNDNmYTAzYWE5NGZlMDIzYzliNTdiMDQ2MTRlYjU1MjkyNGM)
 * **Enterprise Support:** For enterprise support, priority feature requests and live training, see [MobSF Support Packages](https://mobsf.github.io/Mobile-Security-Framework-MobSF/support.html)
 
 
 ## Contribution, Feature Requests & Bugs
 
 * Read [CONTRIBUTING.md](https://github.com/MobSF/Mobile-Security-Framework-MobSF/blob/master/.github/CONTRIBUTING.md) before opening bugs, feature requests and pull request.
-* Open Bugs after reading [Guidelines to Report a Bug](https://github.com/MobSF/Mobile-Security-Framework-MobSF/blob/master/.github/CONTRIBUTING.md#using-the-issue-tracker)
-* Feature Requests, Announcements: [@ajinabraham](https://twitter.com/ajinabraham) or [@OpenSecurity_IN](https://twitter.com/OpenSecurity_IN).
-* For discussions, questions and limited support, use our Slack channel mobsf.slack.com: [Join MobSF Channel](https://mobsf.slack.com/join/shared_invite/enQtNzM2NTAyNzA1MjgxLTdjMzkzNDc3ZjdiMjkwZTZhMmFhNDlkZmMwZDhjNDNmYTAzYWE5NGZlMDIzYzliNTdiMDQ2MTRlYjU1MjkyNGM)
+* For Project updated and announcements, follow [@ajinabraham](https://twitter.com/ajinabraham) or [@OpenSecurity_IN](https://twitter.com/OpenSecurity_IN).
+* Github Issues are only for tracking bugs and feature requests. Do not post support or help queries there. We have a slack channel for that.
 
 
 ## Screenshots
 
 ### Static Analysis - Android
 
-![android-static-analysis-apk](https://user-images.githubusercontent.com/4301109/70381680-c732df00-191c-11ea-86dc-fc2ce93af9df.png)
-![android-static-analysis-apk2](https://user-images.githubusercontent.com/4301109/70381695-095c2080-191d-11ea-8254-e2a0c3eef708.png)
-![compare-result](https://user-images.githubusercontent.com/4301109/70381729-92735780-191d-11ea-8671-c72f54f3a4be.png)
+![android-static-analysis-apk](https://user-images.githubusercontent.com/4301109/76472502-1f6df700-63cc-11ea-9ac0-fca99327e47d.png)
+![android-static-analysis-apk2](https://user-images.githubusercontent.com/4301109/76472562-4cbaa500-63cc-11ea-8fbe-b92ea57a8c6f.png)
+![compare-result](https://user-images.githubusercontent.com/4301109/76473496-0286f300-63cf-11ea-91b6-5bb267c7e80b.png)
 
 ### Static Analysis - iOS
 
-![ios-static-analysis-ipa](https://user-images.githubusercontent.com/4301109/70666043-dd51df80-1c3b-11ea-9b24-4048fad552fb.png)
-![ios-static-analysis-source](https://user-images.githubusercontent.com/4301109/70381767-5d1b3980-191e-11ea-8adc-20f54554bf5b.png)
+![ios-static-analysis-ipa](https://user-images.githubusercontent.com/4301109/76475349-eede8b00-63d4-11ea-9843-360ffa63cefa.png)
+![ios-binary-analysis-ipa](https://user-images.githubusercontent.com/4301109/76473161-0ebe8080-63ce-11ea-9427-4ddbfb41c2ab.png)
+![ios-static-analysis-source](https://user-images.githubusercontent.com/4301109/76473316-783e8f00-63ce-11ea-8b30-df35fb06e2bd.png)
 
 ### Dynamic Analysis - Android APK
 
-![android-dynamic-analysis](https://user-images.githubusercontent.com/4301109/70381806-03673f00-191f-11ea-87e4-dee316212101.png)
-![android-dynamic-frida-live](https://user-images.githubusercontent.com/4301109/70381835-72dd2e80-191f-11ea-8f94-2255c9f605d9.png)
-![android-dynamic-report](https://user-images.githubusercontent.com/4301109/70381853-c18ac880-191f-11ea-8cf4-2ce44521509c.png)
+![android-dynamic-analysis](https://user-images.githubusercontent.com/4301109/76473773-ea63a380-63cf-11ea-927d-730726ae495b.png)
+![android-dynamic-frida-live-api-monitor](https://user-images.githubusercontent.com/4301109/76473831-14b56100-63d0-11ea-83cc-20693d929236.png)
+![android-dynamic-report](https://user-images.githubusercontent.com/4301109/76474288-8641df00-63d1-11ea-8953-ec7adc706f05.png)
 
 ### Web API Viewer
 
@@ -93,13 +95,11 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 
 ## Honorable Contributors
 
-* Amrutha VC (@amruthavc) - For the new MobSF logo
+* Amrutha VC - For the new MobSF logo
 * Dominik Schlecht - For the awesome work on adding Windows Phone App Static Analysis to MobSF
 * Esteban - Better Android Manifest Analysis and Static Analysis Improvement.
-* Matan Dobrushin - For adding Android ARM Emulator support to MobSF - Special thanks goes for cuckoo-droid, I got inspired by their code and idea for this implementation.
-* Rahul (@c0dist) - Kali Support
+* Matan Dobrushin - For adding Android ARM Emulator support to MobSF - Special thanks goes for cuckoo-droid
 * Shuxin - Android Binary Analysis
-* Oscar Alfonso Diaz - (@OscarAkaElvis) - For Dockerfile contributions
 * Abhinav Saxena - (@xandfury) - For Travis CI and Logging integration
 * ![netguru](https://user-images.githubusercontent.com/4301109/76340877-a3dc4f00-62d2-11ea-8631-b4cc8d9e42ed.png) [Netguru](https://www.netguru.com/) (@karolpiateknet, @mtbrzeski) - For iOS Swift support, Rule contributions and SAST refactoring.
 
@@ -109,6 +109,8 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 * Anant Srivastava (@anantshri) - For Activity Tester Idea
 * Anto Joseph (@antojosep007) - For the help with SuperSU.
 * Bharadwaj Machiraju (@tunnelshade_) - For writing pyWebProxy from scratch
+* Rahul (@c0dist) - Kali Support
 * MindMac - For writing Android Blue Pill
+* Oscar Alfonso Diaz - (@OscarAkaElvis) - For Dockerfile contributions
 * Thomas Abraham - For JS Hacks on UI.
 * Tim Brown (@timb_machine) - For the iOS Binary Analysis Ruleset.
