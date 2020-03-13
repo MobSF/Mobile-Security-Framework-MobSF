@@ -961,9 +961,7 @@
                     <tr>
                       <th>ISSUE</th>
                       <th>SEVERITY</th>
-                      <th>CVSS</th>
-                      <th>CWE</th>
-                      <th>OWASP</th>
+                      <th>STANDARDS</th>
                       <th>FILES</th>
                   </tr>
                     </thead>
@@ -984,9 +982,22 @@
                       <span class="badge bg-info">info</span>
                       {% endif %}
                   </td>
-                  <td><strong>{{ details|key:"cvss" }}</strong></td>
-                  <td><strong>{{ details|key:"cwe" }}</strong></td>
-                   <td><strong>{{ details|key:"owasp" }}</strong></td>
+                  <td>
+                      <strong>CVSS V2:</strong>
+                      {{ details|key:"cvss" }}
+                      {% if details|key:"cvss" > 6 %}
+                        (high)
+                      {% elif details|key:"cvss" == 0 %}
+                        (info)
+                      {% elif details|key:"cvss" >= 4 %}
+                        (medium)
+                      {% elif details|key:"cvss" < 4 %}
+                        (low)
+                      {% endif %}
+                      {% if details|key:"cwe" %}</br> <strong>CWE: </strong>{{ details|key:"cwe" }}{% endif %}
+                      {% if details|key:"owasp" %}</br> <strong>OWASP Top 10: </strong>{{ details|key:"owasp" }}{% endif %}
+                      {% if details|key:"owasp-mstg" %}</br> <strong>OWASP MASVS: </strong>{{ details|key:"owasp-mstg" }}{% endif %}
+                  </td>
                   <td>
                   {% for path in details|key:"path" %}
                    <a href="../ViewSource/?file={{ path }}&amp;md5={{ md5 }}&amp;type={{app_type}}"> {{ path }}</a>

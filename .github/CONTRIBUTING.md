@@ -15,8 +15,8 @@ The issue tracker is the preferred channel for [bug reports](#bugs),
 [features requests](#features) and [submitting pull
 requests](#pull-requests), but please respect the following restrictions:
 
-* Please **do not** use the issue tracker for personal support requests (use
-  [Stack Overflow](http://stackoverflow.com)).
+* Please **do not** use the issue tracker for personal support requests (use [MobSF Slack channel](https://mobsf.slack.com/join/shared_invite/enQtNzM2NTAyNzA1MjgxLTdjMzkzNDc3ZjdiMjkwZTZhMmFhNDlkZmMwZDhjNDNmYTAzYWE5NGZlMDIzYzliNTdiMDQ2MTRlYjU1MjkyNGM) or 
+  [Stack Overflow](https://stackoverflow.com/search?q=mobsf)).
 
 * Please **do not** derail or troll issues. Keep the discussion on topic and
   respect the opinions of others.
@@ -39,7 +39,7 @@ Guidelines for bug reports:
 3. **Isolate the problem** &mdash; create a [reduced test
    case](http://css-tricks.com/reduced-test-cases/) and a live example.
 
-4. **Add Log files** &mdash; Please add the log files `logs/MobSF.log` and `logs/webproxy.log` while opening bugs.
+4. **Add Log file** &mdash; Please add the log file `logs/debug.log` while opening bugs.
 
 5. **Timely Response** &mdash; Once you open a bug, you should also provide additional information if requested. Failure to do    so in 25 days will result in closure of the bug without further communication. 
 

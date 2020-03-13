@@ -443,9 +443,7 @@
                     <tr>
                         <th>ISSUE</th>
                         <th>SEVERITY</th>
-                        <th>CVSS</th>
-                        <th>CWE</th>
-                        <th>OWASP</th>
+                        <th>STANDARDS</th>
                         <th>FILES</th>
                     </tr>
                 </thead>
@@ -466,20 +464,21 @@
                       <span class="info">info</span>
                       {% endif %}
                   </td>
-                  <td><b>
-                  
-                  {% if details|key:"cvss" > 6 %}
-                  <span class="danger">{{ details|key:"cvss" }}</br> high</span>
-                  {% elif details|key:"cvss" == 0 %}
-                  <span class="info">{{ details|key:"cvss" }}</br>  info</span>
-                  {% elif details|key:"cvss" >= 4 %}
-                  <span class="warning">{{ details|key:"cvss" }}</br>  medium</span>
-                  {% elif details|key:"cvss" < 4 %}
-                  <span class="success">{{ details|key:"cvss" }}</br>  low</span>
-                  {% endif %}
-                  </b></td>
-                  <td><b>{{ details|key:"cwe" }}</b></td>
-                  <td><b>{{ details|key:"owasp" }}</b></td>
+                  <td>
+                    <h5>CVSS V2:</h5>
+                    {% if details|key:"cvss" > 6 %}
+                    <span class="danger">{{ details|key:"cvss" }} (high)</span>
+                    {% elif details|key:"cvss" == 0 %}
+                    <span class="info">{{ details|key:"cvss" }} (info)</span>
+                    {% elif details|key:"cvss" >= 4 %}
+                    <span class="warning">{{ details|key:"cvss" }} (medium)</span>
+                    {% elif details|key:"cvss" < 4 %}
+                    <span class="success">{{ details|key:"cvss" }} (low)</span>
+                    {% endif %}
+                    {% if details|key:"cwe" %}</br> <h5>CWE: </h5>{{ details|key:"cwe" }}{% endif %}
+                    {% if details|key:"owasp" %}</br> <h5>OWASP Top 10: </h5>{{ details|key:"owasp" }}{% endif %}
+                    {% if details|key:"owasp-mstg" %}</br> <h5>OWASP MASVS: </h5>{{ details|key:"owasp-mstg" }}{% endif %}
+                  </td>
                   <td style="word-break:break-all;">
                   {% for path in details|key:"path" %}
                    {{ path }}

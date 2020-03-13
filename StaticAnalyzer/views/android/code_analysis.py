@@ -11,10 +11,17 @@ from django.conf import settings
 
 from MobSF.utils import filename_from_path
 
-from StaticAnalyzer.views.android import android_apis, android_rules
-from StaticAnalyzer.views.shared_func import (api_rule_matcher,
-                                              code_rule_matcher,
-                                              url_n_email_extract)
+from StaticAnalyzer.views.android.rules import (
+    android_apis,
+    android_rules,
+)
+from StaticAnalyzer.views.shared_func import (
+    url_n_email_extract,
+)
+from StaticAnalyzer.views.rule_matchers import (
+    api_rule_matcher,
+    code_rule_matcher,
+)
 
 logger = logging.getLogger(__name__)
 
