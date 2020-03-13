@@ -1,3 +1,25 @@
+
+### v3.0.5 Beta Changelog
+- Features or Enhancements
+  - iOS Swift Source Code Support
+  - Improved iOS Swift and Objective C rules
+  - OWASP MASVS/MSTG Standard Support
+  - Brand New PDF Reports
+  - Improved SAST Core
+  - Improved iOS Application Transport Security Checks
+  - Improved iOS Permission Checks
+  - Added IP to Geolocation Feature for Domain Malware Check
+  - URL and IP extraction from IPA
+  - App Risk Calculation from App Security Score
+  - Improve Recent Scan View
+  - Add Jtool2 support
+  - Code QA
+  - New Docs Site
+
+- Bug Fixes
+  - Classdump bug fixes
+  - Geolocation bug fixes
+
 ### v3.0.1 Beta Changelog
 - Features or Enhancements
    - Simplified REST API
