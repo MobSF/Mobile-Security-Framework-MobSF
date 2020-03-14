@@ -54,7 +54,7 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 ## Contribution, Feature Requests & Bugs
 
 * Read [CONTRIBUTING.md](https://github.com/MobSF/Mobile-Security-Framework-MobSF/blob/master/.github/CONTRIBUTING.md) before opening bugs, feature requests and pull request.
-* For Project updated and announcements, follow [@ajinabraham](https://twitter.com/ajinabraham) or [@OpenSecurity_IN](https://twitter.com/OpenSecurity_IN).
+* For Project updates and announcements, follow [@ajinabraham](https://twitter.com/ajinabraham) or [@OpenSecurity_IN](https://twitter.com/OpenSecurity_IN).
 * Github Issues are only for tracking bugs and feature requests. Do not post support or help queries there. We have a slack channel for that.
 
 
