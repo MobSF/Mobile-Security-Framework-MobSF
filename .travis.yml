@@ -44,6 +44,7 @@ before_script:
 - pip3 install -r requirements.txt
 - python3 manage.py makemigrations || python manage.py makemigrations
 - python3 manage.py migrate || python manage.py migrate
+- git submodule update --init --recursive
 script:
 - if [ "$TRAVIS_OS_NAME" != "windows" ]; then tox -e lint; fi
 - python3 manage.py test || python manage.py test
