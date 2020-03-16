@@ -631,7 +631,7 @@ def is_safe_path(safe_root, check_path):
     safe_root = os.path.normpath(safe_root)
     check_path = os.path.normpath(check_path)
     return os.path.commonprefix(
-        (os.path.realpath(check_path), safe_root)) == safe_root
+        (os.path.realpath(check_path), os.path.realpath(safe_root))) == os.path.realpath(safe_root)
 
 
 def file_size(app_path):
