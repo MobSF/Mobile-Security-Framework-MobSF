@@ -25,6 +25,12 @@ def static_analysis_test():
         http_client = Client()
         apk_dir = os.path.join(settings.BASE_DIR, 'StaticAnalyzer/test_files/')
         for filename in os.listdir(apk_dir):
+            if not filename.endswith((
+                    '.apk',
+                    '.ipa',
+                    '.appx',
+                    '.zip')):
+                continue
             fpath = os.path.join(apk_dir, filename)
             with open(fpath, 'rb') as filp:
                 response = http_client.post('/upload/', {'file': filp})
@@ -135,6 +141,12 @@ def api_test():
         http_client = Client()
         apk_dir = os.path.join(settings.BASE_DIR, 'StaticAnalyzer/test_files/')
         for filename in os.listdir(apk_dir):
+            if not filename.endswith((
+                    '.apk',
+                    '.ipa',
+                    '.appx',
+                    '.zip')):
+                continue
             fpath = os.path.join(apk_dir, filename)
             if (platform.system() not in ['Darwin', 'Linux']
                     and fpath.endswith('.ipa')):
