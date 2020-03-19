@@ -12,32 +12,37 @@ from django.conf import settings
 from MobSF.utils import filename_from_path
 
 from StaticAnalyzer.views.android.rules import (
-    android_apis,
-    android_rules,
+    # android_apis,
+    # android_rules,
+    laboratory_rules
 )
+
+
 from StaticAnalyzer.views.shared_func import (
     url_n_email_extract,
 )
 from StaticAnalyzer.views.rule_matchers import (
     api_rule_matcher,
-    code_rule_matcher,
+    # code_rule_matcher,
+    code_rule_matcher_bis
 )
 
 logger = logging.getLogger(__name__)
 
 
-def code_analysis(app_dir, perms, typ):
+def code_analysis(app_dir, perms, typ, match_command):
     """Perform the code analysis."""
     try:
         logger.info('Static Android Code Analysis Started')
-        api_rules = android_apis.APIS
-        code_rules = android_rules.RULES
+        # api_rules = android_apis.APIS
+        # code_rules = android_rules.RULES
+        code_rules = laboratory_rules.RULES
         code_findings = {}
         api_findings = {}
         email_n_file = []
         url_n_file = []
         url_list = []
-
+        
         if typ == 'apk':
             java_src = os.path.join(app_dir, 'java_source/')
         elif typ == 'studio':
@@ -73,15 +78,19 @@ def code_analysis(app_dir, perms, typ):
 
                     # Code Analysis
                     relative_java_path = jfile_path.replace(java_src, '')
-                    code_rule_matcher(
-                        code_findings,
-                        list(perms.keys()),
-                        dat,
-                        relative_java_path,
-                        code_rules)
+
+                    code_rule_matcher_bis(code_findings, list(
+                        perms.keys()), dat, relative_java_path, code_rules, match_command)
+                    # code_rule_matcher(
+                    #     command,
+                    #     code_findings,
+                    #     list(perms.keys()),
+                    #     dat,
+                    #     relative_java_path,
+                    #     code_rules)
                     # API Check
-                    api_rule_matcher(api_findings, list(perms.keys()),
-                                     dat, relative_java_path, api_rules)
+                    # api_rule_matcher(api_findings, list(perms.keys()),
+                    #                  dat, relative_java_path, api_rules)
                     # Extract URLs and Emails
                     urls, urls_nf, emails_nf = url_n_email_extract(
                         dat, relative_java_path)

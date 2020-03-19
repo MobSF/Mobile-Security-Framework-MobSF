@@ -42,6 +42,8 @@ from StaticAnalyzer.views.shared_func import (firebase_analysis,
                                               hash_gen, score, unzip,
                                               update_scan_timestamp)
 
+from ..match_command import MatchCommand
+
 from androguard.core.bytecodes import apk
 
 try:
@@ -94,6 +96,9 @@ def static_analyzer(request, api=False):
             app_dic['tools_dir'] = os.path.join(
                 app_dic['dir'], 'StaticAnalyzer/tools/')  # TOOLS DIR
             logger.info('Starting Analysis on : %s', app_dic['app_name'])
+
+            # Will inject the different pattern strategy when it it will be requested
+            match_command = MatchCommand()
 
             if typ == 'apk':
                 # Check if in DB
@@ -198,7 +203,8 @@ def static_analyzer(request, api=False):
                     code_an_dic = code_analysis(
                         app_dic['app_dir'],
                         man_an_dic['permissons'],
-                        'apk')
+                        'apk', 
+                        match_command)
 
                     # Get the strings
                     string_res = strings_jar(
@@ -395,6 +401,7 @@ def static_analyzer(request, api=False):
                             app_dic['app_dir'],
                             man_an_dic['permissons'],
                             pro_type,
+                            match_command
                         )
                         # Firebase DB Check
                         code_an_dic['firebase'] = firebase_analysis(

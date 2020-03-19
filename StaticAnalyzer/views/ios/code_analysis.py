@@ -28,7 +28,7 @@ class _SourceType(Enum):
     nocode = 'No Code'
 
 
-def ios_source_analysis(src):
+def ios_source_analysis(src, match_command):
     """IOS Objective-C and Swift Code Analysis."""
     try:
         logger.info('Starting iOS Source Code and PLIST Analysis')
@@ -71,11 +71,11 @@ def ios_source_analysis(src):
 
                 # Code Analysis
                 relative_src_path = jfile_path.replace(src, '')
-                code_rule_matcher(code_findings, [], dat,
-                                  relative_src_path, code_rules)
-                # API Analysis
-                api_rule_matcher(api_findings, [], dat,
-                                 relative_src_path, api_rules)
+                # code_rule_matcher(code_findings, [], dat,
+                #                   relative_src_path, code_rules)
+                # # API Analysis
+                # api_rule_matcher(api_findings, [], dat,
+                #                  relative_src_path, api_rules)
 
                 # Extract URLs and Emails
                 urls, urls_nf, emails_nf = url_n_email_extract(

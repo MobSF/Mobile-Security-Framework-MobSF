@@ -35,6 +35,8 @@ from StaticAnalyzer.views.shared_func import (
     update_scan_timestamp,
 )
 
+from ..match_command import MatchCommand
+
 logger = logging.getLogger(__name__)
 
 ##############################################################
@@ -69,7 +71,11 @@ def static_analyzer_ios(request, api=False):
             app_dict['app_dir'] = os.path.join(
                 settings.UPLD_DIR, app_dict['md5_hash'] + '/')  # APP DIRECTORY
             tools_dir = os.path.join(
-                app_dict['directory'], 'StaticAnalyzer/tools/ios/')
+                app_dict['directory'], 'StaticAnalyzer/tools/ios/') 
+
+            # Will inject the different pattern strategy when it it will be requested
+            match_command = MatchCommand()
+            
             if file_type == 'ipa':
                 # DB
                 ipa_db = StaticAnalyzerIOS.objects.filter(
@@ -77,6 +83,7 @@ def static_analyzer_ios(request, api=False):
                 if ipa_db.exists() and rescan == '0':
                     context = get_context_from_db_entry(ipa_db)
                 else:
+
                     logger.info('iOS Binary (IPA) Analysis Started')
                     app_dict['app_file'] = app_dict[
                         'md5_hash'] + '.ipa'  # NEW FILENAME
@@ -185,7 +192,8 @@ def static_analyzer_ios(request, api=False):
                     infoplist_dict = plist_analysis(app_dict['app_dir'], True)
                     app_dict['appstore'] = app_search(infoplist_dict.get('id'))
                     code_analysis_dic = ios_source_analysis(
-                        app_dict['app_dir'])
+                        app_dict['app_dir'],
+                        match_command)
                     # Get App Icon
                     app_dict['icon_found'] = get_icon_source(
                         app_dict['md5_hash'],
