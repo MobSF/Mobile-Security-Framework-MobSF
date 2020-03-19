@@ -193,6 +193,17 @@ def api_rule_matcher(findings, perms, data, file_path, rules):
 def code_rule_matcher(findings, perms, data, file_path, rules):
     _rule_matcher(_MatcherType.code, findings, perms, data, file_path, rules)
 
+def code_rule_matcher_bis(command, findings, perms, data, file_path, rules):
+    try:
+        for rule in rules:
+            if rule['input_case'] == InputCase.lower:
+                data = data.lower()
+            elif rule['input_case'] == InputCase.upper:
+                data = data.upper()
+            if command.find_match(rule['type'].name, data, rule, perms):
+                pass
+    except Exception:
+        logger.exception('Error in Code Rule Processing')
 
 def _add_bfindings(findings, desc, detailed_desc, rule):
     """Add Binary Analysis Findings."""
