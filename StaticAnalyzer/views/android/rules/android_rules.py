@@ -254,6 +254,7 @@ RULES = [
         'cvss': 3.9,
         'cwe': CWE['CWE-276'],
         'owasp': '',
+        'owasp-mstg': OWASP_MSTG['storage-14'],
     },
     {
         'desc': 'The App uses an insecure Random Number Generator.',
