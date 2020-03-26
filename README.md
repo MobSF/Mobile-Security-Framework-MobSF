@@ -95,12 +95,13 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 
 ## Shoutouts
 
-* Abhinav Sejpal (@Abhinav_Sejpal) - For poking me with bugs, feature requests, and UI & UX suggestions.
+* Abhinav Sejpal (@Abhinav_Sejpal) - For poking me with bugs, feature requests, and UI & UX suggestions
 * Anant Srivastava (@anantshri) - For Activity Tester Idea
-* Anto Joseph (@antojosep007) - For the help with SuperSU.
-* Bharadwaj Machiraju (@tunnelshade_) - For writing pyWebProxy from scratch
+* Anto Joseph (@antojoseph) - For the help with SuperSU
+* Bharadwaj Machiraju (@tunnelshade) - For writing pyWebProxy from scratch
 * Rahul (@c0dist) - Kali Support
 * MindMac - For writing Android Blue Pill
 * Oscar Alfonso Diaz - (@OscarAkaElvis) - For Dockerfile contributions
-* Thomas Abraham - For JS Hacks on UI.
-* Tim Brown (@timb_machine) - For the iOS Binary Analysis Ruleset.
+* Thomas Abraham - For JS Hacks on UI
+* Tim Brown (@timb_machine) - For the iOS Binary Analysis Ruleset
+* Shanil Prasad (@Rajuraju14) - For improving iOS ATS Analysis

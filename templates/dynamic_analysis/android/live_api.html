@@ -67,7 +67,7 @@ function change_snip(val){
 }
 
 $(document).ready( function () {
-        // $.fn.dataTable.ext.errMode = 'none';
+        $.fn.dataTable.ext.errMode = 'none';
         tbl = $('#autotbl').DataTable( {
         ajax: '/live_api/?hash={{ hash }}&stream=1',
         deferRender:    true,
