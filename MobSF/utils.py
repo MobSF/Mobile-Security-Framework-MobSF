@@ -632,6 +632,7 @@ def is_safe_path(safe_root, check_path):
     check_path = os.path.realpath(os.path.normpath(check_path))
     return os.path.commonprefix([check_path, safe_root]) == safe_root
 
+
 def file_size(app_path):
     """Return the size of the file."""
     return round(float(os.path.getsize(app_path)) / (1024 * 1024), 2)
