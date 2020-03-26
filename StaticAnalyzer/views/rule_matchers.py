@@ -200,7 +200,7 @@ def code_rule_matcher_bis(findings, perms, data, file_path, rules, match_command
                 data = data.lower()
             elif rule['input_case'] == InputCase.upper:
                 data = data.upper()
-            if command.find_match(rule['type'].name, data, rule, perms):
+            if match_command.find_match(rule['type'].name, data, rule, perms):
                 pass
     except Exception:
         logger.exception('Error in Code Rule Processing')

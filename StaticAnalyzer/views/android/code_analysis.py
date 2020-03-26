@@ -27,6 +27,8 @@ from StaticAnalyzer.views.rule_matchers import (
     code_rule_matcher_bis
 )
 
+from StaticAnalyzer.views.match_command import MatchCommand
+
 logger = logging.getLogger(__name__)
 
 
@@ -42,7 +44,14 @@ def code_analysis(app_dir, perms, typ, match_command):
         email_n_file = []
         url_n_file = []
         url_list = []
+<<<<<<< HEAD
         
+=======
+
+        # As code_analysis.py isn't a class (so no injection is possible for now), maybe it would be wise to extract this config in the YAML file
+        command = MatchCommand()
+
+>>>>>>> 2af7f1d8917636d7ef249d475e3fc8d6e588768e
         if typ == 'apk':
             java_src = os.path.join(app_dir, 'java_source/')
         elif typ == 'studio':
@@ -79,8 +88,13 @@ def code_analysis(app_dir, perms, typ, match_command):
                     # Code Analysis
                     relative_java_path = jfile_path.replace(java_src, '')
 
+<<<<<<< HEAD
                     code_rule_matcher_bis(code_findings, list(
                         perms.keys()), dat, relative_java_path, code_rules, match_command)
+=======
+                    code_rule_matcher_bis(command, code_findings, list(
+                        perms.keys()), dat, relative_java_path, code_rules)
+>>>>>>> 2af7f1d8917636d7ef249d475e3fc8d6e588768e
                     # code_rule_matcher(
                     #     command,
                     #     code_findings,
