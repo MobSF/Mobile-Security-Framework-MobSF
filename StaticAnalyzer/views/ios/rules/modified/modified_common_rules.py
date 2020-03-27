@@ -25,7 +25,7 @@ COMMON_RULES = [
         'cwe': CWE['CWE-200'],
         'owasp': '',
         'owasp-mstg': OWASP_MSTG['code-2']
-    }, 
+    },
     {
         'desc': ('Files may contain hardcoded sensitive'
                  ' informations like usernames, passwords, keys etc.'),
@@ -41,7 +41,7 @@ COMMON_RULES = [
         'cwe': CWE['CWE-312'],
         'owasp': OWASP['m9'],
         'owasp-mstg': OWASP_MSTG['storage-14']
-    }, 
+    },
     {
         'desc': ('App uses SQLite Database. '
                  'Sensitive Information should be encrypted.'),
@@ -53,7 +53,7 @@ COMMON_RULES = [
         'cwe': '',
         'owasp': '',
         'owasp-mstg': OWASP_MSTG['storage-14']
-    }, 
+    },
     {
         'desc': ('User input in "loadHTMLString" '
                  'will result in JavaScript Injection.'),
@@ -65,7 +65,7 @@ COMMON_RULES = [
         'cwe': CWE['CWE-95'],
         'owasp': OWASP['m7'],
         'owasp-mstg': OWASP_MSTG['platform-5']
-    }, 
+    },
     {
         'desc': 'This App may have Jailbreak detection capabilities.',
         'type': StringOr.__name__,

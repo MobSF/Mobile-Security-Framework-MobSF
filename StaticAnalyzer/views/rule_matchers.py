@@ -193,15 +193,17 @@ def api_rule_matcher(findings, perms, data, file_path, rules):
 def code_rule_matcher(findings, perms, data, file_path, rules):
     _rule_matcher(_MatcherType.code, findings, perms, data, file_path, rules)
 
-def code_rule_matcher_bis(findings, perms, data, file_path, rules, match_command):
+def code_rule_matcher_bis(findings, perms, data, file_path, rules, match_command, display):
     try:
         for rule in rules:
             if rule['input_case'] == InputCase.lower:
-                data = data.lower()
+                tmp_data = data.lower()
             elif rule['input_case'] == InputCase.upper:
-                data = data.upper()
-            if match_command.find_match(rule['type'].name, data, rule, perms):
-                pass
+                tmp_data = data.upper()
+            elif rule['input_case'] == InputCase.exact:
+                tmp_data = data
+            if match_command.find_match(rule['type'], tmp_data, rule, perms) and display:
+                logger.info("found match for " + rule['desc'])
     except Exception:
         logger.exception('Error in Code Rule Processing')
 
