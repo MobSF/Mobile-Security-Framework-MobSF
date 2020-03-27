@@ -25,8 +25,7 @@ from StaticAnalyzer.views.shared_func import (
 )
 from StaticAnalyzer.views.rule_matchers import (
     api_rule_matcher,
-    # code_rule_matcher,
-    code_rule_matcher_bis
+    code_rule_matcher,
 )
 
 from StaticAnalyzer.views.match_command import MatchCommand
@@ -84,21 +83,16 @@ def code_analysis(app_dir, perms, typ, match_command):
                     # Code Analysis
                     relative_java_path = jfile_path.replace(java_src, '')
 
-                    code_rule_matcher_bis(code_findings, list(
-                        perms.keys()), dat, relative_java_path, code_rules, match_command, False)
-                    
-                    code_rule_matcher_bis(api_rules, list(
-                        perms.keys()), dat, relative_java_path, api_rules, match_command, True)
-                    # code_rule_matcher(
-                    #     command,
-                    #     code_findings,
-                    #     list(perms.keys()),
-                    #     dat,
-                    #     relative_java_path,
-                    #     code_rules)
+                    code_rule_matcher(
+                        code_findings,
+                        list(perms.keys()),
+                        dat,
+                        relative_java_path,
+                        code_rules,
+                        match_command)
                     # API Check
-                    # api_rule_matcher(api_findings, list(perms.keys()),
-                    #                  dat, relative_java_path, api_rules)
+                    api_rule_matcher(api_findings, list(perms.keys()),
+                                     dat, relative_java_path, api_rules, match_command)
                     # Extract URLs and Emails
                     urls, urls_nf, emails_nf = url_n_email_extract(
                         dat, relative_java_path)

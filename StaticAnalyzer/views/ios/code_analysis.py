@@ -6,9 +6,12 @@ from enum import Enum
 
 from MalwareAnalyzer.views.domain_check import malware_check
 
-from StaticAnalyzer.views.ios.rules import (
-    ios_apis, objc_rules,
-    swift_rules,
+from StaticAnalyzer.views.ios.rules.modified import (
+    # ios_apis, objc_rules,
+    # swift_rules,
+    modified_ios_apis,
+    modified_objc_rules,
+    modified_swift_rules
 )
 from StaticAnalyzer.views.shared_func import (
     url_n_email_extract,
@@ -46,12 +49,12 @@ def ios_source_analysis(src, match_command):
             for jfile in files:
 
                 if jfile.endswith('.m'):
-                    api_rules = ios_apis.CODE_APIS
-                    code_rules = objc_rules.OBJC_RULES
+                    api_rules = modified_ios_apis.CODE_APIS
+                    code_rules = modified_objc_rules.OBJC_RULES
                     source_types.add(_SourceType.objc)
                 elif jfile.endswith('.swift'):
-                    api_rules = ios_apis.CODE_APIS
-                    code_rules = swift_rules.SWIFT_RULES
+                    api_rules = modified_ios_apis.CODE_APIS
+                    code_rules = modified_swift_rules.SWIFT_RULES
                     source_types.add(_SourceType.swift)
                 else:
                     continue
@@ -71,11 +74,11 @@ def ios_source_analysis(src, match_command):
 
                 # Code Analysis
                 relative_src_path = jfile_path.replace(src, '')
-                # code_rule_matcher(code_findings, [], dat,
-                #                   relative_src_path, code_rules)
+                code_rule_matcher(code_findings, [], dat,
+                                  relative_src_path, code_rules, match_command)
                 # # API Analysis
-                # api_rule_matcher(api_findings, [], dat,
-                #                  relative_src_path, api_rules)
+                api_rule_matcher(api_findings, [], dat,
+                                 relative_src_path, api_rules, match_command)
 
                 # Extract URLs and Emails
                 urls, urls_nf, emails_nf = url_n_email_extract(
