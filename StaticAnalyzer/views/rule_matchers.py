@@ -18,6 +18,7 @@ class _MatcherType(Enum):
     code = 1
     api = 2
 
+
 def _add_code_findings(findings, file_path, rule):
     """Add Code Analysis Findings."""
     desc = rule['desc']
@@ -46,13 +47,19 @@ def _add_apis_findings(findings, file_path, rule):
     else:
         findings[desc] = {'path': [escape(file_path)]}
 
+
 def api_rule_matcher(findings, perms, data, file_path, rules, match_command):
-    _rule_matcher(_MatcherType.api, findings, perms, data, file_path, rules, match_command)
+    _rule_matcher(_MatcherType.api, findings, perms,
+                  data, file_path, rules, match_command)
+
 
 def code_rule_matcher(findings, perms, data, file_path, rules, match_command):
-    _rule_matcher(_MatcherType.code, findings, perms, data, file_path, rules, match_command)
+    _rule_matcher(_MatcherType.code, findings, perms, data,
+                  file_path, rules, match_command)
 
-def _rule_matcher(matcher, findings, perms, data, file_path, rules, match_command):
+
+def _rule_matcher(matcher, findings, perms, data,
+                  file_path, rules, match_command):
     """Static Analysis Rule Matcher."""
     try:
         if matcher == _MatcherType.code:
@@ -70,6 +77,7 @@ def _rule_matcher(matcher, findings, perms, data, file_path, rules, match_comman
                 add_finding(findings, file_path, rule)
     except Exception:
         logger.exception('Error in Code Rule Processing')
+
 
 def _add_bfindings(findings, desc, detailed_desc, rule):
     """Add Binary Analysis Findings."""

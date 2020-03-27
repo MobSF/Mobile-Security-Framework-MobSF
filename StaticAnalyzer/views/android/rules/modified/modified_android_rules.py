@@ -1,19 +1,18 @@
 from StaticAnalyzer.views.match_strategy import (
-    SingleRegex,
     RegexAnd,
     RegexOr,
+    SingleRegex,
     SingleString,
     StringAnd,
-    StringOr,
     StringAndOr,
+    StringAndPerm,
+    StringOr,
     StringOrAndPerm,
-    StringAndPerm
 )
 from StaticAnalyzer.views.rules_properties import (
     InputCase,
-    Level
+    Level,
 )
-
 from StaticAnalyzer.views.standards import (
     CWE,
     OWASP,
@@ -35,8 +34,8 @@ RULES = [
         'cvss': 7.4,
         'cwe': CWE['CWE-312'],
         'owasp': OWASP['m9'],
-        'owasp-mstg': OWASP_MSTG['storage-14']
-    }, 
+        'owasp-mstg': OWASP_MSTG['storage-14'],
+    },
     {
         'desc': 'IP Address disclosure',
         'type': SingleRegex.__name__,
@@ -46,8 +45,8 @@ RULES = [
         'cvss': 4.3,
         'cwe': CWE['CWE-200'],
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['code-2']
-    }, 
+        'owasp-mstg': OWASP_MSTG['code-2'],
+    },
     {
         'desc': ('Hidden elements in view can be used to hide'
                  ' data from user. But this data can be leaked'),
@@ -59,8 +58,8 @@ RULES = [
         'cvss': 4.3,
         'cwe': CWE['CWE-919'],
         'owasp': OWASP['m1'],
-        'owasp-mstg': OWASP_MSTG['storage-7']
-    }, 
+        'owasp-mstg': OWASP_MSTG['storage-7'],
+    },
     {
         'desc': ('The App uses ECB mode in Cryptographic encryption algorithm.'
                  ' ECB mode is known to be weak as it results in the same'
@@ -72,8 +71,8 @@ RULES = [
         'cvss': 5.9,
         'cwe': CWE['CWE-327'],
         'owasp': OWASP['m5'],
-        'owasp-mstg': OWASP_MSTG['crypto-2']
-    }, 
+        'owasp-mstg': OWASP_MSTG['crypto-2'],
+    },
     {
         'desc': ('This App uses RSA Crypto without OAEP padding. The purpose'
                  ' of the padding scheme is to prevent a number of attacks on'
@@ -86,8 +85,8 @@ RULES = [
         'cvss': 5.9,
         'cwe': CWE['CWE-780'],
         'owasp': OWASP['m5'],
-        'owasp-mstg': OWASP_MSTG['crypto-3']
-    }, 
+        'owasp-mstg': OWASP_MSTG['crypto-3'],
+    },
     {
         'desc': ('Insecure Implementation of SSL. Trusting all the '
                  'certificates or accepting self signed certificates'
@@ -100,48 +99,51 @@ RULES = [
                    r'net\.SSLCertificateSocketFactory|'
                    r'ALLOW_ALL_HOSTNAME_VERIFIER|'
                    r'\.setDefaultHostnameVerifier\(|'
-                   r'NullHostnameVerifier\('), ],
+                   r'NullHostnameVerifier\(')],
         'level': Level.high,
         'input_case': InputCase.exact,
         'cvss': 7.4,
         'cwe': CWE['CWE-295'],
         'owasp': OWASP['m3'],
-        'owasp-mstg': OWASP_MSTG['network-3']
-    }, 
+        'owasp-mstg': OWASP_MSTG['network-3'],
+    },
     {
         'desc': ('WebView load files from external storage. Files in external'
                  ' storage can be modified by any application.'),
         'type': RegexAnd.__name__,
-        'match': [r'\.loadUrl\(.*getExternalStorageDirectory\(', r'webkit\.WebView'],
+        'match': [r'\.loadUrl\(.*getExternalStorageDirectory\(',
+                  r'webkit\.WebView'],
         'level': Level.high,
         'input_case': InputCase.exact,
         'cvss': 5.0,
         'cwe': CWE['CWE-919'],
         'owasp': OWASP['m1'],
-        'owasp-mstg': OWASP_MSTG['platform-6']
-    }, 
+        'owasp-mstg': OWASP_MSTG['platform-6'],
+    },
     {
         'desc': 'The file is World Readable. Any App can read from the file',
         'type': RegexOr.__name__,
-        'match': [r'MODE_WORLD_READABLE|Context\.MODE_WORLD_READABLE', r'openFileOutput\(\s*".+"\s*,\s*1\s*\)'],
+        'match': [r'MODE_WORLD_READABLE|Context\.MODE_WORLD_READABLE',
+                  r'openFileOutput\(\s*".+"\s*,\s*1\s*\)'],
         'level': Level.high,
         'input_case': InputCase.exact,
         'cvss': 4.0,
         'cwe': CWE['CWE-276'],
         'owasp': OWASP['m2'],
-        'owasp-mstg': OWASP_MSTG['storage-2']
-    }, 
+        'owasp-mstg': OWASP_MSTG['storage-2'],
+    },
     {
         'desc': 'The file is World Writable. Any App can write to the file',
         'type': RegexOr.__name__,
-        'match': [r'MODE_WORLD_WRITABLE|Context\.MODE_WORLD_WRITABLE', r'openFileOutput\(\s*".+"\s*,\s*2\s*\)'],
+        'match': [r'MODE_WORLD_WRITABLE|Context\.MODE_WORLD_WRITABLE',
+                  r'openFileOutput\(\s*".+"\s*,\s*2\s*\)'],
         'level': Level.high,
         'input_case': InputCase.exact,
         'cvss': 6.0,
         'cwe': CWE['CWE-276'],
         'owasp': OWASP['m2'],
-        'owasp-mstg': OWASP_MSTG['storage-2']
-    }, 
+        'owasp-mstg': OWASP_MSTG['storage-2'],
+    },
     {
         'desc': ('The file is World Readable and Writable. '
                  'Any App can read/write to the file'),
@@ -152,8 +154,8 @@ RULES = [
         'cvss': 6.0,
         'cwe': CWE['CWE-276'],
         'owasp': OWASP['m2'],
-        'owasp-mstg': OWASP_MSTG['storage-2']
-    }, 
+        'owasp-mstg': OWASP_MSTG['storage-2'],
+    },
     {
         'desc': 'Weak Hash algorithm used',
         'type': SingleRegex.__name__,
@@ -165,8 +167,8 @@ RULES = [
         'cvss': 7.4,
         'cwe': CWE['CWE-327'],
         'owasp': OWASP['m5'],
-        'owasp-mstg': OWASP_MSTG['crypto-4']
-    }, 
+        'owasp-mstg': OWASP_MSTG['crypto-4'],
+    },
     {
         'desc': 'MD5 is a weak hash known to have hash collisions.',
         'type': SingleRegex.__name__,
@@ -178,8 +180,8 @@ RULES = [
         'cvss': 7.4,
         'cwe': CWE['CWE-327'],
         'owasp': OWASP['m5'],
-        'owasp-mstg': OWASP_MSTG['crypto-4']
-    }, 
+        'owasp-mstg': OWASP_MSTG['crypto-4'],
+    },
     {
         'desc': 'SHA-1 is a weak hash known to have hash collisions.',
         'type': SingleRegex.__name__,
@@ -191,8 +193,8 @@ RULES = [
         'cvss': 5.9,
         'cwe': CWE['CWE-327'],
         'owasp': OWASP['m5'],
-        'owasp-mstg': OWASP_MSTG['crypto-4']
-    }, 
+        'owasp-mstg': OWASP_MSTG['crypto-4'],
+    },
     {
         'desc': ('App can write to App Directory. '
                  'Sensitive Information should be encrypted.'),
@@ -203,8 +205,8 @@ RULES = [
         'cvss': 3.9,
         'cwe': CWE['CWE-276'],
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['storage-14']
-    }, 
+        'owasp-mstg': OWASP_MSTG['storage-14'],
+    },
     {
         'desc': 'The App uses an insecure Random Number Generator.',
         'type': SingleRegex.__name__,
@@ -214,8 +216,8 @@ RULES = [
         'cvss': 7.5,
         'cwe': CWE['CWE-330'],
         'owasp': OWASP['m5'],
-        'owasp-mstg': OWASP_MSTG['crypto-6']
-    }, 
+        'owasp-mstg': OWASP_MSTG['crypto-6'],
+    },
     {
         'desc': ('The App logs information. '
                  'Sensitive information should never be logged.'),
@@ -227,8 +229,8 @@ RULES = [
         'cvss': 7.5,
         'cwe': CWE['CWE-532'],
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['storage-3']
-    }, 
+        'owasp-mstg': OWASP_MSTG['storage-3'],
+    },
     {
         'desc': ('This App uses Java Hash Code. It\'s a weak hash function and'
                  ' should never be used in Secure Crypto Implementation.'),
@@ -239,8 +241,8 @@ RULES = [
         'cvss': 2.3,
         'cwe': CWE['CWE-327'],
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['crypto-4']
-    }, 
+        'owasp-mstg': OWASP_MSTG['crypto-4'],
+    },
     {
         'desc': ('These activities prevent '
                  'screenshot when they go to background.'),
@@ -251,8 +253,8 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['storage-9']
-    }, 
+        'owasp-mstg': OWASP_MSTG['storage-9'],
+    },
     {
         'desc': 'This App uses SQL Cipher. But the secret may be hardcoded.',
         'type': SingleString.__name__,
@@ -262,7 +264,7 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['crypto-1']
+        'owasp-mstg': OWASP_MSTG['crypto-1'],
     },
     {
         'desc': 'This app has capabilities to prevent tapjacking attacks.',
@@ -273,8 +275,8 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['platform-9']
-    }, 
+        'owasp-mstg': OWASP_MSTG['platform-9'],
+    },
     {
         'desc': ('App can read/write to External Storage. '
                  'Any App can read data written to External Storage.'),
@@ -286,8 +288,8 @@ RULES = [
         'perm': 'android.permission.WRITE_EXTERNAL_STORAGE',
         'cwe': CWE['CWE-276'],
         'owasp': OWASP['m2'],
-        'owasp-mstg': OWASP_MSTG['storage-2']
-    }, 
+        'owasp-mstg': OWASP_MSTG['storage-2'],
+    },
     {
         'desc': ('App creates temp file. Sensitive '
                  'information should never be written into a temp file.'),
@@ -299,8 +301,8 @@ RULES = [
         'perm': 'android.permission.WRITE_EXTERNAL_STORAGE',
         'cwe': CWE['CWE-276'],
         'owasp': OWASP['m2'],
-        'owasp-mstg': OWASP_MSTG['storage-2']
-    }, 
+        'owasp-mstg': OWASP_MSTG['storage-2'],
+    },
     {
         'desc': ('Insecure WebView Implementation. Execution of user'
                  ' controlled code in WebView is a critical Security Hole.'),
@@ -311,8 +313,8 @@ RULES = [
         'cvss': 8.8,
         'cwe': CWE['CWE-749'],
         'owasp': OWASP['m1'],
-        'owasp-mstg': OWASP_MSTG['platform-7']
-    }, 
+        'owasp-mstg': OWASP_MSTG['platform-7'],
+    },
     {
         'desc': ('This App uses SQL Cipher. SQLCipher '
                  'provides 256-bit AES encryption to sqlite database files.'),
@@ -323,19 +325,20 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['crypto-1']
-    }, 
+        'owasp-mstg': OWASP_MSTG['crypto-1'],
+    },
     {
         'desc': 'This App download files using Android Download Manager',
         'type': StringAnd.__name__,
-        'match': ['android.app.DownloadManager', 'getSystemService(DOWNLOAD_SERVICE)'],
+        'match': ['android.app.DownloadManager',
+                  'getSystemService(DOWNLOAD_SERVICE)'],
         'level': Level.high,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': ''
-    }, 
+        'owasp-mstg': '',
+    },
     {
         'desc': 'This App use Realm Database with encryption.',
         'type': StringAnd.__name__,
@@ -345,8 +348,8 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['crypto-1']
-    }, 
+        'owasp-mstg': OWASP_MSTG['crypto-1'],
+    },
     {
         'desc': ('The App may use weak IVs like '
                  '"0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00" or '
@@ -355,14 +358,15 @@ RULES = [
                  'ciphertext much more predictable and '
                  'susceptible to a dictionary attack.'),
         'type': StringOr.__name__,
-        'match': ['0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00', '0x01,0x02,0x03,0x04,0x05,0x06,0x07'],
+        'match': ['0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00',
+                  '0x01,0x02,0x03,0x04,0x05,0x06,0x07'],
         'level': Level.high,
         'input_case': InputCase.exact,
         'cvss': 9.8,
         'cwe': CWE['CWE-329'],
         'owasp': OWASP['m5'],
-        'owasp-mstg': OWASP_MSTG['crypto-3']
-    }, 
+        'owasp-mstg': OWASP_MSTG['crypto-3'],
+    },
     {
         'desc': 'Remote WebView debugging is enabled.',
         'type': StringAnd.__name__,
@@ -372,8 +376,8 @@ RULES = [
         'cvss': 5.4,
         'cwe': CWE['CWE-919'],
         'owasp': OWASP['m1'],
-        'owasp-mstg': OWASP_MSTG['resilience-2']
-    }, 
+        'owasp-mstg': OWASP_MSTG['resilience-2'],
+    },
     {
         'desc': ('This app listens to Clipboard changes.'
                  ' Some malwares also listen to Clipboard changes.'),
@@ -384,8 +388,8 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['platform-4']
-    }, 
+        'owasp-mstg': OWASP_MSTG['platform-4'],
+    },
     {
         'desc': ('This App copies data to clipboard. Sensitive data should'
                  ' not be copied to clipboard as other'
@@ -397,8 +401,8 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['storage-10']
-    }, 
+        'owasp-mstg': OWASP_MSTG['storage-10'],
+    },
     {
         'desc': ('Insecure WebView Implementation. WebView ignores SSL'
                  ' Certificate errors and accept any SSL Certificate.'
@@ -410,8 +414,8 @@ RULES = [
         'cvss': 7.4,
         'cwe': CWE['CWE-295'],
         'owasp': OWASP['m3'],
-        'owasp-mstg': OWASP_MSTG['network-3']
-    }, 
+        'owasp-mstg': OWASP_MSTG['network-3'],
+    },
     {
         'desc': ('App uses SQLite Database and execute raw SQL query. '
                  'Untrusted user input in raw SQL queries can cause'
@@ -424,8 +428,8 @@ RULES = [
         'cvss': 5.9,
         'cwe': CWE['CWE-89'],
         'owasp': OWASP['m7'],
-        'owasp-mstg': ''
-    }, 
+        'owasp-mstg': '',
+    },
     {
         'desc': 'This App detects frida server.',
         'type': StringAndOr.__name__,
@@ -435,8 +439,8 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['resilience-4']
-    }, 
+        'owasp-mstg': OWASP_MSTG['resilience-4'],
+    },
     {
         'desc': ('This App uses an SSL Pinning Library '
                  '(org.thoughtcrime.ssl.pinning) to '
@@ -444,26 +448,29 @@ RULES = [
                  ' communication channel.'),
         'type': StringAndOr.__name__,
         'match': ['org.thoughtcrime.ssl.pinning',
-                  ['PinningHelper.getPinnedHttpsURLConnection', 'PinningHelper.getPinnedHttpClient', 'PinningSSLSocketFactory(']],
+                  ['PinningHelper.getPinnedHttpsURLConnection',
+                   'PinningHelper.getPinnedHttpClient',
+                   'PinningSSLSocketFactory(']],
         'level': Level.good,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['network-4']
-    }, 
+        'owasp-mstg': OWASP_MSTG['network-4'],
+    },
     {
         'desc': ('This App has capabilities to prevent against'
                  ' Screenshots from Recent Task History/ Now On Tap etc.'),
         'type': StringAndOr.__name__,
-        'match': ['.FLAG_SECURE', ['getWindow().setFlags(', 'getWindow().addFlags(']],
+        'match': ['.FLAG_SECURE',
+                  ['getWindow().setFlags(', 'getWindow().addFlags(']],
         'level': Level.high,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['storage-9']
-    }, 
+        'owasp-mstg': OWASP_MSTG['storage-9'],
+    },
     {
         'desc': ('DexGuard Debug Detection code to detect'
                  ' whether an App is debuggable or not is identified.'),
@@ -474,8 +481,8 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['resilience-2']
-    }, 
+        'owasp-mstg': OWASP_MSTG['resilience-2'],
+    },
     {
         'desc': 'DexGuard Debugger Detection code is identified.',
         'type': StringAnd.__name__,
@@ -485,31 +492,33 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['resilience-2']
-    }, 
+        'owasp-mstg': OWASP_MSTG['resilience-2'],
+    },
     {
         'desc': 'DexGuard Emulator Detection code is identified.',
         'type': StringAnd.__name__,
-        'match': ['import dexguard.util', 'EmulatorDetector.isRunningInEmulator'],
+        'match': ['import dexguard.util',
+                  'EmulatorDetector.isRunningInEmulator'],
         'level': Level.good,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['resilience-5']
-    }, 
+        'owasp-mstg': OWASP_MSTG['resilience-5'],
+    },
     {
         'desc': ('DexGuard code to detect whether the App'
                  ' is signed with a debug key or not is identified.'),
         'type': StringAnd.__name__,
-        'match': ['import dexguard.util', 'DebugDetector.isSignedWithDebugKey'],
+        'match': ['import dexguard.util',
+                  'DebugDetector.isSignedWithDebugKey'],
         'level': Level.good,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['code-2']
-    }, 
+        'owasp-mstg': OWASP_MSTG['code-2'],
+    },
     {
         'desc': 'DexGuard Root Detection code is identified.',
         'type': StringAnd.__name__,
@@ -519,8 +528,8 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['resilience-1']
-    }, 
+        'owasp-mstg': OWASP_MSTG['resilience-1'],
+    },
     {
         'desc': 'DexGuard App Tamper Detection code is identified.',
         'type': StringAnd.__name__,
@@ -530,19 +539,21 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['resilience-3']
-    }, 
+        'owasp-mstg': OWASP_MSTG['resilience-3'],
+    },
     {
-        'desc': 'DexGuard Signer Certificate Tamper Detection code is identified.',
+        'desc': ('DexGuard Signer Certificate'
+                 ' Tamper Detection code is identified.'),
         'type': StringAnd.__name__,
-        'match': ['import dexguard.util', 'TCertificateChecker.checkCertificate'],
+        'match': ['import dexguard.util',
+                  'TCertificateChecker.checkCertificate'],
         'level': Level.good,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['resilience-3']
-    }, 
+        'owasp-mstg': OWASP_MSTG['resilience-3'],
+    },
     {
         'desc': 'The App may use package signature for tamper detection.',
         'type': StringAnd.__name__,
@@ -552,8 +563,8 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['resilience-3']
-    }, 
+        'owasp-mstg': OWASP_MSTG['resilience-3'],
+    },
     {
         'desc': 'This App uses SafetyNet API.',
         'type': SingleString.__name__,
@@ -563,8 +574,8 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['resilience-7']
-    }, 
+        'owasp-mstg': OWASP_MSTG['resilience-7'],
+    },
     {
         'desc': 'This App may request root (Super User) privileges.',
         'type': StringOr.__name__,
@@ -578,8 +589,8 @@ RULES = [
         'cvss': 0,
         'cwe': CWE['CWE-250'],
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['resilience-1']
-    }, 
+        'owasp-mstg': OWASP_MSTG['resilience-1'],
+    },
     {
         'desc': 'This App may have root detection capabilities.',
         'type': StringOr.__name__,
@@ -595,19 +606,20 @@ RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['resilience-1']
-    }, 
+        'owasp-mstg': OWASP_MSTG['resilience-1'],
+    },
     {
         'desc': ('The app uses jackson deserialization library'
                  'Deserialization of untrusted input can result in'
                  'arbitary code execution'),
         'type': StringAnd.__name__,
-        'match': ['com.fasterxml.jackson.databind.ObjectMapper', '.enableDefaultTyping('],
+        'match': ['com.fasterxml.jackson.databind.ObjectMapper',
+                  '.enableDefaultTyping('],
         'level': Level.high,
         'input_case': InputCase.exact,
         'cvss': 7.5,
         'cwe': CWE['CWE-502'],
         'owasp': OWASP['m7'],
-        'owasp-mstg': OWASP_MSTG['platform-8']
-    }
+        'owasp-mstg': OWASP_MSTG['platform-8'],
+    },
 ]

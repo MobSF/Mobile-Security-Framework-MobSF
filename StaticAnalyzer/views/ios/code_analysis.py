@@ -11,7 +11,7 @@ from StaticAnalyzer.views.ios.rules.modified import (
     # swift_rules,
     modified_ios_apis,
     modified_objc_rules,
-    modified_swift_rules
+    modified_swift_rules,
 )
 from StaticAnalyzer.views.shared_func import (
     url_n_email_extract,

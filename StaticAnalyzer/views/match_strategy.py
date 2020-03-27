@@ -9,9 +9,7 @@ class MatchStrategy(ABC):
 
     @abstractclassmethod
     def perform_search(self, content, rule, perms):
-        """
-        Search for instance of match in content
-        """
+        """Search for instance of match in content."""
 
 
 class SingleRegex(MatchStrategy):
@@ -29,7 +27,7 @@ class RegexAnd(MatchStrategy):
         # This check is used because if you only pass a str rather than a list,
         # Python will iterate through the str without raising an exception
         if isinstance(rule['match'], str):
-            logger.debug("wrong regex type, switching to single regex")
+            logger.debug('wrong regex type, switching to single regex')
             return SingleRegex().perform_search(content, rule, perms)
         for regex in rule['match']:
             if bool(re.findall(regex, content)) is False:
@@ -42,7 +40,7 @@ class RegexOr(MatchStrategy):
     def perform_search(self, content, rule, perms):
         found = False
         if isinstance(rule['match'], str):
-            logger.debug("wrong regex type, switching to single regex")
+            logger.debug('wrong regex type, switching to single regex')
             return SingleRegex().perform_search(content, rule, perms)
         for regex in rule['match']:
             if re.findall(regex, content):

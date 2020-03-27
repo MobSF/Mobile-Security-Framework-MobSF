@@ -1,14 +1,11 @@
 from StaticAnalyzer.views.match_strategy import (
     SingleRegex,
     SingleString,
-    StringOr,
-    StringAnd
 )
 from StaticAnalyzer.views.rules_properties import (
     InputCase,
-    Level
+    Level,
 )
-
 from StaticAnalyzer.views.standards import (
     CWE,
     OWASP,
@@ -36,7 +33,7 @@ IPA_RULES = [
         'cvss': 6,
         'cwe': CWE['CWE-676'],
         'owasp': OWASP['m7'],
-        'owasp-mstg': OWASP_MSTG['code-8']
+        'owasp-mstg': OWASP_MSTG['code-8'],
     },
     {
         'desc': 'Binary make use of some weak Crypto API(s)',
@@ -56,7 +53,7 @@ IPA_RULES = [
         'cvss': 3,
         'cwe': CWE['CWE-327'],
         'owasp': OWASP['m5'],
-        'owasp-mstg': OWASP_MSTG['crypto-3']
+        'owasp-mstg': OWASP_MSTG['crypto-3'],
     },
     {
         'desc': 'Binary make use of the following Crypto API(s)',
@@ -106,7 +103,7 @@ IPA_RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': ''
+        'owasp-mstg': '',
     },
     {
         'desc': 'Binary make use of some weak Hashing API(s)',
@@ -132,7 +129,7 @@ IPA_RULES = [
         'cvss': 3,
         'cwe': CWE['CWE-327'],
         'owasp': OWASP['m5'],
-        'owasp-mstg': OWASP_MSTG['crypto-4']
+        'owasp-mstg': OWASP_MSTG['crypto-4'],
     },
     {
         'desc': 'Binary make use of the following Hash API(s)',
@@ -160,7 +157,7 @@ IPA_RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': ''
+        'owasp-mstg': '',
     },
     {
         'desc': 'Binary make use of the insecure Random function(s)',
@@ -174,7 +171,7 @@ IPA_RULES = [
         'cvss': 3,
         'cwe': CWE['CWE-330'],
         'owasp': OWASP['m5'],
-        'owasp-mstg': OWASP_MSTG['crypto-6']
+        'owasp-mstg': OWASP_MSTG['crypto-6'],
     },
     {
         'desc': 'Binary make use of Logging function',
@@ -188,7 +185,7 @@ IPA_RULES = [
         'cvss': 7.5,
         'cwe': CWE['CWE-532'],
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['storage-3']
+        'owasp-mstg': OWASP_MSTG['storage-3'],
     },
     {
         'desc': 'Binary make use of malloc function',
@@ -202,7 +199,7 @@ IPA_RULES = [
         'cvss': 2,
         'cwe': CWE['CWE-789'],
         'owasp': OWASP['m7'],
-        'owasp-mstg': OWASP_MSTG['code-8']
+        'owasp-mstg': OWASP_MSTG['code-8'],
     },
     {
         'desc': 'Binary calls ptrace() function for anti-debugging.',
@@ -219,7 +216,7 @@ IPA_RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': OWASP['m7'],
-        'owasp-mstg': OWASP_MSTG['resilience-2']
+        'owasp-mstg': OWASP_MSTG['resilience-2'],
     },
     {
         'desc': 'fPIE -pie flag is Found',
@@ -250,7 +247,7 @@ IPA_RULES = [
             'cwe': CWE['CWE-119'],
             'owasp': OWASP['m1'],
             'owasp-mstg': OWASP_MSTG['code-9'],
-        }
+        },
     },
     {
         'desc': 'fstack-protector-all flag is Found',
@@ -323,5 +320,5 @@ IPA_RULES = [
         'cwe': '',
         'owasp': '',
         'owasp-mstg': OWASP_MSTG['code-9'],
-    }
+    },
 ]

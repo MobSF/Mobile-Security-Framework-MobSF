@@ -1,13 +1,12 @@
 from StaticAnalyzer.views.match_strategy import (
     SingleRegex,
+    StringAnd,
     StringOr,
-    StringAnd
 )
 from StaticAnalyzer.views.rules_properties import (
     InputCase,
-    Level
+    Level,
 )
-
 from StaticAnalyzer.views.standards import (
     CWE,
     OWASP,
@@ -24,7 +23,7 @@ COMMON_RULES = [
         'cvss': 4.3,
         'cwe': CWE['CWE-200'],
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['code-2']
+        'owasp-mstg': OWASP_MSTG['code-2'],
     },
     {
         'desc': ('Files may contain hardcoded sensitive'
@@ -40,7 +39,7 @@ COMMON_RULES = [
         'cvss': 7.4,
         'cwe': CWE['CWE-312'],
         'owasp': OWASP['m9'],
-        'owasp-mstg': OWASP_MSTG['storage-14']
+        'owasp-mstg': OWASP_MSTG['storage-14'],
     },
     {
         'desc': ('App uses SQLite Database. '
@@ -52,7 +51,7 @@ COMMON_RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['storage-14']
+        'owasp-mstg': OWASP_MSTG['storage-14'],
     },
     {
         'desc': ('User input in "loadHTMLString" '
@@ -64,7 +63,7 @@ COMMON_RULES = [
         'cvss': 8.8,
         'cwe': CWE['CWE-95'],
         'owasp': OWASP['m7'],
-        'owasp-mstg': OWASP_MSTG['platform-5']
+        'owasp-mstg': OWASP_MSTG['platform-5'],
     },
     {
         'desc': 'This App may have Jailbreak detection capabilities.',
@@ -79,9 +78,11 @@ COMMON_RULES = [
                   '/Applications/Icy.app',
                   '/Applications/IntelliScreen.app',
                   '/Applications/SBSettings.app',
-                  '/Library/MobileSubstrate/DynamicLibraries/LiveClock.plist',
+                  ('/Library/MobileSubstrate/DynamicLibraries/'
+                   'LiveClock.plist'),
                   '/System/Library/LaunchDaemons/com.ikey.bbot.plist',
-                  '/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist',
+                  ('/System/Library/LaunchDaemons/'
+                   'com.saurik.Cydia.Startup.plist'),
                   '/etc/ssh/sshd_config',
                   '/private/var/tmp/cydia.log',
                   '/usr/libexec/ssh-keysign',
@@ -121,6 +122,6 @@ COMMON_RULES = [
         'cvss': 0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['resilience-1']
-    }
+        'owasp-mstg': OWASP_MSTG['resilience-1'],
+    },
 ]

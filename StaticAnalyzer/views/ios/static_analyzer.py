@@ -71,11 +71,12 @@ def static_analyzer_ios(request, api=False):
             app_dict['app_dir'] = os.path.join(
                 settings.UPLD_DIR, app_dict['md5_hash'] + '/')  # APP DIRECTORY
             tools_dir = os.path.join(
-                app_dict['directory'], 'StaticAnalyzer/tools/ios/') 
+                app_dict['directory'], 'StaticAnalyzer/tools/ios/')
 
-            # Will inject the different pattern strategy when it it will be requested
+            # Will inject the different pattern strategy
+            # when it it will be requested
             match_command = MatchCommand()
-            
+
             if file_type == 'ipa':
                 # DB
                 ipa_db = StaticAnalyzerIOS.objects.filter(

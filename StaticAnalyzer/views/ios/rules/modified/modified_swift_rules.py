@@ -1,20 +1,18 @@
 from StaticAnalyzer.views.ios.rules.modified import modified_common_rules
-
 from StaticAnalyzer.views.match_strategy import (
-    SingleRegex,
-    RegexOr,
     RegexAnd,
+    RegexOr,
+    SingleRegex,
     SingleString,
-    StringOr,
     StringAnd,
+    StringAndNot,
     StringAndOr,
-    StringAndNot
+    StringOr,
 )
 from StaticAnalyzer.views.rules_properties import (
     InputCase,
-    Level
+    Level,
 )
-
 from StaticAnalyzer.views.standards import (
     CWE,
     OWASP,
@@ -32,7 +30,7 @@ SWIFT_RULES = modified_common_rules.COMMON_RULES + [
         'cvss': 7.5,
         'cwe': CWE['CWE-532'],
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['storage-3']
+        'owasp-mstg': OWASP_MSTG['storage-3'],
     },
     {
         'desc': 'SHA1 is a weak hash known to have hash collisions.',
@@ -43,7 +41,7 @@ SWIFT_RULES = modified_common_rules.COMMON_RULES + [
         'cvss': 5.9,
         'cwe': CWE['CWE-327'],
         'owasp': OWASP['m5'],
-        'owasp-mstg': OWASP_MSTG['crypto-4']
+        'owasp-mstg': OWASP_MSTG['crypto-4'],
     },
     {
         'desc': 'MD2 is a weak hash known to have hash collisions.',
@@ -54,7 +52,7 @@ SWIFT_RULES = modified_common_rules.COMMON_RULES + [
         'cvss': 5.9,
         'cwe': CWE['CWE-327'],
         'owasp': OWASP['m5'],
-        'owasp-mstg': OWASP_MSTG['crypto-4']
+        'owasp-mstg': OWASP_MSTG['crypto-4'],
     },
     {
         'desc': 'MD4 is a weak hash known to have hash collisions.',
@@ -65,7 +63,7 @@ SWIFT_RULES = modified_common_rules.COMMON_RULES + [
         'cvss': 5.9,
         'cwe': CWE['CWE-327'],
         'owasp': OWASP['m5'],
-        'owasp-mstg': OWASP_MSTG['crypto-4']
+        'owasp-mstg': OWASP_MSTG['crypto-4'],
     },
     {
         'desc': 'MD5 is a weak hash known to have hash collisions.',
@@ -76,7 +74,7 @@ SWIFT_RULES = modified_common_rules.COMMON_RULES + [
         'cvss': 5.9,
         'cwe': CWE['CWE-327'],
         'owasp': OWASP['m5'],
-        'owasp-mstg': OWASP_MSTG['crypto-4']
+        'owasp-mstg': OWASP_MSTG['crypto-4'],
     },
     {
         'desc': 'MD6 is a weak hash known to have hash collisions.',
@@ -87,7 +85,7 @@ SWIFT_RULES = modified_common_rules.COMMON_RULES + [
         'cvss': 5.9,
         'cwe': CWE['CWE-327'],
         'owasp': OWASP['m5'],
-        'owasp-mstg': OWASP_MSTG['crypto-4']
+        'owasp-mstg': OWASP_MSTG['crypto-4'],
     },
     {
         'desc': 'This App may have custom keyboards disabled.',
@@ -98,10 +96,11 @@ SWIFT_RULES = modified_common_rules.COMMON_RULES + [
         'cvss': 0.0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['platform-11']
+        'owasp-mstg': OWASP_MSTG['platform-11'],
     },
     {
-        'desc': 'Keyboard cache should be disabled for all sensitve data inputs.',
+        'desc': ('Keyboard cache should be disabled for all '
+                 'sensitve data inputs.'),
         'type': SingleRegex.__name__,
         'match': r'.autocorrectionType = .no',
         'level': Level.good,
@@ -109,7 +108,7 @@ SWIFT_RULES = modified_common_rules.COMMON_RULES + [
         'cvss': 0.0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['storage-5']
+        'owasp-mstg': OWASP_MSTG['storage-5'],
     },
     {
         'desc': ('It is recommended to use WKWebView instead '
@@ -121,18 +120,21 @@ SWIFT_RULES = modified_common_rules.COMMON_RULES + [
         'cvss': 0.0,
         'cwe': '',
         'owasp': OWASP['m1'],
-        'owasp-mstg': OWASP_MSTG['platform-5']
+        'owasp-mstg': OWASP_MSTG['platform-5'],
     },
     {
         'desc': 'This App may have Reverse enginering detection capabilities.',
         'type': StringAnd.__name__,
-        'match': ['\"FridaGadget\"', '\"cynject\"', '\"libcycript\"', '\"/usr/sbin/frida-server\"'],
+        'match': ['\"FridaGadget\"',
+                  '\"cynject\"',
+                  '\"libcycript\"',
+                  '\"/usr/sbin/frida-server\"'],
         'level': Level.good,
         'input_case': InputCase.exact,
         'cvss': 0.0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['resilience-4']
+        'owasp-mstg': OWASP_MSTG['resilience-4'],
     },
     {
         'desc': 'This App may have Emulator detection capabilities.',
@@ -143,7 +145,7 @@ SWIFT_RULES = modified_common_rules.COMMON_RULES + [
         'cvss': 0.0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['resilience-5']
+        'owasp-mstg': OWASP_MSTG['resilience-5'],
     },
     {
         'desc': ('Biometric authentication should be based '
@@ -155,7 +157,7 @@ SWIFT_RULES = modified_common_rules.COMMON_RULES + [
         'cvss': 0.0,
         'cwe': '',
         'owasp': OWASP['m1'],
-        'owasp-mstg': OWASP_MSTG['auth-8']
+        'owasp-mstg': OWASP_MSTG['auth-8'],
     },
     {
         'desc': 'The file has no special protections associated with it.',
@@ -166,7 +168,7 @@ SWIFT_RULES = modified_common_rules.COMMON_RULES + [
         'cvss': 4.3,
         'cwe': CWE['CWE-311'],
         'owasp': OWASP['m2'],
-        'owasp-mstg': OWASP_MSTG['storage-1']
+        'owasp-mstg': OWASP_MSTG['storage-1'],
     },
     {
         'desc': ('This application uses UIPasteboard, improper use '
@@ -178,7 +180,7 @@ SWIFT_RULES = modified_common_rules.COMMON_RULES + [
         'cvss': 0.0,
         'cwe': '',
         'owasp': OWASP['m1'],
-        'owasp-mstg': OWASP_MSTG['platform-4']
+        'owasp-mstg': OWASP_MSTG['platform-4'],
     },
     {
         'desc': 'Usage of generalPasteboard should be avoided.',
@@ -189,7 +191,7 @@ SWIFT_RULES = modified_common_rules.COMMON_RULES + [
         'cvss': 0.0,
         'cwe': '',
         'owasp': OWASP['m1'],
-        'owasp-mstg': OWASP_MSTG['platform-4']
+        'owasp-mstg': OWASP_MSTG['platform-4'],
     },
     {
         'desc': ('The app should not export sensitive functionality via '
@@ -202,7 +204,7 @@ SWIFT_RULES = modified_common_rules.COMMON_RULES + [
         'cvss': 0.0,
         'cwe': '',
         'owasp': OWASP['m1'],
-        'owasp-mstg': OWASP_MSTG['platform-3']
+        'owasp-mstg': OWASP_MSTG['platform-3'],
     },
     {
         'desc': 'Some UI controls have secure text entry configured.',
@@ -213,18 +215,19 @@ SWIFT_RULES = modified_common_rules.COMMON_RULES + [
         'cvss': 0.0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['storage-5']
+        'owasp-mstg': OWASP_MSTG['storage-5'],
     },
     {
         'desc': 'This App may have Certificate Pinning mechanism.',
         'type': StringOr.__name__,
-        'match': ['PinnedCertificatesTrustEvaluator', 'TrustKit.initSharedInstance'],
+        'match': ['PinnedCertificatesTrustEvaluator',
+                  'TrustKit.initSharedInstance'],
         'level': Level.good,
         'input_case': InputCase.exact,
         'cvss': 0.0,
         'cwe': CWE['CWE-295'],
         'owasp': OWASP['m3'],
-        'owasp-mstg': OWASP_MSTG['network-4']
+        'owasp-mstg': OWASP_MSTG['network-4'],
     },
     {
         'desc': ('App uses Realm Database. '
@@ -236,7 +239,7 @@ SWIFT_RULES = modified_common_rules.COMMON_RULES + [
         'cvss': 0,
         'cwe': CWE['CWE-311'],
         'owasp': OWASP['m2'],
-        'owasp-mstg': OWASP_MSTG['storage-14']
+        'owasp-mstg': OWASP_MSTG['storage-14'],
     },
     {
         'desc': ('App uses CoreData Database. '
@@ -248,29 +251,31 @@ SWIFT_RULES = modified_common_rules.COMMON_RULES + [
         'cvss': 0.0,
         'cwe': CWE['CWE-311'],
         'owasp': OWASP['m2'],
-        'owasp-mstg': OWASP_MSTG['storage-14']
+        'owasp-mstg': OWASP_MSTG['storage-14'],
     },
     {
         'desc': 'Used Realm database has configured encryption.',
         'type': StringAnd.__name__,
-        'match': ['Realm.Configuration(encryptionKey:', 'Realm(configuration:'],
+        'match': ['Realm.Configuration(encryptionKey:',
+                  'Realm(configuration:'],
         'level': Level.good,
         'input_case': InputCase.exact,
         'cvss': 0.0,
         'cwe': CWE['CWE-311'],
         'owasp': OWASP['m2'],
-        'owasp-mstg': OWASP_MSTG['storage-14']
+        'owasp-mstg': OWASP_MSTG['storage-14'],
     },
     {
         'desc': 'Copy feature may be disabled in some UI controls.',
         'type': RegexAnd.__name__,
-        'match': [r'canPerformAction', r'UIResponderStandardEditActions\.copy|\.copy'],
+        'match': [r'canPerformAction',
+                  r'UIResponderStandardEditActions\.copy|\.copy'],
         'level': Level.info,
         'input_case': InputCase.exact,
         'cvss': 0.0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': ''
+        'owasp-mstg': '',
     },
     {
         'desc': 'Opening App with URLs can lead to potencial security leaks.',
@@ -281,7 +286,7 @@ SWIFT_RULES = modified_common_rules.COMMON_RULES + [
         'cvss': 0.0,
         'cwe': CWE['CWE-939'],
         'owasp': OWASP['m1'],
-        'owasp-mstg': OWASP_MSTG['platform-3']
+        'owasp-mstg': OWASP_MSTG['platform-3'],
     },
     {
         'desc': ('Sensitive data shouldn\'t be included in backups generated '
@@ -293,7 +298,7 @@ SWIFT_RULES = modified_common_rules.COMMON_RULES + [
         'cvss': 0.0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['storage-8']
+        'owasp-mstg': OWASP_MSTG['storage-8'],
     },
     {
         'desc': ('JavaScript should be disabled in WebViews unless '
@@ -305,41 +310,44 @@ SWIFT_RULES = modified_common_rules.COMMON_RULES + [
         'cvss': 0.0,
         'cwe': '',
         'owasp': '',
-        'owasp-mstg': OWASP_MSTG['platform-5']
+        'owasp-mstg': OWASP_MSTG['platform-5'],
     },
     {
         'desc': 'TLS 1.3 should be used. Detected old version',
         'type': StringAndOr.__name__,
         'match': ['.TLSMinimumSupportedProtocolVersion',
-                  ['tls_protocol_version_t.TLSv10', 'tls_protocol_version_t.TLSv11']],
+                  ['tls_protocol_version_t.TLSv10',
+                   'tls_protocol_version_t.TLSv11']],
         'level': Level.high,
         'input_case': InputCase.exact,
         'cvss': 7.5,
         'cwe': CWE['CWE-757'],
         'owasp': OWASP['m3'],
-        'owasp-mstg': OWASP_MSTG['network-2']
+        'owasp-mstg': OWASP_MSTG['network-2'],
     },
     {
         'desc': 'TLS 1.3 should be used. Detected old version - TLS 1.2.',
         'type': StringAnd.__name__,
-        'match': ['.TLSMinimumSupportedProtocolVersion', 'tls_protocol_version_t.TLSv12'],
+        'match': ['.TLSMinimumSupportedProtocolVersion',
+                  'tls_protocol_version_t.TLSv12'],
         'level': Level.warning,
         'input_case': InputCase.exact,
         'cvss': 0.0,
         'cwe': '',
         'owasp': OWASP['m3'],
-        'owasp-mstg': OWASP_MSTG['network-2']
+        'owasp-mstg': OWASP_MSTG['network-2'],
     },
     {
         'desc': 'DTLS 1.2 should be used. Detected old version - DTLS 1.0.',
         'type': StringAnd.__name__,
-        'match': ['.TLSMinimumSupportedProtocolVersion', 'tls_protocol_version_t.DTLSv10'],
+        'match': ['.TLSMinimumSupportedProtocolVersion',
+                  'tls_protocol_version_t.DTLSv10'],
         'level': Level.warning,
         'input_case': InputCase.exact,
         'cvss': 0.0,
         'cwe': '',
         'owasp': OWASP['m3'],
-        'owasp-mstg': OWASP_MSTG['network-2']
+        'owasp-mstg': OWASP_MSTG['network-2'],
     },
     {
         'desc': ('Use of deprecated property tlsMinimumSupportedProtocol. '
@@ -352,6 +360,6 @@ SWIFT_RULES = modified_common_rules.COMMON_RULES + [
         'cvss': 0.0,
         'cwe': '',
         'owasp': OWASP['m3'],
-        'owasp-mstg': OWASP_MSTG['network-2']
-    }
+        'owasp-mstg': OWASP_MSTG['network-2'],
+    },
 ]
