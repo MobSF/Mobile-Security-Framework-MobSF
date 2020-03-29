@@ -76,16 +76,18 @@ class Environment:
         # identify environment
         runtime = self.get_environment()
         if runtime == 'emulator':
+            logger.info('Found Android Studio Emulator')
             # mount system
             logger.info('Remounting')
             self.adb_command(['remount'])
         elif runtime == 'genymotion':
+            logger.info('Found Genymotion x86 VM')
             # mount system
             logger.info('Remounting /system')
             self.adb_command(['mount', '-o',
                               'rw,remount', '/system'], True)
         else:
-            logger.error('Only Genymotion VMs and Android Studio Emulator'
+            logger.error('Only Genymotion VM/Android Studio Emulator'
                          ' is supported')
             return False
         return True
@@ -446,18 +448,30 @@ class Environment:
 
     def frida_setup(self):
         """Setup Frida."""
+        frida_arch = None
+        frida_version = '12.8.19'
         frida_dir = 'onDevice/frida/'
-        frida_bin = os.path.join(self.tools_dir,
-                                 frida_dir,
-                                 'frida-server-12.8.19-android-x86')
         arch = self.get_android_arch()
         logger.info('Android instance architecture identified as %s', arch)
-        if 'x86' not in arch:
-            logger.error('Make sure a Genymotion Android x86'
-                         'instance is running')
+        if arch in ['armeabi-v7a', 'armeabi']:
+            frida_arch = 'arm'
+        elif arch == 'arm64-v8a':
+            frida_arch = 'arm64'
+        elif arch == 'x86':
+            frida_arch = 'x86'
+        else:
+            logger.error('Make sure a Genymotion Android x86 VM'
+                         ' or Android Studio Emulator'
+                         ' instance is running')
             return
+        frida_bin = 'frida-server-{}-android-{}'.format(
+            frida_version,
+            frida_arch)
+        frida_path = os.path.join(self.tools_dir,
+                                  frida_dir,
+                                  frida_bin)
         logger.info('Copying frida server')
-        self.adb_command(['push', frida_bin, '/system/fd_server'])
+        self.adb_command(['push', frida_path, '/system/fd_server'])
         self.adb_command(['chmod', '755', '/system/fd_server'], True)
 
     def run_frida_server(self):
