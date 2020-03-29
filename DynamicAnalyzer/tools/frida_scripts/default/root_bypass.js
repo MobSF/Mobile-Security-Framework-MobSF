@@ -144,19 +144,16 @@ Java.performNow(function () {
     }
 
     // Patch other libraries after the above ones
-    var RootBypass = [{
-        class: 'android.security.keystore.KeyInfo',
-        method: 'isInsideSecureHardware',
-        func: function () {
-            send("[RootDetection Bypass] isInsideSecureHardware");
-            return true;
-        },
-        target: 6
-    }, {
-        class: 'android.app.ApplicationPackageManager',
-        method: 'getPackageInfo',
-        arguments: ['java.lang.String', 'int'],
-        func: function (pname, flags) {
+    var toHook, className, classMethod;
+    try {
+        className = 'android.app.ApplicationPackageManager'
+        classMethod = 'getPackageInfo'
+        toHook = Java.use(className)[classMethod];
+        if (!toHook) {
+            send('[RootDetection Bypass] Cannot find ' + className + '.' + classMethod);
+            return
+        }
+        toHook.overload('java.lang.String', 'int').implementation = function (pname, flags) {
             var shouldFakePackage = (RootPackages.indexOf(pname) > -1);
             if (shouldFakePackage) {
                 send("[RootDetection Bypass] root check for package: " + pname);
@@ -164,42 +161,50 @@ Java.performNow(function () {
             }
             return this.getPackageInfo.call(this, pname, flags);
         }
-    }, {
-        class: 'android.os.SystemProperties',
-        method: 'get',
-        arguments: ['java.lang.String'],
-        func: function (name) {
+    } catch (err) {
+        send('[RootDetection Bypass] Error ' + className + '.' + classMethod + err);
+        return
+    }
+
+    try {
+        className = 'android.os.SystemProperties'
+        classMethod = 'get'
+        toHook = Java.use(className)[classMethod];
+        if (!toHook) {
+            send('[RootDetection Bypass] Cannot find ' + className + '.' + classMethod);
+            return
+        }
+        toHook.overload('java.lang.String').implementation = function (name) {
             if (RootPropertiesKeys.indexOf(name) != -1) {
                 send("[RootDetection Bypass] " + name);
                 return RootProperties[name];
             }
             return this.get.call(this, name);
         }
+    } catch (err) {
+        send('[RootDetection Bypass] Error ' + className + '.' + classMethod + err);
+        return
     }
-    ]
-
-    RootBypass.forEach(function (bypass, _) {
-        var toHook;
-        try {
-            if (bypass.target && parseInt(Java.androidVersion, 10) < bypass.target) {
-                send('[RootDetection Bypass] Not Hooking unavailable class/method - ' + bypass.class + '.' + bypass.method)
-                return
-            }
-            toHook = Java.use(bypass.class)[bypass.method];
-            if (!toHook) {
-                send('[RootDetection Bypass] Cannot find ' + bypass.class + '.' + bypass.method);
-                return
-            }
-        } catch (err) {
-            send('[RootDetection Bypass] Error ' + bypass.class + '.' + bypass.method + err);
+    try {
+        className = 'android.security.keystore.KeyInfo'
+        classMethod = 'isInsideSecureHardware'
+        if (parseInt(Java.androidVersion, 10) < 6) {
+            send('[RootDetection Bypass] Not Hooking unavailable class/classMethod - ' + className + '.' + classMethod)
             return
         }
-        if (bypass.arguments) {
-            toHook.overload.apply(null, bypass.arguments).implementation = bypass.func;
-        } else {
-            toHook.overload.implementation = bypass.func;
+        toHook = Java.use(className)[classMethod];
+        if (!toHook) {
+            send('[RootDetection Bypass] Cannot find ' + className + '.' + classMethod);
+            return
         }
-    })
+        toHook.implementation = function () {
+            send("[RootDetection Bypass] isInsideSecureHardware");
+            return true;
+        }
+    } catch (err) {
+        send('[RootDetection Bypass] Error ' + className + '.' + classMethod + err);
+        return
+    }
 
     // Native Root Check Bypass
 
