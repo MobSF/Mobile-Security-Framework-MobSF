@@ -73,10 +73,21 @@ class Environment:
                                                  'connect',
                                                   self.identifier]):
             return False
-        # mount system
-        logger.info('Remounting /system')
-        self.adb_command(['mount', '-o',
-                          'rw,remount', '/system'], True)
+        # identify environment
+        runtime = self.get_environment()
+        if runtime == 'emulator':
+            # mount system
+            logger.info('Remounting')
+            self.adb_command(['remount'])
+        elif runtime == 'genymotion':
+            # mount system
+            logger.info('Remounting /system')
+            self.adb_command(['mount', '-o',
+                              'rw,remount', '/system'], True)
+        else:
+            logger.error('Only Genymotion VMs and Android Studio Emulator'
+                         ' is supported')
+            return False
         return True
 
     def adb_command(self, cmd_list, shell=False, silent=False):
@@ -271,6 +282,21 @@ class Environment:
         elif comp == 'exported_activities':
             resp = python_list(anddb[0].EXPORTED_ACTIVITIES)
         return '\n'.join(resp)
+
+    def get_environment(self):
+        """Identify the environment."""
+        out = self.adb_command(['getprop',
+                                'ro.boot.serialno'], True)
+        out += self.adb_command(['getprop',
+                                'ro.serialno'], True)
+        out += self.adb_command(['getprop',
+                                'ro.build.user'], True)
+        if b'EMULATOR' in out:
+            return 'emulator'
+        elif b'genymotion' in out:
+            return 'genymotion'
+        else:
+            return ''
 
     def get_android_version(self):
         """Get Android version."""
