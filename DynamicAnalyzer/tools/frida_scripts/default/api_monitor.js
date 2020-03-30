@@ -101,64 +101,66 @@ var apis = [{
     method: 'deleteFile',
     name: 'File IO'
 },
-/* {
+/*
 // crashes app on android 7
-class: 'android.app.SharedPreferencesImpl',
-method: 'getString',
-name: 'File IO - Shared Preferences'
+{
+    class: 'android.app.SharedPreferencesImpl',
+    method: 'getString',
+    name: 'File IO - Shared Preferences'
 }, {
-class: 'android.app.SharedPreferencesImpl',
-method: 'contains',
-name: 'File IO - Shared Preferences'
+    class: 'android.app.SharedPreferencesImpl',
+    method: 'contains',
+    name: 'File IO - Shared Preferences'
 }, {
-class: 'android.app.SharedPreferencesImpl',
-method: 'getInt',
-name: 'File IO - Shared Preferences'
+    class: 'android.app.SharedPreferencesImpl',
+    method: 'getInt',
+    name: 'File IO - Shared Preferences'
 }, {
-class: 'android.app.SharedPreferencesImpl',
-method: 'getFloat',
-name: 'File IO - Shared Preferences'
+    class: 'android.app.SharedPreferencesImpl',
+    method: 'getFloat',
+    name: 'File IO - Shared Preferences'
 }, {
-class: 'android.app.SharedPreferencesImpl',
-method: 'getLong',
-name: 'File IO - Shared Preferences'
+    class: 'android.app.SharedPreferencesImpl',
+    method: 'getLong',
+    name: 'File IO - Shared Preferences'
 }, {
-class: 'android.app.SharedPreferencesImpl',
-method: 'getBoolean',
-name: 'File IO - Shared Preferences'
+    class: 'android.app.SharedPreferencesImpl',
+    method: 'getBoolean',
+    name: 'File IO - Shared Preferences'
 }, {
-class: 'android.app.SharedPreferencesImpl',
-method: 'getStringSet',
-name: 'File IO - Shared Preferences'
+    class: 'android.app.SharedPreferencesImpl',
+    method: 'getStringSet',
+    name: 'File IO - Shared Preferences'
 }, {
-class: 'android.app.SharedPreferencesImpl$EditorImpl',
-method: 'putString',
-name: 'File IO - Shared Preferences'
+    class: 'android.app.SharedPreferencesImpl$EditorImpl',
+    method: 'putString',
+    name: 'File IO - Shared Preferences'
 }, {
-class: 'android.app.SharedPreferencesImpl$EditorImpl',
-method: 'putStringSet',
-name: 'File IO - Shared Preferences'
-},  {
-class: 'android.app.SharedPreferencesImpl$EditorImpl',
-method: 'putInt',
-name: 'File IO - Shared Preferences'
+    class: 'android.app.SharedPreferencesImpl$EditorImpl',
+    method: 'putStringSet',
+    name: 'File IO - Shared Preferences'
 }, {
-class: 'android.app.SharedPreferencesImpl$EditorImpl',
-method: 'putFloat',
-name: 'File IO - Shared Preferences'
+    class: 'android.app.SharedPreferencesImpl$EditorImpl',
+    method: 'putInt',
+    name: 'File IO - Shared Preferences'
 }, {
-class: 'android.app.SharedPreferencesImpl$EditorImpl',
-method: 'putBoolean',
-name: 'File IO - Shared Preferences'
+    class: 'android.app.SharedPreferencesImpl$EditorImpl',
+    method: 'putFloat',
+    name: 'File IO - Shared Preferences'
 }, {
-class: 'android.app.SharedPreferencesImpl$EditorImpl',
-method: 'putLong',
-name: 'File IO - Shared Preferences'
+    class: 'android.app.SharedPreferencesImpl$EditorImpl',
+    method: 'putBoolean',
+    name: 'File IO - Shared Preferences'
 }, {
-class: 'android.app.SharedPreferencesImpl$EditorImpl',
-method: 'remove',
-name: 'File IO - Shared Preferences'
-}, */
+    class: 'android.app.SharedPreferencesImpl$EditorImpl',
+    method: 'putLong',
+    name: 'File IO - Shared Preferences'
+}, {
+    class: 'android.app.SharedPreferencesImpl$EditorImpl',
+    method: 'remove',
+    name: 'File IO - Shared Preferences'
+},
+*/
 {
     class: 'android.content.ContextWrapper',
     method: 'openOrCreateDatabase',
@@ -490,22 +492,6 @@ name: 'File IO - Shared Preferences'
     name: 'Device Data'
 }
 ];
-
-// Get All Method Implementations
-function get_implementations(toHook) {
-    var imp_args = []
-    toHook.overloads.forEach(function (impl, _) {
-        if (impl.argumentTypes) {
-            var args = [];
-            var argTypes = impl.argumentTypes
-            argTypes.forEach(function (arg_type, __) {
-                args.push(arg_type.className)
-            });
-            imp_args.push(args);
-        }
-    });
-    return imp_args;
-}
 
 // Dynamic Hooks
 function hook(api, callback) {
