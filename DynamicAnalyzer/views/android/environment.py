@@ -71,7 +71,7 @@ class Environment:
         logger.info('Reconnecting to Android Device')
         # connect again with root adb
         if not self.run_subprocess_verify_output([get_adb(),
-                                                 'connect',
+                                                  'connect',
                                                   self.identifier]):
             return False
         # identify environment

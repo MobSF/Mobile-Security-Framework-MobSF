@@ -1,6 +1,5 @@
 // MobSF Android API Monitor
 // Inspired from: https://github.com/realgam3/ReversingAutomation/blob/master/Frida/Android-DynamicHooks/DynamicHooks.js
-
 var apis = [{
     class: 'android.os.Process',
     method: 'start',
@@ -78,7 +77,8 @@ var apis = [{
     class: 'libcore.io.IoBridge',
     method: 'open',
     name: 'File IO'
-},/* {
+},
+/* {
     // so much calls
     class: 'java.io.FileOutputStream',
     method: 'write',
@@ -87,7 +87,8 @@ var apis = [{
     class: 'java.io.FileInputStream',
     method: 'read',
     name: 'File IO'
-}, */ {
+}, */
+{
     class: 'android.content.ContextWrapper',
     method: 'openFileInput',
     name: 'File IO'
@@ -99,64 +100,66 @@ var apis = [{
     class: 'android.content.ContextWrapper',
     method: 'deleteFile',
     name: 'File IO'
-}, /* {
-    // crashes app on android 7
-    class: 'android.app.SharedPreferencesImpl',
-    method: 'getString',
-    name: 'File IO - Shared Preferences'
+},
+/* {
+// crashes app on android 7
+class: 'android.app.SharedPreferencesImpl',
+method: 'getString',
+name: 'File IO - Shared Preferences'
 }, {
-    class: 'android.app.SharedPreferencesImpl',
-    method: 'contains',
-    name: 'File IO - Shared Preferences'
+class: 'android.app.SharedPreferencesImpl',
+method: 'contains',
+name: 'File IO - Shared Preferences'
 }, {
-    class: 'android.app.SharedPreferencesImpl',
-    method: 'getInt',
-    name: 'File IO - Shared Preferences'
+class: 'android.app.SharedPreferencesImpl',
+method: 'getInt',
+name: 'File IO - Shared Preferences'
 }, {
-    class: 'android.app.SharedPreferencesImpl',
-    method: 'getFloat',
-    name: 'File IO - Shared Preferences'
+class: 'android.app.SharedPreferencesImpl',
+method: 'getFloat',
+name: 'File IO - Shared Preferences'
 }, {
-    class: 'android.app.SharedPreferencesImpl',
-    method: 'getLong',
-    name: 'File IO - Shared Preferences'
+class: 'android.app.SharedPreferencesImpl',
+method: 'getLong',
+name: 'File IO - Shared Preferences'
 }, {
-    class: 'android.app.SharedPreferencesImpl',
-    method: 'getBoolean',
-    name: 'File IO - Shared Preferences'
+class: 'android.app.SharedPreferencesImpl',
+method: 'getBoolean',
+name: 'File IO - Shared Preferences'
 }, {
-    class: 'android.app.SharedPreferencesImpl',
-    method: 'getStringSet',
-    name: 'File IO - Shared Preferences'
+class: 'android.app.SharedPreferencesImpl',
+method: 'getStringSet',
+name: 'File IO - Shared Preferences'
 }, {
-    class: 'android.app.SharedPreferencesImpl$EditorImpl',
-    method: 'putString',
-    name: 'File IO - Shared Preferences'
+class: 'android.app.SharedPreferencesImpl$EditorImpl',
+method: 'putString',
+name: 'File IO - Shared Preferences'
 }, {
-    class: 'android.app.SharedPreferencesImpl$EditorImpl',
-    method: 'putStringSet',
-    name: 'File IO - Shared Preferences'
+class: 'android.app.SharedPreferencesImpl$EditorImpl',
+method: 'putStringSet',
+name: 'File IO - Shared Preferences'
 },  {
-    class: 'android.app.SharedPreferencesImpl$EditorImpl',
-    method: 'putInt',
-    name: 'File IO - Shared Preferences'
+class: 'android.app.SharedPreferencesImpl$EditorImpl',
+method: 'putInt',
+name: 'File IO - Shared Preferences'
 }, {
-    class: 'android.app.SharedPreferencesImpl$EditorImpl',
-    method: 'putFloat',
-    name: 'File IO - Shared Preferences'
+class: 'android.app.SharedPreferencesImpl$EditorImpl',
+method: 'putFloat',
+name: 'File IO - Shared Preferences'
 }, {
-    class: 'android.app.SharedPreferencesImpl$EditorImpl',
-    method: 'putBoolean',
-    name: 'File IO - Shared Preferences'
+class: 'android.app.SharedPreferencesImpl$EditorImpl',
+method: 'putBoolean',
+name: 'File IO - Shared Preferences'
 }, {
-    class: 'android.app.SharedPreferencesImpl$EditorImpl',
-    method: 'putLong',
-    name: 'File IO - Shared Preferences'
+class: 'android.app.SharedPreferencesImpl$EditorImpl',
+method: 'putLong',
+name: 'File IO - Shared Preferences'
 }, {
-    class: 'android.app.SharedPreferencesImpl$EditorImpl',
-    method: 'remove',
-    name: 'File IO - Shared Preferences'
-}, */ {
+class: 'android.app.SharedPreferencesImpl$EditorImpl',
+method: 'remove',
+name: 'File IO - Shared Preferences'
+}, */
+{
     class: 'android.content.ContextWrapper',
     method: 'openOrCreateDatabase',
     name: 'Database'
@@ -485,13 +488,14 @@ var apis = [{
     class: 'android.app.ApplicationPackageManager',
     method: 'getInstalledPackages',
     name: 'Device Data'
-}];
+}
+];
 
 // Get All Method Implementations
 function get_implementations(toHook) {
     var imp_args = []
     toHook.overloads.forEach(function (impl, _) {
-        if (impl.hasOwnProperty('argumentTypes')) {
+        if (impl.argumentTypes) {
             var args = [];
             var argTypes = impl.argumentTypes
             argTypes.forEach(function (arg_type, __) {
@@ -526,12 +530,12 @@ function hook(api, callback) {
             send('[API Monitor] Cannot find ' + clazz + '.' + method);
             return
         }
-        var arglist = get_implementations(toHook)
-        arglist.forEach(function (args, _) {
-            toHook.overload.apply(null, args).implementation = function () {
+        var overloadCount = toHook.overloads.length;
+        for (var i = 0; i < overloadCount; i++) {
+            toHook.overloads[i].implementation = function () {
                 var argz = [].slice.call(arguments);
                 // Call original function
-                var result = this[method].apply(this, argz);
+                var retval = this[method].apply(this, arguments);
                 if (callback) {
                     var calledFrom = Exception.$new().getStackTrace().toString().split(',')[1];
                     var message = {
@@ -539,16 +543,16 @@ function hook(api, callback) {
                         class: clazz,
                         method: method,
                         arguments: argz,
-                        result: result,
+                        result: retval ? retval.toString() : null,
                         calledFrom: calledFrom
                     };
-                    result = callback(result, message);
+                    retval = callback(retval, message);
                 }
-                return result;
-            };
-        });
+                return retval;
+            }
+        }
     } catch (err) {
-        send('[API Monitor] - ERROR: ' + clazz + "." + method + "[\"Error\"] => " + err);
+        send('[API Monitor] - ERROR: ' + clazz + "." + method + " [\"Error\"] => " + err);
     }
 }
 
@@ -563,18 +567,19 @@ Java.performNow(function () {
                 !message.name.includes('IPC')) {
             */
             message.returnValue = originalResult
-            if (originalResult) {
-                if (typeof originalResult === 'object') {
-                    message.returnValue = '' + message.returnValue
+            if (originalResult && typeof originalResult === 'object') {
+                var s = [];
+                for (var k = 0, l = originalResult.length; k < l; k++) {
+                    s.push(originalResult[k]);
                 }
+                message.returnValue = '' + s.join('');
             }
             if (!message.result)
-                message.result = ''
+                message.result = undefined
             if (!message.returnValue)
-                message.returnValue = ''
+                message.returnValue = undefined
             var msg = 'MobSF-API-Monitor: ' + JSON.stringify(message);
             send(msg + ',');
-            // }
             return originalResult;
         });
     });
