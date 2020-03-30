@@ -24,6 +24,7 @@ from MobSF.utils import (get_adb,
                          python_list)
 
 logger = logging.getLogger(__name__)
+ANDROID_API_SUPPORTED = 28
 
 
 class Environment:
@@ -67,16 +68,32 @@ class Environment:
         logger.info('Restarting ADB Daemon as root')
         if not self.run_subprocess_verify_output([get_adb(), 'root']):
             return False
-        logger.info('Reconnect to Android Device')
+        logger.info('Reconnecting to Android Device')
         # connect again with root adb
         if not self.run_subprocess_verify_output([get_adb(),
-                                                 'connect',
+                                                  'connect',
                                                   self.identifier]):
             return False
-        # mount system
-        logger.info('Remounting /system')
-        self.adb_command(['mount', '-o',
-                          'rw,remount', '/system'], True)
+        # identify environment
+        runtime = self.get_environment()
+        if runtime == 'emulator':
+            logger.info('Found Android Studio Emulator')
+            # mount system
+            logger.info('Remounting')
+            self.adb_command(['remount'])
+        elif runtime == 'genymotion':
+            logger.info('Found Genymotion x86 VM')
+            # mount system
+            logger.info('Remounting /system')
+            self.adb_command(['mount', '-o',
+                              'rw,remount', '/system'], True)
+        else:
+            logger.error('Only Genymotion VM/Android Studio Emulator'
+                         ' is supported')
+            return False
+        logger.info('Performing System check')
+        if not self.system_check(runtime):
+            return False
         return True
 
     def adb_command(self, cmd_list, shell=False, silent=False):
@@ -272,6 +289,21 @@ class Environment:
             resp = python_list(anddb[0].EXPORTED_ACTIVITIES)
         return '\n'.join(resp)
 
+    def get_environment(self):
+        """Identify the environment."""
+        out = self.adb_command(['getprop',
+                                'ro.boot.serialno'], True)
+        out += self.adb_command(['getprop',
+                                'ro.serialno'], True)
+        out += self.adb_command(['getprop',
+                                'ro.build.user'], True)
+        if b'EMULATOR' in out:
+            return 'emulator'
+        elif b'genymotion' in out:
+            return 'genymotion'
+        else:
+            return ''
+
     def get_android_version(self):
         """Get Android version."""
         out = self.adb_command(['getprop',
@@ -285,9 +317,49 @@ class Environment:
 
     def get_android_arch(self):
         """Get Android Architecture."""
-        out = self.adb_command(['getprop',
-                                'ro.product.cpu.abi'], True)
+        out = self.adb_command([
+            'getprop',
+            'ro.product.cpu.abi'], True)
         return out.decode('utf-8').rstrip()
+
+    def system_check(self, runtime):
+        """Check if /system is writable."""
+        try:
+            try:
+                out = self.adb_command([
+                    'getprop',
+                    'ro.build.version.sdk'], True)
+                if out:
+                    api = int(out.decode('utf-8').strip())
+                    logger.info('Android API Level '
+                                'identified as %s', api)
+                    if api > ANDROID_API_SUPPORTED:
+                        logger.error('This API Level is not supported'
+                                     ' for Dynamic Analysis.')
+                        return False
+            except Exception:
+                pass
+            err_msg = ('VM\'s /system is not writable. '
+                       'This VM cannot be used for '
+                       'Dynamic Analysis.')
+            proc = subprocess.Popen([get_adb(),
+                                     '-s', self.identifier,
+                                     'shell',
+                                     'touch',
+                                     '/system/test'],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+            _, stderr = proc.communicate()
+            if b'Read-only' in stderr:
+                logger.error(err_msg)
+                if runtime == 'emulator':
+                    logger.error('Please start the AVD as per '
+                                 'MobSF documentation!')
+                return False
+        except Exception:
+            logger.error(err_msg)
+            return False
+        return True
 
     def launch_n_capture(self, package, activity, outfile):
         """Launch and Capture Activity."""
@@ -420,18 +492,30 @@ class Environment:
 
     def frida_setup(self):
         """Setup Frida."""
+        frida_arch = None
+        frida_version = '12.8.19'
         frida_dir = 'onDevice/frida/'
-        frida_bin = os.path.join(self.tools_dir,
-                                 frida_dir,
-                                 'frida-server-12.8.19-android-x86')
         arch = self.get_android_arch()
-        logger.info('Android instance architecture identified as %s', arch)
-        if 'x86' not in arch:
-            logger.error('Make sure a Genymotion Android x86'
-                         'instance is running')
+        logger.info('Android OS architecture identified as %s', arch)
+        if arch in ['armeabi-v7a', 'armeabi']:
+            frida_arch = 'arm'
+        elif arch == 'arm64-v8a':
+            frida_arch = 'arm64'
+        elif arch == 'x86':
+            frida_arch = 'x86'
+        else:
+            logger.error('Make sure a Genymotion Android x86 VM'
+                         ' or Android Studio Emulator'
+                         ' instance is running')
             return
-        logger.info('Copying frida server')
-        self.adb_command(['push', frida_bin, '/system/fd_server'])
+        frida_bin = 'frida-server-{}-android-{}'.format(
+            frida_version,
+            frida_arch)
+        frida_path = os.path.join(self.tools_dir,
+                                  frida_dir,
+                                  frida_bin)
+        logger.info('Copying frida server for %s', frida_arch)
+        self.adb_command(['push', frida_path, '/system/fd_server'])
         self.adb_command(['chmod', '755', '/system/fd_server'], True)
 
     def run_frida_server(self):
