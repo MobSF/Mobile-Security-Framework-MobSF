@@ -17,6 +17,7 @@ Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82
 [![ToolsWatch Best Security Tools 2017](https://img.shields.io/badge/ToolsWatch-Rank%209%20%7C%20Year%202017-red.svg)](http://www.toolswatch.org/2018/01/black-hat-arsenal-top-10-security-tools/)
 [![Blackhat Arsenal Asia 2015](https://img.shields.io/badge/Black%20Hat%20Arsenal-Asia%202015-blue.svg)](https://www.blackhat.com/asia-15/arsenal.html#yso-mobile-security-framework)
 [![Blackhat Arsenal Asia 2018](https://img.shields.io/badge/Black%20Hat%20Arsenal-Asia%202018-blue.svg)](https://www.blackhat.com/asia-18/arsenal.html#mobile-security-framework-mobsf)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FMobSF%2FMobile-Security-Framework-MobSF.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FMobSF%2FMobile-Security-Framework-MobSF?ref=badge_shield)
 
 
 MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-release) and [BlackArch](https://blackarch.org/mobile.html)
@@ -105,3 +106,7 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 * Thomas Abraham - For JS Hacks on UI
 * Tim Brown (@timb_machine) - For the iOS Binary Analysis Ruleset
 * Shanil Prasad (@Rajuraju14) - For improving iOS ATS Analysis
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FMobSF%2FMobile-Security-Framework-MobSF.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FMobSF%2FMobile-Security-Framework-MobSF?ref=badge_large)
