@@ -6,12 +6,10 @@ from enum import Enum
 
 from MalwareAnalyzer.views.domain_check import malware_check
 
-from StaticAnalyzer.views.ios.rules.modified import (
-    # ios_apis, objc_rules,
-    # swift_rules,
-    modified_ios_apis,
-    modified_objc_rules,
-    modified_swift_rules,
+from StaticAnalyzer.views.ios.rules import (
+    ios_apis, 
+    objc_rules,
+    swift_rules,
 )
 from StaticAnalyzer.views.shared_func import (
     url_n_email_extract,
@@ -20,6 +18,7 @@ from StaticAnalyzer.views.rule_matchers import (
     api_rule_matcher,
     code_rule_matcher,
 )
+from StaticAnalyzer.views.matchers import MatchCommand
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +30,7 @@ class _SourceType(Enum):
     nocode = 'No Code'
 
 
-def ios_source_analysis(src, match_command):
+def ios_source_analysis(src):
     """IOS Objective-C and Swift Code Analysis."""
     try:
         logger.info('Starting iOS Source Code and PLIST Analysis')
@@ -45,16 +44,20 @@ def ios_source_analysis(src, match_command):
         source_type = ''
         source_types = set()
 
+        # Will inject the different pattern strategy
+        # when it it will be requested
+        match_command = MatchCommand()
+
         for dirname, _, files in os.walk(src):
             for jfile in files:
 
                 if jfile.endswith('.m'):
-                    api_rules = modified_ios_apis.CODE_APIS
-                    code_rules = modified_objc_rules.OBJC_RULES
+                    api_rules = ios_apis.CODE_APIS
+                    code_rules = objc_rules.OBJC_RULES
                     source_types.add(_SourceType.objc)
                 elif jfile.endswith('.swift'):
-                    api_rules = modified_ios_apis.CODE_APIS
-                    code_rules = modified_swift_rules.SWIFT_RULES
+                    api_rules = ios_apis.CODE_APIS
+                    code_rules = swift_rules.SWIFT_RULES
                     source_types.add(_SourceType.swift)
                 else:
                     continue
@@ -76,7 +79,7 @@ def ios_source_analysis(src, match_command):
                 relative_src_path = jfile_path.replace(src, '')
                 code_rule_matcher(code_findings, [], dat,
                                   relative_src_path, code_rules, match_command)
-                # # API Analysis
+                # API Analysis
                 api_rule_matcher(api_findings, [], dat,
                                  relative_src_path, api_rules, match_command)
 

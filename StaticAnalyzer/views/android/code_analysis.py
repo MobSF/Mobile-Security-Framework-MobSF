@@ -11,9 +11,9 @@ from django.conf import settings
 
 from MobSF.utils import filename_from_path
 
-from StaticAnalyzer.views.android.rules.modified import (
-    modified_android_api,
-    modified_android_rules,
+from StaticAnalyzer.views.android.rules import (
+    android_apis,
+    android_rules,
 )
 from StaticAnalyzer.views.shared_func import (
     url_n_email_extract,
@@ -22,21 +22,26 @@ from StaticAnalyzer.views.rule_matchers import (
     api_rule_matcher,
     code_rule_matcher,
 )
+from StaticAnalyzer.views.matchers import MatchCommand
 
 logger = logging.getLogger(__name__)
 
 
-def code_analysis(app_dir, perms, typ, match_command):
+def code_analysis(app_dir, perms, typ):
     """Perform the code analysis."""
     try:
         logger.info('Static Android Code Analysis Started')
-        code_rules = modified_android_rules.RULES
-        api_rules = modified_android_api.APIS
+        code_rules = android_rules.RULES
+        api_rules = android_apis.APIS
         code_findings = {}
         api_findings = {}
         email_n_file = []
         url_n_file = []
         url_list = []
+
+        # Will inject the different pattern strategy
+        # when it it will be requested
+        match_command = MatchCommand()
 
         if typ == 'apk':
             java_src = os.path.join(app_dir, 'java_source/')
