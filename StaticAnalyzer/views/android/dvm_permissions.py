@@ -230,7 +230,7 @@ DVM_PERMISSIONS = {
         'BIND_CONTROLS': ['normal', 'Allows SystemUI to request third party controls.', 'Allows SystemUI to request third party controls. Should only be requested by the System and required by ControlsProviderService declarations.'],
         'BIND_QUICK_ACCESS_WALLET_SERVICE': ['signature', '', 'Must be required by a QuickAccessWalletService to ensure that only the system can bind to it.'],
         'INTERACT_ACROSS_PROFILES': ['normal', '', 'Allows interaction across profiles in the same profile group.'],
-        'LOADER_USAGE_STATS': ['signature', '', "Allows a data loader to read a package's access logs. The access logs contain the set of pages referenced over time."],
+        'LOADER_USAGE_STATS': ['signature', '', 'Allows a data loader to read a package\'s access logs. The access logs contain the set of pages referenced over time.'],
         'MANAGE_EXTERNAL_STORAGE': ['dangerous', 'Allows an application a broad access to external storage in scoped storage', 'Allows an application a broad access to external storage in scoped storage. Intended to be used by few apps that need to manage files on behalf of the users.'],
         'NFC_PREFERRED_PAYMENT_INFO': ['normal', '', 'Allows applications to receive NFC preferred payment service information.'],
         'QUERY_ALL_PACKAGES': ['dangerous', '', 'Allows query of any normal app on the device, regardless of manifest declarations.'],
