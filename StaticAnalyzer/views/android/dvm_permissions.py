@@ -226,6 +226,15 @@ DVM_PERMISSIONS = {
         'SMS_FINANCIAL_TRANSACTIONS': ['signature', 'Allows financial apps to read filtered sms messages', 'Allows financial apps to read filtered sms messages. Protection level: signature|appop'],
         'START_VIEW_PERMISSION_USAGE': ['signature', '', 'Allows the holder to start the permission usage screen for an app.'],
         'USE_FULL_SCREEN_INTENT': ['normal', '', 'Required for apps targeting Build.VERSION_CODES.Q that want to use notification full screen intents.'],
+        'ACCESS_CALL_AUDIO': ['signature', 'Application can access call audio', 'Allows an application assigned to the Dialer role to be granted access to the telephony call audio streams, both TX and RX.'],
+        'BIND_CONTROLS': ['normal', 'Allows SystemUI to request third party controls.', 'Allows SystemUI to request third party controls. Should only be requested by the System and required by ControlsProviderService declarations.'],
+        'BIND_QUICK_ACCESS_WALLET_SERVICE': ['signature', '', 'Must be required by a QuickAccessWalletService to ensure that only the system can bind to it.'],
+        'INTERACT_ACROSS_PROFILES': ['normal', '', 'Allows interaction across profiles in the same profile group.'],
+        'LOADER_USAGE_STATS': ['signature', '', 'Allows a data loader to read a package\'s access logs. The access logs contain the set of pages referenced over time.'],
+        'MANAGE_EXTERNAL_STORAGE': ['dangerous', 'Allows an application a broad access to external storage in scoped storage', 'Allows an application a broad access to external storage in scoped storage. Intended to be used by few apps that need to manage files on behalf of the users.'],
+        'NFC_PREFERRED_PAYMENT_INFO': ['normal', '', 'Allows applications to receive NFC preferred payment service information.'],
+        'QUERY_ALL_PACKAGES': ['dangerous', '', 'Allows query of any normal app on the device, regardless of manifest declarations.'],
+        'READ_PRECISE_PHONE_STATE': ['normal', '', 'Allows read only access to precise phone state. Allows reading of detailed information about phone state for special-use applications such as dialers, carrier applications, or ims applications.'],
     },
 
     'MANIFEST_PERMISSION_GROUP':
