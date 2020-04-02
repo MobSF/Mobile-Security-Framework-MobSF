@@ -253,10 +253,11 @@ div.loading{
               <div class="card-body">
                   <div class="row">
                      <div class="col-md-9">
-                        <h5>MobSF Dynamic Analysis supports Genymotion Android x86 VMs version 4.1 to 9.0. <br/>We recommend using Android 7.0 and above.</h5>
+                        <h4>Dynamic Analyzer Supports</h4>
+                        <h5><strong>• Genymotion Android VM</strong> version 4.1 to 9.0 (x86, upto API 28)<br/><strong>• Android Studio Emulator AVD</strong> version 5.0 to 9.0 (arm, arm64, and x86 upto API 28)<br/>We recommend using Android 7.0 and above.</h5>
                         <p>For Android versions less than <strong>5</strong>, we use Xposed Framework and therefore, you must MobSFy the Android Runtime prior to Dynamic Analysis.<br /> Other versions use Frida and are automatically MobSFyed on the go.</p>
                         <p><h5> HTTPS Traffic Interception</h5>
-                        <p>For Android version <strong>4.1 - 4.3</strong>, set Android VM proxy as <strong>{% if proxy_ip %} {{ proxy_ip }}{% else %} <i>&lt;Host IP&gt;</i>{% endif %}:{{proxy_port}}</strong><br/ >For Android versions <strong>4.4 - 9</strong>, global proxy settings are automatically applied. For more information, please refer Documentation.
+                        <p>For Android version <strong>4.1 - 4.3</strong>, set Android VM proxy as <strong>{% if proxy_ip %} {{ proxy_ip }}{% else %} <i>&lt;Host IP&gt;</i>{% endif %}:{{proxy_port}}</strong><br/ >For Android versions <strong>4.4 - 9</strong>, global proxy settings are automatically applied.<br/>For more information, please refer Documentation.
                         </p>
                       </div>   
                      <div class="col-md-3">
@@ -383,7 +384,7 @@ function dynamic_loader(){
 
 //MobSFy AJAX
  $("#mobsfy").one( "click", function() {
-        $('#stat').append("\nMobSFying Android Runtime");
+        $('#stat').append("\nMobSFying Android Runtime\n");
         $.ajax({
                 url : "../mobsfy/", 
                 type : "POST",

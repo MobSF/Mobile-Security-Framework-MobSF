@@ -38,7 +38,7 @@ def dynamic_analysis(request):
         try:
             identifier = get_device()
         except Exception:
-            msg = ('Is Genymotion Andoird VM running? MobSF cannot'
+            msg = ('Is Andoird VM running? MobSF cannot'
                    ' find android instance identifier.'
                    ' Please run an android instance and refresh'
                    ' this page. If this error persists,'

@@ -456,8 +456,8 @@ def get_adb():
         if len(adb_loc) > 1:
             logger.warning('Multiple ADB locations found. '
                            'Set adb path, ADB_BINARY in MobSF/settings.py'
-                           ' with same adb binary location used'
-                           ' by Genymotion VM/Android VM.')
+                           ' with same adb binary used'
+                           ' by Genymotion VM/Emulator AVD.')
             logger.warning(adb_loc)
         if adb_loc:
             ADB_PATH = adb_loc.pop()
@@ -471,7 +471,8 @@ def get_adb():
             os.environ['MOBSF_ADB'] = 'adb'
             logger.warning('Dynamic Analysis related '
                            'functions will not work. '
-                           '\nMake sure a Genymotion Android VM'
+                           '\nMake sure a Genymotion Android VM/'
+                           'Android Studio Emulator'
                            ' is running before performing Dynamic Analyis.')
     return 'adb'
 
