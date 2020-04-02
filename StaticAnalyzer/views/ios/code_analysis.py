@@ -7,7 +7,7 @@ from enum import Enum
 from MalwareAnalyzer.views.domain_check import malware_check
 
 from StaticAnalyzer.views.ios.rules import (
-    ios_apis, 
+    ios_apis,
     objc_rules,
     swift_rules,
 )
