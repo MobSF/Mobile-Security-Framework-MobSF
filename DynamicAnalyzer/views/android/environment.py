@@ -493,7 +493,7 @@ class Environment:
     def frida_setup(self):
         """Setup Frida."""
         frida_arch = None
-        frida_version = '12.8.19'
+        frida_version = '12.8.20'
         frida_dir = 'onDevice/frida/'
         arch = self.get_android_arch()
         logger.info('Android OS architecture identified as %s', arch)
