@@ -63,7 +63,14 @@ def check_transport_security(p_list):
 
         exception_domains = ats_dict.get('NSExceptionDomains')
         if exception_domains:
+            ats.append({
+                'issue': 'NSExceptionDomains',
+                'status': 'info',
+                'description': ', '.join(exception_domains.keys()),
+            })
             for domain, config in exception_domains.items():
+                if not isinstance(config, dict):
+                    continue
                 old_exp = 'NSTemporaryExceptionAllowsInsecureHTTPLoads'
                 if (config.get('NSExceptionAllowsInsecureHTTPLoads', False)
                         or config.get(old_exp, False)):
