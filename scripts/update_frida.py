@@ -19,11 +19,11 @@ def get_latest_frida_binaries():
 def download_file(url):
     fname = url.split('/')[-1]
     print(f'Downloading & Extracting - {fname}')
-    dwd = '../DynamicAnalyzer/tools/onDevice/frida/'
+    base = '../DynamicAnalyzer/tools/onDevice/frida/'
+    dwd_file = fname.replace('.xz', '')
+    dwd_loc = f'{base}{dwd_file}'
     with requests.get(url, stream=True) as r:
         with lzma.LZMAFile(r.raw) as f:
-            dwd_file = fname.replace('.xz', '')
-            dwd_loc = f'{dwd}{dwd_file}'
             with open(dwd_loc, 'wb') as flip:
                 shutil.copyfileobj(f, flip)
 
