@@ -28,10 +28,7 @@ class MatchStrategy(ABC):
 class SingleRegex(MatchStrategy):
 
     def perform_search(self, content, rule, perms):
-        found = False
-        if re.findall(rule['match'], content):
-            found = True
-        return found
+        return bool(re.findall(rule['match'], content))
 
 
 class RegexAnd(MatchStrategy):
@@ -44,90 +41,68 @@ class RegexAnd(MatchStrategy):
             return SingleRegex().perform_search(content, rule, perms)
         for regex in rule['match']:
             if not bool(re.findall(regex, content)):
-                found = False
-                break
-        return found
+                return False
+        return True
 
 
 class RegexOr(MatchStrategy):
     def perform_search(self, content, rule, perms):
-        found = False
         if isinstance(rule['match'], str):
             logger.debug('wrong regex type, switching to single regex')
             return SingleRegex().perform_search(content, rule, perms)
         for regex in rule['match']:
             if re.findall(regex, content):
-                found = True
-                break
-        return found
+                return True
+        return False
 
 
 class SingleString(MatchStrategy):
     def perform_search(self, content, rule, perms):
-        found = False
-        if rule['match'] in content:
-            found = True
-        return found
+        return rule['match'] in content
 
 
 class StringAnd(MatchStrategy):
     def perform_search(self, content, rule, perms):
-        and_match_str = True
         for match in rule['match']:
-            if (match in content) is False:
-                and_match_str = False
-                break
-        return and_match_str
+            if not match in content:
+                return False
+        return True
 
 
 class StringAndOr(MatchStrategy):
     def perform_search(self, content, rule, perms):
-        found = False
         string_or_stat = False
         or_list = rule['match'][1]
         for match in or_list:
             if match in content:
                 string_or_stat = True
                 break
-        if string_or_stat and rule['match'][0] in content:
-            found = True
-        return found
+        return string_or_stat and rule['match'][0] in content
 
 
 class StringOrAndPerm(MatchStrategy):
     def perform_search(self, content, rule, perms):
-        found = False
         string_or_ps = False
         for match in rule['match']:
             if match in content:
                 string_or_ps = True
                 break
-        if(rule['perm'] in perms) and string_or_ps:
-            found = True
-        return found
+        return rule['perm'] in perms and string_or_ps
 
 
 class StringAndPerm(MatchStrategy):
     def perform_search(self, content, rule, perms):
-        found = False
-        if(rule['perm'] in perms and rule['match'] in content):
-            found = True
-        return found
+        return rule['perm'] in perms and rule['match'] in content
 
 
 class StringOr(MatchStrategy):
     def perform_search(self, content, rule, perms):
-        found = False
         for match in rule['match']:
             if match in content:
-                found = True
-                break
-        return found
+                return True
+        return False
 
 
 class StringAndNot(MatchStrategy):
     def perform_search(self, content, rule, perms):
-        found = False
-        if (rule['match'][0] in content and rule['match'][1] not in content):
-            found = True
-        return found
+        return rule['match'][0] in content and rule['match'][1] not in content
