@@ -47,6 +47,7 @@ def cert_info(app_dir, app_file):
     """Return certificate information."""
     try:
         logger.info('Reading Code Signing Certificate')
+        manifestfile = None
         status = ''
         manidat = ''
         cert_info = ''
