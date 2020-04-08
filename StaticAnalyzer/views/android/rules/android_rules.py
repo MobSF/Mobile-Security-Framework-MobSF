@@ -43,6 +43,8 @@ Rule Format.
 
 """
 from StaticAnalyzer.views.matchers import (
+    InputCase,
+    Level,
     RegexAnd,
     RegexOr,
     SingleRegex,
@@ -52,10 +54,6 @@ from StaticAnalyzer.views.matchers import (
     StringAndPerm,
     StringOr,
     StringOrAndPerm,
-)
-from StaticAnalyzer.views.rules_properties import (
-    InputCase,
-    Level,
 )
 from StaticAnalyzer.views.standards import (
     CWE,

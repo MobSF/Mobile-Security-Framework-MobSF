@@ -39,6 +39,8 @@ Rule Format.
 """
 from StaticAnalyzer.views.ios.rules import common_rules
 from StaticAnalyzer.views.matchers import (
+    InputCase,
+    Level,
     RegexAnd,
     RegexOr,
     SingleRegex,
@@ -47,10 +49,6 @@ from StaticAnalyzer.views.matchers import (
     StringAndNot,
     StringAndOr,
     StringOr,
-)
-from StaticAnalyzer.views.rules_properties import (
-    InputCase,
-    Level,
 )
 from StaticAnalyzer.views.standards import (
     CWE,

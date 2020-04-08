@@ -3,10 +3,11 @@ import re
 import logging
 from enum import Enum
 
-from StaticAnalyzer.views.rules_properties import (
+
+from StaticAnalyzer.views.matchers import (
     InputCase,
-    Match,
-    MatchType,
+    SingleRegex,
+    SingleString,
 )
 
 from django.utils.html import escape
@@ -109,41 +110,36 @@ def binary_rule_matcher(findings, data, ipa_rules):
                 tmp_data = data
 
             # MATCH TYPE
-            if rule['type'] == MatchType.regex:
-                if rule['match'] == Match.single_regex:
-                    matched = re.findall(rule['regex1'], tmp_data)
-                    if matched:
-                        detailed_desc = get_desc(
-                            rule['detailed_desc'],
-                            matched)
-                        _add_bfindings(findings,
-                                       rule['desc'],
-                                       detailed_desc,
-                                       rule)
-                    elif 'conditional' in rule:
-                        detailed_desc = rule['conditional']['detailed_desc']
-                        _add_bfindings(findings,
-                                       rule['conditional']['desc'],
-                                       detailed_desc,
-                                       rule['conditional'])
-                else:
-                    logger.error('Binary Regex Rule Match Error\n %s', rule)
-            elif rule['type'] == MatchType.string:
-                if rule['match'] == Match.single_string:
-                    if rule['string1'] in tmp_data:
-                        _add_bfindings(findings,
-                                       rule['desc'],
-                                       rule['detailed_desc'],
-                                       rule)
-                    elif 'conditional' in rule:
-                        detailed_desc = rule['conditional']['detailed_desc']
-                        _add_bfindings(findings,
-                                       rule['conditional']['desc'],
-                                       detailed_desc,
-                                       rule['conditional'])
-                else:
-                    logger.error('Binary String Rule Match Error\n%s', rule)
+            if rule['type'] == SingleRegex.__name__:
+                matched = re.findall(rule['match'], tmp_data)
+                if matched:
+                    detailed_desc = get_desc(
+                        rule['detailed_desc'],
+                        matched)
+                    _add_bfindings(findings,
+                                   rule['desc'],
+                                   detailed_desc,
+                                   rule)
+                elif 'conditional' in rule:
+                    detailed_desc = rule['conditional']['detailed_desc']
+                    _add_bfindings(findings,
+                                   rule['conditional']['desc'],
+                                   detailed_desc,
+                                   rule['conditional'])
+
+            elif rule['type'] == SingleString.__name__:
+                if rule['match'] in tmp_data:
+                    _add_bfindings(findings,
+                                   rule['desc'],
+                                   rule['detailed_desc'],
+                                   rule)
+                elif 'conditional' in rule:
+                    detailed_desc = rule['conditional']['detailed_desc']
+                    _add_bfindings(findings,
+                                   rule['conditional']['desc'],
+                                   detailed_desc,
+                                   rule['conditional'])
             else:
-                logger.error('Binary Rule Error\n%s', rule)
+                logger.error('Binary rule Error\n%s', rule)
     except Exception:
         logger.exception('Error in Binary Rule Processing')

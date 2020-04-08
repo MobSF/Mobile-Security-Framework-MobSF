@@ -39,13 +39,11 @@ Rule Format.
 """
 
 from StaticAnalyzer.views.matchers import (
+    InputCase,
+    Level,
     SingleRegex,
     StringAnd,
     StringOr,
-)
-from StaticAnalyzer.views.rules_properties import (
-    InputCase,
-    Level,
 )
 from StaticAnalyzer.views.standards import (
     CWE,

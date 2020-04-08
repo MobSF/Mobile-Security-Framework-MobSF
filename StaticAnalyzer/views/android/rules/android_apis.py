@@ -38,14 +38,12 @@ Rule Format.
 """
 
 from StaticAnalyzer.views.matchers import (
+    InputCase,
     RegexAnd,
     SingleRegex,
     SingleString,
     StringAnd,
     StringAndOr,
-)
-from StaticAnalyzer.views.rules_properties import (
-    InputCase,
 )
 APIS = [
     {

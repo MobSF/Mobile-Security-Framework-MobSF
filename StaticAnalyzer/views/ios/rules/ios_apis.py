@@ -32,10 +32,8 @@ Rule Format.
 
 """
 
-from StaticAnalyzer.views.rules_properties import (
-    InputCase,
-)
 from StaticAnalyzer.views.matchers import (
+    InputCase,
     RegexAnd,
     SingleRegex,
     SingleString,

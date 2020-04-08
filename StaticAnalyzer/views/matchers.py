@@ -1,8 +1,39 @@
+"""
+Level - It defines level of the rule.
+
+   1. high - Rule has a high security impact.
+             It will decrease security result by 15 points.
+   2. warning - Rule warns about potencial security leaks.
+                It will decrease security result by 10 points.
+   3. info - Rule informs about best practice in some posible cases.
+             It won't decrease security result.
+   4. good - Rule increase app security.
+             It will increase security result by 5 points.
+
+InputCase - It is an Enum that defines how we should match pattern.
+   1. upper
+   2. lower
+   3. exact
+"""
 from abc import ABC, abstractclassmethod
+from enum import Enum
 import re
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+class Level(Enum):
+    high = 'high'
+    warning = 'warning'
+    info = 'info'
+    good = 'good'
+
+
+class InputCase(Enum):
+    upper = 'upper'
+    lower = 'lower'
+    exact = 'exact'
 
 
 class MatchCommand:
@@ -33,7 +64,6 @@ class SingleRegex(MatchStrategy):
 
 class RegexAnd(MatchStrategy):
     def perform_search(self, content, rule, perms):
-        found = True
         # This check is used because if you only pass a str rather than a list,
         # Python will iterate through the str without raising an exception
         if isinstance(rule['match'], str):
@@ -64,7 +94,7 @@ class SingleString(MatchStrategy):
 class StringAnd(MatchStrategy):
     def perform_search(self, content, rule, perms):
         for match in rule['match']:
-            if not match in content:
+            if match not in content:
                 return False
         return True
 
