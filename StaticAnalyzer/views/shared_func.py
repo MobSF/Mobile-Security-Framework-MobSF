@@ -40,7 +40,7 @@ from StaticAnalyzer.views.ios.db_interaction import (
     get_context_from_db_entry as idb)
 from StaticAnalyzer.views.windows.db_interaction import (
     get_context_from_db_entry as wdb)
-from StaticAnalyzer.views.matchers import (
+from StaticAnalyzer.views.sast_core.matchers import (
     Level,
 )
 

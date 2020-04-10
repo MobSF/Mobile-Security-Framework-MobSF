@@ -14,7 +14,7 @@ from StaticAnalyzer.views.sast_core.matchers import (
     StringOr,
     StringOrAndPerm,
 )
-from StaticAnalyzer.views.standards import (
+from StaticAnalyzer.views.sast_core.standards import (
     CWE,
     OWASP,
     OWASP_MSTG,
