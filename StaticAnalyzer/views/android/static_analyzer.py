@@ -89,8 +89,9 @@ def static_analyzer(request, api=False):
             app_dic['dir'] = settings.BASE_DIR  # BASE DIR
             app_dic['app_name'] = filename  # APP ORGINAL NAME
             app_dic['md5'] = checksum  # MD5
+            # APP DIRECTORY
             app_dic['app_dir'] = os.path.join(settings.UPLD_DIR, app_dic[
-                                              'md5'] + '/')  # APP DIRECTORY
+                                              'md5'] + '/')
             app_dic['tools_dir'] = os.path.join(
                 app_dic['dir'], 'StaticAnalyzer/tools/')  # TOOLS DIR
             logger.info('Starting Analysis on : %s', app_dic['app_name'])
@@ -394,8 +395,7 @@ def static_analyzer(request, api=False):
                         code_an_dic = code_analysis(
                             app_dic['app_dir'],
                             man_an_dic['permissons'],
-                            pro_type,
-                        )
+                            pro_type)
                         # Firebase DB Check
                         code_an_dic['firebase'] = firebase_analysis(
                             list(set(code_an_dic['urls_list'])))

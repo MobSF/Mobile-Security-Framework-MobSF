@@ -70,6 +70,7 @@ def static_analyzer_ios(request, api=False):
                 settings.UPLD_DIR, app_dict['md5_hash'] + '/')  # APP DIRECTORY
             tools_dir = os.path.join(
                 app_dict['directory'], 'StaticAnalyzer/tools/ios/')
+
             if file_type == 'ipa':
                 # DB
                 ipa_db = StaticAnalyzerIOS.objects.filter(
@@ -77,6 +78,7 @@ def static_analyzer_ios(request, api=False):
                 if ipa_db.exists() and rescan == '0':
                     context = get_context_from_db_entry(ipa_db)
                 else:
+
                     logger.info('iOS Binary (IPA) Analysis Started')
                     app_dict['app_file'] = app_dict[
                         'md5_hash'] + '.ipa'  # NEW FILENAME

@@ -42,30 +42,36 @@ Rule Format.
    c. perm - Permission
 
 """
+from StaticAnalyzer.views.matchers import (
+    InputCase,
+    Level,
+    RegexAnd,
+    RegexOr,
+    SingleRegex,
+    SingleString,
+    StringAnd,
+    StringAndOr,
+    StringAndPerm,
+    StringOr,
+    StringOrAndPerm,
+)
 from StaticAnalyzer.views.standards import (
     CWE,
     OWASP,
     OWASP_MSTG,
-)
-from StaticAnalyzer.views.rules_properties import (
-    InputCase,
-    Level,
-    Match,
-    MatchType,
 )
 
 RULES = [
     {
         'desc': ('Files may contain hardcoded sensitive '
                  'informations like usernames, passwords, keys etc.'),
-        'type': MatchType.regex,
-        'regex1': (r'(password\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
-                   r'(pass\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
-                   r'(username\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
-                   r'(secret\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
-                   r'(key\s*=\s*[\'|\"].+[\'|\"]\s{0,5})'),
+        'type': SingleRegex.__name__,
+        'match': (r'(password\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
+                  r'(pass\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
+                  r'(username\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
+                  r'(secret\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|'
+                  r'(key\s*=\s*[\'|\"].+[\'|\"]\s{0,5})'),
         'level': Level.high,
-        'match': Match.single_regex,
         'input_case': InputCase.lower,
         'cvss': 7.4,
         'cwe': CWE['CWE-312'],
@@ -74,10 +80,9 @@ RULES = [
     },
     {
         'desc': 'IP Address disclosure',
-        'type': MatchType.regex,
-        'regex1': r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}',
+        'type': SingleRegex.__name__,
+        'match': r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}',
         'level': Level.warning,
-        'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 4.3,
         'cwe': CWE['CWE-200'],
@@ -87,11 +92,10 @@ RULES = [
     {
         'desc': ('Hidden elements in view can be used to hide'
                  ' data from user. But this data can be leaked'),
-        'type': MatchType.regex,
-        'regex1': (r'setVisibility\(View\.GONE\)|'
-                   r'setVisibility\(View\.INVISIBLE\)'),
+        'type': SingleRegex.__name__,
+        'match': (r'setVisibility\(View\.GONE\)|'
+                  r'setVisibility\(View\.INVISIBLE\)'),
         'level': Level.high,
-        'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 4.3,
         'cwe': CWE['CWE-919'],
@@ -102,10 +106,9 @@ RULES = [
         'desc': ('The App uses ECB mode in Cryptographic encryption algorithm.'
                  ' ECB mode is known to be weak as it results in the same'
                  ' ciphertext for identical blocks of plaintext.'),
-        'type': MatchType.regex,
-        'regex1': r'Cipher\.getInstance\(\s*"\s*AES\/ECB',
+        'type': SingleRegex.__name__,
+        'match': r'Cipher\.getInstance\(\s*"\s*AES\/ECB',
         'level': Level.high,
-        'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 5.9,
         'cwe': CWE['CWE-327'],
@@ -117,10 +120,9 @@ RULES = [
                  ' of the padding scheme is to prevent a number of attacks on'
                  ' RSA that only work when the encryption is performed'
                  ' without padding.'),
-        'type': MatchType.regex,
-        'regex1': r'cipher\.getinstance\(\s*"rsa/.+/nopadding',
+        'type': SingleRegex.__name__,
+        'match': r'cipher\.getinstance\(\s*"rsa/.+/nopadding',
         'level': Level.high,
-        'match': Match.single_regex,
         'input_case': InputCase.lower,
         'cvss': 5.9,
         'cwe': CWE['CWE-780'],
@@ -132,16 +134,15 @@ RULES = [
                  'certificates or accepting self signed certificates'
                  ' is a critical Security Hole. This application is'
                  ' vulnerable to MITM attacks'),
-        'type': MatchType.regex,
-        'regex1': r'javax\.net\.ssl',
-        'regex2': (r'TrustAllSSLSocket-Factory|AllTrustSSLSocketFactory|'
+        'type': RegexAnd.__name__,
+        'match': [r'javax\.net\.ssl',
+                  (r'TrustAllSSLSocket-Factory|AllTrustSSLSocketFactory|'
                    r'NonValidatingSSLSocketFactory|'
                    r'net\.SSLCertificateSocketFactory|'
                    r'ALLOW_ALL_HOSTNAME_VERIFIER|'
                    r'\.setDefaultHostnameVerifier\(|'
-                   r'NullHostnameVerifier\('),
+                   r'NullHostnameVerifier\(')],
         'level': Level.high,
-        'match': Match.regex_and,
         'input_case': InputCase.exact,
         'cvss': 7.4,
         'cwe': CWE['CWE-295'],
@@ -151,11 +152,10 @@ RULES = [
     {
         'desc': ('WebView load files from external storage. Files in external'
                  ' storage can be modified by any application.'),
-        'type': MatchType.regex,
-        'regex1': r'\.loadUrl\(.*getExternalStorageDirectory\(',
-        'regex2': r'webkit\.WebView',
+        'type': RegexAnd.__name__,
+        'match': [r'\.loadUrl\(.*getExternalStorageDirectory\(',
+                  r'webkit\.WebView'],
         'level': Level.high,
-        'match': Match.regex_and,
         'input_case': InputCase.exact,
         'cvss': 5.0,
         'cwe': CWE['CWE-919'],
@@ -164,11 +164,10 @@ RULES = [
     },
     {
         'desc': 'The file is World Readable. Any App can read from the file',
-        'type': MatchType.regex,
-        'regex1': r'MODE_WORLD_READABLE|Context\.MODE_WORLD_READABLE',
-        'regex2': r'openFileOutput\(\s*".+"\s*,\s*1\s*\)',
+        'type': RegexOr.__name__,
+        'match': [r'MODE_WORLD_READABLE|Context\.MODE_WORLD_READABLE',
+                  r'openFileOutput\(\s*".+"\s*,\s*1\s*\)'],
         'level': Level.high,
-        'match': Match.regex_or,
         'input_case': InputCase.exact,
         'cvss': 4.0,
         'cwe': CWE['CWE-276'],
@@ -177,11 +176,10 @@ RULES = [
     },
     {
         'desc': 'The file is World Writable. Any App can write to the file',
-        'type': MatchType.regex,
-        'regex1': r'MODE_WORLD_WRITABLE|Context\.MODE_WORLD_WRITABLE',
-        'regex2': r'openFileOutput\(\s*".+"\s*,\s*2\s*\)',
+        'type': RegexOr.__name__,
+        'match': [r'MODE_WORLD_WRITABLE|Context\.MODE_WORLD_WRITABLE',
+                  r'openFileOutput\(\s*".+"\s*,\s*2\s*\)'],
         'level': Level.high,
-        'match': Match.regex_or,
         'input_case': InputCase.exact,
         'cvss': 6.0,
         'cwe': CWE['CWE-276'],
@@ -191,10 +189,9 @@ RULES = [
     {
         'desc': ('The file is World Readable and Writable. '
                  'Any App can read/write to the file'),
-        'type': MatchType.regex,
-        'regex1': r'openFileOutput\(\s*".+"\s*,\s*3\s*\)',
+        'type': SingleRegex.__name__,
+        'match': r'openFileOutput\(\s*".+"\s*,\s*3\s*\)',
         'level': Level.high,
-        'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 6.0,
         'cwe': CWE['CWE-276'],
@@ -203,12 +200,11 @@ RULES = [
     },
     {
         'desc': 'Weak Hash algorithm used',
-        'type': MatchType.regex,
-        'regex1': (r'getInstance(\"md4\")|getInstance(\"rc2\")|'
-                   r'getInstance(\"rc4\")|getInstance(\"RC4\")|'
-                   r'getInstance(\"RC2\")|getInstance(\"MD4\")'),
+        'type': SingleRegex.__name__,
+        'match': (r'getInstance(\"md4\")|getInstance(\"rc2\")|'
+                  r'getInstance(\"rc4\")|getInstance(\"RC4\")|'
+                  r'getInstance(\"RC2\")|getInstance(\"MD4\")'),
         'level': Level.high,
-        'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 7.4,
         'cwe': CWE['CWE-327'],
@@ -217,12 +213,11 @@ RULES = [
     },
     {
         'desc': 'MD5 is a weak hash known to have hash collisions.',
-        'type': MatchType.regex,
-        'regex1': (r'MessageDigest\.getInstance\(\"*MD5\"*\)|'
-                   r'MessageDigest\.getInstance\(\"*md5\"*\)|'
-                   r'DigestUtils\.md5\('),
+        'type': SingleRegex.__name__,
+        'match': (r'MessageDigest\.getInstance\(\"*MD5\"*\)|'
+                  r'MessageDigest\.getInstance\(\"*md5\"*\)|'
+                  r'DigestUtils\.md5\('),
         'level': Level.high,
-        'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 7.4,
         'cwe': CWE['CWE-327'],
@@ -231,12 +226,11 @@ RULES = [
     },
     {
         'desc': 'SHA-1 is a weak hash known to have hash collisions.',
-        'type': MatchType.regex,
-        'regex1': (r'MessageDigest\.getInstance\(\"*SHA-1\"*\)|'
-                   r'MessageDigest\.getInstance\(\"*sha-1\"*\)|'
-                   r'DigestUtils\.sha\('),
+        'type': SingleRegex.__name__,
+        'match': (r'MessageDigest\.getInstance\(\"*SHA-1\"*\)|'
+                  r'MessageDigest\.getInstance\(\"*sha-1\"*\)|'
+                  r'DigestUtils\.sha\('),
         'level': Level.high,
-        'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 5.9,
         'cwe': CWE['CWE-327'],
@@ -246,10 +240,9 @@ RULES = [
     {
         'desc': ('App can write to App Directory. '
                  'Sensitive Information should be encrypted.'),
-        'type': MatchType.regex,
-        'regex1': r'MODE_PRIVATE|Context\.MODE_PRIVATE',
+        'type': SingleRegex.__name__,
+        'match': r'MODE_PRIVATE|Context\.MODE_PRIVATE',
         'level': Level.info,
-        'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 3.9,
         'cwe': CWE['CWE-276'],
@@ -258,10 +251,9 @@ RULES = [
     },
     {
         'desc': 'The App uses an insecure Random Number Generator.',
-        'type': MatchType.regex,
-        'regex1': r'\bjava\.util\.Random\b',
+        'type': SingleRegex.__name__,
+        'match': r'\bjava\.util\.Random\b',
         'level': Level.high,
-        'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 7.5,
         'cwe': CWE['CWE-330'],
@@ -271,11 +263,10 @@ RULES = [
     {
         'desc': ('The App logs information. '
                  'Sensitive information should never be logged.'),
-        'type': MatchType.regex,
-        'regex1': (r'Log\.(v|d|i|w|e|f|s)|'
-                   r'System\.out\.print|System\.err\.print'),
+        'type': SingleRegex.__name__,
+        'match': (r'Log\.(v|d|i|w|e|f|s)|'
+                  r'System\.out\.print|System\.err\.print'),
         'level': Level.info,
-        'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 7.5,
         'cwe': CWE['CWE-532'],
@@ -285,10 +276,9 @@ RULES = [
     {
         'desc': ('This App uses Java Hash Code. It\'s a weak hash function and'
                  ' should never be used in Secure Crypto Implementation.'),
-        'type': MatchType.string,
-        'string1': '.hashCode()',
+        'type': SingleString.__name__,
+        'match': '.hashCode()',
         'level': Level.warning,
-        'match': Match.single_string,
         'input_case': InputCase.exact,
         'cvss': 2.3,
         'cwe': CWE['CWE-327'],
@@ -298,10 +288,9 @@ RULES = [
     {
         'desc': ('These activities prevent '
                  'screenshot when they go to background.'),
-        'type': MatchType.string,
-        'string1': 'LayoutParams.FLAG_SECURE',
+        'type': SingleString.__name__,
+        'match': 'LayoutParams.FLAG_SECURE',
         'level': Level.good,
-        'match': Match.single_string,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -310,10 +299,9 @@ RULES = [
     },
     {
         'desc': 'This App uses SQL Cipher. But the secret may be hardcoded.',
-        'type': MatchType.string,
-        'string1': 'SQLiteOpenHelper.getWritableDatabase(',
+        'type': SingleString.__name__,
+        'match': 'SQLiteOpenHelper.getWritableDatabase(',
         'level': Level.warning,
-        'match': Match.single_string,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -322,10 +310,9 @@ RULES = [
     },
     {
         'desc': 'This app has capabilities to prevent tapjacking attacks.',
-        'type': MatchType.string,
-        'string1': 'setFilterTouchesWhenObscured(true)',
+        'type': SingleString.__name__,
+        'match': 'setFilterTouchesWhenObscured(true)',
         'level': Level.good,
-        'match': Match.single_string,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -335,14 +322,12 @@ RULES = [
     {
         'desc': ('App can read/write to External Storage. '
                  'Any App can read data written to External Storage.'),
-        'perm': 'android.permission.WRITE_EXTERNAL_STORAGE',
-        'type': MatchType.string,
-        'string1': '.getExternalStorage',
-        'string2': '.getExternalFilesDir(',
+        'type': StringOrAndPerm.__name__,
+        'match': ['.getExternalStorage', '.getExternalFilesDir('],
         'level': Level.high,
-        'match': Match.string_or_and_perm,
         'input_case': InputCase.exact,
         'cvss': 5.5,
+        'perm': 'android.permission.WRITE_EXTERNAL_STORAGE',
         'cwe': CWE['CWE-276'],
         'owasp': OWASP['m2'],
         'owasp-mstg': OWASP_MSTG['storage-2'],
@@ -350,13 +335,12 @@ RULES = [
     {
         'desc': ('App creates temp file. Sensitive '
                  'information should never be written into a temp file.'),
-        'perm': 'android.permission.WRITE_EXTERNAL_STORAGE',
-        'type': MatchType.string,
-        'string1': '.createTempFile(',
+        'type': StringAndPerm.__name__,
+        'match': '.createTempFile(',
         'level': Level.high,
-        'match': Match.string_and_perm,
         'input_case': InputCase.exact,
         'cvss': 5.5,
+        'perm': 'android.permission.WRITE_EXTERNAL_STORAGE',
         'cwe': CWE['CWE-276'],
         'owasp': OWASP['m2'],
         'owasp-mstg': OWASP_MSTG['storage-2'],
@@ -364,11 +348,9 @@ RULES = [
     {
         'desc': ('Insecure WebView Implementation. Execution of user'
                  ' controlled code in WebView is a critical Security Hole.'),
-        'type': MatchType.string,
-        'string1': 'setJavaScriptEnabled(true)',
-        'string2': '.addJavascriptInterface(',
+        'type': StringAnd.__name__,
+        'match': ['setJavaScriptEnabled(true)', '.addJavascriptInterface('],
         'level': Level.warning,
-        'match': Match.string_and,
         'input_case': InputCase.exact,
         'cvss': 8.8,
         'cwe': CWE['CWE-749'],
@@ -378,11 +360,9 @@ RULES = [
     {
         'desc': ('This App uses SQL Cipher. SQLCipher '
                  'provides 256-bit AES encryption to sqlite database files.'),
-        'type': MatchType.string,
-        'string1': 'SQLiteDatabase.loadLibs(',
-        'string2': 'net.sqlcipher.',
+        'type': StringAnd.__name__,
+        'match': ['SQLiteDatabase.loadLibs(', 'net.sqlcipher.'],
         'level': Level.info,
-        'match': Match.string_and,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -391,11 +371,10 @@ RULES = [
     },
     {
         'desc': 'This App download files using Android Download Manager',
-        'type': MatchType.string,
-        'string1': 'android.app.DownloadManager',
-        'string2': 'getSystemService(DOWNLOAD_SERVICE)',
+        'type': StringAnd.__name__,
+        'match': ['android.app.DownloadManager',
+                  'getSystemService(DOWNLOAD_SERVICE)'],
         'level': Level.high,
-        'match': Match.string_and,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -404,11 +383,9 @@ RULES = [
     },
     {
         'desc': 'This App use Realm Database with encryption.',
-        'type': MatchType.string,
-        'string1': 'io.realm.Realm',
-        'string2': '.encryptionKey(',
+        'type': StringAnd.__name__,
+        'match': ['io.realm.Realm', '.encryptionKey('],
         'level': Level.good,
-        'match': Match.string_and,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -422,11 +399,10 @@ RULES = [
                  'Not using a random IV makes the resulting '
                  'ciphertext much more predictable and '
                  'susceptible to a dictionary attack.'),
-        'type': MatchType.string,
-        'string1': '0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00',
-        'string2': '0x01,0x02,0x03,0x04,0x05,0x06,0x07',
+        'type': StringOr.__name__,
+        'match': ['0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00',
+                  '0x01,0x02,0x03,0x04,0x05,0x06,0x07'],
         'level': Level.high,
-        'match': Match.string_or,
         'input_case': InputCase.exact,
         'cvss': 9.8,
         'cwe': CWE['CWE-329'],
@@ -435,11 +411,9 @@ RULES = [
     },
     {
         'desc': 'Remote WebView debugging is enabled.',
-        'type': MatchType.string,
-        'string1': '.setWebContentsDebuggingEnabled(true)',
-        'string2': 'WebView',
+        'type': StringAnd.__name__,
+        'match': ['.setWebContentsDebuggingEnabled(true)', 'WebView'],
         'level': Level.high,
-        'match': Match.string_and,
         'input_case': InputCase.exact,
         'cvss': 5.4,
         'cwe': CWE['CWE-919'],
@@ -449,11 +423,9 @@ RULES = [
     {
         'desc': ('This app listens to Clipboard changes.'
                  ' Some malwares also listen to Clipboard changes.'),
-        'type': MatchType.string,
-        'string1': 'content.ClipboardManager',
-        'string2': 'OnPrimaryClipChangedListener',
+        'type': StringAnd.__name__,
+        'match': ['content.ClipboardManager', 'OnPrimaryClipChangedListener'],
         'level': Level.warning,
-        'match': Match.string_and,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -464,11 +436,9 @@ RULES = [
         'desc': ('This App copies data to clipboard. Sensitive data should'
                  ' not be copied to clipboard as other'
                  ' applications can access it.'),
-        'type': MatchType.string,
-        'string1': 'content.ClipboardManager',
-        'string2': 'setPrimaryClip(',
+        'type': StringAnd.__name__,
+        'match': ['content.ClipboardManager', 'setPrimaryClip('],
         'level': Level.info,
-        'match': Match.string_and,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -479,11 +449,9 @@ RULES = [
         'desc': ('Insecure WebView Implementation. WebView ignores SSL'
                  ' Certificate errors and accept any SSL Certificate.'
                  ' This application is vulnerable to MITM attacks'),
-        'type': MatchType.string,
-        'string1': 'onReceivedSslError(WebView',
-        'string2': '.proceed();',
+        'type': StringAnd.__name__,
+        'match': ['onReceivedSslError(WebView', '.proceed();'],
         'level': Level.high,
-        'match': Match.string_and,
         'input_case': InputCase.exact,
         'cvss': 7.4,
         'cwe': CWE['CWE-295'],
@@ -495,12 +463,9 @@ RULES = [
                  'Untrusted user input in raw SQL queries can cause'
                  ' SQL Injection. Also sensitive information should'
                  ' be encrypted and written to the database.'),
-        'type': MatchType.string,
-        'string1': 'android.database.sqlite',
-        'string_or1': 'rawQuery(',
-        'string_or2': 'execSQL(',
+        'type': StringAndOr.__name__,
+        'match': ['android.database.sqlite', ['rawQuery(', 'execSQL(']],
         'level': Level.high,
-        'match': Match.string_and_or,
         'input_case': InputCase.exact,
         'cvss': 5.9,
         'cwe': CWE['CWE-89'],
@@ -509,13 +474,9 @@ RULES = [
     },
     {
         'desc': 'This App detects frida server.',
-        'type': MatchType.string,
-        'string1': 'fridaserver',
-        'string_or1': '27047',
-        'string_or2': 'REJECT',
-        'string_or3': 'LIBFRIDA',
+        'type': StringAndOr.__name__,
+        'match': ['fridaserver', ['27047', 'REJECT', 'LIBFRIDA']],
         'level': Level.good,
-        'match': Match.string_and_or,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -527,13 +488,12 @@ RULES = [
                  '(org.thoughtcrime.ssl.pinning) to '
                  'prevent MITM attacks in secure'
                  ' communication channel.'),
-        'type': MatchType.string,
-        'string1': 'org.thoughtcrime.ssl.pinning',
-        'string_or1': 'PinningHelper.getPinnedHttpsURLConnection',
-        'string_or2': 'PinningHelper.getPinnedHttpClient',
-        'string_or3': 'PinningSSLSocketFactory(',
+        'type': StringAndOr.__name__,
+        'match': ['org.thoughtcrime.ssl.pinning',
+                  ['PinningHelper.getPinnedHttpsURLConnection',
+                   'PinningHelper.getPinnedHttpClient',
+                   'PinningSSLSocketFactory(']],
         'level': Level.good,
-        'match': Match.string_and_or,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -543,12 +503,10 @@ RULES = [
     {
         'desc': ('This App has capabilities to prevent against'
                  ' Screenshots from Recent Task History/ Now On Tap etc.'),
-        'type': MatchType.string,
-        'string1': '.FLAG_SECURE',
-        'string_or1': 'getWindow().setFlags(',
-        'string_or2': 'getWindow().addFlags(',
+        'type': StringAndOr.__name__,
+        'match': ['.FLAG_SECURE',
+                  ['getWindow().setFlags(', 'getWindow().addFlags(']],
         'level': Level.high,
-        'match': Match.string_and_or,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -558,11 +516,9 @@ RULES = [
     {
         'desc': ('DexGuard Debug Detection code to detect'
                  ' whether an App is debuggable or not is identified.'),
-        'type': MatchType.string,
-        'string1': 'import dexguard.util',
-        'string2': 'DebugDetector.isDebuggable',
+        'type': StringAnd.__name__,
+        'match': ['import dexguard.util', 'DebugDetector.isDebuggable'],
         'level': Level.good,
-        'match': Match.string_and,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -571,11 +527,9 @@ RULES = [
     },
     {
         'desc': 'DexGuard Debugger Detection code is identified.',
-        'type': MatchType.string,
-        'string1': 'import dexguard.util',
-        'string2': 'DebugDetector.isDebuggerConnected',
+        'type': StringAnd.__name__,
+        'match': ['import dexguard.util', 'DebugDetector.isDebuggerConnected'],
         'level': Level.good,
-        'match': Match.string_and,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -584,11 +538,10 @@ RULES = [
     },
     {
         'desc': 'DexGuard Emulator Detection code is identified.',
-        'type': MatchType.string,
-        'string1': 'import dexguard.util',
-        'string2': 'EmulatorDetector.isRunningInEmulator',
+        'type': StringAnd.__name__,
+        'match': ['import dexguard.util',
+                  'EmulatorDetector.isRunningInEmulator'],
         'level': Level.good,
-        'match': Match.string_and,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -598,11 +551,10 @@ RULES = [
     {
         'desc': ('DexGuard code to detect whether the App'
                  ' is signed with a debug key or not is identified.'),
-        'type': MatchType.string,
-        'string1': 'import dexguard.util',
-        'string2': 'DebugDetector.isSignedWithDebugKey',
+        'type': StringAnd.__name__,
+        'match': ['import dexguard.util',
+                  'DebugDetector.isSignedWithDebugKey'],
         'level': Level.good,
-        'match': Match.string_and,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -611,11 +563,9 @@ RULES = [
     },
     {
         'desc': 'DexGuard Root Detection code is identified.',
-        'type': MatchType.string,
-        'string1': 'import dexguard.util',
-        'string2': 'RootDetector.isDeviceRooted',
+        'type': StringAnd.__name__,
+        'match': ['import dexguard.util', 'RootDetector.isDeviceRooted'],
         'level': Level.good,
-        'match': Match.string_and,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -624,11 +574,9 @@ RULES = [
     },
     {
         'desc': 'DexGuard App Tamper Detection code is identified.',
-        'type': MatchType.string,
-        'string1': 'import dexguard.util',
-        'string2': 'TamperDetector.checkApk',
+        'type': StringAnd.__name__,
+        'match': ['import dexguard.util', 'TamperDetector.checkApk'],
         'level': Level.good,
-        'match': Match.string_and,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -638,11 +586,10 @@ RULES = [
     {
         'desc': ('DexGuard Signer Certificate'
                  ' Tamper Detection code is identified.'),
-        'type': MatchType.string,
-        'string1': 'import dexguard.util',
-        'string2': 'TCertificateChecker.checkCertificate',
+        'type': StringAnd.__name__,
+        'match': ['import dexguard.util',
+                  'TCertificateChecker.checkCertificate'],
         'level': Level.good,
-        'match': Match.string_and,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -651,11 +598,9 @@ RULES = [
     },
     {
         'desc': 'The App may use package signature for tamper detection.',
-        'type': MatchType.string,
-        'string1': 'PackageManager.GET_SIGNATURES',
-        'string2': 'getPackageName(',
+        'type': StringAnd.__name__,
+        'match': ['PackageManager.GET_SIGNATURES', 'getPackageName('],
         'level': Level.good,
-        'match': Match.string_and,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -664,10 +609,9 @@ RULES = [
     },
     {
         'desc': 'This App uses SafetyNet API.',
-        'type': MatchType.string,
-        'string1': 'com.google.android.gms.safetynet.SafetyNetApi',
+        'type': SingleString.__name__,
+        'match': 'com.google.android.gms.safetynet.SafetyNetApi',
         'level': Level.good,
-        'match': Match.single_string,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -676,14 +620,13 @@ RULES = [
     },
     {
         'desc': 'This App may request root (Super User) privileges.',
-        'type': MatchType.string,
-        'string1': 'com.noshufou.android.su',
-        'string2': 'com.thirdparty.superuser',
-        'string3': 'eu.chainfire.supersu',
-        'string4': 'com.koushikdutta.superuser',
-        'string5': 'eu.chainfire.',
+        'type': StringOr.__name__,
+        'match': ['com.noshufou.android.su',
+                  'com.thirdparty.superuser',
+                  'eu.chainfire.supersu',
+                  'com.koushikdutta.superuser',
+                  'eu.chainfire.'],
         'level': Level.high,
-        'match': Match.string_or,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': CWE['CWE-250'],
@@ -692,16 +635,15 @@ RULES = [
     },
     {
         'desc': 'This App may have root detection capabilities.',
-        'type': MatchType.string,
-        'string1': '.contains("test-keys")',
-        'string2': '/system/app/Superuser.apk',
-        'string3': 'isDeviceRooted()',
-        'string4': '/system/bin/failsafe/su',
-        'string5': '/system/sd/xbin/su',
-        'string6': '"/system/xbin/which", "su"',
-        'string7': 'RootTools.isAccessGiven()',
+        'type': StringOr.__name__,
+        'match': ['.contains("test-keys")',
+                  '/system/app/Superuser.apk',
+                  'isDeviceRooted()',
+                  '/system/bin/failsafe/su',
+                  '/system/sd/xbin/su',
+                  '"/system/xbin/which", "su"',
+                  'RootTools.isAccessGiven()'],
         'level': Level.good,
-        'match': Match.string_or,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -712,14 +654,14 @@ RULES = [
         'desc': ('The app uses jackson deserialization library'
                  'Deserialization of untrusted input can result in'
                  'arbitary code execution'),
-        'type': MatchType.string,
-        'string1': 'com.fasterxml.jackson.databind.ObjectMapper',
-        'string2': '.enableDefaultTyping(',
+        'type': StringAnd.__name__,
+        'match': ['com.fasterxml.jackson.databind.ObjectMapper',
+                  '.enableDefaultTyping('],
         'level': Level.high,
-        'match': Match.string_and,
         'input_case': InputCase.exact,
         'cvss': 7.5,
         'cwe': CWE['CWE-502'],
         'owasp': OWASP['m7'],
         'owasp-mstg': OWASP_MSTG['platform-8'],
-    }]
+    },
+]

@@ -7,7 +7,8 @@ from enum import Enum
 from MalwareAnalyzer.views.domain_check import malware_check
 
 from StaticAnalyzer.views.ios.rules import (
-    ios_apis, objc_rules,
+    ios_apis,
+    objc_rules,
     swift_rules,
 )
 from StaticAnalyzer.views.shared_func import (
@@ -17,6 +18,7 @@ from StaticAnalyzer.views.rule_matchers import (
     api_rule_matcher,
     code_rule_matcher,
 )
+from StaticAnalyzer.views.matchers import MatchCommand
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +43,10 @@ def ios_source_analysis(src):
         domains = {}
         source_type = ''
         source_types = set()
+
+        # Will inject the different pattern strategy
+        # when it it will be requested
+        match_command = MatchCommand()
 
         for dirname, _, files in os.walk(src):
             for jfile in files:
@@ -72,10 +78,10 @@ def ios_source_analysis(src):
                 # Code Analysis
                 relative_src_path = jfile_path.replace(src, '')
                 code_rule_matcher(code_findings, [], dat,
-                                  relative_src_path, code_rules)
+                                  relative_src_path, code_rules, match_command)
                 # API Analysis
                 api_rule_matcher(api_findings, [], dat,
-                                 relative_src_path, api_rules)
+                                 relative_src_path, api_rules, match_command)
 
                 # Extract URLs and Emails
                 urls, urls_nf, emails_nf = url_n_email_extract(

@@ -37,26 +37,26 @@ Rule Format.
                  detailed_desc, level, cvss, cwe, owasp, and,
                  owasp-mstg
 """
+from StaticAnalyzer.views.matchers import (
+    InputCase,
+    Level,
+    SingleRegex,
+    SingleString,
+)
 from StaticAnalyzer.views.standards import (
     CWE,
     OWASP,
     OWASP_MSTG,
-)
-from StaticAnalyzer.views.rules_properties import (
-    InputCase,
-    Level,
-    Match,
-    MatchType,
 )
 
 IPA_RULES = [
     {
         'desc': 'Binary make use of insecure API(s)',
         'detailed_desc': (
-            'The binary may contain'
-            ' the following insecure API(s) {}.'),
-        'type': MatchType.regex,
-        'regex1': (
+                'The binary may contain'
+                ' the following insecure API(s) {}.'),
+        'type': SingleRegex.__name__,
+        'match': (
             rb'\b_alloca\b|\b_gets\b|\b_memcpy\b|\b_printf\b|\b_scanf\b|'
             rb'\b_sprintf\b|\b_sscanf\b|\b_strcat\b|'
             rb'\bStrCat\b|\b_strcpy\b|\bStrCpy\b|\b_strlen\b|\bStrLen\b|'
@@ -66,7 +66,6 @@ IPA_RULES = [
             rb'\b_wcslen\b|\b_wcsncat\b|\b_wcsncpy\b|\b_wcstok\b|\b_wmemcpy\b|'
             rb'\b_fopen\b|\b_chmod\b|\b_chown\b|\b_stat\b|\b_mktemp\b'),
         'level': Level.high,
-        'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 6,
         'cwe': CWE['CWE-676'],
@@ -78,8 +77,8 @@ IPA_RULES = [
         'detailed_desc': (
             'The binary may use the'
             ' following weak crypto API(s) {}.'),
-        'type': MatchType.regex,
-        'regex1': (
+        'type': SingleRegex.__name__,
+        'match': (
             rb'\bkCCAlgorithmDES\b|'
             rb'\bkCCAlgorithm3DES\b|'
             rb'\bkCCAlgorithmRC2\b|'
@@ -87,7 +86,6 @@ IPA_RULES = [
             rb'\bkCCOptionECBMode\b|'
             rb'\bkCCOptionCBCMode\b'),
         'level': Level.high,
-        'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 3,
         'cwe': CWE['CWE-327'],
@@ -99,8 +97,8 @@ IPA_RULES = [
         'detailed_desc': (
             'The binary may use '
             'the following crypto API(s) {}.'),
-        'type': MatchType.regex,
-        'regex1': (
+        'type': SingleRegex.__name__,
+        'match': (
             rb'\bCCKeyDerivationPBKDF\b|\bCCCryptorCreate\b|\b'
             rb'CCCryptorCreateFromData\b|\b'
             rb'CCCryptorRelease\b|\bCCCryptorUpdate\b|\bCCCryptorFinal\b|\b'
@@ -138,7 +136,6 @@ IPA_RULES = [
             rb'SecIdentityRef\b|\bSecKeyRef\b|\bSecPolicyRef\b|\b'
             rb'SecTrustRef\b'),
         'level': Level.info,
-        'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -150,8 +147,8 @@ IPA_RULES = [
         'detailed_desc': (
             'The binary may use the '
             'following weak hash API(s) {}.'),
-        'type': MatchType.regex,
-        'regex1': (
+        'type': SingleRegex.__name__,
+        'match': (
             rb'\bCC_MD2_Init\b|\bCC_MD2_Update\b|\b'
             rb'CC_MD2_Final\b|\bCC_MD2\b|\bMD2_Init\b|\b'
             rb'MD2_Update\b|\bMD2_Final\b|\bCC_MD4_Init\b|\b'
@@ -165,7 +162,6 @@ IPA_RULES = [
             rb'CC_SHA1_Final\b|\bCC_SHA1\b|\bSHA1_Init\b|\b'
             rb'SHA1_Update\b|\bSHA1_Final\b'),
         'level': Level.high,
-        'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 3,
         'cwe': CWE['CWE-327'],
@@ -177,8 +173,8 @@ IPA_RULES = [
         'detailed_desc': (
             'The binary may use the'
             ' following hash API(s) {}.'),
-        'type': MatchType.regex,
-        'regex1': (
+        'type': SingleRegex.__name__,
+        'match': (
             rb'\bCC_SHA224_Init\b|\bCC_SHA224_Update\b|\b'
             rb'CC_SHA224_Final\b|\bCC_SHA224\b|\b'
             rb'SHA224_Init\b|\bSHA224_Update\b|\b'
@@ -194,7 +190,6 @@ IPA_RULES = [
             rb'CC_SHA512\b|\bSHA512_Init\b|\b'
             rb'SHA512_Update\b|\bSHA512_Final\b'),
         'level': Level.info,
-        'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -206,10 +201,9 @@ IPA_RULES = [
         'detailed_desc': (
             'The binary may use the following '
             'insecure Random function(s) {}.'),
-        'type': MatchType.regex,
-        'regex1': rb'\b_srand\b|\b_random\b',
+        'type': SingleRegex.__name__,
+        'match': rb'\b_srand\b|\b_random\b',
         'level': Level.high,
-        'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 3,
         'cwe': CWE['CWE-330'],
@@ -221,10 +215,9 @@ IPA_RULES = [
         'detailed_desc': (
             'The binary may use {}'
             ' function for logging.'),
-        'type': MatchType.regex,
-        'regex1': rb'\b_NSLog\b',
+        'type': SingleRegex.__name__,
+        'match': rb'\b_NSLog\b',
         'level': Level.info,
-        'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 7.5,
         'cwe': CWE['CWE-532'],
@@ -236,10 +229,9 @@ IPA_RULES = [
         'detailed_desc': (
             'The binary may use {}'
             ' function instead of calloc.'),
-        'type': MatchType.regex,
-        'regex1': rb'\b_malloc\b',
+        'type': SingleRegex.__name__,
+        'match': rb'\b_malloc\b',
         'level': Level.high,
-        'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 2,
         'cwe': CWE['CWE-789'],
@@ -254,10 +246,9 @@ IPA_RULES = [
             ' Ptrace is not a public API and apps that'
             ' use non-public APIs will be rejected'
             ' from AppStore.'),
-        'type': MatchType.regex,
-        'regex1': rb'\b_ptrace\b',
+        'type': SingleRegex.__name__,
+        'match': rb'\b_ptrace\b',
         'level': Level.warning,
-        'match': Match.single_regex,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -272,10 +263,9 @@ IPA_RULES = [
             ' Space Layout Randomization (ASLR), a memory'
             ' protection mechanism for'
             ' exploit mitigation.'),
-        'type': MatchType.string,
-        'string1': b'PIE',
+        'type': SingleString.__name__,
+        'match': b'PIE',
         'level': Level.good,
-        'match': Match.single_string,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -302,10 +292,9 @@ IPA_RULES = [
             'App is compiled with Stack Smashing Protector'
             ' (SSP) flag and is having protection against'
             ' Stack Overflows/Stack Smashing Attacks.'),
-        'type': MatchType.string,
-        'string1': b'stack_chk_guard',
+        'type': SingleString.__name__,
+        'match': b'stack_chk_guard',
         'level': Level.good,
-        'match': Match.single_string,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -333,10 +322,9 @@ IPA_RULES = [
             'management of Objective-C objects and is an '
             'exploit mitigation mechanism against memory '
             'corruption vulnerabilities.'),
-        'type': MatchType.string,
-        'string1': b'_objc_release',
+        'type': SingleString.__name__,
+        'match': b'_objc_release',
         'level': Level.good,
-        'match': Match.single_string,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',
@@ -361,10 +349,9 @@ IPA_RULES = [
     {
         'desc': 'Binary uses WebView Component.',
         'detailed_desc': 'The binary may use UIWebView Component.',
-        'type': MatchType.string,
-        'string1': b'UIWebView',
+        'type': SingleString.__name__,
+        'match': b'UIWebView',
         'level': Level.info,
-        'match': Match.single_string,
         'input_case': InputCase.exact,
         'cvss': 0,
         'cwe': '',

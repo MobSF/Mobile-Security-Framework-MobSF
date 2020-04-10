@@ -22,6 +22,7 @@ from StaticAnalyzer.views.rule_matchers import (
     api_rule_matcher,
     code_rule_matcher,
 )
+from StaticAnalyzer.views.matchers import MatchCommand
 
 logger = logging.getLogger(__name__)
 
@@ -30,13 +31,17 @@ def code_analysis(app_dir, perms, typ):
     """Perform the code analysis."""
     try:
         logger.info('Static Android Code Analysis Started')
-        api_rules = android_apis.APIS
         code_rules = android_rules.RULES
+        api_rules = android_apis.APIS
         code_findings = {}
         api_findings = {}
         email_n_file = []
         url_n_file = []
         url_list = []
+
+        # Will inject the different pattern strategy
+        # when it it will be requested
+        match_command = MatchCommand()
 
         if typ == 'apk':
             java_src = os.path.join(app_dir, 'java_source/')
@@ -73,15 +78,18 @@ def code_analysis(app_dir, perms, typ):
 
                     # Code Analysis
                     relative_java_path = jfile_path.replace(java_src, '')
+
                     code_rule_matcher(
                         code_findings,
                         list(perms.keys()),
                         dat,
                         relative_java_path,
-                        code_rules)
+                        code_rules,
+                        match_command)
                     # API Check
                     api_rule_matcher(api_findings, list(perms.keys()),
-                                     dat, relative_java_path, api_rules)
+                                     dat, relative_java_path,
+                                     api_rules, match_command)
                     # Extract URLs and Emails
                     urls, urls_nf, emails_nf = url_n_email_extract(
                         dat, relative_java_path)
