@@ -43,7 +43,6 @@ class MatchCommand:
 
     def find_match(self, pattern_name, content, rule, perms):
         if pattern_name not in self.patterns:
-            logger.debug('adding %s in the pool of patterns', pattern_name)
             pattern_class = globals()[pattern_name]
             self.patterns[pattern_name] = pattern_class()
         return self.patterns[pattern_name].perform_search(content, rule, perms)
