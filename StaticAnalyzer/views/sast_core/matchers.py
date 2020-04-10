@@ -1,19 +1,35 @@
+# -*- coding: utf_8 -*-
 """
 Level - It defines level of the rule.
 
-   1. high - Rule has a high security impact.
-             It will decrease security result by 15 points.
-   2. warning - Rule warns about potencial security leaks.
-                It will decrease security result by 10 points.
-   3. info - Rule informs about best practice in some posible cases.
-             It won't decrease security result.
-   4. good - Rule increase app security.
-             It will increase security result by 5 points.
+   1. high - A high security impact finding.
+             It will decrease security score by 15 points.
+   2. warning - A meduim impact security finding or warning.
+                It will decrease security score by 10 points.
+   3. info - Rule for catching informational findings.
+             It will not decrease/increase security score.
+   4. good - Rule that corresponds to a secure code finding.
+             It will increase security score by 5 points.
 
 InputCase - It is an Enum that defines how we should match pattern.
    1. upper
    2. lower
    3. exact
+
+Match Types - Types of marchers supported
+   a. SingleRegex - if re.findall(regex1, input)
+   b. RegexAnd - if re.findall(regex1, input) and re.findall(regex2, input)
+   c. RegexOr - if re.findall(regex1, input) or re.findall(regex2, input)
+   d. SingleString - if string1 in input
+   e. StringAnd - if (string1 in input) and (string2 in input)
+   f. StringOr - if (string1 in input) or (string2 in input)
+   g. StringAndOr -  if (string1 in input) and ((string2 in input)
+                       or (string3 in input))
+   h. StringAndPerm - if (string1 in input) and
+                        (permission in permission_list_from_manifest)
+   i. StringOrAndPerm - if ((string1 in input) or (string2 in input))
+                           and (permission in permission_list_from_manifest)
+   j. StringAndNot - if(string1 in input and string2 not in input)
 """
 from abc import ABC, abstractclassmethod
 from enum import Enum

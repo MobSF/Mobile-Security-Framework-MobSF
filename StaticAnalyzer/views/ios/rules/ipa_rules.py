@@ -1,49 +1,12 @@
-"""
-This file contains IPA security rules used in binary analysis.
-
-Rule Format.
-
-1. desc - Description of the findings
-
-2. detailed_desc - Detailed description. If a {} placeholder is used, captures
-                   will be inserted to detailed description on rule match.
-                   formatting is only supported with regex
-
-3. type
-   a. string
-   b. regex
-
-4. match
-   a. single_regex - if re.findall(regex1, input)
-   b. single_string - if string1 in input
-
-5. level
-   a. high
-   b. warning
-   c. info
-   d. good
-
-6. input_case
-   a. upper
-   b. lower
-   c. exact
-
-7. others
-   a. string1
-   b. regex2
-
-8. conditional - Conditional rules to match the opposite case.
-                 The opposite case must contain a dict of desc,
-                 detailed_desc, level, cvss, cwe, owasp, and,
-                 owasp-mstg
-"""
-from StaticAnalyzer.views.matchers import (
+# -*- coding: utf_8 -*-
+"""IPA Binary Analysis Rules."""
+from StaticAnalyzer.views.sast_core.matchers import (
     InputCase,
     Level,
     SingleRegex,
     SingleString,
 )
-from StaticAnalyzer.views.standards import (
+from StaticAnalyzer.views.sast_core.standards import (
     CWE,
     OWASP,
     OWASP_MSTG,

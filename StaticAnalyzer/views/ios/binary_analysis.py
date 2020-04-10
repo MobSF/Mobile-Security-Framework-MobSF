@@ -17,7 +17,7 @@ from StaticAnalyzer.views.ios.otool_analysis import (
 from StaticAnalyzer.views.ios.rules import (
     ipa_rules,
 )
-from StaticAnalyzer.views.rule_matchers import (
+from StaticAnalyzer.views.sast_core.rule_matchers import (
     binary_rule_matcher,
 )
 from StaticAnalyzer.tools.strings import strings_util

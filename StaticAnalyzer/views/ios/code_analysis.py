@@ -14,11 +14,11 @@ from StaticAnalyzer.views.ios.rules import (
 from StaticAnalyzer.views.shared_func import (
     url_n_email_extract,
 )
-from StaticAnalyzer.views.rule_matchers import (
+from StaticAnalyzer.views.sast_core.rule_matchers import (
     api_rule_matcher,
     code_rule_matcher,
 )
-from StaticAnalyzer.views.matchers import MatchCommand
+from StaticAnalyzer.views.sast_core.matchers import MatchCommand
 
 logger = logging.getLogger(__name__)
 
