@@ -1,44 +1,8 @@
-"""
-This file contains Objective-C security rules used in source code analysis.
+# -*- coding: utf_8 -*-
+"""iOS Source Code Analysis Objective C Rules."""
 
-Rule Format.
-
-1. desc - Description of the findings
-
-2. type
-   a. string
-   b. regex
-
-3. match
-   a. single_regex - if re.findall(regex1, input)
-   b .regex_and - if re.findall(regex1, input) and re.findall(regex2, input)
-   c. regex_or - if re.findall(regex1, input) or re.findall(regex2, input)
-   d. single_string - if string1 in input
-   e. string_and - if (string1 in input) and (string2 in input)
-   f. string_or - if (string1 in input) or (string2 in input)
-   g. string_and_or -  if (string1 in input) and ((string_or1 in input)
-                       or (string_or2 in input))
-   h. string_or_and - if (string1 in input) or ((string_and1 in input)
-                      and (string_and2 in input))
-
-4. level
-   a. high
-   b. warning
-   c. info
-   d. good
-
-5. input_case
-   a. upper
-   b. lower
-   c. exact
-
-6. others
-   a. string<no> - string1, string2, string3, string_or1, string_and1
-   b. regex<no> - regex1, regex2, regex3
-
-"""
 from StaticAnalyzer.views.ios.rules import common_rules
-from StaticAnalyzer.views.matchers import (
+from StaticAnalyzer.views.sast_core.matchers import (
     InputCase,
     Level,
     SingleRegex,
@@ -46,7 +10,7 @@ from StaticAnalyzer.views.matchers import (
     StringAnd,
     StringAndOr,
 )
-from StaticAnalyzer.views.standards import (
+from StaticAnalyzer.views.sast_core.standards import (
     CWE,
     OWASP,
     OWASP_MSTG,

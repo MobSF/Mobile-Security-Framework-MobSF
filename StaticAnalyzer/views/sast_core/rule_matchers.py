@@ -1,10 +1,11 @@
+# -*- coding: utf_8 -*-
 """Rule Matchers."""
 import re
 import logging
 from enum import Enum
 
 
-from StaticAnalyzer.views.matchers import (
+from StaticAnalyzer.views.sast_core.matchers import (
     InputCase,
     SingleRegex,
     SingleString,

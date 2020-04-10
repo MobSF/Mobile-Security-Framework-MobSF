@@ -1,3 +1,4 @@
+# -*- coding: utf_8 -*-
 """Standards Supported by MobSF."""
 
 
