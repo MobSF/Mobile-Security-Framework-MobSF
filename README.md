@@ -92,6 +92,7 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 * Shuxin - Android Binary Analysis
 * Abhinav Saxena - (@xandfury) - For Travis CI and Logging integration
 * ![netguru](https://user-images.githubusercontent.com/4301109/76340877-a3dc4f00-62d2-11ea-8631-b4cc8d9e42ed.png) [Netguru](https://www.netguru.com/) (@karolpiateknet, @mtbrzeski) - For iOS Swift support, Rule contributions and SAST refactoring.
+* Maxime Fawe - (@Arenash13) - For Matching Strategy implementation of SAST pattern matching algorithms.
 
 ## Shoutouts
 
