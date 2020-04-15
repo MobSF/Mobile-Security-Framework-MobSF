@@ -1,22 +1,37 @@
+"""Common Utils."""
+import ast
+import hashlib
+import io
+import logging
+import ntpath
 import os
 import platform
 import random
-import subprocess
 import re
-import sys
-import linecache
-import time
-import datetime
-import ntpath
-import hashlib
-import io
-import ast
-import unicodedata
-import requests
 import shutil
-from . import settings
+import signal
+import subprocess
+import stat
+import sys
+import sqlite3
+import unicodedata
+import threading
+from distutils.version import LooseVersion
+
+import distro
+
+import psutil
+
+import requests
 
 from django.shortcuts import render
+
+from install.windows.setup import windows_config_local
+
+from . import settings
+
+logger = logging.getLogger(__name__)
+ADB_PATH = None
 
 
 class Color(object):
@@ -28,288 +43,217 @@ class Color(object):
 
 
 def upstream_proxy(flaw_type):
-    """Set upstream Proxy if needed"""
+    """Set upstream Proxy if needed."""
     if settings.UPSTREAM_PROXY_ENABLED:
         if not settings.UPSTREAM_PROXY_USERNAME:
             proxy_port = str(settings.UPSTREAM_PROXY_PORT)
-            proxy_host = settings.UPSTREAM_PROXY_TYPE + '://' + \
-                settings.UPSTREAM_PROXY_IP + ':' + proxy_port
+            proxy_host = '{}://{}:{}'.format(
+                settings.UPSTREAM_PROXY_TYPE,
+                settings.UPSTREAM_PROXY_IP,
+                proxy_port)
             proxies = {flaw_type: proxy_host}
         else:
             proxy_port = str(settings.UPSTREAM_PROXY_PORT)
-            proxy_host = settings.UPSTREAM_PROXY_TYPE + '://' + settings.UPSTREAM_PROXY_USERNAME + \
-                ':' + settings.UPSTREAM_PROXY_PASSWORD + "@" + \
-                settings.UPSTREAM_PROXY_IP + ':' + proxy_port
+            proxy_host = '{}://{}:{}@{}:{}'.format(
+                settings.UPSTREAM_PROXY_TYPE,
+                settings.UPSTREAM_PROXY_USERNAME,
+                settings.UPSTREAM_PROXY_PASSWORD,
+                settings.UPSTREAM_PROXY_IP,
+                proxy_port)
             proxies = {flaw_type: proxy_host}
     else:
         proxies = {flaw_type: None}
-    if settings.UPSTREAM_PROXY_SSL_VERIFY:
-        verify = True
-    else:
-        verify = False
+    verify = bool(settings.UPSTREAM_PROXY_SSL_VERIFY)
     return proxies, verify
 
 
 def api_key():
-    """Print REST API Key"""
-
+    """Print REST API Key."""
     if os.environ.get('MOBSF_API_KEY'):
-        print("\nAPI Key read from environment variable")
+        logger.info('\nAPI Key read from environment variable')
         return os.environ['MOBSF_API_KEY']
 
-    secret_file = os.path.join(settings.MobSF_HOME, "secret")
-    if isFileExists(secret_file):
+    secret_file = os.path.join(settings.MobSF_HOME, 'secret')
+    if is_file_exists(secret_file):
         try:
-            api_key = open(secret_file).read().strip()
-            return gen_sha256_hash(api_key)
-        except:
-            PrintException("[ERROR] Cannot Read API Key")
+            _api_key = open(secret_file).read().strip()
+            return gen_sha256_hash(_api_key)
+        except Exception:
+            logger.exception('Cannot Read API Key')
 
 
-def printMobSFverison():
-    """Print MobSF Version"""
-    print(settings.BANNER)
-    if platform.system() == "Windows":
-        print('\n\nMobile Security Framework ' + settings.MOBSF_VER)
-        print("\nREST API Key: " + api_key())
+def print_version():
+    """Print MobSF Version."""
+    logger.info(settings.BANNER)
+    ver = settings.MOBSF_VER
+    if platform.system() == 'Windows':
+        logger.info('Mobile Security Framework %s', ver)
+        print('REST API Key: ' + api_key())
     else:
-        print('\n\n\033[1m\033[34mMobile Security Framework ' +
-              settings.MOBSF_VER + '\033[0m')
-        print("\nREST API Key: " + Color.BOLD + api_key() + Color.END)
-    print("OS: " + platform.system())
-    print("Platform: " + platform.platform())
-    if platform.dist()[0]:
-        print("Dist: " + str(platform.dist()))
-    FindJava(True)
-    FindVbox(True)
-    adb_binary_or32bit_support()
-    check_update()
+        logger.info('\033[1m\033[34mMobile Security Framework %s\033[0m', ver)
+        print('REST API Key: ' + Color.BOLD + api_key() + Color.END)
+    logger.info('OS: %s', platform.system())
+    logger.info('Platform: %s', platform.platform())
+    dist = distro.linux_distribution(full_distribution_name=False)
+    if dist:
+        logger.info('Dist: %s', ' '.join(dist))
+    find_java_binary()
+    check_basic_env()
+    thread = threading.Thread(target=check_update, name='check_update')
+    thread.start()
 
 
 def check_update():
     try:
-        print("\n[INFO] Checking for Update.")
-        github_url = "https://raw.githubusercontent.com/MobSF/Mobile-Security-Framework-MobSF/master/MobSF/settings.py"
+        logger.info('Checking for Update.')
+        github_url = settings.GITHUB_URL
         try:
             proxies, verify = upstream_proxy('https')
-        except:
-            PrintException("[ERROR] Setting upstream proxy")
+        except Exception:
+            logger.exception('Setting upstream proxy')
         response = requests.get(github_url, timeout=5,
                                 proxies=proxies, verify=verify)
-        html = str(response.text).split("\n")
+        html = str(response.text).split('\n')
+        local_version = settings.MOBSF_VER
         for line in html:
-            if line.startswith("MOBSF_VER"):
-                line = line.replace("MOBSF_VER", "").replace('"', '')
-                line = line.replace("=", "").strip()
-                if line != settings.MOBSF_VER:
-                    print("""\n[WARN] A new version of MobSF is available,
-Please update from master branch or check for new releases.\n""")
+            if line.startswith('MOBSF_VER'):
+                remote_version = line.split('= ', 1)[1].replace('\'', '')
+                if LooseVersion(local_version) < LooseVersion(remote_version):
+                    logger.warning('A new version of MobSF is available, '
+                                   'Please update to %s from master branch.',
+                                   remote_version)
                 else:
-                    print("\n[INFO] No updates available.")
-    except requests.exceptions.HTTPError as err:
-        print("\n[WARN] Cannot check for updates.. No Internet Connection Found.")
+                    logger.info('No updates available.')
+                break
+    except requests.exceptions.HTTPError:
+        logger.warning('\nCannot check for updates..'
+                       ' No Internet Connection Found.')
         return
-    except:
-        PrintException("[ERROR] Cannot Check for updates.")
+    except Exception:
+        logger.exception('Cannot Check for updates.')
 
 
-def createUserConfig(MobSF_HOME):
+def create_user_conf(mobsf_home):
     try:
-        CONFIG_PATH = os.path.join(MobSF_HOME, 'config.py')
-        if isFileExists(CONFIG_PATH) == False:
-            SAMPLE_CONF = os.path.join(settings.BASE_DIR, "MobSF/settings.py")
-            with io.open(SAMPLE_CONF, mode='r', encoding="utf8", errors="ignore") as f:
+        config_path = os.path.join(mobsf_home, 'config.py')
+        if not is_file_exists(config_path):
+            sample_conf = os.path.join(settings.BASE_DIR, 'MobSF/settings.py')
+            with open(sample_conf, 'r') as f:
                 dat = f.readlines()
-            CONFIG = list()
+            config = []
             add = False
             for line in dat:
-                if "^CONFIG-START^" in line:
+                if '^CONFIG-START^' in line:
                     add = True
-                if "^CONFIG-END^" in line:
+                if '^CONFIG-END^' in line:
                     break
                 if add:
-                    CONFIG.append(line.lstrip())
-            CONFIG.pop(0)
-            COMFIG_STR = ''.join(CONFIG)
-            with io.open(CONFIG_PATH, mode='w', encoding="utf8", errors="ignore") as f:
-                f.write(COMFIG_STR)
-    except:
-        PrintException("[ERROR] Cannot create config file")
+                    config.append(line.lstrip())
+            config.pop(0)
+            conf_str = ''.join(config)
+            with open(config_path, 'w') as f:
+                f.write(conf_str)
+    except Exception:
+        logger.exception('Cannot create config file')
 
 
-def getMobSFHome(useHOME):
+def get_mobsf_home(use_home):
     try:
-        MobSF_HOME = ""
-        if useHOME:
-            MobSF_HOME = os.path.join(os.path.expanduser('~'), ".MobSF")
+        mobsf_home = ''
+        if use_home:
+            mobsf_home = os.path.join(os.path.expanduser('~'), '.MobSF')
             # MobSF Home Directory
-            if not os.path.exists(MobSF_HOME):
-                os.makedirs(MobSF_HOME)
-            createUserConfig(MobSF_HOME)
+            if not os.path.exists(mobsf_home):
+                os.makedirs(mobsf_home)
+            create_user_conf(mobsf_home)
         else:
-            MobSF_HOME = settings.BASE_DIR
+            mobsf_home = settings.BASE_DIR
         # Logs Directory
-        LOG_DIR = os.path.join(MobSF_HOME, 'logs/')
-        if not os.path.exists(LOG_DIR):
-            os.makedirs(LOG_DIR)
+        log_dir = os.path.join(mobsf_home, 'logs/')
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
         # Certs Directory
-        CERT_DIR = os.path.join(LOG_DIR, 'certs/')
-        if not os.path.exists(CERT_DIR):
-            os.makedirs(CERT_DIR)
+        cert_dir = os.path.join(log_dir, 'certs/')
+        if not os.path.exists(cert_dir):
+            os.makedirs(cert_dir)
         # Download Directory
-        DWD_DIR = os.path.join(MobSF_HOME, 'downloads/')
-        if not os.path.exists(DWD_DIR):
-            os.makedirs(DWD_DIR)
+        dwd_dir = os.path.join(mobsf_home, 'downloads/')
+        if not os.path.exists(dwd_dir):
+            os.makedirs(dwd_dir)
         # Screenshot Directory
-        SCREEN_DIR = os.path.join(DWD_DIR, 'screen/')
-        if not os.path.exists(SCREEN_DIR):
-            os.makedirs(SCREEN_DIR)
+        screen_dir = os.path.join(dwd_dir, 'screen/')
+        if not os.path.exists(screen_dir):
+            os.makedirs(screen_dir)
         # Upload Directory
-        UPLD_DIR = os.path.join(MobSF_HOME, 'uploads/')
-        if not os.path.exists(UPLD_DIR):
-            os.makedirs(UPLD_DIR)
-        return MobSF_HOME
-    except:
-        PrintException("[ERROR] Creating MobSF Home Directory")
-
-
-def get_python():
-    """Get Python Executable"""
-    return sys.executable
+        upload_dir = os.path.join(mobsf_home, 'uploads/')
+        if not os.path.exists(upload_dir):
+            os.makedirs(upload_dir)
+        # Signature Directory
+        sig_dir = os.path.join(mobsf_home, 'signatures/')
+        if not os.path.exists(sig_dir):
+            os.makedirs(sig_dir)
+        return mobsf_home
+    except Exception:
+        logger.exception('Creating MobSF Home Directory')
 
 
 def make_migrations(base_dir):
-    """Create Database Migrations"""
+    """Create Database Migrations."""
     try:
-        python = get_python()
-        manage = os.path.join(base_dir, "manage.py")
-        args = [python, manage, "makemigrations"]
+        manage = os.path.join(base_dir, 'manage.py')
+        args = [get_python(), manage, 'makemigrations']
         subprocess.call(args)
-        args = [python, manage, "makemigrations", "StaticAnalyzer"]
+        args = [get_python(), manage, 'makemigrations', 'StaticAnalyzer']
         subprocess.call(args)
-    except:
-        PrintException("[ERROR] Cannot Make Migrations")
+    except Exception:
+        logger.exception('Cannot Make Migrations')
 
 
-def migrate(BASE_DIR):
-    """Migrate Database"""
+def migrate(base_dir):
+    """Migrate Database."""
     try:
-        python = get_python()
-        manage = os.path.join(BASE_DIR, "manage.py")
-        args = [python, manage, "migrate"]
+        manage = os.path.join(base_dir, 'manage.py')
+        args = [get_python(), manage, 'migrate']
         subprocess.call(args)
-    except:
-        PrintException("[ERROR] Cannot Migrate")
+        args = [get_python(), manage, 'migrate', '--run-syncdb']
+        subprocess.call(args)
+    except Exception:
+        logger.exception('Cannot Migrate')
 
 
-def kali_fix(BASE_DIR):
-    try:
-        if platform.system() == "Linux" and platform.dist()[0] == "Kali":
-            fix_path = os.path.join(BASE_DIR, "MobSF/kali_fix.sh")
-            subprocess.call(["chmod", "a+x", fix_path])
-            subprocess.call([fix_path], shell=True)
-    except:
-        PrintException("[ERROR] Cannot run Kali Fix")
-
-
-def FindVbox(debug=False):
-    try:
-        if settings.ANDROID_DYNAMIC_ANALYZER == "MobSF_VM":
-            if len(settings.VBOXMANAGE_BINARY) > 0 and isFileExists(settings.VBOXMANAGE_BINARY):
-                return settings.VBOXMANAGE_BINARY
-            if platform.system() == "Windows":
-                # Path to VBoxManage.exe
-                vbox_path = ["C:\Program Files\Oracle\VirtualBox\VBoxManage.exe",
-                             "C:\Program Files (x86)\Oracle\VirtualBox\VBoxManage.exe"]
-                for path in vbox_path:
-                    if os.path.isfile(path):
-                        return path
-            else:
-                # Path to VBoxManage in Linux/Mac
-                vbox_path = ["/usr/bin/VBoxManage",
-                             "/usr/local/bin/VBoxManage"]
-                for path in vbox_path:
-                    if os.path.isfile(path):
-                        return path
-            if debug:
-                print("\n[WARNING] Could not find VirtualBox path.")
-    except:
-        if debug:
-            PrintException("[ERROR] Cannot find VirtualBox path.")
-
-# Maintain JDK Version
-JAVA_VER = '1.7|1.8|1.9|2.0|2.1|2.2|2.3'
-
-
-def FindJava(debug=False):
-    try:
-        err_msg1 = "[ERROR] Oracle JDK 1.7 or above is not found!"
-        if len(settings.JAVA_DIRECTORY) > 0 and isDirExists(settings.JAVA_DIRECTORY):
-            return settings.JAVA_DIRECTORY
-        if platform.system() == "Windows":
-            if debug:
-                print("\n[INFO] Finding JDK Location in Windows....")
-            # JDK 7 jdk1.7.0_17/bin/
-            for java_path in ["C:/Program Files/Java/",
-                              "C:/Program Files (x86)/Java/"]:
-                if os.path.isdir(java_path):
-                    for dirname in os.listdir(java_path):
-                        if "jdk" in dirname:
-                            win_java_path = java_path + dirname + "/bin/"
-                            args = [win_java_path + "java", "--version"]
-                            dat = RunProcess(args)
-                            if "java" in dat:
-                                if debug:
-                                    print(
-                                        "\n[INFO] Oracle Java JDK is installed!")
-                                return win_java_path
-            for env in ["JDK_HOME", "JAVA_HOME"]:
-                java_home = os.environ.get(env)
-                if java_home and os.path.isdir(java_home):
-                    win_java_path = java_home + "/bin/"
-                    args = [win_java_path + "java", "--version"]
-                    dat = RunProcess(args)
-                    if "java" in dat:
-                        if debug:
-                            print("\n[INFO] Oracle Java is installed!")
-                        return win_java_path
-
-            if debug:
-                print(err_msg1)
-            return "java"
+def find_java_binary():
+    """Find Java."""
+    # Respect user settings
+    if platform.system() == 'Windows':
+        jbin = 'java.exe'
+    else:
+        jbin = 'java'
+    if is_dir_exists(settings.JAVA_DIRECTORY):
+        if settings.JAVA_DIRECTORY.endswith('/'):
+            return settings.JAVA_DIRECTORY + jbin
+        elif settings.JAVA_DIRECTORY.endswith('\\'):
+            return settings.JAVA_DIRECTORY + jbin
         else:
-            if debug:
-                print("\n[INFO] Finding JDK Location in Linux/MAC....")
-            MAC_LINUX_JAVA = "/usr/bin/"
-            args = [MAC_LINUX_JAVA + "java"]
-            dat = RunProcess(args)
-            if "oracle" in dat:
-                args = [MAC_LINUX_JAVA + "java", '-version']
-                dat = RunProcess(args)
-                f_line = dat.split("\n")[0]
-                if re.findall(JAVA_VER, f_line):
-                    if debug:
-                        print("\n[INFO] JDK 1.7 or above is available")
-                    return MAC_LINUX_JAVA
-                else:
-                    err_msg = "[ERROR] Please install Oracle JDK 1.7 or above"
-                    if debug:
-                        print(Color.BOLD + Color.RED + err_msg + Color.END)
-                    return ""
-            else:
-                if debug:
-                    print(Color.BOLD + Color.RED + err_msg1 + Color.END)
-                return ""
-    except:
-        if debug:
-            PrintException("[ERROR] Oracle Java (JDK >=1.7) is not found!")
-        return ""
+            return settings.JAVA_DIRECTORY + '/' + jbin
+    if os.getenv('JAVA_HOME'):
+        java = os.path.join(
+            os.getenv('JAVA_HOME'),
+            'bin',
+            jbin)
+        if is_file_exists(java):
+            return java
+    return 'java'
 
 
-def RunProcess(args):
+def get_python():
+    """Get Python Executable."""
+    return sys.executable
+
+
+def run_process(args):
     try:
         proc = subprocess.Popen(
-            args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,)
+            args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         dat = ''
         while True:
             line = proc.stdout.readline()
@@ -317,65 +261,28 @@ def RunProcess(args):
                 break
             dat += str(line)
         return dat
-    except:
-        PrintException("[ERROR] Finding Java path - Cannot Run Process")
-        return ""
+    except Exception:
+        logger.error('Finding Java path - Cannot Run Process')
+        return ''
 
 
-def PrintException(msg, web=False):
-    try:
-        LOGPATH = settings.LOG_DIR
-    except:
-        LOGPATH = os.path.join(settings.BASE_DIR, "logs/")
-    if not os.path.exists(LOGPATH):
-        os.makedirs(LOGPATH)
-    exc_type, exc_obj, tb = sys.exc_info()
-    f = tb.tb_frame
-    lineno = tb.tb_lineno
-    filename = f.f_code.co_filename
-    linecache.checkcache(filename)
-    line = linecache.getline(filename, lineno, f.f_globals)
-    ts = time.time()
-    st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-    dat = '\n[' + st + ']\n' + msg + \
-        ' ({0}, LINE {1} "{2}"): {3}'.format(
-            filename, lineno, line.strip(), exc_obj)
-    if platform.system() == "Windows":
-        print(dat)
-    else:
-        if web:
-            print(Color.BOLD + Color.ORANGE + dat + Color.END)
-        else:
-            print(Color.BOLD + Color.RED + dat + Color.END)
-    with open(LOGPATH + 'MobSF.log', 'a') as f:
-        f.write(dat)
-
-
-def print_n_send_error_response(request, msg, api, exp='Error Description'):
-    """Print and log errors"""
-    print(Color.BOLD + Color.RED + '[ERROR] ' + msg + Color.END)
-    time_stamp = time.time()
-    formatted_tms = datetime.datetime.fromtimestamp(
-        time_stamp).strftime('%Y-%m-%d %H:%M:%S')
-    data = '\n[' + formatted_tms + ']\n[ERROR] ' + msg
-    try:
-        log_path = settings.LOG_DIR
-    except:
-        log_path = os.path.join(settings.BASE_DIR, "logs/")
-    if not os.path.exists(log_path):
-        os.makedirs(log_path)
-    with open(os.path.join(log_path, 'MobSF.log'), 'a') as flip:
-        flip.write(data)
+def print_n_send_error_response(request,
+                                msg,
+                                api=False,
+                                exp='Description'):
+    """Print and log errors."""
+    logger.error(msg)
     if api:
-        api_response = {"error": msg}
+        api_response = {'error': msg}
         return api_response
     else:
         context = {
             'title': 'Error',
             'exp': exp,
-            'doc': msg
+            'doc': msg,
+            'version': settings.MOBSF_VER,
         }
-        template = "general/error.html"
+        template = 'general/error.html'
         return render(request, template, context, status=500)
 
 
@@ -384,17 +291,17 @@ def filename_from_path(path):
     return tail or ntpath.basename(head)
 
 
-def getMD5(data):
+def get_md5(data):
     return hashlib.md5(data).hexdigest()
 
 
-def findBetween(s, first, last):
+def find_between(s, first, last):
     try:
         start = s.index(first) + len(first)
         end = s.index(last, start)
         return s[start:end]
     except ValueError:
-        return ""
+        return ''
 
 
 def is_number(s):
@@ -427,114 +334,306 @@ def python_dict(value):
     return ast.literal_eval(value)
 
 
-def isBase64(str):
-    return re.match('^[A-Za-z0-9+/]+[=]{0,2}$', str)
+def is_base64(b_str):
+    return re.match('^[A-Za-z0-9+/]+[=]{0,2}$', b_str)
 
 
-def isInternetAvailable():
+def is_internet_available():
     try:
         proxies, verify = upstream_proxy('https')
-    except:
-        PrintException("[ERROR] Setting upstream proxy")
+    except Exception:
+        logger.exception('Setting upstream proxy')
     try:
-        requests.get('https://www.google.com', timeout=5,
-                     proxies=proxies, verify=verify)
+        requests.get(settings.GOOGLE,
+                     timeout=5,
+                     proxies=proxies,
+                     verify=verify)
         return True
-    except requests.exceptions.HTTPError as err:
+    except Exception:
         try:
-            requests.get('https://www.baidu.com/', timeout=5,
-                         proxies=proxies, verify=verify)
+            requests.get(settings.BAIDU,
+                         timeout=5,
+                         proxies=proxies,
+                         verify=verify)
             return True
-        except requests.exceptions.HTTPError as err1:
+        except Exception:
             return False
     return False
 
 
 def sha256(file_path):
-    BLOCKSIZE = 65536
+    blocksize = 65536
     hasher = hashlib.sha256()
     with io.open(file_path, mode='rb') as afile:
-        buf = afile.read(BLOCKSIZE)
+        buf = afile.read(blocksize)
         while buf:
             hasher.update(buf)
-            buf = afile.read(BLOCKSIZE)
-    return (hasher.hexdigest())
+            buf = afile.read(blocksize)
+    return hasher.hexdigest()
+
+
+def sha256_object(file_obj):
+    blocksize = 65536
+    hasher = hashlib.sha256()
+    buf = file_obj.read(blocksize)
+    while buf:
+        hasher.update(buf)
+        buf = file_obj.read(blocksize)
+    return hasher.hexdigest()
 
 
 def gen_sha256_hash(msg):
-    """Generate SHA 256 Hash of the message"""
+    """Generate SHA 256 Hash of the message."""
     hash_object = hashlib.sha256(msg.encode('utf-8'))
     return hash_object.hexdigest()
 
 
-def isFileExists(file_path):
+def is_file_exists(file_path):
     if os.path.isfile(file_path):
         return True
-    # This fix situation where a user just typed "adb" or another executable inside settings.py
+    # This fix situation where a user just typed "adb" or another executable
+    # inside settings.py
     if shutil.which(file_path):
         return True
     else:
         return False
 
 
-def isDirExists(dir_path):
+def is_dir_exists(dir_path):
     if os.path.isdir(dir_path):
         return True
     else:
         return False
 
 
-def genRandom():
-    return ''.join([random.SystemRandom().choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50)])
+def get_random():
+    choice = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
+    return ''.join([random.SystemRandom().choice(choice) for i in range(50)])
 
 
-def zipdir(path, zip_file):
-    """Zip a directory."""
+def find_process_by(name):
+    """Return a set of process path matching name."""
+    proc = set()
+    for p in psutil.process_iter(attrs=['name', 'exe', 'cmdline']):
+        if (name == p.info['name'] or p.info['exe']
+            and os.path.basename(p.info['exe']) == name
+                or p.info['cmdline'] and p.info['cmdline'][0] == name):
+            proc.add(p.info['exe'])
+    return proc
+
+
+def get_device():
+    """Get Device."""
+    if os.getenv('ANALYZER_IDENTIFIER'):
+        return os.getenv('ANALYZER_IDENTIFIER')
+    if settings.ANALYZER_IDENTIFIER:
+        return settings.ANALYZER_IDENTIFIER
+    else:
+        dev_id = ''
+        out = subprocess.check_output([get_adb(), 'devices']).splitlines()
+        if len(out) > 2:
+            dev_id = out[1].decode('utf-8').split('\t')[0]
+            return dev_id
+    logger.error('Is the Android VM running?\n'
+                 'MobSF cannot identify device id.\n'
+                 'Please set ANALYZER_IDENTIFIER in MobSF/settings.py')
+
+
+def get_adb():
+    """Get ADB binary path."""
     try:
-        print("[INFO] Zipping")
-        # pylint: disable=unused-variable
-        # Needed by os.walk
-        for root, _sub_dir, files in os.walk(path):
-            for file_name in files:
-                zip_file.write(os.path.join(root, file_name))
-    except:
-        PrintException("[ERROR] Zipping")
-
-
-def getADB():
-    """Get ADB binary path"""
-    try:
-        if len(settings.ADB_BINARY) > 0 and isFileExists(settings.ADB_BINARY):
-            return settings.ADB_BINARY
+        global ADB_PATH
+        if (len(settings.ADB_BINARY) > 0
+                and is_file_exists(settings.ADB_BINARY)):
+            ADB_PATH = settings.ADB_BINARY
+            return ADB_PATH
+        if ADB_PATH:
+            return ADB_PATH
+        if platform.system() == 'Windows':
+            adb_loc = find_process_by('adb.exe')
         else:
-            adb = 'adb'
-            if platform.system() == "Darwin":
-                adb_dir = os.path.join(settings.TOOLS_DIR, 'adb/mac/')
-                subprocess.call(["chmod", "777", adb_dir])
-                adb = os.path.join(settings.TOOLS_DIR, 'adb/mac/adb')
-            elif platform.system() == "Linux":
-                adb_dir = os.path.join(settings.TOOLS_DIR, 'adb/linux/')
-                subprocess.call(["chmod", "777", adb_dir])
-                adb = os.path.join(settings.TOOLS_DIR, 'adb/linux/adb')
-            elif platform.system() == "Windows":
-                adb = os.path.join(settings.TOOLS_DIR, 'adb/windows/adb.exe')
-            return adb
-    except:
-        PrintException("[ERROR] Getting ADB Location")
-        return "adb"
-
-
-def adb_binary_or32bit_support():
-    """Check if 32bit is supported. Also if the binary works"""
-    adb_path = getADB()
-    try:
-        fnull = open(os.devnull, 'w')
-        subprocess.call([adb_path], stdout=fnull, stderr=fnull)
-    except:
-        msg = "\n[WARNING] You don't have 32 bit execution support enabled or MobSF shipped" \
-            " ADB binary is not compatible with your OS."\
-            "\nPlease set the 'ADB_BINARY' path in settings.py"
-        if platform.system != "Windows":
-            print(Color.BOLD + Color.ORANGE + msg + Color.END)
+            adb_loc = find_process_by('adb')
+        if len(adb_loc) > 1:
+            logger.warning('Multiple ADB locations found. '
+                           'Set adb path, ADB_BINARY in MobSF/settings.py'
+                           ' with same adb binary used'
+                           ' by Genymotion VM/Emulator AVD.')
+            logger.warning(adb_loc)
+        if adb_loc:
+            ADB_PATH = adb_loc.pop()
+            return ADB_PATH
+    except Exception:
+        logger.exception('Getting ADB Location')
+    finally:
+        if ADB_PATH:
+            os.environ['MOBSF_ADB'] = ADB_PATH
         else:
-            print(msg)
+            os.environ['MOBSF_ADB'] = 'adb'
+            logger.warning('Dynamic Analysis related '
+                           'functions will not work. '
+                           '\nMake sure a Genymotion Android VM/'
+                           'Android Studio Emulator'
+                           ' is running before performing Dynamic Analyis.')
+    return 'adb'
+
+
+def check_basic_env():
+    """Check if we have basic env for MobSF to run."""
+    logger.info('MobSF Basic Environment Check')
+    try:
+        import http_tools  # noqa F401
+    except ImportError:
+        logger.exception('httptools not installed!')
+        os.kill(os.getpid(), signal.SIGTERM)
+    try:
+        import lxml  # noqa F401
+    except ImportError:
+        logger.exception('lxml is not installed!')
+        os.kill(os.getpid(), signal.SIGTERM)
+    if not is_file_exists(settings.JAVA_BINARY):
+        logger.error(
+            'JDK 8+ is not available. '
+            'Set JAVA_HOME environment variable'
+            ' or JAVA_DIRECTORY in MobSF/settings.py')
+        logger.info('Current Configuration: '
+                    'JAVA_DIRECTORY=%s', settings.JAVA_DIRECTORY)
+        logger.info('Example Configuration:'
+                    '\nJAVA_DIRECTORY = "C:/Program Files/'
+                    'Java/jdk1.7.0_17/bin/"'
+                    '\nJAVA_DIRECTORY = "/usr/bin/"')
+        os.kill(os.getpid(), signal.SIGTERM)
+    get_adb()
+
+
+def first_run(secret_file, base_dir, mobsf_home):
+    # Based on https://gist.github.com/ndarville/3452907#file-secret-key-gen-py
+    if 'MOBSF_SECRET_KEY' in os.environ:
+        secret_key = os.environ['MOBSF_SECRET_KEY']
+    elif is_file_exists(secret_file):
+        secret_key = open(secret_file).read().strip()
+    else:
+        try:
+            secret_key = get_random()
+            secret = open(secret_file, 'w')
+            secret.write(secret_key)
+            secret.close()
+        except IOError:
+            Exception('Secret file generation failed' % secret_file)
+        # Run Once
+        make_migrations(base_dir)
+        migrate(base_dir)
+        # Windows Setup
+        windows_config_local(mobsf_home)
+    return secret_key
+
+
+def update_local_db(db_name, url, local_file):
+    """Update Local DBs."""
+    update = None
+    inmemoryfile = None
+    try:
+        proxies, verify = upstream_proxy('http')
+    except Exception:
+        logger.exception('[ERROR] Setting upstream proxy')
+    try:
+        response = requests.get(url,
+                                timeout=3,
+                                proxies=proxies,
+                                verify=verify)
+        resp = response.content
+        inmemoryfile = io.BytesIO(resp)
+        # Create on first run
+        if not is_file_exists(local_file):
+            return resp
+        # Check1: SHA256 Change
+        if sha256_object(inmemoryfile) != sha256(local_file):
+            # Hash Changed
+            logger.info('%s Database is outdated!', db_name)
+            update = resp
+        else:
+            logger.info('%s Database is up-to-date', db_name)
+        return update
+    except Exception:
+        logger.exception('[ERROR] %s DB Update', db_name)
+        return update
+    finally:
+        if inmemoryfile:
+            inmemoryfile.truncate(0)
+
+
+def read_sqlite(sqlite_file):
+    """Sqlite Dump - Readable Text."""
+    logger.info('Reading SQLite db')
+    table_dict = {}
+    try:
+        con = sqlite3.connect(sqlite_file)
+        cur = con.cursor()
+        cur.execute('SELECT name FROM sqlite_master WHERE type=\'table\';')
+        tables = cur.fetchall()
+        for table in tables:
+            table_dict[table[0]] = {'head': [], 'data': []}
+            cur.execute('PRAGMA table_info(\'%s\')' % table)
+            rows = cur.fetchall()
+            for sq_row in rows:
+                table_dict[table[0]]['head'].append(sq_row[1])
+            cur.execute('SELECT * FROM \'%s\'' % table)
+            rows = cur.fetchall()
+            for sq_row in rows:
+                tmp_row = []
+                for each_row in sq_row:
+                    tmp_row.append(str(each_row))
+                table_dict[table[0]]['data'].append(tmp_row)
+    except Exception:
+        logger.exception('Reading SQLite db')
+    return table_dict
+
+
+def is_pipe_or_link(path):
+    """Check for named pipe."""
+    return os.path.islink(path) or stat.S_ISFIFO(os.stat(path).st_mode)
+
+
+def get_network():
+    """Get Network IPs."""
+    ips = []
+    try:
+        for det in psutil.net_if_addrs().values():
+            ips.append(det[0].address)
+    except Exception:
+        logger.exception('Failed to enumerate network interfaces')
+    return ips
+
+
+def get_proxy_ip(identifier):
+    """Get Proxy IP."""
+    proxy_ip = None
+    try:
+        if not identifier:
+            return proxy_ip
+        ips = get_network()
+        if ':' not in identifier or not ips:
+            return proxy_ip
+        device_ip = identifier.split(':', 1)[0]
+        ip_range = device_ip.rsplit('.', 1)[0]
+        guess_ip = ip_range + '.1'
+        if guess_ip in ips:
+            return guess_ip
+        for ip_addr in ips:
+            to_check = ip_addr.rsplit('.', 1)[0]
+            if to_check == ip_range:
+                return ip_addr
+    except Exception:
+        logger.error('Error getting Proxy IP')
+    return proxy_ip
+
+
+def is_safe_path(safe_root, check_path):
+    """Detect Path Traversal."""
+    safe_root = os.path.realpath(os.path.normpath(safe_root))
+    check_path = os.path.realpath(os.path.normpath(check_path))
+    return os.path.commonprefix([check_path, safe_root]) == safe_root
+
+
+def file_size(app_path):
+    """Return the size of the file."""
+    return round(float(os.path.getsize(app_path)) / (1024 * 1024), 2)

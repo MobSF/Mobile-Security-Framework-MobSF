@@ -1,22 +1,16 @@
 <!-- Thank you for your contribution to MobSF! -->
 
-### What was a problem?
+### Describe the Pull Request
 
 ```
-DESCRIBE HERE
+DESCRIBE THE DETAILS OF PULL REQUEST HERE
 ```
 
-### How this PR fixes the problem?
+### Checklist for PR
 
-```
-DESCRIBE HERE
-```
-
-### Check lists (check `x` in `[ ]` of list items)
-
-- [ ] Run MobSF unit tests
-- [ ] Tested Working on Linux, Mac, and Windows
-- [ ] Coding style (indentation, etc)
+- [ ] Run MobSF unit tests and lint `tox -e lint,test`.
+- [ ] Tested Working on Linux, Mac, Windows, and Docker
+- [ ] Make sure build is passing on your PR. [![Build Status](https://travis-ci.com/MobSF/Mobile-Security-Framework-MobSF.svg?branch=master)](https://travis-ci.com/MobSF/Mobile-Security-Framework-MobSF/pull_requests)
 
 ### Additional Comments (if any)
 

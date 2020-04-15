@@ -1,266 +1,169 @@
-# -*- coding: utf_8 -*-
 """Module holding the functions for the db."""
-from MobSF.utils import (
-    PrintException,
-    python_list,
-    python_dict
-)
-from StaticAnalyzer.models import (
-    StaticAnalyzerIPA,
-    StaticAnalyzerIOSZIP
-)
+import logging
 
-# IPA DB
+from django.conf import settings
+
+from MobSF.utils import python_dict, python_list
+
+from StaticAnalyzer.models import StaticAnalyzerIOS
+from StaticAnalyzer.models import RecentScansDB
+
+logger = logging.getLogger(__name__)
 
 
-def get_context_from_analysis_ipa(app_dict, info_dict, bin_dict, files, sfiles):
-    """Get the context for IPA from analysis results"""
+def get_context_from_db_entry(db_entry):
+    """Return the context for IPA/ZIP from DB."""
     try:
+        logger.info('Analysis is already Done. Fetching data from the DB...')
         context = {
+            'version': settings.MOBSF_VER,
             'title': 'Static Analysis',
-            'name': app_dict["app_name"],
-            'size': app_dict["size"],
-            'md5': app_dict["md5_hash"],
-            'sha1': app_dict["sha1"],
-            'sha256': app_dict["sha256"],
-            'plist': info_dict["plist_xml"],
-            'bin_name': info_dict["bin_name"],
-            'id': info_dict["id"],
-            'ver': info_dict["ver"],
-            'sdk': info_dict["sdk"],
-            'pltfm': info_dict["pltfm"],
-            'min': info_dict["min"],
-            'bin_anal': bin_dict["bin_res"],
-            'libs': bin_dict["libs"],
-            'files': files,
-            'file_analysis': sfiles,
-            'strings': bin_dict["strings"],
-            'permissions': info_dict["permissions"],
-            'insecure_connections': info_dict["inseccon"]
-        }
-        return context
-    except:
-        PrintException("[ERROR] Rendering to Template")
-
-
-def get_context_from_db_entry_ipa(db_entry):
-    """Return the context for IPA from DB"""
-    try:
-        print("\n[INFO] Analysis is already Done. Fetching data from the DB...")
-        context = {
-            'title': db_entry[0].TITLE,
-            'name': db_entry[0].APPNAMEX,
+            'file_name': db_entry[0].FILE_NAME,
+            'app_name': db_entry[0].APP_NAME,
+            'app_type': db_entry[0].APP_TYPE,
             'size': db_entry[0].SIZE,
             'md5': db_entry[0].MD5,
             'sha1': db_entry[0].SHA1,
             'sha256': db_entry[0].SHA256,
-            'plist': db_entry[0].INFOPLIST,
-            'bin_name': db_entry[0].BINNAME,
-            'id': db_entry[0].IDF,
-            'ver': db_entry[0].VERSION,
-            'sdk': db_entry[0].SDK,
-            'pltfm': db_entry[0].PLTFM,
-            'min': db_entry[0].MINX,
-            'bin_anal': db_entry[0].BIN_ANAL,
-            'libs': db_entry[0].LIBS,
-            'files': python_list(db_entry[0].FILES),
-            'file_analysis': db_entry[0].SFILESX,
-            'strings': python_list(db_entry[0].STRINGS),
+            'build': db_entry[0].BUILD,
+            'app_version': db_entry[0].APP_VERSION,
+            'sdk_name': db_entry[0].SDK_NAME,
+            'platform': db_entry[0].PLATFORM,
+            'min_os_version': db_entry[0].MIN_OS_VERSION,
+            'bundle_id': db_entry[0].BUNDLE_ID,
+            'bundle_url_types': python_list(db_entry[0].BUNDLE_URL_TYPES),
+            'bundle_supported_platforms':
+                python_list(db_entry[0].BUNDLE_SUPPORTED_PLATFORMS),
+            'icon_found': db_entry[0].ICON_FOUND,
+            'info_plist': db_entry[0].INFO_PLIST,
+            'binary_info': python_dict(db_entry[0].MACHO_INFO),
             'permissions': python_list(db_entry[0].PERMISSIONS),
-            'insecure_connections': python_list(db_entry[0].INSECCON)
-        }
-        return context
-    except:
-        PrintException("[ERROR] Fetching from DB")
-
-
-def update_db_entry_ipa(app_dict, info_dict, bin_dict, files, sfiles):
-    """Update an IPA DB entry"""
-    try:
-        # pylint: disable=E1101
-        StaticAnalyzerIPA.objects.filter(MD5=app_dict["md5_hash"]).update(
-            TITLE='Static Analysis',
-            APPNAMEX=app_dict["app_name"],
-            SIZE=app_dict["size"],
-            MD5=app_dict["md5_hash"],
-            SHA1=app_dict["sha1"],
-            SHA256=app_dict["sha256"],
-            INFOPLIST=info_dict["plist_xml"],
-            BINNAME=info_dict["bin_name"],
-            IDF=info_dict["id"],
-            VERSION=info_dict["ver"],
-            SDK=info_dict["sdk"],
-            PLTFM=info_dict["pltfm"],
-            MINX=info_dict["min"],
-            BIN_ANAL=bin_dict["bin_res"],
-            LIBS=bin_dict["libs"],
-            FILES=files,
-            SFILESX=sfiles,
-            STRINGS=bin_dict["strings"],
-            PERMISSIONS=info_dict["permissions"],
-            INSECCON=info_dict["inseccon"]
-        )
-
-    except:
-        PrintException("[ERROR] Updating DB")
-
-
-def create_db_entry_ipa(app_dict, info_dict, bin_dict, files, sfiles):
-    """Save an IOS IPA DB entry"""
-    try:
-        static_db = StaticAnalyzerIPA(
-            TITLE='Static Analysis',
-            APPNAMEX=app_dict["app_name"],
-            SIZE=app_dict["size"],
-            MD5=app_dict["md5_hash"],
-            SHA1=app_dict["sha1"],
-            SHA256=app_dict["sha256"],
-            INFOPLIST=info_dict["plist_xml"],
-            BINNAME=info_dict["bin_name"],
-            IDF=info_dict["id"],
-            VERSION=info_dict["ver"],
-            SDK=info_dict["sdk"],
-            PLTFM=info_dict["pltfm"],
-            MINX=info_dict["min"],
-            BIN_ANAL=bin_dict["bin_res"],
-            LIBS=bin_dict["libs"],
-            FILES=files,
-            SFILESX=sfiles,
-            STRINGS=bin_dict["strings"],
-            PERMISSIONS=info_dict["permissions"],
-            INSECCON=info_dict["inseccon"]
-        )
-        static_db.save()
-    except:
-        PrintException("[ERROR] Saving to DB")
-
-# IOS ZIP DB ENTRY
-
-
-def get_context_from_analysis_ios(app_dict, info_dict,code_dict, files, sfiles):
-    """Get the context for IOS ZIP from analysis results"""
-    try:
-        context = {
-            'title': 'Static Analysis',
-            'name': app_dict["app_name"],
-            'size': app_dict["size"],
-            'md5': app_dict["md5_hash"],
-            'sha1': app_dict["sha1"],
-            'sha256': app_dict["sha256"],
-            'plist': info_dict["plist_xml"],
-            'bin_name': info_dict["bin_name"],
-            'id': info_dict["id"],
-            'ver': info_dict["ver"],
-            'sdk': info_dict["sdk"],
-            'pltfm': info_dict["pltfm"],
-            'min': info_dict["min"],
-            'files': files,
-            'file_analysis': sfiles,
-            'api': code_dict["api"],
-            'insecure': code_dict["code_anal"],
-            'urls': code_dict["urlnfile"],
-            'domains': code_dict["domains"],
-            'emails': code_dict["emailnfile"],
-            'permissions': info_dict["permissions"],
-            'insecure_connections': info_dict["inseccon"]
-        }
-        return context
-    except:
-        PrintException("[ERROR] Rendering to Template")
-
-
-def get_context_from_db_entry_ios(db_entry):
-    """Return the context for IOS ZIP from DB"""
-    try:
-        print("\n[INFO] Analysis is already Done. Fetching data from the DB...")
-        context = {
-            'title': db_entry[0].TITLE,
-            'name': db_entry[0].APPNAMEX,
-            'size': db_entry[0].SIZE,
-            'md5': db_entry[0].MD5,
-            'sha1': db_entry[0].SHA1,
-            'sha256': db_entry[0].SHA256,
-            'plist': db_entry[0].INFOPLIST,
-            'bin_name': db_entry[0].BINNAME,
-            'id': db_entry[0].IDF,
-            'ver': db_entry[0].VERSION,
-            'sdk': db_entry[0].SDK,
-            'pltfm': db_entry[0].PLTFM,
-            'min': db_entry[0].MINX,
+            'ats_analysis': python_list(db_entry[0].ATS_ANALYSIS),
+            'binary_analysis': python_list(db_entry[0].BINARY_ANALYSIS),
+            'ios_api': python_dict(db_entry[0].IOS_API),
+            'code_analysis': python_dict(db_entry[0].CODE_ANALYSIS),
+            'file_analysis': python_list(db_entry[0].FILE_ANALYSIS),
+            'libraries': python_list(db_entry[0].LIBRARIES),
             'files': python_list(db_entry[0].FILES),
-            'file_analysis': db_entry[0].SFILESX,
-            'api': python_dict(db_entry[0].API),
-            'insecure': python_dict(db_entry[0].CODEANAL),
-            'urls': python_list(db_entry[0].URLnFile),
+            'urls': python_list(db_entry[0].URLS),
             'domains': python_dict(db_entry[0].DOMAINS),
-            'emails': python_list(db_entry[0].EmailnFile),
-            'permissions': python_list(db_entry[0].PERMISSIONS),
-            'insecure_connections': python_list(db_entry[0].INSECCON)
+            'emails': python_list(db_entry[0].EMAILS),
+            'strings': python_list(db_entry[0].STRINGS),
+            'firebase_urls': python_list(db_entry[0].FIREBASE_URLS),
+            'appstore_details': python_dict(db_entry[0].APPSTORE_DETAILS),
+
         }
         return context
-    except:
-        PrintException("[ERROR] Fetching from DB")
+    except Exception:
+        logger.exception('Fetching from DB')
 
 
-def update_db_entry_ios(app_dict, info_dict, code_dict, files, sfiles):
-    """Update an IOS ZIP DB entry"""
+def get_context_from_analysis(app_dict,
+                              info_dict,
+                              code_dict,
+                              bin_dict,
+                              all_files):
+    """Get the context for IPA/ZIP from analysis results."""
     try:
-        # pylint: disable=E1101
-        StaticAnalyzerIOSZIP.objects.filter(MD5=app_dict["md5_hash"]).update(
-            TITLE='Static Analysis',
-            APPNAMEX=app_dict["app_name"],
-            SIZE=app_dict["size"],
-            MD5=app_dict["md5_hash"],
-            SHA1=app_dict["sha1"],
-            SHA256=app_dict["sha256"],
-            INFOPLIST=info_dict["plist_xml"],
-            BINNAME=info_dict["bin_name"],
-            IDF=info_dict["id"],
-            VERSION=info_dict["ver"],
-            SDK=info_dict["sdk"],
-            PLTFM=info_dict["pltfm"],
-            MINX=info_dict["min"],
-            FILES=files,
-            SFILESX=sfiles,
-            API=code_dict["api"],
-            CODEANAL=code_dict["code_anal"],
-            URLnFile=code_dict["urlnfile"],
-            DOMAINS=code_dict["domains"],
-            EmailnFile=code_dict["emailnfile"],
-            PERMISSIONS=info_dict["permissions"],
-            INSECCON=info_dict["inseccon"])
+        context = {
+            'version': settings.MOBSF_VER,
+            'title': 'Static Analysis',
+            'file_name': app_dict['file_name'],
+            'app_name': info_dict['bin_name'],
+            'app_type': bin_dict['bin_type'],
+            'size': app_dict['size'],
+            'md5': app_dict['md5_hash'],
+            'sha1': app_dict['sha1'],
+            'sha256': app_dict['sha256'],
+            'build': info_dict['build'],
+            'app_version': info_dict['bundle_version_name'],
+            'sdk_name': info_dict['sdk'],
+            'platform': info_dict['pltfm'],
+            'min_os_version': info_dict['min'],
+            'bundle_id': info_dict['id'],
+            'bundle_url_types': info_dict['bundle_url_types'],
+            'bundle_supported_platforms':
+                info_dict['bundle_supported_platforms'],
+            'icon_found': app_dict['icon_found'],
+            'info_plist': info_dict['plist_xml'],
+            'binary_info': bin_dict['macho'],
+            'permissions': info_dict['permissions'],
+            'ats_analysis': info_dict['inseccon'],
+            'binary_analysis': bin_dict['bin_res'],
+            'ios_api': code_dict['api'],
+            'code_analysis': code_dict['code_anal'],
+            'file_analysis': all_files['special_files'],
+            'libraries': bin_dict['libs'],
+            'files': all_files['files_short'],
+            'urls': code_dict['urlnfile'],
+            'domains': code_dict['domains'],
+            'emails': code_dict['emailnfile'],
+            'strings': bin_dict['strings'],
+            'firebase_urls': code_dict['firebase'],
+            'appstore_details': app_dict['appstore'],
+        }
+        return context
+    except Exception:
+        logger.exception('Rendering to Template')
 
-    except:
-        PrintException("[ERROR] Updating DB")
 
-
-def create_db_entry_ios(app_dict, info_dict, code_dict, files, sfiles):
-    """Save an IOS ZIP DB entry"""
+def save_or_update(update_type,
+                   app_dict,
+                   info_dict,
+                   code_dict,
+                   bin_dict,
+                   all_files):
+    """Save/Update an IPA/ZIP DB entry."""
     try:
-        # pylint: disable=E1101
-        static_db = StaticAnalyzerIOSZIP(
-            TITLE='Static Analysis',
-            APPNAMEX=app_dict["app_name"],
-            SIZE=app_dict["size"],
-            MD5=app_dict["md5_hash"],
-            SHA1=app_dict["sha1"],
-            SHA256=app_dict["sha256"],
-            INFOPLIST=info_dict["plist_xml"],
-            BINNAME=info_dict["bin_name"],
-            IDF=info_dict["id"],
-            VERSION=info_dict["ver"],
-            SDK=info_dict["sdk"],
-            PLTFM=info_dict["pltfm"],
-            MINX=info_dict["min"],
-            FILES=files,
-            SFILESX=sfiles,
-            API=code_dict["api"],
-            CODEANAL=code_dict["code_anal"],
-            URLnFile=code_dict["urlnfile"],
-            DOMAINS=code_dict["domains"],
-            EmailnFile=code_dict["emailnfile"],
-            PERMISSIONS=info_dict["permissions"],
-            INSECCON=info_dict["inseccon"])
-        static_db.save()
-    except:
-        PrintException("[ERROR] Updating DB")
+        values = {
+            'FILE_NAME': app_dict['file_name'],
+            'APP_NAME': info_dict['bin_name'],
+            'APP_TYPE': bin_dict['bin_type'],
+            'SIZE': app_dict['size'],
+            'MD5': app_dict['md5_hash'],
+            'SHA1': app_dict['sha1'],
+            'SHA256': app_dict['sha256'],
+            'BUILD': info_dict['build'],
+            'APP_VERSION': info_dict['bundle_version_name'],
+            'SDK_NAME': info_dict['sdk'],
+            'PLATFORM': info_dict['pltfm'],
+            'MIN_OS_VERSION': info_dict['min'],
+            'BUNDLE_ID': info_dict['id'],
+            'BUNDLE_URL_TYPES': info_dict['bundle_url_types'],
+            'BUNDLE_SUPPORTED_PLATFORMS':
+                info_dict['bundle_supported_platforms'],
+            'ICON_FOUND': app_dict['icon_found'],
+            'INFO_PLIST': info_dict['plist_xml'],
+            'MACHO_INFO': bin_dict['macho'],
+            'PERMISSIONS': info_dict['permissions'],
+            'ATS_ANALYSIS': info_dict['inseccon'],
+            'BINARY_ANALYSIS': bin_dict['bin_res'],
+            'IOS_API': code_dict['api'],
+            'CODE_ANALYSIS': code_dict['code_anal'],
+            'FILE_ANALYSIS': all_files['special_files'],
+            'LIBRARIES': bin_dict['libs'],
+            'FILES': all_files['files_short'],
+            'URLS': code_dict['urlnfile'],
+            'DOMAINS': code_dict['domains'],
+            'EMAILS': code_dict['emailnfile'],
+            'STRINGS': bin_dict['strings'],
+            'FIREBASE_URLS': code_dict['firebase'],
+            'APPSTORE_DETAILS': app_dict['appstore'],
+        }
+        if update_type == 'save':
+            StaticAnalyzerIOS.objects.create(**values)
+        else:
+            StaticAnalyzerIOS.objects.filter(
+                MD5=app_dict['md5_hash']).update(**values)
+    except Exception:
+        logger.exception('Updating DB')
+    try:
+        values = {
+            'APP_NAME': info_dict['bin_name'],
+            'PACKAGE_NAME': info_dict['id'],
+            'VERSION_NAME': info_dict['bundle_version_name'],
+        }
+        RecentScansDB.objects.filter(
+            MD5=app_dict['md5_hash']).update(**values)
+    except Exception:
+        logger.exception('Updating RecentScansDB')

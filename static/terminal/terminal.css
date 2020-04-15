@@ -1,0 +1,79 @@
+
+::selection {
+  background: #FF5E99;
+}
+output {
+  color: #d2d2d2;
+}
+#shell {
+  padding: .1em 1.5em 1em 1em;
+  color: #d2d2d2;
+  background: black;
+  border-radius: 12px;
+}
+#shell output {
+  clear: both;
+  width: 100%;
+
+}
+#shell output h3 {
+  margin: 0;
+}
+#shell output pre {
+  margin: 0;
+}
+.input-line {
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: stretch;
+  display: -moz-box;
+  -moz-box-orient: horizontal;
+  -moz-box-align: stretch;
+  display: box;
+  box-orient: horizontal;
+  box-align: stretch;
+  clear: both;
+}
+.input-line > div:nth-child(2) {
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+  box-flex: 1;
+}
+.prompt {
+  white-space: nowrap;
+  color: #96b38a;
+  margin-right: 7px;
+  display: -webkit-box;
+  -webkit-box-pack: center;
+  -webkit-box-orient: vertical;
+  display: -moz-box;
+  -moz-box-pack: center;
+  -moz-box-orient: vertical;
+  display: box;
+  box-pack: center;
+  box-orient: vertical;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+.cmdline {
+  outline: none;
+  background-color: transparent;
+  margin: 0;
+  width: 100%;
+  font: inherit;
+  border: none;
+  color: inherit;
+}
+.ls-files {
+  -webkit-column-width: 100px;
+  -moz-column-width: 100px;
+  -o-column-width: 100px;
+  column-width: 100px;
+}
+
+.clean-text {
+    background-color: none;
+    background: none;
+    color: #ccc;
+}

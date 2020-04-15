@@ -1,83 +1,113 @@
 from django.conf.urls import url
-import MobSF.views
-import MobSF.rest_api
-import DynamicAnalyzer.views.android.dynamic
-import StaticAnalyzer.views.android.static_analyzer
-import StaticAnalyzer.views.android.java
-import StaticAnalyzer.views.android.smali
-import StaticAnalyzer.views.android.view_source
-import StaticAnalyzer.views.android.manifest_view
-import StaticAnalyzer.views.android.find
-import StaticAnalyzer.views.ios.static_analyzer
-import StaticAnalyzer.views.shared_func
-import StaticAnalyzer.views.windows
-import StaticAnalyzer.tests
-from MobSF import utils
 
+from DynamicAnalyzer.views.android import dynamic_analyzer as dz
+from DynamicAnalyzer.views.android import (
+    operations,
+    report,
+    tests_common,
+    tests_frida)
+
+from MobSF import utils
+from MobSF.views import home
+from MobSF.views.api import rest_api
+
+from StaticAnalyzer import tests
+from StaticAnalyzer.views import shared_func
+from StaticAnalyzer.views.android import (
+    find,
+    generate_downloads,
+    java,
+    manifest_view,
+    smali,
+    view_source,
+)
+from StaticAnalyzer.views.windows import windows
+from StaticAnalyzer.views.android import static_analyzer as android_sa
+from StaticAnalyzer.views.ios import static_analyzer as ios_sa
+from StaticAnalyzer.views.ios import view_source as io_view_source
 
 urlpatterns = [
-    # Examples:
-    url(r'^$', MobSF.views.index),
-    url(r'^upload/$', MobSF.views.upload),
-    url(r'^download/', MobSF.views.download),
-    url(r'^about$', MobSF.views.about),
-    url(r'^api_docs$', MobSF.views.api_docs),
-    url(r'^recent_scans$', MobSF.views.recent_scans),
-    url(r'^delete_scan/$', MobSF.views.delete_scan),
-    url(r'^search$', MobSF.views.search),
-    url(r'^error/$', MobSF.views.error),
-    url(r'^not_found/$', MobSF.views.not_found),
-    url(r'^zip_format/$', MobSF.views.zip_format),
-    url(r'^mac_only/$', MobSF.views.mac_only),
+    # General
+    url(r'^$', home.index, name='home'),
+    url(r'^upload/$', home.Upload.as_view),
+    url(r'^download/', home.download),
+    url(r'^about$', home.about, name='about'),
+    url(r'^api_docs$', home.api_docs, name='api_docs'),
+    url(r'^recent_scans/$', home.recent_scans, name='recent'),
+    url(r'^delete_scan/$', home.delete_scan),
+    url(r'^search$', home.search),
+    url(r'^error/$', home.error, name='error'),
+    url(r'^not_found/$', home.not_found),
+    url(r'^zip_format/$', home.zip_format),
+    url(r'^mac_only/$', home.mac_only),
 
-    # Android Static Analysis
-    url(r'^StaticAnalyzer/$',
-        StaticAnalyzer.views.android.static_analyzer.static_analyzer),
-    url(r'^StaticAnalyzer_iOS/$',
-        StaticAnalyzer.views.ios.static_analyzer.static_analyzer_ios),
-    url(r'^StaticAnalyzer_Windows/$',
-        StaticAnalyzer.views.windows.staticanalyzer_windows),
-    url(r'^ViewFile/$', StaticAnalyzer.views.ios.static_analyzer.view_file),
-    url(r'^ViewSource/$', StaticAnalyzer.views.android.view_source.run),
-    url(r'^PDF/$', StaticAnalyzer.views.shared_func.pdf),
-    url(r'^Smali/$', StaticAnalyzer.views.android.smali.run),
-    url(r'^Java/$', StaticAnalyzer.views.android.java.run),
-    url(r'^Find/$', StaticAnalyzer.views.android.find.run),
-    url(r'^ManifestView/$', StaticAnalyzer.views.android.manifest_view.run),
+    # Static Analysis
+    # Android
+    url(r'^StaticAnalyzer/$', android_sa.static_analyzer),
+    url(r'^ViewSource/$', view_source.run),
+    url(r'^Smali/$', smali.run),
+    url(r'^Java/$', java.run),
+    url(r'^Find/$', find.run),
+    url(r'^generate_downloads/$', generate_downloads.run),
+    url(r'^ManifestView/$', manifest_view.run),
+    # IOS
+    url(r'^StaticAnalyzer_iOS/$', ios_sa.static_analyzer_ios),
+    url(r'^ViewFile/$', io_view_source.run),
+    # Windows
+    url(r'^StaticAnalyzer_Windows/$', windows.staticanalyzer_windows),
+    # Shared
+    url(r'^PDF/$', shared_func.pdf),
+    # App Compare
+    url(r'^compare/(?P<hash1>[0-9a-f]{32})/(?P<hash2>[0-9a-f]{32})/$',
+        shared_func.compare_apps),
 
-    # Android Dynamic Analysis
-    url(r'^DynamicAnalyzer/$',
-        DynamicAnalyzer.views.android.dynamic.android_dynamic_analyzer),
-    url(r'^GetEnv/$', DynamicAnalyzer.views.android.dynamic.get_env),
-    url(r'^GetRes/$', DynamicAnalyzer.views.android.dynamic.get_res),
-    url(r'^MobSFCA/$', DynamicAnalyzer.views.android.dynamic.mobsf_ca),
-    url(r'^TakeScreenShot/$',
-        DynamicAnalyzer.views.android.dynamic.take_screenshot),
-    url(r'^ClipDump/$', DynamicAnalyzer.views.android.dynamic.clip_dump),
-    url(r'^ExportedActivityTester/$',
-        DynamicAnalyzer.views.android.dynamic.exported_activity_tester),
-    url(r'^ActivityTester/$',
-        DynamicAnalyzer.views.android.dynamic.activity_tester),
-    url(r'^FinalTest/$', DynamicAnalyzer.views.android.dynamic.final_test),
-    url(r'^DumpData/$', DynamicAnalyzer.views.android.dynamic.dump_data),
-    url(r'^ExecuteADB/$', DynamicAnalyzer.views.android.dynamic.execute_adb),
-    url(r'^Report/$', DynamicAnalyzer.views.android.dynamic.report),
-    url(r'^View/$', DynamicAnalyzer.views.android.dynamic.view),
-    url(r'^ScreenCast/$', DynamicAnalyzer.views.android.dynamic.screen_cast),
-    url(r'^Touch/$', DynamicAnalyzer.views.android.dynamic.touch),
-    url(r'^capfuzz$', DynamicAnalyzer.views.android.dynamic.capfuzz_start),
+    # Dynamic Analysis
+    url(r'^dynamic_analysis/$',
+        dz.dynamic_analysis,
+        name='dynamic'),
+    url(r'^android_dynamic/$',
+        dz.dynamic_analyzer,
+        name='dynamic_analyzer'),
+    url(r'^httptools$',
+        dz.httptools_start,
+        name='httptools'),
+    url(r'^logcat/$', dz.logcat),
+    # Android Operations
+    url(r'^mobsfy/$', operations.mobsfy),
+    url(r'^screenshot/$', operations.take_screenshot),
+    url(r'^execute_adb/$', operations.execute_adb),
+    url(r'^screen_cast/$', operations.screen_cast),
+    url(r'^touch_events/$', operations.touch),
+    url(r'^get_component/$', operations.get_component),
+    url(r'^mobsf_ca/$', operations.mobsf_ca),
+    # Dynamic Tests
+    url(r'^activity_tester/$', tests_common.activity_tester),
+    url(r'^download_data/$', tests_common.download_data),
+    url(r'^collect_logs/$', tests_common.collect_logs),
+    # Frida
+    url(r'^frida_instrument/$', tests_frida.instrument),
+    url(r'^live_api/$', tests_frida.live_api),
+    url(r'^frida_logs/$', tests_frida.frida_logs),
+    url(r'^list_frida_scripts/$', tests_frida.list_frida_scripts),
+    url(r'^get_script/$', tests_frida.get_script),
+
+
+    # Report
+    url(r'^dynamic_report/$', report.view_report),
+    url(r'^dynamic_view_file/$', report.view_file),
 
     # REST API
-    url(r'^api/v1/upload$', MobSF.rest_api.api_upload),
-    url(r'^api/v1/scan$', MobSF.rest_api.api_scan),
-    url(r'^api/v1/delete_scan$', MobSF.rest_api.api_delete_scan),
-    url(r'^api/v1/download_pdf$', MobSF.rest_api.api_pdf_report),
-    url(r'^api/v1/report_json$', MobSF.rest_api.api_json_report),
+    url(r'^api/v1/upload$', rest_api.api_upload),
+    url(r'^api/v1/scan$', rest_api.api_scan),
+    url(r'^api/v1/delete_scan$', rest_api.api_delete_scan),
+    url(r'^api/v1/download_pdf$', rest_api.api_pdf_report),
+    url(r'^api/v1/report_json$', rest_api.api_json_report),
+    url(r'^api/v1/view_source$', rest_api.api_view_source),
+    url(r'^api/v1/scans$', rest_api.api_recent_scans),
 
     # Test
-    url(r'^runtest/$', StaticAnalyzer.tests.start_test),
-    url(r'^runapitest/$', StaticAnalyzer.tests.start_api_test),
+    url(r'^tests/$', tests.start_test),
 
 ]
 
-utils.printMobSFverison()
+utils.print_version()

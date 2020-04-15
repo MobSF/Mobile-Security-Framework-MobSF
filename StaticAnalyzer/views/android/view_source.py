@@ -2,63 +2,95 @@
 """View Source of a file."""
 
 import io
+import logging
 import ntpath
-import re
 import os
 
-from django.shortcuts import render
-from django.http import HttpResponseRedirect
 from django.conf import settings
+from django.shortcuts import render
 from django.utils.html import escape
 
+from MobSF.forms import FormUtil
 from MobSF.utils import (
-    PrintException
-)
+    is_safe_path,
+    print_n_send_error_response)
 
-def run(request):
+from StaticAnalyzer.forms import (ViewSourceAndroidApiForm,
+                                  ViewSourceAndroidForm)
+
+logger = logging.getLogger(__name__)
+
+
+def run(request, api=False):
     """View the source of a file."""
     try:
-        fil = ''
-        match = re.match('^[0-9a-f]{32}$', request.GET['md5'])
-        if match and (
-                request.GET['file'].endswith('.java') or
-                request.GET['file'].endswith('.smali')
-        ):
+        logger.info('View Android Source File')
+        exp = 'Error Description'
+        if api:
+            fil = request.POST['file']
+            md5 = request.POST['hash']
+            typ = request.POST['type']
+            viewsource_form = ViewSourceAndroidApiForm(request.POST)
+        else:
             fil = request.GET['file']
             md5 = request.GET['md5']
-            if ("../" in fil) or ("%2e%2e" in fil) or (".." in fil) or ("%252e" in fil):
-                return HttpResponseRedirect('/error/')
-            else:
-                if fil.endswith('.java'):
-                    typ = request.GET['type']
-                    if typ == 'eclipse':
-                        src = os.path.join(settings.UPLD_DIR, md5+'/src/')
-                    elif typ == 'studio':
-                        src = os.path.join(settings.UPLD_DIR, md5+'/app/src/main/java/')
-                    elif typ == 'apk':
-                        src = os.path.join(settings.UPLD_DIR, md5+'/java_source/')
-                    else:
-                        return HttpResponseRedirect('/error/')
-                elif fil.endswith('.smali'):
-                    src = os.path.join(settings.UPLD_DIR, md5+'/smali_source/')
-                sfile = os.path.join(src, fil)
-                dat = ''
-                with io.open(
-                    sfile,
-                    mode='r',
-                    encoding="utf8",
-                    errors="ignore"
-                ) as file_pointer:
-                    dat = file_pointer.read()
+            typ = request.GET['type']
+            viewsource_form = ViewSourceAndroidForm(request.GET)
+        if not viewsource_form.is_valid():
+            err = FormUtil.errors_message(viewsource_form)
+            if api:
+                return err
+            return print_n_send_error_response(request, err, False, exp)
+        if fil.endswith('.java'):
+            if typ == 'eclipse':
+                src = os.path.join(settings.UPLD_DIR, md5 + '/src/')
+            elif typ == 'studio':
+                src = os.path.join(
+                    settings.UPLD_DIR, md5 + '/app/src/main/java/')
+            elif typ == 'apk':
+                src = os.path.join(
+                    settings.UPLD_DIR, md5 + '/java_source/')
+        elif fil.endswith('.smali'):
+            src = os.path.join(settings.UPLD_DIR,
+                               md5 + '/smali_source/')
         else:
-            return HttpResponseRedirect('/error/')
+            msg = 'Not Found'
+            doc = 'File not Found!'
+            is_api = False
+            if api:
+                is_api = True
+            return print_n_send_error_response(request, msg, is_api, doc)
+        sfile = os.path.join(src, fil)
+        if not is_safe_path(src, sfile):
+            msg = 'Path Traversal Detected!'
+            if api:
+                return {'error': 'Path Traversal Detected!'}
+            return print_n_send_error_response(request, msg, False, exp)
+        dat = ''
+        with io.open(
+            sfile,
+            mode='r',
+            encoding='utf8',
+            errors='ignore',
+        ) as file_pointer:
+            dat = file_pointer.read()
         context = {
             'title': escape(ntpath.basename(fil)),
             'file': escape(ntpath.basename(fil)),
-            'dat': dat
+            'dat': dat,
+            'type': 'java',
+            'sql': {},
+            'version': settings.MOBSF_VER,
         }
-        template = "static_analysis/view_source.html"
+        template = 'general/view.html'
+        if api:
+            return context
         return render(request, template, context)
-    except:
-        PrintException("[ERROR] Viewing Source")
-        return HttpResponseRedirect('/error/')
+    except Exception as exp:
+        logger.exception('Error Viewing Source')
+        msg = str(exp)
+        exp = exp.__doc__
+        if api:
+            return print_n_send_error_response(request, msg, True, exp)
+        else:
+            return print_n_send_error_response(request, msg, False, exp)

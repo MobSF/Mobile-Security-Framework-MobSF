@@ -1,0 +1,228 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis.">
+      <meta name="author" content="Ajin Abraham">
+      <link rel="icon" href="{% static "img/favicon.ico" %}">
+      <title>Mobile Security Framework - MobSF</title>
+      <link rel="stylesheet" href="{% static "adminlte/dashboard/css/adminlte.min.css" %}">
+      <link rel="stylesheet" href="{% static "adminlte/plugins/fontawesome-free/css/all.min.css" %}">
+      <link rel="stylesheet" href="{% static "landing/css/home.css" %}">
+      <!-- Google Font: Source Sans Pro -->
+      <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+   </head>
+   <body>
+   <div class="topnav">
+
+        <!-- Centered link -->
+        <div class="topnav-centered">
+         <a>
+            <img src="{% static "img/mobsf_logo.png" %}" width="20%" height="20%"/>
+        </a>
+        </div>
+        <!-- Left-aligned links (default) -->
+        <a href="{% url 'recent' %}">RECENT SCANS</a>
+        <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>
+
+        <!-- Right-aligned links -->
+        <div class="topnav-right">
+            <a href="{% url 'api_docs' %}">API DOCS</a>
+            <a href="{% url 'about' %}">ABOUT</a>
+        </div>
+
+        </div>
+      <div class="site-wrapper">
+         <div class="site-wrapper-inner">
+            <div class="cover-container">
+               <div class="masthead clearfix">
+                  <div align="center" class="inner">
+                  </div>
+               </div>
+               <div class="inner cover">
+                  <div style="visibility:hidden; opacity:0" id="drop">
+                     <div id="textnode">Drop anywhere!</div>
+                  </div>
+                  </br>
+                  <form id="upload_form" enctype="multipart/form-data" method="post">
+                     {% csrf_token %}
+                     <div class="fileUpload btn btn-default btn-lg" id="but">
+                        <input type="file" name="file" id="uploadFile" placeholder="Choose File" multiple>
+                        <span class="fas fa-cloud-upload-alt"></span>
+                        Upload &amp; Analyze
+                     </div>
+                     <br />
+                     <small><i>Drag &amp; Drop anywhere!</i></small>
+                     <h5 id="status"></h5>
+                     <progress id="progressBar" value="0" max="100" style="width:300px;visibility:hidden;" ></progress>
+                  </form>
+               </div>
+               <div class="mastfoot">
+                  <form action="/search" method="GET">
+                     <input name="md5" type="text" class="form-control" placeholder="Search MD5">
+                  </form>
+                  <div class="inner">
+                     <h6> <a href="{% url 'recent' %}">RECENT SCANS</a>  |  <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>  |  <a href="{% url 'api_docs' %}">API DOCS</a>   |  <a href="{% url 'about' %}">ABOUT</a></h6>
+                     </br>
+                     <p>&copy; {% now "Y" %}  Mobile Security Framework - MobSF {{ version }}</p>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+      <script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
+      <script>
+            function _(el){
+                return document.getElementById(el);
+            }
+            // Response Handler     
+            function responseHandler(json, isbutton) {
+                if (json.status === 'error') {
+                    _("status").innerText = json.description;
+                } else if (json.status === 'success') {
+                    i = 1;
+                    setInterval(function() {
+                        dot = '';
+                        for (x = 1; x <= i; x++) {
+                            dot += '.';
+                        }
+                        _("status").innerText = "Analyzing" + dot;
+                        i += 1;
+                        if (i == 5) {
+                            i = 1;
+                        }
+                    }, 2000);
+                    window.location.href = window.location.href + json.url;
+                }
+            }
+            function progressHandler(event) {
+                var percent = (event.loaded / event.total) * 100;
+                console.log("Uploaded..." + Math.round(percent));
+                _("progressBar").value = Math.round(percent);
+                _("status").innerText = Math.round(percent) + "% Uploaded...";
+            }
+            function completeHandler(event) {
+                var json = JSON.parse(event.target.responseText);
+                responseHandler(json);
+            }
+            function errorHandler(event) {
+                _("status").innerText = "Upload Failed!";
+            }
+            function abortHandler(event) {
+                _("status").innerText = "Upload Aborted!";
+            }
+          // Is valid file extentions
+          function isValidExt(file_name){
+                var val = file_name.toLowerCase();
+                var regex = new RegExp("(.*?)\.(ipa|apk|zip|appx)$");
+                val = val.replace(/^.*[\\\/]/, '');
+                if (!(regex.test(val))) {
+                    _('status').innerText = "Please upload APK/IPA/ZIP/APPX only!";
+                    return false;
+                }
+                return true;
+          }
+          // Is allowed mimetype
+          function isValidMime(file_mime){
+                if (file_mime.length < 1)
+                    // bypass if mime is not available
+                    return true; 
+                var supported = [{% for mime in mimes %}'{{mime}}',{% endfor %}];
+                if(supported.indexOf(file_mime) >-1)
+                    return true;
+                 _('status').innerText = "MIME type (" + file_mime + ") is not supported!";
+                return false;
+          }
+         // File Upload
+         function uploadFile(file, i) {
+           try {
+                if (!isValidExt(file.name) || !isValidMime(file.type)){
+                    return;
+                }
+                _("progressBar").style.visibility = "visible";
+                var url = '/upload/'
+                var xhr = new XMLHttpRequest()
+                xhr.open('POST', url, true)
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+                xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+                xhr.upload.addEventListener("progress", progressHandler, false);
+                xhr.addEventListener("load", completeHandler, false);
+                xhr.addEventListener("error", errorHandler, false);
+                xhr.addEventListener("abort", abortHandler, false);
+                var formdata = new FormData();
+                formdata.append("file", file);
+                xhr.send(formdata)
+            } catch (e) {
+                alert("Error:" + e);
+            }
+           }
+         
+           function handleFiles(files) {
+               files = [...files]
+               files.forEach(uploadFile)
+           }
+         
+           // Full Screen Drag & Drop File Upload
+           var lastTarget = null;
+           function isFile(evt) {
+               var dt = evt.dataTransfer;
+         
+               for (var i = 0; i < dt.types.length; i++) {
+                   if (dt.types[i] === "Files") {
+                       return true;
+                   }
+               }
+               return false;
+           }
+         
+           window.addEventListener("dragenter", function (e) {
+               if (isFile(e)) {
+                   lastTarget = e.target;
+                   document.querySelector("#drop").style.visibility = "";
+                   document.querySelector("#drop").style.opacity = 1;
+                   document.querySelector("#textnode").style.fontSize = "48px";
+               }
+           });
+         
+           window.addEventListener("dragleave", function (e) {
+               e.preventDefault();
+               if (e.target === document || e.target === lastTarget) {
+                   document.querySelector("#drop").style.visibility = "hidden";
+                   document.querySelector("#drop").style.opacity = 0;
+                   document.querySelector("#textnode").style.fontSize = "42px";
+               }
+           });
+         
+           window.addEventListener("dragover", function (e) {
+               e.preventDefault();
+           });
+         
+           window.addEventListener("drop", function (e) {
+               e.preventDefault();
+               document.querySelector("#drop").style.visibility = "hidden";
+               document.querySelector("#drop").style.opacity = 0;
+               document.querySelector("#textnode").style.fontSize = "42px";
+               if(e.dataTransfer.files.length > 0)
+               {
+               handleFiles(e.dataTransfer.files);
+               }
+           });
+
+            $(document).ready(function() {
+                // Button File Upload
+                $('input[type=file]').change(function() {
+                    _('status').innerText = "";
+                    if (_("uploadFile").files.length === 0) {
+                        return;
+                    }
+                    _("uploadFile").style.display = "none";
+                    var files = _("uploadFile").files;
+                    handleFiles(files);
+                });
+            });
+      </script>
+   </body>
+</html>

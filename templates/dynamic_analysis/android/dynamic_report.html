@@ -1,0 +1,686 @@
+{% extends "base/base_layout.html" %}
+   {% load static %}
+     {% block sidebar_option %}
+      sidebar-mini
+     {% endblock %}
+    {% block extra_css %}
+    <!-- DataTables -->
+    <link rel="stylesheet" href="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.css" %}">
+     <style type="text/css" media="print">
+        @page { size: landscape; }
+        @media print {
+          .btn, #scan_options  {
+            display: none;
+          }
+        }
+    </style>
+    {% endblock %}
+    {% block sidebar %}
+    <!-- Main Sidebar Container -->
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <!-- Sidebar user panel (optional) -->
+      <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+        <div class="info">
+          <a href="#" class="d-block">Dynamic Analyzer</a>
+        </div>
+      </div>
+
+      <!-- Sidebar Menu -->
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" role="menu" data-accordion="false">
+          
+          <li class="nav-item">
+            <a href="#information" class="nav-link">
+              <i class="nav-icon fas fa-info-circle"></i>
+              <p>
+                Information
+              </p>
+            </a>
+          </li>
+          {% if apimon %}
+           <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fa fa-mobile"></i>
+              <p>
+                Frida API Monitor
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              {% for api, details in apimon.items %}
+                <li class="nav-item">
+                <a href="#{{ api | slugify }}" class="nav-link">
+                  <i class="{{details.0|key:"icon"}} nav-icon"></i>
+                  <p>{{api}}</p>
+                </a>
+              </li>
+              {% endfor %}
+            </ul>
+          </li>
+            {% endif %}
+
+          {% if droidmon %}
+           <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fa fa-mobile"></i>
+              <p>
+                Xposed API Monitor
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              {% for api, details in droidmon.items %}
+                <li class="nav-item">
+                <a href="#{{ api | slugify }}" class="nav-link">
+                  <i class="{{details|key:"icon"}} nav-icon"></i>
+                  <p> {{details|key:"name"}}</p>
+                </a>
+              </li>
+              {% endfor %}
+            </ul>
+          </li>
+          {% endif %}
+
+           <li class="nav-item">
+            <a href="#exportedactivitytester" class="nav-link">
+              <i class="nav-icon fas fa-shapes"></i>
+              <p>
+                Exported Activity Tester
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#activitytester" class="nav-link">
+              <i class="nav-icon fa fa-language"></i>
+              <p>
+                Activity Tester
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#screenshots" class="nav-link">
+              <i class="nav-icon fas fa-images"></i>
+              <p>
+                Screenshots
+              </p>
+            </a>
+          </li>
+          <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fa fa-bug"></i>
+              <p>
+                Malware Analysis
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="#malware_check" class="nav-link">
+                  <i class="fab fa-searchengin nav-icon"></i>
+                  <p>Domain Malware Check</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+           <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fa fa-plus"></i>
+              <p>
+                Reconnaissance
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="#clipboard" class="nav-link">
+                  <i class="fas fa-paste nav-icon"></i>
+                  <p>Clipboard Dump</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#urls" class="nav-link">
+                  <i class="fas fa-globe nav-icon"></i>
+                  <p>URLs</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#emails" class="nav-link">
+                  <i class="fas fa-envelope nav-icon"></i>
+                  <p>Emails</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon far fa-copy"></i>
+              <p>
+                File Analysis
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="#sqlitedb" class="nav-link">
+                  <i class="fas fa-database nav-icon"></i>
+                  <p>SQLite Database</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#xmlfiles" class="nav-link">
+                  <i class="fas fa-file-code nav-icon"></i>
+                  <p>XML Files</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#other_files" class="nav-link">
+                  <i class="fas fa-file-contract nav-icon"></i>
+                  <p>Other Files</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a href="javascript:window.print()" class="nav-link">
+            <i class="nav-icon fas fa-print"></i>
+            <p>
+              Download / Print Report
+            </p>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <!-- /.sidebar-menu -->
+    </div>
+    <!-- /.sidebar -->
+{% endblock %}
+{% block content %}
+  <!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <div class="content-header">
+  <!--
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div id="mobsf_header" align="center">
+        </div>
+      </div>
+    </div>-->
+  </div>
+  <!-- /.content-header -->
+
+
+ <!-- Main content -->
+<a id="information" class="anchor"></a>
+<section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title"></h5>
+                <div class="row">
+                <div class="col-12">
+                  <p><strong><i class="fas fa-info-circle"></i> INFORMATION</strong></p>
+                   <div align="center">
+                      <p>
+                      {% if apimon %}
+                      <a target="_blank" class="btn btn-primary" role="button" href="../live_api/?hash={{ md5 }}&amp;package={{ package }}">API Monitor View</a>
+                      {% endif %}
+                      {% if fdlog %}
+                          <a target="_blank" class="btn btn-primary" role="button" href="../frida_logs/?hash={{ md5 }}&amp;package={{ package }}">Frida Logs View</a>
+                      {% endif %}
+                          <a class="btn btn-success" target="_blank" role="button" href="../httptools?project={{package}}">Start HTTPTools</a>
+                      </p>
+                      <p>
+                      {% if droidmon %}
+                         <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ md5 }}-x_logcat.txt">Droidmon API Monitor Logs</a>
+                      {% endif %}
+                      {% if apimon %}
+                         <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ md5 }}-api_monitor.txt">Frida API Monitor Logs</a>
+                      {% endif %}
+                      {% if fdlog %}
+                         <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ md5 }}-frida_out.txt">Frida Logs</a>
+                      {% endif %}
+                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ md5 }}-web_traffic.txt">HTTP(S) Traffic</a>
+                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ md5 }}-logcat.txt">Logcat Logs</a>
+                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ md5 }}-dump.txt">Dumpsys Logs</a> 
+                      <a class="btn btn-primary btn-sm" role="button" href="../download/{{ md5 }}-app_data.tar">Application Data</a>
+                      </p>
+                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+      </div>
+      <!-- /.col -->
+      <!-- row and container-->
+      </div>
+  </div>
+  </section>
+<!-- =========================end information==================================== -->
+
+{% for api, details in apimon.items %}
+<a id="{{api | slugify}}" class="anchor"></a>
+<section class="content">
+      <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+              <p><strong><i class="{{details.0|key:"icon"}}"></i> {{api | upper}}</strong></p>
+                <div class="table-responsive">
+                 <table class="table table-striped">
+                    <thead>
+                    <tr>
+                      <th>CLASS</th>
+                      <th>METHOD</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                      {% for call in details %}
+                        <tr>
+                        <td>{{ call|key:"class" }}</td>
+                        <td style="word-wrap: break-word;min-width: 160px;max-width: 160px;">
+                            <b>{{ call|key:"method" }}</b>
+                            <p> <br /><b><i>Arguments:</i></b> {{ call|key:"arguments" }} </p>
+                              {% if call|key:"result" %}
+                            <p><b><i>Result: </i></b>{{ call|key:"result"}} </p>
+                              {% endif %}
+                              {% if call|key:"returnValue" %}
+                            <p><b><i>Return Value: </i></b>{{ call|key:"returnValue"}} </p>
+                            {% endif %}
+                            {% if call|key:"decoded" %}
+                              <p> <b><i>Decoded String: </i></b>{{ call|key:"decoded" }} </p>
+                            {% endif %}
+                            <p> <b><i>Called From: </i></b>{{ call|key:"calledFrom" }} </p>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+                </div>
+              </div>
+            </div><!-- /.card -->
+            </div>
+            <!-- end row -->
+            </div>
+        </div>
+</section>
+{% endfor %}
+<!-- ===========================end apimon================================== -->
+
+{% for api, details in droidmon.items %}
+<a id="{{api}}" class="anchor"></a>
+<section class="content">
+      <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <p><strong><i class="{{details|key:"icon"}}"></i> {{details|key:"name"}}</strong></p>
+                <div class="table-responsive">
+                 <table class="table table-striped">
+                    <thead>
+                    <tr>
+                      <th>CLASS</th>
+                      <th>METHOD</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                     {% for call in details|key:"calls" %}
+                      <tr>
+                        <td>{{ call|key:"class" }}</td>
+                        <td style="word-wrap: break-word;min-width: 160px;max-width: 160px;">
+                            <b>{{ call|key:"method" }}</b>
+                            {% if call|key:"args" %}
+                            <br/><p> <b><i>Arguments:</i></b> {{ call|key:"args" }} </p>
+                            {% endif %}
+                            {% if call|key:"decoded" %}
+                              <p> <b><i>Decoded String: </i></b>{{ call|key:"decoded" }} </p>
+                            {% endif %}
+                              {% if call|key:"return" %}
+                              <br/><p><b><i>Return: </i></b>{{ call|key:"return" }} </p>
+                              {% endif %}
+                        </td>
+                     </tr>
+                   {% endfor %}
+                  </tbody>
+                </table>
+                </div>
+              </div>
+            </div><!-- /.card -->
+            </div>
+            <!-- end row -->
+            </div>
+        </div>
+</section>
+{% endfor %}
+<!-- ===========================end droidmon================================== -->
+
+
+<a id="exportedactivitytester" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+              <p>
+                <strong><i class="fas fa-shapes"></i> EXPORTED ACTIVITY TESTER</strong>
+            </p>
+             <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-striped">
+      
+                    {% for img, desc in expacttest.items %}
+                        <tr>
+                          <td><img alt="{{desc}}" src="../download/{{ md5 }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
+                        <td>{{ desc }}</td>
+                        </tr>
+                    {% endfor %}
+                  </table>
+              </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+
+</section>
+ <!-- ===========================end exported activity tester ================================== -->
+<a id="activitytester" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fa fa-language"></i> ACTIVITY TESTER</strong>
+             <p>
+             <div class="table-responsive">
+                  <table class="table table-bordered table-hover table-striped">
+                       {% for img, desc in acttest.items %}
+                          <tr>
+                            <td><img alt="{{desc}}" src="../download/{{ md5 }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
+                          <td>{{ desc }}</td>
+                          </tr>
+                      {% endfor %}
+                    </table>
+                </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end activity tester ================================== -->
+ <a id="screenshots" class="anchor"></a>
+ <section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+              <p>
+             <strong><i class="fas fa-images"></i> SCREENSHOTS</strong>
+             </p>
+               <div class="list-group">
+                      {% for i in screenshots %}
+                        <img alt="Screenshot" src="../download/{{ md5 }}-screenshots-apk/{{ i}}" class="img-thumbnail" height="600" width="350">
+                      {% endfor %}
+              </div>
+              
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end screenshots ================================== -->
+ <a id="malware_check" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fab fa-searchengin"></i> DOMAIN MALWARE CHECK</strong>
+             </p>
+              <div class="table-responsive">
+              {% if domains %} 
+                <table id="table_malware" class="table table-bordered table-hover table-striped">
+                  <thead>
+                  <tr>
+                     <th>DOMAIN</th>
+                     <th>STATUS</th>
+                     <th>GEOLOCATION</th>
+                  </tr>
+                 </thead>
+                 <tbody>
+                 {% for domain, details in domains.items %}
+                  <tr><td>{{domain}}</td><td> 
+
+                    {% if details|key:"bad" == "yes" %}
+                    <span class="badge bg-danger">malware</span><br/>
+                      <pre>
+                      <strong>URL: </strong>{{details|key:"domain_or_url"}}
+                      <strong>IP: </strong><span class="badge bg-danger">{{details|key:"ip"}}</span>
+                      <strong>Description: </strong>{{details|key:"desc"}}
+                      </pre>
+                  {% else %}
+                    <span class="badge bg-success">good</span><br/>
+                  {% endif %}
+                  </td>
+                  <td>
+                    {% if details|key:"geolocation" %}
+                      <strong>IP: </strong>{{details|key:"geolocation"|key:"ip"}}  <br/>
+                      <strong>Country: </strong>{{details|key:"geolocation"|key:"country_long"}} <br/>
+                      <strong>Region: </strong>{{details|key:"geolocation"|key:"region"}} <br/>
+                      <strong>City: </strong>{{details|key:"geolocation"|key:"city"}} <br/>
+                      <strong>Latitude: </strong>{{details|key:"geolocation"|key:"latitude"}} <br/>
+                      <strong>Longitude: </strong>{{details|key:"geolocation"|key:"longitude"}} <br/>
+                      <strong>View: <a target="_blank" href="http://maps.google.com/maps?q={{details|key:"geolocation"|key:"latitude"}},{{details|key:"geolocation"|key:"longitude"}}">Google Map</a>
+
+                    {% else %}
+                    No Geolocation information available.
+                    {% endif %}
+                  </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+            </table>    
+             {% endif %}
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end domain malware check ================================== -->
+
+  <a id="clipboard" class="anchor"></a>
+ <section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+              <p>
+             <strong><i class="fas fa-paste"></i> CLIPBOARD DUMP</strong>
+             </p>
+              <div class="list-group">
+                {% for f in clipboard %}
+                    {{ f }} <br>
+                {% endfor %}
+
+              </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end clip dump ================================== -->
+ <a id="urls" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-globe"></i> URLS</strong>
+             </p>
+                {% if urls %} 
+                <div class="list-group">
+                  {% for f in urls %}
+                        {{ f}} <br>
+                  {% endfor %}
+
+              {% endif %}
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end urls ================================== -->
+ <a id="emails" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-envelope"></i> EMAILS</strong>
+             </p>
+                 {% if emails %} 
+                <div class="list-group">
+                  {% for f in emails %}
+                        {{ f}} <br>
+                  {% endfor %}
+
+              {% endif %}
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end emails ================================== -->
+<a id="sqlitedb" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-database"></i> SQLITE DATABASE</strong>
+             </p>
+              <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-striped">
+                     {% for file in sqlite %}
+                     <tr><td><a href="../dynamic_view_file/?file={{file|key:"file"}}&amp;md5={{md5}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td><tr>
+                    {% endfor %}
+                    </table>
+              </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end sqlite ================================== -->
+ <a id="xmlfiles" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-file-code"></i> XML FILES</strong>
+             </p>
+               <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-striped">
+                     {% for file in xml %}
+                     <tr><td><a href="../dynamic_view_file/?file={{file|key:"file"}}&amp;md5={{md5}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td><tr>
+                    {% endfor %}
+                    </table>
+              </div>
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+</section>
+ <!-- ===========================end xml files ================================== -->
+ <a id="other_files" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-file-contract"></i> OTHER FILES</strong>
+             </p>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-striped">
+                     {% for file in others %}
+                     <tr><td><a href="../dynamic_view_file/?file={{file|key:"file"}}&amp;md5={{md5}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td><tr>
+                    {% endfor %}
+                    </table>
+                </div>
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+</section>
+ <!-- ===========================end other files ================================== -->
+<!-- end of contents -->
+</div>
+{% endblock %}
+<!--end new UI-->
+{% block extra_scripts %}
+<!-- DataTables -->
+<script src="{% static "adminlte/plugins/datatables/jquery.dataTables.min.js" %} "></script>
+<script src="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.js" %}"></script>
+<script>
+  $(function () {
+    // Datatable
+    $('table').DataTable({
+      "paging": true,
+      "lengthChange": false,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": true,
+      "responsive": true,
+    });
+  });
+  // Navbar Active
+    $(".nav-link").on("click", function() {
+    $(".nav-link").removeClass("active");
+    $(this).addClass("active");
+  });
+</script>
+{% endblock %}
