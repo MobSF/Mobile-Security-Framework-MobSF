@@ -235,7 +235,7 @@ IPA_RULES = [
         'owasp': '',
         'owasp-mstg': OWASP_MSTG['code-9'],
         'conditional': {
-            'desc': 'fPIE -pie flag is Found',
+            'desc': 'fPIE -pie flag is not Found',
             'detailed_desc': (
                 'with Position Independent Executable (PIE) '
                 'flag. So Address Space Layout Randomization '
