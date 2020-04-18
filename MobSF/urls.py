@@ -47,7 +47,7 @@ urlpatterns = [
     url(r'^ViewSource/$', view_source.run),
     url(r'^Smali/$', smali.run),
     url(r'^Java/$', java.run),
-    url(r'^Find/$', find.run),
+    url(r'^Find/$', find.run, name="find_files"),
     url(r'^generate_downloads/$', generate_downloads.run),
     url(r'^ManifestView/$', manifest_view.run),
     # IOS
@@ -102,7 +102,7 @@ urlpatterns = [
     url(r'^api/v1/delete_scan$', rest_api.api_delete_scan),
     url(r'^api/v1/download_pdf$', rest_api.api_pdf_report),
     url(r'^api/v1/report_json$', rest_api.api_json_report),
-    url(r'^api/v1/view_source$', rest_api.api_view_source),
+    url(r'^api/v1/view_source$', rest_api.api_view_source, name='api_view_source'),
     url(r'^api/v1/scans$', rest_api.api_recent_scans),
 
     # Test

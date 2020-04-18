@@ -6,6 +6,18 @@
 {% block extra_css %}
 <!-- DataTables -->
 <link rel="stylesheet" href="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.css" %}">
+<link rel="stylesheet" href="{% static "jsTree/themes/default/style.min.css" %}" />
+<link rel="stylesheet" href="{% static "jsTree/custom.css" %}" />
+<link rel="stylesheet" href="{% static "others/css/xcode.min.css" %}">
+<style>
+pre {
+  white-space: pre-wrap;       /* css-3 */
+  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+  white-space: -pre-wrap;      /* Opera 4-6 */
+  white-space: -o-pre-wrap;    /* Opera 7 */
+  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+  }
+</style>
 {% endblock %}
 {% block content %}
 <div class="content-wrapper">
@@ -18,29 +30,45 @@
               <div class="card-body">
                 <h3 class="box-title"><i class="fab fa-java"></i> Java Source</h3>
                 <div class="row">
-                <div class="float-right col-3">
-                 <form class="navbar-form navbar-right" action="../Find/" method="POST">
-                    {% csrf_token %} 
-                    <br/>
-                  <strong>Find in files:</strong> <input type="text" name="q" class="form-control" placeholder="Find....">
-                  <input type="hidden" name="md5" value="{{hash}}">
-                  <input type="hidden" name="code" value="java">
-                </form>
+                <div class="float-right col-4 search-container">
+                     <div class="navbar-form navbar-right search-box col-4" >
+                      <strong>Find by filename:</strong> <input type="text" id="filename_search" class="form-control" placeholder="Filename filter">
+                    </div>
+                     <div class="navbar-form navbar-right search-box col-4" >
+                      <strong>Find by content:</strong> <input type="text" id="content_search" class="form-control" placeholder="Content search">
+                    </div>
+                    <div class="col-2"><button type="button" id="clear-button" class="btn btn-primary">Clear</button></div>
                 </div>
                  <div class="col-12">
-                <div class="table-responsive">
-                  <table class="table table-bordered table-hover table-striped">
-                    <thead>
-                    <tr>
-                        <th>Files</th>
-                    </tr>
-                    <tbody>
-                    {% for file in files %}
-                      <tr><td><a href="../ViewSource/?file={{ file }}&amp;md5={{ hash }}&amp;type={{ type }}">{{ file }}</a></td></tr>
-                    {% endfor %}
-                    </tbody>
-                  </table>
-               </div>
+                    <!-- BEGIN: File Frame. -->
+                    <div id="fileframe">
+                        <!-- BEGIN: File Tree. -->
+                        <div id="filetree">
+                            <ul>
+                                {% for f in subfiles %}{{ f }}{% endfor %}
+                            </ul>
+                        </div>
+                        <!-- END: File Tree. -->
+                    </div>
+                    <!-- END: File Frame. -->
+                    <!-- BEGIN: Content Frame. -->
+                    <div id="contentframe">
+                        <!-- BEGIN: Content. -->
+                        <div id="content">
+                            <h2>
+                                File: <span id="filename"></span>
+                            </h2>
+                            <pre>
+                                <code class="java" id="fileoutput"></code>
+                            </pre>
+                        </div>
+                        <!-- END: Content. -->
+                    </div>
+                    <!-- END: Content Frame. -->
+                    <!-- Clear floats. -->
+                    <div class="clear">
+                        <br clear="all" />
+                    </div>
                </div>
                </div>
           </div>
@@ -51,21 +79,145 @@
 </div>
 {% endblock %}
 {% block extra_scripts %}
+
 <!-- DataTables -->
 <script src="{% static "adminlte/plugins/datatables/jquery.dataTables.min.js" %} "></script>
 <script src="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.js" %}"></script>
+<script type="text/javascript" src="{% static "others/js/highlight.min.js" %}"></script>
+<script type="text/javascript" src="{% static "others/js/asciidoc.min.js" %}"></script>
+
+<script src="{% static "jsTree/jstree.min.js" %}"></script>
+
 <script>
-  $(function () {
-    // Datatable
-    $('table').DataTable({
-      "paging": true,
-      "lengthChange": false,
-      "searching": true,
-      "ordering": true,
-      "info": true,
-      "autoWidth": true,
-      "responsive": true,
-    });
-  });
+    var curr_selected;
+    // global that indicates if the search callback should search the id attribute also
+    var search_id_too = false;
+
+    var file_tree = $('#filetree')
+      // listen for event
+      .on('changed.jstree', function (e, data) {
+        var i, j, r = [];
+        console.log(data.selected[0].id);
+        for(i = 0, j = data.selected.length; i < j; i++) {
+            curr_selected = data.instance.get_node(data.selected[i]);
+            if ($(curr_selected)[0].li_attr.class == "file"){
+                $("span#filename").text( curr_selected.text );
+                ShowFile($(curr_selected)[0].id);
+            }
+        }
+      })
+      // create the instance
+      .jstree({
+          "search" : {
+            search_callback: search_for_multiple_words,
+            show_only_matches: true
+          },
+          "plugins" : [ "search" ]
+        });
+
+      // Filename search
+      var to = false;
+      $('#filename_search').keyup(function () {
+        if(to) { clearTimeout(to); }
+        to = setTimeout(function () {
+          search_id_too = false;
+          var v = $('#filename_search').val();
+          $('#content_search').val('');
+          file_tree.jstree('close_all');
+          file_tree.jstree(true).search(v);
+        }, 250);
+      });
+
+
+    // Custom Callback that both searches for any possible word from the query and searches also in the id attribute
+     function search_for_multiple_words(str, node) {
+          // Thanks to https://github.com/nrpieper for the hack
+          //search for any of the words entered
+          var word, words = [];
+          var searchFor = str.toLowerCase().replace(/^\s+/g, '').replace(/\s+$/g, '');
+          if (searchFor.indexOf(' ') >= 0) {
+            words = searchFor.split(' ');
+          } else {
+            words = [searchFor];
+          }
+          for (var i = 0; i < words.length; i++) {
+            word = words[i];
+            if ((node.text || "").toLowerCase().includes(word)){
+                return true;
+            }
+            if (search_id_too && (node.li_attr.id || "").toLowerCase().replace('\\\\', '\\').includes(word)){
+                return true
+            }
+          }
+          return false;
+        }
+
+      var to_content = false;
+      $('#content_search').keyup(function () {
+        if(to_content) { clearTimeout(to_content); }
+        to_content = setTimeout(function () {
+          $('#filename_search').val('');
+          search_id_too = true;
+
+          var v = $('#content_search').val();
+          if (!v){
+            //search term is empty
+            return false;
+          }
+            var fd = new FormData();
+            fd.append('md5', "{{ hash }}");
+            fd.append('q', v);
+            fd.append('code', "java");
+            fd.append('api', true);
+            fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+           $.ajax({
+                url: "{% url 'find_files' %}",
+                type:"POST",
+                processData:false,
+                contentType: false,
+                data: fd,
+                    complete: function(data){
+                        // The response from the server is "double" 'stringified' json
+                        response = JSON.parse(JSON.parse(data.responseText));
+                        console.log("Content search ajax response:");
+                        console.log(response);
+                        file_tree.jstree('close_all');
+                        file_tree.jstree(true).search(response.matches.join(' '));
+                    }
+                });
+        }, 1000);
+      });
+
+    function ShowFile( strPath ){
+        $.ajax
+        ({
+          type: "POST",
+          url: "{% url "api_view_source" %}",
+          dataType: 'json',
+          headers: {
+            "Authorization": "{{ api_key }}"
+          },
+          data: {
+                type: "apk",
+                hash: "{{ hash }}",
+                file: strPath
+            },
+          success: function (strFileData){
+                var code_block = $( "code#fileoutput" )
+                code_block.text( strFileData.dat );
+                hljs.highlightBlock(code_block[0]);
+                // Jump back to top.
+                window.location.hash = "content";
+          }
+        });
+        }
+        $("#clear-button").click(function(){
+            file_tree.jstree(true).clear_search();
+            file_tree.jstree('close_all');
+            $(".search-box").find("input").val('');
+            $("code#fileoutput").text('');
+            $("span#filename").text('');
+        });
 </script>
+
 {% endblock %}
