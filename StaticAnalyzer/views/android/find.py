@@ -22,11 +22,10 @@ def run(request):
     try:
         match = re.match('^[0-9a-f]{32}$', request.POST['md5'])
         if not match:
-            raise ValueError("md5 value error")
+            raise ValueError('Invalid MD5 hash')
         md5 = request.POST['md5']
         query = request.POST['q']
         code = request.POST['code']
-        is_api = 'api' in request.POST
         matches = []
         if code == 'java':
             src = os.path.join(settings.UPLD_DIR, md5 + '/java_source/')
