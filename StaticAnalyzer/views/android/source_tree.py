@@ -4,13 +4,17 @@
 import logging
 import os
 import re
-import shutil
 
 from django.conf import settings
-from django.shortcuts import render, loader
-from django.utils.html import escape
+from django.shortcuts import (
+    loader,
+    render,
+)
 
-from MobSF.utils import print_n_send_error_response, api_key
+from MobSF.utils import (
+    api_key,
+    print_n_send_error_response,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -22,14 +26,17 @@ def tree_index_maker(root_dir):
         for mfile in files:
             t = os.path.join(root, mfile)
             if os.path.isdir(t):
-                yield loader.render_to_string('static_analysis/treeview_folder.html',
-                                              {'file': mfile,
-                                               'subfiles': _index(os.path.join(root, t))})
+                yield loader.render_to_string(
+                    'static_analysis/treeview_folder.html',
+                    {'file': mfile,
+                     'subfiles': _index(os.path.join(root, t))},
+                )
                 continue
-            yield loader.render_to_string('static_analysis/treeview_file.html',
-                                          {'file': mfile,
-                                           'path': t[t.find('java_source') + 12: -len(mfile)]
-                                           })
+            yield loader.render_to_string(
+                'static_analysis/treeview_file.html',
+                {'file': mfile,
+                 'path': t[t.find('java_source') + 12: -len(mfile)]},
+            )
     return _index(root_dir)
 
 
@@ -64,10 +71,12 @@ def run(request):
             'type': typ,
             'source_type': 'smali' if typ == 'smali' else 'java',
             'version': settings.MOBSF_VER,
-            'api_key': api_key()
+            'api_key': api_key(),
         }
         template = 'static_analysis/source_tree.html'
         return render(request, template, context)
     except Exception:
         logger.exception('Getting Source Files')
-        return print_n_send_error_response(request, 'Error Getting Source Files')
+        return print_n_send_error_response(
+            request,
+            'Error Getting Source Files')
