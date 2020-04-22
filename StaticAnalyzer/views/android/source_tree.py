@@ -41,7 +41,6 @@ def run(request):
         typ = request.GET['type']
         if not match:
             return print_n_send_error_response(request, 'Scan hash not found')
-        java_files = []
         md5 = request.GET['md5']
         if typ == 'eclipse':
             src = os.path.join(settings.UPLD_DIR, md5 + '/src/')
@@ -49,7 +48,9 @@ def run(request):
             src = os.path.join(settings.UPLD_DIR, md5
                                + '/app/src/main/java/')
         elif typ == 'apk':
-            src = os.path.join(settings.UPLD_DIR, md5 + "/java_source/")
+            src = os.path.join(settings.UPLD_DIR, md5 + '/java_source/')
+        elif typ == 'smali':
+            src = os.path.join(settings.UPLD_DIR, md5 + '/smali_source/')
         else:
             return print_n_send_error_response(
                 request,
@@ -58,14 +59,15 @@ def run(request):
         tree_index = tree_index_maker(src)
         context = {
             'subfiles': tree_index,
-            'title': 'Java Source',
+            'title': 'Smali Source' if typ == 'smali' else 'Java Source',
             'hash': md5,
             'type': typ,
+            'source_type': 'smali' if typ == 'smali' else 'java',
             'version': settings.MOBSF_VER,
             'api_key': api_key()
         }
-        template = 'static_analysis/java.html'
+        template = 'static_analysis/source_tree.html'
         return render(request, template, context)
     except Exception:
-        logger.exception('Getting Java Files')
-        return print_n_send_error_response(request, 'Error Getting Java Files')
+        logger.exception('Getting Source Files')
+        return print_n_send_error_response(request, 'Error Getting Source Files')

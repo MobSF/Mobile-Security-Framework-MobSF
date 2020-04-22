@@ -16,10 +16,8 @@ from StaticAnalyzer.views import shared_func
 from StaticAnalyzer.views.android import (
     find,
     generate_downloads,
-    java,
     manifest_view,
-    smali,
-    view_source,
+    source_tree,
 )
 from StaticAnalyzer.views.windows import windows
 from StaticAnalyzer.views.android import static_analyzer as android_sa
@@ -44,9 +42,8 @@ urlpatterns = [
     # Static Analysis
     # Android
     url(r'^StaticAnalyzer/$', android_sa.static_analyzer),
-    url(r'^ViewSource/$', view_source.run),
-    url(r'^Smali/$', smali.run),
-    url(r'^Java/$', java.run),
+    url(r'^Smali/$', source_tree.run),
+    url(r'^Java/$', source_tree.run),
     url(r'^Find/$', find.run, name="find_files"),
     url(r'^generate_downloads/$', generate_downloads.run),
     url(r'^ManifestView/$', manifest_view.run),

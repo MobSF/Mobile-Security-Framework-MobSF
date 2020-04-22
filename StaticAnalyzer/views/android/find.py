@@ -9,7 +9,6 @@ import shutil
 import json
 
 from django.conf import settings
-from django.shortcuts import render
 from django.http import JsonResponse
 from django.utils.html import escape
 
@@ -59,17 +58,7 @@ def run(request):
                     ) as file_pointer:
                         dat = file_pointer.read()
                     if query in dat:
-                        if is_api:
-                            matches.append(escape(fileparam))
-                        else:
-                            matches.append((
-                                '<a href="../ViewSource/?file={}'
-                                '&md5={}'
-                                '&type=apk">{}</a>').format(
-                                    escape(fileparam),
-                                    md5,
-                                    escape(fileparam)),
-                            )
+                        matches.append(escape(fileparam))
         flz = len(matches)
         context = {
             'title': 'Search Results',
@@ -78,11 +67,7 @@ def run(request):
             'found': str(flz),
             'version': settings.MOBSF_VER,
         }
-        template = 'general/search.html'
-        if is_api:
-            return JsonResponse(json.dumps(context), safe=False)
-        else:
-            return render(request, template, context)
+        return JsonResponse(json.dumps(context), safe=False)
     except Exception:
         logger.exception('Searching Failed')
         return print_n_send_error_response(request, 'Searching Failed')

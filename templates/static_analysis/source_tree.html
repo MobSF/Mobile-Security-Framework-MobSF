@@ -4,8 +4,6 @@
       sidebar-collapse
 {% endblock %}
 {% block extra_css %}
-<!-- DataTables -->
-<link rel="stylesheet" href="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.css" %}">
 <link rel="stylesheet" href="{% static "jsTree/themes/default/style.min.css" %}" />
 <link rel="stylesheet" href="{% static "jsTree/custom.css" %}" />
 <link rel="stylesheet" href="{% static "others/css/xcode.min.css" %}">
@@ -28,7 +26,11 @@ pre {
             <div class="col-lg-12">
             <div class="card">
               <div class="card-body">
-                <h3 class="box-title"><i class="fab fa-java"></i> Java Source</h3>
+                <h3 class="box-title">{% if source_type == 'java' %}
+                                        <i class="fab fa-java"></i> Java Source</h3>
+                                      {% else %}
+                                        <i class="fa fa-code"></i> Smali Source</h3>
+                                      {% endif %}
                 <div class="row">
                 <div class="float-right col-4 search-container">
                      <div class="navbar-form navbar-right search-box col-4" >
@@ -59,7 +61,7 @@ pre {
                                 File: <span id="filename"></span>
                             </h2>
                             <pre>
-                                <code class="java" id="fileoutput"></code>
+                                <code class="{{ source_type }}" id="fileoutput"></code>
                             </pre>
                         </div>
                         <!-- END: Content. -->
@@ -80,9 +82,6 @@ pre {
 {% endblock %}
 {% block extra_scripts %}
 
-<!-- DataTables -->
-<script src="{% static "adminlte/plugins/datatables/jquery.dataTables.min.js" %} "></script>
-<script src="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.js" %}"></script>
 <script type="text/javascript" src="{% static "others/js/highlight.min.js" %}"></script>
 <script type="text/javascript" src="{% static "others/js/asciidoc.min.js" %}"></script>
 
@@ -128,6 +127,28 @@ pre {
         }, 250);
       });
 
+    function getUrlParameter(sParam) {
+        var sPageURL = window.location.search.substring(1),
+            sURLVariables = sPageURL.split('&'),
+            sParameterName,
+            i;
+
+        for (i = 0; i < sURLVariables.length; i++) {
+            sParameterName = sURLVariables[i].split('=');
+
+            if (sParameterName[0] === sParam) {
+                return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+            }
+        }
+    };
+
+    var file = getUrlParameter("file");
+    if (file){
+        search_id_too = true;
+        file_tree.jstree(true).search(file);
+        ShowFile(file);
+        $("span#filename").text(file);
+    }
 
     // Custom Callback that both searches for any possible word from the query and searches also in the id attribute
      function search_for_multiple_words(str, node) {
@@ -167,7 +188,7 @@ pre {
             var fd = new FormData();
             fd.append('md5', "{{ hash }}");
             fd.append('q', v);
-            fd.append('code', "java");
+            fd.append('code', "{{ source_type }}");
             fd.append('api', true);
             fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
            $.ajax({

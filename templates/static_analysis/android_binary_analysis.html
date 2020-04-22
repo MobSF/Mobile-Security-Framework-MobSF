@@ -591,7 +591,7 @@
                   <p>
                     <a target="_blank" href="../ManifestView/?md5={{ md5 }}&amp;type={{ app_type }}&amp;bin=1" role="button" class="btn btn-primary"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
                     <a href="../Java/?md5={{ md5 }}&amp;type={{ app_type }}" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Java</a>
-                    <a href="../Smali/?md5={{ md5 }}" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Smali</a>
+                    <a href="../Smali/?md5={{ md5 }}&amp;type=smali" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Smali</a>
                     </p>
                     <p>
                     <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type=java" class="btn btn-warning" role="button"> <i class="fa fa-download"></i> Download Java Code</a>
@@ -794,7 +794,7 @@
                     </td>
                     <td>
                     {% for path in details|key:"path" %}
-                    <a href="../ViewSource/?file={{ path }}&amp;md5={{ md5 }}&amp;type={{app_type}}"> {{ path }}</a>
+                    <a href="../Java/?md5={{ md5 }}&amp;type={{ app_type }}&amp;file={{ path }}"> {{ path }}</a>
                     <br/>
                     {% endfor %}
                     </td>
@@ -1000,7 +1000,7 @@
                   </td>
                   <td>
                   {% for path in details|key:"path" %}
-                   <a href="../ViewSource/?file={{ path }}&amp;md5={{ md5 }}&amp;type={{app_type}}"> {{ path }}</a>
+                   <a href="../Java/?md5={{ md5 }}&amp;type={{ app_type }}&amp;file={{ path }}"> {{ path }}</a>
                   <br/>
                   {% endfor %}
                   </td>
@@ -1286,7 +1286,7 @@
                         </td>
 
                        <td>
-                          <a href="../ViewSource/?file={{urldict|key:"path"}}&amp;md5={{ md5}}&amp;type={{app_type}}">{{urldict|key:"path"}}</a>
+                          <a href="../Java/?md5={{ md5 }}&amp;type={{ app_type }}&amp;file={{urldict|key:"path"}}">{{urldict|key:"path"}}</a>
                        </td>
                     </tr>
                   {% endfor %} 
@@ -1377,7 +1377,7 @@
                        {% endfor %}
                         </td>
                        <td>
-                          <a href="../ViewSource/?file={{email_dict|key:"path"}}&amp;md5={{ md5}}&amp;type={{app_type}}">{{email_dict|key:"path"}}</a>
+                          <a href="../Java/?md5={{ md5 }}&amp;type={{ app_type }}&amp;file={{email_dict|key:"path"}}">{{email_dict|key:"path"}}</a>
                        </td>
                     </tr>
                   {% endfor %} 
