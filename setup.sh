@@ -1,4 +1,5 @@
 #!/bin/bash
+unamestr=$(uname)
 if ! [ -x "$(command -v python3)" ]; then
   echo '[ERROR] python3 is not installed.' >&2
   exit 1
@@ -8,14 +9,17 @@ echo '[INSTALL] Found Python3'
 python3 -m pip -V
 if [ $? -eq 0 ]; then
   echo '[INSTALL] Found pip'
-  python3 -m pip install --upgrade pip
+  if [[ $unamestr == 'Darwin' ]]; then
+      python3 -m pip install --no-cache-dir --upgrade pip
+  else
+      python3 -m pip install --no-cache-dir --upgrade pip --user
+  fi
 else
   echo '[ERROR] python3-pip not installed'
   exit 1
 fi
 
-unamestr=$(uname)
-if [[ "$unamestr" == 'Darwin' ]]; then
+if [[ $unamestr == 'Darwin' ]]; then
     export ARCHFLAGS='-arch x86_64'
     export LDFLAGS='-L/usr/local/opt/openssl/lib'
     export CFLAGS='-I/usr/local/opt/openssl/include'
@@ -53,11 +57,21 @@ else
 fi
 
 echo '[INSTALL] Installing dex enabled yara-python'
-pip install --upgrade wheel
-rm -rf yara-python
-pip wheel --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.11.0
-pip install --no-index --find-links=yara-python yara-python
-rm -rf yara-python
+pip install --no-index --find-links=scripts/wheels yara-python
+if [ $? -ne 0 ]; then
+    echo '[INSTALL] Building dex enabled yara-python'
+    pip install --upgrade wheel
+    rm -rf yara-python
+    pip wheel --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.11.0
+    if [ $? -ne 0 ]; then
+        echo '[ERROR] APKiD installation failed. Have you installed all the requirements?'
+        echo 'Please install all the requirements and run setup.bat again.'
+        echo 'Follow the official documentation: https://mobsf.github.io/docs/'
+        read -p 'Press enter to continue'
+    fi
+    pip install --no-index --find-links=yara-python yara-python
+    rm -rf yara-python
+fi
 
 echo '[INSTALL] Installing Requirements'
 pip install --no-cache-dir -r requirements.txt

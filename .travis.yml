@@ -1,53 +1,79 @@
 language: python
+name: Ubuntu 18.04
+dist: bionic
+python:
+- '3.6'
+- '3.7'
+- '3.8'
+os: linux
 git:
   depth: 25
   quiet: true
 cache: pip
+addons:
+  apt:
+    packages:
+    - libpng16-16
+    - xfonts-75dpi
+    - xfonts-base
+    - libffi-dev
+    - libxml2-dev
+    - libxslt1-dev
 jobs:
   include:
-  - name: Python 3.7 on Xenial Linux
-    os: linux
-    dist: xenial
-    python: 3.7
-    before_install:
-    - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
-    - sudo apt-get install -y libpng16-16 xfonts-75dpi xfonts-base libffi-dev	
-      libxml2-dev libxslt1-dev 
-    - wget https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.xenial_amd64.deb
-    - sudo dpkg -i wkhtmltox_0.12.5-1.xenial_amd64.deb
-  - name: Python 3.7 on OSX, Xcode 11
+  - name: Python 3.7.7 on macOS 10.14.6
     os: osx
-    language: shell
     osx_image: xcode11
+    language: shell
     before_install:
-    - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
-    - wget https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox-0.12.5-1.macos-cocoa.pkg
-    - sudo installer -pkg wkhtmltox-0.12.5-1.macos-cocoa.pkg -target /
-  - name: "Python 3.7 on Windows (no lint)"
+    - python3 --version
+    - export WKHTML_URL=https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/
+    - export WKHTML_PKG=wkhtmltox-0.12.5-1.macos-cocoa.pkg
+    - wget ${WKHTML_URL}${WKHTML_PKG}
+    - sudo installer -pkg ${WKHTML_PKG} -target /
+  - name: Python 3.6.8 on Windows 10
     os: windows
     language: shell
-    env:
-    - JAVA_HOME="/c/Program Files/OpenJDK/jdk-13.0.2"
-    - PATH=/c/Python37:/c/Python37/Scripts:$JAVA_HOME/bin:$PATH
     before_install:
-    - export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
-    - choco install python --version 3.7.5
+    - choco install python --version 3.6.8
+    - python --version
     - choco install wkhtmltopdf --version 0.12.5
     - choco install openjdk --version 13.0.102
+    env:
+    - PATH=/c/Python36:/c/Python36/Scripts:$PATH
+    - JAVA_HOME="/c/Program Files/OpenJDK/jdk-13.0.2"
+  - name: Python 3.7.5 on Windows 10
+    os: windows
+    language: shell
+    before_install:
+    - choco install python --version 3.7.5
+    - python --version
+    - choco install wkhtmltopdf --version 0.12.5
+    - choco install openjdk --version 13.0.102
+    env:
+    - PATH=/c/Python37:/c/Python37/Scripts:$PATH
+    - JAVA_HOME="/c/Program Files/OpenJDK/jdk-13.0.2"
+before_install:
+- export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
+- export WKHTML_URL=https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/
+- export WKHTML_DEB=wkhtmltox_0.12.5-1.bionic_amd64.deb
+- if [ "$TRAVIS_OS_NAME" = "linux" ]; then wget ${WKHTML_URL}${WKHTML_DEB} && sudo
+  dpkg -i ${WKHTML_DEB}; fi
 install:
 - set PYTHONIOENCODING=UTF8
 - pip3 install --upgrade pip || python -m pip install --upgrade pip
-before_script:
 - pip3 install --upgrade wheel tox
-- pip3 wheel --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.11.0
-- pip3 install --no-index --find-links=yara-python yara-python
+before_script:
+- pip3 install --no-index --find-links=scripts/wheels yara-python ||  (pip3 wheel
+  --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" "git+https://github.com/VirusTotal/yara-python.git@v3.11.0" &&
+  pip3 install --no-index --find-links=yara-python yara-python)
 - pip3 install -r requirements.txt
 - python3 manage.py makemigrations || python manage.py makemigrations
 - python3 manage.py migrate || python manage.py migrate
 - git submodule update --init --recursive
 script:
-- if [ "$TRAVIS_OS_NAME" != "windows" ]; then tox -e lint; fi
+- tox -e lint
 - python3 manage.py test || python manage.py test
 notifications:
-  slack: mobsf:4Ce13XOnMRzFG3bqQ0Hap7OP
-  
+  slack:
+    secure: C5is6tke369xvmcX4RnL+zL7SWYBrwezjTr9FMmQw5/EJwI3Uu73hnIYqZ4Gf/LtYm1bLO0AArSExZbWyEFNI5g87xl94VAM8qafZRBUI7rdNnvt9YMPVGC3pX6fPgh7qY6/ziZ/B2nouSEKsXPIy8pPiHRGjy5y7jC+UmUoYkIan9BXW3Pb6GJC6eUFXZtv7WOuhcnNUlVqWqM81DLqUCVpfCWcrnOMHBqJ91fBqZ/anb9ZjodJBvG6uWIzqnRiaKs7+InG4dogfIOFiNefqi/qom+uwIEbYVFV4MNMPWwtAEbj1IYp6Uygbsg864UWlfmNgsVty5eur3THiMp+oa+tXKONRrjjyG848w6V2+UNKeaGSBxwYv78TBYSk1v7ipUsr+v+DIIcKP1OInm6bWuxoCG6YuliuldIZsS8KXCR7/u7/x5RfAFW8VtgP3JGowJXBCvDkOyNnQTyGVZSyh3ez51YlZb7T6Wqcgj0w0vDiVzWZDcP9AZCEeOzpndP7R+sOOZCS8G6XUSjCZIxOtKl6PAtmdbe7i+WrpCnL3R34yBzKBJAa69yZHKkkk0MlnEDof1g/G1JVu51Q3xEPglRL5eC1nGFRgJf7lhwpbZ/EuWmpRxPpZtTF5DPevC73TWxI4GHVH3tx9VVM3SkQS65M35z+w/nsJzSa3AFfHM=

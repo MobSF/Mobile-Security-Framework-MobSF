@@ -22,7 +22,6 @@ ENV JDK_URL="https://download.java.net/java/GA/jdk12/GPL/${JDK_FILE}" \
 # See https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
 RUN apt update -y && apt install -y \
     build-essential \
-    git \
     libssl-dev \
     libffi-dev \
     libxml2-dev \
@@ -65,11 +64,8 @@ WORKDIR /root/Mobile-Security-Framework-MobSF
 COPY ./requirements.txt .
 
 # Install Requirements
-RUN pip3 install --upgrade wheel && \
-    pip3 wheel --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.11.0 && \
-    pip3 install --no-index --find-links=yara-python yara-python && \
-    rm -rf yara-python
-RUN pip3 install --quiet --no-cache-dir -r requirements.txt
+RUN pip3 install --no-index --find-links=scripts/wheels yara-python && \
+    pip3 install --quiet --no-cache-dir -r requirements.txt
 
 # Cleanup
 RUN \
