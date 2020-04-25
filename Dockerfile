@@ -1,5 +1,5 @@
 # Base image
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 # Labels and Credits
 LABEL \
@@ -36,7 +36,7 @@ RUN apt update -y && apt install -y \
     fontconfig \
     xfonts-75dpi \
     xfonts-base \
-    python3.6 \
+    python3.8 \
     python3-dev \
     python3-pip \
     wget \
