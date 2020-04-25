@@ -49,7 +49,7 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 
 ## MobSF Support
 
-* **Free Support:** For free limited support, questions and help, join our Slack channel ![MobSF Slack Channel](https://user-images.githubusercontent.com/4301109/76471928-6e1a9180-63ca-11ea-88fb-b43d75153f74.png) [![join_mobsf_slack](https://img.shields.io/badge/mobsf%20slack-join-green?logo=slack&labelColor=4A154B)](https://mobsf.slack.com/join/shared_invite/enQtNzM2NTAyNzA1MjgxLTdjMzkzNDc3ZjdiMjkwZTZhMmFhNDlkZmMwZDhjNDNmYTAzYWE5NGZlMDIzYzliNTdiMDQ2MTRlYjU1MjkyNGM)
+* **Free Support:** For free limited support, questions and help, join our Slack channel [![Join_MobSF_Slack](https://img.shields.io/badge/mobsf%20slack-join-green?logo=slack&labelColor=4A154B)](https://mobsf.slack.com/join/shared_invite/enQtNzM2NTAyNzA1MjgxLTdjMzkzNDc3ZjdiMjkwZTZhMmFhNDlkZmMwZDhjNDNmYTAzYWE5NGZlMDIzYzliNTdiMDQ2MTRlYjU1MjkyNGM)
 * **Enterprise Support:** For enterprise support, priority feature requests and live training, see [MobSF Support Packages](https://mobsf.github.io/Mobile-Security-Framework-MobSF/support.html)
 
 
