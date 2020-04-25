@@ -414,11 +414,16 @@ def get_random():
 def find_process_by(name):
     """Return a set of process path matching name."""
     proc = set()
-    for p in psutil.process_iter(attrs=['name', 'exe', 'cmdline']):
-        if (name == p.info['name'] or p.info['exe']
-            and os.path.basename(p.info['exe']) == name
-                or p.info['cmdline'] and p.info['cmdline'][0] == name):
-            proc.add(p.info['exe'])
+    try:
+        for p in psutil.process_iter(attrs=['name', 'exe', 'cmdline']):
+            if (name == p.info['name'] or p.info['exe']
+                and os.path.basename(p.info['exe']) == name
+                    or p.info['cmdline'] and p.info['cmdline'][0] == name):
+                import pdb; pdb.set_trace()
+                proc.add(p.info['exe'])
+    except FileNotFoundError:
+        # Bug in OSX 10.6 ?
+        pass
     return proc
 
 
@@ -453,6 +458,7 @@ def get_adb():
             adb_loc = find_process_by('adb.exe')
         else:
             adb_loc = find_process_by('adb')
+        
         if len(adb_loc) > 1:
             logger.warning('Multiple ADB locations found. '
                            'Set adb path, ADB_BINARY in MobSF/settings.py'
