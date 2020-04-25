@@ -6,18 +6,21 @@ Mobile Security Framework (MobSF) is an automated, all-in-one mobile application
 
 Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82e3a63c-4813-11e6-9430-6015d98aeaab.png) in India
 
-[![python](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/)
+[![join_mobsf_slack](https://img.shields.io/badge/mobsf%20slack-join-green?logo=slack&labelColor=4A154B)](https://mobsf.slack.com/join/shared_invite/enQtNzM2NTAyNzA1MjgxLTdjMzkzNDc3ZjdiMjkwZTZhMmFhNDlkZmMwZDhjNDNmYTAzYWE5NGZlMDIzYzliNTdiMDQ2MTRlYjU1MjkyNGM)
+[![python](https://img.shields.io/badge/python-3.7-blue.svg?logo=python)](https://www.python.org/downloads/)
 [![platform](https://img.shields.io/badge/platform-osx%2Flinux%2Fwindows-green.svg)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/)
 [![License](https://img.shields.io/:license-GPL--3.0--only-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/cefbfb063c044b069e38af3501c1ee8e)](https://www.codacy.com/app/ajinabraham/Mobile-Security-Framework-MobSF)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=MobSF_Mobile-Security-Framework-MobSF&metric=alert_status)](https://sonarcloud.io/dashboard?id=MobSF_Mobile-Security-Framework-MobSF)
+
 [![Build Status](https://travis-ci.com/MobSF/Mobile-Security-Framework-MobSF.svg?branch=master)](https://travis-ci.com/MobSF/Mobile-Security-Framework-MobSF)
 [![Requirements Status](https://pyup.io/repos/github/MobSF/Mobile-Security-Framework-MobSF/shield.svg)](https://pyup.io/repos/github/MobSF/Mobile-Security-Framework-MobSF/)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/cefbfb063c044b069e38af3501c1ee8e)](https://www.codacy.com/app/ajinabraham/Mobile-Security-Framework-MobSF)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=MobSF_Mobile-Security-Framework-MobSF&metric=alert_status)](https://sonarcloud.io/dashboard?id=MobSF_Mobile-Security-Framework-MobSF)
+
+
 [![ToolsWatch Best Security Tools 2016](https://img.shields.io/badge/ToolsWatch-Rank%205%20%7C%20Year%202016-red.svg)](http://www.toolswatch.org/2017/02/2016-top-security-tools-as-voted-by-toolswatch-org-readers/)
 [![ToolsWatch Best Security Tools 2017](https://img.shields.io/badge/ToolsWatch-Rank%209%20%7C%20Year%202017-red.svg)](http://www.toolswatch.org/2018/01/black-hat-arsenal-top-10-security-tools/)
 [![Blackhat Arsenal Asia 2015](https://img.shields.io/badge/Black%20Hat%20Arsenal-Asia%202015-blue.svg)](https://www.blackhat.com/asia-15/arsenal.html#yso-mobile-security-framework)
 [![Blackhat Arsenal Asia 2018](https://img.shields.io/badge/Black%20Hat%20Arsenal-Asia%202018-blue.svg)](https://www.blackhat.com/asia-18/arsenal.html#mobile-security-framework-mobsf)
-
 
 MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-release) and [BlackArch](https://blackarch.org/mobile.html)
 
