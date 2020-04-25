@@ -61,16 +61,17 @@ ENV JAVA_HOME="/jdk-12"
 ENV PATH="$JAVA_HOME/bin:$PATH"
 
 WORKDIR /root/Mobile-Security-Framework-MobSF
-COPY ./requirements.txt .
+
+# Copy source code
+COPY . .
 
 # Install Requirements
-RUN pip3 install --no-index --find-links=scripts/wheels yara-python && \
+RUN pip3 install --no-index --find-links=scripts/wheels/ yara-python && \
     pip3 install --quiet --no-cache-dir -r requirements.txt
 
 # Cleanup
 RUN \
     apt remove -y \
-        git \
         libssl-dev \
         libffi-dev \
         libxml2-dev \
@@ -80,10 +81,8 @@ RUN \
     apt clean && \
     apt autoclean && \
     apt autoremove -y && \
-    rm -rf /var/lib/apt/lists/* /tmp/* > /dev/null 2>&1
-
-# Copy source code
-COPY . .
+    rm -rf /var/lib/apt/lists/* /tmp/* > /dev/null 2>&1 && \
+    rm -rf /root/Mobile-Security-Framework-MobSF/scripts/wheels > /dev/null 2>&1
 
 # Enable Use Home Directory and set adb path
 RUN sed -i 's/USE_HOME = False/USE_HOME = True/g' MobSF/settings.py && \
