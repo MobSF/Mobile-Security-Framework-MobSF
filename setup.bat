@@ -1,12 +1,12 @@
 @echo off
 where python >nul 2>&1 && (
-  deactivate
+  deactivate >nul 2>&1
   echo [INSTALL] Found Python3
-  pip3 >nul 2>&1 && (
-    echo [INSTALL] Found pip3
-    python -m pip install --upgrade pip
+  pip >nul 2>&1 && (
+    echo [INSTALL] Found pip
+    python -m pip install --no-cache-dir --upgrade pip
   ) || (
-    echo [ERROR] pip3 is not available in PATH
+    echo [ERROR] pip is not available in PATH
     pause
     exit /b
   )
@@ -39,22 +39,25 @@ where python >nul 2>&1 && (
   set INCLUDE=C:\Program Files\OpenSSL-Win64\include;%INCLUDE%
 
   echo [INSTALL] Installing dex enabled yara-python
-  pip install --upgrade wheel
-  rmdir /q /s yara-python >nul 2>&1
-  pip wheel --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" "git+https://github.com/VirusTotal/yara-python.git@v3.11.0"
-  pip install --no-index --find-links=yara-python yara-python
-  rmdir /q /s yara-python >nul 2>&1
-  pip install apkid==2.1.0
-  echo [INSTALL] Running APKiD Test
-  apkid DynamicAnalyzer\tools\onDevice\mobsf_agents\ClipDump.apk
-  if %errorlevel% neq 0 (
-    echo [ERROR] APKiD installation failed. Have you installed Visual Studio BuildTools?
-    pause
-    exit /b %errorlevel%
+  pip install --no-index --find-links=scripts/wheels yara-python && (
+    rem
+  ) || (
+    echo [INSTALL] Building dex enabled yara-python
+    pip install --upgrade wheel
+    rmdir /q /s yara-python >nul 2>&1
+    pip wheel --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" "git+https://github.com/VirusTotal/yara-python.git@v3.11.0" && (
+      pip install --no-index --find-links=yara-python yara-python
+    ) || (
+      echo [ERROR] APKiD installation failed. Have you installed Visual Studio Build Tools and other requirements?
+      echo Please install all the requirements and run setup.bat again.
+      echo Follow the official documentation: https://mobsf.github.io/docs/
+      pause
+    )
+    rmdir /q /s yara-python >nul 2>&1
   )
 
   echo [INSTALL] Installing Requirements
-  pip install -r requirements.txt
+  pip install --no-cache-dir -r requirements.txt
   
   echo [INSTALL] Clean Up
   CALL scripts/clean.bat y
