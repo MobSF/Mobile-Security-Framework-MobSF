@@ -414,11 +414,15 @@ def get_random():
 def find_process_by(name):
     """Return a set of process path matching name."""
     proc = set()
-    for p in psutil.process_iter(attrs=['name', 'exe', 'cmdline']):
-        if (name == p.info['name'] or p.info['exe']
-            and os.path.basename(p.info['exe']) == name
-                or p.info['cmdline'] and p.info['cmdline'][0] == name):
-            proc.add(p.info['exe'])
+    try:
+        for p in psutil.process_iter(attrs=['name', 'exe', 'cmdline']):
+            if (name == p.info['name'] or p.info['exe']
+                and os.path.basename(p.info['exe']) == name
+                    or p.info['cmdline'] and p.info['cmdline'][0] == name):
+                proc.add(p.info['exe'])
+    except FileNotFoundError:
+        # Bug in OSX 10.6 ?
+        pass
     return proc
 
 
