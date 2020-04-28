@@ -414,15 +414,9 @@ def get_random():
 def find_process_by(name):
     """Return a set of process path matching name."""
     proc = set()
-    try:
-        for p in psutil.process_iter(attrs=['name', 'exe', 'cmdline']):
-            if (name == p.info['name'] or p.info['exe']
-                and os.path.basename(p.info['exe']) == name
-                    or p.info['cmdline'] and p.info['cmdline'][0] == name):
-                proc.add(p.info['exe'])
-    except FileNotFoundError:
-        # Bug in OSX 10.6 ?
-        pass
+    for p in psutil.process_iter(attrs=['name']):
+        if (name == p.info['name']):
+            proc.add(p.exe())
     return proc
 
 
@@ -446,6 +440,10 @@ def get_device():
 def get_adb():
     """Get ADB binary path."""
     try:
+        adb_loc = None
+        adb_msg = ('Set adb path, ADB_BINARY in MobSF/settings.py'
+                   ' with same adb binary used'
+                   ' by Genymotion VM/Emulator AVD.')
         global ADB_PATH
         if (len(settings.ADB_BINARY) > 0
                 and is_file_exists(settings.ADB_BINARY)):
@@ -458,15 +456,14 @@ def get_adb():
         else:
             adb_loc = find_process_by('adb')
         if len(adb_loc) > 1:
-            logger.warning('Multiple ADB locations found. '
-                           'Set adb path, ADB_BINARY in MobSF/settings.py'
-                           ' with same adb binary used'
-                           ' by Genymotion VM/Emulator AVD.')
+            logger.warning('Multiple ADB locations found. %s', adb_msg)
             logger.warning(adb_loc)
         if adb_loc:
             ADB_PATH = adb_loc.pop()
             return ADB_PATH
     except Exception:
+        if not adb_loc:
+            logger.warning('Cannot find adb! %s', adb_msg)
         logger.exception('Getting ADB Location')
     finally:
         if ADB_PATH:
