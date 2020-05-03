@@ -20,12 +20,8 @@ ENV JDK_URL="https://download.java.net/java/GA/jdk12/GPL/${JDK_FILE}" \
     WKH_URL="https://builds.wkhtmltopdf.org/0.12.1.4/${WKH_FILE}"
 
 # See https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
-RUN apt update -y && apt install -y \
+RUN apt update -y && apt install -y  --no-install-recommends \
     build-essential \
-    libssl-dev \
-    libffi-dev \
-    libxml2-dev \
-    libxslt1-dev \
     locales \
     sqlite3 \
     fontconfig-config \
