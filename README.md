@@ -30,7 +30,7 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 **Send Bitcoins:** [![Donate Bitcoin](https://user-images.githubusercontent.com/4301109/30631105-cb8063c8-9e00-11e7-95df-43c20b840e52.png)](https://mobsf.github.io/Mobile-Security-Framework-MobSF/donate.html)
 
 ## Documentation
-[![See MobSF Documentation](https://user-images.githubusercontent.com/4301109/70686099-3855f780-1c79-11ea-8141-899e39459da2.png)](https://mobsf.github.io/docs) 
+[![See MobSF Documentation](https://user-images.githubusercontent.com/4301109/70686099-3855f780-1c79-11ea-8141-899e39459da2.png)](https://mobsf.github.io/docs)
 [中文](https://mobsf.github.io/docs/#/zh-cn/)
 
 * Try MobSF Static Analyzer Online:
