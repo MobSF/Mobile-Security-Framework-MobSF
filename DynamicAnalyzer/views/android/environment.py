@@ -297,9 +297,14 @@ class Environment:
                                 'ro.serialno'], True)
         out += self.adb_command(['getprop',
                                 'ro.build.user'], True)
+        out += self.adb_command(['getprop',
+                                'ro.product.manufacturer'], True)
+
         if b'EMULATOR' in out:
             return 'emulator'
         elif b'genymotion' in out:
+            return 'genymotion'
+        elif b'Genymotion' in out:
             return 'genymotion'
         else:
             return ''
@@ -503,6 +508,8 @@ class Environment:
             frida_arch = 'arm64'
         elif arch == 'x86':
             frida_arch = 'x86'
+        elif arch == 'x86_64':
+            frida_arch = 'x86_64'
         else:
             logger.error('Make sure a Genymotion Android x86 VM'
                          ' or Android Studio Emulator'
