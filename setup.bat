@@ -33,7 +33,7 @@ where python >nul 2>&1 && (
   rmdir "venv" /q /s >nul 2>&1
   python -m venv ./venv
   .\venv\Scripts\activate
-  python -m pip install --upgrade pip
+  python -m pip install --upgrade pip wheel
 
   set LIB=C:\Program Files\OpenSSL-Win64\lib;%LIB%
   set INCLUDE=C:\Program Files\OpenSSL-Win64\include;%INCLUDE%
@@ -43,7 +43,6 @@ where python >nul 2>&1 && (
     rem
   ) || (
     echo [INSTALL] Building dex enabled yara-python
-    pip install --upgrade wheel
     rmdir /q /s yara-python >nul 2>&1
     pip wheel --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" "git+https://github.com/VirusTotal/yara-python.git@v3.11.0" && (
       pip install --no-index --find-links=yara-python yara-python
