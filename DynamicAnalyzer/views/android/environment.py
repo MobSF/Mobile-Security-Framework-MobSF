@@ -294,17 +294,20 @@ class Environment:
         out = self.adb_command(['getprop',
                                 'ro.boot.serialno'], True)
         out += self.adb_command(['getprop',
-                                'ro.serialno'], True)
+                                 'ro.serialno'], True)
         out += self.adb_command(['getprop',
-                                'ro.build.user'], True)
+                                 'ro.build.user'], True)
         out += self.adb_command(['getprop',
-                                'ro.product.manufacturer'], True)
-
+                                 'ro.manufacturer.geny-def'], True)
+        out += self.adb_command(['getprop',
+                                 'ro.product.manufacturer.geny-def'], True)
+        ver = self.adb_command(['getprop',
+                                'ro.genymotion.version'],
+                               True).decode('utf-8', 'ignore')
         if b'EMULATOR' in out:
             return 'emulator'
-        elif b'genymotion' in out:
-            return 'genymotion'
-        elif b'Genymotion' in out:
+        elif (b'genymotion' in out.lower()
+                or any(char.isdigit() for char in ver)):
             return 'genymotion'
         else:
             return ''
