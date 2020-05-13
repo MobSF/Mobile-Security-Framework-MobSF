@@ -62,7 +62,7 @@ def create_ca():
     time.sleep(2)
 
 
-def get_ca_dir():
+def get_ca_file():
     """Get CA Dir."""
     from mitmproxy import ctx
     ca_dir = Path(ctx.mitmproxy.options.CONF_DIR).expanduser()
