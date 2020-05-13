@@ -44,12 +44,6 @@ from StaticAnalyzer.views.shared_func import (firebase_analysis,
 
 from androguard.core.bytecodes import apk
 
-try:
-    import io
-    StringIO = io.StringIO  # noqa F401
-except ImportError:
-    from io import StringIO  # noqa F401
-
 
 logger = logging.getLogger(__name__)
 

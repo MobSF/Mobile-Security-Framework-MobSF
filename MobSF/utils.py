@@ -358,7 +358,6 @@ def is_internet_available():
             return True
         except Exception:
             return False
-    return False
 
 
 def sha256(file_path):
@@ -519,7 +518,7 @@ def first_run(secret_file, base_dir, mobsf_home):
             secret.write(secret_key)
             secret.close()
         except IOError:
-            Exception('Secret file generation failed' % secret_file)
+            raise Exception('Secret file generation failed' % secret_file)
         # Run Once
         make_migrations(base_dir)
         migrate(base_dir)

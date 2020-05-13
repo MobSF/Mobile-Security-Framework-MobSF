@@ -515,14 +515,14 @@ def manifest_analysis(mfxml, man_data_dic):
                                             elif protlevel == 'signatureOrSystem':
                                                 ret_list.append(
                                                     ('a_prot_sign_sys', (itemname, item, perm + prot), (an_or_a, itemname)))
-                                        else:
-                                            ret_list.append(
-                                                ('a_prot_unknown', (itemname, item, perm), (an_or_a, itemname)))
-                                            if itemname in ['Activity', 'Activity-Alias']:
-                                                exported.append(item)
-                                            exp_count[cnt_id] = exp_count[
-                                                cnt_id] + 1
-                                        # Esteve 24.07.2016 - end
+                                    else:
+                                        ret_list.append(
+                                            ('a_prot_unknown', (itemname, item, perm), (an_or_a, itemname)))
+                                        if itemname in ['Activity', 'Activity-Alias']:
+                                            exported.append(item)
+                                        exp_count[cnt_id] = exp_count[
+                                            cnt_id] + 1
+                                    # Esteve 24.07.2016 - end
                                 else:
                                     # Esteve 24.07.2016 - begin - At this point, we are dealing with components that do not have a permission neither at the component level nor at the
                                     # application level. As they are exported,

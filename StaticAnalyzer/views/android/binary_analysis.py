@@ -201,9 +201,9 @@ def check_elf_built(f):
         8: [3],  # EM_MIPS=8,    R_MIPS_REL32=3,
     }
     elffile = TinyELFFile(f)
-    for i in range(elffile.header['e_shnum']):
+    for j in range(elffile.header['e_shnum']):
         section_header = elffile.decode_shdr(
-            elffile.header['e_shoff'] + i * elffile.header['e_shentsize'])
+            elffile.header['e_shoff'] + j * elffile.header['e_shentsize'])
         sectype = section_header['sh_type']
         if sectype in (4, 9):  # SHT_RELA=4,SHT_REL=9,
             if section_header['sh_entsize'] > 0:
