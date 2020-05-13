@@ -12,7 +12,11 @@ import stat
 
 from django.conf import settings
 
-from MobSF.utils import (filename_from_path, is_file_exists)
+from MobSF.utils import (
+    filename_from_path,
+    find_java_binary,
+    is_file_exists,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -39,7 +43,7 @@ def dex_2_smali(app_dir, tools_dir):
                 bs_path = os.path.join(tools_dir, 'baksmali-2.4.0.jar')
             output = os.path.join(app_dir, 'smali_source/')
             smali = [
-                settings.JAVA_BINARY,
+                find_java_binary(),
                 '-jar',
                 bs_path,
                 'd',

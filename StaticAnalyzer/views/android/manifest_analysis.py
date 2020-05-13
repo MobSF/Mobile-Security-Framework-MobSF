@@ -11,7 +11,10 @@ from xml.dom import minidom
 
 from django.conf import settings
 
-from MobSF.utils import is_file_exists
+from MobSF.utils import (
+    find_java_binary,
+    is_file_exists,
+)
 
 from StaticAnalyzer.views.android import android_manifest_desc
 
@@ -867,7 +870,7 @@ def get_manifest_file(app_path, app_dir, tools_dir):
         else:
             apktool_path = os.path.join(tools_dir, 'apktool_2.4.1.jar')
         output_dir = os.path.join(app_dir, 'apktool_out')
-        args = [settings.JAVA_BINARY,
+        args = [find_java_binary(),
                 '-jar',
                 apktool_path,
                 '--match-original',

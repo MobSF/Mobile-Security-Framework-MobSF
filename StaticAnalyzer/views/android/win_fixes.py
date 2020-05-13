@@ -6,6 +6,8 @@ import os
 
 from django.conf import settings
 
+from MobSF.utils import find_java_binary
+
 logger = logging.getLogger(__name__)
 
 
@@ -18,7 +20,7 @@ def win_fix_java(tools_dir):
         dat = ''
         with open(dmy, 'r') as file_pointer:
             dat = file_pointer.read().replace(
-                '[xxx]', settings.JAVA_BINARY)
+                '[xxx]', find_java_binary())
         with open(org, 'w') as file_pointer:
             file_pointer.write(dat)
     except Exception:

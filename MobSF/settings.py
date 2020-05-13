@@ -9,8 +9,10 @@ import imp
 import logging
 import os
 
-from MobSF.utils import (find_java_binary, first_run,
-                         get_mobsf_home)
+from MobSF.init import (
+    first_run,
+    get_mobsf_home,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +41,7 @@ USE_HOME = False
 # If you need multiple users to share the scan results set this to False
 # ===============================================
 
-MobSF_HOME = get_mobsf_home(USE_HOME)
+MobSF_HOME = get_mobsf_home(USE_HOME, BASE_DIR)
 # Logs Directory
 LOG_DIR = os.path.join(MobSF_HOME, 'logs/')
 # Download Directory
@@ -366,10 +368,6 @@ else:
     # ==============================================
     # ^CONFIG-END^: Do not edit this line
 
-
-# ============JAVA SETTINGS======================
-JAVA_BINARY = find_java_binary()
-# ===============================================
 
 # Better logging
 LOGGING = {
