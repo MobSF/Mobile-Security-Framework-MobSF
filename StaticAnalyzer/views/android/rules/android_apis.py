@@ -195,7 +195,7 @@ APIS = [
         'match': ['telephony.TelephonyManager',
                   'getDeviceId',
                   'getImei(',
-                  'getImei('],
+                  'getMeid('],
         'input_case': InputCase.exact,
     },
     {
