@@ -294,12 +294,20 @@ class Environment:
         out = self.adb_command(['getprop',
                                 'ro.boot.serialno'], True)
         out += self.adb_command(['getprop',
-                                'ro.serialno'], True)
+                                 'ro.serialno'], True)
         out += self.adb_command(['getprop',
-                                'ro.build.user'], True)
+                                 'ro.build.user'], True)
+        out += self.adb_command(['getprop',
+                                 'ro.manufacturer.geny-def'], True)
+        out += self.adb_command(['getprop',
+                                 'ro.product.manufacturer.geny-def'], True)
+        ver = self.adb_command(['getprop',
+                                'ro.genymotion.version'],
+                               True).decode('utf-8', 'ignore')
         if b'EMULATOR' in out:
             return 'emulator'
-        elif b'genymotion' in out:
+        elif (b'genymotion' in out.lower()
+                or any(char.isdigit() for char in ver)):
             return 'genymotion'
         else:
             return ''
@@ -503,6 +511,8 @@ class Environment:
             frida_arch = 'arm64'
         elif arch == 'x86':
             frida_arch = 'x86'
+        elif arch == 'x86_64':
+            frida_arch = 'x86_64'
         else:
             logger.error('Make sure a Genymotion Android x86 VM'
                          ' or Android Studio Emulator'
