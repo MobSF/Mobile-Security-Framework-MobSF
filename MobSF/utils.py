@@ -6,13 +6,11 @@ import logging
 import ntpath
 import os
 import platform
-import random
 import re
 import shutil
 import signal
 import subprocess
 import stat
-import sys
 import sqlite3
 import unicodedata
 import threading
@@ -131,30 +129,6 @@ def check_update():
         logger.exception('Cannot Check for updates.')
 
 
-def make_migrations(base_dir):
-    """Create Database Migrations."""
-    try:
-        manage = os.path.join(base_dir, 'manage.py')
-        args = [get_python(), manage, 'makemigrations']
-        subprocess.call(args)
-        args = [get_python(), manage, 'makemigrations', 'StaticAnalyzer']
-        subprocess.call(args)
-    except Exception:
-        logger.exception('Cannot Make Migrations')
-
-
-def migrate(base_dir):
-    """Migrate Database."""
-    try:
-        manage = os.path.join(base_dir, 'manage.py')
-        args = [get_python(), manage, 'migrate']
-        subprocess.call(args)
-        args = [get_python(), manage, 'migrate', '--run-syncdb']
-        subprocess.call(args)
-    except Exception:
-        logger.exception('Cannot Migrate')
-
-
 def find_java_binary():
     """Find Java."""
     # Respect user settings
@@ -177,11 +151,6 @@ def find_java_binary():
         if is_file_exists(java):
             return java
     return 'java'
-
-
-def get_python():
-    """Get Python Executable."""
-    return sys.executable
 
 
 def run_process(args):
@@ -337,11 +306,6 @@ def is_dir_exists(dir_path):
         return True
     else:
         return False
-
-
-def get_random():
-    choice = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
-    return ''.join([random.SystemRandom().choice(choice) for i in range(50)])
 
 
 def find_process_by(name):

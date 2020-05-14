@@ -1,13 +1,9 @@
 """Initialize on first run."""
 import logging
 import os
-
-from MobSF.utils import (
-    get_random,
-    is_file_exists,
-    make_migrations,
-    migrate,
-)
+import random
+import subprocess
+import sys
 
 from install.windows.setup import windows_config_local
 
@@ -18,7 +14,7 @@ def first_run(secret_file, base_dir, mobsf_home):
     # Based on https://gist.github.com/ndarville/3452907#file-secret-key-gen-py
     if 'MOBSF_SECRET_KEY' in os.environ:
         secret_key = os.environ['MOBSF_SECRET_KEY']
-    elif is_file_exists(secret_file):
+    elif os.path.isfile(secret_file):
         secret_key = open(secret_file).read().strip()
     else:
         try:
@@ -39,7 +35,7 @@ def first_run(secret_file, base_dir, mobsf_home):
 def create_user_conf(mobsf_home, base_dir):
     try:
         config_path = os.path.join(mobsf_home, 'config.py')
-        if not is_file_exists(config_path):
+        if not os.path.isfile(config_path):
             sample_conf = os.path.join(base_dir, 'MobSF/settings.py')
             with open(sample_conf, 'r') as f:
                 dat = f.readlines()
@@ -58,6 +54,37 @@ def create_user_conf(mobsf_home, base_dir):
                 f.write(conf_str)
     except Exception:
         logger.exception('Cannot create config file')
+
+
+def django_operation(cmds, base_dir):
+    """Generic Function for Djano operations."""
+    manage = os.path.join(base_dir, 'manage.py')
+    args = [sys.executable, manage]
+    args.extend(cmds)
+    subprocess.call(args)
+
+
+def make_migrations(base_dir):
+    """Create Database Migrations."""
+    try:
+        django_operation(['makemigrations'], base_dir)
+        django_operation(['makemigrations', 'StaticAnalyzer'], base_dir)
+    except Exception:
+        logger.exception('Cannot Make Migrations')
+
+
+def migrate(base_dir):
+    """Migrate Database."""
+    try:
+        django_operation(['migrate'], base_dir)
+        django_operation(['migrate', '--run-syncdb'], base_dir)
+    except Exception:
+        logger.exception('Cannot Migrate')
+
+
+def get_random():
+    choice = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
+    return ''.join([random.SystemRandom().choice(choice) for i in range(50)])
 
 
 def get_mobsf_home(use_home, base_dir):
