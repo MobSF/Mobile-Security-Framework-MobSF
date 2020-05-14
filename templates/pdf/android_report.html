@@ -692,7 +692,7 @@
                         {{k}}
                     </td>
                     <td>
-                        <a target="_blank" href="{{v}}">{{v}}</a>
+                        <a target="_blank" href="{{v}}" rel="noopener noreferrer">{{v}}</a>
                     </td>
                     {% endfor %}
                 </tr>
@@ -724,7 +724,7 @@
 		                {{ playstore_details.genre }}
 
                     <h5>Play Store URL:</h5> 
-                      <a target="_blank" href="{{ playstore_details.url }}"> {{ package_name }} </a>
+                      <a target="_blank" href="{{ playstore_details.url }}" rel="noopener noreferrer"> {{ package_name }} </a>
                   </p>
                   
                   <p>
@@ -739,7 +739,7 @@
                   <h5>Release Date:</h5> 
                    {{ playstore_details.released }}
 		               <h5>Privacy Policy:</h5> 
-                   <a target="_blank" href="{{ playstore_details.privacyPolicy }}">Privacy link</a>
+                   <a target="_blank" href="{{ playstore_details.privacyPolicy }}" rel="noopener noreferrer">Privacy link</a>
 		            </p>
                  <p>                                       
                       <h5>Description:</h5> 

@@ -5,23 +5,28 @@ import os
 import re
 import shutil
 import subprocess
-import time
 import threading
-
-from OpenSSL import crypto
+import time
 
 from django.conf import settings
 
-from DynamicAnalyzer.tools.webproxy import (get_ca_dir,
-                                            start_proxy,
-                                            stop_httptools)
+from OpenSSL import crypto
+
+from DynamicAnalyzer.tools.webproxy import (
+    get_ca_file,
+    start_proxy,
+    stop_httptools,
+)
+
+from MobSF.utils import (
+    get_adb,
+    get_device,
+    get_proxy_ip,
+    is_file_exists,
+    python_list,
+)
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
-
-from MobSF.utils import (get_adb,
-                         get_device,
-                         get_proxy_ip,
-                         python_list)
 
 logger = logging.getLogger(__name__)
 ANDROID_API_SUPPORTED = 28
@@ -129,6 +134,7 @@ class Environment:
 
     def configure_proxy(self, project):
         """HTTPS Proxy."""
+        self.install_mobsf_ca('install')
         proxy_port = settings.PROXY_PORT
         logger.info('Starting HTTPs Proxy on %s', proxy_port)
         stop_httptools(proxy_port)
@@ -136,16 +142,22 @@ class Environment:
 
     def install_mobsf_ca(self, action):
         """Install or Remove MobSF Root CA."""
-        ca_construct = '{}.0'
-        pem = open(get_ca_dir(), 'rb').read()
-        ca_file = crypto.load_certificate(crypto.FILETYPE_PEM, pem)
-        ca_file_hash = hex(ca_file.subject_name_hash()).lstrip('0x')
-        ca_file = os.path.join('/system/etc/security/cacerts/',
-                               ca_construct.format(ca_file_hash))
+        mobsf_ca = get_ca_file()
+        ca_file = None
+        if is_file_exists(mobsf_ca):
+            ca_construct = '{}.0'
+            pem = open(mobsf_ca, 'rb').read()
+            ca_obj = crypto.load_certificate(crypto.FILETYPE_PEM, pem)
+            ca_file_hash = hex(ca_obj.subject_name_hash()).lstrip('0x')
+            ca_file = os.path.join('/system/etc/security/cacerts/',
+                                   ca_construct.format(ca_file_hash))
+        else:
+            logger.warning('mitmproxy root CA is not generated yet.')
+            return
         if action == 'install':
             logger.info('Installing MobSF RootCA')
             self.adb_command(['push',
-                              get_ca_dir(),
+                              mobsf_ca,
                               ca_file])
             self.adb_command(['chmod',
                               '644',
@@ -294,12 +306,20 @@ class Environment:
         out = self.adb_command(['getprop',
                                 'ro.boot.serialno'], True)
         out += self.adb_command(['getprop',
-                                'ro.serialno'], True)
+                                 'ro.serialno'], True)
         out += self.adb_command(['getprop',
-                                'ro.build.user'], True)
+                                 'ro.build.user'], True)
+        out += self.adb_command(['getprop',
+                                 'ro.manufacturer.geny-def'], True)
+        out += self.adb_command(['getprop',
+                                 'ro.product.manufacturer.geny-def'], True)
+        ver = self.adb_command(['getprop',
+                                'ro.genymotion.version'],
+                               True).decode('utf-8', 'ignore')
         if b'EMULATOR' in out:
             return 'emulator'
-        elif b'genymotion' in out:
+        elif (b'genymotion' in out.lower()
+                or any(char.isdigit() for char in ver)):
             return 'genymotion'
         else:
             return ''
@@ -503,6 +523,8 @@ class Environment:
             frida_arch = 'arm64'
         elif arch == 'x86':
             frida_arch = 'x86'
+        elif arch == 'x86_64':
+            frida_arch = 'x86_64'
         else:
             logger.error('Make sure a Genymotion Android x86 VM'
                          ' or Android Studio Emulator'
