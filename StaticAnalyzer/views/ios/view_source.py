@@ -44,7 +44,7 @@ def run(request, api=False):
     try:
         logger.info('View iOS Source File')
         exp = 'Error Description'
-        file_format = 'cpp'
+        file_format = None
         if api:
             fil = request.POST['file']
             md5_hash = request.POST['hash']

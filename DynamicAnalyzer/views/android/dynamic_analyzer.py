@@ -155,7 +155,7 @@ def httptools_start(request):
                '/dashboard/{}'.format(
                    str(settings.PROXY_PORT),
                    project))
-        return HttpResponseRedirect(url)
+        return HttpResponseRedirect(url)  # lgtm [py/reflective-xss]
     except Exception:
         logger.exception('Starting httptools Web UI')
         err = 'Error Starting httptools UI'

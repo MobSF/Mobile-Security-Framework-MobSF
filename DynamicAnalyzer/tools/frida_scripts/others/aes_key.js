@@ -1,7 +1,6 @@
 // https://codeshare.frida.re/@dzonerzy/aesinfo/
 
 Java.perform(function () {
-    var use_single_byte = false;
     var complete_bytes = new Array();
     var index = 0;
     var secretKeySpecDef = Java.use('javax.crypto.spec.SecretKeySpec');
@@ -33,7 +32,7 @@ Java.perform(function () {
         return secretKeySpecDef_init_2.call(this, arr, off, len, alg);
     }
 
-    /*ivParameterSpecDef_init_1.implementation = function(arr)
+    ivParameterSpecDef_init_1.implementation = function(arr)
     {
         var iv = b2s(arr);
         send("Creating IV:\\n" + hexdump(iv));
@@ -45,7 +44,7 @@ Java.perform(function () {
         var iv = b2s(arr);
         send("Creating IV, plaintext:\\n" + hexdump(iv));
         return ivParameterSpecDef_init_2.call(this, arr, off, len);
-    }*/
+    }
 
     cipherDoFinal_1.implementation = function () {
         var ret = cipherDoFinal_1.call(this);
