@@ -371,7 +371,8 @@ def get_adb():
                            'functions will not work. '
                            '\nMake sure a Genymotion Android VM/'
                            'Android Studio Emulator'
-                           ' is running before performing Dynamic Analyis.')
+                           ' is running before performing'
+                           ' Dynamic Analysis.')
     return 'adb'
 
 
