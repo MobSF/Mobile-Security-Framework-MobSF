@@ -50,7 +50,7 @@ python3 -m venv ./venv
 if [ $? -eq 0 ]; then
     echo '[INSTALL] Activating virtualenv'
     source venv/bin/activate
-    pip install --upgrade pip
+    pip install --upgrade pip wheel
 else
     echo '[ERROR] Failed to create virtualenv. Please install MobSF requirements mentioned in Documentation.'
     exit 1
@@ -60,7 +60,6 @@ echo '[INSTALL] Installing dex enabled yara-python'
 pip install --no-index --find-links=scripts/wheels yara-python
 if [ $? -ne 0 ]; then
     echo '[INSTALL] Building dex enabled yara-python'
-    pip install --upgrade wheel
     rm -rf yara-python
     pip wheel --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.11.0
     if [ $? -ne 0 ]; then

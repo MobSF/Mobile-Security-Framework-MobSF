@@ -11,7 +11,10 @@ from xml.dom import minidom
 
 from django.conf import settings
 
-from MobSF.utils import is_file_exists
+from MobSF.utils import (
+    find_java_binary,
+    is_file_exists,
+)
 
 from StaticAnalyzer.views.android import android_manifest_desc
 
@@ -515,14 +518,14 @@ def manifest_analysis(mfxml, man_data_dic):
                                             elif protlevel == 'signatureOrSystem':
                                                 ret_list.append(
                                                     ('a_prot_sign_sys', (itemname, item, perm + prot), (an_or_a, itemname)))
-                                        else:
-                                            ret_list.append(
-                                                ('a_prot_unknown', (itemname, item, perm), (an_or_a, itemname)))
-                                            if itemname in ['Activity', 'Activity-Alias']:
-                                                exported.append(item)
-                                            exp_count[cnt_id] = exp_count[
-                                                cnt_id] + 1
-                                        # Esteve 24.07.2016 - end
+                                    else:
+                                        ret_list.append(
+                                            ('a_prot_unknown', (itemname, item, perm), (an_or_a, itemname)))
+                                        if itemname in ['Activity', 'Activity-Alias']:
+                                            exported.append(item)
+                                        exp_count[cnt_id] = exp_count[
+                                            cnt_id] + 1
+                                    # Esteve 24.07.2016 - end
                                 else:
                                     # Esteve 24.07.2016 - begin - At this point, we are dealing with components that do not have a permission neither at the component level nor at the
                                     # application level. As they are exported,
@@ -867,7 +870,7 @@ def get_manifest_file(app_path, app_dir, tools_dir):
         else:
             apktool_path = os.path.join(tools_dir, 'apktool_2.4.1.jar')
         output_dir = os.path.join(app_dir, 'apktool_out')
-        args = [settings.JAVA_BINARY,
+        args = [find_java_binary(),
                 '-jar',
                 apktool_path,
                 '--match-original',

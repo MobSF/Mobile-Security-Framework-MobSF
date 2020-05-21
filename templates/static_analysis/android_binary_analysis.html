@@ -397,7 +397,7 @@
                       <span class="badge bg-info">Category</span>
                       {{ playstore_details.genre }}
                       <span class="badge bg-info">Play Store URL</span>
-                        <a target="_blank" href="{{ playstore_details.url }}"> {{ package_name }} </a>
+                        <a target="_blank" href="{{ playstore_details.url }}" rel="noopener noreferrer"> {{ package_name }} </a>
                     <br/>
                     <span class="badge bg-info">Developer</span>
                         {{playstore_details.developer}},
@@ -413,7 +413,7 @@
                   <span class="badge bg-info">Release Date</span>
                       {{ playstore_details.released }}
                   <span class="badge bg-info">Privacy Policy</span>
-                  <a target="_blank" href="{{ playstore_details.privacyPolicy }}">Privacy link</a>
+                  <a target="_blank" href="{{ playstore_details.privacyPolicy }}" rel="noopener noreferrer">Privacy link</a>
                   <br/>                                     
                       <span class="badge bg-info">Description</span>
                       <pre id="pre-wrap">{{ playstore_details.description }}</pre>
@@ -1420,7 +1420,7 @@
                     {{k}}
                   </td>
                   <td>
-                    <a target="_blank" href="{{v}}">{{v}}</a>
+                    <a target="_blank" href="{{v}}" rel="noopener noreferrer">{{v}}</a>
                   </td>
                   {% endfor %}
                 </tr>

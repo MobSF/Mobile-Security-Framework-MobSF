@@ -6,13 +6,11 @@ import logging
 import ntpath
 import os
 import platform
-import random
 import re
 import shutil
 import signal
 import subprocess
 import stat
-import sys
 import sqlite3
 import unicodedata
 import threading
@@ -25,8 +23,6 @@ import psutil
 import requests
 
 from django.shortcuts import render
-
-from install.windows.setup import windows_config_local
 
 from . import settings
 
@@ -133,94 +129,6 @@ def check_update():
         logger.exception('Cannot Check for updates.')
 
 
-def create_user_conf(mobsf_home):
-    try:
-        config_path = os.path.join(mobsf_home, 'config.py')
-        if not is_file_exists(config_path):
-            sample_conf = os.path.join(settings.BASE_DIR, 'MobSF/settings.py')
-            with open(sample_conf, 'r') as f:
-                dat = f.readlines()
-            config = []
-            add = False
-            for line in dat:
-                if '^CONFIG-START^' in line:
-                    add = True
-                if '^CONFIG-END^' in line:
-                    break
-                if add:
-                    config.append(line.lstrip())
-            config.pop(0)
-            conf_str = ''.join(config)
-            with open(config_path, 'w') as f:
-                f.write(conf_str)
-    except Exception:
-        logger.exception('Cannot create config file')
-
-
-def get_mobsf_home(use_home):
-    try:
-        mobsf_home = ''
-        if use_home:
-            mobsf_home = os.path.join(os.path.expanduser('~'), '.MobSF')
-            # MobSF Home Directory
-            if not os.path.exists(mobsf_home):
-                os.makedirs(mobsf_home)
-            create_user_conf(mobsf_home)
-        else:
-            mobsf_home = settings.BASE_DIR
-        # Logs Directory
-        log_dir = os.path.join(mobsf_home, 'logs/')
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
-        # Certs Directory
-        cert_dir = os.path.join(log_dir, 'certs/')
-        if not os.path.exists(cert_dir):
-            os.makedirs(cert_dir)
-        # Download Directory
-        dwd_dir = os.path.join(mobsf_home, 'downloads/')
-        if not os.path.exists(dwd_dir):
-            os.makedirs(dwd_dir)
-        # Screenshot Directory
-        screen_dir = os.path.join(dwd_dir, 'screen/')
-        if not os.path.exists(screen_dir):
-            os.makedirs(screen_dir)
-        # Upload Directory
-        upload_dir = os.path.join(mobsf_home, 'uploads/')
-        if not os.path.exists(upload_dir):
-            os.makedirs(upload_dir)
-        # Signature Directory
-        sig_dir = os.path.join(mobsf_home, 'signatures/')
-        if not os.path.exists(sig_dir):
-            os.makedirs(sig_dir)
-        return mobsf_home
-    except Exception:
-        logger.exception('Creating MobSF Home Directory')
-
-
-def make_migrations(base_dir):
-    """Create Database Migrations."""
-    try:
-        manage = os.path.join(base_dir, 'manage.py')
-        args = [get_python(), manage, 'makemigrations']
-        subprocess.call(args)
-        args = [get_python(), manage, 'makemigrations', 'StaticAnalyzer']
-        subprocess.call(args)
-    except Exception:
-        logger.exception('Cannot Make Migrations')
-
-
-def migrate(base_dir):
-    """Migrate Database."""
-    try:
-        manage = os.path.join(base_dir, 'manage.py')
-        args = [get_python(), manage, 'migrate']
-        subprocess.call(args)
-        args = [get_python(), manage, 'migrate', '--run-syncdb']
-        subprocess.call(args)
-    except Exception:
-        logger.exception('Cannot Migrate')
-
-
 def find_java_binary():
     """Find Java."""
     # Respect user settings
@@ -243,11 +151,6 @@ def find_java_binary():
         if is_file_exists(java):
             return java
     return 'java'
-
-
-def get_python():
-    """Get Python Executable."""
-    return sys.executable
 
 
 def run_process(args):
@@ -358,7 +261,6 @@ def is_internet_available():
             return True
         except Exception:
             return False
-    return False
 
 
 def sha256(file_path):
@@ -406,23 +308,12 @@ def is_dir_exists(dir_path):
         return False
 
 
-def get_random():
-    choice = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
-    return ''.join([random.SystemRandom().choice(choice) for i in range(50)])
-
-
 def find_process_by(name):
     """Return a set of process path matching name."""
     proc = set()
-    try:
-        for p in psutil.process_iter(attrs=['name', 'exe', 'cmdline']):
-            if (name == p.info['name'] or p.info['exe']
-                and os.path.basename(p.info['exe']) == name
-                    or p.info['cmdline'] and p.info['cmdline'][0] == name):
-                proc.add(p.info['exe'])
-    except FileNotFoundError:
-        # Bug in OSX 10.6 ?
-        pass
+    for p in psutil.process_iter(attrs=['name']):
+        if (name == p.info['name']):
+            proc.add(p.exe())
     return proc
 
 
@@ -446,6 +337,10 @@ def get_device():
 def get_adb():
     """Get ADB binary path."""
     try:
+        adb_loc = None
+        adb_msg = ('Set adb path, ADB_BINARY in MobSF/settings.py'
+                   ' with same adb binary used'
+                   ' by Genymotion VM/Emulator AVD.')
         global ADB_PATH
         if (len(settings.ADB_BINARY) > 0
                 and is_file_exists(settings.ADB_BINARY)):
@@ -458,15 +353,14 @@ def get_adb():
         else:
             adb_loc = find_process_by('adb')
         if len(adb_loc) > 1:
-            logger.warning('Multiple ADB locations found. '
-                           'Set adb path, ADB_BINARY in MobSF/settings.py'
-                           ' with same adb binary used'
-                           ' by Genymotion VM/Emulator AVD.')
+            logger.warning('Multiple ADB locations found. %s', adb_msg)
             logger.warning(adb_loc)
         if adb_loc:
             ADB_PATH = adb_loc.pop()
             return ADB_PATH
     except Exception:
+        if not adb_loc:
+            logger.warning('Cannot find adb! %s', adb_msg)
         logger.exception('Getting ADB Location')
     finally:
         if ADB_PATH:
@@ -477,7 +371,8 @@ def get_adb():
                            'functions will not work. '
                            '\nMake sure a Genymotion Android VM/'
                            'Android Studio Emulator'
-                           ' is running before performing Dynamic Analyis.')
+                           ' is running before performing'
+                           ' Dynamic Analysis.')
     return 'adb'
 
 
@@ -494,7 +389,7 @@ def check_basic_env():
     except ImportError:
         logger.exception('lxml is not installed!')
         os.kill(os.getpid(), signal.SIGTERM)
-    if not is_file_exists(settings.JAVA_BINARY):
+    if not is_file_exists(find_java_binary()):
         logger.error(
             'JDK 8+ is not available. '
             'Set JAVA_HOME environment variable'
@@ -507,28 +402,6 @@ def check_basic_env():
                     '\nJAVA_DIRECTORY = "/usr/bin/"')
         os.kill(os.getpid(), signal.SIGTERM)
     get_adb()
-
-
-def first_run(secret_file, base_dir, mobsf_home):
-    # Based on https://gist.github.com/ndarville/3452907#file-secret-key-gen-py
-    if 'MOBSF_SECRET_KEY' in os.environ:
-        secret_key = os.environ['MOBSF_SECRET_KEY']
-    elif is_file_exists(secret_file):
-        secret_key = open(secret_file).read().strip()
-    else:
-        try:
-            secret_key = get_random()
-            secret = open(secret_file, 'w')
-            secret.write(secret_key)
-            secret.close()
-        except IOError:
-            Exception('Secret file generation failed' % secret_file)
-        # Run Once
-        make_migrations(base_dir)
-        migrate(base_dir)
-        # Windows Setup
-        windows_config_local(mobsf_home)
-    return secret_key
 
 
 def update_local_db(db_name, url, local_file):
