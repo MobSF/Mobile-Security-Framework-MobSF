@@ -20,12 +20,8 @@ ENV JDK_URL="https://download.java.net/java/GA/jdk12/GPL/${JDK_FILE}" \
     WKH_URL="https://builds.wkhtmltopdf.org/0.12.1.4/${WKH_FILE}"
 
 # See https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
-RUN apt update -y && apt install -y \
+RUN apt update -y && apt install -y  --no-install-recommends \
     build-essential \
-    libssl-dev \
-    libffi-dev \
-    libxml2-dev \
-    libxslt1-dev \
     locales \
     sqlite3 \
     fontconfig-config \
@@ -90,9 +86,11 @@ RUN sed -i 's/USE_HOME = False/USE_HOME = True/g' MobSF/settings.py && \
 
 # Postgres support is set to false by default
 ARG POSTGRES=False
+ARG POSTGRES_IP=localhost
+    
 # Check if Postgres support needs to be enabled
 WORKDIR /root/Mobile-Security-Framework-MobSF/scripts
-RUN chmod +x postgres_support.sh; sync; ./postgres_support.sh $POSTGRES
+RUN chmod +x postgres_support.sh; sync; ./postgres_support.sh $POSTGRES $POSTGRES_IP
 WORKDIR /root/Mobile-Security-Framework-MobSF
 
 # Add apktool working path
