@@ -65,7 +65,6 @@ def get_otool_out(tools_dir, cmd_type, bin_path, bin_dir):
     elif cmd_type == 'symbols':
         if plat == 'Darwin':
             args = [otool_bin, '-Iv', bin_path]
-            args2 = args
             return subprocess.check_output(args)
         elif plat == 'Linux':
             args = [jtool_bin, '-arch', 'arm', '-S', bin_path]

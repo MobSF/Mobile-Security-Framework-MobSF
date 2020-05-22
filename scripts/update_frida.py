@@ -10,9 +10,7 @@ def get_latest_frida_binaries():
                      'repos/frida/frida/releases/latest')
     for item in r.json()['assets']:
         url = item['browser_download_url']
-        if ('frida-server' in url
-                and 'android' in url
-                and 'x86_64.xz' not in url):
+        if ('frida-server' in url and 'android' in url):
             download_file(url)
 
 

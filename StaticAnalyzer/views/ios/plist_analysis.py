@@ -5,8 +5,11 @@ import logging
 import os
 import plistlib
 
-import biplist
-from biplist import readPlist, writePlistToString
+from biplist import (
+    InvalidPlistException,
+    readPlist,
+    writePlistToString,
+)
 
 from MobSF.utils import is_file_exists
 
@@ -23,7 +26,7 @@ def convert_bin_xml(bin_xml_file):
         plist_obj = readPlist(bin_xml_file)
         data = writePlistToString(plist_obj)
         return data
-    except biplist.InvalidPlistException:
+    except InvalidPlistException:
         logger.warning('Failed to convert plist')
 
 

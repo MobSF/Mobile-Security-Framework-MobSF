@@ -81,7 +81,7 @@ Java.performNow(function () {
         Runtime.exec.overload.apply(null, args).implementation = function () {
             var fakeCmd;
             var argz = [].slice.call(arguments);
-            var cmd = argz[0]
+            var cmd = argz[0];
             if (typeof cmd === 'string') {
                 fakeCmd = isRootCheck(cmd);
                 if (fakeCmd) {
