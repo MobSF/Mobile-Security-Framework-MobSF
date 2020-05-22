@@ -92,7 +92,7 @@ RUN sed -i 's/USE_HOME = False/USE_HOME = True/g' MobSF/settings.py && \
 ARG POSTGRES=False
 # Check if Postgres support needs to be enabled
 WORKDIR /root/Mobile-Security-Framework-MobSF/scripts
-RUN chmod +x postgres_support.sh; sync; ./postgres_support.sh $POSTGRES > /dev/null 2>&1
+RUN chmod +x postgres_support.sh; sync; ./postgres_support.sh $POSTGRES
 WORKDIR /root/Mobile-Security-Framework-MobSF
 
 # Add apktool working path
