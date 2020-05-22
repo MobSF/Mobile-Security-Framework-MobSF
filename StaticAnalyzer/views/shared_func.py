@@ -286,7 +286,7 @@ def url_n_email_extract(dat, relative_path):
             {'urls': urls, 'path': escape(relative_path)})
 
     # Email Extraction Regex
-    regex = re.compile(r'[\w.-]+@[\w-]+\.[\w]{2,}')
+    regex = re.compile(r'[\w.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
     eflag = 0
     for email in regex.findall(dat.lower()):
         if (email not in emails) and (not email.startswith('//')):
