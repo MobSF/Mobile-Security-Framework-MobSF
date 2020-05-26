@@ -52,7 +52,7 @@ def run_analysis(apk_dir, md5_hash, package):
 
     # Email Etraction Regex
     emails = []
-    regex = re.compile(r'[\w.-]+@[\w-]+\.[\w]{2,}')
+    regex = re.compile(r'[\w.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
     for email in regex.findall(datas['traffic'].lower()):
         if (email not in emails) and (not email.startswith('//')):
             emails.append(email)
