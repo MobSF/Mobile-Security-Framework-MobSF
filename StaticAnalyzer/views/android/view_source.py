@@ -41,7 +41,7 @@ def run(request, api=False):
             if api:
                 return err
             return print_n_send_error_response(request, err, False, exp)
-        if fil.endswith('.java'):
+        if fil.endswith('.java') or fil.endswith('.kt'):
             if typ == 'eclipse':
                 src = os.path.join(settings.UPLD_DIR, md5 + '/src/')
             elif typ == 'studio':
