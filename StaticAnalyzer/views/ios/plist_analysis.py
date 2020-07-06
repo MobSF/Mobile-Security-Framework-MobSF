@@ -52,14 +52,16 @@ def plist_analysis(src, is_source):
             'bundle_supported_platforms': [],
         }
         plist_file = None
+        plist_files = []
         if is_source:
             logger.info('Finding Info.plist in iOS Source')
             for dirpath, _dirnames, files in os.walk(src):
                 for name in files:
                     if (not any(x in dirpath for x in ['__MACOSX', 'Pods'])
-                            and name == 'Info.plist'):
-                        plist_file = os.path.join(dirpath, name)
-                        break
+                            and name.endswith('.plist')):
+                        plist_files.append(os.path.join(dirpath, name))
+                        if name == 'Info.plist':
+                            plist_file = os.path.join(dirpath, name)
         else:
             logger.info('Finding Info.plist in iOS Binary')
             dirs = os.listdir(src)
@@ -70,6 +72,7 @@ def plist_analysis(src, is_source):
                     break
             bin_dir = os.path.join(src, dot_app_dir)  # Full Dir/Payload/x.app
             plist_file = os.path.join(bin_dir, 'Info.plist')
+            plist_files = [plist_file]
         if not is_file_exists(plist_file):
             logger.warning(
                 'Cannot find Info.plist file. Skipping Plist Analysis.')
@@ -96,10 +99,12 @@ def plist_analysis(src, is_source):
                 'CFBundleURLTypes', [])
             plist_info['bundle_supported_platforms'] = plist_obj.get(
                 'CFBundleSupportedPlatforms', [])
-            # Check for app-permissions
-            plist_info['permissions'] = check_permissions(plist_obj)
-            # Check for ats misconfigurations
-            plist_info['inseccon'] = check_transport_security(plist_obj)
+            for plist_file_ in plist_files:
+                plist_obj_ = plistlib.readPlist(plist_file_)
+                # Check for app-permissions
+                plist_info['permissions'] += check_permissions(plist_obj_)
+                # Check for ats misconfigurations
+                plist_info['inseccon'] += check_transport_security(plist_obj_)
         return plist_info
     except Exception:
         logger.exception('Reading from Info.plist')
