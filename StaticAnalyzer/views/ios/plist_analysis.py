@@ -82,7 +82,7 @@ def plist_analysis(src, is_source):
 
         # Generic Plist Analysis
         plist_obj = plistlib.readPlist(plist_file)
-        plist_info['plist_xml'] = plistlib.writePlistToBytes(
+        plist_info['plist_xml'] = plistlib.dumps(
             plist_obj).decode('utf-8', 'ignore')
         plist_info['bin_name'] = (plist_obj.get('CFBundleDisplayName', '')
                                   or plist_obj.get('CFBundleName', ''))
