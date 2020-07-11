@@ -65,7 +65,7 @@ def app_search(app_id):
         det['developerWebsite'] = resp.get('publisher_url', '')
         det['developerEmail'] = resp.get('publisher_email', '')
         det['released'] = resp.get('release_date', '')
-        det['privacyPolicy'] = resp.get('publisher_url', '')
+        det['privacyPolicy'] = resp.get('privacy_url', '')
         description = BeautifulSoup(resp.get('description', ''),
                                     features='lxml')
         det['description'] = description.get_text()

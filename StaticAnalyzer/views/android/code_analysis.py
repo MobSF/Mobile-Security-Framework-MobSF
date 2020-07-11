@@ -63,7 +63,7 @@ def code_analysis(app_dir, perms, typ):
                     jfile_path = p_2
                 repath = dir_name.replace(java_src, '') + '/'
                 if (
-                        jfile.endswith('.java')
+                        (jfile.endswith('.java') or jfile.endswith('.kt'))
                         and any(re.search(cls, repath)
                                 for cls in settings.SKIP_CLASSES) is False
                 ):
