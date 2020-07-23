@@ -193,7 +193,7 @@ def static_analyzer(request, api=False):
 
                     code_an_dic = code_analysis(
                         app_dic['app_dir'],
-                        man_an_dic['permissons'],
+                        man_an_dic['permissions'],
                         'apk')
 
                     # Get the strings
@@ -389,7 +389,7 @@ def static_analyzer(request, api=False):
 
                         code_an_dic = code_analysis(
                             app_dic['app_dir'],
-                            man_an_dic['permissons'],
+                            man_an_dic['permissions'],
                             pro_type)
                         # Firebase DB Check
                         code_an_dic['firebase'] = firebase_analysis(

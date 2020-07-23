@@ -796,13 +796,13 @@ def manifest_analysis(mfxml, man_data_dic):
                 icon_hidden = False
                 break
 
-        permissons = {}
-        for k, permisson in man_data_dic['perm'].items():
-            permissons[k] = (
+        permissions = {}
+        for k, permission in man_data_dic['perm'].items():
+            permissions[k] = (
                 {
-                    'status': permisson[0],
-                    'info': permisson[1],
-                    'description': permisson[2],
+                    'status': permission[0],
+                    'info': permission[1],
+                    'description': permission[2],
                 })
         # Prepare return dict
         exported_comp = {
@@ -816,7 +816,7 @@ def manifest_analysis(mfxml, man_data_dic):
             'exported_act': exported,
             'exported_cnt': exported_comp,
             'browsable_activities': browsable_activities,
-            'permissons': permissons,
+            'permissions': permissions,
             'icon_hidden': icon_hidden,
         }
         return man_an_dic
