@@ -21,16 +21,16 @@ logger = logging.getLogger(__name__)
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-MOBSF_VER = 'v3.0.9 Beta'
+MOBSF_VER = 'v3.1.0 Beta'
 
 BANNER = """
-  __  __       _    ____  _____       _____  ___  
- |  \/  | ___ | |__/ ___||  ___|_   _|___ / / _ \ 
- | |\/| |/ _ \| '_ \___ \| |_  \ \ / / |_ \| | | |
- | |  | | (_) | |_) |__) |  _|  \ V / ___) | |_| |
- |_|  |_|\___/|_.__/____/|_|     \_/ |____(_)___/
+  __  __       _    ____  _____       _____  _ 
+ |  \/  | ___ | |__/ ___||  ___|_   _|___ / / |
+ | |\/| |/ _ \| '_ \___ \| |_  \ \ / / |_ \ | |
+ | |  | | (_) | |_) |__) |  _|  \ V / ___) || |
+ |_|  |_|\___/|_.__/____/|_|     \_/ |____(_)_|
 """  # noqa: W291
-# ASCII Standard
+# ASCII Font: Standard
 # ==============================================
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # ==========MobSF Home Directory=================
@@ -233,32 +233,18 @@ else:
     # -------------------------
 
     # ==========ANDROID SKIP CLASSES==========================
-    # Common third party classes that will be skipped during static analysis
-    SKIP_CLASSES = [
-        r'com[\\\/]{1}google[\\\/]{1}',
-        r'com[\\\/]{1}android[\\\/]{1}',
-        r'android[\\\/]{1}content[\\\/]{1}',
-        r'android[\\\/]{1}support[\\\/]{1}',
-        r'android[\\\/]{1}arch[\\\/]{1}',
-        r'kotlin[\\\/]{1}',
-        r'androidx[\\\/]{1}',
-        r'okhttp2[\\\/]{1}', r'okhttp3[\\\/]{1}',
-        r'com[\\\/]{1}squareup[\\\/]{1}okhttp[\\\/]{1}',
-        r'com[\\\/]{1}twitter[\\\/]{1}',
-        r'twitter4j[\\\/]{1}',
-        r'org[\\\/]{1}apache[\\\/]{1}',
-        r'oauth[\\\/]{1}signpost[\\\/]{1}',
-        r'org[\\\/]{1}chromium[\\\/]{1}',
-        r'com[\\\/]{1}facebook[\\\/]{1}',
-        r'org[\\\/]{1}spongycastle[\\\/]{1}',
-        r'org[\\\/]{1}bouncycastle[\\\/]{1}',
-        r'com[\\\/]{1}amazon[\\\/]{1}identity[\\\/]{1}',
-        r'io[\\\/]{1}fabric[\\\/]{1}sdk[\\\/]{1}',
-        r'com[\\\/]{1}instabug[\\\/]{1}',
-        r'io[\\\/]{1}fabric[\\\/]{1}sdk[\\\/]{1}',
-        r'com[\\\/]{1}crashlytics[\\\/]{1}android[\\\/]{1}',
-        r'com[\\\/]{1}fasterxml[\\\/]{1}jackson[\\\/]{1}',
-    ]
+    # Common third party classes/paths that will be skipped
+    # during static analysis
+    SKIP_CLASS_PATH = {
+        'com/google/', 'androidx', 'okhttp2/', 'okhttp3/',
+        'com/android/', 'com/squareup', 'okhttp/'
+        'android/content/', 'com/twitter/', 'twitter4j/',
+        'android/support/', 'org/apache/', 'oauth/signpost',
+        'android/arch', 'org/chromium/', 'com/facebook',
+        'kotlin/', 'org/spongycastle', 'org/bouncycastle',
+        'com/amazon/identity/', 'io/fabric/sdk',
+        'com/instabug', 'com/crashlytics/android',
+    }
 
     # ==============================================
 

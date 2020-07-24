@@ -586,13 +586,13 @@
                         {{ issue }}
                       </td>
                       <td>
-                        {% if details|key:"level" == 'info' %}
+                        {% if details|key:"severity" == 'info' %}
                           <span class='badge bg-info'>info</span>
-                        {% elif details|key:"level" == 'good' %}
+                        {% elif details|key:"severity" == 'good' %}
                           <span class='badge bg-success'>secure</span>
-                        {% elif details|key:"level" == 'high' %}
+                        {% elif details|key:"severity" == 'high' %}
                           <span class='badge bg-danger'>high</span>
-                        {% elif details|key:"level" == 'warning' %}
+                        {% elif details|key:"severity" == 'warning' %}
                           <span class='badge bg-warning'>warning</span>
                         {% endif %}
                       </td>
@@ -609,8 +609,8 @@
                           (low)
                         {% endif %}
                         {% if details|key:"cwe" %}</br> <strong>CWE: </strong>{{ details|key:"cwe" }}{% endif %}
-                        {% if details|key:"owasp" %}</br> <strong>OWASP Top 10: </strong>{{  details|key:"owasp" }}{% endif %}
-                        {% if details|key:"owasp-mstg" %}</br> <strong>OWASP MASVS: </strong>{{  details|key:"owasp-mstg" }}{% endif %}
+                        {% if details|key:"owasp-mobile" %}</br> <strong>OWASP Top 10: </strong>{{  details|key:"owasp-mobile" }}{% endif %}
+                        {% if details|key:"masvs" %}</br> <strong>OWASP MASVS: </strong>{{  details|key:"masvs" }}{% endif %}
                       </td>
                       <td>
                          {{ details|key:"detailed_desc" }}

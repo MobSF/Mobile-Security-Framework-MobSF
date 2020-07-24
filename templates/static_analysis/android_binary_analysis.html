@@ -776,7 +776,7 @@
         <div class="card">
           <div class="card-body">
               <p>
-             <strong><i class="fab fa-android"></i> ANDROID JAVA API</strong>
+             <strong><i class="fab fa-android"></i> ANDROID API</strong>
              </p>
               <div class="table-responsive">
                 <table id="table_so" class="table table-bordered table-hover table-striped">
@@ -787,14 +787,14 @@
                       </tr>
                     </thead>
                     <tbody>
-                   {% for desc, details in android_api.items %}
+                   {% for rule, details in android_api.items %}
                   <tr>
                     <td>
-                    {{ desc }}
+                    {{ details.metadata.description }}
                     </td>
                     <td>
-                    {% for path in details|key:"path" %}
-                    <a href="../ViewSource/?file={{ path }}&amp;md5={{ md5 }}&amp;type={{app_type}}"> {{ path }}</a>
+                    {% for file_meta in details.files %}
+                    <a href="../ViewSource/?file={{ file_meta.file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ file_meta.match_lines.0 }}:{{ file_meta.match_lines.1 }}"> {{ file_meta.file_path }}</a>
                     <br/>
                     {% endfor %}
                     </td>
@@ -965,42 +965,42 @@
                       <th>FILES</th>
                   </tr>
                     </thead>
-                    <tbody>
-               {% for issue, details in code_analysis.items %}
+                      <tbody>
+               {% for rule, details in code_analysis.items %}
                   <tr>
                   <td>
-                  {{ issue }}
+                  {{ details.metadata.description }}
                   </td>
                   <td>
-                    {% if details|key:"level" == "high" %}
+                    {% if details.metadata.severity == "high" %}
                       <span class="badge bg-danger">high</span>
-                      {% elif details|key:"level" == "good" %}
+                      {% elif details.metadata.severity == "good" %}
                       <span class="badge bg-success">secure</span>
-                      {% elif details|key:"level" == "warning" %}
+                      {% elif details.metadata.severity == "warning" %}
                       <span class="badge bg-warning">warning</span>
-                      {% elif details|key:"level" == "info" %}
+                      {% elif details.metadata.severity == "info" %}
                       <span class="badge bg-info">info</span>
                       {% endif %}
                   </td>
                   <td>
                       <strong>CVSS V2:</strong>
-                      {{ details|key:"cvss" }}
-                      {% if details|key:"cvss" > 6 %}
+                      {{ details.metadata.cvss }}
+                      {% if details.metadata.cvss > 6 %}
                         (high)
-                      {% elif details|key:"cvss" == 0 %}
+                      {% elif details.metadata.cvss == 0 %}
                         (info)
-                      {% elif details|key:"cvss" >= 4 %}
+                      {% elif details.metadata.cvss >= 4 %}
                         (medium)
-                      {% elif details|key:"cvss" < 4 %}
+                      {% elif details.metadata.cvss < 4 %}
                         (low)
                       {% endif %}
-                      {% if details|key:"cwe" %}</br> <strong>CWE: </strong>{{ details|key:"cwe" }}{% endif %}
-                      {% if details|key:"owasp" %}</br> <strong>OWASP Top 10: </strong>{{ details|key:"owasp" }}{% endif %}
-                      {% if details|key:"owasp-mstg" %}</br> <strong>OWASP MASVS: </strong>{{ details|key:"owasp-mstg" }}{% endif %}
+                      {% if details.metadata.cwe %}</br> <strong>CWE: </strong>{{ details.metadata.cwe }}{% endif %}
+                      {% if details.metadata|key:"owasp-mobile" %}</br> <strong>OWASP Top 10: </strong>{{ details.metadata|key:"owasp-mobile" }}{% endif %}
+                      {% if details.metadata.masvs %}</br> <strong>OWASP MASVS: </strong>{{ details.metadata.masvs }}{% endif %}
                   </td>
                   <td>
-                  {% for path in details|key:"path" %}
-                   <a href="../ViewSource/?file={{ path }}&amp;md5={{ md5 }}&amp;type={{app_type}}"> {{ path }}</a>
+                  {% for file_meta in details.files %}
+                   <a href="../ViewSource/?file={{ file_meta.file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ file_meta.match_lines.0 }}:{{ file_meta.match_lines.1 }}"> {{ file_meta.file_path }}</a>
                   <br/>
                   {% endfor %}
                   </td>

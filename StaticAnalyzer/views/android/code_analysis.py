@@ -1,47 +1,34 @@
 # -*- coding: utf_8 -*-
 """Module holding the functions for code analysis."""
 
-import io
 import logging
 import os
-import re
-import shutil
+from pathlib import Path
 
 from django.conf import settings
 
 from MobSF.utils import filename_from_path
 
-from StaticAnalyzer.views.android.rules import (
-    android_apis,
-    android_rules,
-)
 from StaticAnalyzer.views.shared_func import (
     url_n_email_extract,
 )
-from StaticAnalyzer.views.sast_core.rule_matchers import (
-    api_rule_matcher,
-    code_rule_matcher,
-)
-from StaticAnalyzer.views.sast_core.matchers import MatchCommand
+from StaticAnalyzer.views.sast_engine import scan
 
 logger = logging.getLogger(__name__)
 
 
-def code_analysis(app_dir, perms, typ):
+def code_analysis(app_dir, typ):
     """Perform the code analysis."""
     try:
         logger.info('Static Android Code Analysis Started')
-        code_rules = android_rules.RULES
-        api_rules = android_apis.APIS
+        root = Path(settings.BASE_DIR) / 'StaticAnalyzer' / 'views'
+        code_rules = root / 'android' / 'rules' / 'android_rules.yaml'
+        api_rules = root / 'android' / 'rules' / 'android_apis.yaml'
         code_findings = {}
         api_findings = {}
         email_n_file = []
         url_n_file = []
         url_list = []
-
-        # Will inject the different pattern strategy
-        # when it it will be requested
-        match_command = MatchCommand()
 
         if typ == 'apk':
             java_src = os.path.join(app_dir, 'java_source/')
@@ -51,48 +38,31 @@ def code_analysis(app_dir, perms, typ):
             java_src = os.path.join(app_dir, 'src/')
         logger.info('Code Analysis Started on - %s',
                     filename_from_path(java_src))
-        # pylint: disable=unused-variable
-        # Needed by os.walk
-        for dir_name, _sub_dir, files in os.walk(java_src):
-            for jfile in files:
-                jfile_path = os.path.join(java_src, dir_name, jfile)
-                if '+' in jfile:
-                    p_2 = os.path.join(java_src, dir_name,
-                                       jfile.replace('+', 'x'))
-                    shutil.move(jfile_path, p_2)
-                    jfile_path = p_2
-                repath = dir_name.replace(java_src, '') + '/'
+
+        # Code and API Analysis
+        code_findings = scan(
+            code_rules.as_posix(),
+            {'.java', '.kt'},
+            [java_src],
+            settings.SKIP_CLASS_PATH)
+        api_findings = scan(
+            api_rules.as_posix(),
+            {'.java', '.kt'},
+            [java_src])
+
+        skp = settings.SKIP_CLASS_PATH
+        # Extract URLs and Emails
+        for root, _, files in os.walk(java_src):
+            for filename in files:
+                pfile = Path(os.path.join(root, filename))
                 if (
-                        (jfile.endswith('.java') or jfile.endswith('.kt'))
-                        and any(re.search(cls, repath)
-                                for cls in settings.SKIP_CLASSES) is False
+                    (pfile.as_posix().endswith(('.java', '.kt'))
+                     and any(skip_path in pfile.as_posix()
+                             for skip_path in skp) is False)
                 ):
-                    dat = ''
-                    with io.open(
-                        jfile_path,
-                        mode='r',
-                        encoding='utf8',
-                        errors='ignore',
-                    ) as file_pointer:
-                        dat = file_pointer.read()
-
-                    # Code Analysis
-                    relative_java_path = jfile_path.replace(java_src, '')
-
-                    code_rule_matcher(
-                        code_findings,
-                        list(perms.keys()),
-                        dat,
-                        relative_java_path,
-                        code_rules,
-                        match_command)
-                    # API Check
-                    api_rule_matcher(api_findings, list(perms.keys()),
-                                     dat, relative_java_path,
-                                     api_rules, match_command)
-                    # Extract URLs and Emails
+                    relative_java_path = pfile.as_posix().replace(java_src, '')
                     urls, urls_nf, emails_nf = url_n_email_extract(
-                        dat, relative_java_path)
+                        pfile.read_text('utf-8', 'ignore'), relative_java_path)
                     url_list.extend(urls)
                     url_n_file.extend(urls_nf)
                     email_n_file.extend(emails_nf)

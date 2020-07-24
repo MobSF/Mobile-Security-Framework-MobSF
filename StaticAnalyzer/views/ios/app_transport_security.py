@@ -6,7 +6,6 @@ logger = logging.getLogger(__name__)
 
 def check_transport_security(p_list):
     """Check info.plist for insecure connection configurations."""
-    logger.info('Checking for Insecure Connections')
     ats = []
     if 'NSAppTransportSecurity' in p_list:
         ats_dict = p_list['NSAppTransportSecurity']
