@@ -5,17 +5,23 @@ from libsast import Scanner
 
 def scan(rule, extensions, paths, ignore_paths=None):
     """The libsast scan."""
-    options = {
-        'match_rules': rule,
-        'sgrep_rules': None,
-        'sgrep_extensions': None,
-        'match_extensions': extensions,
-        'ignore_filenames': None,
-        'ignore_extensions': None,
-        'ignore_paths': ignore_paths,
-        'show_progress': False}
-    scanner = Scanner(options, paths)
-    return format_findings(scanner.scan()['pattern_matcher'], paths[0])
+    try:
+        options = {
+            'match_rules': rule,
+            'sgrep_rules': None,
+            'sgrep_extensions': None,
+            'match_extensions': extensions,
+            'ignore_filenames': None,
+            'ignore_extensions': None,
+            'ignore_paths': ignore_paths,
+            'show_progress': False}
+        scanner = Scanner(options, paths)
+        res = scanner.scan()
+        if res:
+            return format_findings(res['pattern_matcher'], paths[0])
+    except Exception:
+        logger.exception('libsast scan')
+    return {}
 
 
 def format_findings(findings, root):
