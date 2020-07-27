@@ -1,6 +1,10 @@
 # -*- coding: utf_8 -*-
 """SAST engine."""
+import logging
+
 from libsast import Scanner
+
+logger = logging.getLogger(__name__)
 
 
 def scan(rule, extensions, paths, ignore_paths=None):
