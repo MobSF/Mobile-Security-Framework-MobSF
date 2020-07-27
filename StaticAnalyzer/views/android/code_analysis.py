@@ -29,13 +29,14 @@ def code_analysis(app_dir, typ):
         email_n_file = []
         url_n_file = []
         url_list = []
-
+        app_dir = Path(app_dir)
         if typ == 'apk':
-            java_src = os.path.join(app_dir, 'java_source/')
+            java_src = app_dir / 'java_source'
         elif typ == 'studio':
-            java_src = os.path.join(app_dir, 'app/src/main/java/')
+            java_src = app_dir / 'app' / 'src' / 'main' / 'java'
         elif typ == 'eclipse':
-            java_src = os.path.join(app_dir, 'src/')
+            java_src = app_dir / 'src'
+        java_src = java_src.as_posix() + '/'
         logger.info('Code Analysis Started on - %s',
                     filename_from_path(java_src))
 

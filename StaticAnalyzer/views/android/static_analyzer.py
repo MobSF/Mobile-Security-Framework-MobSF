@@ -5,6 +5,7 @@ import logging
 import os
 import re
 import shutil
+from pathlib import Path
 
 import MalwareAnalyzer.views.Trackers as Trackers
 import MalwareAnalyzer.views.VirusTotal as VirusTotal
@@ -81,17 +82,20 @@ def static_analyzer(request, api=False):
                     typ in ['zip', 'apk']
                 )
         ):
-            app_dic['dir'] = settings.BASE_DIR  # BASE DIR
+            app_dic['dir'] = Path(settings.BASE_DIR)  # BASE DIR
             app_dic['app_name'] = filename  # APP ORGINAL NAME
             app_dic['md5'] = checksum  # MD5
             # APP DIRECTORY
-            app_dic['app_dir'] = os.path.join(settings.UPLD_DIR, app_dic[
-                                              'md5'] + '/')
-            app_dic['tools_dir'] = os.path.join(
-                app_dic['dir'], 'StaticAnalyzer/tools/')  # TOOLS DIR
+            app_dic['app_dir'] = Path(settings.UPLD_DIR) / checksum
+            app_dic['tools_dir'] = app_dic['dir'] / 'StaticAnalyzer' / 'tools'
+            app_dic['tools_dir'] = app_dic['tools_dir'].as_posix()
             logger.info('Starting Analysis on : %s', app_dic['app_name'])
 
             if typ == 'apk':
+                app_dic['app_file'] = app_dic['md5'] + '.apk'  # NEW FILENAME
+                app_dic['app_path'] = (
+                    app_dic['app_dir'] / app_dic['app_file']).as_posix()
+                app_dic['app_dir'] = app_dic['app_dir'].as_posix() + '/'
                 # Check if in DB
                 # pylint: disable=E1101
                 db_entry = StaticAnalyzerAndroid.objects.filter(
@@ -99,17 +103,11 @@ def static_analyzer(request, api=False):
                 if db_entry.exists() and rescan == '0':
                     context = get_context_from_db_entry(db_entry)
                 else:
-                    app_dic['app_file'] = app_dic[
-                        'md5'] + '.apk'  # NEW FILENAME
-                    app_dic['app_path'] = (app_dic['app_dir']
-                                           + app_dic['app_file'])  # APP PATH
-
                     # ANALYSIS BEGINS
                     app_dic['size'] = str(
                         file_size(app_dic['app_path'])) + 'MB'  # FILE SIZE
                     app_dic['sha1'], app_dic[
                         'sha256'] = hash_gen(app_dic['app_path'])
-
                     app_dic['files'] = unzip(
                         app_dic['app_path'], app_dic['app_dir'])
                     if not app_dic['files']:
@@ -271,8 +269,7 @@ def static_analyzer(request, api=False):
                 if settings.VT_ENABLED:
                     vt = VirusTotal.VirusTotal()
                     context['virus_total'] = vt.get_result(
-                        os.path.join(app_dic['app_dir'],
-                                     app_dic['md5']) + '.apk',
+                        app_dic['app_path'],
                         app_dic['md5'])
                 template = 'static_analysis/android_binary_analysis.html'
                 if api:
@@ -291,15 +288,15 @@ def static_analyzer(request, api=False):
                 app_dic['strings'] = ''
                 app_dic['zipped'] = ''
                 # Above fields are only available for APK and not ZIP
+                app_dic['app_file'] = app_dic['md5'] + '.zip'  # NEW FILENAME
+                app_dic['app_path'] = (
+                    app_dic['app_dir'] / app_dic['app_file']).as_posix()
+                app_dic['app_dir'] = app_dic['app_dir'].as_posix() + '/'
                 db_entry = StaticAnalyzerAndroid.objects.filter(
                     MD5=app_dic['md5'])
                 if db_entry.exists() and rescan == '0':
                     context = get_context_from_db_entry(db_entry)
                 else:
-                    app_dic['app_file'] = app_dic[
-                        'md5'] + '.zip'  # NEW FILENAME
-                    app_dic['app_path'] = (app_dic['app_dir']
-                                           + app_dic['app_file'])  # APP PATH
                     logger.info('Extracting ZIP')
                     app_dic['files'] = unzip(
                         app_dic['app_path'], app_dic['app_dir'])
