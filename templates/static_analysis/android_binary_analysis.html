@@ -793,8 +793,8 @@
                     {{ details.metadata.description }}
                     </td>
                     <td>
-                    {% for file_meta in details.files %}
-                    <a href="../ViewSource/?file={{ file_meta.file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ file_meta.match_lines.0 }}:{{ file_meta.match_lines.1 }}"> {{ file_meta.file_path }}</a>
+                     {% for file_path, lines in details.files.items %}
+                    <a href="../ViewSource/?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines }}"> {{ file_path }}</a>
                     <br/>
                     {% endfor %}
                     </td>
@@ -999,8 +999,8 @@
                       {% if details.metadata.masvs %}</br> <strong>OWASP MASVS: </strong>{{ details.metadata.masvs }}{% endif %}
                   </td>
                   <td>
-                  {% for file_meta in details.files %}
-                   <a href="../ViewSource/?file={{ file_meta.file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ file_meta.match_lines.0 }}:{{ file_meta.match_lines.1 }}"> {{ file_meta.file_path }}</a>
+                  {% for file_path, lines in details.files.items %}
+                   <a href="../ViewSource/?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines}}"> {{ file_path }}</a>
                   <br/>
                   {% endfor %}
                   </td>

@@ -1,5 +1,4 @@
 import logging
-import os
 from pathlib import Path
 from enum import Enum
 
@@ -57,24 +56,23 @@ def ios_source_analysis(src):
         api_findings = scan(
             api_rules.as_posix(),
             {'.m', '.swift'},
-            [src])
+            [src],
+            settings.SKIP_CLASS_PATH)
 
         # Extract URLs and Emails
         skp = settings.SKIP_CLASS_PATH
-        for root, _, files in os.walk(src):
-            for filename in files:
-                pfile = Path(os.path.join(root, filename))
-                if (
-                    (pfile.as_posix().endswith(('.m', '.swift'))
-                     and any(skip_path in pfile.as_posix()
-                             for skip_path in skp) is False)
-                ):
-                    relative_java_path = pfile.as_posix().replace(src, '')
-                    urls, urls_nf, emails_nf = url_n_email_extract(
-                        pfile.read_text('utf-8', 'ignore'), relative_java_path)
-                    url_list.extend(urls)
-                    url_n_file.extend(urls_nf)
-                    email_n_file.extend(emails_nf)
+        for pfile in Path(src).rglob('*'):
+            if (
+                (pfile.suffix in ('.m', '.swift')
+                    and any(skip_path in pfile.as_posix()
+                            for skip_path in skp) is False)
+            ):
+                relative_java_path = pfile.as_posix().replace(src, '')
+                urls, urls_nf, emails_nf = url_n_email_extract(
+                    pfile.read_text('utf-8', 'ignore'), relative_java_path)
+                url_list.extend(urls)
+                url_n_file.extend(urls_nf)
+                email_n_file.extend(emails_nf)
 
         if not source_types:
             source_type = _SourceType.nocode.value

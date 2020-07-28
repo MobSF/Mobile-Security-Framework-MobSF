@@ -485,8 +485,8 @@
                       {% if details.metadata.masvs %}</br> <strong>OWASP MASVS: </strong>{{ details.metadata.masvs }}{% endif %}
                   </td>
                  <td style="word-break:break-all;">
-                  {% for file_meta in details.files %}
-                    {{ file_meta.file_path }}
+                  {% for file_path in details.files %}
+                    {{ file_path }}
                   <br/>
                   {% endfor %}
                   </td>

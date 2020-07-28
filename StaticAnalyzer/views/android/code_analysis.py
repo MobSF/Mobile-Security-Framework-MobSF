@@ -2,7 +2,6 @@
 """Module holding the functions for code analysis."""
 
 import logging
-import os
 from pathlib import Path
 
 from django.conf import settings
@@ -49,24 +48,23 @@ def code_analysis(app_dir, typ):
         api_findings = scan(
             api_rules.as_posix(),
             {'.java', '.kt'},
-            [java_src])
+            [java_src],
+            settings.SKIP_CLASS_PATH)
 
         skp = settings.SKIP_CLASS_PATH
         # Extract URLs and Emails
-        for root, _, files in os.walk(java_src):
-            for filename in files:
-                pfile = Path(os.path.join(root, filename))
-                if (
-                    (pfile.as_posix().endswith(('.java', '.kt'))
-                     and any(skip_path in pfile.as_posix()
-                             for skip_path in skp) is False)
-                ):
-                    relative_java_path = pfile.as_posix().replace(java_src, '')
-                    urls, urls_nf, emails_nf = url_n_email_extract(
-                        pfile.read_text('utf-8', 'ignore'), relative_java_path)
-                    url_list.extend(urls)
-                    url_n_file.extend(urls_nf)
-                    email_n_file.extend(emails_nf)
+        for pfile in Path(java_src).rglob('*'):
+            if (
+                (pfile.suffix in ('.java', '.kt')
+                    and any(skip_path in pfile.as_posix()
+                            for skip_path in skp) is False)
+            ):
+                relative_java_path = pfile.as_posix().replace(java_src, '')
+                urls, urls_nf, emails_nf = url_n_email_extract(
+                    pfile.read_text('utf-8', 'ignore'), relative_java_path)
+                url_list.extend(urls)
+                url_n_file.extend(urls_nf)
+                email_n_file.extend(emails_nf)
         logger.info('Finished Code Analysis, Email and URL Extraction')
         code_an_dic = {
             'api': api_findings,

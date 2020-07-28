@@ -498,6 +498,7 @@
                 <p align="center">
                   <a href="../StaticAnalyzer/?checksum={{ md5 }}&amp;name={{ file_name }}&amp;type=zip&amp;rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
                   <a target="_blank" href="../ManifestView/?md5={{ md5 }}&amp;type={{ app_type }}&amp;bin=0" role="button" class="btn btn-primary"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
+                  <a href="../Java/?md5={{ md5 }}&amp;type={{ app_type }}" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Java</a>
                 </p>
               </div>
             </div><!-- /.card -->
@@ -584,8 +585,8 @@
                     {{ details.metadata.description }}
                     </td>
                     <td>
-                    {% for file_meta in details.files %}
-                    <a href="../ViewSource/?file={{ file_meta.file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ file_meta.match_lines.0 }}:{{ file_meta.match_lines.1 }}"> {{ file_meta.file_path }}</a>
+                    {% for file_path, lines in details.files.items %}
+                    <a href="../ViewSource/?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines }}"> {{ file_path }}</a>
                     <br/>
                     {% endfor %}
                     </td>
@@ -790,8 +791,8 @@
                       {% if details.metadata.masvs %}</br> <strong>OWASP MASVS: </strong>{{ details.metadata.masvs }}{% endif %}
                   </td>
                   <td>
-                  {% for file_meta in details.files %}
-                   <a href="../ViewSource/?file={{ file_meta.file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ file_meta.match_lines.0 }}:{{ file_meta.match_lines.1 }}"> {{ file_meta.file_path }}</a>
+                   {% for file_path, lines in details.files.items %}
+                   <a href="../ViewSource/?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines }}"> {{ file_path }}</a>
                   <br/>
                   {% endfor %}
                   </td>

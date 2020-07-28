@@ -35,6 +35,21 @@ def format_findings(findings, root):
         for file_meta in details['files']:
             file_meta['file_path'] = file_meta[
                 'file_path'].replace(root, '', 1)
-            tmp_dict[file_meta['file_path']] = file_meta
-        details['files'] = list(tmp_dict.values())
+            file_path = file_meta['file_path']
+            start = file_meta['match_lines'][0]
+            end = file_meta['match_lines'][1]
+            if start == end:
+                match_lines = start
+            else:
+                exp_lines = []
+                for i in range(start, end + 1):
+                    exp_lines.append(i)
+                match_lines = ','.join(str(m) for m in exp_lines)
+            if file_path not in tmp_dict:
+                tmp_dict[file_path] = str(match_lines)
+            elif tmp_dict[file_path].endswith(','):
+                tmp_dict[file_path] += str(match_lines)
+            else:
+                tmp_dict[file_path] += ',' + str(match_lines)
+        details['files'] = tmp_dict
     return findings
