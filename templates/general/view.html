@@ -113,8 +113,12 @@ pre {
     if (toolbar)
       toolbar.style.display = 'none';
     const hcls = document.getElementsByClassName("enlighter-special")[0];
-    if (hcls)
-      hcls.scrollIntoViewIfNeeded();
+    if (hcls){
+      if (hcls.scrollIntoViewIfNeeded)
+        hcls.scrollIntoViewIfNeeded();
+      else
+        hcls.scrollIntoView();
+    }
     
 </script>
 {% endblock %}
