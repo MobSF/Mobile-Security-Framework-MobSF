@@ -492,8 +492,9 @@ def valid_android_zip(app_dir):
         man = os.path.isfile(
             os.path.join(app_dir, 'app/src/main/AndroidManifest.xml'),
         )
-        src = os.path.exists(os.path.join(app_dir, 'app/src/main/java/'))
-        if man and src:
+        java = os.path.exists(os.path.join(app_dir, 'app/src/main/java/'))
+        kotlin = os.path.exists(os.path.join(app_dir, 'app/src/main/kotlin/'))
+        if man and (java or kotlin):
             return 'studio', True
         # iOS Source
         xcode = [f for f in os.listdir(app_dir) if f.endswith('.xcodeproj')]

@@ -241,7 +241,7 @@ else:
         'android/content/', 'com/twitter/', 'twitter4j/',
         'android/support/', 'org/apache/', 'oauth/signpost',
         'android/arch', 'org/chromium/', 'com/facebook',
-        'kotlin/', 'org/spongycastle', 'org/bouncycastle',
+        'org/spongycastle', 'org/bouncycastle',
         'com/amazon/identity/', 'io/fabric/sdk',
         'com/instabug', 'com/crashlytics/android',
     }

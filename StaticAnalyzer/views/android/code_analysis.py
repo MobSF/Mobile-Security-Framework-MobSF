@@ -30,36 +30,39 @@ def code_analysis(app_dir, typ):
         url_list = []
         app_dir = Path(app_dir)
         if typ == 'apk':
-            java_src = app_dir / 'java_source'
+            src = app_dir / 'java_source'
         elif typ == 'studio':
-            java_src = app_dir / 'app' / 'src' / 'main' / 'java'
+            src = app_dir / 'app' / 'src' / 'main' / 'java'
+            kt = app_dir / 'app' / 'src' / 'main' / 'kotlin'
+            if not src.exists() and kt.exists():
+                src = kt
         elif typ == 'eclipse':
-            java_src = app_dir / 'src'
-        java_src = java_src.as_posix() + '/'
+            src = app_dir / 'src'
+        src = src.as_posix() + '/'
         logger.info('Code Analysis Started on - %s',
-                    filename_from_path(java_src))
+                    filename_from_path(src))
 
         # Code and API Analysis
         code_findings = scan(
             code_rules.as_posix(),
             {'.java', '.kt'},
-            [java_src],
+            [src],
             settings.SKIP_CLASS_PATH)
         api_findings = scan(
             api_rules.as_posix(),
             {'.java', '.kt'},
-            [java_src],
+            [src],
             settings.SKIP_CLASS_PATH)
 
         skp = settings.SKIP_CLASS_PATH
         # Extract URLs and Emails
-        for pfile in Path(java_src).rglob('*'):
+        for pfile in Path(src).rglob('*'):
             if (
                 (pfile.suffix in ('.java', '.kt')
                     and any(skip_path in pfile.as_posix()
                             for skip_path in skp) is False)
             ):
-                relative_java_path = pfile.as_posix().replace(java_src, '')
+                relative_java_path = pfile.as_posix().replace(src, '')
                 urls, urls_nf, emails_nf = url_n_email_extract(
                     pfile.read_text('utf-8', 'ignore'), relative_java_path)
                 url_list.extend(urls)

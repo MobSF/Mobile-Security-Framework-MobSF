@@ -30,6 +30,9 @@ def run(request):
             src = upl / 'src'
         elif typ == 'studio':
             src = upl / 'app' / 'src' / 'main' / 'java'
+            kt = upl / 'app' / 'src' / 'main' / 'kotlin'
+            if not src.exists() and kt.exists():
+                src = kt
         elif typ == 'apk':
             src = upl / 'java_source'
         else:
