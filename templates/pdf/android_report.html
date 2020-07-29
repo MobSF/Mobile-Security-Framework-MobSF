@@ -158,20 +158,30 @@
         <div class="panel-body">
               <p class="wrapped-text">{{ certificate_analysis.certificate_info }}</p>
               <!--Cert status-->
-              {% if certificate_analysis.certificate_status == "good" %}
-                <h5>Certificate Status:</h5> <span class="success">Good</span><br />
-                <h5>Description: </h5> {{ certificate_analysis.description }}<br />
-              {% elif certificate_analysis.certificate_status == "bad" %}
-                <h5>Certificate Status: </h5> <span class="danger">Bad</span><br />
-                <h5>Description:</h5> {{ certificate_analysis.description }}<br />
-              {% elif  certificate_analysis.certificate_status == "missing" %}
-                <h5>Certificate Status: </h5> <span class="warning">Certificate missing</span><br />
-                <h5>Description:</h5> {{ certificate_analysis.description }}<br />
-              {% elif certificate_analysis.certificate_status == "warning" %}
-                <h5>Certificate Status: </h5> <span class="warning">Warning</span><br />
-                <h5>Description:</h5> {{ certificate_analysis.description }}<br />
-              {% endif %}
-              
+                 <table class="basic">
+                      <thead>
+                          <tr>
+                              <th>STATUS</th>
+                              <th>DESCRIPTION</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          {% for find in certificate_analysis.certificate_findings %}
+                          <tr>
+                          <td>
+                          {% if find.0 == 'bad' %}
+                            <span class="danger">bad</span>
+                          {% elif find.0  == 'good' %}
+                            <span class="success">secure</span>
+                          {% elif find.0  == 'warning' %}
+                            <span class="warning">warning</span>
+                          {% endif %}
+                          </td>
+                          <td>{{ find.1 }}</td>
+                          </tr>
+                          {% endfor %}
+                      </tbody>
+                  </table>
         </div>
       {% endif %}
       {% if permissions %}
@@ -185,8 +195,8 @@
                 <th>INFO </th>
                 <th>DESCRIPTION</th>
               </tr>
-                                </thead>
-                                <tbody>
+            </thead>
+            <tbody>
             {% for perm,desc in permissions.items %}
             <tr>
             <td>{{ perm }}</td>
