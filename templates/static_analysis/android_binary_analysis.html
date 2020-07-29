@@ -708,6 +708,7 @@
               <table id="table_binary" class="table table-bordered table-hover table-striped">
                   <thead>
                       <tr>
+                          <th>NO</th>
                           <th>ISSUE</th>
                           <th>SEVERITY</th>
                           <th>DESCRIPTION</th>
@@ -718,6 +719,7 @@
                   <tbody>
                     {% for item in binary_analysis %}
                       <tr>
+                        <td>{{ forloop.counter }}</td>
                         <td>
                         {{item|key:"title" | safe}}
                         </td>
@@ -742,6 +744,7 @@
                      {% endfor %}
                     {% if not binary_analysis  %}
                        <tr>
+                         <td></td>
                          <td>
                            <p> No issue found </p>
                          </td>
@@ -905,6 +908,7 @@
                 <table id="table_manifest" class="table table-bordered table-hover table-striped">
                       <thead>
                       <tr>
+                          <th>NO</th>
                           <th>ISSUE</th>
                           <th>SEVERITY</th>
                           <th>DESCRIPTION</th>
@@ -914,6 +918,7 @@
                                       
                     {% for item in manifest_analysis %}
                       <tr>
+                        <td>{{ forloop.counter }}</td>
                         <td>
                         {{item|key:"title" | safe}}
                         </td>
@@ -959,6 +964,7 @@
                 <table id="table_code" class="table table-bordered table-hover table-striped">
                     <thead>
                     <tr>
+                      <th>NO</th>
                       <th>ISSUE</th>
                       <th>SEVERITY</th>
                       <th>STANDARDS</th>
@@ -968,6 +974,7 @@
                       <tbody>
                {% for rule, details in code_analysis.items %}
                   <tr>
+                  <td>{{ forloop.counter }}</td>
                   <td>
                   {{ details.metadata.description }}
                   </td>
@@ -1031,6 +1038,7 @@
                 <table id="table_file" class="table table-bordered table-hover table-striped">
                     <thead>
                         <tr>
+                            <th>NO</th>
                             <th>ISSUE</th>
                             <th>FILES</th>
                         </tr>
@@ -1038,6 +1046,7 @@
                     <tbody>
                   {% for item in file_analysis %}
                     <tr>
+                    <td>{{ forloop.counter }}</td>
                     <td>
                     {{ item|key:"finding" }}
                     </td>

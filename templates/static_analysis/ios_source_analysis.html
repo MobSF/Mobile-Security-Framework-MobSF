@@ -518,6 +518,7 @@
 
                   <thead>
                       <tr>
+                        <th>NO</th>
                         <th>ISSUE</th>
                         <th>STATUS</th>
                         <th>DESCRIPTION</th>
@@ -527,6 +528,7 @@
                     {% if ats_analysis|length > 0 %}
                       {% for findings in ats_analysis %}
                       <tr>
+                        <td>{{ forloop.counter }}</td>
                         <td>
                         {{findings.issue}}
                         <td>
@@ -547,6 +549,7 @@
                       {% endfor %}
                     {% else %}
                     <tr>
+                      <td></td>
                       <td>
                         No ATS exceptions found.
                       <td>
@@ -584,6 +587,7 @@
                    <table class="table table-bordered table-hover table-striped">
                   <thead>
                       <tr>
+                          <th>NO</th>
                           <th>ISSUE</th>
                           <th>SEVERITY</th>
                           <th>STANDARDS</th>
@@ -594,6 +598,7 @@
                   <tbody>
                     {% for rule, details in code_analysis.items %}
                   <tr>
+                  <td>{{ forloop.counter }}</td>
                   <td>
                   {{ details.metadata.description }}
                   </td>
@@ -658,6 +663,7 @@
                  <table class="table table-bordered table-hover table-striped">
                   <thead>
                       <tr>
+                          <th>NO</th>
                           <th>ISSUE</th>
                           <th>FILES</th>
                       </tr>
@@ -665,6 +671,7 @@
                   <tbody>
                     {% for item in file_analysis %}
                     <tr>
+                      <td>{{ forloop.counter }}</td>
                       <td>
                         {{ item.issue }}
                       </td>

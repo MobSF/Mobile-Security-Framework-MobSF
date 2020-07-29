@@ -205,6 +205,7 @@
        <table class="basic">
                     <thead>
                         <tr>
+                            <th>NO</th>
                             <th>ISSUE</th>
                             <th>SEVERITY</th>
                             <th>DESCRIPTION</th>
@@ -215,6 +216,7 @@
                     <tbody>
                     {% for item in binary_analysis %}
                       <tr>
+                        <td>{{ forloop.counter }}</td>
                         <td>
                         {{item|key:"title" | safe}}
                         </td>
@@ -408,14 +410,16 @@
      <table class="basic">
                     <thead>
                         <tr>
+                            <th>NO</th>
                             <th>ISSUE</th>
                             <th>SEVERITY</th>
-												<th>DESCRIPTION</th>
+												    <th>DESCRIPTION</th>
                                 </tr>
                             </thead>
                             <tbody>
 									  {% for item in manifest_analysis %}
                       <tr>
+                        <td>{{ forloop.counter }}</td>
                         <td>
                         {{item|key:"title" | safe}}
                         </td>
@@ -445,6 +449,7 @@
        <table class="basic">
                 <thead>
                     <tr>
+                        <th>NO</th>
                         <th>ISSUE</th>
                         <th>SEVERITY</th>
                         <th>STANDARDS</th>
@@ -454,6 +459,7 @@
                 <tbody>
                    {% for rule, details in code_analysis.items %}
                   <tr>
+                  <td>{{ forloop.counter }}</td>
                   <td width="25%">
                   {{ details.metadata.description }}
                   </td>

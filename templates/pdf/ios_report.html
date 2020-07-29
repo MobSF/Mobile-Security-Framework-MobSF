@@ -217,6 +217,7 @@
        <table class="basic">
                    <thead>
                       <tr>
+                        <th>NO</th>
                         <th>ISSUE</th>
                         <th>STATUS</th>
                         <th>DESCRIPTION</th>
@@ -226,6 +227,7 @@
                     {% if ats_analysis|length > 0 %}
                       {% for findings in ats_analysis %}
                         <tr>
+                          <td>{{ forloop.counter }}</td>
                           <td>
                           {{findings.issue}}
                           <td>
@@ -325,6 +327,7 @@
        <table class="basic">
                   <thead>
                       <tr>
+                          <th>NO</th>
                           <th>ISSUE</th>
                           <th>SEVERITY</th>
                           <th>STANDARDS</th>
@@ -335,6 +338,7 @@
                      <tbody>
                    {% for issue, details in binary_analysis.items %}
                     <tr>
+                      <td>{{ forloop.counter }}</td>
                       <td>
                         {{ issue }}
                       </td>
@@ -378,6 +382,7 @@
        <table class="basic">
                 <thead>
                     <tr>
+                        <th>NO</th>
                         <th>ISSUE</th>
                         <th>SEVERITY</th>
                         <th>STANDARDS</th>
@@ -387,6 +392,7 @@
                 <tbody>
 									 {% for rule, details in code_analysis.items %}
                   <tr>
+                  <td>{{ forloop.counter }}</td>
                   <td width="25%">
                    {{ details.metadata.description }}
                   </td>
