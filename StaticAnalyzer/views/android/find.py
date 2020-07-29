@@ -33,7 +33,7 @@ def run(request):
             if not src.exists() and kt.exists():
                 src = kt
                 ext = '*.kt'
-        elif code == 'java':
+        elif code == 'apk':
             src = base / 'java_source'
         elif code == 'smali':
             src = base / 'smali_source'
