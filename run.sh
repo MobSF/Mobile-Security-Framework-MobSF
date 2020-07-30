@@ -1,7 +1,4 @@
 #!/bin/bash
-# Dev Server
-#. venv/bin/activate && python manage.py runserver
-# Prod Server
 var="$1"
 
 function validate_ip () {
@@ -48,4 +45,4 @@ if [ ! -z "$var" ]; then
     IP='0.0.0.0'
     PORT='8000'
 fi	 
-. venv/bin/activate && LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8' gunicorn -b ${IP}:${PORT} MobSF.wsgi:application --workers=1 --threads=10 --timeout=1800
+. venv/bin/activate && gunicorn -b ${IP}:${PORT} MobSF.wsgi:application --workers=1 --threads=10 --timeout=1800
