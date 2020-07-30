@@ -5,7 +5,7 @@
       sidebar-collapse
 {% endblock %}
 {% block extra_css %}
-<link rel="stylesheet" href="{% static "others/css/xcode.min.css" %}">
+<link rel="stylesheet" href="{% static "enlighterjs/enlighterjs.min.css" %}" />
 <style>
 pre {
   white-space: pre-wrap;       /* css-3 */
@@ -14,6 +14,12 @@ pre {
   white-space: -o-pre-wrap;    /* Opera 7 */
   word-wrap: break-word;       /* Internet Explorer 5.5+ */
   }
+
+  /* custom yellow line highlight */
+  .enlighter-t-enlighter div.enlighter>div.enlighter-special {
+    background-color: #fff8bb;
+  }
+
 </style>
 {% endblock %}
 {% block content %}
@@ -59,7 +65,7 @@ pre {
                         </div>
                       {% endfor %}
                       {% else %}
-                        <pre><code class="{{ type }}">{{ dat }}</code></pre>
+                        <pre id="code_block">{{ dat }}</pre>
                       {% endif %}
                         </div>
                         <!-- /.box-body -->
@@ -73,7 +79,46 @@ pre {
 {% endblock %}
 
 {% block extra_scripts %}
-<script type="text/javascript" src="{% static "others/js/highlight.min.js" %}"></script>
-<script type="text/javascript" src="{% static "others/js/asciidoc.min.js" %}"></script>
-<script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript" src="{% static "enlighterjs/enlighterjs.min.js" %}"></script>
+
+<!-- Init Code -->
+<script type="text/javascript">
+    const get_lines = function(){
+        const pat = new RegExp(/^[\d,]{1,1000}$/);
+        const urlParams = new URLSearchParams(window.location.search);
+        var lines = urlParams.get("lines");
+        if (!pat.test(lines)){
+          return 0;
+        } else {
+          const parts = lines.split(",");
+          for (i = 0; i < parts.length; i++) {
+             if (parseInt(parts[i]) > 50000)
+               return 0;
+          }
+          return lines;
+        }
+        return 0;
+    }
+    code_blk = document.getElementById('code_block');
+    if (code_blk){
+        EnlighterJS.enlight(code_blk, {
+          theme: 'enlighter',
+          linehover: false,
+          textOverflow: 'scroll',
+          highlight: get_lines(),
+          language: '{{ type }}',
+        });
+    }
+    const toolbar = document.getElementsByClassName("enlighter-toolbar")[0];
+    if (toolbar)
+      toolbar.style.display = 'none';
+    const hcls = document.getElementsByClassName("enlighter-special")[0];
+    if (hcls){
+      if (hcls.scrollIntoViewIfNeeded)
+        hcls.scrollIntoViewIfNeeded();
+      else
+        hcls.scrollIntoView();
+    }
+    
+</script>
 {% endblock %}

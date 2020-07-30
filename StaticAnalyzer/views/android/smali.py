@@ -2,9 +2,8 @@
 """List all smali files."""
 
 import logging
-import os
 import re
-import shutil
+from pathlib import Path
 
 from django.conf import settings
 from django.shortcuts import render
@@ -22,22 +21,15 @@ def run(request):
         match = re.match('^[0-9a-f]{32}$', request.GET['md5'])
         if not match:
             return print_n_send_error_response(request, 'Scan hash not found')
+        skip_path = settings.SKIP_CLASS_PATH
         md5 = request.GET['md5']
-        src = os.path.join(settings.UPLD_DIR, md5 + '/smali_source/')
+        src = Path(settings.UPLD_DIR) / md5 / 'smali_source'
         smali_files = []
-        # pylint: disable=unused-variable
-        # Needed by os.walk
-        for dir_name, _sub_dir, files in os.walk(src):
-            for jfile in files:
-                if jfile.endswith('.smali'):
-                    file_path = os.path.join(src, dir_name, jfile)
-                    if '+' in jfile:
-                        fp2 = os.path.join(
-                            src, dir_name, jfile.replace('+', 'x'))
-                        shutil.move(file_path, fp2)
-                        file_path = fp2
-                    fileparam = file_path.replace(src, '')
-                    smali_files.append(escape(fileparam))
+        for smali_file in src.rglob('*.smali'):
+            smali_file = smali_file.as_posix()
+            if any(skp in smali_file for skp in skip_path) is False:
+                relative_path = smali_file.replace(src.as_posix() + '/', '')
+                smali_files.append(escape(relative_path))
         context = {
             'title': 'Smali Source',
             'files': smali_files,

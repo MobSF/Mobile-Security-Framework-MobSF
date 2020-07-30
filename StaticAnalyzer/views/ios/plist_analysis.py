@@ -102,6 +102,8 @@ def plist_analysis(src, is_source):
             'CFBundleURLTypes', [])
         plist_info['bundle_supported_platforms'] = plist_obj.get(
             'CFBundleSupportedPlatforms', [])
+        logger.info('Checking Permissions')
+        logger.info('Checking for Insecure Connections')
         for plist_file_ in plist_files:
             plist_obj_ = plistlib.readPlist(plist_file_)
             # Check for app-permissions

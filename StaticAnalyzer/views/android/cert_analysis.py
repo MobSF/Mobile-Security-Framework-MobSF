@@ -48,7 +48,6 @@ def cert_info(app_dir, app_file):
     try:
         logger.info('Reading Code Signing Certificate')
         manifestfile = None
-        status = ''
         manidat = ''
         cert_info = ''
         certlist = []
@@ -112,29 +111,46 @@ def cert_info(app_dir, app_file):
             with open(manifestfile, 'r', encoding='utf-8') as manifile:
                 manidat = manifile.read()
         sha256_digest = bool(re.findall(r'SHA-256-Digest', manidat))
+        findings = []
         if a.is_signed():
-            status = 'good'
-            desc = 'Certificate looks good.'
+            findings.append((
+                'good',
+                'Application is signed with a code '
+                'signing certificate'))
         else:
-            status = 'missing'
-            desc = 'Certificate is not found'
-        if re.findall(r'CN=Android Debug', cert_info):
+            findings.append((
+                'bad',
+                'Code signing certificate not found'))
+        if a.is_signed_v1():
             status = 'bad'
-            desc = ('This is a debug certificate. Production application'
-                    ' must not be shipped with a debug certificate.')
+            if a.is_signed_v2() or a.is_signed_v3():
+                status = 'warning'
+            findings.append((
+                status,
+                'Application is signed with v1 signature scheme, '
+                'making it vulnerable to Janus vulnerability on '
+                'Android <7.0'))
+        if re.findall(r'CN=Android Debug', cert_info):
+            findings.append((
+                'bad',
+                'Application signed with a debug certificate. '
+                'Production application must not be shipped '
+                'with a debug certificate.'))
         if re.findall(r'Hash Algorithm: sha1', cert_info):
             status = 'bad'
-            desc = ('The app is signed with SHA1withRSA. SHA1 hash algorithm'
-                    ' is known to have collision issues.')
+            desc = (
+                'Application is signed with SHA1withRSA. '
+                'SHA1 hash algorithm is known to have '
+                'collision issues.')
             if sha256_digest:
                 status = 'warning'
-                desc += ('The manifest indicates SHA256withRSA is in use. '
-                         'Please verify this manually.')
-
+                desc += (
+                    ' The manifest file indicates SHA256withRSA'
+                    ' is in use.')
+            findings.append((status, desc))
         cert_dic = {
             'certificate_info': cert_info,
-            'certificate_status': status,
-            'description': desc,
+            'certificate_findings': findings,
         }
         return cert_dic
     except Exception:
