@@ -590,7 +590,7 @@
                   </p>
                   <p>
                     <a target="_blank" href="../ManifestView/?md5={{ md5 }}&amp;type={{ app_type }}&amp;bin=1" role="button" class="btn btn-primary"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
-                    <a href="../Java/?md5={{ md5 }}&amp;type={{ app_type }}" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Java</a>
+                    <a href="../Java/?md5={{ md5 }}&amp;type={{ app_type }}" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Source</a>
                     <a href="../Smali/?md5={{ md5 }}" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Smali</a>
                     </p>
                     <p>
@@ -619,20 +619,32 @@
             </p>
               <pre><code>{{ certificate_analysis.certificate_info }}</code></pre>
               <!--Cert status-->
-              {% if certificate_analysis.certificate_status == "good" %}
-                <strong>Certificate Status: </strong><span class="badge bg-success">Good</span><br />
-                <strong>Description: </strong>{{ certificate_analysis.description }}<br />
-              {% elif certificate_analysis.certificate_status == "bad" %}
-                <strong>Certificate Status: </strong><span class="badge bg-danger">Bad</span><br />
-                <strong>Description:</strong>{{ certificate_analysis.description }}<br />
-              {% elif  certificate_analysis.certificate_status == "missing" %}
-                <strong>Certificate Status: </strong><span class="badge bg-warning">Certificate missing</span><br />
-                <strong>Description:</strong>{{ certificate_analysis.description }}<br />
-              {% elif certificate_analysis.certificate_status == "warning" %}
-                <strong>Certificate Status: </strong><span class="badge bg-warning">Warning</span><br />
-                <strong>Description:</strong>{{ certificate_analysis.description }}<br />
-              {% endif %}
-              
+              <div class="table-responsive">
+                  <table id="table_cert" class="table table-bordered table-hover table-striped">
+                      <thead>
+                          <tr>
+                              <th>STATUS</th>
+                              <th>DESCRIPTION</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          {% for find in certificate_analysis.certificate_findings %}
+                          <tr>
+                          <td>
+                          {% if find.0 == 'bad' %}
+                            <span class="badge bg-danger">bad</span>
+                          {% elif find.0  == 'good' %}
+                            <span class="badge bg-success">secure</span>
+                          {% elif find.0  == 'warning' %}
+                            <span class="badge bg-warning">warning</span>
+                          {% endif %}
+                          </td>
+                          <td>{{ find.1 }}</td>
+                          </tr>
+                          {% endfor %}
+                      </tbody>
+                  </table>
+           </div>
           </div>
         </div><!-- /.card -->
         </div>
@@ -708,6 +720,7 @@
               <table id="table_binary" class="table table-bordered table-hover table-striped">
                   <thead>
                       <tr>
+                          <th>NO</th>
                           <th>ISSUE</th>
                           <th>SEVERITY</th>
                           <th>DESCRIPTION</th>
@@ -718,6 +731,7 @@
                   <tbody>
                     {% for item in binary_analysis %}
                       <tr>
+                        <td>{{ forloop.counter }}</td>
                         <td>
                         {{item|key:"title" | safe}}
                         </td>
@@ -742,6 +756,7 @@
                      {% endfor %}
                     {% if not binary_analysis  %}
                        <tr>
+                         <td></td>
                          <td>
                            <p> No issue found </p>
                          </td>
@@ -776,7 +791,7 @@
         <div class="card">
           <div class="card-body">
               <p>
-             <strong><i class="fab fa-android"></i> ANDROID JAVA API</strong>
+             <strong><i class="fab fa-android"></i> ANDROID API</strong>
              </p>
               <div class="table-responsive">
                 <table id="table_so" class="table table-bordered table-hover table-striped">
@@ -787,14 +802,14 @@
                       </tr>
                     </thead>
                     <tbody>
-                   {% for desc, details in android_api.items %}
+                   {% for rule, details in android_api.items %}
                   <tr>
                     <td>
-                    {{ desc }}
+                    {{ details.metadata.description }}
                     </td>
                     <td>
-                    {% for path in details|key:"path" %}
-                    <a href="../ViewSource/?file={{ path }}&amp;md5={{ md5 }}&amp;type={{app_type}}"> {{ path }}</a>
+                     {% for file_path, lines in details.files.items %}
+                    <a href="../ViewSource/?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines }}"> {{ file_path }}</a>
                     <br/>
                     {% endfor %}
                     </td>
@@ -905,6 +920,7 @@
                 <table id="table_manifest" class="table table-bordered table-hover table-striped">
                       <thead>
                       <tr>
+                          <th>NO</th>
                           <th>ISSUE</th>
                           <th>SEVERITY</th>
                           <th>DESCRIPTION</th>
@@ -914,6 +930,7 @@
                                       
                     {% for item in manifest_analysis %}
                       <tr>
+                        <td>{{ forloop.counter }}</td>
                         <td>
                         {{item|key:"title" | safe}}
                         </td>
@@ -959,48 +976,50 @@
                 <table id="table_code" class="table table-bordered table-hover table-striped">
                     <thead>
                     <tr>
+                      <th>NO</th>
                       <th>ISSUE</th>
                       <th>SEVERITY</th>
                       <th>STANDARDS</th>
                       <th>FILES</th>
                   </tr>
                     </thead>
-                    <tbody>
-               {% for issue, details in code_analysis.items %}
+                      <tbody>
+               {% for rule, details in code_analysis.items %}
                   <tr>
+                  <td>{{ forloop.counter }}</td>
                   <td>
-                  {{ issue }}
+                  {{ details.metadata.description }}
                   </td>
                   <td>
-                    {% if details|key:"level" == "high" %}
+                    {% if details.metadata.severity == "high" %}
                       <span class="badge bg-danger">high</span>
-                      {% elif details|key:"level" == "good" %}
+                      {% elif details.metadata.severity == "good" %}
                       <span class="badge bg-success">secure</span>
-                      {% elif details|key:"level" == "warning" %}
+                      {% elif details.metadata.severity == "warning" %}
                       <span class="badge bg-warning">warning</span>
-                      {% elif details|key:"level" == "info" %}
+                      {% elif details.metadata.severity == "info" %}
                       <span class="badge bg-info">info</span>
                       {% endif %}
                   </td>
                   <td>
                       <strong>CVSS V2:</strong>
-                      {{ details|key:"cvss" }}
-                      {% if details|key:"cvss" > 6 %}
+                      {{ details.metadata.cvss }}
+                      {% if details.metadata.cvss > 6 %}
                         (high)
-                      {% elif details|key:"cvss" == 0 %}
+                      {% elif details.metadata.cvss == 0 %}
                         (info)
-                      {% elif details|key:"cvss" >= 4 %}
+                      {% elif details.metadata.cvss >= 4 %}
                         (medium)
-                      {% elif details|key:"cvss" < 4 %}
+                      {% elif details.metadata.cvss < 4 %}
                         (low)
                       {% endif %}
-                      {% if details|key:"cwe" %}</br> <strong>CWE: </strong>{{ details|key:"cwe" }}{% endif %}
-                      {% if details|key:"owasp" %}</br> <strong>OWASP Top 10: </strong>{{ details|key:"owasp" }}{% endif %}
-                      {% if details|key:"owasp-mstg" %}</br> <strong>OWASP MASVS: </strong>{{ details|key:"owasp-mstg" }}{% endif %}
+                      {% if details.metadata.cwe %}</br> <strong>CWE: </strong>{{ details.metadata.cwe }}{% endif %}
+                      {% if details.metadata|key:"owasp-mobile" %}</br> <strong>OWASP Top 10: </strong>{{ details.metadata|key:"owasp-mobile" }}{% endif %}
+                      {% if details.metadata.masvs %}</br> <strong>OWASP MASVS: </strong>{{ details.metadata.masvs }}{% endif %}
                   </td>
                   <td>
-                  {% for path in details|key:"path" %}
-                   <a href="../ViewSource/?file={{ path }}&amp;md5={{ md5 }}&amp;type={{app_type}}"> {{ path }}</a>
+                  {% for file_path, lines in details.files.items %}
+                   <a href="../ViewSource/?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines}}"> {{ file_path }}</a>
                   <br/>
                   {% endfor %}
                   </td>
@@ -1031,6 +1050,7 @@
                 <table id="table_file" class="table table-bordered table-hover table-striped">
                     <thead>
                         <tr>
+                            <th>NO</th>
                             <th>ISSUE</th>
                             <th>FILES</th>
                         </tr>
@@ -1038,6 +1058,7 @@
                     <tbody>
                   {% for item in file_analysis %}
                     <tr>
+                    <td>{{ forloop.counter }}</td>
                     <td>
                     {{ item|key:"finding" }}
                     </td>

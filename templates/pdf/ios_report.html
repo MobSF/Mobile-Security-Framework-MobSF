@@ -217,6 +217,7 @@
        <table class="basic">
                    <thead>
                       <tr>
+                        <th>NO</th>
                         <th>ISSUE</th>
                         <th>STATUS</th>
                         <th>DESCRIPTION</th>
@@ -226,6 +227,7 @@
                     {% if ats_analysis|length > 0 %}
                       {% for findings in ats_analysis %}
                         <tr>
+                          <td>{{ forloop.counter }}</td>
                           <td>
                           {{findings.issue}}
                           <td>
@@ -325,6 +327,7 @@
        <table class="basic">
                   <thead>
                       <tr>
+                          <th>NO</th>
                           <th>ISSUE</th>
                           <th>SEVERITY</th>
                           <th>STANDARDS</th>
@@ -335,17 +338,18 @@
                      <tbody>
                    {% for issue, details in binary_analysis.items %}
                     <tr>
+                      <td>{{ forloop.counter }}</td>
                       <td>
                         {{ issue }}
                       </td>
                       <td>
-                        {% if details|key:"level" == 'info' %}
+                        {% if details|key:"severity" == 'info' %}
                           <span class='info'>info</span>
-                        {% elif details|key:"level" == 'good' %}
+                        {% elif details|key:"severity" == 'good' %}
                           <span class='success'>secure</span>
-                        {% elif details|key:"level" == 'high' %}
+                        {% elif details|key:"severity" == 'high' %}
                           <span class='danger'>high</span>
-                        {% elif details|key:"level" == 'warning' %}
+                        {% elif details|key:"severity" == 'warning' %}
                           <span class='warning'>warning</span>
                         {% endif %}
                       </td>
@@ -361,8 +365,8 @@
                         <span class="success">{{ details|key:"cvss" }} (low)</span>
                         {% endif %}
                         {% if details|key:"cwe" %}</br> <h5>CWE: </h5>{{ details|key:"cwe" }}{% endif %}
-                        {% if details|key:"owasp" %}</br> <h5>OWASP Top 10: </h5>{{ details|key:"owasp" }}{% endif %}
-                        {% if details|key:"owasp-mstg" %}</br> <h5>OWASP MASVS: </h5>{{ details|key:"owasp-mstg" }}{% endif %}
+                        {% if details|key:"owasp-mobile" %}</br> <h5>OWASP Top 10: </h5>{{ details|key:"owasp-mobile" }}{% endif %}
+                        {% if details|key:"masvs" %}</br> <h5>OWASP MASVS: </h5>{{ details|key:"masvs" }}{% endif %}
                        </td>
                       <td>
                         {{ details|key:"detailed_desc" }}
@@ -378,6 +382,7 @@
        <table class="basic">
                 <thead>
                     <tr>
+                        <th>NO</th>
                         <th>ISSUE</th>
                         <th>SEVERITY</th>
                         <th>STANDARDS</th>
@@ -385,40 +390,41 @@
                     </tr>
                 </thead>
                 <tbody>
-										{% for issue, details in code_analysis.items %}
+									 {% for rule, details in code_analysis.items %}
                   <tr>
+                  <td>{{ forloop.counter }}</td>
                   <td width="25%">
-                  {{ issue }}
+                   {{ details.metadata.description }}
                   </td>
                   <td>
-                    {% if details|key:"level" == "high" %}
+                    {% if details.metadata.severity == "high" %}
                       <span class="danger">high</span>
-                      {% elif details|key:"level" == "good" %}
+                      {% elif details.metadata.severity == "good" %}
                       <span class="success">secure</span>
-                      {% elif details|key:"level" == "warning" %}
+                      {% elif details.metadata.severity == "warning" %}
                       <span class="warning">warning</span>
-                      {% elif details|key:"level" == "info" %}
+                      {% elif details.metadata.severity == "info" %}
                       <span class="info">info</span>
                       {% endif %}
                   </td>
                   <td>
                     <h5>CVSS V2:</h5>
-                    {% if details|key:"cvss" > 6 %}
-                    <span class="danger">{{ details|key:"cvss" }} (high)</span>
-                    {% elif details|key:"cvss" == 0 %}
-                    <span class="info">{{ details|key:"cvss" }} (info)</span>
-                    {% elif details|key:"cvss" >= 4 %}
-                    <span class="warning">{{ details|key:"cvss" }} (medium)</span>
-                    {% elif details|key:"cvss" < 4 %}
-                    <span class="success">{{ details|key:"cvss" }} (low)</span>
+                    {% if details.metadata.cvss > 6 %}
+                    <span class="danger">{{ details.metadata.cvss }} (high)</span>
+                    {% elif details.metadata.cvss == 0 %}
+                    <span class="info">{{ details.metadata.cvss }} (info)</span>
+                    {% elif details.metadata.cvss >= 4 %}
+                    <span class="warning">{{ details.metadata.cvss }} (medium)</span>
+                    {% elif details.metadata.cvss < 4 %}
+                    <span class="success">{{ details.metadata.cvss }} (low)</span>
                     {% endif %}
-                    {% if details|key:"cwe" %}</br> <h5>CWE: </h5>{{ details|key:"cwe" }}{% endif %}
-                    {% if details|key:"owasp" %}</br> <h5>OWASP Top 10: </h5>{{ details|key:"owasp" }}{% endif %}
-                    {% if details|key:"owasp-mstg" %}</br> <h5>OWASP MASVS: </h5>{{ details|key:"owasp-mstg" }}{% endif %}
+                    {% if details.metadata.cwe %}</br> <strong>CWE: </strong>{{details.metadata.cwe }}{% endif %}
+                    {% if details.metadata|key:"owasp-mobile" %}</br> <strong>OWASP Top 10: </strong>{{ details.metadata|key:"owasp-mobile" }}{% endif %}
+                    {% if details.metadata.masvs %}</br> <strong>OWASP MASVS: </strong>{{ details.metadata.masvs  }}{% endif %}
                   </td>
                   <td style="word-break:break-all;">
-                  {% for path in details|key:"path" %}
-                   {{ path }}
+                  {% for file_path in details.files %}
+                   {{ file_path }}
                   </br>
                   {% endfor %}
                   </td>
@@ -427,37 +433,6 @@
 										</tbody>
 										</table>
       {% endif %}
-
-       <!--
-       {% if ios_api %}
-        <h2><i class="fab fa-apple"></i> iOS OBJECTIVE C API</h2>
-            <table class="basic">
-                      <thead>
-                          <tr>
-                        <th>API</th>
-					    <th>FILES</th>
-                            </tr>
-                        </thead>
-
-                          <tbody>
-                  {% for desc, details in ios_api.items %}
-                  <tr>
-                  <td width="25%">
-                  {{ desc }}
-                  </td>
-                  <td style="word-break:break-all;">
-                  {% for path in details|key:"path" %}
-                  {{ path }}
-                  </br>
-                  {% endfor %}
-                  </td>
-                </tr>    
-              {% endfor %} 
-                    </tbody>
-            </table>
-       {% endif %}
-     -->
-
       {% if domains  %}
       <h2><i class="fab fa-searchengin"></i> DOMAIN MALWARE CHECK</h2>
          <table  class="basic">

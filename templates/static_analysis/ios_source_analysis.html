@@ -467,7 +467,7 @@
         <div class="card">
           <div class="card-body">
               <p>
-             <strong><i class="fab fa-apple"></i> iOS OBJECTIVE C API</strong>
+             <strong><i class="fab fa-apple"></i> iOS API</strong>
              </p>
               <div class="table-responsive">
                            <table class="table table-bordered table-hover table-striped">
@@ -478,14 +478,14 @@
                       </tr>
                     </thead>
                     <tbody>
-                  {% for desc, details in ios_api.items %}
+                   {% for rule, details in  ios_api.items %}
                   <tr>
                   <td>
-                  {{ desc }}
+                  {{ details.metadata.description }}
                   </td>
                   <td>
-                  {% for path in details|key:"path" %}
-                   <a href="../ViewFile/?file={{ path }}&amp;md5={{ md5 }}&amp;type=ios"> {{ path }}</a>
+                  {% for file_path, lines  in details.files.items %}
+                   <a href="../ViewFile/?file={{ file_path }}&amp;md5={{ md5 }}&amp;type=ios&amp;lines={{ lines }}"> {{ file_path }}</a>
                   </br>
                   {% endfor %}
                   </td>
@@ -518,6 +518,7 @@
 
                   <thead>
                       <tr>
+                        <th>NO</th>
                         <th>ISSUE</th>
                         <th>STATUS</th>
                         <th>DESCRIPTION</th>
@@ -527,6 +528,7 @@
                     {% if ats_analysis|length > 0 %}
                       {% for findings in ats_analysis %}
                       <tr>
+                        <td>{{ forloop.counter }}</td>
                         <td>
                         {{findings.issue}}
                         <td>
@@ -547,6 +549,7 @@
                       {% endfor %}
                     {% else %}
                     <tr>
+                      <td></td>
                       <td>
                         No ATS exceptions found.
                       <td>
@@ -584,6 +587,7 @@
                    <table class="table table-bordered table-hover table-striped">
                   <thead>
                       <tr>
+                          <th>NO</th>
                           <th>ISSUE</th>
                           <th>SEVERITY</th>
                           <th>STANDARDS</th>
@@ -592,48 +596,49 @@
                       </tr>
                   </thead>
                   <tbody>
-                     {% for issue, details in code_analysis.items %}
+                    {% for rule, details in code_analysis.items %}
                   <tr>
+                  <td>{{ forloop.counter }}</td>
                   <td>
-                  {{ issue }}
+                  {{ details.metadata.description }}
                   </td>
                   <td>
-                    {% if details|key:"level" == "high" %}
+                    {% if details.metadata.severity == "high" %}
                       <span class="badge bg-danger">high</span>
-                      {% elif details|key:"level" == "good" %}
+                      {% elif details.metadata.severity == "good" %}
                       <span class="badge bg-success">secure</span>
-                      {% elif details|key:"level" == "warning" %}
+                      {% elif details.metadata.severity == "warning" %}
                       <span class="badge bg-warning">warning</span>
-                      {% elif details|key:"level" == "info" %}
+                      {% elif details.metadata.severity == "info" %}
                       <span class="badge bg-info">info</span>
-                      {% endif %}
+                    {% endif %}
                   </td>
                   <td>
                       <strong>CVSS V2:</strong>
-                      {{ details|key:"cvss" }}
-                      {% if details|key:"cvss" > 6 %}
+                       {{ details.metadata.cvss }}
+                      {% if details.metadata.cvss > 6 %}
                         (high)
-                      {% elif details|key:"cvss" == 0 %}
+                      {% elif details.metadata.cvss == 0 %}
                         (info)
-                      {% elif details|key:"cvss" >= 4 %}
+                      {% elif details.metadata.cvss >= 4 %}
                         (medium)
-                      {% elif details|key:"cvss" < 4 %}
+                      {% elif details.metadata.cvss < 4 %}
                         (low)
                       {% endif %}
-                      {% if details|key:"cwe" %}</br> <strong>CWE: </strong>{{ details|key:"cwe" }}{% endif %}
-                      {% if details|key:"owasp" %}</br> <strong>OWASP Top 10: </strong>{{ details|key:"owasp" }}{% endif %}
-                      {% if details|key:"owasp-mstg" %}</br> <strong>OWASP MASVS: </strong>{{ details|key:"owasp-mstg" }}{% endif %}
+                      {% if details.metadata.cwe %}</br> <strong>CWE: </strong>{{details.metadata.cwe }}{% endif %}
+                      {% if details.metadata|key:"owasp-mobile" %}</br> <strong>OWASP Top 10: </strong>{{ details.metadata|key:"owasp-mobile" }}{% endif %}
+                      {% if details.metadata.masvs %}</br> <strong>OWASP MASVS: </strong>{{ details.metadata.masvs  }}{% endif %}
                   </td>
                   <td>
-                  {% for path in details|key:"path" %}
-                   <a href="../ViewFile/?file={{ path }}&amp;md5={{ md5 }}&amp;type=ios"> {{ path }}</a>
+                   {% for file_path, lines in details.files.items %}
+                   <a href="../ViewFile/?file={{ file_path }}&amp;md5={{ md5 }}&amp;type=ios&amp;lines={{ lines }}"> {{ file_path }}</a>
                   </br>
                   {% endfor %}
                   </td>
                 </tr>    
               {% endfor %} 
-                    </tbody>
-                    </table>
+           </tbody>
+          </table>
             </div>
           </div>
         </div><!-- /.card -->
@@ -658,6 +663,7 @@
                  <table class="table table-bordered table-hover table-striped">
                   <thead>
                       <tr>
+                          <th>NO</th>
                           <th>ISSUE</th>
                           <th>FILES</th>
                       </tr>
@@ -665,6 +671,7 @@
                   <tbody>
                     {% for item in file_analysis %}
                     <tr>
+                      <td>{{ forloop.counter }}</td>
                       <td>
                         {{ item.issue }}
                       </td>
