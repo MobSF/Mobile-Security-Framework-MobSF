@@ -14,7 +14,7 @@ from StaticAnalyzer.views.sast_core.standards import (
 
 IPA_RULES = [
     {
-        'desc': 'Binary make use of insecure API(s)',
+        'desc': 'Binary makes use of insecure API(s)',
         'detailed_desc': (
                 'The binary may contain'
                 ' the following insecure API(s) {}.'),
@@ -36,7 +36,7 @@ IPA_RULES = [
         'owasp-mstg': OWASP_MSTG['code-8'],
     },
     {
-        'desc': 'Binary make use of some weak Crypto API(s)',
+        'desc': 'Binary makes use of some weak Crypto API(s)',
         'detailed_desc': (
             'The binary may use the'
             ' following weak crypto API(s) {}.'),
@@ -56,7 +56,7 @@ IPA_RULES = [
         'owasp-mstg': OWASP_MSTG['crypto-3'],
     },
     {
-        'desc': 'Binary make use of the following Crypto API(s)',
+        'desc': 'Binary makes use of the following Crypto API(s)',
         'detailed_desc': (
             'The binary may use '
             'the following crypto API(s) {}.'),
@@ -106,7 +106,7 @@ IPA_RULES = [
         'owasp-mstg': '',
     },
     {
-        'desc': 'Binary make use of some weak Hashing API(s)',
+        'desc': 'Binary makes use of some weak Hashing API(s)',
         'detailed_desc': (
             'The binary may use the '
             'following weak hash API(s) {}.'),
@@ -132,7 +132,7 @@ IPA_RULES = [
         'owasp-mstg': OWASP_MSTG['crypto-4'],
     },
     {
-        'desc': 'Binary make use of the following Hash API(s)',
+        'desc': 'Binary makes use of the following Hash API(s)',
         'detailed_desc': (
             'The binary may use the'
             ' following hash API(s) {}.'),
@@ -160,7 +160,7 @@ IPA_RULES = [
         'owasp-mstg': '',
     },
     {
-        'desc': 'Binary make use of the insecure Random function(s)',
+        'desc': 'Binary makes use of the insecure Random function(s)',
         'detailed_desc': (
             'The binary may use the following '
             'insecure Random function(s) {}.'),
@@ -174,7 +174,7 @@ IPA_RULES = [
         'owasp-mstg': OWASP_MSTG['crypto-6'],
     },
     {
-        'desc': 'Binary make use of Logging function',
+        'desc': 'Binary makes use of Logging function',
         'detailed_desc': (
             'The binary may use {}'
             ' function for logging.'),
@@ -188,7 +188,7 @@ IPA_RULES = [
         'owasp-mstg': OWASP_MSTG['storage-3'],
     },
     {
-        'desc': 'Binary make use of malloc function',
+        'desc': 'Binary makes use of malloc function',
         'detailed_desc': (
             'The binary may use {}'
             ' function instead of calloc.'),
