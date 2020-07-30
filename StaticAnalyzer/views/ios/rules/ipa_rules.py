@@ -6,7 +6,7 @@ from libsast.standards import get_standards
 STDS = get_standards()
 IPA_RULES = [
     {
-        'description': 'Binary make use of insecure API(s)',
+        'description': 'Binary makes use of insecure API(s)',
         'detailed_desc': (
             'The binary may contain'
             ' the following insecure API(s) {}.'),
@@ -28,7 +28,7 @@ IPA_RULES = [
         'masvs': STDS['masvs']['code-8'],
     },
     {
-        'description': 'Binary make use of some weak Crypto API(s)',
+        'description': 'Binary makes use of some weak Crypto API(s)',
         'detailed_desc': (
             'The binary may use the'
             ' following weak crypto API(s) {}.'),
@@ -48,7 +48,7 @@ IPA_RULES = [
         'masvs': STDS['masvs']['crypto-3'],
     },
     {
-        'description': 'Binary make use of the following Crypto API(s)',
+        'description': 'Binary makes use of the following Crypto API(s)',
         'detailed_desc': (
             'The binary may use '
             'the following crypto API(s) {}.'),
@@ -98,7 +98,7 @@ IPA_RULES = [
         'masvs': '',
     },
     {
-        'description': 'Binary make use of some weak Hashing API(s)',
+        'description': 'Binary makes use of some weak Hashing API(s)',
         'detailed_desc': (
             'The binary may use the '
             'following weak hash API(s) {}.'),
@@ -124,7 +124,7 @@ IPA_RULES = [
         'masvs': STDS['masvs']['crypto-4'],
     },
     {
-        'description': 'Binary make use of the following Hash API(s)',
+        'description': 'Binary makes use of the following Hash API(s)',
         'detailed_desc': (
             'The binary may use the'
             ' following hash API(s) {}.'),
@@ -152,7 +152,7 @@ IPA_RULES = [
         'masvs': '',
     },
     {
-        'description': 'Binary make use of the insecure Random function(s)',
+        'description': 'Binary makes use of the insecure Random function(s)',
         'detailed_desc': (
             'The binary may use the following '
             'insecure Random function(s) {}.'),
@@ -166,7 +166,7 @@ IPA_RULES = [
         'masvs': STDS['masvs']['crypto-6'],
     },
     {
-        'description': 'Binary make use of Logging function',
+        'description': 'Binary makes use of Logging function',
         'detailed_desc': (
             'The binary may use {}'
             ' function for logging.'),
@@ -180,7 +180,7 @@ IPA_RULES = [
         'masvs': STDS['masvs']['storage-3'],
     },
     {
-        'description': 'Binary make use of malloc function',
+        'description': 'Binary makes use of malloc function',
         'detailed_desc': (
             'The binary may use {}'
             ' function instead of calloc.'),
