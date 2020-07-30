@@ -2,9 +2,8 @@
 """List all java files."""
 
 import logging
-import os
 import re
-import shutil
+from pathlib import Path
 
 from django.conf import settings
 from django.shortcuts import render
@@ -24,33 +23,31 @@ def run(request):
         if not match:
             return print_n_send_error_response(request, 'Scan hash not found')
         java_files = []
+        skip_path = settings.SKIP_CLASS_PATH
         md5 = request.GET['md5']
+        upl = Path(settings.UPLD_DIR) / md5
         if typ == 'eclipse':
-            src = os.path.join(settings.UPLD_DIR, md5 + '/src/')
+            src = upl / 'src'
         elif typ == 'studio':
-            src = os.path.join(settings.UPLD_DIR, md5
-                               + '/app/src/main/java/')
+            src = upl / 'app' / 'src' / 'main' / 'java'
+            kt = upl / 'app' / 'src' / 'main' / 'kotlin'
+            if not src.exists() and kt.exists():
+                src = kt
         elif typ == 'apk':
-            src = os.path.join(settings.UPLD_DIR, md5 + '/java_source/')
+            src = upl / 'java_source'
         else:
             return print_n_send_error_response(
                 request,
                 'Invalid Directory Structure')
-        # pylint: disable=unused-variable
-        # Needed by os.walk
-        for dir_name, _sub_dir, files in os.walk(src):
-            for jfile in files:
-                if jfile.endswith('.java'):
-                    file_path = os.path.join(src, dir_name, jfile)
-                    if '+' in jfile:
-                        fp2 = os.path.join(
-                            src, dir_name, jfile.replace('+', 'x'))
-                        shutil.move(file_path, fp2)
-                        file_path = fp2
-                    fileparam = file_path.replace(src, '')
-                    if (any(re.search(cls, fileparam)
-                            for cls in settings.SKIP_CLASSES) is False):
-                        java_files.append(escape(fileparam))
+        for java_file in src.rglob('*'):
+            if (
+                (java_file.suffix in ('.java', '.kt')
+                    and any(skp in java_file.as_posix()
+                            for skp in skip_path) is False)
+            ):
+                relative_path = java_file.as_posix().replace(
+                    src.as_posix() + '/', '')
+                java_files.append(escape(relative_path))
         context = {
             'title': 'Java Source',
             'files': java_files,
