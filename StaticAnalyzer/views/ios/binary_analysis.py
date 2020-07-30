@@ -14,10 +14,7 @@ from StaticAnalyzer.views.ios.classdump import get_class_dump
 from StaticAnalyzer.views.ios.otool_analysis import (
     otool_analysis,
 )
-from StaticAnalyzer.views.ios.rules import (
-    ipa_rules,
-)
-from StaticAnalyzer.views.sast_core.rule_matchers import (
+from StaticAnalyzer.views.ios.binary_rule_matcher import (
     binary_rule_matcher,
 )
 from StaticAnalyzer.tools.strings import strings_util
@@ -101,8 +98,7 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
             cdump = get_class_dump(tools_dir, bin_path, app_dir, bin_type)
             binary_rule_matcher(
                 binary_findings,
-                object_data['bindata'] + cdump,
-                ipa_rules.IPA_RULES)
+                object_data['bindata'] + cdump)
             strings_in_ipa = strings_on_ipa(bin_path)
             binary_analysis_dict['libs'] = object_data['libs']
             binary_analysis_dict['bin_res'] = binary_findings

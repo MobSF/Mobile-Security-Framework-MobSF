@@ -79,16 +79,15 @@ def find_icon_path_zip(res_dir, icon_paths_from_manifest):
                         res_dir, path_array[0] + size_str, rel_path + '.png')
                     if os.path.exists(tmp_path):
                         return tmp_path
-            else:
-                if icon_path.starswith('res/') or icon_path.starswith('/res/'):
-                    stripped_relative_path = icon_path.strip(
-                        '/res')  # Works for neither /res and res
-                    full_path = os.path.join(res_dir, stripped_relative_path)
-                    if os.path.exists(full_path):
-                        return full_path
-                    full_path += '.png'
-                    if os.path.exists(full_path):
-                        return full_path
+            elif icon_path.startswith(('res/', '/res/')):
+                stripped_relative_path = icon_path.strip(
+                    '/res')  # Works for neither /res and res
+                full_path = os.path.join(res_dir, stripped_relative_path)
+                if os.path.exists(full_path):
+                    return full_path
+                full_path += '.png'
+                if os.path.exists(full_path):
+                    return full_path
 
             file_name = icon_path.split(os.sep)[-1]
             if file_name.endswith('.png'):

@@ -1,0 +1,85 @@
+- id: api_network_calls
+  description: Network Calls
+  input_case: exact
+  pattern: URLSession|CFStream|NSStream
+  type: Regex
+  severity: info
+- id: api_keychain_access
+  description: Keychain Access.
+  input_case: exact
+  pattern: Keychain|SecItemAdd|SecItemUpdateSecItemCopy|kSecAttr
+  type: Regex
+  severity: info
+- id: api_webview
+  description: WebView Component
+  input_case: exact
+  pattern: UIWebView|WKWebView
+  type: Regex
+  severity: info
+- id: api_safari_view
+  description: SFSafariViewController Componaent
+  input_case: exact
+  pattern: SFSafariViewController
+  type: Regex
+  severity: info
+- id: api_encryption
+  description: Encryption API
+  input_case: exact
+  severity: info
+  pattern: CommonCrypto|CryptoKit
+  type: Regex
+  severity: info
+- id: api_webview_load
+  description: WebView Load Request
+  input_case: exact
+  pattern:
+    - loadRequest
+    - webView
+  type: RegexAnd
+  severity: info
+- id: api_webview_load_string
+  description: WebView Load HTML String
+  input_case: exact
+  pattern:
+    - loadHTMLString
+    - webView
+  type: RegexAnd
+  severity: info
+- id: api_cookie
+  description: Cookie Storage
+  input_case: exact
+  pattern:
+    - HTTPCookieStorage
+    - shared|sharedHTTPCookieStorage
+  type: RegexAnd
+  severity: info
+- id: api_ui_pasteboard
+  description: UIPasteboard
+  input_case: exact
+  pattern: UIPasteboard
+  type: Regex
+  severity: info
+- id: api_userdefaults
+  description: UserDefaults
+  input_case: exact
+  pattern: UserDefaults
+  type: Regex
+  severity: info
+- id: api_core_data
+  description: CoreData
+  input_case: exact
+  pattern: CoreData
+  type: Regex
+  severity: info
+- id: api_local_auth
+  description: Local Authentication Framework
+  input_case: exact
+  pattern: LAContext
+  type: Regex
+  severity: info
+- id: api_uiactivity_share
+  description: UIActivity Sharing
+  input_case: exact
+  pattern: UIActivity
+  type: Regex
+  severity: info

@@ -40,9 +40,6 @@ from StaticAnalyzer.views.ios.db_interaction import (
     get_context_from_db_entry as idb)
 from StaticAnalyzer.views.windows.db_interaction import (
     get_context_from_db_entry as wdb)
-from StaticAnalyzer.views.sast_core.matchers import (
-    Level,
-)
 
 logger = logging.getLogger(__name__)
 try:
@@ -162,6 +159,8 @@ def pdf(request, api=False, jsonres=False):
         context['base_url'] = proto + settings.BASE_DIR
         context['dwd_dir'] = proto + settings.DWD_DIR
         context['host_os'] = host_os
+        context['timestamp'] = RecentScansDB.objects.get(
+            MD5=checksum).TIMESTAMP
         try:
             if api and jsonres:
                 return {'report_dat': context}
@@ -169,6 +168,7 @@ def pdf(request, api=False, jsonres=False):
                 options = {
                     'page-size': 'Letter',
                     'quiet': '',
+                    'enable-local-file-access': '',
                     'no-collate': '',
                     'margin-top': '0.50in',
                     'margin-right': '0.50in',
@@ -313,15 +313,19 @@ def score(findings):
     cvss_scores = []
     avg_cvss = 0
     app_score = 100
-    for _, finding in findings.items():
-        if 'cvss' in finding:
-            if finding['cvss'] != 0:
-                cvss_scores.append(finding['cvss'])
-        if finding['level'] == Level.high.value:
+    for finding in findings.values():
+        find = finding.get('metadata')
+        if not find:
+            # Hack to support iOS Binary Scan Results
+            find = finding
+        if find.get('cvss'):
+            if find['cvss'] != 0:
+                cvss_scores.append(find['cvss'])
+        if find['severity'] == 'high':
             app_score = app_score - 15
-        elif finding['level'] == Level.warning.value:
+        elif find['severity'] == 'warning':
             app_score = app_score - 10
-        elif finding['level'] == Level.good.value:
+        elif find['severity'] == 'good':
             app_score = app_score + 5
     if cvss_scores:
         avg_cvss = round(sum(cvss_scores) / len(cvss_scores), 1)
