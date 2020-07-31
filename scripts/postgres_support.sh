@@ -7,5 +7,5 @@ if [ "$POSTGRES" == True ]; then
  #Enable postgres support
  sed -i '/# Sqlite3 suport/,/# End Sqlite3 support/d' ../MobSF/settings.py && \
  sed -i '/# Postgres DB - Install psycopg2/,/"""/d' ../MobSF/settings.py && \
- sed -i '/# End Postgres support/,/"""/d' ../MobSF/settings.py && \
+ sed -i '/# End Postgres support/,/"""/d' ../MobSF/settings.py
 fi

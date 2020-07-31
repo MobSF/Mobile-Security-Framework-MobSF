@@ -100,14 +100,12 @@ WORKDIR /root/Mobile-Security-Framework-MobSF
 # Add apktool working path
 RUN mkdir -p /root/.local/share/apktool/framework
 
-ADD scripts .
-
 # Expose MobSF Port
 EXPOSE 8000
 # MobSF Proxy
 EXPOSE 1337
 
-RUN chmod 755 ./scripts/entrypoint.sh
+RUN chmod 755 /root/Mobile-Security-Framework-MobSF/scripts/entrypoint.sh
 
 # Run MobSF
-CMD ["./scripts/entrypoint.sh"]
+CMD ["/root/Mobile-Security-Framework-MobSF/scripts/entrypoint.sh"]
