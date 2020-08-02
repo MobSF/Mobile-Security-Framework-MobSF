@@ -231,6 +231,12 @@ class Environment:
              'delete',
              'global',
              'global_http_proxy_port'], True)
+        self.adb_command(
+            ['settings',
+             'put',
+             'global',
+             'http_proxy',
+             ':0'], True)
 
     def enable_adb_reverse_tcp(self, version):
         """Enable ADB Reverse TCP for Proxy."""

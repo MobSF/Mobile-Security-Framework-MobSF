@@ -12,7 +12,10 @@ from StaticAnalyzer.views.android import view_source
 from StaticAnalyzer.views.android.static_analyzer import static_analyzer
 from StaticAnalyzer.views.ios import view_source as ios_view_source
 from StaticAnalyzer.views.ios.static_analyzer import static_analyzer_ios
-from StaticAnalyzer.views.shared_func import pdf
+from StaticAnalyzer.views.shared_func import (
+    compare_apps,
+    pdf,
+)
 from StaticAnalyzer.views.windows import windows
 
 OK = 200
@@ -173,6 +176,26 @@ def api_view_source(request):
             resp = view_source.run(request, api=True)
         else:
             resp = ios_view_source.run(request, api=True)
+        if 'error' in resp:
+            response = make_api_response(resp, 500)
+        else:
+            response = make_api_response(resp, 200)
+    else:
+        response = make_api_response({'error': 'Missing Parameters'}, 422)
+    return response
+
+
+@request_method(['POST'])
+@csrf_exempt
+def api_compare(request):
+    """Compare 2 apps."""
+    params = {'hash1', 'hash2'}
+    if set(request.POST) >= params:
+        resp = compare_apps(
+            request,
+            request.POST['hash1'],
+            request.POST['hash2'],
+            True)
         if 'error' in resp:
             response = make_api_response(resp, 500)
         else:

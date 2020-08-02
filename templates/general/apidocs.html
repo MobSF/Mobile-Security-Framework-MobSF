@@ -36,6 +36,7 @@ pre {
                   <li><code>api/v1/download_pdf</code> - <a href="#generate-pdf-report-api">Download PDF Report</a></li>
                   <li><code>api/v1/report_json</code> - <a href="#generate-json-report-api">Generate JSON Report</a></li>
                   <li><code>api/v1/view_source</code> - <a href="#view-source-api">View Source Files</a></li>
+                  <li><code>api/v1/compare</code> - <a href="#compare-api">Compare Apps</a></li>
                   </ol>
                   <h2><a id="upload-file-api"></a><strong>Upload File API</strong></h2>
                   <p>API to upload a file. Supported file types are apk, zip, ipa and appx.</p>
@@ -251,7 +252,7 @@ pre {
                   </ul>
                   <hr/>
                   <h2><a id="generate-pdf-report-api"></a><strong>Generate PDF Report API</strong></h2>
-                  <p>API to generate PDF Report</p>
+                  <p>API to generate PDF Report.</p>
                   <ul>
                   <li>
                   <p><strong>URL:</strong> <code>/api/v1/download_pdf</code></p>
@@ -315,7 +316,7 @@ pre {
 
                   <hr/>
                   <h2><a id="generate-json-report-api"></a><strong>Generate JSON Report API</strong></h2>
-                  <p>API to generate JSON Report</p>
+                  <p>API to generate JSON Report.</p>
                   <ul>
                   <li>
                   <p><strong>URL:</strong> <code>/api/v1/report_json</code></p>
@@ -379,7 +380,7 @@ pre {
 
                   <hr/>
                   <h2><a id="view-source-api"></a><strong>View Source Files API</strong></h2>
-                  <p>API to view source files</p>
+                  <p>API to view source files.</p>
                   <ul>
                   <li>
                   <p><strong>URL:</strong> <code>/api/v1/view_source</code></p>
@@ -456,8 +457,8 @@ pre {
 
 
                   <hr/>
-                  <h2><a id="recent-scans-api"></a><strong>Display Recent Scans</strong></h2>
-                  <p>API to Display Recent Scans</p>
+                  <h2><a id="recent-scans-api"></a><strong>Display Recent Scans API</strong></h2>
+                  <p>API to Display Recent Scans.</p>
                   <ul>
                   <li>
                   <p><strong>URL:</strong> <code>/api/v1/scans</code></p>
@@ -506,7 +507,7 @@ pre {
                           "id": 1,
                           "FILE_NAME": "xxxxx.ipa",
                           "MD5": "xxxxxxxxxxxxxxxxxxxxxxxxxxx",
-                          "URL": "StaticAnalyzer_iOS/?name=xxxxx.ipa&type=ipa&checksum=xxxxxxxxxxxxxxx",
+                          "URL": "StaticAnalyzer_iOS/?name=xxxxx.ipa&amp;type=ipa&amp;checksum=xxxxxxxxxxxxxxx",
                           "TIMESTAMP": "2019-03-09T08:08:51.813Z"
                         }
                       ],
@@ -533,7 +534,77 @@ pre {
                   <p><strong>Sample Call:</strong></p>
                   <pre><code>curl --url "http://localhost:8000/api/v1/scans" -H "Authorization:{{ api_key}}"
                   </code></pre>
-                  <pre><code>curl --url "http://localhost:8000/api/v1/scans?page=1&page_size=10" -H "Authorization:{{ api_key}}"
+                  <pre><code>curl --url "http://localhost:8000/api/v1/scans?page=1&amp;page_size=10" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                  </ul>
+
+
+                <hr/>
+                  <h2><a id="compare-api"></a><strong>Compare Apps API</strong></h2>
+                  <p>API to Compare scan results.</p>
+                  <ul>
+                  <li>
+                  <p><strong>URL:</strong> <code>/api/v1/compare</code></p>
+                  </li>
+                  <li>
+                  <p><strong>Method:</strong> <code>POST</code></p>
+                  </li>
+                  <li>
+                  <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code></p>
+                  </li>
+                  <li>
+                  <p><strong>Data Params</strong></p>
+                  </li>
+                  </ul>
+                  <table class="table table-striped table-bordered">
+                  <thead>
+                  <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr>
+                  <td>hash1</td>
+                  <td>first scan hash</td>
+                  <td>Yes</td>
+                  </tr>
+                  <tr>
+                  <td>hash2</td>
+                  <td>second scan hash to compare with</td>
+                  <td>Yes</td>
+                  </tr>
+                  </tbody>
+                  </table>
+                  <br>
+                  <ul>
+                  <li>
+                  <p><strong>Success Response:</strong></p>
+                  <ul>
+                  <li><strong>Code:</strong> <code>200</code><br>
+                  <strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code> <br>
+                  <strong>Content:</strong> <code>JSON Contents</code></li>
+                  </ul>
+                  </li>
+                  <li>
+                  <p><strong>Error Response:</strong></p>
+                  <ul>
+                  <li><strong>Code:</strong>  <code>500 Internal Server Error</code> or  <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br>
+                  <strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code> <br>
+                  <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code></li>
+                  </ul>
+                  <p>OR</p>
+                  <ul>
+                  <li><strong>Code:</strong> <code>401 Unauthorized</code> <br>
+                  <strong>Content-Type:</strong>  <code>application/json; charset=utf-8</code> <br>
+                  <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code></li>
+                  </ul>
+                  </li>
+                  <li>
+                  <p><strong>Sample Call:</strong></p>
+                  <pre><code>curl -X POST --url http://localhost:8000/api/v1/compare --data "hash1=82ab8b2193b3cfb1c737e3a786be363a&hash2=f56c96f2b1f0a7c46eb6fef3a035f3dd" -H "Authorization:{{ api_key}}""
                   </code></pre>
                   </li>
                   </ul>
