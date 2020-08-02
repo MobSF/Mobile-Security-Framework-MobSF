@@ -90,7 +90,7 @@ def dynamic_analyzer(request):
         logger.info('Android Version identified as %s', version)
         xposed_first_run = False
         if not env.is_mobsfyied(version):
-            msg = ('This Android instance is not MobSfyed.\n'
+            msg = ('This Android instance is not MobSfyed/Outdated.\n'
                    'MobSFying the android runtime environment')
             logger.warning(msg)
             if not env.mobsfy_init():
