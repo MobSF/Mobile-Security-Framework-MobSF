@@ -101,6 +101,25 @@ class Environment:
             return False
         return True
 
+    def is_package_installed(self, package):
+        """Check if package is installed."""
+        out = self.adb_command(['pm', 'list', 'packages'], True)
+        if f'{package}\n'.encode('utf-8') in out:
+            return True
+        return False
+
+    def install_apk(self, apk_path, package):
+        """Install APK and Verify Installation."""
+        if self.is_package_installed(package):
+            logger.info('Removing existing installation')
+            # Remove existing installation'
+            self.adb_command(['uninstall', package], False, True)
+        logger.info('Installing APK')
+        # Install APK
+        self.adb_command(['install', '-r', '-t', apk_path], False, True)
+        # Verify Installation
+        return self.is_package_installed(package)
+
     def adb_command(self, cmd_list, shell=False, silent=False):
         """ADB Command wrapper."""
         args = [get_adb(),
