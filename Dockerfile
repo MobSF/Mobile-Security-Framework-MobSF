@@ -90,7 +90,7 @@ ARG POSTGRES=False
 ENV POSTGRES_USER=postgres
 ENV POSTGRES_PASSWORD=password
 ENV POSTGRES_DB=mobsf
-#ENV POSTGRES_HOST=postgres
+ENV POSTGRES_HOST=postgres
 
 # Check if Postgres support needs to be enabled
 WORKDIR /root/Mobile-Security-Framework-MobSF/scripts
