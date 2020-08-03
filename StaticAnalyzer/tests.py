@@ -263,7 +263,6 @@ def api_test():
                 logger.error('Reading - %s', sfile['file'])
                 return True
         logger.info('[OK] View Source API test completed')
-        logger.info('Running Delete Scan API Results test')
         # Compare apps test
         logger.info('Running App Compare API tests')
         resp = http_client.post(
