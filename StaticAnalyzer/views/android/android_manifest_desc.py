@@ -31,7 +31,7 @@ MANIFEST_DESC = {
     },
     'a_network_sec': {
         'title': ('App has a Network Security Configuration'
-                  '<br>[android:networkSecurityConfig]'),
+                  '<br>[android:networkSecurityConfig=%s]'),
         'level': 'info',
         'description': ('The Network Security Configuration feature lets apps'
                         ' customize their network security settings in a safe,'

@@ -416,6 +416,46 @@
                     </table>
       {% endif %}
 
+
+     <h2><i class="fas fa-lock"></i> NETWORK SECURITY</h2>
+     <table class="basic">
+                    <thead>
+                        <tr>
+                          <th>NO</th>
+                          <th>SCOPE</th>
+                          <th>SEVERITY</th>
+                          <th>DESCRIPTION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    {% for item in network_security %}
+                      <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                         {% for url in item.scope %}
+                          {{ url }}</br>
+                        {% endfor %}
+                        </td>
+                        <td>
+                          {% if item.severity == "high" %}
+                            <span class="danger">high</span>
+                          {% elif item.severity == "good" %}
+                            <span class="good">good</span>
+                          {% elif item.severity == "info" %}
+                            <span class="info">info</span>
+                          {% elif item.severity == "warning" %}
+                             <span class="warning">warning</span>
+                          {% endif %}
+                        </td>
+                        <td>
+                        {{item.description }}
+                        </td>
+   
+                       </tr>
+                     {% endfor %}
+										</tbody>
+										</table>
+    
     <h2><i class="fas fa-search"></i> MANIFEST ANALYSIS</h2>
      <table class="basic">
                     <thead>

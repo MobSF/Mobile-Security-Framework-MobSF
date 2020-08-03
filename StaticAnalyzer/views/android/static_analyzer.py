@@ -171,7 +171,10 @@ def static_analyzer(request, api=False):
                         man_data_dic['packagename'])
                     man_an_dic = manifest_analysis(
                         app_dic['parsed_xml'],
-                        man_data_dic)
+                        man_data_dic,
+                        '',
+                        app_dic['app_dir'],
+                    )
                     bin_an_buff = []
                     bin_an_buff += elf_analysis(app_dic['app_dir'])
                     bin_an_buff += res_analysis(app_dic['app_dir'])
@@ -353,6 +356,8 @@ def static_analyzer(request, api=False):
                         man_an_dic = manifest_analysis(
                             app_dic['persed_xml'],
                             man_data_dic,
+                            pro_type,
+                            app_dic['app_dir'],
                         )
                         # Get icon
                         eclipse_res_path = os.path.join(
