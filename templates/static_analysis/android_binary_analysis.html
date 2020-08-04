@@ -111,6 +111,14 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
+                <a href="#network_security" class="nav-link">
+                  <i class="nav-icon fas fa-lock"></i>
+                  <p>
+                    Network Security
+                  </p>
+                </a>
+              </li>
+              <li class="nav-item">
                 <a href="#manifest" class="nav-link">
                   <i class="fas fa-search nav-icon"></i>
                   <p>Manifest Analysis</p>
@@ -906,6 +914,62 @@
     </div>
 </section>
  <!-- ===========================end browsable activities ================================== -->
+ <a id="network_security" class="anchor"></a>
+ <section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <p>
+             <strong><i class="fas fa-lock"></i> NETWORK SECURITY</strong>
+             </p>
+              <div class="table-responsive">
+                <table id="table_manifest" class="table table-bordered table-hover table-striped">
+                      <thead>
+                      <tr>
+                          <th>NO</th>
+                          <th>SCOPE</th>
+                          <th>SEVERITY</th>
+                          <th>DESCRIPTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in network_security %}
+                      <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                         {% for url in item.scope %}
+                          {{ url }}</br>
+                        {% endfor %}
+                        </td>
+                        <td>
+                          {% if item.severity == "high" %}
+                            <span class="badge bg-danger">high</span>
+                          {% elif item.severity == "good" %}
+                            <span class="badge bg-success">good</span>
+                          {% elif item.severity == "info" %}
+                            <span class="badge bg-info">info</span>
+                          {% elif item.severity == "warning" %}
+                            <span class="badge bg-warning">medium</span>
+                          {% endif %}
+                        </td>
+                        <td>
+                        {{item.description }}
+                        </td>
+                       </tr>
+                     {% endfor %}
+                    </tbody>
+                  </table>
+                  </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end network security ================================== -->
  <a id="manifest" class="anchor"></a>
  <section class="content">
   <div class="container-fluid">

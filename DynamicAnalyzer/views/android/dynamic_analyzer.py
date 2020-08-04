@@ -3,6 +3,7 @@
 import logging
 import os
 import time
+from pathlib import Path
 
 from shelljob import proc
 
@@ -89,7 +90,7 @@ def dynamic_analyzer(request):
         logger.info('Android Version identified as %s', version)
         xposed_first_run = False
         if not env.is_mobsfyied(version):
-            msg = ('This Android instance is not MobSfyed.\n'
+            msg = ('This Android instance is not MobSfyed/Outdated.\n'
                    'MobSFying the android runtime environment')
             logger.warning(msg)
             if not env.mobsfy_init():
@@ -118,11 +119,17 @@ def dynamic_analyzer(request):
         env.start_clipmon()
         # Get Screen Resolution
         screen_width, screen_height = env.get_screen_res()
-        logger.info('Installing APK')
-        app_dir = os.path.join(settings.UPLD_DIR,
-                               bin_hash + '/')  # APP DIRECTORY
-        apk_path = app_dir + bin_hash + '.apk'  # APP PATH
-        env.adb_command(['install', '-r', apk_path], False, True)
+        apk_path = Path(settings.UPLD_DIR) / bin_hash / f'{bin_hash}.apk'
+        # Install APK
+        status = env.install_apk(apk_path.as_posix(), package)
+        if not status:
+            # Unset Proxy
+            env.unset_global_proxy()
+            msg = ('This APK cannot be installed. Is this APK '
+                   'compatible the Android VM/Emulator?')
+            return print_n_send_error_response(
+                request,
+                msg)
         logger.info('Testing Environment is Ready!')
         context = {'screen_witdth': screen_width,
                    'screen_height': screen_height,
