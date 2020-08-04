@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 import subprocess
+import tempfile
 import threading
 import time
 
@@ -30,6 +31,7 @@ from StaticAnalyzer.models import StaticAnalyzerAndroid
 
 logger = logging.getLogger(__name__)
 ANDROID_API_SUPPORTED = 28
+FRIDA_VERSION = '12.11.6'
 
 
 class Environment:
@@ -40,6 +42,8 @@ class Environment:
         else:
             self.identifier = get_device()
         self.tools_dir = settings.TOOLS_DIR
+        self.frida_str = f'MobSF-Frida-{FRIDA_VERSION}'.encode('utf-8')
+        self.xposed_str = b'MobSF-Xposed'
 
     def wait(self, sec):
         """Wait in Seconds."""
@@ -100,6 +104,25 @@ class Environment:
         if not self.system_check(runtime):
             return False
         return True
+
+    def is_package_installed(self, package):
+        """Check if package is installed."""
+        out = self.adb_command(['pm', 'list', 'packages'], True)
+        if f'{package}\n'.encode('utf-8') in out:
+            return True
+        return False
+
+    def install_apk(self, apk_path, package):
+        """Install APK and Verify Installation."""
+        if self.is_package_installed(package):
+            logger.info('Removing existing installation')
+            # Remove existing installation'
+            self.adb_command(['uninstall', package], False, True)
+        logger.info('Installing APK')
+        # Install APK
+        self.adb_command(['install', '-r', '-t', apk_path], False, True)
+        # Verify Installation
+        return self.is_package_installed(package)
 
     def adb_command(self, cmd_list, shell=False, silent=False):
         """ADB Command wrapper."""
@@ -208,6 +231,12 @@ class Environment:
              'delete',
              'global',
              'global_http_proxy_port'], True)
+        self.adb_command(
+            ['settings',
+             'put',
+             'global',
+             'http_proxy',
+             ':0'], True)
 
     def enable_adb_reverse_tcp(self, version):
         """Enable ADB Reverse TCP for Proxy."""
@@ -398,10 +427,10 @@ class Environment:
         logger.info('Environment MobSFyed Check')
         if android_version < 5:
             agent_file = '.mobsf-x'
-            agent_str = b'MobSF-Xposed'
+            agent_str = self.xposed_str
         else:
             agent_file = '.mobsf-f'
-            agent_str = b'MobSF-Frida'
+            agent_str = self.frida_str
         try:
             out = subprocess.check_output(
                 [get_adb(),
@@ -445,12 +474,15 @@ class Environment:
         self.adb_command(['install', '-r', clip_dump])
         if agent == 'frida':
             agent_file = '.mobsf-f'
+            agent_str = self.frida_str
         else:
             agent_file = '.mobsf-x'
-        mobsf_env = os.path.join(self.tools_dir,
-                                 mobsf_agents,
-                                 agent_file)
-        self.adb_command(['push', mobsf_env, '/system/' + agent_file])
+            agent_str = self.xposed_str
+        f = tempfile.NamedTemporaryFile(delete=False)
+        f.write(agent_str)
+        f.close()
+        self.adb_command(['push', f.name, '/system/' + agent_file])
+        os.unlink(f.name)
 
     def xposed_setup(self, android_version):
         """Setup Xposed."""
@@ -513,7 +545,6 @@ class Environment:
     def frida_setup(self):
         """Setup Frida."""
         frida_arch = None
-        frida_version = '12.11.6'
         frida_dir = 'onDevice/frida/'
         arch = self.get_android_arch()
         logger.info('Android OS architecture identified as %s', arch)
@@ -531,7 +562,7 @@ class Environment:
                          ' instance is running')
             return
         frida_bin = 'frida-server-{}-android-{}'.format(
-            frida_version,
+            FRIDA_VERSION,
             frida_arch)
         frida_path = os.path.join(self.tools_dir,
                                   frida_dir,

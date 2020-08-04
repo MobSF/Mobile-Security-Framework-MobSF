@@ -299,13 +299,13 @@ def url_n_email_extract(dat, relative_path):
 
 
 # This is just the first sanity check that triggers generic_compare
-def compare_apps(request, hash1: str, hash2: str):
+def compare_apps(request, hash1: str, hash2: str, api=False):
     if hash1 == hash2:
         error_msg = 'Results with same hash cannot be compared'
-        return print_n_send_error_response(request, error_msg, False)
+        return print_n_send_error_response(request, error_msg, api)
     logger.info(
         'Starting App compare for %s and %s', hash1, hash2)
-    return generic_compare(request, hash1, hash2)
+    return generic_compare(request, hash1, hash2, api)
 
 
 def score(findings):

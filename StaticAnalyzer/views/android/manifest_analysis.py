@@ -16,7 +16,10 @@ from MobSF.utils import (
     is_file_exists,
 )
 
-from StaticAnalyzer.views.android import android_manifest_desc
+from StaticAnalyzer.views.android import (
+    android_manifest_desc,
+    network_security,
+)
 
 # pylint: disable=E0401
 from .dvm_permissions import DVM_PERMISSIONS
@@ -231,7 +234,7 @@ def get_browsable_activities(node):
         logger.exception('Getting Browsable Activities')
 
 
-def manifest_analysis(mfxml, man_data_dic):
+def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
     """Analyse manifest file."""
     # pylint: disable=C0301
     try:
@@ -250,6 +253,8 @@ def manifest_analysis(mfxml, man_data_dic):
         browsable_activities = {}
         permission_dict = {}
         icon_hidden = True
+        do_netsec = False
+        debuggable = False
         # PERMISSION
         for permission in permissions:
             if permission.getAttribute('android:protectionLevel'):
@@ -286,9 +291,12 @@ def manifest_analysis(mfxml, man_data_dic):
             if application.getAttribute('android:directBootAware') == 'true':
                 ret_list.append(('a_boot_aware', (), ()))
             if application.getAttribute('android:networkSecurityConfig'):
-                ret_list.append(('a_network_sec', (), ()))
+                item = application.getAttribute('android:networkSecurityConfig')
+                ret_list.append(('a_network_sec', (item,), ()))
+                do_netsec = item
             if application.getAttribute('android:debuggable') == 'true':
                 ret_list.append(('a_debuggable', (), ()))
+                debuggable = True
             if application.getAttribute('android:allowBackup') == 'true':
                 ret_list.append(('a_allowbackup', (), ()))
             elif application.getAttribute('android:allowBackup') == 'false':
@@ -818,6 +826,11 @@ def manifest_analysis(mfxml, man_data_dic):
             'browsable_activities': browsable_activities,
             'permissons': permissons,
             'icon_hidden': icon_hidden,
+            'network_security': network_security.analysis(
+                app_dir,
+                do_netsec,
+                debuggable,
+                src_type),
         }
         return man_an_dic
     except Exception:

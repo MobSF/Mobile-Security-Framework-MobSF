@@ -12,14 +12,15 @@ IPA_RULES = [
             ' the following insecure API(s) {}.'),
         'type': 'Regex',
         'pattern': (
-            rb'\b_alloca\b|\b_gets\b|\b_memcpy\b|\b_printf\b|\b_scanf\b|'
-            rb'\b_sprintf\b|\b_sscanf\b|\b_strcat\b|'
-            rb'\bStrCat\b|\b_strcpy\b|\bStrCpy\b|\b_strlen\b|\bStrLen\b|'
-            rb'\b_strncat\b|\bStrNCat\b|\b_strncpy\b|'
-            rb'\bStrNCpy\b|\b_strtok\b|\b_swprintf\b|\b_vsnprintf\b|'
+            rb'\b_alloca\n\b|\b_gets\n\b|\b_memcpy\n\b|\b_printf\n\b|'
+            rb'\b_scanf\n\b|\b_sprintf\n\b|\b_sscanf\n\b|\b_strcat\n\b|'
+            rb'\bStrCat\n\b|\b_strcpy\n\b|\bStrCpy\n\b|\b_strlen\n\b|'
+            rb'\bStrLen\n\b|\b_strncat\n\b|\bStrNCat\n\b|\b_strncpy\n\b|'
+            rb'\bStrNCpy\n\b|\b_strtok\n\b|\b_swprintf\n\b|\b_vsnprintf\n\b|'
             rb'\b_vsprintf\b|\b_vswprintf\b|\b_wcscat\b|\b_wcscpy\b|'
-            rb'\b_wcslen\b|\b_wcsncat\b|\b_wcsncpy\b|\b_wcstok\b|\b_wmemcpy\b|'
-            rb'\b_fopen\b|\b_chmod\b|\b_chown\b|\b_stat\b|\b_mktemp\b'),
+            rb'\b_wcslen\n\b|\b_wcsncat\n\b|\b_wcsncpy\n\b|\b_wcstok\n\b|'
+            rb'\b_wmemcpy\n\b|\b_fopen\n\b|\b_chmod\n\b|\b_chown\n\b|'
+            rb'\b_stat\n\b|\b_mktemp\n\b'),
         'severity': 'high',
         'input_case': 'exact',
         'cvss': 6,
@@ -157,7 +158,7 @@ IPA_RULES = [
             'The binary may use the following '
             'insecure Random function(s) {}.'),
         'type': 'Regex',
-        'pattern': rb'\b_srand\b|\b_random\b',
+        'pattern': rb'\b_srand\n\b|\b_random\n\b',
         'severity': 'high',
         'input_case': 'exact',
         'cvss': 3,
@@ -171,7 +172,7 @@ IPA_RULES = [
             'The binary may use {}'
             ' function for logging.'),
         'type': 'Regex',
-        'pattern': rb'\b_NSLog\b',
+        'pattern': rb'\b_NSLog\n\b',
         'severity': 'info',
         'input_case': 'exact',
         'cvss': 7.5,
@@ -185,7 +186,7 @@ IPA_RULES = [
             'The binary may use {}'
             ' function instead of calloc.'),
         'type': 'Regex',
-        'pattern': rb'\b_malloc\b',
+        'pattern': rb'_malloc\n',
         'severity': 'high',
         'input_case': 'exact',
         'cvss': 2,

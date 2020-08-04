@@ -20,8 +20,8 @@ class StaticAnalyzerAndroid(models.Model):
     MD5 = models.CharField(max_length=32)
     SHA1 = models.CharField(max_length=40)
     SHA256 = models.CharField(max_length=64)
-    PACKAGE_NAME = models.CharField(max_length=40)
-    MAIN_ACTIVITY = models.CharField(max_length=300)
+    PACKAGE_NAME = models.TextField()
+    MAIN_ACTIVITY = models.TextField()
     EXPORTED_ACTIVITIES = models.TextField()
     BROWSABLE_ACTIVITIES = models.TextField()
     ACTIVITIES = models.TextField()
@@ -53,6 +53,7 @@ class StaticAnalyzerAndroid(models.Model):
     APKID = models.TextField(default={})
     TRACKERS = models.TextField(default={})
     PLAYSTORE_DETAILS = models.TextField(default={})
+    NETWORK_SECURITY = models.TextField(default=[])
 
 
 class StaticAnalyzerIOS(models.Model):
