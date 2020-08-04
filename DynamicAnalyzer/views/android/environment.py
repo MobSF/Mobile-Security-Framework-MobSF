@@ -75,7 +75,10 @@ class Environment:
                                                   self.identifier]):
             return False
         logger.info('Restarting ADB Daemon as root')
-        if not self.run_subprocess_verify_output([get_adb(), 'root']):
+        if not self.run_subprocess_verify_output([get_adb(),
+                                                  '-s',
+                                                  self.identifier,
+                                                  'root']):
             return False
         logger.info('Reconnecting to Android Device')
         # connect again with root adb
