@@ -21,7 +21,7 @@ class StaticAnalyzerAndroid(models.Model):
     SHA1 = models.CharField(max_length=40)
     SHA256 = models.CharField(max_length=64)
     PACKAGE_NAME = models.TextField()
-    MAIN_ACTIVITY =models.TextField()
+    MAIN_ACTIVITY = models.TextField()
     EXPORTED_ACTIVITIES = models.TextField()
     BROWSABLE_ACTIVITIES = models.TextField()
     ACTIVITIES = models.TextField()
