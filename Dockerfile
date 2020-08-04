@@ -86,6 +86,12 @@ RUN sed -i 's/USE_HOME = False/USE_HOME = True/g' MobSF/settings.py && \
 
 # Postgres support is set to false by default
 ARG POSTGRES=False
+
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=password
+ENV POSTGRES_DB=mobsf
+ENV POSTGRES_HOST=postgres
+
 # Check if Postgres support needs to be enabled
 WORKDIR /root/Mobile-Security-Framework-MobSF/scripts
 RUN chmod +x postgres_support.sh; sync; ./postgres_support.sh $POSTGRES
@@ -99,9 +105,7 @@ EXPOSE 8000
 # MobSF Proxy
 EXPOSE 1337
 
-RUN python3 manage.py makemigrations && \
-    python3 manage.py makemigrations StaticAnalyzer && \
-    python3 manage.py migrate
+RUN chmod 755 /root/Mobile-Security-Framework-MobSF/scripts/entrypoint.sh
 
 # Run MobSF
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "MobSF.wsgi:application", "--workers=1", "--threads=10", "--timeout=1800"]
+CMD ["/root/Mobile-Security-Framework-MobSF/scripts/entrypoint.sh"]
