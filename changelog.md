@@ -1,4 +1,40 @@
 
+### v3.1.1 Beta Changelog
+- Features or Enhancements
+  - Added Support for Android Network Security Config Analysis
+  - Replace SAST core with libsast
+  - Support for line numbers in source code
+  - Replaced Code Viewer with EnlighterJS
+  - Kotlin source scan support
+  - Improved Certificate Analysis
+  - Genymotion Cloud Support
+  - Support Android Emulator AVD x86, ARM, ARM64
+  - Verify Dynamic Analysis APK Installation
+  - Dynamic Analysis: Support APK with test package requirements
+  - Automatic MobSFy on Frida binary update
+  - Expose App result compare REST API and Update REST API Docs
+  - Clean up MobSF proxy on exit
+  - IPA Binary Regex QA
+  - Optimize Root Checking Frida Script
+  - Environment Checks to see if API Level is supported and /system is writable
+  - Prebuilt dex enabled yara-python and improved setup, tox, tests
+  - Added Chinese documentation
+  - Reduce Docker image size
+  - Improved Postgresql Docker Support
+  - Android Dynamic Analysis QA
+  - Update Dependencies
+
+- Bug Fixes
+  - Android Rule Fixes
+  - Fixed API Monitor which was broken from Frida 12.8.19
+  - Fixed iOS ATS bug
+  - Fix Black PDF background issue
+  - LGTM Scan Code QA
+
+- Security
+  - Fixed Regex DoS in Email Extraction
+  - Fixed insecure Default Bind to 0.0.0.0
+
 ### v3.0.5 Beta Changelog
 - Features or Enhancements
   - iOS Swift Source Code Support
