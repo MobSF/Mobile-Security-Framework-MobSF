@@ -19,8 +19,7 @@ from StaticAnalyzer.views.android import (
     java,
     manifest_view,
     smali,
-    view_source,
-)
+    view_source)
 from StaticAnalyzer.views.windows import windows
 from StaticAnalyzer.views.android import static_analyzer as android_sa
 from StaticAnalyzer.views.ios import static_analyzer as ios_sa

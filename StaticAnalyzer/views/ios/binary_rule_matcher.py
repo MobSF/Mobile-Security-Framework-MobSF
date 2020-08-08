@@ -3,9 +3,7 @@
 import re
 import logging
 
-from StaticAnalyzer.views.ios.rules import (
-    ipa_rules,
-)
+from StaticAnalyzer.views.ios.rules import ipa_rules
 
 logger = logging.getLogger(__name__)
 

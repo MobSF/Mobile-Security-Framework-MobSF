@@ -11,8 +11,7 @@ from django.shortcuts import render
 
 from MobSF.utils import (
     file_size,
-    print_n_send_error_response,
-)
+    print_n_send_error_response)
 
 from StaticAnalyzer.models import StaticAnalyzerIOS
 from StaticAnalyzer.views.ios.appstore import app_search
@@ -26,14 +25,12 @@ from StaticAnalyzer.views.ios.file_analysis import ios_list_files
 from StaticAnalyzer.views.ios.file_recon import extract_urls_n_email
 from StaticAnalyzer.views.ios.icon_analysis import (
     get_icon,
-    get_icon_source,
-)
+    get_icon_source)
 from StaticAnalyzer.views.ios.plist_analysis import plist_analysis
 from StaticAnalyzer.views.shared_func import (
     firebase_analysis,
     hash_gen, score, unzip,
-    update_scan_timestamp,
-)
+    update_scan_timestamp)
 
 logger = logging.getLogger(__name__)
 

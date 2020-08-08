@@ -25,8 +25,7 @@ from django.utils.html import escape
 
 from MobSF.utils import (
     file_size,
-    print_n_send_error_response,
-)
+    print_n_send_error_response)
 
 from StaticAnalyzer.models import StaticAnalyzerWindows
 from StaticAnalyzer.tools.strings import strings_util

@@ -1,6 +1,5 @@
 import io
 
-
 """
 Python Strings.
 

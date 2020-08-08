@@ -11,8 +11,7 @@ import os
 
 from MobSF.init import (
     first_run,
-    get_mobsf_home,
-)
+    get_mobsf_home)
 
 logger = logging.getLogger(__name__)
 
