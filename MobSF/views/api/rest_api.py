@@ -26,14 +26,16 @@ def make_api_response(data, status=OK):
     resp = JsonResponse(data=data, status=status)
     resp['Access-Control-Allow-Origin'] = '*'
     resp['Access-Control-Allow-Methods'] = 'POST'
-    resp['Access-Control-Allow-Headers'] = 'Authorization'
+    resp['Access-Control-Allow-Headers'] = 'Authorization, X-Mobsf-Api-Key'
     resp['Content-Type'] = 'application/json; charset=utf-8'
     return resp
 
 
 def api_auth(meta):
     """Check if API Key Matches."""
-    if 'HTTP_AUTHORIZATION' in meta:
+    if 'HTTP_X_MOBSF_API_KEY' in meta:
+        return bool(api_key() == meta['HTTP_X_MOBSF_API_KEY'])
+    elif 'HTTP_AUTHORIZATION' in meta:
         return bool(api_key() == meta['HTTP_AUTHORIZATION'])
     return False
 
