@@ -202,13 +202,14 @@ def static_analyzer(request, api=False):
                         app_dic['app_dir'])
                     if string_res:
                         app_dic['strings'] = string_res['strings']
+                        app_dic['secrets'] = string_res['secrets']
                         code_an_dic['urls_list'].extend(
                             string_res['urls_list'])
                         code_an_dic['urls'].extend(string_res['url_nf'])
                         code_an_dic['emails'].extend(string_res['emails_nf'])
                     else:
                         app_dic['strings'] = []
-
+                        app_dic['secrets'] = []
                     # Firebase DB Check
                     code_an_dic['firebase'] = firebase_analysis(
                         list(set(code_an_dic['urls_list'])))
@@ -288,7 +289,8 @@ def static_analyzer(request, api=False):
                     'description': '',
                 }
                 bin_an_buff = []
-                app_dic['strings'] = ''
+                app_dic['strings'] = []
+                app_dic['secrets'] = []
                 app_dic['zipped'] = ''
                 # Above fields are only available for APK and not ZIP
                 app_dic['app_file'] = app_dic['md5'] + '.zip'  # NEW FILENAME
