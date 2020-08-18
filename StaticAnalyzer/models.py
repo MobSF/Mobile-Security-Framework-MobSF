@@ -54,6 +54,7 @@ class StaticAnalyzerAndroid(models.Model):
     TRACKERS = models.TextField(default={})
     PLAYSTORE_DETAILS = models.TextField(default={})
     NETWORK_SECURITY = models.TextField(default=[])
+    SECRETS = models.TextField(default=[])
 
 
 class StaticAnalyzerIOS(models.Model):

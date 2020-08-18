@@ -208,6 +208,12 @@
                   <p>Strings</p>
                 </a>
               </li>
+              <li class="nav-item">
+                <a href="#secrets" class="nav-link">
+                  <i class="fas fa-key nav-icon"></i>
+                  <p>Hardcoded Secrets</p>
+                </a>
+              </li>
             </ul>
           </li>
            <li class="nav-item has-treeview">
@@ -1547,6 +1553,32 @@
         </div>
 </section>
  <!-- ===========================end strings ================================== -->
+ <a id="secrets" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-key"></i> POSSIBLE HARDCODED SECRETS</strong>
+             </p>
+               <div class="list-group">
+                  <p>  
+                    {% for val in secrets %}
+                     {{ val }}<br/>
+                    {% endfor %}                  
+                  </p>
+              </div>
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+</section>
+ <!-- ===========================end secrets ================================== -->
+
  <a id="activities" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">

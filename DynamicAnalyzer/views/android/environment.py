@@ -28,8 +28,8 @@ from MobSF.utils import (
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 
 logger = logging.getLogger(__name__)
-ANDROID_API_SUPPORTED = 28
-FRIDA_VERSION = '12.11.7'
+ANDROID_API_SUPPORTED = 29
+FRIDA_VERSION = '12.11.9'
 
 
 class Environment:
@@ -86,21 +86,9 @@ class Environment:
             return False
         # identify environment
         runtime = self.get_environment()
-        if runtime == 'emulator':
-            logger.info('Found Android Studio Emulator')
-            # mount system
-            logger.info('Remounting')
-            self.adb_command(['remount'])
-        elif runtime == 'genymotion':
-            logger.info('Found Genymotion x86 VM')
-            # mount system
-            logger.info('Remounting /system')
-            self.adb_command(['mount', '-o',
-                              'rw,remount', '/system'], True)
-        else:
-            logger.error('Only Genymotion VM/Android Studio Emulator'
-                         ' is supported')
-            return False
+        logger.info('Remounting')
+        # Allow non supported environments also
+        self.adb_command(['remount'])
         logger.info('Performing System check')
         if not self.system_check(runtime):
             return False
@@ -109,7 +97,9 @@ class Environment:
     def is_package_installed(self, package):
         """Check if package is installed."""
         out = self.adb_command(['pm', 'list', 'packages'], True)
-        if f'{package}\n'.encode('utf-8') in out:
+        pkg = f'{package}'.encode('utf-8')
+        if pkg + b'\n' in out or pkg + b'\r\n' in out:
+            # Windows uses \r\n
             return True
         return False
 
@@ -121,7 +111,12 @@ class Environment:
             self.adb_command(['uninstall', package], False, True)
         logger.info('Installing APK')
         # Install APK
-        self.adb_command(['install', '-r', '-t', apk_path], False, True)
+        self.adb_command([
+            'install',
+            '-r',
+            '-t',
+            '-d',
+            apk_path], False, True)
         # Verify Installation
         return self.is_package_installed(package)
 
@@ -347,11 +342,17 @@ class Environment:
                                 'ro.genymotion.version'],
                                True).decode('utf-8', 'ignore')
         if b'EMULATOR' in out:
+            logger.info('Found Android Studio Emulator')
             return 'emulator'
         elif (b'genymotion' in out.lower()
                 or any(char.isdigit() for char in ver)):
+            logger.info('Found Genymotion x86 Android VM')
             return 'genymotion'
         else:
+            logger.warning(
+                'Unable to identify Dynamic Analysis environment. '
+                'Official support is available only for Android '
+                'Emulator and Genymotion VM')
             return ''
 
     def get_android_version(self):
