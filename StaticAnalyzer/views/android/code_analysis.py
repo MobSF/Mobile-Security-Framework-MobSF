@@ -11,7 +11,6 @@ from MobSF.utils import filename_from_path
 from StaticAnalyzer.views.shared_func import (
     url_n_email_extract,
 )
-
 from StaticAnalyzer.views.sast_engine import scan
 
 logger = logging.getLogger(__name__)

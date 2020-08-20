@@ -18,6 +18,7 @@ from MobSF.utils import (
     is_file_exists,
 )
 
+
 logger = logging.getLogger(__name__)
 
 

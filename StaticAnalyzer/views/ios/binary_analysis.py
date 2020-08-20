@@ -11,14 +11,12 @@ from macholib.MachO import MachO
 from MobSF.utils import is_file_exists
 
 from StaticAnalyzer.views.ios.classdump import get_class_dump
-from StaticAnalyzer.views.ios.otool_analysis import(
+from StaticAnalyzer.views.ios.otool_analysis import (
     otool_analysis,
 )
-
 from StaticAnalyzer.views.ios.binary_rule_matcher import (
     binary_rule_matcher,
 )
-
 from StaticAnalyzer.tools.strings import strings_util
 
 logger = logging.getLogger(__name__)
