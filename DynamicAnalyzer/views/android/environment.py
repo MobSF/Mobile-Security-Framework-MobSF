@@ -16,14 +16,16 @@ from OpenSSL import crypto
 from DynamicAnalyzer.tools.webproxy import (
     get_ca_file,
     start_proxy,
-    stop_httptools)
+    stop_httptools,
+)
 
 from MobSF.utils import (
     get_adb,
     get_device,
     get_proxy_ip,
     is_file_exists,
-    python_list)
+    python_list,
+)
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 

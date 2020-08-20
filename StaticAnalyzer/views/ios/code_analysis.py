@@ -6,7 +6,9 @@ from django.conf import settings
 
 from MalwareAnalyzer.views.domain_check import malware_check
 
-from StaticAnalyzer.views.shared_func import url_n_email_extract
+from StaticAnalyzer.views.shared_func import (
+    url_n_email_extract,
+)
 from StaticAnalyzer.views.sast_engine import scan
 
 logger = logging.getLogger(__name__)

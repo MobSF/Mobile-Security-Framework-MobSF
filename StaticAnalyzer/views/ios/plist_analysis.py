@@ -1,5 +1,6 @@
 # -*- coding: utf_8 -*-
 """Module for iOS App Plist Analysis."""
+
 import logging
 import os
 import plistlib
@@ -7,7 +8,8 @@ import plistlib
 from biplist import (
     InvalidPlistException,
     readPlist,
-    writePlistToString)
+    writePlistToString,
+)
 
 from MobSF.utils import is_file_exists
 

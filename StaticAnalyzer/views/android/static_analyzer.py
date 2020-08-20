@@ -21,7 +21,8 @@ from MobSF.utils import (
     file_size,
     is_dir_exists,
     is_file_exists,
-    print_n_send_error_response)
+    print_n_send_error_response,
+)
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 from StaticAnalyzer.views.android.binary_analysis import (elf_analysis,
@@ -44,6 +45,7 @@ from StaticAnalyzer.views.shared_func import (firebase_analysis,
                                               update_scan_timestamp)
 
 from androguard.core.bytecodes import apk
+
 
 logger = logging.getLogger(__name__)
 

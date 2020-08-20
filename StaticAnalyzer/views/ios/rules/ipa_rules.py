@@ -2,6 +2,7 @@
 """IPA Binary Analysis Rules."""
 from libsast.standards import get_standards
 
+
 STDS = get_standards()
 IPA_RULES = [
     {

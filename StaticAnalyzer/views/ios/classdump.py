@@ -1,5 +1,6 @@
 # -*- coding: utf_8 -*-
 """Handle Classdump for iOS binaries."""
+
 import logging
 import os
 import platform
@@ -10,7 +11,9 @@ from django.conf import settings
 
 from MobSF.utils import is_file_exists
 
-from StaticAnalyzer.views.ios.otool_analysis import get_otool_out
+from StaticAnalyzer.views.ios.otool_analysis import (
+    get_otool_out,
+)
 
 logger = logging.getLogger(__name__)
 

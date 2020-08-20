@@ -13,11 +13,13 @@ from django.conf import settings
 
 from MobSF.utils import (
     find_java_binary,
-    is_file_exists)
+    is_file_exists,
+)
 
 from StaticAnalyzer.views.android import (
     android_manifest_desc,
-    network_security)
+    network_security,
+)
 
 # pylint: disable=E0401
 from .dvm_permissions import DVM_PERMISSIONS

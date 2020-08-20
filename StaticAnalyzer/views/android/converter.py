@@ -15,7 +15,8 @@ from django.conf import settings
 from MobSF.utils import (
     filename_from_path,
     find_java_binary,
-    is_file_exists)
+    is_file_exists,
+)
 
 logger = logging.getLogger(__name__)
 

@@ -1,5 +1,6 @@
 # -*- coding: utf_8 -*-
 """List all smali files."""
+
 import logging
 import re
 from pathlib import Path
