@@ -109,7 +109,7 @@
   input_case: exact
   masvs: code-8
   owasp-mobile: m7
-  pattern: strcpy|memcpy|strcat|strncat|strncpy|sprintf|vsprintf|gets
+  pattern: 'strcpy\(|memcpy\(|strcat\(|strncat\(|strncpy\(|sprintf\(|vsprintf\(|gets\('
   severity: high
   type: Regex
 - id: ios_self_signed_ssl
@@ -145,7 +145,7 @@
   input_case: exact
   masvs: storage-3
   owasp-mobile: ''
-  pattern: NSLog|NSAssert|fprintf|fprintf|Logging
+  pattern: NSLog\(|NSAssert\(|fprintf\(|fprintf\(|Logging\(
   severity: info
   type: Regex
 - id: ios_clipboard_listen
