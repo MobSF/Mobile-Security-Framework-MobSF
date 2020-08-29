@@ -52,8 +52,10 @@
   masvs: platform-6
 - id: android_write_app_dir
   description: App can write to App Directory. Sensitive Information should be encrypted.
-  type: Regex
-  pattern: MODE_PRIVATE|Context\.MODE_PRIVATE
+  type: RegexOr
+  pattern:
+    - MODE_PRIVATE
+    - Context\.MODE_PRIVATE
   severity: info
   input_case: exact
   cvss: 3.9
@@ -135,7 +137,6 @@
   severity: high
   input_case: exact
   cvss: 5.5
-  perm: android.permission.WRITE_EXTERNAL_STORAGE
   cwe: cwe-276
   owasp-mobile: m2
   masvs: storage-2
@@ -464,7 +465,7 @@
     scheme is to prevent a number of attacks on RSA that only work when the
     encryption is performed without padding.
   type: Regex
-  pattern: cipher\.getinstance\(\s*"rsa/.+/nopadding
+  pattern: cipher\.getinstance\(\"rsa/.+/nopadding
   severity: high
   input_case: lower
   cvss: 5.9
@@ -512,10 +513,15 @@
   input_case: exact
   masvs: crypto-4
   owasp-mobile: m5
-  pattern: >-
-    getInstance(\"md4\")|getInstance(\"rc2\")|getInstance(\"rc4\")|getInstance(\"RC4\")|getInstance(\"RC2\")|getInstance(\"MD4\")
+  pattern:
+    - getInstance(\"md4\")
+    - getInstance(\"rc2\")
+    - getInstance(\"rc4\")
+    - getInstance(\"RC4\")
+    - getInstance(\"RC2\")
+    - getInstance(\"MD4\")
   severity: high
-  type: Regex
+  type: RegexOr
 - id: android_md5
   cvss: 7.4
   cwe: cwe-327
@@ -523,10 +529,12 @@
   input_case: exact
   masvs: crypto-4
   owasp-mobile: m5
-  pattern: >-
-    MessageDigest\.getInstance\(\"*MD5\"*\)|MessageDigest\.getInstance\(\"*md5\"*\)|DigestUtils\.md5\(
+  pattern:
+    - 'MessageDigest\.getInstance\(\"*MD5\"*\)'
+    - 'MessageDigest\.getInstance\(\"*md5\"*\)'
+    - 'DigestUtils\.md5\('
   severity: high
-  type: Regex
+  type: RegexOr
 - id: android_sha1
   cvss: 5.9
   cwe: cwe-327
@@ -534,10 +542,12 @@
   input_case: exact
   masvs: crypto-4
   owasp-mobile: m5
-  pattern: >-
-    MessageDigest\.getInstance\(\"*SHA-1\"*\)|MessageDigest\.getInstance\(\"*sha-1\"*\)|DigestUtils\.sha\(
+  pattern:
+    - MessageDigest\.getInstance\(\"*SHA-1\"*\)
+    - MessageDigest\.getInstance\(\"*sha-1\"*\)
+    - DigestUtils\.sha\(
   severity: high
-  type: Regex
+  type: RegexOr
 - id: android_weak_iv
   cvss: 9.8
   cwe: cwe-329

@@ -12,59 +12,86 @@
   severity: info
 - id: api_dexloading
   description: Dynamic Class and Dexloading
-  type: Regex
-  pattern: >-
-    dalvik\.system\.DexClassLoader|java\.security\.ClassLoader|java\.net\.URLClassLoader|java\.security\.SecureClassLoader
+  type: RegexOr
+  pattern:
+    - dalvik\.system\.DexClassLoader
+    - java\.security\.ClassLoader
+    - java\.net\.URLClassLoader
+    - java\.security\.SecureClassLoader
   input_case: exact
   severity: info
 - id: api_java_reflection
   description: Java Reflection
-  type: Regex
-  pattern: java\.lang\.reflect\.Method|java\.lang\.reflect\.Field|Class\.forName
+  type: RegexOr
+  pattern:
+    - java\.lang\.reflect\.Method
+    - java\.lang\.reflect\.Field
+    - Class\.forName
   input_case: exact
   severity: info
 - id: api_crypto
   description: Crypto
-  type: Regex
-  pattern: javax\.crypto|kalium\.crypto|bouncycastle\.crypto
+  type: RegexOr
+  pattern:
+    - javax\.crypto
+    - kalium\.crypto
+    - bouncycastle\.crypto
   input_case: exact
   severity: info
 - id: api_start_activity
   description: Starting Activity
-  type: Regex
-  pattern: startActivity\(|startActivityForResult\(
+  type: RegexOr
+  pattern:
+    - startActivity\(
+    - startActivityForResult\(
   input_case: exact
   severity: info
 - id: api_start_service
   description: Starting Service
-  type: Regex
-  pattern: startService\(|bindService\(
+  type: RegexOr
+  pattern:
+    - startService\(
+    - bindService\(
   input_case: exact
   severity: info
 - id: api_send_broadcast
   description: Sending Broadcast
-  type: Regex
-  pattern: sendBroadcast\(|sendOrderedBroadcast\(|sendStickyBroadcast\(
+  type: RegexOr
+  pattern:
+    - sendBroadcast\(
+    - sendOrderedBroadcast\(
+    - sendStickyBroadcast\(
   input_case: exact
   severity: info
 - id: api_local_file_io
   description: Local File I/O Operations
-  type: Regex
-  pattern: >-
-    OpenFileOutput|getSharedPreferences|SharedPreferences\.Editor|getCacheDir|getExternalStorageState|openOrCreateDatabase
+  type: RegexOr
+  pattern:
+    - OpenFileOutput
+    - getSharedPreferences
+    - SharedPreferences\.Editor
+    - getCacheDir
+    - getExternalStorageState
+    - openOrCreateDatabase
   input_case: exact
   severity: info
 - id: api_ipc
   description: Inter Process Communication
-  type: Regex
-  pattern: IRemoteService|IRemoteService\.Stub|IBinder|Intent
+  type: RegexOr
+  pattern:
+    - IRemoteService
+    - IRemoteService\.Stub
+    - IBinder
+    - Intent
   input_case: exact
   severity: info
 - id: api_web
   description: 'HTTP Requests, Connections and Sessions'
-  type: Regex
-  pattern: >-
-    http\.client\.HttpClient|net\.http\.AndroidHttpClient|http\.impl\.client\.AbstractHttpClient
+  type: RegexOr
+  pattern:
+    - http\.client\.HttpClient
+    - net\.http\.AndroidHttpClient
+    - http\.impl\.client\.AbstractHttpClient
   input_case: exact
   severity: info
 - id: api_http_connection
