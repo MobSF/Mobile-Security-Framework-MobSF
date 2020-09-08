@@ -65,7 +65,8 @@ def ios_source_analysis(src):
             if (
                 (pfile.suffix in ('.m', '.swift')
                     and any(skip_path in pfile.as_posix()
-                            for skip_path in skp) is False)
+                            for skip_path in skp) is False
+                    and pfile.is_dir() is False)
             ):
                 relative_java_path = pfile.as_posix().replace(src, '')
                 urls, urls_nf, emails_nf = url_n_email_extract(
