@@ -87,3 +87,4 @@ if ! [ $? -eq 0 ]; then
     echo 'Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html'
 fi
 echo '[INSTALL] Installation Complete'
+python scripts/check_install.py
