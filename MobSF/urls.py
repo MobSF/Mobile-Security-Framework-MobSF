@@ -102,6 +102,7 @@ urlpatterns = [
     url(r'^api/v1/view_source$', rest_api.api_view_source,
         name='api_view_source'),
     url(r'^api/v1/scans$', rest_api.api_recent_scans),
+    url(r'^api/v1/compare$', rest_api.api_compare),
 
     # Test
     url(r'^tests/$', tests.start_test),

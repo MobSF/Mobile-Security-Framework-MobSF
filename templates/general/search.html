@@ -18,7 +18,9 @@
             
                 {% for m in matches %}
                       
-                    <tr><td> {{ m|safe }} </td></tr>
+                    <tr><td> 
+                     <a href ="../ViewSource/?file={{ m }}&amp;md5={{ md5 }}&amp;type={{ typ }}">{{ m }}</a>
+                     </td></tr>
                     
                     {% endfor %}  
 

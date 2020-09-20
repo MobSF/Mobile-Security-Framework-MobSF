@@ -1,0 +1,433 @@
+- id: ios_ip_disclosure
+  cvss: 4.3
+  cwe: cwe-200
+  description: IP Address disclosure
+  input_case: exact
+  masvs: code-2
+  owasp-mobile: ''
+  pattern: \d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}
+  severity: warning
+  type: Regex
+- id: ios_hardcoded_info
+  cvss: 7.4
+  cwe: cwe-312
+  description: Files may contain hardcoded sensitive informations like usernames,
+    passwords, keys etc.
+  input_case: lower
+  masvs: storage-14
+  owasp-mobile: m9
+  pattern: (password\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(pass\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(username\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(secret\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(key\s*=\s*[\'|\"].+[\'|\"]\s{0,5})
+  severity: high
+  type: Regex
+- id: ios_sqlite
+  cvss: 0
+  cwe: ''
+  description: App uses SQLite Database. Sensitive Information should be encrypted.
+  input_case: exact
+  masvs: storage-14
+  owasp-mobile: ''
+  pattern:
+  - sqlite3_exec
+  - sqlite3_finalize
+  severity: info
+  type: RegexOr
+- id: ios_load_html_string
+  cvss: 8.8
+  cwe: cwe-95
+  description: User input in "loadHTMLString" will result in JavaScript Injection.
+  input_case: exact
+  masvs: platform-5
+  owasp-mobile: m7
+  pattern:
+  - loadHTMLString
+  - webView
+  severity: warning
+  type: RegexAnd
+- id: ios_jailbreak_detect
+  cvss: 0
+  cwe: ''
+  description: This App may have Jailbreak detection capabilities.
+  input_case: exact
+  masvs: resilience-1
+  owasp-mobile: ''
+  pattern:
+  - /Applications/Cydia\.app
+  - /Library/MobileSubstrate/MobileSubstrate\.dylib
+  - /usr/sbin/sshd
+  - /etc/apt
+  - cydia://
+  - /var/lib/cydia
+  - /Applications/FakeCarrier\.app
+  - /Applications/Icy\.app
+  - /Applications/IntelliScreen\.app
+  - /Applications/SBSettings\.app
+  - /Library/MobileSubstrate/DynamicLibraries/LiveClock\.plist
+  - /System/Library/LaunchDaemons/com\.ikey\.bbot\.plist
+  - /System/Library/LaunchDaemons/com\.saurik\.Cydia\.Startup\.plist
+  - /etc/ssh/sshd_config
+  - /private/var/tmp/cydia\.log
+  - /usr/libexec/ssh-keysign
+  - /Applications/MxTube\.app
+  - /Applications/RockApp\.app
+  - /Applications/WinterBoard\.app
+  - /Applications/blackra1n\.app
+  - /Library/MobileSubstrate/DynamicLibraries/Veency\.plist
+  - /private/var/lib/apt
+  - /private/var/lib/cydia
+  - /private/var/mobile/Library/SBSettings/Themes
+  - /private/var/stash
+  - /usr/bin/sshd
+  - /usr/libexec/sftp-server
+  - /var/cache/apt
+  - /var/lib/apt
+  - /usr/sbin/frida-server
+  - /usr/bin/cycript
+  - /usr/local/bin/cycript
+  - /usr/lib/libcycript.dylib
+  - frida-server
+  - /etc/apt/sources\.list\.d/electra\.list
+  - /etc/apt/sources\.list\.d/sileo\.sources
+  - /.bootstrapped_electra
+  - /usr/lib/libjailbreak\.dylib
+  - /jb/lzma
+  - /\.cydia_no_stash
+  - /\.installed_unc0ver
+  - /jb/offsets\.plist
+  - /usr/share/jailbreak/injectme\.plist
+  - /Library/MobileSubstrate/MobileSubstrate\.dylib
+  - /usr/libexec/cydia/firmware\.sh
+  - /private/var/cache/apt/
+  - /Library/MobileSubstrate/CydiaSubstrate\.dylib
+  severity: good
+  type: RegexOr
+- id: ios_swift_log
+  cvss: 7.5
+  cwe: CWE-532
+  description: The App logs information. Sensitive information should never be logged.
+  input_case: exact
+  masvs: storage-3
+  owasp-mobile: ''
+  pattern: (print|NSLog|os_log|OSLog|os_signpost)\(.*\)
+  severity: info
+  type: Regex
+- id: ios_swift_sha1_collision
+  cvss: 5.9
+  cwe: CWE-327
+  description: SHA1 is a weak hash known to have hash collisions.
+  input_case: exact
+  masvs: crypto-4
+  owasp-mobile: m5
+  pattern:
+    - (?i)SHA1\(
+    - CC_SHA1\(
+  severity: high
+  type: RegexOr
+- id: ios_md2_collision
+  cvss: 5.9
+  cwe: CWE-327
+  description: MD2 is a weak hash known to have hash collisions.
+  input_case: exact
+  masvs: crypto-4
+  owasp-mobile: m5
+  pattern:
+    - (?i)MD2\(
+    - CC_MD2\(
+  severity: high
+  type: RegexOr
+- id: ios_md4_collision
+  cvss: 5.9
+  cwe: CWE-327
+  description: MD4 is a weak hash known to have hash collisions.
+  input_case: exact
+  masvs: crypto-4
+  owasp-mobile: m5
+  pattern:
+    - (?i)MD4\(
+    - CC_MD4\(
+  severity: high
+  type: RegexOr
+- id: ios_swift_md5_collision
+  cvss: 5.9
+  cwe: CWE-327
+  description: MD5 is a weak hash known to have hash collisions.
+  input_case: exact
+  masvs: crypto-4
+  owasp-mobile: m5
+  pattern:
+    - (?i)MD5\(
+    - CC_MD5\(
+  severity: high
+  type: RegexOr
+- id: ios_md6_collision
+  cvss: 5.9
+  cwe: CWE-327
+  description: MD6 is a weak hash known to have hash collisions.
+  input_case: exact
+  masvs: crypto-4
+  owasp-mobile: m5
+  pattern:
+    - (?i)MD6\(
+    - CC_MD6\(
+  severity: high
+  type: RegexOr
+- id: ios_custom_keyboard_disabled
+  cvss: 0
+  cwe: ''
+  description: This App may have custom keyboards disabled.
+  input_case: exact
+  masvs: platform-11
+  owasp-mobile: ''
+  pattern: extensionPointIdentifier == .*\.keyboard
+  severity: good
+  type: Regex
+- id: ios_keyboard_cache
+  cvss: 0
+  cwe: ''
+  description: Keyboard cache should be disabled for all sensitve data inputs.
+  input_case: exact
+  masvs: storage-5
+  owasp-mobile: ''
+  pattern: .autocorrectionType = .no
+  severity: good
+  type: Regex
+- id: ios_uiwebview_safari_view
+  cvss: 0
+  cwe: ''
+  description: >-
+    It is recommended to use WKWebView instead of SFSafariViewController or
+    UIWebView.
+  input_case: exact
+  masvs: platform-5
+  owasp-mobile: m1
+  pattern: UIWebView|SFSafariViewController
+  severity: warning
+  type: Regex
+- id: ios_detect_reversing
+  cvss: 0
+  cwe: ''
+  description: This App may have Reverse enginering detection capabilities.
+  input_case: exact
+  masvs: resilience-4
+  owasp-mobile: ''
+  pattern:
+    - '"FridaGadget"'
+    - '"cynject"'
+    - '"libcycript"'
+    - '"/usr/sbin/frida-server"'
+  severity: good
+  type: RegexAnd
+- id: ios_detect_simulator
+  cvss: 0
+  cwe: ''
+  description: This App may have Simulator detection capabilities.
+  input_case: exact
+  masvs: resilience-5
+  owasp-mobile: ''
+  pattern: '"SIMULATOR_DEVICE_NAME"'
+  severity: good
+  type: Regex
+- id: ios_biometric_bool
+  cvss: 0
+  cwe: ''
+  description: 'Biometric authentication should be based on Keychain, not based on bool.'
+  input_case: exact
+  masvs: auth-8
+  owasp-mobile: m1
+  pattern: \.evaluatePolicy\(.deviceOwnerAuthentication
+  severity: warning
+  type: Regex
+- id: ios_file_no_special
+  cvss: 4.3
+  cwe: CWE-311
+  description: The file has no special protections associated with it.
+  input_case: exact
+  masvs: storage-1
+  owasp-mobile: m2
+  pattern: (?i)\.noFileProtection
+  severity: high
+  type: Regex
+- id: ios_uipaste_sec
+  cvss: 0
+  cwe: ''
+  description: >-
+    This application uses UIPasteboard, improper use of this class can lead to
+    security issues.
+  input_case: exact
+  masvs: platform-4
+  owasp-mobile: m1
+  pattern: UIPasteboard
+  severity: warning
+  type: Regex
+- id: ios_general_paste
+  cvss: 0
+  cwe: ''
+  description: Usage of generalPasteboard should be avoided.
+  input_case: exact
+  masvs: platform-4
+  owasp-mobile: m1
+  pattern: UIPasteboard\.generalPasteboard
+  severity: warning
+  type: Regex
+- id: ios_custom_url
+  cvss: 0
+  cwe: ''
+  description: >-
+    The app should not export sensitive functionality via custom URL schemes,
+    unless these mechanisms are properly protected.
+  input_case: exact
+  masvs: platform-3
+  owasp-mobile: m1
+  pattern: CFBundleURLSchemes
+  severity: warning
+  type: Regex
+- id: ios_secure_text
+  cvss: 0
+  cwe: ''
+  description: Some UI controls have secure text entry configured.
+  input_case: exact
+  masvs: storage-5
+  owasp-mobile: ''
+  pattern: \.secureTextEntry = true
+  severity: good
+  type: Regex
+- id: ios_cert_pinning
+  cvss: 0
+  cwe: CWE-295
+  description: This App may have Certificate Pinning mechanism.
+  input_case: exact
+  masvs: network-4
+  owasp-mobile: m3
+  pattern:
+    - PinnedCertificatesTrustEvaluator
+    - TrustKit\.initSharedInstance
+  severity: good
+  type: RegexOr
+- id: ios_realm_enable_enc
+  cvss: 0
+  cwe: CWE-311
+  description: App uses Realm Database. Sensitive Information should be encrypted.
+  input_case: exact
+  masvs: storage-14
+  owasp-mobile: m2
+  pattern: realm\.write
+  severity: info
+  type: Regex
+- id: ios_core_data
+  cvss: 0
+  cwe: CWE-311
+  description: App uses CoreData Database. Sensitive Information should be encrypted.
+  input_case: exact
+  masvs: storage-14
+  owasp-mobile: m2
+  pattern:
+    - NSManagedObjectContext
+    - \.save\(\)
+  severity: info
+  type: RegexAnd
+- id: ios_realm_db_enc_enabled
+  cvss: 0
+  cwe: CWE-311
+  description: Used Realm database has configured encryption.
+  input_case: exact
+  masvs: storage-14
+  owasp-mobile: m2
+  pattern:
+    - 'Realm\.Configuration\(encryptionKey:'
+    - 'Realm\(configuration:'
+  severity: good
+  type: RegexAnd
+- id: ios_ui_controls_disabled
+  cvss: 0
+  cwe: ''
+  description: Copy feature may be disabled in some UI controls.
+  input_case: exact
+  masvs: ''
+  owasp-mobile: ''
+  pattern:
+    - canPerformAction
+    - UIResponderStandardEditActions\.copy|\.copy
+  severity: info
+  type: RegexAnd
+- id: ios_open_urls
+  cvss: 0
+  cwe: CWE-939
+  description: Opening App with URLs can lead to potential security leaks.
+  input_case: exact
+  masvs: platform-3
+  owasp-mobile: m1
+  pattern: 'func application\(.*open url: URL'
+  severity: warning
+  type: Regex
+- id: ios_sensitive_backup
+  cvss: 0
+  cwe: ''
+  description: >-
+    Sensitive data shouldn't be included in backups generated by the mobile
+    operating system.
+  input_case: exact
+  masvs: storage-8
+  owasp-mobile: ''
+  pattern: 'kSecAttrAccessible[a-zA-Z]*ThisDeviceOnly'
+  severity: good
+  type: Regex
+- id: ios_webview_disable_js
+  cvss: 0
+  cwe: ''
+  description: JavaScript should be disabled in WebViews unless explicitly required.
+  input_case: exact
+  masvs: platform-5
+  owasp-mobile: ''
+  pattern:
+    - WKWebView
+    - \.javaScriptEnabled = false
+  severity: warning
+  type: RegexAndNot
+- id: ios_tls3_not_used
+  cvss: 7.5
+  cwe: CWE-757
+  description: TLS 1.3 should be used. Detected old version
+  input_case: exact
+  masvs: network-2
+  owasp-mobile: m3
+  pattern:
+    - \.TLSMinimumSupportedProtocolVersion
+    - - tls_protocol_version_t\.TLSv10
+      - tls_protocol_version_t\.TLSv11
+  severity: high
+  type: RegexAndOr
+- id: ios_tls12_used
+  cvss: 0
+  cwe: ''
+  description: TLS 1.3 should be used. Detected old version - TLS 1.2.
+  input_case: exact
+  masvs: network-2
+  owasp-mobile: m3
+  pattern:
+    - \.TLSMinimumSupportedProtocolVersion
+    - tls_protocol_version_t\.TLSv12
+  severity: warning
+  type: RegexAnd
+- id: ios_dtls1_used
+  cvss: 0
+  cwe: ''
+  description: DTLS 1.2 should be used. Detected old version - DTLS 1.0.
+  input_case: exact
+  masvs: network-2
+  owasp-mobile: m3
+  pattern:
+    - \.TLSMinimumSupportedProtocolVersion
+    - tls_protocol_version_t\.DTLSv10
+  severity: warning
+  type: RegexAnd
+- id: ios_depr_tls_min
+  cvss: 0
+  cwe: ''
+  description: >-
+    Use of deprecated property tlsMinimumSupportedProtocol. To avoid potential
+    security risks, use tlsMinimumSupportedProtocolVersion
+  input_case: exact
+  masvs: network-2
+  owasp-mobile: m3
+  pattern: \.tlsMinimumSupportedProtocol
+  severity: warning
+  type: Regex

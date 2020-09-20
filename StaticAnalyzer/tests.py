@@ -189,6 +189,19 @@ def api_test():
         else:
             logger.error('Scan List API Test 2')
             return True
+        resp = http_client.get('/api/v1/scans', HTTP_X_MOBSF_API_KEY=auth)
+        if resp.status_code == 200:
+            logger.info('Scan List API Test with custom http header 1 success')
+        else:
+            logger.error('Scan List API Test with custom http header 1')
+            return True
+        resp = http_client.get(
+            '/api/v1/scans?page=1&page_size=10', HTTP_X_MOBSF_API_KEY=auth)
+        if resp.status_code == 200:
+            logger.info('Scan List API Test with custom http header 2 success')
+        else:
+            logger.error('Scan List API Test with custom http header 2')
+            return True
         logger.info('[OK] Scan List API tests completed')
         # PDF Tests
         logger.info('Running PDF Generation API Test')
@@ -212,6 +225,10 @@ def api_test():
         for pdf in pdfs:
             resp = http_client.post(
                 '/api/v1/download_pdf', pdf, HTTP_AUTHORIZATION=auth)
+            resp_custom = http_client.post(
+                '/api/v1/download_pdf', pdf, HTTP_X_MOBSF_API_KEY=auth)
+            assert (resp.status_code == 200)
+            assert (resp_custom.status_code == 200)
             if (resp.status_code == 200
                     and resp._headers['content-type'][1] == 'application/pdf'):
                 logger.info('[OK] PDF Report Generated: %s', pdf['hash'])
@@ -226,6 +243,10 @@ def api_test():
         for jsn in pdfs:
             resp = http_client.post(
                 '/api/v1/report_json', jsn, HTTP_AUTHORIZATION=auth)
+            resp_custom = http_client.post(
+                '/api/v1/report_json', jsn, HTTP_X_MOBSF_API_KEY=auth)
+            assert (resp.status_code == 200)
+            assert (resp_custom.status_code == 200)
             if (resp.status_code == 200
                     and resp._headers['content-type'][1] == ctype):
                 logger.info('[OK] JSON Report Generated: %s', jsn['hash'])
@@ -252,6 +273,10 @@ def api_test():
         for sfile in files:
             resp = http_client.post(
                 '/api/v1/view_source', sfile, HTTP_AUTHORIZATION=auth)
+            resp_custom = http_client.post(
+                '/api/v1/view_source', sfile, HTTP_X_MOBSF_API_KEY=auth)
+            assert (resp.status_code == 200)
+            assert (resp_custom.status_code == 200)
             if resp.status_code == 200:
                 dat = json.loads(resp.content.decode('utf-8'))
                 if dat['title']:
@@ -263,7 +288,31 @@ def api_test():
                 logger.error('Reading - %s', sfile['file'])
                 return True
         logger.info('[OK] View Source API test completed')
-        logger.info('Running Delete Scan API Results test')
+        # Compare apps test
+        logger.info('Running App Compare API tests')
+        resp = http_client.post(
+            '/api/v1/compare',
+            {
+                'hash1': '3a552566097a8de588b8184b059b0158',
+                'hash2': '52c50ae824e329ba8b5b7a0f523efffe',
+            },
+            HTTP_AUTHORIZATION=auth)
+        assert (resp.status_code == 200)
+        resp_custom = http_client.post(
+            '/api/v1/compare',
+            {
+                'hash1': '3a552566097a8de588b8184b059b0158',
+                'hash2': '52c50ae824e329ba8b5b7a0f523efffe',
+            },
+            HTTP_X_MOBSF_API_KEY=auth)
+        assert (resp_custom.status_code == 200)
+        if resp.status_code == 200:
+            logger.info('[OK] App compare API tests completed')
+        else:
+            logger.error('App compare API tests failed')
+            logger.info(resp.content)
+            return True
+        logger.info('Running Delete Scan Results test')
         # Deleting Scan Results
         if platform.system() in ['Darwin', 'Linux']:
             scan_md5s = ['3a552566097a8de588b8184b059b0158',

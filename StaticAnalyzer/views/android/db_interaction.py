@@ -50,6 +50,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'certificate_analysis': python_dict(
                 db_entry[0].CERTIFICATE_ANALYSIS),
             'manifest_analysis': python_list(db_entry[0].MANIFEST_ANALYSIS),
+            'network_security': python_list(db_entry[0].NETWORK_SECURITY),
             'binary_analysis': python_list(db_entry[0].BINARY_ANALYSIS),
             'file_analysis': python_list(db_entry[0].FILE_ANALYSIS),
             'android_api': python_dict(db_entry[0].ANDROID_API),
@@ -64,6 +65,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'apkid': python_dict(db_entry[0].APKID),
             'trackers': python_dict(db_entry[0].TRACKERS),
             'playstore_details': python_dict(db_entry[0].PLAYSTORE_DETAILS),
+            'secrets': python_list(db_entry[0].SECRETS),
         }
         return context
     except Exception:
@@ -109,6 +111,7 @@ def get_context_from_analysis(app_dic,
             'certificate_analysis': cert_dic,
             'permissions': man_an_dic['permissons'],
             'manifest_analysis': man_an_dic['manifest_anal'],
+            'network_security': man_an_dic['network_security'],
             'binary_analysis': bin_anal,
             'file_analysis': app_dic['certz'],
             'android_api': code_an_dic['api'],
@@ -123,6 +126,7 @@ def get_context_from_analysis(app_dic,
             'apkid': apk_id,
             'trackers': trackers,
             'playstore_details': app_dic['playstore'],
+            'secrets': app_dic['secrets'],
         }
         return context
     except Exception:
@@ -181,6 +185,8 @@ def save_or_update(update_type,
             'APKID': apk_id,
             'TRACKERS': trackers,
             'PLAYSTORE_DETAILS': app_dic['playstore'],
+            'NETWORK_SECURITY': man_an_dic['network_security'],
+            'SECRETS': app_dic['secrets'],
         }
         if update_type == 'save':
             StaticAnalyzerAndroid.objects.create(**values)

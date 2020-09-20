@@ -1,0 +1,425 @@
+- id: api_native_code
+  description: Loading Native Code (Shared Library)
+  type: Regex
+  pattern: System\.loadLibrary\(|System\.load\(
+  input_case: exact
+  severity: info
+- id: api_get_system_service
+  description: Get System Service
+  type: Regex
+  pattern: getSystemService
+  input_case: exact
+  severity: info
+- id: api_dexloading
+  description: Dynamic Class and Dexloading
+  type: RegexOr
+  pattern:
+    - dalvik\.system\.DexClassLoader
+    - java\.security\.ClassLoader
+    - java\.net\.URLClassLoader
+    - java\.security\.SecureClassLoader
+  input_case: exact
+  severity: info
+- id: api_java_reflection
+  description: Java Reflection
+  type: RegexOr
+  pattern:
+    - java\.lang\.reflect\.Method
+    - java\.lang\.reflect\.Field
+    - Class\.forName
+  input_case: exact
+  severity: info
+- id: api_crypto
+  description: Crypto
+  type: RegexOr
+  pattern:
+    - javax\.crypto
+    - kalium\.crypto
+    - bouncycastle\.crypto
+  input_case: exact
+  severity: info
+- id: api_start_activity
+  description: Starting Activity
+  type: RegexOr
+  pattern:
+    - startActivity\(
+    - startActivityForResult\(
+  input_case: exact
+  severity: info
+- id: api_start_service
+  description: Starting Service
+  type: RegexOr
+  pattern:
+    - startService\(
+    - bindService\(
+  input_case: exact
+  severity: info
+- id: api_send_broadcast
+  description: Sending Broadcast
+  type: RegexOr
+  pattern:
+    - sendBroadcast\(
+    - sendOrderedBroadcast\(
+    - sendStickyBroadcast\(
+  input_case: exact
+  severity: info
+- id: api_local_file_io
+  description: Local File I/O Operations
+  type: RegexOr
+  pattern:
+    - OpenFileOutput
+    - getSharedPreferences
+    - SharedPreferences\.Editor
+    - getCacheDir
+    - getExternalStorageState
+    - openOrCreateDatabase
+  input_case: exact
+  severity: info
+- id: api_ipc
+  description: Inter Process Communication
+  type: RegexOr
+  pattern:
+    - IRemoteService
+    - IRemoteService\.Stub
+    - IBinder
+    - Intent
+  input_case: exact
+  severity: info
+- id: api_web
+  description: 'HTTP Requests, Connections and Sessions'
+  type: RegexOr
+  pattern:
+    - http\.client\.HttpClient
+    - net\.http\.AndroidHttpClient
+    - http\.impl\.client\.AbstractHttpClient
+  input_case: exact
+  severity: info
+- id: api_http_connection
+  description: HTTP Connection
+  type: RegexAnd
+  pattern:
+    - HttpURLConnection|org\.apache\.http
+    - openConnection|connect|HttpRequest
+  input_case: exact
+  severity: info
+- id: api_dex_manipulate
+  description: Load and Manipulate Dex Files
+  type: RegexAnd
+  pattern:
+    - >-
+      dalvik\.system\.PathClassLoader|dalvik\.system\.DexFile|dalvik\.system\.DexPathList
+    - loadDex|loadClass|DexClassLoader|loadDexFile
+  input_case: exact
+  severity: info
+- id: api_content_provider
+  description: Content Provider
+  type: Regex
+  pattern: android\.content\.ContentProvider
+  input_case: exact
+  severity: info
+- id: api_obfuscation
+  description: Obfuscation
+  type: RegexAnd
+  pattern:
+    - utils\.AESObfuscator
+    - getObfuscator
+  input_case: exact
+  severity: info
+- id: api_os_command
+  description: Execute OS Command
+  type: RegexAnd
+  pattern:
+    - getRuntime\(\)\.exec\(
+    - getRuntime\(
+  input_case: exact
+  severity: info
+- id: api_keystore
+  description: Android Keystore
+  type: RegexAnd
+  pattern:
+    - security\.KeyStore
+    - Keystore\.getInstance\(
+  input_case: exact
+  severity: info
+- id: api_tcp_server
+  description: TCP Server Socket
+  type: RegexAnd
+  pattern:
+    - ServerSocket
+    - net\.ServerSocket
+  input_case: exact
+  severity: info
+- id: api_tcp
+  description: TCP Socket
+  type: RegexAnd
+  pattern:
+    - Socket
+    - net\.Socket
+  input_case: exact
+  severity: info
+- id: api_udp_datagram
+  description: UDP Datagram Packet
+  type: RegexAnd
+  pattern:
+    - DatagramPacket
+    - net\.DatagramPacket
+  input_case: exact
+  severity: info
+- id: api_udp_datagram_socket
+  description: UDP Datagram Socket
+  type: RegexAnd
+  pattern:
+    - DatagramSocket
+    - net\.DatagramSocket
+  input_case: exact
+  severity: info
+- id: api_webview
+  description: WebView JavaScript Interface
+  type: RegexAnd
+  pattern:
+    - addJavascriptInterface
+    - WebView
+    - android\.webkit
+  input_case: exact
+  severity: info
+- id: api_webview_get
+  description: WebView GET Request
+  type: RegexAnd
+  pattern:
+    - WebView
+    - loadData
+    - android\.webkit
+  input_case: exact
+  severity: info
+- id: api_webview_post
+  description: WebView POST Request
+  type: RegexAnd
+  pattern:
+    - WebView
+    - postUrl
+    - android\.webkit
+  input_case: exact
+  severity: info
+- id: api_notifications
+  description: Android Notifications
+  type: RegexAnd
+  pattern:
+    - app\.NotificationManager
+    - notify
+  input_case: exact
+  severity: info
+- id: api_get_cell
+  description: Get Cell Information
+  type: RegexAnd
+  pattern:
+    - telephony\.TelephonyManager
+    - getAllCellInfo
+  input_case: exact
+  severity: info
+- id: api_get_location
+  description: Get Cell Location
+  type: RegexAnd
+  pattern:
+    - telephony\.TelephonyManager
+    - getCellLocation
+  input_case: exact
+  severity: info
+- id: api_get_subscriber
+  description: Get Subscriber ID
+  type: RegexAnd
+  pattern:
+    - telephony\.TelephonyManager
+    - getSubscriberId
+  input_case: exact
+  severity: info
+- id: api_get_device
+  description: 'Get Device ID, IMEI,MEID/ESN etc'
+  type: RegexAnd
+  pattern:
+    - telephony\.TelephonyManager
+    - getDeviceId
+    - getImei\(
+    - getMeid\(
+  input_case: exact
+  severity: info
+- id: api_get_soft
+  description: 'Get Software Version, IMEI/SV etc'
+  type: RegexAnd
+  pattern:
+    - telephony\.TelephonyManager
+    - getDeviceSoftwareVersion
+  input_case: exact
+  severity: info
+- id: api_get_sim_serial
+  description: Get SIM Serial Number
+  type: RegexAnd
+  pattern:
+    - telephony\.TelephonyManager
+    - getSimSerialNumber
+  input_case: exact
+  severity: info
+- id: api_get_sim_provider
+  description: Get SIM Provider Details
+  type: RegexAnd
+  pattern:
+    - telephony\.TelephonyManager
+    - getSimOperator
+  input_case: exact
+  severity: info
+- id: api_get_sim_operator
+  description: Get SIM Operator Name
+  type: RegexAnd
+  pattern:
+    - telephony\.TelephonyManager
+    - getSimOperatorName
+  input_case: exact
+  severity: info
+- id: api_get_phone
+  description: Get Phone Number
+  type: RegexAnd
+  pattern:
+    - telephony\.TelephonyManager
+    - getLine1Number
+  input_case: exact
+  severity: info
+- id: api_sms_call
+  description: 'Query Database of SMS, Contacts etc'
+  type: RegexAnd
+  pattern:
+    - content\.ContentResolver
+    - query
+  input_case: exact
+  severity: info
+- id: api_send_sms
+  description: Send SMS
+  type: RegexAndOr
+  pattern:
+    - telephony\.SmsManager
+    - - sendMultipartTextMessage
+      - sendTextMessage
+      - vnd\.android-dir\/mms-sms
+  input_case: exact
+  severity: info
+- id: api_url
+  description: URL Connection to file/http/https/ftp/jar
+  type: RegexAndOr
+  pattern:
+    - net\.URLConnection
+    - - openConnection
+      - connect
+      - openStream
+  input_case: exact
+  severity: info
+- id: api_jar_url
+  description: JAR URL Connection
+  type: RegexAndOr
+  pattern:
+    - net\.JarURLConnection
+    - - JarURLConnection
+      - 'jar:'
+  input_case: exact
+  severity: info
+- id: api_https_connection
+  description: HTTPS Connection
+  type: RegexAndOr
+  pattern:
+    - javax\.net\.ssl\.HttpsURLConnection
+    - - HttpsURLConnection
+      - connect
+  input_case: exact
+  severity: info
+- id: api_clipboard
+  description: Set or Read Clipboard data
+  type: RegexAndOr
+  pattern:
+    - content\.ClipboardManager
+    - - CLIPBOARD_SERVICE
+      - ClipboardManager
+  input_case: exact
+  severity: info
+- id: api_base64_encode
+  description: Base64 Encode
+  type: RegexAndOr
+  pattern:
+    - android\.util\.Base64
+    - - \.encodeToString
+      - \.encode
+  input_case: exact
+  severity: info
+- id: api_base64_decode
+  description: Base64 Decode
+  type: RegexAndOr
+  pattern:
+    - android\.util\.Base64
+    - - \.decodeToString
+      - \.decode
+  input_case: exact
+  severity: info
+- id: api_message_digest
+  description: Message Digest
+  type: RegexAndOr
+  pattern:
+    - java\.security\.MessageDigest
+    - - MessageDigestSpi
+      - MessageDigest
+  input_case: exact
+  severity: info
+- id: api_gps
+  description: GPS Location
+  type: RegexAndOr
+  pattern:
+    - android\.location
+    - - getLastKnownLocation\(
+      - requestLocationUpdates\(
+      - getLatitude\(
+      - getLongitude\(
+  input_case: exact
+  severity: info
+- id: api_installed
+  description: Get Installed Applications
+  type: RegexAndOr
+  pattern:
+    - getPackageManager\(
+    - - queryIntentActivities\(
+      - getInstalledApplications\(
+      - getInstalledPackages\(
+  input_case: exact
+  severity: info
+- id: api_get_wifi
+  description: Get WiFi Details
+  type: RegexAndOr
+  pattern:
+    - wifi\.WifiManager
+    - - getConnectionInfo\(
+      - getSSID\(
+      - getConfiguredNetworks\(
+      - getNetworkId\(
+      - getIpAddress\(
+      - getMacAddress\(
+  input_case: exact
+  severity: info
+- id: api_get_network
+  description: Get Network Interface information
+  type: RegexAndOr
+  pattern:
+    - NetworkInterface
+    - - getNetworkInterfaces\(
+      - getInetAddresses\(
+      - getHostAddress\(
+  input_case: exact
+  severity: info
+- id: api_get_advertising
+  description: Get Android Advertising ID
+  type: RegexAndOr
+  pattern:
+    - AdvertisingIdClient
+    - - getAdvertisingIdInfo\(
+      - getAdvertisingId\(
+  input_case: exact
+  severity: info
+- id: api_certificate_handling
+  description: Certificate Handling
+  type: Regex
+  pattern: \.SSLSocketFactory
+  input_case: exact
+  severity: info

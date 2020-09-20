@@ -103,6 +103,10 @@
         <td class="no_border"><h3><span class="{% if virus_total.positives > 0 %}danger{% else %}success{% endif %}"> {{ virus_total.positives }}/{{ virus_total.total }}</span></h3></td>
       </tr>
       {% endif %}
+      <tr>
+        <td class="no_border"><h3>Scan Date:</h3></td>
+        <td class="no_border"><h3>{{ timestamp }}</h3></td>
+      </tr>
     </table>
       </div>
       </br></br>
@@ -154,20 +158,30 @@
         <div class="panel-body">
               <p class="wrapped-text">{{ certificate_analysis.certificate_info }}</p>
               <!--Cert status-->
-              {% if certificate_analysis.certificate_status == "good" %}
-                <h5>Certificate Status:</h5> <span class="success">Good</span><br />
-                <h5>Description: </h5> {{ certificate_analysis.description }}<br />
-              {% elif certificate_analysis.certificate_status == "bad" %}
-                <h5>Certificate Status: </h5> <span class="danger">Bad</span><br />
-                <h5>Description:</h5> {{ certificate_analysis.description }}<br />
-              {% elif  certificate_analysis.certificate_status == "missing" %}
-                <h5>Certificate Status: </h5> <span class="warning">Certificate missing</span><br />
-                <h5>Description:</h5> {{ certificate_analysis.description }}<br />
-              {% elif certificate_analysis.certificate_status == "warning" %}
-                <h5>Certificate Status: </h5> <span class="warning">Warning</span><br />
-                <h5>Description:</h5> {{ certificate_analysis.description }}<br />
-              {% endif %}
-              
+                 <table class="basic">
+                      <thead>
+                          <tr>
+                              <th>STATUS</th>
+                              <th>DESCRIPTION</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          {% for find in certificate_analysis.certificate_findings %}
+                          <tr>
+                          <td>
+                          {% if find.0 == 'bad' %}
+                            <span class="danger">bad</span>
+                          {% elif find.0  == 'good' %}
+                            <span class="success">secure</span>
+                          {% elif find.0  == 'warning' %}
+                            <span class="warning">warning</span>
+                          {% endif %}
+                          </td>
+                          <td>{{ find.1 }}</td>
+                          </tr>
+                          {% endfor %}
+                      </tbody>
+                  </table>
         </div>
       {% endif %}
       {% if permissions %}
@@ -181,8 +195,8 @@
                 <th>INFO </th>
                 <th>DESCRIPTION</th>
               </tr>
-                                </thead>
-                                <tbody>
+            </thead>
+            <tbody>
             {% for perm,desc in permissions.items %}
             <tr>
             <td>{{ perm }}</td>
@@ -201,6 +215,7 @@
        <table class="basic">
                     <thead>
                         <tr>
+                            <th>NO</th>
                             <th>ISSUE</th>
                             <th>SEVERITY</th>
                             <th>DESCRIPTION</th>
@@ -211,6 +226,7 @@
                     <tbody>
                     {% for item in binary_analysis %}
                       <tr>
+                        <td>{{ forloop.counter }}</td>
                         <td>
                         {{item|key:"title" | safe}}
                         </td>
@@ -400,18 +416,60 @@
                     </table>
       {% endif %}
 
+
+     <h2><i class="fas fa-lock"></i> NETWORK SECURITY</h2>
+     <table class="basic">
+                    <thead>
+                        <tr>
+                          <th>NO</th>
+                          <th>SCOPE</th>
+                          <th>SEVERITY</th>
+                          <th>DESCRIPTION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    {% for item in network_security %}
+                      <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                         {% for url in item.scope %}
+                          {{ url }}</br>
+                        {% endfor %}
+                        </td>
+                        <td>
+                          {% if item.severity == "high" %}
+                            <span class="danger">high</span>
+                          {% elif item.severity == "good" %}
+                            <span class="good">good</span>
+                          {% elif item.severity == "info" %}
+                            <span class="info">info</span>
+                          {% elif item.severity == "warning" %}
+                             <span class="warning">warning</span>
+                          {% endif %}
+                        </td>
+                        <td>
+                        {{item.description }}
+                        </td>
+   
+                       </tr>
+                     {% endfor %}
+										</tbody>
+										</table>
+    
     <h2><i class="fas fa-search"></i> MANIFEST ANALYSIS</h2>
      <table class="basic">
                     <thead>
                         <tr>
+                            <th>NO</th>
                             <th>ISSUE</th>
                             <th>SEVERITY</th>
-												<th>DESCRIPTION</th>
+												    <th>DESCRIPTION</th>
                                 </tr>
                             </thead>
                             <tbody>
 									  {% for item in manifest_analysis %}
                       <tr>
+                        <td>{{ forloop.counter }}</td>
                         <td>
                         {{item|key:"title" | safe}}
                         </td>
@@ -441,6 +499,7 @@
        <table class="basic">
                 <thead>
                     <tr>
+                        <th>NO</th>
                         <th>ISSUE</th>
                         <th>SEVERITY</th>
                         <th>STANDARDS</th>
@@ -448,101 +507,49 @@
                     </tr>
                 </thead>
                 <tbody>
-										{% for issue, details in code_analysis.items %}
+                   {% for rule, details in code_analysis.items %}
                   <tr>
+                  <td>{{ forloop.counter }}</td>
                   <td width="25%">
-                  {{ issue }}
+                  {{ details.metadata.description }}
                   </td>
                   <td>
-                    {% if details|key:"level" == "high" %}
+                    {% if details.metadata.severity == "high" %}
                       <span class="danger">high</span>
-                      {% elif details|key:"level" == "good" %}
+                      {% elif details.metadata.severity == "good" %}
                       <span class="success">secure</span>
-                      {% elif details|key:"level" == "warning" %}
+                      {% elif details.metadata.severity == "warning" %}
                       <span class="warning">warning</span>
-                      {% elif details|key:"level" == "info" %}
+                      {% elif details.metadata.severity == "info" %}
                       <span class="info">info</span>
                       {% endif %}
                   </td>
                   <td>
-                    <h5>CVSS V2:</h5>
-                    {% if details|key:"cvss" > 6 %}
-                    <span class="danger">{{ details|key:"cvss" }} (high)</span>
-                    {% elif details|key:"cvss" == 0 %}
-                    <span class="info">{{ details|key:"cvss" }} (info)</span>
-                    {% elif details|key:"cvss" >= 4 %}
-                    <span class="warning">{{ details|key:"cvss" }} (medium)</span>
-                    {% elif details|key:"cvss" < 4 %}
-                    <span class="success">{{ details|key:"cvss" }} (low)</span>
-                    {% endif %}
-                    {% if details|key:"cwe" %}</br> <h5>CWE: </h5>{{ details|key:"cwe" }}{% endif %}
-                    {% if details|key:"owasp" %}</br> <h5>OWASP Top 10: </h5>{{ details|key:"owasp" }}{% endif %}
-                    {% if details|key:"owasp-mstg" %}</br> <h5>OWASP MASVS: </h5>{{ details|key:"owasp-mstg" }}{% endif %}
+                      <strong>CVSS V2:</strong>
+                      {{ details.metadata.cvss }}
+                      {% if details.metadata.cvss > 6 %}
+                         <span class="danger">{{ details|key:"cvss" }} (high)</span>
+                      {% elif details.metadata.cvss == 0 %}
+                        <span class="info">{{ details|key:"cvss" }} (info)</span>
+                      {% elif details.metadata.cvss >= 4 %}
+                        <span class="warning">{{ details|key:"cvss" }} (medium)</span>
+                      {% elif details.metadata.cvss < 4 %}
+                        <span class="success">{{ details|key:"cvss" }} (low)</span>
+                      {% endif %}
+                      {% if details.metadata.cwe %}</br> <strong>CWE: </strong>{{ details.metadata.cwe }}{% endif %}
+                      {% if details.metadata|key:"owasp-mobile" %}</br> <strong>OWASP Top 10: </strong>{{ details.metadata|key:"owasp-mobile" }}{% endif %}
+                      {% if details.metadata.masvs %}</br> <strong>OWASP MASVS: </strong>{{ details.metadata.masvs }}{% endif %}
                   </td>
-                  <td style="word-break:break-all;">
-                  {% for path in details|key:"path" %}
-                   {{ path }}
-                  </br>
+                 <td style="word-break:break-all;">
+                  {% for file_path in details.files %}
+                    {{ file_path }}
+                  <br/>
                   {% endfor %}
                   </td>
                 </tr>    
               {% endfor %} 
 										</tbody>
 										</table>
-
-        <!--
-        <h2><i class="fab fa-android"></i> ANDROID API</h2>
-            <table class="basic">
-                      <thead>
-                          <tr>
-                        <th>API</th>
-												<th>FILES</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-										{% for desc, details in android_api.items %}
-                  <tr>
-                  <td width="25%">
-                  {{ desc }}
-                  </td>
-                  <td style="word-break:break-all;">
-                  {% for path in details|key:"path" %}
-                   {{ path }}
-                  </br>
-                  {% endfor %}
-                  </td>
-                </tr>    
-              {% endfor %} 
-										</tbody>
-										</table>
-    
-
-       {% if file_analysis %}
-      <h2><i class="fa fa-file"></i> FILE ANALYSIS</h2>
-                <table class="basic">
-                      <thead>
-                    <tr>
-                        <th>ISSUE</th>
-                        <th>FILES</th>
-                    </tr>
-                </thead>
-                <tbody>
-              {% for item in file_analysis %}
-                    <tr>
-                    <td>
-                    {{ item|key:"finding" }}
-                    </td>
-                    <td>
-                    {% for cert_f in item|key:"files" %}
-                    {{ cert_f }}<br />
-                    {% endfor %} 
-                    </td>
-                </tr>    
-                {% endfor %} 
-										</tbody>
-										</table>
-      {% endif %}
-      -->
 
       {% if domains  %}
       <h2><i class="fab fa-searchengin"></i> DOMAIN MALWARE CHECK</h2>
@@ -667,6 +674,26 @@
                        <td style="word-break:break-all;">
                          {{email_dict|key:"path"}}
                        </td>
+                    </tr>
+                  {% endfor %} 
+										</tbody>
+										</table>
+      {% endif %}
+
+      {% if secrets %}
+      <h2><i class="fas fa-key"></i> HARDCODED SECRETS</h2>
+          <table class="basic">
+                  <thead>
+                  <tr>
+                     <th>POSSIBLE SECRETS</th>
+                  </tr>
+                 </thead>
+                  <tbody>
+									{% for sec in secrets %}
+                    <tr>
+                       <td style="word-break:break-all;">
+                      {{ sec }}
+                        </td>
                     </tr>
                   {% endfor %} 
 										</tbody>

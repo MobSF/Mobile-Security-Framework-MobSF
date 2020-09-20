@@ -1,21 +1,39 @@
-version: '3'
+version: '3.8'
 services:
   postgres:
     image: "postgres:latest"
     restart: always
     volumes:
-      - /Postgres_data/var/lib/postgresql:/var/lib/postgresql
+      - $HOME/MobSF/postgresql_data:/var/lib/postgresql
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=mobsf
+    ports:
+      - "5432:5432"
+    networks:
+        - mobsf
+      
   mobsf:
+    environment: 
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=mobsf
+      - POSTGRES_HOST=postgres
     build:
       context: .
       dockerfile: Dockerfile
       args:
        - POSTGRES=True
     volumes:
-      - /MobSF_data:/root/.MobSF
+      - $HOME/MobSF/mobsf_data:/root/.MobSF
     ports:
      - "8000:8000"
+    networks:
+      - mobsf
+    depends_on:
+      - postgres
+    links:
+      - "postgres"
+networks:
+  mobsf:

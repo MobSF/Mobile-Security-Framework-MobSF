@@ -67,6 +67,10 @@
         <td class="no_border"><h3><span class="{% if virus_total.positives > 0 %}danger{% else %}success{% endif %}"> {{ virus_total.positives }}/{{ virus_total.total }}</span></h3></td>
       </tr>
       {% endif %}
+      <tr>
+        <td class="no_border"><h3>Scan Date:</h3></td>
+        <td class="no_border"><h3>{{ timestamp }}</h3></td>
+      </tr>
     </table>
       </div>
       </br></br>

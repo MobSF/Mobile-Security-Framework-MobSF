@@ -1,10 +1,9 @@
 # -*- coding: utf_8 -*-
 """View Source of a file."""
 
-import io
 import logging
 import ntpath
-import os
+from pathlib import Path
 
 from django.conf import settings
 from django.shortcuts import render
@@ -41,18 +40,23 @@ def run(request, api=False):
             if api:
                 return err
             return print_n_send_error_response(request, err, False, exp)
-        if fil.endswith('.java'):
+
+        base = Path(settings.UPLD_DIR) / md5
+        syntax = 'java'
+        if fil.endswith(('.java', '.kt')):
             if typ == 'eclipse':
-                src = os.path.join(settings.UPLD_DIR, md5 + '/src/')
+                src = base / 'src'
             elif typ == 'studio':
-                src = os.path.join(
-                    settings.UPLD_DIR, md5 + '/app/src/main/java/')
+                src = base / 'app' / 'src' / 'main' / 'java'
+                kt = base / 'app' / 'src' / 'main' / 'kotlin'
+                if not src.exists() and kt.exists():
+                    src = kt
+                    syntax = 'kotlin'
             elif typ == 'apk':
-                src = os.path.join(
-                    settings.UPLD_DIR, md5 + '/java_source/')
+                src = base / 'java_source'
         elif fil.endswith('.smali'):
-            src = os.path.join(settings.UPLD_DIR,
-                               md5 + '/smali_source/')
+            src = base / 'smali_source'
+            syntax = 'smali'
         else:
             msg = 'Not Found'
             doc = 'File not Found!'
@@ -60,25 +64,17 @@ def run(request, api=False):
             if api:
                 is_api = True
             return print_n_send_error_response(request, msg, is_api, doc)
-        sfile = os.path.join(src, fil)
-        if not is_safe_path(src, sfile):
+        sfile = src / fil
+        if not is_safe_path(src, sfile.as_posix()):
             msg = 'Path Traversal Detected!'
             if api:
                 return {'error': 'Path Traversal Detected!'}
             return print_n_send_error_response(request, msg, False, exp)
-        dat = ''
-        with io.open(
-            sfile,
-            mode='r',
-            encoding='utf8',
-            errors='ignore',
-        ) as file_pointer:
-            dat = file_pointer.read()
         context = {
             'title': escape(ntpath.basename(fil)),
             'file': escape(ntpath.basename(fil)),
-            'dat': dat,
-            'type': 'java',
+            'dat': sfile.read_text('utf-8', 'ignore'),
+            'type': syntax,
             'sql': {},
             'version': settings.MOBSF_VER,
         }
