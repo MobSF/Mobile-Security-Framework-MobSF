@@ -35,7 +35,7 @@ def tree_index_maker(root_dir):
             yield loader.render_to_string(
                 'static_analysis/treeview_file.html',
                 {'file': mfile,
-                 'path': t[t.find('java_source') + 12: -len(mfile)]},
+                 'path': t[t.find('_source') + 8: -len(mfile)]},
             )
     return _index(root_dir)
 
@@ -56,6 +56,7 @@ def run(request):
                                + '/app/src/main/java/')
         elif typ == 'apk':
             src = os.path.join(settings.UPLD_DIR, md5 + '/java_source/')
+            typ = 'java'
         elif typ == 'smali':
             src = os.path.join(settings.UPLD_DIR, md5 + '/smali_source/')
         else:
@@ -66,10 +67,9 @@ def run(request):
         tree_index = tree_index_maker(src)
         context = {
             'subfiles': tree_index,
-            'title': 'Smali Source' if typ == 'smali' else 'Java Source',
+            'title': "{} Source".format(typ.capitalize()),
             'hash': md5,
-            'type': typ,
-            'source_type': 'smali' if typ == 'smali' else 'java',
+            'source_type': typ,
             'version': settings.MOBSF_VER,
             'api_key': api_key(),
         }

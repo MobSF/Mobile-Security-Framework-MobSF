@@ -28,7 +28,7 @@ pre {
               <div class="card-body">
                 <h3 class="box-title">{% if source_type == 'java' %}
                                         <i class="fab fa-java"></i> Java Source</h3>
-                                      {% else %}
+                                      {% elif source_type == 'smali' %}
                                         <i class="fa fa-code"></i> Smali Source</h3>
                                       {% endif %}
                 <div class="row">
@@ -42,10 +42,13 @@ pre {
                     <div class="col-2"><button type="button" id="clear-button" class="btn btn-primary">Clear</button></div>
                 </div>
                  <div class="col-12">
+
                     <!-- BEGIN: File Frame. -->
                     <div id="fileframe">
+                        <div id="loading-div"><img src="{% static "jsTree/themes/default/throbber.gif" %}" /></div>
+                        <div id="no-results"><strong>No results found</strong></div>
                         <!-- BEGIN: File Tree. -->
-                        <div id="filetree">
+                        <div id="filetree" class="transparent-effect">
                             <ul>
                                 {% for f in subfiles %}{{ f }}{% endfor %}
                             </ul>
@@ -104,6 +107,10 @@ pre {
                 ShowFile($(curr_selected)[0].id);
             }
         }
+      }).on('ready.jstree', function (e, data) {
+            hide_loading();
+      }).on('search.jstree', function (e, data) {
+            hide_loading();
       })
       // create the instance
       .jstree({
@@ -121,10 +128,18 @@ pre {
         to = setTimeout(function () {
           search_id_too = false;
           var v = $('#filename_search').val();
-          $('#content_search').val('');
-          file_tree.jstree('close_all');
-          file_tree.jstree(true).search(v);
-        }, 250);
+          // Verify search query is not empty
+          if (!!v.trim()){
+              $('#content_search').val('');
+              //file_tree.jstree('close_all');
+              show_loading();
+              hide_no_results();
+              file_tree.jstree(true).search(v);
+          }
+          else{
+            clear_search();
+          }
+        }, 500);
       });
 
     function getUrlParameter(sParam) {
@@ -173,6 +188,7 @@ pre {
           return false;
         }
 
+      // Content search
       var to_content = false;
       $('#content_search').keyup(function () {
         if(to_content) { clearTimeout(to_content); }
@@ -181,10 +197,12 @@ pre {
           search_id_too = true;
 
           var v = $('#content_search').val();
-          if (!v){
+          if (v.length < 2){
             //search term is empty
             return false;
           }
+            hide_no_results();
+            show_loading();
             var fd = new FormData();
             fd.append('md5', "{{ hash }}");
             fd.append('q', v);
@@ -202,8 +220,15 @@ pre {
                         response = JSON.parse(JSON.parse(data.responseText));
                         console.log("Content search ajax response:");
                         console.log(response);
-                        file_tree.jstree('close_all');
-                        file_tree.jstree(true).search(response.matches.join(' '));
+                        console.log(response.matches.length);
+                        if (response.matches.length){
+                            file_tree.jstree('close_all');
+                            file_tree.jstree(true).search(response.matches.join(' '));
+                        }
+                        else{
+                            hide_loading()
+                            show_no_results();
+                        }
                     }
                 });
         }, 1000);
@@ -232,13 +257,33 @@ pre {
           }
         });
         }
-        $("#clear-button").click(function(){
+        function clear_search(){
+            hide_no_results()
             file_tree.jstree(true).clear_search();
             file_tree.jstree('close_all');
             $(".search-box").find("input").val('');
             $("code#fileoutput").text('');
             $("span#filename").text('');
+        }
+        $("#clear-button").click(function(){
+            clear_search();
         });
+        function show_no_results(){
+            $("#no-results").css("display", "block");
+            $("#filetree").addClass("transparent-effect");
+        }
+        function hide_no_results(){
+            $("#no-results").css("display", "none");
+            $("#filetree").removeClass("transparent-effect");
+        }
+        function show_loading(){
+            $("#loading-div").css("display", "block");
+            $("#filetree").addClass("transparent-effect");
+        }
+        function hide_loading(){
+            $("#loading-div").css("display", "none");
+            $("#filetree").removeClass("transparent-effect");
+        }
 </script>
 
 {% endblock %}
