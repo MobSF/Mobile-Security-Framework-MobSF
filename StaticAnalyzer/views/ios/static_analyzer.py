@@ -109,7 +109,7 @@ def static_analyzer_ios(request, api=False):
                                 request,
                                 msg,
                                 False)
-                    app_dict['bin_dir'] = app_dict['bin_dir'].as_posix()
+                    app_dict['bin_dir'] = app_dict['bin_dir'].as_posix() + '/'
                     # Get Files
                     all_files = ios_list_files(
                         app_dict['bin_dir'], app_dict['md5_hash'], True, 'ipa')
@@ -186,12 +186,10 @@ def static_analyzer_ios(request, api=False):
                     logger.info('iOS Source Code Analysis Started')
                     app_dict['app_file'] = app_dict[
                         'md5_hash'] + '.zip'  # NEW FILENAME
-                    app_dict['app_path'] = app_dict[
-                        'app_dir'] / app_dict['app_file']
+                    app_dict['app_path'] = app_dir / app_dict['app_file']
                     app_dict['app_path'] = app_dict['app_path'].as_posix()
-                    app_dict['app_dir'] = app_dict['app_dir'].as_posix() + '/'
+                    app_dict['app_dir'] = app_dir.as_posix() + '/'
                     # ANALYSIS BEGINS - Already Unzipped
-                    logger.info('ZIP Already Extracted')
                     app_dict['size'] = str(
                         file_size(app_dict['app_path'])) + 'MB'  # FILE SIZE
                     app_dict['sha1'], app_dict['sha256'] = hash_gen(
