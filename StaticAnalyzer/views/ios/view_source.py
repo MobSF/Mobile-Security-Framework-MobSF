@@ -14,7 +14,8 @@ from django.shortcuts import render
 from django.utils.html import escape
 
 from MobSF.forms import FormUtil
-from MobSF.utils import (is_file_exists,
+from MobSF.utils import (is_dir_exists,
+                         is_file_exists,
                          is_safe_path,
                          print_n_send_error_response,
                          read_sqlite)
@@ -62,8 +63,16 @@ def run(request, api=False):
                 return err
             return print_n_send_error_response(request, err, False, exp)
         if mode == 'ipa':
-            src = os.path.join(settings.UPLD_DIR,
-                               md5_hash + '/Payload/')
+            src1 = os.path.join(settings.UPLD_DIR,
+                                md5_hash + '/Payload/')
+            src2 = os.path.join(settings.UPLD_DIR,
+                                md5_hash + '/payload/')
+            if is_dir_exists(src1):
+                src = src1
+            elif is_dir_exists(src2):
+                src = src2
+            else:
+                raise Exception('MobSF cannot find Payload directory')
         elif mode == 'ios':
             src = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         sfile = os.path.join(src, fil)
