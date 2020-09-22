@@ -24,7 +24,10 @@ from MobSF.utils import (
     print_n_send_error_response,
 )
 
-from StaticAnalyzer.models import StaticAnalyzerAndroid
+from StaticAnalyzer.models import (
+    StaticAnalyzerAndroid,
+    StaticAnalyzerIOS,
+)
 from StaticAnalyzer.views.android.binary_analysis import (elf_analysis,
                                                           res_analysis)
 from StaticAnalyzer.views.android.cert_analysis import (
@@ -281,6 +284,11 @@ def static_analyzer(request, api=False):
                 else:
                     return render(request, template, context)
             elif typ == 'zip':
+                ios_ret = HttpResponseRedirect(
+                    '/StaticAnalyzer_iOS/?name='
+                    + app_dic['app_name']
+                    + '&type=ios&checksum='
+                    + app_dic['md5'])
                 # Check if in DB
                 # pylint: disable=E1101
                 cert_dic = {
@@ -299,8 +307,15 @@ def static_analyzer(request, api=False):
                 app_dic['app_dir'] = app_dic['app_dir'].as_posix() + '/'
                 db_entry = StaticAnalyzerAndroid.objects.filter(
                     MD5=app_dic['md5'])
+                ios_db_entry = StaticAnalyzerIOS.objects.filter(
+                    MD5=app_dic['md5'])
                 if db_entry.exists() and rescan == '0':
                     context = get_context_from_db_entry(db_entry)
+                elif ios_db_entry.exists() and rescan == '0':
+                    if api:
+                        return {'type': 'ios'}
+                    else:
+                        return ios_ret
                 else:
                     logger.info('Extracting ZIP')
                     app_dic['files'] = unzip(
@@ -312,11 +327,7 @@ def static_analyzer(request, api=False):
                         if api:
                             return {'type': 'ios'}
                         else:
-                            return HttpResponseRedirect(
-                                '/StaticAnalyzer_iOS/?name='
-                                + app_dic['app_name']
-                                + '&type=ios&checksum='
-                                + app_dic['md5'])
+                            return ios_ret
                     app_dic['certz'] = get_hardcoded_cert_keystore(
                         app_dic['files'])
                     app_dic['zipped'] = pro_type
