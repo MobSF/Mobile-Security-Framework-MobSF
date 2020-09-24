@@ -67,7 +67,8 @@ def apk_2_java(app_path, app_dir, tools_dir):
         logger.info('Decompiling to Java with jadx')
 
         if os.path.exists(output):
-            shutil.rmtree(output)
+            # ignore WinError3 in Windows
+            shutil.rmtree(output, ignore_errors=True)
 
         if (len(settings.JADX_BINARY) > 0
                 and is_file_exists(settings.JADX_BINARY)):
