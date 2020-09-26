@@ -42,8 +42,7 @@ urlpatterns = [
     # Static Analysis
     # Android
     url(r'^StaticAnalyzer/$', android_sa.static_analyzer),
-    url(r'^Smali/$', source_tree.run),
-    url(r'^Java/$', source_tree.run),
+    url(r'^Source$', source_tree.run, name='source_view'),
     url(r'^Find/$', find.run, name='find_files'),
     url(r'^generate_downloads/$', generate_downloads.run),
     url(r'^ManifestView/$', manifest_view.run),

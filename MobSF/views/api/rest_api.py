@@ -174,7 +174,7 @@ def api_view_source(request):
     """View Source for android & ios source file."""
     params = {'file', 'type', 'hash'}
     if set(request.POST) >= params:
-        if request.POST['type'] in {'eclipse', 'studio', 'apk'}:
+        if request.POST['type'] in ['eclipse', 'studio', 'apk', 'java', 'smali']:
             resp = view_source.run(request, api=True)
         else:
             resp = ios_view_source.run(request, api=True)

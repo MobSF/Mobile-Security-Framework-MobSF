@@ -52,7 +52,7 @@ def run(request, api=False):
                 if not src.exists() and kt.exists():
                     src = kt
                     syntax = 'kotlin'
-            elif typ == 'apk':
+            elif typ in ['apk', 'java']:
                 src = base / 'java_source'
         elif fil.endswith('.smali'):
             src = base / 'smali_source'
