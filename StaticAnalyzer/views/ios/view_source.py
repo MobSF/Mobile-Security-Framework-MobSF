@@ -5,6 +5,7 @@ import json
 import logging
 import ntpath
 import os
+from pathlib import Path
 
 import biplist
 
@@ -61,12 +62,20 @@ def run(request, api=False):
             if api:
                 return err
             return print_n_send_error_response(request, err, False, exp)
+        base = Path(settings.UPLD_DIR) / md5_hash
         if mode == 'ipa':
-            src = os.path.join(settings.UPLD_DIR,
-                               md5_hash + '/Payload/')
+            src1 = base / 'payload'
+            src2 = base / 'Payload'
+            if src1.exists():
+                src = src1
+            elif src2.exists():
+                src = src2
+            else:
+                raise Exception('MobSF cannot find Payload directory')
         elif mode == 'ios':
-            src = os.path.join(settings.UPLD_DIR, md5_hash + '/')
-        sfile = os.path.join(src, fil)
+            src = base
+        sfile = src / fil
+        sfile = sfile.as_posix()
         if not is_safe_path(src, sfile):
             msg = 'Path Traversal Detected!'
             if api:

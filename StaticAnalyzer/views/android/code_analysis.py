@@ -62,9 +62,15 @@ def code_analysis(app_dir, typ):
                     and any(skip_path in pfile.as_posix()
                             for skip_path in skp) is False)
             ):
+                content = None
+                try:
+                    content = pfile.read_text('utf-8', 'ignore')
+                    # Certain file path cannot be read in windows
+                except Exception:
+                    continue
                 relative_java_path = pfile.as_posix().replace(src, '')
                 urls, urls_nf, emails_nf = url_n_email_extract(
-                    pfile.read_text('utf-8', 'ignore'), relative_java_path)
+                    content, relative_java_path)
                 url_list.extend(urls)
                 url_n_file.extend(urls_nf)
                 email_n_file.extend(emails_nf)
