@@ -41,9 +41,9 @@ def tree_index_maker(root_dir):
 
 
 def run(request):
-    """Show the java code."""
+    """Source Tree - Java/Smali view"""
     try:
-        logger.info('Listing Java files')
+        logger.info('Listing Source files')
         match = re.match('^[0-9a-f]{32}$', request.GET['md5'])
         typ = request.GET['type']
         if not match:
