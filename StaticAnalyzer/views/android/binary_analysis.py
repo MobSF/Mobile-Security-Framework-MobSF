@@ -236,7 +236,7 @@ def check_elf_built(f):
 def res_analysis(app_dir):
     """Perform the elf analysis."""
     try:
-        logger.info('Static Android Resource Analysis Started')
+        logger.info('Resource Analysis Started')
         elf_desc = {
             'html_infected':
                 (
@@ -284,7 +284,7 @@ def res_analysis(app_dir):
 def elf_analysis(app_dir: str) -> list:
     """Perform the elf analysis."""
     try:
-        logger.info('Static Android Binary Analysis Started')
+        logger.info('Binary Analysis Started')
         fgs = ['nopie', 'nonpie', 'no-pie']
         elf_desc = {
             'elf_no_pi':

@@ -11,18 +11,22 @@ from MobSF.utils import filename_from_path
 from StaticAnalyzer.views.shared_func import (
     url_n_email_extract,
 )
-from StaticAnalyzer.views.sast_engine import scan
+from StaticAnalyzer.views.sast_engine import (
+    niap_scan,
+    scan,
+)
 
 logger = logging.getLogger(__name__)
 
 
-def code_analysis(app_dir, typ):
+def code_analysis(app_dir, typ, manifest_file):
     """Perform the code analysis."""
     try:
-        logger.info('Static Android Code Analysis Started')
+        logger.info('Code Analysis Started')
         root = Path(settings.BASE_DIR) / 'StaticAnalyzer' / 'views'
         code_rules = root / 'android' / 'rules' / 'android_rules.yaml'
         api_rules = root / 'android' / 'rules' / 'android_apis.yaml'
+        niap_rules = root / 'android' / 'rules' / 'android_niap.yaml'
         code_findings = {}
         api_findings = {}
         email_n_file = []
@@ -39,22 +43,28 @@ def code_analysis(app_dir, typ):
         elif typ == 'eclipse':
             src = app_dir / 'src'
         src = src.as_posix() + '/'
+        skp = settings.SKIP_CLASS_PATH
         logger.info('Code Analysis Started on - %s',
                     filename_from_path(src))
-
         # Code and API Analysis
         code_findings = scan(
             code_rules.as_posix(),
             {'.java', '.kt'},
             [src],
-            settings.SKIP_CLASS_PATH)
+            skp)
         api_findings = scan(
             api_rules.as_posix(),
             {'.java', '.kt'},
             [src],
-            settings.SKIP_CLASS_PATH)
-
-        skp = settings.SKIP_CLASS_PATH
+            skp)
+        # NIAP Scan
+        logger.info('Running NIAP Analyzer')
+        niap_findings = niap_scan(
+            niap_rules.as_posix(),
+            {'.java', '.xml'},
+            [src],
+            manifest_file,
+            skp)
         # Extract URLs and Emails
         for pfile in Path(src).rglob('*'):
             if (
@@ -78,6 +88,7 @@ def code_analysis(app_dir, typ):
         code_an_dic = {
             'api': api_findings,
             'findings': code_findings,
+            'niap': niap_findings,
             'urls_list': url_list,
             'urls': url_n_file,
             'emails': email_n_file,

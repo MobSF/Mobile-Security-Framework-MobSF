@@ -4,13 +4,14 @@
 import logging
 import os
 import re
+from pathlib import Path
 
 from django.conf import settings
 from django.shortcuts import render
 
 from MobSF.utils import print_n_send_error_response
 
-from StaticAnalyzer.views.android.manifest_analysis import read_manifest
+from StaticAnalyzer.views.android.manifest_analysis import get_manifest_file
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +36,17 @@ def run(request):
             elif binary == '0':
                 is_binary = False
             app_path = os.path.join(app_dir, md5 + '.apk')
-            manifest = read_manifest(
-                app_dir, app_path, tools_dir, typ, is_binary)
+            manifest_file = get_manifest_file(
+                app_dir,
+                app_path,
+                tools_dir,
+                typ,
+                is_binary)
+            mfile = Path(manifest_file)
+            if mfile.exists():
+                manifest = mfile.read_text('utf-8', 'ignore')
+            else:
+                manifest = ''
             context = {
                 'title': 'AndroidManifest.xml',
                 'file': 'AndroidManifest.xml',

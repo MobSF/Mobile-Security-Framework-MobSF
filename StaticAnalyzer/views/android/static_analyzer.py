@@ -113,6 +113,7 @@ def static_analyzer(request, api=False):
                         'sha256'] = hash_gen(app_dic['app_path'])
                     app_dic['files'] = unzip(
                         app_dic['app_path'], app_dic['app_dir'])
+                    logger.info('APK Extracted')
                     if not app_dic['files']:
                         # Can't Analyze APK, bail out.
                         msg = 'APK file is invalid or corrupt'
@@ -128,17 +129,16 @@ def static_analyzer(request, api=False):
                                 False)
                     app_dic['certz'] = get_hardcoded_cert_keystore(app_dic[
                                                                    'files'])
-
-                    logger.info('APK Extracted')
-
                     # Manifest XML
-                    app_dic['parsed_xml'] = get_manifest(
+                    mani_file, mani_xml = get_manifest(
                         app_dic['app_path'],
                         app_dic['app_dir'],
                         app_dic['tools_dir'],
                         '',
                         True,
                     )
+                    app_dic['manifest_file'] = mani_file
+                    app_dic['parsed_xml'] = mani_xml
 
                     # get app_name
                     app_dic['real_name'] = get_app_name(
@@ -197,7 +197,8 @@ def static_analyzer(request, api=False):
 
                     code_an_dic = code_analysis(
                         app_dic['app_dir'],
-                        'apk')
+                        'apk',
+                        app_dic['manifest_file'])
 
                     # Get the strings
                     string_res = strings_jar(
@@ -340,13 +341,15 @@ def static_analyzer(request, api=False):
                             'sha256'] = hash_gen(app_dic['app_path'])
 
                         # Manifest XML
-                        app_dic['persed_xml'] = get_manifest(
+                        mani_file, mani_xml = get_manifest(
                             '',
                             app_dic['app_dir'],
                             app_dic['tools_dir'],
                             pro_type,
                             False,
                         )
+                        app_dic['manifest_file'] = mani_file
+                        app_dic['parsed_xml'] = mani_xml
 
                         # get app_name
                         app_dic['real_name'] = get_app_name(
@@ -363,11 +366,11 @@ def static_analyzer(request, api=False):
                             + pro_type + '&bin=0'
                         )
 
-                        man_data_dic = manifest_data(app_dic['persed_xml'])
+                        man_data_dic = manifest_data(app_dic['parsed_xml'])
                         app_dic['playstore'] = get_app_details(
                             man_data_dic['packagename'])
                         man_an_dic = manifest_analysis(
-                            app_dic['persed_xml'],
+                            app_dic['parsed_xml'],
                             man_data_dic,
                             pro_type,
                             app_dic['app_dir'],
@@ -403,7 +406,8 @@ def static_analyzer(request, api=False):
 
                         code_an_dic = code_analysis(
                             app_dic['app_dir'],
-                            pro_type)
+                            pro_type,
+                            app_dic['manifest_file'])
                         # Firebase DB Check
                         code_an_dic['firebase'] = firebase_analysis(
                             list(set(code_an_dic['urls_list'])))

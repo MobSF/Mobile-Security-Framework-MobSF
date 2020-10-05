@@ -1,12 +1,11 @@
 # -*- coding: utf_8 -*-
 # flake8: noqa
 """Module for android manifest analysis."""
-
-import io
 import logging
 import os
 import subprocess
 import tempfile
+from pathlib import Path
 from xml.dom import minidom
 
 from django.conf import settings
@@ -34,11 +33,20 @@ ANDROID_5_0_LEVEL = 21
 def get_manifest(app_path, app_dir, tools_dir, typ, binary):
     """Get the manifest file."""
     try:
-        manifest = None
-        dat = read_manifest(app_dir, app_path, tools_dir, typ, binary)
+        manifest_file = get_manifest_file(
+            app_dir,
+            app_path,
+            tools_dir,
+            typ,
+            binary)
+        mfile = Path(manifest_file)
+        if mfile.exists():
+            manifest = mfile.read_text('utf-8', 'ignore')
+        else:
+            manifest = ''
         try:
             logger.info('Parsing AndroidManifest.xml')
-            manifest = minidom.parseString(dat)
+            manifest = minidom.parseString(manifest)
         except Exception:
             err = ('apktool failed to extract '
                    'AndroidManifest.xml or parsing failed')
@@ -51,7 +59,7 @@ def get_manifest(app_path, app_dir, tools_dir, typ, binary):
                  r'platformBuildVersionCode="Failed" '
                  r'platformBuildVersionName="Failed XML Parsing" ></manifest>'))
             logger.warning('Using Fake XML to continue the Analysis')
-        return manifest
+        return manifest_file, manifest
     except Exception:
         logger.exception('Parsing Manifest file')
 
@@ -837,43 +845,27 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
         logger.exception('Performing Manifest Analysis')
 
 
-def read_manifest(app_dir, app_path, tools_dir, typ, apk):
+def get_manifest_file(app_dir, app_path, tools_dir, typ, apk):
     """Read the manifest file."""
     try:
-        dat = ''
         manifest = ''
         if apk:
-            manifest = get_manifest_file(app_path, app_dir, tools_dir)
-            if is_file_exists(manifest):
-                logger.info('Reading Android Manifest')
-                with io.open(
-                    manifest,
-                    mode='r',
-                    encoding='utf8',
-                    errors='ignore',
-                ) as file_pointer:
-                    dat = file_pointer.read()
+            logger.info('Getting AndroidManifest.xml from APK')
+            manifest = get_manifest_apk(app_path, app_dir, tools_dir)
         else:
-            logger.info('Reading Manifest from Source')
+            logger.info('Getting AndroidManifest.xml from Source Code')
             if typ == 'eclipse':
                 manifest = os.path.join(app_dir, 'AndroidManifest.xml')
             elif typ == 'studio':
                 manifest = os.path.join(
                     app_dir,
                     'app/src/main/AndroidManifest.xml')
-            with io.open(
-                manifest,
-                mode='r',
-                encoding='utf8',
-                errors='ignore',
-            ) as file_pointer:
-                dat = file_pointer.read()
-        return dat
+        return manifest
     except Exception:
-        logger.exception('Reading Manifest file')
+        logger.exception('Getting AndroidManifest.xml file')
 
 
-def get_manifest_file(app_path, app_dir, tools_dir):
+def get_manifest_apk(app_path, app_dir, tools_dir):
     """Get readable AndroidManifest.xml."""
     try:
         manifest = None
