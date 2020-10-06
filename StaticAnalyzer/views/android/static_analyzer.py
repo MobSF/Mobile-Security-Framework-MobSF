@@ -28,8 +28,7 @@ from StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
     StaticAnalyzerIOS,
 )
-from StaticAnalyzer.views.android.binary_analysis import (elf_analysis,
-                                                          res_analysis)
+from StaticAnalyzer.views.android.binary_analysis import elf_analysis
 from StaticAnalyzer.views.android.cert_analysis import (
     cert_info, get_hardcoded_cert_keystore)
 from StaticAnalyzer.views.android.code_analysis import code_analysis
@@ -178,9 +177,7 @@ def static_analyzer(request, api=False):
                         '',
                         app_dic['app_dir'],
                     )
-                    bin_an_buff = []
-                    bin_an_buff += elf_analysis(app_dic['app_dir'])
-                    bin_an_buff += res_analysis(app_dic['app_dir'])
+                    elf_dict = elf_analysis(app_dic['app_dir'])
                     cert_dic = cert_info(
                         app_dic['app_dir'],
                         app_dic['app_file'])
@@ -238,7 +235,7 @@ def static_analyzer(request, api=False):
                                 man_an_dic,
                                 code_an_dic,
                                 cert_dic,
-                                bin_an_buff,
+                                elf_dict['elf_analysis'],
                                 apkid_results,
                                 tracker_res,
                             )
@@ -252,7 +249,7 @@ def static_analyzer(request, api=False):
                                 man_an_dic,
                                 code_an_dic,
                                 cert_dic,
-                                bin_an_buff,
+                                elf_dict['elf_analysis'],
                                 apkid_results,
                                 tracker_res,
                             )
@@ -264,7 +261,7 @@ def static_analyzer(request, api=False):
                         man_an_dic,
                         code_an_dic,
                         cert_dic,
-                        bin_an_buff,
+                        elf_dict['elf_analysis'],
                         apkid_results,
                         tracker_res,
                     )
@@ -297,7 +294,6 @@ def static_analyzer(request, api=False):
                     'certificate_status': '',
                     'description': '',
                 }
-                bin_an_buff = []
                 app_dic['strings'] = []
                 app_dic['secrets'] = []
                 app_dic['zipped'] = ''
@@ -428,7 +424,7 @@ def static_analyzer(request, api=False):
                                     man_an_dic,
                                     code_an_dic,
                                     cert_dic,
-                                    bin_an_buff,
+                                    [],
                                     {},
                                     {},
                                 )
@@ -442,7 +438,7 @@ def static_analyzer(request, api=False):
                                     man_an_dic,
                                     code_an_dic,
                                     cert_dic,
-                                    bin_an_buff,
+                                    [],
                                     {},
                                     {},
                                 )
@@ -454,7 +450,7 @@ def static_analyzer(request, api=False):
                             man_an_dic,
                             code_an_dic,
                             cert_dic,
-                            bin_an_buff,
+                            [],
                             {},
                             {},
                         )

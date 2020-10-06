@@ -911,7 +911,7 @@
                     <tr>
                     <td>{{ forloop.counter }}</td>
                     <td>
-                      <span class="badge bg-info"> {{ iden }}</span>
+                      <span class="badge {% if 'does not' in details.choice %} bg-warning {% elif 'not in accordance' in details.choice %} bg-danger {% else %} bg-info {% endif %}"> {{ iden }}</span>
                     </td>
                      <td>
                      {{ details.class }}

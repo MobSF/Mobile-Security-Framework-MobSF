@@ -77,14 +77,6 @@
             </a>
           </li>
           <li class="nav-item">
-            <a href="#binary_analysis" class="nav-link">
-              <i class="nav-icon fas fa-flag"></i>
-              <p>
-                Binary Analysis
-              </p>
-            </a>
-          </li>
-          <li class="nav-item">
             <a href="#android_api" class="nav-link">
               <i class="nav-icon fab fa-android"></i>
               <p>
@@ -128,6 +120,12 @@
                 <a href="#code_analysis" class="nav-link">
                   <i class="fa fa-code nav-icon"></i>
                   <p>Code Analysis</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#binary_analysis" class="nav-link">
+                  <i class="nav-icon fas fa-flag"></i>
+                  <p>Binary Analysis</p>
                 </a>
               </li>
               <li class="nav-item">
@@ -637,6 +635,7 @@
               <p>
                 <strong><i class="fa fa-certificate"></i> SIGNER CERTIFICATE</strong>
             </p>
+            {% if certificate_analysis %}
               <pre><code>{{ certificate_analysis.certificate_info }}</code></pre>
               <!--Cert status-->
               <div class="table-responsive">
@@ -665,6 +664,9 @@
                       </tbody>
                   </table>
            </div>
+           {% else %}
+           Failed to read Code Signing Certificate.
+           {% endif %}
           </div>
         </div><!-- /.card -->
         </div>
@@ -726,84 +728,7 @@
     </div>
 </section>
  <!-- ===========================end permission ================================== -->
- <a id="binary_analysis" class="anchor"></a>
- <section class="content">
-  <div class="container-fluid">
-    <div class="row">
-        <div class="col-lg-12">
-        <div class="card">
-          <div class="card-body">
-              <p>
-             <strong><i class="fa fa-flag"></i> SHARED LIBRARY BINARY ANALYSIS</strong>
-             </p>
-              <div class="table-responsive">
-              <table id="table_binary" class="table table-bordered table-hover table-striped">
-                  <thead>
-                      <tr>
-                          <th>NO</th>
-                          <th>ISSUE</th>
-                          <th>SEVERITY</th>
-                          <th>DESCRIPTION</th>
-                          <th>FILES</th>
-                          
-                      </tr>
-                  </thead>
-                  <tbody>
-                    {% for item in binary_analysis %}
-                      <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>
-                        {{item|key:"title" | safe}}
-                        </td>
-                        <td>
-                          {% if item|key:"stat" == "high" %}
-                            <span class="badge bg-danger">high</span>
-                          {% elif item|key:"stat" == "info" %}
-                            <span class="badge bg-info">info</span>
-                          {% elif item|key:"stat" == "medium" %}
-                            <span class="badge bg-warning">medium</span>
-                          {% endif %}
-                         
-                        </td>
-                        <td>
-                        {{item|key:"desc" | safe}}
-                        </td>
-                        <td>
-                        {{item|key:"file"}}
-                        </td>
-   
-                       </tr>
-                     {% endfor %}
-                    {% if not binary_analysis  %}
-                       <tr>
-                         <td></td>
-                         <td>
-                           <p> No issue found </p>
-                         </td>
-                         <td>
-                           <span class="badge bg-info">info</span>
-                         </td>
-                          <td>
-                           <p> </p>
-                         </td>
-                          <td>
-                           <p></p>
-                         </td>
-                       </tr>
-                    {% endif %}
-                    </tbody>
-                    </table>
-                  </div>
-              
-          </div>
-        </div><!-- /.card -->
-        </div>
-        <!-- end row -->
-        </div>
-    </div>
-</section>
- <!-- ===========================end binary analysis ================================== -->
-  <a id="android_api" class="anchor"></a>
+   <a id="android_api" class="anchor"></a>
  <section class="content">
   <div class="container-fluid">
     <div class="row">
@@ -1112,7 +1037,87 @@
     </div>
 </section>
  <!-- ===========================end code analysis ================================== -->
-<a id="niap_analysis" class="anchor"></a>
+ <a id="binary_analysis" class="anchor"></a>
+ <section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+              <p>
+             <strong><i class="fa fa-flag"></i> SHARED LIBRARY BINARY ANALYSIS</strong>
+             </p>
+              <div class="table-responsive">
+              <table id="table_binary" class="table table-bordered table-hover table-striped">
+                  <thead>
+                      <tr>
+                          <th>NO</th>
+                          <th>SHARED OBJECT</th>
+                          <th>NX</th>
+                          <th>PIE</th>
+                          <th>STACK CANARY</th>
+                          <th>RELRO</th>
+                          <th>RPATH</th>
+                          <th>RUNPATH</th>
+                          <th>FORTIFY</th>
+                          <th>SYMBOLS STRIPPED</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+            {% if not binary_analysis %}
+              No Shared Objects found.
+            {% endif %}
+             {% for so in binary_analysis %}
+             <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{so.name}}</td>
+              <td><b>{{so.nx.is_nx}}</b>
+                <br/>
+                <span class="badge bg-{% if so.nx.severity == 'high' %}danger{% elif so.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.nx.severity}}</span>
+                <br/>{{so.nx.description}}</td>
+              <td><b>{{so.pie.is_pie}}</b>
+                <br/>
+                <span class="badge bg-{% if so.pie.severity == 'high' %}danger{% elif so.pie.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.pie.severity}}</span>
+                <br/>{{so.pie.description}}</td>
+              <td><b>{{so.stack_canary.has_canary}}</b>
+                  <br/>
+                  <span class="badge bg-{% if so.stack_canary.severity == 'high' %}danger{% elif so.stack_canary.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.stack_canary.severity}}</span>
+                  <br/>{{so.stack_canary.description}}</td>
+              <td><b>{{so.relocation_readonly.relro}}</b>
+                <br/>
+                <span class="badge bg-{% if so.relocation_readonly.severity == 'high' %}danger{% elif so.relocation_readonly.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.relocation_readonly.severity}}</span>
+                <br/>{{so.relocation_readonly.description}}</td>
+              <td><b>{{so.rpath.rpath}}</b>
+                <br/>
+                <span class="badge bg-{% if so.rpath.severity == 'high' %}danger{% elif so.rpath.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.rpath.severity}}</span>
+                <br/>{{so.rpath.description}}</td>
+              <td><b>{{so.runpath.runpath}}</b>
+                <br/>
+                <span class="badge bg-{% if so.runpath.severity == 'high' %}danger{% elif so.runpath.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.runpath.severity}}</span>
+                <br/>{{so.runpath.description}}</td>
+              <td><b>{{so.fortify.is_fortified}}</b>
+                <br/>
+                <span class="badge bg-{% if so.fortify.severity == 'high' %}danger{% elif so.fortify.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.fortify.severity}}</span>
+                <br/>{{so.fortify.description}}</td>
+              <td><b>{{so.symbol.is_stripped}}</b>
+                <br/>
+                <span class="badge bg-{% if so.symbol.severity == 'high' %}danger{% elif so.symbol.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.symbol.severity}}</span>
+                <br/>{{so.symbol.description}}</td>
+            </tr>
+             {% endfor %}
+                    </tbody>
+                    </table>
+                  </div>
+              
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end binary analysis ================================== -->
+ <a id="niap_analysis" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
     <div class="row">
@@ -1138,7 +1143,7 @@
                     <tr>
                     <td>{{ forloop.counter }}</td>
                     <td>
-                      <span class="badge bg-info"> {{ iden }}</span>
+                      <span class="badge {% if 'does not' in details.choice %} bg-warning {% elif 'not in accordance' in details.choice %} bg-danger {% else %} bg-info {% endif %}"> {{ iden }}</span>
                     </td>
                      <td>
                      {{ details.class }}

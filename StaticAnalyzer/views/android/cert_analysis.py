@@ -155,3 +155,4 @@ def cert_info(app_dir, app_file):
         return cert_dic
     except Exception:
         logger.exception('Reading Code Signing Certificate')
+        return {}
