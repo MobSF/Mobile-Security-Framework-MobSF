@@ -93,6 +93,14 @@
             </a>
           </li>
           <li class="nav-item">
+            <a href="#binary_code_analysis" class="nav-link">
+              <i class="fa fa-code nav-icon"></i>
+              <p>
+                Binary Code Analysis
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
             <a href="#binary_analysis" class="nav-link">
               <i class="nav-icon fas fa-flag"></i>
               <p>
@@ -561,7 +569,7 @@
 
  <!-- ===========================end transport security ================================== -->
 
- <a id="binary_analysis" class="anchor"></a>
+ <a id="binary_code_analysis" class="anchor"></a>
  <section class="content">
   <div class="container-fluid">
     <div class="row">
@@ -569,7 +577,7 @@
         <div class="card">
           <div class="card-body">
               <p>
-             <strong><i class="fa fa-flag"></i> IPA BINARY ANALYSIS</strong>
+             <strong><i class="fa fa-code"></i> IPA BINARY CODE ANALYSIS</strong>
              </p>
               <div class="table-responsive">
                <table class="table table-bordered table-hover table-striped">
@@ -633,6 +641,98 @@
         </div>
     </div>
 </section>
+<!-- ===========================end binary code analysis ================================== -->
+<a id="binary_analysis" class="anchor"></a>
+<section class="content">
+ <div class="container-fluid">
+   <div class="row">
+       <div class="col-lg-12">
+       <div class="card">
+         <div class="card-body">
+             <p>
+            <strong><i class="fa fa-flag"></i> IPA BINARY ANALYSIS</strong>
+            </p>
+             <div class="table-responsive">
+              <table class="table table-bordered table-hover table-striped">
+                 <thead>
+                     <tr>
+                      <th>PROTECTION</th>
+                      <th>STATUS</th>
+                      <th>SEVERITY</th>
+                      <th>DESCRIPTION</th>
+                     </tr>
+                 </thead>
+                    <tbody>
+                    {% if not macho_analysis %}
+                      Binary Analysis Failed.
+                    {% else %}
+                    <tr>
+                      <td><b>NX</b></td>
+                      <td>{{macho_analysis.nx.has_nx}}</td>
+                      <td><span class="badge bg-{% if macho_analysis.nx.severity == 'high' %}danger{% elif macho_analysis.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{macho_analysis.nx.severity}}</span></td>
+                      <td>{{macho_analysis.nx.description}}</td>
+                    </tr>
+                    <tr>
+                      <td><b>PIE</b></td>
+                      <td>{{macho_analysis.pie.has_pie}}</td>
+                      <td><span class="badge bg-{% if macho_analysis.pie.severity == 'high' %}danger{% elif macho_analysis.pie.severity == 'warning' %}warning{% else %}info{% endif %}">{{macho_analysis.pie.severity}}</span></td>
+                      <td>{{macho_analysis.pie.description}}</td>
+                    </tr>
+                    <tr>
+                      <td><b>STACK CANARY</b></td>
+                      <td>{{macho_analysis.stack_canary.has_canary}}</td>
+                      <td><span class="badge bg-{% if macho_analysis.stack_canary.severity == 'high' %}danger{% elif macho_analysis.stack_canary.severity == 'warning' %}warning{% else %}info{% endif %}">{{macho_analysis.stack_canary.severity}}</span></td>
+                      <td>{{macho_analysis.stack_canary.description}}</td>
+                    </tr>
+                    <tr>
+                      <td><b>ARC</b></td>
+                      <td>{{macho_analysis.arc.has_arc}}</td>
+                      <td><span class="badge bg-{% if macho_analysis.arc.severity == 'high' %}danger{% elif macho_analysis.arc.severity == 'warning' %}warning{% else %}info{% endif %}">{{macho_analysis.arc.severity}}</span></td>
+                      <td>{{macho_analysis.arc.description}}</td>
+                    </tr>
+                    <tr>
+                      <td><b>RPATH</b></td>
+                      <td>{{macho_analysis.rpath.has_rpath}}</td>
+                      <td><span class="badge bg-{% if macho_analysis.rpath.severity == 'high' %}danger{% elif macho_analysis.rpath.severity == 'warning' %}warning{% else %}info{% endif %}">{{macho_analysis.rpath.severity}}</span></td>
+                      <td>{{macho_analysis.rpath.description}}</td>
+                    </tr>
+                    <tr>
+                      <td><b>RESTRICTED</b></td>
+                      <td>{{macho_analysis.restricted.is_restricted}}</td>
+                      <td><span class="badge bg-{% if macho_analysis.restricted.severity == 'high' %}danger{% elif macho_analysis.restricted.severity == 'warning' %}warning{% else %}info{% endif %}">{{macho_analysis.restricted.severity}}</span></td>
+                      <td>{{macho_analysis.restricted.description}}</td>
+                    </tr>
+                    <tr>
+                      <td><b>CODE SIGNATURE</b></td>
+                      <td>{{macho_analysis.code_signature.has_code_signature}}</td>
+                      <td><span class="badge bg-{% if macho_analysis.code_signature.severity == 'high' %}danger{% elif macho_analysis.code_signature.severity == 'warning' %}warning{% else %}info{% endif %}">{{macho_analysis.code_signature.severity}}</span></td>
+                      <td>{{macho_analysis.code_signature.description}}</td>
+                    </tr>
+                    <tr>
+                      <td><b>ENCRYPTED</b></td>
+                      <td>{{macho_analysis.encrypted.is_encrypted}}</td>
+                      <td><span class="badge bg-{% if macho_analysis.encrypted.severity == 'high' %}danger{% elif macho_analysis.encrypted.severity == 'warning' %}warning{% else %}info{% endif %}">{{macho_analysis.encrypted.severity}}</span></td>
+                      <td>{{macho_analysis.encrypted.description}}</td>
+                    </tr>
+                    <tr>
+                      <td><b>SYMBOLS STRIPPED</b></td>
+                      <td>{{macho_analysis.symbol.is_stripped}}</td>
+                      <td><span class="badge bg-{% if macho_analysis.symbol.severity == 'high' %}danger{% elif macho_analysis.symbol.severity == 'warning' %}warning{% else %}info{% endif %}">{{macho_analysis.symbol.severity}}</span></td>
+                      <td>{{macho_analysis.symbol.description}}</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+                   </table>
+                 </div>
+             
+         </div>
+       </div><!-- /.card -->
+       </div>
+       <!-- end row -->
+       </div>
+   </div>
+</section>
+
  <!-- ===========================end binary analysis ================================== -->
 <a id="file_analysis" class="anchor"></a>
 <section class="content">

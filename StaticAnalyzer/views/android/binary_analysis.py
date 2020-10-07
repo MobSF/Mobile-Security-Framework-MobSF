@@ -22,7 +22,7 @@ class Checksec:
             desc = (
                 'The shared object has NX bit set. This marks a '
                 'memory page non-executable making attacker '
-                'injected shellcode non executable.')
+                'injected shellcode non-executable.')
         else:
             severity = 'high'
             desc = (
@@ -61,8 +61,8 @@ class Checksec:
                 'space layout randomization (ASLR) randomly arranges '
                 'the address space positions of key data areas of a '
                 'process, including the base of the executable and the '
-                'positions of the stack,heap and libraries. Built '
-                'with option -fPIC.')
+                'positions of the stack,heap and libraries. Use compiler '
+                'option -fPIC to enable Position Independent Code.')
         elf_dict['pie'] = {
             'is_pie': is_pie,
             'severity': severity,
@@ -187,10 +187,10 @@ class Checksec:
         is_stripped = self.is_symbols_stripped()
         if is_stripped:
             severity = 'info'
-            desc = 'Symbols are stripped'
+            desc = 'Symbols are stripped.'
         else:
             severity = 'warning'
-            desc = 'Symbols are available'
+            desc = 'Symbols are available.'
         elf_dict['symbol'] = {
             'is_stripped': is_stripped,
             'severity': severity,
@@ -271,8 +271,9 @@ def elf_analysis(app_dir: str) -> dict:
         elf_list = []
         logger.info('Binary Analysis Started')
         libs = Path(app_dir) / 'lib'
+        elf = {'elf_analysis': elf_list, 'elf_strings': strings}
         if not libs.is_dir():
-            return {'elf_analysis': elf_list, 'elf_strings': strings}
+            return elf
         for sofile in libs.rglob('*.so'):
             so_rel = (
                 f'{sofile.parents[1].name}/'
@@ -287,3 +288,4 @@ def elf_analysis(app_dir: str) -> dict:
         return {'elf_analysis': elf_list, 'elf_strings': strings}
     except Exception:
         logger.exception('Performing Binary Analysis')
+        return elf

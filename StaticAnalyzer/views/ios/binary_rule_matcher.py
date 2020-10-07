@@ -50,12 +50,6 @@ def binary_rule_matcher(findings, data):
                                    rule['description'],
                                    detailed_desc,
                                    rule)
-                elif 'conditional' in rule:
-                    detailed_desc = rule['conditional']['detailed_desc']
-                    _add_bfindings(findings,
-                                   rule['conditional']['description'],
-                                   detailed_desc,
-                                   rule['conditional'])
 
             else:
                 logger.error('Binary rule Error\n%s', rule)

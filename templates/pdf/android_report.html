@@ -733,25 +733,6 @@
 										</table>
       {% endif %}
 
-      {% if secrets %}
-      <h2><i class="fas fa-key"></i> HARDCODED SECRETS</h2>
-          <table class="basic">
-                  <thead>
-                  <tr>
-                     <th>POSSIBLE SECRETS</th>
-                  </tr>
-                 </thead>
-                  <tbody>
-									{% for sec in secrets %}
-                    <tr>
-                       <td style="word-break:break-all;">
-                      {{ sec }}
-                        </td>
-                    </tr>
-                  {% endfor %} 
-										</tbody>
-										</table>
-      {% endif %}
   
       {% if trackers|key:"trackers" %}
       <h2><i class="fas fa-user-secret"></i> TRACKERS</h2>
@@ -780,6 +761,27 @@
             </tbody>
         </table>
          {% endif %}
+    
+        {% if secrets %}
+        <h2><i class="fas fa-key"></i> HARDCODED SECRETS</h2>
+            <table class="basic">
+                    <thead>
+                    <tr>
+                      <th>POSSIBLE SECRETS</th>
+                    </tr>
+                  </thead>
+                    <tbody>
+                    {% for sec in secrets %}
+                      <tr>
+                        <td style="word-break:break-all;">
+                        {{ sec }}
+                          </td>
+                      </tr>
+                    {% endfor %} 
+                      </tbody>
+                      </table>
+        {% endif %}
+
      {% if not playstore_details.error %}
     <h2><i class="fab fa-google-play"></i> PLAYSTORE INFORMATION </h2>
 

@@ -2,17 +2,18 @@
 """Module for iOS IPA Binary Analysis."""
 
 import logging
-import os
+from pathlib import Path
 
 from macholib.mach_o import (CPU_TYPE_NAMES, MH_CIGAM_64, MH_MAGIC_64,
                              get_cpu_subtype)
 from macholib.MachO import MachO
 
-from MobSF.utils import is_file_exists
-
 from StaticAnalyzer.views.ios.classdump import get_class_dump
 from StaticAnalyzer.views.ios.otool_analysis import (
     otool_analysis,
+)
+from StaticAnalyzer.views.ios.macho_analysis import (
+    macho_analysis,
 )
 from StaticAnalyzer.views.ios.binary_rule_matcher import (
     binary_rule_matcher,
@@ -66,40 +67,48 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
         binary_analysis_dict = {}
         binary_findings = {}
         logger.info('Starting Binary Analysis')
-        dirs = os.listdir(src)
+        dirs = Path(src).glob('*')
         dot_app_dir = ''
+        bin_name = ''
         for dir_ in dirs:
-            if dir_.endswith('.app'):
-                dot_app_dir = dir_
+            if dir_.as_posix().endswith('.app'):
+                dot_app_dir = dir_.as_posix()
                 break
         # Bin Dir - Dir/Payload/x.app/
-        bin_dir = os.path.join(src, dot_app_dir)
-        if (executable_name
-                and is_file_exists(os.path.join(bin_dir, executable_name))):
-            bin_name = executable_name
-        else:
+        bin_dir = Path(src) / dot_app_dir
+        if not executable_name:
             bin_name = dot_app_dir.replace('.app', '')
+        else:
+            _bin = bin_dir / executable_name
+            if _bin.exists():
+                bin_name = executable_name
         # Bin Path - Dir/Payload/x.app/x
-        bin_path = os.path.join(bin_dir, bin_name)
+        bin_path = bin_dir / bin_name
         binary_analysis_dict['libs'] = []
         binary_analysis_dict['bin_res'] = {}
         binary_analysis_dict['strings'] = []
-        if not is_file_exists(bin_path):
-            logger.warning('MobSF Cannot find binary in %s', bin_path)
+        if not (bin_path.exists() or bin_path.is_file()):
+            logger.warning(
+                'MobSF Cannot find binary in %s', bin_path.as_posix())
             logger.warning('Skipping Otool, Classdump and Strings')
         else:
-            bin_info = get_bin_info(bin_path)
+            bin_info = get_bin_info(bin_path.as_posix())
             object_data = otool_analysis(
                 tools_dir,
                 bin_name,
-                bin_path,
-                bin_dir)
+                bin_path.as_posix(),
+                bin_dir.as_posix())
             bin_type = detect_bin_type(object_data['libs'])
-            cdump = get_class_dump(tools_dir, bin_path, app_dir, bin_type)
+            cdump = get_class_dump(
+                tools_dir,
+                bin_path.as_posix(),
+                app_dir, bin_type)
             binary_rule_matcher(
                 binary_findings,
                 object_data['bindata'] + cdump)
-            strings_in_ipa = strings_on_ipa(bin_path)
+            strings_in_ipa = strings_on_ipa(bin_path.as_posix())
+            binary_analysis_dict['macho_analysis'] = macho_analysis(bin_path)
+
             binary_analysis_dict['libs'] = object_data['libs']
             binary_analysis_dict['bin_res'] = binary_findings
             binary_analysis_dict['strings'] = strings_in_ipa

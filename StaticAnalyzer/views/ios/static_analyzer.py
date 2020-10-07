@@ -214,6 +214,7 @@ def static_analyzer_ios(request, api=False):
                         'bin_type': code_analysis_dic['source_type'],
                         'macho': {},
                         'bin_res': [],
+                        'macho_analysis': {},
                         'libs': [],
                         'strings': [],
                     }
