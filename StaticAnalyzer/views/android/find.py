@@ -66,7 +66,7 @@ def run(request):
                         if query in dat:
                             matches.append(fileparam)
                     elif search_type == 'filename':
-                        if query in filename:
+                        if query.lower() in filename.lower():
                             matches.append(fileparam)
 
         flz = len(matches)
