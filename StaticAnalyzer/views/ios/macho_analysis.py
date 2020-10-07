@@ -259,14 +259,6 @@ class Checksec:
             symbols.append(i.name)
         return symbols
 
-    def get_headers(self):
-        headers = []
-        headers.append(self.macho.header.flags_list)
-        headers.append(self.macho.header.flags_list)
-        headers.append(self.macho.header.flags_list)
-        headers.append(self.macho.header.flags_list)
-        return headers
-
 
 def macho_analysis(binary):
     try:
