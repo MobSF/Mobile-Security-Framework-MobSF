@@ -211,12 +211,12 @@ def static_analyzer_ios(request, api=False):
                     code_analysis_dic['firebase'] = firebase_analysis(
                         list(set(code_analysis_dic['urls_list'])))
                     fake_bin_dict = {
-                        'bin_type': code_analysis_dic['source_type'],
-                        'macho': {},
-                        'bin_res': [],
-                        'macho_analysis': {},
-                        'libs': [],
+                        'checksec': {},
+                        'libraries': [],
+                        'bin_code_analysis': {},
                         'strings': [],
+                        'bin_info': {},
+                        'bin_type': code_analysis_dic['source_type'],
                     }
                     # Saving to DB
                     logger.info('Connecting to DB')
