@@ -41,7 +41,7 @@ from StaticAnalyzer.views.android.manifest_analysis import (get_manifest,
                                                             manifest_analysis,
                                                             manifest_data)
 from StaticAnalyzer.views.android.playstore import get_app_details
-from StaticAnalyzer.views.android.strings import strings_jar
+from StaticAnalyzer.views.android.strings import strings_from_apk
 from StaticAnalyzer.views.shared_func import (firebase_analysis,
                                               hash_gen, score, unzip,
                                               update_scan_timestamp)
@@ -197,10 +197,11 @@ def static_analyzer(request, api=False):
                         'apk',
                         app_dic['manifest_file'])
 
-                    # Get the strings
-                    string_res = strings_jar(
+                    # Get the strings from android resource and shared objects
+                    string_res = strings_from_apk(
                         app_dic['app_file'],
-                        app_dic['app_dir'])
+                        app_dic['app_dir'],
+                        elf_dict['elf_strings'])
                     if string_res:
                         app_dic['strings'] = string_res['strings']
                         app_dic['secrets'] = string_res['secrets']
