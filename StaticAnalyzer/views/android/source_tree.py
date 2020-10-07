@@ -41,7 +41,7 @@ def tree_index_maker(root_dir):
 
 
 def run(request):
-    """Source Tree - Java/Smali view"""
+    """Source Tree - Java/Smali view."""
     try:
         logger.info('Listing Source files')
         match = re.match('^[0-9a-f]{32}$', request.GET['md5'])
@@ -66,7 +66,7 @@ def run(request):
         tree_index = tree_index_maker(src)
         context = {
             'subfiles': tree_index,
-            'title': "{} Source".format(typ.capitalize()),
+            'title': '{} Source'.format(typ.capitalize()),
             'hash': md5,
             'source_type': typ,
             'version': settings.MOBSF_VER,
