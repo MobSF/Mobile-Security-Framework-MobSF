@@ -117,17 +117,27 @@ var file_tree = $('#filetree')
 	// create the instance
 	.jstree();
 
+function open_parents(parents_ids) {
+	// In some situations, the open_node(node_obj.parent) does not work properly
+	// This function iterates over all of its ancestors in order to make sure the bug does not produce
+	for(i in parents_ids) {
+		parent_id = parents_ids[i];
+		if(parent_id != "#") {
+			file_tree.jstree(true).open_node(parent_id);
+		}
+	}
+}
+
 function select_nodes(node_ids) {
 	// Gets a list of node ids, getting their objects and selects them all in once
 	// This replaces the old searching method which speeds up everything
-	found_nodes = []
 	for(i in node_ids) {
 		node_obj = file_tree.jstree(true).get_node(node_ids[i]);
 		if(node_obj) {
-			found_nodes.push(node_obj);
+			open_parents(node_obj.parents);
+			$(document.getElementById(node_obj.id)).addClass("jstree-search");
 		}
 	}
-	file_tree.jstree(true).select_node(found_nodes, true); // second parameter is supress_event which prevents changed.jstree to be triggered
 }
 // Filename search
 var to = false;
@@ -163,7 +173,6 @@ $('#filename_search').keyup(function() {
 					console.log(response);
 					console.log(response.matches.length);
 					if(response.matches.length) {
-						//file_tree.jstree(true).search(response.matches.join(' '));
 						select_nodes(response.matches);
 						hide_loading();
 					} else {
@@ -233,7 +242,6 @@ $('#content_search').keyup(function() {
 				console.log(response);
 				console.log(response.matches.length);
 				if(response.matches.length) {
-					//file_tree.jstree(true).search(response.matches.join(' '));
 					select_nodes(response.matches);
 					hide_loading();
 				} else {
@@ -295,7 +303,7 @@ function ShowFile(strPath) {
 
 function reset_tree() {
 	file_tree.jstree(true).close_all();
-	file_tree.jstree(true).deselect_all(true);
+	$('.jstree-search').removeClass("jstree-search");
 }
 
 function clear_search() {
