@@ -272,7 +272,6 @@ else:
     ADB_BINARY = ''
 
     # iOS 3P Tools
-    OTOOL_BINARY = ''
     JTOOL_BINARY = ''
     CLASSDUMP_BINARY = ''
     CLASSDUMP_SWIFT_BINARY = ''

@@ -76,7 +76,7 @@ class StaticAnalyzerIOS(models.Model):
     BUNDLE_SUPPORTED_PLATFORMS = models.CharField(max_length=50)
     ICON_FOUND = models.BooleanField(default=False)
     INFO_PLIST = models.TextField()
-    MACHO_INFO = models.TextField(default={})
+    BINARY_INFO = models.TextField(default={})
     PERMISSIONS = models.TextField(default=[])
     ATS_ANALYSIS = models.TextField(default=[])
     BINARY_ANALYSIS = models.TextField(default=[])

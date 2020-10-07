@@ -243,12 +243,43 @@ class Checksec:
                 return False
         return True
 
+    def get_libraries(self):
+        libs = []
+        for i in self.macho.libraries:
+            curr = '.'.join(str(x) for x in i.current_version)
+            comp = '.'.join(str(x) for x in i.compatibility_version)
+            lib = (f'{i.name} (compatibility version: {comp}'
+                   f', current version: {curr})')
+            libs.append(lib)
+        return libs
+
+    def get_symbols(self):
+        symbols = []
+        for i in self.macho.symbols:
+            symbols.append(i.name)
+        return symbols
+
+    def get_headers(self):
+        headers = []
+        headers.append(self.macho.header.flags_list)
+        headers.append(self.macho.header.flags_list)
+        headers.append(self.macho.header.flags_list)
+        headers.append(self.macho.header.flags_list)
+        return headers
+
 
 def macho_analysis(binary):
     try:
         logger.info('Running MachO Analysis on %s', binary.name)
-        chksec = Checksec(binary)
-        return chksec.checksec()
+        cs = Checksec(binary)
+        chksec = cs.checksec()
+        symbols = cs.get_symbols()
+        libs = cs.get_libraries()
+        return {
+            'checksec': chksec,
+            'symbols': symbols,
+            'libraries': libs,
+        }
     except Exception:
         logger.exception('Running MachO Analysis')
         return {}

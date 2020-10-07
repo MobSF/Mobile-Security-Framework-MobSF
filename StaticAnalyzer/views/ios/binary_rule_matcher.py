@@ -26,9 +26,10 @@ def _add_bfindings(findings, desc, detailed_desc, rule):
                       'masvs': rule['masvs']}
 
 
-def binary_rule_matcher(findings, data):
+def binary_rule_matcher(findings, symbols, classdump):
     """Static Analysis Rule Matcher."""
     try:
+        data = classdump + '\n'.join(symbols).encode('utf-8')
         for rule in ipa_rules.IPA_RULES:
 
             # CASE CHECK
