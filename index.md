@@ -35,12 +35,12 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 
 ## Support MobSF
 
-**Donate via Paypal:** [![Donate via Paypal](https://user-images.githubusercontent.com/4301109/76471686-c43b0500-63c9-11ea-8225-2a305efb3d87.gif)](https://paypal.me/ajinabraham)
-
-**Send Bitcoins:** [![Donate Bitcoin](https://user-images.githubusercontent.com/4301109/30631105-cb8063c8-9e00-11e7-95df-43c20b840e52.png)](https://mobsf.github.io/Mobile-Security-Framework-MobSF/donate.html)
+* **Donate via Paypal:** [![Donate via Paypal](https://user-images.githubusercontent.com/4301109/76471686-c43b0500-63c9-11ea-8225-2a305efb3d87.gif)](https://paypal.me/ajinabraham)
+* **Sponsor the Project:** [![Github Sponsors](https://user-images.githubusercontent.com/4301109/95517226-9e410780-098e-11eb-9ef5-7b8c7561d725.png)](https://github.com/sponsors/ajinabraham)
 
 ## Documentation
 [![See MobSF Documentation](https://user-images.githubusercontent.com/4301109/70686099-3855f780-1c79-11ea-8141-899e39459da2.png)](https://mobsf.github.io/docs)
+[中文](https://mobsf.github.io/docs/#/zh-cn/)
 
 * Try MobSF Static Analyzer Online:
 [![Try in PWD](https://user-images.githubusercontent.com/4301109/76351696-494bee80-62e4-11ea-894a-cb1cd07c86fc.png)](https://labs.play-with-docker.com/?stack=https://raw.githubusercontent.com/MobSF/Mobile-Security-Framework-MobSF/master/scripts/stack/docker-compose.yml)
@@ -50,7 +50,7 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 
 ## Collaborators
 
-[Ajin Abraham](https://in.linkedin.com/in/ajinabraham) ![india](https://user-images.githubusercontent.com/4301109/37564171-6549d678-2ab6-11e8-9b9d-21327c7f5d5b.png) | [Dominik Schlecht](https://github.com/sn0b4ll) ![germany](https://user-images.githubusercontent.com/4301109/37564176-743238ba-2ab6-11e8-9666-5d98f0a1d127.png) | [Magaofei](https://github.com/magaofei) ![china](https://user-images.githubusercontent.com/4301109/44515364-00bbe880-a6e0-11e8-944d-5b48a86427da.png) | [Matan Dobrushin](https://github.com/matandobr) ![israel](https://user-images.githubusercontent.com/4301109/37564177-782f1758-2ab6-11e8-91e5-c76bde37b330.png) | [Vincent Nadal](https://github.com/superpoussin22) ![france](https://user-images.githubusercontent.com/4301109/37564175-71d6d92c-2ab6-11e8-89d7-d21f5aa0bda8.png)
+[Ajin Abraham](https://in.linkedin.com/in/ajinabraham) ![india](https://user-images.githubusercontent.com/4301109/37564171-6549d678-2ab6-11e8-9b9d-21327c7f5d5b.png)  | [Magaofei](https://github.com/magaofei) ![china](https://user-images.githubusercontent.com/4301109/44515364-00bbe880-a6e0-11e8-944d-5b48a86427da.png) | [Matan Dobrushin](https://github.com/matandobr) ![israel](https://user-images.githubusercontent.com/4301109/37564177-782f1758-2ab6-11e8-91e5-c76bde37b330.png) | [Vincent Nadal](https://github.com/superpoussin22) ![france](https://user-images.githubusercontent.com/4301109/37564175-71d6d92c-2ab6-11e8-89d7-d21f5aa0bda8.png)
 
 ## e-Learning Courses & Certifications
 ![MobSF Course](https://user-images.githubusercontent.com/4301109/76344880-ad68b580-62d8-11ea-8cde-9e3475fc92f6.png) [Automated Mobile Application Security Assessment with MobSF -MAS](https://opsecx.com/index.php/product/automated-mobile-application-security-assessment-with-mobsf/)
@@ -70,30 +70,25 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 * Github Issues are only for tracking bugs and feature requests. Do not post support or help queries there. We have a slack channel for that.
 
 
-## Screenshots
-
 ### Static Analysis - Android
 
-![android-static-analysis-apk](https://user-images.githubusercontent.com/4301109/76472502-1f6df700-63cc-11ea-9ac0-fca99327e47d.png)
-![android-static-analysis-apk2](https://user-images.githubusercontent.com/4301109/76472562-4cbaa500-63cc-11ea-8fbe-b92ea57a8c6f.png)
-![compare-result](https://user-images.githubusercontent.com/4301109/76473496-0286f300-63cf-11ea-91b6-5bb267c7e80b.png)
+![mobsf_android_static_analysis](https://user-images.githubusercontent.com/4301109/95506503-f9b6c980-097d-11eb-803a-f88321e1feb7.gif)
 
 ### Static Analysis - iOS
 
-![ios-static-analysis-ipa](https://user-images.githubusercontent.com/4301109/76475349-eede8b00-63d4-11ea-9843-360ffa63cefa.png)
-![ios-binary-analysis-ipa](https://user-images.githubusercontent.com/4301109/76473161-0ebe8080-63ce-11ea-9427-4ddbfb41c2ab.png)
-![ios-static-analysis-source](https://user-images.githubusercontent.com/4301109/76473316-783e8f00-63ce-11ea-8b30-df35fb06e2bd.png)
+![mobsf_ios_ipa_static_analysis](https://user-images.githubusercontent.com/4301109/95507865-16540100-0980-11eb-9e4d-887668d46969.gif)
 
 ### Dynamic Analysis - Android APK
 
-![android-dynamic-analysis](https://user-images.githubusercontent.com/4301109/76473773-ea63a380-63cf-11ea-927d-730726ae495b.png)
-![android-dynamic-frida-live-api-monitor](https://user-images.githubusercontent.com/4301109/76473831-14b56100-63d0-11ea-83cc-20693d929236.png)
-![android-dynamic-report](https://user-images.githubusercontent.com/4301109/76474288-8641df00-63d1-11ea-8953-ec7adc706f05.png)
+![mobsf_dynamic_analysis](https://user-images.githubusercontent.com/4301109/95514697-5e782100-098a-11eb-8390-47bb3822a2d7.gif)
 
 ### Web API Viewer
 
-![android-dynamic-http-tools](https://user-images.githubusercontent.com/4301109/65378797-57c53000-dcdb-11e9-84e9-d5acf887f3aa.png)
+![ mobsf_web_api_fuzzing_with_burp](https://user-images.githubusercontent.com/4301109/95516560-69808080-098d-11eb-9e0b-fb5a25e96585.gif)
 
+## Past Collaborators
+
+* [Dominik Schlecht](https://github.com/sn0b4ll) ![germany](https://user-images.githubusercontent.com/4301109/37564176-743238ba-2ab6-11e8-9666-5d98f0a1d127.png)
 
 ## Honorable Contributors
 
@@ -118,3 +113,4 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 * Thomas Abraham - For JS Hacks on UI
 * Tim Brown (@timb_machine) - For the iOS Binary Analysis Ruleset
 * Shanil Prasad (@Rajuraju14) - For improving iOS ATS Analysis
+
