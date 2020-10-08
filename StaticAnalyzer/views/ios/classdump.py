@@ -11,9 +11,6 @@ from django.conf import settings
 
 from MobSF.utils import is_file_exists
 
-from StaticAnalyzer.views.ios.otool_analysis import (
-    get_otool_out,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -35,19 +32,28 @@ def classdump_mac(clsdmp_bin, tools_dir, ipa_bin):
     # Execute permission check
     if not os.access(class_dump_bin, os.X_OK):
         os.chmod(class_dump_bin, stat.S_IEXEC)
-    return subprocess.check_output([class_dump_bin, ipa_bin])
+    return subprocess.check_output(
+        [class_dump_bin, ipa_bin],
+        stderr=subprocess.DEVNULL)
 
 
 def classdump_linux(tools_dir, ipa_bin):
     """Run Classdump on Linux."""
     try:
+        if (len(settings.JTOOL_BINARY) > 0
+                and is_file_exists(settings.JTOOL_BINARY)):
+            jtool_bin = settings.JTOOL_BINARY
+        else:
+            jtool_bin = os.path.join(tools_dir, 'jtool.ELF64')
+        if not os.access(jtool_bin, os.X_OK):
+            os.chmod(jtool_bin, stat.S_IEXEC)
         logger.info('Running jtool against the binary for dumping classes')
-        args = get_otool_out(tools_dir, 'classdump', ipa_bin, '')
-        with open(os.devnull, 'w') as devnull:
-            # timeout to handle possible deadlock from jtool1
-            return subprocess.check_output(args,
-                                           stderr=devnull,
-                                           timeout=30)
+        args = [jtool_bin, '-arch', 'arm', '-d', 'objc', '-v', ipa_bin]
+        # timeout to handle possible deadlock from jtool1
+        return subprocess.check_output(
+            args,
+            stderr=subprocess.DEVNULL,
+            timeout=60)
     except Exception:
         return b''
 
@@ -55,6 +61,7 @@ def classdump_linux(tools_dir, ipa_bin):
 def get_class_dump(tools_dir, bin_path, app_dir, bin_type):
     """Running Classdump on binary."""
     try:
+        bin_path = bin_path.as_posix()
         cdump = b''
         logger.info('Dumping classes')
         if platform.system() == 'Darwin':

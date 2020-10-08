@@ -251,7 +251,7 @@
                       <td>
                         No ATS exceptions found.
                       <td>
-                        <span class="badge bg-success">secure</span>
+                        <span class="success">secure</span>
                       </td>
                       <td>
                         No insecure connections configured. App Transport Security (ATS) is enabled.
@@ -323,7 +323,7 @@
       {% endif %}
       
       {% if binary_analysis  %}
-      <h2><i class="fas fa-flag"></i> IPA BINARY ANALYSIS</h2>
+      <h2><i class="fas fa-code"></i> IPA BINARY CODE ANALYSIS</h2>
        <table class="basic">
                   <thead>
                       <tr>
@@ -376,7 +376,79 @@
                  </tbody>
                     </table>
         {% endif %}
-    
+        {% if macho_analysis  %}
+      <h2><i class="fas fa-flag"></i> IPA BINARY ANALYSIS</h2>
+       <table class="basic">
+                  <thead>
+                    <tr>
+                      <th>PROTECTION</th>
+                      <th>STATUS</th>
+                      <th>SEVERITY</th>
+                      <th>DESCRIPTION</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                    {% if not macho_analysis %}
+                      Binary Analysis Failed.
+                    {% else %}
+                    <tr>
+                      <td><b>NX</b></td>
+                      <td>{{macho_analysis.nx.has_nx}}</td>
+                      <td><span class="{% if macho_analysis.nx.severity == 'high' %}danger{% elif macho_analysis.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{macho_analysis.nx.severity}}</span></td>
+                      <td>{{macho_analysis.nx.description}}</td>
+                    </tr>
+                    <tr>
+                      <td><b>PIE</b></td>
+                      <td>{{macho_analysis.pie.has_pie}}</td>
+                      <td><span class="{% if macho_analysis.pie.severity == 'high' %}danger{% elif macho_analysis.pie.severity == 'warning' %}warning{% else %}info{% endif %}">{{macho_analysis.pie.severity}}</span></td>
+                      <td>{{macho_analysis.pie.description}}</td>
+                    </tr>
+                    <tr>
+                      <td><b>STACK CANARY</b></td>
+                      <td>{{macho_analysis.stack_canary.has_canary}}</td>
+                      <td><span class="{% if macho_analysis.stack_canary.severity == 'high' %}danger{% elif macho_analysis.stack_canary.severity == 'warning' %}warning{% else %}info{% endif %}">{{macho_analysis.stack_canary.severity}}</span></td>
+                      <td>{{macho_analysis.stack_canary.description}}</td>
+                    </tr>
+                    <tr>
+                      <td><b>ARC</b></td>
+                      <td>{{macho_analysis.arc.has_arc}}</td>
+                      <td><span class="{% if macho_analysis.arc.severity == 'high' %}danger{% elif macho_analysis.arc.severity == 'warning' %}warning{% else %}info{% endif %}">{{macho_analysis.arc.severity}}</span></td>
+                      <td>{{macho_analysis.arc.description}}</td>
+                    </tr>
+                    <tr>
+                      <td><b>RPATH</b></td>
+                      <td>{{macho_analysis.rpath.has_rpath}}</td>
+                      <td><span class="{% if macho_analysis.rpath.severity == 'high' %}danger{% elif macho_analysis.rpath.severity == 'warning' %}warning{% else %}info{% endif %}">{{macho_analysis.rpath.severity}}</span></td>
+                      <td>{{macho_analysis.rpath.description}}</td>
+                    </tr>
+                    <tr>
+                      <td><b>RESTRICTED</b></td>
+                      <td>{{macho_analysis.restricted.is_restricted}}</td>
+                      <td><span class="{% if macho_analysis.restricted.severity == 'high' %}danger{% elif macho_analysis.restricted.severity == 'warning' %}warning{% else %}info{% endif %}">{{macho_analysis.restricted.severity}}</span></td>
+                      <td>{{macho_analysis.restricted.description}}</td>
+                    </tr>
+                    <tr>
+                      <td><b>CODE SIGNATURE</b></td>
+                      <td>{{macho_analysis.code_signature.has_code_signature}}</td>
+                      <td><span class="{% if macho_analysis.code_signature.severity == 'high' %}danger{% elif macho_analysis.code_signature.severity == 'warning' %}warning{% else %}info{% endif %}">{{macho_analysis.code_signature.severity}}</span></td>
+                      <td>{{macho_analysis.code_signature.description}}</td>
+                    </tr>
+                    <tr>
+                      <td><b>ENCRYPTED</b></td>
+                      <td>{{macho_analysis.encrypted.is_encrypted}}</td>
+                      <td><span class="{% if macho_analysis.encrypted.severity == 'high' %}danger{% elif macho_analysis.encrypted.severity == 'warning' %}warning{% else %}info{% endif %}">{{macho_analysis.encrypted.severity}}</span></td>
+                      <td>{{macho_analysis.encrypted.description}}</td>
+                    </tr>
+                    <tr>
+                      <td><b>SYMBOLS STRIPPED</b></td>
+                      <td>{{macho_analysis.symbol.is_stripped}}</td>
+                      <td><span class="{% if macho_analysis.symbol.severity == 'high' %}danger{% elif macho_analysis.symbol.severity == 'warning' %}warning{% else %}info{% endif %}">{{macho_analysis.symbol.severity}}</span></td>
+                      <td>{{macho_analysis.symbol.description}}</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+                    </table>
+        {% endif %}
     {% if code_analysis  %}
       <h2><i class="fas fa-code"></i> CODE ANALYSIS</h2>
        <table class="basic">

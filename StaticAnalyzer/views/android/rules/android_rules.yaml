@@ -82,18 +82,6 @@
   cwe: cwe-532
   owasp-mobile: ''
   masvs: storage-3
-- id: android_java_hash
-  description: >-
-    This App uses Java Hash Code. It is a weak hash function and should never be
-    used in Secure Crypto Implementation.
-  type: Regex
-  pattern: \.hashCode\(\)
-  severity: info
-  input_case: exact
-  cvss: 2.3
-  cwe: cwe-327
-  owasp-mobile: ''
-  masvs: crypto-4
 - id: android_sql_cipher
   description: This App uses SQL Cipher. But the secret may be hardcoded.
   type: Regex
@@ -282,10 +270,13 @@
     prevent MITM attacks in secure communication channel.
   type: RegexAndOr
   pattern:
-    - org\.thoughtcrime\.ssl\.pinning
-    - - PinningHelper\.getPinnedHttpsURLConnection
-      - PinningHelper\.getPinnedHttpClient
-      - PinningSSLSocketFactory\(
+    - org\.thoughtcrime\.ssl\.pinning|\.getTrustManagers\(|TrustManagerFactory\.|CertificatePinner\.Builder\(|Retrofit\.Builder\(|Picasso\.Builder\(|\.setHostnameVerifier\(
+    - - PinningHelper\.getPinnedHttpsURLConnection|PinningHelper\.getPinnedHttpClient|PinningSSLSocketFactory\(
+      - \.setCertificateEntry\(|trustedChain|\.init\(
+      - \.add\(
+      - \.baseUrl\(
+      - \.downloader\(
+      - PinningHostnameVerifier\(|\.verify\(|DynamicPinningHostnameVerifier\(
   severity: good
   input_case: exact
   cvss: 0
@@ -514,12 +505,12 @@
   masvs: crypto-4
   owasp-mobile: m5
   pattern:
-    - getInstance(\"md4\")
-    - getInstance(\"rc2\")
-    - getInstance(\"rc4\")
-    - getInstance(\"RC4\")
-    - getInstance(\"RC2\")
-    - getInstance(\"MD4\")
+    - \.getInstance\(.*md4
+    - \.getInstance\(.*rc2
+    - \.getInstance\(.*rc4
+    - \.getInstance\(.*RC4
+    - \.getInstance\(.*RC2
+    - \.getInstance\(.*MD4
   severity: high
   type: RegexOr
 - id: android_md5
@@ -530,9 +521,9 @@
   masvs: crypto-4
   owasp-mobile: m5
   pattern:
-    - 'MessageDigest\.getInstance\(\"*MD5\"*\)'
-    - 'MessageDigest\.getInstance\(\"*md5\"*\)'
-    - 'DigestUtils\.md5\('
+    - \.getInstance\(.*MD5
+    - \.getInstance\(.*md5
+    - DigestUtils\.md5\(
   severity: high
   type: RegexOr
 - id: android_sha1
@@ -543,8 +534,10 @@
   masvs: crypto-4
   owasp-mobile: m5
   pattern:
-    - MessageDigest\.getInstance\(\"*SHA-1\"*\)
-    - MessageDigest\.getInstance\(\"*sha-1\"*\)
+    - \.getInstance\(.*SHA-1
+    - \.getInstance\(.*sha-1
+    - \.getInstance\(.*SHA1
+    - \.getInstance\(.*sha1
     - DigestUtils\.sha\(
   severity: high
   type: RegexOr
