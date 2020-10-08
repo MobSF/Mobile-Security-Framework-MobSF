@@ -28,8 +28,8 @@ def run(request):
         code = request.POST['code']
         search_type = request.POST['search_type']
         if search_type not in ['content', 'filename']:
-            print_n_send_error_response(request, 'Unknown search type')
-
+            return print_n_send_error_response(request,
+                                               'Unknown search type')
         matches = []
         if code == 'java':
             src = os.path.join(settings.UPLD_DIR, md5 + '/java_source/')
