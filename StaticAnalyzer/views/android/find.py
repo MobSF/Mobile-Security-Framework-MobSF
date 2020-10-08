@@ -65,8 +65,8 @@ def run(request):
                             dat = file_pointer.read()
                         if query in dat:
                             matches.append(fileparam)
-                    elif search_type == 'filename':
-                        if query.lower() in filename.lower():
+                    elif (search_type == 'filename'
+                                and query in filename):
                             matches.append(fileparam)
 
         flz = len(matches)
