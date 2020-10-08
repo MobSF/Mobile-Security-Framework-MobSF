@@ -12,11 +12,7 @@ def scan(rule, extensions, paths, ignore_paths=None):
     try:
         options = {
             'match_rules': rule,
-            'sgrep_rules': None,
-            'sgrep_extensions': None,
             'match_extensions': extensions,
-            'ignore_filenames': None,
-            'ignore_extensions': None,
             'ignore_paths': ignore_paths,
             'show_progress': False}
         scanner = Scanner(options, paths)
@@ -25,6 +21,26 @@ def scan(rule, extensions, paths, ignore_paths=None):
             return format_findings(res['pattern_matcher'], paths[0])
     except Exception:
         logger.exception('libsast scan')
+    return {}
+
+
+def niap_scan(rule, extensions, paths, apath, ignore_paths=None):
+    """NIAP scan."""
+    try:
+        if not apath:
+            apath = ''
+        options = {
+            'choice_rules': rule,
+            'alternative_path': apath,
+            'choice_extensions': extensions,
+            'ignore_paths': ignore_paths,
+            'show_progress': False}
+        scanner = Scanner(options, paths)
+        res = scanner.scan()
+        if res:
+            return res['choice_matcher']
+    except Exception:
+        logger.exception('NIAP scan')
     return {}
 
 

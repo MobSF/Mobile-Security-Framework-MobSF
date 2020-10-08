@@ -28,8 +28,7 @@ from StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
     StaticAnalyzerIOS,
 )
-from StaticAnalyzer.views.android.binary_analysis import (elf_analysis,
-                                                          res_analysis)
+from StaticAnalyzer.views.android.binary_analysis import elf_analysis
 from StaticAnalyzer.views.android.cert_analysis import (
     cert_info, get_hardcoded_cert_keystore)
 from StaticAnalyzer.views.android.code_analysis import code_analysis
@@ -42,7 +41,7 @@ from StaticAnalyzer.views.android.manifest_analysis import (get_manifest,
                                                             manifest_analysis,
                                                             manifest_data)
 from StaticAnalyzer.views.android.playstore import get_app_details
-from StaticAnalyzer.views.android.strings import strings_jar
+from StaticAnalyzer.views.android.strings import strings_from_apk
 from StaticAnalyzer.views.shared_func import (firebase_analysis,
                                               hash_gen, score, unzip,
                                               update_scan_timestamp)
@@ -113,6 +112,7 @@ def static_analyzer(request, api=False):
                         'sha256'] = hash_gen(app_dic['app_path'])
                     app_dic['files'] = unzip(
                         app_dic['app_path'], app_dic['app_dir'])
+                    logger.info('APK Extracted')
                     if not app_dic['files']:
                         # Can't Analyze APK, bail out.
                         msg = 'APK file is invalid or corrupt'
@@ -128,17 +128,16 @@ def static_analyzer(request, api=False):
                                 False)
                     app_dic['certz'] = get_hardcoded_cert_keystore(app_dic[
                                                                    'files'])
-
-                    logger.info('APK Extracted')
-
                     # Manifest XML
-                    app_dic['parsed_xml'] = get_manifest(
+                    mani_file, mani_xml = get_manifest(
                         app_dic['app_path'],
                         app_dic['app_dir'],
                         app_dic['tools_dir'],
                         '',
                         True,
                     )
+                    app_dic['manifest_file'] = mani_file
+                    app_dic['parsed_xml'] = mani_xml
 
                     # get app_name
                     app_dic['real_name'] = get_app_name(
@@ -178,9 +177,7 @@ def static_analyzer(request, api=False):
                         '',
                         app_dic['app_dir'],
                     )
-                    bin_an_buff = []
-                    bin_an_buff += elf_analysis(app_dic['app_dir'])
-                    bin_an_buff += res_analysis(app_dic['app_dir'])
+                    elf_dict = elf_analysis(app_dic['app_dir'])
                     cert_dic = cert_info(
                         app_dic['app_dir'],
                         app_dic['app_file'])
@@ -197,12 +194,14 @@ def static_analyzer(request, api=False):
 
                     code_an_dic = code_analysis(
                         app_dic['app_dir'],
-                        'apk')
+                        'apk',
+                        app_dic['manifest_file'])
 
-                    # Get the strings
-                    string_res = strings_jar(
+                    # Get the strings from android resource and shared objects
+                    string_res = strings_from_apk(
                         app_dic['app_file'],
-                        app_dic['app_dir'])
+                        app_dic['app_dir'],
+                        elf_dict['elf_strings'])
                     if string_res:
                         app_dic['strings'] = string_res['strings']
                         app_dic['secrets'] = string_res['secrets']
@@ -237,7 +236,7 @@ def static_analyzer(request, api=False):
                                 man_an_dic,
                                 code_an_dic,
                                 cert_dic,
-                                bin_an_buff,
+                                elf_dict['elf_analysis'],
                                 apkid_results,
                                 tracker_res,
                             )
@@ -251,7 +250,7 @@ def static_analyzer(request, api=False):
                                 man_an_dic,
                                 code_an_dic,
                                 cert_dic,
-                                bin_an_buff,
+                                elf_dict['elf_analysis'],
                                 apkid_results,
                                 tracker_res,
                             )
@@ -263,7 +262,7 @@ def static_analyzer(request, api=False):
                         man_an_dic,
                         code_an_dic,
                         cert_dic,
-                        bin_an_buff,
+                        elf_dict['elf_analysis'],
                         apkid_results,
                         tracker_res,
                     )
@@ -296,7 +295,6 @@ def static_analyzer(request, api=False):
                     'certificate_status': '',
                     'description': '',
                 }
-                bin_an_buff = []
                 app_dic['strings'] = []
                 app_dic['secrets'] = []
                 app_dic['zipped'] = ''
@@ -340,13 +338,15 @@ def static_analyzer(request, api=False):
                             'sha256'] = hash_gen(app_dic['app_path'])
 
                         # Manifest XML
-                        app_dic['persed_xml'] = get_manifest(
+                        mani_file, mani_xml = get_manifest(
                             '',
                             app_dic['app_dir'],
                             app_dic['tools_dir'],
                             pro_type,
                             False,
                         )
+                        app_dic['manifest_file'] = mani_file
+                        app_dic['parsed_xml'] = mani_xml
 
                         # get app_name
                         app_dic['real_name'] = get_app_name(
@@ -363,11 +363,11 @@ def static_analyzer(request, api=False):
                             + pro_type + '&bin=0'
                         )
 
-                        man_data_dic = manifest_data(app_dic['persed_xml'])
+                        man_data_dic = manifest_data(app_dic['parsed_xml'])
                         app_dic['playstore'] = get_app_details(
                             man_data_dic['packagename'])
                         man_an_dic = manifest_analysis(
-                            app_dic['persed_xml'],
+                            app_dic['parsed_xml'],
                             man_data_dic,
                             pro_type,
                             app_dic['app_dir'],
@@ -403,7 +403,8 @@ def static_analyzer(request, api=False):
 
                         code_an_dic = code_analysis(
                             app_dic['app_dir'],
-                            pro_type)
+                            pro_type,
+                            app_dic['manifest_file'])
                         # Firebase DB Check
                         code_an_dic['firebase'] = firebase_analysis(
                             list(set(code_an_dic['urls_list'])))
@@ -424,7 +425,7 @@ def static_analyzer(request, api=False):
                                     man_an_dic,
                                     code_an_dic,
                                     cert_dic,
-                                    bin_an_buff,
+                                    [],
                                     {},
                                     {},
                                 )
@@ -438,7 +439,7 @@ def static_analyzer(request, api=False):
                                     man_an_dic,
                                     code_an_dic,
                                     cert_dic,
-                                    bin_an_buff,
+                                    [],
                                     {},
                                     {},
                                 )
@@ -450,7 +451,7 @@ def static_analyzer(request, api=False):
                             man_an_dic,
                             code_an_dic,
                             cert_dic,
-                            bin_an_buff,
+                            [],
                             {},
                             {},
                         )

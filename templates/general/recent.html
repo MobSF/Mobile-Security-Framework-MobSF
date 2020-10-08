@@ -75,6 +75,7 @@
                             <td>{{ e.TIMESTAMP }}</td>
                             <td><p><a class="btn btn-primary" href="../{{ e.URL }}"><i class="fas fa-eye"></i> Static Report</a>
                                    <a class="btn btn-primary" href="../PDF/?md5={{ e.MD5 }}"><i class="fas fa-file-pdf"></i></a>
+                                   <a class="btn btn-info" href="../{{ e.URL }}&amp;rescan=1"><i class="fas fa-sync-alt"></i></a>
                                 </p>
                             {% if '.apk' == e.FILE_NAME|slice:"-4:"%}
                                 <p><a class="btn btn-success" href="../dynamic_report/?hash={{ e.MD5  }}&amp;package={{e.PACKAGE}}"><i class="fa fa-mobile"></i> Dynamic Report</a> 

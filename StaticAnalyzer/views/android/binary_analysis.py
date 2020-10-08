@@ -1,335 +1,291 @@
 # !/usr/bin/python
 # coding=utf-8
-import io
 import logging
-import os
-import struct
+from pathlib import Path
+
+import lief
 
 logger = logging.getLogger(__name__)
 
 
-class TinyELFFile(object):
-    """from pyelftools."""
+class Checksec:
+    def __init__(self, elf_file, so_rel):
+        self.elf_rel = so_rel
+        self.elf = lief.parse(elf_file.as_posix())
 
-    def __init__(self, stream):
-        self.stream = stream
-        self.stream.seek(0)
-        self.magic = self.stream.read(4)
-        ei_class = self.stream.read(1)
-        if ei_class == b'\x01':
-            self.elfclass = 32
-        elif ei_class == b'\x02':
-            self.elfclass = 64
+    def checksec(self):
+        elf_dict = {}
+        elf_dict['name'] = self.elf_rel
+        is_nx = self.is_nx()
+        if is_nx:
+            severity = 'info'
+            desc = (
+                'The shared object has NX bit set. This marks a '
+                'memory page non-executable making attacker '
+                'injected shellcode non-executable.')
         else:
-            raise Exception('Invalid EI_CLASS %s' % repr(ei_class))
-        ei_data = self.stream.read(1)
-        if ei_data == b'\x01':
-            self.little_endian = True
-        elif ei_data == b'\x02':
-            self.little_endian = False
-        else:
-            raise Exception('Invalid EI_DATA %s' % repr(ei_data))
-        self.unpack_endian = '<' if self.little_endian else '>'
-        self.stream.seek(0)
-        self.header = {
-            'e_ident': {
-                'EI_MAG': [self.unpack_byte() for i in range(4)],
-                'EI_CLASS': self.unpack_byte(),
-                'EI_DATA': self.unpack_byte(),
-                'EI_VERSION': self.unpack_byte(),
-                'EI_OSABI': self.unpack_byte(),
-                'EI_ABIVERSION': self.unpack_byte(),
-                'Padding': [self.unpack_byte() for i in range(7)],
-            },
-            'e_type': self.unpack_half(),
-            'e_machine': self.unpack_half(),
-            'e_version': self.unpack_word(),
-            'e_entry': self.unpack_addr(),
-            'e_phoff': self.unpack_offset(),
-            'e_shoff': self.unpack_offset(),
-            'e_flags': self.unpack_word(),
-            'e_ehsize': self.unpack_half(),
-            'e_phentsize': self.unpack_half(),
-            'e_phnum': self.unpack_half(),
-            'e_shentsize': self.unpack_half(),
-            'e_shnum': self.unpack_half(),
-            'e_shstrndx': self.unpack_half(),
+            severity = 'high'
+            desc = (
+                'The shared object does not have NX bit set. NX bit '
+                'offer protection against exploitation of memory corruption '
+                'vulnerabilities by marking memory page as non-executable. '
+                'Use option --noexecstack or -z noexecstack to mark stack as '
+                'non executable.')
+        elf_dict['nx'] = {
+            'is_nx': is_nx,
+            'severity': severity,
+            'description': desc,
         }
-        xxx = self.decode_shdr(
-            self.header['e_shoff']
-            + self.header['e_shstrndx']
-            * self.header['e_shentsize'])
-        self._file_stringtable_section = xxx['sh_offset']
-
-    def decode_shdr(self, off):
-        self.stream.seek(off)
-        elf_shdr = {
-            'sh_name': self.unpack_word(),
-            'sh_type': self.unpack_word(),
-            'sh_flags': self.unpack_xword(),
-            'sh_addr': self.unpack_addr(),
-            'sh_offset': self.unpack_offset(),
-            'sh_size': self.unpack_xword(),
-            'sh_link': self.unpack_word(),
-            'sh_info': self.unpack_word(),
-            'sh_addralign': self.unpack_xword(),
-            'sh_entsize': self.unpack_xword(),
+        severity = 'info'
+        is_pie = self.is_pie()
+        if is_pie == 'dso':
+            is_pie = 'Dynamic Shared Object (DSO)'
+            desc = (
+                'The shared object is build with -fPIC flag which '
+                'enables Position independent code. This makes Return '
+                'Oriented Programming (ROP) attacks much more difficult '
+                'to execute reliably.')
+        elif is_pie:
+            desc = (
+                'The shared object is build with -fPIC flag which '
+                'enables Position independent code. This makes Return '
+                'Oriented Programming (ROP) attacks much more difficult '
+                'to execute reliably.')
+        else:
+            severity = 'high'
+            desc = (
+                'The shared object is built without Position '
+                'Independent Code flag. In order to prevent '
+                'an attacker from reliably jumping to, for example, a '
+                'particular exploited function in memory, Address '
+                'space layout randomization (ASLR) randomly arranges '
+                'the address space positions of key data areas of a '
+                'process, including the base of the executable and the '
+                'positions of the stack,heap and libraries. Use compiler '
+                'option -fPIC to enable Position Independent Code.')
+        elf_dict['pie'] = {
+            'is_pie': is_pie,
+            'severity': severity,
+            'description': desc,
         }
-        return elf_shdr
-
-    def decode_sym(self, off):
-        self.stream.seek(off)
-        elf_sym = {}
-        elf_sym['st_name'] = self.unpack_word()
-        if self.elfclass == 32:
-            elf_sym['st_value'] = self.unpack_addr()
-            elf_sym['st_size'] = self.unpack_word()
+        has_canary = self.has_canary()
+        if has_canary:
+            severity = 'info'
+            desc = (
+                'This shared object has a stack canary value '
+                'added to the stack so that it will be overwritten by '
+                'a stack buffer that overflows the return address. '
+                'This allows detection of overflows by verifying the '
+                'integrity of the canary before function return.')
         else:
-            pass
-        st_info_struct = self.unpack_byte()
-        st_info_bind = st_info_struct >> 4 & 0x0F
-        st_info_type = st_info_struct & 0x0F
-        st_other_struct = self.unpack_byte()
-        st_other_visibility = st_other_struct & 0x07
-        elf_sym['st_info'] = {
-            'bind': st_info_bind,
-            'type': st_info_type,
+            severity = 'high'
+            desc = (
+                'This shared object does not have a stack '
+                'canary value added to the stack. Stack canraies '
+                'are used to detect and prevent exploits from '
+                'overwriting return address. Use the option '
+                '-fstack-protector-all to enable stack canaries.')
+        elf_dict['stack_canary'] = {
+            'has_canary': has_canary,
+            'severity': severity,
+            'description': desc,
         }
-        elf_sym['st_other'] = {
-            'visibility': st_other_visibility,
+        relro = self.relro()
+        if relro == 'Full':
+            severity = 'info'
+            desc = (
+                'This shared object has full RELRO '
+                'enabled. RELRO ensures that the GOT cannot be '
+                'overwritten in vulnerable ELF binaries. '
+                'In Full RELRO, the entire GOT (.got and '
+                '.got.plt both) is marked as read-only.')
+        elif relro == 'Partial':
+            severity = 'warning'
+            desc = (
+                'This shared object has partial RELRO '
+                'enabled. RELRO ensures that the GOT cannot be '
+                'overwritten in vulnerable ELF binaries. '
+                'In partial RELRO, the non-PLT part of the GOT '
+                'section is read only but .got.plt is still '
+                'writeable. Use the option -z,relro,-z,now to '
+                'enable full RELRO.')
+        else:
+            severity = 'high'
+            desc = (
+                'This shared object does not have RELRO '
+                'enabled. The entire GOT (.got and '
+                '.got.plt both) are writable. Without this compiler '
+                'flag, buffer overflows on a global variable can '
+                'overwrite GOT entries. Use the option '
+                '-z,relro,-z,now to enable full RELRO and only '
+                '-z,relro to enable partial RELRO.')
+        elf_dict['relocation_readonly'] = {
+            'relro': relro,
+            'severity': severity,
+            'description': desc,
         }
-        elf_sym['st_shndx'] = self.unpack_half()
-        if self.elfclass == 32:
-            pass
+        rpath = self.rpath()
+        if rpath:
+            severity = 'high'
+            desc = (
+                'The shared object has RPATH set. In certain cases '
+                'an attacker can abuse this feature to run arbitrary '
+                'shared objects for code execution and privilege '
+                'escalation. The only time a shared library in '
+                'should set RPATH is if it is linked to private '
+                'shared libraries in the same package. Remove the '
+                'compiler option -rpath to remove RPATH.')
         else:
-            elf_sym['st_value'] = self.unpack_addr()
-            elf_sym['st_size'] = self.unpack_xword()
-        return elf_sym
-
-    def decode_rel(self, off):
-        self.stream.seek(off)
-        elf_rel = {
-            'r_offset': self.unpack_addr(),
-            'r_info': self.unpack_xword(),
+            severity = 'info'
+            desc = (
+                'The shared object does not have run-time search path '
+                'or RPATH set.')
+        elf_dict['rpath'] = {
+            'rpath': rpath,
+            'severity': severity,
+            'description': desc,
         }
-        if self.elfclass == 32:
-            r_info_sym = (elf_rel['r_info'] >> 8) & 0xFFFFFF
-            r_info_type = elf_rel['r_info'] & 0xFF
-        else:  # 64
-            r_info_sym = (elf_rel['r_info'] >> 32) & 0xFFFFFFFF
-            r_info_type = elf_rel['r_info'] & 0xFFFFFFFF
-        elf_rel['r_info_sym'] = r_info_sym
-        elf_rel['r_info_type'] = r_info_type
-        return elf_rel
-
-    def decode_rela(self, off):
-        elf_rela = self.decode_rel(off)
-        elf_rela['r_addend'] = self.unpack_sxword()
-        return elf_rela
-
-    def decode_string(self, off):
-        self.stream.seek(off)
-        chunksize = 64
-        chunks = []
-        found = False
-        while True:
-            chunk = self.stream.read(chunksize)
-            end_index = chunk.find(b'\x00')
-            if end_index >= 0:
-                chunks.append(chunk[:end_index])
-                found = True
-                break
-            else:
-                chunks.append(chunk)
-            if len(chunk) < chunksize:
-                break
-        strn = b''.join(chunks) if found else None
-        return strn.decode('ascii')
-
-    def unpack_byte(self):
-        return struct.unpack(self.unpack_endian + 'B', self.stream.read(1))[0]
-
-    def unpack_half(self):
-        return struct.unpack(self.unpack_endian + 'H', self.stream.read(2))[0]
-
-    def unpack_word(self):
-        return struct.unpack(self.unpack_endian + 'L', self.stream.read(4))[0]
-
-    def unpack_word64(self):
-        return struct.unpack(self.unpack_endian + 'Q', self.stream.read(8))[0]
-
-    def unpack_addr(self):
-        if self.elfclass == 32:
-            return (struct.unpack(self.unpack_endian
-                    + 'L', self.stream.read(4))[0])
+        runpath = self.runpath()
+        if runpath:
+            severity = 'high'
+            desc = (
+                'The shared object has RUNPATH set. In certain cases '
+                'an attacker can abuse this feature and or modify '
+                'environment variables to run arbitrary '
+                'shared objects for code execution and privilege '
+                'escalation. The only time a shared library in should '
+                'set RUNPATH is if it is linked to private shared '
+                'libraries in the same package. Remove the compiler '
+                'option --enable-new-dtags,-rpath to remove RUNPATH.')
         else:
-            return (struct.unpack(self.unpack_endian
-                    + 'Q', self.stream.read(8))[0])
-
-    def unpack_offset(self):
-        return self.unpack_addr()
-
-    def unpack_sword(self):
-        return struct.unpack(self.unpack_endian + 'l', self.stream.read(4))[0]
-
-    def unpack_xword(self):
-        if self.elfclass == 32:
-            return (struct.unpack(self.unpack_endian
-                    + 'L', self.stream.read(4))[0])
+            severity = 'info'
+            desc = (
+                'The shared object does not have RUNPATH set.')
+        elf_dict['runpath'] = {
+            'runpath': runpath,
+            'severity': severity,
+            'description': desc,
+        }
+        fortified_functions = self.fortify()
+        if fortified_functions:
+            severity = 'info'
+            desc = ('The shared object has the '
+                    f'following fortifed functions: {fortified_functions}')
         else:
-            return (struct.unpack(self.unpack_endian
-                    + 'Q', self.stream.read(8))[0])
-
-    def unpack_sxword(self):
-        if self.elfclass == 32:
-            return (struct.unpack(self.unpack_endian
-                    + 'l', self.stream.read(4))[0])
+            severity = 'warning'
+            desc = ('The shared object does not have any '
+                    'fortified functions. Fortified functions '
+                    'provides buffer overflow checks against '
+                    'glibc\'s commons insecure functions like '
+                    'strcpy, gets etc. Use the compiler option '
+                    '-D_FORTIFY_SOURCE=2 to fority functions.')
+        elf_dict['fortify'] = {
+            'is_fortified': bool(fortified_functions),
+            'severity': severity,
+            'description': desc,
+        }
+        is_stripped = self.is_symbols_stripped()
+        if is_stripped:
+            severity = 'info'
+            desc = 'Symbols are stripped.'
         else:
-            return (struct.unpack(self.unpack_endian
-                    + 'q', self.stream.read(8))[0])
+            severity = 'warning'
+            desc = 'Symbols are available.'
+        elf_dict['symbol'] = {
+            'is_stripped': is_stripped,
+            'severity': severity,
+            'description': desc,
+        }
+        return elf_dict
+
+    def is_nx(self):
+        return self.elf.has_nx
+
+    def is_pie(self):
+        if not self.elf.is_pie:
+            return False
+        if self.elf.has(lief.ELF.DYNAMIC_TAGS.DEBUG):
+            return True
+        else:
+            return 'dso'
+
+    def has_canary(self):
+        for symbol in ('__stack_chk_fail',
+                       '__intel_security_cookie'):
+            try:
+                if self.elf.get_symbol(symbol):
+                    return True
+            except lief.not_found:
+                pass
+        return False
+
+    def relro(self):
+        try:
+            gnu_relro = lief.ELF.SEGMENT_TYPES.GNU_RELRO
+            flags = lief.ELF.DYNAMIC_TAGS.FLAGS
+            bind_now = lief.ELF.DYNAMIC_FLAGS.BIND_NOW
+            if self.elf.get(gnu_relro):
+                if bind_now in self.elf.get(flags):
+                    return 'Full RELRO'
+                else:
+                    return 'Partial RELRO'
+            return 'No RELRO'
+        except lief.not_found:
+            return 'No RELRO'
+
+    def rpath(self):
+        try:
+            rpath = lief.ELF.DYNAMIC_TAGS.RPATH
+            return self.elf.get(rpath)
+        except lief.not_found:
+            return False
+
+    def runpath(self):
+        try:
+            runpath = lief.ELF.DYNAMIC_TAGS.RUNPATH
+            return self.elf.get(runpath)
+        except lief.not_found:
+            return False
+
+    def is_symbols_stripped(self):
+        for i in self.elf.static_symbols:
+            if i:
+                return False
+        return True
+
+    def fortify(self):
+        fortified_funcs = []
+        for function in self.elf.symbols:
+            if function.name.endswith('_chk'):
+                fortified_funcs.append(function.name)
+        return fortified_funcs
+
+    def strings(self):
+        return self.elf.strings
 
 
-def check_elf_built(f):
-    has_pi = False
-    has_sp = False
-    has_pi_fg = {
-        3: [8],  # EM_386=3,    R_386_RELATIVE=8,
-        62: [8],  # EM_X86_64=62,    R_X86_64_RELATIVE=8,
-        40: [23, 3],  # EM_ARM=40,    R_ARM_RELATIVE=23,R_ARM_REL32=3,
-        183: [1027, 3],  # EM_AARCH64=183,
-                         # R_AARCH64_RELATIVE=1027,R_ARM_REL32=3,
-        8: [3],  # EM_MIPS=8,    R_MIPS_REL32=3,
-    }
-    elffile = TinyELFFile(f)
-    for j in range(elffile.header['e_shnum']):
-        section_header = elffile.decode_shdr(
-            elffile.header['e_shoff'] + j * elffile.header['e_shentsize'])
-        sectype = section_header['sh_type']
-        if sectype in (4, 9):  # SHT_RELA=4,SHT_REL=9,
-            if section_header['sh_entsize'] > 0:
-                siz = section_header['sh_size'] // section_header['sh_entsize']
-                for i in range(siz):
-                    elffile.stream.seek(
-                        section_header['sh_offset']
-                        + i
-                        * section_header['sh_entsize'])
-                    if section_header['sh_type'] == 9:
-                        entry = elffile.decode_rel(
-                            section_header['sh_offset']
-                            + i
-                            * section_header['sh_entsize'])
-                    elif section_header['sh_type'] == 4:
-                        entry = elffile.decode_rela(
-                            section_header['sh_offset']
-                            + i
-                            * section_header['sh_entsize'])
-                    else:
-                        continue
-                    if (entry['r_info_type']
-                            in has_pi_fg.get(elffile.header['e_machine'], [])):
-                        if entry['r_info_sym'] == 0:
-                            has_pi = True
-                            break
-    return has_pi, has_sp
-
-
-def res_analysis(app_dir):
-    """Perform the elf analysis."""
+def elf_analysis(app_dir: str) -> dict:
+    """Perform elf analysis on shared object."""
     try:
-        logger.info('Static Android Resource Analysis Started')
-        elf_desc = {
-            'html_infected':
-                (
-                    'Found html files infected by malware.',
-                    'high',
-                    'The built environment was probably'
-                    ' infected by malware, The html file '
-                    'used in this APK is infected.')}
-        html_an_dic = {}
-        for k in list(elf_desc.keys()):
-            html_an_dic[k] = []
-        resraw = os.path.join(app_dir, 'res', 'raw')
-        assets = os.path.join(app_dir, 'assets')
-        for resdir in (resraw, assets):
-            if os.path.exists(resdir) and os.path.isdir(resdir):
-                for pdir, _dirl, filel in os.walk(resdir):
-                    for filename in filel:
-                        if (filename.endswith('.htm')
-                                or filename.endswith('.html')):
-                            try:
-                                filepath = os.path.join(pdir, filename)
-                                buf = ''
-                                with io.open(filepath, mode='rb') as filp:
-                                    buf = filp.read()
-                                if 'svchost.exe' in buf:
-                                    html_an_dic['html_infected'].append(
-                                        filepath.replace(app_dir, ''))
-                            except Exception:
-                                pass
-        res = []
-        for k, filelist in list(html_an_dic.items()):
-            if len(filelist):
-                descs = elf_desc.get(k)
-                res.append({'title': descs[0],
-                            'stat': descs[1],
-                            'desc': descs[2],
-                            'file': ' '.join(filelist),
-                            })
-        return res
-
-    except Exception:
-        logger.exception('Performing Resourse Analysis')
-
-
-def elf_analysis(app_dir: str) -> list:
-    """Perform the elf analysis."""
-    try:
-        logger.info('Static Android Binary Analysis Started')
-        fgs = ['nopie', 'nonpie', 'no-pie']
-        elf_desc = {
-            'elf_no_pi':
-                (
-                    'Found elf built without Position Independent Executable'
-                    ' (PIE) flag',
-                    'high',
-                    'In order to prevent an attacker from reliably jumping'
-                    ' to, for example, a particular'
-                    ' exploited function in memory, Address space layout'
-                    ' randomization (ASLR) randomly '
-                    'arranges the address space positions of key data areas'
-                    ' of a process, including the '
-                    'base of the executable and the positions of the stack,'
-                    ' heap and libraries. Built with'
-                    ' option <strong>-pie</strong>.')}
-        elf_an_dic = {}
-        for k in list(elf_desc.keys()):
-            elf_an_dic[k] = []
-        libdir = os.path.join(app_dir, 'lib')
-        if os.path.exists(libdir):
-            for pdir, _dirl, filel in os.walk(libdir):
-                for fname in filel:
-                    if fname.endswith('.so'):
-                        try:
-                            filepath = os.path.join(pdir, fname)
-                            f = io.open(filepath, mode='rb')
-                            has_pie, has_sg = check_elf_built(f)
-                            f.close()
-                            if not has_pie:
-                                if not any(pie_st in fgs for pie_st in fname):
-                                    elf_an_dic['elf_no_pi'].append(
-                                        filepath.replace(libdir, 'lib'))
-                        except Exception:
-                            pass
-        res = []
-        for k, filelist in list(elf_an_dic.items()):
-            if len(filelist):
-                descs = elf_desc.get(k)
-                res.append({'title': descs[0],
-                            'stat': descs[1],
-                            'desc': descs[2],
-                            'file': ' '.join(filelist),
-                            })
-        return res
-
+        strings = []
+        elf_list = []
+        logger.info('Binary Analysis Started')
+        libs = Path(app_dir) / 'lib'
+        elf = {'elf_analysis': elf_list, 'elf_strings': strings}
+        if not libs.is_dir():
+            return elf
+        for sofile in libs.rglob('*.so'):
+            so_rel = (
+                f'{sofile.parents[1].name}/'
+                f'{sofile.parents[0].name}/'
+                f'{sofile.name}')
+            logger.info('Analyzing %s', so_rel)
+            chk = Checksec(sofile, so_rel)
+            elf_find = chk.checksec()
+            if elf_find:
+                elf_list.append(elf_find)
+                strings.append({so_rel: chk.strings()})
+        return {'elf_analysis': elf_list, 'elf_strings': strings}
     except Exception:
         logger.exception('Performing Binary Analysis')
+        return elf

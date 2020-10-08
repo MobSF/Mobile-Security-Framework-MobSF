@@ -398,18 +398,18 @@
                                         </tr>
                                         <tr>
                                             <td>
-                                                {% for desc, info in android_api.common %}
-                                                    {{ desc }} <br/>
+                                                {% for id, info in android_api.common %}
+                                                    {{ info.metadata.description }} <br/>
                                                 {% endfor %}
                                             </td>
                                             <td>
-                                                {% for desc, info in android_api.only_first %}
-                                                    {{ desc }} <br/>
+                                                {% for id, info in android_api.only_first %}
+                                                    {{ info.metadata.description  }} <br/>
                                                 {% endfor %}
                                             </td>
                                             <td>
-                                                {% for desc, info in android_api.only_second %}
-                                                    {{ desc }} <br/>
+                                                {% for id, info in android_api.only_second %}
+                                                    {{ info.metadata.description  }} <br/>
                                                 {% endfor %}
                                             </td>
                                         </tr>

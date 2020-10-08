@@ -152,9 +152,9 @@
         <h5>Exported Services:</h5> <span {% if exported_count.exported_services > 0 %} class="danger" {% endif %}> {{ exported_count.exported_services }}</span></br>
         <h5>Exported Receivers:</h5> <span {% if exported_count.exported_receivers > 0 %} class="danger" {% endif %}> {{ exported_count.exported_receivers }}</span></br>
         <h5>Exported Providers:</h5> <span {% if exported_count.exported_providers > 0 %} class="danger" {% endif %}> {{ exported_count.exported_providers }}</span></br>
-
-        {% if certificate_analysis.certificate_info %}
-         <h2><i class="fa fa-certificate"></i> CERTIFICATE INFORMATION</h2>
+     
+        <h2><i class="fa fa-certificate"></i> CERTIFICATE INFORMATION</h2>
+        {% if certificate_analysis %}
         <div class="panel-body">
               <p class="wrapped-text">{{ certificate_analysis.certificate_info }}</p>
               <!--Cert status-->
@@ -183,6 +183,8 @@
                       </tbody>
                   </table>
         </div>
+      {% else %}
+      <span class="danger">Failed to read Code Signing Certificate.</span>
       {% endif %}
       {% if permissions %}
       <h2><i class="fa fa-list"></i> APPLICATION PERMISSIONS</h2>
@@ -209,52 +211,7 @@
             </table>
       {% endif %}
 
-       {% if binary_analysis  %}
-      <h2><i class="fa fa-flag"></i> SHARED LIBRARY BINARY ANALYSIS</h2>
-
-       <table class="basic">
-                    <thead>
-                        <tr>
-                            <th>NO</th>
-                            <th>ISSUE</th>
-                            <th>SEVERITY</th>
-                            <th>DESCRIPTION</th>
-                            <th>FILES</th>
-                            
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {% for item in binary_analysis %}
-                      <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>
-                        {{item|key:"title" | safe}}
-                        </td>
-                        <td>
-                          {% if item|key:"stat" == "high" %}
-                            <span class="danger">high</span>
-                          {% elif item|key:"stat" == "info" %}
-                            <span class="info">info</span>
-                          {% elif item|key:"stat" == "medium" %}
-                            <span class="warning">medium</span>
-                          {% endif %}
-                         
-                        </td>
-                        <td>
-                        {{item|key:"desc"}}
-                        </td>
-                        <td>
-                        {{item|key:"file"}}
-                        </td>
-   
-                       </tr>
-                     {% endfor %}
-                   
-                    
-                    </tbody>
-                    </table>
-        {% endif %}
-
+      
        {% if virus_total and virus_total.items|length > 9 and 'request successfully queued' not in virus_total.verbose_msg %}
        <h2><i class="fas fa-spider"></i> VIRUSTOTAL SCAN</h2>
        <p> <h5>{{ virus_total.positives }} / {{ virus_total.total }}</h5> &nbsp; AVs found this file Malicious! </p>
@@ -550,6 +507,102 @@
               {% endfor %} 
 										</tbody>
 										</table>
+            
+     {% if binary_analysis  %}
+      <h2><i class="fa fa-flag"></i> SHARED LIBRARY BINARY ANALYSIS</h2>
+
+        <table class="basic">
+                    <thead>
+                      <tr>
+                        <th>NO</th>
+                        <th>SHARED OBJECT</th>
+                        <th>NX</th>
+                        <th>PIE</th>
+                        <th>STACK CANARY</th>
+                        <th>RELRO</th>
+                        <th>RPATH</th>
+                        <th>RUNPATH</th>
+                        <th>FORTIFY</th>
+                        <th>SYMBOLS STRIPPED</th>
+                     </tr>
+                    </thead>
+                    <tbody>
+                      {% if not binary_analysis %}
+                        No Shared Objects found.
+                      {% endif %}
+                       {% for so in binary_analysis %}
+                       <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td width="20%">{{so.name}}</td>
+                        <td style="vertical-align: top;"><b>{{so.nx.is_nx}}</b>
+                          <br/>
+                          <span class="{% if so.nx.severity == 'high' %}danger{% elif so.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.nx.severity}}</span>
+                          <br/>{{so.nx.description}}</td>
+                        <td style="vertical-align: top;"><b>{{so.pie.is_pie}}</b>
+                          <br/>
+                          <span class="{% if so.pie.severity == 'high' %}danger{% elif so.pie.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.pie.severity}}</span>
+                          <br/>{{so.pie.description}}</td>
+                        <td style="vertical-align: top;"><b>{{so.stack_canary.has_canary}}</b>
+                            <br/>
+                            <span class="{% if so.stack_canary.severity == 'high' %}danger{% elif so.stack_canary.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.stack_canary.severity}}</span>
+                            <br/>{{so.stack_canary.description}}</td>
+                        <td style="vertical-align: top;"><b>{{so.relocation_readonly.relro}}</b>
+                          <br/>
+                          <span class="{% if so.relocation_readonly.severity == 'high' %}danger{% elif so.relocation_readonly.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.relocation_readonly.severity}}</span>
+                          <br/>{{so.relocation_readonly.description}}</td>
+                        <td style="vertical-align: top;"><b>{{so.rpath.rpath}}</b>
+                          <br/>
+                          <span class="{% if so.rpath.severity == 'high' %}danger{% elif so.rpath.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.rpath.severity}}</span>
+                          <br/>{{so.rpath.description}}</td>
+                        <td style="vertical-align: top;"><b>{{so.runpath.runpath}}</b>
+                          <br/>
+                          <span class="{% if so.runpath.severity == 'high' %}danger{% elif so.runpath.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.runpath.severity}}</span>
+                          <br/>{{so.runpath.description}}</td>
+                        <td style="vertical-align: top;"><b>{{so.fortify.is_fortified}}</b>
+                          <br/>
+                          <span class="{% if so.fortify.severity == 'high' %}danger{% elif so.fortify.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.fortify.severity}}</span>
+                          <br/>{{so.fortify.description}}</td>
+                        <td style="vertical-align: top;"><b>{{so.symbol.is_stripped}}</b>
+                          <br/>
+                          <span class="{% if so.symbol.severity == 'high' %}danger{% elif so.symbol.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.symbol.severity}}</span>
+                          <br/>{{so.symbol.description}}</td>
+                      </tr>
+                       {% endfor %}
+                  </tbody>
+                    </table>
+    {% endif %}
+              
+    <h2><i class="fa fa-id-badge"></i> NIAP ANALYSIS</h2>
+    <table class="basic">
+              <thead>
+                  <tr>
+                    <th>NO</th>
+                    <th>IDENTIFIER</th>
+                    <th>REQUIREMENT</th>
+                    <th>FEATURE</th>
+                    <th>DESCRIPTION</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for iden, details in niap_analysis.items %}
+                  <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>
+                    <span class="{% if 'does not' in details.choice %} warning {% elif 'not in accordance' in details.choice %} danger {% else %} info {% endif %}"> {{ iden }}</span>
+                  </td>
+                   <td>
+                   {{ details.class }}
+                  </td>
+                  <td>
+                    {{ details.description }}
+                   </td>
+                   <td>
+                    {{ details.choice }}
+                   </td>
+                </tr>    
+              {% endfor %} 
+            </tbody>
+                  </table>
 
       {% if domains  %}
       <h2><i class="fab fa-searchengin"></i> DOMAIN MALWARE CHECK</h2>
@@ -680,25 +733,6 @@
 										</table>
       {% endif %}
 
-      {% if secrets %}
-      <h2><i class="fas fa-key"></i> HARDCODED SECRETS</h2>
-          <table class="basic">
-                  <thead>
-                  <tr>
-                     <th>POSSIBLE SECRETS</th>
-                  </tr>
-                 </thead>
-                  <tbody>
-									{% for sec in secrets %}
-                    <tr>
-                       <td style="word-break:break-all;">
-                      {{ sec }}
-                        </td>
-                    </tr>
-                  {% endfor %} 
-										</tbody>
-										</table>
-      {% endif %}
   
       {% if trackers|key:"trackers" %}
       <h2><i class="fas fa-user-secret"></i> TRACKERS</h2>
@@ -727,6 +761,27 @@
             </tbody>
         </table>
          {% endif %}
+    
+        {% if secrets %}
+        <h2><i class="fas fa-key"></i> HARDCODED SECRETS</h2>
+            <table class="basic">
+                    <thead>
+                    <tr>
+                      <th>POSSIBLE SECRETS</th>
+                    </tr>
+                  </thead>
+                    <tbody>
+                    {% for sec in secrets %}
+                      <tr>
+                        <td style="word-break:break-all;">
+                        {{ sec }}
+                          </td>
+                      </tr>
+                    {% endfor %} 
+                      </tbody>
+                      </table>
+        {% endif %}
+
      {% if not playstore_details.error %}
     <h2><i class="fab fa-google-play"></i> PLAYSTORE INFORMATION </h2>
 
