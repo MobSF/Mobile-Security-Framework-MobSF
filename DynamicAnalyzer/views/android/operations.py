@@ -107,7 +107,7 @@ def mobsfy(request, api=False):
 
 
 @require_http_methods(['POST'])
-def execute_adb(request, api=True):
+def execute_adb(request, api=False):
     """Execute ADB Commands."""
     data = {'status': 'ok', 'message': ''}
     cmd = request.POST['cmd']
