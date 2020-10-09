@@ -10,7 +10,7 @@ from DynamicAnalyzer.views.android.operations import (
     invalid_params,
     is_attack_pattern,
     is_md5,
-    json_response,
+    send_response,
     strict_package_check)
 from DynamicAnalyzer.views.android.environment import Environment
 from DynamicAnalyzer.views.android.tests_xposed import download_xposed_log
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 @require_http_methods(['POST'])
-def activity_tester(request):
+def activity_tester(request, api=False):
     """Exported & non exported activity Tester."""
     data = {}
     try:
@@ -35,7 +35,7 @@ def activity_tester(request):
         md5_hash = request.POST['hash']
         package = request.POST['package']
         if is_attack_pattern(package) or not is_md5(md5_hash):
-            return invalid_params()
+            return invalid_params(api)
         app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         screen_dir = os.path.join(app_dir, 'screenshots-apk/')
         if not os.path.exists(screen_dir):
@@ -45,7 +45,7 @@ def activity_tester(request):
         if not static_android_db.exists():
             data = {'status': 'failed',
                     'message': 'App details not found in database'}
-            return json_response(data)
+            return send_response(data, api)
         iden = ''
         if test == 'exported':
             iden = 'Exported '
@@ -60,7 +60,7 @@ def activity_tester(request):
             logger.info(msg)
             data = {'status': 'failed',
                     'message': msg}
-            return json_response(data)
+            return send_response(data, api)
         act_no = 0
         logger.info('Starting %sActivity Tester...', iden)
         logger.info('%s %sActivities Identified',
@@ -85,13 +85,13 @@ def activity_tester(request):
     except Exception as exp:
         logger.exception('%sActivity tester', iden)
         data = {'status': 'failed', 'message': str(exp)}
-    return json_response(data)
+    return send_response(data, api)
 
 # AJAX
 
 
 @require_http_methods(['POST'])
-def download_data(request):
+def download_data(request, api=False):
     """Download Application Data from Device."""
     logger.info('Downloading app data')
     data = {}
@@ -100,7 +100,7 @@ def download_data(request):
         package = request.POST['package']
         md5_hash = request.POST['hash']
         if is_attack_pattern(package) or not is_md5(md5_hash):
-            return invalid_params()
+            return invalid_params(api)
         apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         stop_httptools(settings.PROXY_PORT)
         files_loc = '/data/local/'
@@ -116,13 +116,13 @@ def download_data(request):
     except Exception as exp:
         logger.exception('Downloading application data')
         data = {'status': 'failed', 'message': str(exp)}
-    return json_response(data)
+    return send_response(data, api)
 
 # AJAX
 
 
 @require_http_methods(['POST'])
-def collect_logs(request):
+def collect_logs(request, api=False):
     """Collecting Data and Cleanup."""
     logger.info('Collecting Data and Cleaning Up')
     data = {}
@@ -132,7 +132,7 @@ def collect_logs(request):
         package = request.POST['package']
         if (not strict_package_check(package)
                 or not is_md5(md5_hash)):
-            return invalid_params()
+            return invalid_params(api)
         apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         lout = os.path.join(apk_dir, 'logcat.txt')
         dout = os.path.join(apk_dir, 'dump.txt')
@@ -157,4 +157,4 @@ def collect_logs(request):
     except Exception as exp:
         logger.exception('Data Collection & Clean Up failed')
         data = {'status': 'failed', 'message': str(exp)}
-    return json_response(data)
+    return send_response(data, api)

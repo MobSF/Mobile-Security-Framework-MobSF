@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-MOBSF_VER = 'v3.1.7 Beta'
+MOBSF_VER = 'v3.1.8 Beta'
 
 BANNER = """
   __  __       _    ____  _____       _____  _ 
@@ -178,7 +178,7 @@ MIDDLEWARE_CLASSES = (
 )
 
 MIDDLEWARE = (
-    'MobSF.views.api.rest_api_middleware.RestApiAuthMiddleware',
+    'MobSF.views.api.api_middleware.RestApiAuthMiddleware',
 )
 ROOT_URLCONF = 'MobSF.urls'
 WSGI_APPLICATION = 'MobSF.wsgi.application'

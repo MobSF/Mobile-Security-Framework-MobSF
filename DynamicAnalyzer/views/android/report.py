@@ -34,25 +34,30 @@ def key(d, key_name):
     return d.get(key_name)
 
 
-def view_report(request):
+def view_report(request, api=False):
     """Dynamic Analysis Report Generation."""
     logger.info('Dynamic Analysis Report Generation')
     try:
-        md5_hash = request.GET['hash']
-        package = request.GET['package']
+        if api:
+            md5_hash = request.POST['hash']
+            package = request.POST['package']
+        else:
+            md5_hash = request.GET['hash']
+            package = request.GET['package']
         droidmon = {}
         apimon = {}
         if (is_attack_pattern(package)
                 or not is_md5(md5_hash)):
             return print_n_send_error_response(request,
-                                               'Invalid Parameters')
+                                               'Invalid Parameters',
+                                               api)
         app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         download_dir = settings.DWD_DIR
         if not is_file_exists(os.path.join(app_dir, 'logcat.txt')):
             msg = ('Dynamic Analysis report is not available '
                    'for this app. Perform Dynamic Analysis '
                    'and generate the report.')
-            return print_n_send_error_response(request, msg)
+            return print_n_send_error_response(request, msg, api)
         fd_log = os.path.join(app_dir, 'mobsf_frida_out.txt')
         droidmon = droidmon_api_analysis(app_dir, package)
         apimon = apimon_analysis(app_dir)
@@ -77,14 +82,16 @@ def view_report(request):
                    'version': settings.MOBSF_VER,
                    'title': 'Dynamic Analysis'}
         template = 'dynamic_analysis/android/dynamic_report.html'
+        if api:
+            return context
         return render(request, template, context)
     except Exception as exp:
         logger.exception('Dynamic Analysis Report Generation')
         err = 'Error Geneating Dynamic Analysis Report. ' + str(exp)
-        return print_n_send_error_response(request, err)
+        return print_n_send_error_response(request, err, api)
 
 
-def view_file(request):
+def view_file(request, api=False):
     """View File."""
     logger.info('Viewing File')
     try:
@@ -92,12 +99,18 @@ def view_file(request):
         rtyp = ''
         dat = ''
         sql_dump = {}
-        fil = request.GET['file']
-        md5_hash = request.GET['md5']
-        typ = request.GET['type']
+        if api:
+            fil = request.POST['file']
+            md5_hash = request.POST['hash']
+            typ = request.POST['type']
+        else:
+            fil = request.GET['file']
+            md5_hash = request.GET['md5']
+            typ = request.GET['type']
         if not is_md5(md5_hash):
             return print_n_send_error_response(request,
-                                               'Invalid Parameters')
+                                               'Invalid Parameters',
+                                               api)
         src = os.path.join(
             settings.UPLD_DIR,
             md5_hash,
@@ -105,7 +118,7 @@ def view_file(request):
         sfile = os.path.join(src, fil)
         if not is_safe_path(src, sfile) or is_path_traversal(fil):
             err = 'Path Traversal Attack Detected'
-            return print_n_send_error_response(request, err)
+            return print_n_send_error_response(request, err, api)
         with io.open(sfile, mode='r', encoding='ISO-8859-1') as flip:
             dat = flip.read()
         if fil.endswith('.xml') and typ == 'xml':
@@ -117,7 +130,7 @@ def view_file(request):
             rtyp = 'asciidoc'
         else:
             err = 'File type not supported'
-            return print_n_send_error_response(request, err)
+            return print_n_send_error_response(request, err, api)
         fil = escape(ntpath.basename(fil))
         context = {
             'title': fil,
@@ -128,7 +141,12 @@ def view_file(request):
             'version': settings.MOBSF_VER,
         }
         template = 'general/view.html'
+        if api:
+            return context
         return render(request, template, context)
     except Exception:
         logger.exception('Viewing File')
-        return print_n_send_error_response(request, 'Error Viewing File')
+        return print_n_send_error_response(
+            request,
+            'Error Viewing File',
+            api)

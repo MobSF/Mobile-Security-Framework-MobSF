@@ -31,7 +31,7 @@ from StaticAnalyzer.models import StaticAnalyzerAndroid
 logger = logging.getLogger(__name__)
 
 
-def dynamic_analysis(request):
+def dynamic_analysis(request, api=False):
     """Android Dynamic Analysis Entry point."""
     try:
         apks = StaticAnalyzerAndroid.objects.filter(
@@ -44,7 +44,7 @@ def dynamic_analysis(request):
                    ' Please run an android instance and refresh'
                    ' this page. If this error persists,'
                    ' set ANALYZER_IDENTIFIER in MobSF/settings.py')
-            return print_n_send_error_response(request, msg)
+            return print_n_send_error_response(request, msg, api)
         proxy_ip = get_proxy_ip(identifier)
         context = {'apks': apks,
                    'identifier': identifier,
@@ -52,20 +52,27 @@ def dynamic_analysis(request):
                    'proxy_port': settings.PROXY_PORT,
                    'title': 'MobSF Dynamic Analysis',
                    'version': settings.MOBSF_VER}
+        if api:
+            return context
         template = 'dynamic_analysis/dynamic_analysis.html'
         return render(request, template, context)
     except Exception as exp:
         logger.exception('Dynamic Analysis')
         return print_n_send_error_response(request,
-                                           exp)
+                                           exp,
+                                           api)
 
 
-def dynamic_analyzer(request):
+def dynamic_analyzer(request, api=False):
     """Android Dynamic Analyzer Environment."""
     logger.info('Creating Dynamic Analysis Environment')
     try:
-        bin_hash = request.GET['hash']
-        package = request.GET['package']
+        if api:
+            bin_hash = request.POST['hash']
+            package = request.POST['package']
+        else:
+            bin_hash = request.GET['hash']
+            package = request.GET['package']
         no_device = False
         if (is_attack_pattern(package)
                 or not is_md5(bin_hash)):
@@ -169,7 +176,7 @@ def httptools_start(request):
         return print_n_send_error_response(request, err)
 
 
-def logcat(request):
+def logcat(request, api=False):
     logger.info('Starting Logcat streaming')
     try:
         pkg = request.GET.get('package')
@@ -177,7 +184,8 @@ def logcat(request):
             if not strict_package_check(pkg):
                 return print_n_send_error_response(
                     request,
-                    'Invalid package name')
+                    'Invalid package name',
+                    api)
             template = 'dynamic_analysis/android/logcat.html'
             return render(request, template, {'package': pkg})
         app_pkg = request.GET.get('app_package')
@@ -185,7 +193,8 @@ def logcat(request):
             if not strict_package_check(app_pkg):
                 return print_n_send_error_response(
                     request,
-                    'Invalid package name')
+                    'Invalid package name',
+                    api)
             adb = os.environ['MOBSF_ADB']
             g = proc.Group()
             g.run([adb, 'logcat', app_pkg + ':V', '*:*'])
@@ -200,8 +209,9 @@ def logcat(request):
                                          content_type='text/event-stream')
         return print_n_send_error_response(
             request,
-            'Invalid parameters')
+            'Invalid parameters',
+            api)
     except Exception:
         logger.exception('Logcat Streaming')
         err = 'Error in Logcat streaming'
-        return print_n_send_error_response(request, err)
+        return print_n_send_error_response(request, err, api)

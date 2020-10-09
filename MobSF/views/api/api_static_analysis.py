@@ -1,12 +1,12 @@
 # -*- coding: utf_8 -*-
 """MobSF REST API V 1."""
 
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from MobSF.utils import api_key
 from MobSF.views.helpers import request_method
 from MobSF.views.home import RecentScans, Upload, delete_scan
+from MobSF.views.api.api_middleware import make_api_response
 
 from StaticAnalyzer.views.android import view_source
 from StaticAnalyzer.views.android.static_analyzer import static_analyzer
@@ -17,27 +17,6 @@ from StaticAnalyzer.views.shared_func import (
     pdf,
 )
 from StaticAnalyzer.views.windows import windows
-
-OK = 200
-
-
-def make_api_response(data, status=OK):
-    """Make API Response."""
-    resp = JsonResponse(data=data, status=status)
-    resp['Access-Control-Allow-Origin'] = '*'
-    resp['Access-Control-Allow-Methods'] = 'POST'
-    resp['Access-Control-Allow-Headers'] = 'Authorization, X-Mobsf-Api-Key'
-    resp['Content-Type'] = 'application/json; charset=utf-8'
-    return resp
-
-
-def api_auth(meta):
-    """Check if API Key Matches."""
-    if 'HTTP_X_MOBSF_API_KEY' in meta:
-        return bool(api_key() == meta['HTTP_X_MOBSF_API_KEY'])
-    elif 'HTTP_AUTHORIZATION' in meta:
-        return bool(api_key() == meta['HTTP_AUTHORIZATION'])
-    return False
 
 
 @request_method(['POST'])

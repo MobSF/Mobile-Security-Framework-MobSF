@@ -9,7 +9,8 @@ from DynamicAnalyzer.views.android import (
 
 from MobSF import utils
 from MobSF.views import home
-from MobSF.views.api import rest_api
+from MobSF.views.api import api_static_analysis as api_sz
+from MobSF.views.api import api_dynamic_analysis as api_dz
 
 from StaticAnalyzer import tests
 from StaticAnalyzer.views import shared_func
@@ -90,21 +91,38 @@ urlpatterns = [
     url(r'^frida_logs/$', tests_frida.frida_logs),
     url(r'^list_frida_scripts/$', tests_frida.list_frida_scripts),
     url(r'^get_script/$', tests_frida.get_script),
-
-
     # Report
     url(r'^dynamic_report/$', report.view_report),
     url(r'^dynamic_view_file/$', report.view_file),
 
     # REST API
-    url(r'^api/v1/upload$', rest_api.api_upload),
-    url(r'^api/v1/scan$', rest_api.api_scan),
-    url(r'^api/v1/delete_scan$', rest_api.api_delete_scan),
-    url(r'^api/v1/download_pdf$', rest_api.api_pdf_report),
-    url(r'^api/v1/report_json$', rest_api.api_json_report),
-    url(r'^api/v1/view_source$', rest_api.api_view_source),
-    url(r'^api/v1/scans$', rest_api.api_recent_scans),
-    url(r'^api/v1/compare$', rest_api.api_compare),
+    # Static Analysis
+    url(r'^api/v1/upload$', api_sz.api_upload),
+    url(r'^api/v1/scan$', api_sz.api_scan),
+    url(r'^api/v1/delete_scan$', api_sz.api_delete_scan),
+    url(r'^api/v1/download_pdf$', api_sz.api_pdf_report),
+    url(r'^api/v1/report_json$', api_sz.api_json_report),
+    url(r'^api/v1/view_source$', api_sz.api_view_source),
+    url(r'^api/v1/scans$', api_sz.api_recent_scans),
+    url(r'^api/v1/compare$', api_sz.api_compare),
+    # Dynamic Analysis
+    url(r'^api/v1/dynamic/get_apps$', api_dz.api_get_apps),
+    url(r'^api/v1/dynamic/start_analysis$', api_dz.api_start_analysis),
+    url(r'^api/v1/dynamic/stop_analysis$', api_dz.api_stop_analysis),
+    url(r'^api/v1/dynamic/report_json$', api_dz.api_dynamic_report),
+    url(r'^api/v1/dynamic/view_source$', api_dz.api_dynamic_view_file),
+    # Android Specific
+    url(r'^api/v1/android/logcat$', api_dz.api_logcat),
+    url(r'^api/v1/android/mobsfy$', api_dz.api_mobsfy),
+    url(r'^api/v1/android/adb_command$', api_dz.api_adb_execute),
+    url(r'^api/v1/android/root_ca$', api_dz.api_root_ca),
+    url(r'^api/v1/android/activity$', api_dz.api_api_tester),
+    # Frida
+    url(r'^api/v1/frida/instrument$', api_dz.api_instrument),
+    url(r'^api/v1/frida/api_monitor$', api_dz.api_api_monitor),
+    url(r'^api/v1/frida/logs$', api_dz.api_frida_logs),
+    url(r'^api/v1/frida/list_scripts$', api_dz.api_list_frida_scripts),
+    url(r'^api/v1/frida/get_script$', api_dz.api_get_script),
 
     # Test
     url(r'^tests/$', tests.start_test),
