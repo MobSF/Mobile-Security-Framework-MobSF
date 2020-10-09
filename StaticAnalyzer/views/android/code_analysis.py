@@ -64,7 +64,7 @@ def code_analysis(app_dir, typ, manifest_file):
             {'.java', '.xml'},
             [src],
             manifest_file,
-            skp)
+            None)
         # Extract URLs and Emails
         for pfile in Path(src).rglob('*'):
             if (
