@@ -97,25 +97,35 @@ pre {
 
 <script>
 var curr_selected;
+
+// In the first load, check if a specific file should be shown in parallel to the tree load
+var searchParams = new URLSearchParams(window.location.search);
+var supplied_path = searchParams.get('file');
+if (supplied_path){
+        var filename = supplied_path.replace(/^.*[\\\/]/, '');
+        $("span#filename").text(filename);
+        show_file(supplied_path);
+}
+
 var file_tree = $('#filetree')
-	// listen for event
-	.on('changed.jstree', function(e, data) {
-		var i, j, r = [];
-		console.log('[DEBUG] The selected node is: ' + data.instance.get_node(data.selected[0]).text);
-		for(i = 0, j = data.selected.length; i < j; i++) {
-			curr_selected = data.instance.get_node(data.selected[i]);
-			if($(curr_selected)[0].li_attr.class == "file") {
-				$("span#filename").text(curr_selected.text);
-				ShowFile($(curr_selected)[0].id);
-			}
-		}
-	}).on('ready.jstree', function(e, data) {
-		hide_loading();
-	}).on('search.jstree', function(e, data) {
-		hide_loading();
-	})
-	// create the instance
-	.jstree();
+    // listen for event
+    .on('changed.jstree', function(e, data) {
+        var i, j, r = [];
+        console.log('[DEBUG] The selected node is: ' + data.instance.get_node(data.selected[0]).text);
+        for(i = 0, j = data.selected.length; i < j; i++) {
+            curr_selected = data.instance.get_node(data.selected[i]);
+            if($(curr_selected)[0].li_attr.class == "file") {
+                $("span#filename").text(curr_selected.text);
+                show_file($(curr_selected)[0].id);
+            }
+        }
+    }).on('ready.jstree', function(e, data) {
+        hide_loading();
+    }).on('search.jstree', function(e, data) {
+        hide_loading();
+    })
+    // create the instance
+    .jstree();
 
 function open_parents(parents_ids) {
 	// In some situations, the open_node(node_obj.parent) does not work properly
@@ -187,25 +197,6 @@ $('#filename_search').keyup(function() {
 	}, 1000);
 });
 
-function getUrlParameter(sParam) {
-	var sPageURL = window.location.search.substring(1),
-		sURLVariables = sPageURL.split('&'),
-		sParameterName,
-		i;
-	for(i = 0; i < sURLVariables.length; i++) {
-		sParameterName = sURLVariables[i].split('=');
-		if(sParameterName[0] === sParam) {
-			return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
-		}
-	}
-};
-var file = getUrlParameter("file");
-if(file) {
-	search_id_too = true;
-	file_tree.jstree(true).search(file);
-	ShowFile(file);
-	$("span#filename").text(file);
-}
 // Content search
 var to_content = false;
 $('#content_search').keyup(function() {
@@ -268,37 +259,37 @@ const get_lines = function() {
 	return 0;
 }
 
-function ShowFile(strPath) {
-	$.ajax({
-		type: "POST",
-		url: "{% url "api_view_source" %}",
-		dataType: 'json',
-		headers: {
-			"Authorization": "{{ api_key }}"
-		},
-		data: {
-			type: "{{ source_type }}",
-			hash: "{{ hash }}",
-			file: strPath
-		},
-		success: function(strFileData) {
-			var code_block = $("pre#fileoutput")
-			code_block.text(strFileData.dat);
-			code_blk = document.getElementById('fileoutput');
-			if(code_blk) {
-				EnlighterJS.enlight(code_blk, false);
-				EnlighterJS.enlight(code_blk, {
-					theme: 'enlighter',
-					linehover: false,
-					textOverflow: 'scroll',
-					highlight: get_lines(),
-					language: 'java',
-				});
-			}
-			// Jump back to top.
-			window.location.hash = "content";
-		}
-	});
+function show_file(strPath) {
+    $.ajax({
+        type: "POST",
+        url: "{% url "api_view_source" %}",
+        dataType: 'json',
+        headers: {
+            "Authorization": "{{ api_key }}"
+        },
+        data: {
+            type: "{{ source_type }}",
+            hash: "{{ hash }}",
+            file: strPath
+        },
+        success: function(strFileData) {
+            var code_block = $("pre#fileoutput")
+            code_block.text(strFileData.dat);
+            code_blk = document.getElementById('fileoutput');
+            if(code_blk) {
+                EnlighterJS.enlight(code_blk, false);
+                EnlighterJS.enlight(code_blk, {
+                    theme: 'enlighter',
+                    linehover: false,
+                    textOverflow: 'scroll',
+                    highlight: get_lines(),
+                    language: 'java',
+                });
+            }
+            // Jump back to top.
+            window.location.hash = "content";
+        }
+    });
 }
 
 function reset_tree() {
