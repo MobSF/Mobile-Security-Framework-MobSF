@@ -54,7 +54,8 @@ def run(request):
         elif typ == 'studio':
             src = os.path.join(settings.UPLD_DIR, md5
                                + '/app/src/main/java/')
-        elif typ == 'java':
+        elif typ in ['java', 'apk']:
+            typ = 'java'
             src = os.path.join(settings.UPLD_DIR, md5 + '/java_source/')
         elif typ == 'smali':
             src = os.path.join(settings.UPLD_DIR, md5 + '/smali_source/')
