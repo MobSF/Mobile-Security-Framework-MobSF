@@ -228,6 +228,10 @@ else:
     #          MOBSF USER CONFIGURATIONS
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+    # REST API only mode
+    # Set MOBSF_API_ONLY to 1 to enable REST API only mode
+    # In this mode, web UI related urls are disabled.
+    API_ONLY = os.getenv('MOBSF_API_ONLY', '0')
     # -------------------------
     # STATIC ANALYZER SETTINGS
     # -------------------------

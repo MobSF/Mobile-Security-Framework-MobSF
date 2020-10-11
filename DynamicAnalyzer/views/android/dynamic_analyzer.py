@@ -34,8 +34,19 @@ logger = logging.getLogger(__name__)
 def dynamic_analysis(request, api=False):
     """Android Dynamic Analysis Entry point."""
     try:
+        scan_apps = []
         apks = StaticAnalyzerAndroid.objects.filter(
             APP_TYPE='apk').order_by('-id')
+        for apk in apks:
+            temp_dict = {
+                'ICON_FOUND': apk.ICON_FOUND,
+                'MD5': apk.MD5,
+                'APP_NAME': apk.APP_NAME,
+                'VERSION_NAME': apk.VERSION_NAME,
+                'FILE_NAME': apk.FILE_NAME,
+                'PACKAGE_NAME': apk.PACKAGE_NAME,
+            }
+            scan_apps.append(temp_dict)
         try:
             identifier = get_device()
         except Exception:
@@ -46,7 +57,7 @@ def dynamic_analysis(request, api=False):
                    ' set ANALYZER_IDENTIFIER in MobSF/settings.py')
             return print_n_send_error_response(request, msg, api)
         proxy_ip = get_proxy_ip(identifier)
-        context = {'apks': apks,
+        context = {'apps': scan_apps,
                    'identifier': identifier,
                    'proxy_ip': proxy_ip,
                    'proxy_port': settings.PROXY_PORT,
@@ -77,7 +88,8 @@ def dynamic_analyzer(request, api=False):
         if (is_attack_pattern(package)
                 or not is_md5(bin_hash)):
             return print_n_send_error_response(request,
-                                               'Invalid Parameters')
+                                               'Invalid Parameters',
+                                               api)
         try:
             identifier = get_device()
         except Exception:
@@ -88,11 +100,11 @@ def dynamic_analyzer(request, api=False):
                    'Please run an android instance and refresh'
                    ' this page. If this error persists,'
                    ' set ANALYZER_IDENTIFIER in MobSF/settings.py')
-            return print_n_send_error_response(request, msg)
+            return print_n_send_error_response(request, msg, api)
         env = Environment(identifier)
         if not env.connect_n_mount():
             msg = 'Cannot Connect to ' + identifier
-            return print_n_send_error_response(request, msg)
+            return print_n_send_error_response(request, msg, api)
         version = env.get_android_version()
         logger.info('Android Version identified as %s', version)
         xposed_first_run = False
@@ -103,7 +115,8 @@ def dynamic_analyzer(request, api=False):
             if not env.mobsfy_init():
                 return print_n_send_error_response(
                     request,
-                    'Failed to MobSFy the instance')
+                    'Failed to MobSFy the instance',
+                    api)
             if version < 5:
                 xposed_first_run = True
         if xposed_first_run:
@@ -113,7 +126,7 @@ def dynamic_analyzer(request, api=False):
                    ' Restart the device and enable'
                    ' all Xposed modules. And finally'
                    ' restart the device once again.')
-            return print_n_send_error_response(request, msg)
+            return print_n_send_error_response(request, msg, api)
         # Clean up previous analysis
         env.dz_cleanup(bin_hash)
         # Configure Web Proxy
@@ -136,21 +149,25 @@ def dynamic_analyzer(request, api=False):
                    'compatible the Android VM/Emulator?')
             return print_n_send_error_response(
                 request,
-                msg)
+                msg,
+                api)
         logger.info('Testing Environment is Ready!')
         context = {'screen_witdth': screen_width,
                    'screen_height': screen_height,
                    'package': package,
-                   'md5': bin_hash,
+                   'hash': bin_hash,
                    'android_version': version,
                    'version': settings.MOBSF_VER,
                    'title': 'Dynamic Analyzer'}
         template = 'dynamic_analysis/android/dynamic_analyzer.html'
+        if api:
+            return context
         return render(request, template, context)
     except Exception:
         logger.exception('Dynamic Analyzer')
         return print_n_send_error_response(request,
-                                           'Dynamic Analysis Failed.')
+                                           'Dynamic Analysis Failed.',
+                                           api)
 
 
 def httptools_start(request):
@@ -188,7 +205,10 @@ def logcat(request, api=False):
                     api)
             template = 'dynamic_analysis/android/logcat.html'
             return render(request, template, {'package': pkg})
-        app_pkg = request.GET.get('app_package')
+        if api:
+            app_pkg = request.POST['package']
+        else:
+            app_pkg = request.GET.get('app_package')
         if app_pkg:
             if not strict_package_check(app_pkg):
                 return print_n_send_error_response(

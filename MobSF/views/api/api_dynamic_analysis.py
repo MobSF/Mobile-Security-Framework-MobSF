@@ -40,17 +40,13 @@ def api_start_analysis(request):
     return make_api_response(resp, 200)
 
 
-@request_method(['GET'])
+@request_method(['POST'])
 @csrf_exempt
 def api_logcat(request):
-    """GET - Get Logcat HTTP Streaming API."""
-    if 'package' not in request.GET:
+    """POST - Get Logcat HTTP Streaming API."""
+    if 'package' not in request.POST:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
-    pkg = request.GET['package']
-    request.GET._mutable = True
-    request.GET['package'] = None
-    request.GET['app_package'] = pkg
     lcat = dynamic_analyzer.logcat(request, True)
     if isinstance(lcat, dict):
         if 'error' in lcat:

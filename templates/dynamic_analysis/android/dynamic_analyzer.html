@@ -75,7 +75,7 @@
                   <a href="#" id="actt" class="btn btn-primary" role="button" >Start Activity Tester</a>
                   <a href="#" id="ss" class="btn btn-primary" role="button">Take a Screenshot</a>
                   <a href="#" id="logstream" class="btn btn-primary">Logcat Stream</a>
-                  <a href="../live_api/?hash={{ md5 }}&amp;package={{ package }}" id="apimon" target="_blank" class="btn btn-primary" style='display: none'>Live API Monitor</a>
+                  <a href="../live_api/?hash={{ hash }}&amp;package={{ package }}" id="apimon" target="_blank" class="btn btn-primary" style='display: none'>Live API Monitor</a>
                   <a href="#" id="stop" class="btn btn-info" role="button" >Generate Report</a>
                 </div>
               </div>
@@ -454,7 +454,7 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
         );
     }
     function get_comp(comp){
-      action('../get_component/', { component: comp, hash: '{{ md5 }}'}, function(json) {
+      action('../get_component/', { component: comp, hash: '{{ hash }}'}, function(json) {
           if (json.status==="ok")
             output(json.message, true, true);
           else
@@ -638,7 +638,7 @@ $("#screen").click(function() {
 //Screenshot
 $("#ss").click(function() {
   print_status("Taking a screenshot");
-  action('../screenshot/', {hash: '{{ md5 }}'}, function(json) {
+  action('../screenshot/', {hash: '{{ hash }}'}, function(json) {
     if (json.status==="ok"){
         print_status("Screenshot taken!");
     } else {
@@ -673,7 +673,7 @@ $("#rootca").click(function() {
 }); 
  
 function activity_tester(test){
-  action('../activity_tester/', {hash: '{{ md5 }}', package: '{{ package }}', 'test': test}, function(json) {
+  action('../activity_tester/', {hash: '{{ hash }}', package: '{{ package }}', 'test': test}, function(json) {
     if (json.status === "ok")
       if (test === 'exported')
         print_status("Exported Activity testing completed.");
@@ -706,7 +706,7 @@ $("#logstream").click(function() {
 // Frida logs
 $("#fd_log").click(function() {
     print_status("Streaming Frida logs");
-    setTimeout(function(){ window.open('../frida_logs/?hash={{ md5 }}&package={{ package }}', '_blank');}, 100);   
+    setTimeout(function(){ window.open('../frida_logs/?hash={{ hash }}&package={{ package }}', '_blank');}, 100);   
     return false;  
 });
 
@@ -741,7 +741,7 @@ $("#frida_spawn").click(function() {
     });
 
     action('../frida_instrument/', {
-      hash: '{{ md5 }}',
+      hash: '{{ hash }}',
       package: '{{ package }}',
       default_hooks: default_hooks.join(","),
       auxiliary_hooks: auxiliary_hooks.join(","),
@@ -761,12 +761,12 @@ $("#frida_spawn").click(function() {
 
 //Dump App data
 function dump(){
-  action('../download_data/', { hash: '{{ md5 }}', package: '{{ package }}'}, function(json) {
+  action('../download_data/', { hash: '{{ hash }}', package: '{{ package }}'}, function(json) {
     if (json.status==="ok"){
       print_status("Application data dumped!");
       print_status("Generating Report...Please Wait!");
       //Call reporting
-      location.href="//"+location.host+"/dynamic_report/?hash={{ md5 }}&package={{ package }}";
+      location.href="//"+location.host+"/dynamic_report/?hash={{ hash }}&package={{ package }}";
     } else {
       print_status(json.message);
     }
@@ -780,7 +780,7 @@ $("#stop").one( "click", function() {
   var stext = $("#screen").text();
   if (stext === "Stop Screen")
     $("#screen").click();
-  action('../collect_logs/', { hash: '{{ md5 }}', package: '{{ package }}'}, function(json) {
+  action('../collect_logs/', { hash: '{{ hash }}', package: '{{ package }}'}, function(json) {
     if (json.status==="ok"){
       $('#stop').addClass("btn btn-success");
       $('#stop').text("Please Wait...");

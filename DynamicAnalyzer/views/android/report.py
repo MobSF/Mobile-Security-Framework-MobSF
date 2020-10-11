@@ -64,7 +64,7 @@ def view_report(request, api=False):
         analysis_result = run_analysis(app_dir, md5_hash, package)
         generate_download(app_dir, md5_hash, download_dir, package)
         images = get_screenshots(md5_hash, download_dir)
-        context = {'md5': md5_hash,
+        context = {'hash': md5_hash,
                    'emails': analysis_result['emails'],
                    'urls': analysis_result['urls'],
                    'domains': analysis_result['domains'],
@@ -73,11 +73,11 @@ def view_report(request, api=False):
                    'sqlite': analysis_result['sqlite'],
                    'others': analysis_result['other_files'],
                    'screenshots': images['screenshots'],
-                   'acttest': images['activities'],
-                   'expacttest': images['exported_activities'],
+                   'activity_tester': images['activities'],
+                   'exported_activity_tester': images['exported_activities'],
                    'droidmon': droidmon,
                    'apimon': apimon,
-                   'fdlog': is_file_exists(fd_log),
+                   'frida_logs': is_file_exists(fd_log),
                    'package': package,
                    'version': settings.MOBSF_VER,
                    'title': 'Dynamic Analysis'}
@@ -105,7 +105,7 @@ def view_file(request, api=False):
             typ = request.POST['type']
         else:
             fil = request.GET['file']
-            md5_hash = request.GET['md5']
+            md5_hash = request.GET['hash']
             typ = request.GET['type']
         if not is_md5(md5_hash):
             return print_n_send_error_response(request,
@@ -124,6 +124,7 @@ def view_file(request, api=False):
         if fil.endswith('.xml') and typ == 'xml':
             rtyp = 'xml'
         elif typ == 'db':
+            dat = None
             sql_dump = read_sqlite(sfile)
             rtyp = 'asciidoc'
         elif typ == 'others':
@@ -135,8 +136,8 @@ def view_file(request, api=False):
         context = {
             'title': fil,
             'file': fil,
-            'dat': dat,
-            'sql': sql_dump,
+            'data': dat,
+            'sqlite': sql_dump,
             'type': rtyp,
             'version': settings.MOBSF_VER,
         }

@@ -50,9 +50,9 @@ def run(request):
             context = {
                 'title': 'AndroidManifest.xml',
                 'file': 'AndroidManifest.xml',
-                'dat': manifest,
+                'data': manifest,
                 'type': 'xml',
-                'sql': {},
+                'sqlite': {},
                 'version': settings.MOBSF_VER,
             }
             template = 'general/view.html'

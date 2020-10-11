@@ -27,74 +27,10 @@ from StaticAnalyzer.views.android import static_analyzer as android_sa
 from StaticAnalyzer.views.ios import static_analyzer as ios_sa
 from StaticAnalyzer.views.ios import view_source as io_view_source
 
+from . import settings
+
+
 urlpatterns = [
-    # General
-    url(r'^$', home.index, name='home'),
-    url(r'^upload/$', home.Upload.as_view),
-    url(r'^download/', home.download),
-    url(r'^about$', home.about, name='about'),
-    url(r'^api_docs$', home.api_docs, name='api_docs'),
-    url(r'^recent_scans/$', home.recent_scans, name='recent'),
-    url(r'^delete_scan/$', home.delete_scan),
-    url(r'^search$', home.search),
-    url(r'^error/$', home.error, name='error'),
-    url(r'^not_found/$', home.not_found),
-    url(r'^zip_format/$', home.zip_format),
-    url(r'^mac_only/$', home.mac_only),
-
-    # Static Analysis
-    # Android
-    url(r'^StaticAnalyzer/$', android_sa.static_analyzer),
-    url(r'^ViewSource/$', view_source.run),
-    url(r'^Smali/$', smali.run),
-    url(r'^Java/$', java.run),
-    url(r'^Find/$', find.run),
-    url(r'^generate_downloads/$', generate_downloads.run),
-    url(r'^ManifestView/$', manifest_view.run),
-    # IOS
-    url(r'^StaticAnalyzer_iOS/$', ios_sa.static_analyzer_ios),
-    url(r'^ViewFile/$', io_view_source.run),
-    # Windows
-    url(r'^StaticAnalyzer_Windows/$', windows.staticanalyzer_windows),
-    # Shared
-    url(r'^PDF/$', shared_func.pdf),
-    # App Compare
-    url(r'^compare/(?P<hash1>[0-9a-f]{32})/(?P<hash2>[0-9a-f]{32})/$',
-        shared_func.compare_apps),
-
-    # Dynamic Analysis
-    url(r'^dynamic_analysis/$',
-        dz.dynamic_analysis,
-        name='dynamic'),
-    url(r'^android_dynamic/$',
-        dz.dynamic_analyzer,
-        name='dynamic_analyzer'),
-    url(r'^httptools$',
-        dz.httptools_start,
-        name='httptools'),
-    url(r'^logcat/$', dz.logcat),
-    # Android Operations
-    url(r'^mobsfy/$', operations.mobsfy),
-    url(r'^screenshot/$', operations.take_screenshot),
-    url(r'^execute_adb/$', operations.execute_adb),
-    url(r'^screen_cast/$', operations.screen_cast),
-    url(r'^touch_events/$', operations.touch),
-    url(r'^get_component/$', operations.get_component),
-    url(r'^mobsf_ca/$', operations.mobsf_ca),
-    # Dynamic Tests
-    url(r'^activity_tester/$', tests_common.activity_tester),
-    url(r'^download_data/$', tests_common.download_data),
-    url(r'^collect_logs/$', tests_common.collect_logs),
-    # Frida
-    url(r'^frida_instrument/$', tests_frida.instrument),
-    url(r'^live_api/$', tests_frida.live_api),
-    url(r'^frida_logs/$', tests_frida.frida_logs),
-    url(r'^list_frida_scripts/$', tests_frida.list_frida_scripts),
-    url(r'^get_script/$', tests_frida.get_script),
-    # Report
-    url(r'^dynamic_report/$', report.view_report),
-    url(r'^dynamic_view_file/$', report.view_file),
-
     # REST API
     # Static Analysis
     url(r'^api/v1/upload$', api_sz.api_upload),
@@ -123,10 +59,77 @@ urlpatterns = [
     url(r'^api/v1/frida/logs$', api_dz.api_frida_logs),
     url(r'^api/v1/frida/list_scripts$', api_dz.api_list_frida_scripts),
     url(r'^api/v1/frida/get_script$', api_dz.api_get_script),
-
-    # Test
-    url(r'^tests/$', tests.start_test),
-
 ]
+if settings.API_ONLY == '0':
+    urlpatterns.extend([
+        # General
+        url(r'^$', home.index, name='home'),
+        url(r'^upload/$', home.Upload.as_view),
+        url(r'^download/', home.download),
+        url(r'^about$', home.about, name='about'),
+        url(r'^api_docs$', home.api_docs, name='api_docs'),
+        url(r'^recent_scans/$', home.recent_scans, name='recent'),
+        url(r'^delete_scan/$', home.delete_scan),
+        url(r'^search$', home.search),
+        url(r'^error/$', home.error, name='error'),
+        url(r'^not_found/$', home.not_found),
+        url(r'^zip_format/$', home.zip_format),
+        url(r'^mac_only/$', home.mac_only),
+
+        # Static Analysis
+        # Android
+        url(r'^StaticAnalyzer/$', android_sa.static_analyzer),
+        url(r'^ViewSource/$', view_source.run),
+        url(r'^Smali/$', smali.run),
+        url(r'^Java/$', java.run),
+        url(r'^Find/$', find.run),
+        url(r'^generate_downloads/$', generate_downloads.run),
+        url(r'^ManifestView/$', manifest_view.run),
+        # IOS
+        url(r'^StaticAnalyzer_iOS/$', ios_sa.static_analyzer_ios),
+        url(r'^ViewFile/$', io_view_source.run),
+        # Windows
+        url(r'^StaticAnalyzer_Windows/$', windows.staticanalyzer_windows),
+        # Shared
+        url(r'^PDF/$', shared_func.pdf),
+        # App Compare
+        url(r'^compare/(?P<hash1>[0-9a-f]{32})/(?P<hash2>[0-9a-f]{32})/$',
+            shared_func.compare_apps),
+
+        # Dynamic Analysis
+        url(r'^dynamic_analysis/$',
+            dz.dynamic_analysis,
+            name='dynamic'),
+        url(r'^android_dynamic/$',
+            dz.dynamic_analyzer,
+            name='dynamic_analyzer'),
+        url(r'^httptools$',
+            dz.httptools_start,
+            name='httptools'),
+        url(r'^logcat/$', dz.logcat),
+        # Android Operations
+        url(r'^mobsfy/$', operations.mobsfy),
+        url(r'^screenshot/$', operations.take_screenshot),
+        url(r'^execute_adb/$', operations.execute_adb),
+        url(r'^screen_cast/$', operations.screen_cast),
+        url(r'^touch_events/$', operations.touch),
+        url(r'^get_component/$', operations.get_component),
+        url(r'^mobsf_ca/$', operations.mobsf_ca),
+        # Dynamic Tests
+        url(r'^activity_tester/$', tests_common.activity_tester),
+        url(r'^download_data/$', tests_common.download_data),
+        url(r'^collect_logs/$', tests_common.collect_logs),
+        # Frida
+        url(r'^frida_instrument/$', tests_frida.instrument),
+        url(r'^live_api/$', tests_frida.live_api),
+        url(r'^frida_logs/$', tests_frida.frida_logs),
+        url(r'^list_frida_scripts/$', tests_frida.list_frida_scripts),
+        url(r'^get_script/$', tests_frida.get_script),
+        # Report
+        url(r'^dynamic_report/$', report.view_report),
+        url(r'^dynamic_view_file/$', report.view_file),
+        # Test
+        url(r'^tests/$', tests.start_test),
+    ])
 
 utils.print_version()
