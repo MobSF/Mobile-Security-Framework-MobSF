@@ -48,11 +48,13 @@ def run(request, api=False):
             try:
                 src, syntax, _ = find_java_source_folder(base)
             except StopIteration:
-                return print_n_send_error_response(request, 'Invalid Directory Structure', api)
+                msg = 'Invalid Directory Structure'
+                return print_n_send_error_response(request, msg, api)
 
         sfile = src / fil
         if not is_safe_path(src, sfile.as_posix()):
-            return print_n_send_error_response(request, 'Path Traversal Detected!', api)
+            msg = 'Path Traversal Detected!'
+            return print_n_send_error_response(request, msg, api)
         context = {
             'title': escape(ntpath.basename(fil)),
             'file': escape(ntpath.basename(fil)),

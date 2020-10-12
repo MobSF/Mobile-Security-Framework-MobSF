@@ -11,6 +11,7 @@ from django.http import JsonResponse
 from django.utils.html import escape
 
 from MobSF.utils import print_n_send_error_response
+
 from StaticAnalyzer.views.shared_func import find_java_source_folder
 
 logger = logging.getLogger(__name__)
@@ -33,24 +34,27 @@ def run(request):
         base = Path(settings.UPLD_DIR) / md5
         if code == 'smali':
             src = base / 'smali_source'
-            ext = '*.smali'
         else:
             try:
-                src, _, ext = find_java_source_folder(base)
+                src = find_java_source_folder(base)[0]
             except StopIteration:
-                return print_n_send_error_response(request, 'Invalid Directory Structure', True)
+                msg = 'Invalid Directory Structure'
+                return print_n_send_error_response(request, msg, True)
 
-        # Sometimes there are Kotlin files within src/main/java, so finding them both
-        exts = [".java", ".kt"]
+        # Sometimes there are Kotlin files within src/main/java
+        # So finding should be in them both
+        exts = ['.java', '.kt']
         files = [p for p in src.rglob('*') if p.suffix in exts]
         for fname in files:
             file_path = fname.as_posix()
-            rpath = file_path.replace(src.as_posix() + '/', '').replace('/', '\\')
+            rpath = file_path.replace(src.as_posix() + '/', '')
+            rpath = rpath.replace('/', '\\')
             if search_type == 'content':
                 dat = fname.read_text('utf-8', 'ignore')
                 if query in dat:
                     matches.add(escape(rpath))
-            elif search_type == 'filename' and query.lower() in fname.name.lower():
+            elif search_type == 'filename' and \
+                    query.lower() in fname.name.lower():
                 matches.add(escape(rpath))
 
         flz = len(matches)

@@ -16,6 +16,7 @@ from MobSF.utils import (
     api_key,
     print_n_send_error_response,
 )
+
 from StaticAnalyzer.views.shared_func import find_java_source_folder
 
 logger = logging.getLogger(__name__)

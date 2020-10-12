@@ -376,10 +376,14 @@ def firebase_analysis(urls):
 
 
 def find_java_source_folder(base_folder: Path):
-    # Find the correct java/kotlin source folder for APK/source zip within the analysis folder
+    # Find the correct java/kotlin source folder for APK/source zip
     # Returns a Tuple of - (SRC_PATH, SRC_TYPE, SRC_SYNTAX)
-    return next(p for p in [(base_folder / 'java_source', 'java', '*.java'),
-                            (base_folder / 'app' / 'src' / 'main' / 'java', 'java', '*.java'),
-                            (base_folder / 'app' / 'src' / 'main' / 'kotlin', 'kotlin', '*.kt'),
-                            (base_folder / 'src' 'java', '*.java')]
+    return next(p for p in [(base_folder / 'java_source',
+                             'java', '*.java'),
+                            (base_folder / 'app' / 'src' / 'main' / 'java',
+                             'java', '*.java'),
+                            (base_folder / 'app' / 'src' / 'main' / 'kotlin',
+                             'kotlin', '*.kt'),
+                            (base_folder / 'src',
+                             'java', '*.java')]
                 if p[0].exists())
