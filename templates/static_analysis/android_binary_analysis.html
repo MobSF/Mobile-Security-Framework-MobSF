@@ -330,7 +330,7 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-lg-12">
-        
+
           <div class="card">
             <div class="card-body">
               <h5 class="card-title"></h5>
@@ -388,7 +388,7 @@
                   {{ version_name }}
                 <span class="badge bg-primary">Android Version Code</span>
                 {{ version_code }}
-                </div>    
+                </div>
               </div>
 
             </div>
@@ -432,7 +432,7 @@
                       {{ playstore_details.released }}
                   <span class="badge bg-info">Privacy Policy</span>
                   <a target="_blank" href="{{ playstore_details.privacyPolicy }}" rel="noopener noreferrer">Privacy link</a>
-                  <br/>                                     
+                  <br/>
                       <span class="badge bg-info">Description</span>
                       <pre id="pre-wrap">{{ playstore_details.description }}</pre>
             </div>
@@ -754,7 +754,7 @@
                     </td>
                     <td>
                      {% for file_path, lines in details.files.items %}
-                    <a href="{% url "source_view" %}?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines }}"> {{ file_path }}</a>
+                    <a href="{% url "source_view" %}?file={{ file_path }}&amp;md5={{ md5 }}&amp;type=java&amp;lines={{ lines }}"> {{ file_path }}</a>
                     <br/>
                     {% endfor %}
                     </td>
@@ -1020,7 +1020,7 @@
                   </td>
                   <td>
                   {% for file_path, lines in details.files.items %}
-                   <a href="{% url "source_view" %}?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines}}"> {{ file_path }}</a>
+                   <a href="{% url "source_view" %}?file={{ file_path }}&amp;md5={{ md5 }}&amp;type=java&amp;lines={{ lines}}"> {{ file_path }}</a>
                   <br/>
                   {% endfor %}
                   </td>
@@ -1438,7 +1438,7 @@
                         </td>
 
                        <td>
-                          <a href="{% url "source_view" %}?file={{urldict|key:"path"}}&amp;md5={{ md5}}&amp;type={{app_type}}">{{urldict|key:"path"}}</a>
+                          <a href="{% url "source_view" %}?file={{urldict|key:"path"}}&amp;md5={{ md5}}&amp;type=java">{{urldict|key:"path"}}</a>
                        </td>
                     </tr>
                   {% endfor %} 
@@ -1529,7 +1529,7 @@
                        {% endfor %}
                         </td>
                        <td>
-                          <a href="{% url "source_view" %}?file={{email_dict|key:"path"}}&amp;md5={{ md5}}&amp;type={{app_type}}">{{email_dict|key:"path"}}</a>
+                          <a href="{% url "source_view" %}?file={{email_dict|key:"path"}}&amp;md5={{ md5}}&amp;type=java">{{email_dict|key:"path"}}</a>
                        </td>
                     </tr>
                   {% endfor %} 

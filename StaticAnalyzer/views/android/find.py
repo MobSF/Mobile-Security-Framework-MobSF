@@ -1,18 +1,17 @@
 # -*- coding: utf_8 -*-
 """Find in java or smali files."""
 
-import io
 import logging
-import os
 import re
-import shutil
 import json
+from pathlib import Path
 
 from django.conf import settings
 from django.http import JsonResponse
 from django.utils.html import escape
 
 from MobSF.utils import print_n_send_error_response
+from StaticAnalyzer.views.shared_func import find_java_source_folder
 
 logger = logging.getLogger(__name__)
 
@@ -30,49 +29,34 @@ def run(request):
         if search_type not in ['content', 'filename']:
             return print_n_send_error_response(request,
                                                'Unknown search type')
-        matches = []
-        if code == 'java':
-            src = os.path.join(settings.UPLD_DIR, md5 + '/java_source/')
-            ext = '.java'
-        elif code == 'smali':
-            src = os.path.join(settings.UPLD_DIR, md5 + '/smali_source/')
-            ext = '.smali'
+        matches = set()
+        base = Path(settings.UPLD_DIR) / md5
+        if code == 'smali':
+            src = base / 'smali_source'
+            ext = '*.smali'
         else:
-            err = 'Only Java/Smali files are allowed'
-            return print_n_send_error_response(request,
-                                               err)
-        # pylint: disable=unused-variable
-        # Needed by os.walk
-        for dir_name, _sub_dir, files in os.walk(src):
-            for jfile in files:
-                if jfile.endswith(ext):
-                    filename = jfile
-                    file_path = os.path.join(src, dir_name, jfile)
-                    if '+' in jfile:
-                        filename = jfile.replace('+', 'x')
-                        fp2 = os.path.join(
-                            src, dir_name, filename)
-                        shutil.move(file_path, fp2)
-                        file_path = fp2
-                    fileparam = escape(file_path.replace(src, ''))
-                    if search_type == 'content':
-                        with io.open(
-                            file_path,
-                            mode='r',
-                            encoding='utf8',
-                            errors='ignore',
-                        ) as file_pointer:
-                            dat = file_pointer.read()
-                        if query in dat:
-                            matches.append(fileparam)
-                    elif (search_type == 'filename'
-                            and query in filename):
-                        matches.append(fileparam)
+            try:
+                src, _, ext = find_java_source_folder(base)
+            except StopIteration:
+                return print_n_send_error_response(request, 'Invalid Directory Structure', True)
+
+        # Sometimes there are Kotlin files within src/main/java, so finding them both
+        exts = [".java", ".kt"]
+        files = [p for p in src.rglob('*') if p.suffix in exts]
+        for fname in files:
+            file_path = fname.as_posix()
+            rpath = file_path.replace(src.as_posix() + '/', '').replace('/', '\\')
+            if search_type == 'content':
+                dat = fname.read_text('utf-8', 'ignore')
+                if query in dat:
+                    matches.add(escape(rpath))
+            elif search_type == 'filename' and query.lower() in fname.name.lower():
+                matches.add(escape(rpath))
 
         flz = len(matches)
         context = {
             'title': 'Search Results',
-            'matches': matches,
+            'matches': list(matches),
             'term': query,
             'found': str(flz),
             'search_type': search_type,

@@ -4,6 +4,7 @@
 import logging
 import os
 import re
+from pathlib import Path
 
 from django.conf import settings
 from django.shortcuts import (
@@ -15,13 +16,14 @@ from MobSF.utils import (
     api_key,
     print_n_send_error_response,
 )
+from StaticAnalyzer.views.shared_func import find_java_source_folder
 
 logger = logging.getLogger(__name__)
 
 
 # Generator that uses 2 template files in order to make the main template
-def tree_index_maker(root_dir):
-    def _index(root):
+def tree_index_maker(root_dir, original_root_dir_len):
+    def _index(root, root_len):
         files = os.listdir(root)
         for mfile in files:
             t = os.path.join(root, mfile)
@@ -29,15 +31,15 @@ def tree_index_maker(root_dir):
                 yield loader.render_to_string(
                     'static_analysis/treeview_folder.html',
                     {'file': mfile,
-                     'subfiles': _index(os.path.join(root, t))},
+                     'subfiles': _index(os.path.join(root, t), root_len)},
                 )
                 continue
             yield loader.render_to_string(
                 'static_analysis/treeview_file.html',
                 {'file': mfile,
-                 'path': t[t.find('_source') + 8: -len(mfile)]},
+                 'path': t[root_len + 1: -len(mfile)]},
             )
-    return _index(root_dir)
+    return _index(root_dir, original_root_dir_len)
 
 
 def run(request):
@@ -49,22 +51,20 @@ def run(request):
         if not match:
             return print_n_send_error_response(request, 'Scan hash not found')
         md5 = request.GET['md5']
-        if typ == 'eclipse':
-            src = os.path.join(settings.UPLD_DIR, md5 + '/src/')
-        elif typ == 'studio':
-            src = os.path.join(settings.UPLD_DIR, md5
-                               + '/app/src/main/java/')
-        elif typ in ['java', 'apk']:
-            typ = 'java'
-            src = os.path.join(settings.UPLD_DIR, md5 + '/java_source/')
-        elif typ == 'smali':
-            src = os.path.join(settings.UPLD_DIR, md5 + '/smali_source/')
-        else:
-            return print_n_send_error_response(
-                request,
-                'Invalid Directory Structure')
 
-        tree_index = tree_index_maker(src)
+        base = Path(settings.UPLD_DIR) / md5
+        if typ == 'smali':
+            src = base / '/smali_source/'
+        else:
+            try:
+                src = find_java_source_folder(base)[0]
+            except StopIteration:
+                return print_n_send_error_response(
+                    request,
+                    'Invalid Directory Structure')
+
+        src = src.as_posix()
+        tree_index = tree_index_maker(src, len(src))
         context = {
             'subfiles': tree_index,
             'title': '{} Source'.format(typ.capitalize()),
