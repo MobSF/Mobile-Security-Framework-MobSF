@@ -97,7 +97,7 @@ def mobsfy(request, api=False):
             data = {'status': 'failed', 'message': msg}
             return send_response(data, api)
         else:
-            data = {'status': 'ok', 'version': version}
+            data = {'status': 'ok', 'android_version': version}
     except Exception as exp:
         logger.exception('MobSFying Android instance failed')
         data = {'status': 'failed', 'message': str(exp)}

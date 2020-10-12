@@ -25,7 +25,7 @@
             </p>
 
             <!--API Docs -->
-
+            <h1>Static Analysis</h1>
             <ol>
               <li><code>api/v1/upload</code> - <a href="#upload-file-api">Upload a File</a></li>
               <li><code>api/v1/scan</code> - <a href="#scan-file-api">Scan a File</a></li>
@@ -36,6 +36,28 @@
               <li><code>api/v1/view_source</code> - <a href="#view-source-api">View Source Files</a></li>
               <li><code>api/v1/compare</code> - <a href="#compare-api">Compare Apps</a></li>
             </ol>
+
+            <h1>Dynamic Analysis</h1>
+            <ol>
+            
+              <li><code>api/v1/dynamic/get_apps</code> - <a href="#get-apps-api">Get Apps for Dynamic Analysis</a></li>
+              <li><code>api/v1/dynamic/start_analysis</code> - <a href="#start-analysis-api">Start Dynamic Analysis</a></li>
+              <li><code>api/v1/android/logcat</code> - <a href="#logcat-api">View Logcat</a></li>
+              <li><code>api/v1/android/mobsfy</code> - <a href="#mobsfy-api">MobSFy VM/Emulator/Device</a></li>
+              <li><code>api/v1/android/adb_command</code> - <a href="#adb-command-api">Execute ADB Commands</a></li>
+              <li><code>api/v1/android/root_ca</code> - <a href="#root-ca-api">Install or Remove MobSF Root CA</a></li>
+              <li><code>api/v1/android/activity</code> - <a href="#activity-api">Activity or Exported Activity Tester</a></li>
+              <li><code>api/v1/frida/instrument</code> - <a href="#frida-instrument-api">Frida Instrument App</a></li>
+              <li><code>api/v1/frida/api_monitor</code> - <a href="#frida-api-monitor-api">Frida API Monitor</a></li>
+              <li><code>api/v1/frida/logs</code> - <a href="#frida-logs-api">Frida View Logs</a></li>
+              <li><code>api/v1/frida/list_scripts</code> - <a href="#frida-list-scripts-api">Frida List Scripts</a></li>
+              <li><code>api/v1/frida/get_script</code> - <a href="#frida-get-script-api">Frida Get Script</a></li>
+              <li><code>api/v1/dynamic/stop_analysis</code> - <a href="#stop-analysis-api">Stop Dynamic Analysis</a></li>
+              <li><code>api/v1/dynamic/report_json</code> - <a href="#dynamic-report-json-api">Dynamic Analysis JSON report</a></li>
+              <li><code>api/v1/dynamic/view_source</code> - <a href="#dynamic-view-source-api">Dynamic Analysis View Source</a></li>
+
+            </ol>
+
             <h2><a id="upload-file-api"></a><strong>Upload File API</strong></h2>
             <p>API to upload a file. Supported file types are apk, zip, ipa and appx.</p>
             <ul>
@@ -730,19 +752,1233 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/compare --data "hash1=82ab8b2193b3cfb1c737e3a786be363a&hash2=f56c96f2b1f0a7c46eb6fef3a035f3dd" -H "Authorization:{{ api_key}}""
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/compare --data "hash1=82ab8b2193b3cfb1c737e3a786be363a&hash2=f56c96f2b1f0a7c46eb6fef3a035f3dd" -H "Authorization:{{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>
                 <p>OR</p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/compare --data "hash1=82ab8b2193b3cfb1c737e3a786be363a&hash2=f56c96f2b1f0a7c46eb6fef3a035f3dd" -H "X-Mobsf-Api-Key:{{ api_key}}""
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/compare --data "hash1=82ab8b2193b3cfb1c737e3a786be363a&hash2=f56c96f2b1f0a7c46eb6fef3a035f3dd" -H "X-Mobsf-Api-Key:{{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
+
+           <hr />
+            <h2><a id="get-apps-api"></a><strong>Get Apps API</strong></h2>
+            <p>Get Apps available for Dynamic Analysis. You must perform static analysis before attempting dynamic analysis.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/dynamic/get_apps</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>GET</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{
+  "apks": [
+    {
+      "ICON_FOUND": true,
+      "MD5": "3a552566097a8de588b8184b059b0158",
+      "APP_NAME": "HelloWorld",
+      "VERSION_NAME": "1.0",
+      "FILE_NAME": "android.apk",
+      "PACKAGE_NAME": "opensecurity.helloworld"
+    },
+    {
+      "ICON_FOUND": true,
+      "MD5": "6825bb9fde2fc671322df005976755a1",
+      "APP_NAME": "Wikipedia",
+      "VERSION_NAME": "2.7.277-r-2019-12-11",
+      "FILE_NAME": "org.wikipedia_2.7.277-r-2019-12-11-30277_minAPI19(x86)(nodpi)_apkmirror.com.apk",
+      "PACKAGE_NAME": "org.wikipedia"
+    },
+  ],
+  "identifier": "192.168.56.139:5555",
+  "proxy_ip": "192.168.56.1",
+  "proxy_port": 1337,
+  "title": "MobSF Dynamic Analysis",
+  "version": "v3.1.8 Beta"
+}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl --url http://localhost:8000/api/v1/dynamic/get_apps -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="start-analysis-api"></a><strong>Start Dynamic Analysis API</strong></h2>
+            <p>Start MobSF Dynamic Analyzer. Ensure that dynamic analysis environment (Android VM/Emulator/Device) is configured and running before calling this API.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/dynamic/start_analysis</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>package</td>
+                  <td>package name of the app</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>hash</td>
+                  <td>hash of the scan</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{
+  "screen_witdth": "1440",
+  "screen_height": "2960",
+  "package": "opensecurity.helloworld",
+  "hash": "3a552566097a8de588b8184b059b0158",
+  "android_version": 8,
+  "version": "v3.1.8 Beta",
+  "title": "Dynamic Analyzer"
+}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/start_analysis --data "package=opensecurity.helloworld&amp;hash=3a552566097a8de588b8184b059b0158" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="logcat-api"></a><strong>View Logcat API</strong></h2>
+            <p>API view Logcat logs.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/android/logcat</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>package</td>
+                  <td>package name of the app</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>text/event-stream</code> <br />
+                    <strong>Content:</strong> <code>Logcat Stream Data</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/logcat --data "package=org.wikipedia" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+             <hr />
+            <h2><a id="mobsfy-api"></a><strong>MobSFy API</strong></h2>
+            <p>API to MobSFY android runtime environment.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/android/mobsfy</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>identifier</td>
+                  <td>ADB identifier of Android VM/Emulator/Device</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{
+  "status": "ok",
+  "android_version": 8
+}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/mobsfy --data "identifier=192.168.56.139:5555" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+<hr />
+            <h2><a id="adb-command-api"></a><strong>Execute ADB Commands API</strong></h2>
+            <p>Execute ADB commands inside VM/Emulator/Device.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/android/adb_command</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>cmd</td>
+                  <td>non blocking adb commands</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{
+  "status": "ok",
+  "message": "acct\nbugreports\ncache\ncharger\nconfig\nd\ndata\ndefault.prop\ndev\netc\nfstab.vbox86\ninit\ninit.environ.rc\ninit.rc\ninit.usb.configfs.rc\ninit.usb.rc\ninit.vbox86.rc\ninit.zygote32.rc\nmnt\nnonplat_file_contexts\nnonplat_hwservice_contexts\nnonplat_property_contexts\nnonplat_seapp_contexts\nnonplat_service_contexts\noem\nplat_file_contexts\nplat_hwservice_contexts\nplat_property_contexts\nplat_seapp_contexts\nplat_service_contexts\nproc\nrom.trace\nroot\nsbin\nsdcard\nsepolicy\nstorage\nsys\nsystem\ntmp\nueventd.rc\nueventd.vbox86.rc\nvar\nvendor\nvndservice_contexts\n"
+}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/adb_command --data "cmd=shell ls" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+       <hr />
+            <h2><a id="root-ca-api"></a><strong>Install or Remove Root CA API</strong></h2>
+            <p>API to install or remove MobSF Root CA to or from the Android VM/Emulator/Device.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/android/root_ca</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>action</td>
+                  <td>install/remove</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{
+  "status": "ok",
+  "message": "installed"
+}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/root_ca --data "action=install" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+ <hr />
+            <h2><a id="activity-api"></a><strong>Activity or Exported Activity Tester API</strong></h2>
+            <p>API to run Activity or Exported Activity Tester.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/android/activity</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>package</td>
+                  <td>package name of the app</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>hash</td>
+                  <td>hash of the scan</td>
+                  <td>Yes</td>
+                </tr>
+              <tr>
+                  <td>test</td>
+                  <td>exported/activity</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{
+  "status": "ok"
+}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/activity --data "hash=6825bb9fde2fc671322df005976755a1&amp;package=org.wikipedia&amp;test=exported" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+       <hr />
+            <h2><a id="frida-instrument-api"></a><strong>Frida Instrument App API</strong></h2>
+            <p>API to start Frida Instrumentation.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/frida/instrument</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>package</td>
+                  <td>package name of the app</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>hash</td>
+                  <td>hash of the scan</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>default_hooks</td>
+                  <td>comma separated default hooks to load.</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>auxiliary_hooks</td>
+                  <td>comma separated auxiliary hooks to load.</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>frida_code</td>
+                  <td>user defined frida code to load.</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>class_name</td>
+                  <td>class name to perform method enumeration when `enum_methods` auxiliary_hook is specified.</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>class_search</td>
+                  <td>pattern to search when `search_class` auxiliary_hook is specified.</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>class_trace</td>
+                  <td>class name to trace when `trace_class` auxiliary_hook is specified.</td>
+                  <td>No</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{
+  "status": "ok"
+}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/instrument --data "hash=6825bb9fde2fc671322df005976755a1&amp;package=org.wikipedia&amp;default_hooks=api_monitor,ssl_pinning_bypass,root_bypass,debugger_check_bypass&amp;auxiliary_hooks=&amp;frida_code=" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/instrument --data "hash=6825bb9fde2fc671322df005976755a1&amp;package=org.wikipedia&amp;default_hooks=api_monitor,ssl_pinning_bypass,root_bypass,debugger_check_bypass&amp;auxiliary_hooks=enum_class,string_catch,string_compare,enum_methods,search_class,trace_class&amp;class_name=java.io.File&amp;class_search=ssl&amp;class_trace=javax.net.ssl.TrustManager&amp;frida_code=Java.perform(function()+%7B%0A++%2F%2F+Use+send()+for+logging%0A%7D)%3B" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+       <hr />
+            <h2><a id="frida-api-monitor-api"></a><strong>Frida API Monitor API</strong></h2>
+            <p>API to view Frida API monitor output.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/frida/api_monitor</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>hash</td>
+                  <td>hash of the scan</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>JSON Contents</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/api_monitor --data "hash=6825bb9fde2fc671322df005976755a1" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="frida-logs-api"></a><strong>Frida View Logs API</strong></h2>
+            <p>API to view Frida log output.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/frida/logs</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>hash</td>
+                  <td>hash of the scan</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>JSON Contents</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/logs --data "hash=6825bb9fde2fc671322df005976755a1" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="frida-list-scripts-api"></a><strong>Frida List Scripts API</strong></h2>
+            <p>API to list available frida scripts.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/frida/list_scripts</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>GET</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{
+  "status": "ok",
+  "files": [
+    "hook_java_reflection",
+    "jni_hook_by_address",
+    "bypass_flag_secure",
+    "file_trace",
+    "hook_constructor",
+    "jni_trace",
+    "default",
+    "get_android_id",
+    "aes_key",
+    "inputstream_dump",
+    "helper"
+  ]
+}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl --url http://localhost:8000/api/v1/frida/list_scripts -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+
+          <hr />
+            <h2><a id="frida-get-script-api"></a><strong>Frida Get Script API</strong></h2>
+            <p>API to generate frida script based on selection.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/frida/get_script</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>scripts[]</td>
+                  <td>name of the script from the output of Frida List Scripts (/api/v1/frida/list_scripts) API.</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>JSON Contents</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/get_script --data "scripts[]=hook_java_reflection&amp;scripts[]=jni_hook_by_address&amp;scripts[]=default&amp;scripts[]=get_android_id" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="stop-analysis-api"></a><strong>Stop Dynamic Analysis API</strong></h2>
+            <p>Stop MobSF Dynamic Analyzer. This API must be called to stop dynamic analysis and prior to report generation.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/dynamic/stop_analysis</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>package</td>
+                  <td>package name of the app</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>hash</td>
+                  <td>hash of the scan</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{
+  "status": "ok"
+}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/stop_analysis --data "package=org.wikipedia&amp;hash=6825bb9fde2fc671322df005976755a1" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="dynamic-report-json-api"></a><strong>Dynamic Analysis JSON Report API</strong></h2>
+            <p>Generate JSON Report of Dynamic Analysis. Stop Dynamic Analysis (/api/v1/dynamic/stop_analysis) API must be called before calling this API.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/dynamic/report_json</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>package</td>
+                  <td>package name of the app</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>hash</td>
+                  <td>hash of the scan</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>JSON Contents</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/report_json --data "package=org.wikipedia&amp;hash=6825bb9fde2fc671322df005976755a1" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+
+            <hr />
+            <h2><a id="dynamic-view-source-api"></a><strong>Dynamic Analysis View Source API</strong></h2>
+            <p>API to view source of files dumped from device after dynamic analysis. Stop Dynamic Analysis (/api/v1/dynamic/stop_analysis) API must be called before calling this API.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/dynamic/view_source</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>file</td>
+                  <td>relative path of the file</td>
+                  <td>Yes</td>
+                </tr>
+                 <tr>
+                  <td>type</td>
+                  <td>xml/db/others</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>hash</td>
+                  <td>hash of the scan</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>JSON Contents</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/view_source --data "file=data/data/org.wikipedia/shared_prefs/org.wikipedia_preferences.xml&amp;hash=6825bb9fde2fc671322df005976755a1&amp;type=xml" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+            
 
             <!-- end API Docs-->
           </div>

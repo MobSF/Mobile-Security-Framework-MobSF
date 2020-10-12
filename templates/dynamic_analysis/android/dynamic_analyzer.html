@@ -178,18 +178,18 @@
                               <input onclick="aux_click(this)" name="auxiliary" type="checkbox" value="enum_methods" id="enum_methods">
                               Enumerate Class methods
                             </label>
-                             <input type="text" class="form-control" id="cls_name" placeholder="java.io.File">
+                             <input type="text" class="form-control" id="class_name" placeholder="java.io.File">
 
                              <label>
                               <input onclick="aux_click(this)" name="auxiliary" type="checkbox" value="search_class" id="search_class">
                               Search Class Pattern
                             </label>
-                             <input type="text" class="form-control" id="cls_search" placeholder="ssl\.Trust*">
+                             <input type="text" class="form-control" id="class_search" placeholder="ssl\.Trust*">
                              <label>
                              <input onclick="aux_click(this)" name="auxiliary" type="checkbox"  value="trace_class" id="trace_class">
                               Trace Class Methods
                             </label>
-                             <input type="text" class="form-control" id="cls_trace" placeholder="java.net.Socket,java.io.File,java.lang.String">
+                             <input type="text" class="form-control" id="class_trace" placeholder="java.net.Socket,java.io.File,java.lang.String">
                         </div>
      
 
@@ -745,9 +745,9 @@ $("#frida_spawn").click(function() {
       package: '{{ package }}',
       default_hooks: default_hooks.join(","),
       auxiliary_hooks: auxiliary_hooks.join(","),
-      cls_name: $('#cls_name').val(),
-      cls_search:  $('#cls_search').val(),
-      cls_trace:  $('#cls_trace').val(),
+      class_name: $('#class_name').val(),
+      class_search:  $('#class_search').val(),
+      class_trace:  $('#class_trace').val(),
       frida_code: editor.getDoc().getValue(),
     }, function(json) {
     if (json.status === "ok")

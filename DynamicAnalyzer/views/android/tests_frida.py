@@ -86,15 +86,15 @@ def instrument(request, api=False):
         code = request.POST['frida_code']
         # Fill extras
         extras = {}
-        class_name = request.POST.get('cls_name')
+        class_name = request.POST.get('class_name')
         if class_name:
-            extras['cls_name'] = class_name.strip()
-        class_search = request.POST.get('cls_search')
+            extras['class_name'] = class_name.strip()
+        class_search = request.POST.get('class_search')
         if class_search:
-            extras['cls_search'] = class_search.strip()
-        cls_trace = request.POST.get('cls_trace')
+            extras['class_search'] = class_search.strip()
+        cls_trace = request.POST.get('class_trace')
         if cls_trace:
-            extras['cls_trace'] = cls_trace.strip()
+            extras['class_trace'] = cls_trace.strip()
         if (is_attack_pattern(default_hooks)
                 or not strict_package_check(package)
                 or not is_md5(md5_hash)):
