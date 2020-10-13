@@ -67,7 +67,7 @@ def run(request):
         tree_index = tree_index_maker(src, len(src))
         context = {
             'subfiles': tree_index,
-            'title': '{} Source'.format(typ.capitalize()),
+            'title': f'{typ.capitalize()} Source',
             'hash': md5,
             'source_type': typ,
             'version': settings.MOBSF_VER,
