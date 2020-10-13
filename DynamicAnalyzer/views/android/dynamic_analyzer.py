@@ -141,12 +141,12 @@ def dynamic_analyzer(request, api=False):
         screen_width, screen_height = env.get_screen_res()
         apk_path = Path(settings.UPLD_DIR) / bin_hash / f'{bin_hash}.apk'
         # Install APK
-        status = env.install_apk(apk_path.as_posix(), package)
+        status, output = env.install_apk(apk_path.as_posix(), package)
         if not status:
             # Unset Proxy
             env.unset_global_proxy()
-            msg = ('This APK cannot be installed. Is this APK '
-                   'compatible the Android VM/Emulator?')
+            msg = (f'This APK cannot be installed. Is this APK '
+                   f'compatible the Android VM/Emulator?\n{output}')
             return print_n_send_error_response(
                 request,
                 msg,

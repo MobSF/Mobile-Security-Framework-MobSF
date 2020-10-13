@@ -113,14 +113,15 @@ class Environment:
             self.adb_command(['uninstall', package], False, True)
         logger.info('Installing APK')
         # Install APK
-        self.adb_command([
+        out = self.adb_command([
             'install',
             '-r',
             '-t',
             '-d',
             apk_path], False, True)
+        out = out.decode('utf-8', 'ignore')
         # Verify Installation
-        return self.is_package_installed(package)
+        return self.is_package_installed(package), out
 
     def adb_command(self, cmd_list, shell=False, silent=False):
         """ADB Command wrapper."""
