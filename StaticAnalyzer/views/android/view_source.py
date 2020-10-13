@@ -42,7 +42,7 @@ def run(request, api=False):
 
         base = Path(settings.UPLD_DIR) / md5
         if typ == 'smali':
-            src = base / '/smali_source/'
+            src = base / 'smali_source'
             syntax = 'smali'
         else:
             try:
