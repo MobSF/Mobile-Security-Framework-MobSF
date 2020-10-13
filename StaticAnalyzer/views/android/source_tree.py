@@ -48,11 +48,10 @@ def run(request):
     try:
         logger.info('Listing Source files')
         match = re.match('^[0-9a-f]{32}$', request.GET['md5'])
-        typ = request.GET['type']
         if not match:
             return print_n_send_error_response(request, 'Scan hash not found')
         md5 = request.GET['md5']
-
+        typ = request.GET['type']
         base = Path(settings.UPLD_DIR) / md5
         if typ == 'smali':
             src = base / '/smali_source/'
