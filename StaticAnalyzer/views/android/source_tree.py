@@ -54,7 +54,7 @@ def run(request):
         typ = request.GET['type']
         base = Path(settings.UPLD_DIR) / md5
         if typ == 'smali':
-            src = base / '/smali_source/'
+            src = base / 'smali_source'
         else:
             try:
                 src = find_java_source_folder(base)[0]
