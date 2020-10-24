@@ -304,6 +304,7 @@ def compare_apps(request, hash1: str, hash2: str, api=False):
     if hash1 == hash2:
         error_msg = 'Results with same hash cannot be compared'
         return print_n_send_error_response(request, error_msg, api)
+    # Second Validation for REST API
     if not (is_md5(hash1) and is_md5(hash2)):
         error_msg = 'Invalid hashes'
         return print_n_send_error_response(request, error_msg, api)
