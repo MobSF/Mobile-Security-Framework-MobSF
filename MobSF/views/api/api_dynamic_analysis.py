@@ -30,11 +30,13 @@ def api_get_apps(request):
 @csrf_exempt
 def api_start_analysis(request):
     """POST - Start Dynamic Analysis."""
-    params = {'hash', 'package'}
-    if set(request.POST) < params:
+    if 'hash' not in request.POST:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
-    resp = dynamic_analyzer.dynamic_analyzer(request, True)
+    resp = dynamic_analyzer.dynamic_analyzer(
+        request,
+        request.POST['hash'],
+        True)
     if 'error' in resp:
         return make_api_response(resp, 500)
     return make_api_response(resp, 200)
@@ -113,7 +115,7 @@ def api_root_ca(request):
 @csrf_exempt
 def api_api_tester(request):
     """POST - Activity Tester."""
-    params = {'test', 'hash', 'package'}
+    params = {'test', 'hash'}
     if set(request.POST) < params:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
@@ -127,8 +129,7 @@ def api_api_tester(request):
 @csrf_exempt
 def api_stop_analysis(request):
     """POST - Stop Dynamic Analysis."""
-    params = {'hash', 'package'}
-    if set(request.POST) < params:
+    if 'hash' not in request.POST:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     tests_common.collect_logs(request, True)
@@ -145,7 +146,6 @@ def api_instrument(request):
     """POST - Frida Instrument."""
     params = {
         'hash',
-        'package',
         'default_hooks',
         'auxiliary_hooks',
         'frida_code'}
@@ -214,11 +214,13 @@ def api_get_script(request):
 @csrf_exempt
 def api_dynamic_report(request):
     """POST - Dynamic Analysis report."""
-    params = {'hash', 'package'}
-    if set(request.POST) < params:
+    if 'hash' not in request.POST:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
-    resp = report.view_report(request, True)
+    resp = report.view_report(
+        request,
+        request.POST['hash'],
+        True)
     if 'error' in resp:
         return make_api_response(resp, 500)
     return make_api_response(resp, 200)

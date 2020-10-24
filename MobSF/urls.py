@@ -100,7 +100,7 @@ if settings.API_ONLY == '0':
         url(r'^dynamic_analysis/$',
             dz.dynamic_analysis,
             name='dynamic'),
-        url(r'^android_dynamic/$',
+        url(r'^android_dynamic/(?P<checksum>[0-9a-f]{32})$',
             dz.dynamic_analyzer,
             name='dynamic_analyzer'),
         url(r'^httptools$',
@@ -126,7 +126,8 @@ if settings.API_ONLY == '0':
         url(r'^list_frida_scripts/$', tests_frida.list_frida_scripts),
         url(r'^get_script/$', tests_frida.get_script),
         # Report
-        url(r'^dynamic_report/$', report.view_report),
+        url(r'^dynamic_report/(?P<checksum>[0-9a-f]{32})$',
+            report.view_report),
         url(r'^dynamic_view_file/$', report.view_file),
         # Test
         url(r'^tests/$', tests.start_test),

@@ -15,16 +15,18 @@ from django.views.decorators.http import require_http_methods
 
 from DynamicAnalyzer.views.android.frida_core import Frida
 from DynamicAnalyzer.views.android.operations import (
+    get_package_name,
     invalid_params,
     is_attack_pattern,
-    is_md5,
     send_response,
-    strict_package_check)
+)
 
 from MobSF.utils import (
     is_file_exists,
+    is_md5,
     is_safe_path,
-    print_n_send_error_response)
+    print_n_send_error_response,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +81,6 @@ def instrument(request, api=False):
     data = {}
     try:
         logger.info('Starting Instrumentation')
-        package = request.POST['package']
         md5_hash = request.POST['hash']
         default_hooks = request.POST['default_hooks']
         auxiliary_hooks = request.POST['auxiliary_hooks']
@@ -96,8 +97,10 @@ def instrument(request, api=False):
         if cls_trace:
             extras['class_trace'] = cls_trace.strip()
         if (is_attack_pattern(default_hooks)
-                or not strict_package_check(package)
                 or not is_md5(md5_hash)):
+            return invalid_params(api)
+        package = get_package_name(md5_hash)
+        if not package:
             return invalid_params(api)
         frida_obj = Frida(md5_hash,
                           package,

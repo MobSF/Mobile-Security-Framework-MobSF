@@ -307,9 +307,9 @@ div.loading{
                                 {{ e.PACKAGE_NAME }}
                            </td>
                             <td align="center"> 
-                              <a class="btn btn-success" onclick="dynamic_loader()" href="../android_dynamic/?hash={{e.MD5}}&amp;package={{e.PACKAGE_NAME}}"><i class="fab fa-android"></i> Start Dynamic Analysis</a>
+                              <a class="btn btn-success" onclick="dynamic_loader()" href="../android_dynamic/{{e.MD5}}"><i class="fab fa-android"></i> Start Dynamic Analysis</a>
                               <br/> <br/>
-                                 <a class="btn btn-info" href="../dynamic_report/?hash={{ e.MD5 }}&amp;package={{ e.PACKAGE_NAME }}"><i class="fa fa-mobile"></i> View Report </a>
+                                 <a class="btn btn-info" href="../dynamic_report/{{ e.MD5 }}"><i class="fa fa-mobile"></i> View Report </a>
                             </td>
                         </tr>
                     {% endfor %}

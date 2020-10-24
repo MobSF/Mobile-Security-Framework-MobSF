@@ -14,16 +14,20 @@ from django.shortcuts import render
 
 from DynamicAnalyzer.views.android.environment import Environment
 from DynamicAnalyzer.views.android.operations import (
-    is_attack_pattern,
-    is_md5,
-    strict_package_check)
+    get_package_name,
+    strict_package_check,
+)
 from DynamicAnalyzer.tools.webproxy import (
     start_httptools_ui,
-    stop_httptools)
+    stop_httptools,
+)
 
-from MobSF.utils import (get_device,
-                         get_proxy_ip,
-                         print_n_send_error_response)
+from MobSF.utils import (
+    get_device,
+    get_proxy_ip,
+    is_md5,
+    print_n_send_error_response,
+)
 
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
@@ -74,22 +78,24 @@ def dynamic_analysis(request, api=False):
                                            api)
 
 
-def dynamic_analyzer(request, api=False):
+def dynamic_analyzer(request, checksum, api=False):
     """Android Dynamic Analyzer Environment."""
     logger.info('Creating Dynamic Analysis Environment')
     try:
-        if api:
-            bin_hash = request.POST['hash']
-            package = request.POST['package']
-        else:
-            bin_hash = request.GET['hash']
-            package = request.GET['package']
         no_device = False
-        if (is_attack_pattern(package)
-                or not is_md5(bin_hash)):
-            return print_n_send_error_response(request,
-                                               'Invalid Parameters',
-                                               api)
+        if not is_md5(checksum):
+            # We need this check since checksum is not validated
+            # in REST API
+            return print_n_send_error_response(
+                request,
+                'Invalid Parameters',
+                api)
+        package = get_package_name(checksum)
+        if not package:
+            return print_n_send_error_response(
+                request,
+                'Invalid Parameters',
+                api)
         try:
             identifier = get_device()
         except Exception:
@@ -128,7 +134,7 @@ def dynamic_analyzer(request, api=False):
                    ' restart the device once again.')
             return print_n_send_error_response(request, msg, api)
         # Clean up previous analysis
-        env.dz_cleanup(bin_hash)
+        env.dz_cleanup(checksum)
         # Configure Web Proxy
         env.configure_proxy(package)
         # Supported in Android 5+
@@ -139,7 +145,7 @@ def dynamic_analyzer(request, api=False):
         env.start_clipmon()
         # Get Screen Resolution
         screen_width, screen_height = env.get_screen_res()
-        apk_path = Path(settings.UPLD_DIR) / bin_hash / f'{bin_hash}.apk'
+        apk_path = Path(settings.UPLD_DIR) / checksum / f'{checksum}.apk'
         # Install APK
         status, output = env.install_apk(apk_path.as_posix(), package)
         if not status:
@@ -155,7 +161,7 @@ def dynamic_analyzer(request, api=False):
         context = {'screen_witdth': screen_width,
                    'screen_height': screen_height,
                    'package': package,
-                   'hash': bin_hash,
+                   'hash': checksum,
                    'android_version': version,
                    'version': settings.MOBSF_VER,
                    'title': 'Dynamic Analyzer'}
@@ -165,9 +171,10 @@ def dynamic_analyzer(request, api=False):
         return render(request, template, context)
     except Exception:
         logger.exception('Dynamic Analyzer')
-        return print_n_send_error_response(request,
-                                           'Dynamic Analysis Failed.',
-                                           api)
+        return print_n_send_error_response(
+            request,
+            'Dynamic Analysis Failed.',
+            api)
 
 
 def httptools_start(request):

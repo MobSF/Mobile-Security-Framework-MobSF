@@ -872,11 +872,6 @@
               </thead>
               <tbody>
                 <tr>
-                  <td>package</td>
-                  <td>package name of the app</td>
-                  <td>Yes</td>
-                </tr>
-                <tr>
                   <td>hash</td>
                   <td>hash of the scan</td>
                   <td>Yes</td>
@@ -925,7 +920,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/start_analysis --data "package=opensecurity.helloworld&amp;hash=3a552566097a8de588b8184b059b0158" -H "Authorization:{{ api_key}}"
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/start_analysis --data "hash=3a552566097a8de588b8184b059b0158" -H "Authorization:{{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>
@@ -1264,11 +1259,6 @@
               </thead>
               <tbody>
                 <tr>
-                  <td>package</td>
-                  <td>package name of the app</td>
-                  <td>Yes</td>
-                </tr>
-                <tr>
                   <td>hash</td>
                   <td>hash of the scan</td>
                   <td>Yes</td>
@@ -1316,7 +1306,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/activity --data "hash=6825bb9fde2fc671322df005976755a1&amp;package=org.wikipedia&amp;test=exported" -H "Authorization:{{ api_key}}"
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/activity --data "hash=6825bb9fde2fc671322df005976755a1&amp;test=exported" -H "Authorization:{{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>
@@ -1349,11 +1339,6 @@
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>package</td>
-                  <td>package name of the app</td>
-                  <td>Yes</td>
-                </tr>
                 <tr>
                   <td>hash</td>
                   <td>hash of the scan</td>
@@ -1427,14 +1412,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/instrument --data "hash=6825bb9fde2fc671322df005976755a1&amp;package=org.wikipedia&amp;default_hooks=api_monitor,ssl_pinning_bypass,root_bypass,debugger_check_bypass&amp;auxiliary_hooks=&amp;frida_code=" -H "Authorization:{{ api_key}}"
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/instrument --data "hash=6825bb9fde2fc671322df005976755a1&amp;default_hooks=api_monitor,ssl_pinning_bypass,root_bypass,debugger_check_bypass&amp;auxiliary_hooks=&amp;frida_code=" -H "Authorization:{{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>
                 <p>OR</p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/instrument --data "hash=6825bb9fde2fc671322df005976755a1&amp;package=org.wikipedia&amp;default_hooks=api_monitor,ssl_pinning_bypass,root_bypass,debugger_check_bypass&amp;auxiliary_hooks=enum_class,string_catch,string_compare,enum_methods,search_class,trace_class&amp;class_name=java.io.File&amp;class_search=ssl&amp;class_trace=javax.net.ssl.TrustManager&amp;frida_code=Java.perform(function()+%7B%0A++%2F%2F+Use+send()+for+logging%0A%7D)%3B" -H "Authorization:{{ api_key}}"
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/instrument --data "hash=6825bb9fde2fc671322df005976755a1&amp;default_hooks=api_monitor,ssl_pinning_bypass,root_bypass,debugger_check_bypass&amp;auxiliary_hooks=enum_class,string_catch,string_compare,enum_methods,search_class,trace_class&amp;class_name=java.io.File&amp;class_search=ssl&amp;class_trace=javax.net.ssl.TrustManager&amp;frida_code=Java.perform(function()+%7B%0A++%2F%2F+Use+send()+for+logging%0A%7D)%3B" -H "Authorization:{{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>
@@ -1761,11 +1746,6 @@
               </thead>
               <tbody>
                 <tr>
-                  <td>package</td>
-                  <td>package name of the app</td>
-                  <td>Yes</td>
-                </tr>
-                <tr>
                   <td>hash</td>
                   <td>hash of the scan</td>
                   <td>Yes</td>
@@ -1808,7 +1788,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/stop_analysis --data "package=org.wikipedia&amp;hash=6825bb9fde2fc671322df005976755a1" -H "Authorization:{{ api_key}}"
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/stop_analysis --data "hash=6825bb9fde2fc671322df005976755a1" -H "Authorization:{{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>
@@ -1841,11 +1821,6 @@
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>package</td>
-                  <td>package name of the app</td>
-                  <td>Yes</td>
-                </tr>
                 <tr>
                   <td>hash</td>
                   <td>hash of the scan</td>
@@ -1887,7 +1862,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/report_json --data "package=org.wikipedia&amp;hash=6825bb9fde2fc671322df005976755a1" -H "Authorization:{{ api_key}}"
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/report_json --data "hash=6825bb9fde2fc671322df005976755a1" -H "Authorization:{{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>

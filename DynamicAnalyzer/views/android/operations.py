@@ -14,12 +14,27 @@ from django.views.decorators.http import require_http_methods
 
 from DynamicAnalyzer.views.android.environment import Environment
 
-from MobSF.utils import (get_adb, get_device, is_number)
+from MobSF.utils import (
+    get_adb,
+    get_device,
+    is_md5,
+    is_number,
+)
+
+from StaticAnalyzer.models import StaticAnalyzerAndroid
 
 logger = logging.getLogger(__name__)
 
 
 # Helpers
+
+def get_package_name(checksum):
+    """Get Package NAme from DB."""
+    static_android_db = StaticAnalyzerAndroid.objects.filter(
+        MD5=checksum)
+    if not static_android_db.exists():
+        return None
+    return static_android_db[0].PACKAGE_NAME
 
 
 def send_response(data, api=False):
@@ -57,14 +72,6 @@ def is_path_traversal(user_input):
         logger.error('Path traversal attack detected')
         return True
     return False
-
-
-def is_md5(user_input):
-    """Check if string is valid MD5."""
-    stat = re.match(r'^[0-9a-f]{32}$', user_input)
-    if not stat:
-        logger.error('Invalid scan hash')
-    return stat
 
 
 def invalid_params(api=False):

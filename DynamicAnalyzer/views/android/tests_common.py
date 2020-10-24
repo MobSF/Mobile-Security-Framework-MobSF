@@ -7,16 +7,18 @@ from django.conf import settings
 from django.views.decorators.http import require_http_methods
 
 from DynamicAnalyzer.views.android.operations import (
+    get_package_name,
     invalid_params,
-    is_attack_pattern,
-    is_md5,
     send_response,
-    strict_package_check)
+)
 from DynamicAnalyzer.views.android.environment import Environment
 from DynamicAnalyzer.views.android.tests_xposed import download_xposed_log
 from DynamicAnalyzer.tools.webproxy import stop_httptools
 
-from MobSF.utils import python_list
+from MobSF.utils import (
+    is_md5,
+    python_list,
+)
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 
@@ -33,8 +35,7 @@ def activity_tester(request, api=False):
         env = Environment()
         test = request.POST['test']
         md5_hash = request.POST['hash']
-        package = request.POST['package']
-        if is_attack_pattern(package) or not is_md5(md5_hash):
+        if not is_md5(md5_hash):
             return invalid_params(api)
         app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         screen_dir = os.path.join(app_dir, 'screenshots-apk/')
@@ -46,6 +47,7 @@ def activity_tester(request, api=False):
             data = {'status': 'failed',
                     'message': 'App details not found in database'}
             return send_response(data, api)
+        package = static_android_db[0].PACKAGE_NAME
         iden = ''
         if test == 'exported':
             iden = 'Exported '
@@ -97,10 +99,14 @@ def download_data(request, api=False):
     data = {}
     try:
         env = Environment()
-        package = request.POST['package']
         md5_hash = request.POST['hash']
-        if is_attack_pattern(package) or not is_md5(md5_hash):
+        if not is_md5(md5_hash):
             return invalid_params(api)
+        package = get_package_name(md5_hash)
+        if not package:
+            data = {'status': 'failed',
+                    'message': 'App details not found in database'}
+            return send_response(data, api)
         apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         stop_httptools(settings.PROXY_PORT)
         files_loc = '/data/local/'
@@ -129,10 +135,13 @@ def collect_logs(request, api=False):
     try:
         env = Environment()
         md5_hash = request.POST['hash']
-        package = request.POST['package']
-        if (not strict_package_check(package)
-                or not is_md5(md5_hash)):
+        if not is_md5(md5_hash):
             return invalid_params(api)
+        package = get_package_name(md5_hash)
+        if not package:
+            data = {'status': 'failed',
+                    'message': 'App details not found in database'}
+            return send_response(data, api)
         apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         lout = os.path.join(apk_dir, 'logcat.txt')
         dout = os.path.join(apk_dir, 'dump.txt')

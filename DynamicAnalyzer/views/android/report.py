@@ -10,19 +10,25 @@ from django.shortcuts import render
 from django.template.defaulttags import register
 from django.utils.html import escape
 
-from DynamicAnalyzer.views.android.analysis import (generate_download,
-                                                    get_screenshots,
-                                                    run_analysis)
-from DynamicAnalyzer.views.android.operations import (is_attack_pattern,
-                                                      is_md5,
-                                                      is_path_traversal)
+from DynamicAnalyzer.views.android.analysis import (
+    generate_download,
+    get_screenshots,
+    run_analysis,
+)
+from DynamicAnalyzer.views.android.operations import (
+    get_package_name,
+    is_path_traversal,
+)
 from DynamicAnalyzer.views.android.tests_xposed import droidmon_api_analysis
 from DynamicAnalyzer.views.android.tests_frida import apimon_analysis
 
-from MobSF.utils import (is_file_exists,
-                         is_safe_path,
-                         print_n_send_error_response,
-                         read_sqlite)
+from MobSF.utils import (
+    is_file_exists,
+    is_md5,
+    is_safe_path,
+    print_n_send_error_response,
+    read_sqlite,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -34,24 +40,26 @@ def key(d, key_name):
     return d.get(key_name)
 
 
-def view_report(request, api=False):
+def view_report(request, checksum, api=False):
     """Dynamic Analysis Report Generation."""
     logger.info('Dynamic Analysis Report Generation')
     try:
-        if api:
-            md5_hash = request.POST['hash']
-            package = request.POST['package']
-        else:
-            md5_hash = request.GET['hash']
-            package = request.GET['package']
         droidmon = {}
         apimon = {}
-        if (is_attack_pattern(package)
-                or not is_md5(md5_hash)):
-            return print_n_send_error_response(request,
-                                               'Invalid Parameters',
-                                               api)
-        app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
+        if not is_md5(checksum):
+            # We need this check since checksum is not validated
+            # in REST API
+            return print_n_send_error_response(
+                request,
+                'Invalid Parameters',
+                api)
+        package = get_package_name(checksum)
+        if not package:
+            return print_n_send_error_response(
+                request,
+                'Invalid Parameters',
+                api)
+        app_dir = os.path.join(settings.UPLD_DIR, checksum + '/')
         download_dir = settings.DWD_DIR
         if not is_file_exists(os.path.join(app_dir, 'logcat.txt')):
             msg = ('Dynamic Analysis report is not available '
@@ -61,10 +69,10 @@ def view_report(request, api=False):
         fd_log = os.path.join(app_dir, 'mobsf_frida_out.txt')
         droidmon = droidmon_api_analysis(app_dir, package)
         apimon = apimon_analysis(app_dir)
-        analysis_result = run_analysis(app_dir, md5_hash, package)
-        generate_download(app_dir, md5_hash, download_dir, package)
-        images = get_screenshots(md5_hash, download_dir)
-        context = {'hash': md5_hash,
+        analysis_result = run_analysis(app_dir, checksum, package)
+        generate_download(app_dir, checksum, download_dir, package)
+        images = get_screenshots(checksum, download_dir)
+        context = {'hash': checksum,
                    'emails': analysis_result['emails'],
                    'urls': analysis_result['urls'],
                    'domains': analysis_result['domains'],

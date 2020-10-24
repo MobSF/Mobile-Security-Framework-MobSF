@@ -119,6 +119,8 @@ class Environment:
             '-t',
             '-d',
             apk_path], False, True)
+        if not out:
+            return False, 'adb install failed'
         out = out.decode('utf-8', 'ignore')
         # Verify Installation
         return self.is_package_installed(package), out
@@ -131,9 +133,10 @@ class Environment:
         if shell:
             args += ['shell']
         args += cmd_list
-
         try:
-            result = subprocess.check_output(args)
+            result = subprocess.check_output(
+                args,
+                stderr=subprocess.STDOUT)
             return result
         except Exception:
             if not silent:
