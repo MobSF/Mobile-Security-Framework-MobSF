@@ -38,7 +38,7 @@ def tree_index_maker(root_dir, original_root_dir_len):
             yield loader.render_to_string(
                 'static_analysis/treeview_file.html',
                 {'file': mfile,
-                 'path': t[root_len + 1: -len(mfile)].replace('/', '\\')},
+                 'path': t[root_len + 1: -len(mfile)]},
             )
     return _index(root_dir, original_root_dir_len)
 
