@@ -47,8 +47,8 @@ def run(request):
         files = [p for p in src.rglob('*') if p.suffix in exts]
         for fname in files:
             file_path = fname.as_posix()
-            rpath = file_path.replace(src.as_posix() + '/', '')
-            rpath = rpath.replace('/', '\\')
+            rpath = file_path.replace(src.as_posix(), '')
+            rpath = rpath[1:]
             if search_type == 'content':
                 dat = fname.read_text('utf-8', 'ignore')
                 if query in dat:
