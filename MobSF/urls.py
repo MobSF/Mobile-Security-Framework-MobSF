@@ -18,6 +18,7 @@ from StaticAnalyzer.views.android import (
     generate_downloads,
     manifest_view,
     source_tree,
+    view_source,
 )
 from StaticAnalyzer.views.windows import windows
 from StaticAnalyzer.views.android import static_analyzer as android_sa
@@ -42,7 +43,8 @@ urlpatterns = [
     # Static Analysis
     # Android
     url(r'^StaticAnalyzer/$', android_sa.static_analyzer),
-    url(r'^Source$', source_tree.run, name='source_view'),
+    url(r'^source_code/$', source_tree.run, name='tree_view'),
+    url(r'^view_file/$', view_source.run, name='view_source'),
     url(r'^Find/$', find.run, name='find_files'),
     url(r'^generate_downloads/$', generate_downloads.run),
     url(r'^ManifestView/$', manifest_view.run),
