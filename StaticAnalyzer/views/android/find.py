@@ -41,9 +41,7 @@ def run(request):
                 msg = 'Invalid Directory Structure'
                 return print_n_send_error_response(request, msg, True)
 
-        # Sometimes there are Kotlin files within src/main/java
-        # So finding should be in them both
-        exts = ['.java', '.kt']
+        exts = ['.java', '.kt', '.smali']
         files = [p for p in src.rglob('*') if p.suffix in exts]
         for fname in files:
             file_path = fname.as_posix()
