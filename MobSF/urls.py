@@ -45,7 +45,7 @@ urlpatterns = [
     url(r'^StaticAnalyzer/$', android_sa.static_analyzer),
     url(r'^source_code/$', source_tree.run, name='tree_view'),
     url(r'^view_file/$', view_source.run, name='view_source'),
-    url(r'^Find/$', find.run, name='find_files'),
+    url(r'^find/$', find.run, name='find_files'),
     url(r'^generate_downloads/$', generate_downloads.run),
     url(r'^ManifestView/$', manifest_view.run),
     # IOS
