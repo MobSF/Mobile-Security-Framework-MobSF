@@ -23,22 +23,20 @@ logger = logging.getLogger(__name__)
 
 
 # Generator that uses 2 template files in order to make the main template
-def tree_index_maker(root_dir, original_root_dir_len):
+def tree_index_maker(root_dir: Path, original_root_dir_len: int):
     def _index(root, root_len):
-        files = os.listdir(root)
-        for mfile in files:
-            t = os.path.join(root, mfile)
-            if os.path.isdir(t):
+        for mfile in root.iterdir():
+            if mfile.is_dir():
                 yield loader.render_to_string(
                     'static_analysis/treeview_folder.html',
-                    {'file': mfile,
-                     'subfiles': _index(os.path.join(root, t), root_len)},
+                    {'file': mfile.name,
+                     'subfiles': _index(mfile, root_len)},
                 )
                 continue
             yield loader.render_to_string(
                 'static_analysis/treeview_file.html',
-                {'file': mfile,
-                 'path': t[root_len + 1: -len(mfile)]},
+                {'file': mfile.name,
+                 'path': mfile.as_posix()[root_len + 1: -len(mfile.name)]},
             )
     return _index(root_dir, original_root_dir_len)
 
@@ -63,8 +61,7 @@ def run(request):
                     request,
                     'Invalid Directory Structure')
 
-        src = src.as_posix()
-        tree_index = tree_index_maker(src, len(src))
+        tree_index = tree_index_maker(src, len(src.as_posix()))
         context = {
             'subfiles': tree_index,
             'title': f'{typ.capitalize()} Source',
