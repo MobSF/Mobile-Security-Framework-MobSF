@@ -2,7 +2,6 @@
 """List all java files."""
 
 import logging
-import os
 import re
 from pathlib import Path
 
