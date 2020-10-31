@@ -154,7 +154,7 @@
         <h5>Exported Providers:</h5> <span {% if exported_count.exported_providers > 0 %} class="danger" {% endif %}> {{ exported_count.exported_providers }}</span></br>
      
         <h2><i class="fa fa-certificate"></i> CERTIFICATE INFORMATION</h2>
-        {% if certificate_analysis %}
+        {% if certificate_analysis.certificate_info %}
         <div class="panel-body">
               <p class="wrapped-text">{{ certificate_analysis.certificate_info }}</p>
               <!--Cert status-->
@@ -184,7 +184,7 @@
                   </table>
         </div>
       {% else %}
-      <span class="danger">Failed to read Code Signing Certificate.</span>
+      <span class="danger">Failed to read Code Signing Certificate or none available.</span>
       {% endif %}
       {% if permissions %}
       <h2><i class="fa fa-list"></i> APPLICATION PERMISSIONS</h2>
