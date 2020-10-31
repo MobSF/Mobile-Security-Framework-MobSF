@@ -15,6 +15,7 @@ import shutil
 import subprocess
 import zipfile
 from urllib.parse import urlparse
+from pathlib import Path
 
 import requests
 
@@ -377,3 +378,17 @@ def firebase_analysis(urls):
             if fbdic not in firebase_db:
                 firebase_db.append(fbdic)
     return firebase_db
+
+
+def find_java_source_folder(base_folder: Path):
+    # Find the correct java/kotlin source folder for APK/source zip
+    # Returns a Tuple of - (SRC_PATH, SRC_TYPE, SRC_SYNTAX)
+    return next(p for p in [(base_folder / 'java_source',
+                             'java', '*.java'),
+                            (base_folder / 'app' / 'src' / 'main' / 'java',
+                             'java', '*.java'),
+                            (base_folder / 'app' / 'src' / 'main' / 'kotlin',
+                             'kotlin', '*.kt'),
+                            (base_folder / 'src',
+                             'java', '*.java')]
+                if p[0].exists())

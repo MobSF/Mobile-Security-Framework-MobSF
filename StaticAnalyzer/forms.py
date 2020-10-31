@@ -62,6 +62,8 @@ class AndroidChecks(forms.Form):
         choices=(
             ('eclipse', 'eclipse'),
             ('studio', 'studio'),
+            ('java', 'java'),
+            ('smali', 'smali'),
             ('apk', 'apk')))
 
     def clean_file(self):

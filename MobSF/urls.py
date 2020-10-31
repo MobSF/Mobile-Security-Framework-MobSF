@@ -17,9 +17,8 @@ from StaticAnalyzer.views import shared_func
 from StaticAnalyzer.views.android import (
     find,
     generate_downloads,
-    java,
     manifest_view,
-    smali,
+    source_tree,
     view_source,
 )
 from StaticAnalyzer.views.windows import windows
@@ -38,7 +37,8 @@ urlpatterns = [
     url(r'^api/v1/delete_scan$', api_sz.api_delete_scan),
     url(r'^api/v1/download_pdf$', api_sz.api_pdf_report),
     url(r'^api/v1/report_json$', api_sz.api_json_report),
-    url(r'^api/v1/view_source$', api_sz.api_view_source),
+    url(r'^api/v1/view_source$', api_sz.api_view_source,
+        name='api_view_source'),
     url(r'^api/v1/scans$', api_sz.api_recent_scans),
     url(r'^api/v1/compare$', api_sz.api_compare),
     # Dynamic Analysis
@@ -79,10 +79,9 @@ if settings.API_ONLY == '0':
         # Static Analysis
         # Android
         url(r'^StaticAnalyzer/$', android_sa.static_analyzer),
-        url(r'^ViewSource/$', view_source.run),
-        url(r'^Smali/$', smali.run),
-        url(r'^Java/$', java.run),
-        url(r'^Find/$', find.run),
+        url(r'^source_code/$', source_tree.run, name='tree_view'),
+        url(r'^view_file/$', view_source.run, name='view_source'),
+        url(r'^find/$', find.run, name='find_files'),
         url(r'^generate_downloads/$', generate_downloads.run),
         url(r'^ManifestView/$', manifest_view.run),
         # IOS
