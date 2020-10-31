@@ -30,11 +30,12 @@ logger = logging.getLogger(__name__)
 
 def get_package_name(checksum):
     """Get Package NAme from DB."""
-    static_android_db = StaticAnalyzerAndroid.objects.filter(
-        MD5=checksum)
-    if not static_android_db.exists():
+    try:
+        static_android_db = StaticAnalyzerAndroid.objects.get(
+            MD5=checksum)
+        return static_android_db.PACKAGE_NAME
+    except Exception:
         return None
-    return static_android_db[0].PACKAGE_NAME
 
 
 def send_response(data, api=False):

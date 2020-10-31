@@ -41,21 +41,17 @@ def activity_tester(request, api=False):
         screen_dir = os.path.join(app_dir, 'screenshots-apk/')
         if not os.path.exists(screen_dir):
             os.makedirs(screen_dir)
-        static_android_db = StaticAnalyzerAndroid.objects.filter(
+        static_android_db = StaticAnalyzerAndroid.objects.get(
             MD5=md5_hash)
-        if not static_android_db.exists():
-            data = {'status': 'failed',
-                    'message': 'App details not found in database'}
-            return send_response(data, api)
-        package = static_android_db[0].PACKAGE_NAME
+        package = static_android_db.PACKAGE_NAME
         iden = ''
         if test == 'exported':
             iden = 'Exported '
             logger.info('Exported activity tester')
-            activities = python_list(static_android_db[0].EXPORTED_ACTIVITIES)
+            activities = python_list(static_android_db.EXPORTED_ACTIVITIES)
         else:
             logger.info('Activity tester')
-            activities = python_list(static_android_db[0].ACTIVITIES)
+            activities = python_list(static_android_db.ACTIVITIES)
         logger.info('Fetching %sactivities for %s', iden, package)
         if not activities:
             msg = 'No {}Activites found'.format(iden)

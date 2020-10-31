@@ -316,20 +316,20 @@ class Environment:
 
     def android_component(self, bin_hash, comp):
         """Get APK Components."""
-        anddb = StaticAnalyzerAndroid.objects.filter(MD5=bin_hash)
+        anddb = StaticAnalyzerAndroid.objects.get(MD5=bin_hash)
         resp = []
         if comp == 'activities':
-            resp = python_list(anddb[0].ACTIVITIES)
+            resp = python_list(anddb.ACTIVITIES)
         elif comp == 'receivers':
-            resp = python_list(anddb[0].RECEIVERS)
+            resp = python_list(anddb.RECEIVERS)
         elif comp == 'providers':
-            resp = python_list(anddb[0].PROVIDERS)
+            resp = python_list(anddb.PROVIDERS)
         elif comp == 'services':
-            resp = python_list(anddb[0].SERVICES)
+            resp = python_list(anddb.SERVICES)
         elif comp == 'libraries':
-            resp = python_list(anddb[0].LIBRARIES)
+            resp = python_list(anddb.LIBRARIES)
         elif comp == 'exported_activities':
-            resp = python_list(anddb[0].EXPORTED_ACTIVITIES)
+            resp = python_list(anddb.EXPORTED_ACTIVITIES)
         return '\n'.join(resp)
 
     def get_environment(self):
