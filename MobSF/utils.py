@@ -514,3 +514,11 @@ def is_safe_path(safe_root, check_path):
 def file_size(app_path):
     """Return the size of the file."""
     return round(float(os.path.getsize(app_path)) / (1024 * 1024), 2)
+
+
+def is_md5(user_input):
+    """Check if string is valid MD5."""
+    stat = re.match(r'^[0-9a-f]{32}$', user_input)
+    if not stat:
+        logger.error('Invalid scan hash')
+    return stat

@@ -113,14 +113,17 @@ class Environment:
             self.adb_command(['uninstall', package], False, True)
         logger.info('Installing APK')
         # Install APK
-        self.adb_command([
+        out = self.adb_command([
             'install',
             '-r',
             '-t',
             '-d',
             apk_path], False, True)
+        if not out:
+            return False, 'adb install failed'
+        out = out.decode('utf-8', 'ignore')
         # Verify Installation
-        return self.is_package_installed(package)
+        return self.is_package_installed(package), out
 
     def adb_command(self, cmd_list, shell=False, silent=False):
         """ADB Command wrapper."""
@@ -130,9 +133,10 @@ class Environment:
         if shell:
             args += ['shell']
         args += cmd_list
-
         try:
-            result = subprocess.check_output(args)
+            result = subprocess.check_output(
+                args,
+                stderr=subprocess.STDOUT)
             return result
         except Exception:
             if not silent:
@@ -312,20 +316,20 @@ class Environment:
 
     def android_component(self, bin_hash, comp):
         """Get APK Components."""
-        anddb = StaticAnalyzerAndroid.objects.filter(MD5=bin_hash)
+        anddb = StaticAnalyzerAndroid.objects.get(MD5=bin_hash)
         resp = []
         if comp == 'activities':
-            resp = python_list(anddb[0].ACTIVITIES)
+            resp = python_list(anddb.ACTIVITIES)
         elif comp == 'receivers':
-            resp = python_list(anddb[0].RECEIVERS)
+            resp = python_list(anddb.RECEIVERS)
         elif comp == 'providers':
-            resp = python_list(anddb[0].PROVIDERS)
+            resp = python_list(anddb.PROVIDERS)
         elif comp == 'services':
-            resp = python_list(anddb[0].SERVICES)
+            resp = python_list(anddb.SERVICES)
         elif comp == 'libraries':
-            resp = python_list(anddb[0].LIBRARIES)
+            resp = python_list(anddb.LIBRARIES)
         elif comp == 'exported_activities':
-            resp = python_list(anddb[0].EXPORTED_ACTIVITIES)
+            resp = python_list(anddb.EXPORTED_ACTIVITIES)
         return '\n'.join(resp)
 
     def get_environment(self):

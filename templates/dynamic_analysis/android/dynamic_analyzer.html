@@ -75,7 +75,7 @@
                   <a href="#" id="actt" class="btn btn-primary" role="button" >Start Activity Tester</a>
                   <a href="#" id="ss" class="btn btn-primary" role="button">Take a Screenshot</a>
                   <a href="#" id="logstream" class="btn btn-primary">Logcat Stream</a>
-                  <a href="../live_api/?hash={{ md5 }}&amp;package={{ package }}" id="apimon" target="_blank" class="btn btn-primary" style='display: none'>Live API Monitor</a>
+                  <a href="../../live_api/?hash={{ hash }}&amp;package={{ package }}" id="apimon" target="_blank" class="btn btn-primary" style='display: none'>Live API Monitor</a>
                   <a href="#" id="stop" class="btn btn-info" role="button" >Generate Report</a>
                 </div>
               </div>
@@ -97,7 +97,7 @@
                   <div class="sensor"></div>
                   <div class="speaker"></div>
                   <div class="screen" id="container">
-                  <img width="320" height="580" src="../download/screen/screen.png" id="my" onerror="$('#my').attr('src','/static/img/loading.jpg')" style="background-color:black;">
+                  <img width="320" height="580" src="../../download/screen/screen.png" id="my" onerror="$('#my').attr('src','/static/img/loading.jpg')" style="background-color:black;">
                   </div>
                   </div>
                 </div>
@@ -178,18 +178,18 @@
                               <input onclick="aux_click(this)" name="auxiliary" type="checkbox" value="enum_methods" id="enum_methods">
                               Enumerate Class methods
                             </label>
-                             <input type="text" class="form-control" id="cls_name" placeholder="java.io.File">
+                             <input type="text" class="form-control" id="class_name" placeholder="java.io.File">
 
                              <label>
                               <input onclick="aux_click(this)" name="auxiliary" type="checkbox" value="search_class" id="search_class">
                               Search Class Pattern
                             </label>
-                             <input type="text" class="form-control" id="cls_search" placeholder="ssl\.Trust*">
+                             <input type="text" class="form-control" id="class_search" placeholder="ssl\.Trust*">
                              <label>
                              <input onclick="aux_click(this)" name="auxiliary" type="checkbox"  value="trace_class" id="trace_class">
                               Trace Class Methods
                             </label>
-                             <input type="text" class="form-control" id="cls_trace" placeholder="java.net.Socket,java.io.File,java.lang.String">
+                             <input type="text" class="form-control" id="class_trace" placeholder="java.net.Socket,java.io.File,java.lang.String">
                         </div>
      
 
@@ -336,7 +336,7 @@ function action(url, data, on_success){
 
 // Frida load other scripts
 function load_frida_others(){
-  $.get('../list_frida_scripts/', function(json, status){
+  $.get(document.location.origin + '/list_frida_scripts/', function(json, status){
       if (json.status == 'ok'){
         json.files.forEach(function(script) {
           $('#fd_scs').append('<option value=' + escape(script) + '>' + escape(script) + '</option>');
@@ -454,7 +454,7 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
         );
     }
     function get_comp(comp){
-      action('../get_component/', { component: comp, hash: '{{ md5 }}'}, function(json) {
+      action(document.location.origin + '/get_component/', { component: comp, hash: '{{ hash }}'}, function(json) {
           if (json.status==="ok")
             output(json.message, true, true);
           else
@@ -463,7 +463,7 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
     }
 
     function execute_adb(exec_cmd){
-      action('../execute_adb/', { cmd: exec_cmd }, function(json) {
+      action(document.location.origin + '/execute_adb/', { cmd: exec_cmd }, function(json) {
           if (json.status==="ok")
             output(json.message, true, true);
       });
@@ -598,7 +598,7 @@ $('#my').click(function(e) {
         x = x * (width/320); 
         y = y * (height/580);
         console.log('X Axis: '+ x + " Y Axis: "+ y);
-        action('../touch_events/', {x: x, y: y}, function(json) {
+        action(document.location.origin + '/touch_events/', {x: x, y: y}, function(json) {
             if (json.status==='ok')
               console.log('Clicked!');
             else
@@ -618,9 +618,9 @@ $("#screen").click(function() {
           touch = "on";
           screenfunc = setInterval(function(){
               // Capture Screen
-              action('../screen_cast/', {}, function(json) {
+              action(document.location.origin + '/screen_cast/', {}, function(json) {
                 if (json.status == 'ok')
-                  $('#my').attr('src', '../download/screen/screen.png?'+ new Date().getTime());
+                  $('#my').attr('src', document.location.origin + '/download/screen/screen.png?'+ new Date().getTime());
                 else
                   console.log(json.message)
                });
@@ -638,7 +638,7 @@ $("#screen").click(function() {
 //Screenshot
 $("#ss").click(function() {
   print_status("Taking a screenshot");
-  action('../screenshot/', {hash: '{{ md5 }}'}, function(json) {
+  action(document.location.origin + '/screenshot/', {hash: '{{ hash }}'}, function(json) {
     if (json.status==="ok"){
         print_status("Screenshot taken!");
     } else {
@@ -661,7 +661,7 @@ $("#rootca").click(function() {
     $("#rootca").text("Remove MobSF RootCA");
     act = "install";
   }
-  action('../mobsf_ca/', {action: act}, function(json) {
+  action(document.location.origin + '/mobsf_ca/', {action: act}, function(json) {
       if (json.message === "installed")
         print_status("MobSF RootCA installed successfully");
       else if (json.message === "removed")
@@ -673,7 +673,7 @@ $("#rootca").click(function() {
 }); 
  
 function activity_tester(test){
-  action('../activity_tester/', {hash: '{{ md5 }}', package: '{{ package }}', 'test': test}, function(json) {
+  action(document.location.origin + '/activity_tester/', {hash: '{{ hash }}', 'test': test}, function(json) {
     if (json.status === "ok")
       if (test === 'exported')
         print_status("Exported Activity testing completed.");
@@ -700,13 +700,13 @@ $("#actt").click(function()  {
 // Logcat Stream
 $("#logstream").click(function() {
     print_status("Logcat Steaming started");
-    setTimeout(function(){ window.open('../logcat/?package={{ package }}', '_blank');}, 500);   
+    setTimeout(function(){ window.open(document.location.origin + '/logcat/?package={{ package }}', '_blank');}, 500);   
     return false;  
 }); 
 // Frida logs
 $("#fd_log").click(function() {
     print_status("Streaming Frida logs");
-    setTimeout(function(){ window.open('../frida_logs/?hash={{ md5 }}&package={{ package }}', '_blank');}, 100);   
+    setTimeout(function(){ window.open(document.location.origin + '/frida_logs/?hash={{ hash }}&package={{ package }}', '_blank');}, 100);   
     return false;  
 });
 
@@ -714,7 +714,7 @@ $("#fd_log").click(function() {
 // Load Frida Scripts
 $("#loadscript").click(function() {
    var scripts = $('#fd_scs').val();
-   action('../get_script/', {scripts: scripts}, function(json) {
+   action(document.location.origin + '/get_script/', {scripts: scripts}, function(json) {
     if (json.status==="ok"){
         editor.getDoc().setValue(json.content);
     }
@@ -740,14 +740,13 @@ $("#frida_spawn").click(function() {
         auxiliary_hooks.push($(this).val());
     });
 
-    action('../frida_instrument/', {
-      hash: '{{ md5 }}',
-      package: '{{ package }}',
+    action(document.location.origin + '/frida_instrument/', {
+      hash: '{{ hash }}',
       default_hooks: default_hooks.join(","),
       auxiliary_hooks: auxiliary_hooks.join(","),
-      cls_name: $('#cls_name').val(),
-      cls_search:  $('#cls_search').val(),
-      cls_trace:  $('#cls_trace').val(),
+      class_name: $('#class_name').val(),
+      class_search:  $('#class_search').val(),
+      class_trace:  $('#class_trace').val(),
       frida_code: editor.getDoc().getValue(),
     }, function(json) {
     if (json.status === "ok")
@@ -761,12 +760,12 @@ $("#frida_spawn").click(function() {
 
 //Dump App data
 function dump(){
-  action('../download_data/', { hash: '{{ md5 }}', package: '{{ package }}'}, function(json) {
+  action(document.location.origin + '/download_data/', { hash: '{{ hash }}'}, function(json) {
     if (json.status==="ok"){
       print_status("Application data dumped!");
       print_status("Generating Report...Please Wait!");
       //Call reporting
-      location.href="//"+location.host+"/dynamic_report/?hash={{ md5 }}&package={{ package }}";
+      window.location = document.location.origin+"/dynamic_report/{{ hash }}";
     } else {
       print_status(json.message);
     }
@@ -780,7 +779,7 @@ $("#stop").one( "click", function() {
   var stext = $("#screen").text();
   if (stext === "Stop Screen")
     $("#screen").click();
-  action('../collect_logs/', { hash: '{{ md5 }}', package: '{{ package }}'}, function(json) {
+  action(document.location.origin + '/collect_logs/', { hash: '{{ hash }}'}, function(json) {
     if (json.status==="ok"){
       $('#stop').addClass("btn btn-success");
       $('#stop').text("Please Wait...");

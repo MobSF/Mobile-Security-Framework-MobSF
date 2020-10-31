@@ -14,16 +14,34 @@ from django.views.decorators.http import require_http_methods
 
 from DynamicAnalyzer.views.android.environment import Environment
 
-from MobSF.utils import (get_adb, get_device, is_number)
+from MobSF.utils import (
+    get_adb,
+    get_device,
+    is_md5,
+    is_number,
+)
+
+from StaticAnalyzer.models import StaticAnalyzerAndroid
 
 logger = logging.getLogger(__name__)
 
 
 # Helpers
 
+def get_package_name(checksum):
+    """Get Package NAme from DB."""
+    try:
+        static_android_db = StaticAnalyzerAndroid.objects.get(
+            MD5=checksum)
+        return static_android_db.PACKAGE_NAME
+    except Exception:
+        return None
 
-def json_response(data):
+
+def send_response(data, api=False):
     """Return JSON Response."""
+    if api:
+        return data
     return HttpResponse(json.dumps(data),
                         content_type='application/json')
 
@@ -57,26 +75,20 @@ def is_path_traversal(user_input):
     return False
 
 
-def is_md5(user_input):
-    """Check if string is valid MD5."""
-    stat = re.match(r'^[0-9a-f]{32}$', user_input)
-    if not stat:
-        logger.error('Invalid scan hash')
-    return stat
-
-
-def invalid_params():
+def invalid_params(api=False):
     """Standard response for invalid params."""
     msg = 'Invalid Parameters'
     logger.error(msg)
     data = {'status': 'failed', 'message': msg}
-    return json_response(data)
+    if api:
+        return data
+    return send_response(data)
 
 # AJAX
 
 
 @require_http_methods(['POST'])
-def mobsfy(request):
+def mobsfy(request, api=False):
     """Configure Instance for Dynamic Analysis."""
     logger.info('MobSFying Android instance')
     data = {}
@@ -86,24 +98,24 @@ def mobsfy(request):
         if not create_env.connect_n_mount():
             msg = 'Connection failed'
             data = {'status': 'failed', 'message': msg}
-            return json_response(data)
+            return send_response(data, api)
         version = create_env.mobsfy_init()
         if not version:
             msg = 'Connection failed'
             data = {'status': 'failed', 'message': msg}
-            return json_response(data)
+            return send_response(data, api)
         else:
-            data = {'status': 'ok', 'version': version}
+            data = {'status': 'ok', 'android_version': version}
     except Exception as exp:
         logger.exception('MobSFying Android instance failed')
         data = {'status': 'failed', 'message': str(exp)}
-    return json_response(data)
+    return send_response(data, api)
 
 # AJAX
 
 
 @require_http_methods(['POST'])
-def execute_adb(request):
+def execute_adb(request, api=False):
     """Execute ADB Commands."""
     data = {'status': 'ok', 'message': ''}
     cmd = request.POST['cmd']
@@ -124,7 +136,7 @@ def execute_adb(request):
         else:
             out = ''
         data = {'status': 'ok', 'message': out}
-    return json_response(data)
+    return send_response(data, api)
 
 # AJAX
 
@@ -144,13 +156,13 @@ def get_component(request):
     except Exception as exp:
         logger.exception('Getting Android Component')
         data = {'status': 'failed', 'message': str(exp)}
-    return json_response(data)
+    return send_response(data)
 
 # AJAX
 
 
 @require_http_methods(['POST'])
-def take_screenshot(request):
+def take_screenshot(request, api=False):
     """Take Screenshot."""
     logger.info('Taking screenshot')
     data = {}
@@ -158,7 +170,7 @@ def take_screenshot(request):
         env = Environment()
         bin_hash = request.POST['hash']
         if not is_md5(bin_hash):
-            return invalid_params()
+            return invalid_params(api)
         data = {}
         rand_int = random.randint(1, 1000000)
         screen_dir = os.path.join(settings.UPLD_DIR,
@@ -174,7 +186,7 @@ def take_screenshot(request):
     except Exception as exp:
         logger.exception('Taking screenshot')
         data = {'status': 'failed', 'message': str(exp)}
-    return json_response(data)
+    return send_response(data, api)
 # AJAX
 
 
@@ -191,7 +203,7 @@ def screen_cast(request):
     except Exception as exp:
         logger.exception('Screen streaming')
         data = {'status': 'failed', 'message': str(exp)}
-    return json_response(data)
+    return send_response(data)
 
 # AJAX
 
@@ -219,14 +231,14 @@ def touch(request):
     except Exception as exp:
         logger.exception('Sending Touch Events')
         data = {'status': 'failed', 'message': str(exp)}
-    return json_response(data)
+    return send_response(data)
 
 
 # AJAX
 
 
 @require_http_methods(['POST'])
-def mobsf_ca(request):
+def mobsf_ca(request, api=False):
     """Install and Remove MobSF Proxy RootCA."""
     data = {}
     try:
@@ -244,4 +256,4 @@ def mobsf_ca(request):
     except Exception as exp:
         logger.exception('MobSF RootCA Handler')
         data = {'status': 'failed', 'message': str(exp)}
-    return json_response(data)
+    return send_response(data, api)

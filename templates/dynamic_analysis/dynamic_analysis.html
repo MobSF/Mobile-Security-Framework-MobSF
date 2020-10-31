@@ -293,8 +293,8 @@ div.loading{
                     </tr>
                     </thead>
                     <tbody>
-                    {% if apks %}
-                    {% for e in apks %}
+                    {% if apps %}
+                    {% for e in apps %}
                         <tr>
                             <td align="center">
                               <img id="app_icon" src="{% if e.ICON_FOUND %}/download/{{ e.MD5 }}-icon.png{% else %}{% static 'img/no_icon.png' %}{% endif %}"/>
@@ -307,9 +307,9 @@ div.loading{
                                 {{ e.PACKAGE_NAME }}
                            </td>
                             <td align="center"> 
-                              <a class="btn btn-success" onclick="dynamic_loader()" href="../android_dynamic/?hash={{e.MD5}}&amp;package={{e.PACKAGE_NAME}}"><i class="fab fa-android"></i> Start Dynamic Analysis</a>
+                              <a class="btn btn-success" onclick="dynamic_loader()" href="../android_dynamic/{{e.MD5}}"><i class="fab fa-android"></i> Start Dynamic Analysis</a>
                               <br/> <br/>
-                                 <a class="btn btn-info" href="../dynamic_report/?hash={{ e.MD5 }}&amp;package={{ e.PACKAGE_NAME }}"><i class="fa fa-mobile"></i> View Report </a>
+                                 <a class="btn btn-info" href="../dynamic_report/{{ e.MD5 }}"><i class="fa fa-mobile"></i> View Report </a>
                             </td>
                         </tr>
                     {% endfor %}
@@ -346,7 +346,7 @@ div.loading{
           <div class="modal-body">
             <form role="form">
                 <div class="form-group">
-                    <label>IP &amp; Port</label>
+                    <label>IP &amp; Port/Identifier</label>
                      <input id="identifier" type="text" class="form-control" value="{{ identifier }}">
                 </div>
                 <div class="form-group">
@@ -396,7 +396,7 @@ function dynamic_loader(){
                     success : function(json) {
                         if (json.status==="ok"){
                               $('#stat').append("\nSucessfully created MobSF Dynamic Analysis environment.");
-                            if (json.version  < 5){
+                            if (json.android_version  < 5){
                               $('#stat').append("\n* Download & Install Xposed Framework.\n* Restart the device.");
                               $('#stat').append("\n* Enable all the Xposed modules.\n* Restart the device once more.");
                             } else{

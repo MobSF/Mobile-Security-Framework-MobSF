@@ -71,15 +71,6 @@ def generic_compare(request,
                     first_hash: str,
                     second_hash: str,
                     api: bool = False):
-    # Second Validation for REST API
-    match1 = re.match('^[0-9a-f]{32}$', first_hash)
-    match2 = re.match('^[0-9a-f]{32}$', second_hash)
-    if not (match1 and match2):
-        return print_n_send_error_response(
-            request,
-            'Invalid Hash(s)',
-            api,
-        )
     # This context consists of specific lists and analysis
     # that is done on the classic ones
     # it will be filled during the different diff analysis

@@ -73,9 +73,9 @@ def run(request, api=False):
         context = {
             'title': escape(ntpath.basename(fil)),
             'file': escape(ntpath.basename(fil)),
-            'dat': sfile.read_text('utf-8', 'ignore'),
+            'data': sfile.read_text('utf-8', 'ignore'),
             'type': syntax,
-            'sql': {},
+            'sqlite': {},
             'version': settings.MOBSF_VER,
         }
         template = 'general/view.html'

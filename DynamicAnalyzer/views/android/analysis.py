@@ -80,8 +80,8 @@ def get_screenshots(md5_hash, download_dir):
     try:
         screen_dir = os.path.join(download_dir,
                                   md5_hash + '-screenshots-apk/')
-        sadb = StaticAnalyzerAndroid.objects.filter(MD5=md5_hash)
-        if os.path.exists(screen_dir) and sadb.exists():
+        sadb = StaticAnalyzerAndroid.objects.get(MD5=md5_hash)
+        if os.path.exists(screen_dir):
             for img in os.listdir(screen_dir):
                 if img.endswith('.png'):
                     if img.startswith('act'):
@@ -90,8 +90,8 @@ def get_screenshots(md5_hash, download_dir):
                         expact_imgs.append(img)
                     else:
                         imgs.append(img)
-            exported_act = python_list(sadb[0].EXPORTED_ACTIVITIES)
-            act_desc = python_list(sadb[0].ACTIVITIES)
+            exported_act = python_list(sadb.EXPORTED_ACTIVITIES)
+            act_desc = python_list(sadb.ACTIVITIES)
             if act_imgs:
                 if len(act_imgs) == len(act_desc):
                     act = dict(list(zip(act_imgs, act_desc)))
