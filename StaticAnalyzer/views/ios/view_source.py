@@ -134,8 +134,8 @@ def run(request, api=False):
             'title': escape(ntpath.basename(fil)),
             'file': escape(ntpath.basename(fil)),
             'type': file_format,
-            'dat': dat,
-            'sql': sql_dump,
+            'data': dat,
+            'sqlite': sql_dump,
             'version': settings.MOBSF_VER,
         }
         template = 'general/view.html'

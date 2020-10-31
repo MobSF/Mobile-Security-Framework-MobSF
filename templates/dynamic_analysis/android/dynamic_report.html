@@ -226,27 +226,27 @@
                    <div align="center">
                       <p>
                       {% if apimon %}
-                      <a target="_blank" class="btn btn-primary" role="button" href="../live_api/?hash={{ md5 }}&amp;package={{ package }}">API Monitor View</a>
+                      <a target="_blank" class="btn btn-primary" role="button" href="../live_api/?hash={{ hash }}&amp;package={{ package }}">API Monitor View</a>
                       {% endif %}
-                      {% if fdlog %}
-                          <a target="_blank" class="btn btn-primary" role="button" href="../frida_logs/?hash={{ md5 }}&amp;package={{ package }}">Frida Logs View</a>
+                      {% if frida_logs %}
+                          <a target="_blank" class="btn btn-primary" role="button" href="../frida_logs/?hash={{ hash }}&amp;package={{ package }}">Frida Logs View</a>
                       {% endif %}
                           <a class="btn btn-success" target="_blank" role="button" href="../httptools?project={{package}}">Start HTTPTools</a>
                       </p>
                       <p>
                       {% if droidmon %}
-                         <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ md5 }}-x_logcat.txt">Droidmon API Monitor Logs</a>
+                         <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-x_logcat.txt">Droidmon API Monitor Logs</a>
                       {% endif %}
                       {% if apimon %}
-                         <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ md5 }}-api_monitor.txt">Frida API Monitor Logs</a>
+                         <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-api_monitor.txt">Frida API Monitor Logs</a>
                       {% endif %}
-                      {% if fdlog %}
-                         <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ md5 }}-frida_out.txt">Frida Logs</a>
+                      {% if frida_logs %}
+                         <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-frida_out.txt">Frida Logs</a>
                       {% endif %}
-                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ md5 }}-web_traffic.txt">HTTP(S) Traffic</a>
-                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ md5 }}-logcat.txt">Logcat Logs</a>
-                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ md5 }}-dump.txt">Dumpsys Logs</a> 
-                      <a class="btn btn-primary btn-sm" role="button" href="../download/{{ md5 }}-app_data.tar">Application Data</a>
+                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-web_traffic.txt">HTTP(S) Traffic</a>
+                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-logcat.txt">Logcat Logs</a>
+                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-dump.txt">Dumpsys Logs</a> 
+                      <a class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-app_data.tar">Application Data</a>
                       </p>
                    </div>
                 </div>
@@ -373,9 +373,9 @@
              <div class="table-responsive">
                     <table class="table table-bordered table-hover table-striped">
       
-                    {% for img, desc in expacttest.items %}
+                    {% for img, desc in exported_activity_tester.items %}
                         <tr>
-                          <td><img alt="{{desc}}" src="../download/{{ md5 }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
+                          <td><img alt="{{desc}}" src="../download/{{ hash }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
                         <td>{{ desc }}</td>
                         </tr>
                     {% endfor %}
@@ -402,9 +402,9 @@
              <p>
              <div class="table-responsive">
                   <table class="table table-bordered table-hover table-striped">
-                       {% for img, desc in acttest.items %}
+                       {% for img, desc in activity_tester.items %}
                           <tr>
-                            <td><img alt="{{desc}}" src="../download/{{ md5 }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
+                            <td><img alt="{{desc}}" src="../download/{{ hash }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
                           <td>{{ desc }}</td>
                           </tr>
                       {% endfor %}
@@ -430,7 +430,7 @@
              </p>
                <div class="list-group">
                       {% for i in screenshots %}
-                        <img alt="Screenshot" src="../download/{{ md5 }}-screenshots-apk/{{ i}}" class="img-thumbnail" height="600" width="350">
+                        <img alt="Screenshot" src="../download/{{ hash }}-screenshots-apk/{{ i}}" class="img-thumbnail" height="600" width="350">
                       {% endfor %}
               </div>
               
@@ -552,7 +552,6 @@
         </div><!-- /.card -->
         </div>
         <!-- end row -->
-        </div>
     </div>
 </section>
  <!-- ===========================end urls ================================== -->
@@ -594,7 +593,7 @@
               <div class="table-responsive">
                     <table class="table table-bordered table-hover table-striped">
                      {% for file in sqlite %}
-                     <tr><td><a href="../dynamic_view_file/?file={{file|key:"file"}}&amp;md5={{md5}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td><tr>
+                     <tr><td><a href="../dynamic_view_file/?file={{file|key:"file"}}&amp;hash={{hash}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td><tr>
                     {% endfor %}
                     </table>
               </div>
@@ -619,7 +618,7 @@
                <div class="table-responsive">
                     <table class="table table-bordered table-hover table-striped">
                      {% for file in xml %}
-                     <tr><td><a href="../dynamic_view_file/?file={{file|key:"file"}}&amp;md5={{md5}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td><tr>
+                     <tr><td><a href="../dynamic_view_file/?file={{file|key:"file"}}&amp;hash={{hash}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td><tr>
                     {% endfor %}
                     </table>
               </div>
@@ -644,7 +643,7 @@
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover table-striped">
                      {% for file in others %}
-                     <tr><td><a href="../dynamic_view_file/?file={{file|key:"file"}}&amp;md5={{md5}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td><tr>
+                     <tr><td><a href="../dynamic_view_file/?file={{file|key:"file"}}&amp;hash={{hash}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td><tr>
                     {% endfor %}
                     </table>
                 </div>

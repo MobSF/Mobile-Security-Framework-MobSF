@@ -285,7 +285,7 @@
             </li>
             {% if dynamic_analysis_done %}
             <li class="nav-item">
-              <a href="../dynamic_report/?hash={{ md5 }}&amp;package={{ package_name }}" class="nav-link">
+              <a href="../dynamic_report/{{ md5 }}" class="nav-link">
               <i class="nav-icon fas fa-file-alt"></i>
               <p>
                 Dynamic Analysis Report
@@ -294,7 +294,7 @@
             </li>
             {% else %}
             <li class="nav-item">
-              <a href="../android_dynamic/?hash={{md5}}&amp;package={{package_name}}" class="nav-link">
+              <a href="../android_dynamic/{{md5}}" class="nav-link">
               <i class="nav-icon fa fa-play-circle"></i>
               <p>
                 Start Dynamic Analysis
@@ -595,7 +595,7 @@
                 </p>
                 <p> <a href="../StaticAnalyzer/?checksum={{ md5 }}&amp;name={{ file_name }}&amp;type=apk&amp;rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a></p>
                 <p>
-                  <a href="../android_dynamic/?hash={{md5}}&amp;package={{package_name}}" class="btn btn-success" role="button"><i class="fa fa-play-circle"></i> Start Dynamic Analysis</a>
+                  <a href="../android_dynamic/{{md5}}" class="btn btn-success" role="button"><i class="fa fa-play-circle"></i> Start Dynamic Analysis</a>
                 </p>
               </div>
             </div><!-- /.card -->

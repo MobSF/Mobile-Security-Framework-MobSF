@@ -15,16 +15,18 @@ from django.views.decorators.http import require_http_methods
 
 from DynamicAnalyzer.views.android.frida_core import Frida
 from DynamicAnalyzer.views.android.operations import (
+    get_package_name,
     invalid_params,
     is_attack_pattern,
-    is_md5,
-    json_response,
-    strict_package_check)
+    send_response,
+)
 
 from MobSF.utils import (
     is_file_exists,
+    is_md5,
     is_safe_path,
-    print_n_send_error_response)
+    print_n_send_error_response,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 
 @require_http_methods(['GET'])
-def list_frida_scripts(request):
+def list_frida_scripts(request, api=False):
     """Get frida scripts from others."""
     scripts = []
     others = os.path.join(settings.TOOLS_DIR,
@@ -41,13 +43,14 @@ def list_frida_scripts(request):
     files = glob.glob(others + '**/*.js', recursive=True)
     for item in files:
         scripts.append(Path(item).stem)
-    return json_response({'status': 'ok',
-                          'files': scripts})
+    return send_response({'status': 'ok',
+                          'files': scripts},
+                         api)
 # AJAX
 
 
 @require_http_methods(['POST'])
-def get_script(request):
+def get_script(request, api=False):
     """Get frida scripts from others."""
     data = {'status': 'ok', 'content': ''}
     try:
@@ -59,42 +62,46 @@ def get_script(request):
         for script in scripts:
             script_file = os.path.join(others, script + '.js')
             if not is_safe_path(others, script_file):
-                return json_response(data)
+                data = {
+                    'status': 'failed',
+                    'message': 'Path traversal detected.'}
+                return send_response(data, api)
             if is_file_exists(script_file):
                 script_ct.append(Path(script_file).read_text())
         data['content'] = '\n'.join(script_ct)
     except Exception:
         pass
-    return json_response(data)
+    return send_response(data, api)
 # AJAX
 
 
 @require_http_methods(['POST'])
-def instrument(request):
+def instrument(request, api=False):
     """Instrument app with frida."""
     data = {}
     try:
         logger.info('Starting Instrumentation')
-        package = request.POST['package']
         md5_hash = request.POST['hash']
         default_hooks = request.POST['default_hooks']
         auxiliary_hooks = request.POST['auxiliary_hooks']
         code = request.POST['frida_code']
         # Fill extras
         extras = {}
-        class_name = request.POST.get('cls_name')
+        class_name = request.POST.get('class_name')
         if class_name:
-            extras['cls_name'] = class_name.strip()
-        class_search = request.POST.get('cls_search')
+            extras['class_name'] = class_name.strip()
+        class_search = request.POST.get('class_search')
         if class_search:
-            extras['cls_search'] = class_search.strip()
-        cls_trace = request.POST.get('cls_trace')
+            extras['class_search'] = class_search.strip()
+        cls_trace = request.POST.get('class_trace')
         if cls_trace:
-            extras['cls_trace'] = cls_trace.strip()
+            extras['class_trace'] = cls_trace.strip()
         if (is_attack_pattern(default_hooks)
-                or not strict_package_check(package)
                 or not is_md5(md5_hash)):
-            return invalid_params()
+            return invalid_params(api)
+        package = get_package_name(md5_hash)
+        if not package:
+            return invalid_params(api)
         frida_obj = Frida(md5_hash,
                           package,
                           default_hooks.split(','),
@@ -108,25 +115,33 @@ def instrument(request):
     except Exception as exp:
         logger.exception('Instrumentation failed')
         data = {'status': 'failed', 'message': str(exp)}
-    return json_response(data)
+    return send_response(data, api)
 
 
-def live_api(request):
+def live_api(request, api=False):
     try:
-        apphash = request.GET.get('hash', '')
-        stream = request.GET.get('stream', '')
+        if api:
+            apphash = request.POST['hash']
+            stream = True
+        else:
+            apphash = request.GET.get('hash', '')
+            stream = request.GET.get('stream', '')
         if not is_md5(apphash):
-            return invalid_params()
+            return invalid_params(api)
         if stream:
             apk_dir = os.path.join(settings.UPLD_DIR, apphash + '/')
             apimon_file = os.path.join(apk_dir, 'mobsf_api_monitor.txt')
             data = {}
-            if is_file_exists(apimon_file):
-                with open(apimon_file, 'r') as flip:
-                    api_list = json.loads('[{}]'.format(
-                        flip.read()[:-1]))
-                data = {'data': api_list}
-                return json_response(data)
+            if not is_file_exists(apimon_file):
+                data = {
+                    'status': 'failed',
+                    'message': 'Data does not exist.'}
+                return send_response(data, api)
+            with open(apimon_file, 'r') as flip:
+                api_list = json.loads('[{}]'.format(
+                    flip.read()[:-1]))
+            data = {'data': api_list}
+            return send_response(data, api)
         logger.info('Starting API monitor streaming')
         template = 'dynamic_analysis/android/live_api.html'
         return render(request,
@@ -138,23 +153,31 @@ def live_api(request):
     except Exception:
         logger.exception('API monitor streaming')
         err = 'Error in API monitor streaming'
-        return print_n_send_error_response(request, err)
+        return print_n_send_error_response(request, err, api)
 
 
-def frida_logs(request):
+def frida_logs(request, api=False):
     try:
-        apphash = request.GET.get('hash', '')
-        stream = request.GET.get('stream', '')
+        if api:
+            apphash = request.POST['hash']
+            stream = True
+        else:
+            apphash = request.GET.get('hash', '')
+            stream = request.GET.get('stream', '')
         if not is_md5(apphash):
-            return invalid_params()
+            return invalid_params(api)
         if stream:
             apk_dir = os.path.join(settings.UPLD_DIR, apphash + '/')
             frida_logs = os.path.join(apk_dir, 'mobsf_frida_out.txt')
             data = {}
-            if is_file_exists(frida_logs):
-                with open(frida_logs, 'r') as flip:
-                    data = {'data': flip.read()}
-                return json_response(data)
+            if not is_file_exists(frida_logs):
+                data = {
+                    'status': 'failed',
+                    'message': 'Data does not exist.'}
+                return send_response(data, api)
+            with open(frida_logs, 'r') as flip:
+                data = {'data': flip.read()}
+            return send_response(data, api)
         logger.info('Frida Logs live streaming')
         template = 'dynamic_analysis/android/frida_logs.html'
         return render(request,
@@ -166,7 +189,7 @@ def frida_logs(request):
     except Exception:
         logger.exception('Frida log streaming')
         err = 'Error in Frida log streaming'
-        return print_n_send_error_response(request, err)
+        return print_n_send_error_response(request, err, api)
 
 
 def decode_base64(data, altchars=b'+/'):

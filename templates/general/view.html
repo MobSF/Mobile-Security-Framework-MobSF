@@ -35,8 +35,8 @@ pre {
                    <div class="box-body">
                       <h3>{{file}} </h3>
                       <br />
-                      {% if sql %}
-                      {% for table, data in sql.items %}
+                      {% if sqlite %}
+                      {% for table, data in sqlite.items %}
                       <div class="box">
                           <div class="box-header">
                             <h4 class="box-title"><b>{{table}}</b></h4>
@@ -65,7 +65,7 @@ pre {
                         </div>
                       {% endfor %}
                       {% else %}
-                        <pre id="code_block">{{ dat }}</pre>
+                        <pre id="code_block">{{ data }}</pre>
                       {% endif %}
                         </div>
                         <!-- /.box-body -->

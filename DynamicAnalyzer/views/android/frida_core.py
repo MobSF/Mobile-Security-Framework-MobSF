@@ -63,12 +63,12 @@ class Frida:
                 scripts.append(string_catch())
             elif itm == 'string_compare':
                 scripts.append(string_compare())
-            elif itm == 'enum_methods' and 'cls_name' in self.extras:
-                scripts.append(get_methods(self.extras['cls_name']))
-            elif itm == 'search_class' and 'cls_search' in self.extras:
-                scripts.append(class_pattern(self.extras['cls_search']))
-            elif itm == 'trace_class' and 'cls_trace' in self.extras:
-                scripts.append(class_trace(self.extras['cls_trace']))
+            elif itm == 'enum_methods' and 'class_name' in self.extras:
+                scripts.append(get_methods(self.extras['class_name']))
+            elif itm == 'search_class' and 'class_search' in self.extras:
+                scripts.append(class_pattern(self.extras['class_search']))
+            elif itm == 'trace_class' and 'class_trace' in self.extras:
+                scripts.append(class_trace(self.extras['class_trace']))
         return scripts
 
     def get_script(self):

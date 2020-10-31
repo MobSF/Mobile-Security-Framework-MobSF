@@ -14,16 +14,20 @@ from django.shortcuts import render
 
 from DynamicAnalyzer.views.android.environment import Environment
 from DynamicAnalyzer.views.android.operations import (
-    is_attack_pattern,
-    is_md5,
-    strict_package_check)
+    get_package_name,
+    strict_package_check,
+)
 from DynamicAnalyzer.tools.webproxy import (
     start_httptools_ui,
-    stop_httptools)
+    stop_httptools,
+)
 
-from MobSF.utils import (get_device,
-                         get_proxy_ip,
-                         print_n_send_error_response)
+from MobSF.utils import (
+    get_device,
+    get_proxy_ip,
+    is_md5,
+    print_n_send_error_response,
+)
 
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
@@ -31,11 +35,22 @@ from StaticAnalyzer.models import StaticAnalyzerAndroid
 logger = logging.getLogger(__name__)
 
 
-def dynamic_analysis(request):
+def dynamic_analysis(request, api=False):
     """Android Dynamic Analysis Entry point."""
     try:
+        scan_apps = []
         apks = StaticAnalyzerAndroid.objects.filter(
             APP_TYPE='apk').order_by('-id')
+        for apk in apks:
+            temp_dict = {
+                'ICON_FOUND': apk.ICON_FOUND,
+                'MD5': apk.MD5,
+                'APP_NAME': apk.APP_NAME,
+                'VERSION_NAME': apk.VERSION_NAME,
+                'FILE_NAME': apk.FILE_NAME,
+                'PACKAGE_NAME': apk.PACKAGE_NAME,
+            }
+            scan_apps.append(temp_dict)
         try:
             identifier = get_device()
         except Exception:
@@ -44,33 +59,43 @@ def dynamic_analysis(request):
                    ' Please run an android instance and refresh'
                    ' this page. If this error persists,'
                    ' set ANALYZER_IDENTIFIER in MobSF/settings.py')
-            return print_n_send_error_response(request, msg)
+            return print_n_send_error_response(request, msg, api)
         proxy_ip = get_proxy_ip(identifier)
-        context = {'apks': apks,
+        context = {'apps': scan_apps,
                    'identifier': identifier,
                    'proxy_ip': proxy_ip,
                    'proxy_port': settings.PROXY_PORT,
                    'title': 'MobSF Dynamic Analysis',
                    'version': settings.MOBSF_VER}
+        if api:
+            return context
         template = 'dynamic_analysis/dynamic_analysis.html'
         return render(request, template, context)
     except Exception as exp:
         logger.exception('Dynamic Analysis')
         return print_n_send_error_response(request,
-                                           exp)
+                                           exp,
+                                           api)
 
 
-def dynamic_analyzer(request):
+def dynamic_analyzer(request, checksum, api=False):
     """Android Dynamic Analyzer Environment."""
     logger.info('Creating Dynamic Analysis Environment')
     try:
-        bin_hash = request.GET['hash']
-        package = request.GET['package']
         no_device = False
-        if (is_attack_pattern(package)
-                or not is_md5(bin_hash)):
-            return print_n_send_error_response(request,
-                                               'Invalid Parameters')
+        if not is_md5(checksum):
+            # We need this check since checksum is not validated
+            # in REST API
+            return print_n_send_error_response(
+                request,
+                'Invalid Parameters',
+                api)
+        package = get_package_name(checksum)
+        if not package:
+            return print_n_send_error_response(
+                request,
+                'Invalid Parameters',
+                api)
         try:
             identifier = get_device()
         except Exception:
@@ -81,11 +106,11 @@ def dynamic_analyzer(request):
                    'Please run an android instance and refresh'
                    ' this page. If this error persists,'
                    ' set ANALYZER_IDENTIFIER in MobSF/settings.py')
-            return print_n_send_error_response(request, msg)
+            return print_n_send_error_response(request, msg, api)
         env = Environment(identifier)
         if not env.connect_n_mount():
             msg = 'Cannot Connect to ' + identifier
-            return print_n_send_error_response(request, msg)
+            return print_n_send_error_response(request, msg, api)
         version = env.get_android_version()
         logger.info('Android Version identified as %s', version)
         xposed_first_run = False
@@ -96,7 +121,8 @@ def dynamic_analyzer(request):
             if not env.mobsfy_init():
                 return print_n_send_error_response(
                     request,
-                    'Failed to MobSFy the instance')
+                    'Failed to MobSFy the instance',
+                    api)
             if version < 5:
                 xposed_first_run = True
         if xposed_first_run:
@@ -106,9 +132,9 @@ def dynamic_analyzer(request):
                    ' Restart the device and enable'
                    ' all Xposed modules. And finally'
                    ' restart the device once again.')
-            return print_n_send_error_response(request, msg)
+            return print_n_send_error_response(request, msg, api)
         # Clean up previous analysis
-        env.dz_cleanup(bin_hash)
+        env.dz_cleanup(checksum)
         # Configure Web Proxy
         env.configure_proxy(package)
         # Supported in Android 5+
@@ -119,31 +145,36 @@ def dynamic_analyzer(request):
         env.start_clipmon()
         # Get Screen Resolution
         screen_width, screen_height = env.get_screen_res()
-        apk_path = Path(settings.UPLD_DIR) / bin_hash / f'{bin_hash}.apk'
+        apk_path = Path(settings.UPLD_DIR) / checksum / f'{checksum}.apk'
         # Install APK
-        status = env.install_apk(apk_path.as_posix(), package)
+        status, output = env.install_apk(apk_path.as_posix(), package)
         if not status:
             # Unset Proxy
             env.unset_global_proxy()
-            msg = ('This APK cannot be installed. Is this APK '
-                   'compatible the Android VM/Emulator?')
+            msg = (f'This APK cannot be installed. Is this APK '
+                   f'compatible the Android VM/Emulator?\n{output}')
             return print_n_send_error_response(
                 request,
-                msg)
+                msg,
+                api)
         logger.info('Testing Environment is Ready!')
         context = {'screen_witdth': screen_width,
                    'screen_height': screen_height,
                    'package': package,
-                   'md5': bin_hash,
+                   'hash': checksum,
                    'android_version': version,
                    'version': settings.MOBSF_VER,
                    'title': 'Dynamic Analyzer'}
         template = 'dynamic_analysis/android/dynamic_analyzer.html'
+        if api:
+            return context
         return render(request, template, context)
     except Exception:
         logger.exception('Dynamic Analyzer')
-        return print_n_send_error_response(request,
-                                           'Dynamic Analysis Failed.')
+        return print_n_send_error_response(
+            request,
+            'Dynamic Analysis Failed.',
+            api)
 
 
 def httptools_start(request):
@@ -169,7 +200,7 @@ def httptools_start(request):
         return print_n_send_error_response(request, err)
 
 
-def logcat(request):
+def logcat(request, api=False):
     logger.info('Starting Logcat streaming')
     try:
         pkg = request.GET.get('package')
@@ -177,15 +208,20 @@ def logcat(request):
             if not strict_package_check(pkg):
                 return print_n_send_error_response(
                     request,
-                    'Invalid package name')
+                    'Invalid package name',
+                    api)
             template = 'dynamic_analysis/android/logcat.html'
             return render(request, template, {'package': pkg})
-        app_pkg = request.GET.get('app_package')
+        if api:
+            app_pkg = request.POST['package']
+        else:
+            app_pkg = request.GET.get('app_package')
         if app_pkg:
             if not strict_package_check(app_pkg):
                 return print_n_send_error_response(
                     request,
-                    'Invalid package name')
+                    'Invalid package name',
+                    api)
             adb = os.environ['MOBSF_ADB']
             g = proc.Group()
             g.run([adb, 'logcat', app_pkg + ':V', '*:*'])
@@ -200,8 +236,9 @@ def logcat(request):
                                          content_type='text/event-stream')
         return print_n_send_error_response(
             request,
-            'Invalid parameters')
+            'Invalid parameters',
+            api)
     except Exception:
         logger.exception('Logcat Streaming')
         err = 'Error in Logcat streaming'
-        return print_n_send_error_response(request, err)
+        return print_n_send_error_response(request, err, api)
