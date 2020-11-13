@@ -65,9 +65,9 @@ def upstream_proxy(flaw_type):
 
 def api_key():
     """Print REST API Key."""
-    if os.environ.get('MOBSF_API_KEY'):
+    if os.environ.get('MOBSF_SECRET_KEY'):
         logger.info('\nAPI Key read from environment variable')
-        return os.environ['MOBSF_API_KEY']
+        return os.environ['MOBSF_SECRET_KEY']
 
     secret_file = os.path.join(settings.MobSF_HOME, 'secret')
     if is_file_exists(secret_file):
