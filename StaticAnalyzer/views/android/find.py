@@ -50,7 +50,7 @@ def run(request):
             rpath = rpath[1:]
             if search_type == 'content':
                 dat = fname.read_text('utf-8', 'ignore')
-                if query in dat:
+                if query.lower() in dat.lower():
                     matches.add(escape(rpath))
             elif search_type == 'filename' and \
                     query.lower() in fname.name.lower():

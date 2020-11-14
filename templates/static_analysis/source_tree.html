@@ -41,10 +41,10 @@ pre {
                 <div class="row">
                 <div class="float-right col-4 search-container">
                      <div class="navbar-form navbar-right search-box col-4" >
-                      <strong>Find by filename:</strong> <input type="text" id="filename_search" class="form-control" placeholder="Filename filter">
+                      <strong>Find by filename:</strong> <input type="text" id="filename_search" class="form-control" placeholder="Filename">
                     </div>
                      <div class="navbar-form navbar-right search-box col-4" >
-                      <strong>Find by content:</strong> <input type="text" id="content_search" class="form-control" placeholder="Content search">
+                      <strong>Find by content:</strong> <input type="text" id="content_search" class="form-control" placeholder="Text">
                     </div>
                     <div class="col-2"><button type="button" id="clear-button" class="btn btn-primary">Clear</button></div>
                 </div>
@@ -274,7 +274,7 @@ function show_file(strPath) {
         },
         success: function(strFileData) {
             var code_block = $("pre#fileoutput")
-            code_block.text(strFileData.dat);
+            code_block.text(strFileData.data);
             code_blk = document.getElementById('fileoutput');
             if(code_blk) {
                 EnlighterJS.enlight(code_blk, false);
