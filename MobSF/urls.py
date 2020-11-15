@@ -78,19 +78,20 @@ if settings.API_ONLY == '0':
 
         # Static Analysis
         # Android
-        url(r'^StaticAnalyzer/$', android_sa.static_analyzer),
+        url(r'^static_analyzer/$', android_sa.static_analyzer),
+        # Remove this is version 4/5
         url(r'^source_code/$', source_tree.run, name='tree_view'),
         url(r'^view_file/$', view_source.run, name='view_source'),
         url(r'^find/$', find.run, name='find_files'),
         url(r'^generate_downloads/$', generate_downloads.run),
-        url(r'^ManifestView/$', manifest_view.run),
+        url(r'^manifest_view/$', manifest_view.run),
         # IOS
-        url(r'^StaticAnalyzer_iOS/$', ios_sa.static_analyzer_ios),
-        url(r'^ViewFile/$', io_view_source.run),
+        url(r'^static_analyzer_ios/$', ios_sa.static_analyzer_ios),
+        url(r'^view_file_ios/$', io_view_source.run),
         # Windows
-        url(r'^StaticAnalyzer_Windows/$', windows.staticanalyzer_windows),
+        url(r'^static_analyzer_windows/$', windows.staticanalyzer_windows),
         # Shared
-        url(r'^PDF/$', shared_func.pdf),
+        url(r'^pdf/$', shared_func.pdf),
         # App Compare
         url(r'^compare/(?P<hash1>[0-9a-f]{32})/(?P<hash2>[0-9a-f]{32})/$',
             shared_func.compare_apps),

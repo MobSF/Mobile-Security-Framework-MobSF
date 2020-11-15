@@ -165,7 +165,7 @@ def static_analyzer(request, api=False):
                             app_dic['icon_path'] = icon_dic['path']
 
                     # Set Manifest link
-                    app_dic['mani'] = ('../ManifestView/?md5='
+                    app_dic['mani'] = ('../manifest_view/?md5='
                                        + app_dic['md5']
                                        + '&type=apk&bin=1')
                     man_data_dic = manifest_data(app_dic['parsed_xml'])
@@ -284,7 +284,7 @@ def static_analyzer(request, api=False):
                     return render(request, template, context)
             elif typ == 'zip':
                 ios_ret = HttpResponseRedirect(
-                    '/StaticAnalyzer_iOS/?name='
+                    '/static_analyzer_ios/?name='
                     + app_dic['app_name']
                     + '&type=ios&checksum='
                     + app_dic['md5'])
@@ -358,7 +358,7 @@ def static_analyzer(request, api=False):
 
                         # Set manifest view link
                         app_dic['mani'] = (
-                            '../ManifestView/?md5='
+                            '../manifest_view/?md5='
                             + app_dic['md5'] + '&type='
                             + pro_type + '&bin=0'
                         )

@@ -169,7 +169,7 @@
             </a>
           </li>
             <li class="nav-item">
-              <a href="../PDF/?md5={{ md5 }}" class="nav-link">
+              <a href="../pdf/?md5={{ md5 }}" class="nav-link">
               <i class="nav-icon fas fa-file-pdf"></i>
               <p>
                 PDF Report
@@ -331,7 +331,7 @@
                 <strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong>
                 </p>
                 <p align="center">
-                  <a href="../StaticAnalyzer_iOS/?checksum={{ md5 }}&amp;name={{ file_name }}&amp;type=ios&amp;rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
+                  <a href="../static_analyzer_ios/?checksum={{ md5 }}&amp;name={{ file_name }}&amp;type=ios&amp;rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
                   <a data-target="#mplist" role="button" class="btn btn-primary" data-toggle="modal" href="#"><i class="fa fa-list"></i> View Info.plist</a>
                </p>
               </div>
@@ -485,7 +485,7 @@
                   </td>
                   <td>
                   {% for file_path, lines  in details.files.items %}
-                   <a href="../ViewFile/?file={{ file_path }}&amp;md5={{ md5 }}&amp;type=ios&amp;lines={{ lines }}"> {{ file_path }}</a>
+                   <a href="../view_file_ios/?file={{ file_path }}&amp;md5={{ md5 }}&amp;type=ios&amp;lines={{ lines }}"> {{ file_path }}</a>
                   </br>
                   {% endfor %}
                   </td>
@@ -631,7 +631,7 @@
                   </td>
                   <td>
                    {% for file_path, lines in details.files.items %}
-                   <a href="../ViewFile/?file={{ file_path }}&amp;md5={{ md5 }}&amp;type=ios&amp;lines={{ lines }}"> {{ file_path }}</a>
+                   <a href="../view_file_ios/?file={{ file_path }}&amp;md5={{ md5 }}&amp;type=ios&amp;lines={{ lines }}"> {{ file_path }}</a>
                   </br>
                   {% endfor %}
                   </td>
@@ -678,7 +678,7 @@
                       <td>
                         {% for file in item.files %}
                           {% if file.type %}
-                          <a href="../ViewFile/?file={{file.file_path}}&amp;type={{file.type}}&amp;md5={{file.hash}}">{{ file.file_path }}</a>
+                          <a href="../view_file_ios/?file={{file.file_path}}&amp;type={{file.type}}&amp;md5={{file.hash}}">{{ file.file_path }}</a>
                           {% else %}
                           {{ file.file_path }}
                           {% endif %}
@@ -790,7 +790,7 @@
                        {% endfor %}
                         </td>
                        <td>
-                          <a href="../ViewFile/?file={{urldict|key:"path"}}&amp;md5={{ md5}}&amp;type=ios">{{urldict|key:"path"}}</a>
+                          <a href="../view_file_ios/?file={{urldict|key:"path"}}&amp;md5={{ md5}}&amp;type=ios">{{urldict|key:"path"}}</a>
                        </td>
                     </tr>
                   {% endfor %} 
@@ -881,7 +881,7 @@
                        {% endfor %}
                         </td>
                        <td>
-                          <a href="../ViewFile/?file={{email_dict|key:"path"}}&amp;md5={{ md5}}&amp;type=ios">{{email_dict|key:"path"}}</a>   
+                          <a href="../?file={{email_dict|key:"path"}}&amp;md5={{ md5}}&amp;type=ios">{{email_dict|key:"path"}}</a>   
                        </td>
                     </tr>
                   {% endfor %} 
