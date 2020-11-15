@@ -74,7 +74,6 @@ if settings.API_ONLY == '0':
         url(r'^error/$', home.error, name='error'),
         url(r'^not_found/$', home.not_found),
         url(r'^zip_format/$', home.zip_format),
-        url(r'^mac_only/$', home.mac_only),
 
         # Static Analysis
         # Android

@@ -76,24 +76,26 @@ class Upload(object):
         response_data = {
             'description': '',
             'status': 'error',
-            'analyzer': '',
         }
         if request.method != 'POST':
-            logger.error('Method not Supported!')
-            response_data['description'] = 'Method not Supported!'
+            msg = 'Method not Supported!'
+            logger.error(msg)
+            response_data['description'] = msg
             return self.resp_json(response_data)
 
         if not self.form.is_valid():
-            logger.error('Invalid Form Data!')
-            response_data['description'] = 'Invalid Form Data!'
+            msg = 'Invalid Form Data!'
+            logger.error(msg)
+            response_data['description'] = msg
             return self.resp_json(response_data)
 
         self.file_content_type = request.FILES['file'].content_type
         self.file_name_lower = request.FILES['file'].name.lower()
         self.file_type = FileType(self.file_content_type, self.file_name_lower)
         if not self.file_type.is_allow_file():
-            logger.error('File format not Supported!')
-            response_data['description'] = 'File format not Supported!'
+            msg = 'File format not Supported!'
+            logger.error(msg)
+            response_data['description'] = msg
             return self.resp_json(response_data)
 
         if self.file_type.is_ipa():
@@ -101,7 +103,6 @@ class Upload(object):
                 msg = 'Static Analysis of iOS IPA requires Mac or Linux'
                 logger.error(msg)
                 response_data['description'] = msg
-                response_data['analyzer'] = 'mac_only'
                 return self.resp_json(response_data)
 
         response_data = self.upload()
@@ -178,16 +179,6 @@ def zip_format(request):
         'version': settings.MOBSF_VER,
     }
     template = 'general/zip.html'
-    return render(request, template, context)
-
-
-def mac_only(request):
-    """Mac Ony Message Route."""
-    context = {
-        'title': 'Supports OSX Only',
-        'version': settings.MOBSF_VER,
-    }
-    template = 'general/ios.html'
     return render(request, template, context)
 
 
