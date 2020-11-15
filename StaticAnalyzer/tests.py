@@ -169,6 +169,10 @@ def api_test():
         logger.info('[OK] Completed Upload API test')
         logger.info('Running Static Analysis API Test')
         for upl in uploaded:
+            if (platform.system() == 'Windows'
+                    and upl['scan_type'] == 'ipa'):
+                # Do not scan IPA in Windows
+                continue
             resp = http_client.post(
                 '/api/v1/scan', upl, HTTP_AUTHORIZATION=auth)
             if resp.status_code == 200:
