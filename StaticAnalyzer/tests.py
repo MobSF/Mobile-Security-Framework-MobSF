@@ -49,6 +49,10 @@ def static_analysis_test():
                 upl['hash'], upl['scan_type'])
             if RESCAN:
                 scan_url = scan_url + '&rescan=1'
+            if (platform.system() == 'Windows'
+                    and upl['file_name'].endswith('.ipa')):
+                # Do not scan IPA in Windows
+                continue
             resp = http_client.get(scan_url, follow=True)
             if resp.status_code == 200:
                 logger.info('[OK] Static Analysis Complete: %s', scan_url)
