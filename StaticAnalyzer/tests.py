@@ -31,6 +31,8 @@ def static_analysis_test():
                     '.appx',
                     '.zip')):
                 continue
+            if platform.system() == 'Windows' and filename.endswith('.ipa'):
+                continue
             fpath = os.path.join(apk_dir, filename)
             with open(fpath, 'rb') as filp:
                 response = http_client.post('/upload/', {'file': filp})
@@ -49,10 +51,6 @@ def static_analysis_test():
                 upl['hash'], upl['scan_type'])
             if RESCAN:
                 scan_url = scan_url + '&rescan=1'
-            if (platform.system() == 'Windows'
-                    and upl['file_name'].endswith('.ipa')):
-                # Do not scan IPA in Windows
-                continue
             resp = http_client.get(scan_url, follow=True)
             if resp.status_code == 200:
                 logger.info('[OK] Static Analysis Complete: %s', scan_url)
@@ -152,6 +150,8 @@ def api_test():
                     '.appx',
                     '.zip')):
                 continue
+            if platform.system() == 'Windows' and filename.endswith('.ipa'):
+                continue
             fpath = os.path.join(apk_dir, filename)
             if (platform.system() not in ['Darwin', 'Linux']
                     and fpath.endswith('.ipa')):
@@ -169,10 +169,6 @@ def api_test():
         logger.info('[OK] Completed Upload API test')
         logger.info('Running Static Analysis API Test')
         for upl in uploaded:
-            if (platform.system() == 'Windows'
-                    and upl['scan_type'] == 'ipa'):
-                # Do not scan IPA in Windows
-                continue
             resp = http_client.post(
                 '/api/v1/scan', upl, HTTP_AUTHORIZATION=auth)
             if resp.status_code == 200:
