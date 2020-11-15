@@ -4,6 +4,7 @@ import os
 import random
 import subprocess
 import sys
+import shutil
 
 from install.windows.setup import windows_config_local
 
@@ -116,7 +117,10 @@ def get_mobsf_home(use_home, base_dir):
             os.makedirs(upload_dir)
         # Signature Directory
         sig_dir = os.path.join(mobsf_home, 'signatures/')
-        if not os.path.exists(sig_dir):
+        if use_home:
+            src = os.path.join(base_dir, 'signatures/')
+            shutil.copytree(src, sig_dir)
+        elif not os.path.exists(sig_dir):
             os.makedirs(sig_dir)
         return mobsf_home
     except Exception:
