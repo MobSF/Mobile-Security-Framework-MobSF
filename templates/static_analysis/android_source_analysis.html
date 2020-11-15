@@ -220,7 +220,7 @@
             </ul>
           </li>
             <li class="nav-item">
-              <a href="../PDF/?md5={{ md5 }}" class="nav-link">
+              <a href="../pdf/?md5={{ md5 }}" class="nav-link">
               <i class="nav-icon fas fa-file-pdf"></i>
               <p>
                 PDF Report
@@ -510,9 +510,9 @@
                 <strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong>
                 </p>
                 <p align="center">
-                  <a href="../StaticAnalyzer/?checksum={{ md5 }}&amp;name={{ file_name }}&amp;type=zip&amp;rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
-                  <a target="_blank" href="../ManifestView/?md5={{ md5 }}&amp;type={{ app_type }}&amp;bin=0" role="button" class="btn btn-primary"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
-                  <a href="../Java/?md5={{ md5 }}&amp;type={{ app_type }}" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Source</a>
+                  <a href="../static_analyzer/?checksum={{ md5 }}&amp;name={{ file_name }}&amp;type=zip&amp;rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
+                  <a target="_blank" href="../manifest_view/?md5={{ md5 }}&amp;type={{ app_type }}&amp;bin=0" role="button" class="btn btn-primary"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
+                  <a href="{% url "tree_view" %}?md5={{ md5 }}&amp;type=java" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Source</a>
                 </p>
               </div>
             </div><!-- /.card -->
@@ -600,7 +600,7 @@
                     </td>
                     <td>
                     {% for file_path, lines in details.files.items %}
-                    <a href="../ViewSource/?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines }}"> {{ file_path }}</a>
+                    <a href="{% url "view_source" %}?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines }}"> {{ file_path }}</a>
                     <br/>
                     {% endfor %}
                     </td>
@@ -868,7 +868,7 @@
                   </td>
                   <td>
                    {% for file_path, lines in details.files.items %}
-                   <a href="../ViewSource/?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines }}"> {{ file_path }}</a>
+                   <a href="{% url "view_source" %}?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines }}"> {{ file_path }}</a>
                   <br/>
                   {% endfor %}
                   </td>
@@ -1069,7 +1069,7 @@
                         </td>
 
                        <td>
-                          <a href="../ViewSource/?file={{urldict|key:"path"}}&amp;md5={{ md5}}&amp;type={{app_type}}">{{urldict|key:"path"}}</a>
+                          <a href="{% url "view_source" %}?file={{urldict|key:"path"}}&amp;md5={{ md5}}&amp;type={{app_type}}">{{urldict|key:"path"}}</a>
                        </td>
                     </tr>
                   {% endfor %} 
@@ -1160,7 +1160,7 @@
                        {% endfor %}
                         </td>
                        <td>
-                          <a href="../ViewSource/?file={{email_dict|key:"path"}}&amp;md5={{ md5}}&amp;type={{app_type}}">{{email_dict|key:"path"}}</a>
+                          <a href="{% url "view_source" %}?file={{email_dict|key:"path"}}&amp;md5={{ md5}}&amp;type={{app_type}}">{{email_dict|key:"path"}}</a>
                        </td>
                     </tr>
                   {% endfor %} 
@@ -1380,5 +1380,3 @@
   });
 </script>
 {% endblock %}
-
-

@@ -74,39 +74,35 @@ class Upload(object):
     def upload_html(self):
         request = self.request
         response_data = {
-            'url': '',
             'description': '',
-            'status': '',
+            'status': 'error',
         }
         if request.method != 'POST':
-            logger.error('Method not Supported!')
-            response_data['description'] = 'Method not Supported!'
-            response_data['status'] = HTTP_BAD_REQUEST
+            msg = 'Method not Supported!'
+            logger.error(msg)
+            response_data['description'] = msg
             return self.resp_json(response_data)
 
         if not self.form.is_valid():
-            logger.error('Invalid Form Data!')
-            response_data['description'] = 'Invalid Form Data!'
-            response_data['status'] = HTTP_BAD_REQUEST
+            msg = 'Invalid Form Data!'
+            logger.error(msg)
+            response_data['description'] = msg
             return self.resp_json(response_data)
 
         self.file_content_type = request.FILES['file'].content_type
         self.file_name_lower = request.FILES['file'].name.lower()
         self.file_type = FileType(self.file_content_type, self.file_name_lower)
         if not self.file_type.is_allow_file():
-            logger.error('File format not Supported!')
-            response_data['description'] = 'File format not Supported!'
-            response_data['status'] = HTTP_BAD_REQUEST
+            msg = 'File format not Supported!'
+            logger.error(msg)
+            response_data['description'] = msg
             return self.resp_json(response_data)
 
         if self.file_type.is_ipa():
             if platform.system() not in LINUX_PLATFORM:
                 msg = 'Static Analysis of iOS IPA requires Mac or Linux'
                 logger.error(msg)
-                response_data[
-                    'description'] = msg
-                response_data['status'] = 'success'
-                response_data['url'] = 'mac_only/'
+                response_data['description'] = msg
                 return self.resp_json(response_data)
 
         response_data = self.upload()
@@ -125,12 +121,7 @@ class Upload(object):
         if not self.file_type.is_allow_file():
             api_response['error'] = 'File format not Supported!'
             return api_response, HTTP_BAD_REQUEST
-        data = self.upload()
-        api_response = {
-            'scan_type': data['scan_type'],
-            'hash': data['hash'],
-            'file_name': data['file_name'],
-        }
+        api_response = self.upload()
         return api_response, 200
 
     def upload(self):
@@ -146,7 +137,6 @@ class Upload(object):
             return scanning.scan_zip()
         elif self.file_type.is_ipa():
             return scanning.scan_ipa()
-        # Windows APPX
         elif self.file_type.is_appx():
             return scanning.scan_appx()
 
@@ -189,16 +179,6 @@ def zip_format(request):
         'version': settings.MOBSF_VER,
     }
     template = 'general/zip.html'
-    return render(request, template, context)
-
-
-def mac_only(request):
-    """Mac Ony Message Route."""
-    context = {
-        'title': 'Supports OSX Only',
-        'version': settings.MOBSF_VER,
-    }
-    template = 'general/ios.html'
     return render(request, template, context)
 
 

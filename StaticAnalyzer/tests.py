@@ -31,47 +31,50 @@ def static_analysis_test():
                     '.appx',
                     '.zip')):
                 continue
+            if platform.system() == 'Windows' and filename.endswith('.ipa'):
+                continue
             fpath = os.path.join(apk_dir, filename)
             with open(fpath, 'rb') as filp:
                 response = http_client.post('/upload/', {'file': filp})
                 obj = json.loads(response.content.decode('utf-8'))
                 if response.status_code == 200 and obj['status'] == 'success':
                     logger.info('[OK] Upload OK: %s', filename)
-                    uploaded.append(obj['url'])
+                    uploaded.append(obj)
                 else:
                     logger.error('Performing Upload: %s', filename)
                     return True
         logger.info('[OK] Completed Upload test')
         logger.info('Running Static Analysis Test')
         for upl in uploaded:
+            scan_url = '/{}/?name={}&checksum={}&type={}'.format(
+                upl['analyzer'], upl['file_name'],
+                upl['hash'], upl['scan_type'])
             if RESCAN:
-                upl = '/' + upl + '&rescan=1'
-            else:
-                upl = '/' + upl
-            resp = http_client.get(upl, follow=True)
+                scan_url = scan_url + '&rescan=1'
+            resp = http_client.get(scan_url, follow=True)
             if resp.status_code == 200:
-                logger.info('[OK] Static Analysis Complete: %s', upl)
+                logger.info('[OK] Static Analysis Complete: %s', scan_url)
             else:
-                logger.error('Performing Static Analysis: %s', upl)
+                logger.error('Performing Static Analysis: %s', scan_url)
                 return True
         logger.info('[OK] Static Analysis test completed')
         logger.info('Running PDF Generation Test')
         if platform.system() in ['Darwin', 'Linux']:
             pdfs = [
-                '/PDF/?md5=3a552566097a8de588b8184b059b0158',
-                '/PDF/?md5=6c23c2970551be15f32bbab0b5db0c71',
-                '/PDF/?md5=52c50ae824e329ba8b5b7a0f523efffe',
-                '/PDF/?md5=57bb5be0ea44a755ada4a93885c3825e',
-                '/PDF/?md5=8179b557433835827a70510584f3143e',
-                '/PDF/?md5=7b0a23bffc80bac05739ea1af898daad',
+                '/pdf/?md5=3a552566097a8de588b8184b059b0158',
+                '/pdf/?md5=6c23c2970551be15f32bbab0b5db0c71',
+                '/pdf/?md5=52c50ae824e329ba8b5b7a0f523efffe',
+                '/pdf/?md5=57bb5be0ea44a755ada4a93885c3825e',
+                '/pdf/?md5=8179b557433835827a70510584f3143e',
+                '/pdf/?md5=7b0a23bffc80bac05739ea1af898daad',
             ]
         else:
             pdfs = [
-                '/PDF/?md5=3a552566097a8de588b8184b059b0158',
-                '/PDF/?md5=52c50ae824e329ba8b5b7a0f523efffe',
-                '/PDF/?md5=57bb5be0ea44a755ada4a93885c3825e',
-                '/PDF/?md5=8179b557433835827a70510584f3143e',
-                '/PDF/?md5=7b0a23bffc80bac05739ea1af898daad',
+                '/pdf/?md5=3a552566097a8de588b8184b059b0158',
+                '/pdf/?md5=52c50ae824e329ba8b5b7a0f523efffe',
+                '/pdf/?md5=57bb5be0ea44a755ada4a93885c3825e',
+                '/pdf/?md5=8179b557433835827a70510584f3143e',
+                '/pdf/?md5=7b0a23bffc80bac05739ea1af898daad',
             ]
 
         for pdf in pdfs:
@@ -146,6 +149,8 @@ def api_test():
                     '.ipa',
                     '.appx',
                     '.zip')):
+                continue
+            if platform.system() == 'Windows' and filename.endswith('.ipa'):
                 continue
             fpath = os.path.join(apk_dir, filename)
             if (platform.system() not in ['Darwin', 'Linux']

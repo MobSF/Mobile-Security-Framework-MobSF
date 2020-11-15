@@ -1,0 +1,332 @@
+{% extends "base/base_layout.html" %}
+{% load static %}
+ {% block sidebar_option %}
+      sidebar-collapse
+{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static "jsTree/themes/default/style.min.css" %}" />
+<link rel="stylesheet" href="{% static "jsTree/custom.css" %}" />
+<link rel="stylesheet" href="{% static "others/css/xcode.min.css" %}">
+<link rel="stylesheet" href="{% static "enlighterjs/enlighterjs.min.css" %}" />
+<style>
+pre {
+  white-space: pre-wrap;       /* css-3 */
+  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+  white-space: -pre-wrap;      /* Opera 4-6 */
+  white-space: -o-pre-wrap;    /* Opera 7 */
+  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+  }
+
+  /* custom yellow line highlight */
+  .enlighter-t-enlighter div.enlighter>div.enlighter-special {
+    background-color: #fff8bb;
+  }
+
+</style>
+{% endblock %}
+{% block content %}
+<div class="content-wrapper">
+  <div class="content-header">
+  </div>
+   <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h3 class="box-title">{% if source_type == 'java' %}
+                                        <i class="fab fa-java"></i> Java Source</h3>
+                                      {% elif source_type == 'smali' %}
+                                        <i class="fa fa-code"></i> Smali Source</h3>
+                                      {% endif %}
+                <div class="row">
+                <div class="float-right col-4 search-container">
+                     <div class="navbar-form navbar-right search-box col-4" >
+                      <strong>Find by filename:</strong> <input type="text" id="filename_search" class="form-control" placeholder="Filename">
+                    </div>
+                     <div class="navbar-form navbar-right search-box col-4" >
+                      <strong>Find by content:</strong> <input type="text" id="content_search" class="form-control" placeholder="Text">
+                    </div>
+                    <div class="col-2"><button type="button" id="clear-button" class="btn btn-primary">Clear</button></div>
+                </div>
+                 <div class="col-12">
+
+                    <!-- BEGIN: File Frame. -->
+                    <div id="fileframe">
+                        <div id="loading-div"><img src="{% static "jsTree/themes/default/throbber.gif" %}" /></div>
+                        <div id="no-results"><strong>No results found</strong></div>
+                        <!-- BEGIN: File Tree. -->
+                        <div id="filetree" class="transparent-effect">
+                            <ul>
+                                {% for f in subfiles %}{{ f }}{% endfor %}
+                            </ul>
+                        </div>
+                        <!-- END: File Tree. -->
+                    </div>
+                    <!-- END: File Frame. -->
+                    <!-- BEGIN: Content Frame. -->
+                    <div id="contentframe">
+                        <!-- BEGIN: Content. -->
+                        <div id="content">
+                            <h2>
+                                File: <span id="filename"></span>
+                            </h2>
+                            <pre id="fileoutput">
+                                <!--<code class="{{ source_type }}" id="fileoutput"></code>-->
+                            </pre>
+                        </div>
+                        <!-- END: Content. -->
+                    </div>
+                    <!-- END: Content Frame. -->
+                    <!-- Clear floats. -->
+                    <div class="clear">
+                        <br clear="all" />
+                    </div>
+               </div>
+               </div>
+          </div>
+        </div>
+       </div>
+     </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+
+<script type="text/javascript" src="{% static "enlighterjs/enlighterjs.min.js" %}"></script>
+<script src="{% static "jsTree/jstree.min.js" %}"></script>
+
+<script>
+var curr_selected;
+
+// In the first load, check if a specific file should be shown in parallel to the tree load
+var searchParams = new URLSearchParams(window.location.search);
+var supplied_path = searchParams.get('file');
+if (supplied_path){
+        var filename = supplied_path.replace(/^.*[\\\/]/, '');
+        $("span#filename").text(filename);
+        show_file(supplied_path);
+}
+
+var file_tree = $('#filetree')
+    // listen for event
+    .on('changed.jstree', function(e, data) {
+        var i, j, r = [];
+        console.log('[DEBUG] The selected node is: ' + data.instance.get_node(data.selected[0]).text);
+        for(i = 0, j = data.selected.length; i < j; i++) {
+            curr_selected = data.instance.get_node(data.selected[i]);
+            if($(curr_selected)[0].li_attr.class == "file") {
+                $("span#filename").text(curr_selected.text);
+                show_file($(curr_selected)[0].id);
+            }
+        }
+    }).on('ready.jstree', function(e, data) {
+        hide_loading();
+    }).on('search.jstree', function(e, data) {
+        hide_loading();
+    })
+    // create the instance
+    .jstree();
+
+function open_parents(parents_ids) {
+	// In some situations, the open_node(node_obj.parent) does not work properly
+	// This function iterates over all of its ancestors in order to make sure the bug does not produce
+	for(i in parents_ids) {
+		parent_id = parents_ids[i];
+		if(parent_id != "#") {
+			file_tree.jstree(true).open_node(parent_id);
+		}
+	}
+}
+
+function select_nodes(node_ids) {
+	// Gets a list of node ids, getting their objects and selects them all in once
+	// This replaces the old searching method which speeds up everything
+	for(i in node_ids) {
+		node_obj = file_tree.jstree(true).get_node(node_ids[i]);
+		if(node_obj) {
+			open_parents(node_obj.parents);
+			$(document.getElementById(node_obj.id)).addClass("jstree-search");
+		}
+	}
+}
+// Filename search
+var to = false;
+$('#filename_search').keyup(function() {
+	if(to) {
+		clearTimeout(to);
+	}
+	to = setTimeout(function() {
+		var v = $('#filename_search').val();
+		// Verify search query is not empty
+		if(!!v.trim()) {
+			$('#content_search').val('');
+			reset_tree();
+			hide_no_results();
+			show_loading();
+			var fd = new FormData();
+			fd.append('md5', "{{ hash }}");
+			fd.append('q', v);
+			fd.append('code', "{{ source_type }}");
+			fd.append('search_type', "filename");
+			fd.append('api', true);
+			fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+			$.ajax({
+				url: "{% url 'find_files' %}",
+				type: "POST",
+				processData: false,
+				contentType: false,
+				data: fd,
+				complete: function(data) {
+					// The response from the server is "double" 'stringified' json
+					response = JSON.parse(JSON.parse(data.responseText));
+					console.log("Filename search ajax response:");
+					console.log(response);
+					console.log(response.matches.length);
+					if(response.matches.length) {
+						select_nodes(response.matches);
+						hide_loading();
+					} else {
+						hide_loading();
+						show_no_results();
+					}
+				}
+			});
+		} else {
+			clear_search();
+		}
+	}, 1000);
+});
+
+// Content search
+var to_content = false;
+$('#content_search').keyup(function() {
+	if(to_content) {
+		clearTimeout(to_content);
+	}
+	to_content = setTimeout(function() {
+		$('#filename_search').val('');
+		var v = $('#content_search').val();
+		if(v.length < 2) {
+			//search term is empty
+			return false;
+		}
+		reset_tree();
+		hide_no_results();
+		show_loading();
+		var fd = new FormData();
+		fd.append('md5', "{{ hash }}");
+		fd.append('q', v);
+		fd.append('code', "{{ source_type }}");
+		fd.append('search_type', "content");
+		fd.append('api', true);
+		fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+		$.ajax({
+			url: "{% url 'find_files' %}",
+			type: "POST",
+			processData: false,
+			contentType: false,
+			data: fd,
+			complete: function(data) {
+				// The response from the server is "double" 'stringified' json
+				response = JSON.parse(JSON.parse(data.responseText));
+				console.log("Content search ajax response:");
+				console.log(response);
+				console.log(response.matches.length);
+				if(response.matches.length) {
+					select_nodes(response.matches);
+					hide_loading();
+				} else {
+					hide_loading();
+					show_no_results();
+				}
+			}
+		});
+	}, 1000);
+});
+const get_lines = function() {
+	const pat = new RegExp(/^[\d,]{1,1000}$/);
+	const urlParams = new URLSearchParams(window.location.search);
+	var lines = urlParams.get("lines");
+	if(!pat.test(lines)) {
+		return 0;
+	} else {
+		const parts = lines.split(",");
+		for(i = 0; i < parts.length; i++) {
+			if(parseInt(parts[i]) > 50000) return 0;
+		}
+		return lines;
+	}
+	return 0;
+}
+
+function show_file(strPath) {
+    $.ajax({
+        type: "POST",
+        url: "{% url "api_view_source" %}",
+        dataType: 'json',
+        headers: {
+            "Authorization": "{{ api_key }}"
+        },
+        data: {
+            type: "{{ source_type }}",
+            hash: "{{ hash }}",
+            file: strPath
+        },
+        success: function(strFileData) {
+            var code_block = $("pre#fileoutput")
+            code_block.text(strFileData.data);
+            code_blk = document.getElementById('fileoutput');
+            if(code_blk) {
+                EnlighterJS.enlight(code_blk, false);
+                EnlighterJS.enlight(code_blk, {
+                    theme: 'enlighter',
+                    linehover: false,
+                    textOverflow: 'scroll',
+                    highlight: get_lines(),
+                    language: 'java',
+                });
+            }
+            // Jump back to top.
+            window.location.hash = "content";
+        }
+    });
+}
+
+function reset_tree() {
+	file_tree.jstree(true).close_all();
+	$('.jstree-search').removeClass("jstree-search");
+}
+
+function clear_search() {
+	hide_no_results();
+	reset_tree();
+	$(".search-box").find("input").val('');
+	$("code#fileoutput").text('');
+	$("span#filename").text('');
+}
+$("#clear-button").click(function() {
+	clear_search();
+});
+
+function show_no_results() {
+	$("#no-results").css("display", "block");
+	$("#filetree").addClass("transparent-effect");
+}
+
+function hide_no_results() {
+	$("#no-results").css("display", "none");
+	$("#filetree").removeClass("transparent-effect");
+}
+
+function show_loading() {
+	$("#loading-div").css("display", "block");
+	$("#filetree").addClass("transparent-effect");
+}
+
+function hide_loading() {
+	$("#loading-div").css("display", "none");
+	$("#filetree").removeClass("transparent-effect");
+}
+</script>
+
+{% endblock %}

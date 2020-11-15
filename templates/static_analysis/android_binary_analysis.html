@@ -268,7 +268,7 @@
             </ul>
           </li>
             <li class="nav-item">
-              <a href="../PDF/?md5={{ md5 }}" class="nav-link">
+              <a href="../pdf/?md5={{ md5 }}" class="nav-link">
               <i class="nav-icon fas fa-file-pdf"></i>
               <p>
                 PDF Report
@@ -330,7 +330,7 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-lg-12">
-        
+
           <div class="card">
             <div class="card-body">
               <h5 class="card-title"></h5>
@@ -350,7 +350,7 @@
                     <span class="badge bg-success">Trackers Detection</span> <strong>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</strong><br/>
                   {% endif %}
                   {% if virus_total and virus_total.items|length > 9 %}
-                    {% if virus_total.positives > 0 %} 
+                    {% if virus_total.positives > 0 %}
                       <span class="badge bg-danger">VirusTotal Detection</span> <strong>{{ virus_total.positives }}/{{ virus_total.total }}</strong><br/>
                     {% else %}
                       <span class="badge bg-success">VirusTotal Detection</span> <strong>{{ virus_total.positives }}/{{ virus_total.total }}</strong><br/>
@@ -358,7 +358,7 @@
                   {% endif %}
                 </div>
                 <div class="col-6">
-                  <p><strong><i class="fas fa-box-open"></i> FILE INFORMATION </strong></p>                         
+                  <p><strong><i class="fas fa-box-open"></i> FILE INFORMATION </strong></p>
                   <span class="badge bg-primary">File Name</span>
                   {{ file_name }}<br/>
                   <span class="badge bg-primary">Size</span>
@@ -366,20 +366,20 @@
                   <span class="badge bg-primary">MD5</span>
                   {{ md5 }}<br/>
                   <span class="badge bg-primary">SHA1</span>
-                  {{ sha1 }}<br/>           
+                  {{ sha1 }}<br/>
                   <span class="badge bg-primary">SHA256</span>
                   {{ sha256 }}<br/>
                 </div>
                 <div class="col-4">
-                  <p><strong><i class="fas fa-info"></i> APP INFORMATION </strong></p>                                       
+                  <p><strong><i class="fas fa-info"></i> APP INFORMATION </strong></p>
                   <span class="badge bg-primary">App Name</span>
-                  {{ app_name }}<br/>                                   
+                  {{ app_name }}<br/>
                   <span class="badge bg-primary">Package Name</span>
                   {{ package_name }}<br/>
                   <span class="badge bg-primary">Main Activity</span>
                   {{ main_activity }}<br/>
                   <span class="badge bg-primary">Target SDK</span>
-                  {{ target_sdk }}           
+                  {{ target_sdk }}
                   <span class="badge bg-primary">Min SDK</span>
                     {{ min_sdk }}
                   <span class="badge bg-primary">Max SDK</span>
@@ -388,7 +388,7 @@
                   {{ version_name }}
                 <span class="badge bg-primary">Android Version Code</span>
                 {{ version_code }}
-                </div>    
+                </div>
               </div>
 
             </div>
@@ -403,7 +403,7 @@
                 <strong><i class="fab fa-google-play"></i> PLAYSTORE INFORMATION</strong>
                 </p>
                     <span class="badge bg-info">Title</span>
-                      {{ playstore_details.title }} <br/>                                     
+                      {{ playstore_details.title }} <br/>
                     <span class="badge bg-info">Score</span>
                       {{ playstore_details.score}}
                     <span class="badge bg-info">Installs</span>
@@ -432,7 +432,7 @@
                       {{ playstore_details.released }}
                   <span class="badge bg-info">Privacy Policy</span>
                   <a target="_blank" href="{{ playstore_details.privacyPolicy }}" rel="noopener noreferrer">Privacy link</a>
-                  <br/>                                     
+                  <br/>
                       <span class="badge bg-info">Description</span>
                       <pre id="pre-wrap">{{ playstore_details.description }}</pre>
             </div>
@@ -448,7 +448,7 @@
    <div class="container-fluid">
       <div class="row">
         <div class="col-lg-12">
-        
+
           <div class="card">
             <div class="card-body">
               <h5 class="card-title"></h5>
@@ -577,7 +577,7 @@
 
         </div>
       </div>
-    </div>  
+    </div>
   </section>
   <!-- =========================end information==================================== -->
 
@@ -593,7 +593,7 @@
                 <p>
                 <strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong>
                 </p>
-                <p> <a href="../StaticAnalyzer/?checksum={{ md5 }}&amp;name={{ file_name }}&amp;type=apk&amp;rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a></p>
+                <p> <a href="../static_analyzer/?checksum={{ md5 }}&amp;name={{ file_name }}&amp;type=apk&amp;rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a></p>
                 <p>
                   <a href="../android_dynamic/{{md5}}" class="btn btn-success" role="button"><i class="fa fa-play-circle"></i> Start Dynamic Analysis</a>
                 </p>
@@ -607,14 +607,14 @@
                     <strong><i class="fas fa-file-code"></i> DECOMPILED CODE</strong>
                   </p>
                   <p>
-                    <a target="_blank" href="../ManifestView/?md5={{ md5 }}&amp;type={{ app_type }}&amp;bin=1" role="button" class="btn btn-primary"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
-                    <a href="../Java/?md5={{ md5 }}&amp;type={{ app_type }}" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Source</a>
-                    <a href="../Smali/?md5={{ md5 }}" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Smali</a>
+                    <a target="_blank" href="../manifest_view/?md5={{ md5 }}&amp;type={{ app_type }}&amp;bin=1" role="button" class="btn btn-primary"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
+                    <a href="{% url "tree_view" %}?md5={{ md5 }}&amp;type=java" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Source</a>
+                    <a href="{% url "tree_view" %}?md5={{ md5 }}&amp;type=smali" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Smali</a>
                     </p>
                     <p>
                     <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type=java" class="btn btn-warning" role="button"> <i class="fa fa-download"></i> Download Java Code</a>
-                    <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type=smali" class="btn btn-warning"> <i class="fa fa-download"></i> Download Smali Code</a> 
-                    <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type=apk" class="btn btn-warning"> <i class="fa fa-download"></i> Download APK</a> 
+                    <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type=smali" class="btn btn-warning"> <i class="fa fa-download"></i> Download Smali Code</a>
+                    <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type=apk" class="btn btn-warning"> <i class="fa fa-download"></i> Download APK</a>
                     </p>
                 </div>
               </div>
@@ -717,9 +717,9 @@
                           {% endfor %}
                       </tbody>
                   </table>
-                                
+
            </div>
-              
+
           </div>
         </div><!-- /.card -->
         </div>
@@ -754,7 +754,7 @@
                     </td>
                     <td>
                      {% for file_path, lines in details.files.items %}
-                    <a href="../ViewSource/?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines }}"> {{ file_path }}</a>
+                    <a href="{% url "view_source" %}?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines }}"> {{ file_path }}</a>
                     <br/>
                     {% endfor %}
                     </td>
@@ -1020,7 +1020,7 @@
                   </td>
                   <td>
                   {% for file_path, lines in details.files.items %}
-                   <a href="../ViewSource/?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines}}"> {{ file_path }}</a>
+                   <a href="{% url "view_source" %}?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines}}"> {{ file_path }}</a>
                   <br/>
                   {% endfor %}
                   </td>
@@ -1438,7 +1438,7 @@
                         </td>
 
                        <td>
-                          <a href="../ViewSource/?file={{urldict|key:"path"}}&amp;md5={{ md5}}&amp;type={{app_type}}">{{urldict|key:"path"}}</a>
+                          <a href="{% url "view_source" %}?file={{urldict|key:"path"}}&amp;md5={{ md5}}&amp;type={{app_type}}">{{urldict|key:"path"}}</a>
                        </td>
                     </tr>
                   {% endfor %} 
@@ -1529,7 +1529,7 @@
                        {% endfor %}
                         </td>
                        <td>
-                          <a href="../ViewSource/?file={{email_dict|key:"path"}}&amp;md5={{ md5}}&amp;type={{app_type}}">{{email_dict|key:"path"}}</a>
+                          <a href="{% url "view_source" %}?file={{email_dict|key:"path"}}&amp;md5={{ md5}}&amp;type={{app_type}}">{{email_dict|key:"path"}}</a>
                        </td>
                     </tr>
                   {% endfor %} 
@@ -1819,5 +1819,3 @@
   });
 </script>
 {% endblock %}
-
-

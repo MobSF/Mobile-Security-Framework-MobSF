@@ -5,13 +5,14 @@ from django.db import models
 
 
 class RecentScansDB(models.Model):
+    ANALYZER = models.CharField(max_length=50, default='')
+    SCAN_TYPE = models.CharField(max_length=10, default='')
     FILE_NAME = models.CharField(max_length=260, default='')
-    MD5 = models.CharField(max_length=32, default='')
-    URL = models.URLField(default='')
-    TIMESTAMP = models.DateTimeField(default=datetime.now)
     APP_NAME = models.CharField(max_length=260, default='')
     PACKAGE_NAME = models.CharField(max_length=260, default='')
     VERSION_NAME = models.CharField(max_length=50, default='')
+    MD5 = models.CharField(max_length=32, default='')
+    TIMESTAMP = models.DateTimeField(default=datetime.now)
 
 
 class StaticAnalyzerAndroid(models.Model):

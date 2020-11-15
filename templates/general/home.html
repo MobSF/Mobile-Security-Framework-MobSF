@@ -82,7 +82,7 @@
             function responseHandler(json, isbutton) {
                 if (json.status === 'error') {
                     _("status").innerText = json.description;
-                } else if (json.status === 'success') {
+                } else {
                     i = 1;
                     setInterval(function() {
                         dot = '';
@@ -95,7 +95,11 @@
                             i = 1;
                         }
                     }, 2000);
-                    window.location.href = window.location.href + json.url;
+                    var url = json.analyzer + '/';
+                    if (json.hash){
+                        url += '?name=' + json.file_name + '&checksum=' + json.hash + '&type=' + json.scan_type
+                    }
+                    window.location.href = window.location.href + url;
                 }
             }
             function progressHandler(event) {

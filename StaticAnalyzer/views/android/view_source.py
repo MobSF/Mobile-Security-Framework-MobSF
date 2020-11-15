@@ -14,6 +14,7 @@ from MobSF.utils import (
     is_safe_path,
     print_n_send_error_response)
 
+from StaticAnalyzer.views.shared_func import find_java_source_folder
 from StaticAnalyzer.forms import (ViewSourceAndroidApiForm,
                                   ViewSourceAndroidForm)
 
@@ -37,39 +38,23 @@ def run(request, api=False):
             viewsource_form = ViewSourceAndroidForm(request.GET)
         if not viewsource_form.is_valid():
             err = FormUtil.errors_message(viewsource_form)
-            if api:
-                return err
-            return print_n_send_error_response(request, err, False, exp)
+            return print_n_send_error_response(request, err, api, exp)
 
         base = Path(settings.UPLD_DIR) / md5
-        syntax = 'java'
-        if fil.endswith(('.java', '.kt')):
-            if typ == 'eclipse':
-                src = base / 'src'
-            elif typ == 'studio':
-                src = base / 'app' / 'src' / 'main' / 'java'
-                kt = base / 'app' / 'src' / 'main' / 'kotlin'
-                if not src.exists() and kt.exists():
-                    src = kt
-                    syntax = 'kotlin'
-            elif typ == 'apk':
-                src = base / 'java_source'
-        elif fil.endswith('.smali'):
+        if typ == 'smali':
             src = base / 'smali_source'
             syntax = 'smali'
         else:
-            msg = 'Not Found'
-            doc = 'File not Found!'
-            is_api = False
-            if api:
-                is_api = True
-            return print_n_send_error_response(request, msg, is_api, doc)
+            try:
+                src, syntax, _ = find_java_source_folder(base)
+            except StopIteration:
+                msg = 'Invalid Directory Structure'
+                return print_n_send_error_response(request, msg, api)
+
         sfile = src / fil
         if not is_safe_path(src, sfile.as_posix()):
             msg = 'Path Traversal Detected!'
-            if api:
-                return {'error': 'Path Traversal Detected!'}
-            return print_n_send_error_response(request, msg, False, exp)
+            return print_n_send_error_response(request, msg, api)
         context = {
             'title': escape(ntpath.basename(fil)),
             'file': escape(ntpath.basename(fil)),
@@ -86,7 +71,4 @@ def run(request, api=False):
         logger.exception('Error Viewing Source')
         msg = str(exp)
         exp = exp.__doc__
-        if api:
-            return print_n_send_error_response(request, msg, True, exp)
-        else:
-            return print_n_send_error_response(request, msg, False, exp)
+        return print_n_send_error_response(request, msg, api, exp)
