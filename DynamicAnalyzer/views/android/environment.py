@@ -111,6 +111,14 @@ class Environment:
             logger.info('Removing existing installation')
             # Remove existing installation'
             self.adb_command(['uninstall', package], False, True)
+        # Disable install verification
+        self.adb_command([
+            'settings',
+            'put',
+            'global',
+            'verifier_verify_adb_installs',
+            '0',
+        ], True)
         logger.info('Installing APK')
         # Install APK
         out = self.adb_command([
