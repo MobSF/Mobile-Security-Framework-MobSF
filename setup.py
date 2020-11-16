@@ -1,4 +1,7 @@
-"""Setup for MobSF"""
+#!/usr/bin/env python3
+"""Setup for MobSF."""
+
+
 from setuptools import (
     find_packages,
     setup,
