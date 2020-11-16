@@ -21,9 +21,6 @@ def get_version(rel_path):
             return line.split('\'')[1]
     raise RuntimeError('Unable to find version string.')
 
-requirements = []
-with open('requirements.txt') as f:
-    requirements = f.read().splitlines()
 
 description = (
     'Mobile Security Framework (MobSF) is an automated,'
@@ -51,10 +48,10 @@ setup(
         'DynamicAnalyzer', 'DynamicAnalyzer.*',
         'StaticAnalyzer', 'StaticAnalyzer.*',
     ]),
-    python_requires=">=3.7<3.9",
+    python_requires='>=3.7<3.9',
     include_package_data=True,
     url='https://github.com/MobSF/Mobile-Security-Framework-MobSF',
     long_description=read('README.md'),
     long_description_content_type='text/markdown',
-    install_requires=requirements,
+    install_requires=Path('requirements.txt').read_text().splitlines(),
 )
