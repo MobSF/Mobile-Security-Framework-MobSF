@@ -32,7 +32,13 @@ if [[ $unamestr == 'Darwin' ]]; then
             echo 'Please install command-line tools and macOS headers.'
             echo 'xcode-select --install'
             echo "sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_${current_macos_version}.pkg -target /"
-            exit 1
+            if [ -d "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX${current_macos_version}.sdk/usr/include" ]; then
+                echo "headers found"
+                export "CPATH=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX${current_macos_version}.sdk/usr/include"
+            else   
+                 echo 'exiting'   
+                 exit 1
+            fi
         else    
             xcode-select -v		
 	    if ! [ $? -eq 0 ]; then

@@ -1,6 +1,8 @@
+<img src="https://raw.githubusercontent.com/skylot/jadx/master/jadx-gui/src/main/resources/logos/jadx-logo.png" width="64" align="left" />
+
 ## JADX
 
-[![Build Status](https://travis-ci.org/skylot/jadx.png?branch=master)](https://travis-ci.org/skylot/jadx)
+[![Build Status](https://travis-ci.com/skylot/jadx.svg?branch=master)](https://travis-ci.com/skylot/jadx)
 [![Code Coverage](https://codecov.io/gh/skylot/jadx/branch/master/graph/badge.svg)](https://codecov.io/gh/skylot/jadx)
 [![Alerts from lgtm.com](https://img.shields.io/lgtm/alerts/g/skylot/jadx.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/skylot/jadx/alerts/)
 [![SonarQube Bugs](https://sonarcloud.io/api/project_badges/measure?project=jadx&metric=bugs)](https://sonarcloud.io/dashboard?id=jadx)
@@ -9,7 +11,7 @@
 
 **jadx** - Dex to Java decompiler
 
-Command line and GUI tools for produce Java source code from Android Dex and Apk files
+Command line and GUI tools for producing Java source code from Android Dex and Apk files
 
 **Main features:**
 - decompile Dalvik bytecode to java classes from APK, dex, aar and zip files
@@ -121,5 +123,3 @@ To support this project you can:
 
 ---------------------------------------
 *Licensed under the Apache 2.0 License*
-
-*Copyright 2019 by Skylot*
