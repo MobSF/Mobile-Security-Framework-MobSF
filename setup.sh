@@ -35,7 +35,7 @@ if [[ $unamestr == 'Darwin' ]]; then
             if [ -d "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX${current_macos_version}.sdk/usr/include" ]; then
                 echo "headers found"
                 export "CPATH=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX${current_macos_version}.sdk/usr/include"
-                else   
+            else   
                  echo 'exiting'   
                  exit 1
             fi
