@@ -119,7 +119,7 @@ def get_mobsf_home(use_home, base_dir):
         sig_dir = os.path.join(mobsf_home, 'signatures/')
         if use_home:
             src = os.path.join(base_dir, 'signatures/')
-            shutil.copytree(src, sig_dir)
+            shutil.copytree(src, sig_dir, dirs_exist_ok=True)
         elif not os.path.exists(sig_dir):
             os.makedirs(sig_dir)
         return mobsf_home
