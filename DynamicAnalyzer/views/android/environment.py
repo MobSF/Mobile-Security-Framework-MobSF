@@ -31,7 +31,7 @@ from StaticAnalyzer.models import StaticAnalyzerAndroid
 
 logger = logging.getLogger(__name__)
 ANDROID_API_SUPPORTED = 29
-FRIDA_VERSION = '14.0.8'
+FRIDA_VERSION = '14.1.0'
 
 
 class Environment:
