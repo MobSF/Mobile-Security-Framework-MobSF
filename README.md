@@ -64,6 +64,10 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 
 ![mobsf_android_static_analysis](https://user-images.githubusercontent.com/4301109/95506503-f9b6c980-097d-11eb-803a-f88321e1feb7.gif)
 
+### Static Analysis - Android Source Tree-view
+
+![mobsf_android_static_analysis_tree_view](https://user-images.githubusercontent.com/6709304/101240296-1578ea80-36f7-11eb-810a-3827f238c231.gif)
+
 ### Static Analysis - iOS
 
 ![mobsf_ios_ipa_static_analysis](https://user-images.githubusercontent.com/4301109/95507865-16540100-0980-11eb-9e4d-887668d46969.gif)
