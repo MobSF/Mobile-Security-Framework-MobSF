@@ -106,8 +106,8 @@ echo '[INSTALL] Clean Up'
 bash scripts/clean.sh y
 
 echo '[INSTALL] Migrating Database'
-python manage.py makemigrations 2>&1
-python manage.py makemigrations StaticAnalyzer 2>&1
+python manage.py makemigrations
+python manage.py makemigrations StaticAnalyzer
 python manage.py migrate
 wkhtmltopdf -V
 if ! [ $? -eq 0 ]; then
