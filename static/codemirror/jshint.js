@@ -26347,7 +26347,7 @@ var JSHINT = (function() {
           // which prevented the branch's execution in all cases. While
           // enabling the code will produce behavior that is consistent with
           // the other forms of code evaluation that follow, such a change is
-          // also technically incompatable with prior versions of JSHint (due
+          // also technically incompatible with prior versions of JSHint (due
           // to the fact that the behavior was never formally documented). This
           // branch should be enabled as part of a major release.
           //if (p[0] && p[0].id === "(string)") {
