@@ -35,7 +35,6 @@ jobs:
       run: |
         choco install wkhtmltopdf --version 0.12.6
     - name: Install Python dependencies
-    - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip wheel tox
         pip install --no-index --find-links=scripts/wheels yara-python || (pip wheel --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" "git+https://github.com/VirusTotal/yara-python.git@v3.11.0" && pip install --no-index --find-links=yara-python yara-python)
