@@ -29,9 +29,7 @@ jobs:
     - name: Install Host Dependencies in macOS
       if: startsWith(matrix.os, 'macOS')
       run: |
-        export WKHTML_URL=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-2/
-        export WKHTML_PKG=wkhtmltox-0.12.6-2.macos-cocoa.pkg
-        wget ${WKHTML_URL}${WKHTML_PKG} &&sudo installer -pkg ${WKHTML_PKG} -target / && rm -rf ${WKHTML_PKG}
+        brew install --cask wkhtmltopdf
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip wheel tox
