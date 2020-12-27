@@ -709,6 +709,8 @@
                             <span class="badge bg-warning">SignatureOrSystem</span>
                           {% elif desc.status == 'signature' %}
                             <span class="badge bg-success">signature</span>
+                          {% elif desc.status == 'unknown' %}
+                            <span class="badge bg-secondary">unknown</span>
                           {% endif %}
                           </td>
                           <td>{{ desc.info }}</td>
