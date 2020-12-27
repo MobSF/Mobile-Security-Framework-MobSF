@@ -9,15 +9,19 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: [3.7, 3.8]
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
       with:
-        python-version: 3.8
+        python-version: ${{ matrix.python-version }}
     - name: Install Host Dependencies
       run: |
-        sudo apt update && sudo apt install -y openjdk-8-jdk xfonts-75dpi xfonts-base
+        sudo apt update && sudo apt install -y xfonts-75dpi xfonts-base
         export WKHTML_URL=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/
         export WKHTML_DEB=wkhtmltox_0.12.6-1.bionic_amd64.deb
         wget ${WKHTML_URL}${WKHTML_DEB} && sudo dpkg -i ${WKHTML_DEB} && rm -rf ${WKHTML_DEB}
