@@ -11,13 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.8
+    - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: 3.8
     - name: Install Host Dependencies
       run: |
-        sudo apt update && sudo apt install -y openjdk-8-jdk libxml2-dev libxslt1-dev wkhtmltopdf xvfb
+        sudo apt update && sudo apt install -y openjdk-8-jdk libxml2-dev libxslt1-dev wget
+        export WKHTML_URL=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/
+        export WKHTML_DEB=wkhtmltox_0.12.6-1.bionic_amd64.deb
+        wget ${WKHTML_URL}${WKHTML_DEB} && sudo dpkg -i ${WKHTML_DEB} && rm -rf ${WKHTML_DEB}
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip wheel tox
@@ -34,5 +37,4 @@ jobs:
     - name: Unit Tests
       run: |
         git submodule update --init --recursive
-        alias wkhtmltopdf='xvfb-run wkhtmltopdf'
         python manage.py test
