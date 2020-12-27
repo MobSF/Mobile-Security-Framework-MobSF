@@ -555,6 +555,8 @@
                             <span class="badge bg-warning">SignatureOrSystem</span>
                           {% elif desc.status == 'signature' %}
                             <span class="badge bg-success">signature</span>
+                          {% elif desc.status == 'unknown' %}
+                            <span class="badge bg-secondary">unknown</span>
                           {% endif %}
                           </td>
                           <td>{{ desc.info }}</td>
@@ -893,7 +895,7 @@
         <div class="card">
           <div class="card-body">
             <p>
-             <strong><i class="fa fa-id-badge"></i> NIAP ANALYSIS</strong>
+             <strong><i class="fa fa-id-badge"></i> NIAP ANALYSIS v1.3</strong>
              </p>
               <div class="table-responsive">
                 <table id="table_file" class="table table-bordered table-hover table-striped">

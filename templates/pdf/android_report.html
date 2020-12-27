@@ -202,7 +202,19 @@
             {% for perm,desc in permissions.items %}
             <tr>
             <td>{{ perm }}</td>
-            <td>{{ desc.status }}</td>
+            <td>
+            {% if desc.status == 'dangerous' %}
+              <span class="danger">dangerous</span>
+            {% elif desc.status == 'normal' %}
+              <span class="info">normal</span>
+            {% elif desc.status == 'signatureOrSystem' %}
+              <span class="warning">SignatureOrSystem</span>
+            {% elif desc.status == 'signature' %}
+              <span class="success">signature</span>
+            {% elif desc.status == 'unknown' %}
+              <span class="secondary">unknown</span>
+            {% endif %}
+            </td>
             <td>{{ desc.info }}</td>
             <td>{{ desc.description }}</td>
             </tr>
@@ -572,7 +584,7 @@
                     </table>
     {% endif %}
               
-    <h2><i class="fa fa-id-badge"></i> NIAP ANALYSIS</h2>
+    <h2><i class="fa fa-id-badge"></i> NIAP ANALYSIS v1.3</h2>
     <table class="basic">
               <thead>
                   <tr>
