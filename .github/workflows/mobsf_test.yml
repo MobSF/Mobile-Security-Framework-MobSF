@@ -17,7 +17,7 @@ jobs:
         python-version: 3.8
     - name: Install Host Dependencies
       run: |
-        sudo apt update && sudo apt install -y openjdk-8-jdk libxml2-dev libxslt1-dev wkhtmltopdf xvfb
+        sudo apt update && sudo apt install -y openjdk-8-jdk libxml2-dev libxslt1-dev wkhtmltopdf
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip wheel tox
@@ -33,6 +33,7 @@ jobs:
         tox -e lint
     - name: Unit Tests
       run: |
-        alias wkhtmltopdf='xvfb-run wkhtmltopdf'
         git submodule update --init --recursive
-        tox -e test
+        python manage.py test
+      env:
+        DISPLAY: 0
