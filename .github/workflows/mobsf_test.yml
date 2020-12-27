@@ -9,8 +9,9 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macOS-latest, windows-latest]
+        os: [ubuntu-20.04, macos-11.0, windows-latest]
         python-version: [3.7, 3.8]
     runs-on: ${{ matrix.os }}
     steps:
@@ -19,18 +20,18 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install Host Dependencies in Linux
+    - name: Install Ubuntu Dependencies
       if: startsWith(matrix.os, 'ubuntu')
       run: |
         sudo apt update && sudo apt install -y xfonts-75dpi xfonts-base
         export WKHTML_URL=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/
         export WKHTML_DEB=wkhtmltox_0.12.6-1.focal_amd64.deb
         wget ${WKHTML_URL}${WKHTML_DEB} && sudo dpkg -i ${WKHTML_DEB} && rm -rf ${WKHTML_DEB}
-    - name: Install Host Dependencies in macOS
+    - name: Install macOS Dependencies
       if: startsWith(matrix.os, 'macOS')
       run: |
         brew install --cask wkhtmltopdf
-    - name: Install Host Dependencies in Windows
+    - name: Install Windows Dependencies
       if: startsWith(matrix.os, 'windows')
       run: |
         choco install wkhtmltopdf --version 0.12.6
