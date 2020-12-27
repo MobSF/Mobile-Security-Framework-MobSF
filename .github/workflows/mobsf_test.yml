@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-20.04, macOS 11.0]
         python-version: [3.7, 3.8]
     steps:
     - uses: actions/checkout@v2
@@ -19,12 +19,19 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install Host Dependencies
+    - name: Install Host Dependencies in Linux
+      if: startsWith(matrix.os, 'ubuntu')
       run: |
         sudo apt update && sudo apt install -y xfonts-75dpi xfonts-base
         export WKHTML_URL=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/
-        export WKHTML_DEB=wkhtmltox_0.12.6-1.bionic_amd64.deb
+        export WKHTML_DEB=wkhtmltox_0.12.6-1.focal_amd64.deb
         wget ${WKHTML_URL}${WKHTML_DEB} && sudo dpkg -i ${WKHTML_DEB} && rm -rf ${WKHTML_DEB}
+    - name: Install Host Dependencies in macOS
+      if: startsWith(matrix.os, 'macOS')
+      run: |
+        export WKHTML_URL=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-2/
+        export WKHTML_PKG=wkhtmltox-0.12.6-2.macos-cocoa.pkg
+        wget ${WKHTML_URL}${WKHTML_PKG} &&sudo installer -pkg ${WKHTML_PKG} -target / && rm -rf ${WKHTML_PKG}
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip wheel tox
