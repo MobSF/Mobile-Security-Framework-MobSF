@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         os: [ubuntu-20.04, macOS-latest]
@@ -26,10 +26,6 @@ jobs:
         export WKHTML_URL=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/
         export WKHTML_DEB=wkhtmltox_0.12.6-1.focal_amd64.deb
         wget ${WKHTML_URL}${WKHTML_DEB} && sudo dpkg -i ${WKHTML_DEB} && rm -rf ${WKHTML_DEB}
-    - name: Install Host Dependencies in macOS
-      if: startsWith(matrix.os, 'macOS')
-      run: |
-        brew install Caskroom/cask/wkhtmltopdf
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip wheel tox
