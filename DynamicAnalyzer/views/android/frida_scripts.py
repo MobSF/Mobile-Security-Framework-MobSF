@@ -12,7 +12,9 @@ def get_content(file_name):
                           'auxiliary',
                           file_name)
 
-    with open(script, 'r') as scp:
+    with open(script, 'r',
+              encoding='utf8',
+              errors='ignore') as scp:
         content = scp.read()
     return content
 

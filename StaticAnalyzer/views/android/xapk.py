@@ -19,7 +19,7 @@ def handle_xapk(app_dic):
         logger.error('Manifest file not found in XAPK')
         return False
     manifest = app_dic['app_dir'] / 'manifest.json'
-    with open(manifest) as f:
+    with open(manifest, encoding='utf8', errors='ignore') as f:
         data = load(f)
     if not data:
         logger.error('Manifest file is empty')
