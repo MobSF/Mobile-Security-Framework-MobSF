@@ -42,6 +42,7 @@ from StaticAnalyzer.views.android.manifest_analysis import (get_manifest,
                                                             manifest_data)
 from StaticAnalyzer.views.android.playstore import get_app_details
 from StaticAnalyzer.views.android.strings import strings_from_apk
+from StaticAnalyzer.views.android.xapk import handle_xapk
 from StaticAnalyzer.views.shared_func import (firebase_analysis,
                                               hash_gen, score, unzip,
                                               update_scan_timestamp)
@@ -74,16 +75,9 @@ def static_analyzer(request, api=False):
         # Input validation
         app_dic = {}
         match = re.match('^[0-9a-f]{32}$', checksum)
-        if (
-                (
-                    match
-                ) and (
-                    filename.lower().endswith('.apk')
-                    or filename.lower().endswith('.zip')
-                ) and (
-                    typ in ['zip', 'apk']
-                )
-        ):
+        if (match
+                and filename.lower().endswith(('.apk', '.xapk', '.zip'))
+                and typ in ['zip', 'apk', 'xapk']):
             app_dic['dir'] = Path(settings.BASE_DIR)  # BASE DIR
             app_dic['app_name'] = filename  # APP ORGINAL NAME
             app_dic['md5'] = checksum  # MD5
@@ -92,7 +86,13 @@ def static_analyzer(request, api=False):
             app_dic['tools_dir'] = app_dic['dir'] / 'StaticAnalyzer' / 'tools'
             app_dic['tools_dir'] = app_dic['tools_dir'].as_posix()
             logger.info('Starting Analysis on : %s', app_dic['app_name'])
-
+            if typ == 'xapk':
+                # Handle XAPK
+                # Base APK will have the MD5 of XAPK
+                res = handle_xapk(app_dic)
+                if not res:
+                    raise Exception('Invalid XAPK File')
+                typ = 'apk'
             if typ == 'apk':
                 app_dic['app_file'] = app_dic['md5'] + '.apk'  # NEW FILENAME
                 app_dic['app_path'] = (

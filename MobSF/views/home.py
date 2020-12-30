@@ -129,6 +129,8 @@ class Upload(object):
         logger.info('MIME Type: %s FILE: %s', content_type, file_name)
         if self.file_type.is_apk():
             return scanning.scan_apk()
+        elif self.file_type.is_xapk():
+            return scanning.scan_xapk()
         elif self.file_type.is_zip():
             return scanning.scan_zip()
         elif self.file_type.is_ipa():

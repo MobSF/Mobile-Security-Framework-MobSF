@@ -23,6 +23,7 @@ class FileType(object):
         """
         if self.zip and (
             self.is_apk()
+                or self.is_xapk()
                 or self.is_zip()
                 or self.is_ipa()
                 or self.is_appx()):
@@ -34,6 +35,10 @@ class FileType(object):
         file_obj.seek(0, 0)
         # ZIP magic PK.. no support for spanned and empty arch
         return bool(magic == b'\x50\x4B\x03\x04')
+
+    def is_xapk(self):
+        return (self.file_type in settings.APK_MIME
+                and self.file_name_lower.endswith('.xapk'))
 
     def is_apk(self):
         return (self.file_type in settings.APK_MIME

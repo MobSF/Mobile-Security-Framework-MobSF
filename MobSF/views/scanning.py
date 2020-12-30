@@ -65,6 +65,20 @@ class Scanning(object):
         logger.info('Performing Static Analysis of Android APK')
         return data
 
+    def scan_xapk(self):
+        """Android XAPK."""
+        md5 = handle_uploaded_file(self.file, '.xapk')
+        data = {
+            'analyzer': 'static_analyzer',
+            'status': 'success',
+            'hash': md5,
+            'scan_type': 'xapk',
+            'file_name': self.file_name,
+        }
+        add_to_recent_scan(data)
+        logger.info('Performing Static Analysis of Android XAPK base APK')
+        return data
+
     def scan_zip(self):
         """Android /iOS Zipped Source."""
         md5 = handle_uploaded_file(self.file, '.zip')
