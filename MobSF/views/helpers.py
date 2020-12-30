@@ -10,9 +10,10 @@ ALLOW_METHODS = ['GET', 'POST', 'PUT', 'DELETE',
 
 class FileType(object):
 
-    def __init__(self, file_type, file_name_lower):
-        self.file_type = file_type
-        self.file_name_lower = file_name_lower
+    def __init__(self, file_obj):
+        self.file_type = file_obj.content_type
+        self.file_name_lower = file_obj.name.lower()
+        self.zip = self.is_zip_magic(file_obj)
 
     def is_allow_file(self):
         """
@@ -20,9 +21,24 @@ class FileType(object):
 
         return bool
         """
-        if self.is_apk() or self.is_zip() or self.is_ipa() or self.is_appx():
+        if self.zip and (
+            self.is_apk()
+                or self.is_xapk()
+                or self.is_zip()
+                or self.is_ipa()
+                or self.is_appx()):
             return True
         return False
+
+    def is_zip_magic(self, file_obj):
+        magic = file_obj.read(4)
+        file_obj.seek(0, 0)
+        # ZIP magic PK.. no support for spanned and empty arch
+        return bool(magic == b'\x50\x4B\x03\x04')
+
+    def is_xapk(self):
+        return (self.file_type in settings.APK_MIME
+                and self.file_name_lower.endswith('.xapk'))
 
     def is_apk(self):
         return (self.file_type in settings.APK_MIME

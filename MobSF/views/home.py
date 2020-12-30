@@ -56,9 +56,8 @@ class Upload(object):
     def __init__(self, request):
         self.request = request
         self.form = UploadFileForm(request.POST, request.FILES)
-        self.file_content_type = None
-        self.file_name_lower = None
         self.file_type = None
+        self.file = None
 
     @staticmethod
     def as_view(request):
@@ -89,9 +88,8 @@ class Upload(object):
             response_data['description'] = msg
             return self.resp_json(response_data)
 
-        self.file_content_type = request.FILES['file'].content_type
-        self.file_name_lower = request.FILES['file'].name.lower()
-        self.file_type = FileType(self.file_content_type, self.file_name_lower)
+        self.file = request.FILES['file']
+        self.file_type = FileType(self.file)
         if not self.file_type.is_allow_file():
             msg = 'File format not Supported!'
             logger.error(msg)
@@ -115,9 +113,8 @@ class Upload(object):
         if not self.form.is_valid():
             api_response['error'] = FormUtil.errors_message(self.form)
             return api_response, HTTP_BAD_REQUEST
-        self.file_content_type = request.FILES['file'].content_type
-        self.file_name_lower = request.FILES['file'].name.lower()
-        self.file_type = FileType(self.file_content_type, self.file_name_lower)
+        self.file = request.FILES['file']
+        self.file_type = FileType(self.file)
         if not self.file_type.is_allow_file():
             api_response['error'] = 'File format not Supported!'
             return api_response, HTTP_BAD_REQUEST
@@ -127,12 +124,13 @@ class Upload(object):
     def upload(self):
         request = self.request
         scanning = Scanning(request)
-        file_type = self.file_content_type
-        file_name_lower = self.file_name_lower
-
-        logger.info('MIME Type: %s FILE: %s', file_type, file_name_lower)
+        content_type = self.file.content_type
+        file_name = self.file.name
+        logger.info('MIME Type: %s FILE: %s', content_type, file_name)
         if self.file_type.is_apk():
             return scanning.scan_apk()
+        elif self.file_type.is_xapk():
+            return scanning.scan_xapk()
         elif self.file_type.is_zip():
             return scanning.scan_zip()
         elif self.file_type.is_ipa():

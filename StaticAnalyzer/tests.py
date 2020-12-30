@@ -26,6 +26,7 @@ def static_analysis_test():
         apk_dir = os.path.join(settings.BASE_DIR, 'StaticAnalyzer/test_files/')
         for filename in os.listdir(apk_dir):
             if not filename.endswith((
+                    '.xapk',
                     '.apk',
                     '.ipa',
                     '.appx',
@@ -61,6 +62,7 @@ def static_analysis_test():
         logger.info('Running PDF Generation Test')
         if platform.system() in ['Darwin', 'Linux']:
             pdfs = [
+                '/pdf/?md5=02e7989c457ab67eb514a8328779f256',
                 '/pdf/?md5=3a552566097a8de588b8184b059b0158',
                 '/pdf/?md5=6c23c2970551be15f32bbab0b5db0c71',
                 '/pdf/?md5=52c50ae824e329ba8b5b7a0f523efffe',
@@ -70,6 +72,7 @@ def static_analysis_test():
             ]
         else:
             pdfs = [
+                '/pdf/?md5=02e7989c457ab67eb514a8328779f256',
                 '/pdf/?md5=3a552566097a8de588b8184b059b0158',
                 '/pdf/?md5=52c50ae824e329ba8b5b7a0f523efffe',
                 '/pdf/?md5=57bb5be0ea44a755ada4a93885c3825e',
@@ -104,14 +107,16 @@ def static_analysis_test():
         logger.info('Running Delete Scan Results test')
         # Deleting Scan Results
         if platform.system() in ['Darwin', 'Linux']:
-            scan_md5s = ['3a552566097a8de588b8184b059b0158',
+            scan_md5s = ['02e7989c457ab67eb514a8328779f256',
+                         '3a552566097a8de588b8184b059b0158',
                          '6c23c2970551be15f32bbab0b5db0c71',
                          '52c50ae824e329ba8b5b7a0f523efffe',
                          '57bb5be0ea44a755ada4a93885c3825e',
                          '8179b557433835827a70510584f3143e',
                          '7b0a23bffc80bac05739ea1af898daad']
         else:
-            scan_md5s = ['3a552566097a8de588b8184b059b0158',
+            scan_md5s = ['02e7989c457ab67eb514a8328779f256',
+                         '3a552566097a8de588b8184b059b0158',
                          '52c50ae824e329ba8b5b7a0f523efffe',
                          '57bb5be0ea44a755ada4a93885c3825e',
                          '8179b557433835827a70510584f3143e',
@@ -145,6 +150,7 @@ def api_test():
         apk_dir = os.path.join(settings.BASE_DIR, 'StaticAnalyzer/test_files/')
         for filename in os.listdir(apk_dir):
             if not filename.endswith((
+                    '.xapk',
                     '.apk',
                     '.ipa',
                     '.appx',
@@ -212,6 +218,7 @@ def api_test():
         logger.info('Running PDF Generation API Test')
         if platform.system() in ['Darwin', 'Linux']:
             pdfs = [
+                {'hash': '02e7989c457ab67eb514a8328779f256'},
                 {'hash': '3a552566097a8de588b8184b059b0158'},
                 {'hash': '6c23c2970551be15f32bbab0b5db0c71'},
                 {'hash': '52c50ae824e329ba8b5b7a0f523efffe'},
@@ -221,6 +228,7 @@ def api_test():
             ]
         else:
             pdfs = [
+                {'hash': '02e7989c457ab67eb514a8328779f256'},
                 {'hash': '3a552566097a8de588b8184b059b0158'},
                 {'hash': '52c50ae824e329ba8b5b7a0f523efffe'},
                 {'hash': '57bb5be0ea44a755ada4a93885c3825e'},
@@ -320,7 +328,8 @@ def api_test():
         logger.info('Running Delete Scan Results test')
         # Deleting Scan Results
         if platform.system() in ['Darwin', 'Linux']:
-            scan_md5s = ['3a552566097a8de588b8184b059b0158',
+            scan_md5s = ['02e7989c457ab67eb514a8328779f256',
+                         '3a552566097a8de588b8184b059b0158',
                          '6c23c2970551be15f32bbab0b5db0c71',
                          '52c50ae824e329ba8b5b7a0f523efffe',
                          '57bb5be0ea44a755ada4a93885c3825e',
@@ -328,7 +337,8 @@ def api_test():
                          '7b0a23bffc80bac05739ea1af898daad',
                          ]
         else:
-            scan_md5s = ['3a552566097a8de588b8184b059b0158',
+            scan_md5s = ['02e7989c457ab67eb514a8328779f256',
+                         '3a552566097a8de588b8184b059b0158',
                          '52c50ae824e329ba8b5b7a0f523efffe',
                          '57bb5be0ea44a755ada4a93885c3825e',
                          '8179b557433835827a70510584f3143e',
