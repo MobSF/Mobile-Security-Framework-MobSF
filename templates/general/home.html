@@ -121,10 +121,10 @@
           // Is valid file extentions
           function isValidExt(file_name){
                 var val = file_name.toLowerCase();
-                var regex = new RegExp("(.*?)\.(ipa|apk|zip|appx)$");
+                var regex = new RegExp("(.*?)\.(ipa|apk|xapk|zip|appx)$");
                 val = val.replace(/^.*[\\\/]/, '');
                 if (!(regex.test(val))) {
-                    _('status').innerText = "Please upload APK/IPA/ZIP/APPX only!";
+                    _('status').innerText = "Please upload APK/XAPK/IPA/ZIP/APPX only!";
                     return false;
                 }
                 return true;
