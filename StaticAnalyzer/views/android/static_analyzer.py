@@ -10,7 +10,7 @@ from pathlib import Path
 import MalwareAnalyzer.views.Trackers as Trackers
 import MalwareAnalyzer.views.VirusTotal as VirusTotal
 from MalwareAnalyzer.views.apkid import apkid_analysis
-from MalwareAnalyzer.views.domain_check import malware_check
+from MalwareAnalyzer.views.MalwareDomainCheck import MalwareDomainCheck
 
 from django.conf import settings
 from django.http import HttpResponseRedirect
@@ -218,7 +218,7 @@ def static_analyzer(request, api=False):
                     # Domain Extraction and Malware Check
                     logger.info(
                         'Performing Malware Check on extracted Domains')
-                    code_an_dic['domains'] = malware_check(
+                    code_an_dic['domains'] = MalwareDomainCheck().scan(
                         list(set(code_an_dic['urls_list'])))
                     # Copy App icon
                     copy_icon(app_dic['md5'], app_dic['icon_path'])
@@ -411,7 +411,7 @@ def static_analyzer(request, api=False):
                         # Domain Extraction and Malware Check
                         logger.info(
                             'Performing Malware Check on extracted Domains')
-                        code_an_dic['domains'] = malware_check(
+                        code_an_dic['domains'] = MalwareDomainCheck().scan(
                             list(set(code_an_dic['urls_list'])))
                         logger.info('Connecting to Database')
                         try:

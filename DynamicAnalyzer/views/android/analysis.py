@@ -14,7 +14,7 @@ from MobSF.utils import (is_file_exists,
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
 
-from MalwareAnalyzer.views.domain_check import malware_check
+from MalwareAnalyzer.views.MalwareDomainCheck import MalwareDomainCheck
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ def run_analysis(apk_dir, md5_hash, package):
         urls = []
     # Domain Extraction and Malware Check
     logger.info('Performing Malware Check on extracted Domains')
-    domains = malware_check(urls)
+    domains = MalwareDomainCheck().scan(urls)
 
     # Email Etraction Regex
     emails = []

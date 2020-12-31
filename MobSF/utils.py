@@ -101,6 +101,9 @@ def print_version():
 
 def check_update():
     try:
+        if not is_internet_available():
+            logger.warning('Internet Not Available. Skipping Update check')
+            return
         logger.info('Checking for Update.')
         github_url = settings.GITHUB_URL
         try:
