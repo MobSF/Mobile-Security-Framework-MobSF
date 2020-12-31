@@ -4,7 +4,7 @@ from enum import Enum
 
 from django.conf import settings
 
-from MalwareAnalyzer.views.domain_check import malware_check
+from MalwareAnalyzer.views.MalwareDomainCheck import MalwareDomainCheck
 
 from StaticAnalyzer.views.shared_func import (
     url_n_email_extract,
@@ -85,7 +85,7 @@ def ios_source_analysis(src):
         urls_list = list(set(url_list))
         # Domain Extraction and Malware Check
         logger.info('Performing Malware Check on extracted Domains')
-        domains = malware_check(urls_list)
+        domains = MalwareDomainCheck().scan(urls_list)
         logger.info('Finished Code Analysis, Email and URL Extraction')
         code_analysis_dict = {
             'api': api_findings,
