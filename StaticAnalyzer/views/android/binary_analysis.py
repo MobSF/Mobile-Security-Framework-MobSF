@@ -135,13 +135,15 @@ class Checksec:
                 'should set RPATH is if it is linked to private '
                 'shared libraries in the same package. Remove the '
                 'compiler option -rpath to remove RPATH.')
+            rpt = rpath.rpath
         else:
             severity = 'info'
             desc = (
                 'The shared object does not have run-time search path '
                 'or RPATH set.')
+            rpt = rpath
         elf_dict['rpath'] = {
-            'rpath': rpath,
+            'rpath': rpt,
             'severity': severity,
             'description': desc,
         }
