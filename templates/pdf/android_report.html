@@ -497,13 +497,13 @@
                       <strong>CVSS V2:</strong>
                       {{ details.metadata.cvss }}
                       {% if details.metadata.cvss > 6 %}
-                         <span class="danger">{{ details|key:"cvss" }} (high)</span>
+                         <span class="danger"> (high)</span>
                       {% elif details.metadata.cvss == 0 %}
-                        <span class="info">{{ details|key:"cvss" }} (info)</span>
+                        <span class="info">(info)</span>
                       {% elif details.metadata.cvss >= 4 %}
-                        <span class="warning">{{ details|key:"cvss" }} (medium)</span>
+                        <span class="warning"> (medium)</span>
                       {% elif details.metadata.cvss < 4 %}
-                        <span class="success">{{ details|key:"cvss" }} (low)</span>
+                        <span class="success"> (low)</span>
                       {% endif %}
                       {% if details.metadata.cwe %}</br> <strong>CWE: </strong>{{ details.metadata.cwe }}{% endif %}
                       {% if details.metadata|key:"owasp-mobile" %}</br> <strong>OWASP Top 10: </strong>{{ details.metadata|key:"owasp-mobile" }}{% endif %}
