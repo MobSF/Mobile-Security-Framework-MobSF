@@ -153,18 +153,21 @@ def manifest_data(mfxml):
 
         for permission in permissions:
             perm.append(permission.getAttribute('android:name'))
-
-        for i in perm:
-            prm = i
-            pos = i.rfind('.')
+        android_permission_tags = ('com.google.', 'android.', 'com.google.')
+        for full_perm in perm:
+            prm = full_perm
+            pos = full_perm.rfind('.')
             if pos != -1:
-                prm = i[pos + 1:]
+                prm = full_perm[pos + 1:]
+            if not full_perm.startswith(android_permission_tags):
+                prm = full_perm
             try:
-                dvm_perm[i] = DVM_PERMISSIONS['MANIFEST_PERMISSION'][prm]
+                dvm_perm[full_perm] = DVM_PERMISSIONS[
+                    'MANIFEST_PERMISSION'][prm]
             except KeyError:
-                dvm_perm[i] = [
-                    'dangerous',
-                    'Unknown permission from android reference',
+                dvm_perm[full_perm] = [
+                    'unknown',
+                    'Unknown permission',
                     'Unknown permission from android reference',
                 ]
 
@@ -873,7 +876,7 @@ def get_manifest_apk(app_path, app_dir, tools_dir):
                 and is_file_exists(settings.APKTOOL_BINARY)):
             apktool_path = settings.APKTOOL_BINARY
         else:
-            apktool_path = os.path.join(tools_dir, 'apktool_2.4.1.jar')
+            apktool_path = os.path.join(tools_dir, 'apktool_2.5.0.jar')
         output_dir = os.path.join(app_dir, 'apktool_out')
         args = [find_java_binary(),
                 '-jar',

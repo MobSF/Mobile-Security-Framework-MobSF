@@ -131,6 +131,10 @@ class Frida:
                 sys.stdin.read()
                 script.unload()
                 session.detach()
+        except (frida.ProcessNotFoundError,
+                frida.TransportError,
+                frida.InvalidOperationError):
+            pass
         except Exception:
             logger.exception('Error Connecting to Frida')
 

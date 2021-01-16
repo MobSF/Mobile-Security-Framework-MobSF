@@ -1,7 +1,7 @@
 import io
 import logging
 
-from MalwareAnalyzer.views.domain_check import malware_check
+from MalwareAnalyzer.views.MalwareDomainCheck import MalwareDomainCheck
 
 from StaticAnalyzer.views.shared_func import url_n_email_extract
 
@@ -46,7 +46,7 @@ def extract_urls_n_email(src, all_files, strings):
         urls_list = list(set(url_list))
         # Domain Extraction and Malware Check
         logger.info('Performing Malware Check on extracted Domains')
-        domains = malware_check(urls_list)
+        domains = MalwareDomainCheck().scan(urls_list)
         logger.info('Finished URL and Email Extraction')
         binary_recon = {
             'urls_list': urls_list,

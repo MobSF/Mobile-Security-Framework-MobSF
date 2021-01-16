@@ -23,6 +23,16 @@
         credentials
   else: does not store any credentials
   class: Security Functional Requirements
+- id: FCS_CKM_EXT.1.1
+  type: code
+  choice_type: or
+  description: Cryptographic Key Generation Services
+  selection: 'The application {}.'
+  choice:
+    - - java\.security\.KeyPairGenerator|KeyPairGenerator\.getInstance\(
+      - implement asymmetric key generation
+  else: generate no asymmetric cryptographic keys
+  class: Security Functional Requirements
 - id: FDP_DEC_EXT.1.1
   type: manifest
   choice_type: all
@@ -121,16 +131,6 @@
     - - java\.security\.SecureRandom
       - null
   class: Selection-Based Security Functional Requirements
-- id: FCS_CKM_EXT.1.1
-  type: code
-  choice_type: or
-  description: Cryptographic Key Generation Services
-  selection: 'The application {}.'
-  choice:
-    - - java\.security\.KeyPairGenerator|KeyPairGenerator\.getInstance\(
-      - implement asymmetric key generation
-  else: generate no asymmetric cryptographic keys
-  class: Selection-Based Security Functional Requirements
 - id: FCS_CKM.1.1(1)
   type: code
   choice_type: and
@@ -147,6 +147,17 @@
       - >-
         in accordance with a specified cryptographic key generation algorithm
         RSA schemes using cryptographic key sizes of 2048-bit or greater
+  class: Selection-Based Security Functional Requirements
+- id: 'FCS_CKM.1.1(3),FCS_CKM.1.2(3)'
+  type: code
+  choice_type: or
+  description: Password Conditioning
+  selection: >-
+    A password/passphrase shall perform [Password-based Key Derivation
+    Functions] {}.
+  choice:
+    - - \.getInstance\(\"PBKDF2|PBEKeySpec\(.*?\)
+      - in accordance with a specified cryptographic algorithm.
   class: Selection-Based Security Functional Requirements
 - id: FCS_COP.1.1(1)
   type: code
@@ -214,101 +225,6 @@
       - HMAC-SHA-384
     - - \.getInstance\(*.HmacMD5|put_HashAlgorithm\(\"MD5
       - HMAC-MD5
-  class: Selection-Based Security Functional Requirements
-- id: FCS_TLSC_EXT.1.1
-  type: code
-  choice_type: all
-  description: TLS Client Protocol
-  selection: 'The application invoke platform-provided TLS and cipher suites {}.'
-  choice:
-    - - \.getInstance\(.*TLSv1\.3|\(TlsVersion\.TLS_1_3
-      - TLS 1.3
-    - - \.getInstance\(.*TLSv1\.2|\(TlsVersion\.TLS_1_2
-      - TLS 1.2
-    - - \.getInstance\(.*TLSv1\.1|\(TlsVersion\.TLS_1_1
-      - 'TLS 1.1, This version is insecure'
-    - - \.getInstance\(.*TLSv1\.0|\(TlsVersion\.TLS_1_0
-      - 'TLS 1.0, This version is insecure'
-    - - TLS_RSA_WITH_AES_128_CBC_SHA
-      - TLS_RSA_WITH_AES_128_CBC_SHA
-    - - TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
-      - TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
-    - - TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
-      - TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
-    - - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256
-      - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256
-    - - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
-      - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
-    - - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
-      - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
-    - - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
-      - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
-    - - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
-      - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
-    - - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-      - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-    - - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
-      - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
-    - - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-      - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-    - - TLS_RSA_WITH_AES_128_CBC_SHA256
-      - TLS_RSA_WITH_AES_128_CBC_SHA256
-    - - TLS_RSA_WITH_AES_256_CBC_SHA256
-      - TLS_RSA_WITH_AES_256_CBC_SHA256
-  class: Selection-Based Security Functional Requirements
-- id: FCS_TLSC_EXT.1.2
-  type: code
-  choice_type: and
-  description: TLS Client Protocol
-  selection: >-
-    The application verify that the presented identifier matches the reference
-    identifier according to RFC 6125.
-  choice:
-    - - - HostnameVerifier\(
-        - \.verify\(|\.setHostnameVerifier\(
-      - RSA schemes using cryptographic key sizes of 2048-bit or greater
-  class: Selection-Based Security Functional Requirements
-- id: FCS_TLSC_EXT.1.3
-  type: code
-  choice_type: and
-  description: TLS Client Protocol
-  selection: >-
-    The application establish a trusted channel only if the peer certificate is
-    valid.
-  choice:
-    - - - \.getTrustManagers\(|TrustManagerFactory\.
-        - \.setCertificateEntry\(|trustedChain|\.init\(
-      - null
-    - - - org\.thoughtcrime\.ssl\.pinning
-        - >-
-          PinningHelper\.getPinnedHttpsURLConnection|PinningHelper\.getPinnedHttpClient|PinningSSLSocketFactory\(
-      - null
-    - - - CertificatePinner\.Builder\(
-        - \.add\(
-      - null
-    - - - Retrofit\.Builder\(
-        - \.baseUrl\(
-      - null
-    - - - Picasso\.Builder\(
-        - \.downloader\(
-      - null
-    - - - \.setHostnameVerifier\(
-        - PinningHostnameVerifier\(|\.verify\(|DynamicPinningHostnameVerifier\(
-  class: Selection-Based Security Functional Requirements
-- id: FCS_TLSC_EXT.4.1
-  type: code
-  choice_type: all
-  description: TLS Client Protocol
-  selection: >-
-    The application present the supported Elliptic Curves Extension in the
-    Client Hello with the following NIST curves {}.
-  choice:
-    - - ECGenParameterSpec\(.*secp256r1
-      - secp256r1
-    - - ECGenParameterSpec\(.*secp384r1
-      - secp384r1
-    - - ECGenParameterSpec\(.*secp521r1
-      - secp521r1
   class: Selection-Based Security Functional Requirements
 - id: FCS_HTTPS_EXT.1.1
   type: code
@@ -393,17 +309,6 @@
     - - java\.security\.cert\.X509Certificate
       - null
   class: Selection-Based Security Functional Requirements
-- id: FIA_X509_EXT.2.1
-  type: code
-  choice_type: or
-  description: X.509 Certificate Authentication
-  selection: >-
-    The application use X.509v3 certificates as defined by RFC 5280 to support
-    authentication for HTTPS , TLS.
-  choice:
-    - - java\.security\.cert\.X509Certificate
-      - null
-  class: Selection-Based Security Functional Requirements
 - id: FIA_X509_EXT.2.2
   type: code
   choice_type: and
@@ -417,6 +322,19 @@
     - - - java\.security\.cert\.X509Certificate
         - \.checkValidity\(
         - CertificateExpiredException|CertificateNotYetValidException
+      - null
+  class: Selection-Based Security Functional Requirements
+- id: FPT_TUD_EXT.2.1
+  type: code
+  choice_type: or
+  description: Integrity for Installation and Update
+  selection: >-
+    The application shall be distributed using the format of the
+    platform-supported package manager.
+  choice:
+    - - \.enableInstallerId\(InstallerID\.GOOGLE_PLAY
+      - null
+    - - \.getInstallerPackageName\(
       - null
   class: Selection-Based Security Functional Requirements
 - id: FCS_CKM.1.1(2)

@@ -31,7 +31,7 @@ from StaticAnalyzer.models import StaticAnalyzerAndroid
 
 logger = logging.getLogger(__name__)
 ANDROID_API_SUPPORTED = 29
-FRIDA_VERSION = '14.0.8'
+FRIDA_VERSION = '14.2.2'
 
 
 class Environment:
@@ -96,18 +96,23 @@ class Environment:
             return False
         return True
 
-    def is_package_installed(self, package):
+    def is_package_installed(self, package, extra):
         """Check if package is installed."""
+        success = '\nSuccess' in extra
         out = self.adb_command(['pm', 'list', 'packages'], True)
         pkg = f'{package}'.encode('utf-8')
-        if pkg + b'\n' in out or pkg + b'\r\n' in out:
-            # Windows uses \r\n
+        pkg_fmts = [pkg + b'\n', pkg + b'\r\n', pkg + b'\r\r\n']
+        if any(pkg in out for pkg in pkg_fmts):
+            # Windows uses \r\n and \r\r\n
+            return True
+        if success:
+            # Fallback check
             return True
         return False
 
     def install_apk(self, apk_path, package):
         """Install APK and Verify Installation."""
-        if self.is_package_installed(package):
+        if self.is_package_installed(package, ''):
             logger.info('Removing existing installation')
             # Remove existing installation'
             self.adb_command(['uninstall', package], False, True)
@@ -131,7 +136,7 @@ class Environment:
             return False, 'adb install failed'
         out = out.decode('utf-8', 'ignore')
         # Verify Installation
-        return self.is_package_installed(package), out
+        return self.is_package_installed(package, out), out
 
     def adb_command(self, cmd_list, shell=False, silent=False):
         """ADB Command wrapper."""

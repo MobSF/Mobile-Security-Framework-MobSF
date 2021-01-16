@@ -18,7 +18,8 @@ def read(rel_path):
 def get_version(rel_path):
     for line in read(rel_path).splitlines():
         if line.startswith('MOBSF_VER'):
-            return line.split('\'')[1]
+            version = line.split('\'')[1].replace('v','')
+            return version.split()[0].strip()
     raise RuntimeError('Unable to find version string.')
 
 
@@ -47,6 +48,7 @@ setup(
         'MalwareAnalyzer', 'MalwareAnalyzer.*',
         'DynamicAnalyzer', 'DynamicAnalyzer.*',
         'StaticAnalyzer', 'StaticAnalyzer.*',
+        'install', 'install.*',
     ]),
     python_requires='>=3.7<3.9',
     include_package_data=True,

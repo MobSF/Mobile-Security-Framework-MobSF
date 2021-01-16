@@ -202,7 +202,19 @@
             {% for perm,desc in permissions.items %}
             <tr>
             <td>{{ perm }}</td>
-            <td>{{ desc.status }}</td>
+            <td>
+            {% if desc.status == 'dangerous' %}
+              <span class="danger">dangerous</span>
+            {% elif desc.status == 'normal' %}
+              <span class="info">normal</span>
+            {% elif desc.status == 'signatureOrSystem' %}
+              <span class="warning">SignatureOrSystem</span>
+            {% elif desc.status == 'signature' %}
+              <span class="success">signature</span>
+            {% elif desc.status == 'unknown' %}
+              <span class="secondary">unknown</span>
+            {% endif %}
+            </td>
             <td>{{ desc.info }}</td>
             <td>{{ desc.description }}</td>
             </tr>
@@ -485,13 +497,13 @@
                       <strong>CVSS V2:</strong>
                       {{ details.metadata.cvss }}
                       {% if details.metadata.cvss > 6 %}
-                         <span class="danger">{{ details|key:"cvss" }} (high)</span>
+                         <span class="danger"> (high)</span>
                       {% elif details.metadata.cvss == 0 %}
-                        <span class="info">{{ details|key:"cvss" }} (info)</span>
+                        <span class="info">(info)</span>
                       {% elif details.metadata.cvss >= 4 %}
-                        <span class="warning">{{ details|key:"cvss" }} (medium)</span>
+                        <span class="warning"> (medium)</span>
                       {% elif details.metadata.cvss < 4 %}
-                        <span class="success">{{ details|key:"cvss" }} (low)</span>
+                        <span class="success"> (low)</span>
                       {% endif %}
                       {% if details.metadata.cwe %}</br> <strong>CWE: </strong>{{ details.metadata.cwe }}{% endif %}
                       {% if details.metadata|key:"owasp-mobile" %}</br> <strong>OWASP Top 10: </strong>{{ details.metadata|key:"owasp-mobile" }}{% endif %}
@@ -572,7 +584,7 @@
                     </table>
     {% endif %}
               
-    <h2><i class="fa fa-id-badge"></i> NIAP ANALYSIS</h2>
+    <h2><i class="fa fa-id-badge"></i> NIAP ANALYSIS v1.3</h2>
     <table class="basic">
               <thead>
                   <tr>

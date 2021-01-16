@@ -48,7 +48,7 @@ def api_scan(request):
     if set(request.POST) >= params:
         scan_type = request.POST['scan_type']
         # APK, Android ZIP and iOS ZIP
-        if scan_type in {'apk', 'zip'}:
+        if scan_type in {'xapk', 'apk', 'zip'}:
             resp = static_analyzer(request, True)
             if 'type' in resp:
                 # For now it's only ios_zip

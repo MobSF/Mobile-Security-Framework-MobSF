@@ -21,14 +21,14 @@ logger = logging.getLogger(__name__)
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-MOBSF_VER = 'v3.1.9 Beta'
+MOBSF_VER = 'v3.2.5 Beta'
 
 BANNER = """
-  __  __       _    ____  _____       _____  _ 
- |  \/  | ___ | |__/ ___||  ___|_   _|___ / / |
- | |\/| |/ _ \| '_ \___ \| |_  \ \ / / |_ \ | |
- | |  | | (_) | |_) |__) |  _|  \ V / ___) || |
- |_|  |_|\___/|_.__/____/|_|     \_/ |____(_)_|
+  __  __       _    ____  _____   _____  ____  
+ |  \/  | ___ | |__/ ___||  ___| |___ / |___ \ 
+ | |\/| |/ _ \| '_ \___ \| |_      |_ \   __) |
+ | |  | | (_) | |_) |__) |  _|    ___) | / __/ 
+ |_|  |_|\___/|_.__/____/|_|     |____(_)_____|
 """  # noqa: W291
 # ASCII Font: Standard
 # ==============================================
@@ -328,6 +328,8 @@ else:
 
     # -----External URLS--------------------------
     MALWARE_DB_URL = 'https://www.malwaredomainlist.com/mdlcsv.php'
+    MALTRAIL_DB_URL = ('https://raw.githubusercontent.com/stamparm/aux/'
+                       'master/maltrail-malware-domains.txt')
     VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/vtapi/v2/file/'
     EXODUS_URL = 'https://reports.exodus-privacy.eu.org'
     APPMONSTA_URL = 'https://api.appmonsta.com/v1/stores/android/details/'

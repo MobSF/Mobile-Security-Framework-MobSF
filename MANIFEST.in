@@ -1,6 +1,10 @@
 
 recursive-include StaticAnalyzer/tools *
 recursive-include DynamicAnalyzer/tools *
-recursive-include signatures/ *
-recursive-include static/ *
-recursive-include templates/ *
+recursive-include signatures *
+recursive-include static *
+recursive-include templates *
+recursive-include install *
+include manage.py
+include requirements.txt
+recursive-exclude *.pyc

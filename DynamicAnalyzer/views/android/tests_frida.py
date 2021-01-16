@@ -137,7 +137,9 @@ def live_api(request, api=False):
                     'status': 'failed',
                     'message': 'Data does not exist.'}
                 return send_response(data, api)
-            with open(apimon_file, 'r') as flip:
+            with open(apimon_file, 'r',
+                      encoding='utf8',
+                      errors='ignore') as flip:
                 api_list = json.loads('[{}]'.format(
                     flip.read()[:-1]))
             data = {'data': api_list}
@@ -175,7 +177,9 @@ def frida_logs(request, api=False):
                     'status': 'failed',
                     'message': 'Data does not exist.'}
                 return send_response(data, api)
-            with open(frida_logs, 'r') as flip:
+            with open(frida_logs, 'r',
+                      encoding='utf8',
+                      errors='ignore') as flip:
                 data = {'data': flip.read()}
             return send_response(data, api)
         logger.info('Frida Logs live streaming')
@@ -241,7 +245,9 @@ def apimon_analysis(app_dir):
         if not is_file_exists(location):
             return {}
         logger.info('Frida API Monitor Analysis')
-        with open(location, 'r') as flip:
+        with open(location, 'r',
+                  encoding='utf8',
+                  errors='ignore') as flip:
             apis = json.loads('[{}]'.format(
                 flip.read()[:-1]))
         for api in apis:

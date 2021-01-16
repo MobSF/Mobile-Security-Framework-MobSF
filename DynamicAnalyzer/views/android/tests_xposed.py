@@ -118,7 +118,9 @@ def droidmon_api_analysis(app_dir, package):
         if not is_file_exists(location):
             return {}
         logger.info('Xposed Droidmon API Analysis')
-        with open(location, 'r', encoding='utf-8') as flip:
+        with open(location, 'r',
+                  encoding='utf8',
+                  errors='ignore') as flip:
             dat = flip.readlines()
         res_id = 'Droidmon-apimonitor-' + package + ':'
         for line in dat:

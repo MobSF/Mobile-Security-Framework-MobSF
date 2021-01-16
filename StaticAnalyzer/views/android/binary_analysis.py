@@ -135,13 +135,15 @@ class Checksec:
                 'should set RPATH is if it is linked to private '
                 'shared libraries in the same package. Remove the '
                 'compiler option -rpath to remove RPATH.')
+            rpt = rpath.rpath
         else:
             severity = 'info'
             desc = (
                 'The shared object does not have run-time search path '
                 'or RPATH set.')
+            rpt = rpath
         elf_dict['rpath'] = {
-            'rpath': rpath,
+            'rpath': rpt,
             'severity': severity,
             'description': desc,
         }
@@ -157,12 +159,14 @@ class Checksec:
                 'set RUNPATH is if it is linked to private shared '
                 'libraries in the same package. Remove the compiler '
                 'option --enable-new-dtags,-rpath to remove RUNPATH.')
+            rnp = runpath.runpath
         else:
             severity = 'info'
             desc = (
                 'The shared object does not have RUNPATH set.')
+            rnp = runpath
         elf_dict['runpath'] = {
-            'runpath': runpath,
+            'runpath': rnp,
             'severity': severity,
             'description': desc,
         }

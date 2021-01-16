@@ -14,10 +14,10 @@ LABEL \
 ENV DEBIAN_FRONTEND="noninteractive" \
     ANALYZER_IDENTIFIER="" \
     JDK_FILE="openjdk-12_linux-x64_bin.tar.gz" \
-    WKH_FILE="wkhtmltox_0.12.5-1.focal_amd64.deb"
+    WKH_FILE="wkhtmltox_0.12.6-1.focal_amd64.deb"
 
 ENV JDK_URL="https://download.java.net/java/GA/jdk12/GPL/${JDK_FILE}" \
-    WKH_URL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/${WKH_FILE}"
+    WKH_URL="https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/${WKH_FILE}"
 
 # See https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
 RUN apt update -y && apt install -y  --no-install-recommends \
