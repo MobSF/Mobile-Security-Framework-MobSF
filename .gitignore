@@ -1,7 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-MobSF/windows_vm_priv_key.asc
 
 # C extensions
 *.so
@@ -20,6 +19,7 @@ lib/
 lib64/
 parts/
 sdist/
+dist
 var/
 *.egg-info/
 .installed.cfg
@@ -63,14 +63,16 @@ target/
 #D2J Error file
 classes-error.zip
 
-#MobSF Files
-logs/
-uploads/
-db.sqlite3
-secret
-
 #IntelliJ IDE
 .idea
 */migrations/*
 .fuse_hidden*
-/MalwareAnalyzer/malwaredb/*
+.tox
+
+#MobSF Files
+mobsf/debug.log
+mobsf/uploads/
+mobsf/db.sqlite3
+mobsf/secret
+mobsf/StaticAnalyzer/migrations
+mobsf/MobSF/windows_vm_priv_key.asc

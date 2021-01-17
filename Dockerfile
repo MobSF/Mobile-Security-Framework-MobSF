@@ -87,8 +87,8 @@ COPY . .
 RUN rm -rf /root/Mobile-Security-Framework-MobSF/scripts/wheels > /dev/null 2>&1 
 
 # Enable Use Home Directory and set adb path
-RUN sed -i 's/USE_HOME = False/USE_HOME = True/g' MobSF/settings.py && \
-    sed -i "s#ADB_BINARY = ''#ADB_BINARY = '/usr/bin/adb'#" MobSF/settings.py
+RUN sed -i 's/USE_HOME = False/USE_HOME = True/g' mobsf/MobSF/settings.py && \
+    sed -i "s#ADB_BINARY = ''#ADB_BINARY = '/usr/bin/adb'#" mobsf/MobSF/settings.py
 
 # Postgres support is set to false by default
 ARG POSTGRES=False

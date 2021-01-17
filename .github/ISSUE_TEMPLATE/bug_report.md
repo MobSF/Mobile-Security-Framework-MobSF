@@ -39,7 +39,7 @@ What happens, under which versions, under what conditions, when, and what were y
 ## LOG FILE
 
 ```
-Paste the contents of logs/debug.log here or attach the log file.
+Paste the contents of mobsf/debug.log here or attach the log file.
 ```
 
 <!--
