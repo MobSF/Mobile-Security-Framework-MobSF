@@ -21,7 +21,7 @@ Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82
 [![Blackhat Arsenal Asia 2015](https://img.shields.io/badge/Black%20Hat%20Arsenal-Asia%202015-blue.svg)](https://www.blackhat.com/asia-15/arsenal.html#yso-mobile-security-framework)
 [![Blackhat Arsenal Asia 2018](https://img.shields.io/badge/Black%20Hat%20Arsenal-Asia%202018-blue.svg)](https://www.blackhat.com/asia-18/arsenal.html#mobile-security-framework-mobsf)
 
-MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-release) and [BlackArch](https://blackarch.org/mobile.html)
+MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-release), [BlackArch](https://blackarch.org/mobile.html) and [Pentoo](https://www.pentoo.ch/).
 
 ## Support MobSF
 
