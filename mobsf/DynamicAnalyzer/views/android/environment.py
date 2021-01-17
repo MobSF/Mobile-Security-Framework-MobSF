@@ -18,6 +18,9 @@ from mobsf.DynamicAnalyzer.tools.webproxy import (
     start_proxy,
     stop_httptools,
 )
+from mobsf.DynamicAnalyzer.views.android import (
+    frida_server_download as fserver,
+)
 from mobsf.MobSF.utils import (
     get_adb,
     get_device,
@@ -564,7 +567,6 @@ class Environment:
     def frida_setup(self):
         """Setup Frida."""
         frida_arch = None
-        frida_dir = 'onDevice/frida/'
         arch = self.get_android_arch()
         logger.info('Android OS architecture identified as %s', arch)
         if arch in ['armeabi-v7a', 'armeabi']:
@@ -580,12 +582,15 @@ class Environment:
                          ' or Android Studio Emulator'
                          ' instance is running')
             return
-        frida_bin = 'frida-server-{}-android-{}'.format(
-            FRIDA_VERSION,
-            frida_arch)
-        frida_path = os.path.join(self.tools_dir,
-                                  frida_dir,
-                                  frida_bin)
+        frida_bin = f'frida-server-{FRIDA_VERSION}-android-{frida_arch}'
+        stat = fserver.update_frida_server(frida_arch, FRIDA_VERSION)
+        if not stat:
+            msg = ('Cannot download frida-server binary. You will need'
+                   f' {frida_bin} in {settings.DWD_DIR} for '
+                   'Dynamic Analysis to work')
+            logger.error(msg)
+            return
+        frida_path = os.path.join(settings.DWD_DIR, frida_bin)
         logger.info('Copying frida server for %s', frida_arch)
         self.adb_command(['push', frida_path, '/system/fd_server'])
         self.adb_command(['chmod', '755', '/system/fd_server'], True)
