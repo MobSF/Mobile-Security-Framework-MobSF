@@ -23,7 +23,7 @@ echo Deleting Secret File
 del /f "mobsf\secret" >nul 2>&1
 echo Deleting Previous Setup files
 rmdir "%UserProfile%\MobSF" /q /s >nul 2>&1
-del /f "setup_done.txt" >nul 2>&1
+del /f "mobsf\setup_done.txt" >nul 2>&1
 echo Done
 ) ELSE ( 
 echo Please run script from mobsf.MobSF directory
