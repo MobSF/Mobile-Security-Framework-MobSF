@@ -415,7 +415,7 @@ def update_local_db(db_name, url, local_file):
     update = None
     inmemoryfile = None
     try:
-        proxies, verify = upstream_proxy('http')
+        proxies, verify = upstream_proxy('https')
     except Exception:
         logger.exception('[ERROR] Setting upstream proxy')
     try:

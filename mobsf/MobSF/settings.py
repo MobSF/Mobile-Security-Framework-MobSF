@@ -20,8 +20,8 @@ logger = logging.getLogger(__name__)
 #       MOBSF CONFIGURATIONS
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-VERSION = '3.2.6'
-MOBSF_VER = 'v3.2.6 Beta'
+VERSION = '3.2.7'
+MOBSF_VER = 'v3.2.7 Beta'
 # Remove this later with f string
 BANNER = """
   __  __       _    ____  _____   _____  ____  
@@ -335,6 +335,7 @@ else:
     GITHUB_URL = ('https://raw.githubusercontent.com/'
                   'MobSF/Mobile-Security-Framework-MobSF/'
                   'master/mobsf/MobSF/settings.py')
+    FRIDA_SERVER = 'https://api.github.com/repos/frida/frida/releases/tags/'
     GOOGLE = 'https://www.google.com'
     BAIDU = 'https://www.baidu.com/'
 
