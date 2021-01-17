@@ -18,7 +18,7 @@ def read(rel_path):
 def get_version(rel_path):
     for line in read(rel_path).splitlines():
         if line.startswith('MOBSF_VER'):
-            version = line.split('\'')[1].replace('v','')
+            version = line.split('\'')[1].replace('v', '')
             return version.split()[0].strip()
     raise RuntimeError('Unable to find version string.')
 
@@ -30,7 +30,7 @@ description = (
     'performing static and dynamic analysis.')
 setup(
     name='mobsf',
-    version=get_version('MobSF/settings.py'),
+    version=get_version('mobsf/MobSF/settings.py'),
     description=description,
     author='Ajin Abraham',
     author_email='ajin25@gmail.com',
@@ -44,11 +44,11 @@ setup(
         'Topic :: Software Development :: Quality Assurance',
     ],
     packages=find_packages(include=[
-        'MobSF', 'MobSF.*',
-        'MalwareAnalyzer', 'MalwareAnalyzer.*',
-        'DynamicAnalyzer', 'DynamicAnalyzer.*',
-        'StaticAnalyzer', 'StaticAnalyzer.*',
-        'install', 'install.*',
+        'mobsf.MobSF', 'mobsf.MobSF.*',
+        'mobsf.MalwareAnalyzer', 'mobsf.MalwareAnalyzer.*',
+        'mobsf.DynamicAnalyzer', 'mobsf.DynamicAnalyzer.*',
+        'mobsf.StaticAnalyzer', 'mobsf.StaticAnalyzer.*',
+        'mobsf.install', 'mobsf.install.*',
     ]),
     python_requires='>=3.7<3.9',
     include_package_data=True,
