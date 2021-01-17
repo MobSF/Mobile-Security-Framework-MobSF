@@ -252,7 +252,7 @@ else:
     # ======WINDOWS STATIC ANALYSIS SETTINGS ===========
 
     # Private key
-    WINDOWS_VM_SECRET = 'MobSF/windows_vm_priv_key.asc'
+    WINDOWS_VM_SECRET = 'mobsf/MobSF/windows_vm_priv_key.asc'
     # IP and Port of the MobSF Windows VM
     # example: WINDOWS_VM_IP = '127.0.0.1'   ;noqa E800
     WINDOWS_VM_IP = None
@@ -334,7 +334,7 @@ else:
     ITUNES_URL = 'https://itunes.apple.com/lookup'
     GITHUB_URL = ('https://raw.githubusercontent.com/'
                   'MobSF/Mobile-Security-Framework-MobSF/'
-                  'master/MobSF/settings.py')
+                  'master/mobsf/MobSF/settings.py')
     GOOGLE = 'https://www.google.com'
     BAIDU = 'https://www.baidu.com/'
 
