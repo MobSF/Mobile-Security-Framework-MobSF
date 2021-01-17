@@ -15,7 +15,7 @@ rmdir "mobsf\DynamicAnalyzer\migrations" /q /s >nul 2>&1
 echo Deleting MobSF Migrations
 rmdir "mobsf\MobSF\migrations" /q /s >nul 2>&1
 echo Deleting temp and log files
-rmdir "mobsf\logs" /q /s >nul 2>&1
+del /f "mobsf\debug.log" >nul 2>&1
 del /f "classes*" >nul 2>&1
 echo Deleting DB
 del /f "mobsf\db.sqlite3" >nul 2>&1

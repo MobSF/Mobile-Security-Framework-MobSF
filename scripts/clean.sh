@@ -33,7 +33,7 @@ then
         find ./ -name "*.pyc" -exec rm -rf {} \;
         find ./ | grep -E "(__pycache__|\.pyo$)" | xargs rm -rf
         echo 'Deleting temp and log files'
-	rm -rf ./mobsf/logs/*
+	rm -rf ./mobsf/debug.log
 	rm -rf ./classes*
 	echo 'Deleting DB'
 	rm -rf ./mobsf/db.sqlite3

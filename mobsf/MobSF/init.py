@@ -99,10 +99,6 @@ def get_mobsf_home(use_home, base_dir):
             create_user_conf(mobsf_home, base_dir)
         else:
             mobsf_home = base_dir
-        # Logs Directory
-        log_dir = os.path.join(mobsf_home, 'logs/')
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
         # Download Directory
         dwd_dir = os.path.join(mobsf_home, 'downloads/')
         if not os.path.exists(dwd_dir):

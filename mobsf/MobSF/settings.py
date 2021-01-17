@@ -42,8 +42,6 @@ USE_HOME = False
 # ===============================================
 
 MobSF_HOME = get_mobsf_home(USE_HOME, BASE_DIR)
-# Logs Directory
-LOG_DIR = os.path.join(MobSF_HOME, 'logs/')
 # Download Directory
 DWD_DIR = os.path.join(MobSF_HOME, 'downloads/')
 # Screenshot Directory
@@ -388,7 +386,7 @@ LOGGING = {
         'logfile': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(MobSF_HOME, 'logs', 'debug.log'),
+            'filename': os.path.join(MobSF_HOME, 'debug.log'),
             'formatter': 'standard',
         },
         'console': {
