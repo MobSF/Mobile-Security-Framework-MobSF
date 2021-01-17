@@ -13,9 +13,12 @@ from django.core.wsgi import get_wsgi_application
 
 from whitenoise import WhiteNoise
 
+from . import settings
+
 
 warnings.filterwarnings('ignore', category=UserWarning, module='cffi')
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mobsf.MobSF.settings')
 
+static = os.path.join(settings.BASE_DIR, 'static')
 application = WhiteNoise(get_wsgi_application(),
-                         root='mobsf/static', prefix='static/')
+                         root=static, prefix='static/')

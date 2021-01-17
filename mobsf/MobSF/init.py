@@ -60,6 +60,9 @@ def create_user_conf(mobsf_home, base_dir):
 def django_operation(cmds, base_dir):
     """Generic Function for Djano operations."""
     manage = os.path.join(base_dir, '../manage.py')
+    if not os.path.exists(manage):
+        # Bail out for package
+        return
     args = [sys.executable, manage]
     args.extend(cmds)
     subprocess.call(args)
@@ -115,7 +118,10 @@ def get_mobsf_home(use_home, base_dir):
         sig_dir = os.path.join(mobsf_home, 'signatures/')
         if use_home:
             src = os.path.join(base_dir, 'signatures/')
-            shutil.copytree(src, sig_dir, dirs_exist_ok=True)
+            try:
+                shutil.copytree(src, sig_dir)
+            except Exception:
+                pass
         elif not os.path.exists(sig_dir):
             os.makedirs(sig_dir)
         return mobsf_home

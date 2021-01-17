@@ -334,16 +334,18 @@ def get_device():
             return dev_id
     logger.error('Is the Android VM running?\n'
                  'MobSF cannot identify device id.\n'
-                 'Please set ANALYZER_IDENTIFIER in MobSF/settings.py')
+                 'Please set ''ANALYZER_IDENTIFIER in '
+                 '{}').format(get_config_loc())
 
 
 def get_adb():
     """Get ADB binary path."""
     try:
         adb_loc = None
-        adb_msg = ('Set adb path, ADB_BINARY in MobSF/settings.py'
+        adb_msg = ('Set adb path, ADB_BINARY in {}'
                    ' with same adb binary used'
-                   ' by Genymotion VM/Emulator AVD.')
+                   ' by Genymotion VM/Emulator AVD.'
+                   '').format(get_config_loc())
         global ADB_PATH
         if (len(settings.ADB_BINARY) > 0
                 and is_file_exists(settings.ADB_BINARY)):
@@ -396,7 +398,7 @@ def check_basic_env():
         logger.error(
             'JDK 8+ is not available. '
             'Set JAVA_HOME environment variable'
-            ' or JAVA_DIRECTORY in MobSF/settings.py')
+            ' or JAVA_DIRECTORY in {}').format(get_config_loc())
         logger.info('Current Configuration: '
                     'JAVA_DIRECTORY=%s', settings.JAVA_DIRECTORY)
         logger.info('Example Configuration:'
@@ -525,3 +527,15 @@ def is_md5(user_input):
     if not stat:
         logger.error('Invalid scan hash')
     return stat
+
+
+def get_config_loc():
+    """Get config location."""
+    if settings.USE_HOME:
+        return os.path.join(
+            os.path.expanduser('~'),
+            '.MobSF',
+            'config.py',
+        )
+    else:
+        return 'MobSF/settings.py'

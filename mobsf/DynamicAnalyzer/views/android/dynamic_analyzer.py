@@ -22,6 +22,7 @@ from mobsf.DynamicAnalyzer.tools.webproxy import (
     stop_httptools,
 )
 from mobsf.MobSF.utils import (
+    get_config_loc,
     get_device,
     get_proxy_ip,
     is_md5,
@@ -55,7 +56,8 @@ def dynamic_analysis(request, api=False):
                    ' find android instance identifier.'
                    ' Please run an android instance and refresh'
                    ' this page. If this error persists,'
-                   ' set ANALYZER_IDENTIFIER in MobSF/settings.py')
+                   ' set ANALYZER_IDENTIFIER in '
+                   '{}').format(get_config_loc())
             return print_n_send_error_response(request, msg, api)
         proxy_ip = get_proxy_ip(identifier)
         context = {'apps': scan_apps,
@@ -102,7 +104,8 @@ def dynamic_analyzer(request, checksum, api=False):
                    ' find android instance identifier. '
                    'Please run an android instance and refresh'
                    ' this page. If this error persists,'
-                   ' set ANALYZER_IDENTIFIER in MobSF/settings.py')
+                   ' set ANALYZER_IDENTIFIER in '
+                   '{}').format(get_config_loc())
             return print_n_send_error_response(request, msg, api)
         env = Environment(identifier)
         if not env.connect_n_mount():
