@@ -21,7 +21,8 @@ logger = logging.getLogger(__name__)
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 VERSION = '3.2.6'
-MOBSF_VER = 'v3.2.6 Beta'  # Remove this later with format
+MOBSF_VER = 'v3.2.6 Beta'
+# Remove this later with f string
 BANNER = """
   __  __       _    ____  _____   _____  ____  
  |  \/  | ___ | |__/ ___||  ___| |___ / |___ \ 
