@@ -57,7 +57,7 @@ def dynamic_analysis(request, api=False):
                    ' Please run an android instance and refresh'
                    ' this page. If this error persists,'
                    ' set ANALYZER_IDENTIFIER in '
-                   '{}').format(get_config_loc())
+                   f'{get_config_loc()}')
             return print_n_send_error_response(request, msg, api)
         proxy_ip = get_proxy_ip(identifier)
         context = {'apps': scan_apps,
@@ -105,7 +105,7 @@ def dynamic_analyzer(request, checksum, api=False):
                    'Please run an android instance and refresh'
                    ' this page. If this error persists,'
                    ' set ANALYZER_IDENTIFIER in '
-                   '{}').format(get_config_loc())
+                   f'{get_config_loc()}')
             return print_n_send_error_response(request, msg, api)
         env = Environment(identifier)
         if not env.connect_n_mount():

@@ -42,8 +42,8 @@ def main():
     else:
         from waitress import serve
         from .MobSF import wsgi
-        serve(wsgi.application,
-              listen=listen,
-              threads=10,
-              channel_timeout=3600,
-        )
+        serve(
+            wsgi.application,
+            listen=listen,
+            threads=10,
+            channel_timeout=3600)
