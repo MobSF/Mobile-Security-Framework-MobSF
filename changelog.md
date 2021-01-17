@@ -1,3 +1,28 @@
+### v3.2.6 Beta Changelog
+- Features or Enhancements
+  - Added Support for Android 10 Dynamic Analysis
+  - Published new REST APIs for Dynamic Analysis
+  - New Source Tree Browser for Android Static Analysis 
+  - Improved Binary and Shared Object Analysis with LIEF
+  - Added Support for NIAP v1.3
+  - Added a world map UI plotting server locations
+  - Added Maltrail Domain Check
+  - Improved Android Permission Analysis
+  - iOS Objective C Rule improvements
+  - Android Kotlin Rule improvements
+  - MobSF now available as a python package and published to pypi
+  - Migrated CI from Travis to Github Action
+  - Improved File Magic Check on Uploads
+  - Post Install Check script
+  - Static Analysis Hardcoded Secrets Section from strings.xml
+  - Updated Dependencies
+  - Custom Header for REST API Key
+
+- Bug Fixes
+  - Fixed Install Verification bug on older Android versions
+  - Fix a Regex DoS in rule
+  - Fixed IPA Static Analysis Bug
+  - Minor PDF template fix
 
 ### v3.1.1 Beta Changelog
 - Features or Enhancements
