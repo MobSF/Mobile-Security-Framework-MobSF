@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 def clean_up_old_binaries(dirc, version):
-    """Delete Old Binaries"""
+    """Delete Old Binaries."""
     for f in Path(dirc).iterdir():
         if f.is_file() and f.name.startswith('frida-server'):
             if version in f.name:
