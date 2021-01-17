@@ -29,7 +29,7 @@ from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 
 logger = logging.getLogger(__name__)
 ANDROID_API_SUPPORTED = 29
-FRIDA_VERSION = '14.2.2'
+FRIDA_VERSION = '14.2.6'
 
 
 class Environment:
