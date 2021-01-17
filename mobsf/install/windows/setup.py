@@ -28,7 +28,8 @@ logger = logging.getLogger(__name__)
 # Only static URL, let's hope this never changes..
 CONFIG_URL = (
     'https://raw.githubusercontent.com/MobSF/'
-    'Mobile-Security-Framework-MobSF/master/install/windows/config.txt'
+    'Mobile-Security-Framework-MobSF/master/'
+    'mobsf/install/windows/config.txt'
 )
 
 # Static path to config file as a starting point
@@ -307,7 +308,7 @@ def generate_secret():
         '\t{}\n'
         '\tto MobSF to the path specified in settings.py\n'
         '\t(default: Mobile-Security-Framework-MobSF/'
-        'MobSF/windows_vm_priv_key.asc)'
+        'mobsf/MobSF/windows_vm_priv_key.asc)'
         .format(CONFIG['MobSF']['priv_key'])
     ))
     input('Please press any key when done..')
@@ -355,15 +356,16 @@ def local_config():
 
     # Copy predefined config to MobSF folder
     shutil.copy(
-        os.getcwd() + '\\install\\windows\\config.txt',
+        os.getcwd() + '\\mobsf\\install\\windows\\config.txt',
         os.path.join(CONFIG_PATH, CONFIG_FILE),
     )
 
 
 def rewrite_local_config(mobsf_home):
     """For local installation some config-vars need to be rewritten."""
-    CONFIG['MobSF']['subdir_tools'] = (mobsf_home
-                                       + '\\StaticAnalyzer\\tools\\windows\\')
+    CONFIG['MobSF']['subdir_tools'] = (
+        mobsf_home
+        + '\\mobsf\\StaticAnalyzer\\tools\\windows\\')
     CONFIG['MobSF']['dir'] = mobsf_home
 
     # Write to config
