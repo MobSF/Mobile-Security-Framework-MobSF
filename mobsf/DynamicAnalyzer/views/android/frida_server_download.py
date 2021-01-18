@@ -18,16 +18,29 @@ from mobsf.MobSF.utils import (
 logger = logging.getLogger(__name__)
 
 
-def download_frida_server(url, fname):
+def clean_up_old_binaries(dirc, version):
+    """Delete Old Binaries"""
+    for f in Path(dirc).iterdir():
+        if f.is_file() and f.name.startswith('frida-server'):
+            if version in f.name:
+                continue
+            try:
+                f.unlink()
+            except Exception:
+                pass
+
+
+def download_frida_server(url, version, fname):
     """Download frida-server-binary."""
     try:
         download_dir = Path(settings.DWD_DIR)
-        logger.info('Downloading frida-server binary %s', fname)
+        logger.info('Downloading binary %s', fname)
         dwd_loc = download_dir / fname
         with requests.get(url, stream=True) as r:
             with LZMAFile(r.raw) as f:
                 with open(dwd_loc, 'wb') as flip:
                     copyfileobj(f, flip)
+        clean_up_old_binaries(download_dir, version)
         return True
     except Exception:
         logger.exception('[ERROR] Downloading Frida Server Binary')
@@ -55,7 +68,7 @@ def update_frida_server(arch, version):
         for item in response.json()['assets']:
             if item['name'] == f'{fserver}.xz':
                 url = item['browser_download_url']
-                return download_frida_server(url, fserver)
+                return download_frida_server(url, version, fserver)
         return False
     except Exception:
         logger.exception('[ERROR] Fetching Frida Server Release')

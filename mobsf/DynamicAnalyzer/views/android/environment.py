@@ -586,9 +586,10 @@ class Environment:
         stat = fserver.update_frida_server(frida_arch, FRIDA_VERSION)
         if not stat:
             msg = ('Cannot download frida-server binary. You will need'
-                   f'{frida_bin} in {settings.DWD_DIR} for '
+                   f' {frida_bin} in {settings.DWD_DIR} for '
                    'Dynamic Analysis to work')
             logger.error(msg)
+            return
         frida_path = os.path.join(settings.DWD_DIR, frida_bin)
         logger.info('Copying frida server for %s', frida_arch)
         self.adb_command(['push', frida_path, '/system/fd_server'])

@@ -211,6 +211,20 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 268435456
 # In this mode, web UI related urls are disabled.
 API_ONLY = os.getenv('MOBSF_API_ONLY', '0')
 
+# -----External URLS--------------------------
+MALWARE_DB_URL = 'https://www.malwaredomainlist.com/mdlcsv.php'
+MALTRAIL_DB_URL = ('https://raw.githubusercontent.com/stamparm/aux/'
+                    'master/maltrail-malware-domains.txt')
+VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/vtapi/v2/file/'
+EXODUS_URL = 'https://reports.exodus-privacy.eu.org'
+APPMONSTA_URL = 'https://api.appmonsta.com/v1/stores/android/details/'
+ITUNES_URL = 'https://itunes.apple.com/lookup'
+GITHUB_URL = ('https://raw.githubusercontent.com/'
+                'MobSF/Mobile-Security-Framework-MobSF/'
+                'master/mobsf/MobSF/settings.py')
+FRIDA_SERVER = 'https://api.github.com/repos/frida/frida/releases/tags/'
+GOOGLE = 'https://www.google.com'
+BAIDU = 'https://www.baidu.com/'
 # ===================
 # USER CONFIGURATION
 # ===================
@@ -223,7 +237,7 @@ else:
     If 'USE_HOME' is set to True,
     then below user configuration settings are not considered.
     The user configuration will be loaded from
-    config.py in MobSF Home directory.
+    .MobSF/config.py in user's home directory.
     """
     # ^CONFIG-START^: Do not edit this line
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -301,7 +315,7 @@ else:
     FRIDA_TIMEOUT = 4
     # ==============================================
 
-    # ================HTTPS PROXY ===============
+    # ================HTTPS PROXY =============== 
     PROXY_IP = '127.0.0.1'
     PROXY_PORT = 1337  # Proxy Port
     # ===================================================
@@ -324,27 +338,10 @@ else:
     APKID_ENABLED = True
     # ==============================================
 
-    # -----External URLS--------------------------
-    MALWARE_DB_URL = 'https://www.malwaredomainlist.com/mdlcsv.php'
-    MALTRAIL_DB_URL = ('https://raw.githubusercontent.com/stamparm/aux/'
-                       'master/maltrail-malware-domains.txt')
-    VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/vtapi/v2/file/'
-    EXODUS_URL = 'https://reports.exodus-privacy.eu.org'
-    APPMONSTA_URL = 'https://api.appmonsta.com/v1/stores/android/details/'
-    ITUNES_URL = 'https://itunes.apple.com/lookup'
-    GITHUB_URL = ('https://raw.githubusercontent.com/'
-                  'MobSF/Mobile-Security-Framework-MobSF/'
-                  'master/mobsf/MobSF/settings.py')
-    FRIDA_SERVER = 'https://api.github.com/repos/frida/frida/releases/tags/'
-    GOOGLE = 'https://www.google.com'
-    BAIDU = 'https://www.baidu.com/'
-
-    # -------External -----------------------------
+    # ========DISABLED COMPONENTS===================
+    # -------External API Keys----------------------
     # Get AppMonsta API from https://appmonsta.com/dashboard/get_api_key/
     APPMONSTA_API = ''
-
-    # ========DISABLED COMPONENTS===================
-
     # ----------VirusTotal--------------------------
     VT_ENABLED = False
     VT_API_KEY = ''
