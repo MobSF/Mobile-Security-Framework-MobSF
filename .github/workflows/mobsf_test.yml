@@ -17,8 +17,6 @@ jobs:
           # excludes py38, py39 on Windows
           - os: windows-latest
             python-version: 3.8
-          - os: windows-latest
-            python-version: 3.9
 
     runs-on: ${{ matrix.os }}
     steps:
