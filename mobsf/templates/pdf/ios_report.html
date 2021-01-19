@@ -466,7 +466,11 @@
                   <tr>
                   <td>{{ forloop.counter }}</td>
                   <td width="25%">
-                   {{ details.metadata.description }}
+                    {% if details.metadata|key:"ref" %}
+                    <a href="{{details.metadata.ref}}" target="_blank" rel="noopener"> {{ details.metadata.description }}</a>
+                    {% else %}
+                      {{ details.metadata.description }}
+                    {% endif %}
                   </td>
                   <td>
                     {% if details.metadata.severity == "high" %}

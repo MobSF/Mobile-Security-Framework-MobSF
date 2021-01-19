@@ -19,6 +19,7 @@
   pattern: (password\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(pass\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(username\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(secret\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(key\s*=\s*[\'|\"].+[\'|\"]\s{0,5})
   severity: high
   type: Regex
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#checking-memory-for-sensitive-data-mstg-storage-10
 - id: ios_sqlite
   cvss: 0
   cwe: ''
@@ -31,6 +32,7 @@
   - sqlite3_finalize
   severity: info
   type: RegexOr
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#sqlite-database-unencrypted
 - id: ios_load_html_string
   cvss: 8.8
   cwe: cwe-95
@@ -43,6 +45,7 @@
   - webView
   severity: warning
   type: RegexAnd
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06h-Testing-Platform-Interaction.md#testing-webview-protocol-handlers-mstg-platform-6
 - id: ios_jailbreak_detect
   cvss: 0
   cwe: ''
@@ -100,6 +103,7 @@
   - /Library/MobileSubstrate/CydiaSubstrate\.dylib
   severity: good
   type: RegexOr
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06j-Testing-Resiliency-Against-Reverse-Engineering.md#jailbreak-detection-mstg-resilience-1
 - id: ios_banned_api
   cvss: 2.2
   cwe: cwe-676
@@ -112,6 +116,7 @@
   pattern: 'strcpy\(|memcpy\(|strcat\(|strncat\(|strncpy\(|sprintf\(|vsprintf\(|gets\('
   severity: high
   type: Regex
+  ref: https://developer.apple.com/library/archive/documentation/Security/Conceptual/SecureCodingGuide/Articles/BufferOverflows.html#//apple_ref/doc/uid/TP40002577-SW1
 - id: ios_self_signed_ssl
   cvss: 7.4
   cwe: cwe-295
@@ -125,6 +130,7 @@
     canAuthenticateAgainstProtectionSpace|continueWithoutCredentialForAuthenticationChallenge|kCFStreamSSLAllowsExpiredCertificates|kCFStreamSSLAllowsAnyRoot|kCFStreamSSLAllowsExpiredRoots|validatesSecureCertificate\s*=\s*(no|NO)|allowInvalidCertificates\s*=\s*(YES|yes)
   severity: high
   type: Regex
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06g-Testing-Network-Communication.md#testing-custom-certificate-stores-and-certificate-pinning-mstg-network-3-and-mstg-network-4
 - id: ios_webview_ignore_ssl
   cvss: 7.4
   cwe: cwe-295
@@ -138,6 +144,7 @@
     setAllowsAnyHTTPSCertificate:\s*YES|allowsAnyHTTPSCertificateForHost|loadingUnvalidatedHTTPSPage\s*=\s*(YES|yes)
   severity: high
   type: Regex
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05g-Testing-Network-Communication.md#webview-server-certificate-verification
 - id: ios_app_logging
   cvss: 7.5
   cwe: cwe-532
@@ -148,6 +155,7 @@
   pattern: NSLog\(|NSAssert\(|fprintf\(|fprintf\(|Logging\(
   severity: info
   type: Regex
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06i-Testing-Code-Quality-and-Build-Settings.md#finding-debugging-code-and-verbose-error-logging-mstg-code-4
 - id: ios_clipboard_listen
   cvss: 0
   cwe: ''
@@ -160,6 +168,7 @@
   pattern: 'UIPasteboardChangedNotification|generalPasteboard\]\.string'
   severity: warning
   type: Regex
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04b-Mobile-App-Security-Testing.md#clipboard
 - id: ios_temp_dir
   cvss: 7.5
   cwe: cwe-22
@@ -184,6 +193,7 @@
   pattern: NSFileProtectionComplete
   severity: good
   type: Regex
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#ios-data-storage
 - id: ios_file_enc_closed
   cvss: 0
   cwe: ''
@@ -194,6 +204,7 @@
   pattern: NSFileProtectionCompleteUnlessOpen
   severity: good
   type: Regex
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#ios-data-storage
 - id: ios_file_enc_boot
   cvss: 0
   cwe: ''
@@ -206,6 +217,7 @@
   pattern: NSFileProtectionCompleteUntilFirstUserAuthentication
   severity: good
   type: Regex
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#ios-data-storage
 - id: ios_file_perm
   cvss: 4.3
   cwe: cwe-311
@@ -216,6 +228,7 @@
   pattern: NSFileProtectionNone
   severity: warning
   type: Regex
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#ios-data-storage
 - id: ios_jailbreak_check
   cvss: 0
   cwe: ''
@@ -229,6 +242,7 @@
     - isJailbroken
   severity: good
   type: RegexAnd
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06j-Testing-Resiliency-Against-Reverse-Engineering.md#jailbreak-detection-mstg-resilience-1
 - id: ios_piracy_check
   cvss: 0
   cwe: ''
@@ -242,6 +256,7 @@
     - isPirated
   severity: good
   type: RegexAnd
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06j-Testing-Resiliency-Against-Reverse-Engineering.md#bypassing-jailbreak-detection
 - id: ios_md5_collision
   cvss: 7.4
   cwe: cwe-327
@@ -254,6 +269,7 @@
     - CC_MD5
   severity: high
   type: RegexAnd
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
 - id: ios_sha1_collision
   cvss: 5.9
   cwe: cwe-327
@@ -266,6 +282,7 @@
     - CC_SHA1
   severity: high
   type: RegexAnd
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
 - id: ios_aes_ecb
   cvss: 5.9
   cwe: cwe-327
@@ -281,6 +298,7 @@
     - kCCAlgorithmAES
   severity: high
   type: RegexAnd
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#weak-block-cipher-mode
 - id: ios_ptrace
   cvss: 0
   cwe: ''
@@ -293,6 +311,7 @@
     - PT_DENY_ATTACH
   severity: info
   type: RegexAnd
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06j-Testing-Resiliency-Against-Reverse-Engineering.md#using-ptrace
 - id: ios_mach_ports
   cvss: 0
   cwe: ''
@@ -306,6 +325,7 @@
       - mach_task_self\(\)
   severity: info
   type: RegexAndOr
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#mach-ports
 - id: ios_clipboard_copy
   cvss: 0
   cwe: ''
@@ -321,6 +341,7 @@
       - '@select\(copy:\)'
   severity: info
   type: RegexAndOr
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04b-Mobile-App-Security-Testing.md#clipboard
 - id: ios_realm_db
   cvss: 0
   cwe: ''
@@ -331,3 +352,4 @@
   pattern: '\[realm transactionWithBlock:'
   severity: info
   type: Regex
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#realm-databases
