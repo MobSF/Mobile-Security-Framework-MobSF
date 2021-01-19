@@ -83,7 +83,7 @@ def plist_analysis(src, is_source):
             return plist_info
 
         # Generic Plist Analysis
-        plist_obj = plistlib.readPlist(plist_file)
+        plist_obj = plistlib.load(plist_file)
         plist_info['plist_xml'] = plistlib.dumps(
             plist_obj).decode('utf-8', 'ignore')
         plist_info['bin_name'] = (plist_obj.get('CFBundleDisplayName', '')
@@ -107,7 +107,7 @@ def plist_analysis(src, is_source):
         logger.info('Checking Permissions')
         logger.info('Checking for Insecure Connections')
         for plist_file_ in plist_files:
-            plist_obj_ = plistlib.readPlist(plist_file_)
+            plist_obj_ = plistlib.load(plist_file_)
             # Check for app-permissions
             plist_info['permissions'] += check_permissions(plist_obj_)
             # Check for ats misconfigurations
