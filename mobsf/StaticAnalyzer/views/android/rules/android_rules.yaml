@@ -36,6 +36,7 @@
   cwe: cwe-295
   owasp-mobile: m3
   masvs: network-3
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05g-Testing-Network-Communication.md#android-network-apis
 - id: android_webview_external
   description: >-
     WebView load files from external storage. Files in external storage can be
@@ -50,6 +51,7 @@
   cwe: cwe-919
   owasp-mobile: m1
   masvs: platform-6
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05h-Testing-Platform-Interaction.md#static-analysis-7
 - id: android_write_app_dir
   description: App can write to App Directory. Sensitive Information should be encrypted.
   type: RegexOr
@@ -71,6 +73,7 @@
   cvss: 7.5
   cwe: cwe-330
   owasp-mobile: m5
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#weak-random-number-generators
   masvs: crypto-6
 - id: android_logging
   description: The App logs information. Sensitive information should never be logged.
@@ -82,6 +85,7 @@
   cwe: cwe-532
   owasp-mobile: ''
   masvs: storage-3
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#logs
 - id: android_sql_cipher
   description: This App uses SQL Cipher. But the secret may be hardcoded.
   type: Regex
@@ -102,6 +106,7 @@
   cwe: ''
   owasp-mobile: ''
   masvs: platform-9
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05h-Testing-Platform-Interaction.md#testing-for-overlay-attacks-mstg-platform-9
 - id: android_read_write_external
   description: >-
     App can read/write to External Storage. Any App can read data written to
@@ -116,6 +121,7 @@
   cwe: cwe-276
   owasp-mobile: m2
   masvs: storage-2
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#external-storage
 - id: android_temp_file
   description: >-
     App creates temp file. Sensitive information should never be written into a
@@ -142,6 +148,7 @@
   cwe: cwe-749
   owasp-mobile: m1
   masvs: platform-7
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05h-Testing-Platform-Interaction.md#testing-javascript-execution-in-webviews-mstg-platform-5
 - id: android_sql_cipher_aes256
   description: >-
     This App uses SQL Cipher. SQLCipher provides 256-bit AES encryption to
@@ -192,6 +199,7 @@
   cwe: cwe-919
   owasp-mobile: m1
   masvs: resilience-2
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04c-Tampering-and-Reverse-Engineering.md#debugging-and-tracing
 - id: android_clipboard_listen
   description: >-
     This app listens to Clipboard changes. Some malwares also listen to
@@ -205,6 +213,7 @@
   cvss: 0
   cwe: ''
   owasp-mobile: ''
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04b-Mobile-App-Security-Testing.md#clipboard
   masvs: platform-4
 - id: android_clipboard_copy
   description: >-
@@ -220,6 +229,7 @@
   cwe: ''
   owasp-mobile: ''
   masvs: storage-10
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04b-Mobile-App-Security-Testing.md#clipboard
 - id: android_webview_ignore_ssl
   description: >-
     Insecure WebView Implementation. WebView ignores SSL Certificate errors and
@@ -234,6 +244,7 @@
   cwe: cwe-295
   owasp-mobile: m3
   masvs: network-3
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05g-Testing-Network-Communication.md#webview-server-certificate-verification
 - id: android_sql_raw_query
   description: >-
     App uses SQLite Database and execute raw SQL query. Untrusted user input in
@@ -250,6 +261,7 @@
   cwe: cwe-89
   owasp-mobile: m7
   masvs: ''
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04h-Testing-Code-Quality.md#injection-flaws-mstg-arch-2-and-mstg-platform-2
 - id: android_detect_frida
   description: This App detects frida server.
   type: RegexAndOr
@@ -264,6 +276,7 @@
   cwe: ''
   owasp-mobile: ''
   masvs: resilience-4
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05j-Testing-Resiliency-Against-Reverse-Engineering.md#testing-reverse-engineering-tools-detection-mstg-resilience-4
 - id: android_ssl_pinning
   description: >-
     This App uses an SSL Pinning Library (org.thoughtcrime.ssl.pinning) to
@@ -283,6 +296,7 @@
   cwe: ''
   owasp-mobile: ''
   masvs: network-4
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05g-Testing-Network-Communication.md#testing-custom-certificate-stores-and-certificate-pinning-mstg-network-4
 - id: android_prevent_screenshot
   description: >-
     This App has capabilities to prevent against Screenshots from Recent Task
@@ -298,6 +312,7 @@
   cwe: ''
   owasp-mobile: ''
   masvs: storage-9
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#finding-sensitive-information-in-auto-generated-screenshots-mstg-storage-9
 - id: android_debuggable
   description: >-
     DexGuard Debug Detection code to detect whether an App is debuggable or not
@@ -312,6 +327,7 @@
   cwe: ''
   owasp-mobile: ''
   masvs: resilience-2
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04c-Tampering-and-Reverse-Engineering.md#debugging-and-tracing
 - id: android_debugger_detect
   description: DexGuard Debugger Detection code is identified.
   type: RegexAnd
@@ -324,6 +340,7 @@
   cwe: ''
   owasp-mobile: ''
   masvs: resilience-2
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04c-Tampering-and-Reverse-Engineering.md#debugging-and-tracing
 - id: android_emulator_detect
   description: DexGuard Emulator Detection code is identified.
   type: RegexAnd
@@ -336,6 +353,7 @@
   cwe: ''
   owasp-mobile: ''
   masvs: resilience-5
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04c-Tampering-and-Reverse-Engineering.md#debugging-and-tracing
 - id: android_debug_sign
   description: >-
     DexGuard code to detect whether the App is signed with a debug key or not is
@@ -362,6 +380,7 @@
   cwe: ''
   owasp-mobile: ''
   masvs: resilience-1
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05j-Testing-Resiliency-Against-Reverse-Engineering.md#testing-root-detection-mstg-resilience-1
 - id: android_tamper_detect
   description: DexGuard App Tamper Detection code is identified.
   type: RegexAnd
@@ -374,6 +393,7 @@
   cwe: ''
   owasp-mobile: ''
   masvs: resilience-3
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04c-Tampering-and-Reverse-Engineering.md#mobile-app-tampering-and-reverse-engineering
 - id: android_certificate_tamper
   description: DexGuard Signer Certificate Tamper Detection code is identified.
   type: RegexAnd
@@ -386,6 +406,7 @@
   cwe: ''
   owasp-mobile: ''
   masvs: resilience-3
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04c-Tampering-and-Reverse-Engineering.md#mobile-app-tampering-and-reverse-engineering
 - id: android_package_tamper
   description: The App may use package signature for tamper detection.
   type: RegexAnd
@@ -398,6 +419,7 @@
   cwe: ''
   owasp-mobile: ''
   masvs: resilience-3
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04c-Tampering-and-Reverse-Engineering.md#mobile-app-tampering-and-reverse-engineering
 - id: android_safetynet
   description: This App uses SafetyNet API.
   type: Regex
@@ -408,6 +430,7 @@
   cwe: ''
   owasp-mobile: ''
   masvs: resilience-7
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05j-Testing-Resiliency-Against-Reverse-Engineering.md#safetynet
 - id: android_su_detect
   description: This App may request root (Super User) privileges.
   type: RegexOr
@@ -423,6 +446,7 @@
   cwe: cwe-250
   owasp-mobile: ''
   masvs: resilience-1
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05j-Testing-Resiliency-Against-Reverse-Engineering.md#testing-root-detection-mstg-resilience-1
 - id: android_jackson_deserialize
   description: >-
     The app uses jackson deserialization libraryDeserialization of untrusted
@@ -450,6 +474,7 @@
   cwe: cwe-327
   owasp-mobile: m5
   masvs: crypto-2
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#weak-block-cipher-mode
 - id: android_rsa_no_oaep
   description: >-
     This App uses RSA Crypto without OAEP padding. The purpose of the padding
@@ -463,6 +488,7 @@
   cwe: cwe-780
   owasp-mobile: m5
   masvs: crypto-3
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#mobile-app-cryptography
 - id: android_world_writable
   description: The file is World Writable. Any App can write to the file
   type: RegexOr
@@ -475,6 +501,7 @@
   cwe: cwe-276
   owasp-mobile: m2
   masvs: storage-2
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#testing-local-storage-for-sensitive-data-mstg-storage-1-and-mstg-storage-2
 - id: android_world_readable
   description: The file is World Readable. Any App can read from the file
   type: RegexOr
@@ -487,6 +514,7 @@
   cwe: cwe-276
   owasp-mobile: m2
   masvs: storage-2
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#testing-local-storage-for-sensitive-data-mstg-storage-1-and-mstg-storage-2
 - id: android_world_read_write
   description: The file is World Readable and Writable. Any App can read/write to the file
   type: Regex
@@ -497,6 +525,7 @@
   cwe: cwe-276
   owasp-mobile: m2
   masvs: storage-2
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#testing-local-storage-for-sensitive-data-mstg-storage-1-and-mstg-storage-2
 - id: android_weak_hash
   cvss: 7.4
   cwe: cwe-327
@@ -513,6 +542,7 @@
     - \.getInstance\(.*MD4
   severity: high
   type: RegexOr
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
 - id: android_md5
   cvss: 7.4
   cwe: cwe-327
@@ -526,6 +556,7 @@
     - DigestUtils\.md5\(
   severity: high
   type: RegexOr
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
 - id: android_sha1
   cvss: 5.9
   cwe: cwe-327
@@ -541,6 +572,7 @@
     - DigestUtils\.sha\(
   severity: high
   type: RegexOr
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
 - id: android_weak_iv
   cvss: 9.8
   cwe: cwe-329
@@ -557,6 +589,7 @@
     - '0x01,0x02,0x03,0x04,0x05,0x06,0x07'
   severity: high
   type: RegexOr
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#mobile-app-cryptography
 - id: android_detect_root
   cvss: 0
   cwe: ''
@@ -574,6 +607,7 @@
     - RootTools\.isAccessGiven\(\)
   severity: good
   type: RegexOr
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05j-Testing-Resiliency-Against-Reverse-Engineering.md#testing-root-detection-mstg-resilience-1
 - id: android_hardcoded
   cvss: 7.4
   cwe: cwe-312
@@ -587,3 +621,4 @@
     (password\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(pass\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(username\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(secret\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(key\s*=\s*[\'|\"].+[\'|\"]\s{0,5})
   severity: high
   type: Regex
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#checking-memory-for-sensitive-data-mstg-storage-10
