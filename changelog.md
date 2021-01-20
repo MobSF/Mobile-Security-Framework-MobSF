@@ -1,3 +1,14 @@
+### v3.2.8 Beta Changelog
+- Features or Enhancements
+  - OWASP MSTG Mapping to Rules
+  - Python 3.9 support
+  - Prebuilt DEX enabled yara-python wheels 
+  - Dynamic Downloading of frida-server binary
+  - Code QA
+ 
+- Bug Fixes
+  - Windows APPX bug fix
+
 ### v3.2.6 Beta Changelog
 - Features or Enhancements
   - Added Support for Android 10 Dynamic Analysis
