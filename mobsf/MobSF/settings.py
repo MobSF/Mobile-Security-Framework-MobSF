@@ -20,8 +20,8 @@ logger = logging.getLogger(__name__)
 #       MOBSF CONFIGURATIONS
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-VERSION = '3.2.8'
-MOBSF_VER = 'v3.2.8 Beta'
+VERSION = '3.2.9'
+MOBSF_VER = 'v3.2.9 Beta'
 # Remove this later with f string
 BANNER = """
   __  __       _    ____  _____   _____  ____  
