@@ -49,7 +49,7 @@ where python >nul 2>&1 && (
   rem Install venv
   echo [INSTALL] Using venv
   rmdir "venv" /q /s >nul 2>&1
-  %PYTHON% -m venv ./venv
+  python -m venv ./venv
   .\venv\Scripts\activate
   python -m pip install --upgrade pip wheel
 
