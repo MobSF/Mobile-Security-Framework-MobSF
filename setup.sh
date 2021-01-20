@@ -82,7 +82,7 @@ else
     exit 1
 fi
 
-# Install yara-python and apkid
+# Install dex enabled yara-python
 echo '[INSTALL] Installing dex enabled yara-python'
 pip install --no-index --find-links=scripts/wheels yara-python
 if [ $? -ne 0 ]; then
