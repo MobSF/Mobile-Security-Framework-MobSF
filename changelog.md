@@ -1,3 +1,7 @@
+### v3.2.9 Beta Changelog
+- Bug Fixes
+  - MobSF python package fix
+
 ### v3.2.8 Beta Changelog
 - Features or Enhancements
   - OWASP MSTG Mapping to Rules
