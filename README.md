@@ -7,6 +7,7 @@ Mobile Security Framework (MobSF) is an automated, all-in-one mobile application
 Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82e3a63c-4813-11e6-9430-6015d98aeaab.png) in India
 
 [![python](https://img.shields.io/badge/python-3.7-blue.svg?logo=python&labelColor=yellow)](https://www.python.org/downloads/)
+[![PyPI version](https://badge.fury.io/py/mobsf.svg)](https://badge.fury.io/py/mobsf)
 [![platform](https://img.shields.io/badge/platform-osx%2Flinux%2Fwindows-green.svg)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/)
 [![License](https://img.shields.io/:license-GPL--3.0--only-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
 
