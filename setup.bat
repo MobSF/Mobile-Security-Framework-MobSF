@@ -1,7 +1,22 @@
 @echo off
+rem Python Check
 where python >nul 2>&1 && (
   deactivate >nul 2>&1
-  echo [INSTALL] Found Python3
+  echo [INSTALL] Python is available
+
+  rem Python Version Check
+  for /F "tokens=* USEBACKQ" %%F IN (`python --version`) DO (
+  set var=%%F
+  )
+  echo %var%|findstr /R "[3].[789]" >nul
+  if errorlevel 1 (
+      echo [ERROR] MobSF dependencies require Python 3.7/3.8/3.9. Your python points to %var%
+      exit /b
+  ) else (
+      echo [INSTALL] Found %var%
+  )
+
+  rem Pip Check and Upgrade
   pip >nul 2>&1 && (
     echo [INSTALL] Found pip
     python -m pip install --no-cache-dir --upgrade pip
@@ -11,6 +26,7 @@ where python >nul 2>&1 && (
     exit /b
   )
 
+  rem OpenSSL Check
   if exist "C:\\Program Files\\OpenSSL-Win64\\bin\\openssl.exe" (
     echo [INSTALL] Found OpenSSL executable
   ) else (
@@ -20,6 +36,7 @@ where python >nul 2>&1 && (
    exit /b
   )
 
+  rem Visual Studio Build Tools Check
   if exist "C:\\Program Files (x86)\\Microsoft Visual Studio" (
     echo [INSTALL] Found Visual Studio Build Tools
   ) else (
@@ -29,12 +46,14 @@ where python >nul 2>&1 && (
     exit /b
   )
 
+  rem Install venv
   echo [INSTALL] Using venv
   rmdir "venv" /q /s >nul 2>&1
-  python -m venv ./venv
+  %PYTHON% -m venv ./venv
   .\venv\Scripts\activate
   python -m pip install --upgrade pip wheel
 
+  rem Install dex enabled yara-python
   set LIB=C:\Program Files\OpenSSL-Win64\lib;%LIB%
   set INCLUDE=C:\Program Files\OpenSSL-Win64\include;%INCLUDE%
 
@@ -59,7 +78,7 @@ where python >nul 2>&1 && (
   pip install --no-cache-dir -r requirements.txt
   
   echo [INSTALL] Clean Up
-  CALL scripts/clean.bat y
+  call scripts/clean.bat y
 
   echo [INSTALL] Migrating Database
   python manage.py makemigrations

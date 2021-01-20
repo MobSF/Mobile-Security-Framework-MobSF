@@ -173,16 +173,14 @@ def _binary_analysis(app_dic):
     # Init optional sections to prevent None-Pointer-Errors
     bin_an_dic['results'] = []
     bin_an_dic['warnings'] = []
-
     # Search for exe
     for file_name in app_dic['files']:
         if file_name.endswith('.exe'):
             bin_an_dic['bin'] = file_name
             bin_an_dic['bin_name'] = file_name.replace('.exe', '')
             break
-    if not bin_an_dic['bin_name']:
+    if not bin_an_dic.get('bin_name'):
         logger.exception('No executeable in appx.')
-
     bin_path = os.path.join(app_dic['app_dir'], bin_an_dic['bin'])
 
     # Execute strings command
@@ -283,6 +281,7 @@ def binskim(name, bin_an_dic, run_local=False, app_dir=None):
         output_d = bin_path + '_binskim'
         verbose = '--verbose'
         policy_p = '--config'
+        force = '--force'
         policy_d = 'default'  # TODO(Other policies?)
 
         # Assemble
@@ -292,7 +291,7 @@ def binskim(name, bin_an_dic, run_local=False, app_dir=None):
             path,
             verbose,
             output_p, output_d,
-            policy_p, policy_d,
+            policy_p, policy_d, force,
         ]
 
         # Execute process
@@ -308,13 +307,68 @@ def binskim(name, bin_an_dic, run_local=False, app_dir=None):
 
         # Load output as json
         output = json.loads(response)
-
     bin_an_dic = parse_binskim(bin_an_dic, output)
     return bin_an_dic
 
 
 def parse_binskim(bin_an_dic, output):
     """Parse output to results and warnings."""
+    try:
+        output['runs'][0]['rules']
+        return parse_binskim_old(bin_an_dic, output)
+    except Exception:
+        return parse_binskim_sarif(bin_an_dic, output)
+
+
+def get_short_desc(rules, rule_id):
+    """Get short description from sarif."""
+    for i in rules:
+        if i['id'] == rule_id:
+            return i['shortDescription']['text']
+
+
+def parse_binskim_sarif(bin_an_dic, output):
+    """Parse new version of binskim sarif output."""
+    current_run = output['runs'][0]
+    rules = current_run['tool']['driver']['rules']
+    if 'results' in current_run:
+        for res in current_run['results']:
+            if res['level'] != 'pass':
+                if len(res['message']['arguments']) > 2:
+                    info = ('{}, {}').format(
+                        res['message']['arguments'][1],
+                        res['message']['arguments'][2])
+                else:
+                    info = ''
+                result = {
+                    'rule_id': res['ruleId'],
+                    'status': 'Insecure',
+                    'info': info,
+                    'desc': get_short_desc(rules, res['ruleId']),
+                }
+            else:
+                result = {
+                    'rule_id': res['ruleId'],
+                    'status': 'Secure',
+                    'info': '',
+                    'desc': get_short_desc(rules, res['ruleId']),
+                }
+            bin_an_dic['results'].append(result)
+    else:
+        logger.warning('binskim has no results.')
+        # Create an warining for the gui
+        warning = {
+            'rule_id': 'No Binskim-Results',
+            'status': 'Info',
+            'info': '',
+            'desc': 'No results from Binskim.',
+        }
+        bin_an_dic['warnings'].append(warning)
+    return bin_an_dic
+
+
+def parse_binskim_old(bin_an_dic, output):
+    """Parse old version of binskim."""
     current_run = output['runs'][0]
     if 'results' in current_run:
         rules = output['runs'][0]['rules']
