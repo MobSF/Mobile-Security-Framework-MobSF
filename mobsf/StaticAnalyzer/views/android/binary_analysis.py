@@ -91,7 +91,7 @@ class Checksec:
             'description': desc,
         }
         relro = self.relro()
-        if relro == 'Full':
+        if relro == 'Full RELRO':
             severity = 'info'
             desc = (
                 'This shared object has full RELRO '
@@ -99,7 +99,7 @@ class Checksec:
                 'overwritten in vulnerable ELF binaries. '
                 'In Full RELRO, the entire GOT (.got and '
                 '.got.plt both) is marked as read-only.')
-        elif relro == 'Partial':
+        elif relro == 'Partial RELRO':
             severity = 'warning'
             desc = (
                 'This shared object has partial RELRO '
