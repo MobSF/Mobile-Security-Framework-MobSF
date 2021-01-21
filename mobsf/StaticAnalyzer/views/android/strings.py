@@ -17,6 +17,7 @@ def is_secret(inp):
         'api"', 'key"', 'api_"', 'secret"',
         'password"', 'aws', 'gcp', 's3',
         'token"', 'username"', 'user_name"', 'user"',
+        'bearer', 'jwt', 'certificate"',
     )
     not_string = (
         'label_', 'text', 'hint', 'msg_', 'create_',
