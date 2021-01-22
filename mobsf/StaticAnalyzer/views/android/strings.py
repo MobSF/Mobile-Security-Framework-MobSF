@@ -14,9 +14,13 @@ def is_secret(inp):
     inp = inp.lower()
     """Check if captures string is a possible secret."""
     iden = (
-        'api"', 'key"', 'api_"', 'secret"',
-        'password"', 'aws', 'gcp', 's3',
+        'api"', 'key"', 'api_', 'key_', 'secret"',
+        'password"', 'aws', 'gcp', 's3', 'secret_',
         'token"', 'username"', 'user_name"', 'user"',
+        'bearer', 'jwt', 'certificate"', 'credential',
+        'azure', 'webhook', 'twilio_', 'bitcoin',
+        '_auth', 'firebase', 'oauth', 'authorization',
+        'private', 'pwd', 'session', 'token_',
     )
     not_string = (
         'label_', 'text', 'hint', 'msg_', 'create_',
