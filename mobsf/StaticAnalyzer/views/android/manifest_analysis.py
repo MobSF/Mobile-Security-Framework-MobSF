@@ -109,20 +109,24 @@ def manifest_data(mfxml):
             package = node.getAttribute('package')
             androidversioncode = node.getAttribute('android:versionCode')
             androidversionname = node.getAttribute('android:versionName')
+        alt_main = ''
         for activity in activities:
             act_2 = activity.getAttribute('android:name')
             act.append(act_2)
-            if len(mainact) < 1:
-                # ^ Fix for Shitty Manifest with more than one MAIN
+            if not mainact:
+                # ^ Some manifest has more than one MAIN, take only
+                # the first occurrence.
                 for sitem in activity.getElementsByTagName('action'):
                     val = sitem.getAttribute('android:name')
                     if val == 'android.intent.action.MAIN':
                         mainact = activity.getAttribute('android:name')
-                if mainact == '':
-                    for sitem in activity.getElementsByTagName('category'):
-                        val = sitem.getAttribute('android:name')
-                        if val == 'android.intent.category.LAUNCHER':
-                            mainact = activity.getAttribute('android:name')
+                # Manifest has no MAIN, look for launch activity.
+                for sitem in activity.getElementsByTagName('category'):
+                    val = sitem.getAttribute('android:name')
+                    if val == 'android.intent.category.LAUNCHER':
+                        alt_main = activity.getAttribute('android:name')
+        if not mainact and alt_main:
+            mainact = alt_main
 
         for service in services:
             service_name = service.getAttribute('android:name')
