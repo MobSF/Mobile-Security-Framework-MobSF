@@ -86,7 +86,7 @@ class Checksec:
             severity = 'high'
             desc = (
                 'This binary does not have a stack '
-                'canary value added to the stack. Stack canraies '
+                'canary value added to the stack. Stack canaries '
                 'are used to detect and prevent exploits from '
                 'overwriting return address. Use the option '
                 '-fstack-protector-all to enable stack canaries.')
