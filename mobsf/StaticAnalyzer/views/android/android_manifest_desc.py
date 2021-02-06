@@ -719,7 +719,7 @@ MANIFEST_DESC = {
     'a_sms_receiver_port': {
         'title': 'Data SMS Receiver Set on Port: %s Found<br>[android:port]',
         'level': 'high',
-        'description': ('A binary SMS recevier is configured to listen on a'
+        'description': ('A binary SMS receiver is configured to listen on a'
                         ' port. Binary SMS messages sent to a device are '
                         'processed by the application in whichever way the'
                         ' developer choses. The data in this SMS should be'
