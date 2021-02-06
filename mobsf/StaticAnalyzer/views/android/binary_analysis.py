@@ -81,7 +81,7 @@ class Checksec:
             severity = 'high'
             desc = (
                 'This shared object does not have a stack '
-                'canary value added to the stack. Stack canraies '
+                'canary value added to the stack. Stack canaries '
                 'are used to detect and prevent exploits from '
                 'overwriting return address. Use the option '
                 '-fstack-protector-all to enable stack canaries.')
@@ -174,7 +174,7 @@ class Checksec:
         if fortified_functions:
             severity = 'info'
             desc = ('The shared object has the '
-                    f'following fortifed functions: {fortified_functions}')
+                    f'following fortified functions: {fortified_functions}')
         else:
             severity = 'warning'
             desc = ('The shared object does not have any '
@@ -182,7 +182,7 @@ class Checksec:
                     'provides buffer overflow checks against '
                     'glibc\'s commons insecure functions like '
                     'strcpy, gets etc. Use the compiler option '
-                    '-D_FORTIFY_SOURCE=2 to fority functions.')
+                    '-D_FORTIFY_SOURCE=2 to fortify functions.')
         elf_dict['fortify'] = {
             'is_fortified': bool(fortified_functions),
             'severity': severity,

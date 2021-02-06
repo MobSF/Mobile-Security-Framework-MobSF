@@ -187,7 +187,7 @@ def analysis(app_dir, config, is_debuggable, src_type):
                         'description': (
                             'Certificate pinning expires '
                             f'on {exp}. After this date '
-                            'pinnning will be disabled.'
+                            'pinning will be disabled.'
                             f'[{pins_list}]'),
                         'severity': 'info',
                     })
