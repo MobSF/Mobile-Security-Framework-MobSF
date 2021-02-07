@@ -24,6 +24,7 @@ from mobsf.DynamicAnalyzer.tools.webproxy import (
 from mobsf.MobSF.utils import (
     get_config_loc,
     get_device,
+    get_http_tools_url,
     get_proxy_ip,
     is_md5,
     print_n_send_error_response,
@@ -136,7 +137,7 @@ def dynamic_analyzer(request, checksum, api=False):
         # Clean up previous analysis
         env.dz_cleanup(checksum)
         # Configure Web Proxy
-        env.configure_proxy(package)
+        env.configure_proxy(package, request)
         # Supported in Android 5+
         env.enable_adb_reverse_tcp(version)
         # Apply Global Proxy to device
@@ -181,7 +182,8 @@ def httptools_start(request):
     """Start httprools UI."""
     logger.info('Starting httptools Web UI')
     try:
-        stop_httptools(settings.PROXY_PORT)
+        httptools_url = get_http_tools_url(request)
+        stop_httptools(httptools_url)
         start_httptools_ui(settings.PROXY_PORT)
         time.sleep(3)
         logger.info('httptools UI started')
@@ -189,10 +191,7 @@ def httptools_start(request):
             project = request.GET['project']
         else:
             project = ''
-        url = ('http://localhost:{}'
-               '/dashboard/{}'.format(
-                   str(settings.PROXY_PORT),
-                   project))
+        url = f'{httptools_url}/dashboard/{project}'
         return HttpResponseRedirect(url)  # lgtm [py/reflective-xss]
     except Exception:
         logger.exception('Starting httptools Web UI')

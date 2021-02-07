@@ -540,3 +540,10 @@ def get_config_loc():
         )
     else:
         return 'MobSF/settings.py'
+
+
+def get_http_tools_url(req):
+    """Get httptools URL from request."""
+    scheme = req.scheme
+    ip = req.get_host().split(':')[0]
+    return f'{scheme}://{ip}:{str(settings.PROXY_PORT)}'

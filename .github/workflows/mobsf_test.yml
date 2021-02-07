@@ -12,7 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-20.04, macos-latest, windows-latest]
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [3.8, 3.9]
         # exclude:
           # excludes py38, py39 on Windows
           # - os: windows-latest
@@ -42,8 +42,7 @@ jobs:
         choco install wkhtmltopdf --version 0.12.6
     - name: Install Python dependencies
       run: |
-        python -m pip install --upgrade pip wheel tox
-        pip install --no-index --find-links=scripts/wheels yara-python || (pip wheel --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" "git+https://github.com/VirusTotal/yara-python.git@v3.11.0" && pip install --no-index --find-links=yara-python yara-python)
+        python -m pip install --upgrade pip tox
         pip install -r requirements.txt
     - name: Migrate Database
       run: |

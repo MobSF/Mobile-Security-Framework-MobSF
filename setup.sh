@@ -11,10 +11,10 @@ fi
 python_version="$(python3 --version 2>&1 | awk '{print $2}')"
 py_major=$(echo "$python_version" | cut -d'.' -f1)
 py_minor=$(echo "$python_version" | cut -d'.' -f2)
-if [ "$py_major" -eq "3" ] && [ "$py_minor" -gt "6" ]; then
+if [ "$py_major" -eq "3" ] && [ "$py_minor" -gt "7" ]; then
     echo "[INSTALL] Found Python ${python_version}"
 else
-    echo "[ERROR] MobSF dependencies require Python 3.7/3.8/3.9. You have Python version ${python_version} or python3 points to Python ${python_version}."
+    echo "[ERROR] MobSF dependencies require Python 3.8/3.9. You have Python version ${python_version} or python3 points to Python ${python_version}."
     exit 1
 fi
 
@@ -76,27 +76,10 @@ python3 -m venv ./venv
 if [ $? -eq 0 ]; then
     echo '[INSTALL] Activating virtualenv'
     source venv/bin/activate
-    pip install --upgrade pip wheel
+    pip install --upgrade pip
 else
     echo '[ERROR] Failed to create virtualenv. Please install MobSF requirements mentioned in Documentation.'
     exit 1
-fi
-
-# Install dex enabled yara-python
-echo '[INSTALL] Installing dex enabled yara-python'
-pip install --no-index --find-links=scripts/wheels yara-python
-if [ $? -ne 0 ]; then
-    echo '[INSTALL] Building dex enabled yara-python'
-    rm -rf yara-python
-    pip wheel --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" git+https://github.com/VirusTotal/yara-python.git@v3.11.0
-    if [ $? -ne 0 ]; then
-        echo '[ERROR] APKiD installation failed. Have you installed all the requirements?'
-        echo 'Please install all the requirements and run setup.bat again.'
-        echo 'Follow the official documentation: https://mobsf.github.io/docs/'
-        read -p 'Press enter to continue'
-    fi
-    pip install --no-index --find-links=yara-python yara-python
-    rm -rf yara-python
 fi
 
 echo '[INSTALL] Installing Requirements'

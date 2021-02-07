@@ -8,9 +8,9 @@ where python >nul 2>&1 && (
   for /F "tokens=* USEBACKQ" %%F IN (`python --version`) DO (
   set var=%%F
   )
-  echo %var%|findstr /R "[3].[789]" >nul
+  echo %var%|findstr /R "[3].[89]" >nul
   if errorlevel 1 (
-      echo [ERROR] MobSF dependencies require Python 3.7/3.8/3.9. Your python points to %var%
+      echo [ERROR] MobSF dependencies require Python 3.8/3.9. Your python points to %var%
       exit /b
   ) else (
       echo [INSTALL] Found %var%
@@ -51,28 +51,10 @@ where python >nul 2>&1 && (
   rmdir "venv" /q /s >nul 2>&1
   python -m venv ./venv
   .\venv\Scripts\activate
-  python -m pip install --upgrade pip wheel
+  python -m pip install --upgrade pip
 
-  rem Install dex enabled yara-python
   set LIB=C:\Program Files\OpenSSL-Win64\lib;%LIB%
   set INCLUDE=C:\Program Files\OpenSSL-Win64\include;%INCLUDE%
-
-  echo [INSTALL] Installing dex enabled yara-python
-  pip install --no-index --find-links=scripts/wheels yara-python && (
-    rem
-  ) || (
-    echo [INSTALL] Building dex enabled yara-python
-    rmdir /q /s yara-python >nul 2>&1
-    pip wheel --wheel-dir=yara-python --build-option="build" --build-option="--enable-dex" "git+https://github.com/VirusTotal/yara-python.git@v3.11.0" && (
-      pip install --no-index --find-links=yara-python yara-python
-    ) || (
-      echo [ERROR] APKiD installation failed. Have you installed Visual Studio Build Tools and other requirements?
-      echo Please install all the requirements and run setup.bat again.
-      echo Follow the official documentation: https://mobsf.github.io/docs/
-      pause
-    )
-    rmdir /q /s yara-python >nul 2>&1
-  )
 
   echo [INSTALL] Installing Requirements
   pip install --no-cache-dir -r requirements.txt

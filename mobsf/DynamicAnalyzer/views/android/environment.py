@@ -8,6 +8,7 @@ import subprocess
 import tempfile
 import threading
 import time
+from hashlib import md5
 
 from django.conf import settings
 
@@ -24,6 +25,7 @@ from mobsf.DynamicAnalyzer.views.android import (
 from mobsf.MobSF.utils import (
     get_adb,
     get_device,
+    get_http_tools_url,
     get_proxy_ip,
     is_file_exists,
     python_list,
@@ -32,7 +34,7 @@ from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 
 logger = logging.getLogger(__name__)
 ANDROID_API_SUPPORTED = 29
-FRIDA_VERSION = '14.2.6'
+FRIDA_VERSION = '14.2.8'
 
 
 class Environment:
@@ -171,12 +173,13 @@ class Environment:
         else:
             os.makedirs(screen_dir)
 
-    def configure_proxy(self, project):
+    def configure_proxy(self, project, request):
         """HTTPS Proxy."""
         self.install_mobsf_ca('install')
         proxy_port = settings.PROXY_PORT
         logger.info('Starting HTTPs Proxy on %s', proxy_port)
-        stop_httptools(proxy_port)
+        httptools_url = get_http_tools_url(request)
+        stop_httptools(httptools_url)
         start_proxy(proxy_port, project)
 
     def install_mobsf_ca(self, action):
@@ -185,11 +188,14 @@ class Environment:
         ca_file = None
         if is_file_exists(mobsf_ca):
             ca_construct = '{}.0'
-            pem = open(mobsf_ca, 'rb').read()
-            ca_obj = crypto.load_certificate(crypto.FILETYPE_PEM, pem)
-            ca_file_hash = hex(ca_obj.subject_name_hash()).lstrip('0x')
+            pem = open(mobsf_ca, 'rb')
+            ca_obj = crypto.load_certificate(crypto.FILETYPE_PEM, pem.read())
+            md = md5(ca_obj.get_subject().der()).digest()
+            ret = (md[0] | (md[1] << 8) | (md[2] << 16) | md[3] << 24)
+            ca_file_hash = hex(ret).lstrip('0x')
             ca_file = os.path.join('/system/etc/security/cacerts/',
                                    ca_construct.format(ca_file_hash))
+            pem.close()
         else:
             logger.warning('mitmproxy root CA is not generated yet.')
             return
