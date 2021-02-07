@@ -104,8 +104,23 @@ def static_analysis_test():
             logger.error('App compare tests failed')
             logger.info(resp.content)
             return True
-        logger.info('Running Delete Scan Results test')
+
+        # Search by MD5
+        logger.info('Running Search test')
+        for scan_md5 in pdfs:
+            url = '/search?md5={}'.format(scan_md5)
+            resp = http_client.get(url, follow=True)
+            assert (resp.status_code == 200)
+            if resp.status_code == 200:
+                logger.info('[OK] Search by MD5 test passed for %s', scan_md5)
+            else:
+                logger.error('Search by MD5 test failed for %s', scan_md5)
+                logger.info(resp.content)
+                return True
+        logger.info('[OK] Search by MD5 tests completed')
+
         # Deleting Scan Results
+        logger.info('Running Delete Scan Results test')
         if platform.system() in ['Darwin', 'Linux']:
             scan_md5s = ['02e7989c457ab67eb514a8328779f256',
                          '3a552566097a8de588b8184b059b0158',
