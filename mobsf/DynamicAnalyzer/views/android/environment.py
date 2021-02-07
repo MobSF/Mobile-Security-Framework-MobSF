@@ -25,6 +25,7 @@ from mobsf.DynamicAnalyzer.views.android import (
 from mobsf.MobSF.utils import (
     get_adb,
     get_device,
+    get_http_tools_url,
     get_proxy_ip,
     is_file_exists,
     python_list,
@@ -172,12 +173,13 @@ class Environment:
         else:
             os.makedirs(screen_dir)
 
-    def configure_proxy(self, project):
+    def configure_proxy(self, project, request):
         """HTTPS Proxy."""
         self.install_mobsf_ca('install')
         proxy_port = settings.PROXY_PORT
         logger.info('Starting HTTPs Proxy on %s', proxy_port)
-        stop_httptools(proxy_port)
+        httptools_url = get_http_tools_url(request)
+        stop_httptools(httptools_url)
         start_proxy(proxy_port, project)
 
     def install_mobsf_ca(self, action):

@@ -11,18 +11,18 @@ from mobsf.MobSF.utils import is_file_exists, upstream_proxy
 logger = logging.getLogger(__name__)
 
 
-def stop_httptools(port):
+def stop_httptools(url):
     """Kill httptools."""
     # Invoke HTTPtools UI Kill Request
     try:
-        requests.get('http://127.0.0.1:' + str(port) + '/kill', timeout=5)
+        requests.get(f'{url}/kill', timeout=5)
         logger.info('Killing httptools UI')
     except Exception:
         pass
 
-    # Inkoke HTTPtools Proxy Kill Request
+    # Invoke HTTPtools Proxy Kill Request
     try:
-        http_proxy = 'http://127.0.0.1:' + str(port)
+        http_proxy = url.replace('https://', 'http://')
         headers = {'httptools': 'kill'}
         url = 'http://127.0.0.1'
         requests.get(url, headers=headers, proxies={
