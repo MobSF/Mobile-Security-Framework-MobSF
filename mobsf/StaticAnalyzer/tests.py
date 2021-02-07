@@ -151,6 +151,7 @@ def static_analysis_test():
         logger.info('Delete Scan Results test completed')
     except Exception:
         logger.exception('Completing Static Analyzer Test')
+        return True
     return False
 
 
@@ -375,6 +376,7 @@ def api_test():
         logger.info('Delete Scan Results API test completed')
     except Exception:
         logger.exception('Completing REST API Unit Test')
+        return True
     return False
 
 
