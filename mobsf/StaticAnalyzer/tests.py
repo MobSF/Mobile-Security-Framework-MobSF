@@ -106,21 +106,6 @@ def static_analysis_test():
             return True
 
         # Search by MD5
-        logger.info('Running Search test')
-        for scan_md5 in pdfs:
-            url = '/search?md5={}'.format(scan_md5)
-            resp = http_client.get(url, follow=True)
-            assert (resp.status_code == 200)
-            if resp.status_code == 200:
-                logger.info('[OK] Search by MD5 test passed for %s', scan_md5)
-            else:
-                logger.error('Search by MD5 test failed for %s', scan_md5)
-                logger.info(resp.content)
-                return True
-        logger.info('[OK] Search by MD5 tests completed')
-
-        # Deleting Scan Results
-        logger.info('Running Delete Scan Results test')
         if platform.system() in ['Darwin', 'Linux']:
             scan_md5s = ['02e7989c457ab67eb514a8328779f256',
                          '3a552566097a8de588b8184b059b0158',
@@ -136,6 +121,21 @@ def static_analysis_test():
                          '57bb5be0ea44a755ada4a93885c3825e',
                          '8179b557433835827a70510584f3143e',
                          '7b0a23bffc80bac05739ea1af898daad']
+        logger.info('Running Search test')
+        for scan_md5 in scan_md5s:
+            url = '/search?md5={}'.format(scan_md5)
+            resp = http_client.get(url, follow=True)
+            assert (resp.status_code == 200)
+            if resp.status_code == 200:
+                logger.info('[OK] Search by MD5 test passed for %s', scan_md5)
+            else:
+                logger.error('Search by MD5 test failed for %s', scan_md5)
+                logger.info(resp.content)
+                return True
+        logger.info('[OK] Search by MD5 tests completed')
+
+        # Deleting Scan Results
+        logger.info('Running Delete Scan Results test')
         for md5 in scan_md5s:
             resp = http_client.post('/delete_scan/', {'md5': md5})
             if resp.status_code == 200:
