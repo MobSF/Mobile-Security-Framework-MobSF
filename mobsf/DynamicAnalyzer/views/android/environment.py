@@ -8,6 +8,7 @@ import subprocess
 import tempfile
 import threading
 import time
+from hashlib import md5
 
 from django.conf import settings
 
@@ -187,9 +188,12 @@ class Environment:
             ca_construct = '{}.0'
             pem = open(mobsf_ca, 'rb').read()
             ca_obj = crypto.load_certificate(crypto.FILETYPE_PEM, pem)
-            ca_file_hash = hex(ca_obj.subject_name_hash()).lstrip('0x')
+            md = md5(ca_obj.get_subject().der()).digest()
+            ret = (md[0] | (md[1] << 8) | (md[2] << 16) | md[3] << 24)
+            ca_file_hash = hex(ret).lstrip('0x')
             ca_file = os.path.join('/system/etc/security/cacerts/',
                                    ca_construct.format(ca_file_hash))
+            pem.close()
         else:
             logger.warning('mitmproxy root CA is not generated yet.')
             return
