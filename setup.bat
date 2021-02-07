@@ -8,9 +8,9 @@ where python >nul 2>&1 && (
   for /F "tokens=* USEBACKQ" %%F IN (`python --version`) DO (
   set var=%%F
   )
-  echo %var%|findstr /R "[3].[789]" >nul
+  echo %var%|findstr /R "[3].[89]" >nul
   if errorlevel 1 (
-      echo [ERROR] MobSF dependencies require Python 3.7/3.8/3.9. Your python points to %var%
+      echo [ERROR] MobSF dependencies require Python 3.8/3.9. Your python points to %var%
       exit /b
   ) else (
       echo [INSTALL] Found %var%
