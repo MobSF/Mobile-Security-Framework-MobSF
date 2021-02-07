@@ -188,8 +188,8 @@ class Environment:
         ca_file = None
         if is_file_exists(mobsf_ca):
             ca_construct = '{}.0'
-            pem = open(mobsf_ca, 'rb').read()
-            ca_obj = crypto.load_certificate(crypto.FILETYPE_PEM, pem)
+            pem = open(mobsf_ca, 'rb')
+            ca_obj = crypto.load_certificate(crypto.FILETYPE_PEM, pem.read())
             md = md5(ca_obj.get_subject().der()).digest()
             ret = (md[0] | (md[1] << 8) | (md[2] << 16) | md[3] << 24)
             ca_file_hash = hex(ret).lstrip('0x')
