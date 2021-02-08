@@ -61,12 +61,12 @@ def staticanalyzer_windows(request, api=False):
         app_dic = {}  # Dict to store the binary attributes
         if api:
             typ = request.POST['scan_type']
-            rescan = str(request.POST.get('re_scan', 0))
+            rescan = request.POST.get('re_scan', '0') != '0'
             checksum = request.POST['hash']
             filename = request.POST['file_name']
         else:
             typ = request.GET['type']
-            rescan = str(request.GET.get('rescan', 0))
+            rescan = request.GET.get('rescan', '0') != '0'
             checksum = request.GET['checksum']
             filename = request.GET['name']
         md5_regex = re.match('^[0-9a-f]{32}$', checksum)
@@ -82,7 +82,7 @@ def staticanalyzer_windows(request, api=False):
                 db_entry = StaticAnalyzerWindows.objects.filter(
                     MD5=app_dic['md5'],
                 )
-                if db_entry.exists() and rescan == '0':
+                if db_entry.exists() and not rescan:
                     logger.info(
                         'Analysis is already Done.'
                         ' Fetching data from the DB...')
@@ -105,14 +105,14 @@ def staticanalyzer_windows(request, api=False):
                     bin_an_dic = _binary_analysis(app_dic)
                     # Saving to db
                     logger.info('Connecting to DB')
-                    if rescan == '1':
+                    if rescan:
                         logger.info('Updating Database...')
                         save_or_update('update',
                                        app_dic,
                                        xml_dic,
                                        bin_an_dic)
                         update_scan_timestamp(app_dic['md5'])
-                    elif rescan == '0':
+                    else:
                         logger.info('Saving to Database')
                         save_or_update('save',
                                        app_dic,
