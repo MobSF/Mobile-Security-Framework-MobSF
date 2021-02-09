@@ -32,43 +32,6 @@ else
     exit 1
 fi
 
-# macOS Specific Checks
-if [[ $unamestr == 'Darwin' ]]; then
-    export ARCHFLAGS='-arch x86_64'
-    export LDFLAGS='-L/usr/local/opt/openssl/lib'
-    export CFLAGS='-I/usr/local/opt/openssl/include'
-    current_macos_version="$(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}')"
-    major=$(echo "$current_macos_version" | cut -d'.' -f1)
-    # Check if xcode is installed
-    xcode-select -v
-    if ! [ $? -eq 0 ]; then
-        echo 'Please install command-line tools'
-        echo 'xcode-select --install'
-        exit 1
-    else
-        echo '[INSTALL] Found Xcode'
-	fi
-    # Check if headers are installed
-    is_installed=$(pkgutil --pkgs=com.apple.pkg.macOS_SDK_headers_for_macOS_"${current_macos_version}")
-    if [ -z "$is_installed" ]; then
-        if [ "$major" -lt "11" ]; then
-            echo 'Please install macOS headers.'
-            echo "sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_${current_macos_version}.pkg -target /"
-        fi
-    fi
-    # Export header path if available
-    if [ -d "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX${current_macos_version}.sdk/usr/include" ]; then
-        echo "[INSTALL] Found headers under Xcode"
-        export "CPATH=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX${current_macos_version}.sdk/usr/include"
-    elif [ -d "/Library/Developer/CommandLineTools/SDKs/MacOSX${current_macos_version}.sdk/usr/include" ]; then
-        echo "[INSTALL] Found headers under CommandLineTools"
-        export "CPATH=/Library/Developer/CommandLineTools/SDKs/MacOSX${current_macos_version}.sdk/usr/include"
-    else
-        echo '[ERROR] setup cannot find macOS SDK header location. Please install appropriate headers.'   
-        exit 1
-    fi
-fi
-
 # Install venv
 echo '[INSTALL] Using python virtualenv'
 rm -rf ./venv
