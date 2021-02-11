@@ -8,6 +8,26 @@
   cwe: cwe-200
   owasp-mobile: ''
   masvs: code-2
+- id: Sensitive Stored Data Has Been Exposed via IPC Mechanisms
+  description: >-
+    As part of the IPC mechanisms, content providers allow app’s
+    stored data to be accessed and modified by other apps .The app may be
+    leaking sensitive data
+  type: RegexOr
+  pattern:
+  - android\.content\.ContentProvider
+  - android\.database\.Cursor
+  - android\.database\.sqlite
+  - (.*?)\.query
+  - (.*?)\.update
+  - (.*?)\.delete
+  severity: warning
+  input_case: exact
+  cvss: 4.6
+  cwe: 'cwe-922'
+  owasp-mobile: 'm2'
+  masvs: storage-6
+  ref: https://github.com/OWASP/owasp-mstg/blob/1.1.3-excel/Document/0x05d-Testing-Data-Storage.md#determining-whether-sensitive-stored-data-has-been-exposed-via-ipc-mechanisms-mstg-storage-6
 - id: android_hiddenui
   description: >-
     Hidden elements in view can be used to hide data from user. But this data
