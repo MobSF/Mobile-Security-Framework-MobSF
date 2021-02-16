@@ -32,6 +32,19 @@ else
     exit 1
 fi
 
+# macOS Specific Checks
+if [[ $unamestr == 'Darwin' ]]; then
+    # Check if xcode is installed
+    xcode-select -v
+    if ! [ $? -eq 0 ]; then
+        echo 'Please install command-line tools'
+        echo 'xcode-select --install'
+        exit 1
+    else
+        echo '[INSTALL] Found Xcode'
+	fi    
+fi
+
 # Install venv
 echo '[INSTALL] Using python virtualenv'
 rm -rf ./venv
