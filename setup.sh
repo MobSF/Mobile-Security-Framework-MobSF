@@ -65,7 +65,6 @@ if [[ $unamestr == 'Darwin' ]]; then
         export "CPATH=/Library/Developer/CommandLineTools/SDKs/MacOSX${current_macos_version}.sdk/usr/include"
     else
         echo '[ERROR] setup cannot find macOS SDK header location. Please install appropriate headers.'   
-        exit 1
     fi
 fi
 
