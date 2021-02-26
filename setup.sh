@@ -42,7 +42,7 @@ if [[ $unamestr == 'Darwin' ]]; then
         exit 1
     else
         echo '[INSTALL] Found Xcode'
-	fi    
+	  fi    
 fi
 
 # Install venv
