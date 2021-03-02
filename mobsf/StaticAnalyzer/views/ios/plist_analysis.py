@@ -55,6 +55,7 @@ def plist_analysis(src, is_source):
             'build_version_name': '',
             'bundle_url_types': [],
             'bundle_supported_platforms': [],
+            'bundle_version_name': '',
         }
         plist_file = None
         plist_files = []
