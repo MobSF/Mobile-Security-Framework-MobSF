@@ -3,13 +3,14 @@ rem Python Check
 where python >nul 2>&1 && (
   deactivate >nul 2>&1
   echo [INSTALL] Python is available
-
+  :redo
   rem Python Version Check
   for /F "tokens=* USEBACKQ" %%F IN (`python --version`) DO (
   set var=%%F
   )
   echo %var%|findstr /R "[3].[89]" >nul
   if errorlevel 1 (
+      if "%var%"=="" goto redo
       echo [ERROR] MobSF dependencies require Python 3.8/3.9. Your python points to %var%
       exit /b
   ) else (
