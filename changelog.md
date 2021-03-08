@@ -1,4 +1,24 @@
 ### v3.2.9 Beta Changelog
+- Features or Enhancements
+   - Android Hardcoded Secrets Improvement
+   - iOS IPA binary analysis improvements
+   - Improved Android Manifest Analysis
+   - Improved Setup
+   - Updated to APKiD that is maintained by MobSF Team
+   - Static Analysis Rule QA
+   - macOS BigSur support
+   - Update libsast to skip large files.
+   - Improved iOS plist analysis
+   - Relaxed Android Source code zip requirements
+ 
+
+- Bug Fixes
+  - Fixed a bug in Android Shared Library RELRO check
+  - Fixed a bug in Windows setup that prevents detection of python version on the first run
+  - Fixed a bug in Recent Scan
+  - Fixed a bug in root CA naming that prevented traffic interception
+
+### v3.2.9 Beta Changelog
 - Bug Fixes
   - MobSF python package fix
 
