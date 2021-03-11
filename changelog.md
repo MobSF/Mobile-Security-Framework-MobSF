@@ -1,4 +1,4 @@
-### v3.2.9 Beta Changelog
+### v3.3.3 Beta Changelog
 - Features or Enhancements
    - Android Hardcoded Secrets Improvement
    - iOS IPA binary analysis improvements
