@@ -104,16 +104,16 @@ class Frida:
     def connect(self):
         """Connect to Frida Server."""
         session = None
+        device = None
         try:
             env = Environment()
             self.clean_up()
             env.run_frida_server()
             device = frida.get_device(get_device(), settings.FRIDA_TIMEOUT)
             pid = device.spawn([self.package])
-            device.resume(pid)
             logger.info('Spawning %s', self.package)
-            time.sleep(2)
             session = device.attach(pid)
+            time.sleep(2)
         except frida.ServerNotRunningError:
             logger.warning('Frida server is not running')
             self.connect()
@@ -130,6 +130,7 @@ class Frida:
                 script = session.create_script(self.get_script())
                 script.on('message', self.frida_response)
                 script.load()
+                device.resume(pid)
                 sys.stdin.read()
                 script.unload()
                 session.detach()

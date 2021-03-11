@@ -36,38 +36,6 @@ class Checksec:
             'severity': severity,
             'description': desc,
         }
-        severity = 'info'
-        is_pie = self.is_pie()
-        if is_pie == 'dso':
-            is_pie = 'Dynamic Shared Object (DSO)'
-            desc = (
-                'The shared object is build with -fPIC flag which '
-                'enables Position independent code. This makes Return '
-                'Oriented Programming (ROP) attacks much more difficult '
-                'to execute reliably.')
-        elif is_pie:
-            desc = (
-                'The shared object is build with -fPIC flag which '
-                'enables Position independent code. This makes Return '
-                'Oriented Programming (ROP) attacks much more difficult '
-                'to execute reliably.')
-        else:
-            severity = 'high'
-            desc = (
-                'The shared object is built without Position '
-                'Independent Code flag. In order to prevent '
-                'an attacker from reliably jumping to, for example, a '
-                'particular exploited function in memory, Address '
-                'space layout randomization (ASLR) randomly arranges '
-                'the address space positions of key data areas of a '
-                'process, including the base of the executable and the '
-                'positions of the stack,heap and libraries. Use compiler '
-                'option -fPIC to enable Position Independent Code.')
-        elf_dict['pie'] = {
-            'is_pie': is_pie,
-            'severity': severity,
-            'description': desc,
-        }
         has_canary = self.has_canary()
         if has_canary:
             severity = 'info'
@@ -204,14 +172,6 @@ class Checksec:
 
     def is_nx(self):
         return self.elf.has_nx
-
-    def is_pie(self):
-        if not self.elf.is_pie:
-            return False
-        if self.elf.has(lief.ELF.DYNAMIC_TAGS.DEBUG):
-            return True
-        else:
-            return 'dso'
 
     def has_canary(self):
         for symbol in ('__stack_chk_fail',
