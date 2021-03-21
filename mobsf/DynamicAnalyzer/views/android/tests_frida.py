@@ -259,7 +259,8 @@ def apimon_analysis(app_dir):
                 to_decode = api['arguments'][0]
             try:
                 if to_decode:
-                    api['decoded'] = decode_base64(to_decode)
+                    api['decoded'] = decode_base64(
+                        to_decode).decode('utf-8', 'ignore')
             except Exception:
                 pass
             api['icon'] = get_icon_map(api['name'])

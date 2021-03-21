@@ -148,7 +148,7 @@ def droidmon_api_analysis(app_dir, package):
                         if ('decode' in apis['method']
                                 and api == 'api_base64'):
                             call_data['decoded'] = base64_decode(
-                                call_data['args'])
+                                call_data['args']).decode('utf-8', 'ignore')
                         hooks.append(call_data)
             except Exception:
                 pass

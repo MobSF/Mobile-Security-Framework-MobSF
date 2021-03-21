@@ -153,7 +153,10 @@ def save_or_update(update_type,
             'APPSTORE_DETAILS': app_dict['appstore'],
         }
         if update_type == 'save':
-            StaticAnalyzerIOS.objects.create(**values)
+            db_entry = StaticAnalyzerIOS.objects.filter(
+                MD5=app_dict['md5_hash'])
+            if not db_entry.exists():
+                StaticAnalyzerIOS.objects.create(**values)
         else:
             StaticAnalyzerIOS.objects.filter(
                 MD5=app_dict['md5_hash']).update(**values)
