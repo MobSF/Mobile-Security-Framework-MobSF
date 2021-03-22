@@ -1,3 +1,12 @@
+### v3.3.5 Beta Changelog
+
+- Bug Fixes
+  - Removed Android Shared Library PIE Check
+  - Improved Frida Instrumentation Logic to prevent Frida bypass
+  - Fixed a False positive in Android Java Random rule
+  - Fixed a bug that caused multiple first time saves of the same scan
+  - Fixed Dynamic Analyzer JSON Report REST API bug
+ 
 ### v3.3.3 Beta Changelog
 - Features or Enhancements
    - Android Hardcoded Secrets Improvement
@@ -11,7 +20,6 @@
    - Improved iOS plist analysis
    - Relaxed Android Source code zip requirements
  
-
 - Bug Fixes
   - Fixed a bug in Android Shared Library RELRO check
   - Fixed a bug in Windows setup that prevents detection of python version on the first run
