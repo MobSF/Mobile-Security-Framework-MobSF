@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #       MOBSF CONFIGURATIONS
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-BANNER, MOBSF_VER = get_mobsf_version()
+MOBSF_VER, BANNER = get_mobsf_version()
 # ==============================================
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # ==========MobSF Home Directory=================
