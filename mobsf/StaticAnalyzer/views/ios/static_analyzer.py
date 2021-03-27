@@ -53,7 +53,7 @@ def static_analyzer_ios(request, api=False):
         else:
             file_type = request.GET['type']
             checksum = request.GET['checksum']
-            rescan = str(request.POST.get('re_scan', 0))
+            rescan = str(request.GET.get('rescan', 0))
             filename = request.GET['name']
 
         md5_match = re.match('^[0-9a-f]{32}$', checksum)
