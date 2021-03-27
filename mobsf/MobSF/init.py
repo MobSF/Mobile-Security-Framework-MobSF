@@ -10,6 +10,16 @@ from mobsf.install.windows.setup import windows_config_local
 
 logger = logging.getLogger(__name__)
 
+VERSION = '3.3.6'
+BANNER = """
+  __  __       _    ____  _____   _____  _____ 
+ |  \/  | ___ | |__/ ___||  ___| |___ / |___ / 
+ | |\/| |/ _ \| '_ \___ \| |_      |_ \   |_ \ 
+ | |  | | (_) | |_) |__) |  _|    ___) | ___) |
+ |_|  |_|\___/|_.__/____/|_|     |____(_)____/
+"""  # noqa: W291
+# ASCII Font: Standard
+
 
 def first_run(secret_file, base_dir, mobsf_home):
     # Based on https://gist.github.com/ndarville/3452907#file-secret-key-gen-py
@@ -127,3 +137,7 @@ def get_mobsf_home(use_home, base_dir):
         return mobsf_home
     except Exception:
         logger.exception('Creating MobSF Home Directory')
+
+
+def get_mobsf_version():
+    return BANNER, f'v{VERSION} Beta'

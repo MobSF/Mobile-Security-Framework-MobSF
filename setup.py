@@ -10,7 +10,7 @@ from setuptools import (
 from pathlib import Path
 
 
-SETTINGS_LOC = 'mobsf/MobSF/settings.py'
+SETTINGS_LOC = 'mobsf/MobSF/init.py'
 
 
 def read(rel_path):

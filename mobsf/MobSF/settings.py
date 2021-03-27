@@ -12,6 +12,7 @@ import os
 from mobsf.MobSF.init import (
     first_run,
     get_mobsf_home,
+    get_mobsf_version,
 )
 
 logger = logging.getLogger(__name__)
@@ -19,18 +20,7 @@ logger = logging.getLogger(__name__)
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #       MOBSF CONFIGURATIONS
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-VERSION = '3.3.5'
-MOBSF_VER = 'v3.3.5 Beta'
-# Remove this later with f string
-BANNER = """
-  __  __       _    ____  _____   _____  _____ 
- |  \/  | ___ | |__/ ___||  ___| |___ / |___ / 
- | |\/| |/ _ \| '_ \___ \| |_      |_ \   |_ \ 
- | |  | | (_) | |_) |__) |  _|    ___) | ___) |
- |_|  |_|\___/|_.__/____/|_|     |____(_)____/
-"""  # noqa: W291
-# ASCII Font: Standard
+BANNER, MOBSF_VER = get_mobsf_version()
 # ==============================================
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # ==========MobSF Home Directory=================
