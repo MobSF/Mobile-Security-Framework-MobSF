@@ -302,14 +302,17 @@ def generate_secret():
     pub_key_file = open(CONFIG['MobSF']['pub_key'], 'w')
     pub_key_file.write(pubkey.save_pkcs1().decode('utf-8'))
     pub_key_file.close()
-
+    config_path = os.path.join(
+        expanduser('~'),
+        '.MobSF',
+        'config.py')
     print((
         '[!] Please move the private key file\n'
         '\t{}\n'
-        '\tto MobSF to the path specified in settings.py\n'
+        '\tto MobSF to the path specified in {}\n'
         '\t(default: Mobile-Security-Framework-MobSF/'
         'mobsf/MobSF/windows_vm_priv_key.asc)'
-        .format(CONFIG['MobSF']['priv_key'])
+        .format(CONFIG['MobSF']['priv_key'], config_path)
     ))
     input('Please press any key when done..')
 

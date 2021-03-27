@@ -65,6 +65,7 @@ def dynamic_analysis(request, api=False):
                    'identifier': identifier,
                    'proxy_ip': proxy_ip,
                    'proxy_port': settings.PROXY_PORT,
+                   'settings_loc': get_config_loc(),
                    'title': 'MobSF Dynamic Analysis',
                    'version': settings.MOBSF_VER}
         if api:

@@ -387,8 +387,8 @@ else:
     APKID_ENABLED = True
     # ==============================================
 
-    # ========DISABLED COMPONENTS===================
-    # -------External API Keys----------------------
+    # ========DISABLED BY DEFAULT COMPONENTS=========
+
     # Get AppMonsta API from https://appmonsta.com/dashboard/get_api_key/
     APPMONSTA_API = ''
     # ----------VirusTotal--------------------------

@@ -301,7 +301,7 @@ def is_file_exists(file_path):
     if os.path.isfile(file_path):
         return True
     # This fix situation where a user just typed "adb" or another executable
-    # inside settings.py
+    # inside settings.py/config.py
     if shutil.which(file_path):
         return True
     else:

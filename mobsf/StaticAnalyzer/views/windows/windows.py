@@ -24,6 +24,7 @@ from django.utils.html import escape
 
 from mobsf.MobSF.utils import (
     file_size,
+    get_config_loc,
     print_n_send_error_response,
 )
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
@@ -219,8 +220,8 @@ def _binary_analysis(app_dic):
             bin_an_dic = binscope(name, bin_an_dic)
         else:
             logger.warning(
-                'Windows VM not configured in settings.py.'
-                ' Skipping Binskim and Binscope.')
+                'Windows VM not configured in %s.'
+                ' Skipping Binskim and Binscope.', get_config_loc())
             warning = {
                 'rule_id': 'VM',
                 'status': 'Info',
