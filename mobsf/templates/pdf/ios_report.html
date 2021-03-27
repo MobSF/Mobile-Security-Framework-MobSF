@@ -422,12 +422,6 @@
                       <td>{{macho_analysis.rpath.description}}</td>
                     </tr>
                     <tr>
-                      <td><b>RESTRICTED</b></td>
-                      <td>{{macho_analysis.restricted.is_restricted}}</td>
-                      <td><span class="{% if macho_analysis.restricted.severity == 'high' %}danger{% elif macho_analysis.restricted.severity == 'warning' %}warning{% else %}info{% endif %}">{{macho_analysis.restricted.severity}}</span></td>
-                      <td>{{macho_analysis.restricted.description}}</td>
-                    </tr>
-                    <tr>
                       <td><b>CODE SIGNATURE</b></td>
                       <td>{{macho_analysis.code_signature.has_code_signature}}</td>
                       <td><span class="{% if macho_analysis.code_signature.severity == 'high' %}danger{% elif macho_analysis.code_signature.severity == 'warning' %}warning{% else %}info{% endif %}">{{macho_analysis.code_signature.severity}}</span></td>

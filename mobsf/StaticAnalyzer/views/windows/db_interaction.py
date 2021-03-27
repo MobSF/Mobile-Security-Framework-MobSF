@@ -109,7 +109,10 @@ def save_or_update(update_type,
             'BINARY_WARNINGS': bin_an_dic['warnings'],
         }
         if update_type == 'save':
-            StaticAnalyzerWindows.objects.create(**values)
+            db_entry = StaticAnalyzerWindows.objects.filter(
+                MD5=app_dic['md5'])
+            if not db_entry.exists():
+                StaticAnalyzerWindows.objects.create(**values)
         else:
             StaticAnalyzerWindows.objects.filter(
                 MD5=app_dic['md5']).update(**values)

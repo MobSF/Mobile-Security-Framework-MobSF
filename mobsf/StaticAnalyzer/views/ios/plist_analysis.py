@@ -55,6 +55,7 @@ def plist_analysis(src, is_source):
             'build_version_name': '',
             'bundle_url_types': [],
             'bundle_supported_platforms': [],
+            'bundle_version_name': '',
         }
         plist_file = None
         plist_files = []
@@ -80,7 +81,7 @@ def plist_analysis(src, is_source):
             plist_files = [plist_file]
 
         # Skip Plist Analysis if there is no Info.plist
-        if not is_file_exists(plist_file):
+        if not plist_file or not is_file_exists(plist_file):
             logger.warning(
                 'Cannot find Info.plist file. Skipping Plist Analysis.')
             return plist_info

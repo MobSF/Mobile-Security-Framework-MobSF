@@ -334,7 +334,8 @@ def static_analyzer(request, api=False):
                     app_dic['files'] = unzip(
                         app_dic['app_path'], app_dic['app_dir'])
                     # Check if Valid Directory Structure and get ZIP Type
-                    pro_type, valid = valid_android_zip(app_dic['app_dir'])
+                    pro_type, valid = valid_source_code(app_dic['app_dir'])
+                    logger.info('Source code type - %s', pro_type)
                     if valid and pro_type == 'ios':
                         logger.info('Redirecting to iOS Source Code Analyzer')
                         if api:
@@ -344,7 +345,6 @@ def static_analyzer(request, api=False):
                     app_dic['certz'] = get_hardcoded_cert_keystore(
                         app_dic['files'])
                     app_dic['zipped'] = pro_type
-                    logger.info('ZIP Type - %s', pro_type)
                     if valid and (pro_type in ['eclipse', 'studio']):
                         # ANALYSIS BEGINS
                         app_dic['size'] = str(
@@ -513,23 +513,40 @@ def static_analyzer(request, api=False):
             return print_n_send_error_response(request, msg, False, exp)
 
 
-def valid_android_zip(app_dir):
-    """Test if this is an valid android zip."""
+def is_android_source(app_dir):
+    """Detect Android Source and IDE Type."""
+    # Eclipse
+    man = os.path.isfile(os.path.join(app_dir, 'AndroidManifest.xml'))
+    src = os.path.exists(os.path.join(app_dir, 'src/'))
+    if man and src:
+        return 'eclipse', True
+    # Studio
+    man = os.path.isfile(
+        os.path.join(app_dir, 'app/src/main/AndroidManifest.xml'),
+    )
+    java = os.path.exists(os.path.join(app_dir, 'app/src/main/java/'))
+    kotlin = os.path.exists(os.path.join(app_dir, 'app/src/main/kotlin/'))
+    if man and (java or kotlin):
+        return 'studio', True
+    return None, False
+
+
+def valid_source_code(app_dir):
+    """Test if this is an valid source code zip."""
     try:
-        logger.info('Checking for ZIP Validity and Mode')
-        # Eclipse
-        man = os.path.isfile(os.path.join(app_dir, 'AndroidManifest.xml'))
-        src = os.path.exists(os.path.join(app_dir, 'src/'))
-        if man and src:
-            return 'eclipse', True
-        # Studio
-        man = os.path.isfile(
-            os.path.join(app_dir, 'app/src/main/AndroidManifest.xml'),
-        )
-        java = os.path.exists(os.path.join(app_dir, 'app/src/main/java/'))
-        kotlin = os.path.exists(os.path.join(app_dir, 'app/src/main/kotlin/'))
-        if man and (java or kotlin):
-            return 'studio', True
+        logger.info('Detecting source code type')
+        ide, is_and = is_android_source(app_dir)
+        if ide:
+            return ide, is_and
+        # Relaxed Android Source check, one level down
+        for x in os.listdir(app_dir):
+            obj = os.path.join(app_dir, x)
+            if not is_dir_exists(obj):
+                continue
+            ide, is_and = is_android_source(obj)
+            if ide:
+                move_to_parent(obj, app_dir)
+                return ide, is_and
         # iOS Source
         xcode = [f for f in os.listdir(app_dir) if f.endswith('.xcodeproj')]
         if xcode:
@@ -543,7 +560,15 @@ def valid_android_zip(app_dir):
                 return 'ios', True
         return '', False
     except Exception:
-        logger.exception('Determining Upload type')
+        logger.exception('Identifying source code from zip')
+
+
+def move_to_parent(inside, app_dir):
+    """Move contents of inside to app dir."""
+    for x in os.listdir(inside):
+        full_path = os.path.join(inside, x)
+        shutil.move(full_path, app_dir)
+    shutil.rmtree(inside)
 
 
 def copy_icon(md5, icon_path=''):
@@ -574,6 +599,8 @@ def get_app_name(app_path, app_dir, tools_dir, is_apk):
             strings_dir = strings_path
         elif os.path.exists(eclipse_path):
             strings_dir = eclipse_path
+        else:
+            strings_dir = ''
     if not os.path.exists(strings_dir):
         logger.warning('Cannot find values folder.')
         return ''

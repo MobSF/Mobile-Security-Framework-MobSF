@@ -191,7 +191,10 @@ def save_or_update(update_type,
             'SECRETS': app_dic['secrets'],
         }
         if update_type == 'save':
-            StaticAnalyzerAndroid.objects.create(**values)
+            db_entry = StaticAnalyzerAndroid.objects.filter(
+                MD5=app_dic['md5'])
+            if not db_entry.exists():
+                StaticAnalyzerAndroid.objects.create(**values)
         else:
             StaticAnalyzerAndroid.objects.filter(
                 MD5=app_dic['md5']).update(**values)

@@ -21,7 +21,6 @@ class Checksec:
         has_code_signature = self.has_code_signature()
         has_arc = self.has_arc()
         is_encrypted = self.is_encrypted()
-        is_restricted = self.is_restricted()
         is_stripped = self.is_symbols_stripped()
 
         if has_nx:
@@ -143,26 +142,6 @@ class Checksec:
             'severity': severity,
             'description': desc,
         }
-        if is_restricted:
-            severity = 'info'
-            desc = (
-                'This binary has restricted segment that '
-                'prevents dynamic loading of dylib for '
-                'arbitrary code injection.')
-        else:
-            severity = 'high'
-            desc = (
-                'This binary does not have restricted '
-                'segment that prevents dynamic loading '
-                'of dylib for arbitrary code injection. '
-                'Use compiler options -Wl,-sectcreate,'
-                '__RESTRICT,__restrict,/dev/null to '
-                'enable restricted segment.')
-        macho_dict['restricted'] = {
-            'is_restricted': is_restricted,
-            'severity': severity,
-            'description': desc,
-        }
         if has_code_signature:
             severity = 'info'
             desc = 'This binary has a code signature.'
@@ -193,7 +172,9 @@ class Checksec:
             desc = (
                 'Symbols are available. To strip '
                 'debugging symbols, set Strip Debug '
-                'Symbols During Copy to YES via the '
+                'Symbols During Copy to YES, '
+                'Deployment Postprocessing to YES, '
+                'and Strip Linked Product to YES in '
                 'project\'s build settings.')
         macho_dict['symbol'] = {
             'is_stripped': is_stripped,
@@ -230,12 +211,6 @@ class Checksec:
 
     def is_encrypted(self):
         return bool(self.macho.encryption_info.crypt_id)
-
-    def is_restricted(self):
-        for segment in self.macho.segments:
-            if segment.name.lower() == '__restrict':
-                return True
-        return False
 
     def is_symbols_stripped(self):
         for i in self.macho.symbols:

@@ -9,7 +9,7 @@ def check_transport_security(p_list):
     ats = []
     if 'NSAppTransportSecurity' in p_list:
         ats_dict = p_list['NSAppTransportSecurity']
-        if ats_dict.get('NSAllowsArbitraryLoads'):
+        if ats_dict and ats_dict.get('NSAllowsArbitraryLoads'):
             ats.append({
                 'issue': ('App Transport Security '
                           'AllowsArbitraryLoads is allowed'),
@@ -25,7 +25,7 @@ def check_transport_security(p_list):
                     'disabled. This setting is not applicable to domains '
                     'listed in NSExceptionDomains.'),
             })
-        if ats_dict.get('NSAllowsArbitraryLoadsForMedia'):
+        if ats_dict and ats_dict.get('NSAllowsArbitraryLoadsForMedia'):
             ats.append({
                 'issue': 'Insecure media load is allowed',
                 'status': 'insecure',
@@ -36,7 +36,7 @@ def check_transport_security(p_list):
                     'This setting is not applicable to domains '
                     'listed in NSExceptionDomains.'),
             })
-        if ats_dict.get('NSAllowsArbitraryLoadsInWebContent'):
+        if ats_dict and ats_dict.get('NSAllowsArbitraryLoadsInWebContent'):
             ats.append({
                 'issue': 'Insecure WebView load is allowed',
                 'status': 'insecure',
@@ -46,7 +46,7 @@ def check_transport_security(p_list):
                     'URLSession connections. This setting is not applicable '
                     'to domains listed in NSExceptionDomains.'),
             })
-        if ats_dict.get('NSAllowsLocalNetworking'):
+        if ats_dict and ats_dict.get('NSAllowsLocalNetworking'):
             ats.append({
                 'issue': 'Insecure local networking is allowed',
                 'status': 'insecure',
@@ -59,9 +59,8 @@ def check_transport_security(p_list):
             })
 
         # NS Domain Exceptions
-
-        exception_domains = ats_dict.get('NSExceptionDomains')
-        if exception_domains:
+        if ats_dict and ats_dict.get('NSExceptionDomains'):
+            exception_domains = ats_dict.get('NSExceptionDomains')
             ats.append({
                 'issue': 'NSExceptionDomains',
                 'status': 'info',
