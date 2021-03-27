@@ -179,7 +179,7 @@ def static_analyzer_ios(request, api=False):
             elif file_type == 'ios':
                 ios_zip_db = StaticAnalyzerIOS.objects.filter(
                     MD5=app_dict['md5_hash'])
-                if ios_zip_db.exists() and not rescan == '1':
+                if ios_zip_db.exists() and rescan != '1':
                     context = get_context_from_db_entry(ios_zip_db)
                 else:
                     logger.info('iOS Source Code Analysis Started')
