@@ -15,7 +15,7 @@ def is_secret(inp):
     """Check if captures string is a possible secret."""
     iden = (
         'api"', 'key"', 'api_', 'key_', 'secret"',
-        'password"', 'aws', 'gcp', 's3', 'secret_',
+        'password"', 'aws', 'gcp', 's3_', '_s3', 'secret_',
         'token"', 'username"', 'user_name"', 'user"',
         'bearer', 'jwt', 'certificate"', 'credential',
         'azure', 'webhook', 'twilio_', 'bitcoin',
