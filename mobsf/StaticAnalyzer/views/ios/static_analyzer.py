@@ -77,7 +77,7 @@ def static_analyzer_ios(request, api=False):
                 # DB
                 ipa_db = StaticAnalyzerIOS.objects.filter(
                     MD5=app_dict['md5_hash'])
-                if ipa_db.exists() and not rescan == '1':
+                if ipa_db.exists() and rescan != '1':
                     context = get_context_from_db_entry(ipa_db)
                 else:
                     logger.info('iOS Binary (IPA) Analysis Started')
