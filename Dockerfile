@@ -81,9 +81,8 @@ RUN \
 # Copy source code
 COPY . .
 
-# Enable Use Home Directory and set adb path
-RUN sed -i 's/USE_HOME = False/USE_HOME = True/g' mobsf/MobSF/settings.py && \
-    sed -i "s#ADB_BINARY = ''#ADB_BINARY = '/usr/bin/adb'#" mobsf/MobSF/settings.py
+# Set adb binary path
+RUN sed -i "s#ADB_BINARY = ''#ADB_BINARY = '/usr/bin/adb'#" mobsf/MobSF/settings.py
 
 # Postgres support is set to false by default
 ARG POSTGRES=False

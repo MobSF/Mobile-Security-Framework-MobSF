@@ -10,13 +10,13 @@ from mobsf.install.windows.setup import windows_config_local
 
 logger = logging.getLogger(__name__)
 
-VERSION = '3.3.6'
+VERSION = '3.4.0'
 BANNER = """
-  __  __       _    ____  _____   _____  _____ 
- |  \/  | ___ | |__/ ___||  ___| |___ / |___ / 
- | |\/| |/ _ \| '_ \___ \| |_      |_ \   |_ \ 
- | |  | | (_) | |_) |__) |  _|    ___) | ___) |
- |_|  |_|\___/|_.__/____/|_|     |____(_)____/
+  __  __       _    ____  _____         _____ _  _   
+ |  \/  | ___ | |__/ ___||  ___| __   _|___ /| || |  
+ | |\/| |/ _ \| '_ \___ \| |_    \ \ / / |_ \| || |_ 
+ | |  | | (_) | |_) |__) |  _|    \ V / ___) |__   _|
+ |_|  |_|\___/|_.__/____/|_|       \_/ |____(_) |_|  
 """  # noqa: W291
 # ASCII Font: Standard
 
@@ -140,4 +140,4 @@ def get_mobsf_home(use_home, base_dir):
 
 
 def get_mobsf_version():
-    return BANNER, f'v{VERSION} Beta'
+    return BANNER, VERSION, f'v{VERSION} Beta'

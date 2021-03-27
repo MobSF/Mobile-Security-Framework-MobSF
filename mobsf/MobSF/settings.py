@@ -17,20 +17,16 @@ from mobsf.MobSF.init import (
 
 logger = logging.getLogger(__name__)
 
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#       MOBSF CONFIGURATIONS
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-BANNER, MOBSF_VER = get_mobsf_version()
-# ==============================================
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# ==========MobSF Home Directory=================
-USE_HOME = False
-
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#       MOBSF CONFIGURATION
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+BANNER, VERSION, MOBSF_VER = get_mobsf_version()
+USE_HOME = True
 # True : All Uploads/Downloads will be stored in user's home directory
-# False : All Uploads/Downloads will be stored in MobSF root directory
-# If you need multiple users to share the scan results set this to False
-# ===============================================
+# False : All Uploads/Downloads will be stored under MobSF root directory
 
+# MobSF Data Directory
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MobSF_HOME = get_mobsf_home(USE_HOME, BASE_DIR)
 # Download Directory
 DWD_DIR = os.path.join(MobSF_HOME, 'downloads/')
@@ -46,6 +42,82 @@ SIGNATURE_DIR = os.path.join(MobSF_HOME, 'signatures/')
 TOOLS_DIR = os.path.join(BASE_DIR, 'DynamicAnalyzer/tools/')
 # Secret File
 SECRET_FILE = os.path.join(MobSF_HOME, 'secret')
+
+# ==========Load MobSF User Settings==========
+try:
+    if USE_HOME:
+        USER_CONFIG = os.path.join(MobSF_HOME, 'config.py')
+        sett = imp.load_source('user_settings', USER_CONFIG)
+        locals().update(
+            {k: v for k, v in list(sett.__dict__.items())
+                if not k.startswith('__')})
+        CONFIG_HOME = True
+    else:
+        CONFIG_HOME = False
+except Exception:
+    logger.exception('Reading Config')
+    CONFIG_HOME = False
+
+# ===MOBSF SECRET GENERATION AND DB MIGRATION====
+SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MobSF_HOME)
+
+# =============ALLOWED DOWNLOAD EXTENSIONS=====
+ALLOWED_EXTENSIONS = {
+    '.txt': 'text/plain',
+    '.png': 'image/png',
+    '.zip': 'application/zip',
+    '.tar': 'application/x-tar',
+    '.apk': 'application/octet-stream',
+}
+# =============ALLOWED MIMETYPES=================
+APK_MIME = [
+    'application/octet-stream',
+    'application/vnd.android.package-archive',
+    'application/x-zip-compressed',
+    'binary/octet-stream',
+]
+IPA_MIME = [
+    'application/iphone',
+    'application/octet-stream',
+    'application/x-itunes-ipa',
+    'application/x-zip-compressed',
+    'binary/octet-stream',
+]
+ZIP_MIME = [
+    'application/zip',
+    'application/octet-stream',
+    'application/x-zip-compressed',
+    'binary/octet-stream',
+]
+APPX_MIME = [
+    'application/octet-stream',
+    'application/vns.ms-appx',
+    'application/x-zip-compressed',
+]
+
+# REST API only mode
+# Set MOBSF_API_ONLY to 1 to enable REST API only mode
+# In this mode, web UI related urls are disabled.
+API_ONLY = os.getenv('MOBSF_API_ONLY', '0')
+
+# -----External URLS--------------------------
+MALWARE_DB_URL = 'https://www.malwaredomainlist.com/mdlcsv.php'
+MALTRAIL_DB_URL = ('https://raw.githubusercontent.com/stamparm/aux/'
+                   'master/maltrail-malware-domains.txt')
+VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/vtapi/v2/file/'
+EXODUS_URL = 'https://reports.exodus-privacy.eu.org'
+APPMONSTA_URL = 'https://api.appmonsta.com/v1/stores/android/details/'
+ITUNES_URL = 'https://itunes.apple.com/lookup'
+GITHUB_URL = ('https://raw.githubusercontent.com/'
+              'MobSF/Mobile-Security-Framework-MobSF/'
+              'master/mobsf/MobSF/init.py')
+FRIDA_SERVER = 'https://api.github.com/repos/frida/frida/releases/tags/'
+GOOGLE = 'https://www.google.com'
+BAIDU = 'https://www.baidu.com/'
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# ============DJANGO SETTINGS =================
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
@@ -75,68 +147,6 @@ DATABASES = {
 """
 # ===============================================
 
-# ==========LOAD CONFIG from .MobSF HOME==========
-try:
-    # Update Config from .MobSF Home Directory
-    if USE_HOME:
-        USER_CONFIG = os.path.join(MobSF_HOME, 'config.py')
-        sett = imp.load_source('user_settings', USER_CONFIG)
-        locals().update(
-            {k: v for k, v in list(sett.__dict__.items())
-                if not k.startswith('__')})
-        CONFIG_HOME = True
-    else:
-        CONFIG_HOME = False
-except Exception:
-    logger.exception('Reading Config')
-    CONFIG_HOME = False
-# ===============================================
-
-# ===MOBSF SECRET GENERATION AND DB MIGRATION====
-SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MobSF_HOME)
-
-# =============================================
-
-# =============ALLOWED DOWNLOAD EXTENSIONS=====
-ALLOWED_EXTENSIONS = {
-    '.txt': 'text/plain',
-    '.png': 'image/png',
-    '.zip': 'application/zip',
-    '.tar': 'application/x-tar',
-    '.apk': 'application/octet-stream',
-}
-# ===============================================
-
-# =============ALLOWED MIMETYPES=================
-
-APK_MIME = [
-    'application/octet-stream',
-    'application/vnd.android.package-archive',
-    'application/x-zip-compressed',
-    'binary/octet-stream',
-]
-IPA_MIME = [
-    'application/iphone',
-    'application/octet-stream',
-    'application/x-itunes-ipa',
-    'application/x-zip-compressed',
-    'binary/octet-stream',
-]
-ZIP_MIME = [
-    'application/zip',
-    'application/octet-stream',
-    'application/x-zip-compressed',
-    'binary/octet-stream',
-]
-APPX_MIME = [
-    'application/octet-stream',
-    'application/vns.ms-appx',
-    'application/x-zip-compressed',
-]
-
-# ===============================================
-
-# ============DJANGO SETTINGS =================
 DEBUG = True
 DJANGO_LOG_LEVEL = DEBUG
 ALLOWED_HOSTS = ['127.0.0.1', 'mobsf', '*']
@@ -164,7 +174,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
-
 MIDDLEWARE = (
     'mobsf.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
 )
@@ -196,29 +205,79 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 # 256MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 268435456
-# REST API only mode
-# Set MOBSF_API_ONLY to 1 to enable REST API only mode
-# In this mode, web UI related urls are disabled.
-API_ONLY = os.getenv('MOBSF_API_ONLY', '0')
-
-# -----External URLS--------------------------
-MALWARE_DB_URL = 'https://www.malwaredomainlist.com/mdlcsv.php'
-MALTRAIL_DB_URL = ('https://raw.githubusercontent.com/stamparm/aux/'
-                   'master/maltrail-malware-domains.txt')
-VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/vtapi/v2/file/'
-EXODUS_URL = 'https://reports.exodus-privacy.eu.org'
-APPMONSTA_URL = 'https://api.appmonsta.com/v1/stores/android/details/'
-ITUNES_URL = 'https://itunes.apple.com/lookup'
-GITHUB_URL = ('https://raw.githubusercontent.com/'
-              'MobSF/Mobile-Security-Framework-MobSF/'
-              'master/mobsf/MobSF/settings.py')
-FRIDA_SERVER = 'https://api.github.com/repos/frida/frida/releases/tags/'
-GOOGLE = 'https://www.google.com'
-BAIDU = 'https://www.baidu.com/'
+# Better logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'standard': {
+            'format': '[%(levelname)s] %(asctime)-15s - %(message)s',
+            'datefmt': '%d/%b/%Y %H:%M:%S',
+        },
+        'color': {
+            '()': 'colorlog.ColoredFormatter',
+            'format':
+                '%(log_color)s[%(levelname)s] %(asctime)-15s - %(message)s',
+            'datefmt': '%d/%b/%Y %H:%M:%S',
+            'log_colors': {
+                'DEBUG': 'cyan',
+                'INFO': 'green',
+                'WARNING': 'yellow',
+                'ERROR': 'red',
+                'CRITICAL': 'red,bg_white',
+            },
+        },
+    },
+    'handlers': {
+        'logfile': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(MobSF_HOME, 'debug.log'),
+            'formatter': 'standard',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'color',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'logfile'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.db.backends': {
+            'handlers': ['console', 'logfile'],
+            # DEBUG will log all queries, so change it to WARNING.
+            'level': 'INFO',
+            'propagate': False,   # Don't propagate to other handlers
+        },
+        'mobsf.MobSF': {
+            'handlers': ['console', 'logfile'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'mobsf.StaticAnalyzer': {
+            'handlers': ['console', 'logfile'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'mobsf.MalwareAnalyzer': {
+            'handlers': ['console', 'logfile'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'mobsf.DynamicAnalyzer': {
+            'handlers': ['console', 'logfile'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
 # ===================
 # USER CONFIGURATION
 # ===================
-
 if CONFIG_HOME:
     logger.info('Loading User config from: %s', USER_CONFIG)
 else:
@@ -345,75 +404,3 @@ else:
     # if VT_UPLOAD is set to True.
     # ==============================================
     # ^CONFIG-END^: Do not edit this line
-
-
-# Better logging
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': True,
-    'formatters': {
-        'standard': {
-            'format': '[%(levelname)s] %(asctime)-15s - %(message)s',
-            'datefmt': '%d/%b/%Y %H:%M:%S',
-        },
-        'color': {
-            '()': 'colorlog.ColoredFormatter',
-            'format':
-                '%(log_color)s[%(levelname)s] %(asctime)-15s - %(message)s',
-            'datefmt': '%d/%b/%Y %H:%M:%S',
-            'log_colors': {
-                'DEBUG': 'cyan',
-                'INFO': 'green',
-                'WARNING': 'yellow',
-                'ERROR': 'red',
-                'CRITICAL': 'red,bg_white',
-            },
-        },
-    },
-    'handlers': {
-        'logfile': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(MobSF_HOME, 'debug.log'),
-            'formatter': 'standard',
-        },
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'color',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console', 'logfile'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-        'django.db.backends': {
-            'handlers': ['console', 'logfile'],
-            # DEBUG will log all queries, so change it to WARNING.
-            'level': 'INFO',
-            'propagate': False,   # Don't propagate to other handlers
-        },
-        'mobsf.MobSF': {
-            'handlers': ['console', 'logfile'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'mobsf.StaticAnalyzer': {
-            'handlers': ['console', 'logfile'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'mobsf.MalwareAnalyzer': {
-            'handlers': ['console', 'logfile'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'mobsf.DynamicAnalyzer': {
-            'handlers': ['console', 'logfile'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-    },
-}

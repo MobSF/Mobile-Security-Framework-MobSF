@@ -14,7 +14,7 @@ import stat
 import sqlite3
 import unicodedata
 import threading
-from distutils.version import LooseVersion
+from distutils.version import StrictVersion
 
 import distro
 
@@ -113,17 +113,21 @@ def check_update():
         response = requests.get(github_url, timeout=5,
                                 proxies=proxies, verify=verify)
         html = str(response.text).split('\n')
-        local_version = settings.MOBSF_VER
+        local_version = settings.VERSION
+        remote_version = None
         for line in html:
-            if line.startswith('MOBSF_VER'):
-                remote_version = line.split('= ', 1)[1].replace('\'', '')
-                if LooseVersion(local_version) < LooseVersion(remote_version):
-                    logger.warning('A new version of MobSF is available, '
-                                   'Please update to %s from master branch.',
-                                   remote_version)
-                else:
-                    logger.info('No updates available.')
+            if line.startswith('VERSION'):
+                remote_version = line.split('\'')[1]
                 break
+        if remote_version:
+            sem_loc = StrictVersion(local_version)
+            sem_rem = StrictVersion(remote_version)
+            if sem_loc < sem_rem:
+                logger.warning('A new version of MobSF is available, '
+                               'Please update to %s from master branch.',
+                               remote_version)
+            else:
+                logger.info('No updates available.')
     except requests.exceptions.HTTPError:
         logger.warning('\nCannot check for updates..'
                        ' No Internet Connection Found.')
