@@ -21,8 +21,8 @@ Use separate Windows-VM for MobSF and *don't* expose it to a network range where
 ## Steps for MobSF 
 To integrate a Windows-VM into MobSF, please follow these steps.
 
-* Get the IP of you VM and set in the `mobsf/MobSF/settings.py` File (search for `WINDOWS_VM_IP`)
-* (If not yet done:) Copy the private rsa key from the vm to MobSF
+* Get the IP of your Windows VM and set `WINDOWS_VM_IP` in `<user_home_dir>/.MobSF/config.py`.
+* (If not yet done:) Copy the private rsa key from the VM to MobSF
 
 NOTE: These steps are not required, if you are running MobSF in a Windows Host.
 

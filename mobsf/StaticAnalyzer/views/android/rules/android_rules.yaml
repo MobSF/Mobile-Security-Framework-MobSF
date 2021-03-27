@@ -475,6 +475,20 @@
   owasp-mobile: m5
   masvs: crypto-2
   ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#weak-block-cipher-mode
+- id: android_aws_ecb_default
+  description: >-
+    Calling Cipher.getInstance("AES") will return AES ECB mode by default. ECB mode is
+    known to be weak as it results in the same ciphertext for identical blocks
+    of plaintext.
+  type: Regex
+  pattern: Cipher\.getInstance\("AES"\)
+  severity: high
+  input_case: exact
+  cvss: 5.9
+  cwe: cwe-327
+  owasp-mobile: m5
+  masvs: crypto-2
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#weak-block-cipher-mode
 - id: android_rsa_no_oaep
   description: >-
     This App uses RSA Crypto without OAEP padding. The purpose of the padding

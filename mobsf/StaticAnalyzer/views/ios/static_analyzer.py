@@ -45,17 +45,19 @@ def static_analyzer_ios(request, api=False):
     """Module that performs iOS IPA/ZIP Static Analysis."""
     try:
         logger.info('iOS Static Analysis Started')
+        rescan = False
         if api:
             file_type = request.POST['scan_type']
             checksum = request.POST['hash']
-            rescan = str(request.POST.get('re_scan', 0))
+            re_scan = request.POST.get('re_scan', 0)
             filename = request.POST['file_name']
         else:
             file_type = request.GET['type']
             checksum = request.GET['checksum']
-            rescan = str(request.GET.get('rescan', 0))
+            re_scan = request.GET.get('rescan', 0)
             filename = request.GET['name']
-
+        if re_scan == '1':
+            rescan = True
         md5_match = re.match('^[0-9a-f]{32}$', checksum)
         if ((md5_match)
                 and (filename.lower().endswith('.ipa')
@@ -77,7 +79,7 @@ def static_analyzer_ios(request, api=False):
                 # DB
                 ipa_db = StaticAnalyzerIOS.objects.filter(
                     MD5=app_dict['md5_hash'])
-                if ipa_db.exists() and rescan != '1':
+                if ipa_db.exists() and not rescan:
                     context = get_context_from_db_entry(ipa_db)
                 else:
                     logger.info('iOS Binary (IPA) Analysis Started')
@@ -138,7 +140,7 @@ def static_analyzer_ios(request, api=False):
                     }
                     # Saving to DB
                     logger.info('Connecting to DB')
-                    if rescan == '1':
+                    if rescan:
                         logger.info('Updating Database...')
                         save_or_update(
                             'update',
@@ -179,7 +181,7 @@ def static_analyzer_ios(request, api=False):
             elif file_type == 'ios':
                 ios_zip_db = StaticAnalyzerIOS.objects.filter(
                     MD5=app_dict['md5_hash'])
-                if ios_zip_db.exists() and rescan != '1':
+                if ios_zip_db.exists() and not rescan:
                     context = get_context_from_db_entry(ios_zip_db)
                 else:
                     logger.info('iOS Source Code Analysis Started')
@@ -219,7 +221,7 @@ def static_analyzer_ios(request, api=False):
                     }
                     # Saving to DB
                     logger.info('Connecting to DB')
-                    if rescan == '1':
+                    if rescan:
                         logger.info('Updating Database...')
                         save_or_update(
                             'update',
