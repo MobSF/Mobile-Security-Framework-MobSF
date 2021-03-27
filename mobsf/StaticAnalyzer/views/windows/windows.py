@@ -82,7 +82,7 @@ def staticanalyzer_windows(request, api=False):
                 db_entry = StaticAnalyzerWindows.objects.filter(
                     MD5=app_dic['md5'],
                 )
-                if db_entry.exists() and rescan == '0':
+                if db_entry.exists() and rescan != '1':
                     logger.info(
                         'Analysis is already Done.'
                         ' Fetching data from the DB...')
@@ -112,7 +112,7 @@ def staticanalyzer_windows(request, api=False):
                                        xml_dic,
                                        bin_an_dic)
                         update_scan_timestamp(app_dic['md5'])
-                    elif rescan == '0':
+                    else:
                         logger.info('Saving to Database')
                         save_or_update('save',
                                        app_dic,

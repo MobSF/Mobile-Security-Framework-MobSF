@@ -77,7 +77,7 @@ def static_analyzer_ios(request, api=False):
                 # DB
                 ipa_db = StaticAnalyzerIOS.objects.filter(
                     MD5=app_dict['md5_hash'])
-                if ipa_db.exists() and rescan == '0':
+                if ipa_db.exists() and rescan != '1':
                     context = get_context_from_db_entry(ipa_db)
                 else:
                     logger.info('iOS Binary (IPA) Analysis Started')
@@ -148,7 +148,7 @@ def static_analyzer_ios(request, api=False):
                             bin_analysis_dict,
                             all_files)
                         update_scan_timestamp(app_dict['md5_hash'])
-                    elif rescan == '0':
+                    else:
                         logger.info('Saving to Database')
                         save_or_update(
                             'save',
@@ -179,7 +179,7 @@ def static_analyzer_ios(request, api=False):
             elif file_type == 'ios':
                 ios_zip_db = StaticAnalyzerIOS.objects.filter(
                     MD5=app_dict['md5_hash'])
-                if ios_zip_db.exists() and rescan == '0':
+                if ios_zip_db.exists() and rescan != '1':
                     context = get_context_from_db_entry(ios_zip_db)
                 else:
                     logger.info('iOS Source Code Analysis Started')
@@ -229,7 +229,7 @@ def static_analyzer_ios(request, api=False):
                             fake_bin_dict,
                             all_files)
                         update_scan_timestamp(app_dict['md5_hash'])
-                    elif rescan == '0':
+                    else:
                         logger.info('Saving to Database')
                         save_or_update(
                             'save',

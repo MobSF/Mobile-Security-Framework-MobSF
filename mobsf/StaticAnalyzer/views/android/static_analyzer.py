@@ -117,7 +117,7 @@ def static_analyzer(request, api=False):
                 # pylint: disable=E1101
                 db_entry = StaticAnalyzerAndroid.objects.filter(
                     MD5=app_dic['md5'])
-                if db_entry.exists() and rescan == '0':
+                if db_entry.exists() and rescan != '1':
                     context = get_context_from_db_entry(db_entry)
                 else:
                     # ANALYSIS BEGINS
@@ -256,7 +256,7 @@ def static_analyzer(request, api=False):
                                 tracker_res,
                             )
                             update_scan_timestamp(app_dic['md5'])
-                        elif rescan == '0':
+                        else:
                             logger.info('Saving to Database')
                             save_or_update(
                                 'save',
@@ -322,9 +322,9 @@ def static_analyzer(request, api=False):
                     MD5=app_dic['md5'])
                 ios_db_entry = StaticAnalyzerIOS.objects.filter(
                     MD5=app_dic['md5'])
-                if db_entry.exists() and rescan == '0':
+                if db_entry.exists() and rescan != '1':
                     context = get_context_from_db_entry(db_entry)
-                elif ios_db_entry.exists() and rescan == '0':
+                elif ios_db_entry.exists() and rescan != '1':
                     if api:
                         return {'type': 'ios'}
                     else:
@@ -445,7 +445,7 @@ def static_analyzer(request, api=False):
                                     {},
                                 )
                                 update_scan_timestamp(app_dic['md5'])
-                            elif rescan == '0':
+                            else:
                                 logger.info('Saving to Database')
                                 save_or_update(
                                     'save',
