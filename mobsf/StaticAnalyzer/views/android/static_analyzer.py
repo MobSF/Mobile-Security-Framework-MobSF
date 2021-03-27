@@ -77,16 +77,19 @@ def key(data, key_name):
 def static_analyzer(request, api=False):
     """Do static analysis on an request and save to db."""
     try:
+        rescan = False
         if api:
             typ = request.POST['scan_type']
             checksum = request.POST['hash']
             filename = request.POST['file_name']
-            rescan = str(request.POST.get('re_scan', 0))
+            re_scan = request.POST.get('re_scan', 0)
         else:
             typ = request.GET['type']
             checksum = request.GET['checksum']
             filename = request.GET['name']
-            rescan = str(request.GET.get('rescan', 0))
+            re_scan = request.GET.get('rescan', 0)
+        if re_scan == '1':
+            rescan = True
         # Input validation
         app_dic = {}
         match = re.match('^[0-9a-f]{32}$', checksum)
@@ -117,7 +120,7 @@ def static_analyzer(request, api=False):
                 # pylint: disable=E1101
                 db_entry = StaticAnalyzerAndroid.objects.filter(
                     MD5=app_dic['md5'])
-                if db_entry.exists() and rescan != '1':
+                if db_entry.exists() and not rescan:
                     context = get_context_from_db_entry(db_entry)
                 else:
                     # ANALYSIS BEGINS
@@ -242,7 +245,7 @@ def static_analyzer(request, api=False):
                     logger.info('Connecting to Database')
                     try:
                         # SAVE TO DB
-                        if rescan == '1':
+                        if rescan:
                             logger.info('Updating Database...')
                             save_or_update(
                                 'update',
@@ -322,9 +325,9 @@ def static_analyzer(request, api=False):
                     MD5=app_dic['md5'])
                 ios_db_entry = StaticAnalyzerIOS.objects.filter(
                     MD5=app_dic['md5'])
-                if db_entry.exists() and rescan != '1':
+                if db_entry.exists() and not rescan:
                     context = get_context_from_db_entry(db_entry)
-                elif ios_db_entry.exists() and rescan != '1':
+                elif ios_db_entry.exists() and not rescan:
                     if api:
                         return {'type': 'ios'}
                     else:
@@ -431,7 +434,7 @@ def static_analyzer(request, api=False):
                         logger.info('Connecting to Database')
                         try:
                             # SAVE TO DB
-                            if rescan == '1':
+                            if rescan:
                                 logger.info('Updating Database...')
                                 save_or_update(
                                     'update',
