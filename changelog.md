@@ -1,3 +1,18 @@
+
+### v3.4.0 Beta Changelog
+
+- Features or Enhancements
+   - Android Hardcoded Secrets False Positive Improvement
+   - New Android Crypto Rule
+   - Rescan Fail-Safe and Code QA
+   - Auto Comment for PR and Issues
+   - USE_HOME by default
+   - Dynamically Display Config Location
+ 
+
+- Bug Fixes
+  - Fixed a bug in iOS ATS plist analysis
+
 ### v3.3.5 Beta Changelog
 
 - Bug Fixes
