@@ -62,7 +62,7 @@ WORKDIR /root/Mobile-Security-Framework-MobSF
 COPY requirements.txt .
 
 # Install Requirements
-RUN pip3 install --quiet --no-cache-dir -r requirements.txt
+RUN pip3 install --use-deprecated=legacy-resolver --quiet --no-cache-dir -r requirements.txt
 
 # Cleanup
 RUN \
