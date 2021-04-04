@@ -43,7 +43,7 @@ jobs:
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip tox
-        pip install -r --use-deprecated=legacy-resolver requirements.txt
+        pip install --use-deprecated=legacy-resolver -r requirements.txt
     - name: Migrate Database
       run: |
         python manage.py makemigrations
