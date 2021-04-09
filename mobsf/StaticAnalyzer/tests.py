@@ -83,7 +83,7 @@ def static_analysis_test():
         for pdf in pdfs:
             resp = http_client.get(pdf)
             if (resp.status_code == 200
-                    and resp._headers['content-type'][1] == 'application/pdf'):
+                    and resp.headers['content-type'] == 'application/pdf'):
                 logger.info('[OK] PDF Report Generated: %s', pdf)
             else:
                 logger.error('Generating PDF: %s', pdf)
@@ -259,7 +259,7 @@ def api_test():
             assert (resp.status_code == 200)
             assert (resp_custom.status_code == 200)
             if (resp.status_code == 200
-                    and resp._headers['content-type'][1] == 'application/pdf'):
+                    and resp.headers['content-type'] == 'application/pdf'):
                 logger.info('[OK] PDF Report Generated: %s', pdf['hash'])
             else:
                 logger.error('Generating PDF: %s', pdf['hash'])
@@ -277,7 +277,7 @@ def api_test():
             assert (resp.status_code == 200)
             assert (resp_custom.status_code == 200)
             if (resp.status_code == 200
-                    and resp._headers['content-type'][1] == ctype):
+                    and resp.headers['content-type'] == ctype):
                 logger.info('[OK] JSON Report Generated: %s', jsn['hash'])
             else:
                 logger.error('Generating JSON Response: %s', jsn['hash'])
