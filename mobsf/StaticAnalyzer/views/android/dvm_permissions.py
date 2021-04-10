@@ -246,9 +246,23 @@ DVM_PERMISSIONS = {
         'USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER': ['signature', '', 'Allows to read device identifiers and use ICC based authentication like EAP-AKA. Often required in authentication to access the carrier\'s server and manage services of the subscriber.'],
     },
 
-    'MANIFEST_PERMISSION_GROUP':
-        {
+    'SPECIAL_PERMISSIONS': {
+        'com.sec.android.provider.badge.permission.READ': ['normal', 'Show notification count on app', 'Show notification count or badge on application launch icon for samsung phones.'],
+        'com.sec.android.provider.badge.permission.WRITE': ['normal', 'Show notification count on app', 'Show notification count or badge on application launch icon for samsung phones.'],
+        'com.htc.launcher.permission.READ_SETTINGS': ['normal', 'Show notification count on app', 'Show notification count or badge on application launch icon for htc phones.'],
+        'com.htc.launcher.permission.UPDATE_SHORTCUT': ['normal', 'Show notification count on app', 'Show notification count or badge on application launch icon for htc phones.'],
+        'com.sonyericsson.home.permission.BROADCAST_BADGE': ['normal', 'Show notification count on app', 'Show notification count or badge on application launch icon for sony phones.'],
+        'com.sonymobile.home.permission.PROVIDER_INSERT_BADGE': ['normal', 'Show notification count on app', 'Show notification count or badge on application launch icon for sony phones.'],
+        'com.anddoes.launcher.permission.UPDATE_COUNT': ['normal', 'Show notification count on app', 'Show notification count or badge on application launch icon for apex.'],
+        'com.majeur.launcher.permission.UPDATE_BADGE': ['normal', 'Show notification count on app', 'Show notification count or badge on application launch icon for solid.'],
+        'com.huawei.android.launcher.permission.READ_SETTINGS': ['normal', 'Show notification count on app', 'Show notification count or badge on application launch icon for huawei phones.'],
+        'com.huawei.android.launcher.permission.WRITE_SETTINGS': ['normal', 'Show notification count on app', 'Show notification count or badge on application launch icon for huawei phones.'],
+        'com.huawei.android.launcher.permission.CHANGE_BADGE': ['normal', 'Show notification count on app', 'Show notification count or badge on application launch icon for huawei phones.'],
+        'com.oppo.launcher.permission.READ_SETTINGS': ['normal', 'Show notification count on app', 'Show notification count or badge on application launch icon for oppo phones.'],
+        'com.oppo.launcher.permission.WRITE_SETTINGS': ['normal', 'Show notification count on app', 'Show notification count or badge on application launch icon for oppo phones.'],
+    },
 
+    'MANIFEST_PERMISSION_GROUP': {
         'ACCOUNTS': 'Permissions for direct access to the accounts managed by the Account Manager.',
         'COST_MONEY': 'Used for permissions that can be used to make the user spend money without their direct involvement.',
         'DEVELOPMENT_TOOLS': 'Group of permissions that are related to development features.',

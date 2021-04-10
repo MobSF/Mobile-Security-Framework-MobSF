@@ -154,10 +154,15 @@ def manifest_data(mfxml):
             except Exception:
                 continue  # No icon attribute?
 
+        android_permission_tags = ('com.google.', 'android.', 'com.google.')
         for permission in permissions:
             perm.append(permission.getAttribute('android:name'))
-        android_permission_tags = ('com.google.', 'android.', 'com.google.')
         for full_perm in perm:
+            # Handle Special Perms
+            if DVM_PERMISSIONS['SPECIAL_PERMISSIONS'].get(full_perm):
+                dvm_perm[full_perm] = DVM_PERMISSIONS[
+                    'SPECIAL_PERMISSIONS'][full_perm]
+            # For general android permissions
             prm = full_perm
             pos = full_perm.rfind('.')
             if pos != -1:
