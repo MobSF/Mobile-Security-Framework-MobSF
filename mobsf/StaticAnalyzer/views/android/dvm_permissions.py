@@ -235,6 +235,15 @@ DVM_PERMISSIONS = {
         'NFC_PREFERRED_PAYMENT_INFO': ['normal', '', 'Allows applications to receive NFC preferred payment service information.'],
         'QUERY_ALL_PACKAGES': ['normal', '', 'Allows query of any normal app on the device, regardless of manifest declarations.'],
         'READ_PRECISE_PHONE_STATE': ['dangerous', '', 'Allows read only access to precise phone state. Allows reading of detailed information about phone state for special-use applications such as dialers, carrier applications, or ims applications.'],
+        'READ_APP_BADGE': ['normal', 'show app notification', 'Allows an application to show app icon badges'],
+        'BIND_COMPANION_DEVICE_SERVICE': ['normal', '', 'Must be required by any CompanionDeviceServices to ensure that only the system can bind to it.'],
+        'HIDE_OVERLAY_WINDOWS': ['normal', 'Prevent non-system-overlay windows ', 'Allows an app to prevent non-system-overlay windows from being drawn on top of it'],
+        'HIGH_SAMPLING_RATE_SENSORS': ['normal', 'Access higher sampling rate sensor data', 'Allows an app to access sensor data with a sampling rate greater than 200 Hz.'],
+        'MANAGE_ONGOING_CALLS': ['signature', 'Query and manage ongoing call details', 'Allows to query ongoing call details and manage ongoing calls.'],
+        'REQUEST_COMPANION_PROFILE_WATCH': ['normal', '', 'Allows app to request to be associated with a device via CompanionDeviceManager as a "watch"'],
+        'REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE': ['normal', '', 'Allows an application to subscribe to notifications about the presence status change of their associated companion device.'],
+        'SCHEDULE_EXACT_ALARM': ['normal', '', 'Allows an app to use exact alarm scheduling APIs to perform timing sensitive background work.'],
+        'USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER': ['signature', '', 'Allows to read device identifiers and use ICC based authentication like EAP-AKA. Often required in authentication to access the carrier\'s server and manage services of the subscriber.'],
     },
 
     'MANIFEST_PERMISSION_GROUP':
