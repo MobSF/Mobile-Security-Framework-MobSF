@@ -39,8 +39,8 @@ def dynamic_analysis(request, api=False):
     try:
         scan_apps = []
         apks = StaticAnalyzerAndroid.objects.filter(
-            APP_TYPE='apk').order_by('-id')
-        for apk in apks:
+            APP_TYPE='apk')
+        for apk in reversed(apks):
             temp_dict = {
                 'ICON_FOUND': apk.ICON_FOUND,
                 'MD5': apk.MD5,
