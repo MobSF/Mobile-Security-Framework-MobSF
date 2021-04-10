@@ -158,10 +158,6 @@ def manifest_data(mfxml):
         for permission in permissions:
             perm.append(permission.getAttribute('android:name'))
         for full_perm in perm:
-            # Handle Special Perms
-            if DVM_PERMISSIONS['SPECIAL_PERMISSIONS'].get(full_perm):
-                dvm_perm[full_perm] = DVM_PERMISSIONS[
-                    'SPECIAL_PERMISSIONS'][full_perm]
             # For general android permissions
             prm = full_perm
             pos = full_perm.rfind('.')
@@ -173,11 +169,16 @@ def manifest_data(mfxml):
                 dvm_perm[full_perm] = DVM_PERMISSIONS[
                     'MANIFEST_PERMISSION'][prm]
             except KeyError:
-                dvm_perm[full_perm] = [
-                    'unknown',
-                    'Unknown permission',
-                    'Unknown permission from android reference',
-                ]
+                # Handle Special Perms
+                if DVM_PERMISSIONS['SPECIAL_PERMISSIONS'].get(full_perm):
+                    dvm_perm[full_perm] = DVM_PERMISSIONS[
+                        'SPECIAL_PERMISSIONS'][full_perm]
+                else:
+                    dvm_perm[full_perm] = [
+                        'unknown',
+                        'Unknown permission',
+                        'Unknown permission from android reference',
+                    ]
 
         man_data_dic = {
             'services': svc,
