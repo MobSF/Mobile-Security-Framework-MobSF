@@ -113,9 +113,9 @@ class Environment:
             return True
         return False
 
-    def install_apk(self, apk_path, package):
+    def install_apk(self, apk_path, package, reinstall):
         """Install APK and Verify Installation."""
-        if self.is_package_installed(package, ''):
+        if self.is_package_installed(package, '') and reinstall != '0':
             logger.info('Removing existing installation')
             # Remove existing installation'
             self.adb_command(['uninstall', package], False, True)
@@ -127,7 +127,7 @@ class Environment:
             'verifier_verify_adb_installs',
             '0',
         ], True)
-        logger.info('Installing APK')
+        logger.info('Installing APK - %s', package)
         # Install APK
         out = self.adb_command([
             'install',

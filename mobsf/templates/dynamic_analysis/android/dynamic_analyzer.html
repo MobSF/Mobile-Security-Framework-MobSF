@@ -41,6 +41,11 @@
         font-size: 13px;
         border: 1px solid #eee;
       }
+
+      .frida-pre {
+        font-family: "courier new", courier, monospace;
+        font-size: 11px;
+      }
 </style>
 
 {% endblock %}
@@ -118,6 +123,9 @@
                 <ul class="nav nav-tabs" id="tabnav" role="tablist">
                   <li class="nav-item">
                     <a class="nav-link active" id="dm-tab" data-toggle="pill" href="#dm" role="tab" aria-controls="dm" aria-selected="true">Dynamic Analyzer</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link disabled" id="frida-tab" data-toggle="pill" href="#frida_logs" role="tab" aria-controls="frida" aria-selected="false">Frida Logs</a>
                   </li>
                   <li class="nav-item">
                     <a class="nav-link" id="errors-tab" data-toggle="pill" href="#errors" role="tab" aria-controls="errors" aria-selected="false">Errors</a>
@@ -207,6 +215,13 @@
           <!--tab end-->
 
                   </div>
+
+                  <div class="tab-pane fade" id="frida_logs" role="tabpanel" aria-labelledby="frida-tab">
+                    <h4 class="page-header"><strong>Frida Logs </strong>- {{ package }}</h4>
+                    <div id="messages"></br>Data refreshed in every 3 seconds.</div>
+                    <pre class="frida-pre" id="logs"></pre>
+                  </div>
+                  <!-- frida logs -->
                   <div class="tab-pane fade" id="errors" role="tabpanel" aria-labelledby="errors-tab">
                     
                     
@@ -578,6 +593,25 @@ print_status("Invoking MobSF agents");
 print_status("Environment is ready for user assisted dynamic analysis.");
 print_status("Navigate through all the flows of the app manually.");
 
+// Frida Logs Tab
+
+function get_logs(){
+      $.ajax({
+        url : '/frida_logs/?hash={{ hash }}&stream=1', 
+        type : "GET",
+        dataType: "json", 
+        success : function(json){ 
+            $('#logs').text(json.data);
+        },
+        error : function(xhr, ajaxOptions, thrownError) {
+          console.log(xhr.responseText);
+        }
+      });
+}
+get_logs();
+setInterval( function () {
+      get_logs();
+}, 3000 );
 
 // Touch Events
 var touch = "off";
@@ -705,8 +739,10 @@ $("#logstream").click(function() {
 }); 
 // Frida logs
 $("#fd_log").click(function() {
-    print_status("Streaming Frida logs");
-    setTimeout(function(){ window.open(document.location.origin + '/frida_logs/?hash={{ hash }}&package={{ package }}', '_blank');}, 100);   
+    $('#tabnav a[href="#frida_logs"]').tab('show');
+    // print_status("Streaming Frida logs");
+    // setTimeout(function(){ window.open(document.location.origin + '/frida_logs/?hash={{ hash }}&package={{ package }}', '_blank');}, 100);   
+    document.body.scrollTop = document.documentElement.scrollTop = 0;
     return false;  
 });
 
@@ -726,6 +762,7 @@ $("#loadscript").click(function() {
 $("#frida_spawn").click(function() {
     print_status("Instrumenting app with frida");
     $('#fd_log').removeAttr('disabled');
+    $('#frida-tab').removeClass('disabled');
     var default_hooks = [];
     $.each($("input[name='default_hooks']:checked"), function(){            
         default_hooks.push($(this).val());

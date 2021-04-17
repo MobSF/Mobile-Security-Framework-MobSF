@@ -95,8 +95,12 @@ def dynamic_analyzer(request, checksum, api=False):
         if not package:
             return print_n_send_error_response(
                 request,
-                'Invalid Parameters',
+                'Cannot get package name from checksum',
                 api)
+        if api:
+            reinstall = request.POST.get('re_install', '1')
+        else:
+            reinstall = request.GET.get('re_install', '1')
         try:
             identifier = get_device()
         except Exception:
@@ -149,7 +153,10 @@ def dynamic_analyzer(request, checksum, api=False):
         screen_width, screen_height = env.get_screen_res()
         apk_path = Path(settings.UPLD_DIR) / checksum / f'{checksum}.apk'
         # Install APK
-        status, output = env.install_apk(apk_path.as_posix(), package)
+        status, output = env.install_apk(
+            apk_path.as_posix(),
+            package,
+            reinstall)
         if not status:
             # Unset Proxy
             env.unset_global_proxy()
