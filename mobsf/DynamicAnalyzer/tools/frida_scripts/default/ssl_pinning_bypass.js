@@ -7,7 +7,7 @@ Java.perform(function() {
             var TrustManagerImpl = Java.use('com.android.org.conscrypt.TrustManagerImpl');
             TrustManagerImpl.checkTrustedRecursive.implementation = function(certs, host, clientAuth, untrustedChain, trustedChain, used) {
                 send('[SSL Pinning Bypass] checkTrustedRecursive() bypassed');
-                return Java.use("java.util.ArrayList").$new();
+                return Java.use('java.util.ArrayList').$new();
             }
         }catch (err) {
             send('[SSL Pinning Bypass] TrustManagerImpl.checkTrustedRecursive() not found');
@@ -45,13 +45,13 @@ Java.perform(function() {
     }
     // 3rd Party Pinning
     try{
-        var OkHttpClient = Java.use("com.squareup.okhttp.OkHttpClient");
+        var OkHttpClient = Java.use('com.squareup.okhttp.OkHttpClient');
         OkHttpClient.setCertificatePinner.implementation = function(certificatePinner){
             send('[SSL Pinning Bypass] OkHttpClient.setCertificatePinner() bypassed');
             return this;
         };
-        // Invalidate the certificate pinnet checks (if "setCertificatePinner" was called before the previous invalidation)
-        var CertificatePinner = Java.use("com.squareup.okhttp.CertificatePinner");
+        // Invalidate the certificate pinnet checks (if 'setCertificatePinner' was called before the previous invalidation)
+        var CertificatePinner = Java.use('com.squareup.okhttp.CertificatePinner');
         CertificatePinner.check.overload('java.lang.String', '[Ljava.security.cert.Certificate;').implementation = function(p0, p1){
             send('[SSL Pinning Bypass] CertificatePinner.check() 1 bypassed');
             return;
@@ -74,7 +74,7 @@ Java.perform(function() {
     }
     try {
         // https://gist.github.com/cubehouse/56797147b5cb22768b500f25d3888a22
-        var dataTheorem = Java.use("com.datatheorem.android.trustkit.pinning.OkHostnameVerifier");
+        var dataTheorem = Java.use('com.datatheorem.android.trustkit.pinning.OkHostnameVerifier');
         dataTheorem.verify.overload('java.lang.String', 'javax.net.ssl.SSLSession').implementation = function (str) {
             send('[SSL Pinning Bypass] DataTheorem trustkit.pinning.OkHostnameVerifier.verify() 1 bypassed for ' + str);
             return true;
@@ -99,7 +99,7 @@ Java.perform(function() {
         var SSLCertificateChecker = Java.use('nl.xservices.plugins.SSLCertificateChecker');
         SSLCertificateChecker.execute.overload('java.lang.String', 'org.json.JSONArray', 'org.apache.cordova.CallbackContext').implementation = function (action, args, callbackContext) {
             send('[SSL Pinning Bypass] Apache Cordova - SSLCertificateChecker.execute() bypassed');
-            callbackContext.success("CONNECTION_SECURE");
+            callbackContext.success('CONNECTION_SECURE');
             return;
         };
     } catch(err) {
@@ -114,5 +114,130 @@ Java.perform(function() {
         };
     } catch(err) {
         send('[SSL Pinning Bypass] Wultra CertStore.validateFingerprint not found');
+    }
+
+    /* Based on https://blog.csdn.net/ALakers/article/details/107642166
+    WebView SSL Error Bypass */
+    try {
+        var WebViewClient = Java.use('android.webkit.WebViewClient');
+        WebViewClient.onReceivedSslError.implementation = function(webView, sslErrorHandler, sslError) {
+            send('WebViewClient onReceivedSslError bypassed');
+            sslErrorHandler.proceed();
+            return;
+        };
+        WebViewClient.onReceivedError.overload('android.webkit.WebView', 'int', 'java.lang.String', 'java.lang.String').implementation = function(a, b, c, d) {
+            send('WebViewClient onReceivedError bypassed');
+            return;
+        };
+        WebViewClient.onReceivedError.overload('android.webkit.WebView', 'android.webkit.WebResourceRequest', 'android.webkit.WebResourceError').implementation = function() {
+            send('WebViewClient onReceivedError bypassed');
+            return;
+        };
+    } catch(err) {
+        send('[SSL Pinning Bypass] WebViewClient not found');
+    }
+    /*** HttpsURLConnection ***/
+    try {
+        var HttpsURLConnection = Java.use('javax.net.ssl.HttpsURLConnection');
+        HttpsURLConnection.setDefaultHostnameVerifier.implementation = function(hostnameVerifier) {
+            send('[SSL Pinning Bypass] HttpsURLConnection.setDefaultHostnameVerifier bypassed');
+            return null;
+        };
+        HttpsURLConnection.setSSLSocketFactory.implementation = function(SSLSocketFactory) {
+            send('[SSL Pinning Bypass] HttpsURLConnection.setSSLSocketFactory bypassed');
+            return null;
+        };
+        HttpsURLConnection.setHostnameVerifier.implementation = function(hostnameVerifier) {
+            send('[SSL Pinning Bypass] HttpsURLConnection.setHostnameVerifier bypassed');
+            return null;
+        };
+    } catch(err) {
+        send('[SSL Pinning Bypass] HttpsURLConnection not found');
+    }
+    try {
+        /* SSLContext */
+        var X509TrustManager = Java.use('javax.net.ssl.X509TrustManager');
+        var HostnameVerifier = Java.use('javax.net.ssl.HostnameVerifier');
+        var SSLContext = Java.use('javax.net.ssl.SSLContext');
+        var TrustManager;
+        try {
+            TrustManager = Java.registerClass({
+                name: 'fake.TrustManager',
+                implements: [X509TrustManager],
+                methods: {
+                    checkClientTrusted: function(chain, authType) {},
+                    checkServerTrusted: function(chain, authType) {},
+                    getAcceptedIssuers: function() {
+                        return [];
+                    }
+                }
+            });
+        } catch (e) {
+        }
+
+        var EmptySSLFactory;
+        try {
+            var TrustManagers = [TrustManager.$new()];
+            var TLS_SSLContext = SSLContext.getInstance('TLS');
+            TLS_SSLContext.init(null, TrustManagers, null);
+            EmptySSLFactory = TLS_SSLContext.getSocketFactory();
+
+            var SSLContext_init = SSLContext.init.overload('[Ljavax.net.ssl.KeyManager;', '[Ljavax.net.ssl.TrustManager;', 'java.security.SecureRandom');
+            SSLContext_init.implementation = function(keyManager, trustManager, secureRandom) {
+                SSLContext_init.call(this, null, TrustManagers, null);
+                send('[SSL Pinning Bypass] SSLContext.init() bypass');
+            };
+        } catch (e) {
+            send('[SSL Pinning Bypass] SSLContext.init() not found');
+        }
+        /* Xutils */
+        var TrustHostnameVerifier;
+        try {
+            TrustHostnameVerifier = Java.registerClass({
+                name: 'fake.TrustHostnameVerifier',
+                implements: [HostnameVerifier],
+                method: {
+                    verify: function(hostname, session) {
+                        return true;
+                    }
+                }
+            });
+        } catch (e) {
+        }
+        var RequestParams = Java.use('org.xutils.http.RequestParams');
+        RequestParams.setSslSocketFactory.implementation = function(sslSocketFactory) {
+            sslSocketFactory = EmptySSLFactory;
+            return null;
+        }
+        RequestParams.setHostnameVerifier.implementation = function(hostnameVerifier) {
+            hostnameVerifier = TrustHostnameVerifier.$new();
+            return null;
+        }
+    } catch (e) {
+        send('[SSL Pinning Bypass] Xutils not found');
+    }
+    /* httpclientandroidlib */
+    try {
+        var AbstractVerifier = Java.use('ch.boye.httpclientandroidlib.conn.ssl.AbstractVerifier');
+        AbstractVerifier.verify.overload('java.lang.String', '[Ljava.lang.String', '[Ljava.lang.String', 'boolean').implementation = function() {
+            send('[SSL Pinning Bypass] httpclientandroidlib AbstractVerifier bypassed');
+            return null;
+        }
+    } catch (e) {
+        send('[SSL Pinning Bypass] httpclientandroidlib not found');
+    }
+    /* cronet */
+    try {
+        var netBuilder = Java.use('org.chromium.net.CronetEngine$Builder');
+        netBuilder.enablePublicKeyPinningBypassForLocalTrustAnchors.implementation = function(arg) {
+            var ret = netBuilder.enablePublicKeyPinningBypassForLocalTrustAnchors.call(this, true);
+            return ret;
+        };
+        netBuilder.addPublicKeyPins.implementation = function(hostName, pinsSha256, includeSubdomains, expirationDate) {
+            return this;
+        };
+        send('[SSL Pinning Bypass] Cronet Public Key pinning bypassed');
+    } catch (err) {
+        send('[SSL Pinning Bypass] Cronet not found');
     }
 }, 0);

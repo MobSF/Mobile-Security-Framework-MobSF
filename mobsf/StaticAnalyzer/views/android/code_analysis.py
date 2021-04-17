@@ -21,7 +21,6 @@ logger = logging.getLogger(__name__)
 def code_analysis(app_dir, typ, manifest_file):
     """Perform the code analysis."""
     try:
-        logger.info('Code Analysis Started')
         root = Path(settings.BASE_DIR) / 'StaticAnalyzer' / 'views'
         code_rules = root / 'android' / 'rules' / 'android_rules.yaml'
         api_rules = root / 'android' / 'rules' / 'android_apis.yaml'

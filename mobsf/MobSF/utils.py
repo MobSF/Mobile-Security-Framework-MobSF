@@ -347,7 +347,7 @@ def get_adb():
     try:
         adb_loc = None
         adb_msg = ('Set adb path, ADB_BINARY in'
-                   f'{get_config_loc()}'
+                   f' {get_config_loc()}'
                    ' with same adb binary used'
                    ' by Genymotion VM/Emulator AVD.')
         global ADB_PATH
