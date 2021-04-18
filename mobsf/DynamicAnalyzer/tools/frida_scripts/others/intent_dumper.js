@@ -4,7 +4,7 @@ Java.perform(function () {
     act.getIntent.overload().implementation = function () {
       var intent = this.getIntent()
       var cp = intent.getComponent()
-      send("Starting " + cp.getPackageName() + "/" + cp.getClassName())
+      send("[Intent Dumper] Starting " + cp.getPackageName() + "/" + cp.getClassName())
       var ext = intent.getExtras();
       if (ext) {
         var keys = ext.keySet()
@@ -12,8 +12,8 @@ Java.perform(function () {
         while (iterator.hasNext()) {
           var k = iterator.next().toString()
           var v = ext.get(k)
-          console.log("\t" + v.getClass().getName())
-          console.log("\t" + k + ' : ' + v.toString())
+          send("\t" + v.getClass().getName())
+          send("\t" + k + ' : ' + v.toString())
         }
       }
     return intent;

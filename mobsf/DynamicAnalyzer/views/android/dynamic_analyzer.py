@@ -4,8 +4,10 @@ import logging
 import os
 import time
 from pathlib import Path
+from json import dump
 
 from shelljob import proc
+
 
 from django.http import (HttpResponseRedirect,
                          StreamingHttpResponse)
@@ -61,11 +63,20 @@ def dynamic_analysis(request, api=False):
                    f'{get_config_loc()}')
             return print_n_send_error_response(request, msg, api)
         proxy_ip = get_proxy_ip(identifier)
+        try:
+            env = Environment(identifier)
+            device_packages = env.get_device_packages()
+            pkg_file = Path(settings.DWD_DIR) / 'packages.json'
+            with pkg_file.open('w', encoding='utf-8') as target:
+                dump(device_packages, target)
+        except Exception:
+            device_packages = {}
         context = {'apps': scan_apps,
                    'identifier': identifier,
                    'proxy_ip': proxy_ip,
                    'proxy_port': settings.PROXY_PORT,
                    'settings_loc': get_config_loc(),
+                   'device_packages': device_packages,
                    'title': 'MobSF Dynamic Analysis',
                    'version': settings.MOBSF_VER}
         if api:
@@ -84,6 +95,13 @@ def dynamic_analyzer(request, checksum, api=False):
     logger.info('Creating Dynamic Analysis Environment')
     try:
         no_device = False
+        identifier = None
+        if api:
+            reinstall = request.POST.get('re_install', '1')
+            install = request.POST.get('install', '1')
+        else:
+            reinstall = request.GET.get('re_install', '1')
+            install = request.GET.get('install', '1')
         if not is_md5(checksum):
             # We need this check since checksum is not validated
             # in REST API
@@ -97,10 +115,6 @@ def dynamic_analyzer(request, checksum, api=False):
                 request,
                 'Cannot get package name from checksum',
                 api)
-        if api:
-            reinstall = request.POST.get('re_install', '1')
-        else:
-            reinstall = request.GET.get('re_install', '1')
         try:
             identifier = get_device()
         except Exception:
@@ -151,21 +165,22 @@ def dynamic_analyzer(request, checksum, api=False):
         env.start_clipmon()
         # Get Screen Resolution
         screen_width, screen_height = env.get_screen_res()
-        apk_path = Path(settings.UPLD_DIR) / checksum / f'{checksum}.apk'
-        # Install APK
-        status, output = env.install_apk(
-            apk_path.as_posix(),
-            package,
-            reinstall)
-        if not status:
-            # Unset Proxy
-            env.unset_global_proxy()
-            msg = (f'This APK cannot be installed. Is this APK '
-                   f'compatible the Android VM/Emulator?\n{output}')
-            return print_n_send_error_response(
-                request,
-                msg,
-                api)
+        if install == '1':
+            # Install APK
+            apk_path = Path(settings.UPLD_DIR) / checksum / f'{checksum}.apk'
+            status, output = env.install_apk(
+                apk_path.as_posix(),
+                package,
+                reinstall)
+            if not status:
+                # Unset Proxy
+                env.unset_global_proxy()
+                msg = (f'This APK cannot be installed. Is this APK '
+                       f'compatible the Android VM/Emulator?\n{output}')
+                return print_n_send_error_response(
+                    request,
+                    msg,
+                    api)
         logger.info('Testing Environment is Ready!')
         context = {'screen_witdth': screen_width,
                    'screen_height': screen_height,

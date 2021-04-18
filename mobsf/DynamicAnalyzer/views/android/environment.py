@@ -336,21 +336,24 @@ class Environment:
 
     def android_component(self, bin_hash, comp):
         """Get APK Components."""
-        anddb = StaticAnalyzerAndroid.objects.get(MD5=bin_hash)
-        resp = []
-        if comp == 'activities':
-            resp = python_list(anddb.ACTIVITIES)
-        elif comp == 'receivers':
-            resp = python_list(anddb.RECEIVERS)
-        elif comp == 'providers':
-            resp = python_list(anddb.PROVIDERS)
-        elif comp == 'services':
-            resp = python_list(anddb.SERVICES)
-        elif comp == 'libraries':
-            resp = python_list(anddb.LIBRARIES)
-        elif comp == 'exported_activities':
-            resp = python_list(anddb.EXPORTED_ACTIVITIES)
-        return '\n'.join(resp)
+        try:
+            anddb = StaticAnalyzerAndroid.objects.get(MD5=bin_hash)
+            resp = []
+            if comp == 'activities':
+                resp = python_list(anddb.ACTIVITIES)
+            elif comp == 'receivers':
+                resp = python_list(anddb.RECEIVERS)
+            elif comp == 'providers':
+                resp = python_list(anddb.PROVIDERS)
+            elif comp == 'services':
+                resp = python_list(anddb.SERVICES)
+            elif comp == 'libraries':
+                resp = python_list(anddb.LIBRARIES)
+            elif comp == 'exported_activities':
+                resp = python_list(anddb.EXPORTED_ACTIVITIES)
+            return '\n'.join(resp)
+        except Exception:
+            return 'Static Analysis not done.'
 
     def get_environment(self):
         """Identify the environment."""
@@ -398,6 +401,31 @@ class Environment:
             'getprop',
             'ro.product.cpu.abi'], True)
         return out.decode('utf-8').rstrip()
+
+    def get_device_packages(self):
+        """Get all packages from device."""
+        device_packages = {}
+        out = self.adb_command([
+            'pm',
+            'list',
+            'packages',
+            '-f',
+            '-3'], True)
+        for pkg_str in out.decode('utf-8').rstrip().split():
+            path_pkg = pkg_str.split('package:', 1)[1].strip()
+            parts = path_pkg.split('.apk=', 1)
+            apk = f'{parts[0]}.apk'
+            pkg = parts[1]
+            if pkg == 'opensecurity.clipdump':
+                # Do not include MobSF agent
+                continue
+            out1 = self.adb_command([
+                'md5sum',
+                '-b',
+                apk], True)
+            md5 = out1.decode('utf-8').strip()
+            device_packages[md5] = (pkg, apk)
+        return device_packages
 
     def system_check(self, runtime):
         """Check if /system is writable."""

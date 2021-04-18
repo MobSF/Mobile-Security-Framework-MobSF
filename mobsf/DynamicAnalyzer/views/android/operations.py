@@ -7,6 +7,7 @@ import random
 import re
 import subprocess
 import threading
+from pathlib import Path
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -29,12 +30,19 @@ logger = logging.getLogger(__name__)
 # Helpers
 
 def get_package_name(checksum):
-    """Get Package NAme from DB."""
+    """Get Package Name from DB or Device."""
     try:
         static_android_db = StaticAnalyzerAndroid.objects.get(
             MD5=checksum)
         return static_android_db.PACKAGE_NAME
     except Exception:
+        pkg_file = Path(settings.DWD_DIR) / 'packages.json'
+        if not pkg_file.exists():
+            return None
+        with pkg_file.open(encoding='utf-8') as src:
+            packages = json.load(src)
+        if packages.get(checksum):
+            return packages[checksum][0]
         return None
 
 

@@ -581,6 +581,14 @@ term.init();
 {% endif %}
 
 
+// Disable Activity Tester and Exported Activity Tester for on Device only apps
+var loc = location.href;
+if (loc.includes('&install=0')){
+    $('#expactt').hide();
+    $('#actt').hide();
+}
+
+
 
 //Print Status
 function print_status(message){
