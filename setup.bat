@@ -51,7 +51,7 @@ where python >nul 2>&1 && (
   echo [INSTALL] Using venv
   rmdir "venv" /q /s >nul 2>&1
   python -m venv ./venv
-  .\venv\Scripts\activate
+  .\venv\Scripts\activate || true
   python -m pip install --upgrade pip
 
   set LIB=C:\Program Files\OpenSSL-Win64\lib;%LIB%
