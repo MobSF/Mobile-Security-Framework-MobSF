@@ -14,6 +14,8 @@ from django.conf import settings
 
 from OpenSSL import crypto
 
+from frida import __version__ as frida_version
+
 from mobsf.DynamicAnalyzer.tools.webproxy import (
     get_ca_file,
     start_proxy,
@@ -34,7 +36,6 @@ from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 
 logger = logging.getLogger(__name__)
 ANDROID_API_SUPPORTED = 29
-FRIDA_VERSION = '14.2.15'
 
 
 class Environment:
@@ -45,7 +46,7 @@ class Environment:
         else:
             self.identifier = get_device()
         self.tools_dir = settings.TOOLS_DIR
-        self.frida_str = f'MobSF-Frida-{FRIDA_VERSION}'.encode('utf-8')
+        self.frida_str = f'MobSF-Frida-{frida_version}'.encode('utf-8')
         self.xposed_str = b'MobSF-Xposed'
 
     def wait(self, sec):
@@ -616,8 +617,8 @@ class Environment:
                          ' or Android Studio Emulator'
                          ' instance is running')
             return
-        frida_bin = f'frida-server-{FRIDA_VERSION}-android-{frida_arch}'
-        stat = fserver.update_frida_server(frida_arch, FRIDA_VERSION)
+        frida_bin = f'frida-server-{frida_version}-android-{frida_arch}'
+        stat = fserver.update_frida_server(frida_arch, frida_version)
         if not stat:
             msg = ('Cannot download frida-server binary. You will need'
                    f' {frida_bin} in {settings.DWD_DIR} for '

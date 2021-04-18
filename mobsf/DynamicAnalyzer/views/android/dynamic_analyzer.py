@@ -40,6 +40,7 @@ def dynamic_analysis(request, api=False):
     """Android Dynamic Analysis Entry point."""
     try:
         scan_apps = []
+        device_packages = {}
         apks = StaticAnalyzerAndroid.objects.filter(
             APP_TYPE='apk')
         for apk in reversed(apks):
@@ -64,13 +65,14 @@ def dynamic_analysis(request, api=False):
             return print_n_send_error_response(request, msg, api)
         proxy_ip = get_proxy_ip(identifier)
         try:
-            env = Environment(identifier)
-            device_packages = env.get_device_packages()
-            pkg_file = Path(settings.DWD_DIR) / 'packages.json'
-            with pkg_file.open('w', encoding='utf-8') as target:
-                dump(device_packages, target)
+            if identifier:
+                env = Environment(identifier)
+                device_packages = env.get_device_packages()
+                pkg_file = Path(settings.DWD_DIR) / 'packages.json'
+                with pkg_file.open('w', encoding='utf-8') as target:
+                    dump(device_packages, target)
         except Exception:
-            device_packages = {}
+            pass
         context = {'apps': scan_apps,
                    'identifier': identifier,
                    'proxy_ip': proxy_ip,
