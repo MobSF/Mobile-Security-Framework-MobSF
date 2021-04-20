@@ -105,6 +105,9 @@ if settings.API_ONLY == '0':
             dz.httptools_start,
             name='httptools'),
         url(r'^logcat/$', dz.logcat),
+        url(r'^static_scan/(?P<checksum>[0-9a-f]{32})$',
+            dz.trigger_static_analysis,
+            name='static_scan'),
         # Android Operations
         url(r'^mobsfy/$', operations.mobsfy),
         url(r'^screenshot/$', operations.take_screenshot),

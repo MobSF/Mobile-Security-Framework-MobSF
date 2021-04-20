@@ -31,6 +31,7 @@ from mobsf.MobSF.utils import (
     is_md5,
     print_n_send_error_response,
 )
+from mobsf.MobSF.views.scanning import add_to_recent_scan
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 
 logger = logging.getLogger(__name__)
@@ -96,7 +97,6 @@ def dynamic_analyzer(request, checksum, api=False):
     """Android Dynamic Analyzer Environment."""
     logger.info('Creating Dynamic Analysis Environment')
     try:
-        no_device = False
         identifier = None
         if api:
             reinstall = request.POST.get('re_install', '1')
@@ -120,8 +120,8 @@ def dynamic_analyzer(request, checksum, api=False):
         try:
             identifier = get_device()
         except Exception:
-            no_device = True
-        if no_device or not identifier:
+            pass
+        if not identifier:
             msg = ('Is the android instance running? MobSF cannot'
                    ' find android instance identifier. '
                    'Please run an android instance and refresh'
@@ -266,3 +266,45 @@ def logcat(request, api=False):
         logger.exception('Logcat Streaming')
         err = 'Error in Logcat streaming'
         return print_n_send_error_response(request, err, api)
+
+
+def trigger_static_analysis(request, checksum):
+    """On device APK Static Analysis."""
+    try:
+        identifier = None
+        if not is_md5(checksum):
+            return print_n_send_error_response(
+                request,
+                'Invalid MD5')
+        package = get_package_name(checksum)
+        if not package:
+            return print_n_send_error_response(
+                request,
+                'Cannot get package name from checksum')
+        try:
+            identifier = get_device()
+        except Exception:
+            pass
+        if not identifier:
+            err = 'Cannot connect to Android Runtime'
+            return print_n_send_error_response(request, err)
+        env = Environment(identifier)
+        apk_file = env.get_apk(checksum, package)
+        if not apk_file:
+            err = 'Failed to download APK file'
+            return print_n_send_error_response(request, err)
+        data = {
+            'analyzer': 'static_analyzer',
+            'status': 'success',
+            'hash': checksum,
+            'scan_type': 'apk',
+            'file_name': f'{package}.apk',
+        }
+        add_to_recent_scan(data)
+        return HttpResponseRedirect(
+            f'/static_analyzer/?name={package}.apk'
+            f'&checksum={checksum}&type=apk')
+    except Exception:
+        msg = 'On device APK Static Analysis'
+        logger.exception(msg)
+        return print_n_send_error_response(request, msg)

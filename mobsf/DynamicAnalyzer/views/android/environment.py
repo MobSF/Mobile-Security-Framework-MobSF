@@ -428,6 +428,32 @@ class Environment:
             device_packages[md5] = (pkg, apk)
         return device_packages
 
+    def get_apk(self, checksum, package):
+        """Download APK from device."""
+        try:
+            out_dir = os.path.join(settings.UPLD_DIR, checksum + '/')
+            if not os.path.exists(out_dir):
+                os.makedirs(out_dir)
+            out_file = os.path.join(out_dir, f'{checksum}.apk')
+            if is_file_exists(out_file):
+                return out_file
+            out = self.adb_command([
+                'pm',
+                'path',
+                package], True)
+            out = out.decode('utf-8').rstrip()
+            path = out.split('package:', 1)[1].strip()
+            logger.info('Downloading APK')
+            self.adb_command([
+                'pull',
+                path,
+                out_file,
+            ])
+            if is_file_exists(out_file):
+                return out_file
+        except Exception:
+            return False
+
     def system_check(self, runtime):
         """Check if /system is writable."""
         try:

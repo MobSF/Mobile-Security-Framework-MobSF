@@ -59,6 +59,18 @@ def static_analysis_test():
                 logger.error('Performing Static Analysis: %s', scan_url)
                 return True
         logger.info('[OK] Static Analysis test completed')
+        # Testing Dynamic static_scan
+        logger.info('Running On-Device Static Analysis test')
+        scan_url = '/static_scan/3a552566097a8de588b8184b059b0158'
+        resp = http_client.get(scan_url, follow=True)
+        if 'Error' not in resp.content.decode('utf-8'):
+            logger.info(
+                '[OK] On-Device Static Analysis Complete: %s',
+                scan_url)
+        else:
+            logger.error('On-Device Static Analysis: %s', scan_url)
+            return True
+        logger.info('[OK] On-Device Static Analysis test completed')
         logger.info('Running PDF Generation Test')
         if platform.system() in ['Darwin', 'Linux']:
             pdfs = [
