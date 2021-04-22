@@ -207,7 +207,10 @@ class Checksec:
         return self.macho.has_rpath
 
     def has_code_signature(self):
-        return self.macho.code_signature.data_size > 0
+        try:
+            return self.macho.code_signature.data_size > 0
+        except Exception:
+            return False
 
     def is_encrypted(self):
         return bool(self.macho.encryption_info.crypt_id)
