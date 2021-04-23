@@ -9,6 +9,7 @@ import platform
 import re
 import shutil
 import signal
+import string
 import subprocess
 import stat
 import sqlite3
@@ -551,3 +552,17 @@ def get_http_tools_url(req):
     scheme = req.scheme
     ip = req.get_host().split(':')[0]
     return f'{scheme}://{ip}:{str(settings.PROXY_PORT)}'
+
+
+def clean_filename(filename, replace=' '):
+    if platform.system() == 'Windows':
+        whitelist = f'-_.() {string.ascii_letters}{string.digits}'
+        # replace spaces
+        for r in replace:
+            filename = filename.replace(r, '_')
+        # keep only valid ascii chars
+        cleaned_filename = unicodedata.normalize(
+            'NFKD', filename).encode('ASCII', 'ignore').decode()
+        # keep only whitelisted chars
+        return ''.join(c for c in cleaned_filename if c in whitelist)
+    return filename
