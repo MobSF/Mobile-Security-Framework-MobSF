@@ -14,6 +14,8 @@ from django.conf import settings
 
 from OpenSSL import crypto
 
+from frida import __version__ as frida_version
+
 from mobsf.DynamicAnalyzer.tools.webproxy import (
     get_ca_file,
     start_proxy,
@@ -34,7 +36,6 @@ from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 
 logger = logging.getLogger(__name__)
 ANDROID_API_SUPPORTED = 29
-FRIDA_VERSION = '14.2.14'
 
 
 class Environment:
@@ -45,7 +46,7 @@ class Environment:
         else:
             self.identifier = get_device()
         self.tools_dir = settings.TOOLS_DIR
-        self.frida_str = f'MobSF-Frida-{FRIDA_VERSION}'.encode('utf-8')
+        self.frida_str = f'MobSF-Frida-{frida_version}'.encode('utf-8')
         self.xposed_str = b'MobSF-Xposed'
 
     def wait(self, sec):
@@ -113,9 +114,9 @@ class Environment:
             return True
         return False
 
-    def install_apk(self, apk_path, package):
+    def install_apk(self, apk_path, package, reinstall):
         """Install APK and Verify Installation."""
-        if self.is_package_installed(package, ''):
+        if self.is_package_installed(package, '') and reinstall != '0':
             logger.info('Removing existing installation')
             # Remove existing installation'
             self.adb_command(['uninstall', package], False, True)
@@ -127,7 +128,7 @@ class Environment:
             'verifier_verify_adb_installs',
             '0',
         ], True)
-        logger.info('Installing APK')
+        logger.info('Installing APK - %s', package)
         # Install APK
         out = self.adb_command([
             'install',
@@ -336,21 +337,24 @@ class Environment:
 
     def android_component(self, bin_hash, comp):
         """Get APK Components."""
-        anddb = StaticAnalyzerAndroid.objects.get(MD5=bin_hash)
-        resp = []
-        if comp == 'activities':
-            resp = python_list(anddb.ACTIVITIES)
-        elif comp == 'receivers':
-            resp = python_list(anddb.RECEIVERS)
-        elif comp == 'providers':
-            resp = python_list(anddb.PROVIDERS)
-        elif comp == 'services':
-            resp = python_list(anddb.SERVICES)
-        elif comp == 'libraries':
-            resp = python_list(anddb.LIBRARIES)
-        elif comp == 'exported_activities':
-            resp = python_list(anddb.EXPORTED_ACTIVITIES)
-        return '\n'.join(resp)
+        try:
+            anddb = StaticAnalyzerAndroid.objects.get(MD5=bin_hash)
+            resp = []
+            if comp == 'activities':
+                resp = python_list(anddb.ACTIVITIES)
+            elif comp == 'receivers':
+                resp = python_list(anddb.RECEIVERS)
+            elif comp == 'providers':
+                resp = python_list(anddb.PROVIDERS)
+            elif comp == 'services':
+                resp = python_list(anddb.SERVICES)
+            elif comp == 'libraries':
+                resp = python_list(anddb.LIBRARIES)
+            elif comp == 'exported_activities':
+                resp = python_list(anddb.EXPORTED_ACTIVITIES)
+            return '\n'.join(resp)
+        except Exception:
+            return 'Static Analysis not done.'
 
     def get_environment(self):
         """Identify the environment."""
@@ -398,6 +402,57 @@ class Environment:
             'getprop',
             'ro.product.cpu.abi'], True)
         return out.decode('utf-8').rstrip()
+
+    def get_device_packages(self):
+        """Get all packages from device."""
+        device_packages = {}
+        out = self.adb_command([
+            'pm',
+            'list',
+            'packages',
+            '-f',
+            '-3'], True)
+        for pkg_str in out.decode('utf-8').rstrip().split():
+            path_pkg = pkg_str.split('package:', 1)[1].strip()
+            parts = path_pkg.split('.apk=', 1)
+            apk = f'{parts[0]}.apk'
+            pkg = parts[1]
+            if pkg == 'opensecurity.clipdump':
+                # Do not include MobSF agent
+                continue
+            out1 = self.adb_command([
+                'md5sum',
+                '-b',
+                apk], True)
+            md5 = out1.decode('utf-8').strip()
+            device_packages[md5] = (pkg, apk)
+        return device_packages
+
+    def get_apk(self, checksum, package):
+        """Download APK from device."""
+        try:
+            out_dir = os.path.join(settings.UPLD_DIR, checksum + '/')
+            if not os.path.exists(out_dir):
+                os.makedirs(out_dir)
+            out_file = os.path.join(out_dir, f'{checksum}.apk')
+            if is_file_exists(out_file):
+                return out_file
+            out = self.adb_command([
+                'pm',
+                'path',
+                package], True)
+            out = out.decode('utf-8').rstrip()
+            path = out.split('package:', 1)[1].strip()
+            logger.info('Downloading APK')
+            self.adb_command([
+                'pull',
+                path,
+                out_file,
+            ])
+            if is_file_exists(out_file):
+                return out_file
+        except Exception:
+            return False
 
     def system_check(self, runtime):
         """Check if /system is writable."""
@@ -588,8 +643,8 @@ class Environment:
                          ' or Android Studio Emulator'
                          ' instance is running')
             return
-        frida_bin = f'frida-server-{FRIDA_VERSION}-android-{frida_arch}'
-        stat = fserver.update_frida_server(frida_arch, FRIDA_VERSION)
+        frida_bin = f'frida-server-{frida_version}-android-{frida_arch}'
+        stat = fserver.update_frida_server(frida_arch, frida_version)
         if not stat:
             msg = ('Cannot download frida-server binary. You will need'
                    f' {frida_bin} in {settings.DWD_DIR} for '

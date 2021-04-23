@@ -308,6 +308,7 @@ else:
         'org/spongycastle', 'org/bouncycastle',
         'com/amazon/identity/', 'io/fabric/sdk',
         'com/instabug', 'com/crashlytics/android',
+        'kotlinx/', 'kotlin/',
     }
 
     # ==============================================

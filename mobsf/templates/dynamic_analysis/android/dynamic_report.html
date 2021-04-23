@@ -378,13 +378,20 @@
             </p>
              <div class="table-responsive">
                     <table class="table table-bordered table-hover table-striped">
-      
+                      <thead>
+                        <tr>
+                          <th>SCREENSHOT</th>
+                          <th>ACTIVITY</th>
+                        </tr>
+                     </thead>
+                     <tbody>
                     {% for img, desc in exported_activity_tester.items %}
                         <tr>
                           <td><img alt="{{desc}}" src="../download/{{ hash }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
                         <td>{{ desc }}</td>
                         </tr>
                     {% endfor %}
+                    </tbody>
                   </table>
               </div>
           </div>
@@ -408,12 +415,20 @@
              <p>
              <div class="table-responsive">
                   <table class="table table-bordered table-hover table-striped">
+                    <thead>
+                      <tr>
+                        <th>SCREENSHOT</th>
+                        <th>ACTIVITY</th>
+                      </tr>
+                    </thead>
+                    <tbody>
                        {% for img, desc in activity_tester.items %}
                           <tr>
                             <td><img alt="{{desc}}" src="../download/{{ hash }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
                           <td>{{ desc }}</td>
                           </tr>
                       {% endfor %}
+                    </tbody>
                     </table>
                 </div>
           </div>
@@ -626,9 +641,16 @@
              </p>
               <div class="table-responsive">
                     <table class="table table-bordered table-hover table-striped">
+                      <thead>
+                        <tr>
+                          <th>FILES</th>
+                        </tr>
+                      </thead>
+                      <tbody>
                      {% for file in sqlite %}
-                     <tr><td><a href="../dynamic_view_file/?file={{file|key:"file"}}&amp;hash={{hash}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td><tr>
+                     <tr><td><a href="../dynamic_view_file/?file={{file|key:"file"}}&amp;hash={{hash}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td></tr>
                     {% endfor %}
+                     </tbody>
                     </table>
               </div>
           </div>
@@ -651,9 +673,16 @@
              </p>
                <div class="table-responsive">
                     <table class="table table-bordered table-hover table-striped">
+                      <thead>
+                        <tr>
+                          <th>FILES</th>
+                        </tr>
+                      </thead>
+                      <tbody>
                      {% for file in xml %}
-                     <tr><td><a href="../dynamic_view_file/?file={{file|key:"file"}}&amp;hash={{hash}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td><tr>
+                     <tr><td><a href="../dynamic_view_file/?file={{file|key:"file"}}&amp;hash={{hash}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td></tr>
                     {% endfor %}
+                     </tbody>
                     </table>
               </div>
             </div>
@@ -676,9 +705,16 @@
              </p>
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover table-striped">
+                      <thead>
+                        <tr>
+                          <th>FILES</th>
+                        </tr>
+                      </thead>
+                      <tbody>
                      {% for file in others %}
-                     <tr><td><a href="../dynamic_view_file/?file={{file|key:"file"}}&amp;hash={{hash}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td><tr>
+                     <tr><td><a href="../dynamic_view_file/?file={{file|key:"file"}}&amp;hash={{hash}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td></tr>
                     {% endfor %}
+                    </tbody>
                     </table>
                 </div>
             </div>
