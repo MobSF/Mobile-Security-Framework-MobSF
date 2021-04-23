@@ -253,7 +253,8 @@ def apimon_analysis(app_dir):
             to_decode = None
             if (api['class'] == 'android.util.Base64'
                     and (api['method'] == 'encodeToString')):
-                to_decode = api['returnValue'].replace('"', '')
+                if api.get('returnValue'):
+                    to_decode = api['returnValue'].replace('"', '')
             elif (api['class'] == 'android.util.Base64'
                   and api['method'] == 'decode'):
                 to_decode = api['arguments'][0]

@@ -1,4 +1,3 @@
-# -*- coding: utf_8 -*-
 """Perform Analysis on Dynamic Analysis Data."""
 import io
 import logging
@@ -9,6 +8,7 @@ import tarfile
 from pathlib import Path
 
 from mobsf.MobSF.utils import (
+    clean_filename,
     is_file_exists,
     is_pipe_or_link,
     python_list,
@@ -159,6 +159,13 @@ def get_log_data(apk_dir, package):
             'traffic': traffic}
 
 
+def safe_paths(tar_meta):
+    """Safe filenames in windows."""
+    for fh in tar_meta:
+        fh.name = clean_filename(fh.name)
+        yield fh
+
+
 def get_app_files(apk_dir, md5_hash, package):
     """Get files from device."""
     logger.info('Getting app files')
@@ -173,7 +180,7 @@ def get_app_files(apk_dir, md5_hash, package):
         shutil.rmtree(untar_dir)
     try:
         with tarfile.open(tar_loc, errorlevel=1) as tar:
-            tar.extractall(untar_dir)
+            tar.extractall(untar_dir, members=safe_paths(tar))
     except FileExistsError:
         pass
     except Exception:
