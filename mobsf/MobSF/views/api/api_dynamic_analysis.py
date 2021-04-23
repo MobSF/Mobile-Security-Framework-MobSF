@@ -126,6 +126,19 @@ def api_api_tester(request):
 
 @request_method(['POST'])
 @csrf_exempt
+def api_tls_tester(request):
+    """POST - TLS/SSL Security Tester."""
+    if 'hash' not in request.POST:
+        return make_api_response(
+            {'error': 'Missing Parameters'}, 422)
+    resp = tests_common.tls_tests(request, True)
+    if resp['status'] == 'ok':
+        return make_api_response(resp, 200)
+    return make_api_response(resp, 500)
+
+
+@request_method(['POST'])
+@csrf_exempt
 def api_stop_analysis(request):
     """POST - Stop Dynamic Analysis."""
     if 'hash' not in request.POST:
