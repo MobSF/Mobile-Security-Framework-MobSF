@@ -18,6 +18,7 @@ from frida import __version__ as frida_version
 
 from mobsf.DynamicAnalyzer.tools.webproxy import (
     get_ca_file,
+    get_http_tools_url,
     start_proxy,
     stop_httptools,
 )
@@ -27,7 +28,6 @@ from mobsf.DynamicAnalyzer.views.android import (
 from mobsf.MobSF.utils import (
     get_adb,
     get_device,
-    get_http_tools_url,
     get_proxy_ip,
     is_file_exists,
     python_list,
@@ -504,6 +504,15 @@ class Environment:
         logger.info('Activity screenshot captured')
         logger.info('Stopping app')
         self.adb_command(['am', 'force-stop', package], True)
+
+    def run_app(self, package):
+        """Launch an app with package name."""
+        self.adb_command(['monkey',
+                          '-p',
+                          package,
+                          '-c',
+                          'android.intent.category.LAUNCHER',
+                          '1'], True)
 
     def is_mobsfyied(self, android_version):
         """Check is Device is MobSFyed."""

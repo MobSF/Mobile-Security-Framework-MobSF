@@ -20,13 +20,13 @@ from mobsf.DynamicAnalyzer.views.android.operations import (
     strict_package_check,
 )
 from mobsf.DynamicAnalyzer.tools.webproxy import (
+    get_http_tools_url,
     start_httptools_ui,
     stop_httptools,
 )
 from mobsf.MobSF.utils import (
     get_config_loc,
     get_device,
-    get_http_tools_url,
     get_proxy_ip,
     is_md5,
     print_n_send_error_response,
@@ -95,7 +95,6 @@ def dynamic_analysis(request, api=False):
 
 def dynamic_analyzer(request, checksum, api=False):
     """Android Dynamic Analyzer Environment."""
-    logger.info('Creating Dynamic Analysis Environment')
     try:
         identifier = None
         if api:
@@ -117,6 +116,7 @@ def dynamic_analyzer(request, checksum, api=False):
                 request,
                 'Cannot get package name from checksum',
                 api)
+        logger.info('Creating Dynamic Analysis Environment for %s', package)
         try:
             identifier = get_device()
         except Exception:

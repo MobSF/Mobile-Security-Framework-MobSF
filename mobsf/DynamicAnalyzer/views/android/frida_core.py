@@ -45,6 +45,8 @@ class Frida:
         """Get default Frida Scripts."""
         combined_script = []
         header = []
+        if not self.defaults:
+            return header
         def_scripts = os.path.join(self.frida_dir, 'default')
         files = glob.glob(def_scripts + '**/*.js', recursive=True)
         for item in files:
@@ -58,6 +60,8 @@ class Frida:
     def get_auxiliary(self):
         """Get auxiliary hooks."""
         scripts = []
+        if not self.auxiliary:
+            return scripts
         for itm in self.auxiliary:
             if itm == 'enum_class':
                 scripts.append(get_loaded_classes())
@@ -75,6 +79,8 @@ class Frida:
 
     def get_script(self):
         """Get final script."""
+        if not self.code:
+            self.code = ''
         scripts = self.get_default_scripts()
         scripts.extend(self.get_auxiliary())
         scripts.extend([self.code])

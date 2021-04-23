@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 import tarfile
+from json import load
 from pathlib import Path
 
 from mobsf.MobSF.utils import (
@@ -67,6 +68,7 @@ def run_analysis(apk_dir, md5_hash, package):
     analysis_result['xml'] = all_files['xml']
     analysis_result['sqlite'] = all_files['sqlite']
     analysis_result['other_files'] = all_files['others']
+    analysis_result['tls_tests'] = get_tls_logs(apk_dir, md5_hash)
     return analysis_result
 
 
@@ -110,6 +112,15 @@ def get_screenshots(md5_hash, download_dir):
     result['activities'] = act
     result['exported_activities'] = exp_act
     return result
+
+
+def get_tls_logs(apk_dir, md5_hash):
+    """Get TLS/SSL test logs."""
+    out = Path(apk_dir) / 'mobsf_tls_tests.json'
+    if not out.exists():
+        return None
+    with out.open(encoding='utf-8') as src:
+        return load(src)
 
 
 def get_log_data(apk_dir, package):

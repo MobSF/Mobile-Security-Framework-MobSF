@@ -83,6 +83,7 @@ def view_report(request, checksum, api=False):
                    'xml': analysis_result['xml'],
                    'sqlite': analysis_result['sqlite'],
                    'others': analysis_result['other_files'],
+                   'tls_tests': analysis_result['tls_tests'],
                    'screenshots': images['screenshots'],
                    'activity_tester': images['activities'],
                    'exported_activity_tester': images['exported_activities'],

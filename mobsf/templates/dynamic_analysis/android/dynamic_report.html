@@ -81,7 +81,15 @@
             </ul>
           </li>
           {% endif %}
-
+          
+          <li class="nav-item">
+            <a href="#tls_tests" class="nav-link">
+              <i class="nav-icon fas fa-lock"></i>
+              <p>
+                TLS/SSL Security Tester
+              </p>
+            </a>
+          </li>
            <li class="nav-item">
             <a href="#exportedactivitytester" class="nav-link">
               <i class="nav-icon fas fa-shapes"></i>
@@ -365,7 +373,54 @@
 {% endfor %}
 <!-- ===========================end droidmon================================== -->
 
+<!-- ==========================start tls test================================== -->
 
+<a id="tls_tests" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+              <p>
+                <strong><i class="fas fa-lock"></i> TLS/SSL Security Tester</strong>
+            </p>
+             <div class="table-responsive">
+              <table class="table table-bordered table-hover table-striped">
+                <thead>
+                    <tr>
+                      <th>TESTS</th>
+                      <th>RESULT</th>
+                  </tr>
+                </thead>
+                <tbody>
+                   <tr>
+                    <td>TLS Misconfiguration Test</td>
+                    <td>{% if tls_tests%}{% if tls_tests.tls_misconfigured == True %}❌{% else %}✅{% endif %}{% else %}Not Tested{% endif %}</td>
+                  </tr>
+                  <tr>
+                    <td>TLS Pinning/Certificate Transparency Test</td>
+                    <td>{% if tls_tests%}{% if tls_tests.no_tls_pin_or_transparency == True %}❌{% else %}✅{% endif %}{% else %}Not Tested{% endif %}</td>
+                  </tr>
+                  <tr>
+                    <td>TLS Pinning/Certificate Transparency Bypass Test</td>
+                    <td>{% if tls_tests%}{% if tls_tests.pin_or_transparency_bypassed == True %}❌{% else %}✅{% endif %}{% else %}Not Tested{% endif %}</td>
+                  </tr>
+                  <tr>
+                    <td>Cleartext Traffic Test</td>
+                    <td>{% if tls_tests%}{% if tls_tests.has_cleartext == True %}❌{% else %}✅{% endif %}{% else %}Not Tested{% endif %}</td>
+                  </tr>
+              </table>
+              </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+
+</section>
+<!-- ===========================end tls test================================== -->
 <a id="exportedactivitytester" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">

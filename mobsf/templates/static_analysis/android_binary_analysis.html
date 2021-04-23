@@ -6,6 +6,7 @@
     {% block extra_css %}
     <!-- DataTables -->
     <link rel="stylesheet" href="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.css" %}">
+    <link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
      <style type="text/css" media="print">
         @page { size: landscape; }
         @media print {
@@ -28,8 +29,21 @@
             word-wrap: break-word;       /* Internet Explorer 5.5+ */
             }
     </style>
+    <script>
+      // Preloading
+      function dynamic_loader(){
+        var loadingOverlay = document.querySelector('.loading');
+        loadingOverlay.classList.remove('hidden');
+      }
+    </script>
     {% endblock %}
     {% block sidebar %}
+    <!--Loader-->
+<div class="hidden loading">
+  <div class='uil-ring-css' style='transform:scale(0.79);'>
+    <div></div>
+  </div>
+  </div>
     <!-- Main Sidebar Container -->
     <!-- Sidebar -->
     <div class="sidebar">
@@ -300,7 +314,7 @@
             </li>
             {% else %}
             <li class="nav-item">
-              <a href="../android_dynamic/{{md5}}" class="nav-link">
+              <a onclick="dynamic_loader()" href="../android_dynamic/{{md5}}" class="nav-link">
               <i class="nav-icon fa fa-play-circle"></i>
               <p>
                 Start Dynamic Analysis
@@ -601,7 +615,7 @@
                 </p>
                 <p> <a href="../static_analyzer/?checksum={{ md5 }}&amp;name={{ file_name }}&amp;type=apk&amp;rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a></p>
                 <p>
-                  <a href="../android_dynamic/{{md5}}" class="btn btn-success" role="button"><i class="fa fa-play-circle"></i> Start Dynamic Analysis</a>
+                  <a onclick="dynamic_loader()" href="../android_dynamic/{{md5}}" class="btn btn-success" role="button"><i class="fa fa-play-circle"></i> Start Dynamic Analysis</a>
                 </p>
               </div>
             </div><!-- /.card -->
@@ -1828,6 +1842,7 @@
  <!-- ===========================end files ================================== -->
 <!-- end of contents -->
 </div>
+
 {% endblock %}
 <!--end new UI-->
 {% block extra_scripts %}

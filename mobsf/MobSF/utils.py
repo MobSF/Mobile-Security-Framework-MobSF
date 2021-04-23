@@ -547,13 +547,6 @@ def get_config_loc():
         return 'MobSF/settings.py'
 
 
-def get_http_tools_url(req):
-    """Get httptools URL from request."""
-    scheme = req.scheme
-    ip = req.get_host().split(':')[0]
-    return f'{scheme}://{ip}:{str(settings.PROXY_PORT)}'
-
-
 def clean_filename(filename, replace=' '):
     if platform.system() == 'Windows':
         whitelist = f'-_.() {string.ascii_letters}{string.digits}'

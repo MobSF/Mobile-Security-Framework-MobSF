@@ -17,9 +17,14 @@ from mobsf.DynamicAnalyzer.views.android.environment import (
 from mobsf.DynamicAnalyzer.views.android.tests_xposed import (
     download_xposed_log,
 )
-from mobsf.DynamicAnalyzer.tools.webproxy import stop_httptools
-from mobsf.MobSF.utils import (
+from mobsf.DynamicAnalyzer.views.android.tests_tls import (
+    run_tls_tests,
+)
+from mobsf.DynamicAnalyzer.tools.webproxy import (
     get_http_tools_url,
+    stop_httptools,
+)
+from mobsf.MobSF.utils import (
     is_md5,
     python_list,
 )
@@ -166,4 +171,42 @@ def collect_logs(request, api=False):
     except Exception as exp:
         logger.exception('Data Collection & Clean Up failed')
         data = {'status': 'failed', 'message': str(exp)}
+    return send_response(data, api)
+
+# AJAX
+
+
+@require_http_methods(['POST'])
+def tls_tests(request, api=False):
+    """Perform TLS tests."""
+    logger.info('Running TLS/SSL Security tests')
+    data = {}
+    package = None
+    try:
+        test_duration = 25
+        test_package = 'tls_tests'
+        env = Environment()
+        md5_hash = request.POST['hash']
+        if not is_md5(md5_hash):
+            return invalid_params(api)
+        package = get_package_name(md5_hash)
+        if not package:
+            data = {'status': 'failed',
+                    'message': 'App details not found in database'}
+            return send_response(data, api)
+        res = run_tls_tests(
+            request,
+            md5_hash,
+            env,
+            package,
+            test_package,
+            test_duration,
+        )
+        data = {'status': 'ok', 'tls_tests': res}
+    except Exception as exp:
+        logger.exception('Checking Application Security in Transit')
+        data = {'status': 'failed', 'message': str(exp)}
+    finally:
+        logger.info('Test Completed. Resuming HTTPS Proxy')
+        env.configure_proxy(package, request)
     return send_response(data, api)
