@@ -110,6 +110,7 @@ if settings.API_ONLY == '0':
             dz.trigger_static_analysis,
             name='static_scan'),
         # Android Operations
+        url(r'^run_apk/$', operations.run_apk),
         url(r'^mobsfy/$', operations.mobsfy),
         url(r'^screenshot/$', operations.take_screenshot),
         url(r'^execute_adb/$', operations.execute_adb),

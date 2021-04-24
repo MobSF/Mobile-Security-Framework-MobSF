@@ -77,7 +77,9 @@
                  <div id="but" align="center">
                   <a href="#" id="screen" class="btn btn-primary" role="button"><i class="fa fa-mobile"></i> Show Screen</a>
                   <a href="#" id="rootca" class="btn btn-primary" role="button"><i class="fa fa-certificate"></i> Remove MobSF RootCA</a>
+                  {% if android_version >= 5 %}
                   <a href="#" id="tls_test" class="btn btn-primary" role="button"  data-toggle="modal" data-target="#tls_modal"><i class="fa fa-lock"></i> TLS/SSL Security Tester</a>
+                  {% endif %}
                   <a href="#" id="expactt" class="btn btn-primary" role="button"><i class="fa fa-language"></i> Exported Activity Tester</a>
                   <a href="#" id="actt" class="btn btn-primary" role="button"><i class="fa fa-rocket"></i> Activity Tester</a>
                   <a href="#" id="ss" class="btn btn-primary" role="button"><i class="fa fa-camera"></i> Take a Screenshot</a>
@@ -139,6 +141,11 @@
                   <div class="tab-pane fade active show" id="dm" role="tabpanel" aria-labelledby="dm-tab">
                      
                               <textarea id="stat"></textarea>
+                {% if android_version < 5 %}
+                <!-- xposed only-->
+                <br>
+                <button id="run_app" class="btn btn-success"><i class="fas fa-play"></i> Run App</button>
+                {% endif %}
                 <!--box-->
                 <div id="frida_options" class="box box-primary">
                     <div class="box-header with-border">
@@ -882,6 +889,19 @@ $('#run_tls_tests').click(function()  {
   });
   return false;  
 }); 
+
+// Run APK for Xposed
+$("#run_app").click(function() {
+    print_status("Launching App");
+    action(document.location.origin + '/run_apk/', {hash: '{{ hash }}'}, function(json) {
+      if (json.status==="ok"){
+          print_status("App launched");
+      } else {
+          print_status("Failed to launch app");
+      }
+    });
+    return false;  
+});
 
 // Logcat Stream
 $("#logstream").click(function() {

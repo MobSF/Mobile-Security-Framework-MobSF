@@ -42,6 +42,8 @@ def dynamic_analysis(request, api=False):
     try:
         scan_apps = []
         device_packages = {}
+        and_ver = None
+        and_sdk = None
         apks = StaticAnalyzerAndroid.objects.filter(
             APP_TYPE='apk')
         for apk in reversed(apks):
@@ -64,7 +66,6 @@ def dynamic_analysis(request, api=False):
                    ' set ANALYZER_IDENTIFIER in '
                    f'{get_config_loc()}')
             return print_n_send_error_response(request, msg, api)
-        proxy_ip = get_proxy_ip(identifier)
         try:
             if identifier:
                 env = Environment(identifier)
@@ -72,11 +73,15 @@ def dynamic_analysis(request, api=False):
                 pkg_file = Path(settings.DWD_DIR) / 'packages.json'
                 with pkg_file.open('w', encoding='utf-8') as target:
                     dump(device_packages, target)
+                and_ver = env.get_android_version()
+                and_sdk = env.get_android_sdk()
         except Exception:
             pass
         context = {'apps': scan_apps,
                    'identifier': identifier,
-                   'proxy_ip': proxy_ip,
+                   'android_version': and_ver,
+                   'android_sdk': and_sdk,
+                   'proxy_ip': get_proxy_ip(identifier),
                    'proxy_port': settings.PROXY_PORT,
                    'settings_loc': get_config_loc(),
                    'device_packages': device_packages,
@@ -137,7 +142,7 @@ def dynamic_analyzer(request, checksum, api=False):
         logger.info('Android Version identified as %s', version)
         xposed_first_run = False
         if not env.is_mobsfyied(version):
-            msg = ('This Android instance is not MobSfyed/Outdated.\n'
+            msg = ('This Android instance is not MobSFyed/Outdated.\n'
                    'MobSFying the android runtime environment')
             logger.warning(msg)
             if not env.mobsfy_init():

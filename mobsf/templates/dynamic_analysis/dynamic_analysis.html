@@ -86,10 +86,25 @@ textarea:focus {
                   <div class="row">
                      <div class="col-md-9">
                         <h4>MobSF Dynamic Analyzer Supports</h4>
-                        <h5><strong>• Genymotion Android VM</strong> version 4.1 - 10.0 (x86, upto API 29)<br/><strong>• Android Studio Emulator AVD</strong> version 5.0 - 9.0 (arm, arm64, x86, and x86_64 upto API 28)<br/></h5>
-                        <p>Recommended Android version is <strong>8.0 +</strong>.<br/> For Android versions lower than <strong>5</strong>, MobSF uses Xposed Framework and you must MobSFy and reboot the Android Runtime prior to Dynamic Analysis.<br /> Frida is used with newer versions of Android and no user action is required.</p>
-                        <p><h5> HTTPS Traffic Interception</h5>
-                        <p>For Android version <strong>4.1 - 4.3</strong>, set Android VM proxy as <strong>{% if proxy_ip %} {{ proxy_ip }}{% else %} <i>&lt;Host IP&gt;</i>{% endif %}:{{proxy_port}}</strong><br/ >For Android versions <strong>4.4 - 10</strong>, global proxy settings are automatically applied.<br/>For more information, please refer Documentation.
+                        <h5>
+                          <strong>• Genymotion Android VM</strong> version 4.1 - 10.0 (x86, upto API 29)<br/>
+                          <strong>• Android Emulator AVD</strong> (non production) version 5.0 - 9.0 (arm, arm64, x86, and x86_64 upto API 28)
+                        </h5>
+                        <p>
+                          {% if android_version %}
+                            Recommended Android version is <strong>7.0 +</strong><br/>
+                            Detected Android Version: <strong>{{android_version}}</strong>, SDK: <strong>{{ android_sdk }}</strong> <br/>
+                          {% endif %}
+
+                          {% if android_version < 5 %}
+                          Xposed Framework is used for instrumentation and you must MobSFy and reboot the Android Runtime prior to Dynamic Analysis.
+                          {% if android_version < 4.4 %}
+                           <br/>For Android version <strong>4.1 - 4.3</strong>, set Android VM proxy as <strong>{% if proxy_ip %} {{ proxy_ip }}{% else %} <i>&lt;Host IP&gt;</i>{% endif %}:{{proxy_port}}</strong>
+                          {% endif %}
+                          {% else %}
+                            Frida will be used for instrumentation.
+                          {% endif %}
+                         
                         </p>
                       </div>   
                      <div class="col-md-3">

@@ -170,6 +170,28 @@ def get_component(request):
 
 
 @require_http_methods(['POST'])
+def run_apk(request):
+    """Run Android APK."""
+    data = {}
+    try:
+        env = Environment()
+        md5_hash = request.POST['hash']
+        if not is_md5(md5_hash):
+            return invalid_params()
+        pkg = get_package_name(md5_hash)
+        if not pkg:
+            return invalid_params()
+        env.run_app(pkg)
+        data = {'status': 'ok'}
+    except Exception as exp:
+        logger.exception('Running the App')
+        data = {'status': 'failed', 'message': str(exp)}
+    return send_response(data)
+
+# AJAX
+
+
+@require_http_methods(['POST'])
 def take_screenshot(request, api=False):
     """Take Screenshot."""
     logger.info('Taking screenshot')

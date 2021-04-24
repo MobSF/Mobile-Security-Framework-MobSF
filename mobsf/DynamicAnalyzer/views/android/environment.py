@@ -403,6 +403,13 @@ class Environment:
             'ro.product.cpu.abi'], True)
         return out.decode('utf-8').rstrip()
 
+    def get_android_sdk(self):
+        """Get Android API version."""
+        out = self.adb_command([
+            'getprop',
+            'ro.build.version.sdk'], True)
+        return out.decode('utf-8').strip()
+
     def get_device_packages(self):
         """Get all packages from device."""
         device_packages = {}
@@ -461,14 +468,11 @@ class Environment:
         """Check if /system is writable."""
         try:
             try:
-                out = self.adb_command([
-                    'getprop',
-                    'ro.build.version.sdk'], True)
-                if out:
-                    api = int(out.decode('utf-8').strip())
+                api = self.get_android_sdk()
+                if api:
                     logger.info('Android API Level '
                                 'identified as %s', api)
-                    if api > ANDROID_API_SUPPORTED:
+                    if int(api) > ANDROID_API_SUPPORTED:
                         logger.error('This API Level is not supported'
                                      ' for Dynamic Analysis.')
                         return False
@@ -610,7 +614,7 @@ class Environment:
                                   'JustTrustMe.apk')
         rootcloak = os.path.join(self.tools_dir,
                                  xposed_modules,
-                                 'RootCloak.apk')
+                                 'com.devadvance.rootcloak2_v18_c43b61.apk')
         proxyon = os.path.join(self.tools_dir,
                                xposed_modules,
                                'mobi.acpm.proxyon_v1_419b04.apk')

@@ -240,27 +240,28 @@
                    <div align="center">
                       <p>
                       {% if apimon %}
-                      <a target="_blank" class="btn btn-primary" role="button" href="../live_api/?hash={{ hash }}&amp;package={{ package }}">API Monitor View</a>
+                      <a target="_blank" class="btn btn-primary" role="button" href="../live_api/?hash={{ hash }}&amp;package={{ package }}"><i class="fa fa-mobile"></i> API Monitor View</a>
                       {% endif %}
                       {% if frida_logs %}
-                          <a target="_blank" class="btn btn-primary" role="button" href="../frida_logs/?hash={{ hash }}&amp;package={{ package }}">Frida Logs View</a>
+                          <a target="_blank" class="btn btn-primary" role="button" href="../frida_logs/?hash={{ hash }}&amp;package={{ package }}"><i class="fas fa-spider"></i> Frida Logs View</a>
                       {% endif %}
-                          <a class="btn btn-success" target="_blank" role="button" href="../httptools?project={{package}}">Start HTTPTools</a>
+                          <a class="btn btn-success" target="_blank" role="button" href="../httptools?project={{package}}"><i class="fab fa-hire-a-helper"></i> Start HTTPTools</a>
                       </p>
+                      <p><h6><strong>Raw Logs</strong></h6></p>
                       <p>
                       {% if droidmon %}
-                         <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-x_logcat.txt">Droidmon API Monitor Logs</a>
+                         <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-x_logcat.txt"><i class="fa fa-mobile"></i> Droidmon API Monitor Logs</a>
                       {% endif %}
                       {% if apimon %}
-                         <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-api_monitor.txt">Frida API Monitor Logs</a>
+                         <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-api_monitor.txt"><i class="fas fa-water"></i> API Monitor Logs</a>
                       {% endif %}
                       {% if frida_logs %}
-                         <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-frida_out.txt">Frida Logs</a>
+                         <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-frida_out.txt"><i class="fas fa-water"></i> Frida Logs</a>
                       {% endif %}
-                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-web_traffic.txt">HTTP(S) Traffic</a>
-                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-logcat.txt">Logcat Logs</a>
-                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-dump.txt">Dumpsys Logs</a> 
-                      <a class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-app_data.tar">Application Data</a>
+                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-web_traffic.txt"><i class="fas fa-water"></i> HTTP(S) Traffic</a>
+                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-logcat.txt"><i class="fas fa-water"></i> Logcat Logs</a>
+                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-dump.txt"><i class="fas fa-water"></i> Dumpsys Logs</a> 
+                      <a class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-app_data.tar"><i class="fas fa-download"></i> Application Data</a>
                       </p>
                    </div>
                 </div>
