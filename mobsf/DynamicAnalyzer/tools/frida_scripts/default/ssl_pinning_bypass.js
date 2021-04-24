@@ -139,10 +139,11 @@ Java.perform(function() {
     /*** HttpsURLConnection ***/
     try {
         var HttpsURLConnection = Java.use('javax.net.ssl.HttpsURLConnection');
+        /*
         HttpsURLConnection.setDefaultHostnameVerifier.implementation = function(hostnameVerifier) {
             send('[SSL Pinning Bypass] HttpsURLConnection.setDefaultHostnameVerifier bypassed');
             return null;
-        };
+        };*/
         HttpsURLConnection.setSSLSocketFactory.implementation = function(SSLSocketFactory) {
             send('[SSL Pinning Bypass] HttpsURLConnection.setSSLSocketFactory bypassed');
             return null;
