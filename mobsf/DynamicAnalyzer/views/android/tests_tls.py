@@ -83,7 +83,7 @@ def run_tls_tests(request, md5_hash, env, package, test_pkg, duration):
     frd = Frida(
         md5_hash,
         package,
-        ['ssl_pinning_bypass'],
+        ['ssl_pinning_bypass', 'debugger_check_bypass', 'root_bypass'],
         None,
         None,
         None,
