@@ -81,9 +81,10 @@ class Frida:
         """Get final script."""
         if not self.code:
             self.code = ''
-        scripts = self.get_default_scripts()
+        # Load custom code first
+        scripts = [self.code]
+        scripts.extend(self.get_default_scripts())
         scripts.extend(self.get_auxiliary())
-        scripts.extend([self.code])
         final = 'setTimeout(function() {{ {} }}, 0)'.format(
             '\n'.join(scripts))
         return final

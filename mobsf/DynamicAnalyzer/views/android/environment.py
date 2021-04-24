@@ -425,6 +425,9 @@ class Environment:
                 '-b',
                 apk], True)
             md5 = out1.decode('utf-8').strip()
+            if '.apk' in md5:
+                # -b not respected in Android 5.0
+                md5 = md5.split()[0]
             device_packages[md5] = (pkg, apk)
         return device_packages
 
