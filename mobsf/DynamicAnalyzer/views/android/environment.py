@@ -152,7 +152,7 @@ class Environment:
         args += cmd_list
         try:
             result = subprocess.check_output(
-                args,
+                args,  # lgtm [py/command-line-injection]
                 stderr=subprocess.STDOUT)
             return result
         except Exception:

@@ -222,8 +222,8 @@ def httptools_start(request):
         else:
             project = ''
         url = f'{httptools_url}/dashboard/{project}'
-        ret = HttpResponseRedirect(url)
-        return ret  # lgtm [py/reflective-xss] lgtm [py/url-redirection]
+        return HttpResponseRedirect(
+            url)  # lgtm [py/reflective-xss] lgtm [py/url-redirection]
     except Exception:
         logger.exception('Starting httptools Web UI')
         err = 'Error Starting httptools UI'
@@ -307,8 +307,8 @@ def trigger_static_analysis(request, checksum):
         }
         add_to_recent_scan(data)
         return HttpResponseRedirect(
-            f'/static_analyzer/?name='
-            f'{package}.apk&checksum={checksum}'  # lgtm [py/url-redirection]
+            f'/static_analyzer/?name='  # lgtm [py/url-redirection]
+            f'{package}.apk&checksum={checksum}'
             f'&type=apk')
     except Exception:
         msg = 'On device APK Static Analysis'
