@@ -1,3 +1,27 @@
+### v3.4.3 Beta Changelog
+
+- Features or Enhancements
+   - Android Dynamic Analysis TLS/SSL Security Tester
+   - Dynamic Analysis without Static Analysis
+   - Support Dynamic Analysis of third party apps in VM/AVD
+   - Download and perform static analysis of third party apps from VM/AVD
+   - Dynamic Analysis enhancement to preserve app config/data
+   - Improved SSL Pinning Bypass script
+   - Added Intent dumper auxiliary Frida script
+   - Added an auxiliary method bypass template script
+   - Security Hardening
+   - Addressing LGTM issues and QA
+   - Android Permissions Mapping update and Typo fix
+   - VirusTotal Code QA
+   - Refactored Logcat log viewer to show only app specific logs
+   - Xposed Improvements and updates of agents
+   - Updated frontend libraries for CodeMirror and EnligherJS
+   - New REST API exposed for TLS/SSL tests
+   - General Code QA
+
+- Bug Fixes
+  - Fixed Windows Setup script
+  - Fixed typo and incomplete description in Android permission mapping
 
 ### v3.4.0 Beta Changelog
 
