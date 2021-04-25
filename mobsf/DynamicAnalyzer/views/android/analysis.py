@@ -144,26 +144,26 @@ def get_log_data(apk_dir, package):
                      errors='ignore') as flip:
             web_data = flip.read()
     if is_file_exists(logcat):
-        with io.open(logcat,
+        with io.open(logcat,  # lgtm [py/path-injection]
                      mode='r',
                      encoding='utf8',
                      errors='ignore') as flip:
             logcat_data = flip.readlines()
             traffic = ''.join(logcat_data)
     if is_file_exists(xlogcat):
-        with io.open(xlogcat,
+        with io.open(xlogcat,  # lgtm [py/path-injection]
                      mode='r',
                      encoding='utf8',
                      errors='ignore') as flip:
             droidmon_data = flip.read()
     if is_file_exists(apimon):
-        with io.open(apimon,
+        with io.open(apimon,  # lgtm [py/path-injection]
                      mode='r',
                      encoding='utf8',
                      errors='ignore') as flip:
             apimon_data = flip.read()
     if is_file_exists(fd_logs):
-        with io.open(fd_logs,
+        with io.open(fd_logs,  # lgtm [py/path-injection]
                      mode='r',
                      encoding='utf8',
                      errors='ignore') as flip:
@@ -217,7 +217,7 @@ def get_app_files(apk_dir, md5_hash, package):
                         all_files['xml'].append(
                             {'type': 'xml', 'file': fileparam})
                     else:
-                        with open(file_path,
+                        with open(file_path,  # lgtm [py/path-injection]
                                   'r',
                                   encoding='ISO-8859-1') as flip:
                             file_cnt_sig = flip.read(6)

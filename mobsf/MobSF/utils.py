@@ -559,3 +559,13 @@ def clean_filename(filename, replace=' '):
         # keep only whitelisted chars
         return ''.join(c for c in cleaned_filename if c in whitelist)
     return filename
+
+
+def cmd_injection_check(data):
+    """OS Cmd Injection from Commix."""
+    breakers = [
+        ';', '%3B', '&', '%26', '&&',
+        '%26%26', '|', '%7C', '||',
+        '%7C%7C', '%0a', '%0d%0a',
+    ]
+    return any(i in data for i in breakers)

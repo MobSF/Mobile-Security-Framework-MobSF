@@ -19,6 +19,7 @@ from mobsf.MobSF.utils import (
     api_key,
     is_dir_exists,
     is_file_exists,
+    is_safe_path,
     print_n_send_error_response,
 )
 from mobsf.MobSF.views.helpers import FileType
@@ -235,19 +236,20 @@ def search(request):
 
 def download(request):
     """Download from mobsf.MobSF Route."""
-    msg = 'Error Downloading File '
     if request.method == 'GET':
+        root = settings.DWD_DIR
         allowed_exts = settings.ALLOWED_EXTENSIONS
         filename = request.path.replace('/download/', '', 1)
+        dwd_file = os.path.join(root, filename)
         # Security Checks
-        if '../' in filename:
+        if '../' in filename or not is_safe_path(root, dwd_file):
             msg = 'Path Traversal Attack Detected'
             return print_n_send_error_response(request, msg)
         ext = os.path.splitext(filename)[1]
         if ext in allowed_exts:
-            dwd_file = os.path.join(settings.DWD_DIR, filename)
             if os.path.isfile(dwd_file):
-                wrapper = FileWrapper(open(dwd_file, 'rb'))
+                wrapper = FileWrapper(
+                    open(dwd_file, 'rb'))  # lgtm [py/path-injection]
                 response = HttpResponse(
                     wrapper, content_type=allowed_exts[ext])
                 response['Content-Length'] = os.path.getsize(dwd_file)

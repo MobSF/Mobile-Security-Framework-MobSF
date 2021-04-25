@@ -52,6 +52,7 @@
 {% endblock %}
 
 {% block content %}
+
 <script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
 
 <div class="content-wrapper">
@@ -139,8 +140,7 @@
               <div class="card-body">
                 <div class="tab-content" id="tabs">
                   <div class="tab-pane fade active show" id="dm" role="tabpanel" aria-labelledby="dm-tab">
-                     
-                              <textarea id="stat"></textarea>
+                  <textarea id="stat"></textarea>
                 {% if android_version < 5 %}
                 <!-- xposed only-->
                 <br>

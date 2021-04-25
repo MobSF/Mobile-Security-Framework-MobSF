@@ -101,7 +101,7 @@ textarea:focus {
                           {% if android_version < 4.4 %}
                            <br/>For Android version <strong>4.1 - 4.3</strong>, set Android VM proxy as <strong>{% if proxy_ip %} {{ proxy_ip }}{% else %} <i>&lt;Host IP&gt;</i>{% endif %}:{{proxy_port}}</strong>
                           {% endif %}
-                          {% else %}
+                          {% elif android_version %}
                             Frida will be used for instrumentation.
                           {% endif %}
                          

@@ -131,7 +131,10 @@ def view_file(request, api=False):
         if not is_safe_path(src, sfile) or is_path_traversal(fil):
             err = 'Path Traversal Attack Detected'
             return print_n_send_error_response(request, err, api)
-        with io.open(sfile, mode='r', encoding='ISO-8859-1') as flip:
+        with io.open(
+                sfile,  # lgtm [py/path-injection]
+                mode='r',
+                encoding='ISO-8859-1') as flip:
             dat = flip.read()
         if fil.endswith('.xml') and typ == 'xml':
             rtyp = 'xml'

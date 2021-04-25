@@ -61,10 +61,10 @@ class Environment:
             return False
         return True
 
-    def run_subprocess_verify_output(self, command):
+    def run_subprocess_verify_output(self, cmd):
         """Run subprocess and verify execution."""
-        out = subprocess.check_output(command)
-        self.wait(2)
+        out = subprocess.check_output(cmd)  # lgtm [py/command-line-injection]
+        self.wait(2)                        # adb shell is allowed
         return self.check_connect_error(out)
 
     def connect_n_mount(self):

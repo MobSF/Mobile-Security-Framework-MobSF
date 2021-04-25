@@ -48,7 +48,7 @@ try:
     if USE_HOME:
         USER_CONFIG = os.path.join(MobSF_HOME, 'config.py')
         sett = imp.load_source('user_settings', USER_CONFIG)
-        locals().update(
+        locals().update(  # lgtm [py/modification-of-locals]
             {k: v for k, v in list(sett.__dict__.items())
                 if not k.startswith('__')})
         CONFIG_HOME = True

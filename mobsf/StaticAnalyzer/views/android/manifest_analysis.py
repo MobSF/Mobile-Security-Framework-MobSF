@@ -902,7 +902,7 @@ def get_manifest_apk(app_path, app_dir, tools_dir):
             # APKTool already created readable XML
             return manifest
         logger.info('Converting AXML to XML')
-        subprocess.check_output(args)
+        subprocess.check_output(args)  # lgtm [py/command-line-injection] md5 hash
         return manifest
     except Exception:
         logger.exception('Getting Manifest file')
