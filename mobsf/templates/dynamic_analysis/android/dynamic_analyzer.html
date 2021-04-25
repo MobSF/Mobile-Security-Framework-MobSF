@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="{% static "others/css/devices.min.css" %}" type="text/css">
 <link rel="stylesheet" href="{% static "codemirror/codemirror.css" %}" type="text/css">
 <link rel="stylesheet" href="{% static "codemirror/lint.css" %}" type="text/css">
+<link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
 <style>
      textarea {
         width: 100%;
@@ -51,6 +52,7 @@
 {% endblock %}
 
 {% block content %}
+
 <script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
 
 <div class="content-wrapper">
@@ -74,14 +76,17 @@
               <!-- /.card-header -->
               <div class="card-body">
                  <div id="but" align="center">
-                  <a href="#" id="screen" class="btn btn-primary" role="button">Show Screen</a>
-                  <a href="#" id="rootca" class="btn btn-primary" role="button">Remove MobSF RootCA</a>
-                  <a href="#" id="expactt" class="btn btn-primary" role="button">Start Exported Activity Tester</a>
-                  <a href="#" id="actt" class="btn btn-primary" role="button" >Start Activity Tester</a>
-                  <a href="#" id="ss" class="btn btn-primary" role="button">Take a Screenshot</a>
-                  <a href="#" id="logstream" class="btn btn-primary">Logcat Stream</a>
-                  <a href="../../live_api/?hash={{ hash }}&amp;package={{ package }}" id="apimon" target="_blank" class="btn btn-primary" style='display: none'>Live API Monitor</a>
-                  <a href="#" id="stop" class="btn btn-info" role="button" >Generate Report</a>
+                  <a href="#" id="screen" class="btn btn-primary" role="button"><i class="fa fa-mobile"></i> Show Screen</a>
+                  <a href="#" id="rootca" class="btn btn-primary" role="button"><i class="fa fa-certificate"></i> Remove MobSF RootCA</a>
+                  {% if android_version >= 5 %}
+                  <a href="#" id="tls_test" class="btn btn-primary" role="button"  data-toggle="modal" data-target="#tls_modal"><i class="fa fa-lock"></i> TLS/SSL Security Tester</a>
+                  {% endif %}
+                  <a href="#" id="expactt" class="btn btn-primary" role="button"><i class="fa fa-language"></i> Exported Activity Tester</a>
+                  <a href="#" id="actt" class="btn btn-primary" role="button"><i class="fa fa-rocket"></i> Activity Tester</a>
+                  <a href="#" id="ss" class="btn btn-primary" role="button"><i class="fa fa-camera"></i> Take a Screenshot</a>
+                  <a href="#" id="logstream" class="btn btn-primary"><i class="fa fa-water"></i> Logcat Stream</a>
+                  <a href="../../live_api/?hash={{ hash }}&amp;package={{ package }}" id="apimon" target="_blank" class="btn btn-primary" style='display: none'><i class="fa fa-search"></i> Live API Monitor</a>
+                  <a href="#" id="stop" class="btn btn-info" role="button" ><i class="fa fa-file-alt"></i> Generate Report</a>
                 </div>
               </div>
               <!-- /.card-body -->
@@ -135,8 +140,12 @@
               <div class="card-body">
                 <div class="tab-content" id="tabs">
                   <div class="tab-pane fade active show" id="dm" role="tabpanel" aria-labelledby="dm-tab">
-                     
-                              <textarea id="stat"></textarea>
+                  <textarea id="stat"></textarea>
+                {% if android_version < 5 %}
+                <!-- xposed only-->
+                <br>
+                <button id="run_app" class="btn btn-success"><i class="fas fa-play"></i> Run App</button>
+                {% endif %}
                 <!--box-->
                 <div id="frida_options" class="box box-primary">
                     <div class="box-header with-border">
@@ -207,7 +216,8 @@
 
                       <div class="box-footer">
                      
-                      <button id="frida_spawn" type="submit" class="btn btn-success">Start Instrumentation</button> <button id="fd_log" type="button" class="btn btn-primary" disabled>Frida Live Logs</button>
+                      <button id="frida_spawn" type="submit" class="btn btn-success"><i class="fas fa-play"></i> Start Instrumentation</button>
+                      <button id="fd_log" type="button" class="btn btn-primary" disabled><i class="fas fa-file-medical-alt"></i> Frida Live Logs</button>
                       </div>
                     </form>
                   </div>
@@ -305,6 +315,87 @@ Java.perform(function() {
      </div>
     </div>
 </div>
+<!-- Modal -->
+<div class="modal" id="tls_modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Run TLS/SSL Security Tests - {{ package }}</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form role="form">
+            <div class="form-group">
+                <p>TLS/SSL Security test helps you to evaluate the security of your application's network connections. These tests are applicable only for applications that performs network connections over HTTP protocol. We run multiple TLS/SSL tests against the application.<br>
+                </p>
+                <p>
+                <strong>TLS Misconfiguration Test </strong> - Enable HTTPS MITM Proxy, Remove Root CA, Run the App for 25 seconds.<br>
+                <code>This test will uncover insecure configurations that allow HTTPS connections bypassing certificate errors or SSL/TLS errors in WebViews. This is equivalent to not having TLS.</code><br>
+                </p>
+                <p>
+                <strong>TLS Pinning/Certificate Transparency Test </strong> - Enable HTTPS MITM Proxy, Install Root CA, Run the App for 25 seconds.<br>
+                <code>This test will evaluate the application's TLS/SSL hardening controls and will check if the application implement certificate or public key pinning and or certificate transparency.</code><br>
+                <p>
+                <strong>TLS Pinning/Certificate Transparency Bypass Test </strong> - Enable HTTPS MITM Proxy, Install Root CA, Bypass Certificate/Public Key Pinning or Certificate Transparency.<br>
+                <code>This test tries to bypass certificate or public key pinning and or certificate transparency controls in your application. MobSF can bypass most of the generic implementations.</code><br>
+                </p>
+                <p><strong>NOTE: </strong><i>For Better results, while the application is running, navigate through different business logic flows that will trigger network connections over HTTP protocol. Make sure that no other applications are running during the test.</i></p>
+              </div>
+            <div class="form-group">
+              <label>Test Progress</label>
+              <textarea id="tls_text" class="form-control" rows="10" placeholder="" disabled=""></textarea>
+            </div>
+            <div class="form-group">
+              <table class="table table-bordered table-hover table-striped">
+                <thead>
+                    <tr>
+                      <th>TESTS</th>
+                      <th>RESULT</th>
+                  </tr>
+                </thead>
+                <tbody>
+                   <tr>
+                    <td>TLS Misconfiguration Test</td>
+                    <td id="tls_1">-</td>
+                  </tr>
+                  <tr>
+                    <td>TLS Pinning/Certificate Transparency Test</td>
+                    <td id="tls_2">-</td>
+                  </tr>
+                  <tr>
+                    <td>TLS Pinning/Certificate Transparency Bypass Test</td>
+                    <td id="tls_3">-</td>
+                  </tr>
+                  <tr>
+                    <td>Cleartext Traffic Test</td>
+                    <td id="tls_4">-</td>
+                  </tr>
+              </tbody>
+              </table>
+            </div>
+
+          </form>
+      </div>
+       <div class="modal-footer">
+        <button id="run_tls_tests" type="button" class="btn btn-primary"><i class="fas fa-bolt"></i> Run TLS/SSL Tests</button>
+      </div>
+    </div>
+
+    <!--Loader-->
+<div class="hidden loading">
+  <div class='uil-ring-css' style='transform:scale(0.79);'>
+    <div></div>
+  </div>
+  </div>
+
+
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+<!-- End Modal -->
 
 {% endblock %}
 {% block extra_scripts %}
@@ -314,6 +405,16 @@ Java.perform(function() {
 <script src="{% static "codemirror/lint.js" %}"></script>
 <script src="{% static "codemirror/javascript-lint.js" %}"></script>
 <script>
+// Loading Spinner
+function dynamic_loader(){
+    var loadingOverlay = document.querySelector('.loading');
+    loadingOverlay.classList.remove('hidden');
+}
+function stop_loader(){
+    var loadingOverlay = document.querySelector('.loading');
+    loadingOverlay.classList.add('hidden');
+}
+
 // Frida Auxiliary actions
 
 function aux_click(cb) {
@@ -595,6 +696,12 @@ function print_status(message){
   $('#stat').append(message + '\n');
   $('#stat').scrollTop($('#stat')[0].scrollHeight);
 }
+//Print TLS/SSL test progress inside modal
+function print_tls_progress(message){
+  $('#tls_text').append(message + '\n');
+  $('#tls_text').scrollTop($('#tls_text')[0].scrollHeight);
+}
+
 print_status("Setting up Dynamic Analysis environment");
 print_status("Running HTTPS intercepting proxy");
 print_status("Invoking MobSF agents");
@@ -654,8 +761,8 @@ $('#my').click(function(e) {
 var screenfunc;
 $("#screen").click(function() {
       var stext = $("#screen").text();
-      if (stext === "Show Screen"){
-          $("#screen").text("Stop Screen");
+      if (stext.includes("Show Screen")){
+          $("#screen").html("<i class='fa fa-mobile'></i> Stop Screen");
           print_status('Screen streaming started')
           touch = "on";
           screenfunc = setInterval(function(){
@@ -668,7 +775,7 @@ $("#screen").click(function() {
                });
           },3000);
       } else {
-          $("#screen").text("Show Screen");
+          $("#screen").html("<i class='fa fa-mobile'></i> Show Screen");
           print_status("Screen streaming stopped");
           $('#my').attr('src', '/static/img/loading.jpg');
           clearInterval(screenfunc);
@@ -696,11 +803,11 @@ $("#ss").click(function() {
 $("#rootca").click(function() {
   var stext = $("#rootca").text();
   var act;
-  if (stext === "Remove MobSF RootCA"){
-    $("#rootca").text("Install MobSF RootCA");
+  if (stext.includes("Remove MobSF RootCA")){
+    $("#rootca").html("<i class='fa fa-certificate'></i> Install MobSF RootCA");
     act = "remove";
   } else {
-    $("#rootca").text("Remove MobSF RootCA");
+    $("#rootca").html("<i class='fa fa-certificate'></i> Remove MobSF RootCA");
     act = "install";
   }
   action(document.location.origin + '/mobsf_ca/', {action: act}, function(json) {
@@ -737,7 +844,64 @@ $("#actt").click(function()  {
   print_status("Starting Activity tester...")
   activity_tester('all_activities')
   return false;  
+});
+
+//SSL/TLS Tester
+$('#run_tls_tests').click(function()  {
+  const msg = "TLS/SSL tests will take 75 seconds to complete. While the application is running, please navigate through different activity flows/business logic.";
+  $('#tls_1').text('-');$('#tls_2').text('-');$('#tls_3').text('-');$('#tls_4').text('-');
+  print_status("Running TLS/SSL Security Tester");
+  print_tls_progress("Running TLS Misconfiguration test.")
+  print_tls_progress("Running TLS Pinning/Certificate Transparency test.")
+  print_tls_progress("Running TLS Pinning/Certificate Transparency Bypass test.")
+  print_tls_progress(msg)
+  dynamic_loader();
+  action(document.location.origin + '/tls_tests/', {hash: '{{ hash }}'}, function(json) {
+    if (json.status === "ok"){
+      stop_loader();
+      // print_tls_progress(JSON.stringify(json.tls_tests))
+      if (json.tls_tests.tls_misconfigured === true)
+          $('#tls_1').text('❌')
+      else
+          $('#tls_1').text('✅')
+      if (json.tls_tests.no_tls_pin_or_transparency === true)
+          $('#tls_2').text('❌')
+      else
+          $('#tls_2').text('✅')
+      if (json.tls_tests.pin_or_transparency_bypassed === true)
+          $('#tls_3').text('❌')
+      else
+          $('#tls_3').text('✅')
+      if (json.tls_tests.has_cleartext === true)
+          $('#tls_4').text('❌')
+      else
+          $('#tls_4').text('✅')
+      const ok = "TLS/SSL Security tests completed.";
+      print_status(ok)
+      print_tls_progress(ok)
+    } else {
+      stop_loader();
+      print_status("TLS/SSL Security tests failed.")
+      print_tls_progress("TLS/SSL Security tests failed.")
+      print_tls_progress("[ERROR]")
+      print_tls_progress(json.message)
+    }
+  });
+  return false;  
 }); 
+
+// Run APK for Xposed
+$("#run_app").click(function() {
+    print_status("Launching App");
+    action(document.location.origin + '/run_apk/', {hash: '{{ hash }}'}, function(json) {
+      if (json.status==="ok"){
+          print_status("App launched");
+      } else {
+          print_status("Failed to launch app");
+      }
+    });
+    return false;  
+});
 
 // Logcat Stream
 $("#logstream").click(function() {
@@ -822,7 +986,7 @@ $("#stop").one( "click", function() {
   print_status("Collecting data...");
   //Stop Screen Casting if it's running
   var stext = $("#screen").text();
-  if (stext === "Stop Screen")
+  if (stext.includes("Stop Screen"))
     $("#screen").click();
   action(document.location.origin + '/collect_logs/', { hash: '{{ hash }}'}, function(json) {
     if (json.status==="ok"){

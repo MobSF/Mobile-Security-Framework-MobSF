@@ -7,7 +7,10 @@ var stream = true;
 var div = document.getElementById("messages");
 source.onmessage = function(message) {
     if (stream) {
-        i = i+1;
+        // Grep package name
+        if (!message.data.includes('{{package}}'))
+            return;
+        i = i + 1;
         // Display only last 500 lines
         if (i < 500){
             div.innerHTML = div.innerHTML + html_safe(message.data) + "<br>" ;

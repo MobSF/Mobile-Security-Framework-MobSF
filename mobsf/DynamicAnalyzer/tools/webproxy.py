@@ -6,6 +6,8 @@ import time
 
 import requests
 
+from django.conf import settings
+
 from mobsf.MobSF.utils import is_file_exists, upstream_proxy
 
 logger = logging.getLogger(__name__)
@@ -70,3 +72,18 @@ def get_ca_file():
     if not is_file_exists(ca_file):
         create_ca()
     return ca_file
+
+
+def get_traffic(package):
+    web = Path.home() / '.httptools' / 'flows' / f'{package}.flow.txt'
+    if web.is_file():
+        return web.read_text('utf-8', 'ignore')
+    return ''
+
+
+def get_http_tools_url(req):
+    """Get httptools URL from request."""
+    scheme = req.scheme
+    ip = req.get_host().split(':')[0]
+    port = settings.PROXY_PORT
+    return f'{scheme}://{ip}:{str(port)}'

@@ -83,6 +83,7 @@ def view_report(request, checksum, api=False):
                    'xml': analysis_result['xml'],
                    'sqlite': analysis_result['sqlite'],
                    'others': analysis_result['other_files'],
+                   'tls_tests': analysis_result['tls_tests'],
                    'screenshots': images['screenshots'],
                    'activity_tester': images['activities'],
                    'exported_activity_tester': images['exported_activities'],
@@ -130,7 +131,10 @@ def view_file(request, api=False):
         if not is_safe_path(src, sfile) or is_path_traversal(fil):
             err = 'Path Traversal Attack Detected'
             return print_n_send_error_response(request, err, api)
-        with io.open(sfile, mode='r', encoding='ISO-8859-1') as flip:
+        with io.open(
+                sfile,  # lgtm [py/path-injection]
+                mode='r',
+                encoding='ISO-8859-1') as flip:
             dat = flip.read()
         if fil.endswith('.xml') and typ == 'xml':
             rtyp = 'xml'

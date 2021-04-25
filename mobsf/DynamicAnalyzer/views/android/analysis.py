@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 import tarfile
+from json import load
 from pathlib import Path
 
 from mobsf.MobSF.utils import (
@@ -67,6 +68,7 @@ def run_analysis(apk_dir, md5_hash, package):
     analysis_result['xml'] = all_files['xml']
     analysis_result['sqlite'] = all_files['sqlite']
     analysis_result['other_files'] = all_files['others']
+    analysis_result['tls_tests'] = get_tls_logs(apk_dir, md5_hash)
     return analysis_result
 
 
@@ -112,6 +114,15 @@ def get_screenshots(md5_hash, download_dir):
     return result
 
 
+def get_tls_logs(apk_dir, md5_hash):
+    """Get TLS/SSL test logs."""
+    out = Path(apk_dir) / 'mobsf_tls_tests.json'
+    if not out.exists():
+        return None
+    with out.open(encoding='utf-8') as src:
+        return load(src)
+
+
 def get_log_data(apk_dir, package):
     """Get Data for analysis."""
     logcat_data = []
@@ -133,26 +144,26 @@ def get_log_data(apk_dir, package):
                      errors='ignore') as flip:
             web_data = flip.read()
     if is_file_exists(logcat):
-        with io.open(logcat,
+        with io.open(logcat,  # lgtm [py/path-injection]
                      mode='r',
                      encoding='utf8',
                      errors='ignore') as flip:
             logcat_data = flip.readlines()
             traffic = ''.join(logcat_data)
     if is_file_exists(xlogcat):
-        with io.open(xlogcat,
+        with io.open(xlogcat,  # lgtm [py/path-injection]
                      mode='r',
                      encoding='utf8',
                      errors='ignore') as flip:
             droidmon_data = flip.read()
     if is_file_exists(apimon):
-        with io.open(apimon,
+        with io.open(apimon,  # lgtm [py/path-injection]
                      mode='r',
                      encoding='utf8',
                      errors='ignore') as flip:
             apimon_data = flip.read()
     if is_file_exists(fd_logs):
-        with io.open(fd_logs,
+        with io.open(fd_logs,  # lgtm [py/path-injection]
                      mode='r',
                      encoding='utf8',
                      errors='ignore') as flip:
@@ -206,7 +217,7 @@ def get_app_files(apk_dir, md5_hash, package):
                         all_files['xml'].append(
                             {'type': 'xml', 'file': fileparam})
                     else:
-                        with open(file_path,
+                        with open(file_path,  # lgtm [py/path-injection]
                                   'r',
                                   encoding='ISO-8859-1') as flip:
                             file_cnt_sig = flip.read(6)

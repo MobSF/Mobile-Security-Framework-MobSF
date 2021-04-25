@@ -201,9 +201,11 @@ def pdf(request, api=False, jsonres=False):
                     'error': 'Cannot Generate PDF/JSON',
                     'err_details': str(exp)}
             else:
+                err = {
+                    'pdf_error': 'Cannot Generate PDF',
+                    'err_details': str(exp)}
                 return HttpResponse(
-                    json.dumps({'pdf_error': 'Cannot Generate PDF',
-                                'err_details': str(exp)}),
+                    json.dumps(err),  # lgtm [py/stack-trace-exposure]
                     content_type=ctype,
                     status=500)
     except Exception as exp:

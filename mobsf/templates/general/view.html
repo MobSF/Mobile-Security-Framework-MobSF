@@ -86,6 +86,7 @@ pre {
     const get_lines = function(){
         const pat = new RegExp(/^[\d,]{1,1000}$/);
         const urlParams = new URLSearchParams(window.location.search);
+        var i;
         var lines = urlParams.get("lines");
         if (!pat.test(lines)){
           return 0;
@@ -97,7 +98,6 @@ pre {
           }
           return lines;
         }
-        return 0;
     }
     code_blk = document.getElementById('code_block');
     if (code_blk){

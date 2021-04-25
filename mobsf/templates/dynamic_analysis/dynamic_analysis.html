@@ -7,6 +7,7 @@
 {% block extra_css %}
  <!-- DataTables -->
 <link rel="stylesheet" href="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.css" %}">
+<link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
 <style>
    #app_icon{
             width: 64px;
@@ -40,175 +41,6 @@
 textarea:focus {
     background: none repeat scroll 0 0 #FFFFFF;
     outline-width: 0;
-}
-
-/* Loading */
-
-*.hidden {
-  display: none !important;
-}
-
-div.loading{
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(16, 16, 16, 0.5);
-}
-
-@-webkit-keyframes uil-ring-anim {
-  0% {
-    -ms-transform: rotate(0deg);
-    -moz-transform: rotate(0deg);
-    -webkit-transform: rotate(0deg);
-    -o-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  100% {
-    -ms-transform: rotate(360deg);
-    -moz-transform: rotate(360deg);
-    -webkit-transform: rotate(360deg);
-    -o-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-@-webkit-keyframes uil-ring-anim {
-  0% {
-    -ms-transform: rotate(0deg);
-    -moz-transform: rotate(0deg);
-    -webkit-transform: rotate(0deg);
-    -o-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  100% {
-    -ms-transform: rotate(360deg);
-    -moz-transform: rotate(360deg);
-    -webkit-transform: rotate(360deg);
-    -o-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-@-moz-keyframes uil-ring-anim {
-  0% {
-    -ms-transform: rotate(0deg);
-    -moz-transform: rotate(0deg);
-    -webkit-transform: rotate(0deg);
-    -o-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  100% {
-    -ms-transform: rotate(360deg);
-    -moz-transform: rotate(360deg);
-    -webkit-transform: rotate(360deg);
-    -o-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-@-ms-keyframes uil-ring-anim {
-  0% {
-    -ms-transform: rotate(0deg);
-    -moz-transform: rotate(0deg);
-    -webkit-transform: rotate(0deg);
-    -o-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  100% {
-    -ms-transform: rotate(360deg);
-    -moz-transform: rotate(360deg);
-    -webkit-transform: rotate(360deg);
-    -o-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-@-moz-keyframes uil-ring-anim {
-  0% {
-    -ms-transform: rotate(0deg);
-    -moz-transform: rotate(0deg);
-    -webkit-transform: rotate(0deg);
-    -o-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  100% {
-    -ms-transform: rotate(360deg);
-    -moz-transform: rotate(360deg);
-    -webkit-transform: rotate(360deg);
-    -o-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-@-webkit-keyframes uil-ring-anim {
-  0% {
-    -ms-transform: rotate(0deg);
-    -moz-transform: rotate(0deg);
-    -webkit-transform: rotate(0deg);
-    -o-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  100% {
-    -ms-transform: rotate(360deg);
-    -moz-transform: rotate(360deg);
-    -webkit-transform: rotate(360deg);
-    -o-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-@-o-keyframes uil-ring-anim {
-  0% {
-    -ms-transform: rotate(0deg);
-    -moz-transform: rotate(0deg);
-    -webkit-transform: rotate(0deg);
-    -o-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  100% {
-    -ms-transform: rotate(360deg);
-    -moz-transform: rotate(360deg);
-    -webkit-transform: rotate(360deg);
-    -o-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-@keyframes uil-ring-anim {
-  0% {
-    -ms-transform: rotate(0deg);
-    -moz-transform: rotate(0deg);
-    -webkit-transform: rotate(0deg);
-    -o-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  100% {
-    -ms-transform: rotate(360deg);
-    -moz-transform: rotate(360deg);
-    -webkit-transform: rotate(360deg);
-    -o-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-.uil-ring-css {
-  margin: auto;
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  width: 200px;
-  height: 200px;
-}
-.uil-ring-css > div {
-  position: absolute;
-  display: block;
-  width: 160px;
-  height: 160px;
-  top: 20px;
-  left: 20px;
-  border-radius: 80px;
-  box-shadow: 0 6px 0 0 #ffffff;
-  -ms-animation: uil-ring-anim 1s linear infinite;
-  -moz-animation: uil-ring-anim 1s linear infinite;
-  -webkit-animation: uil-ring-anim 1s linear infinite;
-  -o-animation: uil-ring-anim 1s linear infinite;
-  animation: uil-ring-anim 1s linear infinite;
 }
 
 /* disable button */
@@ -254,10 +86,25 @@ div.loading{
                   <div class="row">
                      <div class="col-md-9">
                         <h4>MobSF Dynamic Analyzer Supports</h4>
-                        <h5><strong>• Genymotion Android VM</strong> version 4.1 - 10.0 (x86, upto API 29)<br/><strong>• Android Studio Emulator AVD</strong> version 5.0 - 9.0 (arm, arm64, x86, and x86_64 upto API 28)<br/></h5>
-                        <p>Recommended Android version is <strong>8.0 +</strong>.<br/> For Android versions lower than <strong>5</strong>, MobSF uses Xposed Framework and you must MobSFy and reboot the Android Runtime prior to Dynamic Analysis.<br /> Frida is used with newer versions of Android and no user action is required.</p>
-                        <p><h5> HTTPS Traffic Interception</h5>
-                        <p>For Android version <strong>4.1 - 4.3</strong>, set Android VM proxy as <strong>{% if proxy_ip %} {{ proxy_ip }}{% else %} <i>&lt;Host IP&gt;</i>{% endif %}:{{proxy_port}}</strong><br/ >For Android versions <strong>4.4 - 10</strong>, global proxy settings are automatically applied.<br/>For more information, please refer Documentation.
+                        <h5>
+                          <strong>• Genymotion Android VM</strong> version 4.1 - 10.0 (x86, upto API 29)<br/>
+                          <strong>• Android Emulator AVD</strong> (non production) version 5.0 - 9.0 (arm, arm64, x86, and x86_64 upto API 28)
+                        </h5>
+                        <p>
+                          {% if android_version %}
+                            Recommended Android version is <strong>7.0 +</strong><br/>
+                            Detected Android Version: <strong>{{android_version}}</strong>, SDK: <strong>{{ android_sdk }}</strong> <br/>
+                          {% endif %}
+
+                          {% if android_version < 5 %}
+                          Xposed Framework is used for instrumentation and you must MobSFy and reboot the Android Runtime prior to Dynamic Analysis.
+                          {% if android_version < 4.4 %}
+                           <br/>For Android version <strong>4.1 - 4.3</strong>, set Android VM proxy as <strong>{% if proxy_ip %} {{ proxy_ip }}{% else %} <i>&lt;Host IP&gt;</i>{% endif %}:{{proxy_port}}</strong>
+                          {% endif %}
+                          {% elif android_version %}
+                            Frida will be used for instrumentation.
+                          {% endif %}
+                         
                         </p>
                       </div>   
                      <div class="col-md-3">
