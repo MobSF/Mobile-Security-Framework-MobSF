@@ -76,9 +76,10 @@
               <!-- /.card-header -->
               <div class="card-body">
                  <div id="but" align="center">
-                  <a href="#" id="screen" class="btn btn-primary" role="button"><i class="fa fa-mobile"></i> Show Screen</a>
-                  <a href="#" id="rootca" class="btn btn-primary" role="button"><i class="fa fa-certificate"></i> Remove MobSF RootCA</a>
+                  <a href="#" id="screen" class="btn btn-primary" role="button"><i class="fa fa-mobile-alt"></i> Show Screen</a>
+                  <a href="#" id="rootca" class="btn btn-primary" role="button"><i class="fa fa-certificate"></i> Remove Root CA</a>
                   {% if android_version >= 5 %}
+                  <a href="#" id="proxy" class="btn btn-primary" role="button"><i class="fas fa-eye-slash"></i> Unset HTTP(S) Proxy</a>
                   <a href="#" id="tls_test" class="btn btn-primary" role="button"  data-toggle="modal" data-target="#tls_modal"><i class="fa fa-lock"></i> TLS/SSL Security Tester</a>
                   {% endif %}
                   <a href="#" id="expactt" class="btn btn-primary" role="button"><i class="fa fa-language"></i> Exported Activity Tester</a>
@@ -702,11 +703,11 @@ function print_tls_progress(message){
   $('#tls_text').scrollTop($('#tls_text')[0].scrollHeight);
 }
 
-print_status("Setting up Dynamic Analysis environment");
-print_status("Running HTTPS intercepting proxy");
-print_status("Invoking MobSF agents");
-print_status("Environment is ready for user assisted dynamic analysis.");
-print_status("Navigate through all the flows of the app manually.");
+print_status("Setting up MobSF Dynamic Analysis environment...");
+print_status("Running HTTP(S) interception proxy.");
+print_status("Invoking MobSF agents.");
+print_status("Environment is ready for Dynamic Analysis.");
+print_status("Start Instrumentation or Run the application and navigate through the different flows or business logic manually.");
 
 // Frida Logs Tab
 
@@ -763,7 +764,7 @@ $("#screen").click(function() {
       var stext = $("#screen").text();
       if (stext.includes("Show Screen")){
           $("#screen").html("<i class='fa fa-mobile'></i> Stop Screen");
-          print_status('Screen streaming started')
+          print_status('Screen streaming started.')
           touch = "on";
           screenfunc = setInterval(function(){
               // Capture Screen
@@ -775,8 +776,8 @@ $("#screen").click(function() {
                });
           },3000);
       } else {
-          $("#screen").html("<i class='fa fa-mobile'></i> Show Screen");
-          print_status("Screen streaming stopped");
+          $("#screen").html("<i class='fa fa-mobile-alt'></i> Show Screen");
+          print_status("Screen streaming stopped.");
           $('#my').attr('src', '/static/img/loading.jpg');
           clearInterval(screenfunc);
           touch = "off";
@@ -786,7 +787,7 @@ $("#screen").click(function() {
 
 //Screenshot
 $("#ss").click(function() {
-  print_status("Taking a screenshot");
+  print_status("Taking a screenshot.");
   action(document.location.origin + '/screenshot/', {hash: '{{ hash }}'}, function(json) {
     if (json.status==="ok"){
         print_status("Screenshot taken!");
@@ -803,18 +804,42 @@ $("#ss").click(function() {
 $("#rootca").click(function() {
   var stext = $("#rootca").text();
   var act;
-  if (stext.includes("Remove MobSF RootCA")){
-    $("#rootca").html("<i class='fa fa-certificate'></i> Install MobSF RootCA");
+  if (stext.includes("Remove Root CA")){
+    $("#rootca").html("<i class='fa fa-certificate'></i> Install Root CA");
     act = "remove";
   } else {
-    $("#rootca").html("<i class='fa fa-certificate'></i> Remove MobSF RootCA");
+    $("#rootca").html("<i class='fa fa-certificate'></i> Remove Root CA");
     act = "install";
   }
   action(document.location.origin + '/mobsf_ca/', {action: act}, function(json) {
       if (json.message === "installed")
-        print_status("MobSF RootCA installed successfully");
+        print_status("MobSF Root CA installed successfully.");
       else if (json.message === "removed")
-        print_status("MobSF RootCA removed successfully");
+        print_status("MobSF Root CA removed successfully.");
+      else
+        print_status(json.message);
+    });
+    return false;  
+}); 
+
+
+//MobSF Global Proxy
+
+$("#proxy").click(function() {
+  var stext = $("#proxy").text();
+  var act;
+  if (stext.includes("Unset HTTP(S) Proxy")){
+    $("#proxy").html("<i class='fas fa-eye'></i> Set HTTP(S) Proxy");
+    act = "unset";
+  } else {
+    $("#proxy").html("<i class='fas fa-eye-slash'></i> Unset HTTP(S) Proxy");
+    act = "set";
+  }
+  action(document.location.origin + '/global_proxy/', {action: act}, function(json) {
+      if (json.message === "set")
+        print_status("MobSF Global HTTP(S) interception proxy is applied.");
+      else if (json.message === "unset")
+        print_status("MobSF Global HTTP(S) interception proxy is removed.");
       else
         print_status(json.message);
     });
@@ -895,9 +920,9 @@ $("#run_app").click(function() {
     print_status("Launching App");
     action(document.location.origin + '/run_apk/', {hash: '{{ hash }}'}, function(json) {
       if (json.status==="ok"){
-          print_status("App launched");
+          print_status("Application launched.");
       } else {
-          print_status("Failed to launch app");
+          print_status("Failed to launch the application.");
       }
     });
     return false;  
@@ -905,7 +930,7 @@ $("#run_app").click(function() {
 
 // Logcat Stream
 $("#logstream").click(function() {
-    print_status("Logcat Steaming started");
+    print_status("Logcat Steaming started.");
     setTimeout(function(){ window.open(document.location.origin + '/logcat/?package={{ package }}', '_blank');}, 500);   
     return false;  
 }); 
@@ -932,7 +957,7 @@ $("#loadscript").click(function() {
 
 // Frida Spawn
 $("#frida_spawn").click(function() {
-    print_status("Instrumenting app with frida");
+    print_status("Instrumenting the application with Frida.");
     $('#fd_log').removeAttr('disabled');
     $('#frida-tab').removeClass('disabled');
     var default_hooks = [];
@@ -959,7 +984,7 @@ $("#frida_spawn").click(function() {
       frida_code: editor.getDoc().getValue(),
     }, function(json) {
     if (json.status === "ok")
-      print_status("Successfully attached");
+      print_status("Frida instrumentation successful.");
     else
       print_status(json.message);
   });
@@ -992,10 +1017,10 @@ $("#stop").one( "click", function() {
     if (json.status==="ok"){
       $('#stop').addClass("btn btn-success");
       $('#stop').text("Please Wait...");
-      print_status("Downloading logs");
-      print_status("Stopping Application");
+      print_status("Downloading logs.");
+      print_status("Stopping Application.");
     } else{
-      print_status('Failed to collect all data')
+      print_status('Failed to collect data.')
       print_status(json.message)
     }
     dump();

@@ -46,6 +46,7 @@
               <li><code>api/v1/android/mobsfy</code> - <a href="#mobsfy-api">MobSFy VM/Emulator/Device</a></li>
               <li><code>api/v1/android/adb_command</code> - <a href="#adb-command-api">Execute ADB Commands</a></li>
               <li><code>api/v1/android/root_ca</code> - <a href="#root-ca-api">Install or Remove MobSF Root CA</a></li>
+              <li><code>api/v1/android/global_proxy</code> - <a href="#global-proxy-api">Set or Unset MobSF HTTP(S) Proxy</a></li>
               <li><code>api/v1/android/activity</code> - <a href="#activity-api">Activity or Exported Activity Tester</a></li>
               <li><code>api/v1/android/tls_tests</code> - <a href="#tls-tester-api">TLS/SSL Security Tester</a></li>
               <li><code>api/v1/frida/instrument</code> - <a href="#frida-instrument-api">Frida Instrument App</a></li>
@@ -1236,6 +1237,82 @@
                 <ul>
                   <li>
                     <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/root_ca --data "action=install" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+            <hr />
+            <h2><a id="global-proxy-api"></a><strong>Set or Unset MobSF Global HTTP(S) Proxy API</strong></h2>
+            <p>API to apply or remove global HTTP(S) proxy configuration to Android VM/Emulator/Device.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/android/global_proxy</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>action</td>
+                  <td>set/unset</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{
+  "status": "ok",
+  "message": "set"
+}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/global_proxy --data "action=set" -H "Authorization:{{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>

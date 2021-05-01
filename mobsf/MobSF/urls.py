@@ -51,6 +51,7 @@ urlpatterns = [
     url(r'^api/v1/android/mobsfy$', api_dz.api_mobsfy),
     url(r'^api/v1/android/adb_command$', api_dz.api_adb_execute),
     url(r'^api/v1/android/root_ca$', api_dz.api_root_ca),
+    url(r'^api/v1/android/global_proxy$', api_dz.api_global_proxy),
     url(r'^api/v1/android/activity$', api_dz.api_api_tester),
     url(r'^api/v1/android/tls_tests$', api_dz.api_tls_tester),
     # Frida
@@ -118,6 +119,7 @@ if settings.API_ONLY == '0':
         url(r'^touch_events/$', operations.touch),
         url(r'^get_component/$', operations.get_component),
         url(r'^mobsf_ca/$', operations.mobsf_ca),
+        url(r'^global_proxy/$', operations.global_proxy),
         # Dynamic Tests
         url(r'^activity_tester/$', tests_common.activity_tester),
         url(r'^download_data/$', tests_common.download_data),

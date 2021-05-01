@@ -109,6 +109,19 @@ def api_root_ca(request):
     return make_api_response(resp, 500)
 
 
+@request_method(['POST'])
+@csrf_exempt
+def api_global_proxy(request):
+    """POST - MobSF Global Proxy API."""
+    if 'action' not in request.POST:
+        return make_api_response(
+            {'error': 'Missing Parameters'}, 422)
+    resp = operations.global_proxy(request, True)
+    if resp['status'] == 'ok':
+        return make_api_response(resp, 200)
+    return make_api_response(resp, 500)
+
+
 # Android Dynamic Tests APIs
 @request_method(['POST'])
 @csrf_exempt

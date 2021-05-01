@@ -243,7 +243,6 @@ def screen_cast(request):
         logger.exception('Screen streaming')
         data = {'status': 'failed', 'message': str(exp)}
     return send_response(data)
-
 # AJAX
 
 
@@ -271,8 +270,6 @@ def touch(request):
         logger.exception('Sending Touch Events')
         data = {'status': 'failed', 'message': str(exp)}
     return send_response(data)
-
-
 # AJAX
 
 
@@ -294,5 +291,29 @@ def mobsf_ca(request, api=False):
                     'message': 'Action not supported'}
     except Exception as exp:
         logger.exception('MobSF RootCA Handler')
+        data = {'status': 'failed', 'message': str(exp)}
+    return send_response(data, api)
+# AJAX
+
+
+@require_http_methods(['POST'])
+def global_proxy(request, api=False):
+    """Set/unset global proxy."""
+    data = {}
+    try:
+        env = Environment()
+        version = env.get_android_version()
+        action = request.POST['action']
+        if action == 'set':
+            env.set_global_proxy(version)
+            data = {'status': 'ok', 'message': 'set'}
+        elif action == 'unset':
+            env.unset_global_proxy()
+            data = {'status': 'ok', 'message': 'unset'}
+        else:
+            data = {'status': 'failed',
+                    'message': 'Action not supported'}
+    except Exception as exp:
+        logger.exception('MobSF Global Proxy')
         data = {'status': 'failed', 'message': str(exp)}
     return send_response(data, api)

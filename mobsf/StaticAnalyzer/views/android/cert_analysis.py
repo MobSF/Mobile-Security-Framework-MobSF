@@ -27,6 +27,8 @@ def get_hardcoded_cert_keystore(files):
         certz = []
         key_store = []
         for file_name in files:
+            if '.' not in file_name:
+                continue
             ext = file_name.split('.')[-1]
             if re.search('cer|pem|cert|crt|pub|key|pfx|p12', ext):
                 certz.append(escape(file_name))
