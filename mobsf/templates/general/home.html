@@ -18,26 +18,26 @@
    </head>
    <body>
    <div class="topnav">
-
         <!-- Centered link -->
         <div class="topnav-centered">
-        
-        </div>
-        <!-- Left-aligned links (default) -->
-        <a href="{% url 'recent' %}">RECENT SCANS</a>
-        <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>
-        
-
-        <a>
-            <img src="{% static "img/mobsf_logo.png" %}" width="10%" height="10%"/><br><br>
-            <input type="download" id="package" class="form-control" placeholder="Download & Scan by package name"/>
-        </a>
-       
-        <!-- Right-aligned links -->
-        <div class="topnav-right">
-            <a href="{% url 'api_docs' %}">API DOCS</a>
-            <a href="{% url 'about' %}">ABOUT</a>
-        </div>
+            <a>
+               <img src="{% static "img/mobsf_logo.png" %}" width="20%" height="20%"/>
+           </a>
+           </div>
+           <!-- Left-aligned links (default) -->
+           <a href="{% url 'recent' %}">RECENT SCANS</a>
+           <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>
+   
+           <!-- Right-aligned links -->
+           <div class="topnav-right">
+               <a href="{% url 'api_docs' %}">API DOCS</a>
+               <a href="{% url 'about' %}">ABOUT</a>
+               <a>
+                <form action="/search" method="GET">
+                    <input name="md5" type="text" class="form-control" placeholder="Search MD5">
+                 </form>
+                </a>
+           </div>
 
         </div>
       <div class="site-wrapper">
@@ -66,9 +66,8 @@
                   </form>
                </div>
                <div class="mastfoot">
-                  <form action="/search" method="GET">
-                     <input name="md5" type="text" class="form-control" placeholder="Search MD5">
-                  </form>
+                
+                  <input type="download" id="package" class="form-control" placeholder="Download & Scan by package name"/>
 
 
                   <div class="inner">
