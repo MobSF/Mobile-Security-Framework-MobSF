@@ -17,7 +17,6 @@ from mobsf.DynamicAnalyzer.views.android.analysis import (
 )
 from mobsf.DynamicAnalyzer.views.android.operations import (
     get_package_name,
-    is_path_traversal,
 )
 from mobsf.DynamicAnalyzer.views.android.tests_xposed import (
     droidmon_api_analysis,
@@ -28,6 +27,7 @@ from mobsf.DynamicAnalyzer.views.android.tests_frida import (
 from mobsf.MobSF.utils import (
     is_file_exists,
     is_md5,
+    is_path_traversal,
     is_safe_path,
     print_n_send_error_response,
     read_sqlite,

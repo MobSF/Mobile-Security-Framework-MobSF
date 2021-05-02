@@ -1,6 +1,8 @@
 """Helpers."""
 import functools
 
+from mobsf.MobSF.utils import is_zip_magic
+
 from django.conf import settings
 from django.http import HttpRequest, HttpResponseNotAllowed
 
@@ -13,7 +15,7 @@ class FileType(object):
     def __init__(self, file_obj):
         self.file_type = file_obj.content_type
         self.file_name_lower = file_obj.name.lower()
-        self.zip = self.is_zip_magic(file_obj)
+        self.zip = is_zip_magic(file_obj)
 
     def is_allow_file(self):
         """
@@ -26,15 +28,14 @@ class FileType(object):
                 or self.is_xapk()
                 or self.is_zip()
                 or self.is_ipa()
-                or self.is_appx()):
+                or self.is_appx()
+                or self.is_apks()):
             return True
         return False
 
-    def is_zip_magic(self, file_obj):
-        magic = file_obj.read(4)
-        file_obj.seek(0, 0)
-        # ZIP magic PK.. no support for spanned and empty arch
-        return bool(magic == b'\x50\x4B\x03\x04')
+    def is_apks(self):
+        return (self.file_type in settings.APK_MIME
+                and self.file_name_lower.endswith('.apks'))
 
     def is_xapk(self):
         return (self.file_type in settings.APK_MIME

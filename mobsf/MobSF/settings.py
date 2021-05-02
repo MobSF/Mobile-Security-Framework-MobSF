@@ -114,6 +114,9 @@ GITHUB_URL = ('https://raw.githubusercontent.com/'
 FRIDA_SERVER = 'https://api.github.com/repos/frida/frida/releases/tags/'
 GOOGLE = 'https://www.google.com'
 BAIDU = 'https://www.baidu.com/'
+APKPURE = 'https://m.apkpure.com/android/{}/download?from=details'
+APKTADA = 'https://apktada.com/download-apk/'
+APKPLZ = 'https://apkplz.net/download-app/'
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # ============DJANGO SETTINGS =================

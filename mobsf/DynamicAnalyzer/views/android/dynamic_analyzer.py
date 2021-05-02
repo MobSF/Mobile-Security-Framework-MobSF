@@ -17,7 +17,6 @@ from django.shortcuts import render
 from mobsf.DynamicAnalyzer.views.android.environment import Environment
 from mobsf.DynamicAnalyzer.views.android.operations import (
     get_package_name,
-    strict_package_check,
 )
 from mobsf.DynamicAnalyzer.tools.webproxy import (
     get_http_tools_url,
@@ -30,6 +29,7 @@ from mobsf.MobSF.utils import (
     get_proxy_ip,
     is_md5,
     print_n_send_error_response,
+    strict_package_check,
 )
 from mobsf.MobSF.views.scanning import add_to_recent_scan
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid

@@ -67,6 +67,7 @@ if settings.API_ONLY == '0':
         url(r'^$', home.index, name='home'),
         url(r'^upload/$', home.Upload.as_view),
         url(r'^download/', home.download),
+        url(r'^download_scan/', home.download_apk),
         url(r'^about$', home.about, name='about'),
         url(r'^api_docs$', home.api_docs, name='api_docs'),
         url(r'^recent_scans/$', home.recent_scans, name='recent'),
