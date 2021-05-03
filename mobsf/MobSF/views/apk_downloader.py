@@ -128,10 +128,10 @@ def apk_download(package):
     """Download APK."""
     downloaded_file = None
     data = None
-    logger.info('Attempting to download: %s', package)
     try:
         if not strict_package_check(package) or is_path_traversal(package):
             return None
+        logger.info('Attempting to download: %s', package)
         # APKTADA
         data = try_provider(
             package,
