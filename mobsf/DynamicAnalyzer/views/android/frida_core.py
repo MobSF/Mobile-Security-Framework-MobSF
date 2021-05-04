@@ -13,7 +13,6 @@ from mobsf.DynamicAnalyzer.views.android.environment import Environment
 from mobsf.DynamicAnalyzer.views.android.frida_scripts import (
     class_pattern,
     class_trace,
-    get_dependencies,
     get_loaded_classes,
     get_methods,
     string_catch,
@@ -68,7 +67,8 @@ class Frida:
             if itm == 'enum_class':
                 scripts.append(get_loaded_classes())
             elif itm == 'get_dependencies':
-                scripts.append(get_dependencies())
+                scripts.append(get_loaded_classes().replace(
+                    '[AUXILIARY] ', '[RUNTIME-DEPS] '))
             elif itm == 'string_catch':
                 scripts.append(string_catch())
             elif itm == 'string_compare':

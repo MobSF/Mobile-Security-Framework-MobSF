@@ -24,11 +24,6 @@ def get_loaded_classes():
     return get_content('get_loaded_classes.js')
 
 
-def get_dependencies():
-    """Get Loaded classes."""
-    return get_content('_get_dependencies.js')
-
-
 def string_catch():
     """Capture all runtime strings."""
     return get_content('string_catch.js')
