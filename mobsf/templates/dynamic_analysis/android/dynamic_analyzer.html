@@ -84,6 +84,9 @@
                   {% endif %}
                   <a href="#" id="expactt" class="btn btn-primary" role="button"><i class="fa fa-language"></i> Exported Activity Tester</a>
                   <a href="#" id="actt" class="btn btn-primary" role="button"><i class="fa fa-rocket"></i> Activity Tester</a>
+                  {% if android_version >= 5 %}
+                  <a href="#" id="deps" class="btn btn-primary" role="button"><i class="fas fa-running"></i> Get Dependencies</a>
+                  {% endif %}
                   <a href="#" id="ss" class="btn btn-primary" role="button"><i class="fa fa-camera"></i> Take a Screenshot</a>
                   <a href="#" id="logstream" class="btn btn-primary"><i class="fa fa-water"></i> Logcat Stream</a>
                   <a href="../../live_api/?hash={{ hash }}&amp;package={{ package }}" id="apimon" target="_blank" class="btn btn-primary" style='display: none'><i class="fa fa-search"></i> Live API Monitor</a>
@@ -991,6 +994,20 @@ $("#frida_spawn").click(function() {
   return false;  
 }); 
 
+//Frida Get Runtime Dependencies
+$("#deps").click(function() {
+    print_status("Getting application runtime dependencies.");
+    action(document.location.origin + '/get_dependencies/', {hash: '{{ hash }}'}, function(json) {
+      if (json.status==="ok"){
+          $('#fd_log').removeAttr('disabled');
+          $('#frida-tab').removeClass('disabled');
+          print_status("Dependencies collected!");
+      } else {
+          print_status(json.message);
+      }
+    });
+    return false;  
+});
 
 //Dump App data
 function dump(){

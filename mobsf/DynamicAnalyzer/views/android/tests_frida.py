@@ -49,6 +49,29 @@ def list_frida_scripts(request, api=False):
 
 
 @require_http_methods(['POST'])
+def get_runtime_dependencies(request, api=False):
+    """Get App runtime dependencies."""
+    data = {
+        'status': 'failed',
+        'message': 'Failed to get runtime dependencies'}
+    try:
+        checksum = request.POST['hash']
+        if not is_md5(checksum):
+            return invalid_params(api)
+        package = get_package_name(checksum)
+        if not package:
+            return invalid_params(api)
+        get_dependencies(package, checksum)
+        return send_response(
+            {'status': 'ok'},
+            api)
+    except Exception:
+        pass
+    return send_response(data, api)
+# AJAX
+
+
+@require_http_methods(['POST'])
 def get_script(request, api=False):
     """Get frida scripts from others."""
     data = {'status': 'ok', 'content': ''}
@@ -272,3 +295,43 @@ def apimon_analysis(app_dir):
     except Exception:
         logger.exception('API Monitor Analysis')
     return api_details
+
+
+def get_dependencies(package, checksum):
+    """Get 3rd party dependencies at runtime."""
+    frd = Frida(
+        checksum,
+        package,
+        ['ssl_pinning_bypass', 'debugger_check_bypass', 'root_bypass'],
+        ['get_dependencies'],
+        None,
+        None,
+    )
+    location = Path(frd.deps)
+    if location.exists():
+        location.write_text('')
+    trd = threading.Thread(target=frd.connect)
+    trd.daemon = True
+    trd.start()
+
+
+def dependency_analysis(package, app_dir):
+    deps = set()
+    msg = 'Collecting Runtime Dependency Analysis data'
+    try:
+        ignore = (
+            package,
+            'android.', 'androidx.', 'kotlin.', 'kotlinx.', 'java.', 'javax.',
+            'sun.', 'com.android.', 'j$', 'dalvik.system.', 'libcore.',
+            'com.google.', 'org.kxml2.', 'org.apache.', 'org.json.')
+        location = Path(app_dir) / 'mobsf_app_deps.txt'
+        if not location.exists():
+            return deps
+        logger.info(msg)
+        data = location.read_text('utf-8', 'ignore').splitlines()
+        for dep in data:
+            if not dep.startswith(ignore):
+                deps.add(dep.rsplit('.', 1)[0])
+    except Exception:
+        logger.exception(msg)
+    return deps

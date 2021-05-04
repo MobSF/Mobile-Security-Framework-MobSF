@@ -114,6 +114,14 @@
               </p>
             </a>
           </li>
+          <li class="nav-item">
+            <a href="#deps" class="nav-link">
+              <i class="nav-icon fas fa-running"></i>
+              <p>
+                Runtime Dependencies
+              </p>
+            </a>
+          </li>
           <li class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-bug"></i>
@@ -519,6 +527,31 @@
     </div>
 </section>
  <!-- ===========================end screenshots ================================== -->
+
+<a id="deps" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-running"></i> RUNTIME DEPENDENCIES</strong>
+             </p>
+                {% if runtime_dependencies %} 
+                <div class="list-group">
+                  {% for f in runtime_dependencies %}
+                        {{ f }} <br>
+                  {% endfor %}
+              {% endif %}
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+    </div>
+</section>
+ <!-- ===========================end dependencies ================================== -->
  <style>
   #chartdiv {
   width: 100%;

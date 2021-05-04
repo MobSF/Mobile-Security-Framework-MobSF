@@ -23,6 +23,7 @@ from mobsf.DynamicAnalyzer.views.android.tests_xposed import (
 )
 from mobsf.DynamicAnalyzer.views.android.tests_frida import (
     apimon_analysis,
+    dependency_analysis,
 )
 from mobsf.MobSF.utils import (
     is_file_exists,
@@ -72,6 +73,7 @@ def view_report(request, checksum, api=False):
         fd_log = os.path.join(app_dir, 'mobsf_frida_out.txt')
         droidmon = droidmon_api_analysis(app_dir, package)
         apimon = apimon_analysis(app_dir)
+        deps = dependency_analysis(package, app_dir)
         analysis_result = run_analysis(app_dir, checksum, package)
         generate_download(app_dir, checksum, download_dir, package)
         images = get_screenshots(checksum, download_dir)
@@ -90,6 +92,7 @@ def view_report(request, checksum, api=False):
                    'droidmon': droidmon,
                    'apimon': apimon,
                    'frida_logs': is_file_exists(fd_log),
+                   'runtime_dependencies': deps,
                    'package': package,
                    'version': settings.MOBSF_VER,
                    'title': 'Dynamic Analysis'}
