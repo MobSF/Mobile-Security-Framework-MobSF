@@ -385,7 +385,7 @@ class Environment:
             logger.warning(
                 'Unable to identify Dynamic Analysis environment. '
                 'Official support is available only for Android '
-                'Emulator and Genymotion VM')
+                'Emulator, Corellium, and Genymotion')
             return ''
 
     def get_android_version(self):
