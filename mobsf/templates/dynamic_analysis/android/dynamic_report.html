@@ -172,6 +172,12 @@
                   <p>Emails</p>
                 </a>
               </li>
+              <li class="nav-item">
+                <a href="#b64" class="nav-link">
+                  <i class="fas fa-puzzle-piece nav-icon"></i>
+                  <p>Base64 Strings</p>
+                </a>
+              </li>
             </ul>
           </li>
           <li class="nav-item has-treeview">
@@ -718,6 +724,44 @@
     </div>
 </section>
  <!-- ===========================end emails ================================== -->
+<a id="b64" class="anchor"></a>
+<section class="content">
+      <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+              <p><strong><i class="fas fa-puzzle-piece"></i> BASE64 STRINGS DECODED</strong></p>
+                <div class="table-responsive">
+                 <table class="table table-striped">
+                    <thead>
+                    <tr>
+                      <th>CALLED</th>
+                      <th>DECODED STRING</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                      {% for details in base64_strings %}
+                        <tr>
+                        <td>
+                            {{ details.0  }}
+                        </td>
+                        <td style="word-wrap: break-word;min-width: 160px;max-width: 160px;">
+                            {{ details.1|slice:500}}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+                </div>
+              </div>
+            </div><!-- /.card -->
+            </div>
+            <!-- end row -->
+            </div>
+        </div>
+</section>
+ <!-- ===========================end base64 decoded strings ================================== -->
 <a id="sqlitedb" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">

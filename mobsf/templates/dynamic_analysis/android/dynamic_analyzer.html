@@ -472,7 +472,16 @@ var editor = CodeMirror.fromTextArea(document.getElementById("code-js"), {
     gutters: ["CodeMirror-lint-markers"],
     lint: true,
     lineWrapping: true,
+    onLoad: restore(),
   });
+
+//Restore Code
+function restore(){
+  var custom_code = window.sessionStorage.getItem("code");
+  if (custom_code !== null) {
+    setTimeout(function(){ editor.getDoc().setValue(custom_code); }, 2000);
+  }
+}
 
 // Terminal
 var util = util || {};
@@ -958,9 +967,13 @@ $("#loadscript").click(function() {
   return false;  
 });
 
+
 // Frida Spawn
 $("#frida_spawn").click(function() {
     print_status("Instrumenting the application with Frida.");
+    // Save Frida Code to Session Storage
+    var code = editor.getDoc().getValue();
+    window.sessionStorage.setItem('code', code);
     $('#fd_log').removeAttr('disabled');
     $('#frida-tab').removeClass('disabled');
     var default_hooks = [];
@@ -1043,8 +1056,7 @@ $("#stop").one( "click", function() {
     dump();
   });
   return false;  
-}); 
-
+});
 
 //end document.ready
 });

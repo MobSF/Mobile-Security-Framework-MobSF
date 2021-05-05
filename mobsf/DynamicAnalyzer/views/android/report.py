@@ -50,6 +50,7 @@ def view_report(request, checksum, api=False):
     try:
         droidmon = {}
         apimon = {}
+        b64_strings = []
         if not is_md5(checksum):
             # We need this check since checksum is not validated
             # in REST API
@@ -72,7 +73,7 @@ def view_report(request, checksum, api=False):
             return print_n_send_error_response(request, msg, api)
         fd_log = os.path.join(app_dir, 'mobsf_frida_out.txt')
         droidmon = droidmon_api_analysis(app_dir, package)
-        apimon = apimon_analysis(app_dir)
+        apimon, b64_strings = apimon_analysis(app_dir)
         deps = dependency_analysis(package, app_dir)
         analysis_result = run_analysis(app_dir, checksum, package)
         generate_download(app_dir, checksum, download_dir, package)
@@ -91,6 +92,7 @@ def view_report(request, checksum, api=False):
                    'exported_activity_tester': images['exported_activities'],
                    'droidmon': droidmon,
                    'apimon': apimon,
+                   'base64_strings': b64_strings,
                    'frida_logs': is_file_exists(fd_log),
                    'runtime_dependencies': deps,
                    'package': package,

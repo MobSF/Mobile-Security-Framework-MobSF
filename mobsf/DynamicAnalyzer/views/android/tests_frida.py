@@ -263,9 +263,10 @@ def apimon_analysis(app_dir):
     """API Analysis."""
     api_details = {}
     try:
+        strings = []
         location = os.path.join(app_dir, 'mobsf_api_monitor.txt')
         if not is_file_exists(location):
-            return {}
+            return api_details, strings
         logger.info('Frida API Monitor Analysis')
         with open(location, 'r',
                   encoding='utf8',
@@ -285,6 +286,7 @@ def apimon_analysis(app_dir):
                 if to_decode:
                     api['decoded'] = decode_base64(
                         to_decode).decode('utf-8', 'ignore')
+                    strings.append((api['calledFrom'], api['decoded']))
             except Exception:
                 pass
             api['icon'] = get_icon_map(api['name'])
@@ -294,7 +296,7 @@ def apimon_analysis(app_dir):
                 api_details[api['name']] = [api]
     except Exception:
         logger.exception('API Monitor Analysis')
-    return api_details
+    return api_details, strings
 
 
 def get_dependencies(package, checksum):
