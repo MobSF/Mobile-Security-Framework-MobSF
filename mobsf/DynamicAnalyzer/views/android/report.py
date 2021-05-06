@@ -10,6 +10,7 @@ from django.shortcuts import render
 from django.template.defaulttags import register
 from django.utils.html import escape
 
+import mobsf.MalwareAnalyzer.views.Trackers as Trackers
 from mobsf.DynamicAnalyzer.views.android.analysis import (
     generate_download,
     get_screenshots,
@@ -66,6 +67,7 @@ def view_report(request, checksum, api=False):
                 api)
         app_dir = os.path.join(settings.UPLD_DIR, checksum + '/')
         download_dir = settings.DWD_DIR
+        tools_dir = settings.TOOLS_DIR
         if not is_file_exists(os.path.join(app_dir, 'logcat.txt')):
             msg = ('Dynamic Analysis report is not available '
                    'for this app. Perform Dynamic Analysis '
@@ -76,12 +78,15 @@ def view_report(request, checksum, api=False):
         apimon, b64_strings = apimon_analysis(app_dir)
         deps = dependency_analysis(package, app_dir)
         analysis_result = run_analysis(app_dir, checksum, package)
+        domains = analysis_result['domains']
+        trk = Trackers.Trackers(app_dir, tools_dir)
+        trackers = trk.get_runtime_trackers(domains, deps)
         generate_download(app_dir, checksum, download_dir, package)
         images = get_screenshots(checksum, download_dir)
         context = {'hash': checksum,
                    'emails': analysis_result['emails'],
                    'urls': analysis_result['urls'],
-                   'domains': analysis_result['domains'],
+                   'domains': domains,
                    'clipboard': analysis_result['clipboard'],
                    'xml': analysis_result['xml'],
                    'sqlite': analysis_result['sqlite'],
@@ -93,6 +98,7 @@ def view_report(request, checksum, api=False):
                    'droidmon': droidmon,
                    'apimon': apimon,
                    'base64_strings': b64_strings,
+                   'trackers': trackers,
                    'frida_logs': is_file_exists(fd_log),
                    'runtime_dependencies': deps,
                    'package': package,

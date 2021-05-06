@@ -751,24 +751,25 @@
             <thead>
                 <tr>
                     <th>TRACKER</th>
+                    <th>CATEGORIES</th>
                     <th>URL</th>
                 </tr>
             </thead>
           
             <tbody>
-
-                {% for trk in trackers|key:"trackers" %}
-                <tr>
-                    {% for k, v in trk.items %}
-                    <td>
-                        {{k}}
-                    </td>
-                    <td>
-                        <a target="_blank" href="{{v}}" rel="noopener noreferrer">{{v}}</a>
-                    </td>
-                    {% endfor %}
-                </tr>
-                {% endfor %}
+              {% for trk in trackers|key:"trackers" %}
+              <tr>
+                <td>
+                  {{trk.name}}
+                </td>
+                <td>
+                  {{trk.categories}}
+                </td>
+                <td>
+                  <a target="_blank" href="{{trk.url}}" rel="noopener noreferrer">{{trk.url}}</a>
+                </td>
+              </tr>
+              {% endfor %}
             </tbody>
         </table>
          {% endif %}

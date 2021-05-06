@@ -1610,20 +1610,22 @@
                 <thead>
                   <tr>
                     <th>TRACKER NAME</th>
+                    <th>CATEGORIES</th>
                     <th>URL</th>
                   </tr>
                 </thead>
                <tbody>
                 {% for trk in trackers|key:"trackers" %}
                 <tr>
-                  {% for k, v in trk.items %}
                   <td>
-                    {{k}}
+                    {{trk.name}}
                   </td>
                   <td>
-                    <a target="_blank" href="{{v}}" rel="noopener noreferrer">{{v}}</a>
+                    {{trk.categories}}
                   </td>
-                  {% endfor %}
+                  <td>
+                    <a target="_blank" href="{{trk.url}}" rel="noopener noreferrer">{{trk.url}}</a>
+                  </td>
                 </tr>
                 {% endfor %}
               </tbody>
