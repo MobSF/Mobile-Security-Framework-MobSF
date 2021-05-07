@@ -42,22 +42,26 @@ def strings_from_apk(app_file, app_dir, elf_strings):
         logger.info('Extracting Strings from APK')
         dat = []
         secrets = []
+        urls = []
+        urls_nf = []
+        emails_nf = []
         apk_file = os.path.join(app_dir, app_file)
         and_a = apk.APK(apk_file)
         rsrc = and_a.get_android_resources()
-        pkg = rsrc.get_packages_names()[0]
-        rsrc.get_strings_resources()
-        for i in rsrc.values[pkg].keys():
-            res_string = rsrc.values[pkg][i].get('string')
-            if res_string:
-                for duo in res_string:
-                    cap_str = '"' + duo[0] + '" : "' + duo[1] + '"'
-                    if is_secret(duo[0] + '"'):
-                        secrets.append(cap_str)
-                    dat.append(cap_str)
-        data_string = ''.join(dat)
-        urls, urls_nf, emails_nf = url_n_email_extract(
-            data_string, 'Android String Resource')
+        if rsrc:
+            pkg = rsrc.get_packages_names()[0]
+            rsrc.get_strings_resources()
+            for i in rsrc.values[pkg].keys():
+                res_string = rsrc.values[pkg][i].get('string')
+                if res_string:
+                    for duo in res_string:
+                        cap_str = '"' + duo[0] + '" : "' + duo[1] + '"'
+                        if is_secret(duo[0] + '"'):
+                            secrets.append(cap_str)
+                        dat.append(cap_str)
+            data_string = ''.join(dat)
+            urls, urls_nf, emails_nf = url_n_email_extract(
+                data_string, 'Android String Resource')
         if elf_strings:
             for solib in elf_strings:
                 for so, str_list in solib.items():
@@ -71,12 +75,13 @@ def strings_from_apk(app_file, app_dir, elf_strings):
                     urls_nf.extend(suf)
                     emails_nf.extend(sem)
         strings_dat = list(set(dat))
-        return {'strings': strings_dat,
-                'urls_list': urls,
-                'url_nf': urls_nf,
-                'emails_nf': emails_nf,
-                'secrets': secrets,
-                }
+        return {
+            'strings': strings_dat,
+            'urls_list': urls,
+            'url_nf': urls_nf,
+            'emails_nf': emails_nf,
+            'secrets': secrets,
+        }
     except Exception:
         logger.exception('Extracting Strings from APK')
         return {}

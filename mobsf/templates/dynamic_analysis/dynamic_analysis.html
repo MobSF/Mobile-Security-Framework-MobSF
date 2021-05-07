@@ -45,7 +45,7 @@ textarea:focus {
 
 /* disable button */
 {% if not identifier %}
-.btn {
+.disable {
     background-color: #7b7b7b;
     pointer-events: none;
     cursor: default;
@@ -112,7 +112,7 @@ textarea:focus {
                      <br/>
                      <br/>
                      <p>
-                        <button class="btn btn-info" role="button"  data-toggle="modal" data-target="#mmobsfy">MobSFy Android Runtime</button> <p>Android instance: <strong>{{ identifier }}</strong></p></div>
+                        <button class="btn btn-info disable" role="button"  data-toggle="modal" data-target="#mmobsfy">MobSFy Android Runtime</button> <p>Android instance: <strong>{{ identifier }}</strong></p></div>
                       </p>
                     </div>
                      </div>
@@ -156,10 +156,10 @@ textarea:focus {
                            </td>
                             <td align="center"> 
                               <p>
-                                <a class="btn btn-success" onclick="dynamic_loader()" href="../android_dynamic/{{e.MD5}}"><i class="fab fa-android"></i> Start Dynamic Analysis</a>
+                                <a class="btn btn-success disable" onclick="dynamic_loader()" href="../android_dynamic/{{e.MD5}}"><i class="fab fa-android"></i> Start Dynamic Analysis</a>
                               </p>
                               <p>
-                                <a class="btn btn-primary btn-sm" onclick="dynamic_loader()" href="../android_dynamic/{{e.MD5}}?re_install=0"><i class="fab fa-android"></i> Start Dynamic Analysis (without Re-install)</a>
+                                <a class="btn btn-primary btn-sm disable" onclick="dynamic_loader()" href="../android_dynamic/{{e.MD5}}?re_install=0"><i class="fab fa-android"></i> Start Dynamic Analysis (without Re-install)</a>
                               </p>
                               <p>
                                  <a class="btn btn-info" href="../dynamic_report/{{ e.MD5 }}"><i class="fa fa-mobile"></i> View Report </a>
@@ -193,10 +193,10 @@ textarea:focus {
                          </td>
                           <td align="center"> 
                             <p>
-                              <a class="btn btn-primary" onclick="dynamic_loader()" href="../android_dynamic/{{hash}}?re_install=0&install=0"><i class="fab fa-android"></i> Start Dynamic Analysis</a>
+                              <a class="btn btn-primary disable" onclick="dynamic_loader()" href="../android_dynamic/{{hash}}?re_install=0&install=0"><i class="fab fa-android"></i> Start Dynamic Analysis</a>
                             </p>
                             <p>
-                              <a class="btn btn-warning" onclick="dynamic_loader()" href="../static_scan/{{hash}}"><i class="fa fa-download"></i> Pull &amp; Static Analysis</a>
+                              <a class="btn btn-warning disable" onclick="dynamic_loader()" href="../static_scan/{{hash}}"><i class="fa fa-download"></i> Pull &amp; Static Analysis</a>
                               </p>
                             <p>
                                <a class="btn btn-info" href="../dynamic_report/{{hash}}"><i class="fa fa-mobile"></i> View Report </a>
@@ -249,7 +249,7 @@ textarea:focus {
               </form>
           </div>
            <div class="modal-footer">
-            <button id="mobsfy" type="button" class="btn btn-primary">MobSFy!</button>
+            <button id="mobsfy" type="button" class="btn btn-primary disable">MobSFy!</button>
           </div>
         </div>
         <!-- /.modal-content -->

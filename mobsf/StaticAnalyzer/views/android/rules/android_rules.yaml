@@ -202,7 +202,7 @@
   ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04c-Tampering-and-Reverse-Engineering.md#debugging-and-tracing
 - id: android_clipboard_listen
   description: >-
-    This app listens to Clipboard changes. Some malwares also listen to
+    This app listens to Clipboard changes. Some malware also listen to
     Clipboard changes.
   type: RegexAnd
   pattern:
@@ -449,8 +449,8 @@
   ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05j-Testing-Resiliency-Against-Reverse-Engineering.md#testing-root-detection-mstg-resilience-1
 - id: android_jackson_deserialize
   description: >-
-    The app uses jackson deserialization libraryDeserialization of untrusted
-    input can result inarbitary code execution
+    The app uses jackson deserialization library. Deserialization of untrusted
+    input can result in arbitrary code execution.
   type: RegexAnd
   pattern:
     - com\.fasterxml\.jackson\.databind\.ObjectMapper
@@ -626,7 +626,7 @@
   cvss: 7.4
   cwe: cwe-312
   description: >-
-    Files may contain hardcoded sensitive informations like usernames,
+    Files may contain hardcoded sensitive information like usernames,
     passwords, keys etc.
   input_case: lower
   masvs: storage-14

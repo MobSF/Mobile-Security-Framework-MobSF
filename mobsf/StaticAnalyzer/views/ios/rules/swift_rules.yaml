@@ -11,7 +11,7 @@
 - id: ios_hardcoded_info
   cvss: 7.4
   cwe: cwe-312
-  description: Files may contain hardcoded sensitive informations like usernames,
+  description: Files may contain hardcoded sensitive information like usernames,
     passwords, keys etc.
   input_case: lower
   masvs: storage-14
@@ -136,7 +136,6 @@
   masvs: crypto-4
   owasp-mobile: m5
   pattern:
-    - (?i)MD2\(
     - CC_MD2\(
   severity: high
   type: RegexOr
@@ -149,7 +148,6 @@
   masvs: crypto-4
   owasp-mobile: m5
   pattern:
-    - (?i)MD4\(
     - CC_MD4\(
   severity: high
   type: RegexOr
@@ -194,7 +192,7 @@
 - id: ios_keyboard_cache
   cvss: 0
   cwe: ''
-  description: Keyboard cache should be disabled for all sensitve data inputs.
+  description: Keyboard cache should be disabled for all sensitive data inputs.
   input_case: exact
   masvs: storage-5
   owasp-mobile: ''
@@ -218,7 +216,7 @@
 - id: ios_detect_reversing
   cvss: 0
   cwe: ''
-  description: This App may have Reverse enginering detection capabilities.
+  description: This App may have Reverse engineering detection capabilities.
   input_case: exact
   masvs: resilience-4
   owasp-mobile: ''
@@ -243,7 +241,7 @@
 - id: ios_biometric_bool
   cvss: 0
   cwe: ''
-  description: 'Biometric authentication should be based on Keychain, not based on bool.'
+  description: 'Biometric authentication should be based on iOS Keychain, not based on bool.'
   input_case: exact
   masvs: auth-8
   owasp-mobile: m1

@@ -11,28 +11,33 @@
       <title>Mobile Security Framework - MobSF</title>
       <link rel="stylesheet" href="{% static "adminlte/dashboard/css/adminlte.min.css" %}">
       <link rel="stylesheet" href="{% static "adminlte/plugins/fontawesome-free/css/all.min.css" %}">
+      <link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
       <link rel="stylesheet" href="{% static "landing/css/home.css" %}">
       <!-- Google Font: Source Sans Pro -->
       <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
    </head>
    <body>
    <div class="topnav">
-
         <!-- Centered link -->
         <div class="topnav-centered">
-         <a>
-            <img src="{% static "img/mobsf_logo.png" %}" width="20%" height="20%"/>
-        </a>
-        </div>
-        <!-- Left-aligned links (default) -->
-        <a href="{% url 'recent' %}">RECENT SCANS</a>
-        <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>
-
-        <!-- Right-aligned links -->
-        <div class="topnav-right">
-            <a href="{% url 'api_docs' %}">API DOCS</a>
-            <a href="{% url 'about' %}">ABOUT</a>
-        </div>
+            <a>
+               <img src="{% static "img/mobsf_logo.png" %}" width="20%" height="20%"/>
+           </a>
+           </div>
+           <!-- Left-aligned links (default) -->
+           <a href="{% url 'recent' %}">RECENT SCANS</a>
+           <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>
+   
+           <!-- Right-aligned links -->
+           <div class="topnav-right">
+               <a href="{% url 'api_docs' %}">API DOCS</a>
+               <a href="{% url 'about' %}">ABOUT</a>
+               <a>
+                <form action="/search" method="GET">
+                    <input name="md5" type="text" class="form-control" placeholder="Search MD5">
+                 </form>
+                </a>
+           </div>
 
         </div>
       <div class="site-wrapper">
@@ -61,9 +66,10 @@
                   </form>
                </div>
                <div class="mastfoot">
-                  <form action="/search" method="GET">
-                     <input name="md5" type="text" class="form-control" placeholder="Search MD5">
-                  </form>
+                
+                  <input type="download" id="package" class="form-control" placeholder="Download & Scan by package name"/>
+
+
                   <div class="inner">
                      <h6> <a href="{% url 'recent' %}">RECENT SCANS</a>  |  <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>  |  <a href="{% url 'api_docs' %}">API DOCS</a>   |  <a href="{% url 'about' %}">ABOUT</a></h6>
                      </br>
@@ -73,8 +79,68 @@
             </div>
          </div>
       </div>
-      <script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
+
+      <div class="hidden loading">
+        <div class='uil-ring-css' style='transform:scale(0.79);'>
+          <div></div>
+        </div>
+        </div>
+
+        <script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
       <script>
+
+            //Download and scan APK
+            $('#package').keypress(function(event){
+                var keycode = (event.keyCode ? event.keyCode : event.which);
+                if(keycode == '13'){
+                    show_loader();
+                    $.ajax({
+                        url : '../download_scan/', 
+                        type : "POST",
+                        dataType: "json", 
+                        data : {
+                            package: $('#package').val(),
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                        },
+                        success : function(json){
+                            if (json.status === 'ok'){
+                                i = 1;
+                                setInterval(function() {
+                                    dot = '';
+                                    for (x = 1; x <= i; x++) {
+                                        dot += '.';
+                                    }
+                                    _("status").innerText = "Analyzing" + dot;
+                                    i += 1;
+                                    if (i == 5) {
+                                        i = 1;
+                                    }
+                                }, 2000);
+
+                                url = json.analyzer + '/?name=' + json.file_name + '&checksum=' + json.hash + '&type=' + json.scan_type
+                                window.location.href = window.location.href + url;
+                            } else {
+                                hide_loader();
+                                _("status").innerText = json.description;
+                            }
+                        },
+                        error : function(xhr, ajaxOptions, thrownError) {
+                            hide_loader();
+                        }
+                    });
+                }
+            });
+
+            function show_loader(){
+                var loadingOverlay = document.querySelector('.loading');
+                loadingOverlay.classList.remove('hidden');
+            }
+
+            function hide_loader(){
+                var loadingOverlay = document.querySelector('.loading');
+                loadingOverlay.classList.add('hidden');
+            }
+            // Existing
             function _(el){
                 return document.getElementById(el);
             }
@@ -121,10 +187,10 @@
           // Is valid file extentions
           function isValidExt(file_name){
                 var val = file_name.toLowerCase();
-                var regex = new RegExp("(.*?)\.(ipa|apk|xapk|zip|appx)$");
+                var regex = new RegExp("(.*?)\.(ipa|apk|apks|xapk|zip|appx)$");
                 val = val.replace(/^.*[\\\/]/, '');
                 if (!(regex.test(val))) {
-                    _('status').innerText = "Please upload APK/XAPK/IPA/ZIP/APPX only!";
+                    _('status').innerText = "Please upload APK/APKS/XAPK/IPA/ZIP/APPX only!";
                     return false;
                 }
                 return true;

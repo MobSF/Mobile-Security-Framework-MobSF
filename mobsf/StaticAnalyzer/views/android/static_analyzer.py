@@ -53,7 +53,10 @@ from mobsf.StaticAnalyzer.views.android.manifest_analysis import (
 )
 from mobsf.StaticAnalyzer.views.android.playstore import get_app_details
 from mobsf.StaticAnalyzer.views.android.strings import strings_from_apk
-from mobsf.StaticAnalyzer.views.android.xapk import handle_xapk
+from mobsf.StaticAnalyzer.views.android.xapk import (
+    handle_split_apk,
+    handle_xapk,
+)
 from mobsf.StaticAnalyzer.views.shared_func import (
     firebase_analysis,
     hash_gen,
@@ -94,8 +97,9 @@ def static_analyzer(request, api=False):
         app_dic = {}
         match = re.match('^[0-9a-f]{32}$', checksum)
         if (match
-                and filename.lower().endswith(('.apk', '.xapk', '.zip'))
-                and typ in ['zip', 'apk', 'xapk']):
+                and filename.lower().endswith(
+                    ('.apk', '.xapk', '.zip', '.apks'))
+                and typ in ['zip', 'apk', 'xapk', 'apks']):
             app_dic['dir'] = Path(settings.BASE_DIR)  # BASE DIR
             app_dic['app_name'] = filename  # APP ORGINAL NAME
             app_dic['md5'] = checksum  # MD5
@@ -103,13 +107,17 @@ def static_analyzer(request, api=False):
             app_dic['app_dir'] = Path(settings.UPLD_DIR) / checksum
             app_dic['tools_dir'] = app_dic['dir'] / 'StaticAnalyzer' / 'tools'
             app_dic['tools_dir'] = app_dic['tools_dir'].as_posix()
-            logger.info('Starting Analysis on : %s', app_dic['app_name'])
+            logger.info('Starting Analysis on: %s', app_dic['app_name'])
             if typ == 'xapk':
                 # Handle XAPK
                 # Base APK will have the MD5 of XAPK
-                res = handle_xapk(app_dic)
-                if not res:
+                if not handle_xapk(app_dic):
                     raise Exception('Invalid XAPK File')
+                typ = 'apk'
+            elif typ == 'apks':
+                # Handle Split APK
+                if not handle_split_apk(app_dic):
+                    raise Exception('Invalid Split APK File')
                 typ = 'apk'
             if typ == 'apk':
                 app_dic['app_file'] = app_dic['md5'] + '.apk'  # NEW FILENAME

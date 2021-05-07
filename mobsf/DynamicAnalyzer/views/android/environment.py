@@ -378,11 +378,14 @@ class Environment:
                 or any(char.isdigit() for char in ver)):
             logger.info('Found Genymotion x86 Android VM')
             return 'genymotion'
+        elif b'corellium' in out:
+            logger.info('Found Corellium ARM Android VM')
+            return 'corellium'
         else:
             logger.warning(
                 'Unable to identify Dynamic Analysis environment. '
                 'Official support is available only for Android '
-                'Emulator and Genymotion VM')
+                'Emulator, Corellium, and Genymotion')
             return ''
 
     def get_android_version(self):
