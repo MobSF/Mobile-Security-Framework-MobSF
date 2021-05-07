@@ -30,7 +30,7 @@ MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-relea
 
 If you liked MobSF and find it useful, please consider donating.
 
-*It's easy to build open source, try maintaining a project once. Long live opensource!*
+*It's easy to build open source, try maintaining a project once. Long live open source!*
 
 ## Documentation
 [![See MobSF Documentation](https://user-images.githubusercontent.com/4301109/70686099-3855f780-1c79-11ea-8141-899e39459da2.png)](https://mobsf.github.io/docs)
