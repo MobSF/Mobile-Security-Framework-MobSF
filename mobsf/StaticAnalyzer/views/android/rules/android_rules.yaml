@@ -495,7 +495,7 @@
     scheme is to prevent a number of attacks on RSA that only work when the
     encryption is performed without padding.
   type: Regex
-  pattern: cipher\.getinstance\(\"rsa/.+/nopadding
+  pattern: Cipher\.getinstance\(\"rsa/.+/nopadding
   severity: high
   input_case: lower
   cvss: 5.9
@@ -549,11 +549,39 @@
   owasp-mobile: m5
   pattern:
     - \.getInstance\(.*md4
+    - \.getInstance\(.*MD4
+  severity: high
+  type: RegexOr
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
+- id: android_weak_ciphers
+  cvss: 7.4
+  cwe: cwe-327
+  description: Weak Encryption algorithm used
+  input_case: exact
+  masvs: crypto-4
+  owasp-mobile: m5
+  pattern:
     - \.getInstance\(.*rc2
+    - \.getInstance\(.*RC2
     - \.getInstance\(.*rc4
     - \.getInstance\(.*RC4
-    - \.getInstance\(.*RC2
-    - \.getInstance\(.*MD4
+    - \.getInstance\(.*blowfish
+    - \.getInstance\(.*BLOWFISH
+    - \.getInstance\(.*DES
+    - \.getInstance\(.*des
+  severity: high
+  type: RegexOr
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
+- id: cbc_padding_oracle
+  cvss: 7.4
+  cwe: cwe-649
+  description: The App uses the encryption mode CBC with PKCS5/PKCS7 padding. This configuration is vulnerable to padding oracle attacks.
+  input_case: exact
+  masvs: crypto-3
+  owasp-mobile: m5
+  pattern:
+    - \.getInstance\(.*\/CBC\/PKCS5Padding
+    - \.getInstance\(.*\/CBC\/PKCS7Padding
   severity: high
   type: RegexOr
   ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
