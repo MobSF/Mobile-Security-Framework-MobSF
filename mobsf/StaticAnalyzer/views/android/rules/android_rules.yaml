@@ -1,7 +1,7 @@
 - id: android_ip_disclosure
   description: IP Address disclosure
   type: Regex
-  pattern: '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
+  pattern: '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\"'
   severity: warning
   input_case: exact
   cvss: 4.3
@@ -567,8 +567,8 @@
     - \.getInstance\(.*RC4
     - \.getInstance\(.*blowfish
     - \.getInstance\(.*BLOWFISH
-    - \.getInstance\(.*DES
-    - \.getInstance\(.*des
+    - Cipher\.getInstance\(.*DES
+    - Cipher\.getInstance\(.*des
   severity: high
   type: RegexOr
   ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
