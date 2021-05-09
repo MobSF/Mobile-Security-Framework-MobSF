@@ -297,6 +297,23 @@
   owasp-mobile: ''
   masvs: network-4
   ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05g-Testing-Network-Communication.md#testing-custom-certificate-stores-and-certificate-pinning-mstg-network-4
+- id: android_certificate_transparency
+  description: >-
+    This App enforce TLS Certificate Transparency which helps to 
+    detect SSL certificates that have been mistakenly issued by a 
+    certificate authority or maliciously acquired from an otherwise 
+    unimpeachable certificate authority.
+  type: RegexAnd
+  pattern:
+    - CTHostnameVerifierBuilder\(
+    - CTInterceptorBuilder\(
+  severity: good
+  input_case: exact
+  cvss: 0
+  cwe: ''
+  owasp-mobile: ''
+  masvs: network-4
+  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05g-Testing-Network-Communication.md#testing-custom-certificate-stores-and-certificate-pinning-mstg-network-4
 - id: android_prevent_screenshot
   description: >-
     This App has capabilities to prevent against Screenshots from Recent Task
