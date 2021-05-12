@@ -68,7 +68,7 @@
   description: The App uses an insecure Random Number Generator.
   type: Regex
   pattern: java\.util\.Random(?!Access)
-  severity: high
+  severity: warning
   input_case: exact
   cvss: 7.5
   cwe: cwe-330
@@ -87,10 +87,10 @@
   masvs: storage-3
   ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#logs
 - id: android_sql_cipher
-  description: This App uses SQL Cipher. But the secret may be hardcoded.
+  description: This App uses SQL Cipher. Ensure that secrets are not hardcoded in code.
   type: Regex
   pattern: SQLiteOpenHelper\.getWritableDatabase\(
-  severity: warning
+  severity: info
   input_case: exact
   cvss: 0
   cwe: ''
@@ -128,7 +128,7 @@
     temp file.
   type: Regex
   pattern: \.createTempFile\(
-  severity: high
+  severity: warning
   input_case: exact
   cvss: 5.5
   cwe: cwe-276
@@ -141,7 +141,7 @@
   type: RegexAnd
   pattern:
     - setJavaScriptEnabled\(true\)
-    - \.addJavascriptInterface\(
+    - addJavascriptInterface\(
   severity: warning
   input_case: exact
   cvss: 8.8
@@ -169,7 +169,7 @@
   pattern:
     - android\.app\.DownloadManager
     - getSystemService\(DOWNLOAD_SERVICE\)
-  severity: high
+  severity: info
   input_case: exact
   cvss: 0
   cwe: ''
@@ -208,7 +208,7 @@
   pattern:
     - content\.ClipboardManager
     - OnPrimaryClipChangedListener
-  severity: warning
+  severity: info
   input_case: exact
   cvss: 0
   cwe: ''
@@ -255,7 +255,7 @@
     - android\.database\.sqlite
     - - rawQuery\(
       - execSQL\(
-  severity: high
+  severity: warning
   input_case: exact
   cvss: 5.9
   cwe: cwe-89
@@ -613,7 +613,7 @@
     - \.getInstance\(.*MD5
     - \.getInstance\(.*md5
     - DigestUtils\.md5\(
-  severity: high
+  severity: warning
   type: RegexOr
   ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
 - id: android_sha1
@@ -629,7 +629,7 @@
     - \.getInstance\(.*SHA1
     - \.getInstance\(.*sha1
     - DigestUtils\.sha\(
-  severity: high
+  severity: warning
   type: RegexOr
   ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
 - id: android_weak_iv
@@ -678,6 +678,6 @@
   owasp-mobile: m9
   pattern: >-
     (password\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(pass\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(username\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(secret\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(key\s*=\s*[\'|\"].+[\'|\"]\s{0,5})
-  severity: high
+  severity: warning
   type: Regex
   ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#checking-memory-for-sensitive-data-mstg-storage-10
