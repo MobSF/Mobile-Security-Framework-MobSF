@@ -33,7 +33,7 @@ RUN apt update -y && apt install -y  --no-install-recommends \
     fontconfig \
     xfonts-75dpi \
     xfonts-base \
-    python3.8 \
+    python3.9 \
     python3-dev \
     python3-pip \
     wget \
@@ -43,18 +43,16 @@ RUN apt update -y && apt install -y  --no-install-recommends \
 RUN locale-gen en_US.UTF-8
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
-# Install Wkhtmltopdf & OpenJDK
+# Install wkhtmltopdf & OpenJDK
 ARG TARGETPLATFORM
 
 COPY scripts/install_java_wkhtmltopdf.sh .
-RUN ./install_java_wkhtmltopdf.sh && rm -rf ./install_java_wkhtmltopdf.sh
+RUN ./install_java_wkhtmltopdf.sh
 
 WORKDIR /root/Mobile-Security-Framework-MobSF
 
-# Copy static
-COPY requirements.txt .
-
 # Install Requirements
+COPY requirements.txt .
 RUN pip3 install --upgrade setuptools pip && \
     pip3 install --quiet --no-cache-dir -r requirements.txt
 

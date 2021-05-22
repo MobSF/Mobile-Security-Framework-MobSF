@@ -23,3 +23,6 @@ echo "Installing $JDK_FILE ..."
 wget --quiet "${JDK_URL}" && \
     tar zxf "${JDK_FILE}" && \
     rm -f "${JDK_FILE}"
+
+# Delete script
+rm $0
