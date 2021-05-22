@@ -91,7 +91,7 @@ ENV POSTGRES_HOST=postgres
 RUN ./scripts/postgres_support.sh $POSTGRES
 
 # Expose MobSF Port and Proxy Port
-EXPOSE 8000 1337
+EXPOSE 8000 8000 1337 1337
 
 # Run MobSF
 CMD ["/root/Mobile-Security-Framework-MobSF/scripts/entrypoint.sh"]
