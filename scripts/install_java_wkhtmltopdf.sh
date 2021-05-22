@@ -3,6 +3,10 @@ if [ "$TARGETPLATFORM" == "linux/arm64" ]
 then
     WKH_FILE=$WKH_FILE_ARM
     JDK_FILE=$JDK_FILE_ARM
+    pip3 install wheel
+    pip3 wheel --wheel-dir=yara-python-dex git+https://github.com/MobSF/yara-python-dex.git
+    pip install --no-index --find-links=yara-python-dex yara-python-dex
+    rm -rf yara-python-dex
 fi
 
 echo "Target platform identified as $TARGETPLATFORM"
