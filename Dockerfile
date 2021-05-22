@@ -13,11 +13,12 @@ LABEL \
 # Environment vars
 ENV DEBIAN_FRONTEND="noninteractive" \
     ANALYZER_IDENTIFIER="" \
-    JDK_FILE="openjdk-12_linux-x64_bin.tar.gz" \
-    WKH_FILE="wkhtmltox_0.12.6-1.focal_amd64.deb"
-
-ENV JDK_URL="https://download.java.net/java/GA/jdk12/GPL/${JDK_FILE}" \
-    WKH_URL="https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/${WKH_FILE}"
+    JDK_FILE="openjdk-16.0.1_linux-x64_bin.tar.gz" \
+    JDK_FILE_ARM="openjdk-16.0.1_linux-aarch64_bin.tar.gz" \
+    WKH_FILE="wkhtmltox_0.12.6-1.focal_amd64.deb" \
+    WKH_FILE_ARM="wkhtmltox_0.12.6-1.focal_arm64.deb" \
+    JAVA_HOME="/jdk-16.0.1" \
+    PATH="$JAVA_HOME/bin:$PATH"
 
 # See https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
 RUN apt update -y && apt install -y  --no-install-recommends \
@@ -42,19 +43,11 @@ RUN apt update -y && apt install -y  --no-install-recommends \
 RUN locale-gen en_US.UTF-8
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
-# Install Wkhtmltopdf
-RUN wget --quiet -O /tmp/${WKH_FILE} "${WKH_URL}" && \
-    dpkg -i /tmp/${WKH_FILE} && \
-    apt-get install -f -y --no-install-recommends && \
-    ln -s /usr/local/bin/wkhtmltopdf /usr/bin && \
-    rm -f /tmp/${WKH_FILE}
+# Install Wkhtmltopdf & OpenJDK
+ARG TARGETPLATFORM
 
-# Install OpenJDK12
-RUN wget --quiet "${JDK_URL}" && \
-    tar zxf "${JDK_FILE}" && \
-    rm -f "${JDK_FILE}"
-ENV JAVA_HOME="/jdk-12"
-ENV PATH="$JAVA_HOME/bin:$PATH"
+COPY scripts/install_java_wkhtmltopdf.sh .
+RUN ./install_java_wkhtmltopdf.sh && rm -rf ./install_java_wkhtmltopdf.sh
 
 WORKDIR /root/Mobile-Security-Framework-MobSF
 
@@ -62,8 +55,8 @@ WORKDIR /root/Mobile-Security-Framework-MobSF
 COPY requirements.txt .
 
 # Install Requirements
-RUN pip3 install --upgrade setuptools pip
-RUN pip3 install --use-deprecated=legacy-resolver --quiet --no-cache-dir -r requirements.txt
+RUN pip3 install --upgrade setuptools pip && \
+    pip3 install --use-deprecated=legacy-resolver --quiet --no-cache-dir -r requirements.txt
 
 # Cleanup
 RUN \
@@ -82,8 +75,9 @@ RUN \
 # Copy source code
 COPY . .
 
-# Set adb binary path
-RUN sed -i "s#ADB_BINARY = ''#ADB_BINARY = '/usr/bin/adb'#" mobsf/MobSF/settings.py
+# Set adb binary path and apktool directory
+RUN sed -i "s#ADB_BINARY = ''#ADB_BINARY = '/usr/bin/adb'#" mobsf/MobSF/settings.py && \
+    mkdir -p /root/.local/share/apktool/framework
 
 # Postgres support is set to false by default
 ARG POSTGRES=False
@@ -94,19 +88,10 @@ ENV POSTGRES_DB=mobsf
 ENV POSTGRES_HOST=postgres
 
 # Check if Postgres support needs to be enabled
-WORKDIR /root/Mobile-Security-Framework-MobSF/scripts
-RUN chmod +x postgres_support.sh; sync; ./postgres_support.sh $POSTGRES
-WORKDIR /root/Mobile-Security-Framework-MobSF
+RUN ./scripts/postgres_support.sh $POSTGRES
 
-# Add apktool working path
-RUN mkdir -p /root/.local/share/apktool/framework
-
-# Expose MobSF Port
-EXPOSE 8000
-# MobSF Proxy
-EXPOSE 1337
-
-RUN chmod 755 /root/Mobile-Security-Framework-MobSF/scripts/entrypoint.sh
+# Expose MobSF Port and Proxy Port
+EXPOSE 8000 1337
 
 # Run MobSF
 CMD ["/root/Mobile-Security-Framework-MobSF/scripts/entrypoint.sh"]
