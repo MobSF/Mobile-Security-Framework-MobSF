@@ -1,5 +1,5 @@
 #!/bin/bash
-if [ "$TARGETPLATFORM" == "linux/arm/v7" ] || [ "$TARGETPLATFORM" == "linux/arm64" ]
+if [ "$TARGETPLATFORM" == "linux/arm64" ]
 then
     WKH_FILE=$WKH_FILE_ARM
     JDK_FILE=$JDK_FILE_ARM
