@@ -5,7 +5,7 @@ then
     JDK_FILE=$JDK_FILE_ARM
     pip3 install wheel
     pip3 wheel --wheel-dir=yara-python-dex git+https://github.com/MobSF/yara-python-dex.git
-    pip install --no-index --find-links=yara-python-dex yara-python-dex
+    pip3 install --no-index --find-links=yara-python-dex yara-python-dex
     rm -rf yara-python-dex
 fi
 
