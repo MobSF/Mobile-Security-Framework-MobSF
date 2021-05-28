@@ -624,6 +624,296 @@
         </div>
 </section>
 
+<a id="browsable_activities" class="anchor"></a>
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <p>
+                            <strong><i class="fas fa-link"></i> Browsable Activities</strong>
+                        </p>
+                        {% if browsable_activities %}
+                        <div class="table-responsive">
+                            {% for activity, data in browsable_activities.only_first %}
+                            <table class="table table-bordered table-hover table-striped">
+                                <thead>
+                                    <th colspan="8">{{activity}}</th>
+                                    <tr>
+                                        <th></th>
+                                        <th>SCHEMES</th>
+                                        <th>MIME TYPE</th>
+                                        <th>HOSTS</th>
+                                        <th>PORTS</th>
+                                        <th>PATHS</th>
+                                        <th>PATH PREFIXS</th>
+                                        <th>PATH PATTERNS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <strong>{{first_app.name_ver}}</strong>
+                                        </td>
+                                        <td>
+                                            {% for cmp in data|key:"schemes" %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for cmp in data|key:"mime_types" %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        
+                                        <td>
+                                            {% for cmp in data|key:"hosts" %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for cmp in data|key:"ports" %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        
+                                        <td>
+                                            {% for cmp in data|key:"paths" %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for cmp in data|key:"path_prefixs" %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for cmp in data|key:"path_patterns" %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            {% endfor %}
+                            {% for activity, data in browsable_activities.only_second %}
+                            <table class="table table-bordered table-hover table-striped">
+                                <thead>
+                                    <th colspan="8">{{activity}}</th>
+                                    <tr>
+                                        <th></th>
+                                        <th>SCHEMES</th>
+                                        <th>MIME TYPE</th>
+                                        <th>HOSTS</th>
+                                        <th>PORTS</th>
+                                        <th>PATHS</th>
+                                        <th>PATH PREFIXS</th>
+                                        <th>PATH PATTERNS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <strong>{{second_app.name_ver}}</strong>
+                                        </td>
+                                        <td>
+                                            {% for cmp in data|key:"schemes" %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for cmp in data|key:"mime_types" %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        
+                                        <td>
+                                            {% for cmp in data|key:"hosts" %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for cmp in data|key:"ports" %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        
+                                        <td>
+                                            {% for cmp in data|key:"paths" %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for cmp in data|key:"path_prefixs" %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for cmp in data|key:"path_patterns" %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            {% endfor %}
+                            {% for activity, data in common_browsable_activities.items %}
+                            <table class="table table-bordered table-hover table-striped">
+                                <thead>
+                                    <th colspan="8">{{activity}}</th>
+                                    <tr>
+                                        <th></th>
+                                        <th>SCHEMES</th>
+                                        <th>MIME TYPE</th>
+                                        <th>HOSTS</th>
+                                        <th>PORTS</th>
+                                        <th>PATHS</th>
+                                        <th>PATH PREFIXS</th>
+                                        <th>PATH PATTERNS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <strong>Common</strong>
+                                        </td>
+                                        <td>
+                                            {% for cmp in data.schemes.common %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for cmp in data.mime_types.common %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        
+                                        <td>
+                                            {% for cmp in data.hosts.common %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for cmp in data.ports.common %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        
+                                        <td>
+                                            {% for cmp in data.paths.common %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for cmp in data.path_prefixs.common %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for cmp in data.path_patterns.common %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>{{first_app.name_ver}}</strong>
+                                        </td>
+                                        <td>
+                                            {% for cmp in data.schemes.only_first %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for cmp in data.mime_types.only_first %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        
+                                        <td>
+                                            {% for cmp in data.hosts.only_first %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for cmp in data.ports.only_first %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        
+                                        <td>
+                                            {% for cmp in data.paths.only_first %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for cmp in data.path_prefixs.only_first %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for cmp in data.path_patterns.only_first %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>{{second_app.name_ver}}</strong>
+                                        </td>
+                                        <td>
+                                            {% for cmp in data.schemes.only_second %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for cmp in data.mime_types.only_second %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        
+                                        <td>
+                                            {% for cmp in data.hosts.only_second %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for cmp in data.ports.only_second %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        
+                                        <td>
+                                            {% for cmp in data.paths.only_second %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for cmp in data.path_prefixs.only_second %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for cmp in data.path_patterns.only_second %}
+                                            {{cmp}}<br/>
+                                            {% endfor %}
+                                        </td>
+                                    </tr>                                    
+                                </tbody>
+                            </table>
+                            {% endfor %}
+                            {% else %}
+                            <p align="center"><strong>Error/ No browsable activities</strong></p>
+                            {% endif %}
+                        </div>
+                    </div><!-- /.card -->
+                </div>
+            </div><!-- end row -->
+        </div>
+    </div>
+</section>
+
 <a id="urls" class="anchor"></a>
 <section class="content">
       <div class="container-fluid">
