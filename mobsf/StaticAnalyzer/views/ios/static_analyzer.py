@@ -27,7 +27,10 @@ from mobsf.StaticAnalyzer.views.ios.icon_analysis import (
     get_icon,
     get_icon_source,
 )
-from mobsf.StaticAnalyzer.views.ios.plist_analysis import plist_analysis
+from mobsf.StaticAnalyzer.views.ios.plist_analysis import (
+    plist_analysis,
+    get_plist_secret,
+)
 from mobsf.StaticAnalyzer.views.shared_func import (
     firebase_analysis,
     hash_gen, score, unzip,
@@ -116,6 +119,7 @@ def static_analyzer_ios(request, api=False):
                         app_dict['bin_dir'], app_dict['md5_hash'], True, 'ipa')
                     infoplist_dict = plist_analysis(app_dict['bin_dir'], False)
                     app_dict['appstore'] = app_search(infoplist_dict.get('id'))
+                    app_dict['secrets'] = get_plist_secrets(infoplist_dict['plist_xml'])
                     bin_analysis_dict = binary_analysis(
                         app_dict['bin_dir'],
                         tools_dir,
