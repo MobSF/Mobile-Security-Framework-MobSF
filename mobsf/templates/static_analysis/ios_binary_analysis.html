@@ -1079,7 +1079,7 @@
               </p>
                 <div class="list-group">
                    <p>  
-                     {% for key, value in secrets %}
+                     {% for key, value in secrets.items %}
                       {{ key }} : {{ value }}<br/>
                      {% endfor %}                  
                    </p>

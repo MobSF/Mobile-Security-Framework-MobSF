@@ -29,7 +29,7 @@ from mobsf.StaticAnalyzer.views.ios.icon_analysis import (
 )
 from mobsf.StaticAnalyzer.views.ios.plist_analysis import (
     plist_analysis,
-    get_plist_secret,
+    get_plist_secrets,
 )
 from mobsf.StaticAnalyzer.views.shared_func import (
     firebase_analysis,

@@ -135,7 +135,7 @@ def is_secret(inp):
     )
     return any(i in inp for i in iden)
 
-def get_plist_secret(xml_string):
+def get_plist_secrets(xml_string):
     remove_tags = lambda xml_line: sub('<[^<]+>', '', xml_line).strip()
 
     result_dict = {}
