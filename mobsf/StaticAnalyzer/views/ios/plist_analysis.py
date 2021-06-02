@@ -138,11 +138,14 @@ def is_secret(inp):
 def get_plist_secrets(xml_string):
     remove_tags = lambda xml_line: sub('<[^<]+>', '', xml_line).strip()
 
-    result_dict = {}
+    result_list = []
     xml_list = xml_string.split("\n")
 
     for index, line in enumerate(xml_list):
         if '<key>' in line and is_secret(remove_tags(line)):
-            result_dict[remove_tags(line)] = remove_tags(xml_list[index + 1])
+            result_list.append("{} : {}".format(
+                remove_tags(line),
+                remove_tags(xml_list[index + 1])
+            ))
 
-    return result_dict
+    return result_list
