@@ -1079,9 +1079,9 @@
               </p>
                 <div class="list-group">
                    <p>  
-                     {% for key, value in secrets.items %}
-                      {{ key }} : {{ value }}<br/>
-                     {% endfor %}                  
+                      {% for val in secrets %}
+                        {{ val }}<br/>
+                      {% endfor %}
                    </p>
                </div>
              </div>
