@@ -86,7 +86,7 @@ ENV POSTGRES_DB=mobsf
 ENV POSTGRES_HOST=postgres
 
 # Check if Postgres support needs to be enabled
-RUN cd scripts && ./postgres_support.sh $POSTGRES
+RUN ./scripts/postgres_support.sh $POSTGRES
 
 # Expose MobSF Port and Proxy Port
 EXPOSE 8000 8000 1337 1337
