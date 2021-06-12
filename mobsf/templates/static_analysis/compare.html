@@ -634,6 +634,7 @@
                         <p>
                             <strong><i class="fas fa-clone"></i> BROWSABLE ACTIVITIES</strong>
                         </p>
+                        {% if browsable_activities %}
                         <div class="table-responsive">
                             <table id="table_browsable" class="table table-bordered table-hover table-striped">
                                 <tr>
@@ -838,6 +839,9 @@
                                 </tr>
                             </table>
                         </div>
+                        {% else %}
+                            <p align="center"><strong>Error/ No browsable activities</strong></p>
+                        {% endif %}
                     </div>
                 </div><!-- /.card -->
             </div>
