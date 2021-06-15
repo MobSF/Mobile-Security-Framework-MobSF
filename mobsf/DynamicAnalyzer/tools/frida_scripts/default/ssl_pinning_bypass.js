@@ -244,12 +244,10 @@ Java.perform(function() {
     /* Certificate Transparency Bypass
        Ajin Abraham - opensecurity.in */
     try{
-        Java.perform(function() {
-            Java.use('com.babylon.certificatetransparency.CTInterceptorBuilder').includeHost.overload('java.lang.String').implementation = function(host) {
-                send('[SSL Pinning Bypass] Bypassing Certificate Transparency check');
-                return this.includeHost('nonexistent.domain');
-            };
-        });
+        Java.use('com.babylon.certificatetransparency.CTInterceptorBuilder').includeHost.overload('java.lang.String').implementation = function(host) {
+            send('[SSL Pinning Bypass] Bypassing Certificate Transparency check');
+            return this.includeHost('nonexistent.domain');
+        };
     } catch (err) {
         send('[SSL Pinning Bypass] certificatetransparency.CTInterceptorBuilder not found');
     }
