@@ -55,6 +55,7 @@ class StaticAnalyzerAndroid(models.Model):
     FILES = models.TextField(default=[])
     EXPORTED_COUNT = models.TextField(default={})
     APKID = models.TextField(default={})
+    QUARK = models.TextField(default=[])
     TRACKERS = models.TextField(default={})
     PLAYSTORE_DETAILS = models.TextField(default={})
     NETWORK_SECURITY = models.TextField(default=[])

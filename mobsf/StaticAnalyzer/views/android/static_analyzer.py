@@ -10,6 +10,7 @@ from pathlib import Path
 import mobsf.MalwareAnalyzer.views.Trackers as Trackers
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.MalwareAnalyzer.views.apkid import apkid_analysis
+from mobsf.MalwareAnalyzer.views.quark import quark_analysis
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import MalwareDomainCheck
 
 from django.conf import settings
@@ -209,6 +210,8 @@ def static_analyzer(request, api=False):
                         app_dic['app_file'])
                     apkid_results = apkid_analysis(app_dic[
                         'app_dir'], app_dic['app_path'], app_dic['app_name'])
+                    quark_results = quark_analysis(app_dic[
+                    'app_dir'], app_dic['app_path'], app_dic['app_name'])
                     tracker = Trackers.Trackers(
                         app_dic['app_dir'], app_dic['tools_dir'])
                     tracker_res = tracker.get_trackers()
@@ -264,6 +267,7 @@ def static_analyzer(request, api=False):
                                 cert_dic,
                                 elf_dict['elf_analysis'],
                                 apkid_results,
+                                quark_results,
                                 tracker_res,
                             )
                             update_scan_timestamp(app_dic['md5'])
@@ -278,6 +282,7 @@ def static_analyzer(request, api=False):
                                 cert_dic,
                                 elf_dict['elf_analysis'],
                                 apkid_results,
+                                quark_results,
                                 tracker_res,
                             )
                     except Exception:
@@ -290,6 +295,7 @@ def static_analyzer(request, api=False):
                         cert_dic,
                         elf_dict['elf_analysis'],
                         apkid_results,
+                        quark_results,
                         tracker_res,
                     )
                 context['average_cvss'], context[
