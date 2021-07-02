@@ -1337,20 +1337,24 @@
                 <table id="table_file" class="table table-bordered table-hover table-striped">
                     <thead>
                         <tr>
-                            <th>Potential Malicious Activities</th>
-                            <th>Confidence</th>
+                            <th>POTENTIAL MALICIOUS ACTIVITIES</th>
+                            <th>SOURCE CODE OF ACTIVITIES</th>
+                            <th>CONFIDENCE</th>
                         </tr>
                     </thead>
                     <tbody>
                       {% if quark %}
                         {% for item in quark %}
                           <tr>
+                            <td>{{ item.crime }}</td>
+
                             <td>
-                              {{ item.crime }}
+                              {% for api in item.register %}
+                                <a href="{% url "view_source" %}?file={{ api.file }}&amp;md5={{ md5 }}&amp;type=smali&amp;lines={{ api.line_numbers.first_api }},{{ api.line_numbers.second_api }}">{{api.file}} -> {{api.method}}</a>
+                                <br/>
+                              {% endfor %}
                             </td>
-                            <td>
-                              {{ item.confidence }}
-                            </td>
+                            <td>{{ item.confidence }}</td>
                           </tr>
                         {% endfor%}
                       {% endif %}

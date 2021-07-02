@@ -210,8 +210,6 @@ def static_analyzer(request, api=False):
                         app_dic['app_file'])
                     apkid_results = apkid_analysis(app_dic[
                         'app_dir'], app_dic['app_path'], app_dic['app_name'])
-                    quark_results = quark_analysis(app_dic[
-                    'app_dir'], app_dic['app_path'], app_dic['app_name'])
                     tracker = Trackers.Trackers(
                         app_dic['app_dir'], app_dic['tools_dir'])
                     tracker_res = tracker.get_trackers()
@@ -225,6 +223,9 @@ def static_analyzer(request, api=False):
                         app_dic['app_dir'],
                         'apk',
                         app_dic['manifest_file'])
+
+                    quark_results = quark_analysis(app_dic[
+                        'app_dir'], app_dic['app_path'], app_dic['app_name'])
 
                     # Get the strings from android resource and shared objects
                     string_res = strings_from_apk(
@@ -459,6 +460,7 @@ def static_analyzer(request, api=False):
                                     cert_dic,
                                     [],
                                     {},
+                                    [],
                                     {},
                                 )
                                 update_scan_timestamp(app_dic['md5'])
@@ -473,6 +475,7 @@ def static_analyzer(request, api=False):
                                     cert_dic,
                                     [],
                                     {},
+                                    [],
                                     {},
                                 )
                         except Exception:
@@ -485,6 +488,7 @@ def static_analyzer(request, api=False):
                             cert_dic,
                             [],
                             {},
+                            [],
                             {},
                         )
                     else:
