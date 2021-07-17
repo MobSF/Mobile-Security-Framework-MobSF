@@ -102,7 +102,7 @@ def static_analyzer(request, api=False):
                     ('.apk', '.xapk', '.zip', '.apks'))
                 and typ in ['zip', 'apk', 'xapk', 'apks']):
             app_dic['dir'] = Path(settings.BASE_DIR)  # BASE DIR
-            app_dic['app_name'] = filename  # APP ORGINAL NAME
+            app_dic['app_name'] = filename  # APP ORIGINAL NAME
             app_dic['md5'] = checksum  # MD5
             # APP DIRECTORY
             app_dic['app_dir'] = Path(settings.UPLD_DIR) / checksum

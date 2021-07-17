@@ -124,7 +124,7 @@ APKPLZ = 'https://apkplz.net/download-app/'
 
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
-# Sqlite3 suport
+# Sqlite3 support
 
 DATABASES = {
     'default': {

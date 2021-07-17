@@ -29,11 +29,11 @@ def run_analysis(apk_dir, md5_hash, package):
     domains = {}
     clipboard = []
     # Collect Log data
-    datas = get_log_data(apk_dir, package)
+    data = get_log_data(apk_dir, package)
     clip_tag = 'I/CLIPDUMP-INFO-LOG'
     clip_tag2 = 'I CLIPDUMP-INFO-LOG'
     # Collect Clipboard
-    for log_line in datas['logcat']:
+    for log_line in data['logcat']:
         if clip_tag in log_line:
             clipboard.append(log_line.replace(clip_tag, 'Process ID '))
         if clip_tag2 in log_line:
@@ -44,7 +44,7 @@ def run_analysis(apk_dir, md5_hash, package):
         r'((?:https?://|s?ftps?://|file://|'
         r'javascript:|data:|www\d{0,3}'
         r'[.])[\w().=/;,#:@?&~*+!$%\'{}-]+)', re.UNICODE)
-    urls = re.findall(url_pattern, datas['traffic'].lower())
+    urls = re.findall(url_pattern, data['traffic'].lower())
     if urls:
         urls = list(set(urls))
     else:
@@ -56,7 +56,7 @@ def run_analysis(apk_dir, md5_hash, package):
     # Email Etraction Regex
     emails = []
     regex = re.compile(r'[\w.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
-    for email in regex.findall(datas['traffic'].lower()):
+    for email in regex.findall(data['traffic'].lower()):
         if (email not in emails) and (not email.startswith('//')):
             emails.append(email)
     # Tar dump and fetch files
