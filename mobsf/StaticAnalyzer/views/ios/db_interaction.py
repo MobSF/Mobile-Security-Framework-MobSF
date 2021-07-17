@@ -36,7 +36,7 @@ def get_context_from_db_entry(db_entry):
             'icon_found': db_entry[0].ICON_FOUND,
             'info_plist': db_entry[0].INFO_PLIST,
             'binary_info': python_dict(db_entry[0].BINARY_INFO),
-            'permissions': python_list(db_entry[0].PERMISSIONS),
+            'permissions': python_dict(db_entry[0].PERMISSIONS),
             'ats_analysis': python_list(db_entry[0].ATS_ANALYSIS),
             'binary_analysis': python_list(db_entry[0].BINARY_ANALYSIS),
             'macho_analysis': python_dict(db_entry[0].MACHO_ANALYSIS),

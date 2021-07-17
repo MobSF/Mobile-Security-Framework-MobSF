@@ -192,19 +192,19 @@
               </tr>
             </thead>
                 <tbody>
-                    {% for  perm in permissions %}
+                    {% for perm,desc in permissions.items %}
                     <tr>
                       <td>
-                        {{ perm.name }}
+                        {{ perm }}
                       </td>
                       <td>
-                      {{ perm.status }}
+                      {{ desc.status }}
                       </td>
                       <td>
-                        {{ perm.description}}
+                        {{ desc.description}}
                       </td>
                       <td>
-                        {{ perm.reason }}
+                        {{ desc.reason }}
                       </td>
                     </tr>
                     {% endfor %}
