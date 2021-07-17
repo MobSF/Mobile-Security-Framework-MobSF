@@ -65,7 +65,7 @@ def static_analyzer_ios(request, api=False):
                 and (file_type in ['ipa', 'ios'])):
             app_dict = {}
             app_dict['directory'] = Path(settings.BASE_DIR)  # BASE DIR
-            app_dict['file_name'] = filename  # APP ORGINAL NAME
+            app_dict['file_name'] = filename  # APP ORIGINAL NAME
             app_dict['md5_hash'] = checksum  # MD5
             app_dir = Path(settings.UPLD_DIR) / checksum
             tools_dir = app_dict[
@@ -266,7 +266,7 @@ def static_analyzer_ios(request, api=False):
             else:
                 return print_n_send_error_response(request, msg, False)
     except Exception as exp:
-        logger.exception('Error Perfroming Static Analysis')
+        logger.exception('Error Performing Static Analysis')
         msg = str(exp)
         exp_doc = exp.__doc__
         if api:

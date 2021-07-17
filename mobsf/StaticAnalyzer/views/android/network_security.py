@@ -35,7 +35,7 @@ def read_netsec_config(app_dir, config, src_type):
 
 
 def analysis(app_dir, config, is_debuggable, src_type):
-    """Perfrom Network Security Analysis."""
+    """Perform Network Security Analysis."""
     try:
         if not config:
             return []

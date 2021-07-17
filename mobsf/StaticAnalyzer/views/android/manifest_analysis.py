@@ -141,8 +141,8 @@ def manifest_data(mfxml):
             brd.append(rec)
 
         for _lib in libs:
-            libary = _lib.getAttribute('android:name')
-            lib.append(libary)
+            library = _lib.getAttribute('android:name')
+            lib.append(library)
 
         for category in categories:
             cat.append(category.getAttribute('android:name'))
@@ -217,8 +217,8 @@ def get_browsable_activities(node):
         catg = node.getElementsByTagName('category')
         for cat in catg:
             if cat.getAttribute('android:name') == 'android.intent.category.BROWSABLE':
-                datas = node.getElementsByTagName('data')
-                for data in datas:
+                data_tag = node.getElementsByTagName('data')
+                for data in data_tag:
                     scheme = data.getAttribute('android:scheme')
                     if scheme and scheme not in schemes:
                         schemes.append(scheme)
@@ -261,7 +261,7 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
         logger.info('Manifest Analysis Started')
         exp_count = dict.fromkeys(['act', 'ser', 'bro', 'cnt'], 0)
         applications = mfxml.getElementsByTagName('application')
-        datas = mfxml.getElementsByTagName('data')
+        data_tag = mfxml.getElementsByTagName('data')
         intents = mfxml.getElementsByTagName('intent-filter')
         actions = mfxml.getElementsByTagName('action')
         granturipermissions = mfxml.getElementsByTagName(
@@ -786,7 +786,7 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
             elif granturi.getAttribute('android:pathPattern') == '*':
                 ret_list.append(('a_improper_provider', ('path=*',), ()))
         # DATA
-        for data in datas:
+        for data in data_tag:
             if data.getAttribute('android:scheme') == 'android_secret_code':
                 xmlhost = data.getAttribute('android:host')
                 ret_list.append(('a_dailer_code', (xmlhost,), ()))
@@ -824,13 +824,13 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
                 icon_hidden = False
                 break
 
-        permissons = {}
-        for k, permisson in man_data_dic['perm'].items():
-            permissons[k] = (
+        permissions = {}
+        for k, permission in man_data_dic['perm'].items():
+            permissions[k] = (
                 {
-                    'status': permisson[0],
-                    'info': permisson[1],
-                    'description': permisson[2],
+                    'status': permission[0],
+                    'info': permission[1],
+                    'description': permission[2],
                 })
         # Prepare return dict
         exported_comp = {
@@ -844,7 +844,7 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
             'exported_act': exported,
             'exported_cnt': exported_comp,
             'browsable_activities': browsable_activities,
-            'permissons': permissons,
+            'permissions': permissions,
             'icon_hidden': icon_hidden,
             'network_security': network_security.analysis(
                 app_dir,
