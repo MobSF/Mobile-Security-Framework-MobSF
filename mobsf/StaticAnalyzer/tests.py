@@ -35,8 +35,10 @@ def static_analysis_test():
             if platform.system() == 'Windows' and filename.endswith('.ipa'):
                 continue
             fpath = os.path.join(apk_dir, filename)
-            with open(fpath, 'rb') as filp:
-                response = http_client.post('/upload/', {'file': filp})
+            with open(fpath, 'rb') as file_pointer:
+                response = http_client.post(
+                    '/upload/',
+                    {'file': file_pointer})
                 obj = json.loads(response.content.decode('utf-8'))
                 if response.status_code == 200 and obj['status'] == 'success':
                     logger.info('[OK] Upload OK: %s', filename)
@@ -178,9 +180,11 @@ def api_test():
             if (platform.system() not in ['Darwin', 'Linux']
                     and fpath.endswith('.ipa')):
                 continue
-            with open(fpath, 'rb') as filp:
+            with open(fpath, 'rb') as file_pointer:
                 response = http_client.post(
-                    '/api/v1/upload', {'file': filp}, HTTP_AUTHORIZATION=auth)
+                    '/api/v1/upload',
+                    {'file': file_pointer},
+                    HTTP_AUTHORIZATION=auth)
                 obj = json.loads(response.content.decode('utf-8'))
                 if response.status_code == 200 and 'hash' in obj:
                     logger.info('[OK] Upload OK: %s', filename)
