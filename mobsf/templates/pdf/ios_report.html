@@ -192,19 +192,19 @@
               </tr>
             </thead>
                 <tbody>
-                    {% for  perm in permissions %}
+                    {% for perm,desc in permissions.items %}
                     <tr>
                       <td>
-                        {{ perm.name }}
+                        {{ perm }}
                       </td>
                       <td>
-                      {{ perm.status }}
+                      {{ desc.status }}
                       </td>
                       <td>
-                        {{ perm.description}}
+                        {{ desc.description}}
                       </td>
                       <td>
-                        {{ perm.reason }}
+                        {{ desc.reason }}
                       </td>
                     </tr>
                     {% endfor %}
@@ -591,7 +591,7 @@
                         </td>
                        <td>
                          {% if item.open %}
-                          <span class="danger">insecure</span></br>Firebase DB is exposed publically.
+                          <span class="danger">insecure</span></br>Firebase DB is exposed publicly.
                         {% else %}
                          <span class="info">info</span></br>App talks to a Firebase Database.
                          {% endif %}

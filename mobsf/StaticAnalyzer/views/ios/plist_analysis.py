@@ -49,7 +49,7 @@ def plist_analysis(src, is_source):
             'pltfm': '',
             'min': '',
             'plist_xml': '',
-            'permissions': [],
+            'permissions': {},
             'inseccon': [],
             'bundle_name': '',
             'build_version_name': '',
@@ -117,7 +117,7 @@ def plist_analysis(src, is_source):
             with open(plist_file_, 'rb') as fp:
                 plist_obj_ = load(fp)
             # Check for app-permissions
-            plist_info['permissions'] += check_permissions(plist_obj_)
+            plist_info['permissions'].update(check_permissions(plist_obj_))
             # Check for ats misconfigurations
             plist_info['inseccon'] += check_transport_security(plist_obj_)
         return plist_info

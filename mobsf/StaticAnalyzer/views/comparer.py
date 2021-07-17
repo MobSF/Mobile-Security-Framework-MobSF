@@ -65,11 +65,11 @@ def diff_apkid(context: dict) -> None:
             tmp_flat_results['first_app'][key]]
 
 
-def diff_browsable_activites(context, first_app, second_app):
-    # Browsable activites are 'complex' objects that contains additional
+def diff_browsable_activities(context, first_app, second_app):
+    # Browsable activities are 'complex' objects that contains additional
     # fields that should be compared. The generic diffing performed above
     # only list which browsable activities are in common or present only in
-    # one app. For the activites present in one app we can just pretty-print
+    # one app. For the activities present in one app we can just pretty-print
     # the details but for common browsable activities we need to perform the
     # diffing also on sub-keys, like hosts and schemes.
     section = 'browsable_activities'
@@ -225,7 +225,7 @@ def generic_compare(request,
                 x for x in second_app[section] if x not in
                 first_app[section]]
 
-    diff_browsable_activites(context, first_app, second_app)
+    diff_browsable_activities(context, first_app, second_app)
 
     template = 'static_analysis/compare.html'
     if api:
