@@ -615,6 +615,34 @@
             </tbody>
                   </table>
 
+<!-- Added for anyone who needs QUARK Results in Report
+       {% if quark %} 
+      <h2><i class="fab fa-quora"></i> QUARK </h2>
+      <table class="basic">
+                  <thead>
+                  <tr>
+                      <th>POTENTIAL MALICIOUS BEHAVIOUR</th>
+                      <th>EVIDENCE</th>
+                  </tr>
+                 </thead>
+                  <tbody>
+									 {% for item in quark %}
+                    <tr>
+                       <td style="word-break:break-all;">
+                       {{ item.crime }}
+                        </td>
+                       <td style="word-break:break-all;">
+                          {% for api in item.register %}
+                              {{api.file}} -> {{api.method}}
+                              <br/>
+                            {% endfor %}
+                       </td>
+                    </tr>
+                  {% endfor %} 
+										</tbody>
+										</table>
+        {% endif %}
+-->
       {% if domains  %}
       <h2><i class="fab fa-searchengin"></i> DOMAIN MALWARE CHECK</h2>
          <table  class="basic">
