@@ -96,6 +96,7 @@ class StaticAnalyzerIOS(models.Model):
     STRINGS = models.TextField(default=[])
     FIREBASE_URLS = models.TextField(default=[])
     APPSTORE_DETAILS = models.TextField(default={})
+    SECRETS = models.TextField(default=[])
 
 
 class StaticAnalyzerWindows(models.Model):
