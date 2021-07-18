@@ -9,10 +9,10 @@ jobs:
       - run: pip install bandit black codespell flake8 isort mypy pytest pyupgrade safety
       - run: bandit --recursive --skip B101 . || true  # B101 is assert statements
       - run: black --check . || true
-      - run: codespell --ignore-words-list="doubleclick,upto" --skip="./mobsf/signatures/*,*.map,*.js" || true
+      - run: codespell --ignore-words-list="doubleclick,dout,upto" --skip="./mobsf/signatures/*,*.map,*.js,*.svg"
       - run: flake8 . --count --max-complexity=42 --max-line-length=88 --show-source --statistics
       - run: isort --check-only --profile black . || true
-      - run: pip install -r requirements.txt || true
+      - run: pip install -r requirements.txt
       - run: mypy --ignore-missing-imports . || true
       - run: pytest . || true
       - run: pytest --doctest-modules . || true
