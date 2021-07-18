@@ -51,7 +51,7 @@ def get_context_from_db_entry(db_entry):
             'strings': python_list(db_entry[0].STRINGS),
             'firebase_urls': python_list(db_entry[0].FIREBASE_URLS),
             'appstore_details': python_dict(db_entry[0].APPSTORE_DETAILS),
-            'secrets': python_dict(db_entry[0].SECRETS),
+            'secrets': python_list(db_entry[0].SECRETS),
 
         }
         return context

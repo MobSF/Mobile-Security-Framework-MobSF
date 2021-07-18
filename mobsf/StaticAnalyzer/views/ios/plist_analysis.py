@@ -7,7 +7,6 @@ from plistlib import (
     dumps,
     load,
 )
-
 from re import sub
 
 from biplist import (
@@ -22,6 +21,9 @@ from mobsf.StaticAnalyzer.views.ios.permission_analysis import (
 )
 from mobsf.StaticAnalyzer.views.ios.app_transport_security import (
     check_transport_security,
+)
+from mobsf.StaticAnalyzer.views.shared_func import (
+    is_secret,
 )
 
 logger = logging.getLogger(__name__)
@@ -126,26 +128,22 @@ def plist_analysis(src, is_source):
     except Exception:
         logger.exception('Reading from Info.plist')
 
-def is_secret(inp):
-    inp = inp.lower()
-    iden = (
-        'key', 'api_', 'secret', 'password',
-        'pass', 'aws', 'gcp', 's3', 'token',
-        'user'
-    )
-    return any(i in inp for i in iden)
 
 def get_plist_secrets(xml_string):
-    remove_tags = lambda xml_line: sub('<[^<]+>', '', xml_line).strip()
-
+    """Get possible hardcoded secrets from plist."""
     result_list = []
-    xml_list = xml_string.split("\n")
+
+    def _remove_tags(data):
+        """Remove tags from input."""
+        return sub('<[^<]+>', '', data).strip()
+
+    xml_list = xml_string.split('\n')
 
     for index, line in enumerate(xml_list):
-        if '<key>' in line and is_secret(remove_tags(line)):
-            result_list.append("{} : {}".format(
-                remove_tags(line),
-                remove_tags(xml_list[index + 1])
-            ))
-
+        if '<key>' in line and is_secret(_remove_tags(line)):
+            nxt = index + 1
+            value = xml_list[nxt] if nxt < len(xml_list) else False
+            if value:
+                result_list.append(
+                    f'{_remove_tags(line)} : {_remove_tags(value)}')
     return result_list
