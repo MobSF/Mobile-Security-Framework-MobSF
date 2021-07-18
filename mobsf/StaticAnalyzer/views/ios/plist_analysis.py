@@ -142,7 +142,8 @@ def get_plist_secrets(xml_string):
     for index, line in enumerate(xml_list):
         if '<key>' in line and is_secret(_remove_tags(line)):
             nxt = index + 1
-            value = xml_list[nxt] if nxt < len(xml_list) else False
+            value = (
+                _remove_tags(xml_list[nxt])if nxt < len(xml_list) else False)
             if value:
                 result_list.append(
                     f'{_remove_tags(line)} : {_remove_tags(value)}')
