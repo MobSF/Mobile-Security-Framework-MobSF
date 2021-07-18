@@ -37,6 +37,7 @@ RUN apt update -y && apt install -y  --no-install-recommends \
     python3-dev \
     python3-pip \
     wget \
+    git \
     android-tools-adb
 
 # Set locales
