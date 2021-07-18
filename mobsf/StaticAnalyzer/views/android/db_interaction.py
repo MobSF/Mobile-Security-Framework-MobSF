@@ -63,7 +63,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'files': python_list(db_entry[0].FILES),
             'exported_count': python_dict(db_entry[0].EXPORTED_COUNT),
             'apkid': python_dict(db_entry[0].APKID),
-            'quark': python_dict(db_entry[0].QUARK),
+            'quark': python_list(db_entry[0].QUARK),
             'trackers': python_dict(db_entry[0].TRACKERS),
             'playstore_details': python_dict(db_entry[0].PLAYSTORE_DETAILS),
             'secrets': python_list(db_entry[0].SECRETS),

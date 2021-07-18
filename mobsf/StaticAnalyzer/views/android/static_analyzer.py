@@ -224,8 +224,9 @@ def static_analyzer(request, api=False):
                         'apk',
                         app_dic['manifest_file'])
 
-                    quark_results = quark_analysis(app_dic[
-                        'app_dir'], app_dic['app_path'], app_dic['app_name'])
+                    quark_results = quark_analysis(
+                        app_dic['app_dir'],
+                        app_dic['app_path'])
 
                     # Get the strings from android resource and shared objects
                     string_res = strings_from_apk(
