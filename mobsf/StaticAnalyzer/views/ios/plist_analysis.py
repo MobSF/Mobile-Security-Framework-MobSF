@@ -8,6 +8,8 @@ from plistlib import (
     load,
 )
 
+from re import sub
+
 from biplist import (
     InvalidPlistException,
     readPlist,
@@ -123,3 +125,27 @@ def plist_analysis(src, is_source):
         return plist_info
     except Exception:
         logger.exception('Reading from Info.plist')
+
+def is_secret(inp):
+    inp = inp.lower()
+    iden = (
+        'key', 'api_', 'secret', 'password',
+        'pass', 'aws', 'gcp', 's3', 'token',
+        'user'
+    )
+    return any(i in inp for i in iden)
+
+def get_plist_secrets(xml_string):
+    remove_tags = lambda xml_line: sub('<[^<]+>', '', xml_line).strip()
+
+    result_list = []
+    xml_list = xml_string.split("\n")
+
+    for index, line in enumerate(xml_list):
+        if '<key>' in line and is_secret(remove_tags(line)):
+            result_list.append("{} : {}".format(
+                remove_tags(line),
+                remove_tags(xml_list[index + 1])
+            ))
+
+    return result_list
