@@ -414,7 +414,7 @@
              <p>
              <strong><i class="fa fa-list"></i> APPLICATION PERMISSIONS</strong>
              <p>
-             {% if permissions|length > 0 %}
+             {% if permissions %}
              <div class="table-responsive">
                   <table class="table table-bordered table-hover table-striped">
 
@@ -428,23 +428,23 @@
                   </thead>
                   <tbody>
 
-                    {% for  perm in permissions %}
+                    {% for  perm, desc in permissions.items %}
                     <tr>
                       <td>
-                        {{ perm.name }}
+                        {{ perm }}
                       </td>
                       <td>
-                        {% if perm.status == 'dangerous' %}
+                        {% if desc.status == 'dangerous' %}
                             <span class="badge bg-danger">dangerous</span>
                           {% else %}
                             <span class="badge bg-info">normal</span>
                         {% endif %}
                       </td>
                       <td>
-                        {{ perm.description}}
+                        {{ desc.description}}
                       </td>
                       <td>
-                        {{ perm.reason }}
+                        {{ desc.reason }}
                       </td>
                     </tr>
                     {% endfor %}
@@ -995,7 +995,7 @@
 <script src="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.js" %}"></script>
 <script src="{% static "amcharts/core.js" %}"></script>
 <script src="{% static "amcharts/maps.js" %}"></script>
-<script src="{% static "amcharts/worldLow.js" %}"></script>
+<script src="{% static "amcharts/worldIndiaLow.js" %}"></script>
 <script src="{% static "amcharts/animated.js" %}"></script>
 <script>
   $(function () {
@@ -1025,7 +1025,7 @@
   var chart = am4core.create("chartdiv", am4maps.MapChart);
   
   // Set map definition
-  chart.geodata = am4geodata_worldLow;
+  chart.geodata = am4geodata_worldIndiaLow;
   
   // Set projection
   chart.projection = new am4maps.projections.Miller();

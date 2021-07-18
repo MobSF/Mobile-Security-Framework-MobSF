@@ -62,7 +62,7 @@ def activity_tester(request, api=False):
             activities = python_list(static_android_db.ACTIVITIES)
         logger.info('Fetching %sactivities for %s', iden, package)
         if not activities:
-            msg = 'No {}Activites found'.format(iden)
+            msg = 'No {}Activities found'.format(iden)
             logger.info(msg)
             data = {'status': 'failed',
                     'message': msg}

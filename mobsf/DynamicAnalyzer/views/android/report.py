@@ -110,7 +110,7 @@ def view_report(request, checksum, api=False):
         return render(request, template, context)
     except Exception as exp:
         logger.exception('Dynamic Analysis Report Generation')
-        err = 'Error Geneating Dynamic Analysis Report. ' + str(exp)
+        err = 'Error Generating Dynamic Analysis Report. ' + str(exp)
         return print_n_send_error_response(request, err, api)
 
 

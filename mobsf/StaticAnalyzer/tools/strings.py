@@ -4,7 +4,7 @@ import io
 """
 Python Strings.
 
-Strings-module to be undependend from operating systems
+Strings-module to be independent from operating systems
 Taken from: http://stackoverflow.com/a/17197027
 """
 
