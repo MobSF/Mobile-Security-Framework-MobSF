@@ -317,11 +317,12 @@ def static_analyzer(request, api=False):
                 else:
                     return render(request, template, context)
             elif typ == 'zip':
-                ios_ret = HttpResponseRedirect(
+                ret = (
                     '/static_analyzer_ios/?name='
                     + app_dic['app_name']
                     + '&type=ios&checksum='
-                    + app_dic['md5'])
+                    + app_dic['md5']
+                )
                 # Check if in DB
                 # pylint: disable=E1101
                 cert_dic = {
@@ -347,7 +348,7 @@ def static_analyzer(request, api=False):
                     if api:
                         return {'type': 'ios'}
                     else:
-                        return ios_ret
+                        return HttpResponseRedirect(ret)
                 else:
                     logger.info('Extracting ZIP')
                     app_dic['files'] = unzip(
@@ -360,7 +361,8 @@ def static_analyzer(request, api=False):
                         if api:
                             return {'type': 'ios'}
                         else:
-                            return ios_ret
+                            ret += f'&rescan={str(int(rescan))}'
+                            return HttpResponseRedirect(ret)
                     app_dic['certz'] = get_hardcoded_cert_keystore(
                         app_dic['files'])
                     app_dic['zipped'] = pro_type

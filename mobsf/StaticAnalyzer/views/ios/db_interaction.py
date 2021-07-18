@@ -51,6 +51,7 @@ def get_context_from_db_entry(db_entry):
             'strings': python_list(db_entry[0].STRINGS),
             'firebase_urls': python_list(db_entry[0].FIREBASE_URLS),
             'appstore_details': python_dict(db_entry[0].APPSTORE_DETAILS),
+            'secrets': python_list(db_entry[0].SECRETS),
 
         }
         return context
@@ -102,6 +103,7 @@ def get_context_from_analysis(app_dict,
             'strings': bin_dict['strings'],
             'firebase_urls': code_dict['firebase'],
             'appstore_details': app_dict['appstore'],
+            'secrets': app_dict['secrets'],
         }
         return context
     except Exception:
@@ -151,6 +153,7 @@ def save_or_update(update_type,
             'STRINGS': bin_dict['strings'],
             'FIREBASE_URLS': code_dict['firebase'],
             'APPSTORE_DETAILS': app_dict['appstore'],
+            'SECRETS': app_dict['secrets'],
         }
         if update_type == 'save':
             db_entry = StaticAnalyzerIOS.objects.filter(
