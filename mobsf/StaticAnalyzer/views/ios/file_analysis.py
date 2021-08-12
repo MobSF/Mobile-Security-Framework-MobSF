@@ -40,7 +40,7 @@ def ios_list_files(src, md5_hash, binary_form, mode):
                     filez.append(fileparam)
                     full_paths.append(file_path)
                     ext = jfile.split('.')[-1]
-                    if re.search(r'cer|pem|cert|crt|pub|key|pfx|p12', ext):
+                    if re.search(r'cer|pem|cert|crt|pub|key|pfx|p12|der', ext):
                         certz.append({
                             'file_path': escape(file_path.replace(src, '')),
                             'type': None,

@@ -10,6 +10,7 @@ from pathlib import Path
 import mobsf.MalwareAnalyzer.views.Trackers as Trackers
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.MalwareAnalyzer.views.apkid import apkid_analysis
+from mobsf.MalwareAnalyzer.views.quark import quark_analysis
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import MalwareDomainCheck
 
 from django.conf import settings
@@ -53,7 +54,10 @@ from mobsf.StaticAnalyzer.views.android.manifest_analysis import (
 )
 from mobsf.StaticAnalyzer.views.android.playstore import get_app_details
 from mobsf.StaticAnalyzer.views.android.strings import strings_from_apk
-from mobsf.StaticAnalyzer.views.android.xapk import handle_xapk
+from mobsf.StaticAnalyzer.views.android.xapk import (
+    handle_split_apk,
+    handle_xapk,
+)
 from mobsf.StaticAnalyzer.views.shared_func import (
     firebase_analysis,
     hash_gen,
@@ -94,22 +98,27 @@ def static_analyzer(request, api=False):
         app_dic = {}
         match = re.match('^[0-9a-f]{32}$', checksum)
         if (match
-                and filename.lower().endswith(('.apk', '.xapk', '.zip'))
-                and typ in ['zip', 'apk', 'xapk']):
+                and filename.lower().endswith(
+                    ('.apk', '.xapk', '.zip', '.apks'))
+                and typ in ['zip', 'apk', 'xapk', 'apks']):
             app_dic['dir'] = Path(settings.BASE_DIR)  # BASE DIR
-            app_dic['app_name'] = filename  # APP ORGINAL NAME
+            app_dic['app_name'] = filename  # APP ORIGINAL NAME
             app_dic['md5'] = checksum  # MD5
             # APP DIRECTORY
             app_dic['app_dir'] = Path(settings.UPLD_DIR) / checksum
             app_dic['tools_dir'] = app_dic['dir'] / 'StaticAnalyzer' / 'tools'
             app_dic['tools_dir'] = app_dic['tools_dir'].as_posix()
-            logger.info('Starting Analysis on : %s', app_dic['app_name'])
+            logger.info('Starting Analysis on: %s', app_dic['app_name'])
             if typ == 'xapk':
                 # Handle XAPK
                 # Base APK will have the MD5 of XAPK
-                res = handle_xapk(app_dic)
-                if not res:
+                if not handle_xapk(app_dic):
                     raise Exception('Invalid XAPK File')
+                typ = 'apk'
+            elif typ == 'apks':
+                # Handle Split APK
+                if not handle_split_apk(app_dic):
+                    raise Exception('Invalid Split APK File')
                 typ = 'apk'
             if typ == 'apk':
                 app_dic['app_file'] = app_dic['md5'] + '.apk'  # NEW FILENAME
@@ -215,6 +224,10 @@ def static_analyzer(request, api=False):
                         'apk',
                         app_dic['manifest_file'])
 
+                    quark_results = quark_analysis(
+                        app_dic['app_dir'],
+                        app_dic['app_path'])
+
                     # Get the strings from android resource and shared objects
                     string_res = strings_from_apk(
                         app_dic['app_file'],
@@ -256,6 +269,7 @@ def static_analyzer(request, api=False):
                                 cert_dic,
                                 elf_dict['elf_analysis'],
                                 apkid_results,
+                                quark_results,
                                 tracker_res,
                             )
                             update_scan_timestamp(app_dic['md5'])
@@ -270,6 +284,7 @@ def static_analyzer(request, api=False):
                                 cert_dic,
                                 elf_dict['elf_analysis'],
                                 apkid_results,
+                                quark_results,
                                 tracker_res,
                             )
                     except Exception:
@@ -282,6 +297,7 @@ def static_analyzer(request, api=False):
                         cert_dic,
                         elf_dict['elf_analysis'],
                         apkid_results,
+                        quark_results,
                         tracker_res,
                     )
                 context['average_cvss'], context[
@@ -301,11 +317,12 @@ def static_analyzer(request, api=False):
                 else:
                     return render(request, template, context)
             elif typ == 'zip':
-                ios_ret = HttpResponseRedirect(
+                ret = (
                     '/static_analyzer_ios/?name='
                     + app_dic['app_name']
                     + '&type=ios&checksum='
-                    + app_dic['md5'])
+                    + app_dic['md5']
+                )
                 # Check if in DB
                 # pylint: disable=E1101
                 cert_dic = {
@@ -331,7 +348,7 @@ def static_analyzer(request, api=False):
                     if api:
                         return {'type': 'ios'}
                     else:
-                        return ios_ret
+                        return HttpResponseRedirect(ret)
                 else:
                     logger.info('Extracting ZIP')
                     app_dic['files'] = unzip(
@@ -344,7 +361,8 @@ def static_analyzer(request, api=False):
                         if api:
                             return {'type': 'ios'}
                         else:
-                            return ios_ret
+                            ret += f'&rescan={str(int(rescan))}'
+                            return HttpResponseRedirect(ret)
                     app_dic['certz'] = get_hardcoded_cert_keystore(
                         app_dic['files'])
                     app_dic['zipped'] = pro_type
@@ -445,6 +463,7 @@ def static_analyzer(request, api=False):
                                     cert_dic,
                                     [],
                                     {},
+                                    [],
                                     {},
                                 )
                                 update_scan_timestamp(app_dic['md5'])
@@ -459,6 +478,7 @@ def static_analyzer(request, api=False):
                                     cert_dic,
                                     [],
                                     {},
+                                    [],
                                     {},
                                 )
                         except Exception:
@@ -471,6 +491,7 @@ def static_analyzer(request, api=False):
                             cert_dic,
                             [],
                             {},
+                            [],
                             {},
                         )
                     else:

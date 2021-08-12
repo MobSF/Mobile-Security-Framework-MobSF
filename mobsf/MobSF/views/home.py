@@ -24,6 +24,7 @@ from mobsf.MobSF.utils import (
 )
 from mobsf.MobSF.views.helpers import FileType
 from mobsf.MobSF.views.scanning import Scanning
+from mobsf.MobSF.views.apk_downloader import apk_download
 from mobsf.StaticAnalyzer.models import (
     RecentScansDB,
     StaticAnalyzerAndroid,
@@ -137,6 +138,8 @@ class Upload(object):
             return scanning.scan_apk()
         elif self.file_type.is_xapk():
             return scanning.scan_xapk()
+        elif self.file_type.is_apks():
+            return scanning.scan_apks()
         elif self.file_type.is_zip():
             return scanning.scan_zip()
         elif self.file_type.is_ipa():
@@ -217,6 +220,25 @@ def recent_scans(request):
     }
     template = 'general/recent.html'
     return render(request, template, context)
+
+
+def download_apk(request):
+    """Download and APK by package name."""
+    package = request.POST['package']
+    # Package validated in apk_download()
+    context = {
+        'status': 'failed',
+        'description': 'Unable to download APK',
+    }
+    res = apk_download(package)
+    if res:
+        context = res
+        context['status'] = 'ok'
+        context['package'] = package
+    resp = HttpResponse(
+        json.dumps(context),
+        content_type='application/json; charset=utf-8')
+    return resp
 
 
 def search(request):

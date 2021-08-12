@@ -55,6 +55,7 @@ class StaticAnalyzerAndroid(models.Model):
     FILES = models.TextField(default=[])
     EXPORTED_COUNT = models.TextField(default={})
     APKID = models.TextField(default={})
+    QUARK = models.TextField(default=[])
     TRACKERS = models.TextField(default={})
     PLAYSTORE_DETAILS = models.TextField(default={})
     NETWORK_SECURITY = models.TextField(default=[])
@@ -80,7 +81,7 @@ class StaticAnalyzerIOS(models.Model):
     ICON_FOUND = models.BooleanField(default=False)
     INFO_PLIST = models.TextField(default='')
     BINARY_INFO = models.TextField(default={})
-    PERMISSIONS = models.TextField(default=[])
+    PERMISSIONS = models.TextField(default={})
     ATS_ANALYSIS = models.TextField(default=[])
     BINARY_ANALYSIS = models.TextField(default=[])
     MACHO_ANALYSIS = models.TextField(default={})
@@ -95,6 +96,7 @@ class StaticAnalyzerIOS(models.Model):
     STRINGS = models.TextField(default=[])
     FIREBASE_URLS = models.TextField(default=[])
     APPSTORE_DETAILS = models.TextField(default={})
+    SECRETS = models.TextField(default=[])
 
 
 class StaticAnalyzerWindows(models.Model):

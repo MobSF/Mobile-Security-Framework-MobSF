@@ -60,6 +60,7 @@ urlpatterns = [
     url(r'^api/v1/frida/logs$', api_dz.api_frida_logs),
     url(r'^api/v1/frida/list_scripts$', api_dz.api_list_frida_scripts),
     url(r'^api/v1/frida/get_script$', api_dz.api_get_script),
+    url(r'^api/v1/frida/get_dependencies$', api_dz.api_get_dependencies),
 ]
 if settings.API_ONLY == '0':
     urlpatterns.extend([
@@ -67,6 +68,7 @@ if settings.API_ONLY == '0':
         url(r'^$', home.index, name='home'),
         url(r'^upload/$', home.Upload.as_view),
         url(r'^download/', home.download),
+        url(r'^download_scan/', home.download_apk),
         url(r'^about$', home.about, name='about'),
         url(r'^api_docs$', home.api_docs, name='api_docs'),
         url(r'^recent_scans/$', home.recent_scans, name='recent'),
@@ -131,6 +133,7 @@ if settings.API_ONLY == '0':
         url(r'^frida_logs/$', tests_frida.frida_logs),
         url(r'^list_frida_scripts/$', tests_frida.list_frida_scripts),
         url(r'^get_script/$', tests_frida.get_script),
+        url(r'^get_dependencies/$', tests_frida.get_runtime_dependencies),
         # Report
         url(r'^dynamic_report/(?P<checksum>[0-9a-f]{32})$',
             report.view_report),

@@ -27,7 +27,10 @@ from mobsf.StaticAnalyzer.views.ios.icon_analysis import (
     get_icon,
     get_icon_source,
 )
-from mobsf.StaticAnalyzer.views.ios.plist_analysis import plist_analysis
+from mobsf.StaticAnalyzer.views.ios.plist_analysis import (
+    get_plist_secrets,
+    plist_analysis,
+)
 from mobsf.StaticAnalyzer.views.shared_func import (
     firebase_analysis,
     hash_gen, score, unzip,
@@ -65,7 +68,7 @@ def static_analyzer_ios(request, api=False):
                 and (file_type in ['ipa', 'ios'])):
             app_dict = {}
             app_dict['directory'] = Path(settings.BASE_DIR)  # BASE DIR
-            app_dict['file_name'] = filename  # APP ORGINAL NAME
+            app_dict['file_name'] = filename  # APP ORIGINAL NAME
             app_dict['md5_hash'] = checksum  # MD5
             app_dir = Path(settings.UPLD_DIR) / checksum
             tools_dir = app_dict[
@@ -116,6 +119,8 @@ def static_analyzer_ios(request, api=False):
                         app_dict['bin_dir'], app_dict['md5_hash'], True, 'ipa')
                     infoplist_dict = plist_analysis(app_dict['bin_dir'], False)
                     app_dict['appstore'] = app_search(infoplist_dict.get('id'))
+                    app_dict['secrets'] = get_plist_secrets(
+                        infoplist_dict['plist_xml'])
                     bin_analysis_dict = binary_analysis(
                         app_dict['bin_dir'],
                         tools_dir,
@@ -202,6 +207,8 @@ def static_analyzer_ios(request, api=False):
                         'ios')
                     infoplist_dict = plist_analysis(app_dict['app_dir'], True)
                     app_dict['appstore'] = app_search(infoplist_dict.get('id'))
+                    app_dict['secrets'] = get_plist_secrets(
+                        infoplist_dict['plist_xml'])
                     code_analysis_dic = ios_source_analysis(
                         app_dict['app_dir'])
                     # Get App Icon
@@ -266,7 +273,7 @@ def static_analyzer_ios(request, api=False):
             else:
                 return print_n_send_error_response(request, msg, False)
     except Exception as exp:
-        logger.exception('Error Perfroming Static Analysis')
+        logger.exception('Error Performing Static Analysis')
         msg = str(exp)
         exp_doc = exp.__doc__
         if api:

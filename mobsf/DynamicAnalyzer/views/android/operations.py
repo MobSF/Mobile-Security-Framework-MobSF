@@ -65,26 +65,6 @@ def is_attack_pattern(user_input):
     return stat
 
 
-def strict_package_check(user_input):
-    """Strict package name check."""
-    pat = re.compile(r'^\w+\.*[\w\.\$]+$')
-    resp = re.match(pat, user_input)
-    if not resp:
-        logger.error('Invalid package/class name')
-    return resp
-
-
-def is_path_traversal(user_input):
-    """Check for path traversal."""
-    if (('../' in user_input)
-        or ('%2e%2e' in user_input)
-        or ('..' in user_input)
-            or ('%252e' in user_input)):
-        logger.error('Path traversal attack detected')
-        return True
-    return False
-
-
 def invalid_params(api=False):
     """Standard response for invalid params."""
     msg = 'Invalid Parameters'

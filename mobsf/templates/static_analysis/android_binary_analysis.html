@@ -171,6 +171,12 @@
                   <p>APKiD Analysis</p>
                 </a>
               </li>
+              <li class="nav-item">
+                <a href="#quark" class="nav-link">
+                  <i class="fab fa-quora nav-icon"></i>
+                  <p>Quark Analysis</p>
+                </a>
+              </li>
                {% if virus_total %}
               <li class="nav-item">
                 <a href="#virus_total" class="nav-link">
@@ -1317,6 +1323,51 @@
     </div>
 </section>
  <!-- ===========================end apkid analysis ================================== -->
+  <a id="quark" class="anchor"></a>
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+          <div class="col-lg-12">
+          <div class="card">
+            <div class="card-body">
+              <p>
+               <strong><i class="fab fa-quora"></i> QUARK ANALYSIS</strong>
+               </p>
+               <div class="table-responsive">
+                <table id="table_file" class="table table-bordered table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th>POTENTIAL MALICIOUS BEHAVIOUR</th>
+                            <th>EVIDENCE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                      {% if quark %}
+                        {% for item in quark %}
+                          <tr>
+                            <td>{{ item.crime }}</td>
+
+                            <td>
+                              {% for api in item.register %}
+                                <a href="{% url "view_source" %}?file={{ api.file }}&amp;md5={{ md5 }}&amp;type=smali&amp;lines={{ api.line_numbers.first_api }},{{ api.line_numbers.second_api }}">{{api.file}} -> {{api.method}}</a>
+                                <br/>
+                              {% endfor %}
+                            </td>
+                          </tr>
+                        {% endfor%}
+                      {% endif %}
+              </tbody>
+                              
+              </table>
+              </div>
+            </div>
+          </div><!-- /.card -->
+          </div>
+          <!-- end row -->
+          </div>
+      </div>
+  </section>
+<!-- ===========================end quark analysis ================================== -->
 {% if virus_total %}
 <a id="virus_total" class="anchor"></a>
 <section class="content">
@@ -1610,20 +1661,22 @@
                 <thead>
                   <tr>
                     <th>TRACKER NAME</th>
+                    <th>CATEGORIES</th>
                     <th>URL</th>
                   </tr>
                 </thead>
                <tbody>
                 {% for trk in trackers|key:"trackers" %}
                 <tr>
-                  {% for k, v in trk.items %}
                   <td>
-                    {{k}}
+                    {{trk.name}}
                   </td>
                   <td>
-                    <a target="_blank" href="{{v}}" rel="noopener noreferrer">{{v}}</a>
+                    {{trk.categories}}
                   </td>
-                  {% endfor %}
+                  <td>
+                    <a target="_blank" href="{{trk.url}}" rel="noopener noreferrer">{{trk.url}}</a>
+                  </td>
                 </tr>
                 {% endfor %}
               </tbody>
@@ -1851,7 +1904,7 @@
 <script src="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.js" %}"></script>
 <script src="{% static "amcharts/core.js" %}"></script>
 <script src="{% static "amcharts/maps.js" %}"></script>
-<script src="{% static "amcharts/worldLow.js" %}"></script>
+<script src="{% static "amcharts/worldIndiaLow.js" %}"></script>
 <script src="{% static "amcharts/animated.js" %}"></script>
 <script>
   $(function () {
@@ -1883,7 +1936,7 @@ am4core.useTheme(am4themes_animated);
 var chart = am4core.create("chartdiv", am4maps.MapChart);
 
 // Set map definition
-chart.geodata = am4geodata_worldLow;
+chart.geodata = am4geodata_worldIndiaLow;
 
 // Set projection
 chart.projection = new am4maps.projections.Miller();

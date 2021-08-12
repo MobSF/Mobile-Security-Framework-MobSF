@@ -1,11 +1,17 @@
 @echo off
 rem Python Check
+set /a count=0
 where python >nul 2>&1 && (
-  echo [INSTALL] Python is available
+  echo [INSTALL] Checking for Python version 3.8+
   :redo
-  rem Python Version Check
-  for /F "tokens=* USEBACKQ" %%F IN (`python --version`) DO (
-    set var=%%F
+  if %count% lss 3 (
+    set /a count+=1
+    rem Python Version Check
+    for /F "tokens=* USEBACKQ" %%F IN (`python --version`) DO (
+      set var=%%F
+    )
+  ) else (
+    exit /b
   )
   echo %var%|findstr /R "[3].[89]" >nul
   if errorlevel 1 (

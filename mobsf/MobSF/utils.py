@@ -569,3 +569,30 @@ def cmd_injection_check(data):
         '%7C%7C', '%0a', '%0d%0a',
     ]
     return any(i in data for i in breakers)
+
+
+def strict_package_check(user_input):
+    """Strict package name check."""
+    pat = re.compile(r'^\w+\.*[\w\.\$]+$')
+    resp = re.match(pat, user_input)
+    if not resp:
+        logger.error('Invalid package/class name')
+    return resp
+
+
+def is_path_traversal(user_input):
+    """Check for path traversal."""
+    if (('../' in user_input)
+        or ('%2e%2e' in user_input)
+        or ('..' in user_input)
+            or ('%252e' in user_input)):
+        logger.error('Path traversal attack detected')
+        return True
+    return False
+
+
+def is_zip_magic(file_obj):
+    magic = file_obj.read(4)
+    file_obj.seek(0, 0)
+    # ZIP magic PK.. no support for spanned and empty arch
+    return bool(magic == b'\x50\x4B\x03\x04')

@@ -75,7 +75,7 @@ def staticanalyzer_windows(request, api=False):
             rescan = True
         md5_regex = re.match('^[0-9a-f]{32}$', checksum)
         if (md5_regex) and (typ in ['appx']):
-            app_dic['app_name'] = filename  # APP ORGINAL NAME
+            app_dic['app_name'] = filename  # APP ORIGINAL NAME
             app_dic['md5'] = checksum
             app_dic['app_dir'] = os.path.join(
                 settings.UPLD_DIR, app_dic['md5'] + '/')
@@ -184,7 +184,7 @@ def _binary_analysis(app_dic):
             bin_an_dic['bin_name'] = file_name.replace('.exe', '')
             break
     if not bin_an_dic.get('bin_name'):
-        logger.exception('No executeable in appx.')
+        logger.exception('No executable in appx.')
     bin_path = os.path.join(app_dic['app_dir'], bin_an_dic['bin'])
 
     # Execute strings command
@@ -234,11 +234,11 @@ def _binary_analysis(app_dic):
             }
             bin_an_dic['results'].append(warning)
     else:
-        logger.info('Running lokal analysis.')
+        logger.info('Running local analysis.')
 
         global config
         config = configparser.ConfigParser()
-        # Switch to settings definded path if available
+        # Switch to settings defined path if available
         config.read(expanduser('~') + '\\MobSF\\Config\\config.txt')
 
         # Run analysis functions
@@ -521,7 +521,7 @@ def binscope(name, bin_an_dic, run_local=False, app_dir=None):
 
 
 def _parse_xml(app_dir):
-    """Parse the AppxManifest file to get basic informations."""
+    """Parse the AppxManifest file to get basic information."""
     logger.info('Starting Binary Analysis - XML')
     xml_file = os.path.join(app_dir, 'AppxManifest.xml')
     xml_dic = {
