@@ -19,6 +19,7 @@ from mobsf.StaticAnalyzer.views.android import (
     manifest_view,
     source_tree,
     view_source,
+    deep_view,
 )
 from mobsf.StaticAnalyzer.views.windows import windows
 from mobsf.StaticAnalyzer.views.android import static_analyzer as android_sa
@@ -87,6 +88,7 @@ if settings.API_ONLY == '0':
         url(r'^find/$', find.run, name='find_files'),
         url(r'^generate_downloads/$', generate_downloads.run),
         url(r'^manifest_view/$', manifest_view.run),
+        url(r'^deep_view/$', deep_view.run),
         # IOS
         url(r'^static_analyzer_ios/$', ios_sa.static_analyzer_ios),
         url(r'^view_file_ios/$', io_view_source.run),
