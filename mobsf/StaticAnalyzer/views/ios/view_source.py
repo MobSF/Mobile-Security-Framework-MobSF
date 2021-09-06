@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 def set_ext_api(file_path):
-    """Smart Function to set Extenstion."""
+    """Smart Function to set Extension."""
     ext = file_path.split('.')[-1]
     if ext == 'plist':
         return 'plist'

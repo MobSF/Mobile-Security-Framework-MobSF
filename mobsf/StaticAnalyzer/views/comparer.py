@@ -65,6 +65,39 @@ def diff_apkid(context: dict) -> None:
             tmp_flat_results['first_app'][key]]
 
 
+def diff_browsable_activities(context, first_app, second_app):
+    # Browsable activities are 'complex' objects that contains additional
+    # fields that should be compared. The generic diffing performed above
+    # only list which browsable activities are in common or present only in
+    # one app. For the activities present in one app we can just pretty-print
+    # the details but for common browsable activities we need to perform the
+    # diffing also on sub-keys, like hosts and schemes.
+    section = 'browsable_activities'
+    common_activity = 'common_browsable_activities'
+    browsable_activities_keys = ['schemes', 'mime_types', 'hosts', 'ports',
+                                 'paths', 'path_prefixs', 'path_patterns']
+
+    for act, _ in context[section]['common']:
+        context[common_activity][act] = {}
+        for key in browsable_activities_keys:
+            context[common_activity][act][key] = {}
+
+            context[common_activity][act][key]['common'] = [
+                y for y in first_app[section][act][key] if y in
+                second_app[section][act][key]
+            ]
+
+            context[common_activity][act][key]['only_first'] = [
+                y for y in first_app[section][act][key] if y not in
+                second_app[section][act][key]
+            ]
+
+            context[common_activity][act][key]['only_second'] = [
+                y for y in second_app[section][act][key] if y not in
+                first_app[section][act][key]
+            ]
+
+
 # suppose to get any 2 apps (android / ios / appx)
 # and then figure out what to do with them
 def generic_compare(request,
@@ -82,6 +115,8 @@ def generic_compare(request,
         'urls': {},
         'android_api': {},
         'permissions': {},
+        'browsable_activities': {},
+        'common_browsable_activities': {},
         'apkid': {},
     }
     static_fields = ['md5', 'file_name', 'size', 'icon_found',
@@ -160,6 +195,7 @@ def generic_compare(request,
     for section, is_tuples in [
         ('permissions', True),
         ('android_api', True),
+        ('browsable_activities', True),
         ('urls', False),
     ]:
         if is_tuples:
@@ -188,6 +224,9 @@ def generic_compare(request,
             context[section]['only_second'] = [
                 x for x in second_app[section] if x not in
                 first_app[section]]
+
+    diff_browsable_activities(context, first_app, second_app)
+
     template = 'static_analysis/compare.html'
     if api:
         return context

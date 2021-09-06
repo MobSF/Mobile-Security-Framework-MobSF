@@ -1,6 +1,7 @@
 # -*- coding: utf_8 -*-
 import hashlib
 import logging
+import io
 import os
 
 from django.conf import settings
@@ -30,18 +31,30 @@ def add_to_recent_scan(data):
         logger.exception('Adding Scan URL to Database')
 
 
-def handle_uploaded_file(filecnt, typ):
+def handle_uploaded_file(content, typ):
     """Write Uploaded File."""
-    md5 = hashlib.md5()  # modify if crash for large
-    for chunk in filecnt.chunks():
-        md5.update(chunk)
+    md5 = hashlib.md5()
+    bfr = isinstance(content, io.BufferedReader)
+    if bfr:
+        # Not File upload
+        while chunk := content.read(8192):
+            md5.update(chunk)
+    else:
+        # File upload
+        for chunk in content.chunks():
+            md5.update(chunk)
     md5sum = md5.hexdigest()
     anal_dir = os.path.join(settings.UPLD_DIR, md5sum + '/')
     if not os.path.exists(anal_dir):
         os.makedirs(anal_dir)
     with open(anal_dir + md5sum + typ, 'wb+') as destination:
-        for chunk in filecnt.chunks():
-            destination.write(chunk)
+        if bfr:
+            content.seek(0, 0)
+            while chunk := content.read(8192):
+                destination.write(chunk)
+        else:
+            for chunk in content.chunks():
+                destination.write(chunk)
     return md5sum
 
 
@@ -77,6 +90,20 @@ class Scanning(object):
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android XAPK base APK')
+        return data
+
+    def scan_apks(self):
+        """Android Split APK."""
+        md5 = handle_uploaded_file(self.file, '.apk')
+        data = {
+            'analyzer': 'static_analyzer',
+            'status': 'success',
+            'hash': md5,
+            'scan_type': 'apks',
+            'file_name': self.file_name,
+        }
+        add_to_recent_scan(data)
+        logger.info('Performing Static Analysis of Android Split APK')
         return data
 
     def scan_zip(self):

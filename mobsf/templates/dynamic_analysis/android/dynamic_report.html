@@ -114,6 +114,14 @@
               </p>
             </a>
           </li>
+          <li class="nav-item">
+            <a href="#deps" class="nav-link">
+              <i class="nav-icon fas fa-running"></i>
+              <p>
+                Runtime Dependencies
+              </p>
+            </a>
+          </li>
           <li class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-bug"></i>
@@ -162,6 +170,18 @@
                 <a href="#emails" class="nav-link">
                   <i class="fas fa-envelope nav-icon"></i>
                   <p>Emails</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#trackers" class="nav-link">
+                  <i class="fas fa-user-secret nav-icon"></i>
+                  <p>Trackers</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#b64" class="nav-link">
+                  <i class="fas fa-puzzle-piece nav-icon"></i>
+                  <p>Base64 Strings</p>
                 </a>
               </li>
             </ul>
@@ -519,6 +539,31 @@
     </div>
 </section>
  <!-- ===========================end screenshots ================================== -->
+
+<a id="deps" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-running"></i> RUNTIME DEPENDENCIES</strong>
+             </p>
+                {% if runtime_dependencies %} 
+                <div class="list-group">
+                  {% for f in runtime_dependencies %}
+                        {{ f }} <br>
+                  {% endfor %}
+              {% endif %}
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+    </div>
+</section>
+ <!-- ===========================end dependencies ================================== -->
  <style>
   #chartdiv {
   width: 100%;
@@ -685,6 +730,88 @@
     </div>
 </section>
  <!-- ===========================end emails ================================== -->
+ <a id="trackers" class="anchor"></a>
+ <section class="content">
+   <div class="container-fluid">
+     <div class="row">
+         <div class="col-lg-12">
+         <div class="card">
+           <div class="card-body">
+              <p>
+              <strong><i class="fas fa-user-secret"></i> TRACKERS</strong>
+              </p>
+               <div class="table-responsive">
+                <table id="table_trackers" class="table table-bordered table-hover table-striped">
+                 <thead>
+                   <tr>
+                     <th>TRACKER NAME</th>
+                     <th>CATEGORIES</th>
+                     <th>URL</th>
+                   </tr>
+                 </thead>
+                <tbody>
+                 {% for trk in trackers %}
+                 <tr>
+                   <td>
+                     {{trk.name}}
+                   </td>
+                   <td>
+                     {{trk.categories}}
+                   </td>
+                   <td>
+                     <a target="_blank" href="{{trk.url}}" rel="noopener noreferrer">{{trk.url}}</a>
+                   </td>
+                 </tr>
+                 {% endfor %}
+               </tbody>
+             </table>
+             </div>
+           </div>
+         </div><!-- /.card -->
+         </div>
+         <!-- end row -->
+         </div>
+     </div>
+ </section>
+ <!-- ===========================end trackers ================================== -->
+<a id="b64" class="anchor"></a>
+<section class="content">
+      <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+              <p><strong><i class="fas fa-puzzle-piece"></i> BASE64 STRINGS DECODED</strong></p>
+                <div class="table-responsive">
+                 <table class="table table-striped">
+                    <thead>
+                    <tr>
+                      <th>CALLED</th>
+                      <th>DECODED STRING</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                      {% for details in base64_strings %}
+                        <tr>
+                        <td>
+                            {{ details.0  }}
+                        </td>
+                        <td style="word-wrap: break-word;min-width: 160px;max-width: 160px;">
+                            {{ details.1|slice:500}}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+                </div>
+              </div>
+            </div><!-- /.card -->
+            </div>
+            <!-- end row -->
+            </div>
+        </div>
+</section>
+ <!-- ===========================end base64 decoded strings ================================== -->
 <a id="sqlitedb" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
@@ -791,7 +918,7 @@
 <script src="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.js" %}"></script>
 <script src="{% static "amcharts/core.js" %}"></script>
 <script src="{% static "amcharts/maps.js" %}"></script>
-<script src="{% static "amcharts/worldLow.js" %}"></script>
+<script src="{% static "amcharts/worldIndiaLow.js" %}"></script>
 <script src="{% static "amcharts/animated.js" %}"></script>
 <script>
   $(function () {
@@ -821,7 +948,7 @@
   var chart = am4core.create("chartdiv", am4maps.MapChart);
   
   // Set map definition
-  chart.geodata = am4geodata_worldLow;
+  chart.geodata = am4geodata_worldIndiaLow;
   
   // Set projection
   chart.projection = new am4maps.projections.Miller();

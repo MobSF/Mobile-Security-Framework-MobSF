@@ -171,6 +171,7 @@ def tools_binskim():
         [
             nuget,
             'install', binskim_nuget, '-Pre',
+            '-Version', '1.7.2',
             '-o', mobsf_subdir_tools])
 
     # Some code to determine the version on the fly so we don't have to fix the

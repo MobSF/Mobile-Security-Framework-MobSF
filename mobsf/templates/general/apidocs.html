@@ -51,6 +51,7 @@
               <li><code>api/v1/android/tls_tests</code> - <a href="#tls-tester-api">TLS/SSL Security Tester</a></li>
               <li><code>api/v1/frida/instrument</code> - <a href="#frida-instrument-api">Frida Instrument App</a></li>
               <li><code>api/v1/frida/api_monitor</code> - <a href="#frida-api-monitor-api">Frida API Monitor</a></li>
+              <li><code>api/v1/frida/get_dependencies</code> - <a href="#frida-get-dependencies-api">Frida Get Dependencies</a></li>
               <li><code>api/v1/frida/logs</code> - <a href="#frida-logs-api">Frida View Logs</a></li>
               <li><code>api/v1/frida/list_scripts</code> - <a href="#frida-list-scripts-api">Frida List Scripts</a></li>
               <li><code>api/v1/frida/get_script</code> - <a href="#frida-get-script-api">Frida Get Script</a></li>
@@ -1132,7 +1133,7 @@
                     <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
                     <strong>Content:</strong> <code>{
   "status": "ok",
-  "message": "acct\nbugreports\ncache\ncharger\nconfig\nd\ndata\ndefault.prop\ndev\netc\nfstab.vbox86\ninit\ninit.environ.rc\ninit.rc\ninit.usb.configfs.rc\ninit.usb.rc\ninit.vbox86.rc\ninit.zygote32.rc\nmnt\nnonplat_file_contexts\nnonplat_hwservice_contexts\nnonplat_property_contexts\nnonplat_seapp_contexts\nnonplat_service_contexts\noem\nplat_file_contexts\nplat_hwservice_contexts\nplat_property_contexts\nplat_seapp_contexts\nplat_service_contexts\nproc\nrom.trace\nroot\nsbin\nsdcard\nsepolicy\nstorage\nsys\nsystem\ntmp\nueventd.rc\nueventd.vbox86.rc\nvar\nvendor\nvndservice_contexts\n"
+  "message": "acct\nbugreports\ncache\ncharger\nconfig\nadd\nadata\nadefault.prop\nadev\netc\nfstab.vbox86\ninit\ninit.environ.rc\ninit.rc\ninit.usb.configfs.rc\ninit.usb.rc\ninit.vbox86.rc\ninit.zygote32.rc\nmnt\nnonplat_file_contexts\nnonplat_hwservice_contexts\nnonplat_property_contexts\nnonplat_seapp_contexts\nnonplat_service_contexts\noem\nplat_file_contexts\nplat_hwservice_contexts\nplat_property_contexts\nplat_seapp_contexts\nplat_service_contexts\nproc\nrom.trace\nroot\nsbin\nsdcard\nsepolicy\nstorage\nsys\nsystem\ntmp\nueventd.rc\nueventd.vbox86.rc\nvar\nvendor\nvndservice_contexts\n"
 }</code>
                   </li>
                 </ul>
@@ -1655,6 +1656,80 @@
                 <ul>
                   <li>
                     <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/api_monitor --data "hash=6825bb9fde2fc671322df005976755a1" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="frida-get-dependencies-api"></a><strong>Frida Get Runtime Dependencies API</strong></h2>
+            <p>API to collect runtime dependencies.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/frida/get_dependencies</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>hash</td>
+                  <td>hash of the scan</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/get_dependencies --data "hash=6825bb9fde2fc671322df005976755a1" -H "Authorization:{{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>

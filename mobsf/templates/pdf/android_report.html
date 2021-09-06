@@ -615,6 +615,34 @@
             </tbody>
                   </table>
 
+<!-- Added for anyone who needs QUARK Results in Report
+       {% if quark %} 
+      <h2><i class="fab fa-quora"></i> QUARK </h2>
+      <table class="basic">
+                  <thead>
+                  <tr>
+                      <th>POTENTIAL MALICIOUS BEHAVIOUR</th>
+                      <th>EVIDENCE</th>
+                  </tr>
+                 </thead>
+                  <tbody>
+									 {% for item in quark %}
+                    <tr>
+                       <td style="word-break:break-all;">
+                       {{ item.crime }}
+                        </td>
+                       <td style="word-break:break-all;">
+                          {% for api in item.register %}
+                              {{api.file}} -> {{api.method}}
+                              <br/>
+                            {% endfor %}
+                       </td>
+                    </tr>
+                  {% endfor %} 
+										</tbody>
+										</table>
+        {% endif %}
+-->
       {% if domains  %}
       <h2><i class="fab fa-searchengin"></i> DOMAIN MALWARE CHECK</h2>
          <table  class="basic">
@@ -703,7 +731,7 @@
                         </td>
                        <td>
                          {% if item.open %}
-                          <span class="danger">insecure</span></br>Firebase DB is exposed publically.
+                          <span class="danger">insecure</span></br>Firebase DB is exposed publicly.
                         {% else %}
                          <span class="info">info</span></br>App talks to a Firebase Database.
                          {% endif %}
@@ -751,24 +779,25 @@
             <thead>
                 <tr>
                     <th>TRACKER</th>
+                    <th>CATEGORIES</th>
                     <th>URL</th>
                 </tr>
             </thead>
           
             <tbody>
-
-                {% for trk in trackers|key:"trackers" %}
-                <tr>
-                    {% for k, v in trk.items %}
-                    <td>
-                        {{k}}
-                    </td>
-                    <td>
-                        <a target="_blank" href="{{v}}" rel="noopener noreferrer">{{v}}</a>
-                    </td>
-                    {% endfor %}
-                </tr>
-                {% endfor %}
+              {% for trk in trackers|key:"trackers" %}
+              <tr>
+                <td>
+                  {{trk.name}}
+                </td>
+                <td>
+                  {{trk.categories}}
+                </td>
+                <td>
+                  <a target="_blank" href="{{trk.url}}" rel="noopener noreferrer">{{trk.url}}</a>
+                </td>
+              </tr>
+              {% endfor %}
             </tbody>
         </table>
          {% endif %}

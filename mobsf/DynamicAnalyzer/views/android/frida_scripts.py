@@ -2,7 +2,7 @@ import os
 
 from django.conf import settings
 
-from mobsf.DynamicAnalyzer.views.android.operations import strict_package_check
+from mobsf.MobSF.utils import strict_package_check
 
 
 def get_content(file_name):
