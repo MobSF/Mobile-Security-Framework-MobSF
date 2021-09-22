@@ -14,12 +14,12 @@ from mobsf.MobSF.views.api import api_dynamic_analysis as api_dz
 from mobsf.StaticAnalyzer import tests
 from mobsf.StaticAnalyzer.views import shared_func
 from mobsf.StaticAnalyzer.views.android import (
+    deep_view,
     find,
     generate_downloads,
     manifest_view,
     source_tree,
     view_source,
-    deep_view,
 )
 from mobsf.StaticAnalyzer.views.windows import windows
 from mobsf.StaticAnalyzer.views.android import static_analyzer as android_sa
