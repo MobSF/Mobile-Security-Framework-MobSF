@@ -72,14 +72,13 @@ RUN \
     apt autoremove -y && \
     rm -rf /var/lib/apt/lists/* /tmp/* > /dev/null 2>&1
 
+WORKDIR /home/mobsf/Mobile-Security-Framework-MobSF
 # Copy source code
 COPY . .
 
 # Set adb binary path and apktool directory
 RUN sed -i "s#ADB_BINARY = ''#ADB_BINARY = '/usr/bin/adb'#" mobsf/MobSF/settings.py && \
     mkdir -p /home/mobsf/.local/share/apktool/framework
-
-WORKDIR /home/mobsf/Mobile-Security-Framework-MobSF
 
 # Postgres support is set to false by default
 ARG POSTGRES=False
