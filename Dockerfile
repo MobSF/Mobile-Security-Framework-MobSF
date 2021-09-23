@@ -50,12 +50,13 @@ ARG TARGETPLATFORM
 COPY scripts/install_java_wkhtmltopdf.sh .
 RUN ./install_java_wkhtmltopdf.sh
 
-WORKDIR /root/Mobile-Security-Framework-MobSF
+RUN groupadd -g 9901 mobsf
+RUN adduser mobsf --shell /bin/false -u 9901 --ingroup mobsf --gecos "" --disabled-password
+
 
 # Install Requirements
 COPY requirements.txt .
-RUN pip3 install --upgrade setuptools pip && \
-    pip3 install --quiet --no-cache-dir -r requirements.txt
+RUN pip3 install --quiet --no-cache-dir -r requirements.txt
 
 # Cleanup
 RUN \
@@ -76,7 +77,9 @@ COPY . .
 
 # Set adb binary path and apktool directory
 RUN sed -i "s#ADB_BINARY = ''#ADB_BINARY = '/usr/bin/adb'#" mobsf/MobSF/settings.py && \
-    mkdir -p /root/.local/share/apktool/framework
+    mkdir -p /home/mobsf/.local/share/apktool/framework
+
+WORKDIR /home/mobsf/Mobile-Security-Framework-MobSF
 
 # Postgres support is set to false by default
 ARG POSTGRES=False
@@ -92,5 +95,7 @@ RUN ./scripts/postgres_support.sh $POSTGRES
 # Expose MobSF Port and Proxy Port
 EXPOSE 8000 8000 1337 1337
 
+RUN chown -R mobsf:mobsf /home/mobsf/Mobile-Security-Framework-MobSF
+USER mobsf
 # Run MobSF
-CMD ["/root/Mobile-Security-Framework-MobSF/scripts/entrypoint.sh"]
+CMD ["/home/mobsf/Mobile-Security-Framework-MobSF/scripts/entrypoint.sh"]
