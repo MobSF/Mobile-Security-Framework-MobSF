@@ -8,9 +8,10 @@ assignees: ''
 ---
 
 <!-- ## IMPORTANT -->
-<!-- Issues are ONLY for reporting BUGS. For support, feature requests, questions, queries, and discussions use our slack channel for limited support. Join MobSF Slack channel: http://tiny.cc/mobsf
+<!-- Issues are ONLY for reporting BUGS. For support, feature requests, questions, queries, and discussions use our slack channel for limited support. Join MobSF Slack channel: https://mobsf.slack.com/join/shared_invite/enQtNzM2NTAyNzA1MjgxLTdjMzkzNDc3ZjdiMjkwZTZhMmFhNDlkZmMwZDhjNDNmYTAzYWE5NGZlMDIzYzliNTdiMDQ2MTRlYjU1MjkyNGM
 -->
-<!-- If you see errors while running setup/run scripts, it is mostly because you haven't installed the required dependencies correctly. You will have to look into the errors and figure out what is causing them and solve them accordingly. Make sure you have installed all the required dependencies and their correct versions as per the latest documentation. If you still find yourself at a dead end, join MobSF Slack channel: http://tiny.cc/mobsf Please do not post support/help request in GitHub issues, doing so will definitely waste our time get them closed without further response. -->
+<!-- If you see errors while running setup/run scripts, it is mostly because you haven't installed the required dependencies correctly. You will have to look into the errors and figure out what is causing them and solve them accordingly. Make sure you have installed all the required dependencies and their correct versions as per the latest documentation. If you still find yourself at a dead end, join MobSF Slack channel:https://mobsf.slack.com/join/shared_invite/enQtNzM2NTAyNzA1MjgxLTdjMzkzNDc3ZjdiMjkwZTZhMmFhNDlkZmMwZDhjNDNmYTAzYWE5NGZlMDIzYzliNTdiMDQ2MTRlYjU1MjkyNGM
+Please do not post support/help request in GitHub issues, doing so will definitely waste our time get them closed without further response. -->
 
 ## ENVIRONMENT
 
