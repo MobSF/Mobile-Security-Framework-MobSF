@@ -457,6 +457,8 @@
     - eu\.chainfire\.supersu
     - com\.koushikdutta\.superuser
     - eu\.chainfire\.
+    - com\.saurik\.substrate
+    - de\.robv\.android\.xposed\.installer
   severity: high
   input_case: exact
   cvss: 0
@@ -661,6 +663,9 @@
     - \/system\/app\/Superuser.apk
     - isDeviceRooted\(\)
     - \/system\/bin\/failsafe\/su
+    - \/system\/bin\/su
+    - \/system\/xbin\/su
+    - \/sbin\/su
     - \/system\/sd\/xbin\/su
     - '"\/system\/xbin\/which", "su"'
     - RootTools\.isAccessGiven\(\)
