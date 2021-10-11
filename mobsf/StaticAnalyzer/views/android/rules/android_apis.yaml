@@ -13,7 +13,7 @@
 - id: api_get_system_service
   description: Get Running App Processes
   type: Regex
-  pattern: getRunningAppProcesses
+  pattern: getRunningAppProcesses\(
   input_case: exact
   severity: info
 - id: api_dexloading
@@ -146,7 +146,7 @@
     - Process\.killProcess\(
     - \.killBackgroundProcesses\(
   input_case: exact
-  severity: high
+  severity: info
 - id: api_keystore
   description: Android Keystore
   type: RegexAnd
@@ -311,7 +311,7 @@
     - \.setComponentEnabledSetting\(
     - COMPONENT_ENABLED_STATE_DISABLED
   input_case: exact
-  severity: high
+  severity: info
 - id: api_send_sms
   description: Send SMS
   type: RegexAndOr
