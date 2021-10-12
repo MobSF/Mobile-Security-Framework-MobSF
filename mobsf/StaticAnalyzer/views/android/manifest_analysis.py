@@ -885,7 +885,7 @@ def get_manifest_apk(app_path, app_dir, tools_dir):
                 and is_file_exists(settings.APKTOOL_BINARY)):
             apktool_path = settings.APKTOOL_BINARY
         else:
-            apktool_path = os.path.join(tools_dir, 'apktool_2.5.0.jar')
+            apktool_path = os.path.join(tools_dir, 'apktool_2.6.0.jar')
         output_dir = os.path.join(app_dir, 'apktool_out')
         args = [find_java_binary(),
                 '-jar',
