@@ -37,6 +37,7 @@ RUN apt update -y && apt install -y  --no-install-recommends \
     python3-dev \
     python3-pip \
     wget \
+    curl \
     git \
     android-tools-adb
 
@@ -88,6 +89,8 @@ ENV POSTGRES_HOST=postgres
 
 # Check if Postgres support needs to be enabled
 RUN ./scripts/postgres_support.sh $POSTGRES
+
+HEALTHCHECK CMD curl --fail http://host.docker.internal:8000/ || exit 1
 
 # Expose MobSF Port and Proxy Port
 EXPOSE 8000 8000 1337 1337
