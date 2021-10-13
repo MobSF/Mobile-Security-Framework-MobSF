@@ -179,6 +179,7 @@ def pdf(request, api=False, jsonres=False):
                     'margin-bottom': '0.50in',
                     'margin-left': '0.50in',
                     'encoding': 'UTF-8',
+                    'orientation': 'Landscape',
                     'custom-header': [
                         ('Accept-Encoding', 'gzip'),
                     ],
