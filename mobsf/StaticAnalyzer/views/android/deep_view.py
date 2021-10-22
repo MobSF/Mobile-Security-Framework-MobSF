@@ -36,7 +36,8 @@ def run(request):
             dirdir = app_dir
             deeplink()
             if mfile.exists():
-                deepfile = mfile.read_text('utf-8', 'ignore')
+                deepfile = mfile.read_text(
+                    'utf-8', 'ignore')
             else:
                 deepfile = ''
             context = {
@@ -48,9 +49,11 @@ def run(request):
                 'version': settings.MOBSF_VER,
             }
             template = 'general/view.html'
-            return render(request, template, context)
+            return render(
+                request, template, context)
     except Exception:
-        logger.exception('Viewing AndroidManifest.xml')
+        logger.exception(
+            'Viewing AndroidManifest.xml')
         return print_n_send_error_response(request,
                                            'Error Viewing AndroidManifest.xml')
 
@@ -60,7 +63,8 @@ def strdomvalue(name):
     with open(dirdir + 'apktool_out/res/values/strings.xml', 'r') as f:
         strdata = f.read()
     strdom = parseString(strdata)
-    strings = (strdom.getElementsByTagName('string'))
+    strings = (
+        strdom.getElementsByTagName('string'))
     for lol in strings:
         for node in (lol.childNodes):
             if node.nodeType == node.TEXT_NODE:
@@ -75,6 +79,11 @@ def deeplink():
     b = []
     c = []
     d = []
+    pf = 'android:pathPrefix'
+    sc = 'android:scheme'
+    ht = 'android:host'
+    pp = 'android:pathPattern'
+    ap = 'android:path'
     f = open(dirdir + 'deeplink.txt', 'w')
     f.write('All Deeplinks Listed Below!')
     dom = parseString(data)
@@ -82,163 +91,181 @@ def deeplink():
                   + dom.getElementsByTagName('activity-alias'))
 
     for activity in activities:
-        intentfiltertag = activity.getElementsByTagName('intent-filter')
+        intentfiltertag = activity.getElementsByTagName(
+            'intent-filter')
         if len(intentfiltertag) > 0:
             f.write('\n------------------------------------'
                     + activity.attributes['android:name'].value
                     + '----------------------------------------------\n')
             for intent in intentfiltertag:
-                datatag = intent.getElementsByTagName('data')
+                datatag = intent.getElementsByTagName(
+                    'data')
                 if len(datatag) > 0:
                     for data in datatag:
                         if (data.attributes.length == 3
-                                and data.hasAttribute('android:pathPrefix')):
+                                and data.hasAttribute(pf)):
                             if '@string' in (
-                                    str(data.attributes['android:scheme'].value)):
+                                    str(data.attributes[sc].value)):
                                 one = strdomvalue(
-                                    str(data.attributes['android:scheme'].value))
+                                    str(data.attributes[sc].value))
                             else:
                                 one = str(
-                                    data.attributes['android:scheme'].value)
+                                    data.attributes[sc].value)
                             if '@string' in (
-                                    str(data.attributes['android:host'].value)):
+                                    str(data.attributes[ht].value)):
                                 two = strdomvalue(
-                                    str(data.attributes['android:host'].value))
+                                    str(data.attributes[ht].value))
                             else:
                                 two = str(
-                                    data.attributes['android:host'].value)
+                                    data.attributes[ht].value)
                             if '@string' in (
-                                    str(data.attributes['android:pathPrefix'].value)):
+                                    str(data.attributes[pf].value)):
                                 three = strdomvalue(
-                                    str(data.attributes['android:pathPrefix'].value))
+                                    str(data.attributes[pf].value))
                             else:
                                 three = str(
-                                    data.attributes['android:pathPrefix'].value)
+                                    data.attributes[pf].value)
                             result = one + '://' + two + three + '\n'
                             f.write(result)
 
                         if (data.attributes.length == 3
-                                and data.hasAttribute('android:pathPattern')):
+                                and data.hasAttribute(pp)):
                             if '@string' in (
-                                    str(data.attributes['android:scheme'].value)):
+                                    str(data.attributes[sc].value)):
                                 one = strdomvalue(
-                                    str(data.attributes['android:scheme'].value))
+                                    str(data.attributes[sc].value))
                             else:
                                 one = str(
-                                    data.attributes['android:scheme'].value)
+                                    data.attributes[sc].value)
                             if '@string' in (
-                                    str(data.attributes['android:host'].value)):
+                                    str(data.attributes[ht].value)):
                                 two = strdomvalue(
-                                    str(data.attributes['android:host'].value))
+                                    str(data.attributes[ht].value))
                             else:
                                 two = str(
-                                    data.attributes['android:host'].value)
+                                    data.attributes[ht].value)
                             if '@string' in (
-                                    str(data.attributes['android:pathPattern'].value)):
+                                    str(data.attributes[pp].value)):
                                 three = strdomvalue(
-                                    str(data.attributes['android:pathPattern'].value))
+                                    str(data.attributes[pp].value))
                             else:
                                 three = str(
-                                    data.attributes['android:pathPattern'].value)
+                                    data.attributes[pp].value)
                             result = one + '://' + two + three + '\n'
                             f.write(result)
 
                         if (data.attributes.length == 3
-                                and data.hasAttribute('android:path')):
+                                and data.hasAttribute(ap)):
                             if '@string' in (
-                                    str(data.attributes['android:scheme'].value)):
+                                    str(data.attributes[sc].value)):
                                 one = strdomvalue(
-                                    str(data.attributes['android:scheme'].value))
+                                    str(data.attributes[sc].value))
                             else:
                                 one = str(
-                                    data.attributes['android:scheme'].value)
+                                    data.attributes[sc].value)
                             if '@string' in (
-                                    str(data.attributes['android:host'].value)):
+                                    str(data.attributes[ht].value)):
                                 two = strdomvalue(
-                                    str(data.attributes['android:host'].value))
+                                    str(data.attributes[ht].value))
                             else:
                                 two = str(
-                                    data.attributes['android:host'].value)
+                                    data.attributes[ht].value)
                             if '@string' in (
-                                    str(data.attributes['android:path'].value)):
+                                    str(data.attributes[ap].value)):
                                 three = strdomvalue(
-                                    str(data.attributes['android:path'].value))
+                                    str(data.attributes[ap].value))
                             else:
                                 three = str(
-                                    data.attributes['android:path'].value)
+                                    data.attributes[ap].value)
                             result = one + '://' + two + three + '\n'
                             f.write(result)
 
                         if (data.attributes.length == 2
-                            and (data.hasAttribute('android:host')
-                                 and data.hasAttribute('android:scheme'))):
+                            and (data.hasAttribute(ht)
+                                 and data.hasAttribute(sc))):
                             if '@string' in (
-                                    str(data.attributes['android:scheme'].value)):
+                                    str(data.attributes[sc].value)):
                                 one = strdomvalue(
-                                    str(data.attributes['android:scheme'].value))
+                                    str(data.attributes[sc].value))
                             else:
                                 one = str(
-                                    data.attributes['android:scheme'].value)
+                                    data.attributes[sc].value)
                             if '@string' in (
-                                    str(data.attributes['android:host'].value)):
+                                    str(data.attributes[ht].value)):
                                 two = strdomvalue(
-                                    str(data.attributes['android:host'].value))
+                                    str(data.attributes[ht].value))
                             else:
                                 two = str(
-                                    data.attributes['android:host'].value)
+                                    data.attributes[ht].value)
                             result = one + '://' + two + '\n'
                             f.write(result)
 
                         if (data.attributes.length == 1):
-                            if data.hasAttribute('android:host'):
+                            if data.hasAttribute(
+                                    ht):
                                 b.append(
-                                    str(data.attributes['android:host'].value))
-                            if data.hasAttribute('android:scheme'):
+                                    str(data.attributes[ht].value))
+                            if data.hasAttribute(
+                                    sc):
                                 c.append(
-                                    str(data.attributes['android:scheme'].value))
-                            if data.hasAttribute('android:pathPrefix'):
+                                    str(data.attributes[sc].value))
+                            if data.hasAttribute(
+                                    pf):
                                 d.append(
-                                    str(data.attributes['android:pathPrefix'].value))
-                            if data.hasAttribute('android:pathPattern'):
+                                    str(data.attributes[pf].value))
+                            if data.hasAttribute(
+                                    pp):
                                 d.append(
-                                    str(data.attributes['android:pathPattern'].value))
-                            if data.hasAttribute('android:path'):
+                                    str(data.attributes[pp].value))
+                            if data.hasAttribute(
+                                    ap):
                                 d.append(
-                                    str(data.attributes['android:path'].value))
+                                    str(data.attributes[ap].value))
 
                 for scheme in c:
                     if b == []:
                         if '@string' in (str(scheme)):
-                            f.write(strdomvalue(str(scheme)) + '://')
+                            f.write(
+                                strdomvalue(
+                                    str(scheme)) + '://')
                         else:
-                            f.write(str(scheme) + '://')
+                            f.write(
+                                str(scheme) + '://')
 
                     for host in b:
                         if d == []:
                             if '@string' in (scheme):
-                                one = strdomvalue(scheme)
+                                one = strdomvalue(
+                                    scheme)
                             else:
                                 one = str(scheme)
                             if '@string' in (str(host)):
-                                two = strdomvalue(str(host))
+                                two = strdomvalue(
+                                    str(host))
                             else:
                                 two = str(host)
-                            f.write(one + '://' + two + '\n')
+                            f.write(
+                                one + '://' + two + '\n')
                         for path in d:
                             if '@string' in (str(scheme)):
-                                one = strdomvalue(str(scheme))
+                                one = strdomvalue(
+                                    str(scheme))
                             else:
                                 one = str(scheme)
                             if '@string' in (str(host)):
-                                two = strdomvalue(str(host))
+                                two = strdomvalue(
+                                    str(host))
                             else:
                                 two = str(host)
                             if '@string' in (path):
-                                three = strdomvalue(str(path))
+                                three = strdomvalue(
+                                    str(path))
                             else:
                                 three = str(path)
-                            f.write(one + '://' + two + three + '\n')
+                            f.write(
+                                one + '://' + two + three + '\n')
 
                 b = []
                 c = []
-    f.write('\n\n\nReference:- https://github.com/Shapa7276/Android-Deeplink-Parser')
+    f.write(
+        '\n\n\nRefer:- https://github.com/Shapa7276/Android-Deeplink-Parser')
