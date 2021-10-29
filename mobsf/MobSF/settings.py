@@ -389,7 +389,7 @@ else:
     # --------------------------
     DOMAIN_MALWARE_SCAN = True
     APKID_ENABLED = True
-    QUARK_ENABLED = True
+    QUARK_ENABLED = False
     # ==============================================
 
     # ========DISABLED BY DEFAULT COMPONENTS=========
