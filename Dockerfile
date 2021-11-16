@@ -17,8 +17,9 @@ ENV DEBIAN_FRONTEND="noninteractive" \
     JDK_FILE_ARM="openjdk-16.0.1_linux-aarch64_bin.tar.gz" \
     WKH_FILE="wkhtmltox_0.12.6-1.focal_amd64.deb" \
     WKH_FILE_ARM="wkhtmltox_0.12.6-1.focal_arm64.deb" \
-    JAVA_HOME="/jdk-16.0.1" \
-    PATH="$JAVA_HOME/bin:$PATH"
+    JAVA_HOME="/jdk-16.0.1"
+
+ENV PATH="$JAVA_HOME/bin:$PATH"
 
 # See https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
 RUN apt update -y && apt install -y  --no-install-recommends \
