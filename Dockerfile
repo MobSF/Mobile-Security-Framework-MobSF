@@ -22,7 +22,7 @@ ENV DEBIAN_FRONTEND="noninteractive" \
 ENV PATH="$JAVA_HOME/bin:$PATH"
 
 # See https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
-RUN apt update -y && apt install -y  --no-install-recommends \
+RUN apt-get update -y && apt-get install -y  --no-install-recommends \
     build-essential \
     locales \
     sqlite3 \
@@ -61,16 +61,16 @@ RUN pip3 install --upgrade --no-cache-dir setuptools pip && \
 
 # Cleanup
 RUN \
-    apt remove -y \
-        libssl-dev \
-        libffi-dev \
-        libxml2-dev \
-        libxslt1-dev \
-        python3-dev \
-        wget && \
-    apt clean && \
-    apt autoclean && \
-    apt autoremove -y && \
+    apt-get remove -y \
+            libssl-dev \
+            libffi-dev \
+            libxml2-dev \
+            libxslt1-dev \
+            python3-dev \
+            wget && \
+    apt-get clean && \
+    apt-get autoclean && \
+    apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/* /tmp/* > /dev/null 2>&1
 
 # Copy source code

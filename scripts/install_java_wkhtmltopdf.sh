@@ -3,7 +3,7 @@ if [ "$TARGETPLATFORM" == "linux/arm64" ]
 then
     WKH_FILE=$WKH_FILE_ARM
     JDK_FILE=$JDK_FILE_ARM
-    apt install -y git
+    apt-get install -y git
     pip3 install --no-cache-dir wheel
     pip3 wheel --wheel-dir=yara-python-dex git+https://github.com/MobSF/yara-python-dex.git
     pip3 install --no-cache-dir --no-index --find-links=yara-python-dex yara-python-dex
