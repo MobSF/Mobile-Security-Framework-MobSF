@@ -56,7 +56,7 @@ WORKDIR /root/Mobile-Security-Framework-MobSF
 
 # Install Requirements
 COPY requirements.txt .
-RUN pip3 install --upgrade setuptools pip && \
+RUN pip3 install --upgrade --no-cache-dir setuptools pip && \
     pip3 install --quiet --no-cache-dir -r requirements.txt
 
 # Cleanup
