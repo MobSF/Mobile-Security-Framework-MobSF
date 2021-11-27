@@ -17,8 +17,9 @@ ENV DEBIAN_FRONTEND="noninteractive" \
     JDK_FILE_ARM="openjdk-16.0.1_linux-aarch64_bin.tar.gz" \
     WKH_FILE="wkhtmltox_0.12.6-1.focal_amd64.deb" \
     WKH_FILE_ARM="wkhtmltox_0.12.6-1.focal_arm64.deb" \
-    JAVA_HOME="/jdk-16.0.1" \
-    PATH="$JAVA_HOME/bin:$PATH"
+    JAVA_HOME="/jdk-16.0.1"
+
+ENV PATH="$JAVA_HOME/bin:$PATH"
 
 # See https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
 RUN apt update -y && apt install -y  --no-install-recommends \
@@ -37,6 +38,7 @@ RUN apt update -y && apt install -y  --no-install-recommends \
     python3-dev \
     python3-pip \
     wget \
+    curl \
     git \
     android-tools-adb
 
@@ -56,7 +58,8 @@ RUN adduser mobsf --shell /bin/false -u 9901 --ingroup mobsf --gecos "" --disabl
 
 # Install Requirements
 COPY requirements.txt .
-RUN pip3 install --quiet --no-cache-dir -r requirements.txt
+RUN pip3 install --upgrade --no-cache-dir setuptools pip && \
+    pip3 install --quiet --no-cache-dir -r requirements.txt
 
 # Cleanup
 RUN \
@@ -90,6 +93,8 @@ ENV POSTGRES_HOST=postgres
 
 # Check if Postgres support needs to be enabled
 RUN ./scripts/postgres_support.sh $POSTGRES
+
+HEALTHCHECK CMD curl --fail http://host.docker.internal:8000/ || exit 1
 
 # Expose MobSF Port and Proxy Port
 EXPOSE 8000 8000 1337 1337
