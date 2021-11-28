@@ -61,6 +61,15 @@ fi
 echo '[INSTALL] Installing Requirements'
 pip install --no-cache-dir --use-deprecated=legacy-resolver -r requirements.txt
 
+echo '[INSTALL] Installing Jadx'
+gh-release-install \
+'skylot/jadx' \
+'jadx-{version}.zip' \
+'./mobsf/StaticAnalyzer/tools/jadx.zip' \
+--version-file './mobsf/StaticAnalyzer/tools/jadx-{version}.ver'
+unzip -qq -d ./mobsf/StaticAnalyzer/tools/jadx/ ./mobsf/StaticAnalyzer/tools/jadx.zip
+rm -f ./mobsf/StaticAnalyzer/tools/jadx.zip
+
 echo '[INSTALL] Clean Up'
 bash scripts/clean.sh y
 
