@@ -400,8 +400,8 @@ def find_java_source_folder(base_folder: Path):
 
 
 def is_secret(inp):
-    inp = inp.lower()
     """Check if captures string is a possible secret."""
+    inp = inp.lower()
     iden = (
         'api"', 'key"', 'api_', 'key_', 'secret"',
         'password"', 'aws', 'gcp', 's3_', '_s3', 'secret_',
