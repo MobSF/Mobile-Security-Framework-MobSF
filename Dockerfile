@@ -17,8 +17,9 @@ ENV DEBIAN_FRONTEND="noninteractive" \
     JDK_FILE_ARM="openjdk-16.0.1_linux-aarch64_bin.tar.gz" \
     WKH_FILE="wkhtmltox_0.12.6-1.focal_amd64.deb" \
     WKH_FILE_ARM="wkhtmltox_0.12.6-1.focal_arm64.deb" \
-    JAVA_HOME="/jdk-16.0.1" \
-    PATH="$JAVA_HOME/bin:$PATH"
+    JAVA_HOME="/jdk-16.0.1"
+
+ENV PATH="$JAVA_HOME/bin:$PATH"
 
 # See https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
 RUN apt update -y && apt install -y  --no-install-recommends \
@@ -37,6 +38,7 @@ RUN apt update -y && apt install -y  --no-install-recommends \
     python3-dev \
     python3-pip \
     wget \
+    curl \
     git \
     android-tools-adb
 
@@ -50,11 +52,13 @@ ARG TARGETPLATFORM
 COPY scripts/install_java_wkhtmltopdf.sh .
 RUN ./install_java_wkhtmltopdf.sh
 
-WORKDIR /root/Mobile-Security-Framework-MobSF
+RUN groupadd -g 9901 mobsf
+RUN adduser mobsf --shell /bin/false -u 9901 --ingroup mobsf --gecos "" --disabled-password
+
 
 # Install Requirements
 COPY requirements.txt .
-RUN pip3 install --upgrade setuptools pip && \
+RUN pip3 install --upgrade --no-cache-dir setuptools pip && \
     pip3 install --quiet --no-cache-dir -r requirements.txt
 
 # Cleanup
@@ -71,12 +75,13 @@ RUN \
     apt autoremove -y && \
     rm -rf /var/lib/apt/lists/* /tmp/* > /dev/null 2>&1
 
+WORKDIR /home/mobsf/Mobile-Security-Framework-MobSF
 # Copy source code
 COPY . .
 
 # Set adb binary path and apktool directory
 RUN sed -i "s#ADB_BINARY = ''#ADB_BINARY = '/usr/bin/adb'#" mobsf/MobSF/settings.py && \
-    mkdir -p /root/.local/share/apktool/framework
+    mkdir -p /home/mobsf/.local/share/apktool/framework
 
 # Postgres support is set to false by default
 ARG POSTGRES=False
@@ -89,8 +94,12 @@ ENV POSTGRES_HOST=postgres
 # Check if Postgres support needs to be enabled
 RUN ./scripts/postgres_support.sh $POSTGRES
 
+HEALTHCHECK CMD curl --fail http://host.docker.internal:8000/ || exit 1
+
 # Expose MobSF Port and Proxy Port
 EXPOSE 8000 8000 1337 1337
 
+RUN chown -R mobsf:mobsf /home/mobsf/Mobile-Security-Framework-MobSF
+USER mobsf
 # Run MobSF
-CMD ["/root/Mobile-Security-Framework-MobSF/scripts/entrypoint.sh"]
+CMD ["/home/mobsf/Mobile-Security-Framework-MobSF/scripts/entrypoint.sh"]

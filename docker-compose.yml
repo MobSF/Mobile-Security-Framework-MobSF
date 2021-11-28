@@ -26,7 +26,7 @@ services:
       args:
        - POSTGRES=True
     volumes:
-      - $HOME/MobSF/mobsf_data:/root/.MobSF
+      - $HOME/MobSF/mobsf_data:/home/mobsf/.MobSF
     ports:
      - "8000:8000"
     networks:

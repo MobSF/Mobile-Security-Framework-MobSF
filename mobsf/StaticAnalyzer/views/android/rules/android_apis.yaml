@@ -10,6 +10,12 @@
   pattern: getSystemService
   input_case: exact
   severity: info
+- id: api_get_system_service
+  description: Get Running App Processes
+  type: Regex
+  pattern: getRunningAppProcesses\(
+  input_case: exact
+  severity: info
 - id: api_dexloading
   description: Dynamic Class and Dexloading
   type: RegexOr
@@ -131,6 +137,14 @@
   pattern:
     - getRuntime\(\)\.exec\(
     - getRuntime\(
+  input_case: exact
+  severity: info
+- id: api_kill_process
+  description: Kill Process
+  type: RegexOr
+  pattern:
+    - Process\.killProcess\(
+    - \.killBackgroundProcesses\(
   input_case: exact
   severity: info
 - id: api_keystore
@@ -288,6 +302,14 @@
   pattern:
     - content\.ContentResolver
     - query
+  input_case: exact
+  severity: info
+- id: api_hide_app_icon
+  description: Hide application icon
+  type: RegexAnd
+  pattern:
+    - \.setComponentEnabledSetting\(
+    - COMPONENT_ENABLED_STATE_DISABLED
   input_case: exact
   severity: info
 - id: api_send_sms
