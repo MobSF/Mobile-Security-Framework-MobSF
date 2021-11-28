@@ -89,7 +89,7 @@ RUN gh-release-install \
 'jadx-{version}.zip' \
 './mobsf/StaticAnalyzer/tools/jadx.zip' \
 --version-file './mobsf/StaticAnalyzer/tools/jadx-{version}.ver' && \
-unzip -qq -d ./mobsf/StaticAnalyzer/tools/jadx/ ./mobsf/StaticAnalyzer/tools/jadx.zip &7 \
+unzip -qq -d ./mobsf/StaticAnalyzer/tools/jadx/ ./mobsf/StaticAnalyzer/tools/jadx.zip && \
 rm -f ./mobsf/StaticAnalyzer/tools/jadx.zip
 
 # Postgres support is set to false by default
