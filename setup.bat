@@ -52,15 +52,6 @@ where python >nul 2>&1 && (
     exit /b
   )
 
-  rem Git Check
-  git >nul 2>&1 && (
-    echo [INSTALL] Found git
-  ) || (
-    echo [ERROR] git is not installed
-    pause
-    exit /b
-  )
-
   rem Create venv
   echo [INSTALL] Creating venv
   rmdir "venv" /q /s >nul 2>&1

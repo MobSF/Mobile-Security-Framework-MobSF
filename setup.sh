@@ -45,12 +45,6 @@ if [[ $unamestr == 'Darwin' ]]; then
 	  fi    
 fi
 
-# Git Check
-if ! [ -x "$(command -v git)" ]; then
-    echo '[ERROR] git is not installed.' >&2
-    exit 1
-fi
-
 # Install venv
 echo '[INSTALL] Using python virtualenv'
 rm -rf ./venv
