@@ -63,6 +63,7 @@ where python >nul 2>&1 && (
   set INCLUDE=C:\Program Files\OpenSSL-Win64\include;%INCLUDE%
 
   echo [INSTALL] Installing Requirements
+  %venv% -m pip install --no-cache-dir wheel
   %venv% -m pip install --no-cache-dir --use-deprecated=legacy-resolver -r requirements.txt
   
   echo [INSTALL] Clean Up

@@ -59,6 +59,7 @@ else
 fi
 
 echo '[INSTALL] Installing Requirements'
+pip install --no-cache-dir wheel
 pip install --no-cache-dir --use-deprecated=legacy-resolver -r requirements.txt
 
 echo '[INSTALL] Clean Up'
