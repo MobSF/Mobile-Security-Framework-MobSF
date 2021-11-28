@@ -65,7 +65,7 @@ else
 fi
 
 echo '[INSTALL] Installing Requirements'
-git submodule update --init --recursive
+pip install wheel
 pip install --no-cache-dir --use-deprecated=legacy-resolver -r requirements.txt
 
 echo '[INSTALL] Clean Up'
