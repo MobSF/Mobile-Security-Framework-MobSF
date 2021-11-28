@@ -45,6 +45,12 @@ if [[ $unamestr == 'Darwin' ]]; then
 	  fi    
 fi
 
+# Git Check
+if ! [ -x "$(command -v git)" ]; then
+    echo '[ERROR] git is not installed.' >&2
+    exit 1
+fi
+
 # Install venv
 echo '[INSTALL] Using python virtualenv'
 rm -rf ./venv
@@ -59,16 +65,8 @@ else
 fi
 
 echo '[INSTALL] Installing Requirements'
+git submodule update --init --recursive
 pip install --no-cache-dir --use-deprecated=legacy-resolver -r requirements.txt
-
-echo '[INSTALL] Installing Jadx'
-gh-release-install \
-'skylot/jadx' \
-'jadx-{version}.zip' \
-'./mobsf/StaticAnalyzer/tools/jadx.zip' \
---version-file './mobsf/StaticAnalyzer/tools/jadx-{version}.ver'
-unzip -qq -d ./mobsf/StaticAnalyzer/tools/jadx/ ./mobsf/StaticAnalyzer/tools/jadx.zip
-rm -f ./mobsf/StaticAnalyzer/tools/jadx.zip
 
 echo '[INSTALL] Clean Up'
 bash scripts/clean.sh y

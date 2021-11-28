@@ -78,19 +78,12 @@ RUN \
 WORKDIR /home/mobsf/Mobile-Security-Framework-MobSF
 # Copy source code
 COPY . .
+RUN git submodule update --init --recursive && \
+    rm -rf mobsf/StaticAnalyzer/test_files
 
 # Set adb binary path and apktool directory
 RUN sed -i "s#ADB_BINARY = ''#ADB_BINARY = '/usr/bin/adb'#" mobsf/MobSF/settings.py && \
     mkdir -p /home/mobsf/.local/share/apktool/framework
-
-# Install Jadx
-RUN gh-release-install \
-'skylot/jadx' \
-'jadx-{version}.zip' \
-'./mobsf/StaticAnalyzer/tools/jadx.zip' \
---version-file './mobsf/StaticAnalyzer/tools/jadx-{version}.ver' && \
-unzip -qq -d ./mobsf/StaticAnalyzer/tools/jadx/ ./mobsf/StaticAnalyzer/tools/jadx.zip && \
-rm -f ./mobsf/StaticAnalyzer/tools/jadx.zip
 
 # Postgres support is set to false by default
 ARG POSTGRES=False
