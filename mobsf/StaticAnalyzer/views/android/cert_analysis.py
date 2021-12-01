@@ -131,8 +131,10 @@ def cert_info(app_dir, app_file):
                 status,
                 'Application is signed with v1 signature scheme, '
                 'making it vulnerable to Janus vulnerability on '
-                'Android < 8.0 if signed only with v1 and '
-                'Android < 7.1 if signed with v1 and v2/v3.'))
+                'Android 5.0-8.0, if signed only with v1 signature'
+                ' scheme. Applications running on Android 5.0-7.0'
+                ' signed with v1, and v2/v3 '
+                'scheme is also vulnerable.'))
         if re.findall(r'CN=Android Debug', cert_info):
             findings.append((
                 'bad',
