@@ -420,11 +420,11 @@ class Environment:
                           'start',
                           '-n',
                           package + '/' + activity], True)
-        self.wait(3)
+        self.wait(settings.ACTIVITY_TESTER_SLEEP)
         self.screen_shot(outfile)
         logger.info('Activity screenshot captured')
-        logger.info('Stopping app')
-        self.adb_command(['am', 'force-stop', package], True)
+        # logger.info('Stopping app')
+        # self.adb_command(['am', 'force-stop', package], True)
 
     def is_mobsfyied(self, android_version):
         """Check is Device is MobSFyed."""

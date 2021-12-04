@@ -78,6 +78,8 @@ urlpatterns = [
     url(r'^mobsf_ca/$', operations.mobsf_ca),
     # Dynamic Tests
     url(r'^activity_tester/$', tests_common.activity_tester),
+    url(r'^start_activity/$', tests_common.start_activity),
+
     url(r'^download_data/$', tests_common.download_data),
     url(r'^collect_logs/$', tests_common.collect_logs),
     # Frida

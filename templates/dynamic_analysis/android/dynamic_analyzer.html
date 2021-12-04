@@ -41,6 +41,9 @@
         font-size: 13px;
         border: 1px solid #eee;
       }
+    #start_activity{
+        margin-top: 5px;
+    }
 </style>
 
 {% endblock %}
@@ -54,7 +57,7 @@
       <div class="row mb-2">
         <div id="mobsf_header">
             <h2><strong>Dynamic Analyzer </strong>- {{ package }}</h2>
-          <input type="hidden" id="screen_width" value="{{ screen_witdth }}">
+          <input type="hidden" id="screen_width" value="{{ screen_width }}">
           <input type="hidden" id="screen_height" value="{{ screen_height }}">
         </div>
       </div>
@@ -129,6 +132,21 @@
                   <div class="tab-pane fade active show" id="dm" role="tabpanel" aria-labelledby="dm-tab">
                      
                               <textarea id="stat"></textarea>
+
+				<div class="form-group">
+					<label class="box-title" for="activities">Start Activity</label>
+					<select class="form-select" name="activities" id="activities">
+                        <option>Activities:</option>
+                        {% for activity in activities %}
+					    <option value="{{ activity }}">{{ activity }}</option>
+                        {% endfor %}
+                        <option>Exported Activities:</option>
+                        {% for activity in exported_activities %}
+					    <option value="{{ activity }}">{{ activity }}</option>
+                        {% endfor %}
+					</select>
+					  <button id="start_activity" type="submit" class="btn btn-primary btn-sm">Start Activity</button>
+				</div>
                 <!--box-->
                 <div id="frida_options" class="box box-primary">
                     <div class="box-header with-border">
@@ -671,7 +689,16 @@ $("#rootca").click(function() {
     });
     return false;  
 }); 
- 
+
+function start_activity(activity){
+  action('../start_activity/', {hash: '{{ md5 }}', package: '{{ package }}', 'activity': activity}, function(json) {
+    if (json.status === "ok")
+        print_status("Activity Started");
+    else
+      print_status(json.message);
+  });
+}
+
 function activity_tester(test){
   action('../activity_tester/', {hash: '{{ md5 }}', package: '{{ package }}', 'test': test}, function(json) {
     if (json.status === "ok")
@@ -683,6 +710,15 @@ function activity_tester(test){
       print_status(json.message);
   });
 }
+
+//Start Specific Activity
+$("#start_activity").click(function(){
+  let activity = $('#activities option:selected').val();
+  print_status("Starting Activity: " + activity)
+  start_activity(activity)
+  return false;
+});
+
 //Start ExportedActivity Tester
 $("#expactt").click(function()  {
   print_status("Starting Exported Activity tester...")

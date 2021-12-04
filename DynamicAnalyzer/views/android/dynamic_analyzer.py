@@ -11,19 +11,20 @@ from django.http import (HttpResponseRedirect,
                          StreamingHttpResponse)
 from django.conf import settings
 from django.shortcuts import render
+from django.db.models import ObjectDoesNotExist
 
 from DynamicAnalyzer.views.android.environment import Environment
 from DynamicAnalyzer.views.android.operations import (
     is_attack_pattern,
     is_md5,
-    strict_package_check)
+    strict_package_check, json_response)
 from DynamicAnalyzer.tools.webproxy import (
     start_httptools_ui,
     stop_httptools)
 
 from MobSF.utils import (get_device,
                          get_proxy_ip,
-                         print_n_send_error_response)
+                         print_n_send_error_response, python_list)
 
 
 from StaticAnalyzer.models import StaticAnalyzerAndroid
@@ -82,6 +83,17 @@ def dynamic_analyzer(request):
                    ' this page. If this error persists,'
                    ' set ANALYZER_IDENTIFIER in MobSF/settings.py')
             return print_n_send_error_response(request, msg)
+
+        # Get activities from the static analyzer results
+        try:
+            static_android_db = StaticAnalyzerAndroid.objects.get(MD5=bin_hash)
+        except ObjectDoesNotExist:
+            data = {'status': 'failed',
+                    'message': 'App details not found in database'}
+            return json_response(data)
+        exported_activities = python_list(static_android_db.EXPORTED_ACTIVITIES)
+        activities = python_list(static_android_db.ACTIVITIES)
+
         env = Environment(identifier)
         if not env.connect_n_mount():
             msg = 'Cannot Connect to ' + identifier
@@ -131,9 +143,11 @@ def dynamic_analyzer(request):
                 request,
                 msg)
         logger.info('Testing Environment is Ready!')
-        context = {'screen_witdth': screen_width,
+        context = {'screen_width': screen_width,
                    'screen_height': screen_height,
                    'package': package,
+                   'activities': activities,
+                   'exported_activities': exported_activities,
                    'md5': bin_hash,
                    'android_version': version,
                    'version': settings.MOBSF_VER,
