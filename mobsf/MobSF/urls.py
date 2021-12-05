@@ -124,6 +124,7 @@ if settings.API_ONLY == '0':
         url(r'^global_proxy/$', operations.global_proxy),
         # Dynamic Tests
         url(r'^activity_tester/$', tests_common.activity_tester),
+        url(r'^start_activity/$', tests_common.start_activity),
         url(r'^download_data/$', tests_common.download_data),
         url(r'^collect_logs/$', tests_common.collect_logs),
         url(r'^tls_tests/$', tests_common.tls_tests),

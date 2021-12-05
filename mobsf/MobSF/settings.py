@@ -366,6 +366,7 @@ else:
     # =======ANDROID DYNAMIC ANALYSIS SETTINGS===========
     ANALYZER_IDENTIFIER = ''
     FRIDA_TIMEOUT = 4
+    ACTIVITY_TESTER_SLEEP = 4
     # ==============================================
 
     # ================HTTPS PROXY ===============

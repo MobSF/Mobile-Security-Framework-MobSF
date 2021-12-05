@@ -33,8 +33,31 @@ from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 logger = logging.getLogger(__name__)
 
 # AJAX
+@require_http_methods(['POST'])
+def start_activity(request):
+    """Lunch a specific activity."""
+    try:
+        env = Environment()
+        md5_hash = request.POST['hash']
+        package = request.POST['package']
+        activity = request.POST['activity']
+        if is_attack_pattern(package) or not is_md5(md5_hash):
+            return invalid_params()
+        app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
+        screen_dir = os.path.join(app_dir, 'screenshots-apk/')
+        if not os.path.exists(screen_dir):
+            os.makedirs(screen_dir)
+        logger.info('Launching Activity - %s', activity)
+        outfile = ('{}act-{}.png'.format(screen_dir, activity))
+        env.launch_n_capture(package, activity, outfile)
+        data = {'status': 'ok'}
+    except Exception as exp:
+        logger.exception('%sActivity tester', iden)
+        data = {'status': 'failed', 'message': str(exp)}
+    return json_response(data)
 
 
+# AJAX
 @require_http_methods(['POST'])
 def activity_tester(request, api=False):
     """Exported & non exported activity Tester."""

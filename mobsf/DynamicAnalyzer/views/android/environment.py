@@ -509,11 +509,12 @@ class Environment:
                           'start',
                           '-n',
                           package + '/' + activity], True)
-        self.wait(3)
+        self.wait(settings.ACTIVITY_TESTER_SLEEP)
         self.screen_shot(outfile)
         logger.info('Activity screenshot captured')
-        logger.info('Stopping app')
-        self.adb_command(['am', 'force-stop', package], True)
+        # Uncomment this if stopping the app after each activity is needed
+        # logger.info('Stopping app')
+        # self.adb_command(['am', 'force-stop', package], True)
 
     def run_app(self, package):
         """Launch an app with package name."""

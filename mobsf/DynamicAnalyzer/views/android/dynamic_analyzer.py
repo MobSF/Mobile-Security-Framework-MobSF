@@ -13,6 +13,7 @@ from django.http import (HttpResponseRedirect,
                          StreamingHttpResponse)
 from django.conf import settings
 from django.shortcuts import render
+from django.db.models import ObjectDoesNotExist
 
 from mobsf.DynamicAnalyzer.views.android.environment import Environment
 from mobsf.DynamicAnalyzer.views.android.operations import (
@@ -30,6 +31,7 @@ from mobsf.MobSF.utils import (
     is_md5,
     print_n_send_error_response,
     strict_package_check,
+    python_list
 )
 from mobsf.MobSF.views.scanning import add_to_recent_scan
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
@@ -134,6 +136,17 @@ def dynamic_analyzer(request, checksum, api=False):
                    ' set ANALYZER_IDENTIFIER in '
                    f'{get_config_loc()}')
             return print_n_send_error_response(request, msg, api)
+
+        # Get activities from the static analyzer results
+        try:
+            static_android_db = StaticAnalyzerAndroid.objects.get(MD5=bin_hash)
+        except ObjectDoesNotExist:
+            data = {'status': 'failed',
+                    'message': 'App details not found in database'}
+            return json_response(data)
+        exported_activities = python_list(static_android_db.EXPORTED_ACTIVITIES)
+        activities = python_list(static_android_db.ACTIVITIES)
+
         env = Environment(identifier)
         if not env.connect_n_mount():
             msg = 'Cannot Connect to ' + identifier
@@ -189,7 +202,7 @@ def dynamic_analyzer(request, checksum, api=False):
                     msg,
                     api)
         logger.info('Testing Environment is Ready!')
-        context = {'screen_witdth': screen_width,
+        context = {'screen_width': screen_width,
                    'screen_height': screen_height,
                    'package': package,
                    'hash': checksum,

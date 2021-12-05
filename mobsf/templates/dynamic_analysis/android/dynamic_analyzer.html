@@ -47,6 +47,14 @@
         font-family: "courier new", courier, monospace;
         font-size: 11px;
       }
+
+    #start_activity{
+        margin-top: 5px;
+    }
+    #start_activity_form{
+        margin-top: 10px;
+    }
+
 </style>
 
 {% endblock %}
@@ -61,7 +69,7 @@
       <div class="row mb-2">
         <div id="mobsf_header">
             <h2><strong>Dynamic Analyzer </strong>- {{ package }}</h2>
-          <input type="hidden" id="screen_width" value="{{ screen_witdth }}">
+          <input type="hidden" id="screen_width" value="{{ screen_width }}">
           <input type="hidden" id="screen_height" value="{{ screen_height }}">
         </div>
       </div>
@@ -225,7 +233,20 @@
                       </div>
                     </form>
                   </div>
-           
+				<div class="form-group" id="start_activity_form">
+					<label class="box-title" for="activities">Start Activity</label>
+					<select class="form-select" name="activities" id="activities">
+                        <option>Activities:</option>
+                        {% for activity in activities %}
+					    <option value="{{ activity }}">{{ activity }}</option>
+                        {% endfor %}
+                        <option>Exported Activities:</option>
+                        {% for activity in exported_activities %}
+					    <option value="{{ activity }}">{{ activity }}</option>
+                        {% endfor %}
+					</select>
+					  <button id="start_activity" type="submit" class="btn btn-primary btn-sm">Start Activity</button>
+				</div>
           <!--tab end-->
 
                   </div>
@@ -670,7 +691,14 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
             this.value = ''; // Clear/setup line for next input.
         }
     }
-
+    function start_activity(activity){
+      action('../start_activity/', {hash: '{{ md5 }}', package: '{{ package }}', 'activity': activity}, function(json) {
+        if (json.status === "ok")
+            print_status("Activity Started");
+        else
+          print_status(json.message);
+      });
+    }
     return {
         init: function () {
             output(intro);
@@ -685,6 +713,14 @@ $(document).ready(function() {
 $('.prompt').html('[root@android] # ');
 var term = new Terminal('#input-line .cmdline', '#shell output');
 term.init();
+
+//Start Specific Activity
+$("#start_activity").click(function(){
+  let activity = $('#activities option:selected').val();
+  print_status("Starting Activity: " + activity)
+  start_activity(activity)
+  return false;
+});
 
 // Start up
 {% if android_version < 5 %}
