@@ -139,7 +139,7 @@ def dynamic_analyzer(request, checksum, api=False):
 
         # Get activities from the static analyzer results
         try:
-            static_android_db = StaticAnalyzerAndroid.objects.get(MD5=bin_hash)
+            static_android_db = StaticAnalyzerAndroid.objects.get(MD5=checksum)
         except ObjectDoesNotExist:
             data = {'status': 'failed',
                     'message': 'App details not found in database'}
@@ -208,6 +208,8 @@ def dynamic_analyzer(request, checksum, api=False):
                    'hash': checksum,
                    'android_version': version,
                    'version': settings.MOBSF_VER,
+                   'activities': activities,
+                   'exported_activities': exported_activities,
                    'title': 'Dynamic Analyzer'}
         template = 'dynamic_analysis/android/dynamic_analyzer.html'
         if api:

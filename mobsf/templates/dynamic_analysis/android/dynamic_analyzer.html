@@ -691,14 +691,6 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
             this.value = ''; // Clear/setup line for next input.
         }
     }
-    function start_activity(activity){
-      action('../start_activity/', {hash: '{{ md5 }}', package: '{{ package }}', 'activity': activity}, function(json) {
-        if (json.status === "ok")
-            print_status("Activity Started");
-        else
-          print_status(json.message);
-      });
-    }
     return {
         init: function () {
             output(intro);
@@ -713,6 +705,7 @@ $(document).ready(function() {
 $('.prompt').html('[root@android] # ');
 var term = new Terminal('#input-line .cmdline', '#shell output');
 term.init();
+
 
 //Start Specific Activity
 $("#start_activity").click(function(){
@@ -892,8 +885,17 @@ $("#proxy").click(function() {
         print_status(json.message);
     });
     return false;  
-}); 
- 
+});
+
+function start_activity(activity){
+  action('../start_activity/', {hash: '{{ hash }}', package: '{{ package }}', 'activity': activity}, function(json) {
+    if (json.status === "ok")
+        print_status("Activity Started");
+    else
+      print_status(json.message);
+  });
+}
+
 function activity_tester(test){
   action(document.location.origin + '/activity_tester/', {hash: '{{ hash }}', 'test': test}, function(json) {
     if (json.status === "ok")
