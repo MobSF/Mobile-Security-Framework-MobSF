@@ -67,9 +67,16 @@ where python >nul 2>&1 && (
   %venv% -m pip install --no-cache-dir --use-deprecated=legacy-resolver -r requirements.txt
 
   echo [INSTALL] Installing Jadx
-  %venv% -m gh-release-install 'skylot/jadx' '\mobsf\StaticAnalyzer\tools\jadx.zip' --version-file 'mobsf\StaticAnalyzer\tools\jadx-{version}.ver' 
-  unzip -qq -d mobsf\StaticAnalyzer\tools\jadx\ mobsf\StaticAnalyzer\tools\jadx.zip 
-  del /f mobsf\StaticAnalyzer\tools\jadx.zip >nul 2>&1
+  %venv% -m gh-release-install 'skylot/jadx' '\mobsf\StaticAnalyzer\tools\jadx.zip'
+  if exist "mobsf\StaticAnalyzer\tools\jadx\mobsf\StaticAnalyzer\tools\jadx.zip" (
+    rmdir "mobsf\StaticAnalyzer\tools\jadx" /q /s >nul 2>&1
+    unzip -qq -d mobsf\StaticAnalyzer\tools\jadx\mobsf\StaticAnalyzer\tools\jadx.zip
+    del /f mobsf\StaticAnalyzer\tools\jadx.zip >nul 2>&1
+  ) else (
+    echo [ERROR] Impossible to install Jadx
+    pause
+    exit /b
+  )
 
   echo [INSTALL] Clean Up
   call scripts/clean.bat y
