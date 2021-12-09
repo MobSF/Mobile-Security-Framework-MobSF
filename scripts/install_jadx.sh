@@ -9,7 +9,7 @@ if [ -f '/home/mobsf/Mobile-Security-Framework-MobSF/mobsf/StaticAnalyzer/tools/
     unzip -qq -d /home/mobsf/Mobile-Security-Framework-MobSF/mobsf/StaticAnalyzer/tools/jadx/ /home/mobsf/Mobile-Security-Framework-MobSF/mobsf/StaticAnalyzer/tools/jadx.zip
     rm -f /home/mobsf/Mobile-Security-Framework-MobSF/mobsf/StaticAnalyzer/tools/jadx.zip
 else
-    echo '[ERROR] Problem dowloading Jadx'
+    echo '[ERROR] Problem downloading Jadx'
     exit 1
 fi
 # Delete script
