@@ -73,7 +73,7 @@ where python >nul 2>&1 && (
     unzip -qq -d mobsf\StaticAnalyzer\tools\jadx\mobsf\StaticAnalyzer\tools\jadx.zip
     del /f mobsf\StaticAnalyzer\tools\jadx.zip >nul 2>&1
   ) else (
-    echo [ERROR] Impossible to install Jadx
+    echo [ERROR] Impossible to download and install Jadx
     pause
     exit /b
   )

@@ -80,13 +80,7 @@ WORKDIR /home/mobsf/Mobile-Security-Framework-MobSF
 COPY . .
 
 # install Jadx 
-RUN gh-release-install \
-'skylot/jadx' \
-'jadx-{version}.zip' \
-'./mobsf/StaticAnalyzer/tools/jadx.zip' \
---version-file './mobsf/StaticAnalyzer/tools/jadx-{version}.ver' && \
-unzip -qq -d ./mobsf/StaticAnalyzer/tools/jadx/ ./mobsf/StaticAnalyzer/tools/jadx.zip && \
-rm -f ./mobsf/StaticAnalyzer/tools/jadx.zip
+RUN ./scripts/install_jadx.sh
 
 # Set adb binary path and apktool directory
 RUN sed -i "s#ADB_BINARY = ''#ADB_BINARY = '/usr/bin/adb'#" mobsf/MobSF/settings.py && \

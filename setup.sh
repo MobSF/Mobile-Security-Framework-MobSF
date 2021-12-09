@@ -72,7 +72,7 @@ if [ -f './mobsf/StaticAnalyzer/tools/jadx.zip' ]; then
     unzip -qq -d ./mobsf/StaticAnalyzer/tools/jadx/ ./mobsf/StaticAnalyzer/tools/jadx.zip
     rm -f ./mobsf/StaticAnalyzer/tools/jadx.zip
 else
-    echo '[ERROR] Problem dowloading Jadx'
+    echo '[ERROR] Problem downloading Jadx'
     exit 1
 fi
 
