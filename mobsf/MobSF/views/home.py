@@ -212,6 +212,8 @@ def recent_scans(request):
             entry['PACKAGE'] = package_mapping[entry['MD5']]
         else:
             entry['PACKAGE'] = ''
+        app_dir = os.path.join(settings.UPLD_DIR, entry['MD5'] + '/')
+        entry['dynamic_report_exists'] = is_file_exists(os.path.join(app_dir, 'logcat.txt'))
         entries.append(entry)
     context = {
         'title': 'Recent Scans',
