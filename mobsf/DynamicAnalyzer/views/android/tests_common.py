@@ -40,7 +40,6 @@ def start_activity(request, api=False):
     try:
         env = Environment()
         md5_hash = request.POST['hash']
-        package = request.POST['package']
         activity = request.POST['activity']
         if not is_md5(md5_hash):
             return invalid_params()
@@ -50,6 +49,9 @@ def start_activity(request, api=False):
             os.makedirs(screen_dir)
         logger.info('Launching Activity - %s', activity)
         outfile = ('{}act-{}.png'.format(screen_dir, activity))
+        static_android_db = StaticAnalyzerAndroid.objects.get(
+            MD5=md5_hash)
+        package = static_android_db.PACKAGE_NAME
         env.launch_n_capture(package, activity, outfile)
         data = {'status': 'ok'}
     except Exception as exp:

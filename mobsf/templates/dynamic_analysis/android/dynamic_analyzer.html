@@ -888,7 +888,7 @@ $("#proxy").click(function() {
 });
 
 function start_activity(activity){
-  action('../start_activity/', {hash: '{{ hash }}', package: '{{ package }}', 'activity': activity}, function(json) {
+  action('../start_activity/', {hash: '{{ hash }}', 'activity': activity}, function(json) {
     if (json.status === "ok")
         print_status("Activity Started");
     else

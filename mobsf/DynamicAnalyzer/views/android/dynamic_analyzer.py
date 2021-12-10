@@ -17,7 +17,7 @@ from django.db.models import ObjectDoesNotExist
 
 from mobsf.DynamicAnalyzer.views.android.environment import Environment
 from mobsf.DynamicAnalyzer.views.android.operations import (
-    get_package_name
+    get_package_name,
 )
 from mobsf.DynamicAnalyzer.tools.webproxy import (
     get_http_tools_url,
@@ -31,7 +31,8 @@ from mobsf.MobSF.utils import (
     is_md5,
     print_n_send_error_response,
     strict_package_check,
-    python_list, is_file_exists
+    python_list,
+    is_file_exists,
 )
 from mobsf.MobSF.views.scanning import add_to_recent_scan
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
@@ -50,7 +51,8 @@ def dynamic_analysis(request, api=False):
             APP_TYPE='apk')
 
         for apk in reversed(apks):
-            app_dir = os.path.join(settings.UPLD_DIR, apk.MD5 + '/')
+
+            app_dir = Path(settings.UPLD_DIR) / apk.MD5
             temp_dict = {
                 'ICON_FOUND': apk.ICON_FOUND,
                 'MD5': apk.MD5,
@@ -58,7 +60,7 @@ def dynamic_analysis(request, api=False):
                 'VERSION_NAME': apk.VERSION_NAME,
                 'FILE_NAME': apk.FILE_NAME,
                 'PACKAGE_NAME': apk.PACKAGE_NAME,
-                'dynamic_report_exists': is_file_exists(os.path.join(app_dir, 'logcat.txt'))
+                'DYNAMIC_REPORT_EXISTS': is_file_exists(app_dir / 'logcat.txt')
             }
             scan_apps.append(temp_dict)
         try:
@@ -98,9 +100,7 @@ def dynamic_analysis(request, api=False):
         return render(request, template, context)
     except Exception as exp:
         logger.exception('Dynamic Analysis')
-        return print_n_send_error_response(request,
-                                           exp,
-                                           api)
+        return print_n_send_error_response(request, exp, api)
 
 
 def dynamic_analyzer(request, checksum, api=False):
@@ -144,9 +144,9 @@ def dynamic_analyzer(request, checksum, api=False):
         try:
             static_android_db = StaticAnalyzerAndroid.objects.get(MD5=checksum)
         except ObjectDoesNotExist:
-            data = {'status': 'failed',
-                    'message': 'App details not found in database'}
-            return json_response(data)
+            data = {'status': 'failed', 'message': 'App details not found in database'}
+            return print_n_send_error_response(request, data, api)
+
         exported_activities = python_list(static_android_db.EXPORTED_ACTIVITIES)
         activities = python_list(static_android_db.ACTIVITIES)
 
