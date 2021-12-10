@@ -9,11 +9,16 @@ logger = logging.getLogger(__name__)
 
 class Checksec:
     def __init__(self, macho):
-        self.macho = lief.parse(macho.as_posix())
+        self.macho_path = macho.as_posix()
+        self.macho = lief.parse(self.macho_path)
 
     def checksec(self):
         macho_dict = {}
         macho_dict['name'] = self.macho.name
+
+        if not self.is_macho(self.macho_path):
+            return {}
+
         has_nx = self.has_nx()
         has_pie = self.has_pie()
         has_canary = self.has_canary()
@@ -182,6 +187,9 @@ class Checksec:
             'description': desc,
         }
         return macho_dict
+
+    def is_macho(self, macho_path):
+        return lief.is_macho(macho_path)
 
     def has_nx(self):
         return self.macho.has_nx

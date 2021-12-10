@@ -10,12 +10,15 @@ logger = logging.getLogger(__name__)
 
 class Checksec:
     def __init__(self, elf_file, so_rel):
+        self.elf_path = elf_file.as_posix()
         self.elf_rel = so_rel
-        self.elf = lief.parse(elf_file.as_posix())
+        self.elf = lief.parse(self.elf_path)
 
     def checksec(self):
         elf_dict = {}
         elf_dict['name'] = self.elf_rel
+        if not self.is_elf(self.elf_path):
+            return
         is_nx = self.is_nx()
         if is_nx:
             severity = 'info'
@@ -169,6 +172,9 @@ class Checksec:
             'description': desc,
         }
         return elf_dict
+
+    def is_elf(self, elf_path):
+        return lief.is_elf(elf_path)
 
     def is_nx(self):
         return self.elf.has_nx
