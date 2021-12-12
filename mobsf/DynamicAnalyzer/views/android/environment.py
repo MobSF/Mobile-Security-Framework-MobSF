@@ -509,7 +509,11 @@ class Environment:
                           'start',
                           '-n',
                           package + '/' + activity], True)
-        self.wait(settings.ACTIVITY_TESTER_SLEEP)
+        if not getattr(settings, 'ACTIVITY_TESTER_SLEEP'):
+            sleep = 3
+        else:
+            sleep = settings.ACTIVITY_TESTER_SLEEP
+        self.wait(sleep)
         self.screen_shot(outfile)
         logger.info('Activity screenshot captured')
 
