@@ -165,5 +165,9 @@ class Frida:
             os.remove(self.frida_log)
 
     def write_log(self, file_path, data):
-        with io.open(file_path, 'a', encoding='utf-8', errors="replace") as flip:
+        with io.open(
+                file_path,
+                'a',
+                encoding='utf-8',
+                errors='replace') as flip:
             flip.write(data)

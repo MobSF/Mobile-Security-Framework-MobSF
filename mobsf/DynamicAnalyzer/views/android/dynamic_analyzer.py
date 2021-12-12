@@ -30,9 +30,8 @@ from mobsf.MobSF.utils import (
     get_proxy_ip,
     is_md5,
     print_n_send_error_response,
-    strict_package_check,
     python_list,
-    is_file_exists,
+    strict_package_check,
 )
 from mobsf.MobSF.views.scanning import add_to_recent_scan
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
@@ -52,7 +51,7 @@ def dynamic_analysis(request, api=False):
 
         for apk in reversed(apks):
 
-            app_dir = Path(settings.UPLD_DIR) / apk.MD5
+            logcat = Path(settings.UPLD_DIR) / apk.MD5 / 'logcat.txt'
             temp_dict = {
                 'ICON_FOUND': apk.ICON_FOUND,
                 'MD5': apk.MD5,
@@ -60,7 +59,7 @@ def dynamic_analysis(request, api=False):
                 'VERSION_NAME': apk.VERSION_NAME,
                 'FILE_NAME': apk.FILE_NAME,
                 'PACKAGE_NAME': apk.PACKAGE_NAME,
-                'DYNAMIC_REPORT_EXISTS': is_file_exists(app_dir / 'logcat.txt')
+                'DYNAMIC_REPORT_EXISTS': logcat.exists(),
             }
             scan_apps.append(temp_dict)
         try:
@@ -142,13 +141,16 @@ def dynamic_analyzer(request, checksum, api=False):
 
         # Get activities from the static analyzer results
         try:
-            static_android_db = StaticAnalyzerAndroid.objects.get(MD5=checksum)
+            static_android_db = StaticAnalyzerAndroid.objects.get(
+                MD5=checksum)
         except ObjectDoesNotExist:
-            data = {'status': 'failed', 'message': 'App details not found in database'}
-            return print_n_send_error_response(request, data, api)
+            msg = 'App details not found in database'
+            return print_n_send_error_response(request, msg, api)
 
-        exported_activities = python_list(static_android_db.EXPORTED_ACTIVITIES)
-        activities = python_list(static_android_db.ACTIVITIES)
+        exported_activities = python_list(
+            static_android_db.EXPORTED_ACTIVITIES)
+        activities = python_list(
+            static_android_db.ACTIVITIES)
 
         env = Environment(identifier)
         if not env.connect_n_mount():

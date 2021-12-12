@@ -42,7 +42,7 @@ def start_activity(request, api=False):
         md5_hash = request.POST['hash']
         activity = request.POST['activity']
         if not is_md5(md5_hash):
-            return invalid_params()
+            return invalid_params(api)
         app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         screen_dir = os.path.join(app_dir, 'screenshots-apk/')
         if not os.path.exists(screen_dir):
@@ -55,7 +55,7 @@ def start_activity(request, api=False):
         env.launch_n_capture(package, activity, outfile)
         data = {'status': 'ok'}
     except Exception as exp:
-        logger.exception('start_activity')
+        logger.exception('Start Activity')
         data = {'status': 'failed', 'message': str(exp)}
     return send_response(data, api)
 
