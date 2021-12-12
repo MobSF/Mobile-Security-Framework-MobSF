@@ -106,6 +106,8 @@ def dynamic_analyzer(request, checksum, api=False):
     """Android Dynamic Analyzer Environment."""
     try:
         identifier = None
+        activities = None
+        exported_activities = []
         if api:
             reinstall = request.POST.get('re_install', '1')
             install = request.POST.get('install', '1')
@@ -143,15 +145,14 @@ def dynamic_analyzer(request, checksum, api=False):
         try:
             static_android_db = StaticAnalyzerAndroid.objects.get(
                 MD5=checksum)
+            exported_activities = python_list(
+                static_android_db.EXPORTED_ACTIVITIES)
+            activities = python_list(
+                static_android_db.ACTIVITIES)
         except ObjectDoesNotExist:
-            msg = 'App details not found in database'
-            return print_n_send_error_response(request, msg, api)
-
-        exported_activities = python_list(
-            static_android_db.EXPORTED_ACTIVITIES)
-        activities = python_list(
-            static_android_db.ACTIVITIES)
-
+            logger.warning(
+                'Failed to get Activities. '
+                'Static Analysis not completed for the app.')
         env = Environment(identifier)
         if not env.connect_n_mount():
             msg = 'Cannot Connect to ' + identifier

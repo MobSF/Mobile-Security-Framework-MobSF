@@ -52,7 +52,8 @@ urlpatterns = [
     re_path(r'^api/v1/android/adb_command$', api_dz.api_adb_execute),
     re_path(r'^api/v1/android/root_ca$', api_dz.api_root_ca),
     re_path(r'^api/v1/android/global_proxy$', api_dz.api_global_proxy),
-    re_path(r'^api/v1/android/activity$', api_dz.api_api_tester),
+    re_path(r'^api/v1/android/activity$', api_dz.api_act_tester),
+    re_path(r'^api/v1/android/start_activity$', api_dz.api_start_activity),
     re_path(r'^api/v1/android/tls_tests$', api_dz.api_tls_tester),
     # Frida
     re_path(r'^api/v1/frida/instrument$', api_dz.api_instrument),

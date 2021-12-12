@@ -2,6 +2,7 @@
 """Available Actions."""
 import logging
 import os
+import re
 
 from django.conf import settings
 from django.views.decorators.http import require_http_methods
@@ -39,10 +40,14 @@ def start_activity(request, api=False):
     """Lunch a specific activity."""
     try:
         env = Environment()
-        md5_hash = request.POST['hash']
         activity = request.POST['activity']
-        if not is_md5(md5_hash):
+        md5_hash = request.POST['hash']
+
+        valid_md5 = is_md5(md5_hash)
+        valid_act = re.match(r'^[\w]+(\.[\w]+)*$', activity)
+        if not valid_act or not valid_md5:
             return invalid_params(api)
+
         app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         screen_dir = os.path.join(app_dir, 'screenshots-apk/')
         if not os.path.exists(screen_dir):

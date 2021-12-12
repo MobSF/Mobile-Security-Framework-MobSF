@@ -48,6 +48,7 @@
               <li><code>api/v1/android/root_ca</code> - <a href="#root-ca-api">Install or Remove MobSF Root CA</a></li>
               <li><code>api/v1/android/global_proxy</code> - <a href="#global-proxy-api">Set or Unset MobSF HTTP(S) Proxy</a></li>
               <li><code>api/v1/android/activity</code> - <a href="#activity-api">Activity or Exported Activity Tester</a></li>
+              <li><code>api/v1/android/start_activity</code> - <a href="#start-activity-api">Start an Activity or Exported Activity</a></li>
               <li><code>api/v1/android/tls_tests</code> - <a href="#tls-tester-api">TLS/SSL Security Tester</a></li>
               <li><code>api/v1/frida/instrument</code> - <a href="#frida-instrument-api">Frida Instrument App</a></li>
               <li><code>api/v1/frida/api_monitor</code> - <a href="#frida-api-monitor-api">Frida API Monitor</a></li>
@@ -1395,6 +1396,88 @@
                 <ul>
                   <li>
                     <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/activity --data "hash=6825bb9fde2fc671322df005976755a1&amp;test=exported" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+
+            <hr />
+            <h2><a id="start-activity-api"></a><strong>Start Activity or Exported Activity API</strong></h2>
+            <p>API to manually launch an Activity or Exported Activity.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/android/start_activity</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>hash</td>
+                  <td>hash of the scan</td>
+                  <td>Yes</td>
+                </tr>
+              <tr>
+                  <td>activity</td>
+                  <td>Fully qualified name of the activity or exported activity</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{
+  "status": "ok"
+}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/start_activity --data "hash=6825bb9fde2fc671322df005976755a1&amp;activity=com.package.android.MainActivity" -H "Authorization:{{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>

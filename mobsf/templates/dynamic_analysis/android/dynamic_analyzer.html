@@ -233,21 +233,25 @@
                       </div>
                     </form>
                   </div>
-				<div class="form-group" id="start_activity_form">
-					<label class="box-title" for="activities">Start Activity</label>
-					<select class="form-select form-control" name="activities" id="activities">
-                        <option>Activities:</option>
-                        {% for activity in activities %}
-					    <option value="{{ activity }}">{{ activity }}</option>
-                        {% endfor %}
-                        <option>Exported Activities:</option>
-                        {% for activity in exported_activities %}
-					    <option value="{{ activity }}">{{ activity }}</option>
-                        {% endfor %}
-					</select>
-					  <button id="start_activity" type="submit" class="btn btn-primary btn-sm">Start Activity</button>
-				</div>
-          <!--tab end-->
+            {% if activities or exported_activities %}
+            <div class="form-group" id="start_activity_form">
+              <label class="box-title" for="activities">Start Activity</label>
+              <select class="form-select form-control" name="activities" id="activities">
+                <optgroup label="Activities">
+                            {% for activity in activities %}
+                  <option value="{{ activity }}">{{ activity }}</option>
+                            {% endfor %}
+                </optgroup>
+                <optgroup label="Exported Activities">
+                            {% for activity in exported_activities %}
+                  <option value="{{ activity }}">{{ activity }}</option>
+                            {% endfor %}
+                </optgroup>
+              </select>
+                <button id="start_activity" type="submit" class="btn btn-primary btn-sm">Start Activity</button>
+            </div>
+            {% endif %}
+              <!--tab end-->
 
                   </div>
 
