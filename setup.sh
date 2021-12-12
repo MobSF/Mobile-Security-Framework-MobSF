@@ -7,6 +7,10 @@ if ! [ -x "$(command -v python3)" ]; then
     exit 1
 fi
 
+# china network config
+# china = cn
+network=$1
+
 # Python3 Version Check
 python_version="$(python3 --version 2>&1 | awk '{print $2}')"
 py_major=$(echo "$python_version" | cut -d'.' -f1)
@@ -59,8 +63,14 @@ else
 fi
 
 echo '[INSTALL] Installing Requirements'
-pip install --no-cache-dir wheel
-pip install --no-cache-dir --use-deprecated=legacy-resolver -r requirements.txt
+if [ "$network" == "cn" ]; then
+    echo 'China network used. tsinghua mirror'
+    pip install --no-cache-dir wheel -i https://pypi.tuna.tsinghua.edu.cn/simple
+    pip install --no-cache-dir --use-deprecated=legacy-resolver -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+else
+    pip install --no-cache-dir wheel
+    pip install --no-cache-dir --use-deprecated=legacy-resolver -r requirements.txt
+fi
 
 echo '[INSTALL] Clean Up'
 bash scripts/clean.sh y
