@@ -162,7 +162,7 @@ textarea:focus {
                                 <a class="btn btn-primary btn-sm disable" onclick="dynamic_loader()" href="../android_dynamic/{{e.MD5}}?re_install=0"><i class="fab fa-android"></i> Start Dynamic Analysis (without Re-install)</a>
                               </p>
                               <p>
-                                 <a class="btn btn-info" href="../dynamic_report/{{ e.MD5 }}"><i class="fa fa-mobile"></i> View Report </a>
+                                 <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="../dynamic_report/{{ e.MD5 }}"><i class="fa fa-mobile"></i> View Report </a>
                               </p>
                             </td>
                         </tr>
