@@ -1,8 +1,10 @@
-version: "3"
+version: "3.8"
 services:
   web:
     image: opensecurity/mobile-security-framework-mobsf:latest
     hostname: mobsfhost
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     deploy:
       replicas: 1
       restart_policy:

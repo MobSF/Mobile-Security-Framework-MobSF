@@ -37,7 +37,7 @@ where python >nul 2>&1 && (
     echo [INSTALL] Found OpenSSL executable
   ) else (
    echo [ERROR] OpenSSL executable not found in [C:\\Program Files\\OpenSSL-Win64\\bin\\openssl.exe]
-   echo [INFO] Install OpenSSL non-light version - https://slproweb.com/products/Win32OpenSSL.html
+   echo [INFO] Install OpenSSL non-light version - https://slproweb.com/download/Win64OpenSSL-3_0_0.exe
    pause
    exit /b
   )
@@ -63,6 +63,7 @@ where python >nul 2>&1 && (
   set INCLUDE=C:\Program Files\OpenSSL-Win64\include;%INCLUDE%
 
   echo [INSTALL] Installing Requirements
+  %venv% -m pip install --no-cache-dir wheel
   %venv% -m pip install --no-cache-dir --use-deprecated=legacy-resolver -r requirements.txt
   
   echo [INSTALL] Clean Up

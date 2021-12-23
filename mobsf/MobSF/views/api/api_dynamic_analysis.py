@@ -125,13 +125,27 @@ def api_global_proxy(request):
 # Android Dynamic Tests APIs
 @request_method(['POST'])
 @csrf_exempt
-def api_api_tester(request):
+def api_act_tester(request):
     """POST - Activity Tester."""
     params = {'test', 'hash'}
     if set(request.POST) < params:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = tests_common.activity_tester(request, True)
+    if resp['status'] == 'ok':
+        return make_api_response(resp, 200)
+    return make_api_response(resp, 500)
+
+
+@request_method(['POST'])
+@csrf_exempt
+def api_start_activity(request):
+    """POST - Start Activity."""
+    params = {'activity', 'hash'}
+    if set(request.POST) < params:
+        return make_api_response(
+            {'error': 'Missing Parameters'}, 422)
+    resp = tests_common.start_activity(request, True)
     if resp['status'] == 'ok':
         return make_api_response(resp, 200)
     return make_api_response(resp, 500)

@@ -179,6 +179,7 @@ def pdf(request, api=False, jsonres=False):
                     'margin-bottom': '0.50in',
                     'margin-left': '0.50in',
                     'encoding': 'UTF-8',
+                    'orientation': 'Landscape',
                     'custom-header': [
                         ('Accept-Encoding', 'gzip'),
                     ],
@@ -399,8 +400,8 @@ def find_java_source_folder(base_folder: Path):
 
 
 def is_secret(inp):
-    inp = inp.lower()
     """Check if captures string is a possible secret."""
+    inp = inp.lower()
     iden = (
         'api"', 'key"', 'api_', 'key_', 'secret"',
         'password"', 'aws', 'gcp', 's3_', '_s3', 'secret_',

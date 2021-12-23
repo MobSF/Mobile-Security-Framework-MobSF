@@ -51,7 +51,6 @@ def run_tls_tests(request, md5_hash, env, package, test_pkg, duration):
     version = env.get_android_version()
     env.enable_adb_reverse_tcp(version)
     env.set_global_proxy(version)
-    """Run TLS Tests."""
     # Test 1: Remove Root CA, Run App, No TLS Pinning Bypass
     env.adb_command(['am', 'force-stop', package], True)
     logger.info('Running TLS Misconfiguration Test')

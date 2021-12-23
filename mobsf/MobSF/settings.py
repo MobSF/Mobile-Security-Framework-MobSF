@@ -366,6 +366,7 @@ else:
     # =======ANDROID DYNAMIC ANALYSIS SETTINGS===========
     ANALYZER_IDENTIFIER = ''
     FRIDA_TIMEOUT = 4
+    ACTIVITY_TESTER_SLEEP = 4
     # ==============================================
 
     # ================HTTPS PROXY ===============
@@ -389,7 +390,7 @@ else:
     # --------------------------
     DOMAIN_MALWARE_SCAN = True
     APKID_ENABLED = True
-    QUARK_ENABLED = True
+    QUARK_ENABLED = False
     # ==============================================
 
     # ========DISABLED BY DEFAULT COMPONENTS=========

@@ -2,6 +2,7 @@
 """Available Actions."""
 import logging
 import os
+import re
 
 from django.conf import settings
 from django.views.decorators.http import require_http_methods
@@ -32,9 +33,39 @@ from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 
 logger = logging.getLogger(__name__)
 
+
 # AJAX
+@require_http_methods(['POST'])
+def start_activity(request, api=False):
+    """Lunch a specific activity."""
+    try:
+        env = Environment()
+        activity = request.POST['activity']
+        md5_hash = request.POST['hash']
+
+        valid_md5 = is_md5(md5_hash)
+        valid_act = re.match(r'^[\w]+(\.[\w]+)*$', activity)
+        if not valid_act or not valid_md5:
+            return invalid_params(api)
+
+        app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
+        screen_dir = os.path.join(app_dir, 'screenshots-apk/')
+        if not os.path.exists(screen_dir):
+            os.makedirs(screen_dir)
+        logger.info('Launching Activity - %s', activity)
+        outfile = ('{}act-{}.png'.format(screen_dir, activity))
+        static_android_db = StaticAnalyzerAndroid.objects.get(
+            MD5=md5_hash)
+        package = static_android_db.PACKAGE_NAME
+        env.launch_n_capture(package, activity, outfile)
+        data = {'status': 'ok'}
+    except Exception as exp:
+        logger.exception('Start Activity')
+        data = {'status': 'failed', 'message': str(exp)}
+    return send_response(data, api)
 
 
+# AJAX
 @require_http_methods(['POST'])
 def activity_tester(request, api=False):
     """Exported & non exported activity Tester."""
