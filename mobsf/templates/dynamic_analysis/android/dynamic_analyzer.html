@@ -47,6 +47,14 @@
         font-family: "courier new", courier, monospace;
         font-size: 11px;
       }
+
+    #start_activity{
+        margin-top: 5px;
+    }
+    #start_activity_form{
+        margin-top: 10px;
+    }
+
 </style>
 
 {% endblock %}
@@ -61,7 +69,7 @@
       <div class="row mb-2">
         <div id="mobsf_header">
             <h2><strong>Dynamic Analyzer </strong>- {{ package }}</h2>
-          <input type="hidden" id="screen_width" value="{{ screen_witdth }}">
+          <input type="hidden" id="screen_width" value="{{ screen_width }}">
           <input type="hidden" id="screen_height" value="{{ screen_height }}">
         </div>
       </div>
@@ -225,8 +233,25 @@
                       </div>
                     </form>
                   </div>
-           
-          <!--tab end-->
+            {% if activities or exported_activities %}
+            <div class="form-group" id="start_activity_form">
+              <label class="box-title" for="activities">Start Activity</label>
+              <select class="form-select form-control" name="activities" id="activities">
+                <optgroup label="Activities">
+                            {% for activity in activities %}
+                  <option value="{{ activity }}">{{ activity }}</option>
+                            {% endfor %}
+                </optgroup>
+                <optgroup label="Exported Activities">
+                            {% for activity in exported_activities %}
+                  <option value="{{ activity }}">{{ activity }}</option>
+                            {% endfor %}
+                </optgroup>
+              </select>
+                <button id="start_activity" type="submit" class="btn btn-primary btn-sm">Start Activity</button>
+            </div>
+            {% endif %}
+              <!--tab end-->
 
                   </div>
 
@@ -279,7 +304,7 @@ Java.perform(function() {
                       <button id="loadscript" type="submit" class="btn btn-primary btn-sm">Load</button>
                     </div>
                     <div class="form-group">
-                         <select id="fd_scs" multiple="" class="form-control">
+                         <select id="fd_scs" size="10" multiple="" class="form-control">
                           </select>
                     </div>
                   </div>
@@ -670,7 +695,6 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
             this.value = ''; // Clear/setup line for next input.
         }
     }
-
     return {
         init: function () {
             output(intro);
@@ -685,6 +709,15 @@ $(document).ready(function() {
 $('.prompt').html('[root@android] # ');
 var term = new Terminal('#input-line .cmdline', '#shell output');
 term.init();
+
+
+//Start Specific Activity
+$("#start_activity").click(function(){
+  let activity = $('#activities option:selected').val();
+  print_status("Starting Activity: " + activity)
+  start_activity(activity)
+  return false;
+});
 
 // Start up
 {% if android_version < 5 %}
@@ -856,8 +889,17 @@ $("#proxy").click(function() {
         print_status(json.message);
     });
     return false;  
-}); 
- 
+});
+
+function start_activity(activity){
+  action('../start_activity/', {hash: '{{ hash }}', 'activity': activity}, function(json) {
+    if (json.status === "ok")
+        print_status("Activity Started");
+    else
+      print_status(json.message);
+  });
+}
+
 function activity_tester(test){
   action(document.location.origin + '/activity_tester/', {hash: '{{ hash }}', 'test': test}, function(json) {
     if (json.status === "ok")

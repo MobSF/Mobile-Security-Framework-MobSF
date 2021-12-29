@@ -52,7 +52,8 @@ urlpatterns = [
     re_path(r'^api/v1/android/adb_command$', api_dz.api_adb_execute),
     re_path(r'^api/v1/android/root_ca$', api_dz.api_root_ca),
     re_path(r'^api/v1/android/global_proxy$', api_dz.api_global_proxy),
-    re_path(r'^api/v1/android/activity$', api_dz.api_api_tester),
+    re_path(r'^api/v1/android/activity$', api_dz.api_act_tester),
+    re_path(r'^api/v1/android/start_activity$', api_dz.api_start_activity),
     re_path(r'^api/v1/android/tls_tests$', api_dz.api_tls_tester),
     # Frida
     re_path(r'^api/v1/frida/instrument$', api_dz.api_instrument),
@@ -124,6 +125,7 @@ if settings.API_ONLY == '0':
         re_path(r'^global_proxy/$', operations.global_proxy),
         # Dynamic Tests
         re_path(r'^activity_tester/$', tests_common.activity_tester),
+        re_path(r'^start_activity/$', tests_common.start_activity),
         re_path(r'^download_data/$', tests_common.download_data),
         re_path(r'^collect_logs/$', tests_common.collect_logs),
         re_path(r'^tls_tests/$', tests_common.tls_tests),

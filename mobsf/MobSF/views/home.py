@@ -6,6 +6,7 @@ import os
 import platform
 import re
 import shutil
+from pathlib import Path
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
@@ -212,6 +213,8 @@ def recent_scans(request):
             entry['PACKAGE'] = package_mapping[entry['MD5']]
         else:
             entry['PACKAGE'] = ''
+        logcat = Path(settings.UPLD_DIR) / entry['MD5'] / 'logcat.txt'
+        entry['DYNAMIC_REPORT_EXISTS'] = logcat.exists()
         entries.append(entry)
     context = {
         'title': 'Recent Scans',

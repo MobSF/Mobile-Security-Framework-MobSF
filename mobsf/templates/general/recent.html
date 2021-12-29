@@ -80,7 +80,7 @@
                                    <a class="btn btn-info" href="../{{ e.ANALYZER }}/?name={{e.FILE_NAME}}&amp;checksum={{e.MD5}}&amp;type={{e.SCAN_TYPE}}&amp;rescan=1"><i class="fas fa-sync-alt"></i></a>
                                 </p>
                             {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:"%}
-                                <p><a class="btn btn-success" href="../dynamic_report/{{ e.MD5  }}"><i class="fa fa-mobile"></i> Dynamic Report</a> 
+                                <p><a  class="btn btn-success {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="../dynamic_report/{{ e.MD5  }}"><i class="fa fa-mobile"></i> Dynamic Report</a>
                                 </p><p><a class="diffButton btn btn-warning" id="{{ e.MD5 }}_{{ e.FILE_NAME }}"><i class="fas fa-not-equal"></i> Diff or Compare</a>
                                 </p>
                             {% endif %}

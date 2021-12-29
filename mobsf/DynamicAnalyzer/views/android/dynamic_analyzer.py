@@ -13,6 +13,7 @@ from django.http import (HttpResponseRedirect,
                          StreamingHttpResponse)
 from django.conf import settings
 from django.shortcuts import render
+from django.db.models import ObjectDoesNotExist
 
 from mobsf.DynamicAnalyzer.views.android.environment import Environment
 from mobsf.DynamicAnalyzer.views.android.operations import (
@@ -29,6 +30,7 @@ from mobsf.MobSF.utils import (
     get_proxy_ip,
     is_md5,
     print_n_send_error_response,
+    python_list,
     strict_package_check,
 )
 from mobsf.MobSF.views.scanning import add_to_recent_scan
@@ -46,7 +48,10 @@ def dynamic_analysis(request, api=False):
         and_sdk = None
         apks = StaticAnalyzerAndroid.objects.filter(
             APP_TYPE='apk')
+
         for apk in reversed(apks):
+
+            logcat = Path(settings.UPLD_DIR) / apk.MD5 / 'logcat.txt'
             temp_dict = {
                 'ICON_FOUND': apk.ICON_FOUND,
                 'MD5': apk.MD5,
@@ -54,6 +59,7 @@ def dynamic_analysis(request, api=False):
                 'VERSION_NAME': apk.VERSION_NAME,
                 'FILE_NAME': apk.FILE_NAME,
                 'PACKAGE_NAME': apk.PACKAGE_NAME,
+                'DYNAMIC_REPORT_EXISTS': logcat.exists(),
             }
             scan_apps.append(temp_dict)
         try:
@@ -93,15 +99,15 @@ def dynamic_analysis(request, api=False):
         return render(request, template, context)
     except Exception as exp:
         logger.exception('Dynamic Analysis')
-        return print_n_send_error_response(request,
-                                           exp,
-                                           api)
+        return print_n_send_error_response(request, exp, api)
 
 
 def dynamic_analyzer(request, checksum, api=False):
     """Android Dynamic Analyzer Environment."""
     try:
         identifier = None
+        activities = None
+        exported_activities = None
         if api:
             reinstall = request.POST.get('re_install', '1')
             install = request.POST.get('install', '1')
@@ -134,6 +140,19 @@ def dynamic_analyzer(request, checksum, api=False):
                    ' set ANALYZER_IDENTIFIER in '
                    f'{get_config_loc()}')
             return print_n_send_error_response(request, msg, api)
+
+        # Get activities from the static analyzer results
+        try:
+            static_android_db = StaticAnalyzerAndroid.objects.get(
+                MD5=checksum)
+            exported_activities = python_list(
+                static_android_db.EXPORTED_ACTIVITIES)
+            activities = python_list(
+                static_android_db.ACTIVITIES)
+        except ObjectDoesNotExist:
+            logger.warning(
+                'Failed to get Activities. '
+                'Static Analysis not completed for the app.')
         env = Environment(identifier)
         if not env.connect_n_mount():
             msg = 'Cannot Connect to ' + identifier
@@ -189,12 +208,14 @@ def dynamic_analyzer(request, checksum, api=False):
                     msg,
                     api)
         logger.info('Testing Environment is Ready!')
-        context = {'screen_witdth': screen_width,
+        context = {'screen_width': screen_width,
                    'screen_height': screen_height,
                    'package': package,
                    'hash': checksum,
                    'android_version': version,
                    'version': settings.MOBSF_VER,
+                   'activities': activities,
+                   'exported_activities': exported_activities,
                    'title': 'Dynamic Analyzer'}
         template = 'dynamic_analysis/android/dynamic_analyzer.html'
         if api:
