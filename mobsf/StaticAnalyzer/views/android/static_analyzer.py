@@ -70,6 +70,7 @@ from androguard.core.bytecodes import apk
 
 
 logger = logging.getLogger(__name__)
+logging.getLogger('androguard').setLevel(logging.ERROR)
 
 
 @register.filter

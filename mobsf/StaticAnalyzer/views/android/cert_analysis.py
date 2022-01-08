@@ -17,6 +17,7 @@ from oscrypto import asymmetric
 from django.utils.html import escape
 
 logger = logging.getLogger(__name__)
+logging.getLogger('androguard').setLevel(logging.ERROR)
 
 
 def get_hardcoded_cert_keystore(files):
