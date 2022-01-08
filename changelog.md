@@ -1,3 +1,37 @@
+### v3.4.6 Beta Changelog
+
+- Features or Enhancements
+   - Quark Version Update
+   - New Frida Scripts from F-Secure labs
+   - Manual Activity Launcher and REST API
+   - Suppress warnings from third party
+   - LIEF integration QA
+   - Update Janus Vulnerability description
+   - General Code QA
+   - Improve Setup script
+   - Update Dockerfile to use non-root user
+   - PDF in landscape
+   - Add healthcheck to dockerfile
+   - Update Android API rules
+   - iOS Hardcoded Secret extraction from plists
+   - Add browsable activities in android diff
+   - Multiplatform docker image
+   - Added checks and bypass for certificate transparency
+   - Updated Android Static Analysis rules
+   - Improved Split APK support, now supports .apks file
+   - Ability to lookup and download APK from apktada/apkpure/apkplz
+   - Dynamic Analyzer: Get Runtime Application Third party dependencies
+   - Persist Frida Code change in session storage
+   - Show Base64 strings decoded at runtime and the called class
+   - Detect Trackers from Runtime Dependencies and Network Traffic
+   - Windows Binskim version pinning
+   - Global Proxy Configuration for Dynamic Analyzer
+
+- Bug Fixes
+  - Fix Django 4.0 support
+  - Fix minor bugs
+  - Fix dependency issues
+
 ### v3.4.3 Beta Changelog
 
 - Features or Enhancements
