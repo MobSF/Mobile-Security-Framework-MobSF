@@ -344,6 +344,8 @@ def score(findings):
         app_score = 10
     elif app_score > 100:
         app_score = 100
+    if not getattr(settings, 'CVSS_SCORE_ENABLED', False):
+        avg_cvss = None
     return avg_cvss, app_score
 
 

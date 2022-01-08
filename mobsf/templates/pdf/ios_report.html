@@ -60,6 +60,7 @@
         <td class="no_border"><h3>Identifier:</h3></td>
         <td class="no_border"><h3>{{ bundle_id }}</h3></td>
       </tr>
+      {% if average_cvss %}
       <tr>
         <td class="no_border"><h3>Average CVSS Score:</h3></td>
         <td class="no_border"><h3>
@@ -75,6 +76,7 @@
         {% endif %}
         </h3></td>
       </tr>
+      {% endif %}
       <tr>
         <td class="no_border"><h3>App Security Score:</h3></td>
         <td class="no_border">
@@ -354,17 +356,20 @@
                         {% endif %}
                       </td>
                       <td>
-                        <h5>CVSS V2:</h5>
-                        {% if details|key:"cvss" > 6 %}
-                        <span class="danger">{{ details|key:"cvss" }} (high)</span>
-                        {% elif details|key:"cvss" == 0 %}
-                        <span class="info">{{ details|key:"cvss" }} (info)</span>
-                        {% elif details|key:"cvss" >= 4 %}
-                        <span class="warning">{{ details|key:"cvss" }} (medium)</span>
-                        {% elif details|key:"cvss" < 4 %}
-                        <span class="success">{{ details|key:"cvss" }} (low)</span>
+                        {% if average_cvss %}
+                          <h5>CVSS V2:</h5>
+                          {% if details|key:"cvss" > 6 %}
+                          <span class="danger">{{ details|key:"cvss" }} (high)</span>
+                          {% elif details|key:"cvss" == 0 %}
+                          <span class="info">{{ details|key:"cvss" }} (info)</span>
+                          {% elif details|key:"cvss" >= 4 %}
+                          <span class="warning">{{ details|key:"cvss" }} (medium)</span>
+                          {% elif details|key:"cvss" < 4 %}
+                          <span class="success">{{ details|key:"cvss" }} (low)</span>
+                          {% endif %}
+                          </br>
                         {% endif %}
-                        {% if details|key:"cwe" %}</br> <h5>CWE: </h5>{{ details|key:"cwe" }}{% endif %}
+                        {% if details|key:"cwe" %}<h5>CWE: </h5>{{ details|key:"cwe" }}{% endif %}
                         {% if details|key:"owasp-mobile" %}</br> <h5>OWASP Top 10: </h5>{{ details|key:"owasp-mobile" }}{% endif %}
                         {% if details|key:"masvs" %}</br> <h5>OWASP MASVS: </h5>{{ details|key:"masvs" }}{% endif %}
                        </td>
@@ -478,17 +483,20 @@
                       {% endif %}
                   </td>
                   <td>
-                    <h5>CVSS V2:</h5>
-                    {% if details.metadata.cvss > 6 %}
-                    <span class="danger">{{ details.metadata.cvss }} (high)</span>
-                    {% elif details.metadata.cvss == 0 %}
-                    <span class="info">{{ details.metadata.cvss }} (info)</span>
-                    {% elif details.metadata.cvss >= 4 %}
-                    <span class="warning">{{ details.metadata.cvss }} (medium)</span>
-                    {% elif details.metadata.cvss < 4 %}
-                    <span class="success">{{ details.metadata.cvss }} (low)</span>
+                    {% if average_cvss %}
+                      <h5>CVSS V2:</h5>
+                      {% if details.metadata.cvss > 6 %}
+                      <span class="danger">{{ details.metadata.cvss }} (high)</span>
+                      {% elif details.metadata.cvss == 0 %}
+                      <span class="info">{{ details.metadata.cvss }} (info)</span>
+                      {% elif details.metadata.cvss >= 4 %}
+                      <span class="warning">{{ details.metadata.cvss }} (medium)</span>
+                      {% elif details.metadata.cvss < 4 %}
+                      <span class="success">{{ details.metadata.cvss }} (low)</span>
+                      {% endif %}
+                      </br>
                     {% endif %}
-                    {% if details.metadata.cwe %}</br> <strong>CWE: </strong>{{details.metadata.cwe }}{% endif %}
+                    {% if details.metadata.cwe %}<strong>CWE: </strong>{{details.metadata.cwe }}{% endif %}
                     {% if details.metadata|key:"owasp-mobile" %}</br> <strong>OWASP Top 10: </strong>{{ details.metadata|key:"owasp-mobile" }}{% endif %}
                     {% if details.metadata.masvs %}</br> <strong>OWASP MASVS: </strong>{{ details.metadata.masvs  }}{% endif %}
                   </td>

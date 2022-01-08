@@ -313,7 +313,8 @@ else:
         'com/instabug', 'com/crashlytics/android',
         'kotlinx/', 'kotlin/',
     }
-
+    # Disable CVSSV2 Score by default
+    CVSS_SCORE_ENABLED = False
     # ==============================================
 
     # ======WINDOWS STATIC ANALYSIS SETTINGS ===========

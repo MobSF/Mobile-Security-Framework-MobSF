@@ -253,7 +253,9 @@
                   <p><strong><i class="fas fa-check-double"></i> APP SCORES</strong></p>
                   <img id="app_icon" src="{% if not appstore_details.error %}{{appstore_details.icon}}{% elif icon_found %}/download/{{ md5 }}-icon.png{% else %}{% static 'img/no_icon.png' %}{% endif %}"/>
                   <br/>
+                  {% if average_cvss %}
                   <span class="badge bg-info">Average CVSS</span> <strong>{{ average_cvss }} </strong><br/>
+                  {% endif %}
                   <span class="badge bg-{% if security_score < 50 %}danger{% elif security_score == 100 %}success{% else %}warning{% endif %}">Security Score</span> <strong>{{ security_score }}/100 </strong><br/>
                   {% if virus_total and virus_total.items|length > 9 %}
                     {% if virus_total.positives > 0 %} 
@@ -622,18 +624,21 @@
                         {% endif %}
                       </td>
                       <td>
-                        <strong>CVSS V2:</strong>
-                        {{ details|key:"cvss" }}
-                        {% if details|key:"cvss" > 6 %}
-                          (high)
-                        {% elif details|key:"cvss" == 0 %}
-                          (info)
-                        {% elif details|key:"cvss" >= 4 %}
-                          (medium)
-                        {% elif details|key:"cvss" < 4 %}
-                          (low)
+                        {% if average_cvss %}
+                          <strong>CVSS V2:</strong>
+                          {{ details|key:"cvss" }}
+                          {% if details|key:"cvss" > 6 %}
+                            (high)
+                          {% elif details|key:"cvss" == 0 %}
+                            (info)
+                          {% elif details|key:"cvss" >= 4 %}
+                            (medium)
+                          {% elif details|key:"cvss" < 4 %}
+                            (low)
+                          {% endif %}
+                          </br>
                         {% endif %}
-                        {% if details|key:"cwe" %}</br> <strong>CWE: </strong>{{ details|key:"cwe" }}{% endif %}
+                        {% if details|key:"cwe" %} <strong>CWE: </strong>{{ details|key:"cwe" }}{% endif %}
                         {% if details|key:"owasp-mobile" %}</br> <strong>OWASP Top 10: </strong>{{  details|key:"owasp-mobile" }}{% endif %}
                         {% if details|key:"masvs" %}</br> <strong>OWASP MASVS: </strong>{{  details|key:"masvs" }}{% endif %}
                       </td>

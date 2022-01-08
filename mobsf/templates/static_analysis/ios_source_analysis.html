@@ -233,7 +233,9 @@
                   <p><strong><i class="fas fa-check-double"></i> APP SCORES</strong></p>
                   <img id="app_icon" src="{% if not appstore_details.error %}{{appstore_details.icon}}{% elif icon_found %}/download/{{ md5 }}-icon.png{% else %}{% static 'img/no_icon.png' %}{% endif %}"/>
                   <br/>
+                  {% if average_cvss %}
                   <span class="badge bg-info">Average CVSS</span> <strong>{{ average_cvss }} </strong><br/>
+                  {% endif %}
                   <span class="badge bg-{% if security_score < 50 %}danger{% elif security_score == 100 %}success{% else %}warning{% endif %}">Security Score</span> <strong>{{ security_score }}/100 </strong><br/>
                 </div>
                 <div class="col-5">
@@ -630,18 +632,21 @@
                     {% endif %}
                   </td>
                   <td>
-                      <strong>CVSS V2:</strong>
-                       {{ details.metadata.cvss }}
-                      {% if details.metadata.cvss > 6 %}
-                        (high)
-                      {% elif details.metadata.cvss == 0 %}
-                        (info)
-                      {% elif details.metadata.cvss >= 4 %}
-                        (medium)
-                      {% elif details.metadata.cvss < 4 %}
-                        (low)
+                      {% if average_cvss %}
+                        <strong>CVSS V2:</strong>
+                        {{ details.metadata.cvss }}
+                        {% if details.metadata.cvss > 6 %}
+                          (high)
+                        {% elif details.metadata.cvss == 0 %}
+                          (info)
+                        {% elif details.metadata.cvss >= 4 %}
+                          (medium)
+                        {% elif details.metadata.cvss < 4 %}
+                          (low)
+                        {% endif %}
+                        </br>
                       {% endif %}
-                      {% if details.metadata.cwe %}</br> <strong>CWE: </strong>{{details.metadata.cwe }}{% endif %}
+                      {% if details.metadata.cwe %} <strong>CWE: </strong>{{details.metadata.cwe }}{% endif %}
                       {% if details.metadata|key:"owasp-mobile" %}</br> <strong>OWASP Top 10: </strong>{{ details.metadata|key:"owasp-mobile" }}{% endif %}
                       {% if details.metadata.masvs %}</br> <strong>OWASP MASVS: </strong>{{ details.metadata.masvs  }}{% endif %}
                   </td>

@@ -60,6 +60,7 @@
         <td class="no_border"><h3>Package Name:</h3></td>
         <td class="no_border"><h3>{{ package_name }}</h3></td>
       </tr>
+      {% if average_cvss %}
       <tr>
         <td class="no_border"><h3>Average CVSS Score:</h3></td>
         <td class="no_border"><h3>
@@ -75,6 +76,7 @@
         {% endif %}
         </h3></td>
       </tr>
+      {% endif %}
       <tr>
         <td class="no_border"><h3>App Security Score:</h3></td>
         <td class="no_border">
@@ -498,6 +500,7 @@
                       {% endif %}
                   </td>
                   <td>
+                    {% if average_cvss %}
                       <strong>CVSS V2:</strong>
                       {{ details.metadata.cvss }}
                       {% if details.metadata.cvss > 6 %}
@@ -509,7 +512,9 @@
                       {% elif details.metadata.cvss < 4 %}
                         <span class="success"> (low)</span>
                       {% endif %}
-                      {% if details.metadata.cwe %}</br> <strong>CWE: </strong>{{ details.metadata.cwe }}{% endif %}
+                      </br>
+                    {% endif %}
+                      {% if details.metadata.cwe %}<strong>CWE: </strong>{{ details.metadata.cwe }}{% endif %}
                       {% if details.metadata|key:"owasp-mobile" %}</br> <strong>OWASP Top 10: </strong>{{ details.metadata|key:"owasp-mobile" }}{% endif %}
                       {% if details.metadata.masvs %}</br> <strong>OWASP MASVS: </strong>{{ details.metadata.masvs }}{% endif %}
                   </td>
