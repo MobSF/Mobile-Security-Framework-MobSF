@@ -11,6 +11,7 @@ from mobsf.StaticAnalyzer.views.shared_func import (
 )
 
 logger = logging.getLogger(__name__)
+logging.getLogger('androguard').setLevel(logging.ERROR)
 
 
 def strings_from_apk(app_file, app_dir, elf_strings):

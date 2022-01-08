@@ -7,7 +7,9 @@ import os
 
 from androguard.core.bytecodes import apk
 
+
 logger = logging.getLogger(__name__)
+logging.getLogger('androguard').setLevel(logging.ERROR)
 
 
 # relative to res folder

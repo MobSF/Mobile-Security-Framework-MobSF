@@ -43,7 +43,7 @@ jobs:
     - name: Install Windows Dependencies
       if: startsWith(matrix.os, 'windows')
       run: |
-        choco install wkhtmltopdf --version 0.12.6
+        choco install wkhtmltopdf
     - name: Install Python dependencies
       run: |
         pip install --use-deprecated=legacy-resolver -r requirements.txt
