@@ -740,12 +740,12 @@
                         <td>
                           {% if item.severity == "high" %}
                             <span class="badge bg-danger">high</span>
-                          {% elif item.severity == "good" %}
-                            <span class="badge bg-success">good</span>
+                          {% elif item.severity == "secure" %}
+                            <span class="badge bg-success">secure</span>
                           {% elif item.severity == "info" %}
                             <span class="badge bg-info">info</span>
                           {% elif item.severity == "warning" %}
-                            <span class="badge bg-warning">medium</span>
+                            <span class="badge bg-warning">warning</span>
                           {% endif %}
                         </td>
                         <td>
@@ -799,8 +799,8 @@
                             <span class="badge bg-danger">high</span>
                           {% elif item|key:"stat" == "info" %}
                             <span class="badge bg-info">info</span>
-                          {% elif item|key:"stat" == "medium" %}
-                            <span class="badge bg-warning">medium</span>
+                          {% elif item|key:"stat" == "warning" %}
+                            <span class="badge bg-warning">warning</span>
                           {% endif %}
                          
                         </td>
@@ -1056,7 +1056,7 @@
                       <strong>Description: </strong>{{details|key:"desc"}}
                       </pre>
                   {% else %}
-                    <span class="badge bg-success">good</span><br/>
+                    <span class="badge bg-success">ok</span><br/>
                   {% endif %}
                   </td>
                   <td>
@@ -1159,9 +1159,9 @@
                         </td>
                        <td>
                          {% if item.open %}
-                          <span class="badge bg-danger">insecure</span><br/>Firebase Database is exposed publicly.
+                          <span class="badge bg-danger">high</span><br/>Firebase Database is exposed publicly.
                         {% else %}
-                         <span class="badge bg-primary">Info</span><br/>App talks to a Firebase database.
+                         <span class="badge bg-primary">info</span><br/>App talks to a Firebase database.
                          {% endif %}
                        </td>
                     </tr>

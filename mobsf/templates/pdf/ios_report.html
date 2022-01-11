@@ -221,7 +221,7 @@
                       <tr>
                         <th>NO</th>
                         <th>ISSUE</th>
-                        <th>STATUS</th>
+                        <th>SEVERITY</th>
                         <th>DESCRIPTION</th>
                       </tr>
                   </thead>
@@ -233,14 +233,14 @@
                           <td>
                           {{findings.issue}}
                           <td>
-                            {% if findings.status == "insecure" %}
-                            <span class="danger"> {{findings.status}}</span>
+                            {% if findings.status == "high" %}
+                            <span class="danger"> high</span>
                             {% elif findings.status == "secure" %}
-                            <span class="success"> {{findings.status}}</span>
+                            <span class="success"> secure</span>
                             {% elif findings.status == "warning" %}
-                            <span class="warning"> {{findings.status}}</span>
+                            <span class="warning"> warning</span>
                             {% elif findings.status == "info" %}
-                            <span class="info"> {{findings.status}}</span>
+                            <span class="info"> info</span>
                             {% endif %}
                             </td>
                           <td>
@@ -533,7 +533,7 @@
                       <h5>Description: </h5> {{details|key:"desc"}}
                    
                   {% else %}
-                    <span class="success">good</span><br/>
+                    <span class="success">ok</span><br/>
                   {% endif %}
                   </td>
                   <td>
@@ -599,7 +599,7 @@
                         </td>
                        <td>
                          {% if item.open %}
-                          <span class="danger">insecure</span></br>Firebase DB is exposed publicly.
+                          <span class="danger">high</span></br>Firebase DB is exposed publicly.
                         {% else %}
                          <span class="info">info</span></br>App talks to a Firebase Database.
                          {% endif %}
@@ -716,7 +716,7 @@
         Every app is given an ideal score of 100 to begin with.</br>
         For every findings with severity <span class="danger">high</span> we reduce 15 from the score.</br>
         For every findings with severity <span class="warning">warning</span> we reduce 10 from the score.</br>
-        For every findings with severity <span class="success">good</span> we add 5 to the score.</br>
+        For every findings with severity <span class="success">secure</span> we add 5 to the score.</br>
         If the calculated score is greater than 100, then the app security score is considered as 100.</br>
         And if the calculated score is less than 0, then the app security score is considered as 10.</br>
         </p>

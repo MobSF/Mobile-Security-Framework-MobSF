@@ -63,7 +63,7 @@ def analysis(app_dir, config, is_debuggable, src_type):
                     'description': (
                         'Base config is configured to disallow '
                         'clear text traffic to all domains.'),
-                    'severity': 'good',
+                    'severity': 'secure',
                 })
             trst_anch = b_cfg[0].getElementsByTagName('trust-anchors')
             if trst_anch:
@@ -127,7 +127,7 @@ def analysis(app_dir, config, is_debuggable, src_type):
                         'Domain config is securely configured'
                         ' to disallow clear text traffic to these '
                         'domains in scope.'),
-                    'severity': 'good',
+                    'severity': 'secure',
                 })
             dtrust = cfg.getElementsByTagName('trust-anchors')
             if dtrust:
@@ -200,7 +200,7 @@ def analysis(app_dir, config, is_debuggable, src_type):
                             'that pins are updated before '
                             'certificate expire.'
                             f'[{pins_list}]'),
-                        'severity': 'good',
+                        'severity': 'secure',
                     })
         # Debug Overrides
         de_over = parsed.getElementsByTagName('debug-overrides')

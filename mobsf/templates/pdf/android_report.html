@@ -171,12 +171,14 @@
                           {% for find in certificate_analysis.certificate_findings %}
                           <tr>
                           <td>
-                          {% if find.0 == 'bad' %}
-                            <span class="danger">bad</span>
-                          {% elif find.0  == 'good' %}
+                          {% if find.0 == 'high' %}
+                            <span class="danger">high</span>
+                          {% elif find.0  == 'secure' %}
                             <span class="success">secure</span>
                           {% elif find.0  == 'warning' %}
                             <span class="warning">warning</span>
+                            {% elif find.0  == 'info' %}
+                            <span class="info">info</span>
                           {% endif %}
                           </td>
                           <td>{{ find.1 }}</td>
@@ -410,8 +412,8 @@
                         <td>
                           {% if item.severity == "high" %}
                             <span class="danger">high</span>
-                          {% elif item.severity == "good" %}
-                            <span class="good">good</span>
+                          {% elif item.severity == "secure" %}
+                            <span class="good">secure</span>
                           {% elif item.severity == "info" %}
                             <span class="info">info</span>
                           {% elif item.severity == "warning" %}
@@ -421,7 +423,6 @@
                         <td>
                         {{item.description }}
                         </td>
-   
                        </tr>
                      {% endfor %}
 										</tbody>
@@ -450,8 +451,8 @@
                             <span class="danger">high</span>
                           {% elif item|key:"stat" == "info" %}
                             <span class="info">info</span>
-                          {% elif item|key:"stat" == "medium" %}
-                            <span class="warning">medium</span>
+                          {% elif item|key:"stat" == "warning" %}
+                            <span class="warning">warning</span>
                           {% endif %}
                          
                         </td>
@@ -670,7 +671,7 @@
                       <h5>Description: </h5> {{details|key:"desc"}}
                    
                   {% else %}
-                    <span class="success">good</span><br/>
+                    <span class="success">ok</span><br/>
                   {% endif %}
                   </td>
                   <td>
@@ -736,7 +737,7 @@
                         </td>
                        <td>
                          {% if item.open %}
-                          <span class="danger">insecure</span></br>Firebase DB is exposed publicly.
+                          <span class="danger">high</span></br>Firebase DB is exposed publicly.
                         {% else %}
                          <span class="info">info</span></br>App talks to a Firebase Database.
                          {% endif %}
@@ -882,7 +883,7 @@
     Every app is given an ideal score of 100 to begin with.</br>
     For every findings with severity <span class="danger">high</span> we reduce 15 from the score.</br>
     For every findings with severity <span class="warning">warning</span> we reduce 10 from the score.</br>
-    For every findings with severity <span class="success">good</span> we add 5 to the score.</br>
+    For every findings with severity <span class="success">secure</span> we add 5 to the score.</br>
     If the calculated score is greater than 100, then the app security score is considered as 100.</br>
     And if the calculated score is less than 0, then the app security score is considered as 10.</br>
     </p>

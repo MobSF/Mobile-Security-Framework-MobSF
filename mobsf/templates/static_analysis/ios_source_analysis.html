@@ -534,7 +534,7 @@
                       <tr>
                         <th>NO</th>
                         <th>ISSUE</th>
-                        <th>STATUS</th>
+                        <th>SEVERITY</th>
                         <th>DESCRIPTION</th>
                       </tr>
                   </thead>
@@ -546,14 +546,14 @@
                         <td>
                         {{findings.issue}}
                         <td>
-                          {% if findings.status == "insecure" %}
-                          <span class="badge bg-danger"> {{findings.status}}</span>
+                          {% if findings.status == "high" %}
+                          <span class="badge bg-danger"> high</span>
                           {% elif findings.status == "secure" %}
-                          <span class="badge bg-success"> {{findings.status}}</span>
+                          <span class="badge bg-success"> secure</span>
                           {% elif findings.status == "warning" %}
-                          <span class="badge bg-warning"> {{findings.status}}</span>
+                          <span class="badge bg-warning"> warning</span>
                           {% elif findings.status == "info" %}
-                          <span class="badge bg-info"> {{findings.status}}</span>
+                          <span class="badge bg-info"> info</span>
                           {% endif %}
                           </td>
                         <td>
@@ -720,7 +720,6 @@
     </div>
 </section>
  <!-- ===========================end file analysis ================================== -->
- <!-- ===========================end virus total ================================== -->
 <style>
   #chartdiv {
   width: 100%;
@@ -781,7 +780,7 @@
                       <strong>Description: </strong>{{details|key:"desc"}}
                       </pre>
                   {% else %}
-                    <span class="badge bg-success">good</span><br/>
+                    <span class="badge bg-success">ok</span><br/>
                   {% endif %}
                   </td>
                   <td>
@@ -884,9 +883,9 @@
                         </td>
                        <td>
                          {% if item.open %}
-                          <span class="badge bg-danger">insecure</span><br/>Firebase Database is exposed publicly.
+                          <span class="badge bg-danger">high</span><br/>Firebase Database is exposed publicly.
                         {% else %}
-                         <span class="badge bg-primary">Info</span><br/>App talks to a Firebase database.
+                         <span class="badge bg-primary">info</span><br/>App talks to a Firebase database.
                          {% endif %}
                        </td>
                     </tr>

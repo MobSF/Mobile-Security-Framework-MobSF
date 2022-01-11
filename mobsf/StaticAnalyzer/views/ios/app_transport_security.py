@@ -13,7 +13,7 @@ def check_transport_security(p_list):
             ats.append({
                 'issue': ('App Transport Security '
                           'AllowsArbitraryLoads is allowed'),
-                'status': 'insecure',
+                'status': 'high',
                 'description': (
                     'App Transport Security restrictions are disabled '
                     'for all network connections. Disabling ATS means that '
@@ -28,7 +28,7 @@ def check_transport_security(p_list):
         if ats_dict and ats_dict.get('NSAllowsArbitraryLoadsForMedia'):
             ats.append({
                 'issue': 'Insecure media load is allowed',
-                'status': 'insecure',
+                'status': 'high',
                 'description': (
                     'App Transport Security restrictions are disabled for '
                     'media loaded using the AVFoundation framework, '
@@ -39,7 +39,7 @@ def check_transport_security(p_list):
         if ats_dict and ats_dict.get('NSAllowsArbitraryLoadsInWebContent'):
             ats.append({
                 'issue': 'Insecure WebView load is allowed',
-                'status': 'insecure',
+                'status': 'high',
                 'description': (
                     'App Transport Security restrictions are disabled for '
                     'requests made from WebViews without affecting your '
@@ -49,7 +49,7 @@ def check_transport_security(p_list):
         if ats_dict and ats_dict.get('NSAllowsLocalNetworking'):
             ats.append({
                 'issue': 'Insecure local networking is allowed',
-                'status': 'insecure',
+                'status': 'high',
                 'description': (
                     'App Transport Security restrictions are disabled for '
                     'requests made from local networking '
@@ -77,7 +77,7 @@ def check_transport_security(p_list):
                     findings = {
                         'issue': ('Insecure communication'
                                   ' to {} is allowed'.format(domain)),
-                        'status': 'insecure',
+                        'status': 'high',
                         'description': (
                             'NSExceptionAllowsInsecureHTTPLoads allows '
                             'insecure HTTP loads to {}, '
@@ -93,7 +93,7 @@ def check_transport_security(p_list):
                     findings = {
                         'issue': ('NSIncludesSubdomains set to TRUE'
                                   ' for {}'.format(domain)),
-                        'status': 'insecure',
+                        'status': 'high',
                         'description': (
                             'NSIncludesSubdomains applies the ATS exceptions '
                             'for the given domain to all '
@@ -114,7 +114,7 @@ def check_transport_security(p_list):
                     findings = {
                         'issue': ('NSExceptionMinimumTLSVersion set to {}'
                                   ' on {}'.format(inc_min_tls, domain)),
-                        'status': 'insecure',
+                        'status': 'high',
                         'description': (
                             'The minimum Transport Layer '
                             'Security (TLS) version '
@@ -181,7 +181,7 @@ def check_transport_security(p_list):
                         'issue': ('NSExceptionRequiresForwardSecrecy '
                                   'set to NO'
                                   ' for {}'.format(domain)),
-                        'status': 'insecure',
+                        'status': 'high',
                         'description': (
                             'NSExceptionRequiresForwardSecrecy '
                             'limits the accepted ciphers to '

@@ -117,15 +117,15 @@ def cert_info(app_dir, app_file):
         findings = []
         if a.is_signed():
             findings.append((
-                'good',
+                'info',
                 'Application is signed with a code '
                 'signing certificate'))
         else:
             findings.append((
-                'bad',
+                'high',
                 'Code signing certificate not found'))
         if a.is_signed_v1():
-            status = 'bad'
+            status = 'high'
             if a.is_signed_v2() or a.is_signed_v3():
                 status = 'warning'
             findings.append((
@@ -138,12 +138,12 @@ def cert_info(app_dir, app_file):
                 'scheme is also vulnerable.'))
         if re.findall(r'CN=Android Debug', cert_info):
             findings.append((
-                'bad',
+                'high',
                 'Application signed with a debug certificate. '
                 'Production application must not be shipped '
                 'with a debug certificate.'))
         if re.findall(r'Hash Algorithm: sha1', cert_info):
-            status = 'bad'
+            status = 'high'
             desc = (
                 'Application is signed with SHA1withRSA. '
                 'SHA1 hash algorithm is known to have '

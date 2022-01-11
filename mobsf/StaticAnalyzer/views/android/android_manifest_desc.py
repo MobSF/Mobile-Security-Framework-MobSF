@@ -53,7 +53,7 @@ MANIFEST_DESC = {
     'a_allowbackup': {
         'title': ('Application Data can be Backed up'
                   '<br>[android:allowBackup=true]'),
-        'level': 'medium',
+        'level': 'warning',
         'description': ('This flag allows anyone to backup your application'
                         ' data via adb. It allows users who have enabled USB'
                         ' debugging to copy application data off of the'
@@ -63,7 +63,7 @@ MANIFEST_DESC = {
     'a_allowbackup_miss': {
         'title': ('Application Data can be Backed up<br>[android:allowBackup]'
                   ' flag is missing.'),
-        'level': 'medium',
+        'level': 'warning',
         'description': ('The flag [android:allowBackup] should be set to false'
                         '. By default it is set to true and allows anyone to '
                         'backup your application data via adb. It allows users'
@@ -730,7 +730,7 @@ MANIFEST_DESC = {
     },
     'a_high_intent_priority': {
         'title': 'High Intent Priority (%s)<br>[android:priority]',
-        'level': 'medium',
+        'level': 'warning',
         'description': ('By setting an intent priority higher than another'
                         ' intent, the app effectively overrides '
                         'other requests.'),
@@ -738,7 +738,7 @@ MANIFEST_DESC = {
     },
     'a_high_action_priority': {
         'title': 'High Action Priority (%s)<br>[android:priority] ',
-        'level': 'medium',
+        'level': 'warning',
         'description': ('By setting an action priority higher than'
                         ' another action, the app effectively '
                         'overrides other requests.'),
