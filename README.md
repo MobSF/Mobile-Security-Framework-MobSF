@@ -37,6 +37,7 @@ If you liked MobSF and find it useful, please consider donating.
 ## Documentation
 [![See MobSF Documentation](https://user-images.githubusercontent.com/4301109/70686099-3855f780-1c79-11ea-8141-899e39459da2.png)](https://mobsf.github.io/docs)
 [![See MobSF Documentation in Chinese](https://user-images.githubusercontent.com/4301109/117404947-b09d0880-aebf-11eb-9db8-3d7360f47914.png)](https://mobsf.github.io/docs/#/zh-cn/)
+[![See MobSF Documentation in Japanese](https://user-images.githubusercontent.com/4301109/148662149-7ee671b4-66a2-4232-9522-276b8e88d924.png)](https://mobsf.github.io/docs/#/ja-jp/)
 
 * Try MobSF Static Analyzer Online:
 [![Try in PWD](https://user-images.githubusercontent.com/4301109/76351696-494bee80-62e4-11ea-894a-cb1cd07c86fc.png)](https://labs.play-with-docker.com/?stack=https://raw.githubusercontent.com/MobSF/Mobile-Security-Framework-MobSF/master/scripts/stack/docker-compose.yml)

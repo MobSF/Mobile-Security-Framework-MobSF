@@ -7,6 +7,7 @@ import ntpath
 import os
 import platform
 import re
+import sys
 import shutil
 import signal
 import string
@@ -596,3 +597,12 @@ def is_zip_magic(file_obj):
     file_obj.seek(0, 0)
     # ZIP magic PK.. no support for spanned and empty arch
     return bool(magic == b'\x50\x4B\x03\x04')
+
+
+def disable_print():
+    sys.stdout = open(os.devnull, 'w')
+
+
+# Restore
+def enable_print():
+    sys.stdout = sys.__stdout__
