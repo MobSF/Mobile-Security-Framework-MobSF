@@ -466,6 +466,15 @@ sidebar-collapse
     type: 'pie',
     options: {
         responsive: true,
+        legend: {
+            display: true,
+            labels: {
+                fontSize: 22,
+            }
+        },
+        tooltips: {
+            bodyFontSize: 22,
+        }
     },
     data: {
         labels: [`High`, `Warning`, `Info`, `Secure`],
