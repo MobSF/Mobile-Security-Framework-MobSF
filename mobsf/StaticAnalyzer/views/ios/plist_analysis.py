@@ -110,8 +110,11 @@ def plist_analysis(src, is_source):
         plist_info['bundle_name'] = plist_obj.get('CFBundleName', '')
         plist_info['bundle_version_name'] = plist_obj.get(
             'CFBundleShortVersionString', '')
-        plist_info['bundle_url_types'] = plist_obj.get(
-            'CFBundleURLTypes', [])
+        btype = plist_obj.get('CFBundleURLTypes', [])
+        if btype and isinstance(btype, dict):
+            # Fixes bugs like # 1885
+            btype = [btype]
+        plist_info['bundle_url_types'] = btype
         plist_info['bundle_supported_platforms'] = plist_obj.get(
             'CFBundleSupportedPlatforms', [])
         logger.info('Checking Permissions')

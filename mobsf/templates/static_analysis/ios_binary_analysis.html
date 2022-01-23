@@ -430,7 +430,6 @@
                       </tr>
                   </thead>
                   <tbody>
-
                     {% for scheme in bundle_url_types %}
                     <tr>
                       <td>
@@ -442,9 +441,9 @@
                       </td>
                       <td>
                         {% if scheme|key:"CFBundleURLSchemes" %}
-                        {% for ul in scheme.CFBundleURLSchemes %}
-                           {{ul}} <br/>
-                        {% endfor %}
+                          {% for ul in scheme.CFBundleURLSchemes %}
+                            {{ul}} <br/>
+                          {% endfor %}
                         {% endif %}
                       </td>
                     </tr>
