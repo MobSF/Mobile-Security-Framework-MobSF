@@ -1,9 +1,8 @@
 name: 'Build and Publish Release to DockerHub'
 
 on:
-    push:
-        branches:
-            - master
+  release:
+    types: [created]
 
 jobs:
     buildx:
