@@ -1,3 +1,22 @@
+### v3.5.0 Beta Changelog
+
+- Features or Enhancements
+   - MobSF Application Security Scorecard for scoring mobile application security
+   - Scorecard REST API
+   - Published Static Analyzer online [mobsf.live](https://mobsf.live) (Thanks to Jovan Petrovic for sponsoring the server)
+   - Improved App Security Scoring Logic
+   - Improved PDF Report, Reduce generation times.
+   - Disable CVSSv2 by default. 
+   - Non blocking file upload from home screen.
+   - Android and iOS SAST rule QA
+   - Manifest, Certificate, Transport Security and Network Security rule QA
+   - Common severity levels High, Warning, Info and Secure.
+  
+
+- Bug Fixes
+  - Fixes #1885
+  - Replaced PWD with dedicated server
+
 ### v3.4.6 Beta Changelog
 
 - Features or Enhancements
