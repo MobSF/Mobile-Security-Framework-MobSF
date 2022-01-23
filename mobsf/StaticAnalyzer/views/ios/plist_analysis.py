@@ -22,7 +22,7 @@ from mobsf.StaticAnalyzer.views.ios.permission_analysis import (
 from mobsf.StaticAnalyzer.views.ios.app_transport_security import (
     check_transport_security,
 )
-from mobsf.StaticAnalyzer.views.shared_func import (
+from mobsf.StaticAnalyzer.views.common.shared_func import (
     is_secret,
 )
 

@@ -171,6 +171,12 @@
                 </a>
               </li>
               <li class="nav-item">
+                <a href="#trackers" class="nav-link">
+                  <i class="fas fa-user-secret nav-icon"></i>
+                  <p>Trackers</p>
+                </a>
+              </li>
+              <li class="nav-item">
                 <a href="#strings" class="nav-link">
                   <i class="fas fa-font nav-icon"></i>
                   <p>Strings</p>
@@ -280,11 +286,19 @@
                   {% if icon_hidden %}
                     <strong>Hidden Icon!</strong>
                   {% endif %}
-                  <br/>
+                  <p>
                   {% if average_cvss %}
                   <span class="badge bg-info">Average CVSS</span> <b>{{ average_cvss }} </b><br/>
                   {% endif %}
-                  <span class="badge bg-{% if security_score < 50 %}danger{% elif security_score == 100 %}success{% else %}warning{% endif %}">Security Score</span> <b>{{ security_score }}/100 </b><br/>
+                  <span class="badge bg-{% if appsec.security_score < 40 %}danger{% elif appsec.security_score == 100 %}success{% else %}warning{% endif %}">Security Score</span> <strong>{{ appsec.security_score }}/100 </strong><br/>
+                  {% if trackers.detected_trackers > 0 %}
+                  <span class="badge bg-warning">Trackers Detection</span> <strong>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</strong><br/>
+                  {% else %}
+                    <span class="badge bg-success">Trackers Detection</span> <strong>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</strong><br/>
+                  {% endif %}  
+                </p>
+                  <p> <a href="../appsec_dashboard/{{ md5 }}/" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
+
                 </div>
                 <div class="col-6">
                   <p><strong><i class="fas fa-box-open"></i> FILE INFORMATION </strong></p>                         
@@ -1222,6 +1236,52 @@
     </div>
 </section>
  <!-- ===========================end emails ================================== -->
+ <a id="trackers" class="anchor"></a>
+ <section class="content">
+   <div class="container-fluid">
+     <div class="row">
+         <div class="col-lg-12">
+         <div class="card">
+           <div class="card-body">
+              <p>
+              <strong><i class="fas fa-user-secret"></i> TRACKERS</strong>
+              </p>
+               <div class="table-responsive">
+               {% if trackers %}
+                <table id="table_trackers" class="table table-bordered table-hover table-striped">
+                 <thead>
+                   <tr>
+                     <th>TRACKER NAME</th>
+                     <th>CATEGORIES</th>
+                     <th>URL</th>
+                   </tr>
+                 </thead>
+                <tbody>
+                 {% for trk in trackers|key:"trackers" %}
+                 <tr>
+                   <td>
+                     {{trk.name}}
+                   </td>
+                   <td>
+                     {{trk.categories}}
+                   </td>
+                   <td>
+                     <a target="_blank" href="{{trk.url}}" rel="noopener noreferrer">{{trk.url}}</a>
+                   </td>
+                 </tr>
+                 {% endfor %}
+               </tbody>
+             </table>
+              {% endif %}
+             </div>
+           </div>
+         </div><!-- /.card -->
+         </div>
+         <!-- end row -->
+         </div>
+     </div>
+ </section>
+  <!-- ===========================end trackers ================================== -->
 <a id="strings" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">

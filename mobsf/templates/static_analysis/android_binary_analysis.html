@@ -367,11 +367,11 @@
                   {% if icon_hidden %}
                     <strong>Hidden Icon!</strong>
                   {% endif %}
-                  <br/>
+                  <p>
                   {% if average_cvss %}
                   <span class="badge bg-info">Average CVSS</span> <strong>{{ average_cvss }} </strong><br/>
                   {% endif %}
-                  <span class="badge bg-{% if security_score < 50 %}danger{% elif security_score == 100 %}success{% else %}warning{% endif %}">Security Score</span> <strong>{{ security_score }}/100 </strong><br/>
+                  <span class="badge bg-{% if appsec.security_score < 40 %}danger{% elif appsec.security_score == 100 %}success{% else %}warning{% endif %}">Security Score</span> <strong>{{ appsec.security_score }}/100 </strong><br/>
                   {% if trackers.detected_trackers > 0 %}
                     <span class="badge bg-warning">Trackers Detection</span> <strong>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</strong><br/>
                   {% else %}
@@ -384,6 +384,9 @@
                       <span class="badge bg-success">VirusTotal Detection</span> <strong>{{ virus_total.positives }}/{{ virus_total.total }}</strong><br/>
                     {% endif %}
                   {% endif %}
+                </p>
+                  <p> <a href="../appsec_dashboard/{{ md5 }}/" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
+
                 </div>
                 <div class="col-6">
                   <p><strong><i class="fas fa-box-open"></i> FILE INFORMATION </strong></p>
@@ -670,13 +673,15 @@
                   <table id="table_cert" class="table table-bordered table-hover table-striped">
                       <thead>
                           <tr>
-                              <th>STATUS</th>
+                              <th>TITLE</th>
+                              <th>SEVERITY</th>
                               <th>DESCRIPTION</th>
                           </tr>
                       </thead>
                       <tbody>
                           {% for find in certificate_analysis.certificate_findings %}
                           <tr>
+                          <td>{{ find.2 }}</td>
                           <td>
                           {% if find.0 == 'high' %}
                             <span class="badge bg-danger">high</span>

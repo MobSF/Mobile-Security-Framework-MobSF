@@ -11,10 +11,9 @@ from mobsf.StaticAnalyzer.views.android import view_source
 from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
 from mobsf.StaticAnalyzer.views.ios import view_source as ios_view_source
 from mobsf.StaticAnalyzer.views.ios.static_analyzer import static_analyzer_ios
-from mobsf.StaticAnalyzer.views.shared_func import (
-    compare_apps,
-    pdf,
-)
+from mobsf.StaticAnalyzer.views.common.shared_func import compare_apps
+from mobsf.StaticAnalyzer.views.common.pdf import pdf
+from mobsf.StaticAnalyzer.views.common.appsec import appsec_dashboard
 from mobsf.StaticAnalyzer.views.windows import windows
 
 
@@ -183,4 +182,32 @@ def api_compare(request):
             response = make_api_response(resp, 200)
     else:
         response = make_api_response({'error': 'Missing Parameters'}, 422)
+    return response
+
+
+@request_method(['POST'])
+@csrf_exempt
+def api_scorecard(request):
+    """Generate App Score Card."""
+    params = {'hash'}
+    if set(request.POST) == params:
+        resp = appsec_dashboard(
+            request,
+            request.POST['hash'],
+            api=True)
+        if 'error' in resp:
+            if resp.get('error') == 'Invalid scan hash':
+                response = make_api_response(resp, 400)
+            else:
+                response = make_api_response(resp, 500)
+        elif 'hash' in resp:
+            response = make_api_response(resp, 200)
+        elif 'not_found' in resp:
+            response = make_api_response(resp, 404)
+        else:
+            response = make_api_response(
+                {'error': 'JSON Generation Error'}, 500)
+    else:
+        response = make_api_response(
+            {'error': 'Missing Parameters'}, 422)
     return response
