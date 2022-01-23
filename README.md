@@ -1,5 +1,5 @@
 # Mobile Security Framework (MobSF)
-Version: v3.4 beta
+Version: v3.5 beta
 ![](https://cloud.githubusercontent.com/assets/4301109/20019521/cc61f7fc-a2f2-11e6-95f3-407030d9fdde.png)
 
 Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis. MobSF support mobile app binaries (APK, XAPK, IPA & APPX) along with zipped source code and provides REST APIs for seamless integration with your CI/CD or DevSecOps pipeline.The Dynamic Analyzer helps you to perform runtime security assessment and interactive instrumented testing.
@@ -39,8 +39,7 @@ If you liked MobSF and find it useful, please consider donating.
 [![See MobSF Documentation in Chinese](https://user-images.githubusercontent.com/4301109/117404947-b09d0880-aebf-11eb-9db8-3d7360f47914.png)](https://mobsf.github.io/docs/#/zh-cn/)
 [![See MobSF Documentation in Japanese](https://user-images.githubusercontent.com/4301109/148662149-7ee671b4-66a2-4232-9522-276b8e88d924.png)](https://mobsf.github.io/docs/#/ja-jp/)
 
-* Try MobSF Static Analyzer Online:
-[![Try in PWD](https://user-images.githubusercontent.com/4301109/76351696-494bee80-62e4-11ea-894a-cb1cd07c86fc.png)](https://labs.play-with-docker.com/?stack=https://raw.githubusercontent.com/MobSF/Mobile-Security-Framework-MobSF/master/scripts/stack/docker-compose.yml)
+* Try MobSF Static Analyzer Online: [mobsf.live](https://mobsf.live)
 * MobSF in CI/CD: [mobsfscan](https://github.com/MobSF/mobsfscan)
 * Conference Presentations: [Slides & Videos](https://mobsf.github.io/Mobile-Security-Framework-MobSF/presentations.html)
 * MobSF Online Course: [OpSecX MAS](https://opsecx.com/index.php/product/automated-mobile-application-security-assessment-with-mobsf/)
@@ -115,3 +114,4 @@ If you liked MobSF and find it useful, please consider donating.
 * Thomas Abraham - For JS Hacks on UI
 * Tim Brown (@timb_machine) - For the iOS Binary Analysis Ruleset
 * Shanil Prasad (@Rajuraju14) - For improving iOS ATS Analysis
+* Jovan Petrovic for sponsoring a server to host mobsf.live

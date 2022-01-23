@@ -5,7 +5,7 @@ import os
 
 from androguard.core.bytecodes import apk
 
-from mobsf.StaticAnalyzer.views.shared_func import (
+from mobsf.StaticAnalyzer.views.common.shared_func import (
     is_secret,
     url_n_email_extract,
 )

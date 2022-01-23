@@ -7,7 +7,7 @@ from django.conf import settings
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
     MalwareDomainCheck,
 )
-from mobsf.StaticAnalyzer.views.shared_func import (
+from mobsf.StaticAnalyzer.views.common.shared_func import (
     url_n_email_extract,
 )
 from mobsf.StaticAnalyzer.views.sast_engine import scan

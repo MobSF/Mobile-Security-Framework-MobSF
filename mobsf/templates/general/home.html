@@ -87,12 +87,31 @@
         </div>
 
         <script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
+        <script src="{% static "others/js/notify.min.js" %}"></script>
       <script>
+     
+            // Result View
+            function load_result(url){
+                hide_loader();
+                var xhr = new XMLHttpRequest()
+                xhr.open('GET', url, true)
+                xhr.addEventListener("loadstart", function(evt){
+                    Notifier.snackbar({
+                        message: "Analysis started! Please wait to be redirected or check recent scans after sometime.",
+                        duration: 10,
+                    });
+                })
+                xhr.addEventListener("load", function (evt) {
+                    window.location.href = window.location.href + url;
+                }, false);
+                xhr.send();
+            }
 
             //Download and scan APK
             $('#package').keypress(function(event){
                 var keycode = (event.keyCode ? event.keyCode : event.which);
                 if(keycode == '13'){
+                    _("status").innerText = 'Trying to download ...';
                     show_loader();
                     $.ajax({
                         url : '../download_scan/', 
@@ -118,7 +137,7 @@
                                 }, 2000);
 
                                 url = json.analyzer + '/?name=' + encodeURIComponent(json.file_name) + '&checksum=' + json.hash + '&type=' + json.scan_type
-                                window.location.href = window.location.href + url;
+                                load_result(url);
                             } else {
                                 hide_loader();
                                 _("status").innerText = json.description;
@@ -130,7 +149,6 @@
                     });
                 }
             });
-
             function show_loader(){
                 var loadingOverlay = document.querySelector('.loading');
                 loadingOverlay.classList.remove('hidden');
@@ -165,7 +183,7 @@
                     if (json.hash){
                         url += '?name=' + encodeURIComponent(json.file_name) + '&checksum=' + json.hash + '&type=' + json.scan_type
                     }
-                    window.location.href = window.location.href + url;
+                    load_result(url);
                 }
             }
             function progressHandler(event) {

@@ -1,0 +1,539 @@
+{% extends "base/base_layout.html" %}
+{% load static %}
+{% block sidebar_option %}
+sidebar-collapse
+{% endblock %}
+{% block extra_css %}
+<style>
+    @media print {
+      body { 
+        -webkit-print-color-adjust: exact; 
+      }
+    }
+    #mobsf{
+      width: 30px;
+      height: 30px;
+      background-color: #46494c;
+    }
+    #app_icon{
+      width: 64px;
+      height: 64px;
+    }
+
+    #app_icon2{
+      width: 32px;
+      height: 32px;
+    }
+    
+    #severity{
+      width:240px !important;
+      height:238px !important;
+    }
+
+
+    #risk{
+      width:220px !important;
+      height:115px !important;
+    }
+
+    .privacy {
+        text-align: center;
+        font-size: 125px;
+        color: white;
+        line-height:205px;
+        display: inline-block;
+        height:205px;
+        width: 205px;
+    }
+    pre {
+        white-space: pre-wrap;       /* Since CSS 2.1 */
+        white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+        white-space: -pre-wrap;      /* Opera 4-6 */
+        white-space: -o-pre-wrap;    /* Opera 7 */
+        word-wrap: break-word;       /* Internet Explorer 5.5+ */
+    }
+    .sameline{
+      display: flex;
+      justify-content: space-between;
+      padding-right: 10px;
+}
+
+
+.risk-level {
+  counter-reset: step-counter;
+  margin: 0;
+  padding: 0;
+}
+.risk-level > li {
+  color:rgb(49, 49, 49);
+  display: inline-block;
+  overflow: hidden;
+  width: 30px;
+  height: 30px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  border-radius: 3px;
+  text-align: center;
+  line-height: 30px;
+  vertical-align: middle;
+}
+.risk-level > li::before {
+  display: block;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: "Trebuchet MS", Arial, sans-serif;
+  font-size: 25px;
+}
+.risk-level > li.isActive {
+  font-weight: bold;
+  font-size: 28px;
+  width: 50px;
+  height: 50px;
+  line-height: 50px;
+}
+.risk-level > li.isActive::before {
+  color: white;
+  font-size: 42px;
+}
+.risk-level > li:nth-child(1) {
+  background: #28a745;
+}
+.risk-level > li:nth-child(2) {
+  background: yellow;
+}
+.risk-level > li:nth-child(3) {
+  background: #ffc107;
+}
+.risk-level > li:nth-child(4) {
+  background: #ff0018;
+}
+/* Credits for Risk Level
+// @Author: Bastien Heynderickx (hachbé)
+// @Website: http://www.hachbe.be
+// @Version: 0.0.2 (2015-02-18)
+*/
+</style>
+{% endblock %}
+{% block content %}
+    <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-12">
+            <div class="sameline">
+           <h1><img src="{% static "img/mobsf_icon.png" %}" id="mobsf" alt="MobSF"> MobSF Application Security Scorecard
+           <img id="app_icon" src="/download/{{ hash }}-icon.png" onerror="this.src='{% static 'img/no_icon.png' %}'"/>
+           - {% if app_name %}  {{ app_name }}  {% else %} {{ file_name }} {% endif %} {{ version_name }}
+        
+            {% if '.apk' == file_name|slice:"-4:"%}<i class="fab fa-android"></i>
+            {% elif '.xapk' == file_name|slice:"-5:"%}<i class="fab fa-android"></i>
+            {% elif '.apks' == file_name|slice:"-5:"%}<i class="fab fa-android"></i>
+            {% elif '.ipa' == file_name|slice:"-4:"%}<i class="fab fa-apple"></i>
+            {% elif '.zip' == file_name|slice:"-4:"%}<i class="fas fa-file-archive"></i>
+            {% elif '.appx' == file_name|slice:"-5:"%}<i class="fab fa-windows"></i>
+            {% endif %}
+        </h1>
+        <label class="text-right">  <a class="btn btn-outline-primary" onclick="window.print()"><i class="fas fa-file-pdf"></i></a> </label>
+      </div>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="row">
+
+            <div class="col-lg-3">
+                <div class="card">
+                    <div class="card-header ui-sortable-handle" >
+                      <h3 class="card-title">
+                        <i class="fas fa-star-half-alt"></i> Security Score
+                      </h3>
+                    </div><!-- /.card-header -->
+                    <div class="card-body">
+                      <div align="center"class="tab-content p-0">
+                        <p>
+                        <input type="text" value="{{ security_score }}" class="dial" data-fgColor="
+                        {% if security_score < 30 %}
+                        #ff0018
+                        {% elif security_score < 40 %}
+                        #ffc107
+                        {% elif security_score < 60 %}
+                        #17a2b8
+                        {% else %}
+                        #28a745
+                        {% endif %}
+                        ">
+                        </br>
+                   <h5>Security Score {{ security_score }}/100</h5></p>
+                      </div>
+                    </div><!-- /.card-body -->
+                  </div>
+            </div>
+
+            <div class="col-lg-3">
+                <div class="card">
+                    <div class="card-header ui-sortable-handle" >
+                      <h3 class="card-title">
+                        <i class="fas fa-tachometer-alt"></i> Risk Rating
+                      </h3>
+                    </div><!-- /.card-header -->
+                    <div class="card-body">
+                      <div align="center" class="tab-content p-0">
+                        <p>
+                          <canvas id="risk"></canvas>
+                        </br>
+                        <p><h5>Grade</h5></p>
+                        <ol class="risk-level">
+                          {% if security_score < 30 %}
+                          <li>A</li>
+                          <li>B</li>
+                          <li>C</li>
+                          <li class="isActive">F</li>
+                          {% elif security_score < 40 %}
+                          <li>A</li>
+                          <li>B</li>
+                          <li class="isActive">C</li>
+                          <li>F</li>
+                          {% elif security_score < 60 %}
+                          <li>A</li>
+                          <li class="isActive">B</li>
+                          <li>C</li>
+                          <li>F</li>
+                          {% else %}
+                          <li class="isActive">A</li>
+                          <li>B</li>
+                          <li>C</li>
+                          <li>F</li>
+                          {% endif %}
+                        </ol>
+                        </h5>
+                        </p>
+                      </div>
+                    </div><!-- /.card-body -->
+                  </div>
+            </div>
+
+            <div class="col-lg-3">
+                <div class="card">
+                    <div class="card-header ui-sortable-handle" >
+                      <h3 class="card-title">
+                        <i class="fas fa-chart-pie mr-1"></i>
+                        Severity Distribution (%)
+                      </h3>
+                    </div><!-- /.card-header -->
+                    <div class="card-body">
+                      <div align="center" class="tab-content p-0">
+                        <canvas width="100%" height="100%" id="severity"></canvas>
+                      </br>
+                      </div>
+                    </div><!-- /.card-body -->
+                  </div>
+            </div>
+
+            <div class="col-lg-3">
+                <div class="card">
+                    <div class="card-header ui-sortable-handle" >
+                      <h3 class="card-title">
+                        <i class="fas fa-user-secret"></i>
+                        Privacy Risk
+                      </h3>
+                    </div><!-- /.card-header -->
+                    <div class="card-body">
+                      <div align="center" class="tab-content p-0">
+                        <p>
+                        <span class="privacy" style="{% if total_trackers %}
+                            {% if trackers == 0 %}
+                              background:#39850d">
+                            {% elif trackers > 4 %}
+                              background:#ff0018">
+                            {% else %}
+                              background:#303238">
+                            {% endif %}
+                            {{ trackers }} {% else %}"> NA {% endif %}</span>
+                        </br>
+                        <h5>{% if total_trackers %} User/Device Trackers {% else %} Not Scanned {% endif %}</h5></p>
+                      </div>
+                    </div><!-- /.card-body -->
+                  </div>
+            </div>
+
+        </div>
+
+    </br>
+
+    
+
+        <div class="row">
+            <div class="col-12" id="accordion">
+
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-header ui-sortable-handle" >
+                          <h3 class="card-title">
+                            <i class="fas fa-file-alt"></i> Findings
+                          </h3>
+                        </div><!-- /.card-header -->
+                        <div class="card-body">
+                            <!--boxes-->
+                            <div class="row">
+                                <!-- /.col -->
+                                <div class="col-md-3 col-sm-6 col-12">
+                                    <div class="info-box">
+                                      <span class="info-box-icon bg-danger"><i class="fas fa-bug"></i></span>
+                        
+                                      <div class="info-box-content">
+                                        <span class="info-box-text">High</span>
+                                        <span class="info-box-number">{{ high | length}}</span>
+                                      </div>
+                                      <!-- /.info-box-content -->
+                                    </div>
+                                    <!-- /.info-box -->
+                                  </div>
+                                  <!-- /.col -->
+                                  <div class="col-md-3 col-sm-6 col-12">
+                                    <div class="info-box">
+                                      <span class="info-box-icon bg-warning"><i class="fas fa-exclamation-triangle"></i></span>
+                        
+                                      <div class="info-box-content">
+                                        <span class="info-box-text">Warning</span>
+                                        <span class="info-box-number">{{ warning | length}}</span>
+                                      </div>
+                                      <!-- /.info-box-content -->
+                                    </div>
+                                    <!-- /.info-box -->
+                                  </div>
+                                 
+                                  <!-- /.col -->
+                                <div class="col-md-3 col-sm-6 col-12">
+                                  <div class="info-box">
+                                    <span class="info-box-icon bg-info"><i class="fas fa-info"></i></span>
+                      
+                                    <div class="info-box-content">
+                                      <span class="info-box-text">Info</span>
+                                      <span class="info-box-number">{{ info | length}}</span>
+                                    </div>
+                                    <!-- /.info-box-content -->
+                                  </div>
+                                  <!-- /.info-box -->
+                                </div>
+                                <!-- /.col -->
+                                <div class="col-md-3 col-sm-6 col-12">
+                                    <div class="info-box">
+                                      <span class="info-box-icon bg-success"><i class="fas fa-check"></i></span>
+                        
+                                      <div class="info-box-content">
+                                        <span class="info-box-text">Secure</span>
+                                        <span class="info-box-number">{{ secure | length}}</span>
+                                      </div>
+                                      <!-- /.info-box-content -->
+                                    </div>
+                                    <!-- /.info-box -->
+                                  </div>
+                                
+                              </div>
+                             <!--end boxes-->
+                            </br>
+{% for item in high %}
+    <div class="card card-danger card-outline">
+        <a class="d-block w-100" data-toggle="collapse" href="#high-{{ forloop.counter }}">
+        <div class="sameline">
+            <div class="card-header">
+                <h4 class="card-title w-100">
+                    <span class="badge bg-danger">high</span> {{ item.title}} 
+                </h4>
+            </div>
+        <label> {{ item.section | upper }}</label>
+        </div>
+        </a>
+        <div id="high-{{ forloop.counter }}" class="collapse" data-parent="#accordion">
+            <div class="card-body">
+                <pre>{{ item.description}}</pre>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+{% for item in warning %}
+    <div class="card card-warning card-outline">
+        <a class="d-block w-100" data-toggle="collapse" href="#warning-{{ forloop.counter }}">
+        <div class="sameline">
+            <div class="card-header">
+                <h4 class="card-title w-100">
+                    <span class="badge bg-warning">warning</span> {{ item.title}}
+                </h4>
+            </div>
+            <label> {{ item.section | upper }}</label>
+        </div>
+        </a>
+        <div id="warning-{{ forloop.counter }}" class="collapse" data-parent="#accordion">
+            <div class="card-body">
+            <pre>{{ item.description}}</pre>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+{% for item in info %}
+    <div class="card card-info card-outline">
+        <a class="d-block w-100" data-toggle="collapse" href="#info-{{ forloop.counter }}">
+        <div class="sameline">
+            <div class="card-header">
+                <h4 class="card-title w-100">
+                    <span class="badge bg-info">info</span> {{ item.title}}
+                </h4>
+            </div>
+            <label class="text-right"> {{ item.section | upper }}</label>
+        </div>
+        </a>
+        <div id="info-{{ forloop.counter }}" class="collapse" data-parent="#accordion">
+            <div class="card-body">
+            <pre>{{ item.description}}</pre>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+
+{% for item in secure %}
+    <div class="card card-success card-outline">
+        <a class="d-block w-100" data-toggle="collapse" href="#success-{{ forloop.counter }}">
+        <div class="sameline">
+            <div class="card-header">
+                <h4 class="card-title w-100">
+                    <span class="badge bg-success">secure</span> {{ item.title}}
+                </h4>
+            </div>
+            <label class="text-right"> {{ item.section | upper }}</label>
+        </div>
+        </a>
+        
+        <div id="success-{{ forloop.counter }}" class="collapse" data-parent="#accordion">
+            <div class="card-body">
+            <pre>{{ item.description}}</pre>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+                </div>
+        </div>  </div>
+    </div>
+              
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12 mt-3 text-center">
+                <p class="lead">
+                  <h5> MobSF Application Security Scorecard generated for 
+                    <img id="app_icon2" src="/download/{{ hash }}-icon.png" onerror="this.src='{% static 'img/no_icon.png' %}'"/>
+                    ({% if app_name %}  {{ app_name }}  {% else %} {{ file_name }} {% endif %} {{ version_name }})
+                     {% if '.apk' == file_name|slice:"-4:"%}<i class="fab fa-android"></i>
+                     {% elif '.xapk' == file_name|slice:"-5:"%}<i class="fab fa-android"></i>
+                     {% elif '.apks' == file_name|slice:"-5:"%}<i class="fab fa-android"></i>
+                     {% elif '.ipa' == file_name|slice:"-4:"%}<i class="fab fa-apple"></i>
+                     {% elif '.zip' == file_name|slice:"-4:"%}<i class="fas fa-file-archive"></i>
+                     {% elif '.appx' == file_name|slice:"-5:"%}<i class="fab fa-windows"></i>
+                     {% endif %}
+                  </h5>
+                </p>
+            </div>
+        </div>
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+{% endblock %}
+{% block extra_scripts %}
+<script src="{% static "chartjs/Chart.bundle.js" %}"></script>
+<script src="{% static "chartjs/chartjs-gauge.js" %}"></script>
+<script src="{% static "jqueryknob/jquery.knob.min.js" %}"></script>
+<script>
+
+    // Severity
+
+    const high = {{ high | length }};
+    const warn = {{warning | length}};
+    const info = {{ info | length}};
+    const secure = {{ secure | length}};
+    const hp = Math.floor(high/ (high + warn + info + secure) * 100)
+    const wp = Math.floor(warn/ (high + warn + info + secure) * 100)
+    const ip = Math.floor(info/ (warn + warn + info + secure) * 100)
+    const sp = Math.floor(secure/ (warn + warn + info + secure) * 100)
+    var ctx = document.getElementById("severity").getContext('2d');
+    var myChart = new Chart(ctx, {
+    type: 'pie',
+    options: {
+        responsive: true,
+        legend: {
+            display: true,
+            labels: {
+                fontSize: 22,
+            }
+        },
+        tooltips: {
+            bodyFontSize: 22,
+        }
+    },
+    data: {
+        labels: [`High`, `Warning`, `Info`, `Secure`],
+        datasets: [{
+        backgroundColor: [
+            "#dc3545",
+            "#ffc107",
+            "#17a2b8",
+            "#28a745",
+        ],
+        data: [hp, wp, ip, sp],
+        }],
+    }
+    });
+    
+    // Security Score
+    $(function() {
+        $(".dial").knob({
+            'readOnly': true,
+        });
+    });
+
+
+    // Risk Meter
+    const riskFactor = '{% if security_score < 30 %}3.9{% elif security_score < 40 %}2.5{% elif security_score < 60 %}1.5{% else %}.5{% endif %}';
+    var ctx = document.getElementById("risk").getContext('2d');
+    var chart = new Chart(ctx, {
+    type: 'gauge',
+    data: {
+      datasets: [{
+        value: riskFactor,
+        minValue: 0,
+        data: [1, 2, 3, 4],
+        backgroundColor: ['#28a745', 'yellow', 'orange', '#dc3545'],
+      }]
+    },
+    options: {
+      needle: {
+        radiusPercentage: 2,
+        widthPercentage: 3.2,
+        lengthPercentage: 80,
+        color: 'rgba(0, 0, 0, 1)'
+      },
+      valueLabel: {
+        display: true,
+        formatter: (value) => {
+          return '{% if security_score < 30 %}Critical Risk{% elif security_score < 40 %}High Risk{% elif security_score < 60 %}Medium Risk{% else %}Low Risk{% endif %}';
+        },
+        color: 'rgba(255, 255, 255, 1)',
+        backgroundColor: 'rgba(0, 0, 0, 1)',
+        fontSize: 20,
+        borderRadius: 5,
+        padding: {
+          top: 5,
+          bottom: 10
+        }
+      }
+    }
+  });
+
+</script>
+{% endblock %}

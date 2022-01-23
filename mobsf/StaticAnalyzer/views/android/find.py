@@ -11,7 +11,7 @@ from django.http import JsonResponse
 from django.utils.html import escape
 
 from mobsf.MobSF.utils import print_n_send_error_response
-from mobsf.StaticAnalyzer.views.shared_func import (
+from mobsf.StaticAnalyzer.views.common.shared_func import (
     find_java_source_folder,
 )
 

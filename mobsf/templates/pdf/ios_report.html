@@ -34,7 +34,7 @@
   {% endif %}
   <link rel="stylesheet" href="{{base_url}}{% static "others/css/pdf_report.css" %}">
   <link rel="stylesheet" href="{{base_url}}{% static "adminlte/plugins/fontawesome-free/css/all.min.css" %}">
-  </head>
+</head>
 
   <body bgcolor="FFFFFF">
     <article id="cover">
@@ -61,6 +61,11 @@
         <td class="no_border"><h3>{{ bundle_id }}</h3></td>
       </tr>
       <tr>
+        <td class="no_border"><h3>Scan Date:</h3></td>
+        <td class="no_border"><h3>{{ timestamp }}</h3></td>
+      </tr>
+      {% if average_cvss %}
+      <tr>
         <td class="no_border"><h3>Average CVSS Score:</h3></td>
         <td class="no_border"><h3>
   
@@ -75,41 +80,80 @@
         {% endif %}
         </h3></td>
       </tr>
+      {% endif %}
       <tr>
-        <td class="no_border"><h3>App Security Score:</h3></td>
+        <td class="no_border"><h3> App Security Score:</h3></td>
+        <td class="no_border">
+        <h2> 
+          {% if appsec.security_score < 30 %}
+            <span class="danger">{{ appsec.security_score }}/100 (CRITICAL RISK)</span>
+          {% elif appsec.security_score < 40 %}
+            <span class="high">{{ appsec.security_score }}/100 (HIGH RISK)</span>
+          {% elif appsec.security_score < 60 %}
+            <span class="warning">{{ appsec.security_score }}/100 (MEDIUM RISK)</span>
+          {% else %}
+            <span class="success">{{ appsec.security_score }}/100 (LOW RISK)</span>
+          {% endif %}
+        </h2>
+        </td>
+      </tr>
+      <tr>
+        <td class="no_border"><h3> Grade:</h3></td>
         <td class="no_border">
         <h3> 
-          {% if security_score < 16 %}
-            <span class="danger">{{ security_score }}/100 (CRITICAL RISK)</span>
-          {% elif security_score < 41 %}
-            <span class="high">{{ security_score }}/100 (HIGH RISK)</span>
-          {% elif security_score < 71 %}
-            <span class="warning">{{ security_score }}/100 (MEDIUM RISK)</span>
+          <span class="grade" style="background: 
+          {% if appsec.security_score < 30 %}
+          #ff0018">F
+          {% elif appsec.security_score < 40 %}
+          #ffc107">C
+          {% elif appsec.security_score < 60 %}
+          #f4ff45">B
           {% else %}
-            <span class="success">{{ security_score }}/100 (LOW RISK)</span>
+          #28a745">A
           {% endif %}
+          </span>
+        </br>
         </h3>
         </td>
       </tr>
+      {% if trackers|key:"trackers" %}
+      <tr>
+        <td class="no_border"><h3>Trackers Detection:</h3></td>
+        <td class="no_border"><h3><span {% if trackers.detected_trackers > 0 %} class="warning" {% endif %}>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</span></h3></td>
+      </tr>
+     {% endif %}
       {% if virus_total and virus_total.items|length > 9 and 'request successfully queued' not in virus_total.verbose_msg %}
         <tr>
         <td class="no_border"><h3>VirusTotal Detection:</h3></td>
         <td class="no_border"><h3><span class="{% if virus_total.positives > 0 %}danger{% else %}success{% endif %}"> {{ virus_total.positives }}/{{ virus_total.total }}</span></h3></td>
       </tr>
       {% endif %}
+    </table>
+  </br></br>
+</br></br>
+</br></br>
+</br></br>
+</br></br>
+</br></br>
+</br></br>
+</br></br>
+</br></br>
+    <h2><i class="fas fa-chart-pie mr-1"></i> FINDINGS SEVERITY</h2>
+    <table class="basic tbl-white">
       <tr>
-        <td class="no_border"><h3>Scan Date:</h3></td>
-        <td class="no_border"><h3>{{ timestamp }}</h3></td>
+        <th class="td-high"><i class="fas fa-bug"> </i> HIGH</th>
+        <th class="td-warning"><i class="fas fa-exclamation-triangle"> </i> WARNING</th>
+        <th class="td-info"><i class="fas fa-info"> </i> INFO</th>
+        <th class="td-success"><i class="fas fa-check"></i> SECURE</th>
+      </tr>
+      <tr>
+        <td class="td-high"><h2>{{ appsec.high | length}}</h2></td>
+        <td class="td-warning"><h2>{{ appsec.warning | length}}</h2></td>
+        <td class="td-info"><h2>{{ appsec.info | length}}</h2></td>
+        <td class="td-success"><h2>{{ appsec.secure | length}}</h2></td>
       </tr>
     </table>
       </div>
-      </br></br>
-      </br></br>
-      </br></br>
-      </br></br>
-      </br></br>
-      </br></br>
-      </br></br>
     </article>
     
     <article id="contents">
@@ -219,7 +263,7 @@
                       <tr>
                         <th>NO</th>
                         <th>ISSUE</th>
-                        <th>STATUS</th>
+                        <th>SEVERITY</th>
                         <th>DESCRIPTION</th>
                       </tr>
                   </thead>
@@ -231,14 +275,14 @@
                           <td>
                           {{findings.issue}}
                           <td>
-                            {% if findings.status == "insecure" %}
-                            <span class="danger"> {{findings.status}}</span>
-                            {% elif findings.status == "secure" %}
-                            <span class="success"> {{findings.status}}</span>
-                            {% elif findings.status == "warning" %}
-                            <span class="warning"> {{findings.status}}</span>
-                            {% elif findings.status == "info" %}
-                            <span class="info"> {{findings.status}}</span>
+                            {% if findings.severity == "high" %}
+                            <span class="danger"> high</span>
+                            {% elif findings.severity == "secure" %}
+                            <span class="success"> secure</span>
+                            {% elif findings.severity == "warning" %}
+                            <span class="warning"> warning</span>
+                            {% elif findings.severity == "info" %}
+                            <span class="info"> info</span>
                             {% endif %}
                             </td>
                           <td>
@@ -354,17 +398,20 @@
                         {% endif %}
                       </td>
                       <td>
-                        <h5>CVSS V2:</h5>
-                        {% if details|key:"cvss" > 6 %}
-                        <span class="danger">{{ details|key:"cvss" }} (high)</span>
-                        {% elif details|key:"cvss" == 0 %}
-                        <span class="info">{{ details|key:"cvss" }} (info)</span>
-                        {% elif details|key:"cvss" >= 4 %}
-                        <span class="warning">{{ details|key:"cvss" }} (medium)</span>
-                        {% elif details|key:"cvss" < 4 %}
-                        <span class="success">{{ details|key:"cvss" }} (low)</span>
+                        {% if average_cvss %}
+                          <h5>CVSS V2:</h5>
+                          {% if details|key:"cvss" > 6 %}
+                          <span class="danger">{{ details|key:"cvss" }} (high)</span>
+                          {% elif details|key:"cvss" == 0 %}
+                          <span class="info">{{ details|key:"cvss" }} (info)</span>
+                          {% elif details|key:"cvss" >= 4 %}
+                          <span class="warning">{{ details|key:"cvss" }} (medium)</span>
+                          {% elif details|key:"cvss" < 4 %}
+                          <span class="success">{{ details|key:"cvss" }} (low)</span>
+                          {% endif %}
+                          </br>
                         {% endif %}
-                        {% if details|key:"cwe" %}</br> <h5>CWE: </h5>{{ details|key:"cwe" }}{% endif %}
+                        {% if details|key:"cwe" %}<h5>CWE: </h5>{{ details|key:"cwe" }}{% endif %}
                         {% if details|key:"owasp-mobile" %}</br> <h5>OWASP Top 10: </h5>{{ details|key:"owasp-mobile" }}{% endif %}
                         {% if details|key:"masvs" %}</br> <h5>OWASP MASVS: </h5>{{ details|key:"masvs" }}{% endif %}
                        </td>
@@ -478,17 +525,20 @@
                       {% endif %}
                   </td>
                   <td>
-                    <h5>CVSS V2:</h5>
-                    {% if details.metadata.cvss > 6 %}
-                    <span class="danger">{{ details.metadata.cvss }} (high)</span>
-                    {% elif details.metadata.cvss == 0 %}
-                    <span class="info">{{ details.metadata.cvss }} (info)</span>
-                    {% elif details.metadata.cvss >= 4 %}
-                    <span class="warning">{{ details.metadata.cvss }} (medium)</span>
-                    {% elif details.metadata.cvss < 4 %}
-                    <span class="success">{{ details.metadata.cvss }} (low)</span>
+                    {% if average_cvss %}
+                      <h5>CVSS V2:</h5>
+                      {% if details.metadata.cvss > 6 %}
+                      <span class="danger">{{ details.metadata.cvss }} (high)</span>
+                      {% elif details.metadata.cvss == 0 %}
+                      <span class="info">{{ details.metadata.cvss }} (info)</span>
+                      {% elif details.metadata.cvss >= 4 %}
+                      <span class="warning">{{ details.metadata.cvss }} (medium)</span>
+                      {% elif details.metadata.cvss < 4 %}
+                      <span class="success">{{ details.metadata.cvss }} (low)</span>
+                      {% endif %}
+                      </br>
                     {% endif %}
-                    {% if details.metadata.cwe %}</br> <strong>CWE: </strong>{{details.metadata.cwe }}{% endif %}
+                    {% if details.metadata.cwe %}<strong>CWE: </strong>{{details.metadata.cwe }}{% endif %}
                     {% if details.metadata|key:"owasp-mobile" %}</br> <strong>OWASP Top 10: </strong>{{ details.metadata|key:"owasp-mobile" }}{% endif %}
                     {% if details.metadata.masvs %}</br> <strong>OWASP MASVS: </strong>{{ details.metadata.masvs  }}{% endif %}
                   </td>
@@ -525,7 +575,7 @@
                       <h5>Description: </h5> {{details|key:"desc"}}
                    
                   {% else %}
-                    <span class="success">good</span><br/>
+                    <span class="success">ok</span><br/>
                   {% endif %}
                   </td>
                   <td>
@@ -547,7 +597,7 @@
                 </tbody>
             </table>
       {% endif %}
-
+<!--
        {% if urls %} 
       <h2><i class="fas fa-globe"></i> URLS </h2>
       <table class="basic">
@@ -573,7 +623,7 @@
 										</tbody>
 										</table>
         {% endif %}
-
+-->
        {% if firebase_urls %} 
       <h2><i class="fas fa-database"></i> FIREBASE DATABASES</h2>
             <table class="basic">
@@ -591,7 +641,7 @@
                         </td>
                        <td>
                          {% if item.open %}
-                          <span class="danger">insecure</span></br>Firebase DB is exposed publicly.
+                          <span class="danger">high</span></br>Firebase DB is exposed publicly.
                         {% else %}
                          <span class="info">info</span></br>App talks to a Firebase Database.
                          {% endif %}
@@ -631,6 +681,35 @@
 										</tbody>
 										</table>
       {% endif %}
+
+      {% if trackers|key:"trackers" %}
+      <h2><i class="fas fa-user-secret"></i> TRACKERS</h2>
+       <table class="basic">
+            <thead>
+                <tr>
+                    <th>TRACKER</th>
+                    <th>CATEGORIES</th>
+                    <th>URL</th>
+                </tr>
+            </thead>
+          
+            <tbody>
+              {% for trk in trackers|key:"trackers" %}
+              <tr>
+                <td>
+                  {{trk.name}}
+                </td>
+                <td>
+                  {{trk.categories}}
+                </td>
+                <td>
+                  <a target="_blank" href="{{trk.url}}" rel="noopener noreferrer">{{trk.url}}</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+        </table>
+         {% endif %}
   
     {% if secrets %}
       <h2><i class="fas fa-key"></i> HARDCODED SECRETS</h2>
@@ -700,47 +779,6 @@
                     <p>{{ appstore_details.description }}</p>
                   </p>
        {% endif %}
-    </article>
-     <article>
-        </br>
-        <h3> App Security Score Calculation </h3>
-        <p>
-        Every app is given an ideal score of 100 to begin with.</br>
-        For every findings with severity <span class="danger">high</span> we reduce 15 from the score.</br>
-        For every findings with severity <span class="warning">warning</span> we reduce 10 from the score.</br>
-        For every findings with severity <span class="success">good</span> we add 5 to the score.</br>
-        If the calculated score is greater than 100, then the app security score is considered as 100.</br>
-        And if the calculated score is less than 0, then the app security score is considered as 10.</br>
-        </p>
-      <h3> Risk Calculation </h3>
-      <p>
-            <table class="basic">
-                <thead>
-                    <tr>
-                        <th>APP SECURITY SCORE</th>
-                        <th>RISK</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td width="50%">0 - 15</td>
-                        <td><span class="danger">CRITICAL</span></td>
-                    </tr>
-                    <tr>
-                        <td>16 - 40</td>
-                        <td><span class="high">HIGH</span></td>
-                    </tr>
-                    <tr>
-                        <td>41 - 70</td>
-                        <td><span class="warning">MEDIUM</span></td>
-                    </tr>
-                    <tr>
-                        <td>71 - 100</td>
-                        <td><span class="success">LOW</span></td>
-                    </tr>
-                </tbody>
-            </table>
-      </p>
     </article>
     <article id="columns">
       </br>

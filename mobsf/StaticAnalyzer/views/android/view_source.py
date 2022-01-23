@@ -14,7 +14,7 @@ from mobsf.MobSF.utils import (
     is_safe_path,
     print_n_send_error_response,
 )
-from mobsf.StaticAnalyzer.views.shared_func import (
+from mobsf.StaticAnalyzer.views.common.shared_func import (
     find_java_source_folder,
 )
 from mobsf.StaticAnalyzer.forms import (

@@ -165,6 +165,12 @@
                 </a>
               </li>
               <li class="nav-item">
+                <a href="#trackers" class="nav-link">
+                  <i class="fas fa-user-secret nav-icon"></i>
+                  <p>Trackers</p>
+                </a>
+              </li>
+              <li class="nav-item">
                 <a href="#secrets" class="nav-link">
                   <i class="fas fa-key nav-icon"></i>
                   <p>Hardcoded Secrets</p>
@@ -232,10 +238,20 @@
                 <div class="col-2">
                   <p><strong><i class="fas fa-check-double"></i> APP SCORES</strong></p>
                   <img id="app_icon" src="{% if not appstore_details.error %}{{appstore_details.icon}}{% elif icon_found %}/download/{{ md5 }}-icon.png{% else %}{% static 'img/no_icon.png' %}{% endif %}"/>
-                  <br/>
+                  <p>
+                  {% if average_cvss %}
                   <span class="badge bg-info">Average CVSS</span> <strong>{{ average_cvss }} </strong><br/>
-                  <span class="badge bg-{% if security_score < 50 %}danger{% elif security_score == 100 %}success{% else %}warning{% endif %}">Security Score</span> <strong>{{ security_score }}/100 </strong><br/>
+                  {% endif %}
+                  <span class="badge bg-{% if appsec.security_score < 40 %}danger{% elif appsec.security_score == 100 %}success{% else %}warning{% endif %}">Security Score</span> <strong>{{ appsec.security_score }}/100 </strong><br/>
+                  {% if trackers.detected_trackers > 0 %}
+                  <span class="badge bg-warning">Trackers Detection</span> <strong>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</strong><br/>
+                  {% else %}
+                    <span class="badge bg-success">Trackers Detection</span> <strong>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</strong><br/>
+                  {% endif %}
+                </p>
+                  <p> <a href="../appsec_dashboard/{{ md5 }}/" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
                 </div>
+
                 <div class="col-5">
                   <p><strong><i class="fas fa-box-open"></i> FILE INFORMATION </strong></p>                         
                   <span class="badge bg-primary">File Name</span>
@@ -532,7 +548,7 @@
                       <tr>
                         <th>NO</th>
                         <th>ISSUE</th>
-                        <th>STATUS</th>
+                        <th>SEVERITY</th>
                         <th>DESCRIPTION</th>
                       </tr>
                   </thead>
@@ -544,14 +560,14 @@
                         <td>
                         {{findings.issue}}
                         <td>
-                          {% if findings.status == "insecure" %}
-                          <span class="badge bg-danger"> {{findings.status}}</span>
-                          {% elif findings.status == "secure" %}
-                          <span class="badge bg-success"> {{findings.status}}</span>
-                          {% elif findings.status == "warning" %}
-                          <span class="badge bg-warning"> {{findings.status}}</span>
-                          {% elif findings.status == "info" %}
-                          <span class="badge bg-info"> {{findings.status}}</span>
+                          {% if findings.severity == "high" %}
+                          <span class="badge bg-danger"> high</span>
+                          {% elif findings.severity == "secure" %}
+                          <span class="badge bg-success"> secure</span>
+                          {% elif findings.severity == "warning" %}
+                          <span class="badge bg-warning"> warning</span>
+                          {% elif findings.severity == "info" %}
+                          <span class="badge bg-info"> info</span>
                           {% endif %}
                           </td>
                         <td>
@@ -630,18 +646,21 @@
                     {% endif %}
                   </td>
                   <td>
-                      <strong>CVSS V2:</strong>
-                       {{ details.metadata.cvss }}
-                      {% if details.metadata.cvss > 6 %}
-                        (high)
-                      {% elif details.metadata.cvss == 0 %}
-                        (info)
-                      {% elif details.metadata.cvss >= 4 %}
-                        (medium)
-                      {% elif details.metadata.cvss < 4 %}
-                        (low)
+                      {% if average_cvss %}
+                        <strong>CVSS V2:</strong>
+                        {{ details.metadata.cvss }}
+                        {% if details.metadata.cvss > 6 %}
+                          (high)
+                        {% elif details.metadata.cvss == 0 %}
+                          (info)
+                        {% elif details.metadata.cvss >= 4 %}
+                          (medium)
+                        {% elif details.metadata.cvss < 4 %}
+                          (low)
+                        {% endif %}
+                        </br>
                       {% endif %}
-                      {% if details.metadata.cwe %}</br> <strong>CWE: </strong>{{details.metadata.cwe }}{% endif %}
+                      {% if details.metadata.cwe %} <strong>CWE: </strong>{{details.metadata.cwe }}{% endif %}
                       {% if details.metadata|key:"owasp-mobile" %}</br> <strong>OWASP Top 10: </strong>{{ details.metadata|key:"owasp-mobile" }}{% endif %}
                       {% if details.metadata.masvs %}</br> <strong>OWASP MASVS: </strong>{{ details.metadata.masvs  }}{% endif %}
                   </td>
@@ -715,7 +734,6 @@
     </div>
 </section>
  <!-- ===========================end file analysis ================================== -->
- <!-- ===========================end virus total ================================== -->
 <style>
   #chartdiv {
   width: 100%;
@@ -776,7 +794,7 @@
                       <strong>Description: </strong>{{details|key:"desc"}}
                       </pre>
                   {% else %}
-                    <span class="badge bg-success">good</span><br/>
+                    <span class="badge bg-success">ok</span><br/>
                   {% endif %}
                   </td>
                   <td>
@@ -879,9 +897,9 @@
                         </td>
                        <td>
                          {% if item.open %}
-                          <span class="badge bg-danger">insecure</span><br/>Firebase Database is exposed publicly.
+                          <span class="badge bg-danger">high</span><br/>Firebase Database is exposed publicly.
                         {% else %}
-                         <span class="badge bg-primary">Info</span><br/>App talks to a Firebase database.
+                         <span class="badge bg-primary">info</span><br/>App talks to a Firebase database.
                          {% endif %}
                        </td>
                     </tr>
@@ -942,6 +960,52 @@
     </div>
 </section>
  <!-- ===========================end emails ================================== -->
+ <a id="trackers" class="anchor"></a>
+ <section class="content">
+   <div class="container-fluid">
+     <div class="row">
+         <div class="col-lg-12">
+         <div class="card">
+           <div class="card-body">
+              <p>
+              <strong><i class="fas fa-user-secret"></i> TRACKERS</strong>
+              </p>
+               <div class="table-responsive">
+               {% if trackers %}
+                <table id="table_trackers" class="table table-bordered table-hover table-striped">
+                 <thead>
+                   <tr>
+                     <th>TRACKER NAME</th>
+                     <th>CATEGORIES</th>
+                     <th>URL</th>
+                   </tr>
+                 </thead>
+                <tbody>
+                 {% for trk in trackers|key:"trackers" %}
+                 <tr>
+                   <td>
+                     {{trk.name}}
+                   </td>
+                   <td>
+                     {{trk.categories}}
+                   </td>
+                   <td>
+                     <a target="_blank" href="{{trk.url}}" rel="noopener noreferrer">{{trk.url}}</a>
+                   </td>
+                 </tr>
+                 {% endfor %}
+               </tbody>
+             </table>
+              {% endif %}
+             </div>
+           </div>
+         </div><!-- /.card -->
+         </div>
+         <!-- end row -->
+         </div>
+     </div>
+ </section>
+  <!-- ===========================end trackers ================================== -->
  <a id="secrets" class="anchor"></a>
  <section class="content">
    <div class="container-fluid">

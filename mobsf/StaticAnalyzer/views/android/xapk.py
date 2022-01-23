@@ -4,7 +4,7 @@ import logging
 from json import load
 from shutil import move
 
-from mobsf.StaticAnalyzer.views.shared_func import unzip
+from mobsf.StaticAnalyzer.views.common.shared_func import unzip
 from mobsf.MobSF.utils import is_safe_path
 
 logger = logging.getLogger(__name__)
