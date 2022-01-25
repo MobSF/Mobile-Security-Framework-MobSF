@@ -114,4 +114,4 @@ If you liked MobSF and find it useful, please consider donating.
 * Thomas Abraham - For JS Hacks on UI
 * Tim Brown (@timb_machine) - For the iOS Binary Analysis Ruleset
 * Shanil Prasad (@Rajuraju14) - For improving iOS ATS Analysis
-* Jovan Petrovic for sponsoring a server to host mobsf.live
+* Jovan Petrovic (@JovanPetrovic) - For sponsoring a server to host mobsf.live
