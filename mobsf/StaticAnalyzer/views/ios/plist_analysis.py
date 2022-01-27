@@ -147,7 +147,7 @@ def get_plist_secrets(xml_string):
             nxt = index + 1
             value = (
                 _remove_tags(xml_list[nxt])if nxt < len(xml_list) else False)
-            if value:
+            if value and ' ' not in value:
                 result_list.append(
                     f'{_remove_tags(line)} : {_remove_tags(value)}')
     return result_list
