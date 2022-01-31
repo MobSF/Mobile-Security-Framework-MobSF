@@ -1,58 +1,58 @@
 - id: ios_ip_disclosure
-  cvss: 4.3
-  cwe: cwe-200
-  description: IP Address disclosure
+  message: IP Address disclosure
   input_case: exact
-  masvs: code-2
-  owasp-mobile: ''
   pattern: '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\"'
   severity: warning
   type: Regex
+  metadata:
+    cvss: 4.3
+    cwe: cwe-200
+    masvs: code-2
+    owasp-mobile: ''
 - id: ios_hardcoded_info
-  cvss: 7.4
-  cwe: cwe-312
-  description: Files may contain hardcoded sensitive information like usernames,
+  message: Files may contain hardcoded sensitive information like usernames,
     passwords, keys etc.
   input_case: lower
-  masvs: storage-14
-  owasp-mobile: m9
   pattern: (password\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(pass\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(username\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(secret\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(key\s*=\s*[\'|\"].+[\'|\"]\s{0,5})
   severity: high
   type: Regex
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#checking-memory-for-sensitive-data-mstg-storage-10
+  metadata:
+    cvss: 7.4
+    cwe: cwe-312
+    masvs: storage-14
+    owasp-mobile: m9
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#checking-memory-for-sensitive-data-mstg-storage-10
 - id: ios_sqlite
-  cvss: 0
-  cwe: ''
-  description: App uses SQLite Database. Sensitive Information should be encrypted.
+  message: App uses SQLite Database. Sensitive Information should be encrypted.
   input_case: exact
-  masvs: storage-14
-  owasp-mobile: ''
   pattern:
   - sqlite3_exec
   - sqlite3_finalize
   severity: info
   type: RegexOr
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#sqlite-database-unencrypted
+  metadata:
+    cvss: 0
+    cwe: ''
+    masvs: storage-14
+    owasp-mobile: ''
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#sqlite-database-unencrypted
 - id: ios_load_html_string
-  cvss: 8.8
-  cwe: cwe-95
-  description: User input in "loadHTMLString" will result in JavaScript Injection.
+  message: User input in "loadHTMLString" will result in JavaScript Injection.
   input_case: exact
-  masvs: platform-5
-  owasp-mobile: m7
   pattern:
   - loadHTMLString
   - webView
   severity: warning
   type: RegexAnd
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06h-Testing-Platform-Interaction.md#testing-webview-protocol-handlers-mstg-platform-6
+  metadata:
+    cvss: 8.8
+    cwe: cwe-95
+    masvs: platform-5
+    owasp-mobile: m7
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06h-Testing-Platform-Interaction.md#testing-webview-protocol-handlers-mstg-platform-6
 - id: ios_jailbreak_detect
-  cvss: 0
-  cwe: ''
-  description: This App may have Jailbreak detection capabilities.
+  message: This App may have Jailbreak detection capabilities.
   input_case: exact
-  masvs: resilience-1
-  owasp-mobile: ''
   pattern:
   - /Applications/Cydia\.app
   - /Library/MobileSubstrate/MobileSubstrate\.dylib
@@ -103,123 +103,133 @@
   - /Library/MobileSubstrate/CydiaSubstrate\.dylib
   severity: good
   type: RegexOr
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06j-Testing-Resiliency-Against-Reverse-Engineering.md#jailbreak-detection-mstg-resilience-1
+  metadata:
+    cvss: 0
+    cwe: ''
+    masvs: resilience-1
+    owasp-mobile: ''
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06j-Testing-Resiliency-Against-Reverse-Engineering.md#jailbreak-detection-mstg-resilience-1
 - id: ios_swift_log
-  cvss: 7.5
-  cwe: CWE-532
-  description: The App logs information. Sensitive information should never be logged.
+  message: The App logs information. Sensitive information should never be logged.
   input_case: exact
-  masvs: storage-3
-  owasp-mobile: ''
   pattern: (print|NSLog|os_log|OSLog|os_signpost)\(.*\)
   severity: info
   type: Regex
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06i-Testing-Code-Quality-and-Build-Settings.md#finding-debugging-code-and-verbose-error-logging-mstg-code-4
+  metadata:
+    cvss: 7.5
+    cwe: CWE-532
+    masvs: storage-3
+    owasp-mobile: ''
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06i-Testing-Code-Quality-and-Build-Settings.md#finding-debugging-code-and-verbose-error-logging-mstg-code-4
 - id: ios_swift_sha1_collision
-  cvss: 5.9
-  cwe: CWE-327
-  description: SHA1 is a weak hash known to have hash collisions.
+  message: SHA1 is a weak hash known to have hash collisions.
   input_case: exact
-  masvs: crypto-4
-  owasp-mobile: m5
   pattern:
     - (?i)SHA1\(
     - CC_SHA1\(
   severity: high
   type: RegexOr
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
+  metadata:
+    cvss: 5.9
+    cwe: CWE-327
+    masvs: crypto-4
+    owasp-mobile: m5
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
 - id: ios_md2_collision
-  cvss: 5.9
-  cwe: CWE-327
-  description: MD2 is a weak hash known to have hash collisions.
+  message: MD2 is a weak hash known to have hash collisions.
   input_case: exact
-  masvs: crypto-4
-  owasp-mobile: m5
   pattern:
     - CC_MD2\(
   severity: high
   type: RegexOr
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
+  metadata:
+    cvss: 5.9
+    cwe: CWE-327
+    masvs: crypto-4
+    owasp-mobile: m5
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
 - id: ios_md4_collision
-  cvss: 5.9
-  cwe: CWE-327
-  description: MD4 is a weak hash known to have hash collisions.
+  message: MD4 is a weak hash known to have hash collisions.
   input_case: exact
-  masvs: crypto-4
-  owasp-mobile: m5
   pattern:
     - CC_MD4\(
   severity: high
   type: RegexOr
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
+  metadata:
+    cvss: 5.9
+    cwe: CWE-327
+    masvs: crypto-4
+    owasp-mobile: m5
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
 - id: ios_swift_md5_collision
-  cvss: 5.9
-  cwe: CWE-327
-  description: MD5 is a weak hash known to have hash collisions.
+  message: MD5 is a weak hash known to have hash collisions.
   input_case: exact
-  masvs: crypto-4
-  owasp-mobile: m5
   pattern:
     - (?i)MD5\(
     - CC_MD5\(
   severity: high
   type: RegexOr
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
+  metadata:
+    cvss: 5.9
+    cwe: CWE-327
+    masvs: crypto-4
+    owasp-mobile: m5
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
 - id: ios_md6_collision
-  cvss: 5.9
-  cwe: CWE-327
-  description: MD6 is a weak hash known to have hash collisions.
+  message: MD6 is a weak hash known to have hash collisions.
   input_case: exact
-  masvs: crypto-4
-  owasp-mobile: m5
   pattern:
     - (?i)MD6\(
     - CC_MD6\(
   severity: high
   type: RegexOr
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
+  metadata:
+    cvss: 5.9
+    cwe: CWE-327
+    masvs: crypto-4
+    owasp-mobile: m5
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
 - id: ios_custom_keyboard_disabled
-  cvss: 0
-  cwe: ''
-  description: This App may have custom keyboards disabled.
+  message: This App may have custom keyboards disabled.
   input_case: exact
-  masvs: platform-11
-  owasp-mobile: ''
   pattern: extensionPointIdentifier == .*\.keyboard
   severity: good
   type: Regex
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06h-Testing-Platform-Interaction.md#app-extensions
+  metadata:
+    cvss: 0
+    cwe: ''
+    masvs: platform-11
+    owasp-mobile: ''
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06h-Testing-Platform-Interaction.md#app-extensions
 - id: ios_keyboard_cache
-  cvss: 0
-  cwe: ''
-  description: Keyboard cache should be disabled for all sensitive data inputs.
+  message: Keyboard cache should be disabled for all sensitive data inputs.
   input_case: exact
-  masvs: storage-5
-  owasp-mobile: ''
   pattern: .autocorrectionType = .no
   severity: good
   type: Regex
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#finding-sensitive-data-in-the-keyboard-cache-mstg-storage-5
+  metadata:
+    cvss: 0
+    cwe: ''
+    masvs: storage-5
+    owasp-mobile: ''
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#finding-sensitive-data-in-the-keyboard-cache-mstg-storage-5
 - id: ios_uiwebview_safari_view
-  cvss: 0
-  cwe: ''
-  description: >-
+  message: >-
     It is recommended to use WKWebView instead of SFSafariViewController or
     UIWebView.
   input_case: exact
-  masvs: platform-5
-  owasp-mobile: m1
   pattern: UIWebView|SFSafariViewController
   severity: warning
   type: Regex
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06h-Testing-Platform-Interaction.md#testing-ios-webviews-mstg-platform-5
+  metadata:
+    cvss: 0
+    cwe: ''
+    masvs: platform-5
+    owasp-mobile: m1
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06h-Testing-Platform-Interaction.md#testing-ios-webviews-mstg-platform-5
 - id: ios_detect_reversing
-  cvss: 0
-  cwe: ''
-  description: This App may have Reverse engineering detection capabilities.
+  message: This App may have Reverse engineering detection capabilities.
   input_case: exact
-  masvs: resilience-4
-  owasp-mobile: ''
   pattern:
     - '"FridaGadget"'
     - '"cynject"'
@@ -227,235 +237,259 @@
     - '"/usr/sbin/frida-server"'
   severity: good
   type: RegexAnd
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06j-Testing-Resiliency-Against-Reverse-Engineering.md#ios-anti-reversing-defenses
+  metadata:
+    cvss: 0
+    cwe: ''
+    masvs: resilience-4
+    owasp-mobile: ''
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06j-Testing-Resiliency-Against-Reverse-Engineering.md#ios-anti-reversing-defenses
 - id: ios_detect_simulator
-  cvss: 0
-  cwe: ''
-  description: This App may have Simulator detection capabilities.
+  message: This App may have Simulator detection capabilities.
   input_case: exact
-  masvs: resilience-5
-  owasp-mobile: ''
   pattern: '"SIMULATOR_DEVICE_NAME"'
   severity: good
   type: Regex
+  metadata:
+    cvss: 0
+    cwe: ''
+    masvs: resilience-5
+    owasp-mobile: ''
 - id: ios_biometric_bool
-  cvss: 0
-  cwe: ''
-  description: 'Biometric authentication should be based on iOS Keychain, not based on bool.'
+  message: 'Biometric authentication should be based on iOS Keychain, not based on bool.'
   input_case: exact
-  masvs: auth-8
-  owasp-mobile: m1
   pattern: \.evaluatePolicy\(.deviceOwnerAuthentication
   severity: warning
   type: Regex
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06f-Testing-Local-Authentication.md#local-authentication-framework
+  metadata:
+    cvss: 0
+    cwe: ''
+    masvs: auth-8
+    owasp-mobile: m1
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06f-Testing-Local-Authentication.md#local-authentication-framework
 - id: ios_file_no_special
-  cvss: 4.3
-  cwe: CWE-311
-  description: The file has no special protections associated with it.
+  message: The file has no special protections associated with it.
   input_case: exact
-  masvs: storage-1
-  owasp-mobile: m2
   pattern: (?i)\.noFileProtection
   severity: high
   type: Regex
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#ios-data-storage
+  metadata:
+    cvss: 4.3
+    cwe: CWE-311
+    masvs: storage-1
+    owasp-mobile: m2
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#ios-data-storage
 - id: ios_uipaste_sec
-  cvss: 0
-  cwe: ''
-  description: >-
+  message: >-
     This application uses UIPasteboard, improper use of this class can lead to
     security issues.
   input_case: exact
-  masvs: platform-4
-  owasp-mobile: m1
   pattern: UIPasteboard
   severity: warning
   type: Regex
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06h-Testing-Platform-Interaction.md#uipasteboard
+  metadata:
+    cvss: 0
+    cwe: ''
+    masvs: platform-4
+    owasp-mobile: m1
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06h-Testing-Platform-Interaction.md#uipasteboard
 - id: ios_general_paste
-  cvss: 0
-  cwe: ''
-  description: Usage of generalPasteboard should be avoided.
+  message: Usage of generalPasteboard should be avoided.
   input_case: exact
-  masvs: platform-4
-  owasp-mobile: m1
   pattern: UIPasteboard\.generalPasteboard
   severity: warning
   type: Regex
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06h-Testing-Platform-Interaction.md#uipasteboard
+  metadata:
+    cvss: 0
+    cwe: ''
+    masvs: platform-4
+    owasp-mobile: m1
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06h-Testing-Platform-Interaction.md#uipasteboard
 - id: ios_custom_url
-  cvss: 0
-  cwe: ''
-  description: >-
+  message: >-
     The app should not export sensitive functionality via custom URL schemes,
     unless these mechanisms are properly protected.
   input_case: exact
-  masvs: platform-3
-  owasp-mobile: m1
   pattern: CFBundleURLSchemes
   severity: warning
   type: Regex
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06h-Testing-Platform-Interaction.md#testing-custom-url-schemes-registration
+  metadata:
+    cvss: 0
+    cwe: ''
+    masvs: platform-3
+    owasp-mobile: m1
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06h-Testing-Platform-Interaction.md#testing-custom-url-schemes-registration
 - id: ios_secure_text
-  cvss: 0
-  cwe: ''
-  description: Some UI controls have secure text entry configured.
+  message: Some UI controls have secure text entry configured.
   input_case: exact
-  masvs: storage-5
-  owasp-mobile: ''
   pattern: \.secureTextEntry = true
   severity: good
   type: Regex
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#finding-sensitive-data-in-the-keyboard-cache-mstg-storage-5
+  metadata:
+    cvss: 0
+    cwe: ''
+    masvs: storage-5
+    owasp-mobile: ''
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#finding-sensitive-data-in-the-keyboard-cache-mstg-storage-5
 - id: ios_cert_pinning
-  cvss: 0
-  cwe: CWE-295
-  description: This App may have Certificate Pinning mechanism.
+  message: This App may have Certificate Pinning mechanism.
   input_case: exact
-  masvs: network-4
-  owasp-mobile: m3
   pattern:
     - PinnedCertificatesTrustEvaluator
     - TrustKit\.initSharedInstance
   severity: good
   type: RegexOr
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05g-Testing-Network-Communication.md#testing-custom-certificate-stores-and-certificate-pinning-mstg-network-4
+  metadata:
+    cvss: 0
+    cwe: CWE-295
+    masvs: network-4
+    owasp-mobile: m3
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05g-Testing-Network-Communication.md#testing-custom-certificate-stores-and-certificate-pinning-mstg-network-4
 - id: ios_realm_enable_enc
-  cvss: 0
-  cwe: CWE-311
-  description: App uses Realm Database. Sensitive Information should be encrypted.
+  message: App uses Realm Database. Sensitive Information should be encrypted.
   input_case: exact
-  masvs: storage-14
-  owasp-mobile: m2
   pattern: realm\.write
   severity: info
   type: Regex
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#realm-databases
+  metadata:
+    cvss: 0
+    cwe: CWE-311
+    masvs: storage-14
+    owasp-mobile: m2
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#realm-databases
 - id: ios_core_data
-  cvss: 0
-  cwe: CWE-311
-  description: App uses CoreData Database. Sensitive Information should be encrypted.
+  message: App uses CoreData Database. Sensitive Information should be encrypted.
   input_case: exact
-  masvs: storage-14
-  owasp-mobile: m2
   pattern:
     - NSManagedObjectContext
     - \.save\(\)
   severity: info
   type: RegexAnd
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#coredata
+  metadata:
+    cvss: 0
+    cwe: CWE-311
+    masvs: storage-14
+    owasp-mobile: m2
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#coredata
 - id: ios_realm_db_enc_enabled
-  cvss: 0
-  cwe: CWE-311
-  description: Used Realm database has configured encryption.
+  message: Used Realm database has configured encryption.
   input_case: exact
-  masvs: storage-14
-  owasp-mobile: m2
   pattern:
     - 'Realm\.Configuration\(encryptionKey:'
     - 'Realm\(configuration:'
   severity: good
   type: RegexAnd
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#realm-databases
+  metadata:
+    cvss: 0
+    cwe: CWE-311
+    masvs: storage-14
+    owasp-mobile: m2
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#realm-databases
 - id: ios_ui_controls_disabled
-  cvss: 0
-  cwe: ''
-  description: Copy feature may be disabled in some UI controls.
+  message: Copy feature may be disabled in some UI controls.
   input_case: exact
-  masvs: ''
-  owasp-mobile: ''
   pattern:
     - canPerformAction
     - UIResponderStandardEditActions\.copy|\.copy
   severity: info
   type: RegexAnd
+  metadata:
+    cvss: 0
+    cwe: ''
+    masvs: ''
+    owasp-mobile: ''
 - id: ios_open_urls
-  cvss: 0
-  cwe: CWE-939
-  description: Opening App with URLs can lead to potential security leaks.
+  message: Opening App with URLs can lead to potential security leaks.
   input_case: exact
-  masvs: platform-3
-  owasp-mobile: m1
   pattern: 'func application\(.*open url: URL'
   severity: warning
   type: Regex
+  metadata:
+    cvss: 0
+    cwe: CWE-939
+    masvs: platform-3
+    owasp-mobile: m1
 - id: ios_sensitive_backup
-  cvss: 0
-  cwe: ''
-  description: >-
+  message: >-
     Sensitive data shouldn't be included in backups generated by the mobile
     operating system.
   input_case: exact
-  masvs: storage-8
-  owasp-mobile: ''
   pattern: 'kSecAttrAccessible[a-zA-Z]*ThisDeviceOnly'
   severity: good
   type: Regex
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#the-keychain
+  metadata:
+    cvss: 0
+    cwe: ''
+    masvs: storage-8
+    owasp-mobile: ''
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#the-keychain
 - id: ios_webview_disable_js
-  cvss: 0
-  cwe: ''
-  description: JavaScript should be disabled in WebViews unless explicitly required.
+  message: JavaScript should be disabled in WebViews unless explicitly required.
   input_case: exact
-  masvs: platform-5
-  owasp-mobile: ''
   pattern:
     - WKWebView
     - \.javaScriptEnabled = false
   severity: warning
   type: RegexAndNot
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06h-Testing-Platform-Interaction.md#testing-javascript-configuration
+  metadata:
+    cvss: 0
+    cwe: ''
+    masvs: platform-5
+    owasp-mobile: ''
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06h-Testing-Platform-Interaction.md#testing-javascript-configuration
 - id: ios_tls3_not_used
-  cvss: 7.5
-  cwe: CWE-757
-  description: TLS 1.3 should be used. Detected old version
+  message: TLS 1.3 should be used. Detected old version
   input_case: exact
-  masvs: network-2
-  owasp-mobile: m3
   pattern:
     - \.TLSMinimumSupportedProtocolVersion
     - - tls_protocol_version_t\.TLSv10
       - tls_protocol_version_t\.TLSv11
   severity: high
   type: RegexAndOr
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04f-Testing-Network-Communication.md#verifying-data-encryption-on-the-network-mstg-network-1-and-mstg-network-2
+  metadata:
+    cvss: 7.5
+    cwe: CWE-757
+    masvs: network-2
+    owasp-mobile: m3
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04f-Testing-Network-Communication.md#verifying-data-encryption-on-the-network-mstg-network-1-and-mstg-network-2
 - id: ios_tls12_used
-  cvss: 0
-  cwe: ''
-  description: TLS 1.3 should be used. Detected old version - TLS 1.2.
+  message: TLS 1.3 should be used. Detected old version - TLS 1.2.
   input_case: exact
-  masvs: network-2
-  owasp-mobile: m3
   pattern:
     - \.TLSMinimumSupportedProtocolVersion
     - tls_protocol_version_t\.TLSv12
   severity: warning
   type: RegexAnd
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04f-Testing-Network-Communication.md#verifying-data-encryption-on-the-network-mstg-network-1-and-mstg-network-2
+  metadata:
+    cvss: 0
+    cwe: ''
+    masvs: network-2
+    owasp-mobile: m3
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04f-Testing-Network-Communication.md#verifying-data-encryption-on-the-network-mstg-network-1-and-mstg-network-2
 - id: ios_dtls1_used
-  cvss: 0
-  cwe: ''
-  description: DTLS 1.2 should be used. Detected old version - DTLS 1.0.
+  message: DTLS 1.2 should be used. Detected old version - DTLS 1.0.
   input_case: exact
-  masvs: network-2
-  owasp-mobile: m3
   pattern:
     - \.TLSMinimumSupportedProtocolVersion
     - tls_protocol_version_t\.DTLSv10
   severity: warning
   type: RegexAnd
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04f-Testing-Network-Communication.md#verifying-data-encryption-on-the-network-mstg-network-1-and-mstg-network-2
+  metadata:
+    cvss: 0
+    cwe: ''
+    masvs: network-2
+    owasp-mobile: m3
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04f-Testing-Network-Communication.md#verifying-data-encryption-on-the-network-mstg-network-1-and-mstg-network-2
 - id: ios_depr_tls_min
-  cvss: 0
-  cwe: ''
-  description: >-
+  message: >-
     Use of deprecated property tlsMinimumSupportedProtocol. To avoid potential
     security risks, use tlsMinimumSupportedProtocolVersion
   input_case: exact
-  masvs: network-2
-  owasp-mobile: m3
   pattern: \.tlsMinimumSupportedProtocol
   severity: warning
   type: Regex
-  ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04f-Testing-Network-Communication.md#verifying-data-encryption-on-the-network-mstg-network-1-and-mstg-network-2
+  metadata:
+    cvss: 0
+    cwe: ''
+    masvs: network-2
+    owasp-mobile: m3
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04f-Testing-Network-Communication.md#verifying-data-encryption-on-the-network-mstg-network-1-and-mstg-network-2
