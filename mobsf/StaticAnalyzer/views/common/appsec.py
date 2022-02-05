@@ -39,6 +39,31 @@ def common_fields(findings, data):
             'description': f'{desc}\n{ref}',
             'section': 'code',
         })
+    # Permissions
+    dang_perms = []
+    fmt_perm = ''
+    for pm, meta in data['permissions'].items():
+        status = meta['status']
+        description = meta.get('description')
+        if status == 'dangerous':
+            info = meta.get('info')
+            if not info:
+                info = meta.get('reason')
+            dang_perms.append(
+                f'{pm} ({status}): '
+                f'{info} - {description}')
+    if dang_perms:
+        fmt_perm += '\n\n'.join(dang_perms)
+        findings['hotspot'].append({
+            'title': (
+                f'Found {len(dang_perms)} '
+                'critical permission(s)'),
+            'description': (
+                'Ensure that these permissions '
+                'are required by the application.\n\n'
+                f'{fmt_perm}'),
+            'section': 'hotspot',
+        })
     # Malicious Domains
     for domain, value in data['domains'].items():
         if value['bad'] == 'yes':
@@ -120,6 +145,7 @@ def get_android_dashboard(context, from_ctx=False):
         'warning': [],
         'info': [],
         'secure': [],
+        'hotspot': [],
         'total_trackers': None,
     }
     if from_ctx:
@@ -179,6 +205,7 @@ def get_ios_dashboard(context, from_ctx=False):
         'warning': [],
         'info': [],
         'secure': [],
+        'hotspot': [],
         'total_trackers': None,
     }
     if from_ctx:
