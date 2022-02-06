@@ -62,7 +62,34 @@ def common_fields(findings, data):
                 'Ensure that these permissions '
                 'are required by the application.\n\n'
                 f'{fmt_perm}'),
-            'section': 'hotspot',
+            'section': 'permissions',
+        })
+    # File Analysis
+    cert_files = None
+    cfp = []
+    for fa in data['file_analysis']:
+        if 'Cert' in fa.get('finding', ''):
+            cfp = fa['files']
+            break
+        if 'Cert' in fa.get('issue', ''):
+            cert_files = fa['files']
+            break
+    if cert_files:
+        for f in cert_files:
+            cfp.append(f['file_path'])
+    if cfp:
+        fcerts = '\n'.join(cfp)
+        findings['hotspot'].append({
+            'title': (
+                f'Found {len(cfp)} '
+                'certificate/key file(s)'),
+            'description': (
+                'Ensure that these files '
+                'does not contain any '
+                'private information or '
+                'sensitive key materials.\n\n'
+                f'{fcerts}'),
+            'section': 'files',
         })
     # Malicious Domains
     for domain, value in data['domains'].items():
