@@ -278,7 +278,10 @@ LOGGING = {
         },
     },
 }
-# ===================
+# ===========================
+# ENTERPRISE FEATURE REQUESTS
+# ===========================
+EFR_01 = os.getenv('EFR_01', '0')
 # USER CONFIGURATION
 # ===================
 if CONFIG_HOME:

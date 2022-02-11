@@ -116,7 +116,8 @@ def common_fields(findings, data):
         t = len(data['trackers']['trackers'])
         findings['trackers'] = t
         if t > 4:
-            findings['high'].append({
+            sev = 'hotspot' if settings.EFR_01 == '1' else 'high'
+            findings[sev].append({
                 'title': 'Application contains Privacy Trackers',
                 'description': (
                     f'This app has more than {t} privacy trackers.'
@@ -125,7 +126,8 @@ def common_fields(findings, data):
                 'section': 'trackers',
             })
         elif t > 0:
-            findings['warning'].append({
+            sev = 'hotspot' if settings.EFR_01 == '1' else 'warning'
+            findings[sev].append({
                 'title': 'Application contains Privacy Trackers',
                 'description': (
                     f'This app has {t} privacy trackers.'
@@ -146,7 +148,8 @@ def common_fields(findings, data):
     secrets = data['secrets']
     if len(secrets) > 1:
         sec = '\n'.join(secrets)
-        findings['warning'].append({
+        sev = 'hotspot' if settings.EFR_01 == '1' else 'warning'
+        findings[sev].append({
             'title': 'This app may contain hardcoded secrets',
             'description': (
                 'The following secrets were identified from the app. '
@@ -330,6 +333,7 @@ def appsec_dashboard(request, checksum, api=False):
                 return print_n_send_error_response(request, msg)
         context['version'] = settings.MOBSF_VER
         context['title'] = 'AppSec Scorecard'
+        context['efr01'] = True if settings.EFR_01 == '1' else False
         if api:
             return context
         else:
