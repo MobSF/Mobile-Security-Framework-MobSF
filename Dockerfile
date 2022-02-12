@@ -83,8 +83,8 @@ COPY . .
 RUN sed -i "s#ADB_BINARY = ''#ADB_BINARY = '/usr/bin/adb'#" mobsf/MobSF/settings.py && \
     mkdir -p /home/mobsf/.local/share/apktool/framework
 
-# Postgres support is set to false by default
-ARG POSTGRES=False
+# Enable Postgres support by default
+ARG POSTGRES=True
 
 ENV POSTGRES_USER=postgres
 ENV POSTGRES_PASSWORD=password
