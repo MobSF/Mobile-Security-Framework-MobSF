@@ -94,6 +94,16 @@ ENV POSTGRES_HOST=postgres
 # Check if Postgres support needs to be enabled
 RUN ./scripts/postgres_support.sh $POSTGRES
 
+# Enable Amazon SES based email notifications
+ARG AWSSES=True
+ARG AWSSES_ACCESS_KEY_ID=accesskeyid
+ARG AWSSES_SECRET_ACCESS_KEY=secretaccesskey
+
+ENV AWSESS_REGION=region
+ENV AWSSES_SENDER=sender
+
+RUN ./scripts/aws_credentials.sh $AWSSES_ACCESS_KEY_ID $AWSSES_SECRET_ACCESS_KEY
+
 HEALTHCHECK CMD curl --fail http://host.docker.internal:8000/ || exit 1
 
 # Expose MobSF Port and Proxy Port
