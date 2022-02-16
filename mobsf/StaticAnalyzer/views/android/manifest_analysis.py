@@ -275,8 +275,22 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
         icon_hidden = True
         do_netsec = False
         debuggable = False
+        # USES-PERMISSION
+        uses_permissions = mfxml.getElementsByTagName('uses-permission')
+        for uses_permission in uses_permissions:
+            parent_node = uses_permission.parentNode
+            if parent_node != "manifest":
+                ret_list.append(('a_error_subelement', (uses_permission,), ()))
+        uses_sdk_23_permissions = mfxml.getElementsByTagName('uses-permission-sdk-23')
+        for uses_permission in uses_sdk_23_permissions:
+            parent_node = uses_permission.parentNode
+            if parent_node != "manifest":
+                ret_list.append(('a_error_subelement', (uses_permission,), ()))
         # PERMISSION
         for permission in permissions:
+            parent_node = permission.parentNode
+            if parent_node != "manifest":
+                ret_list.append(('a_error_subelement', (permission,), ()))
             if permission.getAttribute('android:protectionLevel'):
                 protectionlevel = permission.getAttribute(
                     'android:protectionLevel')
