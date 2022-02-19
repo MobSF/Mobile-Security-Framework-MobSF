@@ -83,8 +83,8 @@ def check_permissions(p_list):
     for perm, desc in COCOA_KEYS.items():
         if perm in p_list:
             permissions[perm] = {
-                'description': desc[0],
+                'info': desc[0],
                 'status': desc[1],
-                'reason': p_list.get(perm, ''),
+                'description': p_list.get(perm, ''),
             }
     return permissions

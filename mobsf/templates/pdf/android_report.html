@@ -143,15 +143,17 @@
     <table class="basic tbl-white">
       <tr>
         <th class="td-high"><i class="fas fa-bug"> </i> HIGH</th>
-        <th class="td-warning"><i class="fas fa-exclamation-triangle"> </i> WARNING</th>
+        <th class="td-warning"><i class="fas fa-exclamation-triangle"> </i> MEDIUM</th>
         <th class="td-info"><i class="fas fa-info"> </i> INFO</th>
         <th class="td-success"><i class="fas fa-check"></i> SECURE</th>
+        <th class="td-secondary"><i class="fab fa-searchengin"></i> HOTSPOT</th>
       </tr>
       <tr>
         <td class="td-high"><h2>{{ appsec.high | length}}</h2></td>
         <td class="td-warning"><h2>{{ appsec.warning | length}}</h2></td>
         <td class="td-info"><h2>{{ appsec.info | length}}</h2></td>
         <td class="td-success"><h2>{{ appsec.secure | length}}</h2></td>
+        <td class="td-secondary"><h2>{{ appsec.hotspot | length}}</h2></td>
       </tr>
     </table>
       </div>

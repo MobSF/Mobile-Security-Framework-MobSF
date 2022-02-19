@@ -444,7 +444,7 @@
                       <tr>
                           <th>PERMISSIONS</th>
                           <th>STATUS</th>
-                          <th>DESCRIPTION</th>
+                          <th>INFO</th>
                           <th>REASON IN MANIFEST</th>
                       </tr>
                   </thead>
@@ -463,10 +463,10 @@
                         {% endif %}
                       </td>
                       <td>
-                        {{ desc.description}}
+                        {{ desc.info}}
                       </td>
                       <td>
-                        {{ desc.reason }}
+                        {{ desc.description }}
                       </td>
                     </tr>
                     {% endfor %}
