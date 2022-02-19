@@ -343,7 +343,7 @@ sidebar-collapse
                                   <span class="info-box-icon bg-secondary"><i class="fab fa-searchengin"></i></span>
                     
                                   <div class="info-box-content">
-                                    <span class="info-box-text">Hotspot</span>
+                                    <span class="info-box-text"> {% if efr01 %}Need to Investigate{% else %}Hotspot{% endif %}</span>
                                     <span class="info-box-number">{{ hotspot | length}}</span>
                                   </div>
                                   <!-- /.info-box-content -->
@@ -445,7 +445,7 @@ sidebar-collapse
         <div class="sameline">
             <div class="card-header">
                 <h4 class="card-title w-100">
-                    <span class="badge bg-secondary">hotspot</span> {{ item.title}}
+                    <span class="badge bg-secondary">{% if efr01 %}need to investigate{% else %}hotspot{% endif %}</span> {{ item.title}}
                 </h4>
             </div>
             <label class="text-right"> {{ item.section | upper }}</label>
