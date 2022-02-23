@@ -1,3 +1,30 @@
+- id: android_obfuscated
+  message: Some code may be obfuscated
+  type: Regex
+  pattern: \.[a-zA-Z]\.[a-zA-Z]\.
+  severity: good
+  input_case: exact
+  metadata:
+    cvss: ''
+    cwe: ''
+    owasp-mobile: ''
+    masvs: code-9
+    ref: https://mobile-security.gitbook.io/mobile-security-testing-guide/android-testing-guide/0x05i-testing-code-quality-and-build-settings#make-sure-that-free-security-features-are-activated-mstg-code-9
+- id: android_strictmode_present
+  message: >-
+    StrictMode class shouldn't be enabled in production.
+  type: RegexOr
+  pattern: 
+    - StrictMode.*detect
+    - StrictMode.*penalty
+  severity: warning
+  input_case: exact
+  metadata:
+    cvss: ''
+    cwe: ''
+    owasp-mobile: ''
+    masvs: code-4
+    ref: https://mobile-security.gitbook.io/mobile-security-testing-guide/android-testing-guide/0x05i-testing-code-quality-and-build-settings#testing-for-debugging-code-and-verbose-error-logging-mstg-code-4
 - id: android_ip_disclosure
   message: IP Address disclosure
   type: Regex
