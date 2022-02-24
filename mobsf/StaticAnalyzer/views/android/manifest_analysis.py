@@ -253,6 +253,56 @@ def get_browsable_activities(node):
     except Exception:
         logger.exception('Getting Browsable Activities')
 
+def get_custom_schemes(data_tag):
+    """Get Custom Schemes."""
+    try:
+        custom_schemes_dic = {}
+        for data in data_tag:
+            if data.getAttribute('android:scheme') != 'http' and  data.getAttribute('android:scheme') != 'https' and data.getAttribute('android:scheme') != '':
+                itemname = data.parentNode.parentNode.getAttribute('android:name')
+                item = data.parentNode.parentNode.nodeName
+                scheme = data.getAttribute('android:scheme')
+                mime = data.getAttribute('android:mimeType')
+                host = data.getAttribute('android:host')
+                port = data.getAttribute('android:port')
+                path = data.getAttribute('android:path')
+                path_prefix = data.getAttribute('android:pathPrefix')
+                path_pattern = data.getAttribute('android:pathPattern')              
+                if itemname and itemname not in custom_schemes_dic:
+                    aux_dic = {
+                        'type':'',
+                        'schemes':[],
+                        'mime_types':[],
+                        'hosts':[],
+                        'ports':[],
+                        'paths':[],
+                        'path_prefixs':[],
+                        'path_patterns':[],                        
+                    }
+                    custom_schemes_dic[itemname]=aux_dic
+                if item and item:
+                    custom_schemes_dic[itemname]['type'] = item
+                if scheme and scheme not in custom_schemes_dic[itemname]['schemes']:
+                    custom_schemes_dic[itemname]['schemes'].append(scheme)
+                if mime and mime not in custom_schemes_dic[itemname]['mime_types']:
+                    custom_schemes_dic[itemname]['mime_types'].append(mime)
+                if host and host not in custom_schemes_dic[itemname]['hosts']:
+                    custom_schemes_dic[itemname]['hosts'].append(host)
+                if port and port not in custom_schemes_dic[itemname]['ports']:
+                    custom_schemes_dic[itemname]['ports'].append(port)
+                if path and path not in custom_schemes_dic[itemname]['paths']:
+                    custom_schemes_dic[itemname]['paths'].append(path)
+                if path_prefix and path_prefix not in custom_schemes_dic[itemname]['path_prefixs']:
+                    custom_schemes_dic[itemname]['path_prefixs'].append(path_prefix)
+                if path_pattern and path_pattern not in custom_schemes_dic[itemname]['path_patterns']:
+                    custom_schemes_dic[itemname]['path_patterns'].append(path_pattern)
+
+        for item in custom_schemes_dic:
+            custom_schemes_dic[item]['schemes'] = [scheme + '://' for scheme in custom_schemes_dic[item]['schemes']]
+        return custom_schemes_dic                
+    except Exception:
+        logger.exception('Getting Browsable Activities')
+
 
 def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
     """Analyse manifest file."""
@@ -272,6 +322,7 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
         exported = []
         browsable_activities = {}
         permission_dict = {}
+        custom_schemes_dic = {}
         icon_hidden = True
         do_netsec = False
         debuggable = False
@@ -786,6 +837,7 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
             elif granturi.getAttribute('android:pathPattern') == '*':
                 ret_list.append(('a_improper_provider', ('path=*',), ()))
         # DATA
+        custom_schemes_dic = get_custom_schemes(data_tag)
         for data in data_tag:
             if data.getAttribute('android:scheme') == 'android_secret_code':
                 xmlhost = data.getAttribute('android:host')
@@ -851,6 +903,7 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
                 do_netsec,
                 debuggable,
                 src_type),
+            'custom_schemes': custom_schemes_dic,
         }
         return man_an_dic
     except Exception:
