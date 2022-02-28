@@ -39,6 +39,58 @@ def common_fields(findings, data):
             'description': f'{desc}\n{ref}',
             'section': 'code',
         })
+    # Permissions
+    dang_perms = []
+    fmt_perm = ''
+    for pm, meta in data['permissions'].items():
+        status = meta['status']
+        description = meta.get('description')
+        if status == 'dangerous':
+            info = meta.get('info')
+            if not info:
+                info = meta.get('reason')
+            dang_perms.append(
+                f'{pm} ({status}): '
+                f'{info} - {description}')
+    if dang_perms:
+        fmt_perm += '\n\n'.join(dang_perms)
+        findings['hotspot'].append({
+            'title': (
+                f'Found {len(dang_perms)} '
+                'critical permission(s)'),
+            'description': (
+                'Ensure that these permissions '
+                'are required by the application.\n\n'
+                f'{fmt_perm}'),
+            'section': 'permissions',
+        })
+    # File Analysis
+    cert_files = None
+    cfp = []
+    for fa in data['file_analysis']:
+        if 'Cert' in fa.get('finding', ''):
+            cfp = fa['files']
+            break
+        if 'Cert' in fa.get('issue', ''):
+            cert_files = fa['files']
+            break
+    if cert_files:
+        for f in cert_files:
+            cfp.append(f['file_path'])
+    if cfp:
+        fcerts = '\n'.join(cfp)
+        findings['hotspot'].append({
+            'title': (
+                f'Found {len(cfp)} '
+                'certificate/key file(s)'),
+            'description': (
+                'Ensure that these files '
+                'does not contain any '
+                'private information or '
+                'sensitive key materials.\n\n'
+                f'{fcerts}'),
+            'section': 'files',
+        })
     # Malicious Domains
     for domain, value in data['domains'].items():
         if value['bad'] == 'yes':
@@ -64,7 +116,8 @@ def common_fields(findings, data):
         t = len(data['trackers']['trackers'])
         findings['trackers'] = t
         if t > 4:
-            findings['high'].append({
+            sev = 'hotspot' if settings.EFR_01 == '1' else 'high'
+            findings[sev].append({
                 'title': 'Application contains Privacy Trackers',
                 'description': (
                     f'This app has more than {t} privacy trackers.'
@@ -73,7 +126,8 @@ def common_fields(findings, data):
                 'section': 'trackers',
             })
         elif t > 0:
-            findings['warning'].append({
+            sev = 'hotspot' if settings.EFR_01 == '1' else 'warning'
+            findings[sev].append({
                 'title': 'Application contains Privacy Trackers',
                 'description': (
                     f'This app has {t} privacy trackers.'
@@ -94,7 +148,8 @@ def common_fields(findings, data):
     secrets = data['secrets']
     if len(secrets) > 1:
         sec = '\n'.join(secrets)
-        findings['warning'].append({
+        sev = 'hotspot' if settings.EFR_01 == '1' else 'warning'
+        findings[sev].append({
             'title': 'This app may contain hardcoded secrets',
             'description': (
                 'The following secrets were identified from the app. '
@@ -120,6 +175,7 @@ def get_android_dashboard(context, from_ctx=False):
         'warning': [],
         'info': [],
         'secure': [],
+        'hotspot': [],
         'total_trackers': None,
     }
     if from_ctx:
@@ -179,6 +235,7 @@ def get_ios_dashboard(context, from_ctx=False):
         'warning': [],
         'info': [],
         'secure': [],
+        'hotspot': [],
         'total_trackers': None,
     }
     if from_ctx:
@@ -276,6 +333,7 @@ def appsec_dashboard(request, checksum, api=False):
                 return print_n_send_error_response(request, msg)
         context['version'] = settings.MOBSF_VER
         context['title'] = 'AppSec Scorecard'
+        context['efr01'] = True if settings.EFR_01 == '1' else False
         if api:
             return context
         else:
