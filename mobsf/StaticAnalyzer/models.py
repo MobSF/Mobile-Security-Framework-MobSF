@@ -83,6 +83,7 @@ class StaticAnalyzerIOS(models.Model):
     BINARY_INFO = models.TextField(default={})
     PERMISSIONS = models.TextField(default={})
     ATS_ANALYSIS = models.TextField(default=[])
+    TRANSPORT_SECURITY_INFO = models.TextField(default={})
     BINARY_ANALYSIS = models.TextField(default=[])
     MACHO_ANALYSIS = models.TextField(default={})
     IOS_API = models.TextField(default={})

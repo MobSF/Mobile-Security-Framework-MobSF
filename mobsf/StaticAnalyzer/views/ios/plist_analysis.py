@@ -55,6 +55,7 @@ def plist_analysis(src, is_source):
             'plist_xml': '',
             'permissions': {},
             'inseccon': [],
+            'transport_security_info': {},
             'bundle_name': '',
             'build_version_name': '',
             'bundle_url_types': [],
@@ -126,7 +127,9 @@ def plist_analysis(src, is_source):
             # Check for app-permissions
             plist_info['permissions'].update(check_permissions(plist_obj_))
             # Check for ats misconfigurations
-            plist_info['inseccon'] += check_transport_security(plist_obj_)
+            ats_inseccon, ats_transport_security_info = check_transport_security(plist_obj_)
+            plist_info['inseccon'] += ats_inseccon
+            plist_info['transport_security_info'] = ats_transport_security_info
         return plist_info
     except Exception:
         logger.exception('Reading from Info.plist')
