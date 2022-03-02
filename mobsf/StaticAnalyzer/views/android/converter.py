@@ -12,10 +12,12 @@ import stat
 
 from django.conf import settings
 
+from mobsf.MobSF.exceptions import JadxTimoutExpired
 from mobsf.MobSF.utils import (
     filename_from_path,
     find_java_binary,
     is_file_exists,
+    get_jadx_timeout_value
 )
 
 
@@ -90,8 +92,11 @@ def apk_2_java(app_path, app_dir, tools_dir):
             app_path,
         ]
         fnull = open(os.devnull, 'w')
-        subprocess.call(args,
-                        stdout=fnull,
-                        stderr=subprocess.STDOUT)
+        subprocess.run(args,
+                       stdout=fnull,
+                       stderr=subprocess.STDOUT,
+                       timeout=get_jadx_timeout_value())
+    except subprocess.TimeoutExpired as timeout_expired:
+        raise JadxTimoutExpired("Timeout for jadx expired")
     except Exception:
         logger.exception('Decompiling to JAVA')

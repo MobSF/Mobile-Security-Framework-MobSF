@@ -12,6 +12,7 @@ import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.MalwareAnalyzer.views.apkid import apkid_analysis
 from mobsf.MalwareAnalyzer.views.quark import quark_analysis
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import MalwareDomainCheck
+from mobsf.MobSF.exceptions import JadxTimoutExpired
 
 from django.conf import settings
 from django.http import HttpResponseRedirect
@@ -537,7 +538,12 @@ def static_analyzer(request, api=False):
                 return print_n_send_error_response(request, msg, True)
             else:
                 return print_n_send_error_response(request, msg, False)
-
+    except JadxTimoutExpired as jadx_timeout:
+        msg = str(jadx_timeout)
+        if api:
+            return print_n_send_error_response(request, msg, True)
+        else:
+            return print_n_send_error_response(request, msg, False)
     except Exception as excep:
         logger.exception('Error Performing Static Analysis')
         msg = str(excep)
