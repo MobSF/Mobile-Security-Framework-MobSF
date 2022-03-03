@@ -1,3 +1,46 @@
+- id: android_safe_browsing_api_disabled
+  message: >-
+    The app does not use the default SafeBrowsing API. 
+    Handling page navigation should be analized carefully, 
+    as it can load untrusted content.'
+  type: Regex
+  pattern: setSafeBrowsingEnabled\(.*false
+  severity: warning
+  input_case: exact
+  metadata:
+    cvss: ''
+    cwe: ''
+    owasp-mobile: ''
+    masvs: platform-2
+    ref: https://mobile-security.gitbook.io/mobile-security-testing-guide/android-testing-guide/0x05h-testing-platform-interaction#testing-for-url-loading-in-webviews-mstg-platform-2
+
+- id: android_obfuscated
+  message: Some code may be obfuscated
+  type: Regex
+  pattern: \.[a-zA-Z]\.[a-zA-Z]\.
+  severity: good
+  input_case: exact
+  metadata:
+    cvss: ''
+    cwe: ''
+    owasp-mobile: ''
+    masvs: code-9
+    ref: https://mobile-security.gitbook.io/mobile-security-testing-guide/android-testing-guide/0x05i-testing-code-quality-and-build-settings#make-sure-that-free-security-features-are-activated-mstg-code-9
+- id: android_strictmode_present
+  message: >-
+    StrictMode class shouldn't be enabled in production.
+  type: RegexOr
+  pattern: 
+    - StrictMode.*detect
+    - StrictMode.*penalty
+  severity: warning
+  input_case: exact
+  metadata:
+    cvss: ''
+    cwe: ''
+    owasp-mobile: ''
+    masvs: code-4
+    ref: https://mobile-security.gitbook.io/mobile-security-testing-guide/android-testing-guide/0x05i-testing-code-quality-and-build-settings#testing-for-debugging-code-and-verbose-error-logging-mstg-code-4
 - id: android_ip_disclosure
   message: IP Address disclosure
   type: Regex
