@@ -1,3 +1,19 @@
+- id: android_safe_browsing_api_disabled
+  message: >-
+    The app does not use the default SafeBrowsing API. 
+    Handling page navigation should be analized carefully, 
+    as it can load untrusted content.'
+  type: Regex
+  pattern: setSafeBrowsingEnabled\(.*false
+  severity: warning
+  input_case: exact
+  metadata:
+    cvss: ''
+    cwe: ''
+    owasp-mobile: ''
+    masvs: platform-2
+    ref: https://mobile-security.gitbook.io/mobile-security-testing-guide/android-testing-guide/0x05h-testing-platform-interaction#testing-for-url-loading-in-webviews-mstg-platform-2
+
 - id: android_obfuscated
   message: Some code may be obfuscated
   type: Regex
