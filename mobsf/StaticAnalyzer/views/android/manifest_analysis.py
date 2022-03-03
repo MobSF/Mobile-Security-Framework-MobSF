@@ -259,15 +259,17 @@ def get_custom_schemes(data_tag):
         custom_schemes_dic = {}
         for data in data_tag:
             if data.getAttribute('android:scheme') != 'http' and  data.getAttribute('android:scheme') != 'https' and data.getAttribute('android:scheme') != '':
-                itemname = data.parentNode.parentNode.getAttribute('android:name')
+                itemname = data.parentNode.parentNode.getAttribute('android:name')                    
                 item = data.parentNode.parentNode.nodeName
+                if itemname == '':
+                    itemname = item
                 scheme = data.getAttribute('android:scheme')
                 mime = data.getAttribute('android:mimeType')
                 host = data.getAttribute('android:host')
                 port = data.getAttribute('android:port')
                 path = data.getAttribute('android:path')
                 path_prefix = data.getAttribute('android:pathPrefix')
-                path_pattern = data.getAttribute('android:pathPattern')              
+                path_pattern = data.getAttribute('android:pathPattern')
                 if itemname and itemname not in custom_schemes_dic:
                     aux_dic = {
                         'type':'',
@@ -312,6 +314,7 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
         exp_count = dict.fromkeys(['act', 'ser', 'bro', 'cnt'], 0)
         applications = mfxml.getElementsByTagName('application')
         data_tag = mfxml.getElementsByTagName('data')
+        meta_data_tag = mfxml.getElementsByTagName('meta-data')
         intents = mfxml.getElementsByTagName('intent-filter')
         actions = mfxml.getElementsByTagName('action')
         granturipermissions = mfxml.getElementsByTagName(
@@ -846,6 +849,12 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
             elif data.getAttribute('android:port'):
                 dataport = data.getAttribute('android:port')
                 ret_list.append(('a_sms_receiver_port', (dataport,), ()))
+        
+        #META-DATA
+        for meta_data in meta_data_tag:
+            if meta_data.getAttribute('android:name') == 'android.webkit.WebView.EnableSafeBrowsing':
+                if meta_data.getAttribute('android:value') == 'false':
+                    ret_list.append(('a_safe_browsing_disabled', (), ()))
         # INTENTS
         for intent in intents:
             if intent.getAttribute('android:priority').isdigit():

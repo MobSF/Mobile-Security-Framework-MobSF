@@ -1,4 +1,12 @@
 MANIFEST_DESC = {
+    'a_safe_browsing_disabled': {
+        'title': ('SafeBrowsing API is disabled'),
+        'level': 'high',
+        'description': ('The app does not use the default SafeBrowsing API.'
+                        'Handling page navigation should be analized carefully,'
+                        'as it can load untrusted content.'),
+        'name': ('SafeBrowsing API is disabled'),
+    },
     'a_clear_text': {
         'title': ('Clear text traffic is Enabled For App'
                   '<br>[android:usesCleartextTraffic=true]'),
