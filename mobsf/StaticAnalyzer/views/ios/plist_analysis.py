@@ -22,6 +22,10 @@ from mobsf.StaticAnalyzer.views.ios.permission_analysis import (
 from mobsf.StaticAnalyzer.views.ios.app_transport_security import (
     check_transport_security,
 )
+
+from mobsf.StaticAnalyzer.views.ios.adnetworkidentifiers import (
+    check_adnetworkidentifiers,
+)
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     is_secret,
 )
@@ -61,6 +65,7 @@ def plist_analysis(src, is_source):
             'bundle_url_types': [],
             'bundle_supported_platforms': [],
             'bundle_version_name': '',
+            'adnetworkidentifiers': []
         }
         plist_file = None
         plist_files = []
@@ -118,6 +123,7 @@ def plist_analysis(src, is_source):
         plist_info['bundle_url_types'] = btype
         plist_info['bundle_supported_platforms'] = plist_obj.get(
             'CFBundleSupportedPlatforms', [])
+        plist_info['adnetworkidentifiers'] = check_adnetworkidentifiers(plist_obj)
         logger.info('Checking Permissions')
         logger.info('Checking for Insecure Connections')
         for plist_file_ in plist_files:
