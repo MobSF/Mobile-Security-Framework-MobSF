@@ -143,7 +143,9 @@ def check_transport_security(p_list):
 
                 inc_min_tls = (
                     config.get('NSExceptionMinimumTLSVersion', None)
-                    or config.get('NSTemporaryExceptionMinimumTLSVersion', None)
+                    or config.get(
+                        'NSTemporaryExceptionMinimumTLSVersion', None,
+                    )
                 )
 
                 exception_domain_findings['exceptionMinimumTLSVersion'] = \
