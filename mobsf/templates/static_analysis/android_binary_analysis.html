@@ -367,9 +367,11 @@
                   {% if icon_hidden %}
                     <strong>Hidden Icon!</strong>
                   {% endif %}
-                  <br/>
+                  <p>
+                  {% if average_cvss %}
                   <span class="badge bg-info">Average CVSS</span> <strong>{{ average_cvss }} </strong><br/>
-                  <span class="badge bg-{% if security_score < 50 %}danger{% elif security_score == 100 %}success{% else %}warning{% endif %}">Security Score</span> <strong>{{ security_score }}/100 </strong><br/>
+                  {% endif %}
+                  <span class="badge bg-{% if appsec.security_score < 40 %}danger{% elif appsec.security_score == 100 %}success{% else %}warning{% endif %}">Security Score</span> <strong>{{ appsec.security_score }}/100 </strong><br/>
                   {% if trackers.detected_trackers > 0 %}
                     <span class="badge bg-warning">Trackers Detection</span> <strong>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</strong><br/>
                   {% else %}
@@ -382,6 +384,9 @@
                       <span class="badge bg-success">VirusTotal Detection</span> <strong>{{ virus_total.positives }}/{{ virus_total.total }}</strong><br/>
                     {% endif %}
                   {% endif %}
+                </p>
+                  <p> <a href="../appsec_dashboard/{{ md5 }}/" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
+
                 </div>
                 <div class="col-6">
                   <p><strong><i class="fas fa-box-open"></i> FILE INFORMATION </strong></p>
@@ -668,20 +673,24 @@
                   <table id="table_cert" class="table table-bordered table-hover table-striped">
                       <thead>
                           <tr>
-                              <th>STATUS</th>
+                              <th>TITLE</th>
+                              <th>SEVERITY</th>
                               <th>DESCRIPTION</th>
                           </tr>
                       </thead>
                       <tbody>
                           {% for find in certificate_analysis.certificate_findings %}
                           <tr>
+                          <td>{{ find.2 }}</td>
                           <td>
-                          {% if find.0 == 'bad' %}
-                            <span class="badge bg-danger">bad</span>
-                          {% elif find.0  == 'good' %}
+                          {% if find.0 == 'high' %}
+                            <span class="badge bg-danger">high</span>
+                          {% elif find.0  == 'secure' %}
                             <span class="badge bg-success">secure</span>
                           {% elif find.0  == 'warning' %}
                             <span class="badge bg-warning">warning</span>
+                          {% elif find.0  == 'info' %}
+                            <span class="badge bg-info">info</span>
                           {% endif %}
                           </td>
                           <td>{{ find.1 }}</td>
@@ -911,12 +920,12 @@
                         <td>
                           {% if item.severity == "high" %}
                             <span class="badge bg-danger">high</span>
-                          {% elif item.severity == "good" %}
-                            <span class="badge bg-success">good</span>
+                          {% elif item.severity == "secure" %}
+                            <span class="badge bg-success">secure</span>
                           {% elif item.severity == "info" %}
                             <span class="badge bg-info">info</span>
                           {% elif item.severity == "warning" %}
-                            <span class="badge bg-warning">medium</span>
+                            <span class="badge bg-warning">warning</span>
                           {% endif %}
                         </td>
                         <td>
@@ -969,8 +978,8 @@
                             <span class="badge bg-danger">high</span>
                           {% elif item|key:"stat" == "info" %}
                             <span class="badge bg-info">info</span>
-                          {% elif item|key:"stat" == "medium" %}
-                            <span class="badge bg-warning">medium</span>
+                          {% elif item|key:"stat" == "warning" %}
+                            <span class="badge bg-warning">warning</span>
                           {% endif %}
                          
                         </td>
@@ -1035,18 +1044,21 @@
                       {% endif %}
                   </td>
                   <td>
-                      <strong>CVSS V2:</strong>
-                      {{ details.metadata.cvss }}
-                      {% if details.metadata.cvss > 6 %}
-                        (high)
-                      {% elif details.metadata.cvss == 0 %}
-                        (info)
-                      {% elif details.metadata.cvss >= 4 %}
-                        (medium)
-                      {% elif details.metadata.cvss < 4 %}
-                        (low)
+                      {% if average_cvss %}
+                        <strong>CVSS V2:</strong>
+                        {{ details.metadata.cvss }}
+                        {% if details.metadata.cvss > 6 %}
+                          (high)
+                        {% elif details.metadata.cvss == 0 %}
+                          (info)
+                        {% elif details.metadata.cvss >= 4 %}
+                          (medium)
+                        {% elif details.metadata.cvss < 4 %}
+                          (low)
+                        {% endif %}
+                        </br>
                       {% endif %}
-                      {% if details.metadata.cwe %}</br> <strong>CWE: </strong>{{ details.metadata.cwe }}{% endif %}
+                      {% if details.metadata.cwe %} <strong>CWE: </strong>{{ details.metadata.cwe }}{% endif %}
                       {% if details.metadata|key:"owasp-mobile" %}</br> <strong>OWASP Top 10: </strong>{{ details.metadata|key:"owasp-mobile" }}{% endif %}
                       {% if details.metadata.masvs %}</br> <strong>OWASP MASVS: </strong>{{ details.metadata.masvs }}{% endif %}
                   </td>
@@ -1479,7 +1491,7 @@
                       <strong>Description: </strong>{{details|key:"desc"}}
                       </pre>
                   {% else %}
-                    <span class="badge bg-success">good</span><br/>
+                    <span class="badge bg-success">ok</span><br/>
                   {% endif %}
                   </td>
                   <td>
@@ -1582,9 +1594,9 @@
                         </td>
                        <td>
                          {% if item.open %}
-                          <span class="badge bg-danger">insecure</span><br/>Firebase Database is exposed publicly.
+                          <span class="badge bg-danger">high</span><br/>Firebase Database is exposed publicly.
                         {% else %}
-                         <span class="badge bg-primary">Info</span><br/>App talks to a Firebase database.
+                         <span class="badge bg-primary">info</span><br/>App talks to a Firebase database.
                          {% endif %}
                        </td>
                     </tr>

@@ -58,12 +58,15 @@ from mobsf.StaticAnalyzer.views.android.xapk import (
     handle_split_apk,
     handle_xapk,
 )
-from mobsf.StaticAnalyzer.views.shared_func import (
+from mobsf.StaticAnalyzer.views.common.shared_func import (
     firebase_analysis,
+    get_avg_cvss,
     hash_gen,
-    score,
     unzip,
     update_scan_timestamp,
+)
+from mobsf.StaticAnalyzer.views.common.appsec import (
+    get_android_dashboard,
 )
 
 from androguard.core.bytecodes import apk
@@ -301,8 +304,9 @@ def static_analyzer(request, api=False):
                         quark_results,
                         tracker_res,
                     )
-                context['average_cvss'], context[
-                    'security_score'] = score(context['code_analysis'])
+                context['appsec'] = get_android_dashboard(context, True)
+                context['average_cvss'] = get_avg_cvss(
+                    context['code_analysis'])
                 context['dynamic_analysis_done'] = is_file_exists(
                     os.path.join(app_dic['app_dir'], 'logcat.txt'))
 
@@ -450,6 +454,11 @@ def static_analyzer(request, api=False):
                             'Performing Malware Check on extracted Domains')
                         code_an_dic['domains'] = MalwareDomainCheck().scan(
                             list(set(code_an_dic['urls_list'])))
+                        # Extract Trackers from Domains
+                        trk = Trackers.Trackers(
+                            None, app_dic['tools_dir'])
+                        trackers = trk.get_trackers_domains_or_deps(
+                            code_an_dic['domains'], [])
                         logger.info('Connecting to Database')
                         try:
                             # SAVE TO DB
@@ -465,7 +474,7 @@ def static_analyzer(request, api=False):
                                     [],
                                     {},
                                     [],
-                                    {},
+                                    trackers,
                                 )
                                 update_scan_timestamp(app_dic['md5'])
                             else:
@@ -480,7 +489,7 @@ def static_analyzer(request, api=False):
                                     [],
                                     {},
                                     [],
-                                    {},
+                                    trackers,
                                 )
                         except Exception:
                             logger.exception('Saving to Database Failed')
@@ -493,7 +502,7 @@ def static_analyzer(request, api=False):
                             [],
                             {},
                             [],
-                            {},
+                            trackers,
                         )
                     else:
                         msg = 'This ZIP Format is not supported'
@@ -510,8 +519,9 @@ def static_analyzer(request, api=False):
                             }
                             template = 'general/zip.html'
                             return render(request, template, ctx)
-                context['average_cvss'], context[
-                    'security_score'] = score(context['code_analysis'])
+                context['appsec'] = get_android_dashboard(context, True)
+                context['average_cvss'] = get_avg_cvss(
+                    context['code_analysis'])
                 template = 'static_analysis/android_source_analysis.html'
                 if api:
                     return context

@@ -1,7 +1,7 @@
 - id: FCS_RBG_EXT.1.1
   type: code
   choice_type: or
-  description: Random Bit Generation Services
+  message: Random Bit Generation Services
   selection: 'The application {} for its cryptographic operations.'
   choice:
     - - java\.security\.SecureRandomSpi
@@ -14,7 +14,7 @@
 - id: FCS_STO_EXT.1.1
   type: code
   choice_type: or
-  description: Storage of Credentials
+  message: Storage of Credentials
   selection: 'The application {} to non-volatile memory.'
   choice:
     - - android\.security\.KeyChain
@@ -26,7 +26,7 @@
 - id: FCS_CKM_EXT.1.1
   type: code
   choice_type: or
-  description: Cryptographic Key Generation Services
+  message: Cryptographic Key Generation Services
   selection: 'The application {}.'
   choice:
     - - java\.security\.KeyPairGenerator|KeyPairGenerator\.getInstance\(
@@ -36,7 +36,7 @@
 - id: FDP_DEC_EXT.1.1
   type: manifest
   choice_type: all
-  description: Access to Platform Resources
+  message: Access to Platform Resources
   selection: 'The application has access to {}.'
   choice:
     - - 'android\.permission\.(?:INTERNET|ACCESS_NETWORK_STATE)'
@@ -58,7 +58,7 @@
 - id: FDP_DEC_EXT.1.2
   type: manifest
   choice_type: all
-  description: Access to Platform Resources
+  message: Access to Platform Resources
   selection: 'The application has access to {}.'
   choice:
     - - android\.permission\.READ_CONTACTS
@@ -74,7 +74,7 @@
 - id: FDP_NET_EXT.1.1
   type: manifest
   choice_type: or
-  description: Network Communications
+  message: Network Communications
   selection: 'The application has {}.'
   choice:
     - - android\.permission\.INTERNET
@@ -84,7 +84,7 @@
 - id: FDP_DAR_EXT.1.1
   type: code
   choice_type: or
-  description: Encryption Of Sensitive Application Data
+  message: Encryption Of Sensitive Application Data
   selection: 'The application {} in non-volatile memory.'
   choice:
     - - 'androidx\.security\.crypto\.(?:EncryptedFile|EncryptedSharedPreferences)'
@@ -96,7 +96,7 @@
 - id: FMT_MEC_EXT.1.1
   type: code
   choice_type: or
-  description: Supported Configuration Mechanism
+  message: Supported Configuration Mechanism
   selection: >-
     The application invoke the mechanisms recommended by the platform vendor for
     storing and setting configuration options.
@@ -107,7 +107,7 @@
 - id: FTP_DIT_EXT.1.1
   type: code
   choice_type: or
-  description: Protection of Data in Transit
+  message: Protection of Data in Transit
   selection: 'The application does {} between itself and another trusted IT product.'
   choice:
     - - >-
@@ -118,7 +118,7 @@
 - id: 'FCS_RBG_EXT.2.1,FCS_RBG_EXT.2.2'
   type: code
   choice_type: or
-  description: Random Bit Generation from Application
+  message: Random Bit Generation from Application
   selection: >-
     The application perform all deterministic random bit generation (DRBG)
     services in accordance with NIST Special Publication 800-90A using
@@ -134,7 +134,7 @@
 - id: FCS_CKM.1.1(1)
   type: code
   choice_type: and
-  description: Cryptographic Asymmetric Key Generation
+  message: Cryptographic Asymmetric Key Generation
   selection: 'The application generate asymmetric cryptographic keys {}.'
   choice:
     - - - 'java\.security\.KeyPairGenerator|\.getInstance\(.*(?:RSA|rsa)'
@@ -151,7 +151,7 @@
 - id: 'FCS_CKM.1.1(3),FCS_CKM.1.2(3)'
   type: code
   choice_type: or
-  description: Password Conditioning
+  message: Password Conditioning
   selection: >-
     A password/passphrase shall perform [Password-based Key Derivation
     Functions] {}.
@@ -162,7 +162,7 @@
 - id: FCS_COP.1.1(1)
   type: code
   choice_type: or
-  description: Cryptographic Operation - Encryption/Decryption
+  message: Cryptographic Operation - Encryption/Decryption
   selection: 'The application perform encryption/decryption {}.'
   choice:
     - - '\.getInstance\(.*(?:AES/ECB/|/aes/ecb/|AES/CTR/|aes/ctr/)'
@@ -176,7 +176,7 @@
 - id: FCS_COP.1.1(2)
   type: code
   choice_type: or
-  description: Cryptographic Operation - Hashing
+  message: Cryptographic Operation - Hashing
   selection: 'The application perform cryptographic hashing services {}.'
   choice:
     - - 'DigestUtils\.md5\(|\.getInstance\(.*(?:md4|md5|rc2|rc4|RC4|RC2|MD4|MD5)'
@@ -193,7 +193,7 @@
 - id: FCS_COP.1.1(3)
   type: code
   choice_type: and
-  description: Cryptographic Operation - Signing
+  message: Cryptographic Operation - Signing
   selection: >-
     The application perform cryptographic signature services (generation and
     verification) in accordance with a specified cryptographic algorithm {}.
@@ -210,7 +210,7 @@
 - id: FCS_COP.1.1(4)
   type: code
   choice_type: all
-  description: Cryptographic Operation - Keyed-Hash Message Authentication
+  message: Cryptographic Operation - Keyed-Hash Message Authentication
   selection: >-
     The application perform keyed-hash message authentication with cryptographic
     algorithm {} .
@@ -229,7 +229,7 @@
 - id: FCS_HTTPS_EXT.1.1
   type: code
   choice_type: or
-  description: HTTPS Protocol
+  message: HTTPS Protocol
   selection: The application implement the HTTPS protocol that complies with RFC 2818.
   choice:
     - - Scheme \(\"https
@@ -240,7 +240,7 @@
 - id: FCS_HTTPS_EXT.1.2
   type: code
   choice_type: or
-  description: HTTPS Protocol
+  message: HTTPS Protocol
   selection: The application implement HTTPS using TLS.
   choice:
     - - \.getInstance\(.*TLS|HttpsURLConnection| Scheme \(\"https
@@ -251,7 +251,7 @@
 - id: FCS_HTTPS_EXT.1.3
   type: code
   choice_type: or
-  description: HTTPS Protocol
+  message: HTTPS Protocol
   selection: >-
     The application notify the user and {} if the peer certificate is deemed
     invalid.
@@ -265,7 +265,7 @@
 - id: FIA_X509_EXT.1.1
   type: code
   choice_type: all
-  description: X.509 Certificate Validation
+  message: X.509 Certificate Validation
   selection: >-
     The application invoked platform-provided functionality to validate
     certificates in accordance with the following rules: {}.
@@ -290,7 +290,7 @@
 - id: FIA_X509_EXT.1.2
   type: code
   choice_type: or
-  description: X.509 Certificate Validation
+  message: X.509 Certificate Validation
   selection: >-
     The application treat a certificate as a CA certificate only if the
     basicConstraints extension is present and the CA flag is set to TRUE.
@@ -301,7 +301,7 @@
 - id: FIA_X509_EXT.2.1
   type: code
   choice_type: or
-  description: X.509 Certificate Authentication
+  message: X.509 Certificate Authentication
   selection: >-
     The application use X.509v3 certificates as defined by RFC 5280 to support
     authentication for HTTPS , TLS.
@@ -312,7 +312,7 @@
 - id: FIA_X509_EXT.2.2
   type: code
   choice_type: and
-  description: X.509 Certificate Authentication
+  message: X.509 Certificate Authentication
   selection: >-
     When the application cannot establish a connection to determine the validity
     of a certificate, the application allow the administrator to choose whether
@@ -327,7 +327,7 @@
 - id: FPT_TUD_EXT.2.1
   type: code
   choice_type: or
-  description: Integrity for Installation and Update
+  message: Integrity for Installation and Update
   selection: >-
     The application shall be distributed using the format of the
     platform-supported package manager.
@@ -340,7 +340,7 @@
 - id: FCS_CKM.1.1(2)
   type: code
   choice_type: and
-  description: Cryptographic Symmetric Key Generation
+  message: Cryptographic Symmetric Key Generation
   selection: >-
     The application shall generate symmetric cryptographic keys using a Random
     Bit Generator as specified in FCS_RBG_EXT.1 and specified cryptographic key

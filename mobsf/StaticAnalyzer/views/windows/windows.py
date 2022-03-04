@@ -30,7 +30,7 @@ from mobsf.MobSF.utils import (
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.StaticAnalyzer.models import StaticAnalyzerWindows
 from mobsf.StaticAnalyzer.tools.strings import strings_util
-from mobsf.StaticAnalyzer.views.shared_func import (
+from mobsf.StaticAnalyzer.views.common.shared_func import (
     hash_gen,
     unzip,
     update_scan_timestamp,

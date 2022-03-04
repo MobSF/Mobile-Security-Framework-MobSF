@@ -731,48 +731,50 @@
 </section>
  <!-- ===========================end emails ================================== -->
  <a id="trackers" class="anchor"></a>
- <section class="content">
-   <div class="container-fluid">
-     <div class="row">
-         <div class="col-lg-12">
-         <div class="card">
-           <div class="card-body">
-              <p>
-              <strong><i class="fas fa-user-secret"></i> TRACKERS</strong>
-              </p>
-               <div class="table-responsive">
-                <table id="table_trackers" class="table table-bordered table-hover table-striped">
-                 <thead>
-                   <tr>
-                     <th>TRACKER NAME</th>
-                     <th>CATEGORIES</th>
-                     <th>URL</th>
-                   </tr>
-                 </thead>
-                <tbody>
-                 {% for trk in trackers %}
-                 <tr>
-                   <td>
-                     {{trk.name}}
-                   </td>
-                   <td>
-                     {{trk.categories}}
-                   </td>
-                   <td>
-                     <a target="_blank" href="{{trk.url}}" rel="noopener noreferrer">{{trk.url}}</a>
-                   </td>
-                 </tr>
-                 {% endfor %}
-               </tbody>
-             </table>
-             </div>
-           </div>
-         </div><!-- /.card -->
-         </div>
-         <!-- end row -->
-         </div>
-     </div>
- </section>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-user-secret"></i> TRACKERS</strong>
+             </p>
+              <div class="table-responsive">
+              {% if trackers %}
+               <table id="table_trackers" class="table table-bordered table-hover table-striped">
+                <thead>
+                  <tr>
+                    <th>TRACKER NAME</th>
+                    <th>CATEGORIES</th>
+                    <th>URL</th>
+                  </tr>
+                </thead>
+               <tbody>
+                {% for trk in trackers|key:"trackers" %}
+                <tr>
+                  <td>
+                    {{trk.name}}
+                  </td>
+                  <td>
+                    {{trk.categories}}
+                  </td>
+                  <td>
+                    <a target="_blank" href="{{trk.url}}" rel="noopener noreferrer">{{trk.url}}</a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+             {% endif %}
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
  <!-- ===========================end trackers ================================== -->
 <a id="b64" class="anchor"></a>
 <section class="content">

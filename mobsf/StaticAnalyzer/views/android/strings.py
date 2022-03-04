@@ -5,7 +5,7 @@ import os
 
 from androguard.core.bytecodes import apk
 
-from mobsf.StaticAnalyzer.views.shared_func import (
+from mobsf.StaticAnalyzer.views.common.shared_func import (
     is_secret,
     url_n_email_extract,
 )
@@ -34,7 +34,7 @@ def strings_from_apk(app_file, app_dir, elf_strings):
                 if res_string:
                     for duo in res_string:
                         cap_str = '"' + duo[0] + '" : "' + duo[1] + '"'
-                        if is_secret(duo[0] + '"'):
+                        if is_secret(duo[0] + '"') and ' ' not in duo[1]:
                             secrets.append(cap_str)
                         dat.append(cap_str)
             data_string = ''.join(dat)

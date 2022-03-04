@@ -15,7 +15,7 @@ from mobsf.MobSF.utils import (
     api_key,
     print_n_send_error_response,
 )
-from mobsf.StaticAnalyzer.views.shared_func import (
+from mobsf.StaticAnalyzer.views.common.shared_func import (
     find_java_source_folder,
 )
 
