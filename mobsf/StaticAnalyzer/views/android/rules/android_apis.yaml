@@ -1,23 +1,23 @@
 - id: api_native_code
-  description: Loading Native Code (Shared Library)
+  message: Loading Native Code (Shared Library)
   type: Regex
   pattern: System\.loadLibrary\(|System\.load\(
   input_case: exact
   severity: info
 - id: api_get_system_service
-  description: Get System Service
+  message: Get System Service
   type: Regex
   pattern: getSystemService
   input_case: exact
   severity: info
 - id: api_get_system_service
-  description: Get Running App Processes
+  message: Get Running App Processes
   type: Regex
   pattern: getRunningAppProcesses\(
   input_case: exact
   severity: info
 - id: api_dexloading
-  description: Dynamic Class and Dexloading
+  message: Dynamic Class and Dexloading
   type: RegexOr
   pattern:
     - dalvik\.system\.DexClassLoader
@@ -27,7 +27,7 @@
   input_case: exact
   severity: info
 - id: api_java_reflection
-  description: Java Reflection
+  message: Java Reflection
   type: RegexOr
   pattern:
     - java\.lang\.reflect\.Method
@@ -36,7 +36,7 @@
   input_case: exact
   severity: info
 - id: api_crypto
-  description: Crypto
+  message: Crypto
   type: RegexOr
   pattern:
     - javax\.crypto
@@ -45,7 +45,7 @@
   input_case: exact
   severity: info
 - id: api_start_activity
-  description: Starting Activity
+  message: Starting Activity
   type: RegexOr
   pattern:
     - startActivity\(
@@ -53,7 +53,7 @@
   input_case: exact
   severity: info
 - id: api_start_service
-  description: Starting Service
+  message: Starting Service
   type: RegexOr
   pattern:
     - startService\(
@@ -61,7 +61,7 @@
   input_case: exact
   severity: info
 - id: api_send_broadcast
-  description: Sending Broadcast
+  message: Sending Broadcast
   type: RegexOr
   pattern:
     - sendBroadcast\(
@@ -70,7 +70,7 @@
   input_case: exact
   severity: info
 - id: api_local_file_io
-  description: Local File I/O Operations
+  message: Local File I/O Operations
   type: RegexOr
   pattern:
     - OpenFileOutput
@@ -82,7 +82,7 @@
   input_case: exact
   severity: info
 - id: api_ipc
-  description: Inter Process Communication
+  message: Inter Process Communication
   type: RegexOr
   pattern:
     - IRemoteService
@@ -92,7 +92,7 @@
   input_case: exact
   severity: info
 - id: api_web
-  description: 'HTTP Requests, Connections and Sessions'
+  message: 'HTTP Requests, Connections and Sessions'
   type: RegexOr
   pattern:
     - http\.client\.HttpClient
@@ -101,7 +101,7 @@
   input_case: exact
   severity: info
 - id: api_http_connection
-  description: HTTP Connection
+  message: HTTP Connection
   type: RegexAnd
   pattern:
     - HttpURLConnection|org\.apache\.http
@@ -109,7 +109,7 @@
   input_case: exact
   severity: info
 - id: api_dex_manipulate
-  description: Load and Manipulate Dex Files
+  message: Load and Manipulate Dex Files
   type: RegexAnd
   pattern:
     - >-
@@ -118,13 +118,13 @@
   input_case: exact
   severity: info
 - id: api_content_provider
-  description: Content Provider
+  message: Content Provider
   type: Regex
   pattern: android\.content\.ContentProvider
   input_case: exact
   severity: info
 - id: api_obfuscation
-  description: Obfuscation
+  message: Obfuscation
   type: RegexAnd
   pattern:
     - utils\.AESObfuscator
@@ -132,7 +132,7 @@
   input_case: exact
   severity: info
 - id: api_os_command
-  description: Execute OS Command
+  message: Execute OS Command
   type: RegexAnd
   pattern:
     - getRuntime\(\)\.exec\(
@@ -140,7 +140,7 @@
   input_case: exact
   severity: info
 - id: api_kill_process
-  description: Kill Process
+  message: Kill Process
   type: RegexOr
   pattern:
     - Process\.killProcess\(
@@ -148,7 +148,7 @@
   input_case: exact
   severity: info
 - id: api_keystore
-  description: Android Keystore
+  message: Android Keystore
   type: RegexAnd
   pattern:
     - security\.KeyStore
@@ -156,7 +156,7 @@
   input_case: exact
   severity: info
 - id: api_tcp_server
-  description: TCP Server Socket
+  message: TCP Server Socket
   type: RegexAnd
   pattern:
     - ServerSocket
@@ -164,7 +164,7 @@
   input_case: exact
   severity: info
 - id: api_tcp
-  description: TCP Socket
+  message: TCP Socket
   type: RegexAnd
   pattern:
     - Socket
@@ -172,7 +172,7 @@
   input_case: exact
   severity: info
 - id: api_udp_datagram
-  description: UDP Datagram Packet
+  message: UDP Datagram Packet
   type: RegexAnd
   pattern:
     - DatagramPacket
@@ -180,7 +180,7 @@
   input_case: exact
   severity: info
 - id: api_udp_datagram_socket
-  description: UDP Datagram Socket
+  message: UDP Datagram Socket
   type: RegexAnd
   pattern:
     - DatagramSocket
@@ -188,7 +188,7 @@
   input_case: exact
   severity: info
 - id: api_webview
-  description: WebView JavaScript Interface
+  message: WebView JavaScript Interface
   type: RegexAnd
   pattern:
     - addJavascriptInterface
@@ -197,7 +197,7 @@
   input_case: exact
   severity: info
 - id: api_webview_get
-  description: WebView GET Request
+  message: WebView GET Request
   type: RegexAnd
   pattern:
     - WebView
@@ -206,7 +206,7 @@
   input_case: exact
   severity: info
 - id: api_webview_post
-  description: WebView POST Request
+  message: WebView POST Request
   type: RegexAnd
   pattern:
     - WebView
@@ -215,7 +215,7 @@
   input_case: exact
   severity: info
 - id: api_notifications
-  description: Android Notifications
+  message: Android Notifications
   type: RegexAnd
   pattern:
     - app\.NotificationManager
@@ -223,7 +223,7 @@
   input_case: exact
   severity: info
 - id: api_get_cell
-  description: Get Cell Information
+  message: Get Cell Information
   type: RegexAnd
   pattern:
     - telephony\.TelephonyManager
@@ -231,7 +231,7 @@
   input_case: exact
   severity: info
 - id: api_get_location
-  description: Get Cell Location
+  message: Get Cell Location
   type: RegexAnd
   pattern:
     - telephony\.TelephonyManager
@@ -239,7 +239,7 @@
   input_case: exact
   severity: info
 - id: api_get_subscriber
-  description: Get Subscriber ID
+  message: Get Subscriber ID
   type: RegexAnd
   pattern:
     - telephony\.TelephonyManager
@@ -247,7 +247,7 @@
   input_case: exact
   severity: info
 - id: api_get_device
-  description: 'Get Device ID, IMEI,MEID/ESN etc'
+  message: 'Get Device ID, IMEI,MEID/ESN etc'
   type: RegexAnd
   pattern:
     - telephony\.TelephonyManager
@@ -257,7 +257,7 @@
   input_case: exact
   severity: info
 - id: api_get_soft
-  description: 'Get Software Version, IMEI/SV etc'
+  message: 'Get Software Version, IMEI/SV etc'
   type: RegexAnd
   pattern:
     - telephony\.TelephonyManager
@@ -265,7 +265,7 @@
   input_case: exact
   severity: info
 - id: api_get_sim_serial
-  description: Get SIM Serial Number
+  message: Get SIM Serial Number
   type: RegexAnd
   pattern:
     - telephony\.TelephonyManager
@@ -273,7 +273,7 @@
   input_case: exact
   severity: info
 - id: api_get_sim_provider
-  description: Get SIM Provider Details
+  message: Get SIM Provider Details
   type: RegexAnd
   pattern:
     - telephony\.TelephonyManager
@@ -281,7 +281,7 @@
   input_case: exact
   severity: info
 - id: api_get_sim_operator
-  description: Get SIM Operator Name
+  message: Get SIM Operator Name
   type: RegexAnd
   pattern:
     - telephony\.TelephonyManager
@@ -289,7 +289,7 @@
   input_case: exact
   severity: info
 - id: api_get_phone
-  description: Get Phone Number
+  message: Get Phone Number
   type: RegexAnd
   pattern:
     - telephony\.TelephonyManager
@@ -297,7 +297,7 @@
   input_case: exact
   severity: info
 - id: api_sms_call
-  description: 'Query Database of SMS, Contacts etc'
+  message: 'Query Database of SMS, Contacts etc'
   type: RegexAnd
   pattern:
     - content\.ContentResolver
@@ -305,7 +305,7 @@
   input_case: exact
   severity: info
 - id: api_hide_app_icon
-  description: Hide application icon
+  message: Hide application icon
   type: RegexAnd
   pattern:
     - \.setComponentEnabledSetting\(
@@ -313,7 +313,7 @@
   input_case: exact
   severity: info
 - id: api_send_sms
-  description: Send SMS
+  message: Send SMS
   type: RegexAndOr
   pattern:
     - telephony\.SmsManager
@@ -323,7 +323,7 @@
   input_case: exact
   severity: info
 - id: api_url
-  description: URL Connection to file/http/https/ftp/jar
+  message: URL Connection to file/http/https/ftp/jar
   type: RegexAndOr
   pattern:
     - net\.URLConnection
@@ -333,7 +333,7 @@
   input_case: exact
   severity: info
 - id: api_jar_url
-  description: JAR URL Connection
+  message: JAR URL Connection
   type: RegexAndOr
   pattern:
     - net\.JarURLConnection
@@ -342,7 +342,7 @@
   input_case: exact
   severity: info
 - id: api_https_connection
-  description: HTTPS Connection
+  message: HTTPS Connection
   type: RegexAndOr
   pattern:
     - javax\.net\.ssl\.HttpsURLConnection
@@ -351,7 +351,7 @@
   input_case: exact
   severity: info
 - id: api_clipboard
-  description: Set or Read Clipboard data
+  message: Set or Read Clipboard data
   type: RegexAndOr
   pattern:
     - content\.ClipboardManager
@@ -360,7 +360,7 @@
   input_case: exact
   severity: info
 - id: api_base64_encode
-  description: Base64 Encode
+  message: Base64 Encode
   type: RegexAndOr
   pattern:
     - android\.util\.Base64
@@ -369,7 +369,7 @@
   input_case: exact
   severity: info
 - id: api_base64_decode
-  description: Base64 Decode
+  message: Base64 Decode
   type: RegexAndOr
   pattern:
     - android\.util\.Base64
@@ -378,7 +378,7 @@
   input_case: exact
   severity: info
 - id: api_message_digest
-  description: Message Digest
+  message: Message Digest
   type: RegexAndOr
   pattern:
     - java\.security\.MessageDigest
@@ -387,7 +387,7 @@
   input_case: exact
   severity: info
 - id: api_gps
-  description: GPS Location
+  message: GPS Location
   type: RegexAndOr
   pattern:
     - android\.location
@@ -398,7 +398,7 @@
   input_case: exact
   severity: info
 - id: api_installed
-  description: Get Installed Applications
+  message: Get Installed Applications
   type: RegexAndOr
   pattern:
     - getPackageManager\(
@@ -408,7 +408,7 @@
   input_case: exact
   severity: info
 - id: api_get_wifi
-  description: Get WiFi Details
+  message: Get WiFi Details
   type: RegexAndOr
   pattern:
     - wifi\.WifiManager
@@ -421,7 +421,7 @@
   input_case: exact
   severity: info
 - id: api_get_network
-  description: Get Network Interface information
+  message: Get Network Interface information
   type: RegexAndOr
   pattern:
     - NetworkInterface
@@ -431,7 +431,7 @@
   input_case: exact
   severity: info
 - id: api_get_advertising
-  description: Get Android Advertising ID
+  message: Get Android Advertising ID
   type: RegexAndOr
   pattern:
     - AdvertisingIdClient
@@ -440,7 +440,7 @@
   input_case: exact
   severity: info
 - id: api_certificate_handling
-  description: Certificate Handling
+  message: Certificate Handling
   type: Regex
   pattern: \.SSLSocketFactory
   input_case: exact

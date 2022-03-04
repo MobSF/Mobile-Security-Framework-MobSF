@@ -278,7 +278,10 @@ LOGGING = {
         },
     },
 }
-# ===================
+# ===========================
+# ENTERPRISE FEATURE REQUESTS
+# ===========================
+EFR_01 = os.getenv('EFR_01', '0')
 # USER CONFIGURATION
 # ===================
 if CONFIG_HOME:
@@ -313,7 +316,8 @@ else:
         'com/instabug', 'com/crashlytics/android',
         'kotlinx/', 'kotlin/',
     }
-
+    # Disable CVSSV2 Score by default
+    CVSS_SCORE_ENABLED = False
     # ==============================================
 
     # ======WINDOWS STATIC ANALYSIS SETTINGS ===========

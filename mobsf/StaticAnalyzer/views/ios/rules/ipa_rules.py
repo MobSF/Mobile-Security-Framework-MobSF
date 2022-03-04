@@ -8,8 +8,7 @@ IPA_RULES = [
     {
         'description': 'Binary makes use of insecure API(s)',
         'detailed_desc': (
-            'The binary may contain'
-            ' the following insecure API(s) {}.'),
+            'The binary may contain the following insecure API(s) {}'),
         'type': 'Regex',
         'pattern': (
             rb'\b_alloca\n\b|\b_gets\n\b|\b_memcpy\n\b|\b_printf\n\b|'
@@ -31,8 +30,7 @@ IPA_RULES = [
     {
         'description': 'Binary makes use of some weak Crypto API(s)',
         'detailed_desc': (
-            'The binary may use the'
-            ' following weak crypto API(s) {}.'),
+            'The binary may use the following weak crypto API(s) {}'),
         'type': 'Regex',
         'pattern': (
             rb'\bkCCAlgorithmDES\b|'
@@ -51,8 +49,7 @@ IPA_RULES = [
     {
         'description': 'Binary makes use of the following Crypto API(s)',
         'detailed_desc': (
-            'The binary may use '
-            'the following crypto API(s) {}.'),
+            'The binary may use the following crypto API(s) {}'),
         'type': 'Regex',
         'pattern': (
             rb'\bCCKeyDerivationPBKDF\b|\bCCCryptorCreate\b|\b'
@@ -101,8 +98,7 @@ IPA_RULES = [
     {
         'description': 'Binary makes use of some weak Hashing API(s)',
         'detailed_desc': (
-            'The binary may use the '
-            'following weak hash API(s) {}.'),
+            'The binary may use the following weak hash API(s) {}'),
         'type': 'Regex',
         'pattern': (
             rb'\bCC_MD2_Init\b|\bCC_MD2_Update\b|\b'
@@ -127,8 +123,7 @@ IPA_RULES = [
     {
         'description': 'Binary makes use of the following Hash API(s)',
         'detailed_desc': (
-            'The binary may use the'
-            ' following hash API(s) {}.'),
+            'The binary may use the following hash API(s) {}'),
         'type': 'Regex',
         'pattern': (
             rb'\bCC_SHA224_Init\b|\bCC_SHA224_Update\b|\b'
@@ -156,7 +151,7 @@ IPA_RULES = [
         'description': 'Binary makes use of the insecure Random function(s)',
         'detailed_desc': (
             'The binary may use the following '
-            'insecure Random function(s) {}.'),
+            'insecure Random function(s) {}'),
         'type': 'Regex',
         'pattern': rb'\b_srand\n\b|\b_random\n\b',
         'severity': 'high',
@@ -169,8 +164,7 @@ IPA_RULES = [
     {
         'description': 'Binary makes use of Logging function',
         'detailed_desc': (
-            'The binary may use {}'
-            ' function for logging.'),
+            'The binary may use {} function for logging.'),
         'type': 'Regex',
         'pattern': rb'\b_NSLog\n\b',
         'severity': 'info',
@@ -183,8 +177,7 @@ IPA_RULES = [
     {
         'description': 'Binary makes use of malloc function',
         'detailed_desc': (
-            'The binary may use {}'
-            ' function instead of calloc.'),
+            'The binary may use {} function instead of calloc'),
         'type': 'Regex',
         'pattern': rb'_malloc\n',
         'severity': 'high',

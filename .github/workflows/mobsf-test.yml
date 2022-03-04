@@ -1,0 +1,58 @@
+name: MobSF tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04, macos-latest, windows-latest]
+        python-version: [3.8, 3.9]
+        # exclude:
+          # excludes py38, py39 on Windows
+          # - os: windows-latest
+          #   python-version: 3.8
+
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Lint
+      run: |
+        python -m pip install --upgrade pip tox
+        tox -e lint
+    - name: Install Ubuntu Dependencies
+      if: startsWith(matrix.os, 'ubuntu')
+      run: |
+        sudo apt update && sudo apt install -y xfonts-75dpi xfonts-base
+        export WKHTML_URL=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/
+        export WKHTML_DEB=wkhtmltox_0.12.6-1.focal_amd64.deb
+        wget ${WKHTML_URL}${WKHTML_DEB} && sudo dpkg -i ${WKHTML_DEB} && rm -rf ${WKHTML_DEB}
+    - name: Install macOS Dependencies
+      if: startsWith(matrix.os, 'macOS')
+      run: |
+        brew install --cask wkhtmltopdf
+    - name: Install Windows Dependencies
+      if: startsWith(matrix.os, 'windows')
+      run: |
+        choco install wkhtmltopdf
+    - name: Install Python dependencies
+      run: |
+        pip install --use-deprecated=legacy-resolver -r requirements.txt
+    - name: Migrate Database
+      run: |
+        python manage.py makemigrations
+        python manage.py makemigrations StaticAnalyzer
+        python manage.py migrate
+    - name: Unit Tests
+      run: |
+        git submodule update --init --recursive
+        python manage.py test mobsf

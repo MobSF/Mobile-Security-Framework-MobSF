@@ -12,7 +12,11 @@ from mobsf.MobSF.views import home
 from mobsf.MobSF.views.api import api_static_analysis as api_sz
 from mobsf.MobSF.views.api import api_dynamic_analysis as api_dz
 from mobsf.StaticAnalyzer import tests
-from mobsf.StaticAnalyzer.views import shared_func
+from mobsf.StaticAnalyzer.views.common import (
+    appsec,
+    pdf,
+    shared_func,
+)
 from mobsf.StaticAnalyzer.views.android import (
     find,
     generate_downloads,
@@ -40,6 +44,7 @@ urlpatterns = [
             name='api_view_source'),
     re_path(r'^api/v1/scans$', api_sz.api_recent_scans),
     re_path(r'^api/v1/compare$', api_sz.api_compare),
+    re_path(r'^api/v1/scorecard$', api_sz.api_scorecard),
     # Dynamic Analysis
     re_path(r'^api/v1/dynamic/get_apps$', api_dz.api_get_apps),
     re_path(r'^api/v1/dynamic/start_analysis$', api_dz.api_start_analysis),
@@ -94,7 +99,10 @@ if settings.API_ONLY == '0':
         # Windows
         re_path(r'^static_analyzer_windows/$', windows.staticanalyzer_windows),
         # Shared
-        re_path(r'^pdf/$', shared_func.pdf),
+        re_path(r'^pdf/$', pdf.pdf),
+        re_path(r'^appsec_dashboard/(?P<checksum>[0-9a-f]{32})/$',
+                appsec.appsec_dashboard,
+                name='appsec_dashboard'),
         # App Compare
         re_path(r'^compare/(?P<hash1>[0-9a-f]{32})/(?P<hash2>[0-9a-f]{32})/$',
                 shared_func.compare_apps),
