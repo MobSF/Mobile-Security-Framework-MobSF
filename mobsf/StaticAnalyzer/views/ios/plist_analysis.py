@@ -65,7 +65,7 @@ def plist_analysis(src, is_source):
             'bundle_url_types': [],
             'bundle_supported_platforms': [],
             'bundle_version_name': '',
-            'adnetworkidentifiers': []
+            'adnetworkidentifiers': [],
         }
         plist_file = None
         plist_files = []

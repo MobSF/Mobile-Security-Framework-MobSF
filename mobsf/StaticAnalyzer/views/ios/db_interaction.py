@@ -111,7 +111,7 @@ def get_context_from_analysis(app_dict,
             'appstore_details': app_dict['appstore'],
             'secrets': app_dict['secrets'],
             'trackers': code_dict['trackers'],
-            'adnetworkidentifiers': code_dict['adnetworkidentifiers'],
+            'adnetworkidentifiers': info_dict['adnetworkidentifiers'],
         }
         return context
     except Exception:
@@ -165,7 +165,7 @@ def save_or_update(update_type,
             'APPSTORE_DETAILS': app_dict['appstore'],
             'SECRETS': app_dict['secrets'],
             'TRACKERS': code_dict['trackers'],
-            'AD_NETWORK_IDENTIFIERS': code_dict['adnetworkidentifiers'],
+            'AD_NETWORK_IDENTIFIERS': info_dict['adnetworkidentifiers'],
         }
         if update_type == 'save':
             db_entry = StaticAnalyzerIOS.objects.filter(
