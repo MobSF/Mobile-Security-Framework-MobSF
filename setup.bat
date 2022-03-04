@@ -66,18 +66,6 @@ where python >nul 2>&1 && (
   %venv% -m pip install --no-cache-dir wheel
   %venv% -m pip install --no-cache-dir --use-deprecated=legacy-resolver -r requirements.txt
 
-  echo [INSTALL] Installing Jadx
-  %venv% gh-release-install 'skylot/jadx' '\mobsf\StaticAnalyzer\tools\jadx.zip'
-  if exist "mobsf\StaticAnalyzer\tools\jadx\mobsf\StaticAnalyzer\tools\jadx.zip" (
-    rmdir "mobsf\StaticAnalyzer\tools\jadx" /q /s >nul 2>&1
-    unzip -qq -d mobsf\StaticAnalyzer\tools\jadx\mobsf\StaticAnalyzer\tools\jadx.zip
-    del /f mobsf\StaticAnalyzer\tools\jadx.zip >nul 2>&1
-  ) else (
-    echo [ERROR] Impossible to download and install Jadx
-    pause
-    exit /b
-  )
-
   echo [INSTALL] Clean Up
   call scripts/clean.bat y
 
@@ -85,6 +73,10 @@ where python >nul 2>&1 && (
   %venv% manage.py makemigrations
   %venv% manage.py makemigrations StaticAnalyzer
   %venv% manage.py migrate
+  
+  echo [INSTALL] Installing Jadx
+  %venv% python scripts/install_jadx.py 
+
   echo Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html
   echo [INSTALL] Installation Complete
   %venv% scripts/check_install.py

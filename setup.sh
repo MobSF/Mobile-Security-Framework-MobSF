@@ -62,20 +62,6 @@ echo '[INSTALL] Installing Requirements'
 pip install --no-cache-dir wheel
 pip install --no-cache-dir --use-deprecated=legacy-resolver -r requirements.txt
 
-echo '[INSTALL] Installing Jadx'
-gh-release-install \
-'skylot/jadx' \
-'jadx-{version}.zip' \
-'./mobsf/StaticAnalyzer/tools/jadx.zip'
-if [ -f './mobsf/StaticAnalyzer/tools/jadx.zip' ]; then
-    rm -fr ./mobsf/StaticAnalyzer/tools/jadx/
-    unzip -qq -d ./mobsf/StaticAnalyzer/tools/jadx/ ./mobsf/StaticAnalyzer/tools/jadx.zip
-    rm -f ./mobsf/StaticAnalyzer/tools/jadx.zip
-else
-    echo '[ERROR] Problem downloading Jadx'
-    exit 1
-fi
-
 echo '[INSTALL] Clean Up'
 bash scripts/clean.sh y
 
@@ -83,6 +69,10 @@ echo '[INSTALL] Migrating Database'
 python manage.py makemigrations
 python manage.py makemigrations StaticAnalyzer
 python manage.py migrate
+
+echo '[INSTALL] Installing Jadx'
+python ./scripts/install_jadx.py 
+
 wkhtmltopdf -V
 if ! [ $? -eq 0 ]; then
     echo 'Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html'
