@@ -1,7 +1,3 @@
-import logging
-
-logger = logging.getLogger(__name__)
-
 known_adnetworks = {
     "4fzdc2evr5": "Aarki",
     "23zd986j2c": "adgoji",
@@ -33,7 +29,7 @@ known_adnetworks = {
 }
 
 def check_adnetworkidentifiers(p_list):
-    """Collect all available AdNetworkItems and translated them into human readable name if possible"""
+    """Collect all available AdNetworkItems and translate them into human readable name, if possible"""
 
     adnetworkidentifiers = []
 

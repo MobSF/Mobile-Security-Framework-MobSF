@@ -99,7 +99,7 @@ class StaticAnalyzerIOS(models.Model):
     APPSTORE_DETAILS = models.TextField(default={})
     SECRETS = models.TextField(default=[])
     TRACKERS = models.TextField(default={})
-    ADNETWORKIDENTIFIERS = models.TextField(default={})
+    AD_NETWORK_IDENTIFIERS = models.TextField(default={})
 
 
 class StaticAnalyzerWindows(models.Model):
