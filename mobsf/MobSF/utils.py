@@ -606,15 +606,3 @@ def disable_print():
 # Restore
 def enable_print():
     sys.stdout = sys.__stdout__
-
-
-def get_jadx_timeout_value():
-    timeout_value = os.environ.get("JADX_TIMEOUT")
-    if not timeout_value:
-        timeout_value = None
-    else:
-        timeout_value = int(timeout_value)
-        if timeout_value == 0 or timeout_value < 0:
-            timeout_value = None
-
-    return timeout_value
