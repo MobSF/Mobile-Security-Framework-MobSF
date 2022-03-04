@@ -93,7 +93,7 @@ def check_transport_security(p_list):
                     'includesSubdomains': False,
                     'exceptionRequiresForwardSecrecy': True,
                     'exceptionAllowsInsecureHTTPLoads': False,
-                    'exceptionMinimumTLSVersion': None
+                    'exceptionMinimumTLSVersion': None,
                 }
 
                 old_exp = 'NSTemporaryExceptionAllowsInsecureHTTPLoads'
@@ -117,8 +117,9 @@ def check_transport_security(p_list):
                         ),
                     }
                     ats.append(findings)
-                    exception_domain_findings \
-                        ['exceptionAllowsInsecureHTTPLoads'] = True
+                    exception_domain_findings[ \
+                        'exceptionAllowsInsecureHTTPLoads' \
+                        ] = True
 
                 if config.get('NSIncludesSubdomains', False):
                     findings = {
@@ -140,9 +141,9 @@ def check_transport_security(p_list):
                     ats.append(findings)
                     exception_domain_findings['includesSubdomains'] = True
 
-                inc_min_tls = (
-                    config.get('NSExceptionMinimumTLSVersion', None) or
-                    config.get('NSTemporaryExceptionMinimumTLSVersion', None)
+                inc_min_tls = ( \
+                    config.get('NSExceptionMinimumTLSVersion', None) or \
+                    config.get('NSTemporaryExceptionMinimumTLSVersion', None) \
                     )
 
                 exception_domain_findings['exceptionMinimumTLSVersion'] = \
@@ -243,9 +244,11 @@ def check_transport_security(p_list):
                     exception_domain_findings \
                         ['exceptionRequiresForwardSecrecy'] = False
 
-                # NSRequiresCertificateTransparency is obsolete according to Apple documentation and is missing in new applications
-                ct_tag = config.get \
-                    ('NSRequiresCertificateTransparency', False)
+                # NSRequiresCertificateTransparency is obsolete according to
+                # the Apple documentation and is missing in new applications
+                ct_tag = config.get( \
+                    'NSRequiresCertificateTransparency', False \
+                    )
 
                 if ct_tag and ct_tag == 'NO':
                     findings = {

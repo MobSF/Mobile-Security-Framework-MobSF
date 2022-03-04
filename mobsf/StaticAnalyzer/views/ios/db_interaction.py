@@ -55,7 +55,8 @@ def get_context_from_db_entry(db_entry):
             'appstore_details': python_dict(db_entry[0].APPSTORE_DETAILS),
             'secrets': python_list(db_entry[0].SECRETS),
             'trackers': python_dict(db_entry[0].TRACKERS),
-            'adnetworkidentifiers': python_dict(db_entry[0].AD_NETWORK_IDENTIFIERS),
+            'adnetworkidentifiers':
+                python_dict(db_entry[0].AD_NETWORK_IDENTIFIERS),
 
         }
         return context
