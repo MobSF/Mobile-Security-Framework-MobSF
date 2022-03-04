@@ -142,8 +142,8 @@ def check_transport_security(p_list):
                     exception_domain_findings['includesSubdomains'] = True
 
                 inc_min_tls = (
-                    config.get('NSExceptionMinimumTLSVersion', None) or
-                    config.get('NSTemporaryExceptionMinimumTLSVersion', None)
+                    config.get('NSExceptionMinimumTLSVersion', None)
+                    or config.get('NSTemporaryExceptionMinimumTLSVersion', None)
                 )
 
                 exception_domain_findings['exceptionMinimumTLSVersion'] = \
@@ -248,7 +248,7 @@ def check_transport_security(p_list):
                 # NSRequiresCertificateTransparency is obsolete according to
                 # the Apple documentation and is missing in new applications
                 ct_tag = config.get(
-                    'NSRequiresCertificateTransparency', False
+                    'NSRequiresCertificateTransparency', False,
                 )
 
                 if ct_tag and ct_tag == 'NO':
