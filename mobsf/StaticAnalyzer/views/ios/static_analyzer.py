@@ -185,7 +185,6 @@ def static_analyzer_ios(request, api=False):
 
                     # SEND EMAIL NOTIFICATION
 
-                    
                 context['virus_total'] = None
                 if settings.VT_ENABLED:
                     vt = VirusTotal.VirusTotal()

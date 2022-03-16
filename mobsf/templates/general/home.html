@@ -5,7 +5,7 @@
       <meta charset="utf-8">
       <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <meta name="viewport" content="width=device-width, initial-scale=1">
-      <meta name="description" content="Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis.">
+      <meta name="description" content="Cyberspect MobSF is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework built from https://mobsf.github.io/docs/">
       <meta name="author" content="Ajin Abraham">
       <link rel="icon" href="{% static "img/favicon.ico" %}">
       <title>Mobile Security Framework - MobSF</title>
@@ -21,20 +21,20 @@
         <!-- Centered link -->
         <div class="topnav-centered">
             <a>
-               <img src="{% static "img/mobsf_logo.png" %}" width="20%" height="20%"/>
+               <img src={{logo}}" width="20%" height="20%"/>
            </a>
            </div>
            <!-- Left-aligned links (default) -->
            <a href="{% url 'recent' %}">RECENT SCANS</a>
-           <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>
+           <!--<a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>-->
    
            <!-- Right-aligned links -->
            <div class="topnav-right">
-               <a href="{% url 'api_docs' %}">API DOCS</a>
+               <!--<a href="{% url 'api_docs' %}">API DOCS</a>-->
                <a href="{% url 'about' %}">ABOUT</a>
                <a>
                 <form action="/search" method="GET">
-                    <input name="md5" type="text" class="form-control" placeholder="Search MD5">
+                    <input name="md5" type="text" class="form-control" placeholder="Search Hash">
                  </form>
                 </a>
            </div>
@@ -67,13 +67,13 @@
                </div>
                <div class="mastfoot">
                 
-                  <input type="download" id="package" class="form-control" placeholder="Download & Scan by package name"/>
+                  <!--<input type="download" id="package" class="form-control" placeholder="Download & Scan by package name"/>-->
 
 
                   <div class="inner">
-                     <h6> <a href="{% url 'recent' %}">RECENT SCANS</a>  |  <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>  |  <a href="{% url 'api_docs' %}">API DOCS</a>   |  <a href="https://opensecurity.in/donate">DONATE ♥</a> | <a href="{% url 'about' %}">ABOUT</a></h6>
+                     <h6> <a href="{% url 'recent' %}">RECENT SCANS</a>  | <!-- <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>  |  <a href="{% url 'api_docs' %}">API DOCS</a>   |  <a href="https://opensecurity.in/donate">DONATE ♥</a> | --> <a href="{% url 'about' %}">ABOUT</a></h6>
                      </br>
-                     <p>&copy; {% now "Y" %}  Mobile Security Framework - MobSF {{ version }}</p>
+                     <p>&copy; {% now "Y" %}  Cyberspect - MobSF {{ version }}</p>
                   </div>
                </div>
             </div>
