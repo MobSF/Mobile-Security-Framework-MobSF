@@ -12,7 +12,6 @@ import stat
 
 from django.conf import settings
 
-from mobsf.MobSF.exceptions import JadxTimoutExpired
 from mobsf.MobSF.utils import (
     filename_from_path,
     find_java_binary,
