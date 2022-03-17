@@ -52,6 +52,12 @@
                      <div id="textnode">Drop anywhere!</div>
                   </div>
                   </br>
+                  <input type="text"  id="txtCountry" placeholder="Country"><div id="errCountry" class="hidden">Required</div><br /><br />
+                  <input type="text"  id="txtDivision" placeholder="Division"><div id="errDivision" class="hidden">Required</div><br /><br />
+                  <input type="text"  id="txtApplicationName" placeholder="Application Name"><div id="errAppName" class="hidden">Required</div><br /><br />
+                  <input type="text"  id="txtEnvironment" placeholder="Environment"><div id="errEnv" class="hidden">Required</div><br /><br />
+                  <input type="text"  id="txtSubmitter" placeholder="Submitter Email"><div id="errSubmitter" class="hidden">Required</div><br /><br />
+                  
                   <form id="upload_form" enctype="multipart/form-data" method="post">
                      {% csrf_token %}
                      <div class="fileUpload btn btn-default btn-lg" id="but">
@@ -225,7 +231,7 @@
                 return false;
           }
          // File Upload
-         function uploadFile(file, i) {
+         function uploadFile(file, newdata, i) {
            try {
                 if (!isValidExt(file.name) || !isValidMime(file.type)){
                     return;
@@ -242,16 +248,21 @@
                 xhr.addEventListener("abort", abortHandler, false);
                 var formdata = new FormData();
                 formdata.append("file", file);
+                formdata.append("newdata", newdata);
                 xhr.send(formdata)
             } catch (e) {
                 alert("Error:" + e);
             }
            }
          
-           function handleFiles(files) {
-               files = [...files]
-               files.forEach(uploadFile)
-           }
+           function handleFiles(files, newdata) {
+            files = [...files]
+            //files.forEach(uploadFile, newdata)
+            for (var i = 0; i < files.length; i++)
+            {
+                 uploadFile(files[i], newdata, i);
+            }
+        }
          
            // Full Screen Drag & Drop File Upload
            var lastTarget = null;
@@ -265,6 +276,33 @@
                }
                return false;
            }
+
+           function checkRequired() {
+            //alert(document.getElementById('txtCountry').value);
+            if(!document.getElementById('txtCountry').value)
+            {
+                 document.getElementById('errCountry').classList.remove('hidden');
+                 return false;
+            } else { document.getElementById('errCountry').classList.add('hidden');}
+            if(!document.getElementById('txtDivision').value)
+            {
+                 document.getElementById('errDivision').classList.remove('hidden');
+                 return false;
+            } else {document.getElementById('errDivision').classList.add('hidden');}
+            if(!document.getElementById('txtApplicationName').value)
+            {
+                 document.getElementById('errAppName').classList.remove('hidden');
+                 return false;
+            } else {document.getElementById('errAppName').classList.add('hidden');}
+            if(!document.getElementById('txtEnvironment').value)
+            {
+                 document.getElementById('errEnv').classList.remove('hidden');
+                 return false;
+            } else { document.getElementById('errEnv').classList.add('hidden');}
+            
+            return true;
+             
+        }
          
            window.addEventListener("dragenter", function (e) {
                if (isFile(e)) {
@@ -293,13 +331,25 @@
                document.querySelector("#drop").style.visibility = "hidden";
                document.querySelector("#drop").style.opacity = 0;
                document.querySelector("#textnode").style.fontSize = "42px";
+               if(!checkRequired())
+               { return;}
                if(e.dataTransfer.files.length > 0)
                {
-               handleFiles(e.dataTransfer.files);
+                var newdata = [];
+                newdata.push(document.getElementById('txtCountry').value);
+                newdata.push(document.getElementById('txtDivision').value);
+                newdata.push(document.getElementById('txtApplicationName').value);
+                newdata.push(document.getElementById('txtEnvironment').value);
+                newdata.push(document.getElementById('txtSubmitter').value);
+                handleFiles(e.dataTransfer.files, newdata);
                }
            });
 
             $(document).ready(function() {
+                //make sure required fields are filled
+                $('input[type=file]').click(function(){
+                    return checkRequired();
+                });
                 // Button File Upload
                 $('input[type=file]').change(function() {
                     _('status').innerText = "";
@@ -308,7 +358,13 @@
                     }
                     _("uploadFile").style.display = "none";
                     var files = _("uploadFile").files;
-                    handleFiles(files);
+                    var newdata = [];
+                    newdata.push(document.getElementById('txtCountry').value);
+                    newdata.push(document.getElementById('txtDivision').value);
+                    newdata.push(document.getElementById('txtApplicationName').value);
+                    newdata.push(document.getElementById('txtEnvironment').value);
+                    newdata.push(document.getElementById('txtSubmitter').value);
+                    handleFiles(files, newdata);
                 });
             });
       </script>
