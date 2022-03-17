@@ -75,7 +75,6 @@ class Upload(object):
     def resp_json(self, data):
         resp = HttpResponse(json.dumps(data),
                             content_type='application/json; charset=utf-8')
-        resp['Access-Control-Allow-Origin'] = '*'
         return resp
 
     def upload_html(self):
@@ -154,10 +153,14 @@ class Upload(object):
 
 def api_docs(request):
     """Api Docs Route."""
+    # TODO: perform admin authorization check
+
     context = {
         'title': 'REST API Docs',
         'api_key': api_key(),
         'version': settings.MOBSF_VER,
+        'logo': os.environ['LOGO'] if os.environ['LOGO']
+        else '/static/img/mobsf_logo.png',
     }
     template = 'general/apidocs.html'
     return render(request, template, context)

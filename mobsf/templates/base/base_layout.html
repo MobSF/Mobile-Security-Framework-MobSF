@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>{{title}}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Mobile Security Framework - MobSF">
+  <meta name="description" content="Cyberspect - MobSF">
   <meta name="author" content="Ajin Abraham">
   <link rel="icon" href="{% static "img/favicon.ico" %}">
 
@@ -40,16 +40,16 @@
     <ul class="navbar-nav ml-auto">
         <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'recent' %}" class="nav-link">RECENT SCANS</a></li>
         <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'home' %}" class="nav-link">STATIC ANALYZER</a></li>
-        <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'dynamic' %}" class="nav-link">DYNAMIC ANALYZER</a></li>
-        <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'api_docs' %}" class="nav-link">API DOCS</a></li>
-        <li class="nav-item d-none d-sm-inline-block"><a href="https://opensecurity.in/donate" class="nav-link">DONATE ♥</a></li>
+        <!--<li class="nav-item d-none d-sm-inline-block"><a href="{% url 'dynamic' %}" class="nav-link">DYNAMIC ANALYZER</a></li>-->
+        <!--<li class="nav-item d-none d-sm-inline-block"><a href="{% url 'api_docs' %}" class="nav-link">API DOCS</a></li>-->
+        <!--<li class="nav-item d-none d-sm-inline-block"><a href="https://opensecurity.in/donate" class="nav-link">DONATE ♥</a></li>-->
         <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'about' %}" class="nav-link">ABOUT</a></li>
     </ul>
 
     <!-- SEARCH FORM -->
     <form class="form-inline ml-3" action="/search" method="GET">
       <div class="input-group input-group-sm">
-        <input class="form-control form-control-navbar" id="navbar-search-input" type="search" placeholder="Search MD5" name="md5" aria-label="Search">
+        <input class="form-control form-control-navbar" id="navbar-search-input" type="search" placeholder="Search Hash" name="md5" aria-label="Search">
         <div class="input-group-append">
           <button class="btn btn-navbar" type="submit">
             <i class="fas fa-search"></i>
@@ -82,7 +82,7 @@
 
   <!-- /.content-wrapper -->
   <footer class="main-footer">
-    <strong>© {% now "Y" %} Mobile Security Framework - MobSF | <a href="https://ajinabraham.com">Ajin Abraham</a> | <a href="https://opensecurity.in">OpenSecurity</a>.</strong>
+    <strong>© {% now "Y" %} Cyberspect - MobSF <!-- | <a href="https://ajinabraham.com">Ajin Abraham</a> | <a href="https://opensecurity.in">OpenSecurity</a>.--></strong>
     <div class="float-right d-none d-sm-inline-block">
       <b>Version</b> {{ version }}
     </div>
