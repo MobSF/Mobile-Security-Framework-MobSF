@@ -537,6 +537,7 @@ def static_analyzer(request, api=False):
                 return print_n_send_error_response(request, msg, True)
             else:
                 return print_n_send_error_response(request, msg, False)
+
     except Exception as excep:
         logger.exception('Error Performing Static Analysis')
         msg = str(excep)
