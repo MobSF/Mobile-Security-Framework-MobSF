@@ -278,16 +278,13 @@ LOGGING = {
         },
     },
 }
+JADX_TIMEOUT = int(os.getenv('JADX_TIMEOUT', 1800))
 # ===========================
 # ENTERPRISE FEATURE REQUESTS
 # ===========================
 EFR_01 = os.getenv('EFR_01', '0')
 # USER CONFIGURATION
 # ===================
-
-# in case of adding it below STATIC ANALYSER SETTINGS, 'os' is not defined error pops up
-JADX_TIMEOUT = int(os.getenv('JADX_TIMEOUT', 1800))
-
 if CONFIG_HOME:
     logger.info('Loading User config from: %s', USER_CONFIG)
 else:
