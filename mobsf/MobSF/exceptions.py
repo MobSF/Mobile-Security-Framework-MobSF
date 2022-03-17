@@ -1,4 +1,4 @@
 
 
-class JadxTimoutExpired(Exception):
+class JadxTimoutExpiredError(Exception):
     ...
