@@ -15,11 +15,6 @@ logger = logging.getLogger(__name__)
 def add_to_recent_scan(data):
     """Add Entry to Database under Recent Scan."""
     try:
-        if len(data['extradata'][0].split(',')) == 5:
-            submitter_email = data['extradata'][0].split(',')[4]
-        elif data.submitter != '':
-            submitter_email = data.submitter
-
         db_obj = RecentScansDB.objects.filter(MD5=data['hash'])
         if not db_obj.exists():
             new_db_obj = RecentScansDB(
@@ -31,11 +26,8 @@ def add_to_recent_scan(data):
                 VERSION_NAME='',
                 MD5=data['hash'],
                 TIMESTAMP=timezone.now(),
-                COUNTRY=data['extradata'][0].split(',')[0],
-                ENVIRONMENT=data['extradata'][0].split(',')[1],
-                DIVISION=data['extradata'][0].split(',')[2],
-                ENTERED_APP_NAME=data['extradata'][0].split(',')[3],
-                SUBMITTER_EMAIL=submitter_email)
+                SUBMITTER_EMAIL=data['submitter'],
+                EXTRA_DATA=data['extradata'])
 
             new_db_obj.save()
     except Exception:
@@ -75,10 +67,9 @@ class Scanning(object):
         self.file = request.FILES['file']
         self.file_name = request.FILES['file'].name
         self.extradata = request.POST.getlist('extradata')
-        if 'submitter_email' in request.headers:
-            self.submitter = request.headers['submitter_email']
-        else:
-            self.submitter = ''
+
+        # Retrieve user's email address from request header
+        self.submitter = request.headers['x-amzn-oidc-identity']
 
     def scan_apk(self):
         """Android APK."""

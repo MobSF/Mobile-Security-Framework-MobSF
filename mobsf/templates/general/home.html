@@ -55,16 +55,16 @@
                         <div id="textnode">Drop anywhere!</div>
                     </div>
                     </br>
-                    <input type="text" id="txtApplicationName" placeholder="Application Name">
-                    <div id="errAppName" class="hidden">Required</div><br /><br />
-                    <input type="text" id="txtCountry" placeholder="Country">
-                    <div id="errCountry" class="hidden">Required</div><br /><br />
-                    <input type="text" id="txtDivision" placeholder="Division">
-                    <div id="errDivision" class="hidden">Required</div><br /><br />                    
-                    <input type="text" id="txtEnvironment" placeholder="Environment">
-                    <div id="errEnv" class="hidden">Required</div><br /><br />
-                    <input type="text" id="txtSubmitter" placeholder="Submitter Email">
-                    <div id="errSubmitter" class="hidden">Required</div><br /><br />
+                    <input type="text" id="appName" placeholder="Application Name">
+                    <div id="err_appName" class="hidden">Required</div><br /><br />
+                    <input type="text" id="country" placeholder="Country">
+                    <div id="err_country" class="hidden">Required</div><br /><br />
+                    <input type="text" id="division" placeholder="Division">
+                    <div id="err_division" class="hidden">Required</div><br /><br />                    
+                    <input type="text" id="environment" placeholder="Environment">
+                    <div id="err_environment" class="hidden">Required</div><br /><br />
+                    <input type="text" id="submitter" placeholder="Submitter Email">
+                    <div id="err_submitter" class="hidden">Required</div><br /><br />
 
                     <form id="upload_form" enctype="multipart/form-data" method="post">
                         {% csrf_token %}
@@ -269,7 +269,6 @@
 
         function handleFiles(files, extradata) {
             files = [...files]
-            //files.forEach(uploadFile, extradata)
             for (var i = 0; i < files.length; i++) {
                 uploadFile(files[i], extradata, i);
             }
@@ -289,22 +288,22 @@
         }
 
         function checkRequired() {
-            if (!document.getElementById('txtCountry').value) {
-                document.getElementById('errCountry').classList.remove('hidden');
+            if (!document.getElementById('country').value) {
+                document.getElementById('err_country').classList.remove('hidden');
                 return false;
-            } else { document.getElementById('errCountry').classList.add('hidden'); }
-            if (!document.getElementById('txtDivision').value) {
-                document.getElementById('errDivision').classList.remove('hidden');
+            } else { document.getElementById('err_country').classList.add('hidden'); }
+            if (!document.getElementById('division').value) {
+                document.getElementById('err_division').classList.remove('hidden');
                 return false;
-            } else { document.getElementById('errDivision').classList.add('hidden'); }
-            if (!document.getElementById('txtApplicationName').value) {
-                document.getElementById('errAppName').classList.remove('hidden');
+            } else { document.getElementById('err_division').classList.add('hidden'); }
+            if (!document.getElementById('appName').value) {
+                document.getElementById('err_appName').classList.remove('hidden');
                 return false;
-            } else { document.getElementById('errAppName').classList.add('hidden'); }
-            if (!document.getElementById('txtEnvironment').value) {
-                document.getElementById('errEnv').classList.remove('hidden');
+            } else { document.getElementById('err_appName').classList.add('hidden'); }
+            if (!document.getElementById('environment').value) {
+                document.getElementById('err_environment').classList.remove('hidden');
                 return false;
-            } else { document.getElementById('errEnv').classList.add('hidden'); }
+            } else { document.getElementById('err_environment').classList.add('hidden'); }
 
             return true;
 
@@ -339,13 +338,13 @@
             document.querySelector("#textnode").style.fontSize = "42px";
             if (!checkRequired()) { return; }
             if (e.dataTransfer.files.length > 0) {
-                var extradata = [];
-                extradata.push(document.getElementById('txtCountry').value);
-                extradata.push(document.getElementById('txtDivision').value);
-                extradata.push(document.getElementById('txtApplicationName').value);
-                extradata.push(document.getElementById('txtEnvironment').value);
-                extradata.push(document.getElementById('txtSubmitter').value);
-                handleFiles(e.dataTransfer.files, extradata);
+                var extradata = new Object();
+                extradata.enteredAppName = document.getElementById('appName').value;
+                extradata.enteredVersion = document.getElementById('version').value;
+                extradata.country = document.getElementById('country').value;
+                extradata.division = document.getElementById('division').value;                
+                extradata.environment = document.getElementById('environment').value;
+                handleFiles(e.dataTransfer.files, JSON.stringify(extradata));
             }
         });
 
@@ -362,13 +361,13 @@
                 }
                 _("uploadFile").style.display = "none";
                 var files = _("uploadFile").files;
-                var extradata = [];
-                extradata.push(document.getElementById('txtCountry').value);
-                extradata.push(document.getElementById('txtDivision').value);
-                extradata.push(document.getElementById('txtApplicationName').value);
-                extradata.push(document.getElementById('txtEnvironment').value);
-                extradata.push(document.getElementById('txtSubmitter').value);
-                handleFiles(files, extradata);
+                var extradata = new Object();
+                extradata.enteredAppName = document.getElementById('appName').value;
+                extradata.enteredVersion = document.getElementById('version').value;
+                extradata.country = document.getElementById('country').value;
+                extradata.division = document.getElementById('division').value;                
+                extradata.environment = document.getElementById('environment').value;
+                handleFiles(files, JSON.stringify(extradata));
             });
         });
     </script>
