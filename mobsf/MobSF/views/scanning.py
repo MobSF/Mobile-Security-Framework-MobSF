@@ -68,8 +68,9 @@ class Scanning(object):
         self.file_name = request.FILES['file'].name
         self.extradata = request.POST.getlist('extradata')
 
-        # Retrieve user's email address from request header
-        self.submitter = request.headers['x-amzn-oidc-identity']
+        # Retrieve user's email address from SSO info
+        if request.jwt_user:
+            self.submitter = request.jwt_user
 
     def scan_apk(self):
         """Android APK."""
