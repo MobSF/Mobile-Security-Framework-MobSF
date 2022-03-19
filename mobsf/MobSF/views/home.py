@@ -126,7 +126,7 @@ class Upload(object):
             api_response['error'] = 'File format not Supported!'
             return api_response, HTTP_BAD_REQUEST
         if not request.POST.getlist('extradata'):
-            api_response['error'] = "Additional data missing."
+            api_response['error'] = 'Additional data missing.'
             return api_response, HTTP_BAD_REQUEST
         api_response = self.upload()
         return api_response, 200
