@@ -14,8 +14,8 @@ class RecentScansDB(models.Model):
     MD5 = models.CharField(max_length=32, default='', primary_key=True)
     TIMESTAMP = models.DateTimeField(default=datetime.now)
     SUBMITTER_EMAIL = models.CharField(max_length=260, default='')
-    EXTRA_DATA = models.TextField(default={})    
-    
+    EXTRA_DATA = models.TextField(default={})
+
 
 class StaticAnalyzerAndroid(models.Model):
     FILE_NAME = models.CharField(max_length=260, default='')

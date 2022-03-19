@@ -38,7 +38,7 @@ def static_analysis_test():
             with open(fpath, 'rb') as file_pointer:
                 response = http_client.post(
                     '/upload/',
-                    {'file': file_pointer})
+                    {'file': file_pointer, 'extradata': '{}'})
                 obj = json.loads(response.content.decode('utf-8'))
                 if response.status_code == 200 and obj['status'] == 'success':
                     logger.info('[OK] Upload OK: %s', filename)
@@ -183,7 +183,7 @@ def api_test():
             with open(fpath, 'rb') as file_pointer:
                 response = http_client.post(
                     '/api/v1/upload',
-                    {'file': file_pointer},
+                    {'file': file_pointer, 'extradata': '{}'},
                     HTTP_AUTHORIZATION=auth)
                 obj = json.loads(response.content.decode('utf-8'))
                 if response.status_code == 200 and 'hash' in obj:
