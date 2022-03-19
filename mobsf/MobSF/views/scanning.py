@@ -71,6 +71,8 @@ class Scanning(object):
         # Retrieve user's email address from SSO info
         if request.jwt_user:
             self.submitter = request.jwt_user
+        else:
+            self.submitter = ''
 
     def scan_apk(self):
         """Android APK."""
@@ -161,6 +163,8 @@ class Scanning(object):
             'scan_type': 'appx',
             'file_name': self.file_name,
             'status': 'success',
+            'extradata': self.extradata,
+            'submitter': self.submitter,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Windows APP')
