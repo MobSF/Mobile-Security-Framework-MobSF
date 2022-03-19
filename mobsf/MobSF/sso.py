@@ -1,10 +1,9 @@
 # -*- coding: utf_8 -*-
 """Support for SSO using AWS ALB and Azure AD."""
 import base64
+import json
 
 import jwt
-import requests
-import json
 import logging
 
 logger = logging.getLogger(__name__)
