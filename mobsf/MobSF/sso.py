@@ -4,7 +4,10 @@ import base64
 import json
 
 import jwt
+
 import logging
+
+import requests
 
 logger = logging.getLogger(__name__)
 
