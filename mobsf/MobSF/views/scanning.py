@@ -1,5 +1,4 @@
 # -*- coding: utf_8 -*-
-from email.header import Header
 import hashlib
 import logging
 import io
@@ -16,12 +15,10 @@ logger = logging.getLogger(__name__)
 def add_to_recent_scan(data):
     """Add Entry to Database under Recent Scan."""
     try:
-        if len(data['newdata'][0].split(',')) == 5 :
-            submitter_email = data['newdata'][0].split(',')[4]
-        elif data.submitter != "" :
+        if len(data['extradata'][0].split(',')) == 5:
+            submitter_email = data['extradata'][0].split(',')[4]
+        elif data.submitter != '':
             submitter_email = data.submitter
-        else:
-            submitter_email = "default@email.com" 
 
         db_obj = RecentScansDB.objects.filter(MD5=data['hash'])
         if not db_obj.exists():
@@ -34,10 +31,10 @@ def add_to_recent_scan(data):
                 VERSION_NAME='',
                 MD5=data['hash'],
                 TIMESTAMP=timezone.now(),
-                COUNTRY=data['newdata'][0].split(',')[0],
-                ENVIRONMENT=data['newdata'][0].split(',')[1],
-                DIVISION=data['newdata'][0].split(',')[2],
-                ENTERED_APP_NAME=data['newdata'][0].split(',')[3],
+                COUNTRY=data['extradata'][0].split(',')[0],
+                ENVIRONMENT=data['extradata'][0].split(',')[1],
+                DIVISION=data['extradata'][0].split(',')[2],
+                ENTERED_APP_NAME=data['extradata'][0].split(',')[3],
                 SUBMITTER_EMAIL=submitter_email)
 
             new_db_obj.save()
@@ -77,7 +74,7 @@ class Scanning(object):
     def __init__(self, request):
         self.file = request.FILES['file']
         self.file_name = request.FILES['file'].name
-        self.newdata = request.POST.getlist('newdata')
+        self.extradata = request.POST.getlist('extradata')
         if 'submitter_email' in request.headers:
             self.submitter = request.headers['submitter_email']
         else:
@@ -92,8 +89,8 @@ class Scanning(object):
             'hash': md5,
             'scan_type': 'apk',
             'file_name': self.file_name,
-            'newdata':self.newdata,
-            'submitter':self.submitter,
+            'extradata': self.extradata,
+            'submitter': self.submitter,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android APK')
@@ -108,8 +105,8 @@ class Scanning(object):
             'hash': md5,
             'scan_type': 'xapk',
             'file_name': self.file_name,
-            'newdata':self.newdata,
-            'submitter':self.submitter,
+            'extradata': self.extradata,
+            'submitter': self.submitter,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android XAPK base APK')
@@ -124,8 +121,8 @@ class Scanning(object):
             'hash': md5,
             'scan_type': 'apks',
             'file_name': self.file_name,
-            'newdata':self.newdata,
-            'submitter':self.submitter,
+            'extradata': self.extradata,
+            'submitter': self.submitter,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android Split APK')
@@ -140,8 +137,8 @@ class Scanning(object):
             'hash': md5,
             'scan_type': 'zip',
             'file_name': self.file_name,
-            'newdata':self.newdata,
-            'submitter':self.submitter,
+            'extradata': self.extradata,
+            'submitter': self.submitter,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android/iOS Source Code')
@@ -156,8 +153,8 @@ class Scanning(object):
             'scan_type': 'ipa',
             'file_name': self.file_name,
             'status': 'success',
-            'newdata':self.newdata,
-            'submitter':self.submitter,
+            'extradata': self.extradata,
+            'submitter': self.submitter,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of iOS IPA')
