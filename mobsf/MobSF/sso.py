@@ -1,13 +1,14 @@
 # -*- coding: utf_8 -*-
 """Support for SSO using AWS ALB and Azure AD."""
-import jwt
-
-import requests
 import base64
+
+import jwt
+import requests
 import json
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 def parse_jwt(request):
     if 'x-amzn-oidc-data' not in request.headers:
@@ -46,6 +47,7 @@ def parse_jwt(request):
     request.jwt_claims = payload
     request.jwt_user = request.headers['x-amzn-oidc-identity']
     return
+
 
 def is_admin(request):
     return False

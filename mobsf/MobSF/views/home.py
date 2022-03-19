@@ -49,7 +49,7 @@ def index(request):
     mimes = (settings.APK_MIME
              + settings.IPA_MIME
              + settings.ZIP_MIME
-             + settings.APPX_MIME)    
+             + settings.APPX_MIME)
     context = {
         'version': settings.MOBSF_VER,
         'mimes': mimes,

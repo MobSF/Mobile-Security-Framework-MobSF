@@ -28,7 +28,7 @@ def api_auth(meta):
 
 
 def sso_auth(meta):
-    """Check for SSO JWT"""
+    """Check for SSO JWT."""
     if 'HTTP_X_MOBSF_API_KEY' in meta:
         return bool(api_key() == meta['HTTP_X_MOBSF_API_KEY'])
     elif 'HTTP_AUTHORIZATION' in meta:
