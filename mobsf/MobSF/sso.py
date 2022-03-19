@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 def parse_jwt(request):
     request.jwt_claims = '{}'
     request.jwt_user = 'unknown'
-    
+
     if 'x-amzn-oidc-data' not in request.headers:
         return
 
