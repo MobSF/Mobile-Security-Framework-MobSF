@@ -421,4 +421,4 @@ else:
 # ==========CYBERSPECT SETTINGS ===============
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 AWS_REGION = os.getenv('AWS_REGION', 'us-east-2')
-AWS_S3_BUCKET = os.environ['AWS_S3_BUCKET']
+AWS_S3_BUCKET = os.getenv('AWS_S3_BUCKET')

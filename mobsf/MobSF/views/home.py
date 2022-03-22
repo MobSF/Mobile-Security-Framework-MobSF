@@ -173,6 +173,10 @@ class Upload(object):
             return scanning.scan_appx()
 
     def write_to_s3(self, api_response):
+        if not settings.AWS_S3_BUCKET:
+            logging.warning('Environment variable AWS_S3_BUCKET not set')
+            return
+
         s3_client = boto3.client('s3')
         try:
             # Write minimal metadata to file
