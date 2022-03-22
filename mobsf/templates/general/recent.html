@@ -45,6 +45,7 @@
                         <th>APP</th>
                         <th>FILE</th>
                         <th>TYPE</th>
+                        <th>ENTERED NAME</th>
                         <th>HASH</th>
                         <th>SCAN DATE</th>
                         <th style="width: 9%">ACTIONS</th>
@@ -74,6 +75,7 @@
                                 {% elif '.appx' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-windows fa-3x"></i>
                                 {% endif %}
                             </td>
+                            <td>{{e.USER_APP_NAME}}</td>
                             <td>{{ e.MD5 }}</td>
                             <td>{{ e.TIMESTAMP }}</td>
                             <td><p><a class="btn btn-primary btn-sm" href="../{{ e.ANALYZER }}/?name={{e.FILE_NAME}}&amp;checksum={{e.MD5}}&amp;type={{e.SCAN_TYPE}}"><i class="fas fa-eye"></i> Static Report</a>

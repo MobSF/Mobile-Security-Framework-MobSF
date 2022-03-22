@@ -13,6 +13,12 @@ class RecentScansDB(models.Model):
     VERSION_NAME = models.CharField(max_length=50, default='')
     MD5 = models.CharField(max_length=32, default='', primary_key=True)
     TIMESTAMP = models.DateTimeField(default=datetime.now)
+    USER_APP_NAME = models.CharField(max_length=260, default='')
+    USER_APP_VERSION = models.CharField(max_length=50, default='')
+    COUNTRY = models.CharField(max_length=50, default='')
+    DIVISION = models.CharField(max_length=260, default='')
+    ENVIRONMENT = models.CharField(max_length=50, default='')
+    EMAIL = models.CharField(max_length=260, default='')
 
 
 class StaticAnalyzerAndroid(models.Model):
