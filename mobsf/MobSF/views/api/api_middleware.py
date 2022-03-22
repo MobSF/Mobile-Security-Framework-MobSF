@@ -4,7 +4,6 @@ from django.http import JsonResponse
 from django.utils.deprecation import MiddlewareMixin
 
 from mobsf.MobSF.utils import api_key
-from mobsf.MobSF.sso import parse_jwt
 
 OK = 200
 

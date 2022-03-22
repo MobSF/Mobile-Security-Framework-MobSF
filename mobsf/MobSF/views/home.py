@@ -6,11 +6,11 @@ import os
 import platform
 import re
 import shutil
-import boto3
-from botocore.exceptions import ClientError
 from pathlib import Path
 from wsgiref.util import FileWrapper
 
+import boto3
+from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect
@@ -146,7 +146,7 @@ class Upload(object):
         if error_message:
             logger.error(error_message)
             api_response['error'] = error_message
-            return api_response, HTTP_BAD_REQUEST        
+            return api_response, HTTP_BAD_REQUEST
         api_response = self.upload()
         self.write_to_s3(api_response)
         return api_response, 200
@@ -155,7 +155,7 @@ class Upload(object):
         request = self.request
         scanning = Scanning(request)
         content_type = self.file.content_type
-        file_name = self.file.name        
+        file_name = self.file.name
         logger.info('MIME Type: %s, File: %s', content_type, file_name)
         if self.file_type.is_apk():
             return scanning.scan_apk()
@@ -170,28 +170,31 @@ class Upload(object):
         elif self.file_type.is_appx():
             return scanning.scan_appx()
 
-    def write_to_s3(self, api_response):                    
+    def write_to_s3(self, api_response):
         s3_client = boto3.client('s3')
         try:
             # Write minimal metadata to file
-            path_prefix = os.path.join(settings.UPLD_DIR, \
-                api_response['hash'] + '/' + api_response['hash'] + '.')
-            file_path = path_prefix + api_response['scan_type']
-            metadata_filepath = path_prefix + 'json'
-            metadata_file = open(metadata_filepath, "w")
+            prefix = os.path.join(settings.UPLD_DIR, 
+                                  api_response['hash'] + '/' + 
+                                  api_response['hash'] + '.')
+            file_path = prefix + api_response['scan_type']
+            metadata_filepath = prefix + 'json'
+            metadata_file = open(metadata_filepath, 'w')
             metadata_file.write('{"app_name":"' + self.app_name + '",')
             metadata_file.write('"app_version":"' + self.app_version + '",')
             metadata_file.write('"email":"' + self.email + '"}')
-            metadata_file.close()            
+            metadata_file.close()
 
             # Write uploaded files to S3 bucket
-            response = s3_client.upload_file(file_path,
-                settings.AWS_S3_BUCKET, self.file.name)            
+            s3_client.upload_file(file_path,
+                                  settings.AWS_S3_BUCKET,
+                                  self.file.name)
             file_split = os.path.splitext(self.file.name)
-            response = s3_client.upload_file(metadata_filepath, 
-                settings.AWS_S3_BUCKET, file_split[0] + '.json')
-        except ClientError as e:
-            logging.error(e)
+            s3_client.upload_file(metadata_filepath, 
+                                  settings.AWS_S3_BUCKET,
+                                  file_split[0] + '.json')
+        except ClientError:
+            logging.error('Unable to upload files to AWS S3')
             return False
         return
 
@@ -199,7 +202,7 @@ class Upload(object):
         # If upload is performed manually be web user,
         # use their username instead of supplied email
         if 'REMOTE_USER' in self.request.META:
-            self.email = self.request.user.username        
+            self.email = self.request.user.username
         return None
 
 
