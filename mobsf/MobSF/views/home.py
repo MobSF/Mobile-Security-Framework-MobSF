@@ -10,7 +10,9 @@ from pathlib import Path
 from wsgiref.util import FileWrapper
 
 import boto3
+
 from botocore.exceptions import ClientError
+
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect
@@ -174,9 +176,9 @@ class Upload(object):
         s3_client = boto3.client('s3')
         try:
             # Write minimal metadata to file
-            prefix = os.path.join(settings.UPLD_DIR, 
-                                  api_response['hash'] + '/' + 
-                                  api_response['hash'] + '.')
+            prefix = os.path.join(settings.UPLD_DIR,
+                                  api_response['hash'] + '/'
+                                  + api_response['hash'] + '.')
             file_path = prefix + api_response['scan_type']
             metadata_filepath = prefix + 'json'
             metadata_file = open(metadata_filepath, 'w')
@@ -190,7 +192,7 @@ class Upload(object):
                                   settings.AWS_S3_BUCKET,
                                   self.file.name)
             file_split = os.path.splitext(self.file.name)
-            s3_client.upload_file(metadata_filepath, 
+            s3_client.upload_file(metadata_filepath,
                                   settings.AWS_S3_BUCKET,
                                   file_split[0] + '.json')
         except ClientError:
