@@ -26,8 +26,12 @@ def add_to_recent_scan(data):
                 VERSION_NAME='',
                 MD5=data['hash'],
                 TIMESTAMP=timezone.now(),
-                SUBMITTER_EMAIL=data['submitter'],
-                EXTRA_DATA=data['extradata'])
+                USER_APP_NAME=data['user_app_name'],
+                USER_APP_VERSION=data['user_app_version'],
+                DIVISION=data['division'],
+                COUNTRY=data['country'],
+                ENVIRONMENT=data['environment'],
+                EMAIL=data['email'])
 
             new_db_obj.save()
     except Exception:
@@ -66,13 +70,12 @@ class Scanning(object):
     def __init__(self, request):
         self.file = request.FILES['file']
         self.file_name = request.FILES['file'].name
-        self.extradata = request.POST.getlist('extradata')
-
-        # Retrieve user's email address from SSO info
-        if request.jwt_user:
-            self.submitter = request.jwt_user
-        else:
-            self.submitter = ''
+        self.user_app_name = request.POST.get('app_name')
+        self.user_app_version = request.POST.get('app_version')
+        self.country = request.POST.get('country')
+        self.division = request.POST.get('division')
+        self.environment = request.POST.get('environment')
+        self.email = request.POST.get('email')
 
     def scan_apk(self):
         """Android APK."""
@@ -83,8 +86,12 @@ class Scanning(object):
             'hash': md5,
             'scan_type': 'apk',
             'file_name': self.file_name,
-            'extradata': self.extradata,
-            'submitter': self.submitter,
+            'user_app_name': self.user_app_name,
+            'user_app_version': self.user_app_version,
+            'country': self.country,
+            'division': self.division,
+            'environment': self.environment,
+            'email': self.email,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android APK')
@@ -99,8 +106,12 @@ class Scanning(object):
             'hash': md5,
             'scan_type': 'xapk',
             'file_name': self.file_name,
-            'extradata': self.extradata,
-            'submitter': self.submitter,
+            'user_app_name': self.user_app_name,
+            'user_app_version': self.user_app_version,
+            'country': self.country,
+            'division': self.division,
+            'environment': self.environment,
+            'email': self.email,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android XAPK base APK')
@@ -115,8 +126,12 @@ class Scanning(object):
             'hash': md5,
             'scan_type': 'apks',
             'file_name': self.file_name,
-            'extradata': self.extradata,
-            'submitter': self.submitter,
+            'user_app_name': self.user_app_name,
+            'user_app_version': self.user_app_version,
+            'country': self.country,
+            'division': self.division,
+            'environment': self.environment,
+            'email': self.email,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android Split APK')
@@ -131,8 +146,12 @@ class Scanning(object):
             'hash': md5,
             'scan_type': 'zip',
             'file_name': self.file_name,
-            'extradata': self.extradata,
-            'submitter': self.submitter,
+            'user_app_name': self.user_app_name,
+            'user_app_version': self.user_app_version,
+            'country': self.country,
+            'division': self.division,
+            'environment': self.environment,
+            'email': self.email,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android/iOS Source Code')
@@ -147,8 +166,12 @@ class Scanning(object):
             'scan_type': 'ipa',
             'file_name': self.file_name,
             'status': 'success',
-            'extradata': self.extradata,
-            'submitter': self.submitter,
+            'user_app_name': self.user_app_name,
+            'user_app_version': self.user_app_version,
+            'country': self.country,
+            'division': self.division,
+            'environment': self.environment,
+            'email': self.email,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of iOS IPA')
@@ -163,8 +186,12 @@ class Scanning(object):
             'scan_type': 'appx',
             'file_name': self.file_name,
             'status': 'success',
-            'extradata': self.extradata,
-            'submitter': self.submitter,
+            'user_app_name': self.user_app_name,
+            'user_app_version': self.user_app_version,
+            'country': self.country,
+            'division': self.division,
+            'environment': self.environment,
+            'email': self.email,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Windows APP')

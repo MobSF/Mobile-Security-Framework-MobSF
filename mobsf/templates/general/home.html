@@ -55,17 +55,17 @@
                         <div id="textnode">Drop anywhere!</div>
                     </div>
                     </br>
-                    <input type="text" id="appName" placeholder="Application Name">
-                    <div id="err_appName" class="hidden">Required</div><br /><br />
-                    <input type="text" id="country" placeholder="Country">
+                    <input type="text" id="name" placeholder="Application Name">
+                    <div id="err_name" class="hidden">Required</div><br /><br />
+                    <input type="text" id="version" placeholder="Version (1.0)">
+                    <div id="err_version" class="hidden">Required</div><br /><br />
+                    <input type="text" id="country" placeholder="Country (US)">
                     <div id="err_country" class="hidden">Required</div><br /><br />
                     <input type="text" id="division" placeholder="Division">
                     <div id="err_division" class="hidden">Required</div><br /><br />                    
-                    <input type="text" id="environment" placeholder="Environment">
+                    <input type="text" id="environment" placeholder="Environment (Production)">
                     <div id="err_environment" class="hidden">Required</div><br /><br />
-                    <input type="text" id="submitter" placeholder="Submitter Email">
-                    <div id="err_submitter" class="hidden">Required</div><br /><br />
-
+                    
                     <form id="upload_form" enctype="multipart/form-data" method="post">
                         {% csrf_token %}
                         <div class="fileUpload btn btn-default btn-lg" id="but">
@@ -197,11 +197,11 @@
                         i = 1;
                     }
                 }, 2000);
-                var url = json.analyzer + '/';
-                if (json.hash) {
-                    url += '?name=' + encodeURIComponent(json.file_name) + '&checksum=' + json.hash + '&type=' + json.scan_type
-                }
-                load_result(url);
+                // var url = json.analyzer + '/';
+                // if (json.hash) {
+                //    url += '?name=' + encodeURIComponent(json.file_name) + '&checksum=' + json.hash + '&type=' + json.scan_type
+                //}
+                load_result("/recent_scans/");
             }
         }
         function progressHandler(event) {
@@ -260,7 +260,11 @@
                 xhr.addEventListener("abort", abortHandler, false);
                 var formdata = new FormData();
                 formdata.append("file", file);
-                formdata.append("extradata", extradata);
+                formdata.append("app_name", extradata.app_name);
+                formdata.append("app_version", extradata.app_version);
+                formdata.append("division", extradata.division);
+                formdata.append("country", extradata.country);
+                formdata.append("environment", extradata.environment);                
                 xhr.send(formdata)
             } catch (e) {
                 alert("Error:" + e);
@@ -288,6 +292,14 @@
         }
 
         function checkRequired() {
+            if (!document.getElementById('name').value) {
+                document.getElementById('err_name').classList.remove('hidden');
+                return false;
+            } else { document.getElementById('err_name').classList.add('hidden'); }
+            if (!document.getElementById('version').value) {
+                document.getElementById('err_version').classList.remove('hidden');
+                return false;
+            } else { document.getElementById('err_version').classList.add('hidden'); }
             if (!document.getElementById('country').value) {
                 document.getElementById('err_country').classList.remove('hidden');
                 return false;
@@ -295,11 +307,7 @@
             if (!document.getElementById('division').value) {
                 document.getElementById('err_division').classList.remove('hidden');
                 return false;
-            } else { document.getElementById('err_division').classList.add('hidden'); }
-            if (!document.getElementById('appName').value) {
-                document.getElementById('err_appName').classList.remove('hidden');
-                return false;
-            } else { document.getElementById('err_appName').classList.add('hidden'); }
+            } else { document.getElementById('err_division').classList.add('hidden'); }            
             if (!document.getElementById('environment').value) {
                 document.getElementById('err_environment').classList.remove('hidden');
                 return false;
@@ -339,12 +347,12 @@
             if (!checkRequired()) { return; }
             if (e.dataTransfer.files.length > 0) {
                 var extradata = new Object();
-                extradata.enteredAppName = document.getElementById('appName').value;
-                extradata.enteredVersion = document.getElementById('version').value;
+                extradata.app_name = document.getElementById('name').value;
+                extradata.app_version = document.getElementById('version').value;
                 extradata.country = document.getElementById('country').value;
                 extradata.division = document.getElementById('division').value;                
                 extradata.environment = document.getElementById('environment').value;
-                handleFiles(e.dataTransfer.files, JSON.stringify(extradata));
+                handleFiles(e.dataTransfer.files, extradata);
             }
         });
 
@@ -362,12 +370,12 @@
                 _("uploadFile").style.display = "none";
                 var files = _("uploadFile").files;
                 var extradata = new Object();
-                extradata.enteredAppName = document.getElementById('appName').value;
-                extradata.enteredVersion = document.getElementById('version').value;
+                extradata.app_name = document.getElementById('name').value;
+                extradata.app_version = document.getElementById('version').value;
                 extradata.country = document.getElementById('country').value;
                 extradata.division = document.getElementById('division').value;                
                 extradata.environment = document.getElementById('environment').value;
-                handleFiles(files, JSON.stringify(extradata));
+                handleFiles(files, extradata);
             });
         });
     </script>

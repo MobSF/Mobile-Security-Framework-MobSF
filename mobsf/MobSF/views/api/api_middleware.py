@@ -27,15 +27,6 @@ def api_auth(meta):
     return False
 
 
-def sso_auth(meta):
-    """Check for SSO JWT."""
-    if 'HTTP_X_MOBSF_API_KEY' in meta:
-        return bool(api_key() == meta['HTTP_X_MOBSF_API_KEY'])
-    elif 'HTTP_AUTHORIZATION' in meta:
-        return bool(api_key() == meta['HTTP_AUTHORIZATION'])
-    return False
-
-
 class RestApiAuthMiddleware(MiddlewareMixin):
     """
     Middleware.
@@ -46,7 +37,6 @@ class RestApiAuthMiddleware(MiddlewareMixin):
     def process_request(self, request):
         """Middleware to handle API Auth."""
         if not request.path.startswith('/api/'):
-            parse_jwt(request)
             return
         if request.method == 'OPTIONS':
             return make_api_response({}, 200)

@@ -176,9 +176,14 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.contrib.auth.middleware.RemoteUserMiddleware',
+)
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.RemoteUserBackend',
 )
 MIDDLEWARE = (
     'mobsf.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
+    'mobsf.MobSF.views.aws_sso_middleware.alb_idp_auth_middleware',
 )
 ROOT_URLCONF = 'mobsf.MobSF.urls'
 WSGI_APPLICATION = 'mobsf.MobSF.wsgi.application'
@@ -411,3 +416,9 @@ else:
     # if VT_UPLOAD is set to True.
     # ==============================================
     # ^CONFIG-END^: Do not edit this line
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# ==========CYBERSPECT SETTINGS ===============
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+AWS_REGION = os.getenv('AWS_REGION', 'us-east-2')
+AWS_S3_BUCKET = os.environ['AWS_S3_BUCKET']

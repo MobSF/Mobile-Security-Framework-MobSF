@@ -6,6 +6,8 @@ import os
 import platform
 import re
 import shutil
+import boto3
+from botocore.exceptions import ClientError
 from pathlib import Path
 from wsgiref.util import FileWrapper
 
@@ -67,6 +69,13 @@ class Upload(object):
         self.form = UploadFileForm(request.POST, request.FILES)
         self.file_type = None
         self.file = None
+        self.file_path = None
+        self.app_name = self.request.POST.get('app_name', '')
+        self.app_version = self.request.POST.get('app_version', '')
+        self.division = self.request.POST.get('division', '')
+        self.country = self.request.POST.get('country', '')
+        self.environment = self.request.POST.get('environment', '')
+        self.email = self.request.POST.get('email', '')
 
     @staticmethod
     def as_view(request):
@@ -111,7 +120,14 @@ class Upload(object):
                 response_data['description'] = msg
                 return self.resp_json(response_data)
 
+        error_message = self.validate_extradata()
+        if error_message:
+            logger.error(error_message)
+            response_data['description'] = error_message
+            return self.resp_json(response_data)
+
         response_data = self.upload()
+        self.write_to_s3(response_data)
         return self.resp_json(response_data)
 
     def upload_api(self):
@@ -126,18 +142,21 @@ class Upload(object):
         if not self.file_type.is_allow_file():
             api_response['error'] = 'File format not Supported!'
             return api_response, HTTP_BAD_REQUEST
-        if not request.POST.getlist('extradata'):
-            api_response['error'] = 'Additional data missing.'
-            return api_response, HTTP_BAD_REQUEST
+        error_message = self.validate_extradata()
+        if error_message:
+            logger.error(error_message)
+            api_response['error'] = error_message
+            return api_response, HTTP_BAD_REQUEST        
         api_response = self.upload()
+        self.write_to_s3(api_response)
         return api_response, 200
 
     def upload(self):
         request = self.request
         scanning = Scanning(request)
         content_type = self.file.content_type
-        file_name = self.file.name
-        logger.info('MIME Type: %s FILE: %s', content_type, file_name)
+        file_name = self.file.name        
+        logger.info('MIME Type: %s, File: %s', content_type, file_name)
         if self.file_type.is_apk():
             return scanning.scan_apk()
         elif self.file_type.is_xapk():
@@ -150,6 +169,38 @@ class Upload(object):
             return scanning.scan_ipa()
         elif self.file_type.is_appx():
             return scanning.scan_appx()
+
+    def write_to_s3(self, api_response):                    
+        s3_client = boto3.client('s3')
+        try:
+            # Write minimal metadata to file
+            path_prefix = os.path.join(settings.UPLD_DIR, \
+                api_response['hash'] + '/' + api_response['hash'] + '.')
+            file_path = path_prefix + api_response['scan_type']
+            metadata_filepath = path_prefix + 'json'
+            metadata_file = open(metadata_filepath, "w")
+            metadata_file.write('{"app_name":"' + self.app_name + '",')
+            metadata_file.write('"app_version":"' + self.app_version + '",')
+            metadata_file.write('"email":"' + self.email + '"}')
+            metadata_file.close()            
+
+            # Write uploaded files to S3 bucket
+            response = s3_client.upload_file(file_path,
+                settings.AWS_S3_BUCKET, self.file.name)            
+            file_split = os.path.splitext(self.file.name)
+            response = s3_client.upload_file(metadata_filepath, 
+                settings.AWS_S3_BUCKET, file_split[0] + '.json')
+        except ClientError as e:
+            logging.error(e)
+            return False
+        return
+
+    def validate_extradata(self):
+        # If upload is performed manually be web user,
+        # use their username instead of supplied email
+        if 'REMOTE_USER' in self.request.META:
+            self.email = self.request.user.username        
+        return None
 
 
 def api_docs(request):
