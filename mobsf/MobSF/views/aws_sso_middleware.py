@@ -31,7 +31,7 @@ def alb_idp_auth_middleware(
         identifier = JWTIdentifier(region=region)
         info = identifier.identify(request)
         if info:
-            logger.info('authenticated: %s', info)
+            logger.debug('JWT Claims: %s', info)
             request.META['REMOTE_USER'] = info['email']
             request.META['user_claims'] = info
         return get_response(request)
@@ -73,13 +73,11 @@ class JWTIdentifier:
 
     def verify(self, data: str) -> dict:
         jwt_headers = extract_headers(data)
-        logger.debug('aws_sso_middleware: %s', jwt_headers)
         return verify(data, self.region, jwt_headers['kid'],
                       jwt_headers['alg'])
 
     def identify(self, request) -> dict:
         if DATA_HEADER not in request.META:
-            logger.debug('aws_sso_middleware: not SSO')
             return
         data = request.META[DATA_HEADER]
         info = self.verify(data)

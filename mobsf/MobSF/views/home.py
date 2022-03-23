@@ -220,6 +220,8 @@ def api_docs(request):
         'title': 'REST API Docs',
         'api_key': api_key(),
         'version': settings.MOBSF_VER,
+        'logo': os.environ['LOGO'] if os.environ['LOGO']
+        else '/static/img/mobsf_logo.png',
     }
     template = 'general/apidocs.html'
     return render(request, template, context)
