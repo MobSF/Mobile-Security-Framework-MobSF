@@ -146,6 +146,7 @@ sidebar-collapse
         <div class="row">
 
             <div class="col-lg-3">
+              {% if not efr01 %}
                 <div class="card">
                     <div class="card-header ui-sortable-handle" >
                       <h3 class="card-title">
@@ -171,6 +172,7 @@ sidebar-collapse
                       </div>
                     </div><!-- /.card-body -->
                   </div>
+                  {% endif %}
             </div>
 
             <div class="col-lg-3">
@@ -234,6 +236,7 @@ sidebar-collapse
             </div>
 
             <div class="col-lg-3">
+              {% if not efr01 %}
                 <div class="card">
                     <div class="card-header ui-sortable-handle" >
                       <h3 class="card-title">
@@ -258,6 +261,7 @@ sidebar-collapse
                       </div>
                     </div><!-- /.card-body -->
                   </div>
+                  {% endif %}
             </div>
 
         </div>
@@ -298,7 +302,7 @@ sidebar-collapse
                                       <span class="info-box-icon bg-warning"><i class="fas fa-exclamation-triangle"></i></span>
                         
                                       <div class="info-box-content">
-                                        <span class="info-box-text">Warning</span>
+                                        <span class="info-box-text">Medium</span>
                                         <span class="info-box-number">{{ warning | length}}</span>
                                       </div>
                                       <!-- /.info-box-content -->
@@ -307,7 +311,7 @@ sidebar-collapse
                                   </div>
                                  
                                   <!-- /.col -->
-                                <div class="col-md-3 col-sm-6 col-12">
+                                <div class="col-md-2 col-sm-6 col-12">
                                   <div class="info-box">
                                     <span class="info-box-icon bg-info"><i class="fas fa-info"></i></span>
                       
@@ -320,7 +324,7 @@ sidebar-collapse
                                   <!-- /.info-box -->
                                 </div>
                                 <!-- /.col -->
-                                <div class="col-md-3 col-sm-6 col-12">
+                                <div class="col-md-2 col-sm-6 col-12">
                                     <div class="info-box">
                                       <span class="info-box-icon bg-success"><i class="fas fa-check"></i></span>
                         
@@ -333,7 +337,21 @@ sidebar-collapse
                                     <!-- /.info-box -->
                                   </div>
                                 
+
+                              <div class="col-md-2 col-sm-6 col-12">
+                                <div class="info-box">
+                                  <span class="info-box-icon bg-secondary"><i class="fab fa-searchengin"></i></span>
+                    
+                                  <div class="info-box-content">
+                                    <span class="info-box-text"> {% if efr01 %}Need to Investigate{% else %}Hotspot{% endif %}</span>
+                                    <span class="info-box-number">{{ hotspot | length}}</span>
+                                  </div>
+                                  <!-- /.info-box-content -->
+                                </div>
+                                <!-- /.info-box -->
                               </div>
+                            
+                          </div>
                              <!--end boxes-->
                             </br>
 {% for item in high %}
@@ -362,7 +380,7 @@ sidebar-collapse
         <div class="sameline">
             <div class="card-header">
                 <h4 class="card-title w-100">
-                    <span class="badge bg-warning">warning</span> {{ item.title}}
+                    <span class="badge bg-warning">medium</span> {{ item.title}}
                 </h4>
             </div>
             <label> {{ item.section | upper }}</label>
@@ -397,6 +415,8 @@ sidebar-collapse
 {% endfor %}
 
 
+
+
 {% for item in secure %}
     <div class="card card-success card-outline">
         <a class="d-block w-100" data-toggle="collapse" href="#success-{{ forloop.counter }}">
@@ -417,6 +437,32 @@ sidebar-collapse
         </div>
     </div>
 {% endfor %}
+
+
+{% for item in hotspot %}
+    <div class="card card-secondary card-outline">
+        <a class="d-block w-100" data-toggle="collapse" href="#secondary-{{ forloop.counter }}">
+        <div class="sameline">
+            <div class="card-header">
+                <h4 class="card-title w-100">
+                    <span class="badge bg-secondary">{% if efr01 %}need to investigate{% else %}hotspot{% endif %}</span> {{ item.title}}
+                </h4>
+            </div>
+            <label class="text-right"> {{ item.section | upper }}</label>
+        </div>
+        </a>
+        
+        <div id="secondary-{{ forloop.counter }}" class="collapse" data-parent="#accordion">
+            <div class="card-body">
+            <pre>{{ item.description}}</pre>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+
+
+
                 </div>
         </div>  </div>
     </div>
@@ -477,7 +523,7 @@ sidebar-collapse
         }
     },
     data: {
-        labels: [`High`, `Warning`, `Info`, `Secure`],
+        labels: [`High`, `Medium`, `Info`, `Secure`],
         datasets: [{
         backgroundColor: [
             "#dc3545",
