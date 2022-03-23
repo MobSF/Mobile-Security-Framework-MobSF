@@ -278,6 +278,7 @@ LOGGING = {
         },
     },
 }
+JADX_TIMEOUT = int(os.getenv('JADX_TIMEOUT', 1800))
 # ===========================
 # ENTERPRISE FEATURE REQUESTS
 # ===========================
