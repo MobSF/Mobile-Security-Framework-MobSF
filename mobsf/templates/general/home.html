@@ -52,27 +52,28 @@
                      <div id="textnode">Drop anywhere!</div>
                   </div>
                   </br>
-                  <div><input type="text" id="name" placeholder="Application Name" style="width: 200px"></div>
-                  <div id="err_name" class="hidden">Required</div><br />
-                  <div><input type="text" id="version" placeholder="Version" value="1.0" style="width: 200px"></div>
-                  <div id="err_version" class="hidden">Required</div><br />
+                  <div id="err_name" class="hidden"><span class="error">Required!</span></div>
+                  <div><input type="text" id="name" placeholder="Application Name"></div>
+                  <div id="err_name" class="hidden"><span class="error">Required!</span></div>
+                  <div><input type="text" id="version" placeholder="Version" value="1.0"></div>                  
                   <div>
-                    <select id="environment" style="width: 200px">
+                    <select id="environment">
                         <option value="Production">Production</option>
                         <option value="Preproduction">Preproduction</option>
                     </select>                   
-                  </div><br />
+                  </div>
+                  <div id="err_name" class="hidden"><span class="error">Required!</span></div>
                   <div>
-                    <select id="division" style="width: 200px">
+                    <select id="division">
                         <option>select division</option>
                         <option value="North">North</option>
                         <option value="South">South</option>
                         <option value="East">East</option>
                         <option value="West">West</option>
                     </select> 
-                  </div><br /> 
+                  </div>                  
                   <div>
-                      <select id="country" style="width: 200px">
+                      <select id="country">
                         <option value="US">United States</option>
                         <option value="AF">Afghanistan</option>
                         <option value="AX">Aland Islands</option>
@@ -326,7 +327,7 @@
                         <option value="ZM">Zambia</option>
                         <option value="ZW">Zimbabwe</option>
                     </select>
-                  </div><br />                                   
+                  </div>                                  
 
                   <form id="upload_form" enctype="multipart/form-data" method="post">
                      {% csrf_token %}
