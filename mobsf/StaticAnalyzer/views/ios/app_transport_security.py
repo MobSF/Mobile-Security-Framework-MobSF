@@ -6,9 +6,20 @@ logger = logging.getLogger(__name__)
 
 def check_transport_security(p_list):
     """Check info.plist for insecure connection configurations."""
+    """Extract raw transfer security info into separate structure."""
+
     ats = []
+    transportsecurityinfo = {
+        'allowsArbitraryLoads': False,
+        'allowsArbitraryLoadsForMedia': False,
+        'allowsArbitraryLoadsInWebContent': False,
+        'allowsLocalNetworking': False,
+        'exceptionDomains': [],
+    }
+
     if 'NSAppTransportSecurity' in p_list:
         ats_dict = p_list['NSAppTransportSecurity']
+
         if ats_dict and ats_dict.get('NSAllowsArbitraryLoads'):
             ats.append({
                 'issue': ('App Transport Security '
@@ -25,6 +36,8 @@ def check_transport_security(p_list):
                     'disabled. This setting is not applicable to domains '
                     'listed in NSExceptionDomains.'),
             })
+            transportsecurityinfo['allowsArbitraryLoads'] = True
+
         if ats_dict and ats_dict.get('NSAllowsArbitraryLoadsForMedia'):
             ats.append({
                 'issue': 'Insecure media load is allowed',
@@ -36,6 +49,8 @@ def check_transport_security(p_list):
                     'This setting is not applicable to domains '
                     'listed in NSExceptionDomains.'),
             })
+            transportsecurityinfo['allowsArbitraryLoadsForMedia'] = True
+
         if ats_dict and ats_dict.get('NSAllowsArbitraryLoadsInWebContent'):
             ats.append({
                 'issue': 'Insecure WebView load is allowed',
@@ -46,6 +61,8 @@ def check_transport_security(p_list):
                     'URLSession connections. This setting is not applicable '
                     'to domains listed in NSExceptionDomains.'),
             })
+            transportsecurityinfo['allowsArbitraryLoadsInWebContent'] = True
+
         if ats_dict and ats_dict.get('NSAllowsLocalNetworking'):
             ats.append({
                 'issue': 'Insecure local networking is allowed',
@@ -57,6 +74,7 @@ def check_transport_security(p_list):
                     'URLSession connections. This setting is not applicable '
                     'to domains listed in NSExceptionDomains.'),
             })
+            transportsecurityinfo['allowsLocalNetworking'] = True
 
         # NS Domain Exceptions
         if ats_dict and ats_dict.get('NSExceptionDomains'):
@@ -66,9 +84,18 @@ def check_transport_security(p_list):
                 'severity': 'info',
                 'description': ', '.join(exception_domains.keys()),
             })
+
             for domain, config in exception_domains.items():
                 if not isinstance(config, dict):
                     continue
+                exception_domain_findings = {
+                    'domainName': domain,
+                    'includesSubdomains': False,
+                    'exceptionRequiresForwardSecrecy': True,
+                    'exceptionAllowsInsecureHTTPLoads': False,
+                    'exceptionMinimumTLSVersion': None,
+                }
+
                 old_exp = 'NSTemporaryExceptionAllowsInsecureHTTPLoads'
                 old_exp2 = 'NSThirdPartyExceptionAllowsInsecureHTTPLoads'
                 if (config.get('NSExceptionAllowsInsecureHTTPLoads', False)
@@ -90,6 +117,9 @@ def check_transport_security(p_list):
                         ),
                     }
                     ats.append(findings)
+                    exception_domain_findings[
+                        'exceptionAllowsInsecureHTTPLoads'
+                    ] = True
 
                 if config.get('NSIncludesSubdomains', False):
                     findings = {
@@ -109,9 +139,18 @@ def check_transport_security(p_list):
                         ),
                     }
                     ats.append(findings)
-                old_tls = 'NSTemporaryExceptionMinimumTLSVersion'
-                inc_min_tls = (config.get('NSExceptionMinimumTLSVersion', None)
-                               or config.get(old_tls, None))
+                    exception_domain_findings['includesSubdomains'] = True
+
+                inc_min_tls = (
+                    config.get('NSExceptionMinimumTLSVersion', None)
+                    or config.get(
+                        'NSTemporaryExceptionMinimumTLSVersion', None,
+                    )
+                )
+
+                exception_domain_findings['exceptionMinimumTLSVersion'] = \
+                    inc_min_tls
+
                 if inc_min_tls in ['TLSv1.0', 'TLSv1.1']:
                     findings = {
                         'issue': ('NSExceptionMinimumTLSVersion set to {}'
@@ -174,6 +213,7 @@ def check_transport_security(p_list):
                         ),
                     }
                     ats.append(findings)
+
                 old1 = config.get(
                     'NSTemporaryExceptionRequiresForwardSecrecy', False)
                 old2 = config.get(
@@ -203,8 +243,17 @@ def check_transport_security(p_list):
                             'Ephemeral (ECDHE) key exchange.'),
                     }
                     ats.append(findings)
-                ct_tag = config.get('NSRequiresCertificateTransparency', False)
-                if not ct_tag or ct_tag == 'NO':
+                    exception_domain_findings[
+                        'exceptionRequiresForwardSecrecy'
+                    ] = False
+
+                # NSRequiresCertificateTransparency is obsolete according to
+                # the Apple documentation and is missing in new applications
+                ct_tag = config.get(
+                    'NSRequiresCertificateTransparency', False,
+                )
+
+                if ct_tag and ct_tag == 'NO':
                     findings = {
                         'issue': ('NSRequiresCertificateTransparency'
                                   ' set to NO for {}'.format(domain)),
@@ -220,10 +269,10 @@ def check_transport_security(p_list):
                             'server certificates are supported by valid, '
                             'signed CT timestamps from at least '
                             'two CT logs trusted by Apple. '
-                            'This key is optional. The default value is NO.'),
+                            'This key is obsolete since iOS 12.'),
                     }
                     ats.append(findings)
-                elif ct_tag == 'YES':
+                elif ct_tag and ct_tag == 'YES':
                     findings = {
                         'issue': ('NSRequiresCertificateTransparency'
                                   ' set to YES for {}'.format(domain)),
@@ -239,8 +288,11 @@ def check_transport_security(p_list):
                             'server certificates are supported by valid, '
                             'signed CT timestamps from at least '
                             'two CT logs trusted by Apple. '
-                            'This key is optional. The default value is NO.'),
+                            'This key is obsolete since iOS 12.'),
                     }
                     ats.append(findings)
 
-    return ats
+                transportsecurityinfo['exceptionDomains'] \
+                    .append(exception_domain_findings)
+
+    return ats, transportsecurityinfo

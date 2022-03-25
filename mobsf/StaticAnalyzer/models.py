@@ -83,6 +83,7 @@ class StaticAnalyzerIOS(models.Model):
     BINARY_INFO = models.TextField(default={})
     PERMISSIONS = models.TextField(default={})
     ATS_ANALYSIS = models.TextField(default=[])
+    TRANSPORT_SECURITY_INFO = models.TextField(default={})
     BINARY_ANALYSIS = models.TextField(default=[])
     MACHO_ANALYSIS = models.TextField(default={})
     IOS_API = models.TextField(default={})
@@ -98,6 +99,7 @@ class StaticAnalyzerIOS(models.Model):
     APPSTORE_DETAILS = models.TextField(default={})
     SECRETS = models.TextField(default=[])
     TRACKERS = models.TextField(default={})
+    AD_NETWORK_IDENTIFIERS = models.TextField(default={})
 
 
 class StaticAnalyzerWindows(models.Model):

@@ -38,6 +38,8 @@ def get_context_from_db_entry(db_entry):
             'binary_info': python_dict(db_entry[0].BINARY_INFO),
             'permissions': python_dict(db_entry[0].PERMISSIONS),
             'ats_analysis': python_list(db_entry[0].ATS_ANALYSIS),
+            'transport_security_info':
+                python_list(db_entry[0].TRANSPORT_SECURITY_INFO),
             'binary_analysis': python_list(db_entry[0].BINARY_ANALYSIS),
             'macho_analysis': python_dict(db_entry[0].MACHO_ANALYSIS),
             'ios_api': python_dict(db_entry[0].IOS_API),
@@ -53,6 +55,8 @@ def get_context_from_db_entry(db_entry):
             'appstore_details': python_dict(db_entry[0].APPSTORE_DETAILS),
             'secrets': python_list(db_entry[0].SECRETS),
             'trackers': python_dict(db_entry[0].TRACKERS),
+            'adnetworkidentifiers':
+                python_dict(db_entry[0].AD_NETWORK_IDENTIFIERS),
 
         }
         return context
@@ -91,6 +95,8 @@ def get_context_from_analysis(app_dict,
             'binary_info': bin_dict['bin_info'],
             'permissions': info_dict['permissions'],
             'ats_analysis': info_dict['inseccon'],
+            'transport_security_info':
+                info_dict['transport_security_info'],
             'binary_analysis': bin_dict['bin_code_analysis'],
             'macho_analysis': bin_dict['checksec'],
             'ios_api': code_dict['api'],
@@ -106,6 +112,7 @@ def get_context_from_analysis(app_dict,
             'appstore_details': app_dict['appstore'],
             'secrets': app_dict['secrets'],
             'trackers': code_dict['trackers'],
+            'adnetworkidentifiers': info_dict['adnetworkidentifiers'],
         }
         return context
     except Exception:
@@ -142,6 +149,8 @@ def save_or_update(update_type,
             'BINARY_INFO': bin_dict['bin_info'],
             'PERMISSIONS': info_dict['permissions'],
             'ATS_ANALYSIS': info_dict['inseccon'],
+            'TRANSPORT_SECURITY_INFO':
+                info_dict['transport_security_info'],
             'BINARY_ANALYSIS': bin_dict['bin_code_analysis'],
             'MACHO_ANALYSIS': bin_dict['checksec'],
             'IOS_API': code_dict['api'],
@@ -157,6 +166,7 @@ def save_or_update(update_type,
             'APPSTORE_DETAILS': app_dict['appstore'],
             'SECRETS': app_dict['secrets'],
             'TRACKERS': code_dict['trackers'],
+            'AD_NETWORK_IDENTIFIERS': info_dict['adnetworkidentifiers'],
         }
         if update_type == 'save':
             db_entry = StaticAnalyzerIOS.objects.filter(
