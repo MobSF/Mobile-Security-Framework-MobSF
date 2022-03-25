@@ -22,6 +22,9 @@ from mobsf.StaticAnalyzer.views.ios.permission_analysis import (
 from mobsf.StaticAnalyzer.views.ios.app_transport_security import (
     check_transport_security,
 )
+from mobsf.StaticAnalyzer.views.ios.adnetworkidentifiers import (
+    check_adnetworkidentifiers,
+)
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     is_secret,
 )
@@ -55,11 +58,13 @@ def plist_analysis(src, is_source):
             'plist_xml': '',
             'permissions': {},
             'inseccon': [],
+            'transport_security_info': {},
             'bundle_name': '',
             'build_version_name': '',
             'bundle_url_types': [],
             'bundle_supported_platforms': [],
             'bundle_version_name': '',
+            'adnetworkidentifiers': [],
         }
         plist_file = None
         plist_files = []
@@ -117,6 +122,8 @@ def plist_analysis(src, is_source):
         plist_info['bundle_url_types'] = btype
         plist_info['bundle_supported_platforms'] = plist_obj.get(
             'CFBundleSupportedPlatforms', [])
+        plist_info['adnetworkidentifiers'] = \
+            check_adnetworkidentifiers(plist_obj)
         logger.info('Checking Permissions')
         logger.info('Checking for Insecure Connections')
         for plist_file_ in plist_files:
@@ -126,7 +133,11 @@ def plist_analysis(src, is_source):
             # Check for app-permissions
             plist_info['permissions'].update(check_permissions(plist_obj_))
             # Check for ats misconfigurations
-            plist_info['inseccon'] += check_transport_security(plist_obj_)
+            ats_inseccon, ats_transport_security_info = \
+                check_transport_security(plist_obj_)
+            plist_info['inseccon'] += ats_inseccon
+            plist_info['transport_security_info'] = \
+                ats_transport_security_info
         return plist_info
     except Exception:
         logger.exception('Reading from Info.plist')
