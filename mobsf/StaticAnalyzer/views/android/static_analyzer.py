@@ -62,6 +62,7 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
     firebase_analysis,
     get_avg_cvss,
     hash_gen,
+    scan_complete,
     unzip,
     update_scan_timestamp,
 )
@@ -291,8 +292,7 @@ def static_analyzer(request, api=False):
                                 quark_results,
                                 tracker_res,
                             )
-
-                        # SEND EMAIL NOTIFICATION
+                        scan_complete(app_dic['md5'])
 
                     except Exception:
                         logger.exception('Saving to Database Failed')
@@ -494,6 +494,7 @@ def static_analyzer(request, api=False):
                                     [],
                                     trackers,
                                 )
+                            scan_complete(app_dic['md5'])
                         except Exception:
                             logger.exception('Saving to Database Failed')
                         context = get_context_from_analysis(

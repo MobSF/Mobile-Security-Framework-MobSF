@@ -54,7 +54,7 @@
                   </br>
                   <div id="err_name" class="hidden"><span class="error">Required!</span></div>
                   <div><input type="text" id="name" placeholder="Application Name"></div>
-                  <div id="err_name" class="hidden"><span class="error">Required!</span></div>
+                  <div id="err_version" class="hidden"><span class="error">Required!</span></div>
                   <div><input type="text" id="version" placeholder="Version" value="1.0"></div>                  
                   <div>
                     <select id="environment">
@@ -62,14 +62,10 @@
                         <option value="Preproduction">Preproduction</option>
                     </select>                   
                   </div>
-                  <div id="err_name" class="hidden"><span class="error">Required!</span></div>
+                  <div id="err_division" class="hidden"><span class="error">Required!</span></div>
                   <div>
                     <select id="division">
-                        <option>select division</option>
-                        <option value="North">North</option>
-                        <option value="South">South</option>
-                        <option value="East">East</option>
-                        <option value="West">West</option>
+                        <option>Unknown</option>
                     </select> 
                   </div>                  
                   <div>
@@ -551,20 +547,34 @@
            }
 
            function checkRequired() {
-                if (!document.getElementById('name').value) {
-                    document.getElementById('err_name').classList.remove('hidden');
+                if (!_('name').value) {
+                    _('err_name').classList.remove('hidden');
                     return false;
-                } else { document.getElementById('err_name').classList.add('hidden'); }
-                if (!document.getElementById('version').value) {
-                    document.getElementById('err_version').classList.remove('hidden');
+                } else { _('err_name').classList.add('hidden'); }
+                if (!_('version').value) {
+                    _('err_version').classList.remove('hidden');
                     return false;
-                } else { document.getElementById('err_version').classList.add('hidden'); }
-                if (!document.getElementById('division').value) {
-                    document.getElementById('err_division').classList.remove('hidden');
+                } else { _('err_version').classList.add('hidden'); }
+                if (!_('division').value) {
+                    _('err_division').classList.remove('hidden');
                     return false;
-                } else { document.getElementById('err_division').classList.add('hidden'); }            
+                } else { _('err_division').classList.add('hidden'); }            
 
                 return true;
+            }
+
+            function populateDivisions() {
+                var divisionsUrl = '{{divisions}}';
+                if (!divisionsUrl) return;
+                fetch(divisionsUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        var options = '<option value="">select division</option>';
+                        for (i=0; i<data.length; i++){
+                            options +='<option value="' + data[i].id + '">' + data[i].name + '</option>';                                                        
+                        }
+                        _('division').innerHTML = options;
+                    });
             }
          
            window.addEventListener("dragenter", function (e) {
@@ -598,16 +608,18 @@
                if(e.dataTransfer.files.length > 0)
                {
                     var extradata = new Object();
-                    extradata.app_name = document.getElementById('name').value;
-                    extradata.app_version = document.getElementById('version').value;
-                    extradata.country = document.getElementById('country').value;
-                    extradata.division = document.getElementById('division').value;                
-                    extradata.environment = document.getElementById('environment').value;
+                    extradata.app_name = _('name').value;
+                    extradata.app_version = _('version').value;
+                    extradata.country = _('country').value;
+                    extradata.division = _('division').value;                
+                    extradata.environment = _('environment').value;
                     handleFiles(e.dataTransfer.files, extradata);
                }
            });
 
             $(document).ready(function() {
+                populateDivisions();
+
                 // Ensure required fields are filled
                 $('input[type=file]').click(function () {
                     return checkRequired();
@@ -622,11 +634,11 @@
                     _("uploadFile").style.display = "none";
                     var files = _("uploadFile").files;
                     var extradata = new Object();
-                    extradata.app_name = document.getElementById('name').value;
-                    extradata.app_version = document.getElementById('version').value;
-                    extradata.country = document.getElementById('country').value;
-                    extradata.division = document.getElementById('division').value;                
-                    extradata.environment = document.getElementById('environment').value;
+                    extradata.app_name = _('name').value;
+                    extradata.app_version = _('version').value;
+                    extradata.country = _('country').value;
+                    extradata.division = _('division').value;                
+                    extradata.environment = _('environment').value;
                     handleFiles(files, extradata);                    
                 });
             });

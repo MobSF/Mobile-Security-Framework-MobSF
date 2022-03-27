@@ -58,6 +58,7 @@ def index(request):
         'version': settings.MOBSF_VER,
         'mimes': mimes,
         'logo': os.getenv('LOGO', '/static/img/mobsf_logo.png'),
+        'divisions': os.getenv('DIVISIONS'),
     }
     template = 'general/home.html'
     return render(request, template, context)

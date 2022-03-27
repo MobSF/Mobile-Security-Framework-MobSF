@@ -29,6 +29,10 @@ from mobsf.MobSF.utils import (
 from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.StaticAnalyzer.views.comparer import generic_compare
 
+import boto3
+
+from botocore.exceptions import ClientError
+
 logger = logging.getLogger(__name__)
 
 
@@ -231,3 +235,19 @@ def is_secret(inp):
     )
     not_str = any(i in inp for i in not_string)
     return any(i in inp for i in iden) and not not_str
+
+
+def scan_complete(md5_hash):
+    try:
+        # TEMPORARY: INVOKE LAMBDA
+        if (not settings.AWS_LAMBDA_NOTIFY):
+            return
+        lambda_client = boto3.client('lambda')
+        lambda_client.invoke(
+            FunctionName=settings.AWS_LAMBDA_NOTIFY,
+            InvocationType='Event',
+            Payload={'hash': md5_hash},
+        )
+    except ClientError:
+        logging.error('Unable to invoke AWS Lambda')
+    return
