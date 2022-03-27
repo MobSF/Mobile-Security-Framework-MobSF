@@ -210,7 +210,7 @@ class Upload(object):
         # If upload is performed manually be web user,
         # use their username instead of supplied email
         if 'REMOTE_USER' in self.request.META:
-            self.email = self.request.user.username
+            self.email = self.request.META['REMOTE_USER']
         return None
 
 

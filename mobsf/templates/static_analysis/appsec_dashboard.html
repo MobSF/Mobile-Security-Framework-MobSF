@@ -474,7 +474,7 @@ sidebar-collapse
                 <p class="lead">
                   <h5> Security Scorecard generated for 
                     <img id="app_icon2" src="/download/{{ hash }}-icon.png" onerror="this.src='{% static 'img/no_icon.png' %}'"/>
-                    ({% if app_name %}  {{ app_name }}  {% else %} {{ file_name }} {% endif %} {{ version_name }})
+                    ({% if app_name %}{{ app_name }}{% else %}{{ file_name }}{% endif %} {{ version_name }})
                      {% if '.apk' == file_name|slice:"-4:"%}<i class="fab fa-android"></i>
                      {% elif '.xapk' == file_name|slice:"-5:"%}<i class="fab fa-android"></i>
                      {% elif '.apks' == file_name|slice:"-5:"%}<i class="fab fa-android"></i>

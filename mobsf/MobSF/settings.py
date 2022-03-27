@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 #       MOBSF CONFIGURATION
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 BANNER, VERSION, MOBSF_VER = get_mobsf_version()
-USE_HOME = True
+USE_HOME = False
 # True : All Uploads/Downloads will be stored in user's home directory
 # False : All Uploads/Downloads will be stored under MobSF root directory
 
@@ -406,7 +406,7 @@ else:
     # ========DISABLED BY DEFAULT COMPONENTS=========
 
     # Get AppMonsta API from https://appmonsta.com/dashboard/get_api_key/
-    APPMONSTA_API = ''
+    APPMONSTA_API = os.getenv('APPMONSTA_API')
     # ----------VirusTotal--------------------------
     VT_ENABLED = False
     VT_API_KEY = ''
