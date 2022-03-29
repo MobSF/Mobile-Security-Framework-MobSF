@@ -13,11 +13,14 @@ COCOA_KEYS = {
         'normal'),
     'NFCReaderUsageDescription': (
         'Access device’s NFC reader.',
-        'dangerous'),
+        'normal'),
     'NSAppleMusicUsageDescription': (
         'Access Apple Media Library.',
-        'dangerous'),
+        'normal'),
     'NSBluetoothPeripheralUsageDescription': (
+        'Access Bluetooth Interface.',
+        'normal'),
+    'NSBluetoothAlwaysUsageDescription': (
         'Access Bluetooth Interface.',
         'dangerous'),
     'NSCalendarsUsageDescription': (
@@ -52,27 +55,30 @@ COCOA_KEYS = {
         'dangerous'),
     'NSLocationWhenInUseUsageDescription': (
         'Access location information when app is in the foreground.',
-        'dangerous'),
+        'normal'),
     'NSMicrophoneUsageDescription': (
         'Access microphone.',
         'dangerous'),
     'NSMotionUsageDescription': (
         'Access the device’s accelerometer.',
-        'dangerous'),
+        'normal'),
     'NSPhotoLibraryUsageDescription': (
         'Access the user’s photo library.',
         'dangerous'),
     'NSRemindersUsageDescription': (
         'Access the user’s reminders.',
-        'dangerous'),
+        'normal'),
     'NSSiriUsageDescription': (
         'Allow app to send user data to Siri',
-        'dangerous'),
+        'normal'),
     'NSSpeechRecognitionUsageDescription': (
         'Allow app to send user data to Apple’s speech recognition servers.',
         'normal'),
     'NSVideoSubscriberAccountUsageDescription': (
         'Access the user’s TV provider account.',
+        'normal'),
+    'NSUserTrackingUsageDescription': (
+        'Permission to use data for tracking the user or the device',
         'normal'),
 }
 
