@@ -100,7 +100,7 @@ def view_report(request, checksum, api=False):
                    'base64_strings': b64_strings,
                    'trackers': trackers,
                    'frida_logs': is_file_exists(fd_log),
-                   'runtime_dependencies': deps,
+                   'runtime_dependencies': list(deps),
                    'package': package,
                    'version': settings.MOBSF_VER,
                    'title': 'Dynamic Analysis'}
