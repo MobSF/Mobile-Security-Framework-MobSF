@@ -18,6 +18,7 @@ from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.template.defaulttags import register
+from django.forms.models import model_to_dict
 
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
@@ -297,9 +298,9 @@ def recent_scans(request):
 def scan_metadata(md5):
     """Get scan metadata."""
     if re.match('[0-9a-f]{32}', md5):
-        db_obj = RecentScansDB.objects.filter(MD5=md5)
-        if db_obj.exists():
-            return db_obj[0]
+        db_obj = RecentScansDB.objects.filter(MD5=md5).first()
+        if db_obj:
+            return model_to_dict(db_obj)
     return None
 
 
