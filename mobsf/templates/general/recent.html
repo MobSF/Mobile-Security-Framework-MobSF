@@ -54,13 +54,14 @@
                     <tbody>
                     {% for e in entries %}
                         <tr>
-                            <td>{{e.USER_APP_NAME}}</td>
+                            <td>{{e.USER_APP_NAME}}</br>{{e.USER_APP_VERSION}}</td>
                             <td align="center">
                                 <img id="app_icon" src="/download/{{ e.MD5 }}-icon.png" onerror="this.src='{% static 'img/no_icon.png' %}'">
                                 {% if e.PACKAGE_NAME %}
                                   <br/><strong>{{ e.APP_NAME }} {% if e.VERSION_NAME %} - {{ e.VERSION_NAME }} {% endif %}</strong>
                                   </br>{{ e.PACKAGE_NAME }}
                                   <p> <a href="../appsec_dashboard/{{ e.MD5 }}/" class="btn btn-link btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
+                                  <br/><p> <a href="{{dependency_track_url}}/projects/?tag={{ e.MD5 }}" class="btn btn-link btn-sm" role="button></a><i class="fas fa-link"></i> DependencyTrack Project</a></p>
                                 {% else %}
                                 </br><span class="badge bg-warning">scan not completed</span>
                                 {% endif %}

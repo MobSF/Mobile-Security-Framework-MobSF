@@ -222,8 +222,7 @@ def api_docs(request):
         'title': 'REST API Docs',
         'api_key': api_key(),
         'version': settings.MOBSF_VER,
-        'logo': os.environ['LOGO'] if os.environ['LOGO']
-        else '/static/img/mobsf_logo.png',
+        'logo': os.getenv('LOGO', '/static/img/mobsf_logo.png'),
     }
     template = 'general/apidocs.html'
     return render(request, template, context)
@@ -289,9 +288,19 @@ def recent_scans(request):
         'title': 'Recent Scans',
         'entries': entries,
         'version': settings.MOBSF_VER,
+        'dependency_track_url': settings.DEPENDENCY_TRACK_URL,
     }
     template = 'general/recent.html'
     return render(request, template, context)
+
+
+def scan_metadata(md5):
+    """Get scan metadata."""
+    if re.match('[0-9a-f]{32}', md5):
+        db_obj = RecentScansDB.objects.filter(MD5=md5)
+        if db_obj.exists():
+            return db_obj[0]
+    return None
 
 
 def download_apk(request):

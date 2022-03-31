@@ -5,7 +5,8 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from mobsf.MobSF.views.helpers import request_method
-from mobsf.MobSF.views.home import RecentScans, Upload, delete_scan
+from mobsf.MobSF.views.home import (RecentScans, Upload, delete_scan,
+                                    scan_metadata)
 from mobsf.MobSF.views.api.api_middleware import make_api_response
 from mobsf.StaticAnalyzer.views.android import view_source
 from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
@@ -36,6 +37,18 @@ def api_recent_scans(request):
         return make_api_response(resp, 500)
     else:
         return make_api_response(resp, 200)
+
+
+@request_method(['GET'])
+@csrf_exempt
+def api_scan_metadata(request):
+    """GET - get scan metadata."""
+    md5 = request.GET['hash']
+    scan = scan_metadata(md5)
+    if scan:
+        return make_api_response(scan, 200)
+    else:
+        return make_api_response({'hash': md5}, 404)
 
 
 @request_method(['POST'])

@@ -427,3 +427,4 @@ else:
 AWS_REGION = os.getenv('AWS_REGION', 'us-east-2')
 AWS_S3_BUCKET = os.getenv('AWS_S3_BUCKET')
 AWS_LAMBDA_NOTIFY = os.getenv('AWS_LAMBDA_NOTIFY')
+DEPENDENCY_TRACK_URL = os.getenv('DEPENDENCY_TRACK_URL')
