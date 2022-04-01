@@ -107,6 +107,7 @@ def pdf(request, api=False, jsonres=False):
         context['host_os'] = host_os
         context['timestamp'] = RecentScansDB.objects.get(
             MD5=checksum).TIMESTAMP
+        context['logo'] = os.getenv('LOGO', '/static/img/mobsf_logo.png')
         try:
             if api and jsonres:
                 return {'report_dat': context}
