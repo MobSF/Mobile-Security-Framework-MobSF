@@ -1,5 +1,6 @@
 # -*- coding: utf_8 -*-
 """iOS Static Code Analysis."""
+import os
 import logging
 import re
 from pathlib import Path
@@ -195,6 +196,8 @@ def static_analyzer_ios(request, api=False):
                 context['appsec'] = get_ios_dashboard(context, True)
                 context['average_cvss'] = get_avg_cvss(
                     context['binary_analysis'])
+                context['logo'] = os.getenv('LOGO',
+                                            '/static/img/mobsf_logo.png')
                 template = 'static_analysis/ios_binary_analysis.html'
                 if api:
                     return context
@@ -280,6 +283,8 @@ def static_analyzer_ios(request, api=False):
                 context['appsec'] = get_ios_dashboard(context, True)
                 context['average_cvss'] = get_avg_cvss(
                     context['code_analysis'])
+                context['logo'] = os.getenv('LOGO',
+                                            '/static/img/mobsf_logo.png')
                 template = 'static_analysis/ios_source_analysis.html'
                 if api:
                     return context

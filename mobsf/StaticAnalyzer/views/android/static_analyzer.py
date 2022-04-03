@@ -312,6 +312,8 @@ def static_analyzer(request, api=False):
                     context['code_analysis'])
                 context['dynamic_analysis_done'] = is_file_exists(
                     os.path.join(app_dic['app_dir'], 'logcat.txt'))
+                context['logo'] = os.getenv('LOGO',
+                                            '/static/img/mobsf_logo.png')
 
                 context['virus_total'] = None
                 if settings.VT_ENABLED:
@@ -526,6 +528,8 @@ def static_analyzer(request, api=False):
                 context['appsec'] = get_android_dashboard(context, True)
                 context['average_cvss'] = get_avg_cvss(
                     context['code_analysis'])
+                context['logo'] = os.getenv('LOGO',
+                                            '/static/img/mobsf_logo.png')
                 template = 'static_analysis/android_source_analysis.html'
                 if api:
                     return context

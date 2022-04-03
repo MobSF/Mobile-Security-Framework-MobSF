@@ -304,6 +304,15 @@ def scan_metadata(md5):
     return None
 
 
+def logout_aws(request):
+    """Remove AWS ALB session cookie."""
+    resp = HttpResponse(
+        '{}',
+        content_type='application/json; charset=utf-8')
+    resp.set_cookie('AWSELBAuthSessionCookie', None, -1, -1)
+    return resp
+
+
 def download_apk(request):
     """Download and APK by package name."""
     package = request.POST['package']

@@ -60,8 +60,9 @@
                                 {% if e.PACKAGE_NAME %}
                                   <br/><strong>{{ e.APP_NAME }} {% if e.VERSION_NAME %} - {{ e.VERSION_NAME }} {% endif %}</strong>
                                   </br>{{ e.PACKAGE_NAME }}
-                                  <p> <a href="../appsec_dashboard/{{ e.MD5 }}/" class="btn btn-link btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
-                                  <p> <a href="{{dependency_track_url}}/projects/?tag={{ e.MD5 }}" class="btn btn-link btn-sm" role="button"><i class="fas fa-link"></i> DependencyTrack</a></p>
+                                  <p> <a href="../appsec_dashboard/{{ e.MD5 }}/" class="btn btn-link btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a>
+                                    <br/><a href="{{dependency_track_url}}/projects/?tag={{ e.MD5 }}" class="btn btn-link btn-sm" role="button"><i class="fas fa-link"></i> DependencyTrack</a>
+                                  </p>                                  
                                 {% else %}
                                 </br><span class="badge bg-warning">scan not completed</span>
                                 {% endif %}

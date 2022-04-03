@@ -53,30 +53,29 @@
                   </div>
                   </br>
                   <div id="err_name" class="hidden"><span class="error">Required!</span></div>
-                  <div><span><i class="fas fa-info-circle fa-lg" title="The name of the mobile app as it appears (or will appear) in the applicable app store."></i>&nbsp;&nbsp;<input type="text" id="name" placeholder="Application Name"></span></div>
+                  <div><span><input type="text" id="name" placeholder="Application Name"></span>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg" title="The name of the mobile app as it appears (or will appear) in the applicable app store."></i></div>
                   <div id="err_version" class="hidden"><span class="error">Required!</span></div>
-                  <div><span><i class="fas fa-info-circle fa-lg" title="The version number of the mobile app."></i>&nbsp;&nbsp;<input type="text" id="version" placeholder="Version" value="1.0"></span></div>                  
+                  <div><span><input type="text" id="version" placeholder="Version" value="1.0"></span>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg" title="The version number of the mobile app."></i></div>                  
                   <div>
-                      <span>
-                          <i class="fas fa-info-circle fa-lg" title="The environment of the mobile app."></i>&nbsp;&nbsp;
+                      <span>                          
                           <select id="environment">
                               <option value="Production">Production</option>
                               <option value="Preproduction">Preproduction</option>
                           </select>
+                          &nbsp;&nbsp;<i class="fas fa-info-circle fa-lg" title="The environment of the mobile app."></i>
                       </span>
                   </div>
                   <div id="err_division" class="hidden"><span class="error">Required!</span></div>
                   <div>
-                      <span>
-                          <i class="fas fa-info-circle fa-lg" title="The organizational division that owns the mobile app."></i>&nbsp;&nbsp;
+                      <span>                          
                           <select id="division">
                               <option>Unknown</option>
                           </select>
+                          &nbsp;&nbsp;<i class="fas fa-info-circle fa-lg" title="The organizational division that owns the mobile app."></i>
                       </span>
                   </div>                  
                   <div>
-                      <span>
-                          <i class="fas fa-info-circle fa-lg" title="The country (or countries) where the mobile app has been (or will be) released."></i>&nbsp;&nbsp;
+                      <span>                          
                           <select id="country">
                               <!--multiple style="height: 60px"-->
                               <option value="**" selected>Global</option>
@@ -333,6 +332,7 @@
                               <option value="ZM">Zambia</option>
                               <option value="ZW">Zimbabwe</option>
                           </select>
+                          &nbsp;&nbsp;<i class="fas fa-info-circle fa-lg" title="The country (or countries) where the mobile app has been (or will be) released."></i>
                     </span>
                   </div>                                  
 
@@ -342,7 +342,7 @@
                         <input type="file" name="file" id="uploadFile" placeholder="Choose File" multiple>
                         <span class="fas fa-cloud-upload-alt"></span>
                         Upload &amp; Analyze
-                     </div>
+                     </div>&nbsp;&nbsp;
                      <br />
                      <!--<small><i>Drag &amp; Drop anywhere!</i></small>-->
                      <h5 id="status"></h5>

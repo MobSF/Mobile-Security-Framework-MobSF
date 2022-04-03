@@ -84,6 +84,7 @@ if settings.API_ONLY == '0':
         re_path(r'^error/$', home.error, name='error'),
         re_path(r'^not_found/$', home.not_found),
         re_path(r'^zip_format/$', home.zip_format),
+        re_path(r'^logout$', home.logout_aws),
 
         # Static Analysis
         # Android

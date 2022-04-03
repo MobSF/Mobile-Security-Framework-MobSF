@@ -54,11 +54,11 @@ def verify(data: str, region: str, kid: str, alg: str) -> dict:
     return jwt.decode(data, pubkey, algorithms=[alg])
 
 
-def extract_headers(data: str, encoding='utf-8') -> dict:
+def extract_headers(data: str) -> dict:
     try:
         jwt_headers = data.split('.')[0]
-        decoded_jwt_headers = base64.b64decode(jwt_headers + '=' * 10)
-        decoded_jwt_headers = decoded_jwt_headers.decode(encoding=encoding)
+        decoded_jwt_headers = base64.b64decode(jwt_headers)
+        decoded_jwt_headers = decoded_jwt_headers.decode('utf-8')
         decoded_json = json.loads(decoded_jwt_headers)
         return decoded_json
     except Exception:
@@ -83,4 +83,5 @@ class JWTIdentifier:
         logger.debug(request.META[DATA_HEADER])
         data = request.META[DATA_HEADER]
         info = self.verify(data)
+        logger.debug(info)
         return info
