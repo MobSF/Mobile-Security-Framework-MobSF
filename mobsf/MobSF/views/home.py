@@ -23,6 +23,7 @@ from django.forms.models import model_to_dict
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
     api_key,
+    is_admin,
     is_dir_exists,
     is_file_exists,
     is_safe_path,
@@ -60,6 +61,7 @@ def index(request):
         'mimes': mimes,
         'logo': os.getenv('LOGO', '/static/img/mobsf_logo.png'),
         'divisions': os.getenv('DIVISIONS'),
+        'email': request.headers.get('email'),
     }
     template = 'general/home.html'
     return render(request, template, context)
@@ -210,14 +212,15 @@ class Upload(object):
     def validate_extradata(self):
         # If upload is performed manually be web user,
         # use their username instead of supplied email
-        if 'REMOTE_USER' in self.request.META:
-            self.email = self.request.META['REMOTE_USER']
+        if (self.request.headers.get('email')):
+            self.email = self.request.headers.get('email')
         return None
 
 
 def api_docs(request):
     """Api Docs Route."""
-    # TODO: perform admin authorization check
+    if (not is_admin(request)):
+        return print_n_send_error_response(request, 'Unauthorized')
 
     context = {
         'title': 'REST API Docs',
@@ -272,12 +275,17 @@ def not_found(request):
 def recent_scans(request):
     """Show Recent Scans Route."""
     entries = []
-    db_obj = RecentScansDB.objects.all().order_by('-TIMESTAMP').values()
+    db_obj = RecentScansDB.objects.all().order_by('-TIMESTAMP')
+    if (not is_admin(request)):
+        email = request.headers.get('email', '@@')
+        db_obj = db_obj.filter(EMAIL__contains=email)
+
+    recentscans = db_obj.values()
     android = StaticAnalyzerAndroid.objects.all()
     package_mapping = {}
     for item in android:
         package_mapping[item.MD5] = item.PACKAGE_NAME
-    for entry in db_obj:
+    for entry in recentscans:
         if entry['MD5'] in package_mapping.keys():
             entry['PACKAGE'] = package_mapping[entry['MD5']]
         else:
@@ -289,6 +297,7 @@ def recent_scans(request):
         'title': 'Recent Scans',
         'entries': entries,
         'version': settings.MOBSF_VER,
+        'logo': os.getenv('LOGO', '/static/img/mobsf_logo.png'),
         'dependency_track_url': settings.DEPENDENCY_TRACK_URL,
     }
     template = 'general/recent.html'

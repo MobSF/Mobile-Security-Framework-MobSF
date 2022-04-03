@@ -606,3 +606,12 @@ def disable_print():
 # Restore
 def enable_print():
     sys.stdout = sys.__stdout__
+
+
+def is_admin(request):
+    if (not settings.ADMIN_USERS):
+        return False
+    email = request.headers.get('email')
+    if (email and email in settings.ADMIN_USERS.split(',')):
+        return True
+    return False
