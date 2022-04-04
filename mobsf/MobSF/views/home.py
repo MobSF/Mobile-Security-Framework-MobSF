@@ -28,6 +28,7 @@ from mobsf.MobSF.utils import (
     is_file_exists,
     is_safe_path,
     print_n_send_error_response,
+    sso_email,
 )
 from mobsf.MobSF.views.helpers import FileType
 from mobsf.MobSF.views.scanning import Scanning
@@ -61,7 +62,7 @@ def index(request):
         'mimes': mimes,
         'logo': os.getenv('LOGO', '/static/img/mobsf_logo.png'),
         'divisions': os.getenv('DIVISIONS'),
-        'email': request.headers.get('email'),
+        'email': sso_email(request),
     }
     template = 'general/home.html'
     return render(request, template, context)
@@ -212,8 +213,9 @@ class Upload(object):
     def validate_extradata(self):
         # If upload is performed manually be web user,
         # use their username instead of supplied email
-        if (self.request.headers.get('email')):
-            self.email = self.request.headers.get('email')
+        email = sso_email(self.request)
+        if (email):
+            self.email = email
         return None
 
 

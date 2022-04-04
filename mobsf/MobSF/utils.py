@@ -611,7 +611,11 @@ def enable_print():
 def is_admin(request):
     if (not settings.ADMIN_USERS):
         return False
-    email = request.headers.get('email')
+    email = request.META['email']
     if (email and email in settings.ADMIN_USERS.split(',')):
         return True
     return False
+
+
+def sso_email(request):
+    return request.META['email']
