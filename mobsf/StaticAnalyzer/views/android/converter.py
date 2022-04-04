@@ -90,8 +90,11 @@ def apk_2_java(app_path, app_dir, tools_dir):
             app_path,
         ]
         fnull = open(os.devnull, 'w')
-        subprocess.call(args,
-                        stdout=fnull,
-                        stderr=subprocess.STDOUT)
+        subprocess.run(args,
+                       stdout=fnull,
+                       stderr=subprocess.STDOUT,
+                       timeout=settings.JADX_TIMEOUT)
+    except subprocess.TimeoutExpired:
+        logger.warning('Decompiling with jadx timed out')
     except Exception:
         logger.exception('Decompiling to JAVA')
