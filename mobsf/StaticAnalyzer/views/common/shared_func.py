@@ -4,6 +4,7 @@ Shared Functions.
 
 Module providing the shared functions for iOS and Android
 """
+import json
 import io
 import hashlib
 import logging
@@ -242,11 +243,12 @@ def scan_complete(md5_hash):
         # TEMPORARY: INVOKE LAMBDA
         if (not settings.AWS_LAMBDA_NOTIFY):
             return
+        payload = json.dumps({'hash': md5_hash}).encode('utf-8')
         lambda_client = boto3.client('lambda')
         lambda_client.invoke(
             FunctionName=settings.AWS_LAMBDA_NOTIFY,
             InvocationType='Event',
-            Payload={'hash': md5_hash},
+            Payload=payload,
         )
     except ClientError:
         logging.error('Unable to invoke AWS Lambda')
