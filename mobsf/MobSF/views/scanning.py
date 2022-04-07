@@ -73,7 +73,6 @@ class Scanning(object):
         self.file = request.FILES['file']
         self.file_name = request.FILES['file'].name
         self.file_type = FileType(self.file)
-        self.file_path = None
         self.user_app_name = request.POST.get('app_name')
         self.user_app_version = request.POST.get('app_version')
         self.country = request.POST.get('country')

@@ -176,17 +176,19 @@ class Upload(object):
             file_path = prefix + api_response['scan_type']
             metadata_filepath = prefix + 'json'
             metadata_file = open(metadata_filepath, 'w')
-            metadata_file.write('{"app_name":"' + self.app_name + '",')
-            metadata_file.write('"app_version":"' + self.app_version + '",')
-            metadata_file.write('"email":"' + self.email + '",')
+            metadata_file.write('{"app_name":"'
+                                + self.scan.user_app_name + '",')
+            metadata_file.write('"app_version":"'
+                                + self.scan.user_app_version + '",')
+            metadata_file.write('"email":"' + self.scan.email + '",')
             metadata_file.write('"hash":"' + api_response['hash'] + '"}')
             metadata_file.close()
 
             # Write uploaded files to S3 bucket
             s3_client.upload_file(file_path,
                                   settings.AWS_S3_BUCKET,
-                                  self.file.name)
-            file_split = os.path.splitext(self.file.name)
+                                  self.scan.file_name)
+            file_split = os.path.splitext(self.scan.file_name)
             s3_client.upload_file(metadata_filepath,
                                   settings.AWS_S3_BUCKET,
                                   file_split[0] + '.json')
