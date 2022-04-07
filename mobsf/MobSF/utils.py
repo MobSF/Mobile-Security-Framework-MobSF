@@ -618,4 +618,7 @@ def is_admin(request):
 
 
 def sso_email(request):
-    return request.META['email']
+    if (request.META['email']):
+        return request.META['email']
+    else:
+        return None

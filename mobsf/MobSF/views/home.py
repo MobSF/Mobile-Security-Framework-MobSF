@@ -30,7 +30,6 @@ from mobsf.MobSF.utils import (
     print_n_send_error_response,
     sso_email,
 )
-from mobsf.MobSF.views.helpers import FileType
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
 from mobsf.StaticAnalyzer.models import (
@@ -74,15 +73,7 @@ class Upload(object):
     def __init__(self, request):
         self.request = request
         self.form = UploadFileForm(request.POST, request.FILES)
-        self.file_type = None
-        self.file = None
-        self.file_path = None
-        self.app_name = self.request.POST.get('app_name', '')
-        self.app_version = self.request.POST.get('app_version', '')
-        self.division = self.request.POST.get('division', '')
-        self.country = self.request.POST.get('country', '')
-        self.environment = self.request.POST.get('environment', '')
-        self.email = self.request.POST.get('email', '')
+        self.scan = Scanning(self.request)
 
     @staticmethod
     def as_view(request):
@@ -112,15 +103,13 @@ class Upload(object):
             response_data['description'] = msg
             return self.resp_json(response_data)
 
-        self.file = request.FILES['file']
-        self.file_type = FileType(self.file)
-        if not self.file_type.is_allow_file():
+        if not self.scan.file_type.is_allow_file():
             msg = 'File format not Supported!'
             logger.error(msg)
             response_data['description'] = msg
             return self.resp_json(response_data)
 
-        if self.file_type.is_ipa():
+        if self.scan.file_type.is_ipa():
             if platform.system() not in LINUX_PLATFORM:
                 msg = 'Static Analysis of iOS IPA requires Mac or Linux'
                 logger.error(msg)
@@ -140,13 +129,11 @@ class Upload(object):
     def upload_api(self):
         """API File Upload."""
         api_response = {}
-        request = self.request
         if not self.form.is_valid():
             api_response['error'] = FormUtil.errors_message(self.form)
             return api_response, HTTP_BAD_REQUEST
-        self.file = request.FILES['file']
-        self.file_type = FileType(self.file)
-        if not self.file_type.is_allow_file():
+        self.scan.email = self.request.POST.get('email', '')
+        if not self.scan.file_type.is_allow_file():
             api_response['error'] = 'File format not Supported!'
             return api_response, HTTP_BAD_REQUEST
         error_message = self.validate_extradata()
@@ -159,23 +146,21 @@ class Upload(object):
         return api_response, 200
 
     def upload(self):
-        request = self.request
-        scanning = Scanning(request)
-        content_type = self.file.content_type
-        file_name = self.file.name
+        content_type = self.scan.file.content_type
+        file_name = self.scan.file.name
         logger.info('MIME Type: %s, File: %s', content_type, file_name)
-        if self.file_type.is_apk():
-            return scanning.scan_apk()
-        elif self.file_type.is_xapk():
-            return scanning.scan_xapk()
-        elif self.file_type.is_apks():
-            return scanning.scan_apks()
-        elif self.file_type.is_zip():
-            return scanning.scan_zip()
-        elif self.file_type.is_ipa():
-            return scanning.scan_ipa()
-        elif self.file_type.is_appx():
-            return scanning.scan_appx()
+        if self.scan.file_type.is_apk():
+            return self.scan.scan_apk()
+        elif self.scan.file_type.is_xapk():
+            return self.scan.scan_xapk()
+        elif self.scan.file_type.is_apks():
+            return self.scan.scan_apks()
+        elif self.scan.file_type.is_zip():
+            return self.scan.scan_zip()
+        elif self.scan.file_type.is_ipa():
+            return self.scan.scan_ipa()
+        elif self.scan.file_type.is_appx():
+            return self.scan.scan_appx()
 
     def write_to_s3(self, api_response):
         if not settings.AWS_S3_BUCKET:
@@ -211,11 +196,7 @@ class Upload(object):
         return
 
     def validate_extradata(self):
-        # If upload is performed manually be web user,
-        # use their username instead of supplied email
-        email = sso_email(self.request)
-        if (email):
-            self.email = email
+        # Validate additional application metadata provided
         return None
 
 
@@ -279,8 +260,10 @@ def recent_scans(request):
     entries = []
     db_obj = RecentScansDB.objects.all().order_by('-TIMESTAMP')
     if (not is_admin(request)):
-        email = request.headers.get('email', '@@')
-        db_obj = db_obj.filter(EMAIL__contains=email)
+        email_filter = sso_email(request)
+        if (not email_filter):
+            email_filter = '@@'
+        db_obj = db_obj.filter(EMAIL__contains=email_filter)
 
     recentscans = db_obj.values()
     android = StaticAnalyzerAndroid.objects.all()

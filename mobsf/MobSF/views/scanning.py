@@ -8,6 +8,8 @@ from django.conf import settings
 from django.utils import timezone
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
+from mobsf.MobSF.utils import sso_email
+from mobsf.MobSF.views.helpers import FileType
 
 logger = logging.getLogger(__name__)
 
@@ -70,12 +72,14 @@ class Scanning(object):
     def __init__(self, request):
         self.file = request.FILES['file']
         self.file_name = request.FILES['file'].name
+        self.file_type = FileType(self.file)
+        self.file_path = None
         self.user_app_name = request.POST.get('app_name')
         self.user_app_version = request.POST.get('app_version')
         self.country = request.POST.get('country')
         self.division = request.POST.get('division')
         self.environment = request.POST.get('environment')
-        self.email = request.POST.get('email')
+        self.email = sso_email(request)
 
     def scan_apk(self):
         """Android APK."""
