@@ -39,8 +39,8 @@ def static_analysis_test():
                 response = http_client.post(
                     '/upload/',
                     {'file': file_pointer,
-                     'app_name': 'test',
-                     'app_version': '1.0',
+                     'user_app_name': 'test',
+                     'user_app_version': '1.0',
                      'division': 'division',
                      'country': 'US',
                      'environment': 'testing',
@@ -190,8 +190,8 @@ def api_test():
                 response = http_client.post(
                     '/api/v1/upload',
                     {'file': file_pointer,
-                     'app_name': 'test',
-                     'app_version': '1.0',
+                     'user_app_name': 'test',
+                     'user_app_version': '1.0',
                      'division': 'division',
                      'country': 'US',
                      'environment': 'testing',
