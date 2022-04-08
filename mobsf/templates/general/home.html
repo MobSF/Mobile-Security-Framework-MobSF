@@ -526,8 +526,8 @@
                 xhr.addEventListener("abort", abortHandler, false);
                 var formdata = new FormData();
                 formdata.append("file", file);
-                formdata.append("app_name", extradata.app_name);
-                formdata.append("app_version", extradata.app_version);
+                formdata.append("user_app_name", extradata.user_app_name);
+                formdata.append("user_app_version", extradata.user_app_version);
                 formdata.append("division", extradata.division);
                 formdata.append("country", extradata.country);
                 formdata.append("environment", extradata.environment); 
@@ -619,8 +619,8 @@
                if(e.dataTransfer.files.length > 0)
                {
                     var extradata = new Object();
-                    extradata.app_name = _('name').value;
-                    extradata.app_version = _('version').value;
+                    extradata.user_app_name = _('name').value;
+                    extradata.user_app_version = _('version').value;
                     extradata.country = _('country').value;
                     extradata.division = _('division').value;                
                     extradata.environment = _('environment').value;
