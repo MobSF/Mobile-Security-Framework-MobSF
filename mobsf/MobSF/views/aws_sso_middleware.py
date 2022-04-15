@@ -32,9 +32,11 @@ def alb_idp_auth_middleware(
         info = identifier.identify(request)
         if info:
             request.META['email'] = str.lower(info['email'])
+            request.META['groups'] = info['groups']
             logger.debug('%s: %s', info['email'], request.path)
         else:
             request.META['email'] = 'test@testing.local'
+            request.META['groups'] = ''
         return get_response(request)
 
     return middleware

@@ -609,10 +609,10 @@ def enable_print():
 
 
 def is_admin(request):
-    if (not settings.ADMIN_USERS):
+    if (not settings.ADMIN_GROUP):
         return False
-    email = request.META['email']
-    if (email and email in settings.ADMIN_USERS.split(',')):
+    groups = request.META['groups']
+    if (groups and settings.ADMIN_GROUP in groups):
         return True
     return False
 
