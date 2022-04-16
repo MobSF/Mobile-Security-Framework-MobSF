@@ -304,7 +304,8 @@ def logout_aws(request):
     resp = HttpResponse(
         '{}',
         content_type='application/json; charset=utf-8')
-    resp.set_cookie('AWSELBAuthSessionCookie', None, -1, -1)
+    for cookie in request.COOKIES:
+        resp.set_cookie(cookie, None, -1, -1)
     return resp
 
 
