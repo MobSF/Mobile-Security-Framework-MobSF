@@ -40,13 +40,13 @@ def add_to_recent_scan(data):
             scan = db_obj.first()
             if (not scan.EMAIL == data['email']):
                 raise Exception('Existing file uploaded by another user')
-            scan.FILE_NAME=data['file_name']
-            scan.TIMESTAMP=timezone.now()
-            scan.USER_APP_NAME=data['user_app_name']
-            scan.USER_APP_VERSION=data['user_app_version']
-            scan.DIVISION=data['division']
-            scan.COUNTRY=data['country']
-            scan.ENVIRONMENT=data['environment']
+            scan.FILE_NAME = data['file_name']
+            scan.TIMESTAMP = timezone.now()
+            scan.USER_APP_NAME = data['user_app_name']
+            scan.USER_APP_VERSION = data['user_app_version']
+            scan.DIVISION = data['division']
+            scan.COUNTRY = data['country']
+            scan.ENVIRONMENT = data['environment']
             scan.save()
     except Exception:
         logger.exception('Adding Scan URL to Database')
