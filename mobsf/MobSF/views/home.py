@@ -116,12 +116,6 @@ class Upload(object):
                 response_data['description'] = msg
                 return self.resp_json(response_data)
 
-        error_message = self.validate_extradata()
-        if error_message:
-            logger.error(error_message)
-            response_data['description'] = error_message
-            return self.resp_json(response_data)
-
         response_data = self.upload()
         self.write_to_s3(response_data)
         return self.resp_json(response_data)
@@ -135,11 +129,6 @@ class Upload(object):
         self.scan.email = self.request.POST.get('email', '')
         if not self.scan.file_type.is_allow_file():
             api_response['error'] = 'File format not Supported!'
-            return api_response, HTTP_BAD_REQUEST
-        error_message = self.validate_extradata()
-        if error_message:
-            logger.error(error_message)
-            api_response['error'] = error_message
             return api_response, HTTP_BAD_REQUEST
         api_response = self.upload()
         self.write_to_s3(api_response)
@@ -195,10 +184,6 @@ class Upload(object):
             logging.error('Unable to upload files to AWS S3')
             return False
         return
-
-    def validate_extradata(self):
-        # Validate additional application metadata provided
-        return None
 
 
 def api_docs(request):
@@ -304,7 +289,8 @@ def logout_aws(request):
     resp = HttpResponse(
         '{}',
         content_type='application/json; charset=utf-8')
-    resp.set_cookie('AWSELBAuthSessionCookie', None, -1, -1)
+    for cookie in request.COOKIES:
+        resp.set_cookie(cookie, None, -1, -1)
     return resp
 
 

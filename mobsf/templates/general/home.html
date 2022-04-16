@@ -616,9 +616,9 @@
                document.querySelector("#drop").style.opacity = 0;
                document.querySelector("#textnode").style.fontSize = "42px";
                if (!checkRequired()) { return; }
-               if(e.dataTransfer.files.length > 0)
+               if (e.dataTransfer.files.length > 0)
                {
-                    var extradata = new Object();
+                    var extradata = new Object();                
                     extradata.user_app_name = _('name').value;
                     extradata.user_app_version = _('version').value;
                     extradata.country = _('country').value;
@@ -645,8 +645,8 @@
                     _("uploadFile").style.display = "none";
                     var files = _("uploadFile").files;
                     var extradata = new Object();
-                    extradata.app_name = _('name').value;
-                    extradata.app_version = _('version').value;
+                    extradata.user_app_name = _('name').value;
+                    extradata.user_app_version = _('version').value;
                     extradata.country = _('country').value;
                     extradata.division = _('division').value;                
                     extradata.environment = _('environment').value;
