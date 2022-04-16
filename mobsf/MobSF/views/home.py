@@ -131,7 +131,8 @@ class Upload(object):
             api_response['error'] = 'File format not Supported!'
             return api_response, HTTP_BAD_REQUEST
         api_response = self.upload()
-        self.write_to_s3(api_response)
+        if (not self.request.GET.get('scan', '1') == '0'):
+            self.write_to_s3(api_response)
         return api_response, 200
 
     def upload(self):
@@ -180,6 +181,7 @@ class Upload(object):
             s3_client.upload_file(metadata_filepath,
                                   settings.AWS_S3_BUCKET,
                                   'intake/' + self.scan.file_name + '.json')
+            print('Wrote files to S3 bucket: ' + settings.AWS_S3_BUCKET)
         except ClientError:
             logging.error('Unable to upload files to AWS S3')
             return False
