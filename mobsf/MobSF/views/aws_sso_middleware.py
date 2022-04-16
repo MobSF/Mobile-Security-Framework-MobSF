@@ -30,10 +30,12 @@ def alb_idp_auth_middleware(
     def middleware(request):
         identifier = JWTIdentifier(region=region)
         info = identifier.identify(request)
+        print(info)
         if info:
-            request.META['email'] = str.lower(info['email'])
+            email = str.lower(info['email'])
+            request.META['email'] = str.lower(email)
             request.META['groups'] = info['groups']
-            logger.debug('%s: %s', info['email'], request.path)
+            logger.debug('%s: %s', email, request.path)
         else:
             request.META['email'] = 'test@testing.local'
             request.META['groups'] = ''
@@ -82,6 +84,8 @@ class JWTIdentifier:
     def identify(self, request) -> dict:
         if DATA_HEADER not in request.META:
             return {}
+        print(request.META[ACCESS_TOKEN_HEADER])
         data = request.META[DATA_HEADER]
+        print(data)
         info = self.verify(data)
         return info
