@@ -236,20 +236,3 @@ def is_secret(inp):
     )
     not_str = any(i in inp for i in not_string)
     return any(i in inp for i in iden) and not not_str
-
-
-def scan_complete(md5_hash):
-    try:
-        # TEMPORARY: INVOKE LAMBDA
-        if (not settings.AWS_LAMBDA_NOTIFY):
-            return
-        payload = json.dumps({'hash': md5_hash}).encode('utf-8')
-        lambda_client = boto3.client('lambda')
-        lambda_client.invoke(
-            FunctionName=settings.AWS_LAMBDA_NOTIFY,
-            InvocationType='Event',
-            Payload=payload,
-        )
-    except ClientError:
-        logging.error('Unable to invoke AWS Lambda')
-    return
