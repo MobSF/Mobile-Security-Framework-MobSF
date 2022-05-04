@@ -92,9 +92,9 @@ def print_version():
         print('REST API Key: ' + Color.BOLD + api_key() + Color.END)
     logger.info('OS: %s', platform.system())
     logger.info('Platform: %s', platform.platform())
-    dist = distro.linux_distribution(full_distribution_name=False)
-    if dist:
-        logger.info('Dist: %s', ' '.join(dist))
+    dist = ' '.join(distro.linux_distribution(full_distribution_name=False))
+    if dist.strip():
+        logger.info('Dist: %s', dist)
     find_java_binary()
     check_basic_env()
     thread = threading.Thread(target=check_update, name='check_update')
