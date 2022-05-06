@@ -77,14 +77,14 @@
                             <td>{{ e.MD5 }}</td>
                             <td>{{ e.TIMESTAMP }}</td>
                             <td><p>
-                                    <a class="btn btn-primary btn-sm" style="margin-bottom: 3px;" href="../{{ e.ANALYZER }}/?name={{e.FILE_NAME}}&amp;checksum={{e.MD5}}&amp;type={{e.SCAN_TYPE}}"><i class="fas fa-eye" title="View static analysis details"></i> Static Details</a><br/>
+                                    <a class="btn btn-primary btn-sm" style="margin-bottom: 3px; width: 125px;" href="../{{ e.ANALYZER }}/?name={{e.FILE_NAME}}&amp;checksum={{e.MD5}}&amp;type={{e.SCAN_TYPE}}"><i class="fas fa-eye" title="View static analysis details"></i> Static Details</a><br/>
                                     {% if e.PACKAGE_NAME %}
-                                    <a class="btn btn-primary btn-warning btn-sm" style="margin-bottom: 3px;" href="../appsec_dashboard/{{ e.MD5 }}/"><i class="fas fa-user-shield" title="View security scorecard"></i> Scorecard</a><br/>
-                                    <a class="btn btn-primary btn-danger btn-sm" href="{{dependency_track_url}}/projects/?tag={{ e.MD5 }}"><i class="fas fa-link" title="View third party dependency details"></i> Dependencies</a><br/>
+                                    <a class="btn btn-primary btn-warning btn-sm" style="margin-bottom: 3px;  width: 125px;" href="../appsec_dashboard/{{ e.MD5 }}/"><i class="fas fa-user-shield" title="View security scorecard"></i> Scorecard</a><br/>
+                                    <a class="btn btn-primary btn-danger btn-sm" style="width: 125px;" href="{{dependency_track_url}}/projects/?tag={{ e.MD5 }}"><i class="fas fa-link" title="View third party dependency details"></i> Dependencies</a><br/>
                                     {% endif %}
                                 </p><p>
                                    <a class="btn btn-outline-primary btn-sm" href="../pdf/?md5={{ e.MD5 }}"><i class="fas fa-file-pdf" title="Generate PDF report of static analysis details"></i></a>
-                                   <a class="btn btn-outline-info btn-sm" href="../pdf-sbom/?md5={{ e.MD5 }}"><i class="fas fa-file-pdf" title="Generate PDF report of third party dependency details"></i></a>
+                                   <!--<a class="btn btn-outline-info btn-sm" href="../pdf-sbom/?md5={{ e.MD5 }}"><i class="fas fa-file-pdf" title="Generate PDF report of third party dependency details"></i></a>-->
                                    <!--<a class="btn btn-outline-primary btn-sm" href="../{{ e.ANALYZER }}/?name={{e.FILE_NAME}}&amp;checksum={{e.MD5}}&amp;type={{e.SCAN_TYPE}}&amp;rescan=1"><i class="fas fa-sync-alt" title="Perform another static analysis scan"></i></a>-->
                                    {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:"%}
                                    <a class="btn btn-outline-primary btn-sm diffButton" id="{{ e.MD5 }}_{{ e.FILE_NAME }}" href="#"><i class="fas fa-not-equal" title="Compare this scan with another one"></i></a>
