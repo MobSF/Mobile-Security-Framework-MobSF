@@ -5,14 +5,13 @@
       <meta charset="utf-8">
       <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <meta name="viewport" content="width=device-width, initial-scale=1">
-      <meta name="description" content="Cyberspect MobSF is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework built from https://mobsf.github.io/docs/">
-      <meta name="author" content="Ajin Abraham">
-      <link rel="icon" href="{% static "img/favicon.ico" %}">
-      <title>Abbott Laboratories - Mobile Application Security</title>
-      <link rel="stylesheet" href="{% static "adminlte/dashboard/css/adminlte.min.css" %}">
-      <link rel="stylesheet" href="{% static "adminlte/plugins/fontawesome-free/css/all.min.css" %}">
-      <link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
-      <link rel="stylesheet" href="{% static "landing/css/home.css" %}">
+      <meta name="description" content="Cyberspect is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework built on https://mobsf.github.io/docs/">
+      <link rel="icon" href="{% static 'img/favicon.ico' %}">
+      <title>Cyberspect - Mobile Application Security</title>
+      <link rel="stylesheet" href="{% static 'adminlte/dashboard/css/adminlte.min.css' %}">
+      <link rel="stylesheet" href="{% static 'adminlte/plugins/fontawesome-free/css/all.min.css' %}">
+      <link rel="stylesheet" href="{% static 'others/css/spinner.css' %}">
+      <link rel="stylesheet" href="{% static 'landing/css/home.css' %}">
       <!-- Google Font: Source Sans Pro -->
       <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
    </head>
@@ -21,7 +20,7 @@
         <!-- Centered link -->
         <div class="topnav-centered">
             <a>
-               <img src="{{logo}}" width="20%" height="20%"/>
+               <img src="{{tenant_static}}img/mobsf_logo.png" width="20%" height="20%"/>
            </a>
            </div>
            <!-- Left-aligned links (default) -->
@@ -31,6 +30,7 @@
            <!-- Right-aligned links -->
            <div class="topnav-right">
                <!--<a href="{% url 'api_docs' %}">API DOCS</a>-->
+               <a href="{{tenant_static}}Cyberspect%20Quick%20Start.pdf" target="_blank">HELP</a>
                <a href="{% url 'about' %}">ABOUT</a>
                <a>
                 <form action="/search" method="GET">
@@ -358,9 +358,9 @@
 
 
                   <div class="inner">
-                     <h6> <a href="{% url 'recent' %}">RECENT SCANS</a>  | <!-- <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>  |  <a href="{% url 'api_docs' %}">API DOCS</a>   |  <a href="https://opensecurity.in/donate">DONATE ♥</a> | --> <a href="{% url 'about' %}">ABOUT</a></h6>
-                     </br>
-                     <p>&copy; {% now "Y" %}  Cyberspect Mobile Application Security {{ version }} - {{email}}</p>
+                     <!--<h6> <a href="{% url 'recent' %}">RECENT SCANS</a>  |  <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>  |  <a href="{% url 'api_docs' %}">API DOCS</a>   |  <a href="https://opensecurity.in/donate">DONATE ♥</a> |  <a href="{% url 'about' %}">ABOUT</a></h6>
+                     </br>-->
+                     <p>&copy; {% now "Y" %}  Cyberspect - {{ version }} - {{email}}</p>
                   </div>
                </div>
             </div>
@@ -578,7 +578,7 @@
             }
 
             function populateDivisions() {
-                var divisionsUrl = '{{divisions}}';
+                var divisionsUrl = '{{tenant_static}}divisions.json';
                 if (!divisionsUrl) return;
                 fetch(divisionsUrl)
                     .then(response => response.json())

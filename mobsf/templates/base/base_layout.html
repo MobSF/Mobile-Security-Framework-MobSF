@@ -6,8 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>{{title}}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Cyberspect - MobSF">
-  <meta name="author" content="Ajin Abraham">
+  <meta name="description" content="Cyberspect is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework built on https://mobsf.github.io/docs/">
   <link rel="icon" href="{% static "img/favicon.ico" %}">
 
   <!-- Tell the browser to be responsive to screen width -->
@@ -43,6 +42,7 @@
         <!--<li class="nav-item d-none d-sm-inline-block"><a href="{% url 'dynamic' %}" class="nav-link">DYNAMIC ANALYZER</a></li>-->
         <!--<li class="nav-item d-none d-sm-inline-block"><a href="{% url 'api_docs' %}" class="nav-link">API DOCS</a></li>-->
         <!--<li class="nav-item d-none d-sm-inline-block"><a href="https://opensecurity.in/donate" class="nav-link">DONATE ♥</a></li>-->
+        <li class="nav-item d-none d-sm-inline-block"><a href="{{tenant_static}}Cyberspect%20Quick%20Start.pdf" target="_blank" class="nav-link">HELP</a></li>
         <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'about' %}" class="nav-link">ABOUT</a></li>
     </ul>
 
@@ -82,7 +82,7 @@
 
   <!-- /.content-wrapper -->
   <footer class="main-footer">
-    <strong>© {% now "Y" %} Cyberspect - MobSF <!-- | <a href="https://ajinabraham.com">Ajin Abraham</a> | <a href="https://opensecurity.in">OpenSecurity</a>.--></strong>
+    <strong>© {% now "Y" %} Cyberspect</strong>
     <div class="float-right d-none d-sm-inline-block">
       <b>Version</b> {{ version }}
     </div>

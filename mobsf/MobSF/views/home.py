@@ -59,7 +59,7 @@ def index(request):
     context = {
         'version': settings.MOBSF_VER,
         'mimes': mimes,
-        'logo': os.getenv('LOGO', '/static/img/mobsf_logo.png'),
+        'tenant_static': settings.TENANT_STATIC_URL,
         'divisions': os.getenv('DIVISIONS'),
         'email': sso_email(request),
     }
@@ -197,7 +197,7 @@ def api_docs(request):
         'title': 'REST API Docs',
         'api_key': api_key(),
         'version': settings.MOBSF_VER,
-        'logo': os.getenv('LOGO', '/static/img/mobsf_logo.png'),
+        'tenant_static': settings.TENANT_STATIC_URL,
     }
     template = 'general/apidocs.html'
     return render(request, template, context)
@@ -270,7 +270,7 @@ def recent_scans(request):
         'title': 'Recent Scans',
         'entries': entries,
         'version': settings.MOBSF_VER,
-        'logo': os.getenv('LOGO', '/static/img/mobsf_logo.png'),
+        'tenant_static': settings.TENANT_STATIC_URL,
         'dependency_track_url': settings.DEPENDENCY_TRACK_URL,
     }
     template = 'general/recent.html'
