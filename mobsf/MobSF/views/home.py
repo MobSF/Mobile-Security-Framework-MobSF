@@ -209,11 +209,23 @@ def api_docs(request):
     return render(request, template, context)
 
 
+def support(request):
+    """Support Route."""
+    context = {
+        'title': 'Support',
+        'version': settings.MOBSF_VER,
+        'tenant_static': settings.TENANT_STATIC_URL,
+    }
+    template = 'general/support.html'
+    return render(request, template, context)
+
+
 def about(request):
     """About Route."""
     context = {
         'title': 'About',
         'version': settings.MOBSF_VER,
+        'tenant_static': settings.TENANT_STATIC_URL,
     }
     template = 'general/about.html'
     return render(request, template, context)
