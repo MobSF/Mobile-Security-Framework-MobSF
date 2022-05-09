@@ -86,39 +86,45 @@ class Upload(object):
         return resp
 
     def upload_html(self):
-        request = self.request
-        response_data = {
-            'description': '',
-            'status': 'error',
-        }
-        if request.method != 'POST':
-            msg = 'Method not Supported!'
-            logger.error(msg)
-            response_data['description'] = msg
-            return self.resp_json(response_data)
-
-        if not self.form.is_valid():
-            msg = 'Invalid Form Data!'
-            logger.error(msg)
-            response_data['description'] = msg
-            return self.resp_json(response_data)
-
-        if not self.scan.file_type.is_allow_file():
-            msg = 'File format not Supported!'
-            logger.error(msg)
-            response_data['description'] = msg
-            return self.resp_json(response_data)
-
-        if self.scan.file_type.is_ipa():
-            if platform.system() not in LINUX_PLATFORM:
-                msg = 'Static Analysis of iOS IPA requires Mac or Linux'
+        try:
+            request = self.request
+            response_data = {
+                'description': '',
+                'status': 'error',
+            }
+            if request.method != 'POST':
+                msg = 'Method not Supported!'
                 logger.error(msg)
                 response_data['description'] = msg
                 return self.resp_json(response_data)
 
-        response_data = self.upload()
-        self.write_to_s3(response_data)
-        return self.resp_json(response_data)
+            if not self.form.is_valid():
+                msg = 'Invalid Form Data!'
+                logger.error(msg)
+                response_data['description'] = msg
+                return self.resp_json(response_data)
+
+            if not self.scan.file_type.is_allow_file():
+                msg = 'File format not Supported!'
+                logger.error(msg)
+                response_data['description'] = msg
+                return self.resp_json(response_data)
+
+            if self.scan.file_type.is_ipa():
+                if platform.system() not in LINUX_PLATFORM:
+                    msg = 'Static Analysis of iOS IPA requires Mac or Linux'
+                    logger.error(msg)
+                    response_data['description'] = msg
+                    return self.resp_json(response_data)
+
+            response_data = self.upload()
+            self.write_to_s3(response_data)
+            return self.resp_json(response_data)
+        except Exception as ex:
+            msg = getattr(ex, 'message', repr(ex))
+            logger.error(msg)
+            response_data['description'] = msg
+            return self.resp_json(response_data)
 
     def upload_api(self):
         """API File Upload."""
