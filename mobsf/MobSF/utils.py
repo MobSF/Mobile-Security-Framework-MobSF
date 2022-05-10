@@ -203,10 +203,6 @@ def filename_from_path(path):
     return tail or ntpath.basename(head)
 
 
-def get_md5(data):
-    return hashlib.md5(data).hexdigest()
-
-
 def find_between(s, first, last):
     try:
         start = s.index(first) + len(first)
