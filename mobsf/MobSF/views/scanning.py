@@ -8,7 +8,7 @@ from django.conf import settings
 from django.utils import timezone
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
-from mobsf.MobSF.utils import get_siphash, sso_email
+from mobsf.MobSF.utils import get_siphash, get_usergroups, sso_email
 from mobsf.MobSF.views.helpers import FileType
 
 logger = logging.getLogger(__name__)
@@ -32,13 +32,16 @@ def add_to_recent_scan(data):
             DIVISION=data['division'],
             COUNTRY=data['country'],
             ENVIRONMENT=data['environment'],
-            EMAIL=data['email'])
+            EMAIL=data['email'],
+            USER_GROUPS=data['user_groups'])
 
         new_db_obj.save()
     else:
         scan = db_obj.first()
         if (not data['email'] in scan.EMAIL):
             scan.EMAIL = scan.EMAIL + ',' + data['email']
+        if (not data['user_groups'] in scan.USER_GROUPS):
+            scan.USER_GROUPS = scan.USER_GROUPS + ',' + data['user_groups']
         scan.FILE_NAME = data['file_name']
         scan.TIMESTAMP = timezone.now()
         scan.USER_APP_NAME = data['user_app_name']
@@ -94,6 +97,7 @@ class Scanning(object):
         self.division = request.POST.get('division')
         self.environment = request.POST.get('environment')
         self.email = sso_email(request)
+        self.user_groups = get_usergroups(request)
 
     def scan_apk(self):
         """Android APK."""
@@ -112,6 +116,7 @@ class Scanning(object):
             'division': self.division,
             'environment': self.environment,
             'email': self.email,
+            'user_groups': self.user_groups,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android APK')
@@ -134,6 +139,7 @@ class Scanning(object):
             'division': self.division,
             'environment': self.environment,
             'email': self.email,
+            'user_groups': self.user_groups,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android XAPK base APK')
@@ -156,6 +162,7 @@ class Scanning(object):
             'division': self.division,
             'environment': self.environment,
             'email': self.email,
+            'user_groups': self.user_groups,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android Split APK')
@@ -178,6 +185,7 @@ class Scanning(object):
             'division': self.division,
             'environment': self.environment,
             'email': self.email,
+            'user_groups': self.user_groups,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android/iOS Source Code')
@@ -200,6 +208,7 @@ class Scanning(object):
             'division': self.division,
             'environment': self.environment,
             'email': self.email,
+            'user_groups': self.user_groups,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of iOS IPA')
@@ -222,6 +231,7 @@ class Scanning(object):
             'division': self.division,
             'environment': self.environment,
             'email': self.email,
+            'user_groups': self.user_groups,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Windows APP')

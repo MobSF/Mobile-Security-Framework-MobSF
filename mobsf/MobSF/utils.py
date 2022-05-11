@@ -629,3 +629,10 @@ def get_siphash(data):
     sip = siphash.SipHash_2_4(bytes.fromhex(tenant_id), data_bytes)
     response = base64.b64encode(sip.digest()).decode('utf8').replace('=', '')
     return response
+
+
+def get_usergroups(request):
+    if (is_admin(request)):
+        return settings.ADMIN_GROUP
+    else:
+        return settings.GENERAL_GROUP

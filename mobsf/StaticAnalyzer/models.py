@@ -19,6 +19,7 @@ class RecentScansDB(models.Model):
     DIVISION = models.CharField(max_length=260, default='')
     ENVIRONMENT = models.CharField(max_length=50, default='')
     EMAIL = models.CharField(max_length=260, default='')
+    USER_GROUPS = models.CharField(max_length=260, default='')
 
 
 class StaticAnalyzerAndroid(models.Model):

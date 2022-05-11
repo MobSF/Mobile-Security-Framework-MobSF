@@ -188,7 +188,7 @@ class Upload(object):
             file_name = api_response['hash'] + '.' + api_response['scan_type']
             s3_client.upload_file(file_path,
                                   settings.AWS_S3_BUCKET,
-                                  file_name)
+                                  'intake/' + file_name)
             s3_client.upload_file(metadata_filepath,
                                   settings.AWS_S3_BUCKET,
                                   'intake/' + file_name + '.json')
