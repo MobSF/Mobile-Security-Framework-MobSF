@@ -1,5 +1,6 @@
 """Common Utils."""
 import ast
+import base64
 import hashlib
 import io
 import logging
@@ -23,6 +24,8 @@ import distro
 import psutil
 
 import requests
+
+import siphash
 
 from django.shortcuts import render
 
@@ -618,3 +621,11 @@ def sso_email(request):
         return request.META['email']
     else:
         return None
+
+
+def get_siphash(data):
+    data_bytes = bytes.fromhex(data)
+    tenant_id = os.getenv('TENANT_ID', 'df73ea3d2b91442a903b6043399b1353')
+    sip = siphash.SipHash_2_4(bytes.fromhex(tenant_id), data_bytes)
+    response = base64.b64encode(sip.digest()).decode('utf8').replace('=', '')
+    return response

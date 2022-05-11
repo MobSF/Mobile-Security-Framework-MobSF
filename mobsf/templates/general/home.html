@@ -78,7 +78,7 @@
                     <table style="margin-left: auto; margin-right: auto;">
                         <tr>
                         <td>                          
-                            <select id="country" multiple style="height: 70px">
+                            <select id="country" multiple style="height: 66px">
                                 <option value="**" selected>Global</option>
                                 <option value="US">United States</option>
                                 <option value="AF">Afghanistan</option>
@@ -341,8 +341,20 @@
 
                   <form id="upload_form" enctype="multipart/form-data" method="post">
                      {% csrf_token %}
-                     <div class="fileUpload btn btn-default btn-lg" id="but">
-                        <input type="file" name="file" id="uploadFile" placeholder="Choose File" multiple>
+                     <div style="text-align: left; width: 275px; margin: auto">
+                        <div id="err_file" class="hidden"><span class="error">Required!</span></div>
+                        <label for="file">
+                            <i class="fa fa-mobile-alt fa-lg" aria-hidden="true"></i> &nbsp;Mobile App File
+                        </label><br/>
+                        <input type="file" name="file" id="uploadFile" placeholder="Choose Mobile App File" accept=".apk, .apks, .appx, .ipa, .xapk, .zip">
+                    </div>
+                    <div style="text-align: left; width: 275px; margin: auto">
+                        <label for="source_file">
+                            <i class="fa fa-code fa-lg" aria-hidden="true"></i> &nbsp;Source Code File (optional)
+                        </label><br/>
+                        <input type="file" name="source_file" id="uploadSourceFile" placeholder="Choose Source File" accept=".zip">
+                    </div>                     
+                     <div class="fileUpload btn btn-default btn-lg" id="but">                        
                         <span class="fas fa-cloud-upload-alt"></span>
                         Upload &amp; Analyze
                      </div>&nbsp;&nbsp;
@@ -512,9 +524,12 @@
                 return false;
           }
          // File Upload
-         function uploadFile(file, extradata, i) {
+         function upload(app_file, source_file, extradata) {
            try {
-                if (!isValidExt(file.name) || !isValidMime(file.type)){
+                if (!isValidExt(app_file.name) || !isValidMime(app_file.type)){
+                    return;
+                }
+                if (source_file != null && (!isValidExt(source_file.name) || !isValidMime(source_file.type))) {
                     return;
                 }
                 _("progressBar").style.visibility = "visible";
@@ -528,7 +543,10 @@
                 xhr.addEventListener("error", errorHandler, false);
                 xhr.addEventListener("abort", abortHandler, false);
                 var formdata = new FormData();
-                formdata.append("file", file);
+                formdata.append("file", app_file);
+                if (source_file != null) {
+                    formdata.append("source_file", source_file);
+                }
                 formdata.append("user_app_name", extradata.user_app_name);
                 formdata.append("user_app_version", extradata.user_app_version);
                 formdata.append("division", extradata.division);
@@ -540,12 +558,12 @@
             }
            }
          
-           function handleFiles(files, extradata) {
+           /* function handleFiles(files, extradata) {
                 files = [...files]
                 for (var i = 0; i < files.length; i++) {
                     uploadFile(files[i], extradata, i);
                 }
-           }
+           } */
          
            // Full Screen Drag & Drop File Upload
            var lastTarget = null;
@@ -572,7 +590,11 @@
                 if (!_('division').value) {
                     _('err_division').classList.remove('hidden');
                     return false;
-                } else { _('err_division').classList.add('hidden'); }            
+                } else { _('err_division').classList.add('hidden'); }  
+                if (_("uploadFile").files.length === 0) {
+                    _('err_file').classList.remove('hidden');
+                    return false;
+                } else { _('err_file').classList.add('hidden'); }           
 
                 return true;
             }
@@ -591,7 +613,7 @@
                     });
             }
          
-           window.addEventListener("dragenter", function (e) {
+           /* window.addEventListener("dragenter", function (e) {
                if (isFile(e)) {
                    lastTarget = e.target;
                    document.querySelector("#drop").style.visibility = "";
@@ -629,31 +651,31 @@
                     extradata.environment = $('#environment').val();
                     handleFiles(e.dataTransfer.files, extradata);
                }
-           });
+           }); */
 
             $(document).ready(function() {
                 populateDivisions();
-
-                // Ensure required fields are filled
-                $('input[type=file]').click(function () {
-                    return checkRequired();
-                });
-
-                // Button File Upload
-                $('input[type=file]').change(function() {
+                
+                $('#but').click(function () {
                     _('status').innerText = "";
-                    if (_("uploadFile").files.length === 0) {
-                        return;
-                    }
-                    _("uploadFile").style.display = "none";
-                    var files = _("uploadFile").files;
+
+                    // Ensure required fields are filled
+                    if (!checkRequired()) { return false; }
+                    if (_("uploadFile").files.length === 0) { return false; }
+
                     var extradata = new Object();
                     extradata.user_app_name = $('#name').val();
                     extradata.user_app_version = $('#version').val();
                     extradata.country = $('#country').val().join(',');
                     extradata.division = $('#division').val();                
                     extradata.environment = $('#environment').val();
-                    handleFiles(files, extradata);                    
+
+                    if (_("uploadSourceFile").files.length === 0) {
+                        upload(_("uploadFile").files[0], null, extradata); 
+                    }
+                    else {
+                        upload(_("uploadFile").files[0], _("uploadSourceFile").files[0], extradata); 
+                    }
                 });
             });
       </script>
