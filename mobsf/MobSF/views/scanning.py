@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 def add_to_recent_scan(data):
     """Add Entry to Database under Recent Scan."""
+    logger.info('Adding to recent scan page, hash: %s', data['hash'])
     db_obj = RecentScansDB.objects.filter(MD5=data['hash'])
     if not db_obj.exists():
         new_db_obj = RecentScansDB(
@@ -81,13 +82,16 @@ def handle_uploaded_file(content, typ, source_content):
             for chunk in content.chunks():
                 destination.write(chunk)
     if (source_content):
+        logger.info('Processing source_content')
         bfr = isinstance(source_content, io.BufferedReader)
         with open(local_dir + md5sum + typ + '.src', 'wb+') as f:
             if bfr:
+                logger.info('Source bfr is true')
                 source_content.seek(0, 0)
                 while chunk := source_content.read(8192):
                     f.write(chunk)
             else:
+                logger.info('Source bfr is false')
                 for chunk in source_content.chunks():
                     f.write(chunk)
     return md5sum
