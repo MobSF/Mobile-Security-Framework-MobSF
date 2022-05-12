@@ -87,6 +87,7 @@ class Upload(object):
         return resp
 
     def upload_html(self):
+        logger.info('Uploading thru html')
         try:
             request = self.request
             response_data = {
@@ -129,6 +130,7 @@ class Upload(object):
 
     def upload_api(self):
         """API File Upload."""
+        logger.info('Uploading through API')
         api_response = {}
         if not self.form.is_valid():
             api_response['error'] = FormUtil.errors_message(self.form)

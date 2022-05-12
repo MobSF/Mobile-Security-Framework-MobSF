@@ -54,13 +54,16 @@ def add_to_recent_scan(data):
 
 def handle_uploaded_file(content, typ, source_content):
     """Write Uploaded File."""
+    logger.info('Handling uploaded file')
     md5 = hashlib.md5()
     bfr = isinstance(content, io.BufferedReader)
     if bfr:
+        logger.info('bfr is true')
         # Not File upload
         while chunk := content.read(8192):
             md5.update(chunk)
     else:
+        logger.info('bfr is false')
         # File upload
         for chunk in content.chunks():
             md5.update(chunk)
@@ -112,6 +115,7 @@ class Scanning(object):
 
     def scan_apk(self):
         """Android APK."""
+        logger.info('Inside scan_apk, about to handle uploaded file.')
         md5 = handle_uploaded_file(self.file, '.apk', self.source_file)
         short_hash = get_siphash(md5)
         data = {
