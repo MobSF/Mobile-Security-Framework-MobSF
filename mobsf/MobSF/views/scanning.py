@@ -17,40 +17,44 @@ logger = logging.getLogger(__name__)
 def add_to_recent_scan(data):
     """Add Entry to Database under Recent Scan."""
     logger.info('Adding to recent scan page, hash: %s', data['hash'])
-    db_obj = RecentScansDB.objects.filter(MD5=data['hash'])
-    if not db_obj.exists():
-        new_db_obj = RecentScansDB(
-            ANALYZER=data['analyzer'],
-            SCAN_TYPE=data['scan_type'],
-            FILE_NAME=data['file_name'],
-            APP_NAME='',
-            PACKAGE_NAME='',
-            VERSION_NAME='',
-            MD5=data['hash'],
-            TIMESTAMP=timezone.now(),
-            USER_APP_NAME=data['user_app_name'],
-            USER_APP_VERSION=data['user_app_version'],
-            DIVISION=data['division'],
-            COUNTRY=data['country'],
-            ENVIRONMENT=data['environment'],
-            EMAIL=data['email'],
-            USER_GROUPS=data['user_groups'])
 
-        new_db_obj.save()
-    else:
-        scan = db_obj.first()
-        if (not data['email'] in scan.EMAIL):
-            scan.EMAIL = scan.EMAIL + ',' + data['email']
-        if (not data['user_groups'] in scan.USER_GROUPS):
-            scan.USER_GROUPS = scan.USER_GROUPS + ',' + data['user_groups']
-        scan.FILE_NAME = data['file_name']
-        scan.TIMESTAMP = timezone.now()
-        scan.USER_APP_NAME = data['user_app_name']
-        scan.USER_APP_VERSION = data['user_app_version']
-        scan.DIVISION = data['division']
-        scan.COUNTRY = data['country']
-        scan.ENVIRONMENT = data['environment']
-        scan.save()
+    try:
+        db_obj = RecentScansDB.objects.filter(MD5=data['hash'])
+        if not db_obj.exists():
+            new_db_obj = RecentScansDB(
+                ANALYZER=data['analyzer'],
+                SCAN_TYPE=data['scan_type'],
+                FILE_NAME=data['file_name'],
+                APP_NAME='',
+                PACKAGE_NAME='',
+                VERSION_NAME='',
+                MD5=data['hash'],
+                TIMESTAMP=timezone.now(),
+                USER_APP_NAME=data['user_app_name'],
+                USER_APP_VERSION=data['user_app_version'],
+                DIVISION=data['division'],
+                COUNTRY=data['country'],
+                ENVIRONMENT=data['environment'],
+                EMAIL=data['email'],
+                USER_GROUPS=data['user_groups'])
+
+            new_db_obj.save()
+        else:
+            scan = db_obj.first()
+            if (not data['email'] in scan.EMAIL):
+                scan.EMAIL = scan.EMAIL + ',' + data['email']
+            if (not data['user_groups'] in scan.USER_GROUPS):
+                scan.USER_GROUPS = scan.USER_GROUPS + ',' + data['user_groups']
+            scan.FILE_NAME = data['file_name']
+            scan.TIMESTAMP = timezone.now()
+            scan.USER_APP_NAME = data['user_app_name']
+            scan.USER_APP_VERSION = data['user_app_version']
+            scan.DIVISION = data['division']
+            scan.COUNTRY = data['country']
+            scan.ENVIRONMENT = data['environment']
+            scan.save()
+    except Exception:
+        logger.exception('Adding Scan URL to Database')
 
 
 def handle_uploaded_file(content, typ, source_content):
