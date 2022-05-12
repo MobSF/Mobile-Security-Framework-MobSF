@@ -16,8 +16,6 @@ logger = logging.getLogger(__name__)
 
 def add_to_recent_scan(data):
     """Add Entry to Database under Recent Scan."""
-    logger.info('Adding to recent scan page, hash: %s', data['hash'])
-
     try:
         db_obj = RecentScansDB.objects.filter(MD5=data['hash'])
         if not db_obj.exists():
@@ -43,8 +41,7 @@ def add_to_recent_scan(data):
             scan = db_obj.first()
             if (not data['email'] in scan.EMAIL):
                 scan.EMAIL = scan.EMAIL + ',' + data['email']
-            if (data['user_groups']
-                    and (not data['user_groups'] in scan.USER_GROUPS)):
+            if (not data['user_groups'] in scan.USER_GROUPS):
                 scan.USER_GROUPS = (scan.USER_GROUPS + ','
                                     + data['user_groups'])
             scan.FILE_NAME = data['file_name']
@@ -55,8 +52,9 @@ def add_to_recent_scan(data):
             scan.COUNTRY = data['country']
             scan.ENVIRONMENT = data['environment']
             scan.save()
-    except Exception:
+    except Exception as ex:
         logger.exception('Adding Scan URL to Database')
+        raise ex
 
 
 def handle_uploaded_file(content, typ, source_content):
@@ -65,12 +63,10 @@ def handle_uploaded_file(content, typ, source_content):
     md5 = hashlib.md5()
     bfr = isinstance(content, io.BufferedReader)
     if bfr:
-        logger.info('bfr is true')
         # Not File upload
         while chunk := content.read(8192):
             md5.update(chunk)
     else:
-        logger.info('bfr is false')
         # File upload
         for chunk in content.chunks():
             md5.update(chunk)
