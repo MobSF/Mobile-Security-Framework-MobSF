@@ -53,7 +53,7 @@
                     <tbody>
                     {% for e in entries %}
                         <tr>
-                            <td>{{ e.TIMESTAMP }}</td>
+                            <td><span class="scandate">{{ e.TIMESTAMP|date:'c' }}</span></td>
                             <td align="center">
                                 <strong>{{e.USER_APP_NAME}} - {{e.USER_APP_VERSION}}</strong></br>
                                 <img id="app_icon" src="/download/{{ e.MD5 }}-icon.png" onerror="this.src='{% static 'img/no_icon.png' %}'">
@@ -61,8 +61,11 @@
                                   <br/>{{ e.APP_NAME }} {% if e.VERSION_NAME %} - {{ e.VERSION_NAME }} {% endif %}
                                   </br>{{ e.PACKAGE_NAME }}                                 
                                 {% else %}
-                                  {% if e.TIMESTAMP }
-                                  </br><span class="badge bg-warning">scan in progress</span>
+                                  {% if e.ERROR %}
+                                    </br><span class="badge bg-danger">scan error</span>
+                                  {% else %}
+                                    </br><span class="badge bg-warning">scan in progress</span>
+                                  {% endif %}
                                 {% endif %}
                             </td>
                             <td>{{ e.FILE_NAME }}
@@ -81,7 +84,7 @@
                                     <a class="btn btn-primary btn-sm" style="margin-bottom: 3px; width: 125px;" href="../{{ e.ANALYZER }}/?name={{e.FILE_NAME}}&amp;checksum={{e.MD5}}&amp;type={{e.SCAN_TYPE}}"><i class="fas fa-eye" title="View static analysis details"></i> Static Details</a><br/>
                                     {% if e.PACKAGE_NAME %}
                                     <a class="btn btn-primary btn-warning btn-sm" style="margin-bottom: 3px;  width: 125px;" href="../appsec_dashboard/{{ e.MD5 }}/"><i class="fas fa-user-shield" title="View security scorecard"></i> Scorecard</a><br/>
-                                    <a class="btn btn-primary btn-danger btn-sm" style="width: 125px;" href="{{dependency_track_url}}/projects/?tag={{ e.MD5 }}"><i class="fas fa-link" title="View third party dependency details"></i> Dependencies</a><br/>
+                                    <a class="btn btn-primary btn-sm" style="width: 125px;" href="{{dependency_track_url}}/projects/?tag={{ e.MD5 }}"><i class="fas fa-link" title="View third party dependency details"></i> Dependencies</a><br/>
                                     {% endif %}
                                 </p><p>
                                    <a class="btn btn-outline-primary btn-sm" href="../pdf/?md5={{ e.MD5 }}"><i class="fas fa-file-pdf" title="View PDF report of static analysis details"></i></a>
@@ -112,6 +115,7 @@
 {% endblock %}
 {% block extra_scripts %}
 <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
+<script src="{% static "others/js/dayjs.min.js" %}"></script>
 <script>
     // Diff functions
     var diff_first_md5 = '';
@@ -259,6 +263,10 @@
                 window.location.reload();
             }, 30000);
         }
+
+        $("span.scandate").each(function() {
+            this.innerText = dayjs(this.innerText).format("MMM D, YYYY h:mm A")
+        });
     });
 
 </script>
