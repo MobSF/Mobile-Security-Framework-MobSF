@@ -43,8 +43,10 @@ def add_to_recent_scan(data):
             scan = db_obj.first()
             if (not data['email'] in scan.EMAIL):
                 scan.EMAIL = scan.EMAIL + ',' + data['email']
-            if (not data['user_groups'] in scan.USER_GROUPS):
-                scan.USER_GROUPS = scan.USER_GROUPS + ',' + data['user_groups']
+            if (data['user_groups']
+                    and (not data['user_groups'] in scan.USER_GROUPS)):
+                scan.USER_GROUPS = (scan.USER_GROUPS + ','
+                                    + data['user_groups'])
             scan.FILE_NAME = data['file_name']
             scan.TIMESTAMP = timezone.now()
             scan.USER_APP_NAME = data['user_app_name']
