@@ -74,7 +74,7 @@
                           &nbsp;&nbsp;<i class="fas fa-info-circle fa-lg" title="The organizational division that owns the mobile app."></i>
                       </span>
                   </div>          
-                  <div>
+                  <!--<div>
                     <table style="margin-left: auto; margin-right: auto;">
                         <tr>
                         <td>                          
@@ -337,7 +337,7 @@
                         <td>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg" style="margin-bottom: 30px;" title="The country (or countries) where the mobile app has been (or will be) released."></i></td>
                     </tr>
                     </table>   
-                  </div>                               
+                  </div>-->                               
 
                   <form id="upload_form" enctype="multipart/form-data" method="post">
                      {% csrf_token %}
@@ -666,7 +666,7 @@
                     var extradata = new Object();
                     extradata.user_app_name = $('#name').val();
                     extradata.user_app_version = $('#version').val();
-                    extradata.country = $('#country').val().join(',');
+                    extradata.country = ''; //$('#country').val().join(',');
                     extradata.division = $('#division').val();                
                     extradata.environment = $('#environment').val();
 

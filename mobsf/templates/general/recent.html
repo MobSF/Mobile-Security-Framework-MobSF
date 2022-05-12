@@ -8,10 +8,10 @@
 <link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
 
 <style>
-#app_icon{
-        width: 64px;
-        height: 64px;
-    }
+#app_icon {
+    width: 64px;
+    height: 64px;
+}
 .selected {
     background-color: lightgreen !important;
 }
@@ -61,7 +61,8 @@
                                   <br/>{{ e.APP_NAME }} {% if e.VERSION_NAME %} - {{ e.VERSION_NAME }} {% endif %}
                                   </br>{{ e.PACKAGE_NAME }}                                 
                                 {% else %}
-                                </br><span class="badge bg-warning">scan in progress</span>
+                                  {% if e.TIMESTAMP }
+                                  </br><span class="badge bg-warning">scan in progress</span>
                                 {% endif %}
                             </td>
                             <td>{{ e.FILE_NAME }}
@@ -126,7 +127,6 @@
             diff_confirmation($(this));
         })
     }
-
 
     function enable_diff_button(){
         $(".diffButton").on('click', function(e){
@@ -249,10 +249,17 @@
                 diff_cleanup();
         }
         });
-}
-    
+    }
+  
+    $(document).ready(function() {
+        enable_diff_button(); 
 
-enable_diff_button();
+        if ($("span.badge.bg-warning").length > 0) {
+            window.setTimeout(function() {
+                window.location.reload();
+            }, 30000);
+        }
+    });
 
 </script>
 

@@ -52,7 +52,7 @@ def add_to_recent_scan(data):
         scan.save()
 
 
-def handle_uploaded_file(content, typ):
+def handle_uploaded_file(content, typ, source_content):
     """Write Uploaded File."""
     md5 = hashlib.md5()
     bfr = isinstance(content, io.BufferedReader)
@@ -65,10 +65,11 @@ def handle_uploaded_file(content, typ):
         for chunk in content.chunks():
             md5.update(chunk)
     md5sum = md5.hexdigest()
-    anal_dir = os.path.join(settings.UPLD_DIR, md5sum + '/')
-    if not os.path.exists(anal_dir):
-        os.makedirs(anal_dir)
-    with open(anal_dir + md5sum + typ, 'wb+') as destination:
+    logger.info('Hash: %s', md5sum)
+    local_dir = os.path.join(settings.UPLD_DIR, md5sum + '/')
+    if not os.path.exists(local_dir):
+        os.makedirs(local_dir)
+    with open(local_dir + md5sum + typ, 'wb+') as destination:
         if bfr:
             content.seek(0, 0)
             while chunk := content.read(8192):
@@ -76,6 +77,16 @@ def handle_uploaded_file(content, typ):
         else:
             for chunk in content.chunks():
                 destination.write(chunk)
+    if (source_content):
+        bfr = isinstance(source_content, io.BufferedReader)
+        with open(local_dir + md5sum + typ + '.src', 'wb+') as f:
+            if bfr:
+                source_content.seek(0, 0)
+                while chunk := source_content.read(8192):
+                    f.write(chunk)
+            else:
+                for chunk in source_content.chunks():
+                    f.write(chunk)
     return md5sum
 
 
@@ -101,7 +112,7 @@ class Scanning(object):
 
     def scan_apk(self):
         """Android APK."""
-        md5 = handle_uploaded_file(self.file, '.apk')
+        md5 = handle_uploaded_file(self.file, '.apk', self.source_file)
         short_hash = get_siphash(md5)
         data = {
             'analyzer': 'static_analyzer',
@@ -124,7 +135,7 @@ class Scanning(object):
 
     def scan_xapk(self):
         """Android XAPK."""
-        md5 = handle_uploaded_file(self.file, '.xapk')
+        md5 = handle_uploaded_file(self.file, '.xapk', self.source_file)
         short_hash = get_siphash(md5)
         data = {
             'analyzer': 'static_analyzer',
@@ -147,7 +158,7 @@ class Scanning(object):
 
     def scan_apks(self):
         """Android Split APK."""
-        md5 = handle_uploaded_file(self.file, '.apk')
+        md5 = handle_uploaded_file(self.file, '.apk', self.source_file)
         short_hash = get_siphash(md5)
         data = {
             'analyzer': 'static_analyzer',
@@ -170,7 +181,7 @@ class Scanning(object):
 
     def scan_zip(self):
         """Android /iOS Zipped Source."""
-        md5 = handle_uploaded_file(self.file, '.zip')
+        md5 = handle_uploaded_file(self.file, '.zip', self.source_file)
         short_hash = get_siphash(md5)
         data = {
             'analyzer': 'static_analyzer',
@@ -193,7 +204,7 @@ class Scanning(object):
 
     def scan_ipa(self):
         """IOS Binary."""
-        md5 = handle_uploaded_file(self.file, '.ipa')
+        md5 = handle_uploaded_file(self.file, '.ipa', self.source_file)
         short_hash = get_siphash(md5)
         data = {
             'analyzer': 'static_analyzer_ios',
@@ -216,7 +227,7 @@ class Scanning(object):
 
     def scan_appx(self):
         """Windows appx."""
-        md5 = handle_uploaded_file(self.file, '.appx')
+        md5 = handle_uploaded_file(self.file, '.appx', self.source_file)
         short_hash = get_siphash(md5)
         data = {
             'analyzer': 'static_analyzer_windows',

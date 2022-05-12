@@ -76,7 +76,7 @@ def add_apk(dwd_file, filename):
         if not is_zip_magic(flip):
             logger.warning('Downloaded file is not an APK/Split APK')
             return None
-        md5 = handle_uploaded_file(flip, '.apk')
+        md5 = handle_uploaded_file(flip, '.apk', None)
         apk = Path(settings.UPLD_DIR) / md5 / f'{md5}.apk'
         scan_type = get_scan_type(apk)
         data = {
