@@ -98,6 +98,7 @@ def print_version():
     dist = distro.linux_distribution(full_distribution_name=False)
     if dist:
         logger.info('Dist: %s', ' '.join(dist))
+    logger.info('File storage: %s', settings.MobSF_HOME)
     find_java_binary()
     check_basic_env()
     thread = threading.Thread(target=check_update, name='check_update')

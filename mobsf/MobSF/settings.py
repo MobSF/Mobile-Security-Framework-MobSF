@@ -405,8 +405,6 @@ else:
 
     # ========DISABLED BY DEFAULT COMPONENTS=========
 
-    # Get AppMonsta API from https://appmonsta.com/dashboard/get_api_key/
-    APPMONSTA_API = os.getenv('APPMONSTA_API')
     # ----------VirusTotal--------------------------
     VT_ENABLED = False
     VT_API_KEY = ''
@@ -424,6 +422,8 @@ else:
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # ==========CYBERSPECT SETTINGS ===============
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Get AppMonsta API from https://appmonsta.com/dashboard/get_api_key/
+APPMONSTA_API = os.getenv('APPMONSTA_API')
 AWS_REGION = os.getenv('AWS_REGION', 'us-east-2')
 AWS_S3_BUCKET = os.getenv('AWS_S3_BUCKET')
 AWS_LAMBDA_NOTIFY = os.getenv('AWS_LAMBDA_NOTIFY')
