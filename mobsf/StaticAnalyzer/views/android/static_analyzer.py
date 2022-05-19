@@ -19,10 +19,10 @@ from django.shortcuts import render
 from django.template.defaulttags import register
 
 from mobsf.MobSF.utils import (
+    error_response,
     file_size,
     is_dir_exists,
     is_file_exists,
-    print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
@@ -148,12 +148,12 @@ def static_analyzer(request, api=False):
                         # Can't Analyze APK, bail out.
                         msg = 'APK file is invalid or corrupt'
                         if api:
-                            return print_n_send_error_response(
+                            return error_response(
                                 request,
                                 msg,
                                 True)
                         else:
-                            return print_n_send_error_response(
+                            return error_response(
                                 request,
                                 msg,
                                 False)
@@ -510,12 +510,12 @@ def static_analyzer(request, api=False):
                     else:
                         msg = 'This ZIP Format is not supported'
                         if api:
-                            return print_n_send_error_response(
+                            return error_response(
                                 request,
                                 msg,
                                 True)
                         else:
-                            print_n_send_error_response(request, msg, False)
+                            error_response(request, msg, False)
                             ctx = {
                                 'title': 'Invalid ZIP archive',
                                 'version': settings.MOBSF_VER,
@@ -539,18 +539,18 @@ def static_analyzer(request, api=False):
         else:
             msg = 'Hash match failed or Invalid file extension or file type'
             if api:
-                return print_n_send_error_response(request, msg, True)
+                return error_response(request, msg, True)
             else:
-                return print_n_send_error_response(request, msg, False)
+                return error_response(request, msg, False)
 
     except Exception as excep:
         logger.exception('Error Performing Static Analysis')
         msg = str(excep)
         exp = excep.__doc__
         if api:
-            return print_n_send_error_response(request, msg, True, exp)
+            return error_response(request, msg, True, exp)
         else:
-            return print_n_send_error_response(request, msg, False, exp)
+            return error_response(request, msg, False, exp)
 
 
 def is_android_source(app_dir):

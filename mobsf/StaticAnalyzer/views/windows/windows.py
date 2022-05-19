@@ -23,9 +23,9 @@ from django.shortcuts import render
 from django.utils.html import escape
 
 from mobsf.MobSF.utils import (
+    error_response,
     file_size,
     get_config_loc,
-    print_n_send_error_response,
 )
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.StaticAnalyzer.models import StaticAnalyzerWindows
@@ -142,23 +142,23 @@ def staticanalyzer_windows(request, api=False):
             else:
                 msg = 'File type not supported'
                 if api:
-                    return print_n_send_error_response(request, msg, True)
+                    return error_response(request, msg, True)
                 else:
-                    return print_n_send_error_response(request, msg, False)
+                    return error_response(request, msg, False)
         else:
             msg = 'Hash match failed or Invalid file extension'
             if api:
-                return print_n_send_error_response(request, msg, True)
+                return error_response(request, msg, True)
             else:
-                return print_n_send_error_response(request, msg, False)
+                return error_response(request, msg, False)
     except Exception as exception:
         logger.exception('Error Performing Static Analysis')
         msg = str(exception)
         exp_doc = exception.__doc__
         if api:
-            return print_n_send_error_response(request, msg, True, exp_doc)
+            return error_response(request, msg, True, exp_doc)
         else:
-            return print_n_send_error_response(request, msg, False, exp_doc)
+            return error_response(request, msg, False, exp_doc)
 
 
 def _get_token():

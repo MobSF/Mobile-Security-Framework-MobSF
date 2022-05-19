@@ -27,11 +27,11 @@ from mobsf.DynamicAnalyzer.views.android.tests_frida import (
     dependency_analysis,
 )
 from mobsf.MobSF.utils import (
+    error_response,
     is_file_exists,
     is_md5,
     is_path_traversal,
     is_safe_path,
-    print_n_send_error_response,
     read_sqlite,
 )
 
@@ -55,13 +55,13 @@ def view_report(request, checksum, api=False):
         if not is_md5(checksum):
             # We need this check since checksum is not validated
             # in REST API
-            return print_n_send_error_response(
+            return error_response(
                 request,
                 'Invalid Parameters',
                 api)
         package = get_package_name(checksum)
         if not package:
-            return print_n_send_error_response(
+            return error_response(
                 request,
                 'Invalid Parameters',
                 api)
@@ -72,7 +72,7 @@ def view_report(request, checksum, api=False):
             msg = ('Dynamic Analysis report is not available '
                    'for this app. Perform Dynamic Analysis '
                    'and generate the report.')
-            return print_n_send_error_response(request, msg, api)
+            return error_response(request, msg, api)
         fd_log = os.path.join(app_dir, 'mobsf_frida_out.txt')
         droidmon = droidmon_api_analysis(app_dir, package)
         apimon, b64_strings = apimon_analysis(app_dir)
@@ -111,7 +111,7 @@ def view_report(request, checksum, api=False):
     except Exception as exp:
         logger.exception('Dynamic Analysis Report Generation')
         err = 'Error Generating Dynamic Analysis Report. ' + str(exp)
-        return print_n_send_error_response(request, err, api)
+        return error_response(request, err, api)
 
 
 def view_file(request, api=False):
@@ -131,9 +131,9 @@ def view_file(request, api=False):
             md5_hash = request.GET['hash']
             typ = request.GET['type']
         if not is_md5(md5_hash):
-            return print_n_send_error_response(request,
-                                               'Invalid Parameters',
-                                               api)
+            return error_response(request,
+                                  'Invalid Parameters',
+                                  api)
         src = os.path.join(
             settings.UPLD_DIR,
             md5_hash,
@@ -141,7 +141,7 @@ def view_file(request, api=False):
         sfile = os.path.join(src, fil)
         if not is_safe_path(src, sfile) or is_path_traversal(fil):
             err = 'Path Traversal Attack Detected'
-            return print_n_send_error_response(request, err, api)
+            return error_response(request, err, api)
         with io.open(
                 sfile,  # lgtm [py/path-injection]
                 mode='r',
@@ -157,7 +157,7 @@ def view_file(request, api=False):
             rtyp = 'asciidoc'
         else:
             err = 'File type not supported'
-            return print_n_send_error_response(request, err, api)
+            return error_response(request, err, api)
         fil = escape(ntpath.basename(fil))
         context = {
             'title': fil,
@@ -173,7 +173,7 @@ def view_file(request, api=False):
         return render(request, template, context)
     except Exception:
         logger.exception('Viewing File')
-        return print_n_send_error_response(
+        return error_response(
             request,
             'Error Viewing File',
             api)

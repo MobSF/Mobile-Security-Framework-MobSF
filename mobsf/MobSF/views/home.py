@@ -24,11 +24,11 @@ from django.forms.models import model_to_dict
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
     api_key,
+    error_response,
     is_admin,
     is_dir_exists,
     is_file_exists,
     is_safe_path,
-    print_n_send_error_response,
     sso_email,
 )
 from mobsf.MobSF.views.scanning import Scanning
@@ -87,7 +87,8 @@ class Upload(object):
         return resp
 
     def upload_html(self):
-        logger.info('File uploaded via web UI')
+        logger.info('File uploaded via web UI by user %s',
+                    sso_email(self.request))
         try:
             request = self.request
             response_data = {
@@ -212,7 +213,7 @@ class Upload(object):
 def api_docs(request):
     """Api Docs Route."""
     if (not is_admin(request)):
-        return print_n_send_error_response(request, 'Unauthorized')
+        return error_response(request, 'Unauthorized')
 
     context = {
         'title': 'REST API Docs',
@@ -299,7 +300,7 @@ def recent_scans(request):
         logcat = Path(settings.UPLD_DIR) / entry['MD5'] / 'logcat.txt'
         entry['DYNAMIC_REPORT_EXISTS'] = logcat.exists()
         entry['ERROR'] = (datetime.now(timezone.utc)
-                          > entry['TIMESTAMP'] + timedelta(minutes=5))
+                          > entry['TIMESTAMP'] + timedelta(minutes=15))
         entries.append(entry)
     context = {
         'title': 'Recent Scans',
@@ -362,7 +363,9 @@ def search(request):
             return HttpResponseRedirect(url)
         else:
             return HttpResponseRedirect('/not_found/')
-    return print_n_send_error_response(request, 'Invalid Scan Hash')
+    return error_response(request,
+                          'The Scan ID provided is invalid. Please provide a'
+                          + ' valid 32 character alphanumeric value.')
 
 
 def download(request):
@@ -375,7 +378,7 @@ def download(request):
         # Security Checks
         if '../' in filename or not is_safe_path(root, dwd_file):
             msg = 'Path Traversal Attack Detected'
-            return print_n_send_error_response(request, msg)
+            return error_response(request, msg)
         ext = os.path.splitext(filename)[1]
         if ext in allowed_exts:
             if os.path.isfile(dwd_file):
@@ -432,9 +435,9 @@ def delete_scan(request, api=False):
         msg = str(exp)
         exp_doc = exp.__doc__
         if api:
-            return print_n_send_error_response(request, msg, True, exp_doc)
+            return error_response(request, msg, True, exp_doc)
         else:
-            return print_n_send_error_response(request, msg, False, exp_doc)
+            return error_response(request, msg, False, exp_doc)
 
 
 class RecentScans(object):

@@ -12,8 +12,8 @@ from django.conf import settings
 from django.shortcuts import render
 
 from mobsf.MobSF.utils import (
+    error_response,
     file_size,
-    print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
 from mobsf.StaticAnalyzer.views.ios.appstore import app_search
@@ -111,12 +111,12 @@ def static_analyzer_ios(request, api=False):
                         msg = ('IPA is malformed! '
                                'MobSF cannot find Payload directory')
                         if api:
-                            return print_n_send_error_response(
+                            return error_response(
                                 request,
                                 msg,
                                 True)
                         else:
-                            return print_n_send_error_response(
+                            return error_response(
                                 request,
                                 msg,
                                 False)
@@ -289,20 +289,20 @@ def static_analyzer_ios(request, api=False):
             else:
                 msg = 'File Type not supported!'
                 if api:
-                    return print_n_send_error_response(request, msg, True)
+                    return error_response(request, msg, True)
                 else:
-                    return print_n_send_error_response(request, msg, False)
+                    return error_response(request, msg, False)
         else:
             msg = 'Hash match failed or Invalid file extension or file type'
             if api:
-                return print_n_send_error_response(request, msg, True)
+                return error_response(request, msg, True)
             else:
-                return print_n_send_error_response(request, msg, False)
+                return error_response(request, msg, False)
     except Exception as exp:
         logger.exception('Error Performing Static Analysis')
         msg = str(exp)
         exp_doc = exp.__doc__
         if api:
-            return print_n_send_error_response(request, msg, True, exp_doc)
+            return error_response(request, msg, True, exp_doc)
         else:
-            return print_n_send_error_response(request, msg, False, exp_doc)
+            return error_response(request, msg, False, exp_doc)

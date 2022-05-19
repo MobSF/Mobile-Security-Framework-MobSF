@@ -16,7 +16,7 @@ from django.template.loader import get_template
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.MobSF import settings
 from mobsf.MobSF.utils import (
-    print_n_send_error_response,
+    error_response,
     upstream_proxy,
 )
 from mobsf.StaticAnalyzer.models import (
@@ -157,9 +157,9 @@ def pdf(request, api=False, jsonres=False):
         msg = str(exp)
         exp = exp.__doc__
         if api:
-            return print_n_send_error_response(request, msg, True, exp)
+            return error_response(request, msg, True, exp)
         else:
-            return print_n_send_error_response(request, msg, False, exp)
+            return error_response(request, msg, False, exp)
 
 
 def handle_pdf_android(static_db):

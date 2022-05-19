@@ -16,9 +16,9 @@ from django.utils.html import escape
 
 from mobsf.MobSF.forms import FormUtil
 from mobsf.MobSF.utils import (
+    error_response,
     is_file_exists,
     is_safe_path,
-    print_n_send_error_response,
     read_sqlite,
 )
 from mobsf.StaticAnalyzer.forms import (
@@ -65,7 +65,7 @@ def run(request, api=False):
             err = FormUtil.errors_message(viewsource_form)
             if api:
                 return err
-            return print_n_send_error_response(request, err, False, exp)
+            return error_response(request, err, False, exp)
         base = Path(settings.UPLD_DIR) / md5_hash
         if mode == 'ipa':
             src1 = base / 'payload'
@@ -84,7 +84,7 @@ def run(request, api=False):
             msg = 'Path Traversal Detected!'
             if api:
                 return {'error': 'Path Traversal Detected!'}
-            return print_n_send_error_response(request, msg, False, exp)
+            return error_response(request, msg, False, exp)
         dat = ''
         sql_dump = {}
         if typ == 'm':
@@ -154,5 +154,5 @@ def run(request, api=False):
         msg = str(exp)
         exp = exp.__doc__
         if api:
-            return print_n_send_error_response(request, msg, True, exp)
-        return print_n_send_error_response(request, msg, False, exp)
+            return error_response(request, msg, True, exp)
+        return error_response(request, msg, False, exp)

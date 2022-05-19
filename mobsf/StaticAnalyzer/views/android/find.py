@@ -10,7 +10,7 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.utils.html import escape
 
-from mobsf.MobSF.utils import print_n_send_error_response
+from mobsf.MobSF.utils import error_response
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     find_java_source_folder,
 )
@@ -29,9 +29,9 @@ def run(request):
         code = request.POST['code']
         search_type = request.POST['search_type']
         if search_type not in ['content', 'filename']:
-            return print_n_send_error_response(request,
-                                               'Unknown search type',
-                                               True)
+            return error_response(request,
+                                  'Unknown search type',
+                                  True)
         matches = set()
         base = Path(settings.UPLD_DIR) / md5
         if code == 'smali':
@@ -41,7 +41,7 @@ def run(request):
                 src = find_java_source_folder(base)[0]
             except StopIteration:
                 msg = 'Invalid Directory Structure'
-                return print_n_send_error_response(request, msg, True)
+                return error_response(request, msg, True)
 
         exts = ['.java', '.kt', '.smali']
         files = [p for p in src.rglob('*') if p.suffix in exts]
@@ -69,7 +69,7 @@ def run(request):
         return JsonResponse(json.dumps(context), safe=False)
     except Exception:
         logger.exception('Searching Failed')
-        return print_n_send_error_response(
+        return error_response(
             request,
             'Searching Failed',
             True)

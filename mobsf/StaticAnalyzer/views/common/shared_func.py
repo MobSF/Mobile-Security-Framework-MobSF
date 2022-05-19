@@ -22,8 +22,8 @@ from django.utils.html import escape
 
 from mobsf.MobSF import settings
 from mobsf.MobSF.utils import (
+    error_response,
     is_md5,
-    print_n_send_error_response,
     upstream_proxy,
 )
 from mobsf.StaticAnalyzer.models import RecentScansDB
@@ -126,11 +126,11 @@ def url_n_email_extract(dat, relative_path):
 def compare_apps(request, hash1: str, hash2: str, api=False):
     if hash1 == hash2:
         error_msg = 'Results with same hash cannot be compared'
-        return print_n_send_error_response(request, error_msg, api)
+        return error_response(request, error_msg, api)
     # Second Validation for REST API
     if not (is_md5(hash1) and is_md5(hash2)):
         error_msg = 'Invalid hashes'
-        return print_n_send_error_response(request, error_msg, api)
+        return error_response(request, error_msg, api)
     logger.info(
         'Starting App compare for %s and %s', hash1, hash2)
     return generic_compare(request, hash1, hash2, api)

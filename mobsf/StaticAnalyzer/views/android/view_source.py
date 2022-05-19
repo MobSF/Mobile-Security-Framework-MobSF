@@ -11,8 +11,8 @@ from django.utils.html import escape
 
 from mobsf.MobSF.forms import FormUtil
 from mobsf.MobSF.utils import (
+    error_response,
     is_safe_path,
-    print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     find_java_source_folder,
@@ -42,7 +42,7 @@ def run(request, api=False):
             viewsource_form = ViewSourceAndroidForm(request.GET)
         if not viewsource_form.is_valid():
             err = FormUtil.errors_message(viewsource_form)
-            return print_n_send_error_response(request, err, api, exp)
+            return error_response(request, err, api, exp)
 
         base = Path(settings.UPLD_DIR) / md5
         if typ == 'smali':
@@ -53,12 +53,12 @@ def run(request, api=False):
                 src, syntax, _ = find_java_source_folder(base)
             except StopIteration:
                 msg = 'Invalid Directory Structure'
-                return print_n_send_error_response(request, msg, api)
+                return error_response(request, msg, api)
 
         sfile = src / fil
         if not is_safe_path(src, sfile.as_posix()):
             msg = 'Path Traversal Detected!'
-            return print_n_send_error_response(request, msg, api)
+            return error_response(request, msg, api)
         context = {
             'title': escape(ntpath.basename(fil)),
             'file': escape(ntpath.basename(fil)),
@@ -75,4 +75,4 @@ def run(request, api=False):
         logger.exception('Error Viewing Source')
         msg = str(exp)
         exp = exp.__doc__
-        return print_n_send_error_response(request, msg, api, exp)
+        return error_response(request, msg, api, exp)

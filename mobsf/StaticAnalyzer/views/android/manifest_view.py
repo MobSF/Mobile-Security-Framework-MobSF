@@ -9,7 +9,7 @@ from pathlib import Path
 from django.conf import settings
 from django.shortcuts import render
 
-from mobsf.MobSF.utils import print_n_send_error_response
+from mobsf.MobSF.utils import error_response
 from mobsf.StaticAnalyzer.views.android.manifest_analysis import (
     get_manifest_file,
 )
@@ -60,5 +60,5 @@ def run(request):
             return render(request, template, context)
     except Exception:
         logger.exception('Viewing AndroidManifest.xml')
-        return print_n_send_error_response(request,
-                                           'Error Viewing AndroidManifest.xml')
+        return error_response(request,
+                              'Error Viewing AndroidManifest.xml')

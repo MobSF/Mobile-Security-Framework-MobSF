@@ -9,7 +9,7 @@ import shutil
 from django.conf import settings
 from django.shortcuts import redirect
 
-from mobsf.MobSF.utils import print_n_send_error_response
+from mobsf.MobSF.utils import error_response
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +23,8 @@ def run(request):
         match = re.match('^[0-9a-f]{32}$', md5)
         if not match and file_type not in ['apk', 'smali', 'java']:
             logger.exception('Invalid options')
-            return print_n_send_error_response(request,
-                                               'Invalid options')
+            return error_response(request,
+                                  'Invalid options')
         app_dir = os.path.join(settings.UPLD_DIR, md5)
         file_name = ''
         if file_type == 'java':
@@ -49,5 +49,5 @@ def run(request):
         return redirect('/download/' + file_name)
     except Exception:
         logger.exception('Generating Downloads')
-        return print_n_send_error_response(request,
-                                           'Generating Downloads')
+        return error_response(request,
+                              'Generating Downloads')

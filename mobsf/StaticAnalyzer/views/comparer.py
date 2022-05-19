@@ -12,7 +12,7 @@ from django.shortcuts import render
 from django.conf import settings
 from django.utils.html import escape
 
-from mobsf.MobSF.utils import print_n_send_error_response
+from mobsf.MobSF.utils import error_response
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.StaticAnalyzer.views.android.db_interaction import (
     get_context_from_db_entry,
@@ -128,7 +128,7 @@ def generic_compare(request,
     db_entry2 = StaticAnalyzerAndroid.objects.filter(MD5=second_hash)
 
     if not (db_entry.exists() and db_entry2.exists()):
-        return print_n_send_error_response(
+        return error_response(
             request,
             'Currently you can only diff/compare android apps. '
             'One of the app has not completed static analysis or'

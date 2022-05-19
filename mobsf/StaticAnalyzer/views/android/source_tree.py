@@ -13,7 +13,7 @@ from django.shortcuts import (
 
 from mobsf.MobSF.utils import (
     api_key,
-    print_n_send_error_response,
+    error_response,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     find_java_source_folder,
@@ -47,7 +47,7 @@ def run(request):
         logger.info('Listing Source files')
         match = re.match('^[0-9a-f]{32}$', request.GET['md5'])
         if not match:
-            return print_n_send_error_response(request, 'Scan hash not found')
+            return error_response(request, 'Scan hash not found')
         md5 = request.GET['md5']
         typ = request.GET['type']
         base = Path(settings.UPLD_DIR) / md5
@@ -57,7 +57,7 @@ def run(request):
             try:
                 src = find_java_source_folder(base)[0]
             except StopIteration:
-                return print_n_send_error_response(
+                return error_response(
                     request,
                     'Invalid Directory Structure')
 
@@ -74,6 +74,6 @@ def run(request):
         return render(request, template, context)
     except Exception:
         logger.exception('Getting Source Files')
-        return print_n_send_error_response(
+        return error_response(
             request,
             'Error Getting Source Files')

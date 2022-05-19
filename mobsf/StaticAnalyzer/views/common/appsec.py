@@ -10,7 +10,7 @@ from django.shortcuts import render
 
 from mobsf.MobSF import settings
 from mobsf.MobSF.utils import (
-    print_n_send_error_response,
+    error_response,
 )
 from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
@@ -330,7 +330,7 @@ def appsec_dashboard(request, checksum, api=False):
                 return {'not_found': 'Report not found or supported'}
             else:
                 msg = 'Report not found or supported'
-                return print_n_send_error_response(request, msg)
+                return error_response(request, msg)
         context['version'] = settings.MOBSF_VER
         context['title'] = 'AppSec Scorecard'
         context['efr01'] = True if settings.EFR_01 == '1' else False
@@ -346,6 +346,6 @@ def appsec_dashboard(request, checksum, api=False):
         msg = str(exp)
         exp = exp.__doc__
         if api:
-            return print_n_send_error_response(request, msg, True, exp)
+            return error_response(request, msg, True, exp)
         else:
-            return print_n_send_error_response(request, msg, False, exp)
+            return error_response(request, msg, False, exp)
