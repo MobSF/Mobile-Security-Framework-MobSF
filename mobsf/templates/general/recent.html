@@ -46,7 +46,7 @@
                         <th>APPLICATION</th>
                         <th>FILE</th>
                         <th>TYPE</th>
-                        <th>SCAN ID</th>                        
+                        <th>SCAN ID {% if is_admin %} / SUBMITTER{% endif %}</th>                        
                         <th style="width: 15%">ACTIONS</th>
                     </tr>
                     </thead>
@@ -79,7 +79,7 @@
                                 {% elif '.appx' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-windows fa-3x"></i>
                                 {% endif %}
                             </td>                            
-                            <td>{{ e.MD5 }}</td>                            
+                            <td>{{ e.MD5 }}{% if is_admin %}<br/><br/>{{ e.EMAIL }}{% endif %}</td>                            
                             <td><p>                                    
                                     {% if e.PACKAGE_NAME %}
                                     <a class="btn btn-primary btn-sm" style="margin-bottom: 3px; width: 125px;" href="../{{ e.ANALYZER }}/?name={{e.FILE_NAME}}&amp;checksum={{e.MD5}}&amp;type={{e.SCAN_TYPE}}"><i class="fas fa-eye" title="View static analysis details"></i> Static Details</a><br/>

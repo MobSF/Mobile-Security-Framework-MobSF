@@ -492,8 +492,14 @@
                 _("status").innerText = Math.round(percent) + "% Uploaded...";
             }
             function completeHandler(event) {
-                var json = JSON.parse(event.target.responseText);
-                responseHandler(json);
+                if (event.target.status !== 200) {
+                    var json = { status: "error", description: event.target.responseText };
+                    responseHandler(json);
+                }
+                else {
+                    var json = JSON.parse(event.target.responseText);
+                    responseHandler(json);
+                }                
             }
             function errorHandler(event) {
                 _("status").innerText = "Upload Failed!";

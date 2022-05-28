@@ -281,7 +281,8 @@ def recent_scans(request):
     """Show Recent Scans Route."""
     entries = []
     db_obj = RecentScansDB.objects.all().order_by('-TIMESTAMP')
-    if (not is_admin(request)):
+    isadmin = is_admin(request)
+    if (not isadmin):
         email_filter = sso_email(request)
         if (not email_filter):
             email_filter = '@@'
@@ -306,6 +307,7 @@ def recent_scans(request):
         'title': 'Recent Scans',
         'entries': entries,
         'version': settings.MOBSF_VER,
+        'is_admin': isadmin,
         'tenant_static': settings.TENANT_STATIC_URL,
         'dependency_track_url': settings.DEPENDENCY_TRACK_URL,
     }
