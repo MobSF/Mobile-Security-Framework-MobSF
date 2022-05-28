@@ -102,4 +102,4 @@ EXPOSE 8000 8000 1337 1337
 RUN chown -R mobsf:mobsf /home/mobsf/Mobile-Security-Framework-MobSF
 USER mobsf
 # Run MobSF
-CMD ["/home/mobsf/Mobile-Security-Framework-MobSF/scripts/entrypoint.sh 0.0.0.0:8000"]
+CMD ["/home/mobsf/Mobile-Security-Framework-MobSF/scripts/entrypoint.sh"]
