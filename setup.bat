@@ -56,7 +56,6 @@ where python >nul 2>&1 && (
   echo [INSTALL] Creating venv
   rmdir "venv" /q /s >nul 2>&1
   python -m venv ./venv
-  set venv=.\venv\Scripts\python
   python -m pip install --upgrade pip
 
   set LIB=C:\Program Files\OpenSSL-Win64\lib;%LIB%
