@@ -159,7 +159,7 @@ def cert_info(app_dir, app_file):
                     ' The manifest file indicates SHA256withRSA'
                     ' is in use.')
                 title = ('Certificate algorithm might be '
-                     'vulnerable to hash collision')
+                         'vulnerable to hash collision')
             findings.append((status, desc, title))
         if re.findall(r'Hash Algorithm: md5', cert_info):
             status = 'high'
