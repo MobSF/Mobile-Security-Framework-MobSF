@@ -283,7 +283,7 @@ LOGGING = {
         },
     },
 }
-JADX_TIMEOUT = int(os.getenv('JADX_TIMEOUT', 1800))
+JADX_TIMEOUT = int(os.getenv('JADX_TIMEOUT', 900))
 # ===========================
 # ENTERPRISE FEATURE REQUESTS
 # ===========================
@@ -434,3 +434,4 @@ ADMIN_GROUP = os.getenv('ADMIN_GROUP', ' ')
 TENANT_STATIC_URL = STATIC_URL + os.getenv('TENANT_ID', '')
 if (not TENANT_STATIC_URL.endswith('/')):
     TENANT_STATIC_URL = TENANT_STATIC_URL + '/'
+JADX_THREADS = os.getenv('JADX_THREADS', '4')

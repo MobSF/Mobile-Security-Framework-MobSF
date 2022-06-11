@@ -87,6 +87,8 @@ def apk_2_java(app_path, app_dir, tools_dir):
             '-q',
             '-r',
             '--show-bad-code',
+            '-j',
+            settings.JADX_THREADS,
             app_path,
         ]
         fnull = open(os.devnull, 'w')
