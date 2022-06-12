@@ -1,5 +1,6 @@
 # Mobile Security Framework (MobSF)
 Version: v3.5 beta
+
 ![](https://cloud.githubusercontent.com/assets/4301109/20019521/cc61f7fc-a2f2-11e6-95f3-407030d9fdde.png)
 
 Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis. MobSF supports mobile app binaries (APK, XAPK, IPA & APPX) along with zipped source code and provides REST APIs for seamless integration with your CI/CD or DevSecOps pipeline.The Dynamic Analyzer helps you to perform runtime security assessment and interactive instrumented testing.
@@ -65,6 +66,14 @@ If you liked MobSF and find it useful, please consider donating.
 * Read [CONTRIBUTING.md](https://github.com/MobSF/Mobile-Security-Framework-MobSF/blob/master/.github/CONTRIBUTING.md) before opening bugs, feature requests and pull request.
 * For Project updates and announcements, follow [@ajinabraham](https://twitter.com/ajinabraham) or [@OpenSecurity_IN](https://twitter.com/OpenSecurity_IN).
 * Github Issues are only for tracking bugs and feature requests. Do not post support or help queries there. We have a slack channel for that.
+
+### Launching MobSF Rewards
+
+Contributed to MobSF? Here is a big thank you from our community to you. Claim your badge and showcase them with pride. Let us inspire more folks !
+
+![MobSF Badges](https://aviyel.com/assets/uploads/rewards/share/project/7/512/share.png)
+
+[Claim Now!](https://aviyel.com/projects/7/MobSF)
 
 
 ### Static Analysis - Android
