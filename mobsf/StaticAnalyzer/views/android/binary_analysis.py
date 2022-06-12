@@ -61,40 +61,6 @@ class Checksec:
             'severity': severity,
             'description': desc,
         }
-        relro = self.relro()
-        if relro == 'Full RELRO':
-            severity = 'info'
-            desc = (
-                'This shared object has full RELRO '
-                'enabled. RELRO ensures that the GOT cannot be '
-                'overwritten in vulnerable ELF binaries. '
-                'In Full RELRO, the entire GOT (.got and '
-                '.got.plt both) is marked as read-only.')
-        elif relro == 'Partial RELRO':
-            severity = 'warning'
-            desc = (
-                'This shared object has partial RELRO '
-                'enabled. RELRO ensures that the GOT cannot be '
-                'overwritten in vulnerable ELF binaries. '
-                'In partial RELRO, the non-PLT part of the GOT '
-                'section is read only but .got.plt is still '
-                'writeable. Use the option -z,relro,-z,now to '
-                'enable full RELRO.')
-        else:
-            severity = 'high'
-            desc = (
-                'This shared object does not have RELRO '
-                'enabled. The entire GOT (.got and '
-                '.got.plt both) are writable. Without this compiler '
-                'flag, buffer overflows on a global variable can '
-                'overwrite GOT entries. Use the option '
-                '-z,relro,-z,now to enable full RELRO and only '
-                '-z,relro to enable partial RELRO.')
-        elf_dict['relocation_readonly'] = {
-            'relro': relro,
-            'severity': severity,
-            'description': desc,
-        }
         rpath = self.rpath()
         if rpath:
             severity = 'high'
@@ -188,21 +154,6 @@ class Checksec:
             except lief.not_found:
                 pass
         return False
-
-    def relro(self):
-        try:
-            gnu_relro = lief.ELF.SEGMENT_TYPES.GNU_RELRO
-            flags = lief.ELF.DYNAMIC_TAGS.FLAGS
-            bind_now = lief.ELF.DYNAMIC_FLAGS.BIND_NOW
-            if self.elf.get(gnu_relro):
-                eflags = self.elf.get(flags)
-                if eflags and bind_now in eflags:
-                    return 'Full RELRO'
-                else:
-                    return 'Partial RELRO'
-            return 'No RELRO'
-        except lief.not_found:
-            return 'No RELRO'
 
     def rpath(self):
         try:
