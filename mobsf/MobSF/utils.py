@@ -92,9 +92,9 @@ def print_version():
         print('REST API Key: ' + Color.BOLD + api_key() + Color.END)
     logger.info('OS: %s', platform.system())
     logger.info('Platform: %s', platform.platform())
-    dist = distro.linux_distribution(full_distribution_name=False)
-    if dist:
-        logger.info('Dist: %s', ' '.join(dist))
+    dist = ' '.join(distro.linux_distribution(full_distribution_name=False))
+    if dist.strip():
+        logger.info('Dist: %s', dist)
     find_java_binary()
     check_basic_env()
     thread = threading.Thread(target=check_update, name='check_update')
@@ -112,15 +112,10 @@ def check_update():
             proxies, verify = upstream_proxy('https')
         except Exception:
             logger.exception('Setting upstream proxy')
-        response = requests.get(github_url, timeout=5,
-                                proxies=proxies, verify=verify)
-        html = str(response.text).split('\n')
         local_version = settings.VERSION
-        remote_version = None
-        for line in html:
-            if line.startswith('VERSION'):
-                remote_version = line.split('\'')[1]
-                break
+        response = requests.head(github_url, timeout=5,
+                                 proxies=proxies, verify=verify)
+        remote_version = response.next.path_url.split('v')[1]
         if remote_version:
             sem_loc = StrictVersion(local_version)
             sem_rem = StrictVersion(remote_version)
