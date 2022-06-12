@@ -46,6 +46,11 @@ def run(request):
             src = os.path.join(app_dir, file_name)
             dst = os.path.join(settings.DWD_DIR, file_name)
             shutil.copy2(src, dst)
+        elif file_type == 'ipa':
+            file_name = md5 + '.ipa'
+            src = os.path.join(app_dir, file_name)
+            dst = os.path.join(settings.DWD_DIR, file_name)
+            shutil.copy2(src, dst)
         return redirect('/download/' + file_name)
     except Exception:
         logger.exception('Generating Downloads')
