@@ -39,6 +39,7 @@ If you liked MobSF and find it useful, please consider donating.
 [![See MobSF Documentation](https://user-images.githubusercontent.com/4301109/70686099-3855f780-1c79-11ea-8141-899e39459da2.png)](https://mobsf.github.io/docs)
 [![See MobSF Documentation in Chinese](https://user-images.githubusercontent.com/4301109/117404947-b09d0880-aebf-11eb-9db8-3d7360f47914.png)](https://mobsf.github.io/docs/#/zh-cn/)
 [![See MobSF Documentation in Japanese](https://user-images.githubusercontent.com/4301109/148662149-7ee671b4-66a2-4232-9522-276b8e88d924.png)](https://mobsf.github.io/docs/#/ja-jp/)
+[![See MobSF Documentation in Español](https://user-images.githubusercontent.com/4301109/173221657-ac1f7221-6ae9-44d8-bf6b-8732d84bf120.png)](https://mobsf.github.io/docs/#/es/)
 
 * Try MobSF Static Analyzer Online: [mobsf.live](https://mobsf.live)
 * MobSF in CI/CD: [mobsfscan](https://github.com/MobSF/mobsfscan)
@@ -69,11 +70,11 @@ If you liked MobSF and find it useful, please consider donating.
 
 ### Launching MobSF Rewards
 
-Contributed to MobSF? Here is a big thank you from our community to you. Claim your badge and showcase them with pride. Let us inspire more folks !
+Contributed to MobSF? Here is a big thank you from our community to you. Claim your badge, a soulbound NFT and showcase them with pride. Let us inspire more folks !
 
 ![MobSF Badges](https://aviyel.com/assets/uploads/rewards/share/project/7/512/share.png)
 
-[Claim Now!](https://aviyel.com/projects/7/MobSF)
+[Claim Now!](https://aviyel.com/projects/7/mobile-security-framework/rewards)
 
 
 ### Static Analysis - Android
