@@ -195,7 +195,8 @@ class Checksec:
             flags = lief.ELF.DYNAMIC_TAGS.FLAGS
             bind_now = lief.ELF.DYNAMIC_FLAGS.BIND_NOW
             if self.elf.get(gnu_relro):
-                if bind_now in self.elf.get(flags):
+                eflags = self.elf.get(flags)
+                if eflags and bind_now in eflags:
                     return 'Full RELRO'
                 else:
                     return 'Partial RELRO'
