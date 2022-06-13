@@ -68,6 +68,7 @@ ALLOWED_EXTENSIONS = {
     '.zip': 'application/zip',
     '.tar': 'application/x-tar',
     '.apk': 'application/octet-stream',
+    '.ipa': 'application/octet-stream',
 }
 # =============ALLOWED MIMETYPES=================
 APK_MIME = [
