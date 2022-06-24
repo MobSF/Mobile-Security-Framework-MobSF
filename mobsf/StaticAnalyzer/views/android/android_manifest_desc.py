@@ -744,13 +744,4 @@ MANIFEST_DESC = {
                         'overrides other requests.'),
         'name': 'High Action Priority [android:priority]',
     },
-    'a_error_subelement': {
-        'title': ('<strong>%s</strong> is not a subelement '
-                  'of the <Manifest>. These elements would not take effect'),
-        'level': 'warning',
-        'description': ('The parent element of <permission>'
-                        'can only be <manifest>, or these definition '
-                        'and declearation would not take effect.'),
-        'name': 'is not placed as a direct subelement of <manifest>',
-    },
 }
