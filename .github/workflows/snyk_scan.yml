@@ -1,0 +1,16 @@
+name: 'Snyk scan'
+
+on:
+    workflow_dispatch:
+
+jobs:
+    security:
+        runs-on: ubuntu-latest
+        steps:
+        -
+            name: Checkout mobsf
+            uses: actions/checkout@master
+        - name: Snyk
+          uses: snyk/actions/python-3.8@master
+          env:
+            SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
