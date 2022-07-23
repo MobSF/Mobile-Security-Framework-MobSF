@@ -37,7 +37,7 @@ where python >nul 2>&1 && (
     echo [INSTALL] Found OpenSSL executable
   ) else (
    echo [ERROR] OpenSSL executable not found in [C:\\Program Files\\OpenSSL-Win64\\bin\\openssl.exe]
-   echo [INFO] Install OpenSSL non-light version - https://slproweb.com/download/Win64OpenSSL-3_0_0.exe
+   echo [INFO] Install OpenSSL non-light version [Win64 OpenSSL v3.x] - https://slproweb.com/products/Win32OpenSSL.html
    pause
    exit /b
   )

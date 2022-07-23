@@ -1099,7 +1099,6 @@
                           <th>SHARED OBJECT</th>
                           <th>NX</th>
                           <th>STACK CANARY</th>
-                          <th>RELRO</th>
                           <th>RPATH</th>
                           <th>RUNPATH</th>
                           <th>FORTIFY</th>
@@ -1122,10 +1121,6 @@
                   <br/>
                   <span class="badge bg-{% if so.stack_canary.severity == 'high' %}danger{% elif so.stack_canary.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.stack_canary.severity}}</span>
                   <br/>{{so.stack_canary.description}}</td>
-              <td><b>{{so.relocation_readonly.relro}}</b>
-                <br/>
-                <span class="badge bg-{% if so.relocation_readonly.severity == 'high' %}danger{% elif so.relocation_readonly.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.relocation_readonly.severity}}</span>
-                <br/>{{so.relocation_readonly.description}}</td>
               <td><b>{{so.rpath.rpath}}</b>
                 <br/>
                 <span class="badge bg-{% if so.rpath.severity == 'high' %}danger{% elif so.rpath.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.rpath.severity}}</span>

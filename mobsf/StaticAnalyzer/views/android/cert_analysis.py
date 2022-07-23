@@ -158,8 +158,16 @@ def cert_info(app_dir, app_file):
                 desc += (
                     ' The manifest file indicates SHA256withRSA'
                     ' is in use.')
-            title = ('Certificate algorithm might be '
-                     'vulnerable to hash collision')
+                title = ('Certificate algorithm might be '
+                         'vulnerable to hash collision')
+            findings.append((status, desc, title))
+        if re.findall(r'Hash Algorithm: md5', cert_info):
+            status = 'high'
+            desc = (
+                'Application is signed with MD5. '
+                'MD5 hash algorithm is known to have '
+                'collision issues.')
+            title = 'Certificate algorithm vulnerable to hash collision'
             findings.append((status, desc, title))
         cert_dic = {
             'certificate_info': cert_info,

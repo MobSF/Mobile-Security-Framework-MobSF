@@ -41,8 +41,8 @@ def run(request):
             dwd_dir = os.path.join(settings.DWD_DIR, file_name)
             shutil.make_archive(dwd_dir, 'zip', directory)
             file_name = file_name + '.zip'
-        elif file_type == 'apk':
-            file_name = md5 + '.apk'
+        elif file_type in ('apk', 'ipa'):
+            file_name = f'{md5}.{file_type}'
             src = os.path.join(app_dir, file_name)
             dst = os.path.join(settings.DWD_DIR, file_name)
             shutil.copy2(src, dst)

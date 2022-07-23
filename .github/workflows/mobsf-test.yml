@@ -12,7 +12,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-20.04]
-        python-version: [3.9]
+        python-version: ['3.10']
+        # exclude:
+          # excludes py38, py39 on Windows
+          # - os: windows-latest
+          #   python-version: 3.8
 
     runs-on: ${{ matrix.os }}
     steps:
