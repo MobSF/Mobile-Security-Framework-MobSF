@@ -1019,6 +1019,7 @@
                       <th>SEVERITY</th>
                       <th>STANDARDS</th>
                       <th>FILES</th>
+                      <th>OPTIONS</th>
                   </tr>
                     </thead>
                       <tbody>
@@ -1067,6 +1068,21 @@
                    <a href="{% url "view_source" %}?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines}}"> {{ file_path }}</a>
                   <br/>
                   {% endfor %}
+                  </td>
+                  <td>
+
+                    <div class="dropdown show">
+                      <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-eye-slash"></i>
+                      </a>
+                    
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <a class="dropdown-item" href="javascript:suppress('{{rule | escapejs }}', false)">Disable the rule <b>{{ rule }}</b> for <b>{{package_name}}</b></a>
+                        <a class="dropdown-item" href="javascript:suppress('{{rule | escapejs }}', true)">Hide this finding for <b>{{package_name}}</b> only form these files</a>
+                      </div>
+                    </div>
+
+
                   </td>
                 </tr>    
               {% endfor %} 
@@ -1931,6 +1947,38 @@
     $(".nav-link").removeClass("active");
     $(this).addClass("active");
   });
+
+  //Suppression
+
+  function action(url, data, on_success){
+    //Add CSRF
+    data.csrfmiddlewaretoken ='{{ csrf_token }}';
+    $.ajax({
+      url : url, 
+      type : "POST",
+      dataType: "json", 
+      data : data,
+      success : function(json){ on_success(json) },
+      error : function(xhr, ajaxOptions, thrownError) {
+        console.log(xhr.responseText);
+      }
+    });
+  }
+
+
+  function suppress(rule, files){
+    if (files)
+      endpoint = '/suppress_by_files/'
+    else
+      endpoint = '/suppress_by_rule/'
+    action(document.location.origin + endpoint, { checksum: '{{ md5 }}', rule }, function(json) {
+        if (json.status==="ok")
+          alert("suppressed the rule " + rule)
+        else
+          alert("failed")
+    });
+  }
+
 </script>
 
 

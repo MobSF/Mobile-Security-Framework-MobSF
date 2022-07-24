@@ -16,6 +16,7 @@ from mobsf.StaticAnalyzer.views.common import (
     appsec,
     pdf,
     shared_func,
+    suppression,
 )
 from mobsf.StaticAnalyzer.views.android import (
     find,
@@ -103,6 +104,8 @@ if settings.API_ONLY == '0':
         re_path(r'^appsec_dashboard/(?P<checksum>[0-9a-f]{32})/$',
                 appsec.appsec_dashboard,
                 name='appsec_dashboard'),
+        re_path(r'^suppress_by_rule/$', suppression.suppress_by_rule_id),
+        re_path(r'^suppress_by_files/$', suppression.suppress_by_files),
         # App Compare
         re_path(r'^compare/(?P<hash1>[0-9a-f]{32})/(?P<hash2>[0-9a-f]{32})/$',
                 shared_func.compare_apps),
