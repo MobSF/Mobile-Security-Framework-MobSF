@@ -30,6 +30,23 @@ from mobsf.StaticAnalyzer.models import (
 logger = logging.getLogger(__name__)
 
 
+def get_package(checksum):
+    """Get package from checksum."""
+    try:
+        andpkg = StaticAnalyzerAndroid.objects.get(
+            MD5=checksum)
+        return andpkg.PACKAGE_NAME
+    except Exception:
+        pass
+    try:
+        iospkg = StaticAnalyzerIOS.objects.get(
+            MD5=checksum)
+        return iospkg.BUNDLE_ID
+    except Exception:
+        pass
+    return None
+
+
 # AJAX
 
 @require_http_methods(['POST'])
@@ -43,8 +60,7 @@ def suppress_by_rule_id(request, api=False):
         rule = request.POST['rule']
         if not is_md5(checksum):
             return invalid_params(api)
-        package = StaticAnalyzerAndroid.objects.get(
-            MD5=checksum).PACKAGE_NAME
+        package = get_package(checksum)
         if not package or is_attack_pattern(rule):
             return invalid_params(api)
         sup_config = SuppressFindings.objects.filter(
@@ -86,8 +102,7 @@ def suppress_by_files(request, api=False):
         old_files = []
         if not is_md5(checksum):
             return invalid_params(api)
-        package = StaticAnalyzerAndroid.objects.get(
-            MD5=checksum).PACKAGE_NAME
+        package = get_package(checksum)
         if not package or is_attack_pattern(rule):
             return invalid_params(api)
         sup_config = SuppressFindings.objects.filter(
@@ -100,7 +115,7 @@ def suppress_by_files(request, api=False):
         if android_static_db.exists():
             code_res = python_dict(android_static_db[0].CODE_ANALYSIS)
         elif ios_static_db.exists():
-            code_res = python_dict(android_static_db[0].CODE_ANALYSIS)
+            code_res = python_dict(ios_static_db[0].CODE_ANALYSIS)
         else:
             return send_response(data, api)
         files_to_suppress = list(code_res[rule]['files'].keys())
@@ -112,7 +127,7 @@ def suppress_by_files(request, api=False):
                 old[rule] = files_to_suppress
             else:
                 old_files = old[rule]
-                old[rule] = set(files_to_suppress + old_files)
+                old[rule] = list(set(files_to_suppress + old_files))
             sup_config.update(SUPPRESS_FILES=old)
         else:
             # Create Record
@@ -141,8 +156,7 @@ def list_suppressions(request, api=False):
         checksum = request.POST['checksum']
         if not is_md5(checksum):
             return invalid_params(api)
-        package = StaticAnalyzerAndroid.objects.get(
-            MD5=checksum).PACKAGE_NAME
+        package = get_package(checksum)
         if not package:
             return invalid_params(api)
 
@@ -176,8 +190,7 @@ def delete_suppression(request, api=False):
         typ = request.POST['type']
         if not is_md5(checksum):
             return invalid_params(api)
-        package = StaticAnalyzerAndroid.objects.get(
-            MD5=checksum).PACKAGE_NAME
+        package = get_package(checksum)
         if not package or is_attack_pattern(rule):
             return invalid_params(api)
         sup_config = SuppressFindings.objects.filter(
