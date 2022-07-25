@@ -125,7 +125,7 @@ class StaticAnalyzerWindows(models.Model):
 
 
 class SuppressFindings(models.Model):
-    PACKAGE_NAME = models.CharField(max_length=260, default='', unique=True)
+    PACKAGE_NAME = models.CharField(max_length=260, default='')
     SUPPRESS_RULE_ID = models.TextField(default=[])
     SUPPRESS_FILES = models.TextField(default={})
     SUPPRESS_TYPE = models.TextField(default='')

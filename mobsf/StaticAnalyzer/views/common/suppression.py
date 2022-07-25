@@ -5,6 +5,7 @@ Shared Functions for Suppression logic.
 Module provide support for finding suppression
 """
 import logging
+from copy import copy, deepcopy
 
 from django.views.decorators.http import require_http_methods
 
@@ -13,7 +14,6 @@ from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerIOS,
 )
 from mobsf.DynamicAnalyzer.views.android.operations import (
-    get_package_name,
     invalid_params,
     is_attack_pattern,
     send_response,
@@ -43,18 +43,19 @@ def suppress_by_rule_id(request, api=False):
         rule = request.POST['rule']
         if not is_md5(checksum):
             return invalid_params(api)
-        package = get_package_name(checksum)
+        package = StaticAnalyzerAndroid.objects.get(
+            MD5=checksum).PACKAGE_NAME
         if not package or is_attack_pattern(rule):
             return invalid_params(api)
         sup_config = SuppressFindings.objects.filter(
-            PACKAGE_NAME=package)
+            PACKAGE_NAME=package, SUPPRESS_TYPE='code')
         if sup_config.exists():
             # Update Record
             sup_rules = set(
                 python_list(sup_config[0].SUPPRESS_RULE_ID))
             if rule not in sup_rules:
                 sup_rules.add(rule)
-                sup_config.update(SUPPRESS_RULE_ID=sup_rules)
+                sup_config.update(SUPPRESS_RULE_ID=list(sup_rules))
         else:
             # Create Record
             values = {
@@ -82,13 +83,15 @@ def suppress_by_files(request, api=False):
         checksum = request.POST['checksum']
         rule = request.POST['rule']
         files_to_suppress = []
+        old_files = []
         if not is_md5(checksum):
             return invalid_params(api)
-        package = get_package_name(checksum)
+        package = StaticAnalyzerAndroid.objects.get(
+            MD5=checksum).PACKAGE_NAME
         if not package or is_attack_pattern(rule):
             return invalid_params(api)
         sup_config = SuppressFindings.objects.filter(
-            PACKAGE_NAME=package)
+            PACKAGE_NAME=package, SUPPRESS_TYPE='code')
         # Do Lookups
         android_static_db = StaticAnalyzerAndroid.objects.filter(
             MD5=checksum)
@@ -104,7 +107,12 @@ def suppress_by_files(request, api=False):
         if sup_config.exists():
             # Update Record
             old = python_dict(sup_config[0].SUPPRESS_FILES)
-            old[rule] = files_to_suppress
+            # Empty dict or rule key not already present
+            if not old or rule not in old:
+                old[rule] = files_to_suppress
+            else:
+                old_files = old[rule]
+                old[rule] = set(files_to_suppress + old_files)
             sup_config.update(SUPPRESS_FILES=old)
         else:
             # Create Record
@@ -119,3 +127,107 @@ def suppress_by_files(request, api=False):
     except Exception:
         logger.exception('Error suppressing finding by files')
     return send_response(data, api)
+
+# AJAX
+
+
+@require_http_methods(['POST'])
+def list_suppressions(request, api=False):
+    """List Suppression Rules."""
+    data = {
+        'status': 'failed',
+        'message': 'Failed to list suppression rules'}
+    try:
+        checksum = request.POST['checksum']
+        if not is_md5(checksum):
+            return invalid_params(api)
+        package = StaticAnalyzerAndroid.objects.get(
+            MD5=checksum).PACKAGE_NAME
+        if not package:
+            return invalid_params(api)
+
+        data = []
+        all_configs = SuppressFindings.objects.filter(
+            PACKAGE_NAME=package, SUPPRESS_TYPE='code')
+        if all_configs.exists():
+            data = list(all_configs.values())
+            for i in data:
+                i['SUPPRESS_RULE_ID'] = python_list(i['SUPPRESS_RULE_ID'])
+                i['SUPPRESS_FILES'] = python_dict(i['SUPPRESS_FILES'])
+        return send_response(
+            {'status': 'ok', 'message': data},
+            api)
+    except Exception:
+        logger.exception('Error listing suppression rules')
+    return send_response(data, api)
+
+
+# AJAX
+
+@require_http_methods(['POST'])
+def delete_suppression(request, api=False):
+    """Delete suppression rule."""
+    data = {
+        'status': 'failed',
+        'message': 'Failed to delete suppression rule'}
+    try:
+        checksum = request.POST['checksum']
+        rule = request.POST['rule']
+        typ = request.POST['type']
+        if not is_md5(checksum):
+            return invalid_params(api)
+        package = StaticAnalyzerAndroid.objects.get(
+            MD5=checksum).PACKAGE_NAME
+        if not package or is_attack_pattern(rule):
+            return invalid_params(api)
+        sup_config = SuppressFindings.objects.filter(
+            PACKAGE_NAME=package, SUPPRESS_TYPE='code')
+        if sup_config.exists():
+            if typ == 'rule':
+                sup_rules = set(
+                    python_list(sup_config[0].SUPPRESS_RULE_ID))
+                if rule in sup_rules:
+                    sup_rules.remove(rule)
+                    sup_config.update(SUPPRESS_RULE_ID=list(sup_rules))
+            elif typ == 'file':
+                files_config = python_dict(sup_config[0].SUPPRESS_FILES)
+                del files_config[rule]
+                sup_config.update(SUPPRESS_FILES=files_config)
+        return send_response({'status': 'ok'}, api)
+    except Exception:
+        logger.exception('Error deleting suppression rule')
+    return send_response(data, api)
+
+
+def process_suppression(data, package):
+    """Process all suppression."""
+    filtered = {}
+    filters = SuppressFindings.objects.filter(
+        PACKAGE_NAME=package,
+        SUPPRESS_TYPE='code')
+    if not filters.exists():
+        return data
+
+    # Priority to rules
+    filter_rules = python_list(filters[0].SUPPRESS_RULE_ID)
+    if filter_rules:
+        for k in data:
+            if k not in filter_rules:
+                filtered[k] = data[k]
+    else:
+        filtered = deepcopy(data)
+
+    # Process by files
+    filter_files = python_dict(filters[0].SUPPRESS_FILES)
+    cleaned = copy(filtered)
+    if filter_files:
+        for k in filtered:
+            if k not in filter_files.keys():
+                continue
+            for rem_file in filter_files[k]:
+                if rem_file in filtered[k]['files']:
+                    del filtered[k]['files'][rem_file]
+            # Remove rule_id with not files
+            if len(filtered[k]['files']) == 0:
+                del cleaned[k]
+    return cleaned
