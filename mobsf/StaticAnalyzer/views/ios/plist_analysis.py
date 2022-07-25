@@ -40,7 +40,7 @@ SKIP_PATH = {'__MACOSX', 'Pods'}
 def get_bundle_id(pobj, src):
     """Get iOS Bundle ID from source.
 
-    Look up in Info.plist, entitlements, CFBundleURLName, pbxproj
+    Look up in Info.plist, entitlements, pbxproj
     """
     possible_ids = set()
     skip_chars = {'$(', '${'}
@@ -65,18 +65,6 @@ def get_bundle_id(pobj, src):
                 possible_ids.add(t.strip())
         except Exception:
             logger.warning('Error in parsing .entitlements')
-
-    # Look for CFBundleURLName in all Info.plist files
-    for p in path.rglob('*Info.plist'):
-        if any(x in p.resolve().as_posix() for x in SKIP_PATH):
-            continue
-        try:
-            ent = loads(p.read_bytes())
-            bs = ent.get('CFBundleURLTypes')
-            if bs:
-                possible_ids.add(bs[0]['CFBundleURLName'])
-        except Exception:
-            pass
 
     # Look in project.pbxproj
     for p in path.rglob('*.pbxproj'):
