@@ -19,6 +19,9 @@ def get_context_from_db_entry(db_entry):
         code = process_suppression(
             python_dict(db_entry[0].CODE_ANALYSIS),
             bundle_id)
+        binary = process_suppression(
+            python_dict(db_entry[0].BINARY_ANALYSIS),
+            bundle_id)
         context = {
             'version': settings.MOBSF_VER,
             'title': 'Static Analysis',
@@ -43,7 +46,7 @@ def get_context_from_db_entry(db_entry):
             'binary_info': python_dict(db_entry[0].BINARY_INFO),
             'permissions': python_dict(db_entry[0].PERMISSIONS),
             'ats_analysis': python_list(db_entry[0].ATS_ANALYSIS),
-            'binary_analysis': python_list(db_entry[0].BINARY_ANALYSIS),
+            'binary_analysis': binary,
             'macho_analysis': python_dict(db_entry[0].MACHO_ANALYSIS),
             'ios_api': python_dict(db_entry[0].IOS_API),
             'code_analysis': code,
@@ -76,6 +79,9 @@ def get_context_from_analysis(app_dict,
         code = process_suppression(
             code_dict['code_anal'],
             bundle_id)
+        binary = process_suppression(
+            bin_dict['bin_code_analysis'],
+            bundle_id)
         context = {
             'version': settings.MOBSF_VER,
             'title': 'Static Analysis',
@@ -100,7 +106,7 @@ def get_context_from_analysis(app_dict,
             'binary_info': bin_dict['bin_info'],
             'permissions': info_dict['permissions'],
             'ats_analysis': info_dict['inseccon'],
-            'binary_analysis': bin_dict['bin_code_analysis'],
+            'binary_analysis': binary,
             'macho_analysis': bin_dict['checksec'],
             'ios_api': code_dict['api'],
             'code_analysis': code,
