@@ -442,7 +442,7 @@ def delete_scan(request, api=False):
             return error_response(request, msg, False, exp_doc)
 
 
-def health():
+def health(request):
     """Check MobSF system health."""
     # Ensure database access is good
     RecentScansDB.objects.all().first()
