@@ -79,9 +79,6 @@ WORKDIR /home/mobsf/Mobile-Security-Framework-MobSF
 # Copy source code
 COPY . .
 
-# install Jadx 
-RUN ./scripts/install_jadx.sh
-
 # Set adb binary path and apktool directory
 RUN sed -i "s#ADB_BINARY = ''#ADB_BINARY = '/usr/bin/adb'#" mobsf/MobSF/settings.py && \
     mkdir -p /home/mobsf/.local/share/apktool/framework

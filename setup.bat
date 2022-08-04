@@ -65,7 +65,7 @@ where python >nul 2>&1 && (
   echo [INSTALL] Installing Requirements
   %venv% -m pip install --no-cache-dir wheel
   %venv% -m pip install --no-cache-dir --use-deprecated=legacy-resolver -r requirements.txt
-
+  
   echo [INSTALL] Clean Up
   call scripts/clean.bat y
 
@@ -73,10 +73,6 @@ where python >nul 2>&1 && (
   %venv% manage.py makemigrations
   %venv% manage.py makemigrations StaticAnalyzer
   %venv% manage.py migrate
-  
-  echo [INSTALL] Installing Jadx
-  %venv% python scripts/install_jadx.py 
-
   echo Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html
   echo [INSTALL] Installation Complete
   %venv% scripts/check_install.py

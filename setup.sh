@@ -69,10 +69,6 @@ echo '[INSTALL] Migrating Database'
 python manage.py makemigrations
 python manage.py makemigrations StaticAnalyzer
 python manage.py migrate
-
-echo '[INSTALL] Installing Jadx'
-python ./scripts/install_jadx.py 
-
 wkhtmltopdf -V
 if ! [ $? -eq 0 ]; then
     echo 'Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html'
