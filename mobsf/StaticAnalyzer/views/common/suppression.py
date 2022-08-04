@@ -19,6 +19,7 @@ from mobsf.DynamicAnalyzer.views.android.operations import (
     send_response,
 )
 from mobsf.MobSF.utils import (
+    android_component,
     is_md5,
     python_dict,
     python_list,
@@ -58,13 +59,15 @@ def suppress_by_rule_id(request, api=False):
     try:
         checksum = request.POST['checksum']
         rule = request.POST['rule']
+        stype = request.POST['type']
+        type_check = stype in {'code', 'manifest'}
         if not is_md5(checksum):
             return invalid_params(api)
         package = get_package(checksum)
-        if not package or is_attack_pattern(rule):
+        if not package or is_attack_pattern(rule) or not type_check:
             return invalid_params(api)
         sup_config = SuppressFindings.objects.filter(
-            PACKAGE_NAME=package, SUPPRESS_TYPE='code')
+            PACKAGE_NAME=package, SUPPRESS_TYPE=stype)
         if sup_config.exists():
             # Update Record
             sup_rules = set(
@@ -78,7 +81,7 @@ def suppress_by_rule_id(request, api=False):
                 'PACKAGE_NAME': package,
                 'SUPPRESS_RULE_ID': [rule],
                 'SUPPRESS_FILES': {},
-                'SUPPRESS_TYPE': 'code',
+                'SUPPRESS_TYPE': stype,
             }
             SuppressFindings.objects.create(**values)
         return send_response({'status': 'ok'}, api)
@@ -162,7 +165,7 @@ def list_suppressions(request, api=False):
 
         data = []
         all_configs = SuppressFindings.objects.filter(
-            PACKAGE_NAME=package, SUPPRESS_TYPE='code')
+            PACKAGE_NAME=package)
         if all_configs.exists():
             data = list(all_configs.values())
             for i in data:
@@ -187,22 +190,24 @@ def delete_suppression(request, api=False):
     try:
         checksum = request.POST['checksum']
         rule = request.POST['rule']
-        typ = request.POST['type']
+        kind = request.POST['kind']
+        stype = request.POST['type']
+        type_check = stype in {'code', 'manifest'}
         if not is_md5(checksum):
             return invalid_params(api)
         package = get_package(checksum)
-        if not package or is_attack_pattern(rule):
+        if not package or is_attack_pattern(rule) or not type_check:
             return invalid_params(api)
         sup_config = SuppressFindings.objects.filter(
-            PACKAGE_NAME=package, SUPPRESS_TYPE='code')
+            PACKAGE_NAME=package, SUPPRESS_TYPE=stype)
         if sup_config.exists():
-            if typ == 'rule':
+            if kind == 'rule':
                 sup_rules = set(
                     python_list(sup_config[0].SUPPRESS_RULE_ID))
                 if rule in sup_rules:
                     sup_rules.remove(rule)
                     sup_config.update(SUPPRESS_RULE_ID=list(sup_rules))
-            elif typ == 'file':
+            elif kind == 'file':
                 files_config = python_dict(sup_config[0].SUPPRESS_FILES)
                 del files_config[rule]
                 sup_config.update(SUPPRESS_FILES=files_config)
@@ -213,7 +218,7 @@ def delete_suppression(request, api=False):
 
 
 def process_suppression(data, package):
-    """Process all suppression."""
+    """Process all suppression for code."""
     filtered = {}
     filters = SuppressFindings.objects.filter(
         PACKAGE_NAME=package,
@@ -244,3 +249,25 @@ def process_suppression(data, package):
             if len(filtered[k]['files']) == 0:
                 del cleaned[k]
     return cleaned
+
+
+def process_suppression_manifest(data, package):
+    """Process all suppression for manifest."""
+    filtered = []
+    filters = SuppressFindings.objects.filter(
+        PACKAGE_NAME=package,
+        SUPPRESS_TYPE='manifest')
+    if not filters.exists():
+        return data
+
+    filter_rules = python_list(filters[0].SUPPRESS_RULE_ID)
+    if filter_rules:
+        for k in data:
+            rule = k['rule']
+            title = k['title']
+            dynamic_rule = f'{android_component(title)}{rule}'
+            if dynamic_rule not in filter_rules:
+                filtered.append(k)
+    else:
+        filtered = data
+    return filtered

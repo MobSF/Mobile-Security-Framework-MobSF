@@ -5,7 +5,20 @@
     }
   });
 
+
+
   //Suppression Logic
+  
+  function slugify(str)
+  {
+  return str
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  }
+  
   function escapeHtml(unsafe)
   {
     return unsafe
@@ -31,7 +44,7 @@
     });
   }
 
-  function suppress(rule, files, tr){
+  function suppress(rule, files, tr, manifest=false){
     if (files){
       endpoint = '/suppress_by_files/'
       title = '<strong>Hide alert from files</strong>'
@@ -40,6 +53,13 @@
       endpoint = '/suppress_by_rule/'
       title = '<strong>Disable Rule</strong>'
       html = `This will suppress the rule <b>${escapeHtml(rule)}</b> from tiggering for <b>${escapeHtml(pkg)}</b> from now on.`
+    }
+    if (manifest){
+      table = '#table_manifest'
+      type = 'manifest'
+    } else {
+      table = '#table_code'
+      type = 'code'
     }
 
     Swal.fire({
@@ -51,9 +71,9 @@
       confirmButtonText: 'Suppress',
     }).then((result) => {
       if (result.value) {
-        action(document.location.origin + endpoint, { checksum: hash, rule }, function(json) {
+        action(document.location.origin + endpoint,  { checksum: hash, rule, type }, function(json) {
             if (json.status==="ok") {
-                $('#table_code').DataTable().row(tr).remove().draw();
+                $(table).DataTable().row(tr).remove().draw();
             } else {
               Swal.fire("Failed to Suppress")
             }
@@ -64,8 +84,9 @@
   }
 
 function remove_suppression(ctx){
-  type = $(ctx).data('type');
+  kind = $(ctx).data('kind');
   rule = $(ctx).data('rule');
+  type = $(ctx).data('type');
   
   Swal.fire({
     title: 'Delete suppression rule?',
@@ -76,7 +97,7 @@ function remove_suppression(ctx){
     confirmButtonText: 'Delete',
   }).then((result) => {
     if (result.value) {
-      action(document.location.origin + '/delete_suppression/', { checksum: hash, rule, type }, function(json) {
+      action(document.location.origin + '/delete_suppression/', { checksum: hash, rule, kind, type }, function(json) {
           if (json.status==="ok") {
             window.location.hash = 'suppression';
             window.location.reload();
@@ -89,23 +110,24 @@ function remove_suppression(ctx){
 
 }
 
-function get_rules(rules){
+function get_rules(type, rules){
   var html = ''
   rules.forEach(element => {
-    html += `${escapeHtml(element)} - <a onclick='remove_suppression(this)' data-rule='${escapeHtml(element)}' data-type='rule'><i class="fa fa-trash fa-2xs"></i></a></br>`
+    html += `${escapeHtml(element)} - <a onclick='remove_suppression(this)' data-rule='${escapeHtml(element)}' data-type='${type}' data-kind='rule'><i class="fa fa-trash fa-2xs"></i></a></br>`
   });
   return html
 }
 
 
-function get_files(files){
+function get_files(type, files){
   var html = ''
   for (const [rule, rfiles] of Object.entries(files)) {
-    html += `<b>${escapeHtml(rule)}</b> - <a onclick='remove_suppression(this)' data-rule='${escapeHtml(rule)}' data-type='file'><i class="fa fa-trash fa-2xs"></i></a></br>`
+    html += `<b>${escapeHtml(rule)}</b> - <a onclick='remove_suppression(this)' data-rule='${escapeHtml(rule)}' data-type='${type}' data-kind='file'><i class="fa fa-trash fa-2xs"></i></a></br>`
+    html += `<a class="btn btn-primary btn-sm" data-toggle="collapse" href="#c_${slugify(escapeHtml(rule))}" role="button" aria-expanded="false" aria-controls="c_${slugify(escapeHtml(rule))}">Files ➜</a><div class="collapse" id="c_${slugify(escapeHtml(rule))}"><div class="card card-body">`
     rfiles.forEach(element => {
       html += `<li>${escapeHtml(element)}</li>`
     });
-    html += '</br>'
+    html += '</div></div></br>'
   }
   return html
 }
@@ -119,8 +141,8 @@ function list_suppressions(){
         $(function() {
             $.each(json.message, function(i, item) {
               typ = item.SUPPRESS_TYPE
-              rule_ids = get_rules(item.SUPPRESS_RULE_ID)
-              files = get_files(item.SUPPRESS_FILES)
+              rule_ids = get_rules(typ, item.SUPPRESS_RULE_ID)
+              files = get_files(typ, item.SUPPRESS_FILES)
               tbl.row.add([typ, rule_ids, files]).draw(false)
             });
         });

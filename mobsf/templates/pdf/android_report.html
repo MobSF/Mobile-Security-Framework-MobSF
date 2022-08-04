@@ -488,17 +488,17 @@
                         </td>
                         <td>
 
-                          {% if item|key:"stat" == "high" %}
+                          {% if item|key:"severity" == "high" %}
                             <span class="danger">high</span>
-                          {% elif item|key:"stat" == "info" %}
+                          {% elif item|key:"severity" == "info" %}
                             <span class="info">info</span>
-                          {% elif item|key:"stat" == "warning" %}
+                          {% elif item|key:"severity" == "warning" %}
                             <span class="warning">warning</span>
                           {% endif %}
                          
                         </td>
                         <td>
-                        {{item|key:"desc"}}
+                        {{item|key:"description"}}
                         </td>
    
                        </tr>

@@ -19,9 +19,11 @@ from django.shortcuts import render
 from django.template.defaulttags import register
 
 from mobsf.MobSF.utils import (
+    android_component,
     file_size,
     is_dir_exists,
     is_file_exists,
+    key,
     print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.models import (
@@ -74,12 +76,8 @@ from androguard.core.bytecodes import apk
 
 logger = logging.getLogger(__name__)
 logging.getLogger('androguard').setLevel(logging.ERROR)
-
-
-@register.filter
-def key(data, key_name):
-    """Return the data for a key_name."""
-    return data.get(key_name)
+register.filter('key', key)
+register.filter('android_component', android_component)
 
 
 def static_analyzer(request, api=False):

@@ -161,8 +161,11 @@ def common_fields(findings, data):
     warn = len(findings.get('warning'))
     sec = len(findings.get('secure'))
     total = high + warn + sec
-    findings['security_score'] = int(100 - (
+    score = int(100 - (
         ((high * 1) + (warn * .5) - (sec * .2)) / total) * 100)
+    if score > 100:
+        score = 100
+    findings['security_score'] = score
     findings['app_name'] = data.get('app_name', '')
     findings['file_name'] = data.get('file_name', '')
     findings['hash'] = data['md5']
@@ -209,16 +212,16 @@ def get_android_dashboard(context, from_ctx=False):
         })
     # Manifest Analysis
     for m in data['manifest_analysis']:
-        if m['stat'] == 'info':
+        if m['severity'] == 'info':
             continue
         title = m['title'].replace('<strong>', '')
         title = title.replace('</strong>', '')
         fmt = title.split('<br>', 1)
         if len(fmt) > 1:
-            desc = fmt[1].replace('<br>', '') + '\n' + m['desc']
+            desc = fmt[1].replace('<br>', '') + '\n' + m['description']
         else:
-            desc = m['desc']
-        findings[m['stat']].append({
+            desc = m['description']
+        findings[m['severity']].append({
             'title': fmt[0],
             'description': desc,
             'section': 'manifest',

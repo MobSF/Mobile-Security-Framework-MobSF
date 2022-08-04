@@ -7,7 +7,10 @@ from django.db.models import QuerySet
 from mobsf.MobSF.utils import python_dict, python_list
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.StaticAnalyzer.models import RecentScansDB
-from mobsf.StaticAnalyzer.views.common.suppression import process_suppression
+from mobsf.StaticAnalyzer.views.common.suppression import (
+    process_suppression,
+    process_suppression_manifest,
+)
 
 """Module holding the functions for the db."""
 
@@ -22,6 +25,9 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
         package = db_entry[0].PACKAGE_NAME
         code = process_suppression(
             python_dict(db_entry[0].CODE_ANALYSIS),
+            package)
+        manifest_analysis = process_suppression_manifest(
+            python_list(db_entry[0].MANIFEST_ANALYSIS),
             package)
         context = {
             'version': settings.MOBSF_VER,
@@ -53,7 +59,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'permissions': python_dict(db_entry[0].PERMISSIONS),
             'certificate_analysis': python_dict(
                 db_entry[0].CERTIFICATE_ANALYSIS),
-            'manifest_analysis': python_list(db_entry[0].MANIFEST_ANALYSIS),
+            'manifest_analysis': manifest_analysis,
             'network_security': python_list(db_entry[0].NETWORK_SECURITY),
             'binary_analysis': python_list(db_entry[0].BINARY_ANALYSIS),
             'file_analysis': python_list(db_entry[0].FILE_ANALYSIS),
@@ -93,6 +99,9 @@ def get_context_from_analysis(app_dic,
         code = process_suppression(
             code_an_dic['findings'],
             package)
+        manifest_analysis = process_suppression_manifest(
+            man_an_dic['manifest_anal'],
+            package)
         context = {
             'title': 'Static Analysis',
             'version': settings.MOBSF_VER,
@@ -121,7 +130,7 @@ def get_context_from_analysis(app_dic,
             'icon_found': app_dic['icon_found'],
             'certificate_analysis': cert_dic,
             'permissions': man_an_dic['permissions'],
-            'manifest_analysis': man_an_dic['manifest_anal'],
+            'manifest_analysis': manifest_analysis,
             'network_security': man_an_dic['network_security'],
             'binary_analysis': bin_anal,
             'file_analysis': app_dic['certz'],
