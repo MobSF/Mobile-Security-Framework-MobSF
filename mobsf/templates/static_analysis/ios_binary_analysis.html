@@ -388,22 +388,34 @@
 <section class="content">
       <div class="container-fluid">
         <div class="row">
-            <div class="col-lg-12">
+          
+          <div class="col-lg-4">
             <div class="card">
               <div class="card-body">
                 <p>
                 <strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong>
                 </p>
-                <p align="center">
                  <a role="button" class="btn btn-info" href="../static_analyzer_ios/?checksum={{ md5 }}&amp;name={{ file_name }}&amp;type=ipa&amp;rescan=1" ><i class="fa fa-sync"></i> Rescan</a>
-                 <a role="button" class="btn btn-primary" data-target="#mplist" data-toggle="modal" href="#"><i class="fa fa-list"></i> View Info.plist</a>
-                 <a role="button" class="btn btn-primary" data-target="#mstrings" data-toggle="modal" href="#"><i class="fas fa-font"></i> View Strings</a>
-                 <a target="_blank" href="../view_file_ios/?file=classdump.txt&amp;md5={{ md5 }}&amp;type=ios" class="btn btn-warning" role="button"><i class="fa fa-code"></i> View Class Dump</a>
                 </p>
-              
               </div>
             </div><!-- /.card -->
             </div>
+            <div class="col-lg-8">
+              <div class="card">
+                <div class="card-body">
+                    <p>
+                    <strong><i class="fas fa-file-code"></i> DECOMPILED ASSETS</strong>
+                  </p>
+                  <p>
+                    <a role="button" class="btn btn-primary" data-target="#mplist" data-toggle="modal" href="#"><i class="fa fa-list"></i> View Info.plist</a>
+                    <a role="button" class="btn btn-primary" data-target="#mstrings" data-toggle="modal" href="#"><i class="fas fa-font"></i> View Strings</a>
+                    <a target="_blank" href="../view_file_ios/?file=classdump.txt&amp;md5={{ md5 }}&amp;type=ios" class="btn btn-warning" role="button"><i class="fa fa-code"></i> View Class Dump</a>
+                    <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type=ipa" class="btn btn-warning"> <i class="fa fa-download"></i> Download IPA</a>
+                 </p>
+                </div>
+              </div>
+            </div>
+
             <!-- end row -->
             </div>
         </div>

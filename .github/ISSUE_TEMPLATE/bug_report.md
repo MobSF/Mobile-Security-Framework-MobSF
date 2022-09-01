@@ -26,7 +26,7 @@ MobSF Version:
 ```
 What happens, under which versions, under what conditions, when, and what were you expecting instead.
 ```
-<!-- If you see errors while running setup/run scripts, join MobSF Slack channel: http://tiny.cc/mobsf to get limited support. -->
+<!-- If you see errors while running setup/run scripts, join MobSF Slack channel: https://bit.ly/3mCMNOx to get limited support. -->
 
 ## STEPS TO REPRODUCE THE ISSUE
 
@@ -47,7 +47,7 @@ Paste the contents of ~/.MobSF/debug.log here or attach the log file.
 BEFORE POSTING YOUR ISSUE/BUG
 - These comments won't show up when you submit the issue.
 - GitHub issues ARE NOT FOR FEATURE REQUESTS, SUPPORT, DISCUSSIONS AND QUESTIONS! 
-- If you have questions, use our slack channel. Join MobSF Slack channel: http://tiny.cc/mobsf
+- If you have questions, use our slack channel. Join MobSF Slack channel: https://bit.ly/3mCMNOx
 - Reproduce issue in the latest master and try to add as much detail as possible.
 - Search this repository (top of the page) for the issue and it has not been fixed or reported already.
 - Once you open a bug, you should also provide additional information if requested. 

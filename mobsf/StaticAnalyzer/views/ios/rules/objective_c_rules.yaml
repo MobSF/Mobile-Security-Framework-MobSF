@@ -114,7 +114,7 @@
     The App may contain banned API(s). These API(s) are insecure and must not be
     used.
   input_case: exact
-  pattern: 'strcpy\(|memcpy\(|strcat\(|strncat\(|strncpy\(|sprintf\(|vsprintf\(|gets\('
+  pattern: '\s+(strcpy\(|memcpy\(|strcat\(|strncat\(|strncpy\(|sprintf\(|sprintf\(|gets\()'
   severity: high
   type: Regex
   metadata:
