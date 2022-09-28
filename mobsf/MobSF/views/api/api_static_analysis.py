@@ -211,7 +211,6 @@ def api_scorecard(request):
     return response
 
 
-
 @request_method(['POST'])
 @csrf_exempt
 def api_suppress_by_rule_id(request):
@@ -247,7 +246,7 @@ def api_suppress_by_files(request):
 @request_method(['POST'])
 @csrf_exempt
 def api_list_suppressions(request):
-    """POST - View Suppressions"""
+    """POST - View Suppressions."""
     if 'hash' not in request.POST:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
