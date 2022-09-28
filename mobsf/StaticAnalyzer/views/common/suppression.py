@@ -57,7 +57,10 @@ def suppress_by_rule_id(request, api=False):
         'status': 'failed',
         'message': 'Failed to suppress finding by rule id'}
     try:
-        checksum = request.POST['checksum']
+        if api:
+            checksum = request.POST['hash']
+        else:
+            checksum = request.POST['checksum']
         rule = request.POST['rule']
         stype = request.POST['type']
         type_check = stype in {'code', 'manifest'}
@@ -99,7 +102,10 @@ def suppress_by_files(request, api=False):
         'status': 'failed',
         'message': 'Failed to suppress finding by files'}
     try:
-        checksum = request.POST['checksum']
+        if api:
+            checksum = request.POST['hash']
+        else:
+            checksum = request.POST['checksum']
         rule = request.POST['rule']
         files_to_suppress = []
         old_files = []
@@ -156,7 +162,10 @@ def list_suppressions(request, api=False):
         'status': 'failed',
         'message': 'Failed to list suppression rules'}
     try:
-        checksum = request.POST['checksum']
+        if api:
+            checksum = request.POST['hash']
+        else:
+            checksum = request.POST['checksum']
         if not is_md5(checksum):
             return invalid_params(api)
         package = get_package(checksum)
@@ -188,7 +197,10 @@ def delete_suppression(request, api=False):
         'status': 'failed',
         'message': 'Failed to delete suppression rule'}
     try:
-        checksum = request.POST['checksum']
+        if api:
+            checksum = request.POST['hash']
+        else:
+            checksum = request.POST['checksum']
         rule = request.POST['rule']
         kind = request.POST['kind']
         stype = request.POST['type']

@@ -46,6 +46,11 @@ urlpatterns = [
     re_path(r'^api/v1/scans$', api_sz.api_recent_scans),
     re_path(r'^api/v1/compare$', api_sz.api_compare),
     re_path(r'^api/v1/scorecard$', api_sz.api_scorecard),
+    # Static Suppression
+    re_path(r'^api/v1/suppress_by_rule$', api_sz.api_suppress_by_rule_id),
+    re_path(r'^api/v1/suppress_by_files$', api_sz.api_suppress_by_files),
+    re_path(r'^api/v1/list_suppressions$', api_sz.api_list_suppressions),
+    re_path(r'^api/v1/delete_suppression$', api_sz.api_delete_suppression),
     # Dynamic Analysis
     re_path(r'^api/v1/dynamic/get_apps$', api_dz.api_get_apps),
     re_path(r'^api/v1/dynamic/start_analysis$', api_dz.api_start_analysis),
