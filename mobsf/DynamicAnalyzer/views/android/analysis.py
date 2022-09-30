@@ -195,7 +195,26 @@ def get_app_files(apk_dir, md5_hash, package):
         shutil.rmtree(untar_dir)
     try:
         with tarfile.open(tar_loc, errorlevel=1) as tar:
-            tar.extractall(untar_dir, members=safe_paths(tar))
+            def is_within_directory(directory, target):
+                
+                abs_directory = os.path.abspath(directory)
+                abs_target = os.path.abspath(target)
+            
+                prefix = os.path.commonprefix([abs_directory, abs_target])
+                
+                return prefix == abs_directory
+            
+            def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+            
+                for member in tar.getmembers():
+                    member_path = os.path.join(path, member.name)
+                    if not is_within_directory(path, member_path):
+                        raise Exception("Attempted Path Traversal in Tar File")
+            
+                tar.extractall(path, members, numeric_owner) 
+                
+            
+            safe_extract(tar, untar_dir, members=safe_paths(tar))
     except FileExistsError:
         pass
     except Exception:
