@@ -42,7 +42,6 @@ def static_analysis_test():
                      'user_app_name': 'test',
                      'user_app_version': '1.0',
                      'division': 'division',
-                     'country': 'US',
                      'environment': 'testing',
                      'email': 'test@testing.local'})
                 obj = json.loads(response.content.decode('utf-8'))
@@ -193,7 +192,6 @@ def api_test():
                      'user_app_name': 'test',
                      'user_app_version': '1.0',
                      'division': 'division',
-                     'country': 'US',
                      'environment': 'testing',
                      'email': 'test@testing.local'},
                     HTTP_AUTHORIZATION=auth)

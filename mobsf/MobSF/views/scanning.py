@@ -31,7 +31,6 @@ def add_to_recent_scan(data):
                 USER_APP_NAME=data['user_app_name'],
                 USER_APP_VERSION=data['user_app_version'],
                 DIVISION=data['division'],
-                COUNTRY=data['country'],
                 ENVIRONMENT=data['environment'],
                 EMAIL=data['email'],
                 USER_GROUPS=data['user_groups'])
@@ -49,7 +48,6 @@ def add_to_recent_scan(data):
             scan.USER_APP_NAME = data['user_app_name']
             scan.USER_APP_VERSION = data['user_app_version']
             scan.DIVISION = data['division']
-            scan.COUNTRY = data['country']
             scan.ENVIRONMENT = data['environment']
             scan.save()
     except Exception as ex:
@@ -109,7 +107,6 @@ class Scanning(object):
             self.source_file_name = None
         self.user_app_name = request.POST.get('user_app_name')
         self.user_app_version = request.POST.get('user_app_version')
-        self.country = request.POST.get('country')
         self.division = request.POST.get('division')
         self.environment = request.POST.get('environment')
         self.email = sso_email(request)
@@ -128,7 +125,6 @@ class Scanning(object):
             'file_name': self.file_name,
             'user_app_name': self.user_app_name,
             'user_app_version': self.user_app_version,
-            'country': self.country,
             'division': self.division,
             'environment': self.environment,
             'email': self.email,
@@ -151,7 +147,6 @@ class Scanning(object):
             'file_name': self.file_name,
             'user_app_name': self.user_app_name,
             'user_app_version': self.user_app_version,
-            'country': self.country,
             'division': self.division,
             'environment': self.environment,
             'email': self.email,
@@ -174,7 +169,6 @@ class Scanning(object):
             'file_name': self.file_name,
             'user_app_name': self.user_app_name,
             'user_app_version': self.user_app_version,
-            'country': self.country,
             'division': self.division,
             'environment': self.environment,
             'email': self.email,
@@ -197,7 +191,6 @@ class Scanning(object):
             'file_name': self.file_name,
             'user_app_name': self.user_app_name,
             'user_app_version': self.user_app_version,
-            'country': self.country,
             'division': self.division,
             'environment': self.environment,
             'email': self.email,
@@ -220,7 +213,6 @@ class Scanning(object):
             'status': 'success',
             'user_app_name': self.user_app_name,
             'user_app_version': self.user_app_version,
-            'country': self.country,
             'division': self.division,
             'environment': self.environment,
             'email': self.email,
@@ -243,7 +235,6 @@ class Scanning(object):
             'status': 'success',
             'user_app_name': self.user_app_name,
             'user_app_version': self.user_app_version,
-            'country': self.country,
             'division': self.division,
             'environment': self.environment,
             'email': self.email,
