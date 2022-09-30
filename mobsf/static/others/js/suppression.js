@@ -46,11 +46,11 @@
 
   function suppress(rule, files, tr, manifest=false){
     if (files){
-      endpoint = '/suppress_by_files/'
+      endpoint = suppress_by_files_url
       title = '<strong>Hide alert from files</strong>'
       html = `This will suppress any findings of the rule <b>${escapeHtml(rule)}</b> triggering from these files for <b>${escapeHtml(pkg)}</b> from now on.`
     } else {
-      endpoint = '/suppress_by_rule/'
+      endpoint = suppress_by_rule_url
       title = '<strong>Disable Rule</strong>'
       html = `This will suppress the rule <b>${escapeHtml(rule)}</b> from tiggering for <b>${escapeHtml(pkg)}</b> from now on.`
     }
@@ -97,7 +97,7 @@ function remove_suppression(ctx){
     confirmButtonText: 'Delete',
   }).then((result) => {
     if (result.value) {
-      action(document.location.origin + '/delete_suppression/', { checksum: hash, rule, kind, type }, function(json) {
+      action(document.location.origin + delete_suppression_url, { checksum: hash, rule, kind, type }, function(json) {
           if (json.status==="ok") {
             window.location.hash = 'suppression';
             window.location.reload();
@@ -133,7 +133,7 @@ function get_files(type, files){
 }
 
 function list_suppressions(){
-  action(document.location.origin + '/list_suppressions/', { checksum: hash }, function(json) {
+  action(document.location.origin + list_suppressions_url, { checksum: hash }, function(json) {
     if (json.status==="ok") {
 
        var tbl = $('#sup_table').DataTable();

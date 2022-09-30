@@ -221,8 +221,9 @@ def delete_suppression(request, api=False):
                     sup_config.update(SUPPRESS_RULE_ID=list(sup_rules))
             elif kind == 'file':
                 files_config = python_dict(sup_config[0].SUPPRESS_FILES)
-                del files_config[rule]
-                sup_config.update(SUPPRESS_FILES=files_config)
+                if rule in files_config:
+                    del files_config[rule]
+                    sup_config.update(SUPPRESS_FILES=files_config)
         return send_response({'status': 'ok'}, api)
     except Exception:
         logger.exception('Error deleting suppression rule')
