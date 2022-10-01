@@ -187,6 +187,12 @@ def static_analyzer(request, api=False):
                     app_dic['icon_path'] = ''
                     # TODO: Check for possible different names for resource
                     # folder?
+                    if not os.path.exists(res_path):
+                        import shutil
+                        try:
+                            shutil.copytree(os.path.join(app_dic['app_dir'], 'apktool_out', 'res'), res_path)
+                        except:
+                            pass
                     if os.path.exists(res_path):
                         icon_dic = get_icon(
                             app_dic['app_path'], res_path)
