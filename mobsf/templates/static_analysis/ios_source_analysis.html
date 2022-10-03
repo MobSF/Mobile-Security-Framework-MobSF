@@ -681,8 +681,8 @@
                         <i class="fa fa-eye-slash"></i>
                       </a>
                       <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                        <a class="dropdown-item" onclick="suppress('{{rule | escapejs }}', false, $(this.closest('tr')))">Suppress the rule <b>{{ rule }}</b> in <b>{{bundle_id}}</b></a>
-                        <a class="dropdown-item" onclick="suppress('{{rule | escapejs }}', true, $(this.closest('tr')))">Suppress the rule <b>{{ rule }}</b> in <b>{{bundle_id}}</b> only from these files</a>
+                        <a style="cursor:pointer;" class="dropdown-item" onclick="suppress('{{rule | escapejs }}', false, $(this.closest('tr')))">Suppress the rule <b>{{ rule }}</b> in <b>{{bundle_id}}</b></a>
+                        <a style="cursor:pointer;" class="dropdown-item" onclick="suppress('{{rule | escapejs }}', true, $(this.closest('tr')))">Suppress the rule <b>{{ rule }}</b> in <b>{{bundle_id}}</b> only from these files</a>
                       </div>
                     </div>
 
