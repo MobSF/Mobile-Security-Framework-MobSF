@@ -1,3 +1,30 @@
+### v3.6.0 Beta Changelog
+
+- Features or Enhancements
+   - False Positive Triaging / Suppression Triaging Support for critical Android and iOS Security Analysis features.
+      - Android Binary & Source - Supports Code Analysis and Manifest Analysis
+      - iOS Binary - Supports Binary Code Analysis
+      - iOS Source - Supports Code Analysis
+      - New REST APIs for Suppression Support
+   - Android Certificate Analysis improvements
+   - Remove RELRO check from android binary analysis due to false positives
+   - iOS Bundle ID extraction improvements
+   - Feature parity - Allow IPA downloads from reports view 
+   - Code QA: Reduce False positives in identified secrets
+   - Check for updates from Github releases
+   - M1 Mac support
+   - Disabled by default feature to support hotspots in AppSec Scorecard
+   - Dependency updates
+   - Added CodeQL scan on MobSF python code base
+
+- Bug Fixes
+  - Fixes #1999, #1917, #2042 #1981 #2014 #2043 
+  - Fixed a bug in JSON response REST API
+  - iOS URL view fix
+  - Code fixes to address minor security issues in thrid party libraries.
+  - Handle JADX timeouts
+ 
+
 ### v3.5.0 Beta Changelog
 
 - Features or Enhancements
