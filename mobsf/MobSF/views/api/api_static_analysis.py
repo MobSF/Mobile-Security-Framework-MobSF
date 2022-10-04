@@ -12,6 +12,12 @@ from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
 from mobsf.StaticAnalyzer.views.ios import view_source as ios_view_source
 from mobsf.StaticAnalyzer.views.ios.static_analyzer import static_analyzer_ios
 from mobsf.StaticAnalyzer.views.common.shared_func import compare_apps
+from mobsf.StaticAnalyzer.views.common.suppression import (
+    delete_suppression,
+    list_suppressions,
+    suppress_by_files,
+    suppress_by_rule_id,
+)
 from mobsf.StaticAnalyzer.views.common.pdf import pdf
 from mobsf.StaticAnalyzer.views.common.appsec import appsec_dashboard
 from mobsf.StaticAnalyzer.views.windows import windows
@@ -48,7 +54,7 @@ def api_scan(request):
             {'error': 'Missing Parameters'}, 422)
     scan_type = request.POST['scan_type']
     # APK, Android ZIP and iOS ZIP
-    if scan_type in {'xapk', 'apk', 'zip'}:
+    if scan_type in {'xapk', 'apk', 'apks', 'zip'}:
         resp = static_analyzer(request, True)
         if 'type' in resp:
             # For now it's only ios_zip
@@ -202,4 +208,67 @@ def api_scorecard(request):
     else:
         response = make_api_response(
             {'error': 'JSON Generation Error'}, 500)
+    return response
+
+
+@request_method(['POST'])
+@csrf_exempt
+def api_suppress_by_rule_id(request):
+    """POST - Suppress a rule by id."""
+    params = {'rule', 'type', 'hash'}
+    if set(request.POST) < params:
+        return make_api_response(
+            {'error': 'Missing Parameters'}, 422)
+    resp = suppress_by_rule_id(request, True)
+    if 'error' in resp:
+        response = make_api_response(resp, 500)
+    else:
+        response = make_api_response(resp, 200)
+    return response
+
+
+@request_method(['POST'])
+@csrf_exempt
+def api_suppress_by_files(request):
+    """POST - Suppress a rule by files."""
+    params = {'rule', 'hash'}
+    if set(request.POST) < params:
+        return make_api_response(
+            {'error': 'Missing Parameters'}, 422)
+    resp = suppress_by_files(request, True)
+    if 'error' in resp:
+        response = make_api_response(resp, 500)
+    else:
+        response = make_api_response(resp, 200)
+    return response
+
+
+@request_method(['POST'])
+@csrf_exempt
+def api_list_suppressions(request):
+    """POST - View Suppressions."""
+    if 'hash' not in request.POST:
+        return make_api_response(
+            {'error': 'Missing Parameters'}, 422)
+    resp = list_suppressions(request, True)
+    if 'error' in resp:
+        response = make_api_response(resp, 500)
+    else:
+        response = make_api_response(resp, 200)
+    return response
+
+
+@request_method(['POST'])
+@csrf_exempt
+def api_delete_suppression(request):
+    """POST - Delete a suppression."""
+    params = {'kind', 'type', 'rule', 'hash'}
+    if set(request.POST) < params:
+        return make_api_response(
+            {'error': 'Missing Parameters'}, 422)
+    resp = delete_suppression(request, True)
+    if 'error' in resp:
+        response = make_api_response(resp, 500)
+    else:
+        response = make_api_response(resp, 200)
     return response

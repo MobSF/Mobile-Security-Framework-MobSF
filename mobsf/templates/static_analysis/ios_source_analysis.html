@@ -5,8 +5,10 @@
      {% endblock %}
     {% block extra_css %}
     <!-- DataTables -->
+    <link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
     <link rel="stylesheet" href="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.css" %}">
-     <style type="text/css" media="print">
+
+    <style type="text/css" media="print">
         @page { size: landscape; }
         @media print {
           .btn, #scan_options  {
@@ -360,6 +362,7 @@
                 </p>
                 <p align="center">
                   <a href="../static_analyzer_ios/?checksum={{ md5 }}&amp;name={{ file_name }}&amp;type=ios&amp;rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
+                  <a id="supbtn" onclick="list_suppressions()" role="button" class="btn btn-primary" data-target="#sup_list" data-toggle="modal" href="#"><i class="fa fa-list"></i> Manage Suppressions</a>
                   <a data-target="#mplist" role="button" class="btn btn-primary" data-toggle="modal" href="#"><i class="fa fa-list"></i> View Info.plist</a>
                </p>
               </div>
@@ -612,7 +615,7 @@
              <strong><i class="fa fa-code"></i> CODE ANALYSIS</strong>
              </p>
               <div class="table-responsive">
-                   <table class="table table-bordered table-hover table-striped">
+                   <table id="table_code" class="table table-bordered table-hover table-striped">
                   <thead>
                       <tr>
                           <th>NO</th>
@@ -620,6 +623,7 @@
                           <th>SEVERITY</th>
                           <th>STANDARDS</th>
                           <th>FILES</th>
+                          <th>OPTIONS</th>
 
                       </tr>
                   </thead>
@@ -669,6 +673,19 @@
                    <a href="../view_file_ios/?file={{ file_path }}&amp;md5={{ md5 }}&amp;type=ios&amp;lines={{ lines }}"> {{ file_path }}</a>
                   </br>
                   {% endfor %}
+                  </td>
+                  <td>
+
+                    <div class="dropdown show">
+                      <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-eye-slash"></i>
+                      </a>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <a style="cursor:pointer;" class="dropdown-item" onclick="suppress('{{rule | escapejs }}', false, $(this.closest('tr')))">Suppress the rule <b>{{ rule }}</b> in <b>{{bundle_id}}</b></a>
+                        <a style="cursor:pointer;" class="dropdown-item" onclick="suppress('{{rule | escapejs }}', true, $(this.closest('tr')))">Suppress the rule <b>{{ rule }}</b> in <b>{{bundle_id}}</b> only from these files</a>
+                      </div>
+                    </div>
+
                   </td>
                 </tr>    
               {% endfor %} 
@@ -1081,6 +1098,34 @@
       <!-- /.modal-dialog -->
     </div>
 
+<!--Modals-->
+<div class="modal" id="sup_list" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Suppression Rules</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <table id="sup_table" class="table table-bordered table-hover table-striped">
+          <thead>
+            <tr>
+                <th>Suppression Type</th>
+                <th>By Rule ID</th>
+                <th>By Files</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
 
 {% endblock %}
 <!--end new UI-->
@@ -1092,7 +1137,20 @@
 <script src="{% static "amcharts/maps.js" %}"></script>
 <script src="{% static "amcharts/worldIndiaLow.js" %}"></script>
 <script src="{% static "amcharts/animated.js" %}"></script>
+<script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
 <script>
+  var list_suppressions_url = '{% url 'list_suppressions' %}';
+  var suppress_by_files_url = '{% url 'suppress_by_files' %}';
+  var suppress_by_rule_url = '{% url 'suppress_by_rule' %}';
+  var delete_suppression_url = '{% url 'delete_suppression' %}';
+</script>
+<script src="{% static "others/js/suppression.js" %}"></script>
+<script>
+  // Globals
+  const csrf = '{{ csrf_token }}'
+  const pkg = '{{ bundle_id }}'
+  const hash = '{{ md5 }}'
+
   $(function () {
     // Datatable
     $('table').DataTable({

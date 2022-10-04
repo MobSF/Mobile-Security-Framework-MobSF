@@ -36,6 +36,10 @@
               <li><code>api/v1/report_json</code> - <a href="#generate-json-report-api">Generate JSON Report</a></li>
               <li><code>api/v1/view_source</code> - <a href="#view-source-api">View Source Files</a></li>
               <li><code>api/v1/compare</code> - <a href="#compare-api">Compare Apps</a></li>
+              <li><code>api/v1/suppress_by_rule</code> - <a href="#suppress-by-rule-api">Suppress by Rule</a></li>
+              <li><code>api/v1/suppress_by_files</code> - <a href="#suppress-by-files-api">Suppress by Files</a></li>
+              <li><code>api/v1/list_suppressions</code> - <a href="#list-suppressions-api">List Suppressions</a></li>
+              <li><code>api/v1/delete_suppression</code> - <a href="#delete-suppression-api">Delete Suppressions</a></li>
             </ol>
 
             <h1>Dynamic Analysis</h1>
@@ -170,7 +174,7 @@
               <tbody>
                 <tr>
                   <td>scan_type</td>
-                  <td>xapk, apk, zip, ipa, or appx</td>
+                  <td>xapk, apk, apks, zip, ipa, or appx</td>
                   <td>Yes</td>
                 </tr>
                 <tr>
@@ -847,6 +851,365 @@
                 <ul>
                   <li>
                     <pre><code>curl -X POST --url http://localhost:8000/api/v1/compare --data "hash1=82ab8b2193b3cfb1c737e3a786be363a&hash2=f56c96f2b1f0a7c46eb6fef3a035f3dd" -H "X-Mobsf-Api-Key:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="suppress-by-rule-api"></a><strong>Suppress by Rule</strong></h2>
+            <p>Suppress findings by rule id.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/suppress_by_rule</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>hash</td>
+                  <td>hash of the scan</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>type</td>
+                  <td>code or manifest</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>rule</td>
+                  <td>rule id</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>JSON Contents</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/suppress_by_rule --data "hash=82ab8b2193b3cfb1c737e3a786be363a&amp;type=manifest&amp;rule=app_allowbackup" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/suppress_by_rule --data "hash=82ab8b2193b3cfb1c737e3a786be363a&amp;type=code&amp;rule=android_logging" -H "X-Mobsf-Api-Key:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+         
+            <hr />
+            <h2><a id="suppress-by-files-api"></a><strong>Suppress by Files</strong></h2>
+            <p>Suppress findings by files.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/suppress_by_files</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>hash</td>
+                  <td>hash of the scan</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>type</td>
+                  <td>code</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>rule</td>
+                  <td>rule id</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>JSON Contents</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/suppress_by_files --data "hash=82ab8b2193b3cfb1c737e3a786be363a&amp;type=code&amp;rule=app_allowbackup" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/suppress_by_files --data "hash=82ab8b2193b3cfb1c737e3a786be363a&amp;type=code&amp;rule=android_logging" -H "X-Mobsf-Api-Key:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="list-suppressions-api"></a><strong>View Suppressions</strong></h2>
+            <p>View suppressions associated with a scan.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/list_suppressions</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>hash</td>
+                  <td>hash of the scan</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>JSON Contents</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/list_suppressions --data "hash=82ab8b2193b3cfb1c737e3a786be363a" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/list_suppressions --data "hash=82ab8b2193b3cfb1c737e3a786be363a" -H "X-Mobsf-Api-Key:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="delete-suppression-api"></a><strong>Delete Suppressions</strong></h2>
+            <p>Delete suppressions.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/delete_suppression</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>hash</td>
+                  <td>hash of the scan</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>type</td>
+                  <td>code or manifest</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>rule</td>
+                  <td>rule id</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>kind</td>
+                  <td>rule or file</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>JSON Contents</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/delete_suppression --data "hash=82ab8b2193b3cfb1c737e3a786be363a&amp;kind=file&amp;type=code&amp;rule=android_sql_raw_query" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/delete_suppression --data "hash=82ab8b2193b3cfb1c737e3a786be363a&amp;kind=rule&amp;type=manifest&amp;rule=receiver_exported_intent_filter_exists" -H "X-Mobsf-Api-Key:{{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>

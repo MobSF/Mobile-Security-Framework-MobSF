@@ -122,3 +122,10 @@ class StaticAnalyzerWindows(models.Model):
     STRINGS = models.TextField(default=[])
     BINARY_ANALYSIS = models.TextField(default=[])
     BINARY_WARNINGS = models.TextField(default=[])
+
+
+class SuppressFindings(models.Model):
+    PACKAGE_NAME = models.CharField(max_length=260, default='')
+    SUPPRESS_RULE_ID = models.TextField(default=[])
+    SUPPRESS_FILES = models.TextField(default={})
+    SUPPRESS_TYPE = models.TextField(default='')
