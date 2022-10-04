@@ -368,6 +368,121 @@ def api_test():
             logger.info(resp.content)
             return True
         logger.info('Running Delete Scan Results test')
+        # Suppression tests
+        # Android Manifest by rule
+        and_hash = '3a552566097a8de588b8184b059b0158'
+        rule = 'app_is_debuggable'
+        typ = 'manifest'
+        logger.info('Running Suppression disable by rule for APK manifest')
+        resp = http_client.post(
+            '/api/v1/suppress_by_rule',
+            {
+                'hash': and_hash,
+                'type': typ,
+                'rule': rule,
+            },
+            HTTP_AUTHORIZATION=auth)
+        assert (resp.status_code == 200)
+        dat = json.loads(resp.content.decode('utf-8'))
+        if dat['status'] == 'ok':
+            logger.info('[OK] Suppression by rule - %s', rule)
+        else:
+            logger.error('[ERROR] Suppression by rule - %s', rule)
+            return True
+        resp = http_client.post(
+            '/api/v1/list_suppressions',
+            {
+                'hash': and_hash,
+            },
+            HTTP_AUTHORIZATION=auth)
+        assert (resp.status_code == 200)
+        dat = resp.content.decode('utf-8')
+        if rule in dat:
+            logger.info('[OK] Listing suppression for - %s', and_hash)
+        else:
+            logger.error('[ERROR] Listing suppression for  - %s', and_hash)
+            return True
+        resp = http_client.post(
+            '/api/v1/delete_suppression',
+            {
+                'hash': and_hash,
+                'type': typ,
+                'rule': rule,
+                'kind': 'rule',
+            },
+            HTTP_AUTHORIZATION=auth)
+        assert (resp.status_code == 200)
+        resp = http_client.post(
+            '/api/v1/list_suppressions',
+            {
+                'hash': and_hash,
+            },
+            HTTP_AUTHORIZATION=auth)
+        assert (resp.status_code == 200)
+        dat = resp.content.decode('utf-8')
+        if rule not in dat:
+            logger.info('[OK] Suppression deleted - %s', and_hash)
+        else:
+            logger.error('[ERROR] Suppression deletion - %s', and_hash)
+            return True
+        # iOS Code by Files
+        ios_hash = '57bb5be0ea44a755ada4a93885c3825e'
+        rule = 'ios_app_logging'
+        typ = 'code'
+        sfile = ('DamnVulnerableIOSApp/Cocoa'
+                 'Lumberjack/DDAbstractDatabaseLogger.m')
+        logger.info('Running Suppression by files for iOS ObjC source')
+        resp = http_client.post(
+            '/api/v1/suppress_by_files',
+            {
+                'hash': ios_hash,
+                'type': typ,
+                'rule': rule,
+            },
+            HTTP_AUTHORIZATION=auth)
+        assert (resp.status_code == 200)
+        dat = json.loads(resp.content.decode('utf-8'))
+        if dat['status'] == 'ok':
+            logger.info('[OK] Suppression by files for - %s', rule)
+        else:
+            logger.error('[ERROR] Suppression by files for - %s', rule)
+            return True
+        resp = http_client.post(
+            '/api/v1/list_suppressions',
+            {
+                'hash': ios_hash,
+            },
+            HTTP_AUTHORIZATION=auth)
+        assert (resp.status_code == 200)
+        dat = resp.content.decode('utf-8')
+        if rule in dat and sfile in dat:
+            logger.info('[OK] Listing suppression for - %s', ios_hash)
+        else:
+            logger.error('[ERROR] Listing suppression for  - %s', ios_hash)
+            return True
+        resp = http_client.post(
+            '/api/v1/delete_suppression',
+            {
+                'hash': ios_hash,
+                'type': typ,
+                'rule': rule,
+                'kind': 'file',
+            },
+            HTTP_AUTHORIZATION=auth)
+        assert (resp.status_code == 200)
+        resp = http_client.post(
+            '/api/v1/list_suppressions',
+            {
+                'hash': ios_hash,
+            },
+            HTTP_AUTHORIZATION=auth)
+        assert (resp.status_code == 200)
+        dat = resp.content.decode('utf-8')
+        if rule not in dat:
+            logger.info('[OK] Suppression deleted - %s', ios_hash)
+        else:
+            logger.error('[ERROR] Suppression deletion - %s', ios_hash)
+            return True
         # Deleting Scan Results
         if platform.system() in ['Darwin', 'Linux']:
             scan_md5s = ['02e7989c457ab67eb514a8328779f256',
