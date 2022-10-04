@@ -47,7 +47,7 @@ from mobsf.StaticAnalyzer.views.android.db_interaction import (
 )
 from mobsf.StaticAnalyzer.views.android.icon_analysis import (
     find_icon_path_zip,
-    get_icon,
+    get_icon_apk,
 )
 from mobsf.StaticAnalyzer.views.android.manifest_analysis import (
     get_manifest,
@@ -177,27 +177,8 @@ def static_analyzer(request, api=False):
                     )
 
                     # Get icon
-                    res_path = os.path.join(app_dic['app_dir'], 'res')
-                    app_dic['icon_hidden'] = True
-                    # Even if the icon is hidden, try to guess it by the
-                    # default paths
-                    app_dic['icon_found'] = False
-                    app_dic['icon_path'] = ''
-                    # TODO: Check for possible different names for resource
-                    # folder?
-                    if not os.path.exists(res_path):
-                        import shutil
-                        try:
-                            shutil.copytree(os.path.join(app_dic['app_dir'], 'apktool_out', 'res'), res_path)
-                        except:
-                            pass
-                    if os.path.exists(res_path):
-                        icon_dic = get_icon(
-                            app_dic['app_path'], res_path)
-                        if icon_dic:
-                            app_dic['icon_hidden'] = icon_dic['hidden']
-                            app_dic['icon_found'] = bool(icon_dic['path'])
-                            app_dic['icon_path'] = icon_dic['path']
+                    # apktool should run before this
+                    get_icon_apk(app_dic)
 
                     # Set Manifest link
                     app_dic['mani'] = ('../manifest_view/?md5='

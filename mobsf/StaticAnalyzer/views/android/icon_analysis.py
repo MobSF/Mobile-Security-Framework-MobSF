@@ -4,6 +4,8 @@
 import fnmatch
 import logging
 import os
+from shutil import copytree
+from pathlib import Path
 
 from androguard.core.bytecodes import apk
 
@@ -134,3 +136,30 @@ def get_icon(apk_path, res_dir):
         }
     except Exception:
         logger.exception('Fetching icon function')
+
+
+def get_icon_apk(app_dic):
+    """Get/Guess icon from APK binary."""
+    app_dir = Path(app_dic['app_dir'])
+    res_path = app_dir / 'res'
+    app_dic['icon_hidden'] = True
+    # Even if the icon is hidden, try to guess it by the
+    # default paths
+    app_dic['icon_found'] = False
+    app_dic['icon_path'] = ''
+    if not res_path.exists():
+        # If res directory is not found
+        # piggyback on apktool decompiled resources
+        try:
+            apk_tool_res = app_dir / 'apktool_out' / 'res'
+            copytree(apk_tool_res, res_path)
+        except Exception:
+            pass
+    # Set app_dic with icon details
+    if res_path.exists():
+        icon_dic = get_icon(
+            app_dic['app_path'], res_path.as_posix())
+        if icon_dic:
+            app_dic['icon_hidden'] = icon_dic['hidden']
+            app_dic['icon_found'] = bool(icon_dic['path'])
+            app_dic['icon_path'] = icon_dic['path']

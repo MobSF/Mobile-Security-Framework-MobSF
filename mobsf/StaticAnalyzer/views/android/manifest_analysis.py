@@ -879,7 +879,10 @@ def get_manifest_file(app_dir, app_path, tools_dir, typ, apk):
 
 
 def get_manifest_apk(app_path, app_dir, tools_dir):
-    """Get readable AndroidManifest.xml."""
+    """Get readable AndroidManifest.xml.
+
+    Should be called before get_icon_apk() function
+    """
     try:
         manifest = None
         if (len(settings.APKTOOL_BINARY) > 0
