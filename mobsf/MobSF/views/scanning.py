@@ -115,7 +115,7 @@ class Scanning(object):
         self.user_groups = get_usergroups(request)
         self.release = False
         if (is_admin(request)):
-            self.release = request.POST.get('release')
+            self.release = request.POST.get('release', False)
 
     def scan_apk(self):
         """Android APK."""
