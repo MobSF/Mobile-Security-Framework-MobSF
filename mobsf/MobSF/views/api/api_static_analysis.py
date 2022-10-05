@@ -249,9 +249,6 @@ def api_cyberspect_recent_scans(request):
 @csrf_exempt
 def api_update_cyberspect_scans(request):
     """POST - Update a record in CyberspectScans."""
-    if 'id' not in request.POST:
-        return make_api_response(
-            {'error': 'Missing Parameters'}, 422)
     scan = update_cyberspect_scan(request)
     if scan:
         return make_api_response(scan, 200)
