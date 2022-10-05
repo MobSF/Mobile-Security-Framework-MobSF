@@ -34,6 +34,7 @@ from mobsf.MobSF.utils import (
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
 from mobsf.StaticAnalyzer.models import (
+    CyberspectScans,
     RecentScansDB,
     StaticAnalyzerAndroid,
     StaticAnalyzerIOS,
@@ -324,6 +325,61 @@ def scan_metadata(md5):
     return None
 
 
+def update_scan(request):
+    """Update scan record."""
+    db_obj = RecentScansDB.objects.filter(MD5=request.POST['hash']).first()
+    if db_obj:
+        if request.POST['email']:
+            db_obj.EMAIL = request.POST['email']
+        if request.POST['release']:
+            db_obj.RELEASE = request.POST['release']
+        db_obj.save()
+        return model_to_dict(db_obj)
+    return None
+
+
+def update_cyberspect_scan(request):
+    """Update Cyberspect scan record."""
+    db_obj = CyberspectScans.objects.filter(ID=request.POST['id']).first()
+    if db_obj:
+        db_obj.MOBSF_MD5 = request.POST.get('mobsf_md5', db_obj.MOBSF_MD5)
+        db_obj.DT_PROJECT_ID = request.POST.get('dt_project_id',
+                                                db_obj.DT_PROJECT_ID)
+        db_obj.INTAKE_START = request.POST.get('intake_end',
+                                               db_obj.INTAKE_START)
+        db_obj.SAST_START = request.POST.get('sast_start', db_obj.SAST_START)
+        db_obj.SAST_END = request.POST.get('sast_end', db_obj.SAST_END)
+        db_obj.SBOM_START = request.POST.get('sbom_start', db_obj.SBOM_START)
+        db_obj.SBOM_END = request.POST.get('sbom_end', db_obj.SBOM_END)
+        db_obj.DEPENDENCY_START = request.POST.get('dependency_start',
+                                                   db_obj.DEPENDENCY_START)
+        db_obj.DEPENDENCY_END = request.POST.get('dependency_end',
+                                                 db_obj.DEPENDENCY_END)
+        db_obj.NOTIFICATION_START = request.POST.get('notification_start',
+                                                     db_obj.NOTIFICATION_START)
+        db_obj.NOTIFICATION_END = request.POST.get('notification_end',
+                                                   db_obj.NOTIFICATION_END)
+        db_obj.SUCCESS = request.POST.get('success', db_obj.SUCCESS)
+        db_obj.FAILURE_SOURCE = request.POST.get('failure_source',
+                                                 db_obj.FAILURE_SOURCE)
+        db_obj.FAILURE_MESSAGE = request.POST.get('failure_message',
+                                                  db_obj.FAILURE_MESSAGE)
+        db_obj.FILE_SIZE_PACKAGE = request.POST.get('file_size_package',
+                                                    db_obj.FILE_SIZE_PACKAGE)
+        db_obj.FILE_SIZE_SOURCE = request.POST.get('file_size_source',
+                                                   db_obj.FILE_SIZE_SOURCE)
+        db_obj.DEPENDENCY_TYPES = request.POST.get('dependency_types',
+                                                   db_obj.DEPENDENCY_TYPES)
+        db_obj.save()
+        return model_to_dict(db_obj)
+    else:
+        new_db_obj = CyberspectScans(
+            INTAKE_START=request.POST['intake_start'],
+            SCHEDULED=request.POST['scheduled'])
+        new_db_obj.save()
+        return model_to_dict(new_db_obj)
+
+
 def logout_aws(request):
     """Remove AWS ALB session cookie."""
     resp = HttpResponse(
@@ -460,6 +516,22 @@ class RecentScans(object):
         page = self.request.GET.get('page', 1)
         page_size = self.request.GET.get('page_size', 10)
         result = RecentScansDB.objects.all().values().order_by('-TIMESTAMP')
+        try:
+            paginator = Paginator(result, page_size)
+            content = paginator.page(page)
+            data = {
+                'content': list(content),
+                'count': paginator.count,
+                'num_pages': paginator.num_pages,
+            }
+        except Exception as exp:
+            data = {'error': str(exp)}
+        return data
+
+    def cyberspect_recent_scans(self):
+        page = self.request.GET.get('page', 1)
+        page_size = self.request.GET.get('page_size', 10)
+        result = CyberspectScans.objects.all().values().order_by('-TIMESTAMP')
         try:
             paginator = Paginator(result, page_size)
             content = paginator.page(page)

@@ -37,6 +37,7 @@ urlpatterns = [
     # Static Analysis
     re_path(r'^api/v1/upload$', api_sz.api_upload),
     re_path(r'^api/v1/scan$', api_sz.api_scan),
+    re_path(r'^api/v1/update_scan$', api_sz.api_update_scan),
     re_path(r'^api/v1/scan_metadata$', api_sz.api_scan_metadata),
     re_path(r'^api/v1/delete_scan$', api_sz.api_delete_scan),
     re_path(r'^api/v1/download_pdf$', api_sz.api_pdf_report),
@@ -46,6 +47,9 @@ urlpatterns = [
     re_path(r'^api/v1/scans$', api_sz.api_recent_scans),
     re_path(r'^api/v1/compare$', api_sz.api_compare),
     re_path(r'^api/v1/scorecard$', api_sz.api_scorecard),
+    re_path(r'^api/v1/cyberspect_scans$', api_sz.api_cyberspect_recent_scans),
+    re_path(r'^api/v1/update_cyberspect_scan$',
+            api_sz.api_update_cyberspect_scans),
     # Dynamic Analysis
     re_path(r'^api/v1/dynamic/get_apps$', api_dz.api_get_apps),
     re_path(r'^api/v1/dynamic/start_analysis$', api_dz.api_start_analysis),

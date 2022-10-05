@@ -135,6 +135,7 @@ class CyberspectScans(models.Model):
     ID = models.BigAutoField(primary_key=True)
     MOBSF_MD5 = models.CharField(max_length=32, null=True)
     DT_PROJECT_ID = models.UUIDField(null=True)
+    SCHEDULED = models.BooleanField(null=False, default=False)
     INTAKE_START = models.DateField()
     INTAKE_END = models.DateField(null=True)
     SAST_START = models.DateField(null=True)
@@ -150,3 +151,4 @@ class CyberspectScans(models.Model):
     FAILURE_MESSAGE = models.TextField(null=True)
     FILE_SIZE_PACKAGE = models.IntegerField(null=True)
     FILE_SIZE_SOURCE = models.IntegerField(null=True)
+    DEPENDENCY_TYPES = models.CharField(max_length=50, null=True)
