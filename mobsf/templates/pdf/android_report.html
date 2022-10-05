@@ -198,35 +198,6 @@
         {% if certificate_analysis.certificate_info %}
         <div class="panel-body">
               <p class="wrapped-text">{{ certificate_analysis.certificate_info }}</p>
-              <!--Cert status-->
-                 <table class="basic">
-                      <thead>
-                          <tr>
-                              <th>TITLE</th>
-                              <th>SEVERITY</th>
-                              <th>DESCRIPTION</th>
-                          </tr>
-                      </thead>
-                      <tbody>
-                          {% for find in certificate_analysis.certificate_findings %}
-                          <tr>
-                          <td>{{ find.2 }}</td>
-                          <td>
-                          {% if find.0 == 'high' %}
-                            <span class="danger">high</span>
-                          {% elif find.0  == 'secure' %}
-                            <span class="success">secure</span>
-                          {% elif find.0  == 'warning' %}
-                            <span class="warning">warning</span>
-                            {% elif find.0  == 'info' %}
-                            <span class="info">info</span>
-                          {% endif %}
-                          </td>
-                          <td>{{ find.1 }}</td>
-                          </tr>
-                          {% endfor %}
-                      </tbody>
-                  </table>
         </div>
       {% else %}
       <span class="danger">Failed to read Code Signing Certificate or none available.</span>
@@ -430,7 +401,6 @@
                     </table>
       {% endif %}
 
-
      <h2><i class="fas fa-lock"></i> NETWORK SECURITY</h2>
      <table class="basic">
                     <thead>
@@ -468,7 +438,37 @@
                      {% endfor %}
 										</tbody>
 										</table>
-    
+      <h2><i class="fas fa fa-id-card"></i> CERTIFICATE ANALYSIS</h2>
+      <table class="basic">
+        <thead>
+            <tr>
+                <th>TITLE</th>
+                <th>SEVERITY</th>
+                <th>DESCRIPTION</th>
+            </tr>
+        </thead>
+        <tbody>
+          {% if 'certificate_findings' in certificate_analysis %}
+            {% for find in certificate_analysis.certificate_findings %}
+            <tr>
+            <td>{{ find.2 }}</td>
+            <td>
+            {% if find.0 == 'high' %}
+              <span class="danger">high</span>
+            {% elif find.0  == 'secure' %}
+              <span class="success">secure</span>
+            {% elif find.0  == 'warning' %}
+              <span class="warning">warning</span>
+              {% elif find.0  == 'info' %}
+              <span class="info">info</span>
+            {% endif %}
+            </td>
+            <td>{{ find.1 }}</td>
+            </tr>
+            {% endfor %}
+          {% endif %}
+        </tbody>
+    </table>
     <h2><i class="fas fa-search"></i> MANIFEST ANALYSIS</h2>
      <table class="basic">
                     <thead>
