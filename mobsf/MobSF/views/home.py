@@ -345,35 +345,38 @@ def update_cyberspect_scan(request):
         db_obj = CyberspectScans.objects.filter(ID=csid).first()
         if db_obj:
             db_obj.MOBSF_MD5 = request.POST.get('mobsf_md5', db_obj.MOBSF_MD5)
-            db_obj.DT_PROJECT_ID = request.POST.get(
-                'dt_project_id', db_obj.DT_PROJECT_ID)
-            db_obj.INTAKE_START = request.POST.get(
-                'intake_end', db_obj.INTAKE_START)
-            db_obj.SAST_START = request.POST.get(
-                'sast_start', db_obj.SAST_START)
-            db_obj.SAST_END = request.POST.get('sast_end', db_obj.SAST_END)
-            db_obj.SBOM_START = request.POST.get(
-                'sbom_start', db_obj.SBOM_START)
-            db_obj.SBOM_END = request.POST.get('sbom_end', db_obj.SBOM_END)
-            db_obj.DEPENDENCY_START = request.POST.get(
-                'dependency_start', db_obj.DEPENDENCY_START)
-            db_obj.DEPENDENCY_END = request.POST.get(
-                'dependency_end', db_obj.DEPENDENCY_END)
-            db_obj.NOTIFICATION_START = request.POST.get(
-                'notification_start', db_obj.NOTIFICATION_START)
-            db_obj.NOTIFICATION_END = request.POST.get(
-                'notification_end', db_obj.NOTIFICATION_END)
-            db_obj.SUCCESS = request.POST.get('success', db_obj.SUCCESS)
-            db_obj.FAILURE_SOURCE = request.POST.get(
-                'failure_source', db_obj.FAILURE_SOURCE)
-            db_obj.FAILURE_MESSAGE = request.POST.get(
-                'failure_message', db_obj.FAILURE_MESSAGE)
-            db_obj.FILE_SIZE_PACKAGE = request.POST.get(
-                'file_size_package', db_obj.FILE_SIZE_PACKAGE)
-            db_obj.FILE_SIZE_SOURCE = request.POST.get(
-                'file_size_source', db_obj.FILE_SIZE_SOURCE)
-            db_obj.DEPENDENCY_TYPES = request.POST.get(
-                'dependency_types', db_obj.DEPENDENCY_TYPES)
+            if (request.POST['dt_project_id']):
+                db_obj.DT_PROJECT_ID = request.POST['dt_project_id']
+            if (request.POST['intake_end']):
+                db_obj.INTAKE_END = request.POST['intake_end']
+            if (request.POST['sast_start']):
+                db_obj.SAST_START = request.POST['sast_start']
+            if (request.POST['sast_end']):
+                db_obj.SAST_END = request.POST['sast_end']
+            if (request.POST['sbom_start']):
+                db_obj.SBOM_START = request.POST['sbom_start']
+            if (request.POST['sbom_end']):
+                db_obj.SBOM_END = request.POST['sbom_end']
+            if (request.POST['dependency_start']):
+                db_obj.DEPENDENCY_START = request.POST['dependency_start']
+            if (request.POST['dependency_end']):
+                db_obj.DEPENDENCY_END = request.POST['dependency_end']
+            if (request.POST['notification_start']):
+                db_obj.NOTIFICATION_START = request.POST['notification_start']
+            if (request.POST['notification_end']):
+                db_obj.NOTIFICATION_END = request.POST['notification_end']
+            if (request.POST['success']):
+                db_obj.SUCCESS = request.POST['success']
+            if (request.POST['failure_source']):
+                db_obj.FAILURE_SOURCE = request.POST['failure_source']
+            if (request.POST['failure_message']):
+                db_obj.FAILURE_MESSAGE = request.POST['failure_message']
+            if (request.POST['file_size_package']):
+                db_obj.FILE_SIZE_PACKAGE = request.POST['file_size_package']
+            if (request.POST['file_size_source']):
+                db_obj.FILE_SIZE_SOURCE = request.POST['file_size_source']
+            if (request.POST['dependency_types']):
+                db_obj.DEPENDENCY_TYPES = request.POST['dependency_types']
             db_obj.save()
             return model_to_dict(db_obj)
         else:
@@ -388,7 +391,7 @@ def update_cyberspect_scan(request):
             'description': '',
             'status': 'error',
         }
-        response_data['description'] = msg
+        response_data['description'] = str(msg)
         return HttpResponse(json.dumps(response_data),
                             content_type='application/json; charset=utf-8')
 
