@@ -340,45 +340,57 @@ def update_scan(request):
 
 def update_cyberspect_scan(request):
     """Update Cyberspect scan record."""
-    csid = request.POST.get('id', -1)
-    db_obj = CyberspectScans.objects.filter(ID=csid).first()
-    if db_obj:
-        db_obj.MOBSF_MD5 = request.POST.get('mobsf_md5', db_obj.MOBSF_MD5)
-        db_obj.DT_PROJECT_ID = request.POST.get('dt_project_id',
-                                                db_obj.DT_PROJECT_ID)
-        db_obj.INTAKE_START = request.POST.get('intake_end',
-                                               db_obj.INTAKE_START)
-        db_obj.SAST_START = request.POST.get('sast_start', db_obj.SAST_START)
-        db_obj.SAST_END = request.POST.get('sast_end', db_obj.SAST_END)
-        db_obj.SBOM_START = request.POST.get('sbom_start', db_obj.SBOM_START)
-        db_obj.SBOM_END = request.POST.get('sbom_end', db_obj.SBOM_END)
-        db_obj.DEPENDENCY_START = request.POST.get('dependency_start',
-                                                   db_obj.DEPENDENCY_START)
-        db_obj.DEPENDENCY_END = request.POST.get('dependency_end',
-                                                 db_obj.DEPENDENCY_END)
-        db_obj.NOTIFICATION_START = request.POST.get('notification_start',
-                                                     db_obj.NOTIFICATION_START)
-        db_obj.NOTIFICATION_END = request.POST.get('notification_end',
-                                                   db_obj.NOTIFICATION_END)
-        db_obj.SUCCESS = request.POST.get('success', db_obj.SUCCESS)
-        db_obj.FAILURE_SOURCE = request.POST.get('failure_source',
-                                                 db_obj.FAILURE_SOURCE)
-        db_obj.FAILURE_MESSAGE = request.POST.get('failure_message',
-                                                  db_obj.FAILURE_MESSAGE)
-        db_obj.FILE_SIZE_PACKAGE = request.POST.get('file_size_package',
-                                                    db_obj.FILE_SIZE_PACKAGE)
-        db_obj.FILE_SIZE_SOURCE = request.POST.get('file_size_source',
-                                                   db_obj.FILE_SIZE_SOURCE)
-        db_obj.DEPENDENCY_TYPES = request.POST.get('dependency_types',
-                                                   db_obj.DEPENDENCY_TYPES)
-        db_obj.save()
-        return model_to_dict(db_obj)
-    else:
-        new_db_obj = CyberspectScans(
-            INTAKE_START=request.POST['intake_start'],
-            SCHEDULED=request.POST['scheduled'])
-        new_db_obj.save()
-        return model_to_dict(new_db_obj)
+    try:
+        csid = request.POST.get('id', -1)
+        db_obj = CyberspectScans.objects.filter(ID=csid).first()
+        if db_obj:
+            db_obj.MOBSF_MD5 = request.POST.get('mobsf_md5', db_obj.MOBSF_MD5)
+            db_obj.DT_PROJECT_ID = request.POST.get(
+                'dt_project_id', db_obj.DT_PROJECT_ID)
+            db_obj.INTAKE_START = request.POST.get(
+                'intake_end', db_obj.INTAKE_START)
+            db_obj.SAST_START = request.POST.get(
+                'sast_start', db_obj.SAST_START)
+            db_obj.SAST_END = request.POST.get('sast_end', db_obj.SAST_END)
+            db_obj.SBOM_START = request.POST.get(
+                'sbom_start', db_obj.SBOM_START)
+            db_obj.SBOM_END = request.POST.get('sbom_end', db_obj.SBOM_END)
+            db_obj.DEPENDENCY_START = request.POST.get(
+                'dependency_start', db_obj.DEPENDENCY_START)
+            db_obj.DEPENDENCY_END = request.POST.get(
+                'dependency_end', db_obj.DEPENDENCY_END)
+            db_obj.NOTIFICATION_START = request.POST.get(
+                'notification_start', db_obj.NOTIFICATION_START)
+            db_obj.NOTIFICATION_END = request.POST.get(
+                'notification_end', db_obj.NOTIFICATION_END)
+            db_obj.SUCCESS = request.POST.get('success', db_obj.SUCCESS)
+            db_obj.FAILURE_SOURCE = request.POST.get(
+                'failure_source', db_obj.FAILURE_SOURCE)
+            db_obj.FAILURE_MESSAGE = request.POST.get(
+                'failure_message', db_obj.FAILURE_MESSAGE)
+            db_obj.FILE_SIZE_PACKAGE = request.POST.get(
+                'file_size_package', db_obj.FILE_SIZE_PACKAGE)
+            db_obj.FILE_SIZE_SOURCE = request.POST.get(
+                'file_size_source', db_obj.FILE_SIZE_SOURCE)
+            db_obj.DEPENDENCY_TYPES = request.POST.get(
+                'dependency_types', db_obj.DEPENDENCY_TYPES)
+            db_obj.save()
+            return model_to_dict(db_obj)
+        else:
+            new_db_obj = CyberspectScans(
+                SCHEDULED=request.POST.get('scheduled', False))
+            new_db_obj.save()
+            return model_to_dict(new_db_obj)
+    except Exception as ex:
+        msg = getattr(ex, 'message', repr(ex))
+        logger.error(msg)
+        response_data = {
+            'description': '',
+            'status': 'error',
+        }
+        response_data['description'] = msg
+        return HttpResponse(json.dumps(response_data),
+                            content_type='application/json; charset=utf-8')
 
 
 def logout_aws(request):
