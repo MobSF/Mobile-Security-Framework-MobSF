@@ -29,6 +29,7 @@ from mobsf.MobSF.utils import (
     is_dir_exists,
     is_file_exists,
     is_safe_path,
+    key,
     req,
     sso_email,
 )
@@ -45,12 +46,7 @@ from mobsf.StaticAnalyzer.models import (
 LINUX_PLATFORM = ['Darwin', 'Linux']
 HTTP_BAD_REQUEST = 400
 logger = logging.getLogger(__name__)
-
-
-@register.filter
-def key(d, key_name):
-    """To get dict element by key name in template."""
-    return d.get(key_name)
+register.filter('key', key)
 
 
 def index(request):

@@ -6,8 +6,12 @@ import os
 from plistlib import (
     dumps,
     load,
+    loads,
 )
+from pathlib import Path
 from re import sub
+
+from openstep_parser import OpenStepDecoder
 
 from biplist import (
     InvalidPlistException,
@@ -15,7 +19,10 @@ from biplist import (
     writePlistToString,
 )
 
-from mobsf.MobSF.utils import is_file_exists
+from mobsf.MobSF.utils import (
+    find_key_in_dict,
+    is_file_exists,
+)
 from mobsf.StaticAnalyzer.views.ios.permission_analysis import (
     check_permissions,
 )
@@ -27,6 +34,62 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
 )
 
 logger = logging.getLogger(__name__)
+SKIP_PATH = {'__MACOSX', 'Pods'}
+
+
+def get_bundle_id(pobj, src):
+    """Get iOS Bundle ID from source.
+
+    Look up in Info.plist, entitlements, pbxproj
+    """
+    possible_ids = set()
+    skip_chars = {'$(', '${'}
+
+    # From old Info.plist
+    bundle_id_og = pobj.get('CFBundleIdentifier', '')
+    if not any(tmpl in bundle_id_og for tmpl in skip_chars):
+        possible_ids.add(bundle_id_og)
+
+    # Look in entitlements, only present in newer iOS source
+    path = Path(src)
+    for p in path.rglob('*.entitlements'):
+        if any(x in p.resolve().as_posix() for x in SKIP_PATH):
+            continue
+        try:
+            ent = loads(p.read_bytes())
+            groups = ent.get('com.apple.security.application-groups')
+            if not groups:
+                continue
+            for i in groups:
+                t = i.replace('.group', '').replace('group.', '')
+                possible_ids.add(t.strip())
+        except Exception:
+            logger.warning('Error in parsing .entitlements')
+
+    # Look in project.pbxproj
+    for p in path.rglob('*.pbxproj'):
+        if any(x in p.resolve().as_posix() for x in SKIP_PATH):
+            continue
+        try:
+            search = 'PRODUCT_BUNDLE_IDENTIFIER'
+            parsed = OpenStepDecoder.ParseFromString(p.read_text())
+            if not parsed:
+                continue
+            for i in find_key_in_dict(search, parsed):
+                if i.startswith(skip_chars):
+                    continue
+                for spl in skip_chars:
+                    tc = f'.{spl}'
+                    if tc in i:
+                        i = i.split(tc)[0]
+                possible_ids.add(i)
+        except Exception:
+            logger.warning('Error in parsing .pbxproj')
+    if possible_ids:
+        possible_ids = filter(None, possible_ids)
+        # Fuzzy logic: return the shortest bundle id string
+        return min(possible_ids, key=len)
+    return ''
 
 
 def convert_bin_xml(bin_xml_file):
@@ -67,10 +130,12 @@ def plist_analysis(src, is_source):
             logger.info('Finding Info.plist in iOS Source')
             for dirpath, _dirnames, files in os.walk(src):
                 for name in files:
-                    if (not any(x in dirpath for x in ['__MACOSX', 'Pods'])
+                    if (not any(x in dirpath for x in SKIP_PATH)
                             and name.endswith('.plist')):
                         plist_files.append(os.path.join(dirpath, name))
-                        if name == 'Info.plist':
+                        if name == 'GoogleService-Info.plist':
+                            continue
+                        if name == 'Info.plist' or '-Info.plist' in name:
                             plist_file = os.path.join(dirpath, name)
         else:
             logger.info('Finding Info.plist in iOS Binary')
@@ -83,7 +148,6 @@ def plist_analysis(src, is_source):
             bin_dir = os.path.join(src, dot_app_dir)  # Full Dir/Payload/x.app
             plist_file = os.path.join(bin_dir, 'Info.plist')
             plist_files = [plist_file]
-
         # Skip Plist Analysis if there is no Info.plist
         if not plist_file or not is_file_exists(plist_file):
             logger.warning(
@@ -102,7 +166,7 @@ def plist_analysis(src, is_source):
             # For iOS IPA
             plist_info['bin_name'] = dot_app_dir.replace('.app', '')
         plist_info['bin'] = plist_obj.get('CFBundleExecutable', '')
-        plist_info['id'] = plist_obj.get('CFBundleIdentifier', '')
+        plist_info['id'] = get_bundle_id(plist_obj, src)
         plist_info['build'] = plist_obj.get('CFBundleVersion', '')
         plist_info['sdk'] = plist_obj.get('DTSDKName', '')
         plist_info['pltfm'] = plist_obj.get('DTPlatformVersion', '')

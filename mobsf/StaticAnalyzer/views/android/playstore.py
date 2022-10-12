@@ -24,6 +24,8 @@ def get_app_details(package_id):
         description = BeautifulSoup(det['description'], features='lxml')
         det['description'] = description.get_text()
         det['error'] = False
+        if 'androidVersionText' not in det:
+            det['androidVersionText'] = ''
     except Exception:
         det = app_search(package_id)
     return det

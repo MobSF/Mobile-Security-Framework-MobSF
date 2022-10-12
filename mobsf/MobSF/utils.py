@@ -604,6 +604,42 @@ def enable_print():
     sys.stdout = sys.__stdout__
 
 
+def find_key_in_dict(key, var):
+    """Recursively look up a key in a nested dict."""
+    if hasattr(var, 'items'):
+        for k, v in var.items():
+            if k == key:
+                yield v
+            if isinstance(v, dict):
+                for result in find_key_in_dict(key, v):
+                    yield result
+            elif isinstance(v, list):
+                for d in v:
+                    for result in find_key_in_dict(key, d):
+                        yield result
+
+
+def key(data, key_name):
+    """Return the data for a key_name."""
+    return data.get(key_name)
+
+
+def android_component(data):
+    """Return Android component from data."""
+    cmp = ''
+    if 'Activity-Alias' in data:
+        cmp = 'activity_alias_'
+    elif 'Activity' in data:
+        cmp = 'activity_'
+    elif 'Service' in data:
+        cmp = 'service_'
+    elif 'Content Provider' in data:
+        cmp = 'provider_'
+    elif 'Broadcast Receiver' in data:
+        cmp = 'receiver_'
+    return cmp
+
+
 def is_admin(request):
     if (not settings.ADMIN_USERS):
         return False

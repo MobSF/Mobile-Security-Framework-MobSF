@@ -149,7 +149,7 @@ DATABASES = {
 # End Postgres support
 """
 # ===============================================
-
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 DEBUG = False
 DJANGO_LOG_LEVEL = DEBUG
 ALLOWED_HOSTS = ['127.0.0.1', 'mobsf', '*']

@@ -7,6 +7,10 @@ from django.db.models import QuerySet
 from mobsf.MobSF.utils import python_dict, python_list
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.StaticAnalyzer.models import RecentScansDB
+from mobsf.StaticAnalyzer.views.common.suppression import (
+    process_suppression,
+    process_suppression_manifest,
+)
 
 """Module holding the functions for the db."""
 
@@ -18,6 +22,13 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
     """Return the context for APK/ZIP from DB."""
     try:
         logger.info('Analysis is already Done. Fetching data from the DB...')
+        package = db_entry[0].PACKAGE_NAME
+        code = process_suppression(
+            python_dict(db_entry[0].CODE_ANALYSIS),
+            package)
+        manifest_analysis = process_suppression_manifest(
+            python_list(db_entry[0].MANIFEST_ANALYSIS),
+            package)
         context = {
             'version': settings.MOBSF_VER,
             'title': 'Static Analysis',
@@ -28,7 +39,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'md5': db_entry[0].MD5,
             'sha1': db_entry[0].SHA1,
             'sha256': db_entry[0].SHA256,
-            'package_name': db_entry[0].PACKAGE_NAME,
+            'package_name': package,
             'main_activity': db_entry[0].MAIN_ACTIVITY,
             'exported_activities': db_entry[0].EXPORTED_ACTIVITIES,
             'browsable_activities': python_dict(
@@ -48,12 +59,12 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'permissions': python_dict(db_entry[0].PERMISSIONS),
             'certificate_analysis': python_dict(
                 db_entry[0].CERTIFICATE_ANALYSIS),
-            'manifest_analysis': python_list(db_entry[0].MANIFEST_ANALYSIS),
+            'manifest_analysis': manifest_analysis,
             'network_security': python_list(db_entry[0].NETWORK_SECURITY),
             'binary_analysis': python_list(db_entry[0].BINARY_ANALYSIS),
             'file_analysis': python_list(db_entry[0].FILE_ANALYSIS),
             'android_api': python_dict(db_entry[0].ANDROID_API),
-            'code_analysis': python_dict(db_entry[0].CODE_ANALYSIS),
+            'code_analysis': code,
             'niap_analysis': python_dict(db_entry[0].NIAP_ANALYSIS),
             'urls': python_list(db_entry[0].URLS),
             'domains': python_dict(db_entry[0].DOMAINS),
@@ -84,6 +95,13 @@ def get_context_from_analysis(app_dic,
                               trackers) -> dict:
     """Get the context for APK/ZIP from analysis results."""
     try:
+        package = man_data_dic['packagename']
+        code = process_suppression(
+            code_an_dic['findings'],
+            package)
+        manifest_analysis = process_suppression_manifest(
+            man_an_dic['manifest_anal'],
+            package)
         context = {
             'title': 'Static Analysis',
             'version': settings.MOBSF_VER,
@@ -94,7 +112,7 @@ def get_context_from_analysis(app_dic,
             'md5': app_dic['md5'],
             'sha1': app_dic['sha1'],
             'sha256': app_dic['sha256'],
-            'package_name': man_data_dic['packagename'],
+            'package_name': package,
             'main_activity': man_data_dic['mainactivity'],
             'exported_activities': man_an_dic['exported_act'],
             'browsable_activities': man_an_dic['browsable_activities'],
@@ -112,12 +130,12 @@ def get_context_from_analysis(app_dic,
             'icon_found': app_dic['icon_found'],
             'certificate_analysis': cert_dic,
             'permissions': man_an_dic['permissions'],
-            'manifest_analysis': man_an_dic['manifest_anal'],
+            'manifest_analysis': manifest_analysis,
             'network_security': man_an_dic['network_security'],
             'binary_analysis': bin_anal,
             'file_analysis': app_dic['certz'],
             'android_api': code_an_dic['api'],
-            'code_analysis': code_an_dic['findings'],
+            'code_analysis': code,
             'niap_analysis': code_an_dic['niap'],
             'urls': code_an_dic['urls'],
             'domains': code_an_dic['domains'],

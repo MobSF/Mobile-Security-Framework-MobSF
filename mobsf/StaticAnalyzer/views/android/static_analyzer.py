@@ -19,10 +19,12 @@ from django.shortcuts import render
 from django.template.defaulttags import register
 
 from mobsf.MobSF.utils import (
+    android_component,
     error_response,
     file_size,
     is_dir_exists,
     is_file_exists,
+    key,
 )
 from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
@@ -45,7 +47,7 @@ from mobsf.StaticAnalyzer.views.android.db_interaction import (
 )
 from mobsf.StaticAnalyzer.views.android.icon_analysis import (
     find_icon_path_zip,
-    get_icon,
+    get_icon_apk,
 )
 from mobsf.StaticAnalyzer.views.android.manifest_analysis import (
     get_manifest,
@@ -74,12 +76,8 @@ from androguard.core.bytecodes import apk
 
 logger = logging.getLogger(__name__)
 logging.getLogger('androguard').setLevel(logging.ERROR)
-
-
-@register.filter
-def key(data, key_name):
-    """Return the data for a key_name."""
-    return data.get(key_name)
+register.filter('key', key)
+register.filter('android_component', android_component)
 
 
 def static_analyzer(request, api=False):
@@ -179,21 +177,8 @@ def static_analyzer(request, api=False):
                     )
 
                     # Get icon
-                    res_path = os.path.join(app_dic['app_dir'], 'res')
-                    app_dic['icon_hidden'] = True
-                    # Even if the icon is hidden, try to guess it by the
-                    # default paths
-                    app_dic['icon_found'] = False
-                    app_dic['icon_path'] = ''
-                    # TODO: Check for possible different names for resource
-                    # folder?
-                    if os.path.exists(res_path):
-                        icon_dic = get_icon(
-                            app_dic['app_path'], res_path)
-                        if icon_dic:
-                            app_dic['icon_hidden'] = icon_dic['hidden']
-                            app_dic['icon_found'] = bool(icon_dic['path'])
-                            app_dic['icon_path'] = icon_dic['path']
+                    # apktool should run before this
+                    get_icon_apk(app_dic)
 
                     # Set Manifest link
                     app_dic['mani'] = ('../manifest_view/?md5='

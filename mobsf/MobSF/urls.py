@@ -16,6 +16,7 @@ from mobsf.StaticAnalyzer.views.common import (
     appsec,
     pdf,
     shared_func,
+    suppression,
 )
 from mobsf.StaticAnalyzer.views.android import (
     find,
@@ -47,6 +48,11 @@ urlpatterns = [
     re_path(r'^api/v1/scans$', api_sz.api_recent_scans),
     re_path(r'^api/v1/compare$', api_sz.api_compare),
     re_path(r'^api/v1/scorecard$', api_sz.api_scorecard),
+    # Static Suppression
+    re_path(r'^api/v1/suppress_by_rule$', api_sz.api_suppress_by_rule_id),
+    re_path(r'^api/v1/suppress_by_files$', api_sz.api_suppress_by_files),
+    re_path(r'^api/v1/list_suppressions$', api_sz.api_list_suppressions),
+    re_path(r'^api/v1/delete_suppression$', api_sz.api_delete_suppression),
     re_path(r'^api/v1/cyberspect_scans$', api_sz.api_cyberspect_recent_scans),
     re_path(r'^api/v1/update_cyberspect_scan$',
             api_sz.api_update_cyberspect_scans),
@@ -111,6 +117,19 @@ if settings.API_ONLY == '0':
         re_path(r'^appsec_dashboard/(?P<checksum>[0-9a-f]{32})/$',
                 appsec.appsec_dashboard,
                 name='appsec_dashboard'),
+        # Suppression
+        re_path(r'^suppress_by_rule/$',
+                suppression.suppress_by_rule_id,
+                name='suppress_by_rule'),
+        re_path(r'^suppress_by_files/$',
+                suppression.suppress_by_files,
+                name='suppress_by_files'),
+        re_path(r'^list_suppressions/$',
+                suppression.list_suppressions,
+                name='list_suppressions'),
+        re_path(r'^delete_suppression/$',
+                suppression.delete_suppression,
+                name='delete_suppression'),
         # App Compare
         re_path(r'^compare/(?P<hash1>[0-9a-f]{32})/(?P<hash2>[0-9a-f]{32})/$',
                 shared_func.compare_apps),

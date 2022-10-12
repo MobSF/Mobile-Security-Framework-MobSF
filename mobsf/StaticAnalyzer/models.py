@@ -131,6 +131,13 @@ class StaticAnalyzerWindows(models.Model):
     BINARY_WARNINGS = models.TextField(default=[])
 
 
+class SuppressFindings(models.Model):
+    PACKAGE_NAME = models.CharField(max_length=260, default='')
+    SUPPRESS_RULE_ID = models.TextField(default=[])
+    SUPPRESS_FILES = models.TextField(default={})
+    SUPPRESS_TYPE = models.TextField(default='')
+
+
 class CyberspectScans(models.Model):
     ID = models.BigAutoField(primary_key=True)
     MOBSF_MD5 = models.CharField(max_length=32, null=True)

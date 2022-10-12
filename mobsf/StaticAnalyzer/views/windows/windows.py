@@ -362,7 +362,7 @@ def parse_binskim_sarif(bin_an_dic, output):
             bin_an_dic['results'].append(result)
     else:
         logger.warning('binskim has no results.')
-        # Create a warning for the gui
+        # Create an warning for the gui
         warning = {
             'rule_id': 'No Binskim-Results',
             'status': 'Info',
@@ -402,7 +402,7 @@ def parse_binskim_old(bin_an_dic, output):
             bin_an_dic['results'].append(result)
     else:
         logger.warning('binskim has no results.')
-        # Create a warning for the gui
+        # Create an warning for the gui
         warning = {
             'rule_id': 'No Binskim-Results',
             'status': 'Info',
