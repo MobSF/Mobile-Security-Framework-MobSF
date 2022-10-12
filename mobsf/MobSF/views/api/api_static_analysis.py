@@ -249,8 +249,11 @@ def api_cyberspect_recent_scans(request):
 @csrf_exempt
 def api_update_cyberspect_scans(request):
     """POST - Update a record in CyberspectScans."""
-    scan = update_cyberspect_scan(request)
-    if scan:
-        return make_api_response(scan, 200)
+    resp = update_cyberspect_scan(request)
+    if resp:
+        if 'error' in resp:
+            return make_api_response(resp, 500)
+        else:
+            return make_api_response(resp, 200)
     else:
         return make_api_response({'id': request.POST['id']}, 404)

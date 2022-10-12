@@ -29,6 +29,7 @@ from mobsf.MobSF.utils import (
     is_dir_exists,
     is_file_exists,
     is_safe_path,
+    req,
     sso_email,
 )
 from mobsf.MobSF.views.scanning import Scanning
@@ -329,9 +330,9 @@ def update_scan(request):
     """Update scan record."""
     db_obj = RecentScansDB.objects.filter(MD5=request.POST['hash']).first()
     if db_obj:
-        if request.POST['email']:
+        if 'email' in request.POST:
             db_obj.EMAIL = request.POST['email']
-        if request.POST['release']:
+        if 'release' in request.POST:
             db_obj.RELEASE = request.POST['release']
         db_obj.save()
         return model_to_dict(db_obj)
@@ -344,39 +345,34 @@ def update_cyberspect_scan(request):
         csid = request.POST.get('id', -1)
         db_obj = CyberspectScans.objects.filter(ID=csid).first()
         if db_obj:
-            db_obj.MOBSF_MD5 = request.POST.get('mobsf_md5', db_obj.MOBSF_MD5)
-            if (request.POST['dt_project_id']):
-                db_obj.DT_PROJECT_ID = request.POST['dt_project_id']
-            if (request.POST['intake_end']):
-                db_obj.INTAKE_END = request.POST['intake_end']
-            if (request.POST['sast_start']):
-                db_obj.SAST_START = request.POST['sast_start']
-            if (request.POST['sast_end']):
-                db_obj.SAST_END = request.POST['sast_end']
-            if (request.POST['sbom_start']):
-                db_obj.SBOM_START = request.POST['sbom_start']
-            if (request.POST['sbom_end']):
-                db_obj.SBOM_END = request.POST['sbom_end']
-            if (request.POST['dependency_start']):
-                db_obj.DEPENDENCY_START = request.POST['dependency_start']
-            if (request.POST['dependency_end']):
-                db_obj.DEPENDENCY_END = request.POST['dependency_end']
-            if (request.POST['notification_start']):
-                db_obj.NOTIFICATION_START = request.POST['notification_start']
-            if (request.POST['notification_end']):
-                db_obj.NOTIFICATION_END = request.POST['notification_end']
-            if (request.POST['success']):
-                db_obj.SUCCESS = request.POST['success']
-            if (request.POST['failure_source']):
-                db_obj.FAILURE_SOURCE = request.POST['failure_source']
-            if (request.POST['failure_message']):
-                db_obj.FAILURE_MESSAGE = request.POST['failure_message']
-            if (request.POST['file_size_package']):
-                db_obj.FILE_SIZE_PACKAGE = request.POST['file_size_package']
-            if (request.POST['file_size_source']):
-                db_obj.FILE_SIZE_SOURCE = request.POST['file_size_source']
-            if (request.POST['dependency_types']):
-                db_obj.DEPENDENCY_TYPES = request.POST['dependency_types']
+            db_obj.MOBSF_MD5 = req(request, 'mobsf_md5', db_obj.MOBSF_MD5)
+            db_obj.DT_PROJECT_ID = req(request, 'dt_project_id',
+                                       db_obj.DT_PROJECT_ID)
+            db_obj.INTAKE_END = req(request, 'intake_end',
+                                    db_obj.INTAKE_END)
+            db_obj.SAST_START = req(request, 'sast_start', db_obj.SAST_START)
+            db_obj.SAST_END = req(request, 'sast_end', db_obj.SAST_END)
+            db_obj.SBOM_START = req(request, 'sbom_start', db_obj.SBOM_START)
+            db_obj.SBOM_END = req(request, 'sbom_end', db_obj.SBOM_END)
+            db_obj.DEPENDENCY_START = req(request, 'dependency_start',
+                                          db_obj.DEPENDENCY_START)
+            db_obj.DEPENDENCY_END = req(request, 'dependency_end',
+                                        db_obj.DEPENDENCY_END)
+            db_obj.NOTIFICATION_START = req(request, 'notification_start',
+                                            db_obj.NOTIFICATION_START)
+            db_obj.NOTIFICATION_END = req(request, 'notification_end',
+                                          db_obj.NOTIFICATION_END)
+            db_obj.SUCCESS = req(request, 'success', db_obj.SUCCESS)
+            db_obj.FAILURE_SOURCE = req(request, 'failure_source',
+                                        db_obj.FAILURE_SOURCE)
+            db_obj.FAILURE_MESSAGE = req(request, 'failure_message',
+                                         db_obj.FAILURE_MESSAGE)
+            db_obj.FILE_SIZE_PACKAGE = req(request, 'file_size_package',
+                                           db_obj.FILE_SIZE_PACKAGE)
+            db_obj.FILE_SIZE_SOURCE = req(request, 'file_size_source',
+                                          db_obj.FILE_SIZE_SOURCE)
+            db_obj.DEPENDENCY_TYPES = req(request, 'dependency_types',
+                                          db_obj.DEPENDENCY_TYPES)
             db_obj.save()
             return model_to_dict(db_obj)
         else:
@@ -386,14 +382,8 @@ def update_cyberspect_scan(request):
             return model_to_dict(new_db_obj)
     except Exception as ex:
         msg = getattr(ex, 'message', repr(ex))
-        logger.error(msg)
-        response_data = {
-            'description': '',
-            'status': 'error',
-        }
-        response_data['description'] = str(msg)
-        return HttpResponse(json.dumps(response_data),
-                            content_type='application/json; charset=utf-8')
+        logger.error(msg, stack_info=True)
+        return {'error': str(ex)}
 
 
 def logout_aws(request):
