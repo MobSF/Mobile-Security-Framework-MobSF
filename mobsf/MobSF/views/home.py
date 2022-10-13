@@ -322,19 +322,6 @@ def scan_metadata(md5):
     return None
 
 
-def update_scan(request):
-    """Update scan record."""
-    db_obj = RecentScansDB.objects.filter(MD5=request.POST['hash']).first()
-    if db_obj:
-        if 'email' in request.POST:
-            db_obj.EMAIL = request.POST['email']
-        if 'release' in request.POST:
-            db_obj.RELEASE = request.POST['release']
-        db_obj.save()
-        return model_to_dict(db_obj)
-    return None
-
-
 def update_cyberspect_scan(request):
     """Update Cyberspect scan record."""
     try:

@@ -6,8 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from mobsf.MobSF.views.helpers import request_method
 from mobsf.MobSF.views.home import (RecentScans, Upload, delete_scan,
-                                    scan_metadata, update_cyberspect_scan,
-                                    update_scan)
+                                    scan_metadata, update_cyberspect_scan)
 from mobsf.MobSF.views.api.api_middleware import make_api_response
 from mobsf.StaticAnalyzer.views.android import view_source
 from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
@@ -94,20 +93,6 @@ def api_scan(request):
         else:
             response = make_api_response(resp, 200)
     return response
-
-
-@request_method(['POST'])
-@csrf_exempt
-def api_update_scan(request):
-    """POST - Update a Scan."""
-    if 'hash' not in request.POST:
-        return make_api_response(
-            {'error': 'Missing Parameters'}, 422)
-    scan = update_scan(request)
-    if scan:
-        return make_api_response(scan, 200)
-    else:
-        return make_api_response({'hash': request.POST['hash']}, 404)
 
 
 @request_method(['POST'])

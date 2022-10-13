@@ -212,7 +212,7 @@ def get_android_dashboard(context, from_ctx=False):
         })
     # Manifest Analysis
     for m in data['manifest_analysis']:
-        if m['severity'] == 'info':
+        if ('severity' not in m or m['severity'] == 'info'):
             continue
         title = m['title'].replace('<strong>', '')
         title = title.replace('</strong>', '')
