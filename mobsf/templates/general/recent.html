@@ -53,19 +53,24 @@
                     <tbody>
                     {% for e in entries %}
                         <tr>
-                            <td align="center">
+                            <td style="text-align: center;">
                                 <img id="app_icon" src="/download/{{ e.MD5 }}-icon.png" onerror="this.src='{% static 'img/no_icon.png' %}'">
                                 {% if e.PACKAGE_NAME %}
                                   <br/><strong>{{ e.APP_NAME }} {% if e.VERSION_NAME %} - {{ e.VERSION_NAME }} {% endif %}</strong>
                                   </br>{{ e.PACKAGE_NAME }}
-                                  <p> <a href="../appsec_dashboard/{{ e.MD5 }}/" class="btn btn-link btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
+                                  <p> <a href="../appsec_dashboard/{{ e.MD5 }}/" class="btn btn-sm btn-outline-primary" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
+                                  <p><a class="btn btn-primary btn-sm" href="../{{ e.ANALYZER }}/?name={{e.FILE_NAME}}&amp;checksum={{e.MD5}}&amp;type={{e.SCAN_TYPE}}"><i class="fas fa-eye"></i> Static Report</a>
+                                  {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:"%}
+                                    <a  class="btn btn-success btn-sm {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="../dynamic_report/{{ e.MD5  }}"><i class="fa fa-mobile"></i> Dynamic Report</a>
+                                  {% endif %}
+                                  </p>
                                 {% else %}
                                 </br><span class="badge bg-warning">scan not completed</span>
                                 {% endif %}
                             </td>
                             <td>{{ e.FILE_NAME }}
                             </td>
-                            <td align="center">
+                            <td style="text-align: center;">
                                 {% if '.apk' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-android fa-3x"></i>
                                 {% elif '.xapk' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-android fa-3x"></i>
                                 {% elif '.apks' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-android fa-3x"></i>
@@ -76,14 +81,12 @@
                             </td>
                             <td>{{ e.MD5 }}</td>
                             <td>{{ e.TIMESTAMP }}</td>
-                            <td><p><a class="btn btn-primary btn-sm" href="../{{ e.ANALYZER }}/?name={{e.FILE_NAME}}&amp;checksum={{e.MD5}}&amp;type={{e.SCAN_TYPE}}"><i class="fas fa-eye"></i> Static Report</a>
-                                </p><p>
+                            <td><p>
                                    <a class="btn btn-outline-primary btn-sm" href="../pdf/?md5={{ e.MD5 }}"><i class="fas fa-file-pdf"></i></a>
                                    <a class="btn btn-outline-info btn-sm" href="../{{ e.ANALYZER }}/?name={{e.FILE_NAME}}&amp;checksum={{e.MD5}}&amp;type={{e.SCAN_TYPE}}&amp;rescan=1"><i class="fas fa-sync-alt"></i></a>
                                 </p>
                             {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:"%}
-                                <p><a  class="btn btn-success btn-sm {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="../dynamic_report/{{ e.MD5  }}"><i class="fa fa-mobile"></i> Dynamic Report</a>
-                                </p><p><a class="diffButton btn btn-warning btn-sm" id="{{ e.MD5 }}_{{ e.FILE_NAME }}"><i class="fas fa-not-equal"></i> Diff or Compare</a>
+                                <p><a class="diffButton btn btn-warning btn-sm" id="{{ e.MD5 }}_{{ e.FILE_NAME }}"><i class="fas fa-not-equal"></i> Diff or Compare</a>
                                 </p>
                             {% endif %}
                             <p> <a class="btn btn-danger btn-sm" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="#"><i class="fa fa-trash"></i> Delete Scan</a> </p>
