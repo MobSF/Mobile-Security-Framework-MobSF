@@ -314,7 +314,7 @@
                document.querySelector("#drop").style.opacity = 0;
                document.querySelector("#textnode").style.fontSize = "42px";
                if(e.dataTransfer.files.length > 0) {
-                if (document.location.host == 'mobsf.live'){
+                if (document.location.host === 'mobsf.live'){
                     if (confirm(warning) == true) {
                         handleFiles(e.dataTransfer.files);
                     } else {
@@ -334,7 +334,7 @@
                         return;
                     }
                     var files = _("uploadFile").files;
-                    if (document.location.host == 'mobsf.live'){
+                    if (document.location.host === 'mobsf.live'){
                         if (confirm(warning) == true) {
                             _("uploadFile").style.display = "none";
                             handleFiles(files);
