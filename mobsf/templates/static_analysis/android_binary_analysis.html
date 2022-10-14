@@ -619,21 +619,22 @@
 <section class="content">
       <div class="container-fluid">
         <div class="row">
-            <!--<div class="col-lg-4">
-            <div class="card">
-              <div class="card-body">
-                <p>
-                <strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong>
-                </p>
-                <p> <a href="../static_analyzer/?checksum={{ md5 }}&amp;name={{ file_name }}&amp;type=apk&amp;rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
-                  <a id="supbtn" onclick="list_suppressions()" role="button" class="btn btn-primary" data-target="#sup_list" data-toggle="modal" href="#"><i class="fa fa-list"></i> Manage Suppressions</a>
-                </p>
-                <p>
-                  <a onclick="dynamic_loader()" href="../android_dynamic/{{md5}}" class="btn btn-success" role="button"><i class="fa fa-play-circle"></i> Start Dynamic Analysis</a>
-                </p>
+            <div class="col-lg-4">
+              <div class="card">
+                <div class="card-body">
+                  <p>
+                  <strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong>
+                  </p>
+                  <p>
+                    <!--<a href="../static_analyzer/?checksum={{ md5 }}&amp;name={{ file_name }}&amp;type=apk&amp;rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>-->
+                    <a id="supbtn" onclick="list_suppressions()" role="button" class="btn btn-primary" data-target="#sup_list" data-toggle="modal" href="#"><i class="fa fa-list"></i> Manage Suppressions</a>
+                  </p>
+                  <!--<p>
+                    <a onclick="dynamic_loader()" href="../android_dynamic/{{md5}}" class="btn btn-success" role="button"><i class="fa fa-play-circle"></i> Start Dynamic Analysis</a>
+                  </p>-->
+                </div>
               </div>
             </div>
-            </div>-->
             <div class="col-lg-8">
               <div class="card">
                 <div class="card-body">
@@ -997,7 +998,7 @@
                             </a>
       
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                              <a style="cursor:pointer;" class="dropdown-item" onclick="suppress('{{ item|key:"title" | android_component}}{{item|key:'rule' | escapejs }}', false, $(this.closest('tr')), true)">Suppression the rule <b>{{ item|key:"title" | android_component}}{{ item|key:'rule' }}</b> in <b>{{package_name}}</b></a>
+                              <a style="cursor:pointer;" class="dropdown-item" onclick="suppress('{{ item|key:"title" | android_component}}{{item|key:'rule' | escapejs }}', false, $(this.closest('tr')), true)">Suppress the rule <b>{{ item|key:"title" | android_component}}{{ item|key:'rule' }}</b> in <b>{{package_name}}</b></a>
                             </div>
                           </div>
                         </td>
