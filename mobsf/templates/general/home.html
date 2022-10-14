@@ -17,30 +17,47 @@
       <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
    </head>
    <body>
-   <div class="topnav">
-        <!-- Centered link -->
-        <div class="topnav-centered">
-            <a>
-               <img src="{% static "img/mobsf_logo.png" %}" width="20%" height="20%"/>
-           </a>
-           </div>
-           <!-- Left-aligned links (default) -->
-           <a href="{% url 'recent' %}">RECENT SCANS</a>
-           <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>
-   
-           <!-- Right-aligned links -->
-           <div class="topnav-right">
-               <a href="{% url 'api_docs' %}">API DOCS</a>
-               <a href="{% url 'about' %}">ABOUT</a>
-               <a>
-                <form action="/search" method="GET">
-                    <input name="md5" type="text" class="form-control" placeholder="Search MD5">
-                 </form>
-                </a>
-           </div>
 
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a  class="navbar-brand abs">
+                <img src="{% static "img/mobsf_logo.png" %}" width="20%" height="20%"/>
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsingNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="navbar-collapse collapse" id="collapsingNavbar">
+                <ul class="navbar-nav">
+                    <li class="nav-item active">
+                        <a data-toggle="collapse" class="nav-link" href="{% url 'recent' %}">RECENT</a>
+                    </li>
+                    <li class="nav-item">
+                        <a data-toggle="collapse" class="nav-link" href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>
+                    </li>
+                    <li class="nav-item">
+                        <a data-toggle="collapse" class="nav-link" href="{% url 'api_docs' %}">REST API</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" target="_blank" href="https://mobsf.github.io/docs/#/">DOCS</a>
+                    </li>
+                    <li class="nav-item">
+                        <a  class="nav-link" href="{% url 'about' %}">ABOUT</a>
+                    </li>
+                    <li class="nav-item">
+                        <a>
+                        <form action="/search" method="GET">
+                            <input name="md5" type="text" class="form-control" placeholder="Search MD5">
+                        </form>
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
-      <div class="site-wrapper">
+    </nav>
+
+    <div class="site-wrapper">
          <div class="site-wrapper-inner">
             <div class="cover-container">
                <div class="masthead clearfix">
@@ -71,7 +88,8 @@
 
 
                   <div class="inner">
-                     <h6> <a href="{% url 'recent' %}">RECENT SCANS</a>  |  <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>  |  <a href="{% url 'api_docs' %}">API DOCS</a>   |  <a href="https://opensecurity.in/donate">DONATE ♥</a> | <a href="{% url 'about' %}">ABOUT</a></h6>
+                     <h6> <a href="{% url 'recent' %}">RECENT SCANS</a>  |  <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>  |  <a href="{% url 'api_docs' %}">REST API</a>   |  <a href="{% url 'donate' %}">DONATE ♥</a> |  <a target="_blank"
+                         href="https://mobsf.github.io/docs/#/">DOCS</a>  | <a href="{% url 'about' %}">ABOUT</a></h6>
                      </br>
                      <p>&copy; {% now "Y" %}  Mobile Security Framework - MobSF {{ version }}</p>
                   </div>
@@ -88,8 +106,10 @@
 
         <script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
         <script src="{% static "others/js/notify.min.js" %}"></script>
+        <!-- Bootstrap 4 -->
+        <script src="{% static "adminlte/plugins/bootstrap/bootstrap.bundle.min.js" %}"></script>
       <script>
-     
+            let warning = "This is a demo MobSF instance. Anything uploaded here will be publicly available. Do you want to continue?";
             // Result View
             function load_result(url){
                 hide_loader();
@@ -293,9 +313,16 @@
                document.querySelector("#drop").style.visibility = "hidden";
                document.querySelector("#drop").style.opacity = 0;
                document.querySelector("#textnode").style.fontSize = "42px";
-               if(e.dataTransfer.files.length > 0)
-               {
-               handleFiles(e.dataTransfer.files);
+               if(e.dataTransfer.files.length > 0) {
+                if (document.location.host === 'mobsf.live'){
+                    if (confirm(warning) == true) {
+                        handleFiles(e.dataTransfer.files);
+                    } else {
+                        return;
+                    }
+                } else {
+                    handleFiles(e.dataTransfer.files);
+                }
                }
            });
 
@@ -306,9 +333,18 @@
                     if (_("uploadFile").files.length === 0) {
                         return;
                     }
-                    _("uploadFile").style.display = "none";
                     var files = _("uploadFile").files;
-                    handleFiles(files);
+                    if (document.location.host === 'mobsf.live'){
+                        if (confirm(warning) == true) {
+                            _("uploadFile").style.display = "none";
+                            handleFiles(files);
+                        } else {
+                            return;
+                        }
+                    } else {
+                        _("uploadFile").style.display = "none";
+                        handleFiles(files);
+                    }
                 });
             });
       </script>

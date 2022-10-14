@@ -166,6 +166,16 @@ def about(request):
     return render(request, template, context)
 
 
+def donate(request):
+    """Donate Route."""
+    context = {
+        'title': 'Donate',
+        'version': settings.MOBSF_VER,
+    }
+    template = 'general/donate.html'
+    return render(request, template, context)
+
+
 def error(request):
     """Error Route."""
     context = {
