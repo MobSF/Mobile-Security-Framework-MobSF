@@ -669,10 +669,3 @@ def get_usergroups(request):
         return settings.ADMIN_GROUP
     else:
         return settings.GENERAL_GROUP
-
-
-def req(request, value, default=None):
-    if (value in request.POST and request.POST[value]):
-        return request.POST[value]
-    else:
-        return default

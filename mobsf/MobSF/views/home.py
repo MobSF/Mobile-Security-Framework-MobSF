@@ -6,6 +6,7 @@ import os
 import platform
 import re
 import shutil
+import traceback as tb
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from wsgiref.util import FileWrapper
@@ -30,7 +31,6 @@ from mobsf.MobSF.utils import (
     is_file_exists,
     is_safe_path,
     key,
-    req,
     sso_email,
 )
 from mobsf.MobSF.views.scanning import Scanning
@@ -118,12 +118,16 @@ class Upload(object):
                     response_data['description'] = msg
                     return self.resp_json(response_data)
 
+            start_time = datetime.now(timezone.utc)
             response_data = self.upload()
+            self.track_new_scan(False, start_time, response_data['hash'])
             self.write_to_s3(response_data)
             return self.resp_json(response_data)
         except Exception as ex:
             msg = getattr(ex, 'message', repr(ex))
-            logger.error(msg)
+            exmsg = ''.join(tb.format_exception(None, ex, ex.__traceback__))
+            logger.error(exmsg)
+            self.track_failure(msg)
             response_data['description'] = msg
             return self.resp_json(response_data)
 
@@ -138,7 +142,9 @@ class Upload(object):
         if not self.scan.file_type.is_allow_file():
             api_response['error'] = 'File format not Supported!'
             return api_response, HTTP_BAD_REQUEST
+        start_time = datetime.now(timezone.utc)
         api_response = self.upload()
+        self.track_new_scan(True, start_time, api_response['hash'])
         if (not self.request.GET.get('scan', '1') == '0'):
             self.write_to_s3(api_response)
         return api_response, 200
@@ -183,7 +189,9 @@ class Upload(object):
             metadata_file.write('"file_name":"'
                                 + self.scan.file_name + '",')
             metadata_file.write('"short_hash":"' + api_response['short_hash']
-                                + '"}')
+                                + '",')
+            metadata_file.write('"cyberspect_scan_id":"'
+                                + str(self.scan.cyberspect_scan_id) + '"}')
             metadata_file.close()
 
             # Write uploaded files to S3 bucket
@@ -203,9 +211,35 @@ class Upload(object):
                                   'intake/' + file_name + '.json')
 
         except ClientError:
-            logging.error('Unable to upload files to AWS S3')
+            msg = 'Unable to upload files to AWS S3'
+            logging.error(msg)
+            self.track_failure(self.scan, msg)
             return False
         return
+
+    def track_new_scan(self, scheduled, start_time, md5):
+        # Insert new record into CyberspectScans
+        new_db_obj = CyberspectScans(
+            SCHEDULED=scheduled,
+            MOBSF_MD5=md5,
+            INTAKE_START=start_time,
+            FILE_SIZE_PACKAGE=self.scan.file_size,
+            FILE_SIZE_SOURCE=self.scan.source_file_size,
+        )
+        new_db_obj.save()
+        self.scan.cyberspect_scan_id = new_db_obj.ID
+        logger.info('Hash: %s, Cyberspect Scan ID: %s', hash, new_db_obj.ID)
+
+    def track_failure(self, error_message):
+        if self.scan.cyberspect_scan_id == 0:
+            return
+        data = {
+            'id': self.scan.cyberspect_scan_id,
+            'success': False,
+            'failure_source': 'SAST',
+            'failure_message': error_message,
+        }
+        update_cyberspect_scan(data)
 
 
 def api_docs(request):
@@ -322,50 +356,53 @@ def scan_metadata(md5):
     return None
 
 
-def update_cyberspect_scan(request):
+def update_cyberspect_scan(data):
     """Update Cyberspect scan record."""
     try:
-        csid = request.POST.get('id', -1)
-        db_obj = CyberspectScans.objects.filter(ID=csid).first()
+        db_obj = CyberspectScans.objects.filter(ID=data['id']).first()
         if db_obj:
-            db_obj.MOBSF_MD5 = req(request, 'mobsf_md5', db_obj.MOBSF_MD5)
-            db_obj.DT_PROJECT_ID = req(request, 'dt_project_id',
-                                       db_obj.DT_PROJECT_ID)
-            db_obj.INTAKE_END = req(request, 'intake_end',
-                                    db_obj.INTAKE_END)
-            db_obj.SAST_START = req(request, 'sast_start', db_obj.SAST_START)
-            db_obj.SAST_END = req(request, 'sast_end', db_obj.SAST_END)
-            db_obj.SBOM_START = req(request, 'sbom_start', db_obj.SBOM_START)
-            db_obj.SBOM_END = req(request, 'sbom_end', db_obj.SBOM_END)
-            db_obj.DEPENDENCY_START = req(request, 'dependency_start',
-                                          db_obj.DEPENDENCY_START)
-            db_obj.DEPENDENCY_END = req(request, 'dependency_end',
-                                        db_obj.DEPENDENCY_END)
-            db_obj.NOTIFICATION_START = req(request, 'notification_start',
-                                            db_obj.NOTIFICATION_START)
-            db_obj.NOTIFICATION_END = req(request, 'notification_end',
-                                          db_obj.NOTIFICATION_END)
-            db_obj.SUCCESS = req(request, 'success', db_obj.SUCCESS)
-            db_obj.FAILURE_SOURCE = req(request, 'failure_source',
-                                        db_obj.FAILURE_SOURCE)
-            db_obj.FAILURE_MESSAGE = req(request, 'failure_message',
-                                         db_obj.FAILURE_MESSAGE)
-            db_obj.FILE_SIZE_PACKAGE = req(request, 'file_size_package',
-                                           db_obj.FILE_SIZE_PACKAGE)
-            db_obj.FILE_SIZE_SOURCE = req(request, 'file_size_source',
-                                          db_obj.FILE_SIZE_SOURCE)
-            db_obj.DEPENDENCY_TYPES = req(request, 'dependency_types',
-                                          db_obj.DEPENDENCY_TYPES)
+            if 'mobsf_md5' in data:
+                db_obj.MOBSF_MD5 = data['mobsf_md5']
+            if 'dt_project_id' in data and data['dt_project_id']:
+                db_obj.DT_PROJECT_ID = data['dt_project_id']
+            if 'intake_end' in data and data['intake_end']:
+                db_obj.INTAKE_END = data['intake_end']
+            if 'sast_start' in data and data['sast_start']:
+                db_obj.SAST_START = data['sast_start']
+            if 'sast_end' in data and data['sast_end']:
+                db_obj.SAST_END = data['sast_end']
+            if 'sbom_start' in data and data['sbom_start']:
+                db_obj.SBOM_START = data['sbom_start']
+            if 'sbom_end' in data and data['sbom_end']:
+                db_obj.SBOM_END = data['sbom_end']
+            if 'dependency_start' in data and data['dependency_start']:
+                db_obj.DEPENDENCY_START = data['dependency_start']
+            if 'dependency_end' in data and data['dependency_end']:
+                db_obj.DEPENDENCY_END = data['dependency_end']
+            if 'notification_start' in data and data['notification_start']:
+                db_obj.NOTIFICATION_START = data['notification_start']
+            if 'notification_end' in data and data['notification_end']:
+                db_obj.NOTIFICATION_END = data['notification_end']
+            if 'success' in data:
+                db_obj.SUCCESS = data['success']
+            if 'failure_source' in data:
+                db_obj.FAILURE_SOURCE = data['failure_source']
+            if 'failure_message' in data:
+                db_obj.FAILURE_MESSAGE = data['failure_message']
+            if 'file_size_package' in data and data['file_size_package']:
+                db_obj.FILE_SIZE_PACKAGE = data['file_size_package']
+            if 'file_size_source' in data and data['file_size_source']:
+                db_obj.FILE_SIZE_SOURCE = data['file_size_source']
+            if 'dependency_types' in data:
+                db_obj.DEPENDENCY_TYPES = data['dependency_types']
             db_obj.save()
             return model_to_dict(db_obj)
         else:
-            new_db_obj = CyberspectScans(
-                SCHEDULED=request.POST.get('scheduled', False))
-            new_db_obj.save()
-            return model_to_dict(new_db_obj)
+            csid = data['id']
+            return {'error': f'Scan ID {csid} not found'}
     except Exception as ex:
-        msg = getattr(ex, 'message', repr(ex))
-        logger.error(msg, stack_info=True)
+        exmsg = ''.join(tb.format_exception(None, ex, ex.__traceback__))
+        logger.error(exmsg)
         return {'error': str(ex)}
 
 

@@ -70,7 +70,6 @@ def handle_uploaded_file(content, typ, source_content):
         for chunk in content.chunks():
             md5.update(chunk)
     md5sum = md5.hexdigest()
-    logger.info('Hash: %s', md5sum)
     local_dir = os.path.join(settings.UPLD_DIR, md5sum + '/')
     if not os.path.exists(local_dir):
         os.makedirs(local_dir)
@@ -99,14 +98,17 @@ class Scanning(object):
 
     def __init__(self, request):
         self.file = request.FILES['file']
-        self.file_name = request.FILES['file'].name
+        self.file_name = self.file.name
         self.file_type = FileType(self.file)
+        self.file_size = self.file.size
         if ('source_file' in request.FILES):
             self.source_file = request.FILES['source_file']
-            self.source_file_name = request.FILES['source_file'].name
+            self.source_file_name = self.source_file.name
+            self.source_file_size = self.source_file.size
         else:
             self.source_file = None
             self.source_file_name = None
+            self.source_file_size = None
         self.user_app_name = request.POST.get('user_app_name')
         self.user_app_version = request.POST.get('user_app_version')
         self.division = request.POST.get('division')
@@ -116,6 +118,7 @@ class Scanning(object):
         self.release = False
         if (is_admin(request)):
             self.release = request.POST.get('release', False)
+        self.cyberspect_scan_id = 0
 
     def scan_apk(self):
         """Android APK."""
@@ -135,6 +138,7 @@ class Scanning(object):
             'email': self.email,
             'user_groups': self.user_groups,
             'release': self.release,
+            'cyberspect_scan_id': self.cyberspect_scan_id,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android APK')
@@ -158,6 +162,7 @@ class Scanning(object):
             'email': self.email,
             'user_groups': self.user_groups,
             'release': self.release,
+            'cyberspect_scan_id': self.cyberspect_scan_id,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android XAPK base APK')
@@ -181,6 +186,7 @@ class Scanning(object):
             'email': self.email,
             'user_groups': self.user_groups,
             'release': self.release,
+            'cyberspect_scan_id': self.cyberspect_scan_id,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android Split APK')
@@ -204,6 +210,7 @@ class Scanning(object):
             'email': self.email,
             'user_groups': self.user_groups,
             'release': self.release,
+            'cyberspect_scan_id': self.cyberspect_scan_id,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android/iOS Source Code')
@@ -227,6 +234,7 @@ class Scanning(object):
             'email': self.email,
             'user_groups': self.user_groups,
             'release': self.release,
+            'cyberspect_scan_id': self.cyberspect_scan_id,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of iOS IPA')
@@ -250,6 +258,7 @@ class Scanning(object):
             'email': self.email,
             'user_groups': self.user_groups,
             'release': self.release,
+            'cyberspect_scan_id': self.cyberspect_scan_id,
         }
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Windows APP')
