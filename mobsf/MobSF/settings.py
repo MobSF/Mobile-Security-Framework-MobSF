@@ -64,6 +64,7 @@ SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MobSF_HOME)
 # =============ALLOWED DOWNLOAD EXTENSIONS=====
 ALLOWED_EXTENSIONS = {
     '.txt': 'text/plain',
+    '.svg': 'text/plain',
     '.png': 'image/png',
     '.zip': 'application/zip',
     '.tar': 'application/x-tar',
@@ -341,6 +342,8 @@ else:
     # Android 3P Tools
     JADX_BINARY = ''
     BACKSMALI_BINARY = ''
+    VD2SVG_BINARY = ''
+    BATIK_BINARY = ''
     APKTOOL_BINARY = ''
     ADB_BINARY = ''
 
