@@ -19,6 +19,14 @@
 .selectable_table tr:hover {
     background-color: lightgreen !important;
 }
+
+.fa.disabled,
+.fa[disabled],
+.disabled > .fa,
+[disabled] > .fa {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 </style>
 {% endblock %}
 {% block content %}
@@ -79,12 +87,26 @@
                                 {% elif '.appx' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-windows fa-3x"></i>
                                 {% endif %}
                             </td>                            
-                            <td>{{ e.MD5 }}{% if is_admin %}<br/><br/>{{ e.EMAIL }}{% endif %}</td>                            
+                            <td>{{ e.MD5 }}
+                                {% if is_admin %}
+                                    <br/><br/><label id="scanEmails" text="{{ e.EMAIL }}"/>
+                                    <input type="text" id="scanEmailsInput{{e.MD5}}" text="{{ e.EMAIL }}" hidden/>
+                                {% endif %}
+                            </td>                            
                             <td><p>                                    
                                     {% if e.PACKAGE_NAME %}
+                                        {% if is_admin %}
+                                            <a class="btn btn-outline-primary btn-sm" id="admin_edit" onclick="show_admin_save()" href="#"><i class="fas fa-pencil-square-o" title="Edit"></i></a>
+                                            <a class="btn btn-outline-primary btn-sm" id="admin_save" onclick="update_emails({{e.MD5}})" href="#" hidden><i class="fas fa-floppy-disk" title="Save"></i></a>
+                                        {% endif %}
                                     <a class="btn btn-primary btn-sm" style="margin-bottom: 3px; width: 125px;" href="../{{ e.ANALYZER }}/?name={{e.FILE_NAME}}&amp;checksum={{e.MD5}}&amp;type={{e.SCAN_TYPE}}"><i class="fas fa-eye" title="View static analysis details"></i> Static Details</a><br/>
                                     <a class="btn btn-primary btn-warning btn-sm" style="margin-bottom: 3px;  width: 125px;" href="../appsec_dashboard/{{ e.MD5 }}/"><i class="fas fa-user-shield" title="View security scorecard"></i> Scorecard</a><br/>
                                     <a class="btn btn-primary btn-sm" style="width: 125px;" href="{{dependency_track_url}}/projects/?tag={{ e.MD5 }}"><i class="fas fa-link" title="View third party dependency details"></i> Dependencies</a><br/>
+                                        {% if is_admin %}
+                                            {% if e.RELEASE %}<a class="btn btn-outline-primary btn-sm" id="admin_release" onclick="toggle_release({{e.MD5}}, {{!e.RELEASE}})" href={% if e.isWithin30Days() %}"#"{% endif %} {% if !e.iswithin30days() %}disabled{% endif %} ><i class="fas fa-check" title="Remove Release"></i></a>
+                                            {% else %}<a class="btn btn-outline-primary btn-sm" id="admin_release" onclick="toggle_release({{e.MD5}}, {{!e.RELEASE}})" href={% if e.isWithin30Days() %}"#"{% endif %} {% if !e.iswithin30days() %}disabled{% endif %}><i class="fas fa-check" title="Set Release"></i></a>
+                                            {% endif %}
+                                        {% endif %}
                                     {% endif %}
                                 </p><p>
                                     {% if e.PACKAGE_NAME %}
@@ -256,6 +278,155 @@
         }
         });
     }
+
+    function show_admin_save(){
+        $('#admin_edit').prop('hidden', true);
+        $('#admin_save').prop('hidden', false);
+    }
+
+    function reset_admin_save(){
+        $('#admin_edit').prop('hidden', false);
+        $('#admin_save').prop('hidden', true);
+    }
+
+    function getCleanEmails(identifier){
+        var retVal = "";
+        var inputName = "#scanEmailsInput" + identifier;
+        var emails = $(inputName).val();
+        var updated = emails.replace(/,/gi, ";");
+        var emailArray = updated.split(";");
+        eamilArray.forEach(cleanElement);
+        for(var i = 0; i < emailArray.length; i++){
+            if(i < emailArray.length - 1){
+                retVal += emailArray[i] + ",";
+            } else {
+                retVal += emailArray[i];
+            }
+        }
+        return retVal;
+    }
+
+    function cleanElement(item, index, arr){
+        if(item.indexOf("<") != -1 && item.indexOf(">") != -1){
+            arr[index] = item.substring(item.indexOf("<")+1, item.indexOf(">"));
+        } 
+    }
+
+
+
+    function toggle_release(item, flag){
+        Swal.fire({
+        title: 'Are you sure?',
+        text: "This will remove the package as a release version",
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'No',
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#2da532',
+      }).then((result) => {
+          if (result.value) {
+              var md5_hash = item;
+              var newRelease = flag;
+              $.ajax({
+                      url: '../update_scan/',
+                          type : 'POST',
+                      dataType: 'json',
+                          data : {
+                                  csrfmiddlewaretoken: '{{ csrf_token }}',
+                                  md5: md5_hash,
+                                  release: newRelease
+                                  },
+                              success : function(json) {
+                                  if (json.updated ==='yes'){
+                                      Swal.fire(
+                                          'Updated!',
+                                          'The package release has been updated!',
+                                          'success'
+                                      ).then(function () {
+                                          location.reload();
+                                      })
+                                  }
+                                  else {
+                                      Swal.fire(
+                                      'Release update Failed',
+                                      'Cannot update the scan!',
+                                      'error'
+                                      )
+                                  }
+                              },
+                              error : function(xhr,errmsg,err) {
+                                  Swal.fire(
+                                      'Updating Release Failed',
+                                      errmsg,
+                                      'error'
+                                      )
+                              }
+                  });
+                 
+          } //else {
+            //      diff_cleanup();
+          //}
+          });
+      }
+
+      function update_emails(item){
+        Swal.fire({
+        title: 'Are you sure?',
+        text: "This will update the notification emails for this scan",
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'No',
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#2da532',
+      }).then((result) => {
+          if (result.value) {
+              var md5_hash = item;
+              var emails = getCleanEmails(md5_hash);
+              $.ajax({
+                      url: '../update_scan/',
+                          type : 'POST',
+                      dataType: 'json',
+                          data : {
+                                  csrfmiddlewaretoken: '{{ csrf_token }}',
+                                  md5: md5_hash,
+                                  email: emails
+                                  },
+                              success : function(json) {
+                                  if (json.deleted==='yes'){
+                                      Swal.fire(
+                                          'Updated!',
+                                          'The email addresses have been updated!',
+                                          'success'
+                                      ).then(function () {
+                                          reset_admin_save();
+                                          location.reload();
+                                      })
+                                  }
+                                  else {
+                                      Swal.fire(
+                                      'Email update Failed',
+                                      'Cannot update the emails!',
+                                      'error'
+                                      )
+                                  }
+                              },
+                              error : function(xhr,errmsg,err) {
+                                  Swal.fire(
+                                      'Updating emails Failed',
+                                      errmsg,
+                                      'error'
+                                      )
+                              }
+                  });
+                 
+          } else {
+                  reset_admin_save();
+          }
+          });
+      }
+
   
     $(document).ready(function() {
         enable_diff_button(); 

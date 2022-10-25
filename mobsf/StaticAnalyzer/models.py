@@ -21,6 +21,13 @@ class RecentScansDB(models.Model):
     USER_GROUPS = models.CharField(max_length=260, default='')
     RELEASE = models.BooleanField(default=False)
 
+    @property
+    def iswithin30days(self):
+        """Boolean indicating if the scan was performed within 30 days."""
+        nowdate = datetime.now
+        initdate = datetime.strptime(self.TIMESTAMP, '%Y-%m-%d %H::%M::%S.%f')
+        return ((nowdate - initdate).days <= 30)
+
 
 class StaticAnalyzerAndroid(models.Model):
     FILE_NAME = models.CharField(max_length=260, default='')
