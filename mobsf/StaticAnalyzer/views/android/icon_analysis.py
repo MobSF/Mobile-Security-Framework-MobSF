@@ -124,7 +124,7 @@ def find_icon_path_zip(res_dir, icon_paths_from_manifest):
 # SVG/XML icon lookup functions below
 
 
-def get_icon(app_dic, res_dir):
+def get_icon_src(app_dic, res_dir):
     """
     Returns a dict with isHidden boolean and a relative path.
 
@@ -132,20 +132,18 @@ def get_icon(app_dic, res_dir):
     """
     try:
         logger.info('Fetching icon path')
-        ic_dict = {
-            'path': '',
-            'hidden': True,
-        }
+        icon_src = ''
         apk_path = app_dic['app_path']
         app_dir = Path(app_dic['app_dir'])
         a = apk.APK(apk_path)
         icon_resolution = 0xFFFE - 1
         icon_name = a.get_app_icon(max_dpi=icon_resolution)
-        if icon_name:
-            ic_dict['hidden'] = False
-        else:
-            ic_dict['path'] = guess_icon_path(res_dir)
-        if icon_name.endswith('.xml'):
+        if not icon_name:
+            # androguard cannot find icon file.
+            logger.warning('androguard cannot find icon resource')
+            icon_name = guess_icon_path(res_dir)
+            icon_src = icon_name
+        if icon_name and icon_name.endswith('.xml'):
             apktool_res = False
             # Can be vector XML/XML pointing to vector files
             # Convert AXML to XML for vector
@@ -169,14 +167,14 @@ def get_icon(app_dic, res_dir):
                 icon_path = get_icon_svg_from_xml(
                     app_dir, icon_name)
             if icon_path:
-                ic_dict['path'] = icon_path
+                icon_src = icon_path
             else:
                 # if we cannot find from xml
-                ic_dict['path'] = guess_icon_path(res_dir)
+                icon_src = guess_icon_path(res_dir)
         else:
             # We found png icon, the easy path
-            ic_dict['path'] = (app_dir / icon_name).as_posix()
-        return ic_dict
+            icon_src = (app_dir / icon_name).as_posix()
+        return icon_src
     except Exception:
         logger.exception('Fetching icon function')
 
@@ -184,12 +182,11 @@ def get_icon(app_dic, res_dir):
 def get_icon_apk(app_dic):
     """Get/Guess icon from APK binary."""
     app_dir = Path(app_dic['app_dir'])
+    app_dic['icon_path'] = ''
+    app_dic['icon_found'] = False
+    app_dic['icon_hidden'] = True
+
     res_path = app_dir / 'res'
-    icon_dic = {
-        'icon_hidden': True,
-        'icon_found': False,
-        'icon_path': '',
-    }
     if not res_path.exists():
         logger.warning('Cannot find res directory,'
                        ' using apktool res directory')
@@ -203,14 +200,13 @@ def get_icon_apk(app_dic):
     # Set app_dic with icon details
     if res_path.exists():
         # Icon lookup in res directory
-        icon_dic = get_icon(app_dic, res_path.as_posix())
-        if icon_dic:
-            app_dic['icon_hidden'] = icon_dic['hidden']
-            app_dic['icon_found'] = bool(icon_dic['path'])
-            app_dic['icon_path'] = icon_dic['path']
+        app_dic['icon_path'] = get_icon_src(
+            app_dic, res_path.as_posix())
+        app_dic['icon_found'] = bool(app_dic['icon_path'])
+        app_dic['icon_hidden'] = not app_dic['icon_found']
 
-    if icon_dic['path']:
-        src = Path(icon_dic['path'])
+    if app_dic['icon_path']:
+        src = Path(app_dic['icon_path'])
         # Convert SVG icon to PNG
         if src.as_posix().endswith('.svg'):
             src = convert_svg_to_png(src, app_dic['tools_dir'])
