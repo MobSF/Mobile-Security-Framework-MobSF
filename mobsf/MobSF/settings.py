@@ -64,7 +64,6 @@ SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MobSF_HOME)
 # =============ALLOWED DOWNLOAD EXTENSIONS=====
 ALLOWED_EXTENSIONS = {
     '.txt': 'text/plain',
-    '.svg': 'text/plain',
     '.png': 'image/png',
     '.zip': 'application/zip',
     '.tar': 'application/x-tar',
