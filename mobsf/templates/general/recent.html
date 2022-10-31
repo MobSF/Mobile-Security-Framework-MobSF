@@ -87,19 +87,24 @@
                                 {% elif '.appx' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-windows fa-3x"></i>
                                 {% endif %}
                             </td>                            
-                            <td>{{ e.MD5 }}{% if is_admin %}<br/><br/>{{ e.EMAIL }}{% endif %}</td>                            
+                            <td>{{ e.MD5 }}
+                                {% if is_admin %}
+                                    <br/><br/><label id="scanEmails" text="{{ e.EMAIL }}"/>
+                                    <input type="text" id="scanEmailsInput{{e.MD5}}" text="{{ e.EMAIL }}" hidden/>
+                                {% endif %}
+                            </td>                               
                             <td><p>                                    
                                     {% if e.PACKAGE_NAME %}
                                         {% if is_admin %}
-                                            <a class="btn btn-outline-primary btn-sm" id="admin_edit" onclick="show_admin_save()" href="#"><i class="fas fa-pencil-square-o" title="Edit"></i></a>
+                                            <a class="btn btn-outline-primary btn-sm" id="admin_edit" onclick="show_admin_save({{e.MD5}})" href="#"><i class="fas fa-pencil-square-o" title="Edit"></i></a>
                                             <a class="btn btn-outline-primary btn-sm" id="admin_save" onclick="update_emails({{e.MD5}})" href="#" hidden><i class="fas fa-floppy-disk" title="Save"></i></a>
                                         {% endif %}
                                     <a class="btn btn-primary btn-sm" style="margin-bottom: 3px; width: 125px;" href="../{{ e.ANALYZER }}/?name={{e.FILE_NAME}}&amp;checksum={{e.MD5}}&amp;type={{e.SCAN_TYPE}}"><i class="fas fa-eye" title="View static analysis details"></i> Static Details</a><br/>
                                     <a class="btn btn-primary btn-warning btn-sm" style="margin-bottom: 3px;  width: 125px;" href="../appsec_dashboard/{{ e.MD5 }}/"><i class="fas fa-user-shield" title="View security scorecard"></i> Scorecard</a><br/>
                                     <a class="btn btn-primary btn-sm" style="width: 125px;" href="{{dependency_track_url}}/projects/?tag={{ e.MD5 }}"><i class="fas fa-link" title="View third party dependency details"></i> Dependencies</a><br/>
                                         {% if is_admin %}
-                                            {% if e.RELEASE %}<a class="btn btn-outline-primary btn-sm" id="admin_release" onclick="toggle_release({{e.MD5}}, {{ not e.RELEASE}})" href={% if e.isWithin30Days() %}"#"{% endif %} {% if not e.iswithin30days() %}disabled{% endif %} ><i class="fas fa-check" title="Remove Release"></i></a>
-                                            {% else %}<a class="btn btn-outline-primary btn-sm" id="admin_release" onclick="toggle_release({{e.MD5}}, {{ not e.RELEASE}})" href={% if e.isWithin30Days() %}"#"{% endif %} {% if not e.iswithin30days() %}disabled{% endif %}><i class="fas fa-check" title="Set Release"></i></a>
+                                            {% if e.RELEASE %}<a class="btn btn-outline-primary btn-sm" id="admin_release" onclick="toggle_release({{e.MD5}}, false)" href={% if e.isWithin30Days() %}"#"{% endif %} {% if not e.iswithin30days() %}disabled{% endif %} ><i class="fas fa-check" title="Remove Release"></i></a>
+                                            {% else %}<a class="btn btn-outline-primary btn-sm" id="admin_release" onclick="toggle_release({{e.MD5}}, true)" href={% if e.isWithin30Days() %}"#"{% endif %} {% if not e.iswithin30days() %}disabled{% endif %}><i class="fas fa-check" title="Set Release"></i></a>
                                             {% endif %}
                                         {% endif %}
                                     {% endif %}
@@ -274,12 +279,18 @@
         });
     }
 
-    function show_admin_save(){
+    function show_admin_save(item){
+        var inputName = "#scanEmailsInput" + item;
         $('#admin_edit').prop('hidden', true);
+        $('#scanEmails').prop('hidden', true);
+        $(inputName).prop('hidden', false);
         $('#admin_save').prop('hidden', false);
     }
 
-    function reset_admin_save(){
+    function reset_admin_save(item){
+        var inputName = "#scanEmailsInput" + item;
+        $(inputName).prop('hidden', true);
+        $('#scanEmails').prop('hidden', false);
         $('#admin_edit').prop('hidden', false);
         $('#admin_save').prop('hidden', true);
     }
@@ -312,7 +323,7 @@
     function toggle_release(item, flag){
         Swal.fire({
         title: 'Are you sure?',
-        text: "This will remove the package as a release version",
+        text: if(flag){"This will remove the scan as a release version"}else{"This will set the scan as a release version"},
         type: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Yes',
@@ -336,7 +347,7 @@
                                   if (json.updated ==='yes'){
                                       Swal.fire(
                                           'Updated!',
-                                          'The package release has been updated!',
+                                          'The scan has been updated!',
                                           'success'
                                       ).then(function () {
                                           location.reload();
@@ -352,7 +363,7 @@
                               },
                               error : function(xhr,errmsg,err) {
                                   Swal.fire(
-                                      'Updating Release Failed',
+                                      'Updating scan Failed',
                                       errmsg,
                                       'error'
                                       )
@@ -417,7 +428,7 @@
                   });
                  
           } else {
-                  reset_admin_save();
+                  reset_admin_save(item);
           }
           });
       }
