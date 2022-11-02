@@ -7,7 +7,7 @@ import platform
 import re
 import shutil
 import traceback as tb
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from pathlib import Path
 from wsgiref.util import FileWrapper
 
@@ -21,6 +21,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.template.defaulttags import register
 from django.forms.models import model_to_dict
+from django.utils import timezone
 
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
@@ -118,7 +119,7 @@ class Upload(object):
                     response_data['description'] = msg
                     return self.resp_json(response_data)
 
-            start_time = datetime.now(timezone.utc)
+            start_time = timezone.now()
             response_data = self.upload()
             self.track_new_scan(False, start_time, response_data['hash'])
             self.write_to_s3(response_data)
@@ -142,7 +143,7 @@ class Upload(object):
         if not self.scan.file_type.is_allow_file():
             api_response['error'] = 'File format not Supported!'
             return api_response, HTTP_BAD_REQUEST
-        start_time = datetime.now(timezone.utc)
+        start_time = timezone.now()
         api_response = self.upload()
         self.track_new_scan(True, start_time, api_response['hash'])
         if (not self.request.GET.get('scan', '1') == '0'):
@@ -228,7 +229,7 @@ class Upload(object):
         )
         new_db_obj.save()
         self.scan.cyberspect_scan_id = new_db_obj.ID
-        logger.info('Hash: %s, Cyberspect Scan ID: %s', hash, new_db_obj.ID)
+        logger.info('Hash: %s, Cyberspect Scan ID: %s', md5, new_db_obj.ID)
 
     def track_failure(self, error_message):
         if self.scan.cyberspect_scan_id == 0:
@@ -332,7 +333,7 @@ def recent_scans(request):
             entry['PACKAGE'] = ''
         logcat = Path(settings.UPLD_DIR) / entry['MD5'] / 'logcat.txt'
         entry['DYNAMIC_REPORT_EXISTS'] = logcat.exists()
-        entry['ERROR'] = (datetime.now(timezone.utc)
+        entry['ERROR'] = (timezone.now()
                           > entry['TIMESTAMP'] + timedelta(minutes=15))
         entries.append(entry)
     context = {

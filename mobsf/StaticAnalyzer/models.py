@@ -150,7 +150,7 @@ class CyberspectScans(models.Model):
     MOBSF_MD5 = models.CharField(max_length=32, null=True)
     DT_PROJECT_ID = models.UUIDField(null=True)
     SCHEDULED = models.BooleanField(null=False, default=False)
-    INTAKE_START = models.DateTimeField(auto_now_add=True)
+    INTAKE_START = models.DateTimeField(null=False)
     INTAKE_END = models.DateTimeField(null=True)
     SAST_START = models.DateTimeField(null=True)
     SAST_END = models.DateTimeField(null=True)

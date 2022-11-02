@@ -67,7 +67,6 @@ def api_scan(request):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     scan_type = request.POST['scan_type']
-    resp = ''
 
     # Track scan start time
     data = {
