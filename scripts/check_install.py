@@ -24,5 +24,5 @@ except DistributionNotFound as exp:
           f'Please ensure that all the requirements '
           f'mentioned in documentation are installed '
           f'before you run setup script.\nScroll up to see any '
-          f'installtion errors.\n\n{exp}{end}')
+          f'installation errors.\n\n{exp}{end}')
     exit(1)
