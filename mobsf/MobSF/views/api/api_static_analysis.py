@@ -1,8 +1,8 @@
 # -*- coding: utf_8 -*-
 """MobSF REST API V 1."""
+from datetime import datetime
 
 from django.http import HttpResponse
-from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
 from mobsf.MobSF.views.helpers import request_method
@@ -71,7 +71,7 @@ def api_scan(request):
     # Track scan start time
     data = {
         'id': request.POST['cyberspect_scan_id'],
-        'sast_start': timezone.now(),
+        'sast_start': str(datetime.utcnow()),
     }
     update_cyberspect_scan(data)
 
@@ -107,7 +107,7 @@ def api_scan(request):
         data['success'] = False
         data['failure_source'] = 'SAST'
         data['failure_message'] = resp['error']
-    data['sast_end'] = timezone.now()
+    data['sast_end'] = str(datetime.utcnow())
     update_cyberspect_scan(data)
     return response
 

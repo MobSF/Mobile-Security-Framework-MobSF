@@ -411,7 +411,8 @@ def update_cyberspect_scan(data):
 
 def tz(value):
     # Parse string into date/time parts and build time zone aware datetime
-    st = datetime.datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f')
+    value = value.replace('T', ' ').replace('Z', '')
+    st = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S.%f')
     ts = time.mktime(st.timetuple()) + (st.microsecond / 1000000.0)
     dt = datetime.datetime.fromtimestamp(ts)
     return dt.replace(tzinfo=timezone.utc)
