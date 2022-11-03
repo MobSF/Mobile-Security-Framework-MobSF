@@ -1,13 +1,14 @@
 # -*- coding: utf_8 -*-
 """MobSF File Upload and Home Routes."""
+import datetime
 import json
 import logging
 import os
 import platform
 import re
 import shutil
+import time
 import traceback as tb
-from datetime import timedelta
 from pathlib import Path
 from wsgiref.util import FileWrapper
 
@@ -334,7 +335,8 @@ def recent_scans(request):
         logcat = Path(settings.UPLD_DIR) / entry['MD5'] / 'logcat.txt'
         entry['DYNAMIC_REPORT_EXISTS'] = logcat.exists()
         entry['ERROR'] = (timezone.now()
-                          > entry['TIMESTAMP'] + timedelta(minutes=15))
+                          > entry['TIMESTAMP']
+                          + datetime.timedelta(minutes=15))
         entries.append(entry)
     context = {
         'title': 'Recent Scans',
@@ -408,9 +410,11 @@ def update_cyberspect_scan(data):
 
 
 def tz(value):
-    if value[-1:] != 'Z':
-        value = value + 'Z'
-    return value
+    # Parse string into date/time parts and build time zone aware datetime
+    st = datetime.datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f')
+    ts = time.mktime(st.timetuple()) + (st.microsecond / 1000000.0)
+    dt = datetime.datetime.fromtimestamp(ts)
+    return dt.replace(tzinfo=timezone.utc)
 
 
 def logout_aws(request):
