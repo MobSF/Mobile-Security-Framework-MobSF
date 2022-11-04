@@ -96,30 +96,27 @@
                             </td>                               
                             <td><p>                                    
                                     {% if e.PACKAGE_NAME %}
-                                        {% if is_admin %}
-                                            
-                                        {% endif %}
                                     <a class="btn btn-primary btn-sm" style="margin-bottom: 3px; width: 125px;" href="../{{ e.ANALYZER }}/?name={{e.FILE_NAME}}&amp;checksum={{e.MD5}}&amp;type={{e.SCAN_TYPE}}"><i class="fas fa-eye" title="View static analysis details"></i> Static Details</a><br/>
                                     <a class="btn btn-primary btn-warning btn-sm" style="margin-bottom: 3px;  width: 125px;" href="../appsec_dashboard/{{ e.MD5 }}/"><i class="fas fa-user-shield" title="View security scorecard"></i> Scorecard</a><br/>
-                                    <a class="btn btn-primary btn-sm" style="width: 125px;" href="{{dependency_track_url}}/projects/?tag={{ e.MD5 }}"><i class="fas fa-link" title="View third party dependency details"></i> Dependencies</a><br/>
-                                        {% if is_admin %}
-                                            <a class="btn btn-outline-primary btn-sm" id="admin_edit" onclick="show_admin_save({{e.MD5}})" href="#"><i class="fas fa-pencil-square-o" title="Edit"></i></a>
-                                            <a class="btn btn-outline-primary btn-sm" id="admin_save" onclick="update_emails({{e.MD5}})" href="#" hidden><i class="fas fa-floppy-disk" title="Save"></i></a>
-                                            {% if e.RELEASE %}<a class="btn btn-outline-primary btn-sm" id="admin_release" onclick="toggle_release({{e.MD5}}, false)" href="{% if e.iswithin30days %}#{% endif %}" {% if not e.iswithin30days %}disabled{% endif %} ><i class="fas fa-check" title="Remove Release"></i></a>
-                                            {% else %}<a class="btn btn-outline-primary btn-sm" id="admin_release" onclick="toggle_release({{e.MD5}}, true)" href="{% if e.iswithin30days %}#{% endif %}" {% if not e.iswithin30days %}disabled{% endif %}><i class="fas fa-check" title="Set Release"></i></a>
-                                            {% endif %}
-                                        {% endif %}
+                                    <a class="btn btn-primary btn-sm" style="width: 125px;" href="{{dependency_track_url}}/projects/?tag={{ e.MD5 }}"><i class="fas fa-link" title="View third party dependency details"></i> Dependencies</a><br/>                                        
                                     {% endif %}
                                 </p><p>
                                     {% if e.PACKAGE_NAME %}
-                                        <a class="btn btn-outline-primary btn-sm" href="../pdf/?md5={{ e.MD5 }}"><i class="fas fa-file-pdf" title="View PDF report of static analysis details"></i></a>
+                                        <a class="btn btn-outline-primary btn-sm" href="../pdf/?md5={{ e.MD5 }}"><i class="fas fa-file-pdf" title="PDF Report"></i></a>
                                         <!--<a class="btn btn-outline-info btn-sm" href="../pdf-sbom/?md5={{ e.MD5 }}"><i class="fas fa-file-pdf" title="View PDF report of third party dependency details"></i></a>-->
                                         <!--<a class="btn btn-outline-primary btn-sm" href="../{{ e.ANALYZER }}/?name={{e.FILE_NAME}}&amp;checksum={{e.MD5}}&amp;type={{e.SCAN_TYPE}}&amp;rescan=1"><i class="fas fa-sync-alt" title="Perform another static analysis scan"></i></a>-->
                                         <!--{% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:"%}
                                         <a class="btn btn-outline-primary btn-sm diffButton" id="{{ e.MD5 }}_{{ e.FILE_NAME }}" href="#"><i class="fas fa-not-equal" title="Compare this scan with another one"></i></a>
                                         {% endif %}-->
+                                        {% if is_admin %}
+                                            {% if e.RELEASE %}<a class="btn btn-outline-primary btn-sm" id="admin_release" onclick="toggle_release('{{e.MD5}}', false)" href="{% if e.CAN_RELEASE %}#{% endif %}" {% if not e.CAN_RELEASE %}disabled{% endif %}><i class="fas fa-check" title="Remove Release"></i></a>
+                                            {% else %}<a class="btn btn-outline-primary btn-sm" id="admin_release" onclick="toggle_release('{{e.MD5}}', true)" href="{% if e.CAN_RELEASE %}#{% endif %}" {% if not e.CAN_RELEASE %}disabled{% endif %}><i class="fas fa-check" title="Set Release"></i></a>
+                                            {% endif %}
+                                            <a class="btn btn-outline-primary btn-sm" id="admin_edit" onclick="show_admin_save('{{e.MD5}}')" href="#"><i class="fas fa-pen" title="Edit Scan"></i></a>
+                                            <a class="btn btn-outline-primary btn-sm" id="admin_save" onclick="update_emails('{{e.MD5}}')" href="#" hidden><i class="fas fa-save" title="Save Changes"></i></a>                                            
+                                        {% endif %}
                                     {% endif %}
-                                    <a class="btn btn-outline-primary btn-sm" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="#"><i class="fas fa-trash" title="Delete this scan"></i></a>
+                                    <a class="btn btn-outline-primary btn-sm" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="#"><i class="fas fa-trash" title="Delete Scan"></i></a>
                                 </p>
                             </td>
                         </tr>
@@ -325,7 +322,7 @@
     function toggle_release(item, flag){
         Swal.fire({
         title: 'Are you sure?',
-        text: (flag ? "This will remove the scan as a release version" : "This will set the scan as a release version"),
+        text: (flag ? "This will set the scan as a release version" : "This will remove the scan as a release version"),
         type: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Yes',

@@ -322,7 +322,7 @@ def recent_scans(request):
             email_filter = '@@'
         db_obj = db_obj.filter(EMAIL__contains=email_filter)
 
-    recentscans = db_obj.all()
+    recentscans = db_obj.values()
     android = StaticAnalyzerAndroid.objects.all()
     package_mapping = {}
     for item in android:
@@ -337,6 +337,9 @@ def recent_scans(request):
         entry['ERROR'] = (timezone.now()
                           > entry['TIMESTAMP']
                           + datetime.timedelta(minutes=15))
+        entry['CAN_RELEASE'] = (timezone.now()
+                                < entry['TIMESTAMP']
+                                + datetime.timedelta(days=30))
         entries.append(entry)
     context = {
         'title': 'Recent Scans',
