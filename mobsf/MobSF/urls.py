@@ -38,6 +38,7 @@ urlpatterns = [
     # Static Analysis
     re_path(r'^api/v1/upload$', api_sz.api_upload),
     re_path(r'^api/v1/scan$', api_sz.api_scan),
+    re_path(r'^api/v1/update_scan$', api_sz.api_update_scan),
     re_path(r'^api/v1/scan_metadata$', api_sz.api_scan_metadata),
     re_path(r'^api/v1/delete_scan$', api_sz.api_delete_scan),
     re_path(r'^api/v1/download_pdf$', api_sz.api_pdf_report),
@@ -89,6 +90,7 @@ if settings.API_ONLY == '0':
         re_path(r'^about$', home.about, name='about'),
         re_path(r'^api_docs$', home.api_docs, name='api_docs'),
         re_path(r'^recent_scans/$', home.recent_scans, name='recent'),
+        re_path(r'^update_scan/$', home.update_scan),
         re_path(r'^delete_scan/$', home.delete_scan),
         re_path(r'^search$', home.search),
         re_path(r'^error/$', home.error, name='error'),

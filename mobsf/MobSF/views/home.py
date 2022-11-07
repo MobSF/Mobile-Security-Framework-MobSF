@@ -322,7 +322,7 @@ def recent_scans(request):
             email_filter = '@@'
         db_obj = db_obj.filter(EMAIL__contains=email_filter)
 
-    recentscans = db_obj.all()
+    recentscans = db_obj.values()
     android = StaticAnalyzerAndroid.objects.all()
     package_mapping = {}
     for item in android:
@@ -360,6 +360,36 @@ def scan_metadata(md5):
         if db_obj:
             return model_to_dict(db_obj)
     return None
+
+
+def update_scan(request, api=False):
+    """Update RecentScansDB record."""
+    try:
+        md5 = request.POST['hash']
+        response = {'error': f'Scan {md5} not found'}
+        db_obj = RecentScansDB.objects.filter(MD5=md5).first()
+        if db_obj:
+            if 'email' in request.POST:
+                db_obj.EMAIL = request.POST['email']
+            if 'release' in request.POST:
+                db_obj.RELEASE = request.POST['release']
+            db_obj.save()
+            response = model_to_dict(db_obj)
+
+        if api:
+            return response
+        else:
+            ctype = 'application/json; charset=utf-8'
+            return HttpResponse(json.dumps(response), content_type=ctype)
+    except Exception as exp:
+        exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+        logger.error(exmsg)
+        msg = str(exp)
+        exp_doc = exp.__doc__
+        if api:
+            return error_response(request, msg, True, exp_doc)
+        else:
+            return error_response(request, msg, False, exp_doc)
 
 
 def update_cyberspect_scan(data):
