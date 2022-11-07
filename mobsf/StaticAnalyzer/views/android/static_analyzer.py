@@ -106,6 +106,7 @@ def static_analyzer(request, api=False):
             app_dic['dir'] = Path(settings.BASE_DIR)  # BASE DIR
             app_dic['app_name'] = filename  # APP ORIGINAL NAME
             app_dic['md5'] = checksum  # MD5
+            logger.info('Scan Hash: %s', checksum)
             # APP DIRECTORY
             app_dic['app_dir'] = Path(settings.UPLD_DIR) / checksum
             app_dic['tools_dir'] = app_dic['dir'] / 'StaticAnalyzer' / 'tools'
@@ -240,8 +241,6 @@ def static_analyzer(request, api=False):
                         'Performing Malware Check on extracted Domains')
                     code_an_dic['domains'] = MalwareDomainCheck().scan(
                         list(set(code_an_dic['urls_list'])))
-                    # Copy App icon
-                    copy_icon(app_dic['md5'], app_dic['icon_path'])
                     app_dic['zipped'] = 'apk'
 
                     logger.info('Connecting to Database')
@@ -589,19 +588,6 @@ def move_to_parent(inside, app_dir):
         full_path = os.path.join(inside, x)
         shutil.move(full_path, app_dir)
     shutil.rmtree(inside)
-
-
-def copy_icon(md5, icon_path=''):
-    """Copy app icon."""
-    try:
-        # Icon
-        icon_path = icon_path.encode('utf-8')
-        if icon_path:
-            if os.path.exists(icon_path):
-                shutil.copy2(icon_path, os.path.join(
-                    settings.DWD_DIR, md5 + '-icon.png'))
-    except Exception:
-        logger.exception('Generating Downloads')
 
 
 def get_app_name(app_path, app_dir, tools_dir, is_apk):

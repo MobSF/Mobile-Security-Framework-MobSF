@@ -341,6 +341,8 @@ else:
     # Android 3P Tools
     JADX_BINARY = ''
     BACKSMALI_BINARY = ''
+    VD2SVG_BINARY = ''
+    BATIK_BINARY = ''
     APKTOOL_BINARY = ''
     ADB_BINARY = ''
 
