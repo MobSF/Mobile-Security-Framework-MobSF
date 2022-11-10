@@ -62,6 +62,7 @@ def index(request):
         'mimes': mimes,
         'tenant_static': settings.TENANT_STATIC_URL,
         'divisions': os.getenv('DIVISIONS'),
+        'is_admin': is_admin(request),
         'email': sso_email(request),
     }
     template = 'general/home.html'

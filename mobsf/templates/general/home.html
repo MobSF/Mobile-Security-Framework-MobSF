@@ -73,7 +73,10 @@
                           </select>
                           &nbsp;&nbsp;<i class="fas fa-info-circle fa-lg" title="The Abbott Labs organizational division applicable to the mobile application."></i>
                       </span>
-                  </div>          
+                  </div>
+                  {% if is_admin == True %}
+                    <div><span><input type="text" id="override_email" placeholder="Email Override"></span>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg" title="If the email should be sent to a different admin, enter it here."></i></div>
+                  {% endif %}
                   <!--<div>
                     <table style="margin-left: auto; margin-right: auto;">
                         <tr>
@@ -531,8 +534,8 @@
           }
          // File Upload
          function upload(app_file, source_file, extradata) {
-           try {
-                if (!isValidExt(app_file.name) || !isValidMime(app_file.type)){
+             try {
+                if (!isValidExt(app_file.name) || !isValidMime(app_file.type)) {
                     return;
                 }
                 if (source_file != null && (!isValidExt(source_file.name) || !isValidMime(source_file.type))) {
@@ -557,7 +560,10 @@
                 formdata.append("user_app_version", extradata.user_app_version);
                 formdata.append("division", extradata.division);
                 formdata.append("country", extradata.country);
-                formdata.append("environment", extradata.environment); 
+                formdata.append("environment", extradata.environment);
+                if (extradata.email != '') {
+                    formdata.append("email", extradata.email)
+                }
                 xhr.send(formdata)
             } catch (e) {
                 alert("Error:" + e);
@@ -675,6 +681,11 @@
                     extradata.country = ''; //$('#country').val().join(',');
                     extradata.division = $('#division').val();                
                     extradata.environment = $('#environment').val();
+                    if ($('#override_email').length) {
+                        extradata.email = $('#override_email')
+                    } else {
+                        extradata.email = ''
+                    }
 
                     if (_("uploadSourceFile").files.length === 0) {
                         upload(_("uploadFile").files[0], null, extradata); 
