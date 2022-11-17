@@ -323,7 +323,7 @@ def recent_scans(request):
             email_filter = '@@'
         db_obj = db_obj.filter(EMAIL__contains=email_filter)
 
-    recentscans = db_obj.all()
+    recentscans = db_obj.values()
     android = StaticAnalyzerAndroid.objects.all()
     package_mapping = {}
     for item in android:
