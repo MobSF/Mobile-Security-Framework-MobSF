@@ -345,11 +345,11 @@
                       dataType: 'json',
                           data : {
                                   csrfmiddlewaretoken: '{{ csrf_token }}',
-                                  md5: md5_hash,
+                                  hash: md5_hash,
                                   release: newRelease
                                   },
                               success : function(json) {
-                                  if (json.updated ==='yes'){
+                                  if (json.release === newRelease){
                                       Swal.fire(
                                           'Updated!',
                                           'The scan has been updated!',
@@ -405,7 +405,7 @@
                                   email: emails
                                   },
                               success : function(json) {
-                                  if (json.deleted==='yes'){
+                                  if (json.EMAIL === emails){
                                       Swal.fire(
                                           'Updated!',
                                           'The email addresses have been updated!',
