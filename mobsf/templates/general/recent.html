@@ -109,8 +109,8 @@
                                         <a class="btn btn-outline-primary btn-sm diffButton" id="{{ e.MD5 }}_{{ e.FILE_NAME }}" href="#"><i class="fas fa-not-equal" title="Compare this scan with another one"></i></a>
                                         {% endif %}-->
                                         {% if is_admin %}
-                                            {% if e.RELEASE %}<a class="btn btn-outline-primary btn-sm" id="admin_release" onclick="toggle_release('{{e.MD5}}', 'False')" href="{% if e.CAN_RELEASE %}#{% endif %}" {% if not e.CAN_RELEASE %}disabled{% endif %}><i class="fas fa-check" title="Remove Release"></i></a>
-                                            {% else %}<a class="btn btn-outline-primary btn-sm" id="admin_release" onclick="toggle_release('{{e.MD5}}', 'True')" href="{% if e.CAN_RELEASE %}#{% endif %}" {% if not e.CAN_RELEASE %}disabled{% endif %}><i class="fas fa-slash" title="Set Release"></i></a>
+                                            {% if e.RELEASE %}<a class="btn btn-outline-primary btn-sm" id="admin_release" onclick="toggle_release('{{e.MD5}}', false)" href="{% if e.CAN_RELEASE %}#{% endif %}" {% if not e.CAN_RELEASE %}disabled{% endif %}><i class="fas fa-check" title="Remove Release"></i></a>
+                                            {% else %}<a class="btn btn-outline-primary btn-sm" id="admin_release" onclick="toggle_release('{{e.MD5}}', true)" href="{% if e.CAN_RELEASE %}#{% endif %}" {% if not e.CAN_RELEASE %}disabled{% endif %}><i class="fas fa-slash" title="Set Release"></i></a>
                                             {% endif %}
                                             <a class="btn btn-outline-primary btn-sm" id="admin_edit{{e.MD5}}" onclick="show_admin_save('{{e.MD5}}')" href="#"><i class="fas fa-pen" title="Edit Scan"></i></a>
                                             <a class="btn btn-outline-primary btn-sm" id="admin_save{{e.MD5}}" onclick="update_emails('{{e.MD5}}')" href="#" hidden><i class="fas fa-save" title="Save Changes"></i></a>                                            
@@ -338,7 +338,7 @@
       }).then((result) => {
           if (result.value) {
               var md5_hash = item;
-              var newRelease = flag;
+              var newRelease = flag ? True : False;
               $.ajax({
                       url: '../update_scan/',
                           type : 'POST',
