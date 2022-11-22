@@ -121,7 +121,7 @@ class Upload(object):
                     response_data['description'] = msg
                     return self.resp_json(response_data)
 
-            start_time = timezone.now()
+            start_time = datetime.datetime.now(timezone.utc)
             response_data = self.upload()
             self.track_new_scan(False, start_time, response_data['hash'])
             self.write_to_s3(response_data)
@@ -145,7 +145,7 @@ class Upload(object):
         if not self.scan.file_type.is_allow_file():
             api_response['error'] = 'File format not Supported!'
             return api_response, HTTP_BAD_REQUEST
-        start_time = timezone.now()
+        start_time = datetime.datetime.now(timezone.utc)
         api_response = self.upload()
         self.track_new_scan(True, start_time, api_response['hash'])
         if (not self.request.GET.get('scan', '1') == '0'):

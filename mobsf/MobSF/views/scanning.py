@@ -113,12 +113,13 @@ class Scanning(object):
         self.user_app_version = request.POST.get('user_app_version')
         self.division = request.POST.get('division')
         self.environment = request.POST.get('environment')
-        self.email = request.POST.get('email') \
-            if request.POST.get('email') is None else sso_email(request)
+        self.email = sso_email(request)
         self.user_groups = get_usergroups(request)
         self.release = False
         if (is_admin(request)):
             self.release = request.POST.get('release', False)
+            if request.POST.get('email'):
+                self.email = request.POST.get('email')
         self.cyberspect_scan_id = 0
 
     def scan_apk(self):
