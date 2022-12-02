@@ -27,6 +27,7 @@ import requests
 
 import siphash
 
+from django.forms.models import model_to_dict
 from django.shortcuts import render
 
 from . import settings
@@ -669,3 +670,10 @@ def get_usergroups(request):
         return settings.ADMIN_GROUP
     else:
         return settings.GENERAL_GROUP
+
+
+def model_to_dict_str(instance):
+    result = model_to_dict(instance)
+    for key, value in result.items():
+        result[key] = str(value)
+    return result

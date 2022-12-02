@@ -51,21 +51,26 @@ logger = logging.getLogger(__name__)
 ##############################################################
 
 
-def static_analyzer_ios(request, api=False):
+def static_analyzer_ios_request(request):
+    response = static_analyzer_ios(request.GET)
+    if 'template' in response:
+        return render(request, response['template'], response)
+    elif 'error' in response:
+        return error_response(request, response['error'])
+    else:
+        return response
+
+
+def static_analyzer_ios(request_data, api=False):
     """Module that performs iOS IPA/ZIP Static Analysis."""
     try:
         logger.info('iOS Static Analysis Started')
+        logger.info(request_data)
+        file_type = request_data['scan_type']
+        checksum = request_data['hash']
+        re_scan = request_data.get('re_scan', 0)
+        filename = request_data['file_name']
         rescan = False
-        if api:
-            file_type = request.POST['scan_type']
-            checksum = request.POST['hash']
-            re_scan = request.POST.get('re_scan', 0)
-            filename = request.POST['file_name']
-        else:
-            file_type = request.GET['type']
-            checksum = request.GET['checksum']
-            re_scan = request.GET.get('rescan', 0)
-            filename = request.GET['name']
         if re_scan == '1':
             rescan = True
         md5_match = re.match('^[0-9a-f]{32}$', checksum)
@@ -110,16 +115,7 @@ def static_analyzer_ios(request, api=False):
                     else:
                         msg = ('IPA is malformed! '
                                'MobSF cannot find Payload directory')
-                        if api:
-                            return error_response(
-                                request,
-                                msg,
-                                True)
-                        else:
-                            return error_response(
-                                request,
-                                msg,
-                                False)
+                        logger.error(msg)
                     app_dict['bin_dir'] = app_dict['bin_dir'].as_posix() + '/'
                     # Get Files
                     all_files = ios_list_files(
@@ -195,11 +191,9 @@ def static_analyzer_ios(request, api=False):
                     context['binary_analysis'])
                 context['logo'] = os.getenv('LOGO',
                                             '/static/img/mobsf_logo.png')
-                template = 'static_analysis/ios_binary_analysis.html'
-                if api:
-                    return context
-                else:
-                    return render(request, template, context)
+                context['template'] = \
+                    'static_analysis/ios_binary_analysis.html'
+                return context
             elif file_type == 'ios':
                 ios_zip_db = StaticAnalyzerIOS.objects.filter(
                     MD5=app_dict['md5_hash'])
@@ -281,28 +275,18 @@ def static_analyzer_ios(request, api=False):
                     context['code_analysis'])
                 context['logo'] = os.getenv('LOGO',
                                             '/static/img/mobsf_logo.png')
-                template = 'static_analysis/ios_source_analysis.html'
-                if api:
-                    return context
-                else:
-                    return render(request, template, context)
+                context['template'] = \
+                    'static_analysis/ios_source_analysis.html'
+                return context
             else:
                 msg = 'File Type not supported!'
-                if api:
-                    return error_response(request, msg, True)
-                else:
-                    return error_response(request, msg, False)
+                logger.error(msg)
+                return {'error': msg}
         else:
             msg = 'Hash match failed or Invalid file extension or file type'
-            if api:
-                return error_response(request, msg, True)
-            else:
-                return error_response(request, msg, False)
+            logger.error(msg)
+            return {'error': msg}
     except Exception as exp:
         logger.exception('Error Performing Static Analysis')
         msg = str(exp)
-        exp_doc = exp.__doc__
-        if api:
-            return error_response(request, msg, True, exp_doc)
-        else:
-            return error_response(request, msg, False, exp_doc)
+        return {'error': msg}

@@ -121,17 +121,21 @@ class Scanning(object):
             if request.POST.get('email'):
                 self.email = request.POST.get('email')
         self.cyberspect_scan_id = 0
+        self.md5 = ''
+        self.short_hash = ''
+        self.scan_type = ''
 
     def scan_apk(self):
         """Android APK."""
-        md5 = handle_uploaded_file(self.file, '.apk', self.source_file)
-        short_hash = get_siphash(md5)
+        self.md5 = handle_uploaded_file(self.file, '.apk', self.source_file)
+        self.short_hash = get_siphash(self.md5)
+        self.scan_type = 'apk'
         data = {
             'analyzer': 'static_analyzer',
             'status': 'success',
-            'hash': md5,
-            'short_hash': short_hash,
-            'scan_type': 'apk',
+            'hash': self.md5,
+            'short_hash': self.short_hash,
+            'scan_type': self.scan_type,
             'file_name': self.file_name,
             'user_app_name': self.user_app_name,
             'user_app_version': self.user_app_version,
@@ -148,14 +152,15 @@ class Scanning(object):
 
     def scan_xapk(self):
         """Android XAPK."""
-        md5 = handle_uploaded_file(self.file, '.xapk', self.source_file)
-        short_hash = get_siphash(md5)
+        self.md5 = handle_uploaded_file(self.file, '.xapk', self.source_file)
+        self.short_hash = get_siphash(self.md5)
+        self.scan_type = 'xapk'
         data = {
             'analyzer': 'static_analyzer',
             'status': 'success',
-            'hash': md5,
-            'short_hash': short_hash,
-            'scan_type': 'xapk',
+            'hash': self.md5,
+            'short_hash': self.short_hash,
+            'scan_type': self.scan_type,
             'file_name': self.file_name,
             'user_app_name': self.user_app_name,
             'user_app_version': self.user_app_version,
@@ -172,14 +177,15 @@ class Scanning(object):
 
     def scan_apks(self):
         """Android Split APK."""
-        md5 = handle_uploaded_file(self.file, '.apk', self.source_file)
-        short_hash = get_siphash(md5)
+        self.md5 = handle_uploaded_file(self.file, '.apks', self.source_file)
+        self.short_hash = get_siphash(self.md5)
+        self.scan_type = 'apks'
         data = {
             'analyzer': 'static_analyzer',
             'status': 'success',
-            'hash': md5,
-            'short_hash': short_hash,
-            'scan_type': 'apks',
+            'hash': self.md5,
+            'short_hash': self.short_hash,
+            'scan_type': self.scan_type,
             'file_name': self.file_name,
             'user_app_name': self.user_app_name,
             'user_app_version': self.user_app_version,
@@ -196,14 +202,15 @@ class Scanning(object):
 
     def scan_zip(self):
         """Android /iOS Zipped Source."""
-        md5 = handle_uploaded_file(self.file, '.zip', self.source_file)
-        short_hash = get_siphash(md5)
+        self.md5 = handle_uploaded_file(self.file, '.zip', self.source_file)
+        self.short_hash = get_siphash(self.md5)
+        self.scan_type = 'zip'
         data = {
             'analyzer': 'static_analyzer',
             'status': 'success',
-            'hash': md5,
-            'short_hash': short_hash,
-            'scan_type': 'zip',
+            'hash': self.md5,
+            'short_hash': self.short_hash,
+            'scan_type': self.scan_type,
             'file_name': self.file_name,
             'user_app_name': self.user_app_name,
             'user_app_version': self.user_app_version,
@@ -220,13 +227,14 @@ class Scanning(object):
 
     def scan_ipa(self):
         """IOS Binary."""
-        md5 = handle_uploaded_file(self.file, '.ipa', self.source_file)
-        short_hash = get_siphash(md5)
+        self.md5 = handle_uploaded_file(self.file, '.ipa', self.source_file)
+        self.short_hash = get_siphash(self.md5)
+        self.scan_type = 'ipa'
         data = {
             'analyzer': 'static_analyzer_ios',
-            'hash': md5,
-            'short_hash': short_hash,
-            'scan_type': 'ipa',
+            'hash': self.md5,
+            'short_hash': self.short_hash,
+            'scan_type': self.scan_type,
             'file_name': self.file_name,
             'status': 'success',
             'user_app_name': self.user_app_name,
@@ -244,13 +252,14 @@ class Scanning(object):
 
     def scan_appx(self):
         """Windows appx."""
-        md5 = handle_uploaded_file(self.file, '.appx', self.source_file)
-        short_hash = get_siphash(md5)
+        self.md5 = handle_uploaded_file(self.file, '.appx', self.source_file)
+        self.short_hash = get_siphash(self.md5)
+        self.scan_type = 'appx'
         data = {
             'analyzer': 'static_analyzer_windows',
-            'hash': md5,
-            'short_hash': short_hash,
-            'scan_type': 'appx',
+            'hash': self.md5,
+            'short_hash': self.short_hash,
+            'scan_type': self.scan_type,
             'file_name': self.file_name,
             'status': 'success',
             'user_app_name': self.user_app_name,

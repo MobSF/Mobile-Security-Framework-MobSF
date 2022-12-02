@@ -33,6 +33,7 @@ from mobsf.MobSF.utils import (
     is_file_exists,
     is_safe_path,
     key,
+    model_to_dict_str,
     sso_email,
 )
 from mobsf.MobSF.views.scanning import Scanning
@@ -123,16 +124,20 @@ class Upload(object):
 
             start_time = datetime.datetime.now(timezone.utc)
             response_data = self.upload()
-            self.track_new_scan(False, start_time, response_data['hash'])
-            self.write_to_s3(response_data)
+            self.scan.cyberspect_scan_id = \
+                new_cyberspect_scan(False, response_data['hash'],
+                                    start_time,
+                                    self.scan.file_size,
+                                    self.scan.source_file_size)
+            self.cyberspect_scan_intake()
             return self.resp_json(response_data)
-        except Exception as ex:
-            msg = getattr(ex, 'message', repr(ex))
-            exmsg = ''.join(tb.format_exception(None, ex, ex.__traceback__))
+        except Exception as exp:
+            exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
             logger.error(exmsg)
+            msg = str(exp)
+            exp_doc = exp.__doc__
             self.track_failure(msg)
-            response_data['description'] = msg
-            return self.resp_json(response_data)
+            return error_response(request, msg, True, exp_doc)
 
     def upload_api(self):
         """API File Upload."""
@@ -147,9 +152,13 @@ class Upload(object):
             return api_response, HTTP_BAD_REQUEST
         start_time = datetime.datetime.now(timezone.utc)
         api_response = self.upload()
-        self.track_new_scan(True, start_time, api_response['hash'])
+        self.scan.cyberspect_scan_id = \
+            new_cyberspect_scan(False, api_response['hash'],
+                                start_time,
+                                self.scan.file_size,
+                                self.scan.source_file_size)
         if (not self.request.GET.get('scan', '1') == '0'):
-            self.write_to_s3(api_response)
+            self.cyberspect_scan_intake()
         return api_response, 200
 
     def upload(self):
@@ -169,69 +178,43 @@ class Upload(object):
         elif self.scan.file_type.is_appx():
             return self.scan.scan_appx()
 
-    def write_to_s3(self, api_response):
-        if not settings.AWS_S3_BUCKET:
-            logging.warning('Environment variable AWS_S3_BUCKET not set')
+    def cyberspect_scan_intake(self):
+        if not settings.AWS_INTAKE_LAMBDA:
+            logging.warning('Environment variable AWS_INTAKE_LAMBDA not set')
             return
 
-        s3_client = boto3.client('s3')
+        lclient = boto3.client('lambda')
         try:
-            # Write minimal metadata to file
-            prefix = os.path.join(settings.UPLD_DIR,
-                                  api_response['hash'] + '/'
-                                  + api_response['hash'] + '.')
-            file_path = prefix + api_response['scan_type']
-            metadata_filepath = file_path + '.json'
-            metadata_file = open(metadata_filepath, 'w')
-            metadata_file.write('{"user_app_name":"'
-                                + self.scan.user_app_name + '",')
-            metadata_file.write('"user_app_version":"'
-                                + self.scan.user_app_version + '",')
-            metadata_file.write('"email":"' + self.scan.email + '",')
-            metadata_file.write('"hash":"' + api_response['hash'] + '",')
-            metadata_file.write('"file_name":"'
-                                + self.scan.file_name + '",')
-            metadata_file.write('"short_hash":"' + api_response['short_hash']
-                                + '",')
-            metadata_file.write('"cyberspect_scan_id":"'
-                                + str(self.scan.cyberspect_scan_id) + '"}')
-            metadata_file.close()
+            file_path = os.path.join(settings.UPLD_DIR, self.scan.md5 + '/') \
+                + self.scan.md5 + '.' + self.scan.scan_type
+            if (self.scan.source_file_name):
+                source_file_path = file_path + '.src'
+            else:
+                source_file_path = ''
+            lambda_params = {
+                'cyberspect_scan_id': self.scan.cyberspect_scan_id,
+                'hash': self.scan.md5,
+                'short_hash': self.scan.short_hash,
+                'user_app_name': self.scan.user_app_name,
+                'user_app_version': self.scan.user_app_version,
+                'scan_type': self.scan.scan_type,
+                'email': self.scan.email,
+                'file_name': file_path,
+                'source_file_name': source_file_path,
+            }
+            logger.info('Executing Cyberspect intake lambda: %s',
+                        settings.AWS_INTAKE_LAMBDA)
+            lclient.invoke(FunctionName=settings.AWS_INTAKE_LAMBDA,
+                           InvocationType='Event',
+                           Payload=json.dumps(lambda_params).encode('utf-8'))
 
-            # Write uploaded files to S3 bucket
-            logger.info('Writing files to S3 bucket: %s',
-                        settings.AWS_S3_BUCKET)
-            file_name = self.scan.file_name
-            if (self.scan.source_file):
-                source_filepath = file_path + '.src'
-                s3_client.upload_file(source_filepath,
-                                      settings.AWS_S3_BUCKET,
-                                      'intake/' + file_name + '.src')
-            s3_client.upload_file(file_path,
-                                  settings.AWS_S3_BUCKET,
-                                  'intake/' + file_name)
-            s3_client.upload_file(metadata_filepath,
-                                  settings.AWS_S3_BUCKET,
-                                  'intake/' + file_name + '.json')
-
-        except ClientError:
-            msg = 'Unable to upload files to AWS S3'
-            logging.error(msg)
-            self.track_failure(self.scan, msg)
+        except ClientError as exp:
+            exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+            msg = 'Unable to trigger AWS Lambda (Intake). '
+            logging.error('%s %s', msg, exmsg)
+            self.track_failure(msg + str(exp))
             return False
         return
-
-    def track_new_scan(self, scheduled, start_time, md5):
-        # Insert new record into CyberspectScans
-        new_db_obj = CyberspectScans(
-            SCHEDULED=scheduled,
-            MOBSF_MD5=md5,
-            INTAKE_START=start_time,
-            FILE_SIZE_PACKAGE=self.scan.file_size,
-            FILE_SIZE_SOURCE=self.scan.source_file_size,
-        )
-        new_db_obj.save()
-        self.scan.cyberspect_scan_id = new_db_obj.ID
-        logger.info('Hash: %s, Cyberspect Scan ID: %s', md5, new_db_obj.ID)
 
     def track_failure(self, error_message):
         if self.scan.cyberspect_scan_id == 0:
@@ -241,6 +224,7 @@ class Upload(object):
             'success': False,
             'failure_source': 'SAST',
             'failure_message': error_message,
+            'sast_end': datetime.datetime.utcnow(),
         }
         update_cyberspect_scan(data)
 
@@ -361,6 +345,32 @@ def scan_metadata(md5):
         if db_obj:
             return model_to_dict(db_obj)
     return None
+
+
+def get_cyberspect_scan(csid):
+    db_obj = CyberspectScans.objects.filter(ID=csid).first()
+    if db_obj:
+        cs_obj = model_to_dict_str(db_obj)
+        rs_obj = scan_metadata(cs_obj['MOBSF_MD5'])
+        cs_obj['SCAN_TYPE'] = rs_obj['SCAN_TYPE']
+        cs_obj['FILE_NAME'] = rs_obj['FILE_NAME']
+        return cs_obj
+    return None
+
+
+def new_cyberspect_scan(scheduled, md5, start_time,
+                        file_size, source_file_size):
+    # Insert new record into CyberspectScans
+    new_db_obj = CyberspectScans(
+        SCHEDULED=scheduled,
+        MOBSF_MD5=md5,
+        INTAKE_START=start_time,
+        FILE_SIZE_PACKAGE=file_size,
+        FILE_SIZE_SOURCE=source_file_size,
+    )
+    new_db_obj.save()
+    logger.info('Hash: %s, Cyberspect Scan ID: %s', md5, new_db_obj.ID)
+    return new_db_obj.ID
 
 
 def update_scan(request, api=False):
@@ -495,8 +505,8 @@ def search(request):
         db_obj = RecentScansDB.objects.filter(MD5=md5)
         if db_obj.exists():
             e = db_obj[0]
-            url = (f'/{e.ANALYZER }/?name={e.FILE_NAME}&'
-                   f'checksum={e.MD5}&type={e.SCAN_TYPE}')
+            url = (f'/{e.ANALYZER }/?file_name={e.FILE_NAME}&'
+                   f'hash={e.MD5}&scan_type={e.SCAN_TYPE}')
             return HttpResponseRedirect(url)
         else:
             return HttpResponseRedirect('/not_found/')
@@ -577,6 +587,32 @@ def delete_scan(request, api=False):
             return error_response(request, msg, False, exp_doc)
 
 
+def cyberspect_rescan(md5, scheduled):
+    """Get cyberspect scan by hash."""
+    response_data = {
+        'cyberspect_scan_id': '',
+        'hash': '',
+        'scan_type': '',
+        'file_name': '',
+    }
+    rs_obj = RecentScansDB.objects.filter(MD5=md5).first()
+    if not rs_obj:
+        return None
+    cs_obj = CyberspectScans.objects.filter(MOBSF_MD5=md5) \
+        .order_by('-INTAKE_START').first()
+
+    scan_id = new_cyberspect_scan(scheduled, md5,
+                                  datetime.datetime.now(timezone.utc),
+                                  cs_obj.FILE_SIZE_PACKAGE,
+                                  cs_obj.FILE_SIZE_SOURCE)
+
+    response_data['cyberspect_scan_id'] = scan_id
+    response_data['hash'] = md5
+    response_data['scan_type'] = rs_obj.SCAN_TYPE
+    response_data['file_name'] = rs_obj.FILE_NAME
+    return response_data
+
+
 def health(request):
     """Check MobSF system health."""
     # Ensure database access is good
@@ -612,6 +648,23 @@ class RecentScans(object):
         page_size = self.request.GET.get('page_size', 10)
         cs_scans = CyberspectScans.objects.all()
         result = cs_scans.values().order_by('-INTAKE_START')
+        try:
+            paginator = Paginator(result, page_size)
+            content = paginator.page(page)
+            data = {
+                'content': list(content),
+                'count': paginator.count,
+                'num_pages': paginator.num_pages,
+            }
+        except Exception as exp:
+            data = {'error': str(exp)}
+        return data
+
+    def cyberspect_scheduled_scans(self):
+        page = self.request.GET.get('page', 1)
+        page_size = self.request.GET.get('page_size', 10)
+        cs_scans = CyberspectScans.objects.filter(SCHEDULED=True)
+        result = cs_scans.values().order_by('ID')
         try:
             paginator = Paginator(result, page_size)
             content = paginator.page(page)

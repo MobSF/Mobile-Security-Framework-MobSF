@@ -38,6 +38,7 @@ urlpatterns = [
     # Static Analysis
     re_path(r'^api/v1/upload$', api_sz.api_upload),
     re_path(r'^api/v1/scan$', api_sz.api_scan),
+    re_path(r'^api/v1/async_scan$', api_sz.api_async_scan),
     re_path(r'^api/v1/update_scan$', api_sz.api_update_scan),
     re_path(r'^api/v1/scan_metadata$', api_sz.api_scan_metadata),
     re_path(r'^api/v1/delete_scan$', api_sz.api_delete_scan),
@@ -53,7 +54,10 @@ urlpatterns = [
     re_path(r'^api/v1/suppress_by_files$', api_sz.api_suppress_by_files),
     re_path(r'^api/v1/list_suppressions$', api_sz.api_list_suppressions),
     re_path(r'^api/v1/delete_suppression$', api_sz.api_delete_suppression),
+    re_path(r'^api/v1/cyberspect_scan$', api_sz.api_cyberspect_get_scan),
     re_path(r'^api/v1/cyberspect_scans$', api_sz.api_cyberspect_recent_scans),
+    re_path(r'^api/v1/cyberspect_scheduled_scans$',
+            api_sz.api_cyberspect_scheduled_scans),
     re_path(r'^api/v1/update_cyberspect_scan$',
             api_sz.api_update_cyberspect_scan),
     # Dynamic Analysis
@@ -101,7 +105,7 @@ if settings.API_ONLY == '0':
 
         # Static Analysis
         # Android
-        re_path(r'^static_analyzer/$', android_sa.static_analyzer),
+        re_path(r'^static_analyzer/$', android_sa.static_analyzer_request),
         # Remove this is version 4/5
         re_path(r'^source_code/$', source_tree.run, name='tree_view'),
         re_path(r'^view_file/$', view_source.run, name='view_source'),
@@ -109,10 +113,11 @@ if settings.API_ONLY == '0':
         re_path(r'^generate_downloads/$', generate_downloads.run),
         re_path(r'^manifest_view/$', manifest_view.run),
         # IOS
-        re_path(r'^static_analyzer_ios/$', ios_sa.static_analyzer_ios),
+        re_path(r'^static_analyzer_ios/$', ios_sa.static_analyzer_ios_request),
         re_path(r'^view_file_ios/$', io_view_source.run),
         # Windows
-        re_path(r'^static_analyzer_windows/$', windows.staticanalyzer_windows),
+        re_path(r'^static_analyzer_windows/$',
+                windows.staticanalyzer_windows_request),
         # Shared
         re_path(r'^pdf/$', pdf.pdf),
         re_path(r'^appsec_dashboard/(?P<checksum>[0-9a-f]{32})/$',

@@ -165,6 +165,7 @@ INSTALLED_APPS = (
     'mobsf.DynamicAnalyzer',
     'mobsf.MobSF',
     'mobsf.MalwareAnalyzer',
+    'background_task',
 )
 MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
@@ -425,8 +426,7 @@ else:
 # Get AppMonsta API from https://appmonsta.com/dashboard/get_api_key/
 APPMONSTA_API = os.getenv('APPMONSTA_API')
 AWS_REGION = os.getenv('AWS_REGION', 'us-east-2')
-AWS_S3_BUCKET = os.getenv('AWS_S3_BUCKET')
-AWS_LAMBDA_NOTIFY = os.getenv('AWS_LAMBDA_NOTIFY')
+AWS_INTAKE_LAMBDA = os.getenv('AWS_INTAKE_LAMBDA', '')
 DEPENDENCY_TRACK_URL = os.getenv('DEPENDENCY_TRACK_URL')
 ADMIN_USERS = os.getenv('ADMIN_USERS')
 GENERAL_GROUP = os.getenv('GENERAL_GROUP', ' ')

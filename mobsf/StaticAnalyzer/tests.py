@@ -54,7 +54,7 @@ def static_analysis_test():
         logger.info('[OK] Completed Upload test')
         logger.info('Running Static Analysis Test')
         for upl in uploaded:
-            scan_url = '/{}/?name={}&checksum={}&type={}'.format(
+            scan_url = '/{}/?file_name={}&hash={}&scan_type={}'.format(
                 upl['analyzer'], upl['file_name'],
                 upl['hash'], upl['scan_type'])
             if RESCAN:

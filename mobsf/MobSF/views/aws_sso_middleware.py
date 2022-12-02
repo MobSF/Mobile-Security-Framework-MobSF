@@ -33,7 +33,7 @@ def alb_idp_auth_middleware(
         if info:
             request.META['email'] = str.lower(info['email'])
         else:
-            request.META['email'] = 'test@testing.local'
+            request.META['email'] = 'brice@cyberspect.com'
         return get_response(request)
 
     return middleware
