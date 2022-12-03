@@ -95,6 +95,7 @@ ENV POSTGRES_HOST=postgres
 RUN ./scripts/postgres_support.sh $POSTGRES
 
 RUN chown -R mobsf:mobsf /home/mobsf/Mobile-Security-Framework-MobSF
+RUN chmod +x /home/mobsf/Mobile-Security-Framework-MobSF/scripts/background_tasks.sh
 USER mobsf
-# Run MobSF
+# Run MobSF background tasks
 CMD ["/home/mobsf/Mobile-Security-Framework-MobSF/scripts/background_tasks.sh"]
