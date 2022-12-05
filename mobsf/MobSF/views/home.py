@@ -387,11 +387,7 @@ def update_scan(request, api=False):
             db_obj.save()
             response = model_to_dict(db_obj)
 
-        if api:
-            return response
-        else:
-            ctype = 'application/json; charset=utf-8'
-            return HttpResponse(json.dumps(response), content_type=ctype)
+        return response
     except Exception as exp:
         exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
         logger.error(exmsg)
