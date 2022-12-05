@@ -349,7 +349,6 @@
                                   release: newRelease
                                   },
                               success : function(json) {
-                                  if (json.release === newRelease){
                                       Swal.fire(
                                           'Updated!',
                                           'The scan has been updated!',
@@ -357,14 +356,6 @@
                                       ).then(function () {
                                           location.reload();
                                       })
-                                  }
-                                  else {
-                                      Swal.fire(
-                                      'Release update Failed',
-                                      'Cannot update the scan!',
-                                      'error'
-                                      )
-                                  }
                               },
                               error : function(xhr,errmsg,err) {
                                   Swal.fire(
