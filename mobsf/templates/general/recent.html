@@ -91,7 +91,7 @@
                                 {% if is_admin %}
                                     <br/><br/><label id="scanEmails{{e.MD5}}" text="{{ e.EMAIL }}">{{ e.EMAIL }}</label>
                                     <br/>
-                                    <input type="text" id="scanEmailsInput{{e.MD5}}" text="{{ e.EMAIL }}" hidden>{{e.EMAIL}}</input>
+                                    <input type="text" id="scanEmailsInput{{e.MD5}}" text="{{ e.EMAIL }}" hidden />
                                 {% endif %}
                             </td>                               
                             <td><p>                                    
@@ -360,7 +360,7 @@
                               error : function(xhr,errmsg,err) {
                                   Swal.fire(
                                       'Updating scan Failed',
-                                      errmsg "+" err,
+                                      errmsg,
                                       'error'
                                       )
                               }
