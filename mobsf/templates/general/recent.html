@@ -285,7 +285,7 @@
         var saveBtnName = "#admin_save" + item;
         var saveText = $(labelName).innerText;
         $(inputName).prop('hidden', false);
-        $(inputName).prop('text', saveText);
+        $(inputName).innerText = saveText;
         $(labelName).prop('hidden', true);
         $(editBtnName).prop('hidden', true);
         $(saveBtnName).prop('hidden', false);
