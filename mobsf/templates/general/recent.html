@@ -283,9 +283,9 @@
         var inputName = "#scanEmailsInput" + item;
         var editBtnName = "#admin_edit" + item;
         var saveBtnName = "#admin_save" + item;
-        var saveText = $(labelName).innerText;
+        var saveText = $(labelName).value;
         $(inputName).prop('hidden', false);
-        $(inputName).innerText = saveText;
+        $(inputName).value = saveText;
         $(labelName).prop('hidden', true);
         $(editBtnName).prop('hidden', true);
         $(saveBtnName).prop('hidden', false);
@@ -305,7 +305,7 @@
     function getCleanEmails(identifier){
         var retVal = "";
         var inputName = "#scanEmailsInput" + identifier;
-        var emails = $(inputName).val();
+        var emails = $(inputName).value;
         var updated = emails.replace(/,/gi, ";");
         var emailArray = updated.split(";");
         eamilArray.forEach(cleanElement);
@@ -316,6 +316,7 @@
                 retVal += emailArray[i];
             }
         }
+        alert(retVal)
         return retVal;
     }
 
@@ -349,6 +350,7 @@
                                   release: newRelease
                                   },
                               success : function(json) {
+                                if (json.updated==='yes'){
                                       Swal.fire(
                                           'Updated!',
                                           'The scan has been updated!',
@@ -356,6 +358,14 @@
                                       ).then(function () {
                                           location.reload();
                                       })
+                                }
+                                else {
+                                    Swal.fire(
+                                    'Update Failed',
+                                    'Cannot update the scan.',
+                                    'error'
+                                    )
+                                }
                               },
                               error : function(xhr,errmsg,err) {
                                   Swal.fire(
@@ -396,7 +406,7 @@
                                   email: emails
                                   },
                               success : function(json) {
-                                  if (json.EMAIL === emails){
+                                if (json.updated==='yes'){
                                       Swal.fire(
                                           'Updated!',
                                           'The email addresses have been updated!',
