@@ -402,7 +402,7 @@
                       dataType: 'json',
                           data : {
                                   csrfmiddlewaretoken: '{{ csrf_token }}',
-                                  md5: md5_hash,
+                                  hash: md5_hash,
                                   email: emails
                                   },
                               success : function(json) {
