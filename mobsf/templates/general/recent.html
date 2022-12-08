@@ -305,6 +305,8 @@
     function getCleanEmails(identifier){
         var retVal = "";
         var inputName = "#scanEmailsInput" + identifier;
+        alert("emails value" + $(inputName).value);
+        alert("emails text" + $(inputName).innerText);
         var emails = $(inputName).value;
         var updated = emails.replace(/,/gi, ";");
         var emailArray = updated.split(";");
