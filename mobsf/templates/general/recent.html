@@ -285,7 +285,7 @@
         var saveBtnName = "#admin_save" + item;
         var saveText = $(labelName).value;
         $(inputName).prop('hidden', false);
-        $(inputName).value = saveText;
+        $(inputName).val(saveText);
         $(labelName).prop('hidden', true);
         $(editBtnName).prop('hidden', true);
         $(saveBtnName).prop('hidden', false);
@@ -305,9 +305,9 @@
     function getCleanEmails(identifier){
         var retVal = "";
         var inputName = "#scanEmailsInput" + identifier;
-        alert("emails value" + $(inputName).value);
+        alert("emails value" + $(inputName).val());
         alert("emails text" + $(inputName).text);
-        var emails = $(inputName).value;
+        var emails = $(inputName).val();
         var updated = emails.replace(/,/gi, ";");
         var emailArray = updated.split(";");
         eamilArray.forEach(cleanElement);
