@@ -308,8 +308,7 @@
         var emails = $(inputName).val();
         var updated = emails.replace(/,/gi, ";");
         var emailArray = updated.split(";");
-        alert(emailArray.length);
-        eamilArray.forEach(cleanElement);
+        emailArray.forEach(cleanElement);
         for(var i = 0; i < emailArray.length; i++){
             if(i < emailArray.length - 1){
                 retVal += emailArray[i] + ",";
