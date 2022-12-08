@@ -306,7 +306,7 @@
         var retVal = "";
         var inputName = "#scanEmailsInput" + identifier;
         alert("emails value" + $(inputName).value);
-        alert("emails text" + $(inputName).innerText);
+        alert("emails text" + $(inputName).text);
         var emails = $(inputName).value;
         var updated = emails.replace(/,/gi, ";");
         var emailArray = updated.split(";");
