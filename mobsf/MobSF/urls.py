@@ -39,6 +39,7 @@ urlpatterns = [
     re_path(r'^api/v1/upload$', api_sz.api_upload),
     re_path(r'^api/v1/scan$', api_sz.api_scan),
     re_path(r'^api/v1/async_scan$', api_sz.api_async_scan),
+    re_path(r'^api/v1/rescan$', api_sz.api_rescan),
     re_path(r'^api/v1/update_scan$', api_sz.api_update_scan),
     re_path(r'^api/v1/scan_metadata$', api_sz.api_scan_metadata),
     re_path(r'^api/v1/delete_scan$', api_sz.api_delete_scan),
@@ -47,6 +48,7 @@ urlpatterns = [
     re_path(r'^api/v1/view_source$', api_sz.api_view_source,
             name='api_view_source'),
     re_path(r'^api/v1/scans$', api_sz.api_recent_scans),
+    re_path(r'^api/v1/release_scans$', api_sz.api_release_scans),
     re_path(r'^api/v1/compare$', api_sz.api_compare),
     re_path(r'^api/v1/scorecard$', api_sz.api_scorecard),
     # Static Suppression
@@ -56,8 +58,6 @@ urlpatterns = [
     re_path(r'^api/v1/delete_suppression$', api_sz.api_delete_suppression),
     re_path(r'^api/v1/cyberspect_scan$', api_sz.api_cyberspect_get_scan),
     re_path(r'^api/v1/cyberspect_scans$', api_sz.api_cyberspect_recent_scans),
-    re_path(r'^api/v1/cyberspect_scheduled_scans$',
-            api_sz.api_cyberspect_scheduled_scans),
     re_path(r'^api/v1/update_cyberspect_scan$',
             api_sz.api_update_cyberspect_scan),
     # Dynamic Analysis

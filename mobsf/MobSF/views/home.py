@@ -660,11 +660,11 @@ class RecentScans(object):
             data = {'error': str(exp)}
         return data
 
-    def cyberspect_scheduled_scans(self):
+    def release_scans(self):
         page = self.request.GET.get('page', 1)
         page_size = self.request.GET.get('page_size', 10)
-        cs_scans = CyberspectScans.objects.filter(SCHEDULED=True)
-        result = cs_scans.values().order_by('ID')
+        scans = RecentScansDB.objects.filter(RELEASE=True)
+        result = scans.values().order_by('-TIMESTAMP')
         try:
             paginator = Paginator(result, page_size)
             content = paginator.page(page)
