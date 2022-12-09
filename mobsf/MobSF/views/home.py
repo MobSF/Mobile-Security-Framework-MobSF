@@ -14,8 +14,6 @@ from wsgiref.util import FileWrapper
 
 import boto3
 
-from botocore.exceptions import ClientError
-
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect
@@ -28,6 +26,7 @@ from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
     api_key,
     error_response,
+    get_siphash,
     is_admin,
     is_dir_exists,
     is_file_exists,
@@ -129,7 +128,7 @@ class Upload(object):
                                     start_time,
                                     self.scan.file_size,
                                     self.scan.source_file_size)
-            self.cyberspect_scan_intake()
+            cyberspect_scan_intake(self.scan)
             return self.resp_json(response_data)
         except Exception as exp:
             exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
@@ -158,7 +157,7 @@ class Upload(object):
                                 self.scan.file_size,
                                 self.scan.source_file_size)
         if (not self.request.GET.get('scan', '1') == '0'):
-            self.cyberspect_scan_intake()
+            cyberspect_scan_intake(self.scan)
         return api_response, 200
 
     def upload(self):
@@ -177,44 +176,6 @@ class Upload(object):
             return self.scan.scan_ipa()
         elif self.scan.file_type.is_appx():
             return self.scan.scan_appx()
-
-    def cyberspect_scan_intake(self):
-        if not settings.AWS_INTAKE_LAMBDA:
-            logging.warning('Environment variable AWS_INTAKE_LAMBDA not set')
-            return
-
-        lclient = boto3.client('lambda')
-        try:
-            file_path = os.path.join(settings.UPLD_DIR, self.scan.md5 + '/') \
-                + self.scan.md5 + '.' + self.scan.scan_type
-            if (self.scan.source_file_name):
-                source_file_path = file_path + '.src'
-            else:
-                source_file_path = ''
-            lambda_params = {
-                'cyberspect_scan_id': self.scan.cyberspect_scan_id,
-                'hash': self.scan.md5,
-                'short_hash': self.scan.short_hash,
-                'user_app_name': self.scan.user_app_name,
-                'user_app_version': self.scan.user_app_version,
-                'scan_type': self.scan.scan_type,
-                'email': self.scan.email,
-                'file_name': file_path,
-                'source_file_name': source_file_path,
-            }
-            logger.info('Executing Cyberspect intake lambda: %s',
-                        settings.AWS_INTAKE_LAMBDA)
-            lclient.invoke(FunctionName=settings.AWS_INTAKE_LAMBDA,
-                           InvocationType='Event',
-                           Payload=json.dumps(lambda_params).encode('utf-8'))
-
-        except ClientError as exp:
-            exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
-            msg = 'Unable to trigger AWS Lambda (Intake). '
-            logging.error('%s %s', msg, exmsg)
-            self.track_failure(msg + str(exp))
-            return False
-        return
 
     def track_failure(self, error_message):
         if self.scan.cyberspect_scan_id == 0:
@@ -589,12 +550,6 @@ def delete_scan(request, api=False):
 
 def cyberspect_rescan(md5, scheduled):
     """Get cyberspect scan by hash."""
-    response_data = {
-        'cyberspect_scan_id': '',
-        'hash': '',
-        'scan_type': '',
-        'file_name': '',
-    }
     rs_obj = RecentScansDB.objects.filter(MD5=md5).first()
     if not rs_obj:
         return None
@@ -605,12 +560,46 @@ def cyberspect_rescan(md5, scheduled):
                                   datetime.datetime.now(timezone.utc),
                                   cs_obj.FILE_SIZE_PACKAGE,
                                   cs_obj.FILE_SIZE_SOURCE)
+    scan_data = {
+        'cyberspect_scan_id': scan_id,
+        'md5': md5,
+        'short_hash': get_siphash(md5),
+        'scan_type': rs_obj.SCAN_TYPE,
+        'file_name': rs_obj.FILE_NAME,
+        'user_app_name': rs_obj.USER_APP_NAME,
+        'user_app_version': rs_obj.USER_APP_VERSION,
+        'email': rs_obj.EMAIL,
+    }
+    cyberspect_scan_intake(scan_data)
+    return scan_data
 
-    response_data['cyberspect_scan_id'] = scan_id
-    response_data['hash'] = md5
-    response_data['scan_type'] = rs_obj.SCAN_TYPE
-    response_data['file_name'] = rs_obj.FILE_NAME
-    return response_data
+
+def cyberspect_scan_intake(scan):
+    if not settings.AWS_INTAKE_LAMBDA:
+        logging.warning('Environment variable AWS_INTAKE_LAMBDA not set')
+        return
+
+    lclient = boto3.client('lambda')
+    file_path = os.path.join(settings.UPLD_DIR, scan.md5 + '/') \
+        + scan.md5 + '.' + scan.scan_type
+    if (os.path.exists(file_path + '.src')):
+        file_path = file_path + '.src'
+    lambda_params = {
+        'cyberspect_scan_id': scan.cyberspect_scan_id,
+        'hash': scan.md5,
+        'short_hash': scan.short_hash,
+        'user_app_name': scan.user_app_name,
+        'user_app_version': scan.user_app_version,
+        'scan_type': scan.scan_type,
+        'email': scan.email,
+        'file_name': file_path,
+    }
+    logger.info('Executing Cyberspect intake lambda: %s',
+                settings.AWS_INTAKE_LAMBDA)
+    lclient.invoke(FunctionName=settings.AWS_INTAKE_LAMBDA,
+                   InvocationType='Event',
+                   Payload=json.dumps(lambda_params).encode('utf-8'))
+    return
 
 
 def health(request):
