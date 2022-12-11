@@ -1,540 +1,301 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="utf-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge">
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <meta name="description" content="Cyberspect is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework built on https://mobsf.github.io/docs/">
-      <link rel="icon" href="{% static 'img/favicon.ico' %}">
-      <title>Cyberspect - Mobile Application Security</title>
-      <link rel="stylesheet" href="{% static 'adminlte/dashboard/css/adminlte.min.css' %}">
-      <link rel="stylesheet" href="{% static 'adminlte/plugins/fontawesome-free/css/all.min.css' %}">
-      <link rel="stylesheet" href="{% static 'others/css/spinner.css' %}">
-      <link rel="stylesheet" href="{% static 'landing/css/home.css' %}">
-      <!-- Google Font: Source Sans Pro -->
-      <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
-   </head>
-   <body>
-   <div class="topnav">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description"
+        content="Cyberspect is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework built on https://mobsf.github.io/docs/">
+    <link rel="icon" href="{% static 'img/favicon.ico' %}">
+    <title>Cyberspect - Mobile Application Security</title>
+    <link rel="stylesheet" href="{% static 'adminlte/dashboard/css/adminlte.min.css' %}">
+    <link rel="stylesheet" href="{% static 'adminlte/plugins/fontawesome-free/css/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'others/css/spinner.css' %}">
+    <link rel="stylesheet" href="{% static 'landing/css/home.css' %}">
+    <!-- Google Font: Source Sans Pro -->
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+</head>
+
+<body>
+    <div class="topnav">
         <!-- Centered link -->
         <div class="topnav-centered">
             <a>
-               <img src="{{tenant_static}}img/mobsf_logo.png" width="20%" height="20%"/>
-           </a>
-           </div>
-           <!-- Left-aligned links (default) -->
-           <a href="{% url 'recent' %}">RECENT SCANS</a>
-           <!--<a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>-->
-   
-           <!-- Right-aligned links -->
-           <div class="topnav-right">
-               <!--<a href="{% url 'api_docs' %}">API DOCS</a>-->
-               <a href="{% url 'support' %}">SUPPORT</a>
-               <a href="{% url 'about' %}">ABOUT</a>
-               <a>
+                <img src="{{tenant_static}}img/mobsf_logo.png" width="20%" height="20%" />
+            </a>
+        </div>
+        <!-- Left-aligned links (default) -->
+        <a href="{% url 'recent' %}">RECENT SCANS</a>
+
+        <!-- Right-aligned links -->
+        <div class="topnav-right">
+            <!--<a href="{% url 'api_docs' %}">API DOCS</a>-->
+            <a href="{% url 'support' %}">SUPPORT</a>
+            <a href="{% url 'about' %}">ABOUT</a>
+            <a>
                 <form action="/search" method="GET">
                     <input name="md5" type="text" class="form-control" placeholder="Search Hash">
-                 </form>
-                </a>
-           </div>
-
+                </form>
+            </a>
         </div>
-      <div class="site-wrapper">
-         <div class="site-wrapper-inner">
+
+    </div>
+    <div class="site-wrapper">
+        <div class="site-wrapper-inner">
             <div class="cover-container">
-               <div class="masthead clearfix">
-                  <div align="center" class="inner">
-                  </div>
-               </div>
-               <div class="inner cover">
-                  <div style="visibility:hidden; opacity:0" id="drop">
-                     <div id="textnode">Drop anywhere!</div>
-                  </div>
-                  </br>
-                  <div id="err_name" class="hidden"><span class="error">Application Name Required!</span></div>
-                  <div><span><input type="text" id="name" placeholder="Application Name"></span>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg" title="The name of the mobile application as it appears (or will appear) in the applicable app store."></i></div>
-                  <div id="err_version" class="hidden"><span class="error">Version Required!</span></div>
-                  <div><span><input type="text" id="version" placeholder="Version" value="1.0"></span>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg" title="The version of the mobile application."></i></div>                  
-                  <div>
-                      <span>                          
-                          <select id="environment">
-                              <option value="Production">Production</option>
-                              <option value="Preproduction">Preproduction</option>
-                          </select>
-                          &nbsp;&nbsp;<i class="fas fa-info-circle fa-lg" title="The release status of the mobile application."></i>
-                      </span>
-                  </div>
-                  <div id="err_division" class="hidden"><span class="error">Divison Required!</span></div>
-                  <div>
-                      <span>                          
-                          <select id="division">
-                              <option>Unknown</option>
-                          </select>
-                          &nbsp;&nbsp;<i class="fas fa-info-circle fa-lg" title="The Abbott Labs organizational division applicable to the mobile application."></i>
-                      </span>
-                  </div>
-                  {% if is_admin == True and 1 == 2 %}
-                    <div><span><input type="text" id="override_email" placeholder="Email Override"></span>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg" title="If the email should be sent to a different admin, enter it here."></i></div>
-                  {% endif %}
-                  <!--<div>
-                    <table style="margin-left: auto; margin-right: auto;">
-                        <tr>
-                        <td>                          
-                            <select id="country" multiple style="height: 66px">
-                                <option value="**" selected>Global</option>
-                                <option value="US">United States</option>
-                                <option value="AF">Afghanistan</option>
-                                <option value="AX">Aland Islands</option>
-                                <option value="AL">Albania</option>
-                                <option value="DZ">Algeria</option>
-                                <option value="AS">American Samoa</option>
-                                <option value="AD">Andorra</option>
-                                <option value="AO">Angola</option>
-                                <option value="AI">Anguilla</option>
-                                <option value="AQ">Antarctica</option>
-                                <option value="AG">Antigua and Barbuda</option>
-                                <option value="AR">Argentina</option>
-                                <option value="AM">Armenia</option>
-                                <option value="AW">Aruba</option>
-                                <option value="AU">Australia</option>
-                                <option value="AT">Austria</option>
-                                <option value="AZ">Azerbaijan</option>
-                                <option value="BS">Bahamas</option>
-                                <option value="BH">Bahrain</option>
-                                <option value="BD">Bangladesh</option>
-                                <option value="BB">Barbados</option>
-                                <option value="BY">Belarus</option>
-                                <option value="BE">Belgium</option>
-                                <option value="BZ">Belize</option>
-                                <option value="BJ">Benin</option>
-                                <option value="BM">Bermuda</option>
-                                <option value="BT">Bhutan</option>
-                                <option value="BO">Bolivia</option>
-                                <option value="BQ">Bonaire, Sint Eustatius and Saba</option>
-                                <option value="BA">Bosnia and Herzegovina</option>
-                                <option value="BW">Botswana</option>
-                                <option value="BV">Bouvet Island</option>
-                                <option value="BR">Brazil</option>
-                                <option value="IO">British Indian Ocean Territory</option>
-                                <option value="BN">Brunei Darussalam</option>
-                                <option value="BG">Bulgaria</option>
-                                <option value="BF">Burkina Faso</option>
-                                <option value="BI">Burundi</option>
-                                <option value="KH">Cambodia</option>
-                                <option value="CM">Cameroon</option>
-                                <option value="CA">Canada</option>
-                                <option value="CV">Cape Verde</option>
-                                <option value="KY">Cayman Islands</option>
-                                <option value="CF">Central African Republic</option>
-                                <option value="TD">Chad</option>
-                                <option value="CL">Chile</option>
-                                <option value="CN">China</option>
-                                <option value="CX">Christmas Island</option>
-                                <option value="CC">Cocos (Keeling) Islands</option>
-                                <option value="CO">Colombia</option>
-                                <option value="KM">Comoros</option>
-                                <option value="CG">Congo</option>
-                                <option value="CD">Congo, Democratic Republic of the Congo</option>
-                                <option value="CK">Cook Islands</option>
-                                <option value="CR">Costa Rica</option>
-                                <option value="CI">Cote D'Ivoire</option>
-                                <option value="HR">Croatia</option>
-                                <option value="CU">Cuba</option>
-                                <option value="CW">Curacao</option>
-                                <option value="CY">Cyprus</option>
-                                <option value="CZ">Czech Republic</option>
-                                <option value="DK">Denmark</option>
-                                <option value="DJ">Djibouti</option>
-                                <option value="DM">Dominica</option>
-                                <option value="DO">Dominican Republic</option>
-                                <option value="EC">Ecuador</option>
-                                <option value="EG">Egypt</option>
-                                <option value="SV">El Salvador</option>
-                                <option value="GQ">Equatorial Guinea</option>
-                                <option value="ER">Eritrea</option>
-                                <option value="EE">Estonia</option>
-                                <option value="ET">Ethiopia</option>
-                                <option value="FK">Falkland Islands (Malvinas)</option>
-                                <option value="FO">Faroe Islands</option>
-                                <option value="FJ">Fiji</option>
-                                <option value="FI">Finland</option>
-                                <option value="FR">France</option>
-                                <option value="GF">French Guiana</option>
-                                <option value="PF">French Polynesia</option>
-                                <option value="TF">French Southern Territories</option>
-                                <option value="GA">Gabon</option>
-                                <option value="GM">Gambia</option>
-                                <option value="GE">Georgia</option>
-                                <option value="DE">Germany</option>
-                                <option value="GH">Ghana</option>
-                                <option value="GI">Gibraltar</option>
-                                <option value="GR">Greece</option>
-                                <option value="GL">Greenland</option>
-                                <option value="GD">Grenada</option>
-                                <option value="GP">Guadeloupe</option>
-                                <option value="GU">Guam</option>
-                                <option value="GT">Guatemala</option>
-                                <option value="GG">Guernsey</option>
-                                <option value="GN">Guinea</option>
-                                <option value="GW">Guinea-Bissau</option>
-                                <option value="GY">Guyana</option>
-                                <option value="HT">Haiti</option>
-                                <option value="HM">Heard Island and Mcdonald Islands</option>
-                                <option value="VA">Holy See (Vatican City State)</option>
-                                <option value="HN">Honduras</option>
-                                <option value="HK">Hong Kong</option>
-                                <option value="HU">Hungary</option>
-                                <option value="IS">Iceland</option>
-                                <option value="IN">India</option>
-                                <option value="ID">Indonesia</option>
-                                <option value="IR">Iran, Islamic Republic of</option>
-                                <option value="IQ">Iraq</option>
-                                <option value="IE">Ireland</option>
-                                <option value="IM">Isle of Man</option>
-                                <option value="IL">Israel</option>
-                                <option value="IT">Italy</option>
-                                <option value="JM">Jamaica</option>
-                                <option value="JP">Japan</option>
-                                <option value="JE">Jersey</option>
-                                <option value="JO">Jordan</option>
-                                <option value="KZ">Kazakhstan</option>
-                                <option value="KE">Kenya</option>
-                                <option value="KI">Kiribati</option>
-                                <option value="KP">Korea, Democratic People's Republic of</option>
-                                <option value="KR">Korea, Republic of</option>
-                                <option value="XK">Kosovo</option>
-                                <option value="KW">Kuwait</option>
-                                <option value="KG">Kyrgyzstan</option>
-                                <option value="LA">Lao People's Democratic Republic</option>
-                                <option value="LV">Latvia</option>
-                                <option value="LB">Lebanon</option>
-                                <option value="LS">Lesotho</option>
-                                <option value="LR">Liberia</option>
-                                <option value="LY">Libyan Arab Jamahiriya</option>
-                                <option value="LI">Liechtenstein</option>
-                                <option value="LT">Lithuania</option>
-                                <option value="LU">Luxembourg</option>
-                                <option value="MO">Macao</option>
-                                <option value="MK">Macedonia, the Former Yugoslav Republic of</option>
-                                <option value="MG">Madagascar</option>
-                                <option value="MW">Malawi</option>
-                                <option value="MY">Malaysia</option>
-                                <option value="MV">Maldives</option>
-                                <option value="ML">Mali</option>
-                                <option value="MT">Malta</option>
-                                <option value="MH">Marshall Islands</option>
-                                <option value="MQ">Martinique</option>
-                                <option value="MR">Mauritania</option>
-                                <option value="MU">Mauritius</option>
-                                <option value="YT">Mayotte</option>
-                                <option value="MX">Mexico</option>
-                                <option value="FM">Micronesia, Federated States of</option>
-                                <option value="MD">Moldova, Republic of</option>
-                                <option value="MC">Monaco</option>
-                                <option value="MN">Mongolia</option>
-                                <option value="ME">Montenegro</option>
-                                <option value="MS">Montserrat</option>
-                                <option value="MA">Morocco</option>
-                                <option value="MZ">Mozambique</option>
-                                <option value="MM">Myanmar</option>
-                                <option value="NA">Namibia</option>
-                                <option value="NR">Nauru</option>
-                                <option value="NP">Nepal</option>
-                                <option value="NL">Netherlands</option>
-                                <option value="AN">Netherlands Antilles</option>
-                                <option value="NC">New Caledonia</option>
-                                <option value="NZ">New Zealand</option>
-                                <option value="NI">Nicaragua</option>
-                                <option value="NE">Niger</option>
-                                <option value="NG">Nigeria</option>
-                                <option value="NU">Niue</option>
-                                <option value="NF">Norfolk Island</option>
-                                <option value="MP">Northern Mariana Islands</option>
-                                <option value="NO">Norway</option>
-                                <option value="OM">Oman</option>
-                                <option value="PK">Pakistan</option>
-                                <option value="PW">Palau</option>
-                                <option value="PS">Palestinian Territory, Occupied</option>
-                                <option value="PA">Panama</option>
-                                <option value="PG">Papua New Guinea</option>
-                                <option value="PY">Paraguay</option>
-                                <option value="PE">Peru</option>
-                                <option value="PH">Philippines</option>
-                                <option value="PN">Pitcairn</option>
-                                <option value="PL">Poland</option>
-                                <option value="PT">Portugal</option>
-                                <option value="PR">Puerto Rico</option>
-                                <option value="QA">Qatar</option>
-                                <option value="RE">Reunion</option>
-                                <option value="RO">Romania</option>
-                                <option value="RU">Russian Federation</option>
-                                <option value="RW">Rwanda</option>
-                                <option value="BL">Saint Barthelemy</option>
-                                <option value="SH">Saint Helena</option>
-                                <option value="KN">Saint Kitts and Nevis</option>
-                                <option value="LC">Saint Lucia</option>
-                                <option value="MF">Saint Martin</option>
-                                <option value="PM">Saint Pierre and Miquelon</option>
-                                <option value="VC">Saint Vincent and the Grenadines</option>
-                                <option value="WS">Samoa</option>
-                                <option value="SM">San Marino</option>
-                                <option value="ST">Sao Tome and Principe</option>
-                                <option value="SA">Saudi Arabia</option>
-                                <option value="SN">Senegal</option>
-                                <option value="RS">Serbia</option>
-                                <option value="CS">Serbia and Montenegro</option>
-                                <option value="SC">Seychelles</option>
-                                <option value="SL">Sierra Leone</option>
-                                <option value="SG">Singapore</option>
-                                <option value="SX">Sint Maarten</option>
-                                <option value="SK">Slovakia</option>
-                                <option value="SI">Slovenia</option>
-                                <option value="SB">Solomon Islands</option>
-                                <option value="SO">Somalia</option>
-                                <option value="ZA">South Africa</option>
-                                <option value="GS">South Georgia and the South Sandwich Islands</option>
-                                <option value="SS">South Sudan</option>
-                                <option value="ES">Spain</option>
-                                <option value="LK">Sri Lanka</option>
-                                <option value="SD">Sudan</option>
-                                <option value="SR">Suriname</option>
-                                <option value="SJ">Svalbard and Jan Mayen</option>
-                                <option value="SZ">Swaziland</option>
-                                <option value="SE">Sweden</option>
-                                <option value="CH">Switzerland</option>
-                                <option value="SY">Syrian Arab Republic</option>
-                                <option value="TW">Taiwan, Province of China</option>
-                                <option value="TJ">Tajikistan</option>
-                                <option value="TZ">Tanzania, United Republic of</option>
-                                <option value="TH">Thailand</option>
-                                <option value="TL">Timor-Leste</option>
-                                <option value="TG">Togo</option>
-                                <option value="TK">Tokelau</option>
-                                <option value="TO">Tonga</option>
-                                <option value="TT">Trinidad and Tobago</option>
-                                <option value="TN">Tunisia</option>
-                                <option value="TR">Turkey</option>
-                                <option value="TM">Turkmenistan</option>
-                                <option value="TC">Turks and Caicos Islands</option>
-                                <option value="TV">Tuvalu</option>
-                                <option value="UG">Uganda</option>
-                                <option value="UA">Ukraine</option>
-                                <option value="AE">United Arab Emirates</option>
-                                <option value="GB">United Kingdom</option>
-                                <option value="UM">United States Minor Outlying Islands</option>
-                                <option value="UY">Uruguay</option>
-                                <option value="UZ">Uzbekistan</option>
-                                <option value="VU">Vanuatu</option>
-                                <option value="VE">Venezuela</option>
-                                <option value="VN">Viet Nam</option>
-                                <option value="VG">Virgin Islands, British</option>
-                                <option value="VI">Virgin Islands, U.s.</option>
-                                <option value="WF">Wallis and Futuna</option>
-                                <option value="EH">Western Sahara</option>
-                                <option value="YE">Yemen</option>
-                                <option value="ZM">Zambia</option>
-                                <option value="ZW">Zimbabwe</option>
-                            </select>
-                        </td>
-                        <td>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg" style="margin-bottom: 30px;" title="The country (or countries) where the mobile app has been (or will be) released."></i></td>
-                    </tr>
-                    </table>   
-                  </div>-->                               
-
-                  <form id="upload_form" enctype="multipart/form-data" method="post">
-                     {% csrf_token %}
-                     <div style="text-align: left; width: 275px; margin: auto">
-                        <div id="err_file" class="hidden"><span class="error">Required!</span></div>
-                        <label for="file">
-                            <i class="fa fa-mobile-alt fa-lg" aria-hidden="true"></i> &nbsp;Mobile App File
-                        </label><br/>
-                        <input type="file" name="file" id="uploadFile" placeholder="Choose Mobile App File" accept=".apk, .apks, .appx, .ipa, .xapk, .zip">
+                <div class="masthead clearfix">
+                    <div align="center" class="inner">
                     </div>
-                    <div style="text-align: left; width: 275px; margin: auto">
-                        <label for="source_file">
-                            <i class="fa fa-code fa-lg" aria-hidden="true"></i> &nbsp;Source Code File (optional)
-                        </label><br/>
-                        <input type="file" name="source_file" id="uploadSourceFile" placeholder="Choose Source File" accept=".zip">
-                    </div>                     
-                     <div class="fileUpload btn btn-default btn-lg" id="but">                        
-                        <span class="fas fa-cloud-upload-alt"></span>
-                        Upload &amp; Analyze
-                     </div>&nbsp;&nbsp;
-                     <br />
-                     <!--<small><i>Drag &amp; Drop anywhere!</i></small>-->
-                     <h5 id="status"></h5>
-                     <progress id="progressBar" value="0" max="100" style="width:300px;visibility:hidden;" ></progress>
-                  </form>
-               </div>
-               <div class="mastfoot">
-                
-                  <!--<input type="download" id="package" class="form-control" placeholder="Download & Scan by package name"/>-->
+                </div>
+                <div class="inner cover">
+                    <form id="upload_form" enctype="multipart/form-data" method="post">
+                        {% csrf_token %}
+                        <table>
+                            <tr>
+                                <td style="vertical-align: top;">
+                                    <div id="err_name" class="hidden"><span class="error">Application Name
+                                            Required!</span></div>
+                                    <div><span><input type="text" id="appname"
+                                                placeholder="application name"></span>&nbsp;&nbsp;<i
+                                            class="fas fa-info-circle fa-lg"
+                                            title="The name of the mobile application as it appears (or will appear) in the applicable app store."></i>
+                                    </div>
+                                    <div id="err_version" class="hidden"><span class="error">Version Required!</span>
+                                    </div>
+                                    <div><span><input type="text" id="version" placeholder="Version"
+                                                value="1.0"></span>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
+                                            title="The version of the mobile application."></i></div>
+                                    <div>
+                                        <span>
+                                            <select id="environment">
+                                                <option value="Production">Production</option>
+                                                <option value="Preproduction">Preproduction</option>
+                                            </select>
+                                            &nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
+                                                title="The release status of the mobile application."></i>
+                                        </span>
+                                    </div>
+                                    <div id="err_division" class="hidden"><span class="error">Divison Required!</span>
+                                    </div>
+                                    <div>
+                                        <span>
+                                            <select id="division">
+                                                <option>Unknown</option>
+                                            </select>
+                                            &nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
+                                                title="The organizational division applicable to the mobile application."></i>
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <table style="margin-left: auto; margin-right: auto;">
+                                            <tr>
+                                                <td>
+                                                    <select id="country" multiple style="height: 66px"></select>
+                                                </td>
+                                                <td>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
+                                                        style="margin-bottom: 30px;"
+                                                        title="The country (or countries) where the mobile app has been (or will be) released."></i>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    {% if is_admin %}
+                                    <div style="text-align: left"><span><input type="checkbox" id="release">
+                                        <label for="release">Release Version</label></span>&nbsp;&nbsp;<i
+                                            class="fas fa-info-circle fa-lg"
+                                            title="Select to mark mobile app as a release version."></i>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                                <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                                <td>
+                                    <div id="err_privacy" class="hidden"><span class="error">Data Privacy
+                                            Required!</span></div>
+                                    <div>
+                                        <span>
+                                            <select id="data_privacy_classification">
+                                                <option value="">select data privacy</option>
+                                                <option>Highly Restricted</option>
+                                                <option>Restricted</option>
+                                                <option>Internal Use Only</option>
+                                                <option>Public</option>
+                                                <option>Does Not Apply</option>
+                                            </select>
+                                            &nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
+                                                title="The data privacy classification for the mobile application."></i>
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <table style="margin-left: auto; margin-right: auto;">
+                                            <tr>
+                                                <td>
+                                                    <select id="data_privacy_attributes" multiple
+                                                        style="height: 66px"></select>
+                                                </td>
+                                                <td>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
+                                                        style="margin-bottom: 30px;"
+                                                        title="The data privacy attributes for the mobile application."></i>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>                                    
+                                    <div style="text-align: left; width: 275px; margin: auto">
+                                        <div id="err_file" class="hidden"><span class="error">Required!</span></div>
+                                        <label for="file">
+                                            <i class="fa fa-mobile-alt fa-lg" aria-hidden="true"></i> &nbsp;Mobile App
+                                            File
+                                        </label><br />
+                                        <input type="file" name="file" id="uploadFile"
+                                            placeholder="Choose Mobile App File"
+                                            accept=".apk, .apks, .appx, .ipa, .xapk, .zip">
+                                    </div>
+                                    <div style="text-align: left; width: 275px; margin: auto; padding-top: 15px">
+                                        <label for="source_file">
+                                            <i class="fa fa-code fa-lg" aria-hidden="true"></i> &nbsp;Source Code File
+                                            (optional)
+                                        </label><br />
+                                        <input type="file" name="source_file" id="uploadSourceFile"
+                                            placeholder="Choose Source File" accept=".zip">
+                                    </div>
+                                    {% if is_admin %}
+                                    <div><span><input type="text" id="override_email" style="margin-top: 15px"
+                                                placeholder="email address" value="{{email}}"></span>&nbsp;&nbsp;<i
+                                            class="fas fa-info-circle fa-lg"
+                                            title="Email of the user(s) to receive notifications about this scan."></i>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
 
-
-                  <div class="inner">
-                     <!--<h6> <a href="{% url 'recent' %}">RECENT SCANS</a>  |  <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>  |  <a href="{% url 'api_docs' %}">API DOCS</a>   |  <a href="https://opensecurity.in/donate">DONATE ♥</a> |  <a href="{% url 'about' %}">ABOUT</a></h6>
-                     </br>-->
-                     <p>&copy; {% now "Y" %}  Cyberspect - {{ version }} - {{email}}</p>
-                  </div>
-               </div>
+                        <div class="fileUpload btn btn-default btn-lg" id="but">
+                            <span class="fas fa-cloud-upload-alt"></span>
+                            Upload &amp; Analyze
+                        </div>&nbsp;&nbsp;
+                        <br />
+                        <h5 id="status"></h5>
+                        <progress id="progressBar" value="0" max="100"
+                            style="width:300px;visibility:hidden;"></progress>
+                    </form>
+                </div>
+                <div class="mastfoot">
+                    <div class="inner">
+                        <p>&copy; {% now "Y" %} Cyberspect - {{ version }} - {{email}}</p>
+                    </div>
+                </div>
             </div>
-         </div>
-      </div>
+        </div>
+    </div>
 
-      <div class="hidden loading">
+    <div class="hidden loading">
         <div class='uil-ring-css' style='transform:scale(0.79);'>
-          <div></div>
+            <div></div>
         </div>
-        </div>
+    </div>
 
-        <script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
-        <script src="{% static "others/js/notify.min.js" %}"></script>
-      <script>
-     
-            // Result View
-            function load_result(url){
-                hide_loader();
-                var xhr = new XMLHttpRequest()
-                xhr.open('GET', url, true)
-                xhr.addEventListener("loadstart", function(evt){
-                    Notifier.snackbar({
-                        message: "Analysis started! Please wait to be redirected or check recent scans after sometime.",
-                        duration: 10,
-                    });
-                })
-                xhr.addEventListener("load", function (evt) {
-                    window.location.href = window.location.href + url;
-                }, false);
-                xhr.send();
-            }
+    <script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
+    <script src="{% static "others/js/notify.min.js" %}"></script>
+    <script>
+        // Result View
+        function load_result(url) {
+            hide_loader();
+            var xhr = new XMLHttpRequest()
+            xhr.open('GET', url, true)
+            xhr.addEventListener("loadstart", function (evt) {
+                Notifier.snackbar({
+                    message: "Analysis started! Please wait to be redirected or check recent scans after sometime.",
+                    duration: 10,
+                });
+            })
+            xhr.addEventListener("load", function (evt) {
+                window.location.href = window.location.href + url;
+            }, false);
+            xhr.send();
+        }
 
-            //Download and scan APK
-            $('#package').keypress(function(event){
-                var keycode = (event.keyCode ? event.keyCode : event.which);
-                if(keycode == '13'){
-                    _("status").innerText = 'Trying to download ...';
-                    show_loader();
-                    $.ajax({
-                        url : '../download_scan/', 
-                        type : "POST",
-                        dataType: "json", 
-                        data : {
-                            package: $('#package').val(),
-                            csrfmiddlewaretoken: '{{ csrf_token }}',
-                        },
-                        success : function(json){
-                            if (json.status === 'ok'){
-                                i = 1;
-                                setInterval(function() {
-                                    dot = '';
-                                    for (x = 1; x <= i; x++) {
-                                        dot += '.';
-                                    }
-                                    _("status").innerText = "Analyzing" + dot;
-                                    i += 1;
-                                    if (i == 5) {
-                                        i = 1;
-                                    }
-                                }, 2000);
+        function show_loader() {
+            var loadingOverlay = document.querySelector('.loading');
+            loadingOverlay.classList.remove('hidden');
+        }
 
-                                url = json.analyzer + '/?file_name=' + encodeURIComponent(json.file_name) + '&hash=' + json.hash + '&scan_type=' + json.scan_type
-                                load_result(url);
-                            } else {
-                                hide_loader();
-                                _("status").innerText = json.description;
-                            }
-                        },
-                        error : function(xhr, ajaxOptions, thrownError) {
-                            hide_loader();
-                        }
-                    });
-                }
-            });
-            function show_loader(){
-                var loadingOverlay = document.querySelector('.loading');
-                loadingOverlay.classList.remove('hidden');
-            }
+        function hide_loader() {
+            var loadingOverlay = document.querySelector('.loading');
+            loadingOverlay.classList.add('hidden');
+        }
 
-            function hide_loader(){
-                var loadingOverlay = document.querySelector('.loading');
-                loadingOverlay.classList.add('hidden');
+        function _(el) {
+            return document.getElementById(el);
+        }
+
+        function responseHandler(json, isbutton) {
+            if (json.status === 'error') {
+                _("status").innerText = json.description;
+            } else {
+                i = 1;
+                setInterval(function () {
+                    dot = '';
+                    for (x = 1; x <= i; x++) {
+                        dot += '.';
+                    }
+                    _("status").innerText = "Analyzing" + dot;
+                    i += 1;
+                    if (i == 5) {
+                        i = 1;
+                    }
+                }, 2000);
+                load_result("recent_scans/");
             }
-            // Existing
-            function _(el){
-                return document.getElementById(el);
+        }
+        function progressHandler(event) {
+            var percent = (event.loaded / event.total) * 100;
+            console.log("Uploaded..." + Math.round(percent));
+            _("progressBar").value = Math.round(percent);
+            _("status").innerText = Math.round(percent) + "% Uploaded...";
+        }
+        function completeHandler(event) {
+            if (event.target.status !== 200) {
+                var json = { status: "error", description: event.target.responseText };
+                responseHandler(json);
             }
-            // Response Handler     
-            function responseHandler(json, isbutton) {
-                if (json.status === 'error') {
-                    _("status").innerText = json.description;
-                } else {
-                    i = 1;
-                    setInterval(function() {
-                        dot = '';
-                        for (x = 1; x <= i; x++) {
-                            dot += '.';
-                        }
-                        _("status").innerText = "Analyzing" + dot;
-                        i += 1;
-                        if (i == 5) {
-                            i = 1;
-                        }
-                    }, 2000);
-                    //var url = json.analyzer + '/';
-                    //if (json.hash){
-                    //    url += '?file_name=' + encodeURIComponent(json.file_name) + '&hash=' + json.hash + '&scan_type=' + json.scan_type
-                    //}
-                    load_result("recent_scans/");
-                }
+            else {
+                var json = JSON.parse(event.target.responseText);
+                responseHandler(json);
             }
-            function progressHandler(event) {
-                var percent = (event.loaded / event.total) * 100;
-                console.log("Uploaded..." + Math.round(percent));
-                _("progressBar").value = Math.round(percent);
-                _("status").innerText = Math.round(percent) + "% Uploaded...";
-            }
-            function completeHandler(event) {
-                if (event.target.status !== 200) {
-                    var json = { status: "error", description: event.target.responseText };
-                    responseHandler(json);
-                }
-                else {
-                    var json = JSON.parse(event.target.responseText);
-                    responseHandler(json);
-                }                
-            }
-            function errorHandler(event) {
-                _("status").innerText = "Upload Failed!";
-            }
-            function abortHandler(event) {
-                _("status").innerText = "Upload Aborted!";
-            }
-          // Is valid file extensions
-          function isValidExt(file_name){
-                var val = file_name.toLowerCase();
-                var regex = new RegExp("(.*?)\.(ipa|apk|apks|xapk|zip|appx)$");
-                val = val.replace(/^.*[\\\/]/, '');
-                if (!(regex.test(val))) {
-                    _('status').innerText = "Please upload APK/APKS/XAPK/IPA/ZIP/APPX only!";
-                    return false;
-                }
-                return true;
-          }
-          // Is allowed mimetype
-          function isValidMime(file_mime){
-                if (file_mime.length < 1)
-                    // bypass if mime is not available
-                    return true; 
-                var supported = [{% for mime in mimes %}'{{mime}}',{% endfor %}];
-                if(supported.indexOf(file_mime) >-1)
-                    return true;
-                 _('status').innerText = "MIME type (" + file_mime + ") is not supported!";
+        }
+        function errorHandler(event) {
+            _("status").innerText = "Upload Failed!";
+        }
+        function abortHandler(event) {
+            _("status").innerText = "Upload Aborted!";
+        }
+        // Is valid file extensions
+        function isValidExt(file_name) {
+            var val = file_name.toLowerCase();
+            var regex = new RegExp("(.*?)\.(ipa|apk|apks|xapk|zip|appx)$");
+            val = val.replace(/^.*[\\\/]/, '');
+            if (!(regex.test(val))) {
+                _('status').innerText = "Please upload APK/APKS/XAPK/IPA/ZIP/APPX only!";
                 return false;
+            }
+            return true;
+        }
+        // Is allowed mimetype
+        function isValidMime(file_mime) {
+            if (file_mime.length < 1)
+                // bypass if mime is not available
+                return true;
+            var supported = [{% for mime in mimes %} '{{mime}}', {% endfor %}];
+        if (supported.indexOf(file_mime) > -1)
+            return true;
+        _('status').innerText = "MIME type (" + file_mime + ") is not supported!";
+        return false;
           }
-         // File Upload
-         function upload(app_file, source_file, extradata) {
-             try {
+
+        // File Upload
+        function upload(app_file, source_file, extradata) {
+            try {
                 if (!isValidExt(app_file.name) || !isValidMime(app_file.type)) {
                     return;
                 }
@@ -560,141 +321,118 @@
                 formdata.append("user_app_version", extradata.user_app_version);
                 formdata.append("division", extradata.division);
                 formdata.append("country", extradata.country);
-                formdata.append("environment", extradata.environment);
-                if (extradata.email != '') {
-                    formdata.append("email", extradata.email)
-                }
+                formdata.append("environment", extradata.environment);                                
+                formdata.append("data_privacy_classification", extradata.data_privacy_classification);
+                formdata.append("data_privacy_attributes", extradata.data_privacy_attributes);
+                formdata.append("release", extradata.release)
+                formdata.append("email", extradata.email)
                 xhr.send(formdata)
             } catch (e) {
                 alert("Error:" + e);
             }
-           }
-         
-           /* function handleFiles(files, extradata) {
-                files = [...files]
-                for (var i = 0; i < files.length; i++) {
-                    uploadFile(files[i], extradata, i);
-                }
-           } */
-         
-           // Full Screen Drag & Drop File Upload
-           var lastTarget = null;
-           function isFile(evt) {
-               var dt = evt.dataTransfer;
-         
-               for (var i = 0; i < dt.types.length; i++) {
-                   if (dt.types[i] === "Files") {
-                       return true;
-                   }
-               }
-               return false;
-           }
+        }
 
-           function checkRequired() {
-                if (!_('name').value) {
-                    _('err_name').classList.remove('hidden');
-                    return false;
-                } else { _('err_name').classList.add('hidden'); }
-                if (!_('version').value) {
-                    _('err_version').classList.remove('hidden');
-                    return false;
-                } else { _('err_version').classList.add('hidden'); }
-                if (!_('division').value) {
-                    _('err_division').classList.remove('hidden');
-                    return false;
-                } else { _('err_division').classList.add('hidden'); }  
-                if (_("uploadFile").files.length === 0) {
-                    _('err_file').classList.remove('hidden');
-                    return false;
-                } else { _('err_file').classList.add('hidden'); }           
+        function checkRequired() {
+            if (!_('appname').value) {
+                _('err_name').classList.remove('hidden');
+                return false;
+            } else { _('err_name').classList.add('hidden'); }
+            if (!_('version').value) {
+                _('err_version').classList.remove('hidden');
+                return false;
+            } else { _('err_version').classList.add('hidden'); }
+            if (!_('division').value) {
+                _('err_division').classList.remove('hidden');
+                return false;
+            } else { _('err_division').classList.add('hidden'); }
+            if (!_('data_privacy_classification').value) {
+                _('err_privacy').classList.remove('hidden');
+                return false;
+            } else { _('err_privacy').classList.add('hidden'); }
+            if (_("uploadFile").files.length === 0) {
+                _('err_file').classList.remove('hidden');
+                return false;
+            } else { _('err_file').classList.add('hidden'); }
 
-                return true;
-            }
+            return true;
+        }
 
-            function populateDivisions() {
-                var divisionsUrl = '{{tenant_static}}divisions.json';
-                if (!divisionsUrl) return;
-                fetch(divisionsUrl)
-                    .then(response => response.json())
-                    .then(data => {
-                        var options = '<option value="">select division</option>';
-                        for (i=0; i<data.length; i++){
-                            options +='<option value="' + data[i].id + '">' + data[i].name + '</option>';                                                        
-                        }
-                        _('division').innerHTML = options;
-                    });
-            }
-         
-           /* window.addEventListener("dragenter", function (e) {
-               if (isFile(e)) {
-                   lastTarget = e.target;
-                   document.querySelector("#drop").style.visibility = "";
-                   document.querySelector("#drop").style.opacity = 1;
-                   document.querySelector("#textnode").style.fontSize = "48px";
-               }
-           });
-         
-           window.addEventListener("dragleave", function (e) {
-               e.preventDefault();
-               if (e.target === document || e.target === lastTarget) {
-                   document.querySelector("#drop").style.visibility = "hidden";
-                   document.querySelector("#drop").style.opacity = 0;
-                   document.querySelector("#textnode").style.fontSize = "42px";
-               }
-           });
-         
-           window.addEventListener("dragover", function (e) {
-               e.preventDefault();
-           });
-         
-           window.addEventListener("drop", function (e) {
-               e.preventDefault();
-               document.querySelector("#drop").style.visibility = "hidden";
-               document.querySelector("#drop").style.opacity = 0;
-               document.querySelector("#textnode").style.fontSize = "42px";
-               if (!checkRequired()) { return; }
-               if (e.dataTransfer.files.length > 0)
-               {
-                    var extradata = new Object();                
-                    extradata.user_app_name = $('#name').val();
-                    extradata.user_app_version = $('#version').val();
-                    extradata.country = $('#country').val().join(',');
-                    extradata.division = $('#division').val();                
-                    extradata.environment = $('#environment').val();
-                    handleFiles(e.dataTransfer.files, extradata);
-               }
-           }); */
-
-            $(document).ready(function() {
-                populateDivisions();
-                
-                $('#but').click(function () {
-                    _('status').innerText = "";
-
-                    // Ensure required fields are filled
-                    if (!checkRequired()) { return false; }
-                    if (_("uploadFile").files.length === 0) { return false; }
-
-                    var extradata = new Object();
-                    extradata.user_app_name = $('#name').val();
-                    extradata.user_app_version = $('#version').val();
-                    extradata.country = ''; //$('#country').val().join(',');
-                    extradata.division = $('#division').val();                
-                    extradata.environment = $('#environment').val();
-                    if ($('#override_email').length) {
-                        extradata.email = $('#override_email')
-                    } else {
-                        extradata.email = ''
+        function populateDivisions() {
+            var divisionsUrl = '{{tenant_static}}divisions.json';
+            fetch(divisionsUrl)
+                .then(response => response.json())
+                .then(data => {
+                    var options = '<option value="">select division</option>';
+                    for (i = 0; i < data.length; i++) {
+                        options += '<option value="' + data[i].id + '">' + data[i].name + '</option>';
                     }
-
-                    if (_("uploadSourceFile").files.length === 0) {
-                        upload(_("uploadFile").files[0], null, extradata); 
-                    }
-                    else {
-                        upload(_("uploadFile").files[0], _("uploadSourceFile").files[0], extradata); 
-                    }
+                    _('division').innerHTML = options;
                 });
+        }
+
+        function populateCountries() {
+            var countriesUrl = '{{tenant_static}}countries.json';
+            fetch(countriesUrl)
+                .then(response => response.json())
+                .then(data => {
+                    var options = '<option value="**" selected>Global</option>';
+                    for (i = 0; i < data.length; i++) {
+                        options += '<option value="' + data[i].id + '">' + data[i].name + '</option>';
+                    }
+                    _('country').innerHTML = options;
+                });
+        }
+
+        function populateDataPrivacy() {
+            var privacyAttributesUrl = '{{tenant_static}}data-privacy-attributes.json';
+            fetch(privacyAttributesUrl)
+                .then(response => response.json())
+                .then(data => {
+                    var options = '';
+                    for (i = 0; i < data.length; i++) {
+                        options += '<option value="' + data[i].id + '">' + data[i].id + ": " + data[i].name + '</option>';
+                    }
+                    _('data_privacy_attributes').innerHTML = options;
+                });
+        }
+
+        $(document).ready(function () {
+            populateDivisions();
+            populateCountries();
+            populateDataPrivacy();
+
+            $('#but').click(function () {
+                _('status').innerText = "";
+
+                // Ensure required fields are filled
+                if (!checkRequired()) { return false; }
+                if (_("uploadFile").files.length === 0) { return false; }
+
+                var extradata = new Object();
+                extradata.user_app_name = $('#appname').val();
+                extradata.user_app_version = $('#version').val();
+                extradata.country = $('#country').val().join(',');
+                extradata.division = $('#division').val();
+                extradata.environment = $('#environment').val();
+                extradata.data_privacy_classification = $('#data_privacy_classification').val();
+                extradata.data_privacy_attributes = $('#data_privacy_attributes').val().join(',');
+                if ($('#override_email').length) {
+                    extradata.email = $('#override_email').val();
+                    extradata.release = $('#release').prop('checked');
+                } else {
+                    extradata.email = ''
+                    extradata.release = false
+                }
+
+                if (_("uploadSourceFile").files.length === 0) {
+                    upload(_("uploadFile").files[0], null, extradata);
+                }
+                else {
+                    upload(_("uploadFile").files[0], _("uploadSourceFile").files[0], extradata);
+                }
             });
-      </script>
-   </body>
+        });
+    </script>
+</body>
+
 </html>

@@ -128,7 +128,7 @@ class Upload(object):
                                     start_time,
                                     self.scan.file_size,
                                     self.scan.source_file_size)
-            cyberspect_scan_intake(self.scan)
+            cyberspect_scan_intake(self.scan.populate_data_dict())
             return self.resp_json(response_data)
         except Exception as exp:
             exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
@@ -157,7 +157,7 @@ class Upload(object):
                                 self.scan.file_size,
                                 self.scan.source_file_size)
         if (not self.request.GET.get('scan', '1') == '0'):
-            cyberspect_scan_intake(self.scan)
+            cyberspect_scan_intake(self.scan.populate_data_dict())
         return api_response, 200
 
     def upload(self):
@@ -580,18 +580,18 @@ def cyberspect_scan_intake(scan):
         return
 
     lclient = boto3.client('lambda')
-    file_path = os.path.join(settings.UPLD_DIR, scan.md5 + '/') \
-        + scan.md5 + '.' + scan.scan_type
+    file_path = os.path.join(settings.UPLD_DIR, scan['md5'] + '/') \
+        + scan['md5'] + '.' + scan['scan_type']
     if (os.path.exists(file_path + '.src')):
         file_path = file_path + '.src'
     lambda_params = {
-        'cyberspect_scan_id': scan.cyberspect_scan_id,
-        'hash': scan.md5,
-        'short_hash': scan.short_hash,
-        'user_app_name': scan.user_app_name,
-        'user_app_version': scan.user_app_version,
-        'scan_type': scan.scan_type,
-        'email': scan.email,
+        'cyberspect_scan_id': scan['cyberspect_scan_id'],
+        'hash': scan['md5'],
+        'short_hash': scan['short_hash'],
+        'user_app_name': scan['user_app_name'],
+        'user_app_version': scan['user_app_version'],
+        'scan_type': scan['scan_type'],
+        'email': scan['email'],
         'file_name': file_path,
     }
     logger.info('Executing Cyberspect intake lambda: %s',

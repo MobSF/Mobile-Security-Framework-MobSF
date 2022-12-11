@@ -20,6 +20,9 @@ class RecentScansDB(models.Model):
     EMAIL = models.CharField(max_length=260, default='')
     USER_GROUPS = models.CharField(max_length=260, default='')
     RELEASE = models.BooleanField(default=False)
+    COUNTRY = models.CharField(max_length=260, default='')
+    DATA_PRIVACY_CLASSIFICATION = models.CharField(max_length=100, default='')
+    DATA_PRIVACY_ATTRIBUTES = models.CharField(max_length=100, default='')
 
 
 class StaticAnalyzerAndroid(models.Model):

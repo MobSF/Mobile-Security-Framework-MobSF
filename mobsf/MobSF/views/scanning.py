@@ -19,6 +19,7 @@ def add_to_recent_scan(data):
     try:
         db_obj = RecentScansDB.objects.filter(MD5=data['hash'])
         if not db_obj.exists():
+            privacy_classification = data['data_privacy_classification']
             new_db_obj = RecentScansDB(
                 ANALYZER=data['analyzer'],
                 SCAN_TYPE=data['scan_type'],
@@ -32,9 +33,12 @@ def add_to_recent_scan(data):
                 USER_APP_VERSION=data['user_app_version'],
                 DIVISION=data['division'],
                 ENVIRONMENT=data['environment'],
+                COUNTRY=data['country'],
                 EMAIL=data['email'],
                 USER_GROUPS=data['user_groups'],
-                RELEASE=data['release'])
+                RELEASE=data['release'],
+                DATA_PRIVACY_CLASSIFICATION=privacy_classification,
+                DATA_PRIVACY_ATTRIBUTES=data['data_privacy_attributes'])
 
             new_db_obj.save()
         else:
@@ -50,7 +54,11 @@ def add_to_recent_scan(data):
             scan.USER_APP_VERSION = data['user_app_version']
             scan.DIVISION = data['division']
             scan.ENVIRONMENT = data['environment']
+            scan.COUNTRY = data['country']
             scan.RELEASE = data['release']
+            scan.DATA_PRIVACY_CLASSIFICATION = \
+                data['data_privacy_classification']
+            scan.DATA_PRIVACY_ATTRIBUTES = data['data_privacy_attributes']
             scan.save()
     except Exception as ex:
         logger.exception('Adding Scan URL to Database')
@@ -111,13 +119,18 @@ class Scanning(object):
             self.source_file_size = None
         self.user_app_name = request.POST.get('user_app_name')
         self.user_app_version = request.POST.get('user_app_version')
-        self.division = request.POST.get('division')
-        self.environment = request.POST.get('environment')
+        self.division = request.POST.get('division', '')
+        self.environment = request.POST.get('environment', '')
+        self.country = request.POST.get('country', '')
+        self.data_privacy_classification = \
+            request.POST.get('data_privacy_classification', '')
+        self.data_privacy_attributes = \
+            request.POST.get('data_privacy_attributes', '')
         self.email = sso_email(request)
         self.user_groups = get_usergroups(request)
         self.release = False
         if (is_admin(request)):
-            self.release = request.POST.get('release', False)
+            self.release = (request.POST.get('release', '') == 'true')
             if request.POST.get('email'):
                 self.email = request.POST.get('email')
         self.cyberspect_scan_id = 0
@@ -127,136 +140,63 @@ class Scanning(object):
 
     def scan_apk(self):
         """Android APK."""
-        self.md5 = handle_uploaded_file(self.file, '.apk', self.source_file)
-        self.short_hash = get_siphash(self.md5)
         self.scan_type = 'apk'
-        data = {
-            'analyzer': 'static_analyzer',
-            'status': 'success',
-            'hash': self.md5,
-            'short_hash': self.short_hash,
-            'scan_type': self.scan_type,
-            'file_name': self.file_name,
-            'user_app_name': self.user_app_name,
-            'user_app_version': self.user_app_version,
-            'division': self.division,
-            'environment': self.environment,
-            'email': self.email,
-            'user_groups': self.user_groups,
-            'release': self.release,
-            'cyberspect_scan_id': self.cyberspect_scan_id,
-        }
+        data = self.populate_data_dict()
+        data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android APK')
         return data
 
     def scan_xapk(self):
         """Android XAPK."""
-        self.md5 = handle_uploaded_file(self.file, '.xapk', self.source_file)
-        self.short_hash = get_siphash(self.md5)
         self.scan_type = 'xapk'
-        data = {
-            'analyzer': 'static_analyzer',
-            'status': 'success',
-            'hash': self.md5,
-            'short_hash': self.short_hash,
-            'scan_type': self.scan_type,
-            'file_name': self.file_name,
-            'user_app_name': self.user_app_name,
-            'user_app_version': self.user_app_version,
-            'division': self.division,
-            'environment': self.environment,
-            'email': self.email,
-            'user_groups': self.user_groups,
-            'release': self.release,
-            'cyberspect_scan_id': self.cyberspect_scan_id,
-        }
+        data = self.populate_data_dict()
+        data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android XAPK base APK')
         return data
 
     def scan_apks(self):
         """Android Split APK."""
-        self.md5 = handle_uploaded_file(self.file, '.apks', self.source_file)
-        self.short_hash = get_siphash(self.md5)
         self.scan_type = 'apks'
-        data = {
-            'analyzer': 'static_analyzer',
-            'status': 'success',
-            'hash': self.md5,
-            'short_hash': self.short_hash,
-            'scan_type': self.scan_type,
-            'file_name': self.file_name,
-            'user_app_name': self.user_app_name,
-            'user_app_version': self.user_app_version,
-            'division': self.division,
-            'environment': self.environment,
-            'email': self.email,
-            'user_groups': self.user_groups,
-            'release': self.release,
-            'cyberspect_scan_id': self.cyberspect_scan_id,
-        }
+        data = self.populate_data_dict()
+        data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android Split APK')
         return data
 
     def scan_zip(self):
         """Android /iOS Zipped Source."""
-        self.md5 = handle_uploaded_file(self.file, '.zip', self.source_file)
-        self.short_hash = get_siphash(self.md5)
         self.scan_type = 'zip'
-        data = {
-            'analyzer': 'static_analyzer',
-            'status': 'success',
-            'hash': self.md5,
-            'short_hash': self.short_hash,
-            'scan_type': self.scan_type,
-            'file_name': self.file_name,
-            'user_app_name': self.user_app_name,
-            'user_app_version': self.user_app_version,
-            'division': self.division,
-            'environment': self.environment,
-            'email': self.email,
-            'user_groups': self.user_groups,
-            'release': self.release,
-            'cyberspect_scan_id': self.cyberspect_scan_id,
-        }
+        data = self.populate_data_dict()
+        data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android/iOS Source Code')
         return data
 
     def scan_ipa(self):
         """IOS Binary."""
-        self.md5 = handle_uploaded_file(self.file, '.ipa', self.source_file)
-        self.short_hash = get_siphash(self.md5)
         self.scan_type = 'ipa'
-        data = {
-            'analyzer': 'static_analyzer_ios',
-            'hash': self.md5,
-            'short_hash': self.short_hash,
-            'scan_type': self.scan_type,
-            'file_name': self.file_name,
-            'status': 'success',
-            'user_app_name': self.user_app_name,
-            'user_app_version': self.user_app_version,
-            'division': self.division,
-            'environment': self.environment,
-            'email': self.email,
-            'user_groups': self.user_groups,
-            'release': self.release,
-            'cyberspect_scan_id': self.cyberspect_scan_id,
-        }
+        data = self.populate_data_dict()
+        data['analyzer'] = 'static_analyzer_ios'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of iOS IPA')
         return data
 
     def scan_appx(self):
         """Windows appx."""
-        self.md5 = handle_uploaded_file(self.file, '.appx', self.source_file)
-        self.short_hash = get_siphash(self.md5)
         self.scan_type = 'appx'
-        data = {
-            'analyzer': 'static_analyzer_windows',
+        data = self.populate_data_dict()
+        data['analyzer'] = 'static_analyzer_windows'
+        add_to_recent_scan(data)
+        logger.info('Performing Static Analysis of Windows APP')
+        return data
+
+    def populate_data_dict(self):
+        self.md5 = handle_uploaded_file(self.file, '.' + self.scan_type,
+                                        self.source_file)
+        self.short_hash = get_siphash(self.md5)
+        return {
             'hash': self.md5,
             'short_hash': self.short_hash,
             'scan_type': self.scan_type,
@@ -266,11 +206,11 @@ class Scanning(object):
             'user_app_version': self.user_app_version,
             'division': self.division,
             'environment': self.environment,
+            'country': self.country,
+            'data_privacy_classification': self.data_privacy_classification,
+            'data_privacy_attributes': self.data_privacy_attributes,
             'email': self.email,
             'user_groups': self.user_groups,
             'release': self.release,
             'cyberspect_scan_id': self.cyberspect_scan_id,
         }
-        add_to_recent_scan(data)
-        logger.info('Performing Static Analysis of Windows APP')
-        return data

@@ -309,10 +309,16 @@ progress::-webkit-progress-value {
   100% {background-position: -100px 0px, 0 0, 0 0}
 }
 
-.inner input, select {
+.inner input[type=text], select {
   width: 250px;
   height: 35px;
   margin-bottom: 15px;  
+}
+
+.inner input[type=checkbox] {
+  transform: scale(2);
+  margin-left: 5px;
+  margin-right: 10px;
 }
 
 .error {

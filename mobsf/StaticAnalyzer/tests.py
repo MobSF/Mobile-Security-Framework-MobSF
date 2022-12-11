@@ -43,6 +43,8 @@ def static_analysis_test():
                      'user_app_version': '1.0',
                      'division': 'division',
                      'environment': 'testing',
+                     'country': '**',
+                     'data_privacy_classification': 'Does Not Apply',
                      'email': 'test@testing.local'})
                 obj = json.loads(response.content.decode('utf-8'))
                 if response.status_code == 200 and obj['status'] == 'success':
@@ -193,6 +195,8 @@ def api_test():
                      'user_app_version': '1.0',
                      'division': 'division',
                      'environment': 'testing',
+                     'country': '**',
+                     'data_privacy_classification': 'Does Not Apply',
                      'email': 'test@testing.local'},
                     HTTP_AUTHORIZATION=auth)
                 obj = json.loads(response.content.decode('utf-8'))
