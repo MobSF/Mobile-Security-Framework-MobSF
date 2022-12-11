@@ -42,7 +42,7 @@
 
                  <div class="box">
         <div class="box-header with-border">
-            <h3 class="box-title"><i class="fa fa-rocket"></i> Recent Scans</h3>
+            <h3 class="box-title"><i class="fa fa-rocket"></i> Recent Scanned Apps</h3>
         </div>
 
         <div class="box-body">
@@ -50,33 +50,42 @@
                 <table class="table table-bordered table-hover table-striped">
                     <thead>
                     <tr>
-                        <th>SCAN DATE</th>
+                        <th>HASH / DATE</th>
                         <th>APPLICATION</th>
                         <th>FILE</th>
                         <th>TYPE</th>
-                        <th>SCAN ID {% if is_admin %} / SUBMITTER{% endif %}</th>                        
+                        {% if is_admin %}<th>DETAILS</th>{% endif %}
                         <th style="width: 15%">ACTIONS</th>
                     </tr>
                     </thead>
                     <tbody>
                     {% for e in entries %}
                         <tr>
-                            <td><span class="scandate">{{ e.TIMESTAMP|date:'c' }}</span></td>
+                            <td>
+                                <div>{{ e.MD5 }}</div>
+                                <div><span class="scandate">{{ e.TIMESTAMP|date:'c' }}</span></div>
+                                <div>
+                                {% if not e.PACKAGE_NAME %}
+                                    {% if e.ERROR %}
+                                        <span class="badge bg-danger">scan error</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">scan in progress</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-primary" id="releaseBadge{{e.MD5}}" {% if not e.RELEASE %}style="display:none"{% endif %}>RELEASE</span>                                    
+                                {% endif %}
+                                </div>
+                            </td>
                             <td align="center">
                                 <strong>{{e.USER_APP_NAME}} - {{e.USER_APP_VERSION}}</strong></br>
                                 <img id="app_icon" src="/download/{{ e.MD5 }}-icon.png" onerror="this.src='{% static 'img/no_icon.png' %}'">
                                 {% if e.PACKAGE_NAME %}
                                   <br/>{{ e.APP_NAME }} {% if e.VERSION_NAME %} - {{ e.VERSION_NAME }} {% endif %}
-                                  </br>{{ e.PACKAGE_NAME }}                                 
-                                {% else %}
-                                  {% if e.ERROR %}
-                                    </br><span class="badge bg-danger">scan error</span>
-                                  {% else %}
-                                    </br><span class="badge bg-warning">scan in progress</span>
-                                  {% endif %}
-                                {% endif %}
+                                  <br/>{{ e.PACKAGE_NAME }}                                 
+                                {% endif %}                                
                             </td>
-                            <td>{{ e.FILE_NAME }}
+                            <td>
+                                {{ e.FILE_NAME }}
                             </td>
                             <td align="center">
                                 {% if '.apk' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-android fa-3x"></i>
@@ -87,36 +96,53 @@
                                 {% elif '.appx' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-windows fa-3x"></i>
                                 {% endif %}
                             </td>                            
-                            <td>{{ e.MD5 }}
-                                {% if is_admin %}
-                                    <br/><br/><label id="scanEmails{{e.MD5}}" text="{{ e.EMAIL }}">{{ e.EMAIL }}</label>
-                                    <br/>
-                                    <input type="text" id="scanEmailsInput{{e.MD5}}" text="{{ e.EMAIL }}" hidden />
-                                {% endif %}
+                            {% if is_admin %}
+                            <td>           
+                                <div id="viewFields{{e.MD5}}">
+                                    <div id="userAppName{{e.MD5}}">{{e.USER_APP_NAME}}</div>
+                                    <div id="userAppVersion{{e.MD5}}">{{e.USER_APP_VERSION}}</div>
+                                    <div id="division{{e.MD5}}">{{e.DIVISION}}</div>
+                                    <div id="environment{{e.MD5}}">{{e.ENVIRONMENT}}</div>
+                                    <div id="country{{e.MD5}}">{{e.COUNTRY}}</div>
+                                    <div id="dataPrivacyClassification{{e.MD5}}">{{e.DATA_PRIVACY_CLASSIFICATION}}</div>
+                                    <div id="dataPrivacyAttributes{{e.MD5}}">{{e.DATA_PRIVACY_ATTRIBUTES}}</div>
+                                    <div id="email{{e.MD5}}">{{e.EMAIL}}</div>
+                                </div>
+                                <div id="editFields{{e.MD5}}" class="editFields" style="display:none">
+                                    <div><input type="text" id="userAppNameInput{{e.MD5}}" value="{{e.USER_APP_NAME}}" title="User supplied app name"/></div>
+                                    <div><input type="text" id="userAppVersionInput{{e.MD5}}" value="{{e.USER_APP_VERSION}}" title="User supplied app version"/></div>
+                                    <div><input type="text" id="divisionInput{{e.MD5}}" value="{{e.DIVISION}}" title="Division"/></div>
+                                    <div><input type="text" id="environmentInput{{e.MD5}}" value="{{e.ENVIRONMENT}}" title="Environment"/></div>
+                                    <div><input type="text" id="countryInput{{e.MD5}}" value="{{e.COUNTRY}}" title="Countries"/></div>
+                                    <div><input type="text" id="dataPrivacyClassificationInput{{e.MD5}}" value="{{e.DATA_PRIVACY_CLASSIFICATION}}" title="Data privacy classification"/></div>
+                                    <div><input type="text" id="dataPrivacyAttributesInput{{e.MD5}}" value="{{e.DATA_PRIVACY_ATTRIBUTES}}" title="Data privacy attributes"/></div>
+                                    <div><input type="text" id="emailInput{{e.MD5}}" value="{{e.EMAIL}}" /></div>
+                                    <div><input type="checkbox" id="releaseInput{{e.MD5}}" {% if e.RELEASE %}checked{% endif %}/><label for="releaseInput{{e.MD5}}"> Release Version</label></div>
+                                </div>                                
                             </td>                               
-                            <td><p>                                    
+                            {% endif %}
+                            <td>
+                                <p>                                    
                                     {% if e.PACKAGE_NAME %}
-                                    <a class="btn btn-primary btn-sm" style="margin-bottom: 3px; width: 125px;" href="../{{ e.ANALYZER }}/?file_name={{e.FILE_NAME}}&amp;hash={{e.MD5}}&amp;scan_type={{e.SCAN_TYPE}}"><i class="fas fa-eye" title="View static analysis details"></i> Static Details</a><br/>
+                                    <a class="btn btn-primary btn-sm" style="margin-bottom: 3px; width: 125px;" href="../{{ e.ANALYZER }}/?file_name={{e.FILE_NAME}}&amp;hash={{e.MD5}}&amp;scan_type={{e.SCAN_TYPE}}"><i class="fas fa-eye" title="View static analysis scan details"></i> Scan Details</a><br/>
                                     <a class="btn btn-primary btn-warning btn-sm" style="margin-bottom: 3px;  width: 125px;" href="../appsec_dashboard/{{ e.MD5 }}/"><i class="fas fa-user-shield" title="View security scorecard"></i> Scorecard</a><br/>
                                     <a class="btn btn-primary btn-sm" style="width: 125px;" href="{{dependency_track_url}}/projects/?tag={{ e.MD5 }}"><i class="fas fa-link" title="View third party dependency details"></i> Dependencies</a><br/>
                                     {% endif %}
-                                </p><p>
-                                    {% if e.PACKAGE_NAME %}
-                                        <a class="btn btn-outline-primary btn-sm" href="../pdf/?md5={{ e.MD5 }}"><i class="fas fa-file-pdf" title="PDF Report"></i></a>
+                                </p>
+                                <p>
+                                    {% if e.PACKAGE_NAME and is_admin %}
+                                        <a class="btn btn-outline-primary btn-sm" id="adminEdit{{e.MD5}}" onclick="admin_edit('{{e.MD5}}')" href="#"><i class="fas fa-pen" title="Edit Scan"></i></a>
+                                        <a class="btn btn-outline-primary btn-sm" id="adminSave{{e.MD5}}" onclick="admin_save('{{e.MD5}}')" href="#" style="display:none"><i class="fas fa-save" title="Save Changes"></i></a>
+                                    {% endif %}
+                                    <a class="btn btn-outline-primary btn-sm" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="#"><i class="fas fa-trash" title="Delete Scan"></i></a>
+                                    {% if e.PACKAGE_NAME %}                                        
+                                        <a class="btn btn-outline-primary btn-sm" href="../pdf/?md5={{ e.MD5 }}"><i class="fas fa-file-pdf" title="PDF Report"></i></a>                                                                                
                                         <!--<a class="btn btn-outline-info btn-sm" href="../pdf-sbom/?md5={{ e.MD5 }}"><i class="fas fa-file-pdf" title="View PDF report of third party dependency details"></i></a>-->
                                         <!--<a class="btn btn-outline-primary btn-sm" href="../{{ e.ANALYZER }}/?file_name={{e.FILE_NAME}}&amp;hash={{e.MD5}}&amp;scan_type={{e.SCAN_TYPE}}&amp;rescan=1"><i class="fas fa-sync-alt" title="Perform another static analysis scan"></i></a>-->
                                         <!--{% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:"%}
                                         <a class="btn btn-outline-primary btn-sm diffButton" id="{{ e.MD5 }}_{{ e.FILE_NAME }}" href="#"><i class="fas fa-not-equal" title="Compare this scan with another one"></i></a>
-                                        {% endif %}-->
-                                        {% if is_admin %}
-                                            {% if e.RELEASE %}<a class="btn btn-outline-primary btn-sm" id="admin_release" onclick="toggle_release('{{e.MD5}}', false)" href="{% if e.CAN_RELEASE %}#{% endif %}" {% if not e.CAN_RELEASE %}disabled{% endif %}><i class="fas fa-check" title="Remove Release"></i></a>
-                                            {% else %}<a class="btn btn-outline-primary btn-sm" id="admin_release" onclick="toggle_release('{{e.MD5}}', true)" href="{% if e.CAN_RELEASE %}#{% endif %}" {% if not e.CAN_RELEASE %}disabled{% endif %}><i class="fas fa-slash" title="Set Release"></i></a>
-                                            {% endif %}
-                                            <a class="btn btn-outline-primary btn-sm" id="admin_edit{{e.MD5}}" onclick="show_admin_save('{{e.MD5}}')" href="#"><i class="fas fa-pen" title="Edit Scan"></i></a>
-                                            <a class="btn btn-outline-primary btn-sm" id="admin_save{{e.MD5}}" onclick="update_emails('{{e.MD5}}')" href="#" hidden><i class="fas fa-save" title="Save Changes"></i></a>                                            
-                                        {% endif %}
-                                    {% endif %}
-                                    <a class="btn btn-outline-primary btn-sm" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="#"><i class="fas fa-trash" title="Delete Scan"></i></a>
+                                        {% endif %}-->                                        
+                                    {% endif %}                                    
                                 </p>
                             </td>
                         </tr>
@@ -278,37 +304,44 @@
         });
     }
 
-    function show_admin_save(item){
-        var labelName = "#scanEmails" + item;
-        var inputName = "#scanEmailsInput" + item;
-        var editBtnName = "#admin_edit" + item;
-        var saveBtnName = "#admin_save" + item;
-        var saveText = $(labelName).text();
-        $(inputName).prop('hidden', false);
-        $(inputName).val(saveText);
-        $(labelName).prop('hidden', true);
-        $(editBtnName).prop('hidden', true);
-        $(saveBtnName).prop('hidden', false);
+    function admin_edit(item){
+        $("#viewFields" + item).css('display','none');
+        $("#editFields" + item).css('display','');
+        $("#adminEdit" + item).css('display','none');
+        $("#adminSave" + item).css('display','');
     }
 
-    function reset_admin_save(item){
-        var labelName = "#scanEmails" + item;
-        var inputName = "#scanEmailsInput" + item;
-        var editBtnName = "#admin_edit" + item;
-        var saveBtnName = "#admin_save" + item;
-        $(inputName).prop('hidden', true);
-        $(labelName).prop('hidden', false);
-        $(editBtnName).prop('hidden', false);
-        $(saveBtnName).prop('hidden', true);
+    function admin_view(item){
+        $("#viewFields" + item).css('display','');
+        $("#editFields" + item).css('display','none');
+        $("#adminEdit" + item).css('display','');
+        $("#adminSave" + item).css('display','none');
     }
 
-    function getCleanEmails(identifier){
+    function update_labels(item){
+        $("#userAppName" + item).innerText = $("#userAppNameInput" + item).val();
+        $("#userAppVersion" + item).innerText = $("#userAppVersionInput" + item).val();
+        $("#division" + item).innerText = $("#divisionInput" + item).val();
+        $("#environment" + item).innerText = $("#environmentInput" + item).val();
+        $("#country" + item).innerText = $("#countryInput" + item).val();
+        $("#dataPrivacyClassification" + item).innerText = $("#dataPrivacyClassificationInput" + item).val();
+        $("#dataPrivacyAttributes" + item).innerText = $("#dataPrivacyAttributesInput" + item).val();
+        $("#email" + item).innerText = $("#emailInput" + item).val();
+        if ($("#releaseInput" + item).prop("checked")) {
+            $("#releaseBadge" + item).css('display','');
+        }
+        else {
+            $("#releaseBadge" + item).css('display','none');
+        }
+    }
+
+    function get_clean_emails(identifier){
         var retVal = "";
-        var inputName = "#scanEmailsInput" + identifier;
+        var inputName = "#emailInput" + identifier;
         var emails = $(inputName).val();
         var updated = emails.replace(/,/gi, ";");
         var emailArray = updated.split(";");
-        emailArray.forEach(cleanElement);
+        emailArray.forEach(clean_element);
         for(var i = 0; i < emailArray.length; i++){
             if(i < emailArray.length - 1){
                 retVal += emailArray[i] + ",";
@@ -319,124 +352,75 @@
         return retVal;
     }
 
-    function cleanElement(item, index, arr){
+    function clean_element(item, index, arr){
         if(item.indexOf("<") != -1 && item.indexOf(">") != -1){
             arr[index] = item.substring(item.indexOf("<")+1, item.indexOf(">"));
         } 
+    }    
+
+    function admin_save(item){
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This will update the modified fields for this scan",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes',
+            cancelButtonText: 'No',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#2da532',
+        }).then((result) => {
+            if (result.value) {            
+                var cleanEmails = get_clean_emails(item);
+                var release = ($("#releaseInput" + item).prop("checked") ? "True" : "False");
+                $.ajax({
+                        url: '../update_scan/',
+                        type: 'POST',
+                        dataType: 'json',
+                        data: {
+                            csrfmiddlewaretoken: '{{csrf_token}}',
+                            hash: item,
+                            user_app_name: $("#userAppNameInput" + item).val(),
+                            user_app_version: $("#userAppVersionInput" + item).val(),
+                            division: $("#divisionInput" + item).val(),
+                            environment: $("#environmentInput" + item).val(),
+                            country: $("#countryInput" + item).val(),
+                            data_privacy_classification: $("#dataPrivacyClassificationInput" + item).val(),
+                            data_privacy_attributes: $("#dataPrivacyAttributesInput" + item).val(),
+                            email: cleanEmails,
+                            release: release
+                        },
+                        success : function(json) {
+                            if (json.result === 'success') {
+                                update_labels(item);
+                                admin_view(item);  
+                                Swal.fire(
+                                    'Updated!',
+                                    'The scan has been successfully updated.',
+                                    'success'
+                                );
+                            }
+                            else {
+                                Swal.fire(
+                                'Scan Update Failed',
+                                'Cannot update the scan!',
+                                'error'
+                                )
+                            }
+                        },
+                        error : function(xhr,errmsg,err) {
+                            Swal.fire(
+                                'Updating Scan Failed',
+                                errmsg,
+                                'error'
+                                )
+                        }
+                    });
+                    
+            } else {
+                admin_view(item);
+            }
+        });
     }
-
-    function toggle_release(item, flag){
-        Swal.fire({
-        title: 'Are you sure?',
-        text: (flag ? "This will set the scan as a release version" : "This will remove the scan as a release version"),
-        type: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes',
-        cancelButtonText: 'No',
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#2da532',
-      }).then((result) => {
-          if (result.value) {
-              var md5_hash = item;
-              var newRelease = flag ? 'True' : 'False';
-              $.ajax({
-                      url: '../update_scan/',
-                          type : 'POST',
-                      dataType: 'json',
-                          data : {
-                                  csrfmiddlewaretoken: '{{ csrf_token }}',
-                                  hash: md5_hash,
-                                  release: newRelease
-                                  },
-                              success : function(json) {
-                                if (json.updated==='yes'){
-                                      Swal.fire(
-                                          'Updated!',
-                                          'The scan has been updated!',
-                                          'success'
-                                      ).then(function () {
-                                          location.reload();
-                                      })
-                                }
-                                else {
-                                    Swal.fire(
-                                    'Update Failed',
-                                    'Cannot update the scan.',
-                                    'error'
-                                    )
-                                }
-                              },
-                              error : function(xhr,errmsg,err) {
-                                  Swal.fire(
-                                      'Updating scan Failed',
-                                      errmsg,
-                                      'error'
-                                      )
-                              }
-                  });
-                 
-          } //else {
-            //      diff_cleanup();
-          //}
-          });
-      }
-
-      function update_emails(item){
-        Swal.fire({
-        title: 'Are you sure?',
-        text: "This will update the notification emails for this scan",
-        type: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes',
-        cancelButtonText: 'No',
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#2da532',
-      }).then((result) => {
-          if (result.value) {
-              var md5_hash = item;
-              var emails = getCleanEmails(md5_hash);
-              $.ajax({
-                      url: '../update_scan/',
-                          type : 'POST',
-                      dataType: 'json',
-                          data : {
-                                  csrfmiddlewaretoken: '{{ csrf_token }}',
-                                  hash: md5_hash,
-                                  email: emails
-                                  },
-                              success : function(json) {
-                                if (json.updated==='yes'){
-                                      Swal.fire(
-                                          'Updated!',
-                                          'The email addresses have been updated!',
-                                          'success'
-                                      ).then(function () {
-                                          reset_admin_save();
-                                          location.reload();
-                                      })
-                                  }
-                                  else {
-                                      Swal.fire(
-                                      'Email update Failed',
-                                      'Cannot update the emails!',
-                                      'error'
-                                      )
-                                  }
-                              },
-                              error : function(xhr,errmsg,err) {
-                                  Swal.fire(
-                                      'Updating emails Failed',
-                                      errmsg,
-                                      'error'
-                                      )
-                              }
-                  });
-                 
-          } else {
-                  reset_admin_save(item);
-          }
-          });
-      }
 
   
     $(document).ready(function() {

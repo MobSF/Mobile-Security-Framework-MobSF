@@ -336,17 +336,35 @@ def new_cyberspect_scan(scheduled, md5, start_time,
 def update_scan(request, api=False):
     """Update RecentScansDB record."""
     try:
+        if (not is_admin(request) and not api):
+            return HttpResponse(status=403)
         md5 = request.POST['hash']
         response = {'error': f'Scan {md5} not found'}
         db_obj = RecentScansDB.objects.filter(MD5=md5).first()
         if db_obj:
+            if 'user_app_name' in request.POST:
+                db_obj.USER_APP_NAME = request.POST['user_app_name']
+            if 'user_app_version' in request.POST:
+                db_obj.USER_APP_VERSION = request.POST['user_app_version']
+            if 'division' in request.POST:
+                db_obj.DIVISION = request.POST['division']
+            if 'environment' in request.POST:
+                db_obj.ENVIRONMENT = request.POST['environment']
+            if 'country' in request.POST:
+                db_obj.COUNTRY = request.POST['country']
+            if 'data_privacy_classification' in request.POST:
+                dpc = request.POST['data_privacy_classification']
+                db_obj.DATA_PRIVACY_CLASSIFICATION = dpc
+            if 'data_privacy_attributes' in request.POST:
+                dpa = request.POST['data_privacy_attributes']
+                db_obj.DATA_PRIVACY_ATTRIBUTES = dpa
             if 'email' in request.POST:
                 db_obj.EMAIL = request.POST['email']
             if 'release' in request.POST:
                 db_obj.RELEASE = request.POST['release']
             db_obj.save()
             response = model_to_dict(db_obj)
-            data = {'updated': 'yes'}
+            data = {'result': 'success'}
         if api:
             return response
         else:
@@ -547,22 +565,22 @@ def delete_scan(request, api=False):
             return error_response(request, msg, False, exp_doc)
 
 
-def cyberspect_rescan(md5, scheduled):
+def cyberspect_rescan(apphash, scheduled):
     """Get cyberspect scan by hash."""
-    rs_obj = RecentScansDB.objects.filter(MD5=md5).first()
+    rs_obj = RecentScansDB.objects.filter(MD5=apphash).first()
     if not rs_obj:
         return None
-    cs_obj = CyberspectScans.objects.filter(MOBSF_MD5=md5) \
+    cs_obj = CyberspectScans.objects.filter(MOBSF_MD5=apphash) \
         .order_by('-INTAKE_START').first()
 
-    scan_id = new_cyberspect_scan(scheduled, md5,
+    scan_id = new_cyberspect_scan(scheduled, apphash,
                                   datetime.datetime.now(timezone.utc),
                                   cs_obj.FILE_SIZE_PACKAGE,
                                   cs_obj.FILE_SIZE_SOURCE)
     scan_data = {
         'cyberspect_scan_id': scan_id,
-        'md5': md5,
-        'short_hash': get_siphash(md5),
+        'hash': apphash,
+        'short_hash': get_siphash(apphash),
         'scan_type': rs_obj.SCAN_TYPE,
         'file_name': rs_obj.FILE_NAME,
         'user_app_name': rs_obj.USER_APP_NAME,
@@ -579,13 +597,13 @@ def cyberspect_scan_intake(scan):
         return
 
     lclient = boto3.client('lambda')
-    file_path = os.path.join(settings.UPLD_DIR, scan['md5'] + '/') \
-        + scan['md5'] + '.' + scan['scan_type']
+    file_path = os.path.join(settings.UPLD_DIR, scan['hash'] + '/') \
+        + scan['hash'] + '.' + scan['scan_type']
     if (os.path.exists(file_path + '.src')):
         file_path = file_path + '.src'
     lambda_params = {
         'cyberspect_scan_id': scan['cyberspect_scan_id'],
-        'hash': scan['md5'],
+        'hash': scan['hash'],
         'short_hash': scan['short_hash'],
         'user_app_name': scan['user_app_name'],
         'user_app_version': scan['user_app_version'],
