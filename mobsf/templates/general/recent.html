@@ -6,6 +6,7 @@
 {% endblock %}
  {% block extra_css %}
 <link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'landing/css/recent.css' %}">
 
 <style>
 #app_icon {
@@ -103,19 +104,32 @@
                                     <div id="userAppVersion{{e.MD5}}">{{e.USER_APP_VERSION}}</div>
                                     <div id="division{{e.MD5}}">{{e.DIVISION}}</div>
                                     <div id="environment{{e.MD5}}">{{e.ENVIRONMENT}}</div>
-                                    <div id="country{{e.MD5}}">{{e.COUNTRY}}</div>
-                                    <div id="dataPrivacyClassification{{e.MD5}}">{{e.DATA_PRIVACY_CLASSIFICATION}}</div>
-                                    <div id="dataPrivacyAttributes{{e.MD5}}">{{e.DATA_PRIVACY_ATTRIBUTES}}</div>
+                                    <div id="country{{e.MD5}}">{{e.COUNTRY|default_if_none:""}}</div>
+                                    <div id="dataPrivacyClassification{{e.MD5}}">{{e.DATA_PRIVACY_CLASSIFICATION|default_if_none:""}}</div>
+                                    <div id="dataPrivacyAttributes{{e.MD5}}">{{e.DATA_PRIVACY_ATTRIBUTES|default_if_none:""}}</div>
                                     <div id="email{{e.MD5}}">{{e.EMAIL}}</div>
                                 </div>
                                 <div id="editFields{{e.MD5}}" class="editFields" style="display:none">
-                                    <div><input type="text" id="userAppNameInput{{e.MD5}}" value="{{e.USER_APP_NAME}}" title="User supplied app name"/></div>
+                                    <div><input type="text" id="userAppNameInput{{e.MD5}}" value="{{e.USER_APP_NAME}}" title="User supplied app name" class="editField"/></div>
                                     <div><input type="text" id="userAppVersionInput{{e.MD5}}" value="{{e.USER_APP_VERSION}}" title="User supplied app version"/></div>
-                                    <div><input type="text" id="divisionInput{{e.MD5}}" value="{{e.DIVISION}}" title="Division"/></div>
-                                    <div><input type="text" id="environmentInput{{e.MD5}}" value="{{e.ENVIRONMENT}}" title="Environment"/></div>
-                                    <div><input type="text" id="countryInput{{e.MD5}}" value="{{e.COUNTRY}}" title="Countries"/></div>
-                                    <div><input type="text" id="dataPrivacyClassificationInput{{e.MD5}}" value="{{e.DATA_PRIVACY_CLASSIFICATION}}" title="Data privacy classification"/></div>
-                                    <div><input type="text" id="dataPrivacyAttributesInput{{e.MD5}}" value="{{e.DATA_PRIVACY_ATTRIBUTES}}" title="Data privacy attributes"/></div>
+                                    <div><select id="divisionInput{{e.MD5}}" data="{{e.DIVISION}}" title="Division"></select></div>
+                                    <div>
+                                        <select id="environmentInput{{e.MD5}}" data="{{e.ENVIRONMENT}}" title="Environment">
+                                            <option>Production</option>
+                                            <option>Preproduction</option>
+                                        </select>
+                                    </div>                                    
+                                    <div><input type="text" id="countryInput{{e.MD5}}" value="{{e.COUNTRY|default_if_none:''}}" title="Countries"/></div>                                    
+                                    <div>
+                                        <select id="dataPrivacyClassificationInput{{e.MD5}}" data="{{e.DATA_PRIVACY_CLASSIFICATION|default_if_none:''}}" title="Data privacy classification">
+                                            <option>Highly Restricted</option>
+                                            <option>Restricted</option>
+                                            <option>Internal Use Only</option>
+                                            <option>Public</option>
+                                            <option>Does Not Apply</option>
+                                        </select>
+                                    </div>                                    
+                                    <div><input type="text" id="dataPrivacyAttributesInput{{e.MD5}}" value="{{e.DATA_PRIVACY_ATTRIBUTES|default_if_none:''}}" title="Data privacy attributes"/></div>
                                     <div><input type="text" id="emailInput{{e.MD5}}" value="{{e.EMAIL}}" /></div>
                                     <div><input type="checkbox" id="releaseInput{{e.MD5}}" {% if e.RELEASE %}checked{% endif %}/><label for="releaseInput{{e.MD5}}"> Release Version</label></div>
                                 </div>                                
@@ -305,6 +319,12 @@
     }
 
     function admin_edit(item){
+        $("#environmentInput" + item).val($("#environmentInput" + item).attr("data"))
+        $("#dataPrivacyClassificationInput" + item).val($("#dataPrivacyClassificationInput" + item).attr("data"))
+        populateDivisions($("#divisionInput" + item));
+        //populateCountries($("#countryInput" + item));
+        //populateDataPrivacy($("#dataPrivacyAttributesInput" + item));
+
         $("#viewFields" + item).css('display','none');
         $("#editFields" + item).css('display','');
         $("#adminEdit" + item).css('display','none');
@@ -319,14 +339,17 @@
     }
 
     function update_labels(item){
-        $("#userAppName" + item).innerText = $("#userAppNameInput" + item).val();
-        $("#userAppVersion" + item).innerText = $("#userAppVersionInput" + item).val();
-        $("#division" + item).innerText = $("#divisionInput" + item).val();
-        $("#environment" + item).innerText = $("#environmentInput" + item).val();
-        $("#country" + item).innerText = $("#countryInput" + item).val();
-        $("#dataPrivacyClassification" + item).innerText = $("#dataPrivacyClassificationInput" + item).val();
-        $("#dataPrivacyAttributes" + item).innerText = $("#dataPrivacyAttributesInput" + item).val();
-        $("#email" + item).innerText = $("#emailInput" + item).val();
+        $("#userAppName" + item).text($("#userAppNameInput" + item).val());
+        $("#userAppVersion" + item).text($("#userAppVersionInput" + item).val());
+        $("#division" + item).text($("#divisionInput" + item).val());
+        $("#divisionInput" + item).attr("data", $("#divisionInput" + item).val());
+        $("#environment" + item).text($("#environmentInput" + item).val());
+        $("#environmentInput" + item).attr("data", $("#environmentInput" + item).val());
+        $("#country" + item).text($("#countryInput" + item).val());
+        $("#dataPrivacyClassification" + item).text($("#dataPrivacyClassificationInput" + item).val());
+        $("#dataPrivacyClassificationInput" + item).attr("data", $("#dataPrivacyClassificationInput" + item).val());
+        $("#dataPrivacyAttributes" + item).text($("#dataPrivacyAttributesInput" + item).val());
+        $("#email" + item).text($("#emailInput" + item).val());
         if ($("#releaseInput" + item).prop("checked")) {
             $("#releaseBadge" + item).css('display','');
         }
@@ -422,6 +445,58 @@
         });
     }
 
+    function populateDivisions(item) {
+        if (!window.cyberspectDivisions) {
+            var url = '{{tenant_static}}divisions.json';
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    window.cyberspectDivisions = data;
+                    populateSelectList(item, window.cyberspectDivisions);
+                });
+        }
+        else { populateSelectList(item, window.cyberspectDivisions); }
+    }
+
+    function populateCountries(item) {
+        if (!window.cyberspectCountries) {
+            var url = '{{tenant_static}}countries.json';
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    window.cyberspectCountries = data;
+                    populateSelectList(item, window.cyberspectCountries);
+                });
+        }
+        else { populateSelectList(item, window.cyberspectCountries); }
+    }
+
+    function populateDataPrivacy() {
+        if (!window.cyberspectDataPrivacy) {
+            var url = '{{tenant_static}}data-privacy-attributes.json';
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    window.cyberspectDataPrivacy = data;
+                    populateSelectList(item, window.cyberspectDataPrivacy, true);
+                });
+        }
+        else { populateSelectList(item, window.cyberspectDataPrivacy, true); }
+    }
+
+    function populateSelectList(item, data, prefix=false) {
+        var options = '';
+        for (i = 0; i < data.length; i++) {
+            if (prefix) {
+                options += '<option value="' + data[i].id + '">' + data[i].id + ": " + data[i].name + '</option>';
+            }
+            else {
+                options += '<option value="' + data[i].id + '">' + data[i].name + '</option>';
+            }
+        }        
+        item.html(options);
+        item.val(item.attr("data"));
+    }
   
     $(document).ready(function() {
         enable_diff_button(); 

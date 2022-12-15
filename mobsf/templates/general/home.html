@@ -375,7 +375,7 @@
             fetch(countriesUrl)
                 .then(response => response.json())
                 .then(data => {
-                    var options = '<option value="**" selected>Global</option>';
+                    var options = '<option value="ALL" selected>Global</option>';
                     for (i = 0; i < data.length; i++) {
                         options += '<option value="' + data[i].id + '">' + data[i].name + '</option>';
                     }
