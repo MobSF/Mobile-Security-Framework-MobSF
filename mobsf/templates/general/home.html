@@ -377,7 +377,7 @@
                 .then(data => {
                     var options = '<option value="ALL" selected>Global</option>';
                     for (i = 0; i < data.length; i++) {
-                        options += '<option value="' + data[i].id + '">' + data[i].name + '</option>';
+                        options += '<option value="' + data[i].code + '">' + data[i].name + '</option>';
                     }
                     _('country').innerHTML = options;
                 });

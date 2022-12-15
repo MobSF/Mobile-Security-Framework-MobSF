@@ -145,16 +145,16 @@
                                 </p>
                                 <p>
                                     {% if e.PACKAGE_NAME and is_admin %}
-                                        <a class="btn btn-outline-primary btn-sm" id="adminEdit{{e.MD5}}" onclick="admin_edit('{{e.MD5}}')" href="#"><i class="fas fa-pen" title="Edit Scan"></i></a>
-                                        <a class="btn btn-outline-primary btn-sm" id="adminSave{{e.MD5}}" onclick="admin_save('{{e.MD5}}')" href="#" style="display:none"><i class="fas fa-save" title="Save Changes"></i></a>
+                                        <a class="btn btn-outline-primary btn-sm" id="adminEdit{{e.MD5}}" onclick="admin_edit('{{e.MD5}}')" href="javascript:void(0);"><i class="fas fa-pen" title="Edit Scan"></i></a>
+                                        <a class="btn btn-outline-primary btn-sm" id="adminSave{{e.MD5}}" onclick="admin_save('{{e.MD5}}')" href="javascript:void(0);" style="display:none"><i class="fas fa-save" title="Save Changes"></i></a>
                                     {% endif %}
-                                    <a class="btn btn-outline-primary btn-sm" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="#"><i class="fas fa-trash" title="Delete Scan"></i></a>
+                                    <a class="btn btn-outline-primary btn-sm" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="javascript:void(0);"><i class="fas fa-trash" title="Delete Scan"></i></a>
                                     {% if e.PACKAGE_NAME %}                                        
                                         <a class="btn btn-outline-primary btn-sm" href="../pdf/?md5={{ e.MD5 }}"><i class="fas fa-file-pdf" title="PDF Report"></i></a>                                                                                
                                         <!--<a class="btn btn-outline-info btn-sm" href="../pdf-sbom/?md5={{ e.MD5 }}"><i class="fas fa-file-pdf" title="View PDF report of third party dependency details"></i></a>-->
                                         <!--<a class="btn btn-outline-primary btn-sm" href="../{{ e.ANALYZER }}/?file_name={{e.FILE_NAME}}&amp;hash={{e.MD5}}&amp;scan_type={{e.SCAN_TYPE}}&amp;rescan=1"><i class="fas fa-sync-alt" title="Perform another static analysis scan"></i></a>-->
                                         <!--{% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:"%}
-                                        <a class="btn btn-outline-primary btn-sm diffButton" id="{{ e.MD5 }}_{{ e.FILE_NAME }}" href="#"><i class="fas fa-not-equal" title="Compare this scan with another one"></i></a>
+                                        <a class="btn btn-outline-primary btn-sm diffButton" id="{{ e.MD5 }}_{{ e.FILE_NAME }}" href="javascript:void(0);"><i class="fas fa-not-equal" title="Compare this scan with another one"></i></a>
                                         {% endif %}-->                                        
                                     {% endif %}                                    
                                 </p>
@@ -324,7 +324,6 @@
         populateDivisions($("#divisionInput" + item));
         //populateCountries($("#countryInput" + item));
         //populateDataPrivacy($("#dataPrivacyAttributesInput" + item));
-
         $("#viewFields" + item).css('display','none');
         $("#editFields" + item).css('display','');
         $("#adminEdit" + item).css('display','none');
