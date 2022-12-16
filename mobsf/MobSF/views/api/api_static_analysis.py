@@ -349,6 +349,18 @@ def api_cyberspect_recent_scans(request):
         return make_api_response(resp, 200)
 
 
+@request_method(['GET'])
+@csrf_exempt
+def api_cyberspect_completed_scans(request):
+    """GET - get completed Cyberspect scans."""
+    scans = RecentScans(request)
+    resp = scans.cyberspect_completed_scans()
+    if 'error' in resp:
+        return make_api_response(resp, 500)
+    else:
+        return make_api_response(resp, 200)
+
+
 @request_method(['POST'])
 @csrf_exempt
 def api_update_scan(request):

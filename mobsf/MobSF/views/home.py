@@ -43,6 +43,7 @@ from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerIOS,
     StaticAnalyzerWindows,
 )
+from mobsf.StaticAnalyzer.views.common import appsec
 
 LINUX_PLATFORM = ['Darwin', 'Linux']
 HTTP_BAD_REQUEST = 400
@@ -656,6 +657,30 @@ class RecentScans(object):
         try:
             paginator = Paginator(result, page_size)
             content = paginator.page(page)
+            data = {
+                'content': list(content),
+                'count': paginator.count,
+                'num_pages': paginator.num_pages,
+            }
+        except Exception as exp:
+            data = {'error': str(exp)}
+        return data
+
+    def cyberspect_completed_scans(self):
+        page = self.request.GET.get('page', 1)
+        page_size = self.request.GET.get('page_size', 10)
+        result = CyberspectScans.objects.filter(SCHEDULED=True) \
+            .exclude(SUCCESS=None).values().order_by('-INTAKE_START')
+        try:
+            paginator = Paginator(result, page_size)
+            content = paginator.page(page)
+            for scan in content:
+                # Get scan vulnerability counts
+                findings = appsec.appsec_dashboard(self.request,
+                                                   scan['MOBSF_MD5'], True)
+                scan['FINDINGS_HIGH'] = len(findings['high'])
+                scan['FINDINGS_WARNING'] = len(findings['warning'])
+                scan['FINDINGS_INFO'] = len(findings['info'])
             data = {
                 'content': list(content),
                 'count': paginator.count,

@@ -58,6 +58,8 @@ urlpatterns = [
     re_path(r'^api/v1/delete_suppression$', api_sz.api_delete_suppression),
     re_path(r'^api/v1/cyberspect_scan$', api_sz.api_cyberspect_get_scan),
     re_path(r'^api/v1/cyberspect_scans$', api_sz.api_cyberspect_recent_scans),
+    re_path(r'^api/v1/cyberspect_completedscans$',
+            api_sz.api_cyberspect_completed_scans),
     re_path(r'^api/v1/update_cyberspect_scan$',
             api_sz.api_update_cyberspect_scan),
     # Dynamic Analysis
