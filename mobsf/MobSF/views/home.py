@@ -675,9 +675,18 @@ class RecentScans(object):
             paginator = Paginator(result, page_size)
             content = paginator.page(page)
             for scan in content:
+                # Get app details
+                md5 = scan['MOBSF_MD5']
+                scan_result = RecentScansDB.objects.filter(MD5=md5) \
+                    .first()
+                scan['APP_NAME'] = scan_result.APP_NAME
+                scan['VERSION_NAME'] = scan_result.VERSION_NAME
+                scan['PACKAGE_NAME'] = scan_result.PACKAGE_NAME
+                scan['SCAN_TYPE'] = scan_result.SCAN_TYPE
+                scan['EMAIL'] = scan_result.EMAIL
+
                 # Get scan vulnerability counts
-                findings = appsec.appsec_dashboard(self.request,
-                                                   scan['MOBSF_MD5'], True)
+                findings = appsec.appsec_dashboard(self.request, md5, True)
                 scan['FINDINGS_HIGH'] = len(findings['high'])
                 scan['FINDINGS_WARNING'] = len(findings['warning'])
                 scan['FINDINGS_INFO'] = len(findings['info'])
