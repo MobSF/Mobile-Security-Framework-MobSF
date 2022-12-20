@@ -570,13 +570,18 @@ def cyberspect_rescan(apphash, scheduled):
     rs_obj = RecentScansDB.objects.filter(MD5=apphash).first()
     if not rs_obj:
         return None
-    cs_obj = CyberspectScans.objects.filter(MOBSF_MD5=apphash) \
-        .order_by('-INTAKE_START').first()
+    # Get file sizes
+    file_path = os.path.join(settings.UPLD_DIR, apphash + '/') \
+        + apphash + '.' + rs_obj.SCAN_TYPE
+    file_size = os.path.getsize(file_path)
+    source_file_size = 0
+    if os.path.exists(file_path + '.src'):
+        source_file_size = os.path.getsize(file_path + '.src')
 
     scan_id = new_cyberspect_scan(scheduled, apphash,
                                   datetime.datetime.now(timezone.utc),
-                                  cs_obj.FILE_SIZE_PACKAGE,
-                                  cs_obj.FILE_SIZE_SOURCE)
+                                  file_size,
+                                  source_file_size)
     scan_data = {
         'cyberspect_scan_id': scan_id,
         'hash': apphash,
