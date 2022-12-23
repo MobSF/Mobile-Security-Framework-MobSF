@@ -1,6 +1,7 @@
 """Common Utils."""
 import ast
 import base64
+import datetime
 import hashlib
 import io
 import logging
@@ -678,3 +679,10 @@ def model_to_dict_str(instance):
     for key, value in result.items():
         result[key] = str(value)
     return result
+
+
+def tz(value):
+    # Parse string into time zone aware datetime
+    value = value.replace('T', ' ').replace('Z', '')
+    unware_time = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S.%f')
+    return unware_time .replace(tzinfo=datetime.timezone.utc)

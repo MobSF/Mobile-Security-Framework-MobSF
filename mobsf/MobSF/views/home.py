@@ -7,7 +7,6 @@ import os
 import platform
 import re
 import shutil
-import time
 import traceback as tb
 from pathlib import Path
 from wsgiref.util import FileWrapper
@@ -33,6 +32,7 @@ from mobsf.MobSF.utils import (
     is_safe_path,
     key,
     sso_email,
+    tz,
 )
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
@@ -312,8 +312,8 @@ def get_cyberspect_scan(csid):
     if db_obj:
         cs_obj = model_to_dict(db_obj)
         rs_obj = scan_metadata(cs_obj['MOBSF_MD5'])
-        cs_obj['SCAN_TYPE'] = rs_obj['SCAN_TYPE']
-        cs_obj['FILE_NAME'] = rs_obj['FILE_NAME']
+        cs_obj['SCAN_TYPE'] = rs_obj['SCAN_TYPE'] if rs_obj else None
+        cs_obj['FILE_NAME'] = rs_obj['FILE_NAME'] if rs_obj else None
         return cs_obj
     return None
 
@@ -362,6 +362,7 @@ def update_scan(request, api=False):
                 db_obj.EMAIL = request.POST['email']
             if 'release' in request.POST:
                 db_obj.RELEASE = request.POST['release']
+            db_obj.TIMESTAMP = timezone.now()
             db_obj.save()
             response = model_to_dict(db_obj)
             data = {'result': 'success'}
@@ -436,15 +437,6 @@ def update_cyberspect_scan(data):
         exmsg = ''.join(tb.format_exception(None, ex, ex.__traceback__))
         logger.error(exmsg)
         return {'error': str(ex)}
-
-
-def tz(value):
-    # Parse string into date/time parts and build time zone aware datetime
-    value = value.replace('T', ' ').replace('Z', '')
-    st = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S.%f')
-    ts = time.mktime(st.timetuple()) + (st.microsecond / 1000000.0)
-    dt = datetime.datetime.fromtimestamp(ts)
-    return dt.replace(tzinfo=timezone.utc)
 
 
 def logout_aws(request):
