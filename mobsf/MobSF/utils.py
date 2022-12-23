@@ -685,4 +685,9 @@ def tz(value):
     # Parse string into time zone aware datetime
     value = value.replace('T', ' ').replace('Z', '')
     unware_time = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S.%f')
-    return unware_time .replace(tzinfo=datetime.timezone.utc)
+    return unware_time.replace(tzinfo=datetime.timezone.utc)
+
+
+def utcnow():
+    utc = datetime.datetime.now(datetime.timezone.utc)
+    return utc.replace(tzinfo=datetime.timezone.utc)

@@ -17,7 +17,6 @@ from pathlib import Path
 
 import requests
 
-from django.utils import timezone
 from django.utils.html import escape
 
 from mobsf.MobSF import settings
@@ -25,6 +24,7 @@ from mobsf.MobSF.utils import (
     error_response,
     is_md5,
     upstream_proxy,
+    utcnow,
 )
 from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.StaticAnalyzer.views.comparer import generic_compare
@@ -157,7 +157,7 @@ def get_avg_cvss(findings):
 
 def update_scan_timestamp(scan_hash):
     # Update the last scan time.
-    tms = timezone.now()
+    tms = utcnow()
     RecentScansDB.objects.filter(MD5=scan_hash).update(TIMESTAMP=tms)
 
 

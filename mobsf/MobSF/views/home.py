@@ -33,6 +33,7 @@ from mobsf.MobSF.utils import (
     key,
     sso_email,
     tz,
+    utcnow,
 )
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
@@ -184,7 +185,7 @@ class Upload(object):
             'success': False,
             'failure_source': 'SAST',
             'failure_message': error_message,
-            'sast_end': datetime.datetime.utcnow(),
+            'sast_end': utcnow(),
         }
         update_cyberspect_scan(data)
 
@@ -279,10 +280,10 @@ def recent_scans(request):
             entry['PACKAGE'] = ''
         logcat = Path(settings.UPLD_DIR) / entry['MD5'] / 'logcat.txt'
         entry['DYNAMIC_REPORT_EXISTS'] = logcat.exists()
-        entry['ERROR'] = (timezone.now()
+        entry['ERROR'] = (utcnow()
                           > entry['TIMESTAMP']
                           + datetime.timedelta(minutes=15))
-        entry['CAN_RELEASE'] = (timezone.now()
+        entry['CAN_RELEASE'] = (utcnow()
                                 < entry['TIMESTAMP']
                                 + datetime.timedelta(days=30))
         entries.append(entry)
@@ -362,7 +363,7 @@ def update_scan(request, api=False):
                 db_obj.EMAIL = request.POST['email']
             if 'release' in request.POST:
                 db_obj.RELEASE = request.POST['release']
-            db_obj.TIMESTAMP = timezone.now()
+            db_obj.TIMESTAMP = utcnow()
             db_obj.save()
             response = model_to_dict(db_obj)
             data = {'result': 'success'}
@@ -636,13 +637,22 @@ class RecentScans(object):
         result = RecentScansDB.objects.all().values().order_by('-TIMESTAMP')
         try:
             paginator = Paginator(result, page_size)
-            content = paginator.page(page)
-            data = {
-                'content': list(content),
-                'count': paginator.count,
-                'num_pages': paginator.num_pages,
-            }
+            if (int(page) > paginator.num_pages):
+                data = {
+                    'content': [],
+                    'count': paginator.count,
+                    'num_pages': paginator.num_pages,
+                }
+            else:
+                content = paginator.page(page)
+                data = {
+                    'content': list(content),
+                    'count': paginator.count,
+                    'num_pages': paginator.num_pages,
+                }
         except Exception as exp:
+            exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+            logger.error(exmsg)
             data = {'error': str(exp)}
         return data
 
@@ -653,13 +663,22 @@ class RecentScans(object):
         result = cs_scans.values().order_by('-INTAKE_START')
         try:
             paginator = Paginator(result, page_size)
-            content = paginator.page(page)
-            data = {
-                'content': list(content),
-                'count': paginator.count,
-                'num_pages': paginator.num_pages,
-            }
+            if (int(page) > paginator.num_pages):
+                data = {
+                    'content': [],
+                    'count': paginator.count,
+                    'num_pages': paginator.num_pages,
+                }
+            else:
+                content = paginator.page(page)
+                data = {
+                    'content': list(content),
+                    'count': paginator.count,
+                    'num_pages': paginator.num_pages,
+                }
         except Exception as exp:
+            exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+            logger.error(exmsg)
             data = {'error': str(exp)}
         return data
 
@@ -670,29 +689,38 @@ class RecentScans(object):
             .exclude(SUCCESS=None).values().order_by('-INTAKE_START')
         try:
             paginator = Paginator(result, page_size)
-            content = paginator.page(page)
-            for scan in content:
-                # Get app details
-                md5 = scan['MOBSF_MD5']
-                scan_result = RecentScansDB.objects.filter(MD5=md5) \
-                    .first()
-                scan['APP_NAME'] = scan_result.APP_NAME
-                scan['VERSION_NAME'] = scan_result.VERSION_NAME
-                scan['PACKAGE_NAME'] = scan_result.PACKAGE_NAME
-                scan['SCAN_TYPE'] = scan_result.SCAN_TYPE
-                scan['EMAIL'] = scan_result.EMAIL
+            if (int(page) > paginator.num_pages):
+                data = {
+                    'content': [],
+                    'count': paginator.count,
+                    'num_pages': paginator.num_pages,
+                }
+            else:
+                content = paginator.page(page)
+                for scan in content:
+                    # Get app details
+                    md5 = scan['MOBSF_MD5']
+                    scan_result = RecentScansDB.objects.filter(MD5=md5) \
+                        .first()
+                    scan['APP_NAME'] = scan_result.APP_NAME
+                    scan['VERSION_NAME'] = scan_result.VERSION_NAME
+                    scan['PACKAGE_NAME'] = scan_result.PACKAGE_NAME
+                    scan['SCAN_TYPE'] = scan_result.SCAN_TYPE
+                    scan['EMAIL'] = scan_result.EMAIL
 
-                # Get scan vulnerability counts
-                findings = appsec.appsec_dashboard(self.request, md5, True)
-                scan['FINDINGS_HIGH'] = len(findings['high'])
-                scan['FINDINGS_WARNING'] = len(findings['warning'])
-                scan['FINDINGS_INFO'] = len(findings['info'])
-            data = {
-                'content': list(content),
-                'count': paginator.count,
-                'num_pages': paginator.num_pages,
-            }
+                    # Get scan vulnerability counts
+                    findings = appsec.appsec_dashboard(self.request, md5, True)
+                    scan['FINDINGS_HIGH'] = len(findings['high'])
+                    scan['FINDINGS_WARNING'] = len(findings['warning'])
+                    scan['FINDINGS_INFO'] = len(findings['info'])
+                data = {
+                    'content': list(content),
+                    'count': paginator.count,
+                    'num_pages': paginator.num_pages,
+                }
         except Exception as exp:
+            exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+            logger.error(exmsg)
             data = {'error': str(exp)}
         return data
 
@@ -703,12 +731,21 @@ class RecentScans(object):
         result = scans.values().order_by('-TIMESTAMP')
         try:
             paginator = Paginator(result, page_size)
-            content = paginator.page(page)
-            data = {
-                'content': list(content),
-                'count': paginator.count,
-                'num_pages': paginator.num_pages,
-            }
+            if (int(page) > paginator.num_pages):
+                data = {
+                    'content': [],
+                    'count': paginator.count,
+                    'num_pages': paginator.num_pages,
+                }
+            else:
+                content = paginator.page(page)
+                data = {
+                    'content': list(content),
+                    'count': paginator.count,
+                    'num_pages': paginator.num_pages,
+                }
         except Exception as exp:
+            exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+            logger.error(exmsg)
             data = {'error': str(exp)}
         return data
