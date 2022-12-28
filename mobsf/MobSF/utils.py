@@ -683,7 +683,7 @@ def model_to_dict_str(instance):
 
 def tz(value):
     # Parse string into time zone aware datetime
-    value = value.replace('T', ' ').replace('Z', '')
+    value = str(value).replace('T', ' ').replace('Z', '')
     unware_time = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S.%f')
     return unware_time.replace(tzinfo=datetime.timezone.utc)
 

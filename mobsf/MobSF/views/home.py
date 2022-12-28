@@ -685,7 +685,11 @@ class RecentScans(object):
     def cyberspect_completed_scans(self):
         page = self.request.GET.get('page', 1)
         page_size = self.request.GET.get('page_size', 10)
-        result = CyberspectScans.objects.filter(SCHEDULED=True) \
+        def_date = datetime.datetime.now(datetime.timezone.utc) \
+            - datetime.timedelta(hours=24)
+        from_date = tz(self.request.GET.get('from_date', def_date))
+        result = CyberspectScans.objects.filter(SCHEDULED=True,
+                                                INTAKE_START__gte=from_date) \
             .exclude(SUCCESS=None).values().order_by('-INTAKE_START')
         try:
             paginator = Paginator(result, page_size)
