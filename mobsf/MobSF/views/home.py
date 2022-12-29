@@ -690,7 +690,7 @@ class RecentScans(object):
         from_date = tz(self.request.GET.get('from_date', def_date))
         result = CyberspectScans.objects.filter(SCHEDULED=True,
                                                 INTAKE_START__gte=from_date) \
-            .exclude(SUCCESS=None).values().order_by('-INTAKE_START')
+            .values().order_by('ID')
         try:
             paginator = Paginator(result, page_size)
             if (int(page) > paginator.num_pages):
@@ -732,7 +732,7 @@ class RecentScans(object):
         page = self.request.GET.get('page', 1)
         page_size = self.request.GET.get('page_size', 10)
         scans = RecentScansDB.objects.filter(RELEASE=True)
-        result = scans.values().order_by('-TIMESTAMP')
+        result = scans.values().order_by('APP_NAME', 'VERSION_NAME')
         try:
             paginator = Paginator(result, page_size)
             if (int(page) > paginator.num_pages):
