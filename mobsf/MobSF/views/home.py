@@ -211,6 +211,7 @@ def support(request):
         'title': 'Support',
         'version': settings.MOBSF_VER,
         'tenant_static': settings.TENANT_STATIC_URL,
+        'is_admin': is_admin(request),
     }
     template = 'general/support.html'
     return render(request, template, context)

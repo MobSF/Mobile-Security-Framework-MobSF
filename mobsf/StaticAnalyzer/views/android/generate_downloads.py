@@ -21,7 +21,7 @@ def run(request):
         md5 = request.GET['hash']
         file_type = request.GET['file_type']
         match = re.match('^[0-9a-f]{32}$', md5)
-        if not match and file_type not in ['apk', 'smali', 'java']:
+        if not match or file_type not in ['ipa', 'apk', 'smali', 'java']:
             logger.exception('Invalid options')
             return error_response(request,
                                   'Invalid options')

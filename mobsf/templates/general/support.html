@@ -19,6 +19,18 @@ sidebar-collapse
             <p><a href="{{tenant_static}}Cyberspect%20Quick%20Start.pdf" target="_blank">Cyberspect Quick Start Guide</a></p>
           </div>
         </div>
+        {% if is_admin %}
+        <div class="card">
+          <div class="card-body">
+            <h1>Admin Guide</h1>
+
+            <p class="lead">
+              An administrative guide on how to use the Cyberspect solution can be found at the link below.
+            </p>
+            <p><a href="{{tenant_static}}Cyberspect%20Admin%20Guide.pdf" target="_blank">Cyberspect Admin Guide</a></p>
+          </div>
+        </div>
+        {% endif %}
         <div class="card">
           <div class="card-body">
             <h1>Technical Support</h1>
