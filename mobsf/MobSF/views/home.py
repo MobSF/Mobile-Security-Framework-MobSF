@@ -326,7 +326,7 @@ def new_cyberspect_scan(scheduled, md5, start_time,
     new_db_obj = CyberspectScans(
         SCHEDULED=scheduled,
         MOBSF_MD5=md5,
-        INTAKE_START=start_time,
+        INTAKE_START=start_time.replace(tzinfo=datetime.timezone.utc),
         FILE_SIZE_PACKAGE=file_size,
         FILE_SIZE_SOURCE=source_file_size,
     )
@@ -715,9 +715,12 @@ class RecentScans(object):
 
                     # Get scan vulnerability counts
                     findings = appsec.appsec_dashboard(self.request, md5, True)
-                    scan['FINDINGS_HIGH'] = len(findings['high'])
-                    scan['FINDINGS_WARNING'] = len(findings['warning'])
-                    scan['FINDINGS_INFO'] = len(findings['info'])
+                    scan['FINDINGS_HIGH'] = len(findings['high']) \
+                        if 'high' in findings else 0
+                    scan['FINDINGS_WARNING'] = len(findings['warning']) \
+                        if 'warning' in findings else 0
+                    scan['FINDINGS_INFO'] = len(findings['info']) \
+                        if 'info' in findings else 0
                 data = {
                     'content': list(content),
                     'count': paginator.count,

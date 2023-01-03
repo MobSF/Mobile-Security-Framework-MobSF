@@ -96,6 +96,9 @@ def api_async_scan(request):
     """POST - Async Scan API."""
     if ('cyberspect_scan_id' in request.POST):
         csdata = get_cyberspect_scan(request.POST['cyberspect_scan_id'])
+        if not csdata:
+            return make_api_response({'error': 'cyberspect_scan_id not found'},
+                                     404)
         scan_data = {
             'cyberspect_scan_id': csdata['ID'],
             'hash': csdata['MOBSF_MD5'],

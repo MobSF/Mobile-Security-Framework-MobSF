@@ -30,6 +30,7 @@ import siphash
 
 from django.forms.models import model_to_dict
 from django.shortcuts import render
+from django.utils import timezone
 
 from . import settings
 
@@ -682,12 +683,13 @@ def model_to_dict_str(instance):
 
 
 def tz(value):
+    if isinstance(value, datetime.datetime):
+        return value.replace(tzinfo=datetime.timezone.utc)
     # Parse string into time zone aware datetime
     value = str(value).replace('T', ' ').replace('Z', '').replace('+00:00', '')
     unware_time = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S.%f')
-    return unware_time.replace(tzinfo=datetime.timezone.utc)
+    return timezone.makeaware(unware_time)
 
 
 def utcnow():
-    utc = datetime.datetime.now(datetime.timezone.utc)
-    return utc.replace(tzinfo=datetime.timezone.utc)
+    return timezone.now()
