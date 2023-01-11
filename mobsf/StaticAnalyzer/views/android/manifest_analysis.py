@@ -29,6 +29,7 @@ ANDROID_4_2_LEVEL = 17
 ANDROID_5_0_LEVEL = 21
 ANDROID_8_0_LEVEL = 26
 
+
 def get_manifest(app_path, app_dir, tools_dir, typ, binary):
     """Get the manifest file."""
     try:
