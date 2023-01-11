@@ -295,7 +295,7 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
                 permission_dict[permission.getAttribute(
                     'android:name')] = 'normal'
         # GENERAL
-        if man_data_dic['min_sdk'] int(man_data_dic['min_sdk']) < ANDROID_8_0_LEVEL:
+        if man_data_dic['min_sdk'] and int(man_data_dic['min_sdk']) < ANDROID_8_0_LEVEL:
             minsdk = man_data_dic.get('min_sdk')
             ret_list.append(('vulnerable_os_version', (minsdk,), ()))
         # APPLICATIONS
