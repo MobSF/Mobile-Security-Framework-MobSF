@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 ANDROID_4_2_LEVEL = 17
 ANDROID_5_0_LEVEL = 21
-
+ANDROID_8_0_LEVEL = 26
 
 def get_manifest(app_path, app_dir, tools_dir, typ, binary):
     """Get the manifest file."""
@@ -294,7 +294,10 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
             elif permission.getAttribute('android:name'):
                 permission_dict[permission.getAttribute(
                     'android:name')] = 'normal'
-
+        # GENERAL
+        if man_data_dic['min_sdk'] int(man_data_dic['min_sdk']) < ANDROID_8_0_LEVEL:
+            minsdk = man_data_dic.get('min_sdk')
+            ret_list.append(('vulnerable_os_version', (minsdk,), ()))
         # APPLICATIONS
         for application in applications:
             # Esteve 23.07.2016 - begin - identify permission at the
