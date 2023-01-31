@@ -55,7 +55,7 @@
                         <th>APPLICATION</th>
                         <th>FILE</th>
                         <th>TYPE</th>
-                        {% if is_admin %}<th>DETAILS</th>{% endif %}
+                        {% if is_admin and 1 == 0 %}<th>DETAILS</th>{% endif %}
                         <th style="width: 15%">ACTIONS</th>
                     </tr>
                     </thead>
@@ -97,7 +97,7 @@
                                 {% elif '.appx' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-windows fa-3x"></i>
                                 {% endif %}
                             </td>                            
-                            {% if is_admin %}
+                            {% if is_admin and 1 == 0 %}
                             <td>           
                                 <div id="viewFields{{e.MD5}}">
                                     <div id="userAppName{{e.MD5}}">{{e.USER_APP_NAME}}</div>
@@ -144,7 +144,7 @@
                                     {% endif %}
                                 </p>
                                 <p>
-                                    {% if e.PACKAGE_NAME and is_admin %}
+                                    {% if e.PACKAGE_NAME and is_admin and 1 == 0 %}
                                         <a class="btn btn-outline-primary btn-sm" id="adminEdit{{e.MD5}}" onclick="admin_edit('{{e.MD5}}')" href="javascript:void(0);"><i class="fas fa-pen" title="Edit Scan"></i></a>
                                         <a class="btn btn-outline-primary btn-sm" id="adminSave{{e.MD5}}" onclick="admin_save('{{e.MD5}}')" href="javascript:void(0);" style="display:none"><i class="fas fa-save" title="Save Changes"></i></a>
                                     {% endif %}

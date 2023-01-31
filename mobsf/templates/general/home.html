@@ -52,21 +52,48 @@
                 <div class="inner cover">
                     <form id="upload_form" enctype="multipart/form-data" method="post">
                         {% csrf_token %}
-                        <table>
+                        <table style="margin: auto">
                             <tr>
-                                <td style="vertical-align: top;">
+                                 <td style="vertical-align: top;">
                                     <div id="err_name" class="hidden"><span class="error">Application Name
                                             Required!</span></div>
                                     <div><span><input type="text" id="appname"
-                                                placeholder="application name"></span>&nbsp;&nbsp;<i
+                                                placeholder="app name (optional)"></span>&nbsp;&nbsp;<i
                                             class="fas fa-info-circle fa-lg"
                                             title="The name of the mobile application as it appears (or will appear) in the applicable app store."></i>
                                     </div>
                                     <div id="err_version" class="hidden"><span class="error">Version Required!</span>
                                     </div>
-                                    <div><span><input type="text" id="version" placeholder="Version"
-                                                value="1.0"></span>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
-                                            title="The version of the mobile application."></i></div>
+                                    <div><span><input type="text" id="version" placeholder="version (optional)"></span>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
+                                    title="The version of the mobile application."></i></div>
+                                    <div style="text-align: left; width: 275px; margin: auto">
+                                        <div id="err_file" class="hidden"><span class="error">Required!</span></div>
+                                        <label for="file">
+                                            <i class="fa fa-mobile-alt fa-lg" aria-hidden="true"></i> &nbsp;Mobile App
+                                            File
+                                        </label><br />
+                                        <input type="file" name="file" id="uploadFile"
+                                            placeholder="Choose Mobile App File"
+                                            accept=".apk, .apks, .appx, .ipa, .xapk, .zip">
+                                    </div>
+                                    <div style="text-align: left; width: 275px; margin: auto; padding-top: 15px">
+                                        <label for="source_file">
+                                            <i class="fa fa-code fa-lg" aria-hidden="true"></i> &nbsp;Source Code File
+                                            (optional)
+                                        </label><br />
+                                        <input type="file" name="source_file" id="uploadSourceFile"
+                                            placeholder="Choose Source File" accept=".zip">
+                                    </div>
+                                    <br />
+                                    <div class="fileUpload btn btn-default btn-lg" id="but">
+                                        <span class="fas fa-cloud-upload-alt"></span>
+                                        Upload &amp; Analyze
+                                    </div>&nbsp;&nbsp;
+                                    <br />
+                                    <h5 id="status"></h5>
+                                    <progress id="progressBar" value="0" max="100"
+                                        style="width:300px;visibility:hidden;"></progress>
+                                    <!--
                                     <div>
                                         <span>
                                             <select id="environment">
@@ -108,57 +135,43 @@
                                             title="Select to mark mobile app as a release version."></i>
                                     </div>
                                     {% endif %}
+                                    -->
                                 </td>
-                                <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                                <!--
+                                <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>                                
                                 <td>
-                                    <div id="err_privacy" class="hidden"><span class="error">Data Privacy
-                                            Required!</span></div>
-                                    <div>
-                                        <span>
-                                            <select id="data_privacy_classification">
-                                                <option value="">select data privacy</option>
-                                                <option>Highly Restricted</option>
-                                                <option>Restricted</option>
-                                                <option>Internal Use Only</option>
-                                                <option>Public</option>
-                                                <option>Does Not Apply</option>
-                                            </select>
-                                            &nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
-                                                title="The data privacy classification for the mobile application."></i>
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <table style="margin-left: auto; margin-right: auto;">
-                                            <tr>
-                                                <td>
-                                                    <select id="data_privacy_attributes" multiple
-                                                        style="height: 66px"></select>
-                                                </td>
-                                                <td>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
-                                                        style="margin-bottom: 30px;"
-                                                        title="The data privacy attributes for the mobile application."></i>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </div>                                    
-                                    <div style="text-align: left; width: 275px; margin: auto">
-                                        <div id="err_file" class="hidden"><span class="error">Required!</span></div>
-                                        <label for="file">
-                                            <i class="fa fa-mobile-alt fa-lg" aria-hidden="true"></i> &nbsp;Mobile App
-                                            File
-                                        </label><br />
-                                        <input type="file" name="file" id="uploadFile"
-                                            placeholder="Choose Mobile App File"
-                                            accept=".apk, .apks, .appx, .ipa, .xapk, .zip">
-                                    </div>
-                                    <div style="text-align: left; width: 275px; margin: auto; padding-top: 15px">
-                                        <label for="source_file">
-                                            <i class="fa fa-code fa-lg" aria-hidden="true"></i> &nbsp;Source Code File
-                                            (optional)
-                                        </label><br />
-                                        <input type="file" name="source_file" id="uploadSourceFile"
-                                            placeholder="Choose Source File" accept=".zip">
-                                    </div>
+                                    <div style="display: none">                                        
+                                        <div id="err_privacy" class="hidden"><span class="error">Data Privacy
+                                                Required!</span></div>
+                                        <div>
+                                            <span>
+                                                <select id="data_privacy_classification">
+                                                    <option value="">select data privacy</option>
+                                                    <option>Highly Restricted</option>
+                                                    <option>Restricted</option>
+                                                    <option>Internal Use Only</option>
+                                                    <option>Public</option>
+                                                    <option>Does Not Apply</option>
+                                                </select>
+                                                &nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
+                                                    title="The data privacy classification for the mobile application."></i>
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <table style="margin-left: auto; margin-right: auto;">
+                                                <tr>
+                                                    <td>
+                                                        <select id="data_privacy_attributes" multiple
+                                                            style="height: 66px"></select>
+                                                    </td>
+                                                    <td>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
+                                                            style="margin-bottom: 30px;"
+                                                            title="The data privacy attributes for the mobile application."></i>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>                                                                                  
                                     {% if is_admin %}
                                     <div><span><input type="text" id="override_email" style="margin-top: 15px"
                                                 placeholder="email address" value="{{email}}"></span>&nbsp;&nbsp;<i
@@ -167,17 +180,9 @@
                                     </div>
                                     {% endif %}
                                 </td>
+                                -->
                             </tr>
-                        </table>
-
-                        <div class="fileUpload btn btn-default btn-lg" id="but">
-                            <span class="fas fa-cloud-upload-alt"></span>
-                            Upload &amp; Analyze
-                        </div>&nbsp;&nbsp;
-                        <br />
-                        <h5 id="status"></h5>
-                        <progress id="progressBar" value="0" max="100"
-                            style="width:300px;visibility:hidden;"></progress>
+                        </table>                        
                     </form>
                 </div>
                 <div class="mastfoot">
@@ -333,6 +338,7 @@
         }
 
         function checkRequired() {
+            /*
             if (!_('appname').value) {
                 _('err_name').classList.remove('hidden');
                 return false;
@@ -349,6 +355,7 @@
                 _('err_privacy').classList.remove('hidden');
                 return false;
             } else { _('err_privacy').classList.add('hidden'); }
+            */
             if (_("uploadFile").files.length === 0) {
                 _('err_file').classList.remove('hidden');
                 return false;
@@ -397,9 +404,9 @@
         }
 
         $(document).ready(function () {
-            populateDivisions();
-            populateCountries();
-            populateDataPrivacy();
+            //populateDivisions();
+            //populateCountries();
+            //populateDataPrivacy();
 
             $('#but').click(function () {
                 _('status').innerText = "";
@@ -411,11 +418,11 @@
                 var extradata = new Object();
                 extradata.user_app_name = $('#appname').val();
                 extradata.user_app_version = $('#version').val();
-                extradata.country = $('#country').val().join(',');
+                extradata.country = ''; //$('#country').val().join(',');
                 extradata.division = $('#division').val();
                 extradata.environment = $('#environment').val();
                 extradata.data_privacy_classification = $('#data_privacy_classification').val();
-                extradata.data_privacy_attributes = $('#data_privacy_attributes').val().join(',');
+                extradata.data_privacy_attributes = ''; //$('#data_privacy_attributes').val().join(',');
                 if ($('#override_email').length) {
                     extradata.email = $('#override_email').val();
                     extradata.release = $('#release').prop('checked');
