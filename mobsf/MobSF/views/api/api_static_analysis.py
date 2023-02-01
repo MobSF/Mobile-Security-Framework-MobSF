@@ -1,8 +1,9 @@
 # -*- coding: utf_8 -*-
 """MobSF REST API V 1."""
 import logging
+import traceback as tb
 
-from django.http import HttpResponse
+from django.http import HttpResponse, QueryDict
 from django.views.decorators.csrf import csrf_exempt
 
 from mobsf.MobSF.utils import utcnow
@@ -399,46 +400,62 @@ def async_scan(request_data):
 
 
 def scan(request_data):
-    # Track scan start time
-    data = {
-        'id': request_data['cyberspect_scan_id'],
-        'sast_start': utcnow(),
-    }
-    update_cyberspect_scan(data)
+    try:
+        # Track scan start time
+        data = {
+            'id': request_data['cyberspect_scan_id'],
+            'sast_start': utcnow(),
+        }
+        update_cyberspect_scan(data)
 
-    # APK, Android ZIP and iOS ZIP
-    scan_type = request_data['scan_type']
-    if scan_type in {'xapk', 'apk', 'apks', 'zip'}:
-        resp = static_analyzer(request_data, True)
-        if 'type' in resp:
-            # For now it's only ios_zip
-            request_data._mutable = True
-            request_data['scan_type'] = 'ios'
+        # APK, Android ZIP and iOS ZIP
+        scan_type = request_data['scan_type']
+        if scan_type in {'xapk', 'apk', 'apks', 'zip'}:
+            resp = static_analyzer(request_data, True)
+            if 'type' in resp:
+                # For now it's only ios_zip
+                if isinstance(request_data, QueryDict):
+                    request_data._mutable = True
+                request_data['scan_type'] = 'ios'
+                resp = static_analyzer_ios(request_data, True)
+            if 'error' in resp:
+                response = make_api_response(resp, 500)
+            else:
+                response = make_api_response(resp, 200)
+        # IPA
+        elif scan_type == 'ipa':
             resp = static_analyzer_ios(request_data, True)
-        if 'error' in resp:
-            response = make_api_response(resp, 500)
-        else:
-            response = make_api_response(resp, 200)
-    # IPA
-    elif scan_type == 'ipa':
-        resp = static_analyzer_ios(request_data, True)
-        if 'error' in resp:
-            response = make_api_response(resp, 500)
-        else:
-            response = make_api_response(resp, 200)
-    # APPX
-    elif scan_type == 'appx':
-        resp = windows.staticanalyzer_windows(request_data, True)
-        if 'error' in resp:
-            response = make_api_response(resp, 500)
-        else:
-            response = make_api_response(resp, 200)
+            if 'error' in resp:
+                response = make_api_response(resp, 500)
+            else:
+                response = make_api_response(resp, 200)
+        # APPX
+        elif scan_type == 'appx':
+            resp = windows.staticanalyzer_windows(request_data, True)
+            if 'error' in resp:
+                response = make_api_response(resp, 500)
+            else:
+                response = make_api_response(resp, 200)
 
-    # Record scan end time and failure
-    if response.status_code == 500:
-        data['success'] = False
-        data['failure_source'] = 'SAST'
-        data['failure_message'] = resp['error']
-    data['sast_end'] = utcnow()
-    update_cyberspect_scan(data)
-    return response
+        # Record scan end time and failure
+        if response.status_code == 500:
+            data['success'] = False
+            data['failure_source'] = 'SAST'
+            data['failure_message'] = resp['error']
+        data['sast_end'] = utcnow()
+        update_cyberspect_scan(data)
+        return response
+
+    except Exception as exp:
+        exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+        logger.error(exmsg)
+        msg = str(exp)
+        data = {
+            'id': request_data['cyberspect_scan_id'],
+            'success': False,
+            'failure_source': 'SAST',
+            'failure_message': msg,
+            'sast_end': utcnow(),
+        }
+        update_cyberspect_scan(data)
+        return make_api_response(data, 500)
