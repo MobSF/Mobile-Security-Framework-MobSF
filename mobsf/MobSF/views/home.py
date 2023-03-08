@@ -109,7 +109,8 @@ class Upload(object):
                 return self.resp_json(response_data)
 
             if not self.scan.file_type.is_allow_file():
-                msg = 'File format not Supported!'
+                msg = 'File format not supported: ' \
+                    + self.scan.file.content_type
                 logger.error(msg)
                 response_data['description'] = msg
                 return self.resp_json(response_data)
