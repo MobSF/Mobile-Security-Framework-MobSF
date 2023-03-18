@@ -224,16 +224,36 @@ def about(request):
         'title': 'About',
         'version': settings.MOBSF_VER,
         'tenant_static': settings.TENANT_STATIC_URL,
+        'is_admin': is_admin(request),
     }
     template = 'general/about.html'
     return render(request, template, context)
 
+def admin(request):
+    """Admin Route."""
+    if (not is_admin(request)):
+        return error_response(request, 'Unauthorized')
+    
+    entries = []
+    #db_keys = (GET.all.keys).objects.all()
+    isadmin = is_admin(request)
+## Description 	Notify Email 	Role 	API Key 	Create Date 	Expiration Date 	Actions
+    context = {
+        'title': 'Admin',
+        'entries': entries,
+        'version': settings.MOBSF_VER,
+        'is_admin': isadmin,
+        'tenant_static': settings.TENANT_STATIC_URL,
+    }
+    template = 'general/admin.html'
+    return render(request, template, context)
 
 def error(request):
     """Error Route."""
     context = {
         'title': 'Error',
         'version': settings.MOBSF_VER,
+        'is_admin': is_admin(request),
     }
     template = 'general/error.html'
     return render(request, template, context)
@@ -244,6 +264,7 @@ def zip_format(request):
     context = {
         'title': 'Zipped Source Instruction',
         'version': settings.MOBSF_VER,
+        'is_admin': is_admin(request),
     }
     template = 'general/zip.html'
     return render(request, template, context)

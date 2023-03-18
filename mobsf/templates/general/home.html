@@ -34,6 +34,9 @@
             <!--<a href="{% url 'api_docs' %}">API DOCS</a>-->
             <a href="{% url 'support' %}">SUPPORT</a>
             <a href="{% url 'about' %}">ABOUT</a>
+            {% if is_admin %}
+            <a href="{% url 'admin' %}">ADMIN</a>
+            {% endif %}
             <a>
                 <form action="/search" method="GET">
                     <input name="md5" type="text" class="form-control" placeholder="Search Hash">
