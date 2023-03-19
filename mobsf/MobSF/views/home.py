@@ -235,9 +235,17 @@ def admin(request):
         return error_response(request, 'Unauthorized')
     
     entries = []
-    #db_keys = (GET.all.keys).objects.all()
+    #db_keys = (GET.all.keys).objects.all()    
     isadmin = is_admin(request)
-## Description 	Notify Email 	Role 	API Key 	Create Date 	Expiration Date 	Actions
+
+    #for entry in db_keys:        
+    entry = {"id": 1, "description":  "Origis Consulting", "email": "bwilliams@syslogicinc.com","role": "Full Access", "api_key": "MTIzN…", "created_on": "2/16/2023", "expires_on": "2/17/2024"}
+    entries.append(entry)
+    entry = {"id": 2,"description":  "CapGemini", "email": "eransom@syslogicinc.com","role": "Upload Only", "api_key": "AfVyZ…", "created_on": "2/1/2023", "expires_on": "2/2/2024"}
+    entries.append(entry)
+    entry = {"id": 3,"description":  "SysLogic", "email": "wmccardell@syslogicinc.com","role": "Read Only", "api_key": "lmE…", "created_on": "2/28/2023", "expires_on": "3/1/2024"}
+    entries.append(entry)
+
     context = {
         'title': 'Admin',
         'entries': entries,

@@ -11,8 +11,8 @@ sidebar-collapse
       <div class="col-lg-12">
         <div class="card">
           <div class="card-body">
-            <h1>API Keys</h1>
-
+            <h1 style="float: left">API Keys</h1>
+            <a class="btn btn-success btn-sm disabled" href="" style="float: right; margin-top: 12px;margin-right: 12px;"><i class="fa fa-mobile"></i> Create Api Key</a>
             <div class="box-body">
               <div class="table-responsive">
                 <table class="table table-bordered table-hover table-striped">
@@ -30,13 +30,13 @@ sidebar-collapse
                   <tbody>
                     {% for e in entries %}
                     <tr>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
+                      <td>{{ e.description }}</td>
+                      <td>{{ e.email }}</td>
+                      <td>{{ e.role }}</td>
+                      <td>{{ e.api_key }}</td>
+                      <td>{{ e.created_on }}</td>
+                      <td>{{ e.expires_on }}</td>
+                      <td><a class="btn btn-outline-info btn-sm" onclick="" href="" style="margin-right: 12px;"><i class="fas fa-sync-alt"></i> REKEY </a>  <a class="btn btn-danger btn-sm" onclick="" href=""><i class="fa fa-trash"></i> REVOKE </a></td>
                     </tr>
                     {% endfor %}
                   </tbody>
