@@ -162,3 +162,13 @@ class CyberspectScans(models.Model):
     FILE_SIZE_PACKAGE = models.IntegerField(null=True)
     FILE_SIZE_SOURCE = models.IntegerField(null=True)
     DEPENDENCY_TYPES = models.CharField(max_length=50, null=True)
+
+
+class ApiKeys(models.Model):
+    KEY_HASH = models.CharField(max_length=64, default='', primary_key=True)
+    KEY_PREFIX = models.CharField(max_length=5, default='')
+    DESCRIPTION = models.CharField(max_length=100, default='')
+    EMAIL = models.CharField(max_length=260, default='')
+    ROLE_ID = models.IntegerField(default=0)
+    CREATE_DATE = models.DateTimeField(default=datetime.now)
+    EXPIRE_DATE = models.DateTimeField(default=datetime.now)
