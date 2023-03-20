@@ -165,10 +165,16 @@ class CyberspectScans(models.Model):
 
 
 class ApiKeys(models.Model):
+
+    class Role(models.IntegerChoices):
+        UPLOAD_ONLY = 1
+        READ_ONLY = 2
+        FULL_ACCESS = 3
+
     KEY_HASH = models.CharField(max_length=64, default='', primary_key=True)
     KEY_PREFIX = models.CharField(max_length=5, default='')
     DESCRIPTION = models.CharField(max_length=100, default='')
     EMAIL = models.CharField(max_length=260, default='')
-    ROLE_ID = models.IntegerField(default=0)
+    ROLE = models.IntegerField(choices=Role.choices, default=Role.UPLOAD_ONLY)
     CREATE_DATE = models.DateTimeField(default=datetime.now)
     EXPIRE_DATE = models.DateTimeField(default=datetime.now)
