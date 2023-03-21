@@ -19,7 +19,6 @@ from mobsf.MobSF.utils import (
 
 logger = logging.getLogger(__name__)
 
-
 def create_api_key(description, email, role, expire_date):
     """Create new APIKeys record."""
     random_bytes = os.urandom(32)
@@ -46,18 +45,10 @@ def get_api_keys():
 def admin_view(request):
     if (not is_admin(request)):
         return error_response(request, 'Unauthorized')
-    
-    entries = []
-    entry = {"id": 1, "description":  "Origis Consulting", "email": "bwilliams@syslogicinc.com","role": "Full Access", "api_key": "MTIzN…", "created_on": "2/16/2023", "expires_on": "2/17/2024"}
-    entries.append(entry)
-    entry = {"id": 2,"description":  "CapGemini", "email": "eransom@syslogicinc.com","role": "Upload Only", "api_key": "AfVyZ…", "created_on": "2/1/2023", "expires_on": "2/2/2024"}
-    entries.append(entry)
-    entry = {"id": 3,"description":  "SysLogic", "email": "wmccardell@syslogicinc.com","role": "Read Only", "api_key": "lmE…", "created_on": "2/28/2023", "expires_on": "3/1/2024"}
-    entries.append(entry)
-
+        
     context = {
         'title': 'Admin Settings',
-        'entries': entries, # Should be able to replace this with get_api_keys() when ready
+        'entries': get_api_keys(),
         'version': settings.MOBSF_VER,
         'tenant_static': settings.TENANT_STATIC_URL,
     }
