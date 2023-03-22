@@ -30,12 +30,12 @@ sidebar-collapse
                   <tbody>
                     {% for e in entries %}
                     <tr>
-                      <td>{{ e.description }}</td>
-                      <td>{{ e.email }}</td>
-                      <td>{{ e.role }}</td>
-                      <td>{{ e.api_key }}</td>
-                      <td>{{ e.created_on }}</td>
-                      <td>{{ e.expires_on }}</td>
+                      <td>{{ e.DESCRIPTION }}</td>
+                      <td>{{ e.EMAIL }}</td>
+                      <td>{{ e.ROLE }}</td>
+                      <td>{{ e.KEY_PREFIX }}</td>
+                      <td>{{ e.CREATE_DATE }}</td>
+                      <td>{{ e.EXPIRE_DATE }}</td>
                       <td><a class="btn btn-outline-info btn-sm" onclick="" href="" style="margin-right: 12px;"><i class="fas fa-sync-alt"></i> REKEY </a>  <a class="btn btn-danger btn-sm" onclick="" href=""><i class="fa fa-trash"></i> REVOKE </a></td>
                     </tr>
                     {% endfor %}

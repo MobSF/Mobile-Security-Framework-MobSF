@@ -45,10 +45,22 @@ def get_api_keys():
 def admin_view(request):
     if (not is_admin(request)):
         return error_response(request, 'Unauthorized')
-        
+    entries = []
+    api_keys = get_api_keys()
+    for entry in api_keys:
+        if entry["ROLE"] == 1:
+            entry["ROLE"] = "UPLOAD_ONLY"
+        elif entry["ROLE"] == 2:
+            entry["ROLE"] = "READ_ONLY"
+        elif entry["ROLE"] == 3:
+            entry["ROLE"] = "FULL_ACCESS"
+        else:
+            entry["ROLE"] = "NO_ACCESS"
+        entry["KEY_PREFIX"] = entry["KEY_PREFIX"] + "******"
+        entries.append(entry)
     context = {
         'title': 'Admin Settings',
-        'entries': get_api_keys(),
+        'entries': entries,
         'version': settings.MOBSF_VER,
         'tenant_static': settings.TENANT_STATIC_URL,
     }
