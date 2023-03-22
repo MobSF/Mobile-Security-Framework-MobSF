@@ -7,6 +7,7 @@ import traceback as tb
 
 from django.conf import settings
 from django.shortcuts import render
+from django.views.decorators.http import require_http_methods
 
 from mobsf.StaticAnalyzer.models import ApiKeys
 from mobsf.MobSF.utils import (
@@ -22,7 +23,7 @@ logger = logging.getLogger(__name__)
 def create_api_key(description, email, role, expire_date):
     """Create new APIKeys record."""
     random_bytes = os.urandom(32)
-    api_key = base64.b64encode(random_bytes).replace('=', '')
+    api_key = base64.b64encode(random_bytes).decode('utf-8').replace('=', '')
     key_hash = hashlib.sha256(api_key.encode('utf-8')).hexdigest()
     new_db_obj = ApiKeys(
         KEY_HASH=key_hash,
@@ -34,7 +35,7 @@ def create_api_key(description, email, role, expire_date):
         EXPIRE_DATE=expire_date
     )
     new_db_obj.save()
-    logger.info('New API key %s... created by %s', api_key[0:5], sso_email())
+    logger.info('New API key %s... created for %s', api_key[0:5], email)
     return (api_key, new_db_obj)
 
 
@@ -68,6 +69,7 @@ def admin_view(request):
     return render(request, template, context)
 
 
+@require_http_methods(['POST'])
 def create_api_key_post(request):    
     try:
         if (not is_admin(request)):
