@@ -12,7 +12,7 @@ sidebar-collapse
         <div class="card">
           <div class="card-body">
             <h1 style="float: left">API Keys</h1>
-            <a class="btn btn-success btn-sm disabled" href="" style="float: right; margin-top: 12px;margin-right: 12px;"><i class="fa fa-mobile"></i> Create Api Key</a>
+            <a class="btn btn-success btn-sm" data-target="#new_api_key" data-toggle="modal" href="#" role="button" style="float: right; margin-top: 12px; margin-right: 12px;"><i class="fa fa-key" title="Generate a new API key"></i> New API Key</a>
             <div class="box-body">
               <div class="table-responsive">
                 <table class="table table-bordered table-hover table-striped">
@@ -47,5 +47,22 @@ sidebar-collapse
         </div>
       </div>
     </div>
+  </div>
+
+  <!--  New API Key Modal -->
+  <div class="modal" id="new_api_key" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">New API Key</h4>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body">
+        
+        </div>
+      </div>      
+    </div>    
   </div>
   {% endblock %}
