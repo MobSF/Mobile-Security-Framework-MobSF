@@ -60,7 +60,31 @@ sidebar-collapse
           </button>
         </div>
         <div class="modal-body">
-        
+          <form role="form">
+              <div class="form-group">
+                  <label>Description</label>
+                   <input id="description" type="text" class="form-control">
+              </div>
+              <div class="form-group">
+                <label>Notify Email</label>
+                <input id="email" type="text" class="form-control">
+              </div>
+              <div class="form-group">
+                <label>Role</label>
+                <select id="role" class="form-control">
+                  <option vlaue="1">UPLOAD_ONLY</option>
+                  <option vlaue="2">READ_ONLY</option>
+                  <option vlaue="3">FULL_ACCESS</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Expiration Date</label>
+                <input id="datePicker" class="form-control" type="date" min="{{ min_date }}" max="{{ max_date }}" value="{{ default_exp_date }}" >
+              </div>
+            </form>
+        </div>
+         <div class="modal-footer">
+          <button id="create_api_key_post" type="button" class="btn btn-primary disable">Submit</button>
         </div>
       </div>      
     </div>    

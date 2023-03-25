@@ -693,3 +693,9 @@ def tz(value):
 
 def utcnow():
     return timezone.now()
+
+def utc_inc_90days():
+    return timezone.now() + timezone.timedelta(days=90)
+
+def utc_inc_years(years = 1):
+    return timezone.now() + timezone.timedelta(days=365*years)

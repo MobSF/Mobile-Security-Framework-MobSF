@@ -16,6 +16,8 @@ from mobsf.MobSF.utils import (
     sso_email,
     tz,
     utcnow,
+    utc_inc_years,
+    utc_inc_90days,
 )
 
 logger = logging.getLogger(__name__)
@@ -46,6 +48,9 @@ def get_api_keys():
 def admin_view(request):
     if (not is_admin(request)):
         return error_response(request, 'Unauthorized')
+    min = utc_inc_90days()
+    default_exp_date = utc_inc_years(1)
+    max = utc_inc_years(1)
     entries = []
     api_keys = get_api_keys()
     for entry in api_keys:
@@ -62,6 +67,9 @@ def admin_view(request):
     context = {
         'title': 'Admin Settings',
         'entries': entries,
+        'min_date': min.strftime("%Y-%m-%d"),
+        'max_date': max.strftime("%Y-%m-%d"),
+        'default_exp_date': default_exp_date.strftime("%Y-%m-%d"),
         'version': settings.MOBSF_VER,
         'tenant_static': settings.TENANT_STATIC_URL,
     }
