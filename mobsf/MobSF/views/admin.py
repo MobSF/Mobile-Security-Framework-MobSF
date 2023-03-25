@@ -67,6 +67,7 @@ def admin_view(request):
     context = {
         'title': 'Admin Settings',
         'entries': entries,
+        'sso_email': sso_email(request),
         'min_date': min.strftime("%Y-%m-%d"),
         'max_date': max.strftime("%Y-%m-%d"),
         'default_exp_date': default_exp_date.strftime("%Y-%m-%d"),
