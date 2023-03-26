@@ -287,7 +287,7 @@ def recent_scans(request):
         entry['DYNAMIC_REPORT_EXISTS'] = logcat.exists()
         entry['ERROR'] = (utcnow()
                           > entry['TIMESTAMP']
-                          + datetime.timedelta(minutes=15))
+                          + datetime.timedelta(minutes=30))
         entry['CAN_RELEASE'] = (utcnow()
                                 < entry['TIMESTAMP']
                                 + datetime.timedelta(days=30))

@@ -171,7 +171,8 @@ class ApiKeys(models.Model):
         READ_ONLY = 2
         FULL_ACCESS = 3
 
-    KEY_HASH = models.CharField(max_length=64, default='', primary_key=True)
+    ID = models.AutoField(primary_key=True)
+    KEY_HASH = models.CharField(max_length=64, default='')
     KEY_PREFIX = models.CharField(max_length=5, default='')
     DESCRIPTION = models.CharField(max_length=100, default='')
     EMAIL = models.CharField(max_length=260, default='')
