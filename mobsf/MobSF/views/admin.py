@@ -46,6 +46,9 @@ def create_api_key(description, email, role, expire_date):
 def get_api_keys():
     return ApiKeys.objects.all().values().order_by('EXPIRE_DATE')
 
+def delete_api_key(hash):
+    db_obj = ApiKeys.objects.get(pk = hash)
+    return db_obj.delete()    
 
 def admin_view(request):
     if (not is_admin(request)):
@@ -103,6 +106,32 @@ def create_api_key_post(request): #does this need ,api=False???
         return HttpResponse(json.dumps(payload),
                             content_type='application/json',
                             status=200)                 
+        #return HttpResponse(api_key)
+        #return create_api_key(description, email, role, aware_date) ##strftime("%Y-%m-%d %H:%M:%S.%f%Z") '%Y-%m-%d %H:%M:%S.%f%Z
+
+    except Exception as exp:
+        exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+        logger.error(exmsg)
+        msg = str(exp)
+        exp_doc = exp.__doc__
+        return error_response(request, msg, False, exp_doc)
+    
+@require_http_methods(['POST']) 
+def delete_api_key_post(request): #does this need ,api=False???
+    try:
+        if (not is_admin(request)):
+            return error_response(request, 'Unauthorized')
+
+        hash = request.POST['id']
+        
+        if not hash:
+            return error_response(request, 'Missing parameter: key_hash')
+        count, item = delete_api_key(hash)
+        logger.info('%s API Key(s) deleted by: %s',count, sso_email(request))
+        logger.info('API Key deleted: %s',item )
+        payload = {"keys_removed": count}
+        return HttpResponse(json.dumps(payload),
+                        content_type='application/json',status=200)                 
         #return HttpResponse(api_key)
         #return create_api_key(description, email, role, aware_date) ##strftime("%Y-%m-%d %H:%M:%S.%f%Z") '%Y-%m-%d %H:%M:%S.%f%Z
 

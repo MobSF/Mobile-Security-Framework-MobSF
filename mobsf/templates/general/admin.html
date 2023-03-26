@@ -42,7 +42,7 @@ sidebar-collapse
                       <td>{{ e.KEY_PREFIX }}</td>
                       <td>{{ e.CREATE_DATE }}</td>
                       <td>{{ e.EXPIRE_DATE }}</td>
-                      <td><a class="btn btn-outline-info btn-sm" onclick="" href="" style="margin-right: 12px;"><i class="fas fa-sync-alt"></i> REKEY </a>  <a class="btn btn-danger btn-sm" onclick="" href=""><i class="fa fa-trash"></i> REVOKE </a></td>
+                      <td><a class="btn btn-outline-info btn-sm" onclick="" style="margin-right: 12px;"><i class="fas fa-sync-alt"></i> REKEY </a>  <a class="btn btn-danger btn-sm" onclick="delete_apikey('{{ e.KEY_HASH }}')"><i class="fa fa-trash"></i> REVOKE </a></td>
                     </tr>
                     {% endfor %}
                   </tbody>
@@ -138,13 +138,6 @@ sidebar-collapse
                             $('#new_api_key').modal('hide');
                             
                             if (json.api_key){
-                                /*Swal.fire({
-                                  title: 'New API Key',
-                                  icon: 'info',
-                                  html:
-                                    '<p id="display_api">' + json.api_key + '</p><button onclick="copyToClipboard(\'#display_api\')">Clipboard</button>',
-                                    
-                                })*/
                                 Swal.fire({
                                   title: "New API Key",
                                   html: 
@@ -190,47 +183,59 @@ sidebar-collapse
         return false;  
       } 
 
-      /*function delete_apikey(item){
-      //Swal.fire({
-      //title: 'Are you sure?',
-      //text: "This will permanently remove the api key",
-      //type: 'warning',
-      //showCancelButton: true,
-      //confirmButtonText: 'Yes',
-      //cancelButtonText: 'No',
-      //confirmButtonColor: '#d33',
-      //cancelButtonColor: '#2da532',
-    //}).then((result) => {
-     //   if (result.value) {
-      //      var md5_hash = item.id;
+      function delete_apikey(item){
+        Swal.fire({
+        title: 'Are you sure?',
+        text: "This will permanently remove the api key",
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'No',
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#2da532',
+      }).then((result) => {
+        if (result.value) {
             $.ajax({    
-                    url : "../?/", 
+                    url : "../delete_api_key_post/", 
                     type : "POST",
                     dataType: "json", 
                     data : {
                             csrfmiddlewaretoken: '{{ csrf_token }}',
-                            id: ?
+                            id: item,
                             },
                         success : function(json) {
-                           
-                            }
-                            else {
-                                Swal.fire(
-                                'Deletion Failed',
-                                'Unable to delete api key, please try again.',
-                                'error'
-                                )
-                            }
+                           if (json.keys_removed > 0) {
+                            Swal.fire({
+                              title: 'Success',
+                              text: 'API Key has been deleted',
+                              type: 'success'
+                            }).then(function(){ 
+                              location.reload();
+                              });
+                           }
+                           else {
+                            Swal.fire({
+                              title: 'Error',
+                              text: 'There was an error deleting the API key',
+                              type: 'error'
+                            }).then(function(){ 
+                              location.reload();
+                              });
+                          } 
                         },
                         error : function(xhr, errmsg, err) {
                           Swal.fire(
-                          'Deletion Failed',
-                          errmsg,
-                          'error'
+                            {
+                            title: 'Error',
+                            text: 'There was an error deleting the API key' + errmsg,
+                            type: 'error'
+                            }                          
                           )
                         }   
             });
         return false;  
-      } */    
+      }
+    })
+  }
   </script>
   {% endblock %}
