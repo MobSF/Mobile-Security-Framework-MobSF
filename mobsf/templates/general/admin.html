@@ -3,6 +3,11 @@
 {% block sidebar_option %}
 sidebar-collapse
 {% endblock %}
+{% block extra_css %}
+<link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'landing/css/recent.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="content-wrapper">
   <div class="content-header">
@@ -97,6 +102,14 @@ sidebar-collapse
   <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
   <script src="{% static "others/js/dayjs.min.js" %}"></script>
   <script>
+    function copyToClipboard(element) {
+      var $temp = $("<input>");
+      $("body").append($temp);
+      $temp.val($(element).text()).select();
+      document.execCommand("copy");
+      $temp.remove();
+    }
+
     function new_apikey(item){
       //Swal.fire({
       //title: 'Are you sure?',
@@ -122,15 +135,41 @@ sidebar-collapse
                             expire_date: $('#expire_date').val(),
                             },
                         success : function(json) {
+                            $('#new_api_key').modal('hide');
+                            
                             if (json.api_key){
-                                Swal.fire(
-                                    'Created',
-                                    'Api key has been created: ' + json.api_key,
-                                    'success'
-                                ).then(function() {
-                                    $('#new_api_key').modal('hide');
-                                    location.reload();
-                                })
+                                /*Swal.fire({
+                                  title: 'New API Key',
+                                  icon: 'info',
+                                  html:
+                                    '<p id="display_api">' + json.api_key + '</p><button onclick="copyToClipboard(\'#display_api\')">Clipboard</button>',
+                                    
+                                })*/
+                                Swal.fire({
+                                  title: "New API Key",
+                                  html: 
+                                      '<textarea id="display_api" rows="1" readonly style="width: 100%; height:auto; text-align:center; margin-bottom: 5px;">' + json.api_key + '</textarea>' +
+                                      //btn btn-outline-info btn-sm" onclick="" href="" style="margin-right: 12px;"><i class="fas fa-sync-alt"></i> style="margin-left:5px; float: left;
+                                      '<p>Please copy this API key and store it someplace safe. It will not be displayed or accessible again after you close this window.</p><p> If you lose this API key value, you must use the Rekey feature, and copy the new key after it is generated"</p>' +
+                                      '<button type="button" class="btn btn-outline-info btn-sm" id="btn-copy" style="float: none; margin-right: 5px;"><i class="fas fa-key"></i>Copy</button>' +
+                                          '<button type="button" class="btn btn-success btn-sm" id="btn-ok" disabled>Close</button>' +
+                                      '</div>',
+                                  showConfirmButton: false,
+                                  type: "success",
+                                  onOpen: () => {
+                                      $("#btn-copy").click(() => {
+                                          $("#btn-ok").prop('disabled', false);
+
+                                          $("#display_api").select();
+                                          document.execCommand("copy");
+                                      });
+
+                                      $("#btn-ok").click(() => {
+                                          Swal.close();   
+                                      });
+                                  }
+                              });
+
                             }
                             else {
                                 Swal.fire(
@@ -150,5 +189,48 @@ sidebar-collapse
             });
         return false;  
       } 
-    </script>
+
+      /*function delete_apikey(item){
+      //Swal.fire({
+      //title: 'Are you sure?',
+      //text: "This will permanently remove the api key",
+      //type: 'warning',
+      //showCancelButton: true,
+      //confirmButtonText: 'Yes',
+      //cancelButtonText: 'No',
+      //confirmButtonColor: '#d33',
+      //cancelButtonColor: '#2da532',
+    //}).then((result) => {
+     //   if (result.value) {
+      //      var md5_hash = item.id;
+            $.ajax({    
+                    url : "../?/", 
+                    type : "POST",
+                    dataType: "json", 
+                    data : {
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                            id: ?
+                            },
+                        success : function(json) {
+                           
+                            }
+                            else {
+                                Swal.fire(
+                                'Deletion Failed',
+                                'Unable to delete api key, please try again.',
+                                'error'
+                                )
+                            }
+                        },
+                        error : function(xhr, errmsg, err) {
+                          Swal.fire(
+                          'Deletion Failed',
+                          errmsg,
+                          'error'
+                          )
+                        }   
+            });
+        return false;  
+      } */    
+  </script>
   {% endblock %}
