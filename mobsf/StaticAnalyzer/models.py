@@ -179,3 +179,4 @@ class ApiKeys(models.Model):
     ROLE = models.IntegerField(choices=Role.choices, default=Role.UPLOAD_ONLY)
     CREATE_DATE = models.DateTimeField(default=datetime.now)
     EXPIRE_DATE = models.DateTimeField(default=datetime.now)
+    REVOKED_DATE = models.DateTimeField(null=True)

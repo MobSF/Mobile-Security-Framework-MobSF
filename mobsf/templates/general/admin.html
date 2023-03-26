@@ -18,7 +18,9 @@ sidebar-collapse
         <div class="card">
           <div class="card-body">
             <h1 style="float: left">API Keys</h1>
-            <a class="btn btn-success btn-sm" data-target="#new_api_key" data-toggle="modal" href="#" role="button" style="float: right; margin-top: 12px; margin-right: 12px;"><i class="fa fa-key" title="Generate a new API key"></i> New API Key</a>
+            <a class="btn btn-success btn-sm" data-target="#new_api_key" data-toggle="modal" href="#" role="button"
+              style="float: right; margin-top: 12px; margin-right: 12px;"><i class="fa fa-key"
+                title="Generate a new API key"></i> New API Key</a>
             <div class="box-body">
               <div class="table-responsive">
                 <table class="table table-bordered table-hover table-striped">
@@ -42,7 +44,9 @@ sidebar-collapse
                       <td>{{ e.KEY_PREFIX }}</td>
                       <td>{{ e.CREATE_DATE }}</td>
                       <td>{{ e.EXPIRE_DATE }}</td>
-                      <td><a class="btn btn-outline-info btn-sm" onclick="" style="margin-right: 12px;"><i class="fas fa-sync-alt"></i> REKEY </a>  <a class="btn btn-danger btn-sm" onclick="delete_apikey('{{ e.KEY_HASH }}')"><i class="fa fa-trash"></i> REVOKE </a></td>
+                      <td><a class="btn btn-outline-info btn-sm" onclick="" style="margin-right: 12px;"><i
+                            class="fas fa-sync-alt"></i> REKEY </a> <a class="btn btn-danger btn-sm"
+                          onclick="revoke_apikey({{ e.ID }})"><i class="fa fa-trash"></i> REVOKE </a></td>
                     </tr>
                     {% endfor %}
                   </tbody>
@@ -67,38 +71,40 @@ sidebar-collapse
         </div>
         <div class="modal-body">
           <form role="form">
-              <div class="form-group">
-                  <label>Description</label>
-                   <input id="description" type="text" class="form-control">
-              </div>
-              <div class="form-group">
-                <label>Notify Email</label>
-                <input id="email" type="text" class="form-control" value="{{ sso_email }}">
-              </div>
-              <div class="form-group">
-                <label>Role</label>
-                <select id="role" class="form-control">
-                  <option value="1">UPLOAD_ONLY</option>
-                  <option value="2">READ_ONLY</option>
-                  <option value="3">FULL_ACCESS</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Expiration Date</label>
-                <input id="expire_date" class="form-control" type="date" min="{{ min_date }}" max="{{ max_date }}" value="{{ default_exp_date }}" >
-              </div>
-            </form>
+            <div class="form-group">
+              <label>Description</label>
+              <input id="description" type="text" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Notify Email</label>
+              <input id="email" type="text" class="form-control" value="{{ sso_email }}">
+            </div>
+            <div class="form-group">
+              <label>Role</label>
+              <select id="role" class="form-control">
+                <option value="1">UPLOAD_ONLY</option>
+                <option value="2">READ_ONLY</option>
+                <option value="3">FULL_ACCESS</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Expiration Date</label>
+              <input id="expire_date" class="form-control" type="date" min="{{ min_date }}" max="{{ max_date }}"
+                value="{{ default_exp_date }}">
+            </div>
+          </form>
         </div>
-         <div class="modal-footer">
+        <div class="modal-footer">
           <button type="button" data-dismiss="modal" class="btn btn-primary disable">Cancel</button>
-          <button id="create_api_key_post" type="button" onclick="new_apikey(this)" class="btn btn-primary disable">Submit</button>
+          <button id="create_api_key_post" type="button" onclick="new_apikey(this)"
+            class="btn btn-primary disable">Submit</button>
         </div>
-      </div>      
-    </div>    
+      </div>
+    </div>
   </div>
   {% endblock %}
   {% block extra_scripts %}
-  
+
   <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
   <script src="{% static "others/js/dayjs.min.js" %}"></script>
   <script>
@@ -110,7 +116,7 @@ sidebar-collapse
       $temp.remove();
     }
 
-    function new_apikey(item){
+    function new_apikey(item) {
       //Swal.fire({
       //title: 'Are you sure?',
       //text: "This will permanently remove the scan results",
@@ -120,73 +126,74 @@ sidebar-collapse
       //cancelButtonText: 'No',
       //confirmButtonColor: '#d33',
       //cancelButtonColor: '#2da532',
-    //}).then((result) => {
-     //   if (result.value) {
+      //}).then((result) => {
+      //   if (result.value) {
       //      var md5_hash = item.id;
-            $.ajax({    
-                    url : "../create_api_key_post/", 
-                    type : "POST",
-                    dataType: "json", 
-                    data : {
-                            csrfmiddlewaretoken: '{{ csrf_token }}',
-                            description: $('#description').val(),
-                            email: $('#email').val(),
-                            role: $('#role').val(),
-                            expire_date: $('#expire_date').val(),
-                            },
-                        success : function(json) {
-                            $('#new_api_key').modal('hide');
-                            
-                            if (json.api_key){
-                                Swal.fire({
-                                  title: "New API Key",
-                                  html: 
-                                      '<textarea id="display_api" rows="1" readonly style="width: 100%; height:auto; text-align:center; margin-bottom: 5px;">' + json.api_key + '</textarea>' +
-                                      //btn btn-outline-info btn-sm" onclick="" href="" style="margin-right: 12px;"><i class="fas fa-sync-alt"></i> style="margin-left:5px; float: left;
-                                      '<p>Please copy this API key and store it someplace safe. It will not be displayed or accessible again after you close this window.</p><p> If you lose this API key value, you must use the Rekey feature, and copy the new key after it is generated"</p>' +
-                                      '<button type="button" class="btn btn-outline-info btn-sm" id="btn-copy" style="float: none; margin-right: 5px;"><i class="fas fa-key"></i>Copy</button>' +
-                                          '<button type="button" class="btn btn-success btn-sm" id="btn-ok" disabled>Close</button>' +
-                                      '</div>',
-                                  showConfirmButton: false,
-                                  type: "success",
-                                  onOpen: () => {
-                                      $("#btn-copy").click(() => {
-                                          $("#btn-ok").prop('disabled', false);
+      $.ajax({
+        url: "admin/create_api_key",
+        type: "POST",
+        dataType: "json",
+        data: {
+          csrfmiddlewaretoken: '{{ csrf_token }}',
+          description: $('#description').val(),
+          email: $('#email').val(),
+          role: $('#role').val(),
+          expire_date: $('#expire_date').val(),
+        },
+        success: function (json) {
+          $('#new_api_key').modal('hide');
 
-                                          $("#display_api").select();
-                                          document.execCommand("copy");
-                                      });
+          if (json.api_key) {
+            Swal.fire({
+              title: "New API Key",
+              html:
+                '<textarea id="display_api" rows="1" readonly style="width: 100%; height:auto; text-align:center; margin-bottom: 5px;">' + json.api_key + '</textarea>' +
+                //btn btn-outline-info btn-sm" onclick="" href="" style="margin-right: 12px;"><i class="fas fa-sync-alt"></i> style="margin-left:5px; float: left;
+                '<p>Please copy this API key and store it someplace safe. It will not be displayed or accessible again after you close this window.</p><p> If you lose this API key value, you must use the Rekey feature, and copy the new key after it is generated"</p>' +
+                '<button type="button" class="btn btn-outline-info btn-sm" id="btn-copy" style="float: none; margin-right: 5px;"><i class="fas fa-key"></i>Copy</button>' +
+                '<button type="button" class="btn btn-success btn-sm" id="btn-ok" disabled>Close</button>' +
+                '</div>',
+              showConfirmButton: false,
+              type: "success",
+              onOpen: () => {
+                $("#btn-copy").click(() => {
+                  $("#btn-ok").prop('disabled', false);
 
-                                      $("#btn-ok").click(() => {
-                                          Swal.close();   
-                                      });
-                                  }
-                              });
+                  $("#display_api").select();
+                  document.execCommand("copy");
+                });
 
-                            }
-                            else {
-                                Swal.fire(
-                                'Creation Failed',
-                                'Unable to create api key, please try again.',
-                                'error'
-                                )
-                            }
-                        },
-                        error : function(xhr, errmsg, err) {
-                          Swal.fire(
-                          'Creation Failed',
-                          errmsg,
-                          'error'
-                          )
-                        }   
+                $("#btn-ok").click(() => {
+                  Swal.close();
+                  location.reload();
+                });
+              }
             });
-        return false;  
-      } 
 
-      function delete_apikey(item){
-        Swal.fire({
+          }
+          else {
+            Swal.fire(
+              'Creation Failed',
+              'Unable to create API key, please try again.',
+              'error'
+            )
+          }
+        },
+        error: function (xhr, errmsg, err) {
+          Swal.fire(
+            'Creation Failed',
+            errmsg,
+            'error'
+          )
+        }
+      });
+      return false;
+    }
+
+    function revoke_apikey(item) {
+      Swal.fire({
         title: 'Are you sure?',
-        text: "This will permanently remove the api key",
+        text: "This will permanently revoke the selected API key",
         type: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Yes',
@@ -195,47 +202,36 @@ sidebar-collapse
         cancelButtonColor: '#2da532',
       }).then((result) => {
         if (result.value) {
-            $.ajax({    
-                    url : "../delete_api_key_post/", 
-                    type : "POST",
-                    dataType: "json", 
-                    data : {
-                            csrfmiddlewaretoken: '{{ csrf_token }}',
-                            id: item,
-                            },
-                        success : function(json) {
-                           if (json.keys_removed > 0) {
-                            Swal.fire({
-                              title: 'Success',
-                              text: 'API Key has been deleted',
-                              type: 'success'
-                            }).then(function(){ 
-                              location.reload();
-                              });
-                           }
-                           else {
-                            Swal.fire({
-                              title: 'Error',
-                              text: 'There was an error deleting the API key',
-                              type: 'error'
-                            }).then(function(){ 
-                              location.reload();
-                              });
-                          } 
-                        },
-                        error : function(xhr, errmsg, err) {
-                          Swal.fire(
-                            {
-                            title: 'Error',
-                            text: 'There was an error deleting the API key' + errmsg,
-                            type: 'error'
-                            }                          
-                          )
-                        }   
-            });
-        return false;  
-      }
-    })
-  }
+          $.ajax({
+            url: "/admin/revoke_api_key",
+            type: "POST",
+            dataType: "json",
+            data: {
+              csrfmiddlewaretoken: '{{ csrf_token }}',
+              id: item,
+            },
+            success: function (json) {
+              Swal.fire({
+                  title: 'Success',
+                  text: 'API key has been revoked',
+                  type: 'success'
+                }).then(function () {
+                  location.reload();
+                });
+            },
+            error: function (xhr, errmsg, err) {
+              Swal.fire(
+                {
+                  title: 'Error',
+                  text: 'There was an error revoking the API key' + errmsg,
+                  type: 'error'
+                }
+              )
+            }
+          });
+          return false;
+        }
+      })
+    }
   </script>
   {% endblock %}

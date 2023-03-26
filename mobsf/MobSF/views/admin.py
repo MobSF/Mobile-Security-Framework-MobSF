@@ -44,11 +44,18 @@ def create_api_key(description, email, role, expire_date):
 
 
 def get_api_keys():
-    return ApiKeys.objects.all().values().order_by('EXPIRE_DATE')
+    return ApiKeys.objects.filter(REVOKED_DATE=None).values() \
+        .order_by('EXPIRE_DATE')
 
-def delete_api_key(hash):
-    db_obj = ApiKeys.objects.get(pk = hash)
-    return db_obj.delete()    
+
+def revoke_api_key(id):
+    db_obj = ApiKeys.objects.get(ID = id)
+    if db_obj:
+        db_obj.REVOKED_DATE = utcnow()
+        db_obj.save()
+        return db_obj
+    return None
+
 
 def admin_view(request):
     if (not is_admin(request)):
@@ -105,7 +112,7 @@ def create_api_key_post(request): #does this need ,api=False???
         payload = {"api_key": api_key}
         return HttpResponse(json.dumps(payload),
                             content_type='application/json',
-                            status=200)                 
+                            status=200)
         #return HttpResponse(api_key)
         #return create_api_key(description, email, role, aware_date) ##strftime("%Y-%m-%d %H:%M:%S.%f%Z") '%Y-%m-%d %H:%M:%S.%f%Z
 
@@ -115,25 +122,26 @@ def create_api_key_post(request): #does this need ,api=False???
         msg = str(exp)
         exp_doc = exp.__doc__
         return error_response(request, msg, False, exp_doc)
-    
+
+
 @require_http_methods(['POST']) 
-def delete_api_key_post(request): #does this need ,api=False???
+def revoke_api_key_post(request): #does this need ,api=False???
     try:
         if (not is_admin(request)):
             return error_response(request, 'Unauthorized')
 
-        hash = request.POST['id']
-        
-        if not hash:
-            return error_response(request, 'Missing parameter: key_hash')
-        count, item = delete_api_key(hash)
-        logger.info('%s API Key(s) deleted by: %s',count, sso_email(request))
-        logger.info('API Key deleted: %s',item )
-        payload = {"keys_removed": count}
-        return HttpResponse(json.dumps(payload),
-                        content_type='application/json',status=200)                 
-        #return HttpResponse(api_key)
-        #return create_api_key(description, email, role, aware_date) ##strftime("%Y-%m-%d %H:%M:%S.%f%Z") '%Y-%m-%d %H:%M:%S.%f%Z
+        id = request.POST['id']        
+        if not id:
+            return error_response(request, 'Missing parameter: id')
+        item = revoke_api_key(id)
+        if item:
+            logger.info('API key ID %s revoked by: %s', id, sso_email(request))
+            return HttpResponse('{}', content_type='application/json',
+                                status=202)
+        else:
+            logger.info('Unable to find API key %s to revoke', id )                
+            return HttpResponse(json.dumps(id),
+                                content_type='application/json', status=404)
 
     except Exception as exp:
         exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
