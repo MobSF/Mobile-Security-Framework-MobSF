@@ -106,6 +106,7 @@ if settings.API_ONLY == '0':
         re_path(r'^logout$', home.logout_aws),
         re_path(r'^health$', home.health),
         re_path(r'^admin$', admin.admin_view, name='admin'),
+        re_path(r'^create_api_key_post/$', admin.create_api_key_post, name='create_api_key_post'),
 
         # Static Analysis
         # Android
