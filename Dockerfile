@@ -40,6 +40,7 @@ RUN apt update -y && apt install -y  --no-install-recommends \
     wget \
     curl \
     git \
+    jq \
     android-tools-adb
 
 # Set locales
