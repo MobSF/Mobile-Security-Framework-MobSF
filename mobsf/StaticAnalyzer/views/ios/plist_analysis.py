@@ -47,7 +47,8 @@ def get_bundle_id(pobj, src):
 
     # From old Info.plist
     bundle_id_og = pobj.get('CFBundleIdentifier', '')
-    if not any(tmpl in bundle_id_og for tmpl in skip_chars):
+    if (not any(tmpl in bundle_id_og for tmpl in skip_chars)
+            and len(bundle_id_og) > 1):
         possible_ids.add(bundle_id_og)
 
     # Look in entitlements, only present in newer iOS source
