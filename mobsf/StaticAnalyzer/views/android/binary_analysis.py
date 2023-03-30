@@ -3,6 +3,8 @@
 import logging
 from pathlib import Path
 
+from django.conf import settings
+
 import lief
 
 logger = logging.getLogger(__name__)
@@ -188,12 +190,12 @@ class Checksec:
 
 def elf_analysis(app_dir: str) -> dict:
     """Perform elf analysis on shared object."""
+    elf = {'elf_analysis': [], 'elf_strings': []}
     try:
-        strings = []
-        elf_list = []
+        if not getattr(settings, 'SO_ANALYSIS_ENABLED', True):
+            return elf
         logger.info('Binary Analysis Started')
         libs = Path(app_dir) / 'lib'
-        elf = {'elf_analysis': elf_list, 'elf_strings': strings}
         if not libs.is_dir():
             return elf
         for sofile in libs.rglob('*.so'):
@@ -205,9 +207,8 @@ def elf_analysis(app_dir: str) -> dict:
             chk = Checksec(sofile, so_rel)
             elf_find = chk.checksec()
             if elf_find:
-                elf_list.append(elf_find)
-                strings.append({so_rel: chk.strings()})
-        return {'elf_analysis': elf_list, 'elf_strings': strings}
+                elf['elf_analysis'].append(elf_find)
+                elf['elf_strings'].append({so_rel: chk.strings()})
     except Exception:
         logger.exception('Performing Binary Analysis')
-        return elf
+    return elf
