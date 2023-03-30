@@ -56,6 +56,24 @@ def revoke_api_key(id):
         return db_obj
     return None
 
+def rekey_api_key(id, description, email, role, expire_date):
+    db_obj = ApiKeys.objects.get(ID = id)
+    logger.info('API key ID %s rekeyed by: %s', id, email)
+    if db_obj:
+        random_bytes = os.urandom(32)
+        api_key = base64.b64encode(random_bytes).decode('utf-8').replace('=', '')
+        key_hash = hashlib.sha256(api_key.encode('utf-8')).hexdigest()
+        db_obj.KEY_HASH = key_hash
+        db_obj.KEY_PREFIX = api_key[0:5]
+        db_obj.REVOKED_DATE = None
+        db_obj.DESCRIPTION = description
+        db_obj.EMAIL = email
+        db_obj.ROLE = role
+        db_obj.EXPIRE_DATE = expire_date      
+        db_obj.save()
+        return  (api_key, db_obj)
+    return None
+
 
 def admin_view(request):
     if (not is_admin(request)):
@@ -75,6 +93,7 @@ def admin_view(request):
         else:
             entry["ROLE"] = "NO_ACCESS"
         entry["KEY_PREFIX"] = entry["KEY_PREFIX"] + "******"
+        entry["KEY_HASH"] = None
         entries.append(entry)
     context = {
         'title': 'Admin Settings',
@@ -142,6 +161,40 @@ def revoke_api_key_post(request): #does this need ,api=False???
             logger.info('Unable to find API key %s to revoke', id )                
             return HttpResponse(json.dumps(id),
                                 content_type='application/json', status=404)
+
+    except Exception as exp:
+        exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+        logger.error(exmsg)
+        msg = str(exp)
+        exp_doc = exp.__doc__
+        return error_response(request, msg, False, exp_doc)
+    
+@require_http_methods(['POST']) 
+def rekey_api_key_post(request): #does this need ,api=False???
+    try:
+        if (not is_admin(request)):
+            return error_response(request, 'Unauthorized')
+
+        default_expire_date = utcnow()
+        default_expire_date.replace(year=default_expire_date.year + 1)
+        # Validate input parameters
+        id = request.POST['id']
+        description = request.POST['description']
+        email = request.POST['email']
+        role = request.POST['role']
+        expire_date = request.POST['expire_date']
+        full_date_str = expire_date + " 12:00:00.000000 +0000"
+        aware_date = datetime.datetime.strptime(full_date_str, "%Y-%m-%d %H:%M:%S.%f %z")
+
+        if not description:
+            return error_response(request, 'Missing parameter: description')
+        api_key, db_obj = rekey_api_key(id, description, email, role, aware_date) ##strftime("%Y-%m-%d %H:%M:%S.%f%Z") '%Y-%m-%d %H:%M:%S.%f%Z
+        payload = {"api_key": api_key}
+        return HttpResponse(json.dumps(payload),
+                            content_type='application/json',
+                            status=200)
+        #return HttpResponse(api_key)
+        #return create_api_key(description, email, role, aware_date) ##strftime("%Y-%m-%d %H:%M:%S.%f%Z") '%Y-%m-%d %H:%M:%S.%f%Z
 
     except Exception as exp:
         exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
