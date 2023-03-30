@@ -56,7 +56,6 @@ def code_analysis(app_dir, typ, manifest_file):
             [src],
             skp)
         # NIAP Scan
-        logger.info('Running NIAP Analyzer')
         niap_findings = niap_scan(
             niap_rules.as_posix(),
             {'.java', '.xml'},
