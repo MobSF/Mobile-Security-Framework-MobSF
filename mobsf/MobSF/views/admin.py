@@ -79,7 +79,7 @@ def admin_view(request):
     if (not is_admin(request)):
         return error_response(request, 'Unauthorized')
     min = utc_inc_90days()
-    default_exp_date = utc_inc_years(1)
+    default_exp_date = utc_inc_90days()
     max = utc_inc_years(1)
     entries = []
     api_keys = get_api_keys()
