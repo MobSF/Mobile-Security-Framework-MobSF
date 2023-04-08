@@ -18,6 +18,7 @@ from django.utils.html import escape
 
 logger = logging.getLogger(__name__)
 logging.getLogger('androguard').setLevel(logging.ERROR)
+ANDROID_8_1_LEVEL = 27
 
 
 def get_hardcoded_cert_keystore(files):
@@ -46,7 +47,7 @@ def get_hardcoded_cert_keystore(files):
         logger.exception('Getting Hardcoded Certificates/Keystores')
 
 
-def cert_info(app_dir, app_file):
+def cert_info(app_dir, app_file, man_dict):
     """Return certificate information."""
     try:
         logger.info('Reading Code Signing Certificate')
@@ -128,7 +129,9 @@ def cert_info(app_dir, app_file):
                 'Missing Code Signing certificate'))
         if a.is_signed_v1():
             status = 'high'
-            if a.is_signed_v2() or a.is_signed_v3():
+            api_level = int(man_dict['min_sdk'])
+            if ((a.is_signed_v2() or a.is_signed_v3())
+                    and api_level < ANDROID_8_1_LEVEL):
                 status = 'warning'
             findings.append((
                 status,

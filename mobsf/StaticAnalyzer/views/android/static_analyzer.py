@@ -197,7 +197,8 @@ def static_analyzer(request, api=False):
                     elf_dict = elf_analysis(app_dic['app_dir'])
                     cert_dic = cert_info(
                         app_dic['app_dir'],
-                        app_dic['app_file'])
+                        app_dic['app_file'],
+                        man_data_dic)
                     apkid_results = apkid_analysis(app_dic[
                         'app_dir'], app_dic['app_path'], app_dic['app_name'])
                     tracker = Trackers.Trackers(
