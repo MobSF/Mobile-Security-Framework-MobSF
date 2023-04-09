@@ -41,13 +41,13 @@ sidebar-collapse
                     <tr>
                       <td>{{ e.DESCRIPTION }}</td>
                       <td>{{ e.EMAIL }}</td>
-                      <td>{{ e.ROLE }}</td>
+                      <td>{{ e.ROLE_NAME }}</td>
                       <td>{{ e.KEY_PREFIX }}</td>
-                      <td>{{ e.CREATE_DATE }}</td>
-                      <td>{{ e.EXPIRE_DATE }}</td>
-                      <td><a class="btn btn-outline-info btn-sm" onclick="rekey_apikey({{ e.ID }})" style="margin-right: 12px;"><i
-                            class="fas fa-sync-alt"></i> REKEY </a> <a class="btn btn-danger btn-sm"
-                          onclick="revoke_apikey({{ e.ID }})"><i class="fa fa-trash"></i> REVOKE </a></td>
+                      <td>{{ e.CREATE_DATE|date:'c' }}</td>
+                      <td>{{ e.EXPIRE_DATE|date:'c' }}</td>
+                      <td><a class="btn btn-primary btn-sm" href="#" onclick="rekey_apikey({{ e.ID }})" style="margin-right: 12px;"><i
+                            class="fas fa-sync-alt"></i> Rekey </a><a class="btn btn-warning btn-sm" href="#"
+                          onclick="revoke_apikey({{ e.ID }})"><i class="fa fa-trash"></i> Revoke </a></td>
                     </tr>
                     {% endfor %}
                   </tbody>
@@ -96,7 +96,7 @@ sidebar-collapse
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" data-dismiss="modal" class="btn btn-primary disable">Cancel</button>
+          <button type="button" data-dismiss="modal" class="btn btn-secondary disable">Cancel</button>
           <button id="create_api_key_post" type="button" onclick="new_apikey(this)"
             class="btn btn-primary disable">Submit</button>
         </div>
@@ -126,7 +126,7 @@ sidebar-collapse
             </div>
             <div class="form-group">
               <label>Role</label>
-              <select id="rekey_role" class="form-control"> <!--<option value="starter" selected>Starter </option> -->
+              <select id="rekey_role" class="form-control"> 
                 <option value="1">UPLOAD_ONLY</option>
                 <option value="2">READ_ONLY</option>
                 <option value="3">FULL_ACCESS</option>
@@ -140,7 +140,7 @@ sidebar-collapse
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" data-dismiss="modal" class="btn btn-primary disable" onclick="close_rekey_modal()">Cancel</button>
+          <button type="button" data-dismiss="modal" class="btn btn-secondary disable" onclick="close_rekey_modal()">Cancel</button>
           <button id="create_api_key_post" type="button" onclick="rekey_apikey_post(this)"
             class="btn btn-primary disable">Submit</button>
         </div>
@@ -185,7 +185,7 @@ sidebar-collapse
                 '<textarea id="display_api" rows="1" readonly style="width: 100%; height:auto; text-align:center; margin-bottom: 5px;">' + json.api_key + '</textarea>' +
                 //btn btn-outline-info btn-sm" onclick="" href="" style="margin-right: 12px;"><i class="fas fa-sync-alt"></i> style="margin-left:5px; float: left;
                 '<p>Please copy this API key and store it someplace safe. It will not be displayed or accessible again after you close this window.</p><p> If you lose this API key value, you must use the Rekey feature, and copy the new key after it is generated"</p>' +
-                '<button type="button" class="btn btn-outline-info btn-sm" id="btn-copy" style="float: none; margin-right: 5px;"><i class="fas fa-key"></i>Copy</button>' +
+                '<button type="button" class="btn btn-primary btn-sm" id="btn-copy" style="float: none; margin-right: 5px;"><i class="fas fa-key"></i>Copy</button>' +
                 '<button type="button" class="btn btn-success btn-sm" id="btn-ok" disabled>Close</button>' +
                 '</div>',
               showConfirmButton: false,

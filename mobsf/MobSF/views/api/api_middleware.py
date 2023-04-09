@@ -50,16 +50,17 @@ class RestApiAuthMiddleware(MiddlewareMixin):
             return
 
         key_hash = hashlib.sha256(apikey.encode('utf-8')).hexdigest()
-        db_obj = ApiKeys.objects.get(KEY_HASH=key_hash,REVOKED_DATE=None)
+        db_obj = ApiKeys.objects.filter(KEY_HASH=key_hash,
+                                        REVOKED_DATE=None).first()
         if not db_obj:
             return make_api_response(
                 {'error': 'API key is invalid or revoked.'}, 403)
-        if db_obj['EXPIRE_DATE'] >= utcnow():
+        if db_obj.EXPIRE_DATE <= utcnow():
             return make_api_response(
                 {'error': 'API key has expired.'}, 403)
         
-        request.META['email'] = db_obj['EMAIL']
-        role = ApiKeys.Role(db_obj['ROLE'])
+        request.META['email'] = db_obj.EMAIL
+        role = ApiKeys.Role(db_obj.ROLE)
         if role == ApiKeys.Role.FULL_ACCESS:
             return
         elif role == ApiKeys.Role.READ_ONLY:

@@ -11,7 +11,6 @@ from django.conf import settings
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse
-from django.utils import timezone
 
 from mobsf.StaticAnalyzer.models import ApiKeys
 from mobsf.MobSF.utils import (
@@ -77,20 +76,13 @@ def rekey_api_key(id, description, email, role, expire_date):
 def admin_view(request):
     if (not is_admin(request)):
         return error_response(request, 'Unauthorized')
-    min_exp_date = utcnow() + timezone.timedelta(days=1)    
-    max_exp_date = utcnow() + timezone.timedelta(years=1)
-    default_exp_date = utcnow() + timezone.timedelta(days=90) 
+    min_exp_date = utcnow() + datetime.timedelta(days=1)    
+    max_exp_date = utcnow() + datetime.timedelta(days=365)
+    default_exp_date = utcnow() + datetime.timedelta(days=90) 
     entries = []
     api_keys = get_api_keys()
     for entry in api_keys:
-        if entry["ROLE"] == 1:
-            entry["ROLE"] = "UPLOAD_ONLY"
-        elif entry["ROLE"] == 2:
-            entry["ROLE"] = "READ_ONLY"
-        elif entry["ROLE"] == 3:
-            entry["ROLE"] = "FULL_ACCESS"
-        else:
-            entry["ROLE"] = "NO_ACCESS"
+        entry["ROLE_NAME"] = ApiKeys.Role(entry["ROLE"]).name
         entry["KEY_PREFIX"] = entry["KEY_PREFIX"] + "******"
         entry["KEY_HASH"] = None
         entries.append(entry)
