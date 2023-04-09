@@ -43,8 +43,8 @@ sidebar-collapse
                       <td>{{ e.EMAIL }}</td>
                       <td>{{ e.ROLE_NAME }}</td>
                       <td>{{ e.KEY_PREFIX }}</td>
-                      <td>{{ e.CREATE_DATE|date:'c' }}</td>
-                      <td>{{ e.EXPIRE_DATE|date:'c' }}</td>
+                      <td>{{ e.CREATE_DATE|date:"M j, Y" }} {{ e.CREATE_DATE|time:"g:i A" }}</td>
+                      <td>{{ e.EXPIRE_DATE|date:"M j, Y" }}</td>
                       <td><a class="btn btn-primary btn-sm" href="#" onclick="rekey_apikey({{ e.ID }})" style="margin-right: 12px;"><i
                             class="fas fa-sync-alt"></i> Rekey </a><a class="btn btn-warning btn-sm" href="#"
                           onclick="revoke_apikey({{ e.ID }})"><i class="fa fa-trash"></i> Revoke </a></td>
