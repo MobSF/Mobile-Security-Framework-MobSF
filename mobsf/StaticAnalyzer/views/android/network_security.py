@@ -37,14 +37,19 @@ def read_netsec_config(app_dir, config, src_type):
 def analysis(app_dir, config, is_debuggable, src_type):
     """Perform Network Security Analysis."""
     try:
+        netsec = {
+            'network_findings': [],
+            'network_summary': {},
+        }
         if not config:
-            return []
+            return netsec
         netsec_conf = read_netsec_config(app_dir, config, src_type)
         if not netsec_conf:
-            return []
+            return netsec
         logger.info('Parsing Network Security Config')
         parsed = minidom.parseString(netsec_conf)
         finds = []
+        summary = {'high': 0, 'warning': 0, 'info': 0, 'secure': 0}
         # Base Config
         b_cfg = parsed.getElementsByTagName('base-config')
         # 0 or 1 of <base-config>
@@ -57,6 +62,7 @@ def analysis(app_dir, config, is_debuggable, src_type):
                         ' to permit clear text traffic to all domains.'),
                     'severity': 'high',
                 })
+                summary['high'] += 1
             if b_cfg[0].getAttribute('cleartextTrafficPermitted') == 'false':
                 finds.append({
                     'scope': ['*'],
@@ -65,6 +71,7 @@ def analysis(app_dir, config, is_debuggable, src_type):
                         'clear text traffic to all domains.'),
                     'severity': 'secure',
                 })
+                summary['secure'] += 1
             trst_anch = b_cfg[0].getElementsByTagName('trust-anchors')
             if trst_anch:
                 certs = trst_anch[0].getElementsByTagName('certificates')
@@ -79,6 +86,7 @@ def analysis(app_dir, config, is_debuggable, src_type):
                                 f'bundled certs {loc}.'),
                             'severity': 'info',
                         })
+                        summary['info'] += 1
                     elif loc == 'system':
                         finds.append({
                             'scope': ['*'],
@@ -87,6 +95,7 @@ def analysis(app_dir, config, is_debuggable, src_type):
                                 ' system certificates.'),
                             'severity': 'warning',
                         })
+                        summary['warning'] += 1
                     elif loc == 'user':
                         finds.append({
                             'scope': ['*'],
@@ -95,6 +104,7 @@ def analysis(app_dir, config, is_debuggable, src_type):
                                 ' user installed certificates.'),
                             'severity': 'high',
                         })
+                        summary['high'] += 1
                     if override == 'true':
                         finds.append({
                             'scope': ['*'],
@@ -103,6 +113,7 @@ def analysis(app_dir, config, is_debuggable, src_type):
                                 'bypass certificate pinning.'),
                             'severity': 'high',
                         })
+                        summary['high'] += 1
         # Domain Config
         dom_cfg = parsed.getElementsByTagName('domain-config')
         # Any number of <domain-config>
@@ -120,6 +131,7 @@ def analysis(app_dir, config, is_debuggable, src_type):
                         'domains in scope.'),
                     'severity': 'high',
                 })
+                summary['high'] += 1
             elif cfg.getAttribute('cleartextTrafficPermitted') == 'false':
                 finds.append({
                     'scope': domain_list,
@@ -129,6 +141,7 @@ def analysis(app_dir, config, is_debuggable, src_type):
                         'domains in scope.'),
                     'severity': 'secure',
                 })
+                summary['secure'] += 1
             dtrust = cfg.getElementsByTagName('trust-anchors')
             if dtrust:
                 certs = dtrust[0].getElementsByTagName('certificates')
@@ -143,6 +156,7 @@ def analysis(app_dir, config, is_debuggable, src_type):
                                 f'bundled certs {loc}.'),
                             'severity': 'info',
                         })
+                        summary['info'] += 1
                     elif loc == 'system':
                         finds.append({
                             'scope': domain_list,
@@ -151,6 +165,7 @@ def analysis(app_dir, config, is_debuggable, src_type):
                                 ' system certificates.'),
                             'severity': 'warning',
                         })
+                        summary['warning'] += 1
                     elif loc == 'user':
                         finds.append({
                             'scope': domain_list,
@@ -159,6 +174,7 @@ def analysis(app_dir, config, is_debuggable, src_type):
                                 ' user installed certificates.'),
                             'severity': 'high',
                         })
+                        summary['high'] += 1
                     if override == 'true':
                         finds.append({
                             'scope': domain_list,
@@ -167,6 +183,7 @@ def analysis(app_dir, config, is_debuggable, src_type):
                                 'bypass certificate pinning.'),
                             'severity': 'high',
                         })
+                        summary['high'] += 1
             pinsets = cfg.getElementsByTagName('pin-set')
             if pinsets:
                 exp = pinsets[0].getAttribute('expiration')
@@ -191,6 +208,7 @@ def analysis(app_dir, config, is_debuggable, src_type):
                             f'[{pins_list}]'),
                         'severity': 'info',
                     })
+                    summary['info'] += 1
                 else:
                     finds.append({
                         'scope': domain_list,
@@ -202,6 +220,7 @@ def analysis(app_dir, config, is_debuggable, src_type):
                             f'[{pins_list}]'),
                         'severity': 'secure',
                     })
+                    summary['secure'] += 1
         # Debug Overrides
         de_over = parsed.getElementsByTagName('debug-overrides')
         # 0 or 1 of <debug-overrides>
@@ -215,6 +234,7 @@ def analysis(app_dir, config, is_debuggable, src_type):
                         'is debuggable.'),
                     'severity': 'high',
                 })
+                summary['high'] += 1
             otrst_anch = de_over[0].getElementsByTagName('trust-anchors')
             if otrst_anch:
                 certs = otrst_anch[0].getElementsByTagName('certificates')
@@ -229,6 +249,7 @@ def analysis(app_dir, config, is_debuggable, src_type):
                                 f'bundled debug certs {loc}.'),
                             'severity': 'high',
                         })
+                        summary['high'] += 1
                     if override == 'true':
                         finds.append({
                             'scope': ['*'],
@@ -237,7 +258,11 @@ def analysis(app_dir, config, is_debuggable, src_type):
                                 'bypass certificate pinning.'),
                             'severity': 'high',
                         })
-        return finds
+                        summary['high'] += 1
+        return {
+            'network_findings': finds,
+            'network_summary': summary,
+        }
     except Exception:
         logger.exception('Performing Network Security Analysis')
-    return []
+    return {}

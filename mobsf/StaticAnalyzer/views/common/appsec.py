@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 def common_fields(findings, data):
     """Common Fields for Android and iOS."""
     # Code Analysis
-    for cd in data['code_analysis'].values():
+    for cd in data['code_analysis']['findings'].values():
         if cd['metadata']['severity'] == 'good':
             sev = 'secure'
         else:
@@ -186,7 +186,8 @@ def get_android_dashboard(context, from_ctx=False):
     else:
         data = adb(context)
     # Certificate Analysis
-    if 'certificate_findings' in data['certificate_analysis']:
+    if (data.get('certificate_analysis')
+            and 'certificate_findings' in data['certificate_analysis']):
         for i in data['certificate_analysis']['certificate_findings']:
             if i[0] == 'info':
                 continue
@@ -196,36 +197,40 @@ def get_android_dashboard(context, from_ctx=False):
                 'section': 'certificate',
             })
     # Network Security
-    for n in data['network_security']:
-        desc = '\n'.join(n['scope'])
-        desc = f'Scope:\n{desc}\n\n'
-        title_parts = n['description'].split('.', 1)
-        if len(title_parts) > 1:
-            desc += title_parts[1].strip()
-            title = title_parts[0]
-        else:
-            title = n['description']
-        findings[n['severity']].append({
-            'title': title,
-            'description': desc,
-            'section': 'network',
-        })
+    if (data.get('network_security')
+            and 'network_findings' in data['network_security']):
+        for n in data['network_security']['network_findings']:
+            desc = '\n'.join(n['scope'])
+            desc = f'Scope:\n{desc}\n\n'
+            title_parts = n['description'].split('.', 1)
+            if len(title_parts) > 1:
+                desc += title_parts[1].strip()
+                title = title_parts[0]
+            else:
+                title = n['description']
+            findings[n['severity']].append({
+                'title': title,
+                'description': desc,
+                'section': 'network',
+            })
     # Manifest Analysis
-    for m in data['manifest_analysis']:
-        if m['severity'] == 'info':
-            continue
-        title = m['title'].replace('<strong>', '')
-        title = title.replace('</strong>', '')
-        fmt = title.split('<br>', 1)
-        if len(fmt) > 1:
-            desc = fmt[1].replace('<br>', '') + '\n' + m['description']
-        else:
-            desc = m['description']
-        findings[m['severity']].append({
-            'title': fmt[0],
-            'description': desc,
-            'section': 'manifest',
-        })
+    if (data.get('manifest_analysis')
+            and 'manifest_findings' in data['manifest_analysis']):
+        for m in data['manifest_analysis']['manifest_findings']:
+            if m['severity'] == 'info':
+                continue
+            title = m['title'].replace('<strong>', '')
+            title = title.replace('</strong>', '')
+            fmt = title.split('<br>', 1)
+            if len(fmt) > 1:
+                desc = fmt[1].replace('<br>', '') + '\n' + m['description']
+            else:
+                desc = m['description']
+            findings[m['severity']].append({
+                'title': fmt[0],
+                'description': desc,
+                'section': 'manifest',
+            })
     common_fields(findings, data)
     findings['version_name'] = data.get('version_name', '')
     return findings
@@ -246,23 +251,25 @@ def get_ios_dashboard(context, from_ctx=False):
     else:
         data = idb(context)
     # Transport Security
-    for n in data['ats_analysis']:
-        findings[n['severity']].append({
-            'title': n['issue'],
-            'description': n['description'],
-            'section': 'network',
-        })
+    if 'ats_findings' in data['ats_analysis']:
+        for n in data['ats_analysis']['ats_findings']:
+            findings[n['severity']].append({
+                'title': n['issue'],
+                'description': n['description'],
+                'section': 'network',
+            })
     # Binary Code Analysis
-    for issue, cd in data['binary_analysis'].items():
-        if cd['severity'] == 'good':
-            sev = 'secure'
-        else:
-            sev = cd['severity']
-        findings[sev].append({
-            'title': issue,
-            'description': str(cd['detailed_desc']),
-            'section': 'binary',
-        })
+    if 'findings' in data['binary_analysis']:
+        for issue, cd in data['binary_analysis']['findings'].items():
+            if cd['severity'] == 'good':
+                sev = 'secure'
+            else:
+                sev = cd['severity']
+            findings[sev].append({
+                'title': issue,
+                'description': str(cd['detailed_desc']),
+                'section': 'binary',
+            })
     # Macho Analysis
     ma = data['macho_analysis']
     if ma:

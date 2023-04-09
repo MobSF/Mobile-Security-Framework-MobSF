@@ -118,7 +118,7 @@ def plist_analysis(src, is_source):
             'min': '',
             'plist_xml': '',
             'permissions': {},
-            'inseccon': [],
+            'inseccon': {},
             'bundle_name': '',
             'build_version_name': '',
             'bundle_url_types': [],
@@ -184,6 +184,7 @@ def plist_analysis(src, is_source):
             'CFBundleSupportedPlatforms', [])
         logger.info('Checking Permissions')
         logger.info('Checking for Insecure Connections')
+        ats = []
         for plist_file_ in plist_files:
             plist_obj_ = {}
             with open(plist_file_, 'rb') as fp:
@@ -191,10 +192,31 @@ def plist_analysis(src, is_source):
             # Check for app-permissions
             plist_info['permissions'].update(check_permissions(plist_obj_))
             # Check for ats misconfigurations
-            plist_info['inseccon'] += check_transport_security(plist_obj_)
+            ats += check_transport_security(plist_obj_)
+        plist_info['inseccon'] = {
+            'ats_findings': ats,
+            'ats_summary': get_summary(ats),
+        }
         return plist_info
     except Exception:
         logger.exception('Reading from Info.plist')
+
+
+def get_summary(ats):
+    """Get ATS finding summary."""
+    if len(ats) == 0:
+        return {}
+    summary = {'high': 0, 'warning': 0, 'info': 0, 'secure': 0}
+    for i in ats:
+        if i['severity'] == 'high':
+            summary['high'] += 1
+        elif i['severity'] == 'warning':
+            summary['warning'] += 1
+        elif i['severity'] == 'info':
+            summary['info'] += 1
+        elif i['severity'] == 'secure':
+            summary['secure'] += 1
+    return summary
 
 
 def get_plist_secrets(xml_string):

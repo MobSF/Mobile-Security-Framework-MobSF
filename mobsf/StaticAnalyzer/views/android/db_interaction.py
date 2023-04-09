@@ -60,7 +60,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'certificate_analysis': python_dict(
                 db_entry[0].CERTIFICATE_ANALYSIS),
             'manifest_analysis': manifest_analysis,
-            'network_security': python_list(db_entry[0].NETWORK_SECURITY),
+            'network_security': python_dict(db_entry[0].NETWORK_SECURITY),
             'binary_analysis': python_list(db_entry[0].BINARY_ANALYSIS),
             'file_analysis': python_list(db_entry[0].FILE_ANALYSIS),
             'android_api': python_dict(db_entry[0].ANDROID_API),

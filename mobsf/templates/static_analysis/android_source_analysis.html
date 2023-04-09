@@ -744,8 +744,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                                      
-                    {% for item in network_security %}
+                    {% if network_security and 'network_findings' in network_security %}
+                    {% for item in network_security.network_findings %}
                       <tr>
                         <td>{{ forloop.counter }}</td>
                         <td>
@@ -770,8 +770,46 @@
    
                        </tr>
                      {% endfor %}
+                     {% endif %}
                     </tbody>
                   </table>
+                  {% if network_security and 'network_summary' in network_security and network_security.network_summary|length > 0%}
+                  <div class="row">
+                    <div class="col-sm-3 col-6">
+                    <div class="description-block border-right">
+                    <span class="text-danger">HIGH</span>
+                    <h5 class="description-header">{{ network_security.network_summary.high }}</h5>
+                    </div>
+                    </div>
+                    
+                    <div class="col-sm-3 col-6">
+                    <div class="description-block border-right">
+                    <span class="text-warning"></i> WARNING</span>
+                    <h5 class="description-header">{{ network_security.network_summary.warning }}</h5>
+                    </div>
+                    
+                    </div>
+                    
+                    <div class="col-sm-3 col-6">
+                    <div class="description-block border-right">
+                    <span class="text-info">INFO</span>
+                    <h5 class="description-header">{{ network_security.network_summary.info }}</h5>
+                    </div>
+                    
+                    </div>
+
+                    <div class="col-sm-3 col-6">
+                      <div class="description-block">
+                      <span class="text-success">SECURE</span>
+                      <h5 class="description-header">{{ network_security.network_summary.secure }}</h5>
+                      </div>
+                      
+                      </div>
+                      
+                    
+                    </div>
+                    {% endif %}
+                    
                   </div>
           </div>
         </div><!-- /.card -->
@@ -803,8 +841,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                                      
-                    {% for item in manifest_analysis %}
+                      {% if manifest_analysis and 'manifest_findings' in manifest_analysis %}
+                      {% for item in manifest_analysis.manifest_findings %}
                       <tr>
                         <td>{{ forloop.counter }}</td>
                         <td>
@@ -837,8 +875,46 @@
                         </td>
                        </tr>
                      {% endfor %}
+                     {% endif %}
                     </tbody>
                   </table>
+                  {% if manifest_analysis and 'manifest_summary' in manifest_analysis and manifest_analysis.manifest_summary|length > 0%}
+                  <div class="row">
+                    <div class="col-sm-3 col-6">
+                    <div class="description-block border-right">
+                    <span class="text-danger">HIGH</span>
+                    <h5 class="description-header">{{ manifest_analysis.manifest_summary.high }}</h5>
+                    </div>
+                    </div>
+                    
+                    <div class="col-sm-3 col-6">
+                    <div class="description-block border-right">
+                    <span class="text-warning"></i> WARNING</span>
+                    <h5 class="description-header">{{ manifest_analysis.manifest_summary.warning }}</h5>
+                    </div>
+                    
+                    </div>
+                    
+                    <div class="col-sm-3 col-6">
+                    <div class="description-block border-right">
+                    <span class="text-info">INFO</span>
+                    <h5 class="description-header">{{ manifest_analysis.manifest_summary.info }}</h5>
+                    </div>
+                    
+                    </div>
+
+                    <div class="col-sm-3 col-6">
+                      <div class="description-block">
+                      <span class="text-disabled">SUPPRESSED</span>
+                      <h5 class="description-header">{{ manifest_analysis.manifest_summary.suppressed }}</h5>
+                      </div>
+                      
+                      </div>
+                      
+                    
+                    </div>
+                    {% endif %}
+
                   </div>
           </div>
         </div><!-- /.card -->
@@ -871,7 +947,8 @@
                   </tr>
                     </thead>
                     <tbody>
-               {% for rule, details in code_analysis.items %}
+                  {% if code_analysis and 'findings' in code_analysis %}
+                  {% for rule, details in code_analysis.findings.items %}
                   <tr>
                   <td>{{ forloop.counter }}</td>
                   <td>
@@ -933,8 +1010,54 @@
                   </td>
                 </tr>    
               {% endfor %} 
+              {% endif %}
               </tbody>
             </table>
+            {% if code_analysis and 'summary' in code_analysis and code_analysis.summary|length > 0 %}
+            <div class="row">
+              <div class="col-sm-2 col-6">
+              <div class="description-block border-right">
+              <span class="text-danger">HIGH</span>
+              <h5 class="description-header">{{ code_analysis.summary.high }}</h5>
+              </div>
+              </div>
+              
+              <div class="col-sm-2 col-6">
+              <div class="description-block border-right">
+              <span class="text-warning"></i> WARNING</span>
+              <h5 class="description-header">{{ code_analysis.summary.warning }}</h5>
+              </div>
+              
+              </div>
+              
+              <div class="col-sm-2 col-6">
+              <div class="description-block border-right">
+              <span class="text-info">INFO</span>
+              <h5 class="description-header">{{ code_analysis.summary.info }}</h5>
+              </div>
+              
+              </div>
+              
+              <div class="col-sm-2 col-6">
+                <div class="description-block border-right">
+                <span class="text-success">SECURE</span>
+                <h5 class="description-header">{{ code_analysis.summary.secure }}</h5>
+                </div>
+                
+                </div>
+
+              <div class="col-sm-2 col-6">
+                <div class="description-block">
+                <span class="text-disabled">SUPPRESSED</span>
+                <h5 class="description-header">{{ code_analysis.summary.suppressed }}</h5>
+                </div>
+                
+                </div>
+                
+              
+              </div>
+              {% endif %}
+
             </div>
           </div>
         </div><!-- /.card -->
