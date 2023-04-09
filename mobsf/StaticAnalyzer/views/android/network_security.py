@@ -259,10 +259,8 @@ def analysis(app_dir, config, is_debuggable, src_type):
                             'severity': 'high',
                         })
                         summary['high'] += 1
-        return {
-            'network_findings': finds,
-            'network_summary': summary,
-        }
+        netsec['network_findings'] = finds
+        netsec['network_summary'] = summary
     except Exception:
         logger.exception('Performing Network Security Analysis')
-    return {}
+    return netsec
