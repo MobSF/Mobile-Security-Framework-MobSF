@@ -10,16 +10,15 @@ import json
 from django.conf import settings
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse
+from django.utils import timezone
 
 from mobsf.StaticAnalyzer.models import ApiKeys
 from mobsf.MobSF.utils import (
     error_response,
     is_admin,
     sso_email,
-    utcnow,
-    utc_inc_years,
-    utc_inc_90days,    
+    utcnow, 
 )
 
 logger = logging.getLogger(__name__)
@@ -78,9 +77,9 @@ def rekey_api_key(id, description, email, role, expire_date):
 def admin_view(request):
     if (not is_admin(request)):
         return error_response(request, 'Unauthorized')
-    min = utc_inc_90days()
-    default_exp_date = utc_inc_years(1)
-    max = utc_inc_years(1)
+    min_exp_date = utcnow() + timezone.timedelta(days=1)    
+    max_exp_date = utcnow() + timezone.timedelta(years=1)
+    default_exp_date = utcnow() + timezone.timedelta(days=90) 
     entries = []
     api_keys = get_api_keys()
     for entry in api_keys:
@@ -99,8 +98,8 @@ def admin_view(request):
         'title': 'Admin Settings',
         'entries': entries,
         'sso_email': sso_email(request),
-        'min_date': min.strftime("%Y-%m-%d"),
-        'max_date': max.strftime("%Y-%m-%d"),
+        'min_date': min_exp_date.strftime("%Y-%m-%d"),
+        'max_date': max_exp_date.strftime("%Y-%m-%d"),
         'default_exp_date': default_exp_date.strftime("%Y-%m-%d"),
         'version': settings.MOBSF_VER,
         'tenant_static': settings.TENANT_STATIC_URL,
@@ -110,7 +109,7 @@ def admin_view(request):
 
 
 @require_http_methods(['POST']) 
-def create_api_key_post(request): #does this need ,api=False???
+def create_api_key_post(request): 
     try:
         if (not is_admin(request)):
             return error_response(request, 'Unauthorized')
@@ -127,13 +126,12 @@ def create_api_key_post(request): #does this need ,api=False???
 
         if not description:
             return error_response(request, 'Missing parameter: description')
-        api_key, db_obj = create_api_key(description, email, role, aware_date) ##strftime("%Y-%m-%d %H:%M:%S.%f%Z") '%Y-%m-%d %H:%M:%S.%f%Z
+        api_key, db_obj = create_api_key(description, email, role, aware_date)
         payload = {"api_key": api_key}
         return HttpResponse(json.dumps(payload),
                             content_type='application/json',
                             status=200)
-        #return HttpResponse(api_key)
-        #return create_api_key(description, email, role, aware_date) ##strftime("%Y-%m-%d %H:%M:%S.%f%Z") '%Y-%m-%d %H:%M:%S.%f%Z
+
 
     except Exception as exp:
         exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
