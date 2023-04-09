@@ -251,7 +251,8 @@ def get_ios_dashboard(context, from_ctx=False):
     else:
         data = idb(context)
     # Transport Security
-    if 'ats_findings' in data['ats_analysis']:
+    if (data.get('ats_analysis')
+            and 'ats_findings' in data['ats_analysis']):
         for n in data['ats_analysis']['ats_findings']:
             findings[n['severity']].append({
                 'title': n['issue'],
@@ -259,7 +260,8 @@ def get_ios_dashboard(context, from_ctx=False):
                 'section': 'network',
             })
     # Binary Code Analysis
-    if 'findings' in data['binary_analysis']:
+    if (data.get('binary_analysis')
+            and 'findings' in data['binary_analysis']):
         for issue, cd in data['binary_analysis']['findings'].items():
             if cd['severity'] == 'good':
                 sev = 'secure'

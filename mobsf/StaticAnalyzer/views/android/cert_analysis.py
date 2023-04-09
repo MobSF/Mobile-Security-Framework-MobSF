@@ -19,6 +19,9 @@ from django.utils.html import escape
 logger = logging.getLogger(__name__)
 logging.getLogger('androguard').setLevel(logging.ERROR)
 ANDROID_8_1_LEVEL = 27
+HIGH = 'high'
+WARNING = 'warning'
+INFO = 'info'
 
 
 def get_hardcoded_cert_keystore(files):
@@ -55,7 +58,7 @@ def cert_info(app_dir, app_file, man_dict):
         manidat = ''
         cert_info = ''
         certlist = []
-        summary = {'high': 0, 'warning': 0, 'info': 0}
+        summary = {HIGH: 0, WARNING: 0, INFO: 0}
         cert_path = os.path.join(app_dir, 'META-INF/')
 
         apk_file = os.path.join(app_dir, app_file)
@@ -118,27 +121,27 @@ def cert_info(app_dir, app_file, man_dict):
         sha256_digest = bool(re.findall(r'SHA-256-Digest', manidat))
         findings = []
         if a.is_signed():
-            summary['info'] += 1
+            summary[INFO] += 1
             findings.append((
-                'info',
+                INFO,
                 'Application is signed with a code '
                 'signing certificate',
                 'Signed Application'))
         else:
-            summary['high'] += 1
+            summary[HIGH] += 1
             findings.append((
-                'high',
+                HIGH,
                 'Code signing certificate not found',
                 'Missing Code Signing certificate'))
         if a.is_signed_v1():
-            status = 'high'
-            summary['high'] += 1
+            status = HIGH
+            summary[HIGH] += 1
             api_level = int(man_dict['min_sdk'])
             if ((a.is_signed_v2() or a.is_signed_v3())
                     and api_level < ANDROID_8_1_LEVEL):
-                status = 'warning'
-                summary['high'] -= 1
-                summary['warning'] += 1
+                status = WARNING
+                summary[HIGH] -= 1
+                summary[WARNING] += 1
             findings.append((
                 status,
                 'Application is signed with v1 signature scheme, '
@@ -149,25 +152,25 @@ def cert_info(app_dir, app_file, man_dict):
                 'scheme is also vulnerable.',
                 'Application vulnerable to Janus Vulnerability'))
         if re.findall(r'CN=Android Debug', cert_info):
-            summary['high'] += 1
+            summary[HIGH] += 1
             findings.append((
-                'high',
+                HIGH,
                 'Application signed with a debug certificate. '
                 'Production application must not be shipped '
                 'with a debug certificate.',
                 'Application signed with debug certificate'))
         if re.findall(r'Hash Algorithm: sha1', cert_info):
-            status = 'high'
-            summary['high'] += 1
+            status = HIGH
+            summary[HIGH] += 1
             desc = (
                 'Application is signed with SHA1withRSA. '
                 'SHA1 hash algorithm is known to have '
                 'collision issues.')
             title = 'Certificate algorithm vulnerable to hash collision'
             if sha256_digest:
-                status = 'warning'
-                summary['high'] -= 1
-                summary['warning'] += 1
+                status = WARNING
+                summary[HIGH] -= 1
+                summary[WARNING] += 1
                 desc += (
                     ' The manifest file indicates SHA256withRSA'
                     ' is in use.')
@@ -175,8 +178,8 @@ def cert_info(app_dir, app_file, man_dict):
                          'vulnerable to hash collision')
             findings.append((status, desc, title))
         if re.findall(r'Hash Algorithm: md5', cert_info):
-            status = 'high'
-            summary['high'] += 1
+            status = HIGH
+            summary[HIGH] += 1
             desc = (
                 'Application is signed with MD5. '
                 'MD5 hash algorithm is known to have '

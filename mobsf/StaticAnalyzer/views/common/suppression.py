@@ -30,6 +30,13 @@ from mobsf.StaticAnalyzer.models import (
 
 logger = logging.getLogger(__name__)
 
+HIGH = 'high'
+WARNING = 'warning'
+INFO = 'info'
+SECURE = 'secure'
+GOOD = 'good'
+SUPPRESSED = 'suppressed'
+
 
 def get_package(checksum):
     """Get package from checksum."""
@@ -233,8 +240,8 @@ def delete_suppression(request, api=False):
 def process_suppression(data, package):
     """Process all suppression for code."""
     filtered = {}
-    summary = {'high': 0, 'warning': 0, 'info': 0,
-               'secure': 0, 'suppressed': 0}
+    summary = {HIGH: 0, WARNING: 0, INFO: 0,
+               SECURE: 0, SUPPRESSED: 0}
     if len(data) == 0:
         return {
             'findings': data,
@@ -253,7 +260,7 @@ def process_suppression(data, package):
                 if k not in filter_rules:
                     filtered[k] = data[k]
                 else:
-                    summary['suppressed'] += 1
+                    summary[SUPPRESSED] += 1
         else:
             filtered = deepcopy(data)
 
@@ -267,8 +274,8 @@ def process_suppression(data, package):
                 for rem_file in filter_files[k]:
                     if rem_file in filtered[k]['files']:
                         del filtered[k]['files'][rem_file]
-                        summary['suppressed'] += 1
-                # Remove rule_id with not files
+                        summary[SUPPRESSED] += 1
+                # Remove rule_id with no files
                 if len(filtered[k]['files']) == 0:
                     del cleaned[k]
     for v in cleaned.values():
@@ -277,14 +284,14 @@ def process_suppression(data, package):
             sev = v['severity']
         else:
             sev = v['metadata']['severity']
-        if sev == 'high':
-            summary['high'] += 1
-        elif sev == 'warning':
-            summary['warning'] += 1
-        elif sev == 'info':
-            summary['info'] += 1
-        elif sev == 'good' or sev == 'secure':
-            summary['secure'] += 1
+        if sev == HIGH:
+            summary[HIGH] += 1
+        elif sev == WARNING:
+            summary[WARNING] += 1
+        elif sev == INFO:
+            summary[INFO] += 1
+        elif sev == GOOD or sev == SECURE:
+            summary[SECURE] += 1
     return {
         'findings': cleaned,
         'summary': summary,
@@ -294,7 +301,7 @@ def process_suppression(data, package):
 def process_suppression_manifest(data, package):
     """Process all suppression for manifest."""
     filtered = []
-    summary = {'high': 0, 'warning': 0, 'info': 0, 'suppressed': 0}
+    summary = {HIGH: 0, WARNING: 0, INFO: 0, SUPPRESSED: 0}
     filters = SuppressFindings.objects.filter(
         PACKAGE_NAME=package,
         SUPPRESS_TYPE='manifest')
@@ -310,16 +317,16 @@ def process_suppression_manifest(data, package):
                 if dynamic_rule not in filter_rules:
                     filtered.append(k)
                 else:
-                    summary['suppressed'] += 1
+                    summary[SUPPRESSED] += 1
         else:
             filtered = data
     for i in filtered:
-        if i['severity'] == 'high':
-            summary['high'] += 1
-        elif i['severity'] == 'warning':
-            summary['warning'] += 1
-        elif ['severity'] == 'info':
-            summary['info'] += 1
+        if i['severity'] == HIGH:
+            summary[HIGH] += 1
+        elif i['severity'] == WARNING:
+            summary[WARNING] += 1
+        elif ['severity'] == INFO:
+            summary[INFO] += 1
     return {
         'manifest_findings': filtered,
         'manifest_summary': summary,

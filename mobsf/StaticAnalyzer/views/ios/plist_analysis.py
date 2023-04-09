@@ -35,6 +35,10 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
 
 logger = logging.getLogger(__name__)
 SKIP_PATH = {'__MACOSX', 'Pods'}
+HIGH = 'high'
+WARNING = 'warning'
+INFO = 'info'
+SECURE = 'secure'
 
 
 def get_bundle_id(pobj, src):
@@ -206,16 +210,16 @@ def get_summary(ats):
     """Get ATS finding summary."""
     if len(ats) == 0:
         return {}
-    summary = {'high': 0, 'warning': 0, 'info': 0, 'secure': 0}
+    summary = {HIGH: 0, WARNING: 0, INFO: 0, SECURE: 0}
     for i in ats:
-        if i['severity'] == 'high':
-            summary['high'] += 1
-        elif i['severity'] == 'warning':
-            summary['warning'] += 1
-        elif i['severity'] == 'info':
-            summary['info'] += 1
-        elif i['severity'] == 'secure':
-            summary['secure'] += 1
+        if i['severity'] == HIGH:
+            summary[HIGH] += 1
+        elif i['severity'] == WARNING:
+            summary[WARNING] += 1
+        elif i['severity'] == INFO:
+            summary[INFO] += 1
+        elif i['severity'] == SECURE:
+            summary[SECURE] += 1
     return summary
 
 
