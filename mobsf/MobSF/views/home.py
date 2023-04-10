@@ -15,6 +15,7 @@ import boto3
 
 from django.conf import settings
 from django.core.paginator import Paginator
+from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.template.defaulttags import register
@@ -265,7 +266,16 @@ def not_found(request):
 def recent_scans(request):
     """Show Recent Scans Route."""
     entries = []
-    db_obj = RecentScansDB.objects.all().order_by('-TIMESTAMP')
+    filter = request.GET.get('filter', '')
+    if filter:
+        if re.match('[0-9a-f]{32}', filter):
+            db_obj = RecentScansDB.objects.filter(MD5=filter)
+        else:
+            db_obj = RecentScansDB.objects.filter(Q(APP_NAME=filter) |
+                                                  Q(USER_APP_NAME=filter))
+    else:    
+        db_obj = RecentScansDB.objects.all()
+    db_obj = db_obj.order_by('-TIMESTAMP')
     isadmin = is_admin(request)
     if (not isadmin):
         email_filter = sso_email(request)
@@ -299,6 +309,7 @@ def recent_scans(request):
         'is_admin': isadmin,
         'tenant_static': settings.TENANT_STATIC_URL,
         'dependency_track_url': settings.DEPENDENCY_TRACK_URL,
+        'filter': filter,
     }
     template = 'general/recent.html'
     return render(request, template, context)

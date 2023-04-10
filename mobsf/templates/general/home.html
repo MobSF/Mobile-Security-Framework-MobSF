@@ -38,8 +38,8 @@
             <a href="{% url 'admin' %}">ADMIN</a>
             {% endif %}
             <a>
-                <form action="/search" method="GET">
-                    <input name="md5" type="text" class="form-control" placeholder="Search Hash">
+                <form action="/recent_scans" method="GET">
+                    <input name="filter" type="text" class="form-control" placeholder="Search">
                 </form>
             </a>
         </div>
