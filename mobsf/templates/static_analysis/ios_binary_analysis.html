@@ -550,6 +550,41 @@
              <strong><i class="fas fa-lock"></i> APP TRANSPORT SECURITY (ATS)</strong>
              </p>
               <div class="table-responsive">
+                {% if ats_analysis and 'ats_summary' in ats_analysis and ats_analysis.ats_summary|length > 0 %}
+                <div class="row">
+                  <div class="col-sm-2 col-6">
+                  <div class="description-block border-right">
+                  <span class="text-danger">HIGH</span>
+                  <h5 class="description-header">{{ ats_analysis.ats_summary.high }}</h5>
+                  </div>
+                  </div>
+                  
+                  <div class="col-sm-2 col-6">
+                  <div class="description-block border-right">
+                  <span class="text-warning"></i> WARNING</span>
+                  <h5 class="description-header">{{ ats_analysis.ats_summary.warning }}</h5>
+                  </div>
+                  
+                  </div>
+                  
+                  <div class="col-sm-2 col-6">
+                  <div class="description-block border-right">
+                  <span class="text-info">INFO</span>
+                  <h5 class="description-header">{{ ats_analysis.ats_summary.info }}</h5>
+                  </div>
+                  
+                  </div>
+                  
+                  <div class="col-sm-2 col-6">
+                    <div class="description-block">
+                    <span class="text-success">SECURE</span>
+                    <h5 class="description-header">{{ ats_analysis.ats_summary.secure }}</h5>
+                    </div>
+                    
+                    </div>
+      
+                  </div>
+                  {% endif %}
                <table class="table table-bordered table-hover table-striped">
 
                   <thead>
@@ -561,8 +596,8 @@
                       </tr>
                   </thead>
                   <tbody>
-                    {% if ats_analysis|length > 0 %}
-                      {% for findings in ats_analysis %}
+                    {% if ats_analysis and 'ats_findings' in ats_analysis %}
+                      {% for findings in ats_analysis.ats_findings %}
                       <tr>
                         <td>{{ forloop.counter }}</td>
                         <td>
@@ -583,21 +618,11 @@
                         </td>
                       </tr>
                       {% endfor %}
-                    {% else %}
-                    <tr>
-                      <td></td>
-                      <td>
-                        No ATS exceptions found.
-                      <td>
-                        <span class="badge bg-success">secure</span>
-                      </td>
-                      <td>
-                        No insecure connections configured. App Transport Security (ATS) is enabled.
-                      </td>
-                    </tr>
                     {% endif %}
                   </tbody>
               </table>
+             
+                
                   </div>
           </div>
         </div><!-- /.card -->
@@ -620,6 +645,50 @@
              <strong><i class="fa fa-code"></i> IPA BINARY CODE ANALYSIS</strong>
              </p>
               <div class="table-responsive">
+                {% if binary_analysis and 'summary' in binary_analysis and binary_analysis.summary|length > 0 %}
+            <div class="row">
+              <div class="col-sm-2 col-6">
+              <div class="description-block border-right">
+              <span class="text-danger">HIGH</span>
+              <h5 class="description-header">{{ binary_analysis.summary.high }}</h5>
+              </div>
+              </div>
+              
+              <div class="col-sm-2 col-6">
+              <div class="description-block border-right">
+              <span class="text-warning"></i> WARNING</span>
+              <h5 class="description-header">{{ binary_analysis.summary.warning }}</h5>
+              </div>
+              
+              </div>
+              
+              <div class="col-sm-2 col-6">
+              <div class="description-block border-right">
+              <span class="text-info">INFO</span>
+              <h5 class="description-header">{{ binary_analysis.summary.info }}</h5>
+              </div>
+              
+              </div>
+              
+              <div class="col-sm-2 col-6">
+                <div class="description-block border-right">
+                <span class="text-success">SECURE</span>
+                <h5 class="description-header">{{ binary_analysis.summary.secure }}</h5>
+                </div>
+                
+                </div>
+
+              <div class="col-sm-2 col-6">
+                <div class="description-block">
+                <span class="text-disabled">SUPPRESSED</span>
+                <h5 class="description-header">{{ binary_analysis.summary.suppressed }}</h5>
+                </div>
+                
+                </div>
+                
+              
+              </div>
+              {% endif %}
                <table id="table_code" class="table table-bordered table-hover table-striped">
                   <thead>
                       <tr>
@@ -632,7 +701,8 @@
                       </tr>
                   </thead>
                      <tbody>
-                    {% for issue, details in binary_analysis.items %}
+                    {% if binary_analysis and 'findings' in binary_analysis %}
+                    {% for issue, details in binary_analysis.findings.items %}
                     <tr>
                       <td>{{ forloop.counter }}</td>
                       <td>
@@ -685,8 +755,11 @@
                       </td>
                     </tr>
                     {% endfor %}
+                    {% endif %}
                  </tbody>
                     </table>
+            
+
                   </div>
               
           </div>

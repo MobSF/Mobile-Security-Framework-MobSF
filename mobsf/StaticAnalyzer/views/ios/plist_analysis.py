@@ -35,6 +35,10 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
 
 logger = logging.getLogger(__name__)
 SKIP_PATH = {'__MACOSX', 'Pods'}
+HIGH = 'high'
+WARNING = 'warning'
+INFO = 'info'
+SECURE = 'secure'
 
 
 def get_bundle_id(pobj, src):
@@ -118,7 +122,7 @@ def plist_analysis(src, is_source):
             'min': '',
             'plist_xml': '',
             'permissions': {},
-            'inseccon': [],
+            'inseccon': {},
             'bundle_name': '',
             'build_version_name': '',
             'bundle_url_types': [],
@@ -184,6 +188,7 @@ def plist_analysis(src, is_source):
             'CFBundleSupportedPlatforms', [])
         logger.info('Checking Permissions')
         logger.info('Checking for Insecure Connections')
+        ats = []
         for plist_file_ in plist_files:
             plist_obj_ = {}
             with open(plist_file_, 'rb') as fp:
@@ -191,10 +196,31 @@ def plist_analysis(src, is_source):
             # Check for app-permissions
             plist_info['permissions'].update(check_permissions(plist_obj_))
             # Check for ats misconfigurations
-            plist_info['inseccon'] += check_transport_security(plist_obj_)
+            ats += check_transport_security(plist_obj_)
+        plist_info['inseccon'] = {
+            'ats_findings': ats,
+            'ats_summary': get_summary(ats),
+        }
         return plist_info
     except Exception:
         logger.exception('Reading from Info.plist')
+
+
+def get_summary(ats):
+    """Get ATS finding summary."""
+    if len(ats) == 0:
+        return {}
+    summary = {HIGH: 0, WARNING: 0, INFO: 0, SECURE: 0}
+    for i in ats:
+        if i['severity'] == HIGH:
+            summary[HIGH] += 1
+        elif i['severity'] == WARNING:
+            summary[WARNING] += 1
+        elif i['severity'] == INFO:
+            summary[INFO] += 1
+        elif i['severity'] == SECURE:
+            summary[SECURE] += 1
+    return summary
 
 
 def get_plist_secrets(xml_string):
