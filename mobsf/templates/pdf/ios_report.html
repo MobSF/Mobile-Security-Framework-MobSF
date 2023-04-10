@@ -260,6 +260,16 @@
 
        {% if ats_analysis  %}
       <h2><i class="fas fa-lock"></i> APP TRANSPORT SECURITY (ATS)</h2>
+      {% if ats_analysis and 'ats_summary' in ats_analysis and ats_analysis.ats_summary|length > 0 %}
+      <span class="danger">HIGH: </span>
+      <h5 class="description-header">{{ ats_analysis.ats_summary.high }}</h5> | 
+      <span class="warning"></i> WARNING: </span>
+      <h5 class="description-header">{{ ats_analysis.ats_summary.warning }}</h5> |
+      <span class="info">INFO: </span>
+      <h5 class="description-header">{{ ats_analysis.ats_summary.info }}</h5> |
+      <span class="success">SECURE: </span>
+      <h5 class="description-header">{{ ats_analysis.ats_summary.secure }}</h5>
+    {% endif %}</br>
        <table class="basic">
                    <thead>
                       <tr>
@@ -295,16 +305,7 @@
                     {% endif %}
                   </tbody>
                     </table>
-                    {% if ats_analysis and 'ats_summary' in ats_analysis and ats_analysis.ats_summary|length > 0 %}
-                    <span class="danger">HIGH: </span>
-                    <h5 class="description-header">{{ ats_analysis.ats_summary.high }}</h5> | 
-                    <span class="warning"></i> WARNING: </span>
-                    <h5 class="description-header">{{ ats_analysis.ats_summary.warning }}</h5> |
-                    <span class="info">INFO: </span>
-                    <h5 class="description-header">{{ ats_analysis.ats_summary.info }}</h5> |
-                    <span class="success">SECURE: </span>
-                    <h5 class="description-header">{{ ats_analysis.ats_summary.secure }}</h5>
-                  {% endif %}
+                  
         {% endif %}
 
       
@@ -369,6 +370,18 @@
       
       {% if binary_analysis  %}
       <h2><i class="fas fa-code"></i> IPA BINARY CODE ANALYSIS</h2>
+      {% if binary_analysis and 'summary' in binary_analysis and binary_analysis.summary|length > 0 %}
+      <span class="danger">HIGH: </span>
+      <h5 class="description-header">{{ binary_analysis.summary.high }}</h5> | 
+      <span class="warning"></i> WARNING: </span>
+      <h5 class="description-header">{{ binary_analysis.summary.warning }}</h5> |
+      <span class="info">INFO: </span>
+      <h5 class="description-header">{{ binary_analysis.summary.info }}</h5> |
+      <span class="success">SECURE: </span>
+      <h5 class="description-header">{{ binary_analysis.summary.secure }}</h5> |
+      <span class="disabled">SUPPRESSED: </span>
+      <h5 class="description-header">{{ binary_analysis.summary.suppressed }}</h5>
+    {% endif %}</br>
        <table class="basic">
                   <thead>
                       <tr>
@@ -425,18 +438,7 @@
                     {% endif %}
                  </tbody>
                     </table>
-                {% if binary_analysis and 'summary' in binary_analysis and binary_analysis.summary|length > 0 %}
-                <span class="danger">HIGH: </span>
-                <h5 class="description-header">{{ binary_analysis.summary.high }}</h5> | 
-                <span class="warning"></i> WARNING: </span>
-                <h5 class="description-header">{{ binary_analysis.summary.warning }}</h5> |
-                <span class="info">INFO: </span>
-                <h5 class="description-header">{{ binary_analysis.summary.info }}</h5> |
-                <span class="success">SECURE: </span>
-                <h5 class="description-header">{{ binary_analysis.summary.secure }}</h5> |
-                <span class="disabled">SUPPRESSED: </span>
-                <h5 class="description-header">{{ binary_analysis.summary.suppressed }}</h5>
-              {% endif %}
+               
         {% endif %}
         {% if macho_analysis  %}
       <h2><i class="fas fa-flag"></i> IPA BINARY ANALYSIS</h2>
@@ -507,6 +509,18 @@
         {% endif %}
     {% if code_analysis  %}
       <h2><i class="fas fa-code"></i> CODE ANALYSIS</h2>
+      {% if code_analysis and 'summary' in code_analysis and code_analysis.summary|length > 0 %}
+      <span class="danger">HIGH: </span>
+      <h5 class="description-header">{{ code_analysis.summary.high }}</h5> | 
+      <span class="warning"></i> WARNING: </span>
+      <h5 class="description-header">{{ code_analysis.summary.warning }}</h5> |
+      <span class="info">INFO: </span>
+      <h5 class="description-header">{{ code_analysis.summary.info }}</h5> |
+      <span class="success">SECURE: </span>
+      <h5 class="description-header">{{ code_analysis.summary.secure }}</h5> |
+      <span class="disabled">SUPPRESSED: </span>
+      <h5 class="description-header">{{ code_analysis.summary.suppressed }}</h5>
+    {% endif %}</br>
        <table class="basic">
                 <thead>
                     <tr>
@@ -567,20 +581,9 @@
                 </tr>    
               {% endfor %}
               {% endif %}
-										</tbody>
-										</table>
-                    {% if code_analysis and 'summary' in code_analysis and code_analysis.summary|length > 0 %}
-                    <span class="danger">HIGH: </span>
-                    <h5 class="description-header">{{ code_analysis.summary.high }}</h5> | 
-                    <span class="warning"></i> WARNING: </span>
-                    <h5 class="description-header">{{ code_analysis.summary.warning }}</h5> |
-                    <span class="info">INFO: </span>
-                    <h5 class="description-header">{{ code_analysis.summary.info }}</h5> |
-                    <span class="success">SECURE: </span>
-                    <h5 class="description-header">{{ code_analysis.summary.secure }}</h5> |
-                    <span class="disabled">SUPPRESSED: </span>
-                    <h5 class="description-header">{{ code_analysis.summary.suppressed }}</h5>
-                  {% endif %}
+              </tbody>
+              </table>
+                   
       {% endif %}
       {% if domains  %}
       <h2><i class="fab fa-searchengin"></i> DOMAIN MALWARE CHECK</h2>

@@ -545,6 +545,41 @@
              <strong><i class="fas fa-lock"></i> APP TRANSPORT SECURITY (ATS)</strong>
              </p>
               <div class="table-responsive">
+                {% if ats_analysis and 'ats_summary' in ats_analysis and ats_analysis.ats_summary|length > 0 %}
+          <div class="row">
+            <div class="col-sm-2 col-6">
+            <div class="description-block border-right">
+            <span class="text-danger">HIGH</span>
+            <h5 class="description-header">{{ ats_analysis.ats_summary.high }}</h5>
+            </div>
+            </div>
+            
+            <div class="col-sm-2 col-6">
+            <div class="description-block border-right">
+            <span class="text-warning"></i> WARNING</span>
+            <h5 class="description-header">{{ ats_analysis.ats_summary.warning }}</h5>
+            </div>
+            
+            </div>
+            
+            <div class="col-sm-2 col-6">
+            <div class="description-block border-right">
+            <span class="text-info">INFO</span>
+            <h5 class="description-header">{{ ats_analysis.ats_summary.info }}</h5>
+            </div>
+            
+            </div>
+            
+            <div class="col-sm-2 col-6">
+              <div class="description-block">
+              <span class="text-success">SECURE</span>
+              <h5 class="description-header">{{ ats_analysis.ats_summary.secure }}</h5>
+              </div>
+              
+              </div>
+
+            </div>
+            {% endif %}
                <table class="table table-bordered table-hover table-striped">
 
                   <thead>
@@ -581,41 +616,7 @@
                     {% endif %}
                   </tbody>
               </table>
-              {% if ats_analysis and 'ats_summary' in ats_analysis and ats_analysis.ats_summary|length > 0 %}
-          <div class="row">
-            <div class="col-sm-2 col-6">
-            <div class="description-block border-right">
-            <span class="text-danger">HIGH</span>
-            <h5 class="description-header">{{ ats_analysis.ats_summary.high }}</h5>
-            </div>
-            </div>
-            
-            <div class="col-sm-2 col-6">
-            <div class="description-block border-right">
-            <span class="text-warning"></i> WARNING</span>
-            <h5 class="description-header">{{ ats_analysis.ats_summary.warning }}</h5>
-            </div>
-            
-            </div>
-            
-            <div class="col-sm-2 col-6">
-            <div class="description-block border-right">
-            <span class="text-info">INFO</span>
-            <h5 class="description-header">{{ ats_analysis.ats_summary.info }}</h5>
-            </div>
-            
-            </div>
-            
-            <div class="col-sm-2 col-6">
-              <div class="description-block">
-              <span class="text-success">SECURE</span>
-              <h5 class="description-header">{{ ats_analysis.ats_summary.secure }}</h5>
-              </div>
               
-              </div>
-
-            </div>
-            {% endif %}
             
                   </div>
           </div>
@@ -639,6 +640,50 @@
              <strong><i class="fa fa-code"></i> CODE ANALYSIS</strong>
              </p>
               <div class="table-responsive">
+                {% if code_analysis and 'summary' in code_analysis and code_analysis.summary|length > 0 %}
+          <div class="row">
+            <div class="col-sm-2 col-6">
+            <div class="description-block border-right">
+            <span class="text-danger">HIGH</span>
+            <h5 class="description-header">{{ code_analysis.summary.high }}</h5>
+            </div>
+            </div>
+            
+            <div class="col-sm-2 col-6">
+            <div class="description-block border-right">
+            <span class="text-warning"></i> WARNING</span>
+            <h5 class="description-header">{{ code_analysis.summary.warning }}</h5>
+            </div>
+            
+            </div>
+            
+            <div class="col-sm-2 col-6">
+            <div class="description-block border-right">
+            <span class="text-info">INFO</span>
+            <h5 class="description-header">{{ code_analysis.summary.info }}</h5>
+            </div>
+            
+            </div>
+            
+            <div class="col-sm-2 col-6">
+              <div class="description-block border-right">
+              <span class="text-success">SECURE</span>
+              <h5 class="description-header">{{ code_analysis.summary.secure }}</h5>
+              </div>
+              
+              </div>
+
+            <div class="col-sm-2 col-6">
+              <div class="description-block">
+              <span class="text-disabled">SUPPRESSED</span>
+              <h5 class="description-header">{{ code_analysis.summary.suppressed }}</h5>
+              </div>
+              
+              </div>
+              
+            
+            </div>
+            {% endif %}
                    <table id="table_code" class="table table-bordered table-hover table-striped">
                   <thead>
                       <tr>
@@ -717,50 +762,7 @@
               {% endif %}
            </tbody>
           </table>
-          {% if code_analysis and 'summary' in code_analysis and code_analysis.summary|length > 0 %}
-          <div class="row">
-            <div class="col-sm-2 col-6">
-            <div class="description-block border-right">
-            <span class="text-danger">HIGH</span>
-            <h5 class="description-header">{{ code_analysis.summary.high }}</h5>
-            </div>
-            </div>
-            
-            <div class="col-sm-2 col-6">
-            <div class="description-block border-right">
-            <span class="text-warning"></i> WARNING</span>
-            <h5 class="description-header">{{ code_analysis.summary.warning }}</h5>
-            </div>
-            
-            </div>
-            
-            <div class="col-sm-2 col-6">
-            <div class="description-block border-right">
-            <span class="text-info">INFO</span>
-            <h5 class="description-header">{{ code_analysis.summary.info }}</h5>
-            </div>
-            
-            </div>
-            
-            <div class="col-sm-2 col-6">
-              <div class="description-block border-right">
-              <span class="text-success">SECURE</span>
-              <h5 class="description-header">{{ code_analysis.summary.secure }}</h5>
-              </div>
-              
-              </div>
-
-            <div class="col-sm-2 col-6">
-              <div class="description-block">
-              <span class="text-disabled">SUPPRESSED</span>
-              <h5 class="description-header">{{ code_analysis.summary.suppressed }}</h5>
-              </div>
-              
-              </div>
-              
-            
-            </div>
-            {% endif %}
+          
             
             </div>
           </div>
