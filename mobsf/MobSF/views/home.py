@@ -736,6 +736,7 @@ class RecentScans(object):
                         if 'warning' in findings else 0
                     scan['FINDINGS_INFO'] = len(findings['info']) \
                         if 'info' in findings else 0
+                    scan['SECURITY_SCORE'] = findings['security_score']
                 data = {
                     'content': list(content),
                     'count': paginator.count,
