@@ -271,7 +271,7 @@ def recent_scans(request):
         if re.match('[0-9a-f]{32}', sfilter):
             db_obj = RecentScansDB.objects.filter(MD5=sfilter)
         else:
-            db_obj = RecentScansDB.objects.filter(Q(APP_NAME=sfilter) \
+            db_obj = RecentScansDB.objects.filter(Q(APP_NAME=sfilter)
                                                   | Q(USER_APP_NAME=sfilter))
     else:
         db_obj = RecentScansDB.objects.all()
