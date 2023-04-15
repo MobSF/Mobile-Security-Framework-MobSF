@@ -86,7 +86,7 @@ def admin_view(request):
     api_keys = get_api_keys()
     for entry in api_keys:
         entry['ROLE_NAME'] = ApiKeys.Role(entry['ROLE']).name
-        entry['KEY_PREFIX'] = entry['KEY_PREFIX'] + "******"
+        entry['KEY_PREFIX'] = entry['KEY_PREFIX'] + '******'
         entry['KEY_HASH'] = None
         entries.append(entry)
     context = {
@@ -142,7 +142,7 @@ def revoke_api_key_post(request):
         if (not is_admin(request)):
             return error_response(request, 'Unauthorized')
 
-        key_id = request.POST['id']        
+        key_id = request.POST['id']
         if not key_id:
             return error_response(request, 'Missing parameter: id')
         item = revoke_api_key(key_id)
@@ -189,7 +189,7 @@ def rekey_api_key_post(request):
         payload = {'api_key': api_key}
         return HttpResponse(json.dumps(payload),
                             content_type='application/json',
-                            status=200)        
+                            status=200)
 
     except Exception as exp:
         exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
