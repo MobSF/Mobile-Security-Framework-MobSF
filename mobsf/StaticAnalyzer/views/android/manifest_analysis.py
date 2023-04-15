@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 ANDROID_4_2_LEVEL = 17
 ANDROID_5_0_LEVEL = 21
 ANDROID_8_0_LEVEL = 26
-
+ANDROID_MANIFEST_FILE = 'AndroidManifest.xml'
 
 def get_manifest(app_path, app_dir, tools_dir, typ):
     """Get the manifest file."""
@@ -867,18 +867,18 @@ def get_manifest_file(app_dir, app_path, tools_dir, typ):
         manifest = ''
         if typ == 'aar':
             logger.info('Getting AndroidManifest.xml from AAR')
-            manifest = os.path.join(app_dir, 'AndroidManifest.xml')
+            manifest = os.path.join(app_dir, ANDROID_MANIFEST_FILE)
         elif typ == 'apk':
             logger.info('Getting AndroidManifest.xml from APK')
             manifest = get_manifest_apk(app_path, app_dir, tools_dir)
         else:
             logger.info('Getting AndroidManifest.xml from Source Code')
             if typ == 'eclipse':
-                manifest = os.path.join(app_dir, 'AndroidManifest.xml')
+                manifest = os.path.join(app_dir, ANDROID_MANIFEST_FILE)
             elif typ == 'studio':
                 manifest = os.path.join(
                     app_dir,
-                    'app/src/main/AndroidManifest.xml')
+                    f'app/src/main/{ANDROID_MANIFEST_FILE}')
         return manifest
     except Exception:
         logger.exception('Getting AndroidManifest.xml file')
@@ -907,7 +907,7 @@ def get_manifest_apk(app_path, app_dir, tools_dir):
                 app_path,
                 '-o',
                 output_dir]
-        manifest = os.path.join(output_dir, 'AndroidManifest.xml')
+        manifest = os.path.join(output_dir, ANDROID_MANIFEST_FILE)
         if is_file_exists(manifest):
             # APKTool already created readable XML
             return manifest
