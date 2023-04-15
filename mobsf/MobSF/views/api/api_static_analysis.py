@@ -6,7 +6,7 @@ import traceback as tb
 from django.http import HttpResponse, QueryDict
 from django.views.decorators.csrf import csrf_exempt
 
-from mobsf.MobSF.utils import utcnow, make_api_response
+from mobsf.MobSF.utils import make_api_response, utcnow
 from mobsf.MobSF.views.helpers import request_method
 from mobsf.MobSF.views.home import (RecentScans, Upload, cyberspect_rescan,
                                     delete_scan, get_cyberspect_scan,

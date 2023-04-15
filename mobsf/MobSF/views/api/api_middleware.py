@@ -9,7 +9,7 @@ from mobsf.StaticAnalyzer.models import ApiKeys
 
 
 def get_api_key(meta):
-    """Return supplied API key"""
+    """Return supplied API key."""
     if 'HTTP_X_MOBSF_API_KEY' in meta:
         return meta['HTTP_X_MOBSF_API_KEY']
     elif 'HTTP_AUTHORIZATION' in meta:
@@ -18,21 +18,20 @@ def get_api_key(meta):
 
 
 class RestApiAuthMiddleware(MiddlewareMixin):
-    """
-    Middleware for REST API
-    """
-    readonly_funcs = [api_sz.api_upload, api_sz.api_scan_metadata, 
-                      api_sz.api_scan, api_sz.api_async_scan, 
+    """Middleware for REST API."""
+
+    readonly_funcs = [api_sz.api_upload, api_sz.api_scan_metadata,
+                      api_sz.api_scan, api_sz.api_async_scan,
                       api_sz.api_rescan, api_sz.api_pdf_report,
                       api_sz.api_json_report, api_sz.api_view_source,
                       api_sz.api_recent_scans, api_sz.api_release_scans,
                       api_sz.api_compare, api_sz.api_scorecard,
-                      api_sz.api_cyberspect_get_scan, 
+                      api_sz.api_cyberspect_get_scan,
                       api_sz.api_cyberspect_recent_scans,
                       api_sz.api_cyberspect_completed_scans]
-    
+
     def process_request(self, request):
-        """Handle API authentication"""
+        """Handle API authentication."""
         if not request.path.startswith('/api/'):
             return
         if request.method == 'OPTIONS':
@@ -42,7 +41,7 @@ class RestApiAuthMiddleware(MiddlewareMixin):
                 {'error': 'You are unauthorized to make this request.'}, 401)
 
     def process_view(self, request, view_func, view_args, view_kwargs):
-        """Handle API authorization"""
+        """Handle API authorization."""
         if not request.path.startswith('/api/'):
             return
         apikey = get_api_key(request.META)
@@ -58,7 +57,7 @@ class RestApiAuthMiddleware(MiddlewareMixin):
         if db_obj.EXPIRE_DATE <= utcnow():
             return make_api_response(
                 {'error': 'API key has expired.'}, 403)
-        
+
         request.META['email'] = db_obj.EMAIL
         role = ApiKeys.Role(db_obj.ROLE)
         if role == ApiKeys.Role.FULL_ACCESS:

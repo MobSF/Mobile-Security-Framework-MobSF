@@ -87,7 +87,7 @@ def api_key():
 
 
 def make_api_response(data, status=200):
-    """Make API response"""
+    """Make API response."""
     resp = JsonResponse(
         data=data,  # lgtm [py/stack-trace-exposure]
         status=status)

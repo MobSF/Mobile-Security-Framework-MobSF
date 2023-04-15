@@ -266,14 +266,14 @@ def not_found(request):
 def recent_scans(request):
     """Show Recent Scans Route."""
     entries = []
-    filter = request.GET.get('filter', '')
-    if filter:
-        if re.match('[0-9a-f]{32}', filter):
-            db_obj = RecentScansDB.objects.filter(MD5=filter)
+    sfilter = request.GET.get('filter', '')
+    if sfilter:
+        if re.match('[0-9a-f]{32}', sfilter):
+            db_obj = RecentScansDB.objects.filter(MD5=sfilter)
         else:
-            db_obj = RecentScansDB.objects.filter(Q(APP_NAME=filter) |
-                                                  Q(USER_APP_NAME=filter))
-    else:    
+            db_obj = RecentScansDB.objects.filter(Q(APP_NAME=sfilter) | \
+                                                  Q(USER_APP_NAME=sfilter))
+    else:
         db_obj = RecentScansDB.objects.all()
     db_obj = db_obj.order_by('-TIMESTAMP')
     isadmin = is_admin(request)

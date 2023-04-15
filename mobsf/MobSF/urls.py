@@ -95,7 +95,7 @@ if settings.API_ONLY == '0':
         re_path(r'^download_scan/', home.download_apk),
         re_path(r'^support$', home.support, name='support'),
         re_path(r'^about$', home.about, name='about'),
-        re_path(r'^api_docs$', home.api_docs, name='api_docs'),        
+        re_path(r'^api_docs$', home.api_docs, name='api_docs'),
         re_path(r'^recent_scans$', home.recent_scans, name='recent'),
         re_path(r'^update_scan/$', home.update_scan),
         re_path(r'^delete_scan/$', home.delete_scan),

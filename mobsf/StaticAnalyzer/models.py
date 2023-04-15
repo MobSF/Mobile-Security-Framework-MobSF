@@ -167,6 +167,7 @@ class CyberspectScans(models.Model):
 class ApiKeys(models.Model):
 
     class Role(models.IntegerChoices):
+        """API Key role options."""
         UPLOAD_ONLY = 1
         READ_ONLY = 2
         FULL_ACCESS = 3
