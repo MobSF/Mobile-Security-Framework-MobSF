@@ -15,6 +15,7 @@ import boto3
 
 from django.conf import settings
 from django.core.paginator import Paginator
+from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.template.defaulttags import register
@@ -109,7 +110,8 @@ class Upload(object):
                 return self.resp_json(response_data)
 
             if not self.scan.file_type.is_allow_file():
-                msg = 'File format not Supported!'
+                msg = 'File format not supported: ' \
+                    + self.scan.file.content_type
                 logger.error(msg)
                 response_data['description'] = msg
                 return self.resp_json(response_data)
@@ -145,7 +147,7 @@ class Upload(object):
         if not self.form.is_valid():
             api_response['error'] = FormUtil.errors_message(self.form)
             return api_response, HTTP_BAD_REQUEST
-        self.scan.email = self.request.POST.get('email', '')
+        self.scan.email = sso_email(self.request)
         if not self.scan.file_type.is_allow_file():
             api_response['error'] = 'File format not Supported!'
             return api_response, HTTP_BAD_REQUEST
@@ -223,6 +225,7 @@ def about(request):
         'title': 'About',
         'version': settings.MOBSF_VER,
         'tenant_static': settings.TENANT_STATIC_URL,
+        'is_admin': is_admin(request),
     }
     template = 'general/about.html'
     return render(request, template, context)
@@ -233,6 +236,7 @@ def error(request):
     context = {
         'title': 'Error',
         'version': settings.MOBSF_VER,
+        'is_admin': is_admin(request),
     }
     template = 'general/error.html'
     return render(request, template, context)
@@ -243,6 +247,7 @@ def zip_format(request):
     context = {
         'title': 'Zipped Source Instruction',
         'version': settings.MOBSF_VER,
+        'is_admin': is_admin(request),
     }
     template = 'general/zip.html'
     return render(request, template, context)
@@ -261,7 +266,16 @@ def not_found(request):
 def recent_scans(request):
     """Show Recent Scans Route."""
     entries = []
-    db_obj = RecentScansDB.objects.all().order_by('-TIMESTAMP')
+    sfilter = request.GET.get('filter', '')
+    if sfilter:
+        if re.match('[0-9a-f]{32}', sfilter):
+            db_obj = RecentScansDB.objects.filter(MD5=sfilter)
+        else:
+            db_obj = RecentScansDB.objects.filter(Q(APP_NAME=sfilter)
+                                                  | Q(USER_APP_NAME=sfilter))
+    else:
+        db_obj = RecentScansDB.objects.all()
+    db_obj = db_obj.order_by('-TIMESTAMP')
     isadmin = is_admin(request)
     if (not isadmin):
         email_filter = sso_email(request)
@@ -283,7 +297,7 @@ def recent_scans(request):
         entry['DYNAMIC_REPORT_EXISTS'] = logcat.exists()
         entry['ERROR'] = (utcnow()
                           > entry['TIMESTAMP']
-                          + datetime.timedelta(minutes=15))
+                          + datetime.timedelta(minutes=30))
         entry['CAN_RELEASE'] = (utcnow()
                                 < entry['TIMESTAMP']
                                 + datetime.timedelta(days=30))
@@ -295,6 +309,7 @@ def recent_scans(request):
         'is_admin': isadmin,
         'tenant_static': settings.TENANT_STATIC_URL,
         'dependency_track_url': settings.DEPENDENCY_TRACK_URL,
+        'filter': filter,
     }
     template = 'general/recent.html'
     return render(request, template, context)
@@ -721,6 +736,7 @@ class RecentScans(object):
                         if 'warning' in findings else 0
                     scan['FINDINGS_INFO'] = len(findings['info']) \
                         if 'info' in findings else 0
+                    scan['SECURITY_SCORE'] = findings['security_score']
                 data = {
                     'content': list(content),
                     'count': paginator.count,

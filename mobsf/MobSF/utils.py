@@ -29,6 +29,7 @@ import requests
 import siphash
 
 from django.forms.models import model_to_dict
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
 
@@ -83,6 +84,15 @@ def api_key():
             return gen_sha256_hash(_api_key)
         except Exception:
             logger.exception('Cannot Read API Key')
+
+
+def make_api_response(data, status=200):
+    """Make API response."""
+    resp = JsonResponse(
+        data=data,  # lgtm [py/stack-trace-exposure]
+        status=status)
+    resp['Content-Type'] = 'application/json; charset=utf-8'
+    return resp
 
 
 def print_version():

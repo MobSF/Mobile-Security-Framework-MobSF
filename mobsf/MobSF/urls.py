@@ -8,7 +8,7 @@ from mobsf.DynamicAnalyzer.views.android import (
     tests_frida,
 )
 from mobsf.MobSF import utils
-from mobsf.MobSF.views import home
+from mobsf.MobSF.views import admin, home
 from mobsf.MobSF.views.api import api_static_analysis as api_sz
 from mobsf.MobSF.views.api import api_dynamic_analysis as api_dz
 from mobsf.StaticAnalyzer import tests
@@ -96,7 +96,7 @@ if settings.API_ONLY == '0':
         re_path(r'^support$', home.support, name='support'),
         re_path(r'^about$', home.about, name='about'),
         re_path(r'^api_docs$', home.api_docs, name='api_docs'),
-        re_path(r'^recent_scans/$', home.recent_scans, name='recent'),
+        re_path(r'^recent_scans$', home.recent_scans, name='recent'),
         re_path(r'^update_scan/$', home.update_scan),
         re_path(r'^delete_scan/$', home.delete_scan),
         re_path(r'^search$', home.search),
@@ -105,6 +105,10 @@ if settings.API_ONLY == '0':
         re_path(r'^zip_format/$', home.zip_format),
         re_path(r'^logout$', home.logout_aws),
         re_path(r'^health$', home.health),
+        re_path(r'^admin$', admin.admin_view, name='admin'),
+        re_path(r'^admin/create_api_key$', admin.create_api_key_post),
+        re_path(r'^admin/revoke_api_key$', admin.revoke_api_key_post),
+        re_path(r'^admin/rekey_api_key$', admin.rekey_api_key_post),
 
         # Static Analysis
         # Android

@@ -110,10 +110,16 @@ def handle_uploaded_file(content, typ, source_content):
 class Scanning(object):
 
     def __init__(self, request):
-        self.file = request.FILES['file']
-        self.file_name = self.file.name
-        self.file_type = FileType(self.file)
-        self.file_size = self.file.size
+        if ('file' in request.FILES):
+            self.file = request.FILES['file']
+            self.file_name = self.file.name
+            self.file_type = FileType(self.file)
+            self.file_size = self.file.size
+        else:
+            self.file = None
+            self.file_name = None
+            self.file_type = None
+            self.file_size = None
         if ('source_file' in request.FILES):
             self.source_file = request.FILES['source_file']
             self.source_file_name = self.source_file.name
@@ -122,8 +128,8 @@ class Scanning(object):
             self.source_file = None
             self.source_file_name = None
             self.source_file_size = None
-        self.user_app_name = request.POST.get('user_app_name')
-        self.user_app_version = request.POST.get('user_app_version')
+        self.user_app_name = request.POST.get('user_app_name', '')
+        self.user_app_version = request.POST.get('user_app_version', '')
         self.division = request.POST.get('division', '')
         self.environment = request.POST.get('environment', '')
         self.country = request.POST.get('country', '')

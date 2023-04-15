@@ -1,0 +1,375 @@
+{% extends "base/base_layout.html" %}
+{% load static %}
+{% block sidebar_option %}
+sidebar-collapse
+{% endblock %}
+{% block extra_css %}
+<link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'landing/css/recent.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+  <div class="content-header">
+  </div>
+  {{ entries|json_script:"existing_keys" }}
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <h1 style="float: left">API Keys</h1>
+            <a class="btn btn-success btn-sm" data-target="#new_api_key" data-toggle="modal" href="#" role="button"
+              style="float: right; margin-top: 12px; margin-right: 12px;"><i class="fa fa-key"
+                title="Generate a new API key"></i> New API Key</a>
+            <div class="box-body">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped">
+                  <thead>
+                    <tr>
+                      <th>Description</th>
+                      <th>Notify Email</th>
+                      <th>Role</th>
+                      <th>API Key</th>
+                      <th>Create Date</th>
+                      <th>Expiration Date</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for e in entries %}
+                    <tr>
+                      <td>{{ e.DESCRIPTION }}</td>
+                      <td>{{ e.EMAIL }}</td>
+                      <td>{{ e.ROLE_NAME }}</td>
+                      <td>{{ e.KEY_PREFIX }}</td>
+                      <td>{{ e.CREATE_DATE|date:"M j, Y" }} {{ e.CREATE_DATE|time:"g:i A" }}</td>
+                      <td>{{ e.EXPIRE_DATE|date:"M j, Y" }}</td>
+                      <td><a class="btn btn-primary btn-sm" href="#" onclick="rekey_apikey({{ e.ID }})" style="margin-right: 12px;"><i
+                            class="fas fa-sync-alt"></i> Rekey </a><a class="btn btn-warning btn-sm" href="#"
+                          onclick="revoke_apikey({{ e.ID }})"><i class="fa fa-trash"></i> Revoke </a></td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--  New API Key Modal -->
+  <div class="modal" id="new_api_key" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">New API Key</h4>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form role="form">
+            <div class="form-group">
+              <label>Description</label>
+              <input id="description" type="text" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Notify Email</label>
+              <input id="email" type="text" class="form-control" value="{{ sso_email }}">
+            </div>
+            <div class="form-group">
+              <label>Role</label>
+              <select id="role" class="form-control">
+                <option value="1">UPLOAD_ONLY</option>
+                <option value="2">READ_ONLY</option>
+                <option value="3">FULL_ACCESS</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Expiration Date</label>
+              <input id="expire_date" class="form-control" type="date" min="{{ min_date }}" max="{{ max_date }}"
+                value="{{ default_exp_date }}">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" data-dismiss="modal" class="btn btn-secondary disable">Cancel</button>
+          <button id="create_api_key_post" type="button" onclick="new_apikey(this)"
+            class="btn btn-primary disable">Submit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--  Rekey API Key Modal -->
+  <div class="modal" id="rekey_api_key" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Rekey API Key</h4>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form role="form">
+            <div class="form-group">
+              <label>Description</label>
+              <input id="rekey_description" type="text" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Notify Email</label>
+              <input id="rekey_email" type="text" class="form-control" value="{{ sso_email }}">
+            </div>
+            <div class="form-group">
+              <label>Role</label>
+              <select id="rekey_role" class="form-control"> 
+                <option value="1">UPLOAD_ONLY</option>
+                <option value="2">READ_ONLY</option>
+                <option value="3">FULL_ACCESS</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Expiration Date</label>
+              <input id="rekey_expire_date" class="form-control" type="date" min="{{ min_date }}" max="{{ max_date }}"
+                value="{{ default_exp_date }}">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" data-dismiss="modal" class="btn btn-secondary disable" onclick="close_rekey_modal()">Cancel</button>
+          <button id="create_api_key_post" type="button" onclick="rekey_apikey_post(this)"
+            class="btn btn-primary disable">Submit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endblock %}
+  {% block extra_scripts %}
+
+  <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
+  <script src="{% static "others/js/dayjs.min.js" %}"></script>
+  <script>    
+    var rekey_id;
+    const my_keys = JSON.parse(document.getElementById('existing_keys').textContent)
+    function copyToClipboard(element) {
+      var $temp = $("<input>");
+      $("body").append($temp);
+      $temp.val($(element).text()).select();
+      document.execCommand("copy");
+      $temp.remove();
+    }
+
+    function new_apikey(item) {
+      $.ajax({
+        url: "admin/create_api_key",
+        type: "POST",
+        dataType: "json",
+        data: {
+          csrfmiddlewaretoken: '{{ csrf_token }}',
+          description: $('#description').val(),
+          email: $('#email').val(),
+          role: $('#role').val(),
+          expire_date: $('#expire_date').val(),
+        },
+        success: function (json) {
+          $('#new_api_key').modal('hide');
+
+          if (json.api_key) {
+            Swal.fire({
+              title: "New API Key",
+              html:
+                '<textarea id="display_api" rows="1" readonly style="width: 100%; height:auto; text-align:center; margin-bottom: 5px;">' + json.api_key + '</textarea>' +
+                //btn btn-outline-info btn-sm" onclick="" href="" style="margin-right: 12px;"><i class="fas fa-sync-alt"></i> style="margin-left:5px; float: left;
+                '<p>Please copy this API key and store it someplace safe. It will not be displayed or accessible again after you close this window.</p><p> If you lose this API key value, you must use the Rekey feature, and copy the new key after it is generated"</p>' +
+                '<button type="button" class="btn btn-primary btn-sm" id="btn-copy" style="float: none; margin-right: 5px;"><i class="fas fa-key"></i>Copy</button>' +
+                '<button type="button" class="btn btn-success btn-sm" id="btn-ok" disabled>Close</button>' +
+                '</div>',
+              showConfirmButton: false,
+              type: "success",
+              onOpen: () => {
+                $("#btn-copy").click(() => {
+                  $("#btn-ok").prop('disabled', false);
+
+                  $("#display_api").select();
+                  document.execCommand("copy");
+                });
+
+                $("#btn-ok").click(() => {
+                  Swal.close();
+                  location.reload();
+                });
+              }
+            });
+
+          }
+          else {
+            Swal.fire(
+              'Creation Failed',
+              'Unable to create API key, please try again.',
+              'error'
+            )
+          }
+        },
+        error: function (xhr, errmsg, err) {
+          Swal.fire(
+            'Creation Failed',
+            errmsg,
+            'error'
+          )
+        }
+      });
+      return false;
+    }
+
+    function revoke_apikey(item) {
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "This will permanently revoke the selected API key",
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'No',
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#2da532',
+      }).then((result) => {
+        if (result.value) {
+          $.ajax({
+            url: "/admin/revoke_api_key",
+            type: "POST",
+            dataType: "json",
+            data: {
+              csrfmiddlewaretoken: '{{ csrf_token }}',
+              id: item,
+            },
+            success: function (json) {
+              Swal.fire({
+                  title: 'Success',
+                  text: 'API key has been revoked',
+                  type: 'success'
+                }).then(function () {
+                  location.reload();
+                });
+            },
+            error: function (xhr, errmsg, err) {
+              Swal.fire(
+                {
+                  title: 'Error',
+                  text: 'There was an error revoking the API key' + errmsg,
+                  type: 'error'
+                }
+              )
+            }
+          });
+          return false;
+        }
+      })
+    }
+
+    function rekey_apikey(id) {
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "This will cause the original key to no longer be usable",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#2da532',
+        confirmButtonText: 'Rekey!'
+      }).then((result) => { 
+        if (result.value) {          
+          var role = "";
+          var description = ""          
+          for (var i=0 ; i < my_keys.length ; i++)
+          {
+            if (my_keys[i]["ID"] == id) {
+              role = my_keys[i]["ROLE"]
+              description = my_keys[i]["DESCRIPTION"]
+            }
+          }          
+          rekey_apikey_id = id;
+          var myDescription = document.getElementById('rekey_description');
+          myDescription.value = description;          
+          var mySelect = document.getElementById('rekey_role');
+          for(var i, j = 0; i = mySelect.options[j]; j++) {
+            if(i.text == role) {
+              mySelect.selectedIndex = j;
+            break;
+            }
+          }
+          $('#rekey_api_key').show();
+          //var my_id_value = $(this).data('id');
+          //$(".modal-body #hiddenValue").val(my_id_value);
+        }
+      });
+    }
+
+    function rekey_apikey_post() {
+      $.ajax({
+        url: "admin/rekey_api_key",
+        type: "POST",
+        dataType: "json",
+        data: {
+          csrfmiddlewaretoken: '{{ csrf_token }}',
+          id: rekey_apikey_id,
+          description: $('#rekey_description').val(),
+          email: $('#rekey_email').val(),
+          role: $('#rekey_role').val(),
+          expire_date: $('#rekey_expire_date').val(),
+        },
+        success: function (json) {
+          $('#rekey_api_key').modal('hide');
+          if (json.api_key) {
+            Swal.fire({
+              title: "New API Key",
+              html:
+                '<textarea id="display_api" rows="1" readonly style="width: 100%; height:auto; text-align:center; margin-bottom: 5px;">' + json.api_key + '</textarea>' +
+                //btn btn-outline-info btn-sm" onclick="" href="" style="margin-right: 12px;"><i class="fas fa-sync-alt"></i> style="margin-left:5px; float: left;
+                '<p>Please copy this API key and store it someplace safe. It will not be displayed or accessible again after you close this window.</p><p> If you lose this API key value, you must use the Rekey feature, and copy the new key after it is generated"</p>' +
+                '<button type="button" class="btn btn-outline-info btn-sm" id="btn-copy" style="float: none; margin-right: 5px;"><i class="fas fa-key"></i>Copy</button>' +
+                '<button type="button" class="btn btn-success btn-sm" id="btn-ok" disabled>Close</button>' +
+                '</div>',
+              showConfirmButton: false,
+              type: "success",
+              onOpen: () => {
+                $("#btn-copy").click(() => {
+                  $("#btn-ok").prop('disabled', false);
+
+                  $("#display_api").select();
+                  document.execCommand("copy");
+                });
+
+                $("#btn-ok").click(() => {
+                  Swal.close();
+                  location.reload();
+                });
+              }
+            });
+
+          }
+          else {
+            Swal.fire(
+              'Creation Failed',
+              'Unable to create API key, please try again.',
+              'error'
+            )
+          }
+        },
+        error: function (xhr, errmsg, err) {
+          Swal.fire(
+            'Creation Failed',
+            errmsg,
+            'error'
+          )
+        }
+      });
+      return false;
+    }
+
+    function close_rekey_modal() {
+      $('#rekey_api_key').hide();
+    }
+  </script>  
+  {% endblock %}
