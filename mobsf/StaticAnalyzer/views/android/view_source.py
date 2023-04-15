@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 def run(request, api=False):
     """View the source of a file."""
     try:
-        logger.info('View Android Source File')
+        logger.info('View Java Source File')
         exp = 'Error Description'
         if api:
             fil = request.POST['file']

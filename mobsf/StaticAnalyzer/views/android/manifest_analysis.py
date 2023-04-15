@@ -30,15 +30,14 @@ ANDROID_5_0_LEVEL = 21
 ANDROID_8_0_LEVEL = 26
 
 
-def get_manifest(app_path, app_dir, tools_dir, typ, binary):
+def get_manifest(app_path, app_dir, tools_dir, typ):
     """Get the manifest file."""
     try:
         manifest_file = get_manifest_file(
             app_dir,
             app_path,
             tools_dir,
-            typ,
-            binary)
+            typ)
         mfile = Path(manifest_file)
         if mfile.exists():
             manifest = mfile.read_text('utf-8', 'ignore')
@@ -862,11 +861,14 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
         logger.exception('Performing Manifest Analysis')
 
 
-def get_manifest_file(app_dir, app_path, tools_dir, typ, apk):
+def get_manifest_file(app_dir, app_path, tools_dir, typ):
     """Read the manifest file."""
     try:
         manifest = ''
-        if apk:
+        if typ == 'aar':
+            logger.info('Getting AndroidManifest.xml from AAR')
+            manifest = os.path.join(app_dir, 'AndroidManifest.xml')
+        elif typ == 'apk':
             logger.info('Getting AndroidManifest.xml from APK')
             manifest = get_manifest_apk(app_path, app_dir, tools_dir)
         else:

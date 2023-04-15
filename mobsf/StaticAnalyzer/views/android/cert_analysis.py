@@ -58,6 +58,7 @@ def cert_info(app_dir, app_file, man_dict):
         manidat = ''
         cert_info = ''
         certlist = []
+        files = []
         summary = {HIGH: 0, WARNING: 0, INFO: 0}
         cert_path = os.path.join(app_dir, 'META-INF/')
 
@@ -68,8 +69,9 @@ def cert_info(app_dir, app_file, man_dict):
             'sha256': hashlib.sha256,
             'sha512': hashlib.sha512,
         }
-        files = [f for f in os.listdir(
-            cert_path) if os.path.isfile(os.path.join(cert_path, f))]
+        if os.path.exists(cert_path):
+            files = [f for f in os.listdir(
+                cert_path) if os.path.isfile(os.path.join(cert_path, f))]
         a = APK(apk_file)
         if a.is_signed():
             certlist.append('APK is signed')

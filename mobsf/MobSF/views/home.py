@@ -137,6 +137,10 @@ class Upload(object):
             return scanning.scan_xapk()
         elif self.file_type.is_apks():
             return scanning.scan_apks()
+        elif self.file_type.is_jar():
+            return scanning.scan_jar()
+        elif self.file_type.is_aar():
+            return scanning.scan_aar()
         elif self.file_type.is_zip():
             return scanning.scan_zip()
         elif self.file_type.is_ipa():

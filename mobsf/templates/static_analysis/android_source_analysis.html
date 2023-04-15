@@ -535,7 +535,7 @@
                 <p align="center">
                   <a href="../static_analyzer/?checksum={{ md5 }}&amp;name={{ file_name }}&amp;type=zip&amp;rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
                   <a id="supbtn" onclick="list_suppressions()" role="button" class="btn btn-primary" data-target="#sup_list" data-toggle="modal" href="#"><i class="fa fa-list"></i> Manage Suppressions</a>
-                  <a target="_blank" href="../manifest_view/?md5={{ md5 }}&amp;type={{ app_type }}&amp;bin=0" role="button" class="btn btn-primary"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
+                  <a target="_blank" href="../manifest_view/?md5={{ md5 }}&amp;type={{ app_type }}" role="button" class="btn btn-primary"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
                   <a href="{% url "tree_view" %}?md5={{ md5 }}&amp;type=java" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Source</a>
                 </p>
               </div>

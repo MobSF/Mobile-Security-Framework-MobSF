@@ -328,6 +328,7 @@
              </a>
             </li>
             {% else %}
+              {% if app_type not in 'jar,aar' %}
             <li class="nav-item">
               <a onclick="dynamic_loader()" href="../android_dynamic/{{md5}}" class="nav-link">
               <i class="nav-icon fa fa-play-circle"></i>
@@ -336,6 +337,7 @@
               </p>
              </a>
             </li>
+              {% endif %}
             {% endif %}
         </ul>
       </nav>
@@ -484,6 +486,7 @@
       </div>
   </div>
 
+  {% if app_type not in 'jar,aar' %}
   <!-- Boxes -->
    <div class="container-fluid">
       <div class="row">
@@ -619,9 +622,8 @@
       </div>
     </div>
   </section>
+  {% endif %}
   <!-- =========================end information==================================== -->
-
-
 
 <a id="scan_options" class="anchor"></a>
 <section class="content">
@@ -633,12 +635,14 @@
                 <p>
                 <strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong>
                 </p>
-                <p> <a href="../static_analyzer/?checksum={{ md5 }}&amp;name={{ file_name }}&amp;type=apk&amp;rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
+                <p> <a href="../static_analyzer/?checksum={{ md5 }}&amp;name={{ file_name }}&amp;type={{ app_type }}&amp;rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
                   <a id="supbtn" onclick="list_suppressions()" role="button" class="btn btn-primary" data-target="#sup_list" data-toggle="modal" href="#"><i class="fa fa-list"></i> Manage Suppressions</a>
                 </p>
+                {% if app_type not in 'jar,aar' %}
                 <p>
                   <a onclick="dynamic_loader()" href="../android_dynamic/{{md5}}" class="btn btn-success" role="button"><i class="fa fa-play-circle"></i> Start Dynamic Analysis</a>
                 </p>
+                {% endif %}
               </div>
             </div><!-- /.card -->
             </div>
@@ -649,14 +653,20 @@
                     <strong><i class="fas fa-file-code"></i> DECOMPILED CODE</strong>
                   </p>
                   <p>
-                    <a target="_blank" href="../manifest_view/?md5={{ md5 }}&amp;type={{ app_type }}&amp;bin=1" role="button" class="btn btn-primary"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
+                    {% if app_type not in 'jar' %}
+                    <a target="_blank" href="../manifest_view/?md5={{ md5 }}&amp;type={{ app_type }}" role="button" class="btn btn-primary"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
+                    {% endif %}
                     <a href="{% url "tree_view" %}?md5={{ md5 }}&amp;type=java" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Source</a>
+                    {% if app_type not in 'jar,aar' %}
                     <a href="{% url "tree_view" %}?md5={{ md5 }}&amp;type=smali" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Smali</a>
+                    {% endif %}
                     </p>
                     <p>
                     <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type=java" class="btn btn-warning" role="button"> <i class="fa fa-download"></i> Download Java Code</a>
+                    {% if app_type not in 'jar,aar' %}
                     <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type=smali" class="btn btn-warning"> <i class="fa fa-download"></i> Download Smali Code</a>
-                    <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type=apk" class="btn btn-warning"> <i class="fa fa-download"></i> Download APK</a>
+                    {% endif %}
+                    <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type={{ app_type }}" class="btn btn-warning"> <i class="fa fa-download"></i> Download {{ app_type | upper}}</a>
                     </p>
                 </div>
               </div>

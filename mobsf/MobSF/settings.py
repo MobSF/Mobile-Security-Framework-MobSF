@@ -69,6 +69,8 @@ ALLOWED_EXTENSIONS = {
     '.tar': 'application/x-tar',
     '.apk': 'application/octet-stream',
     '.ipa': 'application/octet-stream',
+    '.jar': 'application/java-archive',
+    '.aar': 'application/octet-stream',
 }
 # =============ALLOWED MIMETYPES=================
 APK_MIME = [
@@ -76,6 +78,7 @@ APK_MIME = [
     'application/vnd.android.package-archive',
     'application/x-zip-compressed',
     'binary/octet-stream',
+    'application/java-archive',
 ]
 IPA_MIME = [
     'application/iphone',
