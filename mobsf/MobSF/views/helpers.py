@@ -29,7 +29,9 @@ class FileType(object):
                 or self.is_zip()
                 or self.is_ipa()
                 or self.is_appx()
-                or self.is_apks()):
+                or self.is_apks()
+                or self.is_jar()
+                or self.is_aar()):
             return True
         return False
 
@@ -44,6 +46,14 @@ class FileType(object):
     def is_apk(self):
         return (self.file_type in settings.APK_MIME
                 and self.file_name_lower.endswith('.apk'))
+
+    def is_jar(self):
+        return (self.file_type in settings.APK_MIME
+                and self.file_name_lower.endswith('.jar'))
+
+    def is_aar(self):
+        return (self.file_type in settings.APK_MIME
+                and self.file_name_lower.endswith('.aar'))
 
     def is_zip(self):
         return (self.file_type in settings.ZIP_MIME

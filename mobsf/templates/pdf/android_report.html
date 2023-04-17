@@ -182,7 +182,8 @@
       <h5>Max SDK:</h5> {{ max_sdk }}</br>
       <h5>Android Version Name:</h5> {{ version_name }}</br>
       <h5>Android Version Code:</h5> {{ version_code }}</br>
-
+     
+{% if app_type not in 'jar,aar' %}
       <h2><i class="fas fa-th-large"></i> APP COMPONENTS </h2>
 
         <h5>Activities:</h5> {{ activities | length }}</br>
@@ -193,7 +194,7 @@
         <h5>Exported Services:</h5> <span {% if exported_count.exported_services > 0 %} class="danger" {% endif %}> {{ exported_count.exported_services }}</span></br>
         <h5>Exported Receivers:</h5> <span {% if exported_count.exported_receivers > 0 %} class="danger" {% endif %}> {{ exported_count.exported_receivers }}</span></br>
         <h5>Exported Providers:</h5> <span {% if exported_count.exported_providers > 0 %} class="danger" {% endif %}> {{ exported_count.exported_providers }}</span></br>
-     
+  {% endif %}
         <h2><i class="fa fa-certificate"></i> CERTIFICATE INFORMATION</h2>
         {% if certificate_analysis.certificate_info %}
         <div class="panel-body">
@@ -238,7 +239,6 @@
             </tbody>
             </table>
       {% endif %}
-
       
        {% if virus_total and virus_total.items|length > 9 and 'request successfully queued' not in virus_total.verbose_msg %}
        <h2><i class="fas fa-spider"></i> VIRUSTOTAL SCAN</h2>
