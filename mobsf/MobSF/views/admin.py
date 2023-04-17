@@ -158,7 +158,7 @@ def revoke_api_key_post(request):
         return error_response(request, msg, False, exp_doc)
 
 
-@require_http_methods(['POST']) 
+@require_http_methods(['POST'])
 def edit_api_key_post(request):
     try:
         if (not is_admin(request)):
