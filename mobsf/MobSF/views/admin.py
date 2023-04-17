@@ -55,15 +55,11 @@ def revoke_api_key(key_id):
         return db_obj
     return None
 
-def edit_api_key(id, description, email, role, expire_date):
-    db_obj = ApiKeys.objects.get(ID = id)
-    logger.info('API key ID %s edited by: %s', id, email)
+
+def edit_api_key(key_id, description, email, role, expire_date):
+    db_obj = ApiKeys.objects.get(ID=key_id)
+    logger.info('API key ID %s edited by: %s', key_id, email)
     if db_obj:
-        #random_bytes = os.urandom(32)
-        #api_key = base64.b64encode(random_bytes).decode('utf-8').replace('=', '')
-        #key_hash = hashlib.sha256(api_key.encode('utf-8')).hexdigest()
-        #db_obj.KEY_HASH = key_hash
-        #db_obj.KEY_PREFIX = api_key[0:5]
         db_obj.REVOKED_DATE = None
         db_obj.DESCRIPTION = description
         db_obj.EMAIL = email
@@ -114,7 +110,7 @@ def create_api_key_post(request):
         email = request.POST['email']
         role = request.POST['role']
         expire_date = request.POST['expire_date']
-        full_date_str = expire_date + ' 12:00:00.000000 +0000'
+        full_date_str = expire_date + ' 00:00:00.000000 +0000'
         aware_date = datetime.datetime.strptime(full_date_str,
                                                 '%Y-%m-%d %H:%M:%S.%f %z')
 
@@ -160,9 +156,10 @@ def revoke_api_key_post(request):
         msg = str(exp)
         exp_doc = exp.__doc__
         return error_response(request, msg, False, exp_doc)
-    
+
+
 @require_http_methods(['POST']) 
-def edit_api_key_post(request): #does this need ,api=False???
+def edit_api_key_post(request):
     try:
         if (not is_admin(request)):
             return error_response(request, 'Unauthorized')
@@ -175,21 +172,22 @@ def edit_api_key_post(request): #does this need ,api=False???
         email = request.POST['email']
         role = request.POST['role']
         expire_date = request.POST['expire_date']
-        full_date_str = expire_date + ' 12:00:00.000000 +0000'
+        full_date_str = expire_date + ' 00:00:00.000000 +0000'
         aware_date = datetime.datetime.strptime(full_date_str,
                                                 '%Y-%m-%d %H:%M:%S.%f %z')
 
         if not description:
             return error_response(request, 'Missing parameter: description')
-        item = edit_api_key(id, description, email, role, aware_date) ##strftime("%Y-%m-%d %H:%M:%S.%f%Z") '%Y-%m-%d %H:%M:%S.%f%Z
+        item = edit_api_key(key_id, description, email, role, aware_date)
         if item:
-            logger.info('API key ID %s details edited by: %s', id, sso_email(request))
+            logger.info('API key ID %s details edited by: %s', key_id,
+                        sso_email(request))
             return HttpResponse('{}', content_type='application/json',
                                 status=202)
         else:
-            logger.info('Unable to find API key %s to edit', id )                
+            logger.info('Unable to find API key %s to edit', key_id)
             return HttpResponse(json.dumps(id),
-                                content_type='application/json', status=404)        
+                                content_type='application/json', status=404)
 
     except Exception as exp:
         exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
