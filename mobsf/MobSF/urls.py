@@ -108,7 +108,7 @@ if settings.API_ONLY == '0':
         re_path(r'^admin$', admin.admin_view, name='admin'),
         re_path(r'^admin/create_api_key$', admin.create_api_key_post),
         re_path(r'^admin/revoke_api_key$', admin.revoke_api_key_post),
-        re_path(r'^admin/rekey_api_key$', admin.rekey_api_key_post),
+        re_path(r'^admin/edit_api_key$', admin.edit_api_key_post),
 
         # Static Analysis
         # Android

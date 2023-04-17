@@ -45,8 +45,8 @@ sidebar-collapse
                       <td>{{ e.KEY_PREFIX }}</td>
                       <td>{{ e.CREATE_DATE|date:"M j, Y" }} {{ e.CREATE_DATE|time:"g:i A" }}</td>
                       <td>{{ e.EXPIRE_DATE|date:"M j, Y" }}</td>
-                      <td><a class="btn btn-primary btn-sm" href="#" onclick="rekey_apikey({{ e.ID }})" style="margin-right: 12px;"><i
-                            class="fas fa-sync-alt"></i> Rekey </a><a class="btn btn-warning btn-sm" href="#"
+                      <td><a class="btn btn-primary btn-sm" href="#" onclick="edit_apikey({{ e.ID }})" style="margin-right: 12px;"><i
+                            class="fas fa-sync-alt"></i> Edit </a><a class="btn btn-warning btn-sm" href="#"
                           onclick="revoke_apikey({{ e.ID }})"><i class="fa fa-trash"></i> Revoke </a></td>
                     </tr>
                     {% endfor %}
@@ -104,12 +104,12 @@ sidebar-collapse
     </div>
   </div>
 
-  <!--  Rekey API Key Modal -->
-  <div class="modal" id="rekey_api_key" tabindex="-1" role="dialog">
+  <!--  edit API Key Modal -->
+  <div class="modal" id="edit_api_key" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-xl">
       <div class="modal-content">
         <div class="modal-header">
-          <h4 class="modal-title">Rekey API Key</h4>
+          <h4 class="modal-title">edit API Key</h4>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">×</span>
           </button>
@@ -118,15 +118,15 @@ sidebar-collapse
           <form role="form">
             <div class="form-group">
               <label>Description</label>
-              <input id="rekey_description" type="text" class="form-control">
+              <input id="edit_description" type="text" class="form-control">
             </div>
             <div class="form-group">
               <label>Notify Email</label>
-              <input id="rekey_email" type="text" class="form-control" value="{{ sso_email }}">
+              <input id="edit_email" type="text" class="form-control" value="{{ sso_email }}">
             </div>
             <div class="form-group">
               <label>Role</label>
-              <select id="rekey_role" class="form-control"> 
+              <select id="edit_role" class="form-control"> 
                 <option value="1">UPLOAD_ONLY</option>
                 <option value="2">READ_ONLY</option>
                 <option value="3">FULL_ACCESS</option>
@@ -134,14 +134,14 @@ sidebar-collapse
             </div>
             <div class="form-group">
               <label>Expiration Date</label>
-              <input id="rekey_expire_date" class="form-control" type="date" min="{{ min_date }}" max="{{ max_date }}"
+              <input id="edit_expire_date" class="form-control" type="date" min="{{ min_date }}" max="{{ max_date }}"
                 value="{{ default_exp_date }}">
             </div>
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" data-dismiss="modal" class="btn btn-secondary disable" onclick="close_rekey_modal()">Cancel</button>
-          <button id="create_api_key_post" type="button" onclick="rekey_apikey_post(this)"
+          <button type="button" data-dismiss="modal" class="btn btn-secondary disable" onclick="close_edit_modal()">Cancel</button>
+          <button id="create_api_key_post" type="button" onclick="edit_apikey_post(this)"
             class="btn btn-primary disable">Submit</button>
         </div>
       </div>
@@ -153,7 +153,7 @@ sidebar-collapse
   <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
   <script src="{% static "others/js/dayjs.min.js" %}"></script>
   <script>    
-    var rekey_id;
+    var edit_id;
     const my_keys = JSON.parse(document.getElementById('existing_keys').textContent)
     function copyToClipboard(element) {
       var $temp = $("<input>");
@@ -184,7 +184,7 @@ sidebar-collapse
               html:
                 '<textarea id="display_api" rows="1" readonly style="width: 100%; height:auto; text-align:center; margin-bottom: 5px;">' + json.api_key + '</textarea>' +
                 //btn btn-outline-info btn-sm" onclick="" href="" style="margin-right: 12px;"><i class="fas fa-sync-alt"></i> style="margin-left:5px; float: left;
-                '<p>Please copy this API key and store it someplace safe. It will not be displayed or accessible again after you close this window.</p><p> If you lose this API key value, you must use the Rekey feature, and copy the new key after it is generated"</p>' +
+                '<p>Please copy this API key and store it someplace safe. It will not be displayed or accessible again after you close this window.</p><p> If you lose this API key value, you must use the edit feature, and copy the new key after it is generated"</p>' +
                 '<button type="button" class="btn btn-primary btn-sm" id="btn-copy" style="float: none; margin-right: 5px;"><i class="fas fa-key"></i>Copy</button>' +
                 '<button type="button" class="btn btn-success btn-sm" id="btn-ok" disabled>Close</button>' +
                 '</div>',
@@ -269,17 +269,17 @@ sidebar-collapse
       })
     }
 
-    function rekey_apikey(id) {
-      Swal.fire({
+    function edit_apikey(id) {
+      /*Swal.fire({
         title: 'Are you sure?',
         text: "This will cause the original key to no longer be usable",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#2da532',
-        confirmButtonText: 'Rekey!'
+        confirmButtonText: 'edit!'
       }).then((result) => { 
-        if (result.value) {          
+        if (result.value) {       */   
           var role = "";
           var description = ""          
           for (var i=0 ; i < my_keys.length ; i++)
@@ -289,87 +289,58 @@ sidebar-collapse
               description = my_keys[i]["DESCRIPTION"]
             }
           }          
-          rekey_apikey_id = id;
-          var myDescription = document.getElementById('rekey_description');
+          edit_apikey_id = id;
+          var myDescription = document.getElementById('edit_description');
           myDescription.value = description;          
-          var mySelect = document.getElementById('rekey_role');
+          var mySelect = document.getElementById('edit_role');
           for(var i, j = 0; i = mySelect.options[j]; j++) {
             if(i.text == role) {
               mySelect.selectedIndex = j;
             break;
             }
           }
-          $('#rekey_api_key').show();
+          $('#edit_api_key').show();
           //var my_id_value = $(this).data('id');
           //$(".modal-body #hiddenValue").val(my_id_value);
-        }
-      });
-    }
+    }      
 
-    function rekey_apikey_post() {
+    function edit_apikey_post() {
       $.ajax({
-        url: "admin/rekey_api_key",
+        url: "admin/edit_api_key",
         type: "POST",
         dataType: "json",
         data: {
           csrfmiddlewaretoken: '{{ csrf_token }}',
-          id: rekey_apikey_id,
-          description: $('#rekey_description').val(),
-          email: $('#rekey_email').val(),
-          role: $('#rekey_role').val(),
-          expire_date: $('#rekey_expire_date').val(),
+          id: edit_apikey_id,
+          description: $('#edit_description').val(),
+          email: $('#edit_email').val(),
+          role: $('#edit_role').val(),
+          expire_date: $('#edit_expire_date').val(),
         },
         success: function (json) {
-          $('#rekey_api_key').modal('hide');
-          if (json.api_key) {
-            Swal.fire({
-              title: "New API Key",
-              html:
-                '<textarea id="display_api" rows="1" readonly style="width: 100%; height:auto; text-align:center; margin-bottom: 5px;">' + json.api_key + '</textarea>' +
-                //btn btn-outline-info btn-sm" onclick="" href="" style="margin-right: 12px;"><i class="fas fa-sync-alt"></i> style="margin-left:5px; float: left;
-                '<p>Please copy this API key and store it someplace safe. It will not be displayed or accessible again after you close this window.</p><p> If you lose this API key value, you must use the Rekey feature, and copy the new key after it is generated"</p>' +
-                '<button type="button" class="btn btn-outline-info btn-sm" id="btn-copy" style="float: none; margin-right: 5px;"><i class="fas fa-key"></i>Copy</button>' +
-                '<button type="button" class="btn btn-success btn-sm" id="btn-ok" disabled>Close</button>' +
-                '</div>',
-              showConfirmButton: false,
-              type: "success",
-              onOpen: () => {
-                $("#btn-copy").click(() => {
-                  $("#btn-ok").prop('disabled', false);
-
-                  $("#display_api").select();
-                  document.execCommand("copy");
-                });
-
-                $("#btn-ok").click(() => {
-                  Swal.close();
-                  location.reload();
-                });
-              }
+          $('#edit_api_key').modal('hide');
+          Swal.fire({
+              title: 'Success',
+              text: 'API key details have been changed',
+              type: 'success'
+            }).then(function () {
+              location.reload();
             });
-
-          }
-          else {
-            Swal.fire(
-              'Creation Failed',
-              'Unable to create API key, please try again.',
-              'error'
-            )
-          }
         },
-        error: function (xhr, errmsg, err) {
-          Swal.fire(
-            'Creation Failed',
-            errmsg,
-            'error'
-          )
+          error: function (xhr, errmsg, err) {
+            Swal.fire(
+              {
+                title: 'Error',
+                text: 'There was an error editing the API key details' + errmsg,
+                type: 'error'
+              }
+            )
         }
-      });
-      return false;
-    }
+      })
+    }          
 
-    function close_rekey_modal() {
-      $('#rekey_api_key').hide();
+    function close_edit_modal() {
+      $('#edit_api_key').hide();
     }
   </script>  
   {% endblock %}
