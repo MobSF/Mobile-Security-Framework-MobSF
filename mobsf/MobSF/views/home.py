@@ -21,6 +21,7 @@ from django.shortcuts import render
 from django.template.defaulttags import register
 from django.forms.models import model_to_dict
 from django.utils import timezone
+from django.views.decorators.http import require_http_methods
 
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
@@ -501,6 +502,39 @@ def search(request):
                           'The Scan ID provided is invalid. Please provide a'
                           + ' valid 32 character alphanumeric value.')
 
+@require_http_methods(['POST'])
+def search_by_name(request, api=False):
+    """Search Scan by AppName and Version."""
+    appname = request.POST['appname']
+    version = request.POST['version']
+    db_obj = RecentScansDB.objects.filter(USER_APP_NAME=appname, USER_APP_VERSION=version)    
+    user = sso_email(request)
+    isAdmin = is_admin(request)
+    if db_obj.exists():
+        e = db_obj[0]
+        if user == e.EMAIL or isAdmin:
+            context = {
+                'found': True,
+                'division': e.DIVISION,
+                'country': e.COUNTRY,
+                'environment': e.ENVIRONMENT,
+                'data_privacy_classification': e.DATA_PRIVACY_CLASSIFICATION,
+                'data_privacy_attributes': e.DATA_PRIVACY_ATTRIBUTES,
+                'release': e.RELEASE,
+                'email': e.EMAIL,
+            }
+            logger.info('Found existing APP information %s for upload', e.APP_NAME )
+            return HttpResponse(json.dumps(context), content_type='application/json',
+                                    status=202)
+        else:
+            logger.info('User is not Authorized for existing APP %s.', appname )                
+            payload = {'found': False}
+            return HttpResponse(json.dumps(payload), content_type='application/json', status=202) 
+    else:
+        logger.info('Unable to find existing APP information %s for upload', appname )                
+        payload = {'found': False}
+        return HttpResponse(json.dumps(payload), content_type='application/json', status=202)        
+    
 
 def download(request):
     """Download from mobsf.MobSF Route."""
