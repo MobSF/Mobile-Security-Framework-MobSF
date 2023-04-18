@@ -287,7 +287,7 @@
                         appname: myAppname,
                         version: myVersion,
                     },
-                    success: function (json) {                        
+                    success: function (json) {
                         if (json.found) {
                             if (json.release) {
                                 $("#release").prop("checked", true);
@@ -304,15 +304,8 @@
                         }
                     },
                     error: function (xhr, errmsg, err) {
-                        Swal.fire(
-                        {
-                            title: 'Error',
-                            text: 'There was an error revoking the API key' + errmsg,
-                            type: 'error'
-                        }
-                        )
-                    }
-                    
+                        //no need to do anything here    
+                    }                    
                 })
             }
         }

@@ -507,7 +507,7 @@ def search_by_name(request, api=False):
     """Search Scan by AppName and Version."""
     appname = request.POST['appname']
     version = request.POST['version']
-    db_obj = RecentScansDB.objects.filter(USER_APP_NAME=appname, USER_APP_VERSION=version)    
+    db_obj = RecentScansDB.objects.filter(USER_APP_NAME=appname, USER_APP_VERSION=version)
     user = sso_email(request)
     isAdmin = is_admin(request)
     if db_obj.exists():
@@ -527,14 +527,13 @@ def search_by_name(request, api=False):
             return HttpResponse(json.dumps(context), content_type='application/json',
                                     status=202)
         else:
-            logger.info('User is not Authorized for existing APP %s.', appname )                
+            logger.info('User is not Authorized for existing APP %s.', appname )
             payload = {'found': False}
-            return HttpResponse(json.dumps(payload), content_type='application/json', status=202) 
+            return HttpResponse(json.dumps(payload), content_type='application/json', status=202)
     else:
-        logger.info('Unable to find existing APP information %s for upload', appname )                
+        logger.info('Unable to find existing APP information %s for upload', appname )
         payload = {'found': False}
-        return HttpResponse(json.dumps(payload), content_type='application/json', status=202)        
-    
+        return HttpResponse(json.dumps(payload), content_type='application/json', status=202)    
 
 def download(request):
     """Download from mobsf.MobSF Route."""
