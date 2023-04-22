@@ -100,7 +100,7 @@ if settings.API_ONLY == '0':
         re_path(r'^update_scan/$', home.update_scan),
         re_path(r'^delete_scan/$', home.delete_scan),
         re_path(r'^search$', home.search),
-        re_path(r'^app_info$', home.app_info),        
+        re_path(r'^app_info$', home.app_info),
         re_path(r'^error/$', home.error, name='error'),
         re_path(r'^not_found/$', home.not_found),
         re_path(r'^zip_format/$', home.zip_format),

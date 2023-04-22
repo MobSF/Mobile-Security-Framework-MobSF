@@ -149,7 +149,7 @@ class Upload(object):
             api_response['error'] = FormUtil.errors_message(self.form)
             return api_response, HTTP_BAD_REQUEST
         if not self.scan.email:
-            api_response['error'] = 'User email address could not be determined'
+            api_response['error'] = 'User email address not set'
             return api_response, HTTP_BAD_REQUEST
         if not self.scan.file_type.is_allow_file():
             api_response['error'] = 'File format not supported!'
@@ -513,10 +513,9 @@ def app_info(request):
     db_obj = RecentScansDB.objects.filter(USER_APP_NAME=appname,
                                           USER_APP_VERSION=version)
     user = sso_email(request)
-    isAdmin = is_admin(request)
     if db_obj.exists():
         e = db_obj[0]
-        if user == e.EMAIL or isAdmin:
+        if user == e.EMAIL or is_admin(request):
             context = {
                 'found': True,
                 'division': e.DIVISION,
