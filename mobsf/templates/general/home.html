@@ -275,17 +275,17 @@
         }
 
         function lookupHandler(event) {
-            var myVersion = $("#version").val();
-            var myAppname = $("#appname").val();
-            if (myVersion && myAppname) {
+            var version = $("#version").val();
+            var appname = $("#appname").val();
+            if (version && appname) {
                 $.ajax({
-                    url: "search_by_name",
+                    url: "app_info",
                     type: "POST",
                     dataType: "json",
                     data: {
                         csrfmiddlewaretoken: '{{ csrf_token }}',
-                        appname: myAppname,
-                        version: myVersion,
+                        name: appname,
+                        version: version,
                     },
                     success: function (json) {
                         if (json.found) {

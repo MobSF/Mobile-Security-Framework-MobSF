@@ -504,12 +504,14 @@ def search(request):
                           'The Scan ID provided is invalid. Please provide a'
                           + ' valid 32 character alphanumeric value.')
 
+
 @require_http_methods(['POST'])
-def search_by_name(request, api=False):
-    """Search Scan by AppName and Version."""
-    appname = request.POST['appname']
+def app_info(request):
+    """Get mobile app info by name and version."""
+    appname = request.POST['name']
     version = request.POST['version']
-    db_obj = RecentScansDB.objects.filter(USER_APP_NAME=appname, USER_APP_VERSION=version)
+    db_obj = RecentScansDB.objects.filter(USER_APP_NAME=appname,
+                                          USER_APP_VERSION=version)
     user = sso_email(request)
     isAdmin = is_admin(request)
     if db_obj.exists():
@@ -525,17 +527,22 @@ def search_by_name(request, api=False):
                 'release': e.RELEASE,
                 'email': e.EMAIL,
             }
-            logger.info('Found existing APP information %s for upload', e.APP_NAME )
-            return HttpResponse(json.dumps(context), content_type='application/json',
-                                    status=202)
+            logger.info('Found existing mobile app information for %s@%s',
+                        appname, version)
+            return HttpResponse(json.dumps(context),
+                                content_type='application/json', status=202)
         else:
-            logger.info('User is not Authorized for existing APP %s.', appname )
+            logger.info('User is not authorized for %s@%s.', appname, version)
             payload = {'found': False}
-            return HttpResponse(json.dumps(payload), content_type='application/json', status=202)
+            return HttpResponse(json.dumps(payload),
+                                content_type='application/json', status=403)
     else:
-        logger.info('Unable to find existing APP information %s for upload', appname )
+        logger.info('Unable to find mobile app information for %s@%s',
+                    appname, version)
         payload = {'found': False}
-        return HttpResponse(json.dumps(payload), content_type='application/json', status=202)    
+        return HttpResponse(json.dumps(payload),
+                            content_type='application/json', status=404)
+
 
 def download(request):
     """Download from mobsf.MobSF Route."""
