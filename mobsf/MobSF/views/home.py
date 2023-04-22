@@ -148,9 +148,11 @@ class Upload(object):
         if not self.form.is_valid():
             api_response['error'] = FormUtil.errors_message(self.form)
             return api_response, HTTP_BAD_REQUEST
-        self.scan.email = sso_email(self.request)
+        if not self.scan.email:
+            api_response['error'] = 'User email address could not be determined'
+            return api_response, HTTP_BAD_REQUEST
         if not self.scan.file_type.is_allow_file():
-            api_response['error'] = 'File format not Supported!'
+            api_response['error'] = 'File format not supported!'
             return api_response, HTTP_BAD_REQUEST
         start_time = datetime.datetime.now(timezone.utc)
         api_response = self.upload()

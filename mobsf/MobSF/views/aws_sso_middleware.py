@@ -32,8 +32,8 @@ def alb_idp_auth_middleware(
         info = identifier.identify(request)
         if info:
             request.META['email'] = str.lower(info['email'])
-        elif not os.getenv('TENANT_ID'):
-            request.META['email'] = 'brice@cyberspect.com'
+        elif not os.getenv('TENANT_ID') and not request.META['email']:
+            request.META['email'] = 'admin@cyberspect.com'
         else:
             request.META['email'] = ''
 
