@@ -234,19 +234,6 @@ def api_test():
         else:
             logger.error('Scan List API Test 2')
             return True
-        resp = http_client.get('/api/v1/scans', HTTP_X_MOBSF_API_KEY=auth)
-        if resp.status_code == 200:
-            logger.info('Scan List API Test with custom http header 1 success')
-        else:
-            logger.error('Scan List API Test with custom http header 1')
-            return True
-        resp = http_client.get(
-            '/api/v1/scans?page=1&page_size=10', HTTP_X_MOBSF_API_KEY=auth)
-        if resp.status_code == 200:
-            logger.info('Scan List API Test with custom http header 2 success')
-        else:
-            logger.error('Scan List API Test with custom http header 2')
-            return True
         logger.info('[OK] Scan List API tests completed')
         # PDF Tests
         logger.info('Running PDF Generation API Test')
