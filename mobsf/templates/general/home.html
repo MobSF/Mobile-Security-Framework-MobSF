@@ -60,14 +60,14 @@
                                 <td style="vertical-align: top;">
                                     <div id="err_name" class="hidden"><span class="error">Application Name
                                             Required!</span></div>
-                                    <div><span><input type="text" id="appname"
+                                    <div><span><input type="text" id="appname" onfocusout="lookupHandler()"
                                                 placeholder="application name"></span>&nbsp;&nbsp;<i
                                             class="fas fa-info-circle fa-lg"
                                             title="The name of the mobile application as it appears (or will appear) in the applicable app store."></i>
                                     </div>
                                     <div id="err_version" class="hidden"><span class="error">Version Required!</span>
                                     </div>
-                                    <div><span><input type="text" id="version" placeholder="version"
+                                    <div><span><input type="text" id="version" onfocusout="lookupHandler()" placeholder="version"
                                                 value="1.0"></span>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
                                             title="The version of the mobile application."></i></div>
                                     <div>
@@ -248,7 +248,7 @@
                         i = 1;
                     }
                 }, 2000);
-                load_result("recent_scans/");
+                load_result("recent_scans");
             }
         }
         function progressHandler(event) {
@@ -273,6 +273,43 @@
         function abortHandler(event) {
             _("status").innerText = "Upload Aborted!";
         }
+
+        function lookupHandler(event) {
+            var version = $("#version").val();
+            var appname = $("#appname").val();
+            if (version && appname) {
+                $.ajax({
+                    url: "app_info",
+                    type: "POST",
+                    dataType: "json",
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        name: appname,
+                        version: version,
+                    },
+                    success: function (json) {
+                        if (json.found) {
+                            if (json.release) {
+                                $("#release").prop("checked", true);
+                            }
+                            else {
+                                $("#release").prop("checked", false);
+                            }
+                            $("#environment").val(json.environment);
+                            $("#division").val(json.division);
+                            $("#country").val(json.country);
+                            $("#data_privacy_classification").val(json.data_privacy_classification);
+                            $("#data_privacy_attributes").val(json.data_privacy_attributes);
+                            $("#override_email").val(json.email);
+                        }
+                    },
+                    error: function (xhr, errmsg, err) {
+                        //no need to do anything here    
+                    }                    
+                })
+            }
+        }
+
         // Is valid file extensions
         function isValidExt(file_name) {
             var val = file_name.toLowerCase();

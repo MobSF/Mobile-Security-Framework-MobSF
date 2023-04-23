@@ -10,9 +10,7 @@ from mobsf.StaticAnalyzer.models import ApiKeys
 
 def get_api_key(meta):
     """Return supplied API key."""
-    if 'HTTP_X_MOBSF_API_KEY' in meta:
-        return meta['HTTP_X_MOBSF_API_KEY']
-    elif 'HTTP_AUTHORIZATION' in meta:
+    if 'HTTP_AUTHORIZATION' in meta:
         return meta['HTTP_AUTHORIZATION']
     return None
 
@@ -32,6 +30,9 @@ class RestApiAuthMiddleware(MiddlewareMixin):
 
     def process_request(self, request):
         """Handle API authentication."""
+        request.META['email'] = ''
+        request.META['role'] = ''
+
         if not request.path.startswith('/api/'):
             return
         if request.method == 'OPTIONS':
@@ -46,6 +47,7 @@ class RestApiAuthMiddleware(MiddlewareMixin):
             return
         apikey = get_api_key(request.META)
         if apikey == api_key():
+            request.META['role'] = 'FULL_ACCESS'
             return
 
         key_hash = hashlib.sha256(apikey.encode('utf-8')).hexdigest()
@@ -60,6 +62,7 @@ class RestApiAuthMiddleware(MiddlewareMixin):
 
         request.META['email'] = db_obj.EMAIL
         role = ApiKeys.Role(db_obj.ROLE)
+        request.META['role'] = role.name
         if role == ApiKeys.Role.FULL_ACCESS:
             return
         elif role == ApiKeys.Role.READ_ONLY:

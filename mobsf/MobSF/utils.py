@@ -653,6 +653,8 @@ def android_component(data):
 
 
 def is_admin(request):
+    if ('role' in request.META and request.META['role'] == 'FULL_ACCESS'):
+        return True
     if (not settings.ADMIN_USERS):
         return False
     if ('email' not in request.META):

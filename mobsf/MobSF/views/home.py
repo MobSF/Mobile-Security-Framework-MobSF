@@ -21,6 +21,7 @@ from django.shortcuts import render
 from django.template.defaulttags import register
 from django.forms.models import model_to_dict
 from django.utils import timezone
+from django.views.decorators.http import require_http_methods
 
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
@@ -147,9 +148,11 @@ class Upload(object):
         if not self.form.is_valid():
             api_response['error'] = FormUtil.errors_message(self.form)
             return api_response, HTTP_BAD_REQUEST
-        self.scan.email = sso_email(self.request)
+        if not self.scan.email:
+            api_response['error'] = 'User email address not set'
+            return api_response, HTTP_BAD_REQUEST
         if not self.scan.file_type.is_allow_file():
-            api_response['error'] = 'File format not Supported!'
+            api_response['error'] = 'File format not supported!'
             return api_response, HTTP_BAD_REQUEST
         start_time = datetime.datetime.now(timezone.utc)
         api_response = self.upload()
@@ -158,8 +161,8 @@ class Upload(object):
                                 start_time,
                                 self.scan.file_size,
                                 self.scan.source_file_size)
-        if (not self.request.GET.get('scan', '1') == '0'):
-            cyberspect_scan_intake(self.scan.populate_data_dict())
+        api_response['cyberspect_scan_id'] = self.scan.cyberspect_scan_id
+        cyberspect_scan_intake(self.scan.populate_data_dict())
         return api_response, 200
 
     def upload(self):
@@ -500,6 +503,44 @@ def search(request):
     return error_response(request,
                           'The Scan ID provided is invalid. Please provide a'
                           + ' valid 32 character alphanumeric value.')
+
+
+@require_http_methods(['POST'])
+def app_info(request):
+    """Get mobile app info by name and version."""
+    appname = request.POST['name']
+    version = request.POST['version']
+    db_obj = RecentScansDB.objects.filter(USER_APP_NAME=appname,
+                                          USER_APP_VERSION=version)
+    user = sso_email(request)
+    if db_obj.exists():
+        e = db_obj[0]
+        if user == e.EMAIL or is_admin(request):
+            context = {
+                'found': True,
+                'division': e.DIVISION,
+                'country': e.COUNTRY,
+                'environment': e.ENVIRONMENT,
+                'data_privacy_classification': e.DATA_PRIVACY_CLASSIFICATION,
+                'data_privacy_attributes': e.DATA_PRIVACY_ATTRIBUTES,
+                'release': e.RELEASE,
+                'email': e.EMAIL,
+            }
+            logger.info('Found existing mobile app information for %s@%s',
+                        appname, version)
+            return HttpResponse(json.dumps(context),
+                                content_type='application/json', status=202)
+        else:
+            logger.info('User is not authorized for %s@%s.', appname, version)
+            payload = {'found': False}
+            return HttpResponse(json.dumps(payload),
+                                content_type='application/json', status=403)
+    else:
+        logger.info('Unable to find mobile app information for %s@%s',
+                    appname, version)
+        payload = {'found': False}
+        return HttpResponse(json.dumps(payload),
+                            content_type='application/json', status=404)
 
 
 def download(request):
