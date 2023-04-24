@@ -20,7 +20,7 @@ sidebar-collapse
           <div class="card-body">
             <h1 style="float: left">API Keys</h1>
             <a class="btn btn-success btn-sm" data-target="#new_api_key" data-toggle="modal" href="#" role="button"
-              style="float: right; margin-top: 12px; margin-right: 12px;"><i class="fa fa-key"
+              style="float: right; margin-top: 12px; margin-right: 12px;"><i class="fa fa-plus-circle"
                 title="Generate a new API key"></i> New API Key</a>
             <div class="box-body">
               <div class="table-responsive">
@@ -46,8 +46,8 @@ sidebar-collapse
                       <td>{{ e.CREATE_DATE|date:"M j, Y" }} {{ e.CREATE_DATE|time:"g:i A" }}</td>
                       <td>{{ e.EXPIRE_DATE|date:"M j, Y" }}</td>
                       <td><a class="btn btn-primary btn-sm" href="#" onclick="edit_apikey({{ e.ID }})" style="margin-right: 12px;"><i
-                            class="fas fa-sync-alt"></i> Edit </a><a class="btn btn-warning btn-sm" href="#"
-                          onclick="revoke_apikey({{ e.ID }})"><i class="fa fa-trash"></i> Revoke </a></td>
+                            class="fas fa-pen"></i> Edit </a><a class="btn btn-warning btn-sm" href="#"
+                          onclick="revoke_apikey({{ e.ID }})"><i class="fa fa-ban"></i> Revoke </a></td>
                     </tr>
                     {% endfor %}
                   </tbody>
@@ -182,13 +182,14 @@ sidebar-collapse
             Swal.fire({
               title: "New API Key",
               html:
-                '<textarea id="display_api" rows="1" readonly style="width: 100%; height:auto; text-align:center; margin-bottom: 5px;">' + json.api_key + '</textarea>' +
-                //btn btn-outline-info btn-sm" onclick="" href="" style="margin-right: 12px;"><i class="fas fa-sync-alt"></i> style="margin-left:5px; float: left;
-                '<p>Please copy this API key and store it someplace safe. It will not be displayed or accessible again after you close this window.</p><p> If you lose this API key value, you must use the edit feature, and copy the new key after it is generated"</p>' +
-                '<button type="button" class="btn btn-primary btn-sm" id="btn-copy" style="float: none; margin-right: 5px;"><i class="fas fa-key"></i>Copy</button>' +
-                '<button type="button" class="btn btn-success btn-sm" id="btn-ok" disabled>Close</button>' +
+                '<textarea id="display_api" rows="1" readonly style="width: 100%; height:auto; text-align:center; margin-bottom: 5px;">' + json.api_key + '</textarea>' +                
+                '<p>Please copy this API key and store it someplace safe. It will not be accessible again after you close this window.</p><p> If you lose this API key you will need to generate a new one.</p>' +
+                '<button type="button" class="btn btn-primary btn" id="btn-copy" style="float: none; margin-right: 5px;">Copy</button>' +
+                '<button type="button" class="btn btn-secondary btn" id="btn-ok" disabled>Close</button>' +
                 '</div>',
               showConfirmButton: false,
+              allowOutsideClick: false,
+              allowEscapeKey: false,
               type: "success",
               onOpen: () => {
                 $("#btn-copy").click(() => {
@@ -248,7 +249,7 @@ sidebar-collapse
             success: function (json) {
               Swal.fire({
                   title: 'Success',
-                  text: 'API key has been revoked',
+                  text: 'API key has been revoked.',
                   type: 'success'
                 }).then(function () {
                   location.reload();
@@ -270,16 +271,6 @@ sidebar-collapse
     }
 
     function edit_apikey(id) {
-      /*Swal.fire({
-        title: 'Are you sure?',
-        text: "This will cause the original key to no longer be usable",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#2da532',
-        confirmButtonText: 'edit!'
-      }).then((result) => { 
-        if (result.value) {       */   
           var role = "";
           var description = ""          
           for (var i=0 ; i < my_keys.length ; i++)
@@ -300,8 +291,6 @@ sidebar-collapse
             }
           }
           $('#edit_api_key').show();
-          //var my_id_value = $(this).data('id');
-          //$(".modal-body #hiddenValue").val(my_id_value);
     }      
 
     function edit_apikey_post() {
