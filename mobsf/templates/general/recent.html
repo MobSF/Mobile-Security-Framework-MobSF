@@ -43,7 +43,7 @@
 
                  <div class="box">
         <div class="box-header with-border">
-            <h3 class="box-title"><i class="fa fa-rocket"></i> Recent Scanned Apps{% if filter %} [{{filter}}]{% endif %}</h3>
+            <h3 class="box-title">Scanned Apps{% if filter %} [{{filter}}]{% endif %}</h3>
         </div>
 
         <div class="box-body">
@@ -98,7 +98,7 @@
                                 {% endif %}
                             </td>                            
                             {% if is_admin %}
-                            <td>           
+                            <td style="word-wrap: break-word; max-width: 200px;">           
                                 <div id="viewFields{{e.MD5}}">
                                     <div id="userAppName{{e.MD5}}">{{e.USER_APP_NAME}}</div>
                                     <div id="userAppVersion{{e.MD5}}">{{e.USER_APP_VERSION}}</div>

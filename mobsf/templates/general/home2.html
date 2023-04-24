@@ -1,0 +1,429 @@
+{% extends "base/base_layout.html" %}
+{% block extra_css %}
+<link rel="stylesheet" href="/static/landing/css/home.css">
+{% endblock %}
+{% block sidebar_option %}
+sidebar-collapse
+{% endblock %}
+{% block content %}
+<div class="content-wrapper">
+  <div class="content-header">
+  </div>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">            
+            <div class="inner cover">
+              <h3 class="box-title">Upload Mobile App</h3>
+              <form id="upload_form" enctype="multipart/form-data" method="post">
+                {% csrf_token %}
+                <table>
+                  <tr>
+                    <td style="vertical-align: top;">
+                      <div id="err_name" class="hidden"><span class="error">Application Name
+                          Required!</span></div>
+                      <div><span><input type="text" id="appname" onfocusout="lookupHandler()"
+                            placeholder="application name"></span>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
+                          title="The name of the mobile application as it appears (or will appear) in the applicable app store."></i>
+                      </div>
+                      <div id="err_version" class="hidden"><span class="error">Version Required!</span>
+                      </div>
+                      <div><span><input type="text" id="version" onfocusout="lookupHandler()" placeholder="version"
+                            value="1.0"></span>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
+                          title="The version of the mobile application."></i></div>
+                      <div>
+                        <span>
+                          <select id="environment">
+                            <option value="Production">Production</option>
+                            <option value="Preproduction">Preproduction</option>
+                          </select>
+                          &nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
+                            title="The release status of the mobile application."></i>
+                        </span>
+                      </div>
+                      <div id="err_division" class="hidden"><span class="error">Divison Required!</span>
+                      </div>
+                      <div>
+                        <span>
+                          <select id="division">
+                            <option>Unknown</option>
+                          </select>
+                          &nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
+                            title="The organizational division applicable to the mobile application."></i>
+                        </span>
+                      </div>
+                      <div>
+                        <table style="margin-left: auto; margin-right: auto;">
+                          <tr>
+                            <td>
+                              <select id="country" multiple style="height: 66px"></select>
+                            </td>
+                            <td>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg" style="margin-bottom: 30px;"
+                                title="The country (or countries) where the mobile app has been (or will be) released."></i>
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
+                      {% if is_admin %}
+                      <div style="text-align: left"><span><input type="checkbox" id="release">
+                          <label for="release">Release Version</label></span>&nbsp;&nbsp;<i
+                          class="fas fa-info-circle fa-lg" title="Select to mark mobile app as a release version."></i>
+                      </div>
+                      {% endif %}
+                    </td>
+                    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                    <td>
+                      <div id="err_privacy" class="hidden"><span class="error">Data Privacy
+                          Required!</span></div>
+                      <div>
+                        <span>
+                          <select id="data_privacy_classification">
+                            <option value="">select data privacy</option>
+                            <option>Highly Restricted</option>
+                            <option>Restricted</option>
+                            <option>Internal Use Only</option>
+                            <option>Public</option>
+                            <option>Does Not Apply</option>
+                          </select>
+                          &nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
+                            title="The data privacy classification for the mobile application."></i>
+                        </span>
+                      </div>
+                      <div>
+                        <table style="margin-left: auto; margin-right: auto;">
+                          <tr>
+                            <td>
+                              <select id="data_privacy_attributes" multiple style="height: 66px"></select>
+                            </td>
+                            <td>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg" style="margin-bottom: 30px;"
+                                title="The data privacy attributes for the mobile application."></i>
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
+                      <div style="text-align: left; width: 275px; margin: auto">
+                        <div id="err_file" class="hidden"><span class="error">Required!</span></div>
+                        <label for="file">
+                          <i class="fa fa-mobile-alt fa-lg" aria-hidden="true"></i> &nbsp;Mobile App
+                          File
+                        </label><br />
+                        <input type="file" name="file" id="uploadFile" placeholder="Choose Mobile App File"
+                          accept=".apk, .apks, .appx, .ipa, .xapk, .zip">
+                      </div>
+                      <div style="text-align: left; width: 275px; margin: auto; padding-top: 15px">
+                        <label for="source_file">
+                          <i class="fa fa-code fa-lg" aria-hidden="true"></i> &nbsp;Source Code File
+                          (optional)
+                        </label><br />
+                        <input type="file" name="source_file" id="uploadSourceFile" placeholder="Choose Source File"
+                          accept=".zip">
+                      </div>
+                      {% if is_admin %}
+                      <div><span><input type="text" id="override_email" style="margin-top: 15px"
+                            placeholder="email address" value="{{email}}"></span>&nbsp;&nbsp;<i
+                          class="fas fa-info-circle fa-lg"
+                          title="Email of the user(s) to receive notifications about this scan."></i>
+                      </div>
+                      {% endif %}
+                    </td>
+                  </tr>
+                </table>
+
+                <div class="fileUpload btn btn-default btn-lg" id="but">
+                  <span class="fas fa-cloud-upload-alt"></span>
+                  Upload &amp; Analyze
+                </div>&nbsp;&nbsp;
+                <br />
+                <h5 id="status"></h5>
+                <progress id="progressBar" value="0" max="100" style="width:300px;visibility:hidden;"></progress>
+              </form>
+            </div>              
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="hidden loading">
+  <div class='uil-ring-css' style='transform:scale(0.79);'>
+    <div></div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+  // Result View
+  function load_result(url) {
+    hide_loader();
+    var xhr = new XMLHttpRequest()
+    xhr.open('GET', url, true)
+    xhr.addEventListener("loadstart", function (evt) {
+      Notifier.snackbar({
+        message: "Analysis started! Please wait to be redirected or check recent scans after sometime.",
+        duration: 10,
+      });
+    })
+    xhr.addEventListener("load", function (evt) {
+      window.location.href = window.location.href + url;
+    }, false);
+    xhr.send();
+  }
+
+  function show_loader() {
+    var loadingOverlay = document.querySelector('.loading');
+    loadingOverlay.classList.remove('hidden');
+  }
+
+  function hide_loader() {
+    var loadingOverlay = document.querySelector('.loading');
+    loadingOverlay.classList.add('hidden');
+  }
+
+  function _(el) {
+    return document.getElementById(el);
+  }
+
+  function responseHandler(json, isbutton) {
+    if (json.status === 'error') {
+      _("status").innerText = json.description;
+    } else {
+      i = 1;
+      setInterval(function () {
+        dot = '';
+        for (x = 1; x <= i; x++) {
+          dot += '.';
+        }
+        _("status").innerText = "Analyzing" + dot;
+        i += 1;
+        if (i == 5) {
+          i = 1;
+        }
+      }, 2000);
+      load_result("recent_scans");
+    }
+  }
+  function progressHandler(event) {
+    var percent = (event.loaded / event.total) * 100;
+    console.log("Uploaded..." + Math.round(percent));
+    _("progressBar").value = Math.round(percent);
+    _("status").innerText = Math.round(percent) + "% Uploaded...";
+  }
+  function completeHandler(event) {
+    if (event.target.status !== 200) {
+      var json = { status: "error", description: event.target.responseText };
+      responseHandler(json);
+    }
+    else {
+      var json = JSON.parse(event.target.responseText);
+      responseHandler(json);
+    }
+  }
+  function errorHandler(event) {
+    _("status").innerText = "Upload Failed!";
+  }
+  function abortHandler(event) {
+    _("status").innerText = "Upload Aborted!";
+  }
+
+  function lookupHandler(event) {
+    var version = $("#version").val();
+    var appname = $("#appname").val();
+    if (version && appname) {
+      $.ajax({
+        url: "app_info",
+        type: "POST",
+        dataType: "json",
+        data: {
+          csrfmiddlewaretoken: '{{ csrf_token }}',
+          name: appname,
+          version: version,
+        },
+        success: function (json) {
+          if (json.found) {
+            if (json.release) {
+              $("#release").prop("checked", true);
+            }
+            else {
+              $("#release").prop("checked", false);
+            }
+            $("#environment").val(json.environment);
+            $("#division").val(json.division);
+            $("#country").val(json.country);
+            $("#data_privacy_classification").val(json.data_privacy_classification);
+            $("#data_privacy_attributes").val(json.data_privacy_attributes);
+            $("#override_email").val(json.email);
+          }
+        },
+        error: function (xhr, errmsg, err) {
+          //no need to do anything here    
+        }
+      })
+    }
+  }
+
+  // Is valid file extensions
+  function isValidExt(file_name) {
+    var val = file_name.toLowerCase();
+    var regex = new RegExp("(.*?)\.(ipa|apk|apks|xapk|zip|appx)$");
+    val = val.replace(/^.*[\\\/]/, '');
+    if (!(regex.test(val))) {
+      _('status').innerText = "Please upload APK/APKS/XAPK/IPA/ZIP/APPX only!";
+      return false;
+    }
+    return true;
+  }
+  // Is allowed mimetype
+  function isValidMime(file_mime) {
+    if (file_mime.length < 1)
+      // bypass if mime is not available
+      return true;
+    var supported = [{% for mime in mimes %} '{{mime}}', {% endfor %}];
+  if (supported.indexOf(file_mime) > -1)
+    return true;
+  _('status').innerText = "MIME type (" + file_mime + ") is not supported!";
+  return false;
+    }
+
+  // File Upload
+  function upload(app_file, source_file, extradata) {
+    try {
+      if (!isValidExt(app_file.name) || !isValidMime(app_file.type)) {
+        return;
+      }
+      if (source_file != null && (!isValidExt(source_file.name) || !isValidMime(source_file.type))) {
+        return;
+      }
+      _("progressBar").style.visibility = "visible";
+      var url = '/upload/'
+      var xhr = new XMLHttpRequest()
+      xhr.open('POST', url, true)
+      xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+      xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+      xhr.upload.addEventListener("progress", progressHandler, false);
+      xhr.addEventListener("load", completeHandler, false);
+      xhr.addEventListener("error", errorHandler, false);
+      xhr.addEventListener("abort", abortHandler, false);
+      var formdata = new FormData();
+      formdata.append("file", app_file);
+      if (source_file != null) {
+        formdata.append("source_file", source_file);
+      }
+      formdata.append("user_app_name", extradata.user_app_name);
+      formdata.append("user_app_version", extradata.user_app_version);
+      formdata.append("division", extradata.division);
+      formdata.append("country", extradata.country);
+      formdata.append("environment", extradata.environment);
+      formdata.append("data_privacy_classification", extradata.data_privacy_classification);
+      formdata.append("data_privacy_attributes", extradata.data_privacy_attributes);
+      formdata.append("release", extradata.release)
+      formdata.append("email", extradata.email)
+      xhr.send(formdata)
+    } catch (e) {
+      alert("Error:" + e);
+    }
+  }
+
+  function checkRequired() {
+    if (!_('appname').value) {
+      _('err_name').classList.remove('hidden');
+      return false;
+    } else { _('err_name').classList.add('hidden'); }
+    if (!_('version').value) {
+      _('err_version').classList.remove('hidden');
+      return false;
+    } else { _('err_version').classList.add('hidden'); }
+    if (!_('division').value) {
+      _('err_division').classList.remove('hidden');
+      return false;
+    } else { _('err_division').classList.add('hidden'); }
+    if (!_('data_privacy_classification').value) {
+      _('err_privacy').classList.remove('hidden');
+      return false;
+    } else { _('err_privacy').classList.add('hidden'); }
+    if (_("uploadFile").files.length === 0) {
+      _('err_file').classList.remove('hidden');
+      return false;
+    } else { _('err_file').classList.add('hidden'); }
+
+    return true;
+  }
+
+  function populateDivisions() {
+    var divisionsUrl = '{{tenant_static}}divisions.json';
+    fetch(divisionsUrl)
+      .then(response => response.json())
+      .then(data => {
+        var options = '<option value="">select division</option>';
+        for (i = 0; i < data.length; i++) {
+          options += '<option value="' + data[i].id + '">' + data[i].name + '</option>';
+        }
+        _('division').innerHTML = options;
+      });
+  }
+
+  function populateCountries() {
+    var countriesUrl = '{{tenant_static}}countries.json';
+    fetch(countriesUrl)
+      .then(response => response.json())
+      .then(data => {
+        var options = '<option value="GLOBAL" selected>Global</option>';
+        for (i = 0; i < data.length; i++) {
+          options += '<option value="' + data[i].code + '">' + data[i].name + '</option>';
+        }
+        _('country').innerHTML = options;
+      });
+  }
+
+  function populateDataPrivacy() {
+    var privacyAttributesUrl = '{{tenant_static}}data-privacy-attributes.json';
+    fetch(privacyAttributesUrl)
+      .then(response => response.json())
+      .then(data => {
+        var options = '';
+        for (i = 0; i < data.length; i++) {
+          options += '<option value="' + data[i].id + '">' + data[i].id + ": " + data[i].name + '</option>';
+        }
+        _('data_privacy_attributes').innerHTML = options;
+      });
+  }
+
+  $(document).ready(function () {
+    populateDivisions();
+    populateCountries();
+    populateDataPrivacy();
+
+    $('#but').click(function () {
+      _('status').innerText = "";
+
+      // Ensure required fields are filled
+      if (!checkRequired()) { return false; }
+      if (_("uploadFile").files.length === 0) { return false; }
+
+      var extradata = new Object();
+      extradata.user_app_name = $('#appname').val();
+      extradata.user_app_version = $('#version').val();
+      extradata.country = $('#country').val().join(',');
+      extradata.division = $('#division').val();
+      extradata.environment = $('#environment').val();
+      extradata.data_privacy_classification = $('#data_privacy_classification').val();
+      extradata.data_privacy_attributes = $('#data_privacy_attributes').val().join(',');
+      if ($('#override_email').length) {
+        extradata.email = $('#override_email').val();
+        extradata.release = $('#release').prop('checked');
+      } else {
+        extradata.email = ''
+        extradata.release = false
+      }
+
+      if (_("uploadSourceFile").files.length === 0) {
+        upload(_("uploadFile").files[0], null, extradata);
+      }
+      else {
+        upload(_("uploadFile").files[0], _("uploadSourceFile").files[0], extradata);
+      }
+    });
+  });
+</script>
+{% endblock %}

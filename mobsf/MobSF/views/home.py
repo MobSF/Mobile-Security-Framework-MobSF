@@ -61,13 +61,14 @@ def index(request):
              + settings.ZIP_MIME
              + settings.APPX_MIME)
     context = {
+        'title': 'Cyberspect: Upload App',
         'version': settings.MOBSF_VER,
         'mimes': mimes,
         'tenant_static': settings.TENANT_STATIC_URL,
         'is_admin': is_admin(request),
         'email': sso_email(request),
     }
-    template = 'general/home.html'
+    template = 'general/home2.html'
     return render(request, template, context)
 
 
@@ -306,7 +307,7 @@ def recent_scans(request):
                                 + datetime.timedelta(days=30))
         entries.append(entry)
     context = {
-        'title': 'Recent Scans',
+        'title': 'Scanned Apps',
         'entries': entries,
         'version': settings.MOBSF_VER,
         'is_admin': isadmin,
