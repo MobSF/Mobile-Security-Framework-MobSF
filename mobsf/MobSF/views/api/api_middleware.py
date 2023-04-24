@@ -1,18 +1,12 @@
 # -*- coding: utf_8 -*-
 import hashlib
 
+from django.conf import settings
 from django.utils.deprecation import MiddlewareMixin
 
 from mobsf.MobSF.utils import api_key, make_api_response, utcnow
 from mobsf.MobSF.views.api import api_static_analysis as api_sz
 from mobsf.StaticAnalyzer.models import ApiKeys
-
-
-def get_api_key(meta):
-    """Return supplied API key."""
-    if 'HTTP_AUTHORIZATION' in meta:
-        return meta['HTTP_AUTHORIZATION']
-    return None
 
 
 class RestApiAuthMiddleware(MiddlewareMixin):
@@ -34,18 +28,22 @@ class RestApiAuthMiddleware(MiddlewareMixin):
         request.META['role'] = ''
 
         if not request.path.startswith('/api/'):
+            if self.restricted_endpoint(request):
+                return self.unauthorized()
             return
         if request.method == 'OPTIONS':
             return make_api_response({})
-        if not get_api_key(request.META):
-            return make_api_response(
-                {'error': 'You are unauthorized to make this request.'}, 401)
+        if not self.get_api_key(request.META):
+            return self.unauthorized()
 
     def process_view(self, request, view_func, view_args, view_kwargs):
         """Handle API authorization."""
         if not request.path.startswith('/api/'):
             return
-        apikey = get_api_key(request.META)
+        if (self.restricted_endpoint(request) and
+            not view_func == api_sz.api_upload):
+            return self.unauthorized() 
+        apikey = self.get_api_key(request.META)
         if apikey == api_key():
             request.META['role'] = 'FULL_ACCESS'
             return
@@ -59,7 +57,7 @@ class RestApiAuthMiddleware(MiddlewareMixin):
         if db_obj.EXPIRE_DATE <= utcnow():
             return make_api_response(
                 {'error': 'API key has expired.'}, 403)
-
+        
         request.META['email'] = db_obj.EMAIL
         role = ApiKeys.Role(db_obj.ROLE)
         request.META['role'] = role.name
@@ -72,4 +70,19 @@ class RestApiAuthMiddleware(MiddlewareMixin):
             if view_func == api_sz.api_upload:
                 return
 
-        return make_api_response({'error': 'Unauthorized request.'}, 403)
+        return self.unauthorized(403)
+
+    def get_api_key(self, meta):
+        """Return supplied API key."""
+        if 'HTTP_AUTHORIZATION' in meta:
+            return meta['HTTP_AUTHORIZATION']
+        return None
+
+    def unauthorized(self, status_code=401):
+        return make_api_response(
+            {'error': 'You are unauthorized to make this request.'},
+            status_code)
+
+    def restricted_endpoint(self, request):
+        return settings.CZ100 and request.META['HTTP_HOST'] == settings.CZ100
+
