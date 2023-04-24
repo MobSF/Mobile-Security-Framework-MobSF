@@ -124,6 +124,8 @@ def api_rescan(request):
         # Create a new CyberspectScans record for an app
         scheduled = request.POST.get('scheduled', True)
         scan_data = cyberspect_rescan(request.POST['hash'], scheduled)
+        if not scan_data:
+            make_api_response({'error': 'Scan hash not found'}, 404)
     else:
         return make_api_response(
             {'error': 'Missing parameter: hash'}, 422)
