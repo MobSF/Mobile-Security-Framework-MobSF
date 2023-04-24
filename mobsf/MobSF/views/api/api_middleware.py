@@ -40,9 +40,9 @@ class RestApiAuthMiddleware(MiddlewareMixin):
         """Handle API authorization."""
         if not request.path.startswith('/api/'):
             return
-        if (self.restricted_endpoint(request) and
-            not view_func == api_sz.api_upload):
-            return self.unauthorized() 
+        if (self.restricted_endpoint(request)
+                and not view_func == api_sz.api_upload):
+            return self.unauthorized()
         apikey = self.get_api_key(request.META)
         if apikey == api_key():
             request.META['role'] = 'FULL_ACCESS'
@@ -57,7 +57,7 @@ class RestApiAuthMiddleware(MiddlewareMixin):
         if db_obj.EXPIRE_DATE <= utcnow():
             return make_api_response(
                 {'error': 'API key has expired.'}, 403)
-        
+
         request.META['email'] = db_obj.EMAIL
         role = ApiKeys.Role(db_obj.ROLE)
         request.META['role'] = role.name
@@ -85,4 +85,3 @@ class RestApiAuthMiddleware(MiddlewareMixin):
 
     def restricted_endpoint(self, request):
         return settings.CZ100 and request.META['HTTP_HOST'] == settings.CZ100
-
