@@ -327,6 +327,10 @@ def get_device():
         return os.getenv('ANALYZER_IDENTIFIER')
     if settings.ANALYZER_IDENTIFIER:
         return settings.ANALYZER_IDENTIFIER
+    if os.getenv('ADB_REMOTE_HOST'):
+        return os.getenv('ADB_REMOTE_HOST')
+    if settings.ADB_REMOTE_HOST:
+        return settings.ADB_REMOTE_HOST
     else:
         dev_id = ''
         out = subprocess.check_output([get_adb(), 'devices']).splitlines()
@@ -335,7 +339,8 @@ def get_device():
             return dev_id
     logger.error('Is the Android VM running?\n'
                  'MobSF cannot identify device id.\n'
-                 'Please set ''ANALYZER_IDENTIFIER in '
+                 'Please set ''ANALYZER_IDENTIFIER\n'
+                 ' or ADB_REMOTE_HOST in '
                  '%s', get_config_loc())
 
 
