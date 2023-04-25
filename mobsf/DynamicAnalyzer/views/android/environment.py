@@ -68,6 +68,34 @@ class Environment:
         return self.check_connect_error(out)
 
     def connect_n_mount(self):
+        """
+        ADB over TCP/IP: set remote ADB Host with -H flag
+        Restart of remote ADB server not possible (unable to connect after kill-server)
+        """
+        if (settings.ADB_REMOTE_HOST):
+            logger.info('Restarting ADB Daemon as root')
+            if not self.run_subprocess_verify_output([get_adb(),
+                                                 'connect',
+                                                  self.identifier]):
+                return False
+            if not self.run_subprocess_verify_output([get_adb(),
+                                                  '-H',
+                                                  self.identifier,
+                                                  'root']):
+                return False
+            if not self.run_subprocess_verify_output([get_adb(),
+                                                 'connect',
+                                                  self.identifier]):
+                return False
+            runtime = self.get_environment()
+            logger.info('Remounting')
+            # Allow non supported environments also
+            self.adb_command(['remount'])
+            logger.info('Performing System check')
+            if not self.system_check(runtime):
+                return False
+            return True
+
         """Test ADB Connection."""
         self.adb_command(['kill-server'])
         self.adb_command(['start-server'])
@@ -144,7 +172,14 @@ class Environment:
 
     def adb_command(self, cmd_list, shell=False, silent=False):
         """ADB Command wrapper."""
-        args = [get_adb(),
+        args = []
+        # use -H flag to use remote ADB host
+        if settings.ADB_REMOTE_HOST:
+            args = [get_adb(),
+                '-H',
+                self.identifier]
+        else:
+            args = [get_adb(),
                 '-s',
                 self.identifier]
         if shell:
@@ -270,19 +305,35 @@ class Environment:
         logger.info('Enabling ADB Reverse TCP on %s', proxy_port)
         tcp = 'tcp:{}'.format(proxy_port)
         try:
-            proc = subprocess.Popen([get_adb(),
+            # use -H flag to use remote ADB host
+            if settings.ADB_REMOTE_HOST:
+                proc = subprocess.Popen([get_adb(),
+                                     '-H', self.identifier,
+                                     'reverse', tcp, tcp],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+                _, stderr = proc.communicate()
+                if b'error: closed' in stderr:
+                    logger.warning('ADB Reverse TCP works only on'
+                                   ' Android 5.0 and above. Please '
+                                   'configure a reachable IP Address'
+                                   ' in Android proxy settings.')
+                elif stderr:
+                    logger.error(stderr.decode('utf-8').replace('\n', ''))
+            else:
+                proc = subprocess.Popen([get_adb(),
                                      '-s', self.identifier,
                                      'reverse', tcp, tcp],
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-            _, stderr = proc.communicate()
-            if b'error: closed' in stderr:
-                logger.warning('ADB Reverse TCP works only on'
-                               ' Android 5.0 and above. Please '
-                               'configure a reachable IP Address'
-                               ' in Android proxy settings.')
-            elif stderr:
-                logger.error(stderr.decode('utf-8').replace('\n', ''))
+                _, stderr = proc.communicate()
+                if b'error: closed' in stderr:
+                    logger.warning('ADB Reverse TCP works only on'
+                                   ' Android 5.0 and above. Please '
+                                   'configure a reachable IP Address'
+                                   ' in Android proxy settings.')
+                elif stderr:
+                    logger.error(stderr.decode('utf-8').replace('\n', ''))
         except Exception:
             logger.exception('Enabling ADB Reverse TCP')
 
@@ -484,20 +535,37 @@ class Environment:
             err_msg = ('VM\'s /system is not writable. '
                        'This VM cannot be used for '
                        'Dynamic Analysis.')
-            proc = subprocess.Popen([get_adb(),
+            # use -H flag to use remote ADB host
+            if settings.ADB_REMOTE_HOST:
+                proc = subprocess.Popen([get_adb(),
+                                     '-H', self.identifier,
+                                     'shell',
+                                     'touch',
+                                     '/system/test'],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+                _, stderr = proc.communicate()
+                if b'Read-only' in stderr:
+                    logger.error(err_msg)
+                    if runtime == 'emulator':
+                        logger.error('Please start the AVD as per '
+                                 'MobSF documentation!')
+                    return False
+            else:
+                proc = subprocess.Popen([get_adb(),
                                      '-s', self.identifier,
                                      'shell',
                                      'touch',
                                      '/system/test'],
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-            _, stderr = proc.communicate()
-            if b'Read-only' in stderr:
-                logger.error(err_msg)
-                if runtime == 'emulator':
-                    logger.error('Please start the AVD as per '
+                _, stderr = proc.communicate()
+                if b'Read-only' in stderr:
+                    logger.error(err_msg)
+                    if runtime == 'emulator':
+                        logger.error('Please start the AVD as per '
                                  'MobSF documentation!')
-                return False
+                    return False
         except Exception:
             logger.error(err_msg)
             return False
@@ -533,14 +601,25 @@ class Environment:
             agent_file = '.mobsf-f'
             agent_str = self.frida_str
         try:
-            out = subprocess.check_output(
-                [get_adb(),
-                 '-s', self.identifier,
-                 'shell',
-                 'cat',
-                 '/system/' + agent_file])
-            if agent_str not in out:
-                return False
+            # use -H flag to use remote ADB host
+            if settings.ADB_REMOTE_HOST:
+                out = subprocess.check_output(
+                    [get_adb(),
+                    '-H', self.identifier,
+                    'shell',
+                    'cat',
+                    '/system/' + agent_file])
+                if agent_str not in out:
+                    return False
+            else:
+                out = subprocess.check_output(
+                    [get_adb(),
+                    '-s', self.identifier,
+                    'shell',
+                    'cat',
+                    '/system/' + agent_file])
+                if agent_str not in out:
+                    return False
         except Exception:
             return False
         return True
@@ -683,7 +762,16 @@ class Environment:
 
         def start_frida():
             fnull = open(os.devnull, 'w')
-            argz = [get_adb(),
+            argz = []
+            # use -H flag to use remote ADB host
+            if settings.ADB_REMOTE_HOST:
+                argz = [get_adb(),
+                    '-H',
+                    self.identifier,
+                    'shell',
+                    '/system/fd_server']
+            else:
+                argz = [get_adb(),
                     '-s',
                     self.identifier,
                     'shell',

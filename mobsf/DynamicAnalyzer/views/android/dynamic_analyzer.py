@@ -69,7 +69,7 @@ def dynamic_analysis(request, api=False):
                    ' find android instance identifier.'
                    ' Please run an android instance and refresh'
                    ' this page. If this error persists,'
-                   ' set ANALYZER_IDENTIFIER in '
+                   ' set ANALYZER_IDENTIFIER or ADB_REMOTE_HOST in '
                    f'{get_config_loc()}')
             return print_n_send_error_response(request, msg, api)
         try:
@@ -137,7 +137,7 @@ def dynamic_analyzer(request, checksum, api=False):
                    ' find android instance identifier. '
                    'Please run an android instance and refresh'
                    ' this page. If this error persists,'
-                   ' set ANALYZER_IDENTIFIER in '
+                   ' set ANALYZER_IDENTIFIER or ADB_REMOTE_HOST in '
                    f'{get_config_loc()}')
             return print_n_send_error_response(request, msg, api)
 
