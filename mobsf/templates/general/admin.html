@@ -198,7 +198,14 @@ sidebar-collapse
                   $("#display_api").select();
                   document.execCommand("copy");
                 });
-
+                $('#display_api').bind({
+                  copy : function() {
+                    $("#btn-ok").prop('disabled', false);
+                  },
+                  cut : function() {
+                    $("#btn-ok").prop('disabled', false);                  
+                  }
+                });
                 $("#btn-ok").click(() => {
                   Swal.close();
                   location.reload();
