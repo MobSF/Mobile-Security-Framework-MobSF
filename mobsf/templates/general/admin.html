@@ -279,12 +279,17 @@ sidebar-collapse
 
     function edit_apikey(id) {
           var role = "";
-          var description = ""          
+          var description = "";
+          var email = "";
+          var date = "";
           for (var i=0 ; i < my_keys.length ; i++)
           {
             if (my_keys[i]["ID"] == id) {
-              role = my_keys[i]["ROLE"]
-              description = my_keys[i]["DESCRIPTION"]
+              role = my_keys[i]["ROLE"];
+              description = my_keys[i]["DESCRIPTION"];
+              email = my_keys[i]["EMAIL"];
+              date = my_keys[i]["EXPIRE_DATE"];
+
             }
           }          
           edit_apikey_id = id;
@@ -292,11 +297,16 @@ sidebar-collapse
           myDescription.value = description;          
           var mySelect = document.getElementById('edit_role');
           for(var i, j = 0; i = mySelect.options[j]; j++) {
-            if(i.text == role) {
+            if(i.value == role) {
               mySelect.selectedIndex = j;
             break;
             }
           }
+          //mySelect.selectedIndex = role;
+          var myEmail = document.getElementById('edit_email');
+          myEmail.value = email;
+          var myDate = document.getElementById('edit_expire_date');
+          myDate.value = date.split("T")[0];
           $('#edit_api_key').modal('show');
     }      
 
@@ -320,7 +330,7 @@ sidebar-collapse
               text: 'API key details have been changed',
               type: 'success'
             }).then(function () {
-              location.reload();
+              location.reload(true);
             });
         },
           error: function (xhr, errmsg, err) {
