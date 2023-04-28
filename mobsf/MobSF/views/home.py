@@ -20,7 +20,6 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.template.defaulttags import register
 from django.forms.models import model_to_dict
-from django.utils import timezone
 from django.utils.timezone import utc
 from django.views.decorators.http import require_http_methods
 
@@ -126,8 +125,7 @@ class Upload(object):
                     response_data['description'] = msg
                     return self.resp_json(response_data)
 
-            #start_time = datetime.datetime.now(timezone.utc)
-            start_time = datetime.datetime.utcnow().replace(tzinfo=utc)           
+            start_time = datetime.datetime.utcnow().replace(tzinfo=utc)
             response_data = self.upload()
             self.scan.cyberspect_scan_id = \
                 new_cyberspect_scan(False, response_data['hash'],
@@ -157,7 +155,6 @@ class Upload(object):
         if not self.scan.file_type.is_allow_file():
             api_response['error'] = 'File format not supported!'
             return api_response, HTTP_BAD_REQUEST
-        #start_time = datetime.datetime.now(timezone.utc)
         start_time = datetime.datetime.utcnow().replace(tzinfo=utc)
         api_response = self.upload()
         self.scan.cyberspect_scan_id = \
@@ -632,7 +629,8 @@ def cyberspect_rescan(apphash, scheduled):
     if os.path.exists(file_path + '.src'):
         source_file_size = os.path.getsize(file_path + '.src')
 
-    scan_id = new_cyberspect_scan(scheduled, apphash, datetime.datetime.utcnow().replace(tzinfo=utc),
+    start_time = datetime.datetime.utcnow().replace(tzinfo=utc)
+    scan_id = new_cyberspect_scan(scheduled, apphash, start_time,
                                   file_size, source_file_size)
     scan_data = {
         'cyberspect_scan_id': scan_id,
