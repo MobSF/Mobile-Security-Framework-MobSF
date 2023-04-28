@@ -104,12 +104,12 @@ sidebar-collapse
     </div>
   </div>
 
-  <!--  edit API Key Modal -->
+  <!--  Edit API Key Modal -->
   <div class="modal" id="edit_api_key" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-xl">
       <div class="modal-content">
         <div class="modal-header">
-          <h4 class="modal-title">edit API Key</h4>
+          <h4 class="modal-title">Edit API Key</h4>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">×</span>
           </button>
@@ -198,10 +198,17 @@ sidebar-collapse
                   $("#display_api").select();
                   document.execCommand("copy");
                 });
-
+                $('#display_api').bind({
+                  copy : function() {
+                    $("#btn-ok").prop('disabled', false);
+                  },
+                  cut : function() {
+                    $("#btn-ok").prop('disabled', false);                  
+                  }
+                });
                 $("#btn-ok").click(() => {
                   Swal.close();
-                  location.reload();
+                  location.reload(true);
                 });
               }
             });
@@ -272,12 +279,17 @@ sidebar-collapse
 
     function edit_apikey(id) {
           var role = "";
-          var description = ""          
+          var description = "";
+          var email = "";
+          var date = "";
           for (var i=0 ; i < my_keys.length ; i++)
           {
             if (my_keys[i]["ID"] == id) {
-              role = my_keys[i]["ROLE"]
-              description = my_keys[i]["DESCRIPTION"]
+              role = my_keys[i]["ROLE"];
+              description = my_keys[i]["DESCRIPTION"];
+              email = my_keys[i]["EMAIL"];
+              date = my_keys[i]["EXPIRE_DATE"];
+
             }
           }          
           edit_apikey_id = id;
@@ -285,12 +297,17 @@ sidebar-collapse
           myDescription.value = description;          
           var mySelect = document.getElementById('edit_role');
           for(var i, j = 0; i = mySelect.options[j]; j++) {
-            if(i.text == role) {
+            if(i.value == role) {
               mySelect.selectedIndex = j;
             break;
             }
           }
-          $('#edit_api_key').show();
+          //mySelect.selectedIndex = role;
+          var myEmail = document.getElementById('edit_email');
+          myEmail.value = email;
+          var myDate = document.getElementById('edit_expire_date');
+          myDate.value = date.split("T")[0];
+          $('#edit_api_key').modal('show');
     }      
 
     function edit_apikey_post() {
@@ -313,7 +330,7 @@ sidebar-collapse
               text: 'API key details have been changed',
               type: 'success'
             }).then(function () {
-              location.reload();
+              location.reload(true);
             });
         },
           error: function (xhr, errmsg, err) {
