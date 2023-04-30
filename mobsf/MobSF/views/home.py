@@ -305,6 +305,11 @@ def recent_scans(request):
         entry['CAN_RELEASE'] = (utcnow()
                                 < entry['TIMESTAMP']
                                 + datetime.timedelta(days=30))
+        item = CyberspectScans.objects.filter(MOBSF_MD5=entry['MD5']).exclude(DT_PROJECT_ID=None).first()
+        if item:
+            entry['DT_PROJECT_ID'] = item.DT_PROJECT_ID
+        else:
+            entry['DT_PROJECT_ID'] = None
         entries.append(entry)
     context = {
         'title': 'Scanned Apps',
@@ -733,6 +738,8 @@ class RecentScans(object):
                     'count': paginator.count,
                     'num_pages': paginator.num_pages,
                 }
+            
+            logger.info(content) #DOESN'T exist in this context
         except Exception as exp:
             exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
             logger.error(exmsg)
