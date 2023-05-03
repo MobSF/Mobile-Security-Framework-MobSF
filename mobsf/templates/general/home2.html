@@ -133,10 +133,10 @@ sidebar-collapse
                 <div class="fileUpload btn btn-default btn-lg" id="but">
                   <span class="fas fa-cloud-upload-alt"></span>
                   Upload &amp; Analyze
-                </div>&nbsp;&nbsp;
-                <br />
+                </div>
                 <h5 id="status"></h5>
-                <progress id="progressBar" value="0" max="100" style="width:300px;visibility:hidden;"></progress>
+                <progress id="progressBar" value="0" max="100" style="width:400px;margin-bottom:20px;" class="hidden"></progress>
+                <br />
               </form>
             </div>              
           </div>
@@ -294,7 +294,8 @@ sidebar-collapse
       if (source_file != null && (!isValidExt(source_file.name) || !isValidMime(source_file.type))) {
         return;
       }
-      _("progressBar").style.visibility = "visible";
+      _("but").classList.add('hidden');
+      _("progressBar").classList.remove('hidden');
       var url = '/upload/'
       var xhr = new XMLHttpRequest()
       xhr.open('POST', url, true)
