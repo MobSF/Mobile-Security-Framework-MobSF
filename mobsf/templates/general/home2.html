@@ -133,10 +133,10 @@ sidebar-collapse
                 <div class="fileUpload btn btn-default btn-lg" id="but">
                   <span class="fas fa-cloud-upload-alt"></span>
                   Upload &amp; Analyze
-                </div>&nbsp;&nbsp;
-                <br />
+                </div>
                 <h5 id="status"></h5>
-                <progress id="progressBar" value="0" max="100" style="width:300px;visibility:hidden;"></progress>
+                <progress id="progressBar" value="0" max="100" style="width:400px;margin-bottom:20px;" class="hidden"></progress>
+                <br />
               </form>
             </div>              
           </div>
@@ -229,13 +229,12 @@ sidebar-collapse
 
   function lookupHandler(event) {
     var appname = $("#appname").val();
-    if (version && appname) {
+    if (appname) {
       $.ajax({
         url: "app_info",
-        type: "POST",
+        type: "GET",
         dataType: "json",
         data: {
-          csrfmiddlewaretoken: '{{ csrf_token }}',
           name: appname
         },
         success: function (json) {
@@ -273,17 +272,18 @@ sidebar-collapse
     }
     return true;
   }
+
   // Is allowed mimetype
   function isValidMime(file_mime) {
     if (file_mime.length < 1)
       // bypass if mime is not available
       return true;
     var supported = [{% for mime in mimes %} '{{mime}}', {% endfor %}];
-  if (supported.indexOf(file_mime) > -1)
-    return true;
-  _('status').innerText = "MIME type (" + file_mime + ") is not supported!";
-  return false;
-    }
+    if (supported.indexOf(file_mime) > -1)
+      return true;
+    _('status').innerText = "MIME type (" + file_mime + ") is not supported!";
+    return false;
+  }
 
   // File Upload
   function upload(app_file, source_file, extradata) {
@@ -294,7 +294,8 @@ sidebar-collapse
       if (source_file != null && (!isValidExt(source_file.name) || !isValidMime(source_file.type))) {
         return;
       }
-      _("progressBar").style.visibility = "visible";
+      _("but").classList.add('hidden');
+      _("progressBar").classList.remove('hidden');
       var url = '/upload/'
       var xhr = new XMLHttpRequest()
       xhr.open('POST', url, true)
@@ -392,6 +393,7 @@ sidebar-collapse
     populateDivisions();
     populateCountries();
     populateDataPrivacy();
+    $('#appname').focus();
 
     $('#but').click(function () {
       _('status').innerText = "";
