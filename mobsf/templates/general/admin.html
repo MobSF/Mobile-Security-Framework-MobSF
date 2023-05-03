@@ -302,7 +302,7 @@ sidebar-collapse
             break;
             }
           }
-          //mySelect.selectedIndex = role;
+
           var myEmail = document.getElementById('edit_email');
           myEmail.value = email;
           var myDate = document.getElementById('edit_expire_date');
@@ -348,5 +348,11 @@ sidebar-collapse
     function close_edit_modal() {
       $('#edit_api_key').hide();
     }
+
+    $(document).ready(function () {
+      $('#new_api_key').on('shown.bs.modal', function () {
+        $('#description').focus();
+      })
+    });
   </script>  
   {% endblock %}

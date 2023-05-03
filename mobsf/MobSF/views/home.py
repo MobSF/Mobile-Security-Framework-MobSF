@@ -513,10 +513,10 @@ def search(request):
                           + ' valid 32 character alphanumeric value.')
 
 
-@require_http_methods(['POST'])
+@require_http_methods(['GET'])
 def app_info(request):
     """Get mobile app info by user supplied name."""
-    appname = request.POST['name']
+    appname = request.GET['name']
     db_obj = RecentScansDB.objects.filter(USER_APP_NAME=appname) \
         .order_by('-TIMESTAMP')
     user = sso_email(request)

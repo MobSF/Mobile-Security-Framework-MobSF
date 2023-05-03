@@ -229,13 +229,12 @@ sidebar-collapse
 
   function lookupHandler(event) {
     var appname = $("#appname").val();
-    if (version && appname) {
+    if (appname) {
       $.ajax({
         url: "app_info",
-        type: "POST",
+        type: "GET",
         dataType: "json",
         data: {
-          csrfmiddlewaretoken: '{{ csrf_token }}',
           name: appname
         },
         success: function (json) {
@@ -273,17 +272,18 @@ sidebar-collapse
     }
     return true;
   }
+
   // Is allowed mimetype
   function isValidMime(file_mime) {
     if (file_mime.length < 1)
       // bypass if mime is not available
       return true;
     var supported = [{% for mime in mimes %} '{{mime}}', {% endfor %}];
-  if (supported.indexOf(file_mime) > -1)
-    return true;
-  _('status').innerText = "MIME type (" + file_mime + ") is not supported!";
-  return false;
-    }
+    if (supported.indexOf(file_mime) > -1)
+      return true;
+    _('status').innerText = "MIME type (" + file_mime + ") is not supported!";
+    return false;
+  }
 
   // File Upload
   function upload(app_file, source_file, extradata) {
@@ -392,6 +392,7 @@ sidebar-collapse
     populateDivisions();
     populateCountries();
     populateDataPrivacy();
+    $('#appname').focus();
 
     $('#but').click(function () {
       _('status').innerText = "";
