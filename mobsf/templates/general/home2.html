@@ -29,7 +29,7 @@ sidebar-collapse
                       </div>
                       <div id="err_version" class="hidden"><span class="error">Version Required!</span>
                       </div>
-                      <div><span><input type="text" id="version" onfocusout="lookupHandler()" placeholder="version"
+                      <div><span><input type="text" id="version" placeholder="version"
                             value="1.0"></span>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
                           title="The version of the mobile application."></i></div>
                       <div>
@@ -228,7 +228,6 @@ sidebar-collapse
   }
 
   function lookupHandler(event) {
-    var version = $("#version").val();
     var appname = $("#appname").val();
     if (version && appname) {
       $.ajax({
@@ -237,8 +236,7 @@ sidebar-collapse
         dataType: "json",
         data: {
           csrfmiddlewaretoken: '{{ csrf_token }}',
-          name: appname,
-          version: version,
+          name: appname
         },
         success: function (json) {
           if (json.found) {
@@ -248,11 +246,12 @@ sidebar-collapse
             else {
               $("#release").prop("checked", false);
             }
+            $("#version").val(json.version);
             $("#environment").val(json.environment);
             $("#division").val(json.division);
             $("#country").val(json.country);
             $("#data_privacy_classification").val(json.data_privacy_classification);
-            $("#data_privacy_attributes").val(json.data_privacy_attributes);
+            $("#data_privacy_attributes").val(json.data_privacy_attributes.split(","));
             $("#override_email").val(json.email);
           }
         },

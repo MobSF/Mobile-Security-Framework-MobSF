@@ -275,8 +275,9 @@ def recent_scans(request):
         if re.match('[0-9a-f]{32}', sfilter):
             db_obj = RecentScansDB.objects.filter(MD5=sfilter)
         else:
-            db_obj = RecentScansDB.objects.filter(Q(APP_NAME=sfilter)
-                                                  | Q(USER_APP_NAME=sfilter))
+            db_obj = RecentScansDB.objects \
+                .filter(Q(APP_NAME__icontains=sfilter)
+                        | Q(USER_APP_NAME__icontains=sfilter))
     else:
         db_obj = RecentScansDB.objects.all()
     db_obj = db_obj.order_by('-TIMESTAMP')
@@ -305,7 +306,8 @@ def recent_scans(request):
         entry['CAN_RELEASE'] = (utcnow()
                                 < entry['TIMESTAMP']
                                 + datetime.timedelta(days=30))
-        item = CyberspectScans.objects.filter(MOBSF_MD5=entry['MD5']).exclude(DT_PROJECT_ID=None).first()
+        item = CyberspectScans.objects.filter(MOBSF_MD5=entry['MD5']) \
+            .exclude(DT_PROJECT_ID=None).first()
         if item:
             entry['DT_PROJECT_ID'] = item.DT_PROJECT_ID
         else:
@@ -513,17 +515,17 @@ def search(request):
 
 @require_http_methods(['POST'])
 def app_info(request):
-    """Get mobile app info by name and version."""
+    """Get mobile app info by user supplied name."""
     appname = request.POST['name']
-    version = request.POST['version']
-    db_obj = RecentScansDB.objects.filter(USER_APP_NAME=appname,
-                                          USER_APP_VERSION=version)
+    db_obj = RecentScansDB.objects.filter(USER_APP_NAME=appname) \
+        .order_by('-TIMESTAMP')
     user = sso_email(request)
     if db_obj.exists():
         e = db_obj[0]
         if user == e.EMAIL or is_admin(request):
             context = {
                 'found': True,
+                'version': e.USER_APP_VERSION,
                 'division': e.DIVISION,
                 'country': e.COUNTRY,
                 'environment': e.ENVIRONMENT,
@@ -532,8 +534,8 @@ def app_info(request):
                 'release': e.RELEASE,
                 'email': e.EMAIL,
             }
-            logger.info('Found existing mobile app information for %s@%s',
-                        appname, version)
+            logger.info('Found existing mobile app information for %s',
+                        appname)
             return HttpResponse(json.dumps(context),
                                 content_type='application/json', status=202)
         else:
@@ -738,8 +740,8 @@ class RecentScans(object):
                     'count': paginator.count,
                     'num_pages': paginator.num_pages,
                 }
-            
-            logger.info(content) #DOESN'T exist in this context
+
+            logger.info(content)
         except Exception as exp:
             exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
             logger.error(exmsg)
