@@ -539,13 +539,13 @@ def app_info(request):
             return HttpResponse(json.dumps(context),
                                 content_type='application/json', status=202)
         else:
-            logger.info('User is not authorized for %s@%s.', appname, version)
+            logger.info('User is not authorized for %s.', appname)
             payload = {'found': False}
             return HttpResponse(json.dumps(payload),
                                 content_type='application/json', status=403)
     else:
-        logger.info('Unable to find mobile app information for %s@%s',
-                    appname, version)
+        logger.info('Unable to find mobile app information for %s',
+                    appname)
         payload = {'found': False}
         return HttpResponse(json.dumps(payload),
                             content_type='application/json', status=404)
