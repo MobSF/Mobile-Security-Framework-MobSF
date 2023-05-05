@@ -20,7 +20,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.template.defaulttags import register
 from django.forms.models import model_to_dict
-from django.utils import timezone
+from django.utils.timezone import utc
 from django.views.decorators.http import require_http_methods
 
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
@@ -125,7 +125,7 @@ class Upload(object):
                     response_data['description'] = msg
                     return self.resp_json(response_data)
 
-            start_time = datetime.datetime.now(timezone.utc)
+            start_time = datetime.datetime.utcnow().replace(tzinfo=utc)
             response_data = self.upload()
             self.scan.cyberspect_scan_id = \
                 new_cyberspect_scan(False, response_data['hash'],
@@ -155,7 +155,7 @@ class Upload(object):
         if not self.scan.file_type.is_allow_file():
             api_response['error'] = 'File format not supported!'
             return api_response, HTTP_BAD_REQUEST
-        start_time = datetime.datetime.now(timezone.utc)
+        start_time = datetime.datetime.utcnow().replace(tzinfo=utc)
         api_response = self.upload()
         self.scan.cyberspect_scan_id = \
             new_cyberspect_scan(False, api_response['hash'],
@@ -275,8 +275,9 @@ def recent_scans(request):
         if re.match('[0-9a-f]{32}', sfilter):
             db_obj = RecentScansDB.objects.filter(MD5=sfilter)
         else:
-            db_obj = RecentScansDB.objects.filter(Q(APP_NAME=sfilter)
-                                                  | Q(USER_APP_NAME=sfilter))
+            db_obj = RecentScansDB.objects \
+                .filter(Q(APP_NAME__icontains=sfilter)
+                        | Q(USER_APP_NAME__icontains=sfilter))
     else:
         db_obj = RecentScansDB.objects.all()
     db_obj = db_obj.order_by('-TIMESTAMP')
@@ -305,6 +306,12 @@ def recent_scans(request):
         entry['CAN_RELEASE'] = (utcnow()
                                 < entry['TIMESTAMP']
                                 + datetime.timedelta(days=30))
+        item = CyberspectScans.objects.filter(MOBSF_MD5=entry['MD5']) \
+            .exclude(DT_PROJECT_ID=None).first()
+        if item:
+            entry['DT_PROJECT_ID'] = item.DT_PROJECT_ID
+        else:
+            entry['DT_PROJECT_ID'] = None
         entries.append(entry)
     context = {
         'title': 'Scanned Apps',
@@ -345,7 +352,7 @@ def new_cyberspect_scan(scheduled, md5, start_time,
     new_db_obj = CyberspectScans(
         SCHEDULED=scheduled,
         MOBSF_MD5=md5,
-        INTAKE_START=start_time.replace(tzinfo=datetime.timezone.utc),
+        INTAKE_START=start_time,
         FILE_SIZE_PACKAGE=file_size,
         FILE_SIZE_SOURCE=source_file_size,
     )
@@ -506,19 +513,19 @@ def search(request):
                           + ' valid 32 character alphanumeric value.')
 
 
-@require_http_methods(['POST'])
+@require_http_methods(['GET'])
 def app_info(request):
-    """Get mobile app info by name and version."""
-    appname = request.POST['name']
-    version = request.POST['version']
-    db_obj = RecentScansDB.objects.filter(USER_APP_NAME=appname,
-                                          USER_APP_VERSION=version)
+    """Get mobile app info by user supplied name."""
+    appname = request.GET['name']
+    db_obj = RecentScansDB.objects.filter(USER_APP_NAME=appname) \
+        .order_by('-TIMESTAMP')
     user = sso_email(request)
     if db_obj.exists():
         e = db_obj[0]
         if user == e.EMAIL or is_admin(request):
             context = {
                 'found': True,
+                'version': e.USER_APP_VERSION,
                 'division': e.DIVISION,
                 'country': e.COUNTRY,
                 'environment': e.ENVIRONMENT,
@@ -527,18 +534,18 @@ def app_info(request):
                 'release': e.RELEASE,
                 'email': e.EMAIL,
             }
-            logger.info('Found existing mobile app information for %s@%s',
-                        appname, version)
+            logger.info('Found existing mobile app information for %s',
+                        appname)
             return HttpResponse(json.dumps(context),
                                 content_type='application/json', status=202)
         else:
-            logger.info('User is not authorized for %s@%s.', appname, version)
+            logger.info('User is not authorized for %s.', appname)
             payload = {'found': False}
             return HttpResponse(json.dumps(payload),
                                 content_type='application/json', status=403)
     else:
-        logger.info('Unable to find mobile app information for %s@%s',
-                    appname, version)
+        logger.info('Unable to find mobile app information for %s',
+                    appname)
         payload = {'found': False}
         return HttpResponse(json.dumps(payload),
                             content_type='application/json', status=404)
@@ -629,10 +636,9 @@ def cyberspect_rescan(apphash, scheduled):
     if os.path.exists(file_path + '.src'):
         source_file_size = os.path.getsize(file_path + '.src')
 
-    scan_id = new_cyberspect_scan(scheduled, apphash,
-                                  datetime.datetime.now(timezone.utc),
-                                  file_size,
-                                  source_file_size)
+    start_time = datetime.datetime.utcnow().replace(tzinfo=utc)
+    scan_id = new_cyberspect_scan(scheduled, apphash, start_time,
+                                  file_size, source_file_size)
     scan_data = {
         'cyberspect_scan_id': scan_id,
         'hash': apphash,
@@ -734,6 +740,8 @@ class RecentScans(object):
                     'count': paginator.count,
                     'num_pages': paginator.num_pages,
                 }
+
+            logger.info(content)
         except Exception as exp:
             exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
             logger.error(exmsg)
