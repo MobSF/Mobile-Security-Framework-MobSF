@@ -17,9 +17,9 @@ from mobsf.StaticAnalyzer.models import ApiKeys
 from mobsf.MobSF.utils import (
     error_response,
     is_admin,
-    sso_email,
+    sso_email,    
+    tz,
     utcnow,
-    tz
 )
 
 logger = logging.getLogger(__name__)
@@ -122,7 +122,7 @@ def create_api_key_post(request):
                                 content_type='application/json', status=200)
         regx = ('^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*'
                 '([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$')
-        if not re.search(regx, email): 
+        if not re.search(regx, email):
             payload = {'msg': 'Invalid email address was entered.'}
             return HttpResponse(json.dumps(payload),
                                 content_type='application/json', status=200)
@@ -203,7 +203,7 @@ def edit_api_key_post(request):
                                 content_type='application/json', status=200)
         regx = ('^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*'
                 '([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$')
-        if not re.search(regx, email): 
+        if not re.search(regx, email):
             payload = {'msg': 'Invalid email address was entered.'}
             return HttpResponse(json.dumps(payload),
                                 content_type='application/json', status=200)
