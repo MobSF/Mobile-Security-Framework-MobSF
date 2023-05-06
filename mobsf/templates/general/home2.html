@@ -119,8 +119,10 @@ sidebar-collapse
                         <input type="file" name="source_file" id="uploadSourceFile" placeholder="Choose Source File"
                           accept=".zip">
                       </div>
-                      {% if is_admin %}
-                      <div><span><input type="text" id="override_email" style="margin-top: 15px"
+                      {% if is_admin %}                
+                      <div style="text-align: left; margin-top: 15px">
+                        <div id="err_email" class="hidden"><span class="error">Email Invalid!</span></div>
+                        <span><input type="text" id="override_email" 
                             placeholder="email address" value="{{email}}"></span>&nbsp;&nbsp;<i
                           class="fas fa-info-circle fa-lg"
                           title="Email of the user(s) to receive notifications about this scan."></i>
@@ -346,6 +348,12 @@ sidebar-collapse
       _('err_file').classList.remove('hidden');
       return false;
     } else { _('err_file').classList.add('hidden'); }
+
+    var mailformat = /^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$/
+    if (!_("override_email").value.match(mailformat)) {
+      _('err_email').classList.remove('hidden');
+      return false;
+    } else { _('err_email').classList.add('hidden'); }
 
     return true;
   }

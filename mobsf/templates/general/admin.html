@@ -71,14 +71,16 @@ sidebar-collapse
           </button>
         </div>
         <div class="modal-body">
-          <form role="form">
+          <form id="new_api_key_form" class="needs-validation" onsubmit="new_api_key" novalidate>
             <div class="form-group">
               <label>Description</label>
-              <input id="description" type="text" class="form-control">
+              <input id="description" type="text" class="form-control" required>
+              <div class="invalid-feedback">Please provide a description.</div>
             </div>
             <div class="form-group">
               <label>Notify Email</label>
-              <input id="email" type="text" class="form-control" value="{{ sso_email }}">
+              <input id="email" type="text" class="form-control" value="{{ sso_email }}" required>
+              <div class="invalid-feedback">Please provide an email address.</div>
             </div>
             <div class="form-group">
               <label>Role</label>
@@ -91,14 +93,14 @@ sidebar-collapse
             <div class="form-group">
               <label>Expiration Date</label>
               <input id="expire_date" class="form-control" type="date" min="{{ min_date }}" max="{{ max_date }}"
-                value="{{ default_exp_date }}">
+                value="{{ default_exp_date }}" required>
+              <div class="invalid-feedback">Please provide an expiration date.</div>
             </div>
           </form>
         </div>
         <div class="modal-footer">
           <button type="button" data-dismiss="modal" class="btn btn-secondary disable">Cancel</button>
-          <button id="create_api_key_post" type="button" onclick="new_apikey(this)"
-            class="btn btn-primary disable">Submit</button>
+          <button id="create_api_key_post" type="submit" form="new_api_key_form" class="btn btn-primary disable">Submit</button>
         </div>
       </div>
     </div>
@@ -115,14 +117,16 @@ sidebar-collapse
           </button>
         </div>
         <div class="modal-body">
-          <form role="form">
+          <form id="edit_api_key_form" class="needs-validation" onsubmit="edit_api_key_post" novalidate>
             <div class="form-group">
               <label>Description</label>
-              <input id="edit_description" type="text" class="form-control">
+              <input id="edit_description" type="text" class="form-control" required>
+              <div class="invalid-feedback">Please provide a description.</div>
             </div>
             <div class="form-group">
               <label>Notify Email</label>
-              <input id="edit_email" type="text" class="form-control" value="{{ sso_email }}">
+              <input id="edit_email" type="text" class="form-control" value="{{ sso_email }}" required>
+              <div class="invalid-feedback">Please provide an email address.</div>
             </div>
             <div class="form-group">
               <label>Role</label>
@@ -135,13 +139,14 @@ sidebar-collapse
             <div class="form-group">
               <label>Expiration Date</label>
               <input id="edit_expire_date" class="form-control" type="date" min="{{ min_date }}" max="{{ max_date }}"
-                value="{{ default_exp_date }}">
+                value="{{ default_exp_date }}" required>
+              <div class="invalid-feedback">Please provide an expiration date.</div>
             </div>
           </form>
         </div>
         <div class="modal-footer">
           <button type="button" data-dismiss="modal" class="btn btn-secondary disable" onclick="close_edit_modal()">Cancel</button>
-          <button id="create_api_key_post" type="button" onclick="edit_apikey_post(this)"
+          <button id="create_api_key_post" type="submit" form="edit_api_key_form"
             class="btn btn-primary disable">Submit</button>
         </div>
       </div>
@@ -307,6 +312,7 @@ sidebar-collapse
           myEmail.value = email;
           var myDate = document.getElementById('edit_expire_date');
           myDate.value = date.split("T")[0];
+          myDate.ariaValueMax
           $('#edit_api_key').modal('show');
     }      
 
@@ -353,6 +359,20 @@ sidebar-collapse
       $('#new_api_key').on('shown.bs.modal', function () {
         $('#description').focus();
       })
+
+      var forms = document.querySelectorAll('.needs-validation')
+      Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+          form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+              event.preventDefault()
+              event.stopPropagation()
+            }
+
+            form.classList.add('was-validated')
+          }, false)
+        })        
+
     });
   </script>  
   {% endblock %}
