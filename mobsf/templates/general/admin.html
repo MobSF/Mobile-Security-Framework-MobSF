@@ -39,14 +39,14 @@ sidebar-collapse
                   <tbody>
                     {% for e in entries %}
                     <tr>
-                      <td>{{ e.DESCRIPTION }}</td>
-                      <td>{{ e.EMAIL }}</td>
+                      <td style="max-width: 200px;">{{ e.DESCRIPTION }}</td>
+                      <td style="max-width: 200px;">{{ e.EMAIL }}</td>
                       <td>{{ e.ROLE_NAME }}</td>
                       <td>{{ e.KEY_PREFIX }}</td>
                       <td>{{ e.CREATE_DATE|date:"M j, Y" }} {{ e.CREATE_DATE|time:"g:i A" }}</td>
                       <td>{{ e.EXPIRE_DATE|date:"M j, Y" }}</td>
                       <td><a class="btn btn-primary btn-sm" href="#" onclick="edit_apikey({{ e.ID }})" style="margin-right: 12px;"><i
-                            class="fas fa-pen"></i> Edit </a><a class="btn btn-warning btn-sm" href="#"
+                            class="fas fa-pen"></i> Edit </a><a class="btn btn-warning btn-sm" 
                           onclick="revoke_apikey({{ e.ID }})"><i class="fa fa-ban"></i> Revoke </a></td>
                     </tr>
                     {% endfor %}
@@ -71,14 +71,16 @@ sidebar-collapse
           </button>
         </div>
         <div class="modal-body">
-          <form role="form">
+          <form id="new_api_key_form" class="needs-validation" onsubmit="new_apikey_post()" novalidate>
             <div class="form-group">
               <label>Description</label>
-              <input id="description" type="text" class="form-control">
+              <input id="description" type="text" class="form-control" required>
+              <div class="invalid-feedback">Please provide a description.</div>
             </div>
             <div class="form-group">
               <label>Notify Email</label>
-              <input id="email" type="text" class="form-control" value="{{ sso_email }}">
+              <input id="email" type="text" class="form-control" value="{{ sso_email }}" pattern="^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$" required>
+              <div class="invalid-feedback">Please provide a valid email address (or addresses).</div>
             </div>
             <div class="form-group">
               <label>Role</label>
@@ -91,14 +93,14 @@ sidebar-collapse
             <div class="form-group">
               <label>Expiration Date</label>
               <input id="expire_date" class="form-control" type="date" min="{{ min_date }}" max="{{ max_date }}"
-                value="{{ default_exp_date }}">
+                value="{{ default_exp_date }}" required>
+              <div class="invalid-feedback">Please provide an expiration date before {{ max_date }}.</div>
             </div>
           </form>
         </div>
         <div class="modal-footer">
           <button type="button" data-dismiss="modal" class="btn btn-secondary disable">Cancel</button>
-          <button id="create_api_key_post" type="button" onclick="new_apikey(this)"
-            class="btn btn-primary disable">Submit</button>
+          <button type="submit" form="new_api_key_form" class="btn btn-primary disable">Submit</button>
         </div>
       </div>
     </div>
@@ -115,14 +117,16 @@ sidebar-collapse
           </button>
         </div>
         <div class="modal-body">
-          <form role="form">
+          <form id="edit_api_key_form" class="needs-validation" onsubmit="edit_apikey_post()" novalidate>
             <div class="form-group">
               <label>Description</label>
-              <input id="edit_description" type="text" class="form-control">
+              <input id="edit_description" type="text" class="form-control" required>
+              <div class="invalid-feedback">Please provide a description.</div>
             </div>
             <div class="form-group">
               <label>Notify Email</label>
-              <input id="edit_email" type="text" class="form-control" value="{{ sso_email }}">
+              <input id="edit_email" type="text" class="form-control" value="{{ sso_email }}" pattern="^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$" required>
+              <div class="invalid-feedback">Please provide a valid email address (or addresses).</div>
             </div>
             <div class="form-group">
               <label>Role</label>
@@ -135,14 +139,15 @@ sidebar-collapse
             <div class="form-group">
               <label>Expiration Date</label>
               <input id="edit_expire_date" class="form-control" type="date" min="{{ min_date }}" max="{{ max_date }}"
-                value="{{ default_exp_date }}">
+                value="{{ default_exp_date }}" required>
+              <div class="invalid-feedback">Please provide an expiration date within one year of creation date.</div>
             </div>
+            <input id="edit_apikey_id" type="hidden" />
           </form>
         </div>
         <div class="modal-footer">
           <button type="button" data-dismiss="modal" class="btn btn-secondary disable" onclick="close_edit_modal()">Cancel</button>
-          <button id="create_api_key_post" type="button" onclick="edit_apikey_post(this)"
-            class="btn btn-primary disable">Submit</button>
+          <button type="submit" form="edit_api_key_form" class="btn btn-primary disable">Submit</button>
         </div>
       </div>
     </div>
@@ -154,20 +159,25 @@ sidebar-collapse
   <script src="{% static "others/js/dayjs.min.js" %}"></script>
   <script>    
     var edit_id;
-    const my_keys = JSON.parse(document.getElementById('existing_keys').textContent)
+    const api_keys = JSON.parse(document.getElementById('existing_keys').textContent)
     function copyToClipboard(element) {
-      var $temp = $("<input>");
-      $("body").append($temp);
+      var $temp = $('<input>');
+      $('body').append($temp);
       $temp.val($(element).text()).select();
-      document.execCommand("copy");
+      document.execCommand('copy');
       $temp.remove();
     }
 
-    function new_apikey(item) {
+    function new_apikey_post() {
+      if (!document.forms["new_api_key_form"].checkValidity()) {
+        document.forms["new_api_key_form"].classList.add('was-validated');
+        return;
+      }
+
       $.ajax({
-        url: "admin/create_api_key",
-        type: "POST",
-        dataType: "json",
+        url: 'admin/create_api_key',
+        type: 'POST',
+        dataType: 'json',
         data: {
           csrfmiddlewaretoken: '{{ csrf_token }}',
           description: $('#description').val(),
@@ -176,37 +186,36 @@ sidebar-collapse
           expire_date: $('#expire_date').val(),
         },
         success: function (json) {
-          $('#new_api_key').modal('hide');
-
           if (json.api_key) {
+          $('#new_api_key').modal('hide');
             Swal.fire({
-              title: "New API Key",
+              title: 'New API Key',
               html:
                 '<textarea id="display_api" rows="1" readonly style="width: 100%; height:auto; text-align:center; margin-bottom: 5px;">' + json.api_key + '</textarea>' +                
-                '<p>Please copy this API key and store it someplace safe. It will not be accessible again after you close this window.</p><p> If you lose this API key you will need to generate a new one.</p>' +
+                '<p>Please copy this API key and store it someplace safe. It will not be accessible after you close this window.</p><p> If you lose this API key you will need to generate a new one.</p>' +
                 '<button type="button" class="btn btn-primary btn" id="btn-copy" style="float: none; margin-right: 5px;">Copy</button>' +
                 '<button type="button" class="btn btn-secondary btn" id="btn-ok" disabled>Close</button>' +
                 '</div>',
               showConfirmButton: false,
               allowOutsideClick: false,
               allowEscapeKey: false,
-              type: "success",
+              type: 'success',
               onOpen: () => {
-                $("#btn-copy").click(() => {
-                  $("#btn-ok").prop('disabled', false);
+                $('#btn-copy').click(() => {
+                  $('#btn-ok').prop('disabled', false);
 
-                  $("#display_api").select();
-                  document.execCommand("copy");
+                  $('#display_api').select();
+                  document.execCommand('copy');
                 });
                 $('#display_api').bind({
                   copy : function() {
-                    $("#btn-ok").prop('disabled', false);
+                    $('#btn-ok').prop('disabled', false);
                   },
                   cut : function() {
-                    $("#btn-ok").prop('disabled', false);                  
+                    $('#btn-ok').prop('disabled', false);                  
                   }
                 });
-                $("#btn-ok").click(() => {
+                $('#btn-ok').click(() => {
                   Swal.close();
                   location.reload(true);
                 });
@@ -217,14 +226,14 @@ sidebar-collapse
           else {
             Swal.fire(
               'Creation Failed',
-              'Unable to create API key, please try again.',
+              json.msg,
               'error'
             )
           }
         },
         error: function (xhr, errmsg, err) {
           Swal.fire(
-            'Creation Failed',
+            'API call Failed',
             errmsg,
             'error'
           )
@@ -236,7 +245,7 @@ sidebar-collapse
     function revoke_apikey(item) {
       Swal.fire({
         title: 'Are you sure?',
-        text: "This will permanently revoke the selected API key",
+        text: 'This will permanently revoke the selected API key',
         type: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Yes',
@@ -246,9 +255,9 @@ sidebar-collapse
       }).then((result) => {
         if (result.value) {
           $.ajax({
-            url: "/admin/revoke_api_key",
-            type: "POST",
-            dataType: "json",
+            url: '/admin/revoke_api_key',
+            type: 'POST',
+            dataType: 'json',
             data: {
               csrfmiddlewaretoken: '{{ csrf_token }}',
               id: item,
@@ -278,60 +287,76 @@ sidebar-collapse
     }
 
     function edit_apikey(id) {
-          var role = "";
-          var description = "";
-          var email = "";
-          var date = "";
-          for (var i=0 ; i < my_keys.length ; i++)
+          var role = '';
+          var description = '';
+          var email = '';
+          var expiredate = '';
+          var maxdate = '';
+          for (var i=0 ; i < api_keys.length ; i++)
           {
-            if (my_keys[i]["ID"] == id) {
-              role = my_keys[i]["ROLE"];
-              description = my_keys[i]["DESCRIPTION"];
-              email = my_keys[i]["EMAIL"];
-              date = my_keys[i]["EXPIRE_DATE"];
-
+            if (api_keys[i]['ID'] == id) {
+              description = api_keys[i]['DESCRIPTION'];
+              role = api_keys[i]['ROLE'];              
+              email = api_keys[i]['EMAIL'];
+              expiredate = api_keys[i]['EXPIRE_DATE'];
+              maxdate = new Date(api_keys[i]['CREATE_DATE']);
+              maxdate.setFullYear(maxdate.getFullYear() + 1);
             }
-          }          
-          edit_apikey_id = id;
-          var myDescription = document.getElementById('edit_description');
-          myDescription.value = description;          
-          var mySelect = document.getElementById('edit_role');
-          for(var i, j = 0; i = mySelect.options[j]; j++) {
-            if(i.value == role) {
-              mySelect.selectedIndex = j;
-            break;
+          }
+          $('#edit_apikey_id').val(id);
+          $('#edit_description').val(description);          
+          var role_input = document.getElementById('edit_role');
+          for (var i, j = 0; i = role_input.options[j]; j++) {
+            if (i.value == role) {
+              role_input.selectedIndex = j;
+              break;
             }
           }
 
-          var myEmail = document.getElementById('edit_email');
-          myEmail.value = email;
-          var myDate = document.getElementById('edit_expire_date');
-          myDate.value = date.split("T")[0];
+          $('#edit_email').val(email);
+          var expire_date_input = $('#edit_expire_date');
+          expire_date_input.val(expiredate.split('T')[0]);
+          expire_date_input.attr('max', maxdate.toISOString().split('T')[0]);
+          $('#edit_api_key_form').removeClass('was-validated');
           $('#edit_api_key').modal('show');
     }      
 
     function edit_apikey_post() {
+      if (!document.forms["edit_api_key_form"].checkValidity()) {
+        document.forms["edit_api_key_form"].classList.add('was-validated');
+        return;
+      }
+
       $.ajax({
-        url: "admin/edit_api_key",
-        type: "POST",
-        dataType: "json",
+        url: 'admin/edit_api_key',
+        type: 'POST',
+        dataType: 'json',
         data: {
           csrfmiddlewaretoken: '{{ csrf_token }}',
-          id: edit_apikey_id,
+          id: $('#edit_apikey_id').val(),
           description: $('#edit_description').val(),
           email: $('#edit_email').val(),
           role: $('#edit_role').val(),
           expire_date: $('#edit_expire_date').val(),
         },
         success: function (json) {
-          $('#edit_api_key').modal('hide');
-          Swal.fire({
-              title: 'Success',
-              text: 'API key details have been changed',
-              type: 'success'
-            }).then(function () {
-              location.reload(true);
-            });
+          if (json.api_id) {
+            $('#edit_api_key').modal('hide');
+            Swal.fire({
+                title: 'Success',
+                text: 'API key details have been changed',
+                type: 'success'
+              }).then(function () {
+                location.reload(true);
+              });
+          }
+          else {
+          Swal.fire(
+              'Edit Failed',
+              json.msg,
+              'error'
+            )
+          }
         },
           error: function (xhr, errmsg, err) {
             Swal.fire(
@@ -352,7 +377,7 @@ sidebar-collapse
     $(document).ready(function () {
       $('#new_api_key').on('shown.bs.modal', function () {
         $('#description').focus();
-      })
+      })  
     });
   </script>  
   {% endblock %}
