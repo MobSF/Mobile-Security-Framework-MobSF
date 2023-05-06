@@ -17,7 +17,7 @@ from mobsf.StaticAnalyzer.models import ApiKeys
 from mobsf.MobSF.utils import (
     error_response,
     is_admin,
-    sso_email,    
+    sso_email,
     tz,
     utcnow,
 )
