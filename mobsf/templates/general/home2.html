@@ -349,7 +349,7 @@ sidebar-collapse
       return false;
     } else { _('err_file').classList.add('hidden'); }
 
-    var mailformat = /^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$/
+    var mailformat = /^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$/;
     if (!_("override_email").value.match(mailformat)) {
       _('err_email').classList.remove('hidden');
       return false;

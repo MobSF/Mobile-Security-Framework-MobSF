@@ -6,12 +6,12 @@ import os
 import traceback as tb
 import datetime
 import json
+import re
 
 from django.conf import settings
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse
-from django.core.validators import validate_email
 
 from mobsf.StaticAnalyzer.models import ApiKeys
 from mobsf.MobSF.utils import (
@@ -105,8 +105,8 @@ def create_api_key_post(request):
         if (not is_admin(request)):
             return error_response(request, 'Unauthorized')
 
-        default_expire_date = utcnow()
-        max_date = default_expire_date.replace(year=default_expire_date.year + 1)
+        max_date = utcnow()
+        max_date = max_date.replace(year=max_date.year + 1)
         # Validate input parameters
         description = request.POST['description']
         email = request.POST['email']
@@ -117,20 +117,27 @@ def create_api_key_post(request):
                                                 '%Y-%m-%d %H:%M:%S.%f %Z')
 
         if not description:
-            payload = {'msg': "Missing parameter: description"}
-            return HttpResponse(json.dumps(payload),content_type='application/json', status=200)
-        try:
-            validate_email(email)
-        except Exception as exp:
-            payload = {'msg': "Invalid email was entered."}
-            return HttpResponse(json.dumps(payload),content_type='application/json', status=200)
+            payload = {'msg': 'Missing parameter: description'}
+            return HttpResponse(json.dumps(payload),
+                                content_type='application/json', status=200)
+        regx = ('^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*'
+                '([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$')
+        if not re.search(regx, email): 
+            payload = {'msg': 'Invalid email address was entered.'}
+            return HttpResponse(json.dumps(payload),
+                                content_type='application/json', status=200)
         if tz(aware_date) < tz(utcnow()):
-            payload = {'msg': "Invalid date was entered, it must fall within the next year."}
-            return HttpResponse(json.dumps(payload),content_type='application/json', status=200)
+            payload = {'msg': ('Invalid date was entered, '
+                               'it must fall within the next year.')}
+            return HttpResponse(json.dumps(payload),
+                                content_type='application/json', status=200)
         if tz(aware_date) > tz(max_date):
-            payload = {'msg': "Invalid date was entered, it must fall within the next year."}
-            return HttpResponse(json.dumps(payload),content_type='application/json', status=200)
-        api_key, db_obj = create_api_key(description, email, role, tz(aware_date))
+            payload = {'msg': ('Invalid date was entered, '
+                               'it must fall within the next year.')}
+            return HttpResponse(json.dumps(payload),
+                                content_type='application/json', status=200)
+        api_key, db_obj = create_api_key(description, email, role,
+                                         tz(aware_date))
         payload = {'api_key': api_key}
         return HttpResponse(json.dumps(payload),
                             content_type='application/json',
@@ -178,8 +185,8 @@ def edit_api_key_post(request):
         if (not is_admin(request)):
             return error_response(request, 'Unauthorized')
 
-        default_expire_date = utcnow()
-        max_date = default_expire_date.replace(year=default_expire_date.year + 1)
+        max_date = utcnow()
+        max_date = max_date.replace(year=max_date.year + 1)
         # Validate input parameters
         key_id = request.POST['id']
         description = request.POST['description']
@@ -191,26 +198,32 @@ def edit_api_key_post(request):
                                                 '%Y-%m-%d %H:%M:%S.%f %z')
 
         if not description:
-            payload = {'msg': "Missing parameter: description"}
-            return HttpResponse(json.dumps(payload),content_type='application/json', status=200)
-        try:
-            validate_email(email)
-        except Exception as exp:
-            payload = {'msg': "Invalid email was entered."}
-            return HttpResponse(json.dumps(payload),content_type='application/json', status=200)
+            payload = {'msg': 'Missing parameter: description'}
+            return HttpResponse(json.dumps(payload),
+                                content_type='application/json', status=200)
+        regx = ('^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*'
+                '([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$')
+        if not re.search(regx, email): 
+            payload = {'msg': 'Invalid email address was entered.'}
+            return HttpResponse(json.dumps(payload),
+                                content_type='application/json', status=200)
         if tz(aware_date) < tz(utcnow()):
-            payload = {'msg': "Invalid date was entered, it must fall within the next year."}
-            return HttpResponse(json.dumps(payload),content_type='application/json', status=200)
+            payload = {'msg': ('Invalid date was entered, '
+                               'it must fall within the next year.')}
+            return HttpResponse(json.dumps(payload),
+                                content_type='application/json', status=200)
         if tz(aware_date) > tz(max_date):
-            payload = {'msg': "Invalid date was entered, it must fall within the next year."}
-            return HttpResponse(json.dumps(payload),content_type='application/json', status=200)
+            payload = {'msg': ('Invalid date was entered, '
+                               'it must fall within the next year.')}
+            return HttpResponse(json.dumps(payload),
+                                content_type='application/json', status=200)
         item = edit_api_key(key_id, description, email, role, tz(aware_date))
         if item:
             logger.info('API key ID %s details edited by: %s', key_id,
                         sso_email(request))
             payload = {'api_id': key_id}
-            return HttpResponse(json.dumps(payload), content_type='application/json',
-                                status=200)
+            return HttpResponse(json.dumps(payload),
+                                content_type='application/json', status=200)
         else:
             logger.info('Unable to find API key %s to edit', key_id)
             return HttpResponse(json.dumps(id),
