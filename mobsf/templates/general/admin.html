@@ -176,9 +176,8 @@ sidebar-collapse
           expire_date: $('#expire_date').val(),
         },
         success: function (json) {
-          $('#new_api_key').modal('hide');
-
           if (json.api_key) {
+          $('#new_api_key').modal('hide');
             Swal.fire({
               title: "New API Key",
               html:
@@ -217,14 +216,14 @@ sidebar-collapse
           else {
             Swal.fire(
               'Creation Failed',
-              'Unable to create API key, please try again.',
+              json.msg,
               'error'
             )
           }
         },
         error: function (xhr, errmsg, err) {
           Swal.fire(
-            'Creation Failed',
+            'API call Failed',
             errmsg,
             'error'
           )
@@ -324,14 +323,23 @@ sidebar-collapse
           expire_date: $('#edit_expire_date').val(),
         },
         success: function (json) {
-          $('#edit_api_key').modal('hide');
-          Swal.fire({
-              title: 'Success',
-              text: 'API key details have been changed',
-              type: 'success'
-            }).then(function () {
-              location.reload(true);
-            });
+          if (json.api_id) {
+            $('#edit_api_key').modal('hide');
+            Swal.fire({
+                title: 'Success',
+                text: 'API key details have been changed',
+                type: 'success'
+              }).then(function () {
+                location.reload(true);
+              });
+          }
+          else {
+          Swal.fire(
+              'Edit Failed',
+              json.msg,
+              'error'
+            )
+          }
         },
           error: function (xhr, errmsg, err) {
             Swal.fire(
