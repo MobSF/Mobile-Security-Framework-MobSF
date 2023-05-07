@@ -74,12 +74,12 @@ sidebar-collapse
           <form id="new_api_key_form" class="needs-validation" onsubmit="new_apikey_post()" novalidate>
             <div class="form-group">
               <label>Description</label>
-              <input id="description" type="text" class="form-control" required>
+              <input id="description" type="text" class="form-control" maxlength="100" required>
               <div class="invalid-feedback">Please provide a description.</div>
             </div>
             <div class="form-group">
               <label>Notify Email</label>
-              <input id="email" type="text" class="form-control" value="{{ sso_email }}" pattern="^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$" required>
+              <input id="email" type="text" class="form-control" value="{{ sso_email }}" pattern="^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$" maxlength="260" required>
               <div class="invalid-feedback">Please provide a valid email address (or addresses).</div>
             </div>
             <div class="form-group">
@@ -120,12 +120,12 @@ sidebar-collapse
           <form id="edit_api_key_form" class="needs-validation" onsubmit="edit_apikey_post()" novalidate>
             <div class="form-group">
               <label>Description</label>
-              <input id="edit_description" type="text" class="form-control" required>
+              <input id="edit_description" type="text" class="form-control" maxlength="100" required>
               <div class="invalid-feedback">Please provide a description.</div>
             </div>
             <div class="form-group">
               <label>Notify Email</label>
-              <input id="edit_email" type="text" class="form-control" value="{{ sso_email }}" pattern="^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$" required>
+              <input id="edit_email" type="text" class="form-control" value="{{ sso_email }}" pattern="^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$" maxlength="260" required>
               <div class="invalid-feedback">Please provide a valid email address (or addresses).</div>
             </div>
             <div class="form-group">
