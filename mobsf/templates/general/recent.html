@@ -141,7 +141,7 @@
                                     <a class="btn btn-primary btn-sm" style="margin-bottom: 3px; width: 125px;" href="../{{ e.ANALYZER }}/?file_name={{e.FILE_NAME}}&amp;hash={{e.MD5}}&amp;scan_type={{e.SCAN_TYPE}}"><i class="fas fa-eye" title="View static analysis scan details"></i> Scan Details</a><br/>
                                     <a class="btn btn-primary btn-warning btn-sm" style="margin-bottom: 3px;  width: 125px;" href="../appsec_dashboard/{{ e.MD5 }}/"><i class="fas fa-user-shield" title="View security scorecard"></i> Scorecard</a><br/>
                                         {% if e.DT_PROJECT_ID %}
-                                        <a class="btn btn-primary btn-sm" style="width: 125px;" href="{{dependency_track_url}}/projects/{{ e.DT_PROJECT_ID }}/components"><i class="fas fa-link" title="View third party dependency details"></i> Dependencies</a><br/>
+                                        <a class="btn btn-primary btn-sm" style="width: 125px;" href="{{dependency_track_url}}/projects/{{ e.DT_PROJECT_ID }}/components" target="_blank"><i class="fas fa-link" title="View third party dependency details"></i> Dependencies</a><br/>
                                         {% else %}
                                         <a class="btn btn-primary btn-sm disabled" style="width: 125px;" href="#"><i class="fas fa-link" title="View third party dependency details"></i> Dependencies</a><br/>
                                         {% endif %}
