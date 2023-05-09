@@ -94,6 +94,7 @@ def admin_view(request):
         'default_exp_date': default_exp_date.strftime('%Y-%m-%d'),
         'version': settings.MOBSF_VER,
         'tenant_static': settings.TENANT_STATIC_URL,
+        'is_admin': is_admin(request),
     }
     template = 'general/admin.html'
     return render(request, template, context)

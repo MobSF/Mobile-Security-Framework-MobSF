@@ -517,7 +517,9 @@ def search(request):
 def app_info(request):
     """Get mobile app info by user supplied name."""
     appname = request.GET['name']
-    db_obj = RecentScansDB.objects.filter(USER_APP_NAME=appname) \
+    db_obj = RecentScansDB.objects \
+        .filter(Q(APP_NAME__icontains=appname)
+                | Q(USER_APP_NAME__icontains=appname)) \
         .order_by('-TIMESTAMP')
     user = sso_email(request)
     if db_obj.exists():
