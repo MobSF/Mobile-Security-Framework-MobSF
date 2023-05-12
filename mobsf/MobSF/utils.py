@@ -205,6 +205,7 @@ def error_response(request,
             'exp': exp,
             'doc': msg,
             'version': settings.MOBSF_VER,
+            'is_admin': is_admin(request),
         }
         template = 'general/error.html'
         return render(request, template, context, status=500)

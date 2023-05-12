@@ -161,12 +161,12 @@ sidebar-collapse
     hide_loader();
     var xhr = new XMLHttpRequest()
     xhr.open('GET', url, true)
-    xhr.addEventListener("loadstart", function (evt) {
-      Notifier.snackbar({
-        message: "Analysis started! Please wait to be redirected or check recent scans after sometime.",
-        duration: 10,
-      });
-    })
+    // xhr.addEventListener("loadstart", function (evt) {
+    //   Notifier.snackbar({
+    //     message: "Analysis started! Please wait to be redirected or check recent scans after sometime.",
+    //     duration: 10,
+    //   });
+    // })
     xhr.addEventListener("load", function (evt) {
       window.location.href = window.location.href + url;
     }, false);
@@ -250,7 +250,7 @@ sidebar-collapse
             $("#version").val(json.version);
             $("#environment").val(json.environment);
             $("#division").val(json.division);
-            $("#country").val(json.country);
+            $("#country").val(json.country.split(","));
             $("#data_privacy_classification").val(json.data_privacy_classification);
             $("#data_privacy_attributes").val(json.data_privacy_attributes.split(","));
             $("#override_email").val(json.email);

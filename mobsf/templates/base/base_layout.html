@@ -7,18 +7,18 @@
   <title>{{title}}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Cyberspect is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework built on https://mobsf.github.io/docs/">
-  <link rel="icon" href="{% static "img/favicon.ico" %}">
+  <link rel="icon" href="{% static 'img/favicon.ico' %}">
 
   <!-- Tell the browser to be responsive to screen width -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Force refresh after 4 hours to update SSO cookie -->
   <meta http-equiv="refresh" content="14400" />
   <!-- Font Awesome -->
-  <link rel="stylesheet" href="{% static "adminlte/plugins/fontawesome-free/css/all.min.css" %}">
+  <link rel="stylesheet" href="{% static 'adminlte/plugins/fontawesome-free/css/all.min.css' %}">
   <!-- Theme style -->
-  <link rel="stylesheet" href="{% static "adminlte/dashboard/css/adminlte.min.css" %}">
+  <link rel="stylesheet" href="{% static 'adminlte/dashboard/css/adminlte.min.css' %}">
   <!-- overlayScrollbars -->
-  <link rel="stylesheet" href="{% static "adminlte/plugins/overlayScrollbars/css/OverlayScrollbars.min.css" %}">
+  <link rel="stylesheet" href="{% static 'adminlte/plugins/overlayScrollbars/css/OverlayScrollbars.min.css' %}">
   <!-- Ionicons -->
   <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
   <!-- Google Font: Source Sans Pro -->
@@ -37,7 +37,7 @@
         <a id="nbar" class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
       </li>      
     </ul>
-    <img src="{{tenant_static}}img/mobsf_logo.png" height="35" />
+    <img src="{% static 'img/mobsf_logo.png' %}" height="35" />
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
         <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'home' %}" class="nav-link">UPLOAD</a></li>  
@@ -100,19 +100,19 @@
 <!-- ./wrapper -->
 
 <!-- jQuery -->
-<script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
+<script src="{% static 'adminlte/plugins/jquery.min.js' %}"></script>
 <!-- jQuery UI 1.11.4 -->
-<script src="{% static "adminlte/plugins/jquery-ui.min.js" %}"></script>
+<script src="{% static 'adminlte/plugins/jquery-ui.min.js' %}"></script>
 <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
 <script>
   $.widget.bridge('uibutton', $.ui.button)
 </script>
 <!-- Bootstrap 4 -->
-<script src="{% static "adminlte/plugins/bootstrap/bootstrap.bundle.min.js" %}"></script>
+<script src="{% static 'adminlte/plugins/bootstrap/bootstrap.bundle.min.js' %}"></script>
 <!-- overlayScrollbars -->
-<script src="{% static "adminlte/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js" %}"></script>
+<script src="{% static 'adminlte/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js' %}"></script>
 <!-- AdminLTE App -->
-<script src="{% static "adminlte/dashboard/js/adminlte.min.js" %}"></script>
+<script src="{% static 'adminlte/dashboard/js/adminlte.min.js' %}"></script>
 <script>
 // navbar hack
 if ($(".sidebar-collapse")[0])

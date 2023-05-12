@@ -93,7 +93,6 @@ def admin_view(request):
         'max_date': max_exp_date.strftime('%Y-%m-%d'),
         'default_exp_date': default_exp_date.strftime('%Y-%m-%d'),
         'version': settings.MOBSF_VER,
-        'tenant_static': settings.TENANT_STATIC_URL,
         'is_admin': is_admin(request),
     }
     template = 'general/admin.html'

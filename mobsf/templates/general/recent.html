@@ -5,7 +5,7 @@
       sidebar-collapse
 {% endblock %}
  {% block extra_css %}
-<link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
+<link href="{% static 'adminlte/plugins/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'landing/css/recent.css' %}">
 
 <style>
@@ -143,7 +143,7 @@
                                         {% if e.DT_PROJECT_ID %}
                                         <a class="btn btn-primary btn-sm" style="width: 125px;" href="{{dependency_track_url}}/projects/{{ e.DT_PROJECT_ID }}/components" target="_blank"><i class="fas fa-link" title="View third party dependency details"></i> Dependencies</a><br/>
                                         {% else %}
-                                        <a class="btn btn-primary btn-sm disabled" style="width: 125px;" href="#"><i class="fas fa-link" title="View third party dependency details"></i> Dependencies</a><br/>
+                                        <a class="btn btn-secondary btn-sm disabled" style="width: 125px;" href="#"><i class="fas fa-link" title="View third party dependency details"></i> Dependencies</a><br/>
                                         {% endif %}
                                     {% endif %}
                                 </p>
