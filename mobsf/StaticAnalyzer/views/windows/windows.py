@@ -26,6 +26,7 @@ from mobsf.MobSF.utils import (
     error_response,
     file_size,
     get_config_loc,
+    is_admin,
 )
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.StaticAnalyzer.models import StaticAnalyzerWindows
@@ -57,6 +58,7 @@ config = None
 def staticanalyzer_windows_request(request):
     response = staticanalyzer_windows(request.GET)
     if 'template' in response:
+        response['is_admin'] = is_admin(request)
         return render(request, response['template'], response)
     elif 'error' in response:
         return error_response(request, response['error'])

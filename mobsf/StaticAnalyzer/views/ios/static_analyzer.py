@@ -14,6 +14,7 @@ from django.shortcuts import render
 from mobsf.MobSF.utils import (
     error_response,
     file_size,
+    is_admin,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
 from mobsf.StaticAnalyzer.views.ios.appstore import app_search
@@ -54,6 +55,7 @@ logger = logging.getLogger(__name__)
 def static_analyzer_ios_request(request):
     response = static_analyzer_ios(request.GET)
     if 'template' in response:
+        response['is_admin'] = is_admin(request)
         return render(request, response['template'], response)
     elif 'error' in response:
         return error_response(request, response['error'])

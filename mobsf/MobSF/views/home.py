@@ -64,9 +64,9 @@ def index(request):
         'title': 'Cyberspect: Upload App',
         'version': settings.MOBSF_VER,
         'mimes': mimes,
-        'tenant_static': settings.TENANT_STATIC_URL,
         'is_admin': is_admin(request),
         'email': sso_email(request),
+        'tenant_static': settings.TENANT_STATIC_URL,
     }
     template = 'general/home2.html'
     return render(request, template, context)
@@ -205,7 +205,6 @@ def api_docs(request):
         'title': 'REST API Docs',
         'api_key': api_key(),
         'version': settings.MOBSF_VER,
-        'tenant_static': settings.TENANT_STATIC_URL,
     }
     template = 'general/apidocs.html'
     return render(request, template, context)
@@ -216,8 +215,8 @@ def support(request):
     context = {
         'title': 'Support',
         'version': settings.MOBSF_VER,
-        'tenant_static': settings.TENANT_STATIC_URL,
         'is_admin': is_admin(request),
+        'tenant_static': settings.TENANT_STATIC_URL,
     }
     template = 'general/support.html'
     return render(request, template, context)
@@ -228,7 +227,6 @@ def about(request):
     context = {
         'title': 'About',
         'version': settings.MOBSF_VER,
-        'tenant_static': settings.TENANT_STATIC_URL,
         'is_admin': is_admin(request),
     }
     template = 'general/about.html'
@@ -318,9 +316,9 @@ def recent_scans(request):
         'entries': entries,
         'version': settings.MOBSF_VER,
         'is_admin': isadmin,
-        'tenant_static': settings.TENANT_STATIC_URL,
         'dependency_track_url': settings.DEPENDENCY_TRACK_URL,
         'filter': filter,
+        'tenant_static': settings.TENANT_STATIC_URL,
     }
     template = 'general/recent.html'
     return render(request, template, context)
@@ -539,18 +537,18 @@ def app_info(request):
             logger.info('Found existing mobile app information for %s',
                         appname)
             return HttpResponse(json.dumps(context),
-                                content_type='application/json', status=202)
+                                content_type='application/json', status=200)
         else:
             logger.info('User is not authorized for %s.', appname)
             payload = {'found': False}
             return HttpResponse(json.dumps(payload),
-                                content_type='application/json', status=403)
+                                content_type='application/json', status=200)
     else:
         logger.info('Unable to find mobile app information for %s',
                     appname)
         payload = {'found': False}
         return HttpResponse(json.dumps(payload),
-                            content_type='application/json', status=404)
+                            content_type='application/json', status=200)
 
 
 def download(request):
@@ -743,7 +741,6 @@ class RecentScans(object):
                     'num_pages': paginator.num_pages,
                 }
 
-            logger.info(content)
         except Exception as exp:
             exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
             logger.error(exmsg)

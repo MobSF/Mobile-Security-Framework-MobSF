@@ -22,6 +22,7 @@ from mobsf.MobSF.utils import (
     android_component,
     error_response,
     file_size,
+    is_admin,
     is_dir_exists,
     is_file_exists,
     key,
@@ -83,6 +84,7 @@ register.filter('android_component', android_component)
 def static_analyzer_request(request):
     response = static_analyzer(request.GET, False)
     if 'template' in response:
+        response['is_admin'] = is_admin(request)
         return render(request, response['template'], response)
     elif 'error' in response:
         return error_response(request, response['error'])
