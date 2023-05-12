@@ -161,12 +161,12 @@ sidebar-collapse
     hide_loader();
     var xhr = new XMLHttpRequest()
     xhr.open('GET', url, true)
-    // xhr.addEventListener("loadstart", function (evt) {
-    //   Notifier.snackbar({
-    //     message: "Analysis started! Please wait to be redirected or check recent scans after sometime.",
-    //     duration: 10,
-    //   });
-    // })
+    xhr.addEventListener("loadstart", function (evt) {
+      Notifier.snackbar({
+        message: "Analysis started! Please wait to be redirected or check recent scans after sometime.",
+        duration: 10,
+      });
+    })
     xhr.addEventListener("load", function (evt) {
       window.location.href = window.location.href + url;
     }, false);
@@ -203,7 +203,8 @@ sidebar-collapse
           i = 1;
         }
       }, 2000);
-      load_result("recent_scans");
+      window.location.href = window.location.href + "recent_scans";
+      //load_result("recent_scans");
     }
   }
   function progressHandler(event) {
