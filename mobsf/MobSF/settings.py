@@ -126,38 +126,28 @@ APKPLZ = 'https://apkplz.net/download-app/'
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 # Sqlite3 support
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': DB_DIR,
-#     },
-# }
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': DB_DIR,
-#     },
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': DB_DIR,
+    },
+}
 # End Sqlite3 support
 
 # Postgres DB - Install psycopg2
+"""
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'mobsf',
-<<<<<<< HEAD
-        'USER': 'mobsf',
+        'NAME': os.environ['POSTGRES_DB'],
+        'USER': os.environ['POSTGRES_USER'],
         'PASSWORD': os.environ['POSTGRES_PASSWORD'],
         'HOST': os.environ['POSTGRES_HOST'],
-=======
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'localhost',
->>>>>>> master
         'PORT': 5432,
     }
 }
 # End Postgres support
+"""
 
 # ===============================================
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
