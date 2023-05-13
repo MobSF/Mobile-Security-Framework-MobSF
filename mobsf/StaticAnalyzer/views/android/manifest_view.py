@@ -9,7 +9,10 @@ from pathlib import Path
 from django.conf import settings
 from django.shortcuts import render
 
-from mobsf.MobSF.utils import error_response
+from mobsf.MobSF.utils import (
+    error_response,
+    is_admin,
+)
 from mobsf.StaticAnalyzer.views.android.manifest_analysis import (
     get_manifest_file,
 )
@@ -55,6 +58,7 @@ def run(request):
                 'type': 'xml',
                 'sqlite': {},
                 'version': settings.MOBSF_VER,
+                'is_admin': is_admin(request),
             }
             template = 'general/view.html'
             return render(request, template, context)

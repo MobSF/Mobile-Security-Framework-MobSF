@@ -11,6 +11,7 @@ from django.shortcuts import render
 from mobsf.MobSF import settings
 from mobsf.MobSF.utils import (
     error_response,
+    is_admin,
 )
 from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
@@ -342,6 +343,7 @@ def appsec_dashboard(request, checksum, api=False):
         if api:
             return context
         else:
+            context['is_admin'] = is_admin(request)
             return render(
                 request,
                 'static_analysis/appsec_dashboard.html',

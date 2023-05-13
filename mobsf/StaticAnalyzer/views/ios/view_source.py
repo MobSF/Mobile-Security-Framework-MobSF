@@ -17,6 +17,7 @@ from django.utils.html import escape
 from mobsf.MobSF.forms import FormUtil
 from mobsf.MobSF.utils import (
     error_response,
+    is_admin,
     is_file_exists,
     is_safe_path,
     read_sqlite,
@@ -144,6 +145,7 @@ def run(request, api=False):
             'data': dat,
             'sqlite': sql_dump,
             'version': settings.MOBSF_VER,
+            'is_admin': is_admin(request),
         }
         template = 'general/view.html'
         if api:

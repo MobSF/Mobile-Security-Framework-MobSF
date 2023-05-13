@@ -14,6 +14,7 @@ from django.shortcuts import (
 from mobsf.MobSF.utils import (
     api_key,
     error_response,
+    is_admin,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     find_java_source_folder,
@@ -69,6 +70,7 @@ def run(request):
             'source_type': typ,
             'version': settings.MOBSF_VER,
             'api_key': api_key(),
+            'is_admin': is_admin(request),
         }
         template = 'static_analysis/source_tree.html'
         return render(request, template, context)
