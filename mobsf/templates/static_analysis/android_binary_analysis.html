@@ -643,8 +643,8 @@
                   </p>
                   <p>
                     <a target="_blank" href="../manifest_view/?md5={{ md5 }}&amp;type={{ app_type }}&amp;bin=1" role="button" class="btn btn-primary"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
-                    <a href="{% url "tree_view" %}?md5={{ md5 }}&amp;type=java" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Source</a>
-                    <a href="{% url "tree_view" %}?md5={{ md5 }}&amp;type=smali" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Smali</a>
+                    <a target="_blank" href="{% url "tree_view" %}?md5={{ md5 }}&amp;type=java" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Source</a>
+                    <a target="_blank" href="{% url "tree_view" %}?md5={{ md5 }}&amp;type=smali" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Smali</a>
                     </p>
                     <p>
                     <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type=java" class="btn btn-warning" role="button"> <i class="fa fa-download"></i> Download Java Code</a>
@@ -795,7 +795,7 @@
                     </td>
                     <td>
                      {% for file_path, lines in details.files.items %}
-                    <a href="{% url "view_source" %}?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines }}"> {{ file_path }}</a>
+                    <a target="_blank" href="{% url 'view_source' %}?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines }}"> {{ file_path }}</a>
                     <br/>
                     {% endfor %}
                     </td>
@@ -1080,7 +1080,7 @@
                   </td>
                   <td>
                   {% for file_path, lines in details.files.items %}
-                   <a href="{% url "view_source" %}?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines}}"> {{ file_path }}</a>
+                   <a target="_blank" href="{% url 'view_source' %}?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines}}"> {{ file_path }}</a>
                   <br/>
                   {% endfor %}
                   </td>
@@ -1575,7 +1575,7 @@
                         </td>
 
                        <td>
-                          <a href="{% url "view_source" %}?file={{urldict|key:"path"}}&amp;md5={{ md5}}&amp;type={{app_type}}">{{urldict|key:"path"}}</a>
+                          <a target="_blank" href="{% url 'view_source' %}?file={{urldict|key:"path"}}&amp;md5={{ md5}}&amp;type={{app_type}}">{{urldict|key:"path"}}</a>
                        </td>
                     </tr>
                   {% endfor %} 
