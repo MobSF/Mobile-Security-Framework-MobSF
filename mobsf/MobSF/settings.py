@@ -132,6 +132,12 @@ APKPLZ = 'https://apkplz.net/download-app/'
 #         'NAME': DB_DIR,
 #     },
 # }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': DB_DIR,
+#     },
+# }
 # End Sqlite3 support
 
 # Postgres DB - Install psycopg2
@@ -139,9 +145,15 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'mobsf',
+<<<<<<< HEAD
         'USER': 'mobsf',
         'PASSWORD': os.environ['POSTGRES_PASSWORD'],
         'HOST': os.environ['POSTGRES_HOST'],
+=======
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'localhost',
+>>>>>>> master
         'PORT': 5432,
     }
 }
