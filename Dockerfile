@@ -1,5 +1,5 @@
 # Base image
-FROM ubuntu:20.04
+FROM ubuntu:lunar-20230415
 
 # Labels and Credits
 LABEL \
