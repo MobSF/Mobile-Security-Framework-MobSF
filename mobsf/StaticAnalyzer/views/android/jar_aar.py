@@ -26,6 +26,7 @@ from mobsf.StaticAnalyzer.views.android.manifest_analysis import (
     manifest_data,
 )
 from mobsf.StaticAnalyzer.views.android.strings import strings_from_apk
+from mobsf.StaticAnalyzer.views.android.binary_analysis import elf_analysis
 from mobsf.StaticAnalyzer.views.android.cert_analysis import (
     cert_info,
     get_hardcoded_cert_keystore,
@@ -131,10 +132,7 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
                 'certificate_summary': {},
             }
         app_dic['real_name'] = ''
-        elf_dict = {
-            'elf_analysis': [],
-            'elf_strings': [],
-        }
+        elf_dict = elf_analysis(app_dic['app_dir'])
         apkid_results = {}
         tracker = Trackers.Trackers(
             app_dic['app_dir'],
