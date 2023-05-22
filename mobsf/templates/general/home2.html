@@ -104,7 +104,7 @@ sidebar-collapse
                       </div>
                       <div style="text-align: left; width: 275px; margin: auto">
                         <div id="err_file" class="hidden"><span class="error">Mobile App File Required!</span></div>
-                        <label for="file">
+                        <label for="uploadFile">
                           <i class="fa fa-mobile-alt fa-lg" aria-hidden="true"></i> &nbsp;Mobile App
                           File
                         </label><br />
@@ -112,22 +112,20 @@ sidebar-collapse
                           accept=".apk, .apks, .appx, .ipa, .xapk, .zip">
                       </div>
                       <div style="text-align: left; width: 275px; margin: auto; padding-top: 15px">
-                        <label for="source_file">
+                        <label for="uploadSourceFile">
                           <i class="fa fa-code fa-lg" aria-hidden="true"></i> &nbsp;Source Code File
                           (optional)
                         </label><br />
                         <input type="file" name="source_file" id="uploadSourceFile" placeholder="Choose Source File"
                           accept=".zip">
-                      </div>
-                      {% if is_admin %}                
-                      <div style="text-align: left; margin-top: 15px">
+                      </div>                                      
+                      <div style="text-align: left; margin-top: 15px;{% if not is_admin %} display: hidden;{% endif %}">
                         <div id="err_email" class="hidden"><span class="error">Email Invalid!</span></div>
                         <span><input type="text" id="override_email" 
                             placeholder="email address" value="{{email}}"></span>&nbsp;&nbsp;<i
                           class="fas fa-info-circle fa-lg"
                           title="Email of the user(s) to receive notifications about this scan. Use commas to separate multiple email addresses."></i>
-                      </div>
-                      {% endif %}
+                      </div>                      
                     </td>
                   </tr>
                 </table>
