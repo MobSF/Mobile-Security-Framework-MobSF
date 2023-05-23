@@ -139,7 +139,7 @@ def staticanalyzer_windows(request_data, api=False):
                                      'md5']) + '.appx',
                         app_dic['md5'])
                 context['logo'] = os.getenv('LOGO',
-                                            '/static/img/mobsf_logo.png')
+                                            '../static/img/mobsf_logo.png')
                 context['template'] = \
                     'static_analysis/windows_binary_analysis.html'
                 return context

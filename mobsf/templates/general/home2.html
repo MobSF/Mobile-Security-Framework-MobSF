@@ -1,6 +1,35 @@
 {% extends "base/base_layout.html" %}
 {% block extra_css %}
 <link rel="stylesheet" href="/static/landing/css/home.css">
+<style>
+  .box-title {
+    padding-bottom: 15px;
+  }
+
+  .row,
+  .section-title {
+    text-align: left;
+  }
+
+  #upload-form>.form-control {
+    display: inline;
+    width: 100%;
+  }
+
+  input[type=file] {
+    padding: 0.2rem 0.2rem;
+  }
+
+  .fa-info-circle {
+    padding-left: 8px;
+  }
+
+  .upload-form-hr {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin: 0;
+  }
+</style>
 {% endblock %}
 {% block sidebar_option %}
 sidebar-collapse
@@ -13,134 +42,193 @@ sidebar-collapse
     <div class="row">
       <div class="col-lg-12">
         <div class="card">
-          <div class="card-body">            
+          <div class="card-body">
             <div class="inner cover">
-              <h3 class="box-title">Upload Mobile App</h3>
-              <form id="upload_form" enctype="multipart/form-data" method="post">
+              <h3 class="box-title">Upload Mobile App</h3>              
+              <form id="upload_form" novalidate enctype="multipart/form-data" method="post">
                 {% csrf_token %}
-                <table>
-                  <tr>
-                    <td style="vertical-align: top;">
-                      <div id="err_name" class="hidden"><span class="error">Application Name
-                          Required!</span></div>
-                      <div><span><input type="text" id="appname" onfocusout="lookupHandler()"
-                            placeholder="application name"></span>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
-                          title="The name of the mobile application as it appears (or will appear) in the applicable app store."></i>
-                      </div>
-                      <div id="err_version" class="hidden"><span class="error">Version Required!</span>
-                      </div>
-                      <div><span><input type="text" id="version" placeholder="version"
-                            value="1.0"></span>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
-                          title="The version of the mobile application."></i></div>
-                      <div>
-                        <span>
-                          <select id="environment">
-                            <option value="Production">Production</option>
-                            <option value="Preproduction">Preproduction</option>
-                          </select>
-                          &nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
-                            title="The release status of the mobile application."></i>
-                        </span>
-                      </div>
-                      <div id="err_division" class="hidden"><span class="error">Division Required!</span>
-                      </div>
-                      <div>
-                        <span>
-                          <select id="division">
-                            <option>Unknown</option>
-                          </select>
-                          &nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
-                            title="The organizational division applicable to the mobile application."></i>
-                        </span>
-                      </div>
-                      <div>
-                        <table style="margin-left: auto; margin-right: auto;">
-                          <tr>
-                            <td>
-                              <select id="country" multiple style="height: 66px"></select>
-                            </td>
-                            <td>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg" style="margin-bottom: 30px;"
-                                title="The country (or countries) where the mobile app has been (or will be) released. Use the Ctrl/Command key while clicking with the mouse to select multiple items."></i>
-                            </td>
-                          </tr>
-                        </table>
-                      </div>
-                      {% if is_admin %}
-                      <div style="text-align: left"><span><input type="checkbox" id="release">
-                          <label for="release">Release Version</label></span>&nbsp;&nbsp;<i
-                          class="fas fa-info-circle fa-lg" title="Select to mark mobile app as a release version."></i>
-                      </div>
-                      {% endif %}
-                    </td>
-                    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-                    <td>
-                      <div id="err_privacy" class="hidden"><span class="error">Data Privacy
-                          Required!</span></div>
-                      <div>
-                        <span>
-                          <select id="data_privacy_classification">
-                            <option value="">select data privacy</option>
-                            <option>Highly Restricted</option>
-                            <option>Restricted</option>
-                            <option>Internal Use Only</option>
-                            <option>Public</option>
-                            <option>Does Not Apply</option>
-                          </select>
-                          &nbsp;&nbsp;<i class="fas fa-info-circle fa-lg"
-                            title="The data privacy classification for the mobile application."></i>
-                        </span>
-                      </div>
-                      <div>
-                        <table style="margin-left: auto; margin-right: auto;">
-                          <tr>
-                            <td>
-                              <select id="data_privacy_attributes" multiple style="height: 66px"></select>
-                            </td>
-                            <td>&nbsp;&nbsp;<i class="fas fa-info-circle fa-lg" style="margin-bottom: 30px;"
-                                title="The data privacy attributes for the mobile application. Use the Ctrl/Command key while clicking with the mouse to select multiple items."></i>
-                            </td>
-                          </tr>
-                        </table>
-                      </div>
-                      <div style="text-align: left; width: 275px; margin: auto">
-                        <div id="err_file" class="hidden"><span class="error">Mobile App File Required!</span></div>
-                        <label for="uploadFile">
-                          <i class="fa fa-mobile-alt fa-lg" aria-hidden="true"></i> &nbsp;Mobile App
-                          File
-                        </label><br />
-                        <input type="file" name="file" id="uploadFile" placeholder="Choose Mobile App File"
-                          accept=".apk, .apks, .appx, .ipa, .xapk, .zip">
-                      </div>
-                      <div style="text-align: left; width: 275px; margin: auto; padding-top: 15px">
-                        <label for="uploadSourceFile">
-                          <i class="fa fa-code fa-lg" aria-hidden="true"></i> &nbsp;Source Code File
-                          (optional)
-                        </label><br />
-                        <input type="file" name="source_file" id="uploadSourceFile" placeholder="Choose Source File"
-                          accept=".zip">
-                      </div>
-                      {% if is_admin %}
-                      <div style="text-align: left; margin-top: 15px;">
-                        <div id="err_email" class="hidden"><span class="error">Email Invalid!</span></div>
-                        <span><input type="text" id="override_email" 
-                            placeholder="email address" value="{{email}}"></span>&nbsp;&nbsp;<i
-                          class="fas fa-info-circle fa-lg"
-                          title="Email of the user(s) to receive notifications about this scan. Use commas to separate multiple email addresses."></i>
-                      </div>
-                      {% endif %}
-                    </td>
-                  </tr>
-                </table>
 
+                <div class="row"> <!-- first row -->
+
+                  <!-- Application Name -->
+                  <div class="col-md-5">
+                    <label for="appname">Application Name
+                      <i class="fas fa-info-circle fa-lg"
+                        title="The name of the mobile application as it appears (or will appear) in the applicable app store.">
+                      </i>
+                    </label>
+                    <input type="text" class="form-control" id="appname" placeholder="Application Name"
+                      onfocusout="lookupHandler" required>
+                    <div id="err_name" class="hidden"><span class="error">Application Name Required!</span>
+                    </div>
+                  </div>
+
+                  <!-- Version -->
+                  <div class="col-md-2">
+                    <label for="version">Version
+                      <i class="fas fa-info-circle fa-lg" title="The version of the mobile application.">
+                      </i>
+                    </label>
+                    <input type="text" class="form-control" style="width:90%" id="version" placeholder="Version"
+                      value="1.0" onfocusout="lookupHandler" required>
+                    <div id="err_version" class="hidden"><span class="error">Version Required!</span>
+                    </div>
+                  </div>
+
+                  {% if is_admin %}
+                  <!-- Release -->
+                  <div class="col-md-4">
+                    <div style="margin-top:36px;">
+                      <input type="checkbox" id="release">
+                      <label for="release" style="font-weight:500;">Release Version
+                        <i class="fas fa-info-circle fa-lg" title="Select to mark mobile app as a release version.">
+                        </i>
+                      </label>
+                    </div>
+                  </div>
+                  {% endif %}
+
+                </div> <!-- end of first row -->
+
+                <hr class="upload-form-hr">
+
+                <div class="row"> <!-- second row -->
+
+                  <!-- Environment -->
+                  <div class="col-md-3">
+                    <label for="environment">Environment
+                      <i class="fas fa-info-circle fa-lg" title="The release status of the mobile application.">
+                      </i>
+                    </label>
+                    <select class="custom-select w-100" id="environment">
+                      <option value="Production">Production</option>
+                      <option value="Preproduction">Preproduction</option>
+                    </select>
+                  </div>
+
+                  <!-- Division -->
+                  <div class="col-md-3">
+                    <label for="division">Division</label>
+                    <i class="fas fa-info-circle fa-lg"
+                      title="The organizational division applicable to the mobile application.">
+                    </i>
+                    <select class="custom-select d-block w-100" id="division">
+                      <option>Unknown</option>
+                    </select>
+                    <div id="err_division" class="hidden"><span class="error">Division Required!</span>
+                    </div>
+                  </div>
+
+                  <!-- Country -->
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="country">Country</label>
+                      <i class="fas fa-info-circle fa-lg"
+                      title="The country (or countries) where the mobile app has been (or will be) released.">
+                      </i>
+                      <select class="select2bs4" style="width: 100%" id="country" required multiple>
+                        <option>Unknown</option>
+                      </select>
+                    </div>
+                  </div>
+
+                </div> <!-- end of second row -->
+
+                <hr class="upload-form-hr">
+
+                <div class="row"> <!-- third row -->
+
+                  <!-- Data Privacy -->
+                  <div class="col-md-6">
+                    <label for="data_privacy_classification">Data Privacy
+                      <i class="fas fa-info-circle fa-lg"
+                        title="The data privacy classification for the mobile application.">
+                      </i>
+                    </label>
+                    <select class="custom-select d-block w-100" id="data_privacy_classification" size="1" required>
+                      <option value="">Select Data Privacy</option>
+                      <option>Highly Restricted</option>
+                      <option>Restricted</option>
+                      <option>Internal Use Only</option>
+                      <option>Public</option>
+                      <option>Does Not Apply</option>
+                    </select>
+                    <div id="err_privacy" class="hidden">
+                      <span class="error">Data Privacy Required!</span>
+                    </div>
+                  </div>
+
+                  <!-- Data Privacy Attributes -->
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="data_privacy_attributes">Data Privacy Attributes
+                        <i class="fas fa-info-circle fa-lg"
+                          title="The data privacy attributes for the mobile application.">
+                        </i>
+                      </label>
+                      <select class="select2bs4" style="width: 100%" id="data_privacy_attributes" required multiple>
+                        <option>Unknown</option>
+                      </select>
+                    </div>
+                  </div>
+
+                </div> <!-- end of third row -->
+
+                <hr class="upload-form-hr">
+
+                <div class="row"> <!-- fourth row -->
+
+                  <!-- Mobile App File -->
+                  <div class="col-md-6 mb-3">
+                    <label for="uploadFile" class="form-label">
+                      <i class="fa fa-mobile-alt fa-lg" aria-hidden="true"></i> &nbsp;Mobile App
+                      File
+                    </label>
+                    <input class="form-control" type="file" name="file" id="uploadFile"
+                      placeholder="Choose Mobile App File" accept=".apk, .apks, .appx, .ipa, .xapk, .zip">
+                    <div id="err_file" class="hidden"><span class="error">Mobile App File Required!</span></div>
+                  </div>
+
+                  <!-- Source Code File -->
+                  <div class="col-md-6 mb-3">
+                    <label for="uploadSourceFile" class="form-label">
+                      <i class="fa fa-code fa-lg" aria-hidden="true"></i> &nbsp;Source Code File
+                      (optional)
+                    </label>
+                    <input class="form-control" type="file" name="source_file" id="uploadSourceFile"
+                      placeholder="Choose Source File" accept=".zip">
+                  </div>
+
+                </div> <!-- end of fourth row -->
+
+                <hr class="upload-form-hr">
+
+                <div class="row"> <!-- fifth row -->
+
+                  {% if is_admin %}
+                  <div class="col-md-6 mb-3">
+                    <label for="override_email" class="form-label">Email Address
+                      <i class="fas fa-info-circle fa-lg"
+                        title="Email of the user(s) to receive notifications about this scan.">
+                      </i>
+                    </label>
+                    <input style="width:100%" class="form-control" type="text" id="override_email"
+                      placeholder="Email Address" value="{{email}}">
+                    <div id="err_email" class="hidden"><span class="error">Email Invalid!</span></div>
+                  </div>
+                  {% endif %}
+
+                </div> <!-- end of fifth row -->
+
+                <!-- Upload and Analyze Button -->
                 <div class="fileUpload btn btn-default btn-lg" id="but">
                   <span class="fas fa-cloud-upload-alt"></span>
                   Upload &amp; Analyze
                 </div>
                 <h5 id="status"></h5>
-                <progress id="progressBar" value="0" max="100" style="width:400px;margin-bottom:20px;" class="hidden"></progress>
-                <br />
+                <progress id="progressBar" value="0" max="100" style="width:300px;visibility:hidden;"></progress>
               </form>
-            </div>              
+            </div> <!-- end of inner-cover -->
           </div>
         </div>
       </div>
@@ -359,7 +447,7 @@ sidebar-collapse
     fetch(divisionsUrl)
       .then(response => response.json())
       .then(data => {
-        var options = '<option value="">select division</option>';
+        var options = '<option value="">Select Division</option>';
         for (i = 0; i < data.length; i++) {
           options += '<option value="' + data[i].id + '">' + data[i].name + '</option>';
         }
@@ -398,6 +486,12 @@ sidebar-collapse
     populateCountries();
     populateDataPrivacy();
     $('#appname').focus();
+
+    //Initialize Select2 Elements
+    $('.select2').select2();
+    $('.select2bs4').select2({
+      theme: 'bootstrap4'
+    });
 
     $('#but').click(function () {
       _('status').innerText = "";
