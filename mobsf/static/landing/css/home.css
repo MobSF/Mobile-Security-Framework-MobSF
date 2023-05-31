@@ -275,15 +275,16 @@ div#textnode {
 /* PROGRESS BAR */
 
 progress {
-  width: 400px;
+  width: 500px;
 
-  margin: 25px auto;
+  margin-left: auto;
+  margin-right: auto;
   display: block;
   -webkit-appearance: none;
 
-   border: 0;
-    height: 18px;
-    border-radius: 9px;
+  border: 0;
+  height: 18px;
+  border-radius: 9px;
 }
 
 progress::-webkit-progress-bar {
@@ -360,6 +361,7 @@ input[type=checkbox] {
 
 #upload_form {
   padding-top: 10px;
+  padding-bottom: 10px;
 }
 
 /* Adjust fields on home upload page */
@@ -425,4 +427,32 @@ to the multi select dropdown boxes */
 .select2-container--bootstrap4 .select2-results>.select2-results__options {
   max-height: 144px;
   overflow-y: auto;
+}
+
+.box-title {
+  padding-bottom: 15px;
+}
+
+.row,
+.section-title {
+  text-align: left;
+}
+
+#upload-form>.form-control {
+  display: inline;
+  width: 100%;
+}
+
+input[type=file] {
+  padding: 0.2rem 0.2rem;
+}
+
+.fa-info-circle {
+  padding-left: 8px;
+}
+
+.upload-form-hr {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  margin: 0;
 }

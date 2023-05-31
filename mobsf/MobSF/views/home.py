@@ -771,21 +771,23 @@ class RecentScans(object):
                     md5 = scan['MOBSF_MD5']
                     scan_result = RecentScansDB.objects.filter(MD5=md5) \
                         .first()
-                    scan['APP_NAME'] = scan_result.APP_NAME
-                    scan['VERSION_NAME'] = scan_result.VERSION_NAME
-                    scan['PACKAGE_NAME'] = scan_result.PACKAGE_NAME
-                    scan['SCAN_TYPE'] = scan_result.SCAN_TYPE
-                    scan['EMAIL'] = scan_result.EMAIL
+                    if scan_result:
+                        scan['APP_NAME'] = scan_result.APP_NAME
+                        scan['VERSION_NAME'] = scan_result.VERSION_NAME
+                        scan['PACKAGE_NAME'] = scan_result.PACKAGE_NAME
+                        scan['SCAN_TYPE'] = scan_result.SCAN_TYPE
+                        scan['EMAIL'] = scan_result.EMAIL
 
-                    # Get scan vulnerability counts
-                    findings = appsec.appsec_dashboard(self.request, md5, True)
-                    scan['FINDINGS_HIGH'] = len(findings['high']) \
-                        if 'high' in findings else 0
-                    scan['FINDINGS_WARNING'] = len(findings['warning']) \
-                        if 'warning' in findings else 0
-                    scan['FINDINGS_INFO'] = len(findings['info']) \
-                        if 'info' in findings else 0
-                    scan['SECURITY_SCORE'] = findings['security_score']
+                        # Get scan vulnerability counts
+                        findings = appsec.appsec_dashboard(self.request, md5,
+                                                           True)
+                        scan['FINDINGS_HIGH'] = len(findings['high']) \
+                            if 'high' in findings else 0
+                        scan['FINDINGS_WARNING'] = len(findings['warning']) \
+                            if 'warning' in findings else 0
+                        scan['FINDINGS_INFO'] = len(findings['info']) \
+                            if 'info' in findings else 0
+                        scan['SECURITY_SCORE'] = findings['security_score']
                 data = {
                     'content': list(content),
                     'count': paginator.count,

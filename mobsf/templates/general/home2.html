@@ -1,35 +1,6 @@
 {% extends "base/base_layout.html" %}
 {% block extra_css %}
 <link rel="stylesheet" href="/static/landing/css/home.css">
-<style>
-  .box-title {
-    padding-bottom: 15px;
-  }
-
-  .row,
-  .section-title {
-    text-align: left;
-  }
-
-  #upload-form>.form-control {
-    display: inline;
-    width: 100%;
-  }
-
-  input[type=file] {
-    padding: 0.2rem 0.2rem;
-  }
-
-  .fa-info-circle {
-    padding-left: 8px;
-  }
-
-  .upload-form-hr {
-    padding-top: 5px;
-    padding-bottom: 5px;
-    margin: 0;
-  }
-</style>
 {% endblock %}
 {% block sidebar_option %}
 sidebar-collapse
@@ -225,8 +196,8 @@ sidebar-collapse
                   <span class="fas fa-cloud-upload-alt"></span>
                   Upload &amp; Analyze
                 </div>
+                <progress id="progressBar" value="0" max="100" style="visibility:hidden"></progress>
                 <h5 id="status"></h5>
-                <progress id="progressBar" value="0" max="100" style="width:300px;visibility:hidden;"></progress>
               </form>
             </div> <!-- end of inner-cover -->
           </div>
@@ -236,35 +207,9 @@ sidebar-collapse
   </div>
 </div>
 
-<div class="hidden loading">
-  <div class='uil-ring-css' style='transform:scale(0.79);'>
-    <div></div>
-  </div>
-</div>
 {% endblock %}
 {% block extra_scripts %}
-<script>
-  // Result View
-  function load_result(url) {
-    hide_loader();
-    var xhr = new XMLHttpRequest()
-    xhr.open('GET', url, true)
-    xhr.addEventListener("load", function (evt) {
-      window.location.href = window.location.href + url;
-    }, false);
-    xhr.send();
-  }
-
-  function show_loader() {
-    var loadingOverlay = document.querySelector('.loading');
-    loadingOverlay.classList.remove('hidden');
-  }
-
-  function hide_loader() {
-    var loadingOverlay = document.querySelector('.loading');
-    loadingOverlay.classList.add('hidden');
-  }
-
+<script>  
   function _(el) {
     return document.getElementById(el);
   }
@@ -379,7 +324,7 @@ sidebar-collapse
         return;
       }
       _("but").classList.add('hidden');
-      _("progressBar").classList.remove('hidden');
+      _("progressBar").style.visibility = "visible";
       var url = '/upload/'
       var xhr = new XMLHttpRequest()
       xhr.open('POST', url, true)
