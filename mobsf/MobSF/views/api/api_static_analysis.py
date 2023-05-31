@@ -443,6 +443,7 @@ def scan(request_data):
             data['success'] = False
             data['failure_source'] = 'SAST'
             data['failure_message'] = resp['error']
+        data['sast_start'] = None
         data['sast_end'] = utcnow()
         update_cyberspect_scan(data)
         return response
