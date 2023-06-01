@@ -673,6 +673,7 @@ def cyberspect_scan_intake(scan):
         'scan_type': scan['scan_type'],
         'email': scan['email'],
         'file_name': file_path,
+        'rescan': scan['rescan'],
     }
     logger.info('Executing Cyberspect intake lambda: %s',
                 settings.AWS_INTAKE_LAMBDA)
