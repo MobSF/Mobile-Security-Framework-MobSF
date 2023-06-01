@@ -648,6 +648,7 @@ def cyberspect_rescan(apphash, scheduled):
         'user_app_name': rs_obj.USER_APP_NAME,
         'user_app_version': rs_obj.USER_APP_VERSION,
         'email': rs_obj.EMAIL,
+        'rescan': '1',
     }
     cyberspect_scan_intake(scan_data)
     return scan_data

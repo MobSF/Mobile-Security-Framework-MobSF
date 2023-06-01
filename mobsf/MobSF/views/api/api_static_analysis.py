@@ -104,6 +104,7 @@ def api_async_scan(request):
             'hash': csdata['MOBSF_MD5'],
             'scan_type': csdata['SCAN_TYPE'],
             'file_name': csdata['FILE_NAME'],
+            'rescan': request.POST.get('rescan', '0'),
         }
     else:
         return make_api_response(
@@ -130,10 +131,9 @@ def api_rescan(request):
         return make_api_response(
             {'error': 'Missing parameter: hash'}, 422)
 
-    scan_data['rescan'] = request.POST.get('rescan', '1')
-    async_scan(scan_data)
-    response_message = 'Scan ID ' + str(scan_data['cyberspect_scan_id']) \
-        + ' queued for background scanning'
+    response_message = 'App ID ' + request.POST['hash'] \
+        + ' submitted for background scanning: ID ' \
+        + str(scan_data['cyberspect_scan_id'])
     logging.info(response_message)
     return make_api_response({'message': response_message}, 202)
 
