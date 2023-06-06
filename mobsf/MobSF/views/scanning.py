@@ -144,6 +144,7 @@ class Scanning(object):
             self.release = (request.POST.get('release', '') == 'true')
             if request.POST.get('email'):
                 self.email = request.POST.get('email')
+        self.rescan = request.POST.get('rescan', '0')
         self.cyberspect_scan_id = 0
         self.md5 = ''
         self.short_hash = ''
