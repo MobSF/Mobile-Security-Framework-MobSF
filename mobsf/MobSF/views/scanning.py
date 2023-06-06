@@ -225,4 +225,5 @@ class Scanning(object):
             'user_groups': self.user_groups,
             'release': self.release,
             'cyberspect_scan_id': self.cyberspect_scan_id,
+            'rescan': self.rescan,
         }
