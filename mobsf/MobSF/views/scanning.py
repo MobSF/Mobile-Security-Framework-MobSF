@@ -8,6 +8,12 @@ from django.conf import settings
 from django.utils import timezone
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
+from mobsf.StaticAnalyzer.views.common.shared_func import (
+    unzip,
+)
+from mobsf.StaticAnalyzer.views.android.static_analyzer import (
+    valid_source_code
+)
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +37,7 @@ def add_to_recent_scan(data):
         logger.exception('Adding Scan URL to Database')
 
 
-def handle_uploaded_file(content, extension):
+def handle_uploaded_file(content, extension, istemp=False):
     """Write Uploaded File."""
     md5 = hashlib.md5()
     bfr = isinstance(content, io.BufferedReader)
@@ -45,8 +51,25 @@ def handle_uploaded_file(content, extension):
             md5.update(chunk)
     md5sum = md5.hexdigest()
     anal_dir = os.path.join(settings.UPLD_DIR, md5sum + '/')
+    if istemp:
+        anal_dir = os.path.join(settings.TEMP_DIR, md5sum + '/')
     if not os.path.exists(anal_dir):
         os.makedirs(anal_dir)
+    else:
+        if istemp:
+            # Delete all files and directories in the temp directory recursively
+            for root, dirs, files in os.walk(anal_dir, topdown=False):
+                for name in files:
+                    try:
+                        os.remove(os.path.join(root, name))
+                    except OSError as e:
+                        logger.error('Error while deleting file in temp directory: %s', e)
+                for name in dirs:
+                    try:
+                        os.rmdir(os.path.join(root, name))
+                    except OSError as e:
+                        logger.error('Error while deleting directory in temp directory: %s', e)
+
     with open(f'{anal_dir}{md5sum}{extension}', 'wb+') as destination:
         if bfr:
             content.seek(0, 0)
@@ -144,3 +167,18 @@ class Scanning(object):
         add_to_recent_scan(self.data)
         logger.info('Performing Static Analysis of Windows APP')
         return self.data
+
+    def scan_encrypted_zip(self, password):
+        md5 = handle_uploaded_file(self.file, '.zip', istemp=True)
+        temp_dir = os.path.join(settings.TEMP_DIR, md5 + '/')
+        file = os.path.join(settings.TEMP_DIR, md5 + '/' + md5 + '.zip')
+        files = unzip(file, temp_dir, password)
+        pro_type, valid = valid_source_code(temp_dir)
+        if valid:
+            self.data['hash'] = md5
+            self.data['scan_type'] = 'zip'
+            add_to_recent_scan(self.data)
+            logger.info('Performing Static Analysis of Android/iOS Source Code')
+            return self.data
+        else:
+            #todo

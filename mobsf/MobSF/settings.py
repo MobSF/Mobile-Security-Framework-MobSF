@@ -42,6 +42,8 @@ SIGNATURE_DIR = os.path.join(MobSF_HOME, 'signatures/')
 TOOLS_DIR = os.path.join(BASE_DIR, 'DynamicAnalyzer/tools/')
 # Secret File
 SECRET_FILE = os.path.join(MobSF_HOME, 'secret')
+# Temp Directory
+TEMP_DIR = os.path.join(MobSF_HOME, 'temp/')
 
 # ==========Load MobSF User Settings==========
 try:

@@ -14,7 +14,7 @@ import subprocess
 import zipfile
 from urllib.parse import urlparse
 from pathlib import Path
-
+import zipfile
 import requests
 
 from django.utils import timezone
@@ -52,11 +52,13 @@ def hash_gen(app_path) -> tuple:
         logger.exception('Generating Hashes')
 
 
-def unzip(app_path, ext_path):
+def unzip(app_path, ext_path, password=None):
     logger.info('Unzipping')
     try:
         files = []
         with zipfile.ZipFile(app_path, 'r') as zipptr:
+            if zipfile.is_encrypted(app_path) and password:
+                zipptr.setpassword(password.encode())
             for fileinfo in zipptr.infolist():
                 filename = fileinfo.filename
                 if not isinstance(filename, str):
@@ -65,6 +67,11 @@ def unzip(app_path, ext_path):
                 files.append(filename)
                 zipptr.extract(filename, ext_path)
         return files
+    except RuntimeError as e:
+        if str(e) == 'Bad password for file':
+            logger.error('Invalid password provided for the encrypted zip file.')
+        else:
+            logger.exception('Unzipping Error')
     except Exception:
         logger.exception('Unzipping Error')
         if platform.system() == 'Windows':
@@ -73,8 +80,10 @@ def unzip(app_path, ext_path):
             logger.info('Using the Default OS Unzip Utility.')
             try:
                 unzip_b = shutil.which('unzip')
-                subprocess.call(
-                    [unzip_b, '-o', '-q', app_path, '-d', ext_path])
+                if password:
+                    subprocess.call([unzip_b, '-o', '-P', password, '-q', app_path, '-d', ext_path])
+                else:
+                    subprocess.call([unzip_b, '-o', '-q', app_path, '-d', ext_path])
                 dat = subprocess.check_output([unzip_b, '-qq', '-l', app_path])
                 dat = dat.decode('utf-8').split('\n')
                 files_det = ['Length   Date   Time   Name']
