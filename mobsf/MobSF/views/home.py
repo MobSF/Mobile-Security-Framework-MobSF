@@ -137,12 +137,11 @@ class Upload(object):
             with zipfile.ZipFile(self.file, 'r') as zip_file:
                 if zip_file.is_encrypted() and zip_password:
                     try:
-                        # zip_file.setpassword(zip_password.encode())  # Set the password for the zip file
-                        return scanning.scan_encrypted_zip(zip_password)  # Pass the zip file object to the scan_zip function
+                        return scanning.scan_encrypted_zip(zip_password)
                     except RuntimeError:
-                        return {"error": "Invalid password"}, HTTP_BAD_REQUEST
+                        return {"error": "Error when processing encrypted zip file"}, HTTP_BAD_REQUEST
                 else:
-                    return scanning.scan_zip()  # Pass the zip file object to the scan_zip function
+                    return scanning.scan_encrypted_zip()
         else:
             return self.upload_scan(scanning)
 

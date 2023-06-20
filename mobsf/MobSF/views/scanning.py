@@ -6,6 +6,7 @@ import os
 
 from django.conf import settings
 from django.utils import timezone
+from django.http import JsonResponse
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.StaticAnalyzer.views.common.shared_func import (
@@ -14,9 +15,10 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
 from mobsf.StaticAnalyzer.views.android.static_analyzer import (
     valid_source_code
 )
+from mobsf.MobSF.utils import is_zip_magic_local_file
 
 logger = logging.getLogger(__name__)
-
+HTTP_BAD_REQUEST = 400
 
 def add_to_recent_scan(data):
     """Add Entry to Database under Recent Scan."""
@@ -168,17 +170,41 @@ class Scanning(object):
         logger.info('Performing Static Analysis of Windows APP')
         return self.data
 
-    def scan_encrypted_zip(self, password):
+    def scan_encrypted_zip(self, password=None):
         md5 = handle_uploaded_file(self.file, '.zip', istemp=True)
         temp_dir = os.path.join(settings.TEMP_DIR, md5 + '/')
-        file = os.path.join(settings.TEMP_DIR, md5 + '/' + md5 + '.zip')
+        file = os.path.join(temp_dir, md5 + '.zip')
         files = unzip(file, temp_dir, password)
         pro_type, valid = valid_source_code(temp_dir)
         if valid:
+            md5 = handle_uploaded_file(self.file, '.zip')
             self.data['hash'] = md5
             self.data['scan_type'] = 'zip'
             add_to_recent_scan(self.data)
             logger.info('Performing Static Analysis of Android/iOS Source Code')
             return self.data
         else:
-            #todo
+            if len(files) == 0:
+                error_message = "Error: No files extracted from the ZIP."
+                error_response = {'error': error_message}
+                return JsonResponse(error_response, status=HTTP_BAD_REQUEST)
+            elif len(files) > 1:
+                error_message = "Error: More than 1 file extracted from the ZIP."
+                error_response = {'error': error_message}
+                return JsonResponse(error_response, status=HTTP_BAD_REQUEST)
+            else:
+                allowed_file_types = ['.apk', '.apks', '.xapk', '.zip', '.ipa', '.appx', '.jar', '.aar']
+                full_file_path = os.path.join(temp_dir, files[0])
+                if os.path.exists(full_file_path):
+                    if is_zip_magic_local_file(full_file_path) and full_file_path.lower().endswith(allowed_file_types):
+                        logger.info('File format extracted from the ZIP is Supported!')
+                        #TODO
+
+                    else:
+                        error_message = "Error: File format extracted from the ZIP is not Supported!"
+                        error_response = {'error': error_message}
+                        return JsonResponse(error_response, status=HTTP_BAD_REQUEST)
+                else:
+                    error_message = "Error: File does not exist."
+                    error_response = {'error': error_message}
+                    return JsonResponse(error_response, status=HTTP_BAD_REQUEST)

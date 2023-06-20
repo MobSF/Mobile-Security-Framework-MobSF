@@ -579,8 +579,8 @@ def strict_package_check(user_input):
 def is_path_traversal(user_input):
     """Check for path traversal."""
     if (('../' in user_input)
-        or ('%2e%2e' in user_input)
-        or ('..' in user_input)
+            or ('%2e%2e' in user_input)
+            or ('..' in user_input)
             or ('%252e' in user_input)):
         logger.error('Path traversal attack detected')
         return True
@@ -592,6 +592,13 @@ def is_zip_magic(file_obj):
     file_obj.seek(0, 0)
     # ZIP magic PK.. no support for spanned and empty arch
     return bool(magic == b'\x50\x4B\x03\x04')
+
+
+def is_zip_magic_local_file(file_path):
+    with open(file_path, 'rb') as f:
+        magic = f.read(4)
+        f.seek(0, 0)
+        return bool(magic == b'\x50\x4B\x03\x04')
 
 
 def disable_print():
