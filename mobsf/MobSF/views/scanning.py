@@ -7,6 +7,7 @@ import os
 from django.conf import settings
 from django.utils import timezone
 from django.http import JsonResponse
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.StaticAnalyzer.views.common.shared_func import (
@@ -45,7 +46,7 @@ def handle_uploaded_file(content, extension, istemp=False):
     md5 = hashlib.md5()
     bfr = False
     logger.info('Type of content: %s', type(content))
-    if isinstance(content, io.BufferedReader):
+    if isinstance(content, InMemoryUploadedFile):
         bfr = True
         # Not File upload
         while chunk := content.read(8192):
