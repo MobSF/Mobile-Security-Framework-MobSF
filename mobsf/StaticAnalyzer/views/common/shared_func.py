@@ -69,7 +69,7 @@ def unzip(app_path, ext_path, password=None):
     try:
         files = []
         with zipfile.ZipFile(app_path, 'r') as zipptr:
-            if zipfile.is_encrypted(app_path) and password:
+            if is_encrypted(app_path) and password:
                 zipptr.setpassword(password.encode())
             for fileinfo in zipptr.infolist():
                 filename = fileinfo.filename
