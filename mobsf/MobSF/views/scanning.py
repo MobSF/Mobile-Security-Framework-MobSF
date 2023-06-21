@@ -44,6 +44,7 @@ def handle_uploaded_file(content, extension, istemp=False):
     """Write Uploaded File."""
     md5 = hashlib.md5()
     bfr = False
+    logger.info('Type of content: %s', type(content))
     if isinstance(content, io.BufferedReader):
         bfr = True
         # Not File upload
