@@ -34,6 +34,9 @@ from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerIOS,
     StaticAnalyzerWindows,
 )
+from mobsf.StaticAnalyzer.views.common.shared_func import (
+    is_encrypted
+)
 
 LINUX_PLATFORM = ['Darwin', 'Linux']
 HTTP_BAD_REQUEST = 400
@@ -134,14 +137,13 @@ class Upload(object):
         logger.info('MIME Type: %s FILE: %s', content_type, file_name)
         if self.file_type.is_zip():
             zip_password = request.POST.get('password')
-            with zipfile.ZipFile(self.file, 'r') as zip_file:
-                if zip_file.is_encrypted() and zip_password:
-                    try:
-                        return scanning.scan_encrypted_zip(zip_password)
-                    except RuntimeError:
-                        return {"error": "Error when processing encrypted zip file"}, HTTP_BAD_REQUEST
-                else:
-                    return scanning.scan_encrypted_zip()
+            if is_encrypted() and zip_password:
+                try:
+                    return scanning.scan_encrypted_zip(zip_password)
+                except RuntimeError:
+                    return {"error": "Error when processing encrypted zip file"}, HTTP_BAD_REQUEST
+            else:
+                return scanning.scan_encrypted_zip()
         else:
             return self.upload_scan(scanning)
 
