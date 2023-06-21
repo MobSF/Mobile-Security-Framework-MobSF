@@ -223,21 +223,21 @@ class Scanning(object):
                     if is_zip_magic_local_file(full_file_path) and full_file_path.lower().endswith(allowed_file_types):
                         logger.info('File format extracted from the ZIP is Supported!')
                         if full_file_path.lower().endswith('.apk'):
-                            self.scan_generic(full_file_path, '.apk', 'apk', 'Performing Static Analysis of Android APK', analyzer=None)
+                            return self.scan_generic(full_file_path, '.apk', 'apk', 'Performing Static Analysis of Android APK', analyzer=None)
                         elif full_file_path.lower().endswith('.apks'):
-                            self.scan_generic(full_file_path, '.apk', 'apks', 'Performing Static Analysis of Android Split APK', analyzer=None)
+                            return self.scan_generic(full_file_path, '.apk', 'apks', 'Performing Static Analysis of Android Split APK', analyzer=None)
                         elif full_file_path.lower().endswith('.xapk'):
-                            self.scan_generic(full_file_path, '.xapk', 'xapk', 'Performing Static Analysis of Android XAPK base APK', analyzer=None)
+                            return self.scan_generic(full_file_path, '.xapk', 'xapk', 'Performing Static Analysis of Android XAPK base APK', analyzer=None)
                         elif full_file_path.lower().endswith('.zip'):
-                            self.scan_generic(full_file_path, '.zip', 'zip', 'Performing Static Analysis of Android/iOS Source Code', analyzer=None)
+                            return self.scan_generic(full_file_path, '.zip', 'zip', 'Performing Static Analysis of Android/iOS Source Code', analyzer=None)
                         elif full_file_path.lower().endswith('.ipa'):
-                            self.scan_generic(full_file_path, '.ipa', 'ipa', 'Performing Static Analysis of iOS IPA', analyzer='static_analyzer_ios')
+                            return self.scan_generic(full_file_path, '.ipa', 'ipa', 'Performing Static Analysis of iOS IPA', analyzer='static_analyzer_ios')
                         elif full_file_path.lower().endswith('.appx'):
-                            self.scan_generic(full_file_path, '.appx', 'appx', 'Performing Static Analysis of Windows APP', analyzer='static_analyzer_windows')
+                            return self.scan_generic(full_file_path, '.appx', 'appx', 'Performing Static Analysis of Windows APP', analyzer='static_analyzer_windows')
                         elif full_file_path.lower().endswith('.jar'):
-                            self.scan_generic(full_file_path, '.jar', 'jar', 'Performing Static Analysis of Java JAR', analyzer=None)
+                            return self.scan_generic(full_file_path, '.jar', 'jar', 'Performing Static Analysis of Java JAR', analyzer=None)
                         elif full_file_path.lower().endswith('.aar'):
-                            self.scan_generic(full_file_path, '.aar', 'aar', 'Performing Static Analysis of Android AAR', analyzer=None)
+                            return self.scan_generic(full_file_path, '.aar', 'aar', 'Performing Static Analysis of Android AAR', analyzer=None)
 
                     else:
                         error_message = "Error: File format extracted from the ZIP is not Supported!"
