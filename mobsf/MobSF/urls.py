@@ -7,6 +7,10 @@ from mobsf.DynamicAnalyzer.views.android import (
     tests_common,
     tests_frida,
 )
+from mobsf.DynamicAnalyzer.views.ios import dynamic_analyzer as idz
+from mobsf.DynamicAnalyzer.views.ios import(
+    instance,
+)
 from mobsf.MobSF import utils
 from mobsf.MobSF.views import home
 from mobsf.MobSF.views.api import api_static_analysis as api_sz
@@ -168,6 +172,57 @@ if settings.API_ONLY == '0':
         re_path(r'^dynamic_report/(?P<checksum>[0-9a-f]{32})$',
                 report.view_report),
         re_path(r'^dynamic_view_file/$', report.view_file),
+
+        # iOS Dynamic Analysis
+        re_path(r'^ios/dynamic_analysis/$',
+                idz.dynamic_analysis,
+                name='dynamic_ios'),
+        re_path(r'^ios/create_vm_instance/$',
+                instance.create_vm_instance,
+                name='create_vm_instance'),
+        re_path(r'^ios/get_supported_models/$',
+                instance.get_supported_models,
+                name='get_supported_models'),
+        re_path(r'^ios/get_supported_os/$',
+                instance.get_supported_os,
+                name='get_supported_os'),
+        re_path(r'^ios/start_instance/$',
+                instance.start_instance,
+                name='start_instance'),
+        re_path(r'^ios/stop_instance/$',
+                instance.stop_instance,
+                name='stop_instance'),
+        re_path(r'^ios/unpause_instance/$',
+                instance.unpause_instance,
+                name='unpause_instance'),
+        re_path(r'^ios/reboot_instance/$',
+                instance.reboot_instance,
+                name='reboot_instance'),
+        re_path(r'^ios/destroy_instance/$',
+                instance.destroy_instance,
+                name='destroy_instance'),
+        re_path(r'^ios/list_apps/$',
+                instance.list_apps,
+                name='list_apps'),
+        re_path(r'^ios/setup_environment/(?P<checksum>[0-9a-f]{32})$',
+                instance.setup_environment,
+                name='setup_environment'),
+        re_path(r'^ios/dynamic_analyzer/(?P<checksum>[0-9a-f]{32})$',
+                idz.dynamic_analyzer,
+                name='dynamic_analyzer_ios'),
+        re_path(r'^ios/run_app/$',
+                instance.run_app,
+                name='run_app'),
+        re_path(r'^ios/take_screenshot/$',
+                instance.take_screenshot,
+                name='take_screenshot'),
+        re_path(r'^ios/network_capture/$',
+                instance.network_capture,
+                name='network_capture'),
+        re_path(r'^ios/ssh_execute/$',
+                instance.ssh_execute,
+                name='ssh_execute'),
+                
         # Test
         re_path(r'^tests/$', tests.start_test),
     ])
