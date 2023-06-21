@@ -20,6 +20,7 @@ from mobsf.MobSF.utils import is_zip_magic_local_file
 logger = logging.getLogger(__name__)
 HTTP_BAD_REQUEST = 400
 
+
 def add_to_recent_scan(data):
     """Add Entry to Database under Recent Scan."""
     try:
@@ -42,15 +43,19 @@ def add_to_recent_scan(data):
 def handle_uploaded_file(content, extension, istemp=False):
     """Write Uploaded File."""
     md5 = hashlib.md5()
-    bfr = isinstance(content, io.BufferedReader)
-    if bfr:
+    bfr = False
+    if isinstance(content, io.BufferedReader):
+        bfr = True
         # Not File upload
         while chunk := content.read(8192):
             md5.update(chunk)
     else:
         # File upload
-        for chunk in content.chunks():
-            md5.update(chunk)
+        with open(content, 'rb') as file_obj:
+            for chunk in iter(lambda: file_obj.read(8192), b''):
+                md5.update(chunk)
+        # for chunk in content.chunks():
+        # md5.update(chunk)
     md5sum = md5.hexdigest()
     anal_dir = os.path.join(settings.UPLD_DIR, md5sum + '/')
     if istemp:
@@ -78,8 +83,11 @@ def handle_uploaded_file(content, extension, istemp=False):
             while chunk := content.read(8192):
                 destination.write(chunk)
         else:
-            for chunk in content.chunks():
-                destination.write(chunk)
+            with open(content, 'rb') as file_obj:
+                for chunk in iter(lambda: file_obj.read(8192), b''):
+                    destination.write(chunk)
+            # for chunk in content.chunks():
+            #     destination.write(chunk)
     return md5sum
 
 
@@ -170,6 +178,17 @@ class Scanning(object):
         logger.info('Performing Static Analysis of Windows APP')
         return self.data
 
+    def scan_generic(self, file_path, extension, scan_type, message, analyzer=None):
+        """Generic file."""
+        md5 = handle_uploaded_file(file_path, extension)
+        self.data['hash'] = md5
+        self.data['scan_type'] = scan_type
+        if analyzer:
+            self.data['analyzer'] = analyzer
+        add_to_recent_scan(self.data)
+        logger.info(message)
+        return self.data
+
     def scan_encrypted_zip(self, password=None):
         md5 = handle_uploaded_file(self.file, '.zip', istemp=True)
         temp_dir = os.path.join(settings.TEMP_DIR, md5 + '/')
@@ -198,7 +217,22 @@ class Scanning(object):
                 if os.path.exists(full_file_path):
                     if is_zip_magic_local_file(full_file_path) and full_file_path.lower().endswith(allowed_file_types):
                         logger.info('File format extracted from the ZIP is Supported!')
-                        #TODO
+                        if full_file_path.lower().endswith('.apk'):
+                            self.scan_generic(full_file_path, '.apk', 'apk', 'Performing Static Analysis of Android APK', analyzer=None)
+                        elif full_file_path.lower().endswith('.apks'):
+                            self.scan_generic(full_file_path, '.apk', 'apks', 'Performing Static Analysis of Android Split APK', analyzer=None)
+                        elif full_file_path.lower().endswith('.xapk'):
+                            self.scan_generic(full_file_path, '.xapk', 'xapk', 'Performing Static Analysis of Android XAPK base APK', analyzer=None)
+                        elif full_file_path.lower().endswith('.zip'):
+                            self.scan_generic(full_file_path, '.zip', 'zip', 'Performing Static Analysis of Android/iOS Source Code', analyzer=None)
+                        elif full_file_path.lower().endswith('.ipa'):
+                            self.scan_generic(full_file_path, '.ipa', 'ipa', 'Performing Static Analysis of iOS IPA', analyzer='static_analyzer_ios')
+                        elif full_file_path.lower().endswith('.appx'):
+                            self.scan_generic(full_file_path, '.appx', 'appx', 'Performing Static Analysis of Windows APP', analyzer='static_analyzer_windows')
+                        elif full_file_path.lower().endswith('.jar'):
+                            self.scan_generic(full_file_path, '.jar', 'jar', 'Performing Static Analysis of Java JAR', analyzer=None)
+                        elif full_file_path.lower().endswith('.aar'):
+                            self.scan_generic(full_file_path, '.aar', 'aar', 'Performing Static Analysis of Android AAR', analyzer=None)
 
                     else:
                         error_message = "Error: File format extracted from the ZIP is not Supported!"
