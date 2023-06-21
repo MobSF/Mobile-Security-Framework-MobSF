@@ -49,7 +49,7 @@ def handle_uploaded_file(content, extension, istemp=False):
     if isinstance(content, InMemoryUploadedFile):
         bfr = True
         # Not File upload
-        for chunk in content.chunks():
+        while chunk := content.read(8192):
             md5.update(chunk)
     else:
         # File upload
@@ -82,8 +82,8 @@ def handle_uploaded_file(content, extension, istemp=False):
     with open(f'{anal_dir}{md5sum}{extension}', 'wb+') as destination:
         if bfr:
             content.seek(0, 0)
-            for chunk in content.chunks():
-                md5.update(chunk)
+            while chunk := content.read(8192):
+                destination.write(chunk)
         else:
             with open(content, 'rb') as file_obj:
                 for chunk in iter(lambda: file_obj.read(8192), b''):
