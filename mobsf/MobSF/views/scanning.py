@@ -217,7 +217,7 @@ class Scanning(object):
                 error_response = {'error': error_message}
                 return JsonResponse(error_response, status=HTTP_BAD_REQUEST)
             else:
-                allowed_file_types = ['.apk', '.apks', '.xapk', '.zip', '.ipa', '.appx', '.jar', '.aar']
+                allowed_file_types = ('.apk', '.apks', '.xapk', '.zip', '.ipa', '.appx', '.jar', '.aar')
                 full_file_path = os.path.join(temp_dir, files[0])
                 if os.path.exists(full_file_path):
                     if is_zip_magic_local_file(full_file_path) and full_file_path.lower().endswith(allowed_file_types):
