@@ -52,6 +52,18 @@ def hash_gen(app_path) -> tuple:
         logger.exception('Generating Hashes')
 
 
+def is_encrypted(app_path):
+    try:
+        with zipfile.ZipFile(app_path) as zf:
+            zf.testzip()
+        return False  # No exception raised, file is not encrypted
+    except RuntimeError as e:
+        if 'encrypted' in str(e):
+            return True  # Exception raised and indicates encryption
+        else:
+            raise  # Re-raise exception if it's not related to encryption
+
+
 def unzip(app_path, ext_path, password=None):
     logger.info('Unzipping')
     try:
@@ -71,7 +83,7 @@ def unzip(app_path, ext_path, password=None):
         if str(e) == 'Bad password for file':
             logger.error('Invalid password provided for the encrypted zip file.')
         else:
-            logger.exception('Unzipping Error')
+            logger.exception('Unzipping Error: %s', str(e))
     except Exception:
         logger.exception('Unzipping Error')
         if platform.system() == 'Windows':
