@@ -183,11 +183,12 @@ class Scanning(object):
         logger.info('Performing Static Analysis of Windows APP')
         return self.data
 
-    def scan_generic(self, file_path, extension, scan_type, message, analyzer=None):
+    def scan_generic(self, file_path, file_name, extension, scan_type, message, analyzer=None):
         """Generic file."""
         md5 = handle_uploaded_file(file_path, extension)
         self.data['hash'] = md5
         self.data['scan_type'] = scan_type
+        self.data['file_name'] = file_name
         if analyzer:
             self.data['analyzer'] = analyzer
         add_to_recent_scan(self.data)
@@ -223,21 +224,21 @@ class Scanning(object):
                     if is_zip_magic_local_file(full_file_path) and full_file_path.lower().endswith(allowed_file_types):
                         logger.info('File format extracted from the ZIP is Supported!')
                         if full_file_path.lower().endswith('.apk'):
-                            return self.scan_generic(full_file_path, '.apk', 'apk', 'Performing Static Analysis of Android APK', analyzer=None)
+                            return self.scan_generic(full_file_path, files[0], '.apk', 'apk', 'Performing Static Analysis of Android APK', analyzer=None)
                         elif full_file_path.lower().endswith('.apks'):
-                            return self.scan_generic(full_file_path, '.apk', 'apks', 'Performing Static Analysis of Android Split APK', analyzer=None)
+                            return self.scan_generic(full_file_path, files[0], '.apk', 'apks', 'Performing Static Analysis of Android Split APK', analyzer=None)
                         elif full_file_path.lower().endswith('.xapk'):
-                            return self.scan_generic(full_file_path, '.xapk', 'xapk', 'Performing Static Analysis of Android XAPK base APK', analyzer=None)
+                            return self.scan_generic(full_file_path, files[0], '.xapk', 'xapk', 'Performing Static Analysis of Android XAPK base APK', analyzer=None)
                         elif full_file_path.lower().endswith('.zip'):
-                            return self.scan_generic(full_file_path, '.zip', 'zip', 'Performing Static Analysis of Android/iOS Source Code', analyzer=None)
+                            return self.scan_generic(full_file_path, files[0], '.zip', 'zip', 'Performing Static Analysis of Android/iOS Source Code', analyzer=None)
                         elif full_file_path.lower().endswith('.ipa'):
-                            return self.scan_generic(full_file_path, '.ipa', 'ipa', 'Performing Static Analysis of iOS IPA', analyzer='static_analyzer_ios')
+                            return self.scan_generic(full_file_path, files[0], '.ipa', 'ipa', 'Performing Static Analysis of iOS IPA', analyzer='static_analyzer_ios')
                         elif full_file_path.lower().endswith('.appx'):
-                            return self.scan_generic(full_file_path, '.appx', 'appx', 'Performing Static Analysis of Windows APP', analyzer='static_analyzer_windows')
+                            return self.scan_generic(full_file_path, files[0], '.appx', 'appx', 'Performing Static Analysis of Windows APP', analyzer='static_analyzer_windows')
                         elif full_file_path.lower().endswith('.jar'):
-                            return self.scan_generic(full_file_path, '.jar', 'jar', 'Performing Static Analysis of Java JAR', analyzer=None)
+                            return self.scan_generic(full_file_path, files[0], '.jar', 'jar', 'Performing Static Analysis of Java JAR', analyzer=None)
                         elif full_file_path.lower().endswith('.aar'):
-                            return self.scan_generic(full_file_path, '.aar', 'aar', 'Performing Static Analysis of Android AAR', analyzer=None)
+                            return self.scan_generic(full_file_path, files[0], '.aar', 'aar', 'Performing Static Analysis of Android AAR', analyzer=None)
 
                     else:
                         error_message = "Error: File format extracted from the ZIP is not Supported!"
