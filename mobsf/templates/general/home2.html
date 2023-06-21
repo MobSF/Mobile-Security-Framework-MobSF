@@ -29,7 +29,7 @@ sidebar-collapse
                       </i>
                     </label>
                     <input type="text" class="form-control" id="appname" placeholder="Application Name"
-                      onfocusout="lookupHandler" required>
+                      onfocusout="lookupHandler()" required>
                     <div id="err_name" class="hidden"><span class="error">Application Name Required!</span>
                     </div>
                   </div>
@@ -41,7 +41,7 @@ sidebar-collapse
                       </i>
                     </label>
                     <input type="text" class="form-control" style="width:90%" id="version" placeholder="Version"
-                      value="1.0" onfocusout="lookupHandler" required>
+                      value="1.0" required>
                     <div id="err_version" class="hidden"><span class="error">Version Required!</span>
                     </div>
                   </div>
@@ -281,6 +281,9 @@ sidebar-collapse
             $("#data_privacy_classification").val(json.data_privacy_classification);
             $("#data_privacy_attributes").val(json.data_privacy_attributes.split(","));
             $("#override_email").val(json.email);
+
+            $("#country").trigger('change');
+            $("#data_privacy_attributes").trigger('change');
           }
         },
         error: function (xhr, errmsg, err) {
