@@ -99,6 +99,21 @@ def common_fields(findings, data):
                 'description': str(value['geolocation']),
                 'section': 'domains',
             })
+        if value.get('ofac') and value['ofac'] is True:
+            country = ''
+            if value['geolocation'].get('country_long'):
+                country = value['geolocation'].get('country_long')
+            elif value['geolocation'].get('region'):
+                country = value['geolocation'].get('region')
+            elif value['geolocation'].get('city'):
+                country = value['geolocation'].get('city')
+            findings['hotspot'].append({
+                'title': ('App may communicate to a server '
+                          f'({domain}) in OFAC sanctioned country '
+                          f'({country})'),
+                'description': str(value['geolocation']),
+                'section': 'domains',
+            })
     # Firebase
     for fb in data['firebase_urls']:
         if fb['open']:
