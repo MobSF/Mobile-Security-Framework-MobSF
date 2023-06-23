@@ -195,20 +195,27 @@ def elf_analysis(app_dir: str) -> dict:
         if not getattr(settings, 'SO_ANALYSIS_ENABLED', True):
             return elf
         logger.info('Binary Analysis Started')
-        libs = Path(app_dir) / 'lib'
-        if not libs.is_dir():
-            return elf
-        for sofile in libs.rglob('*.so'):
-            so_rel = (
-                f'{sofile.parents[1].name}/'
-                f'{sofile.parents[0].name}/'
-                f'{sofile.name}')
-            logger.info('Analyzing %s', so_rel)
-            chk = Checksec(sofile, so_rel)
-            elf_find = chk.checksec()
-            if elf_find:
-                elf['elf_analysis'].append(elf_find)
-                elf['elf_strings'].append({so_rel: chk.strings()})
+        # Supports APK, AAR and JAR
+        libs = [
+            Path(app_dir) / 'lib',
+            Path(app_dir) / 'libs',
+            Path(app_dir) / 'jni']
+        for lib_dir in libs:
+            if not lib_dir.is_dir():
+                continue
+            for sofile in lib_dir.rglob('*.so'):
+                so_rel = (
+                    f'{sofile.parents[1].name}/'
+                    f'{sofile.parents[0].name}/'
+                    f'{sofile.name}')
+                logger.info('Analyzing %s', so_rel)
+                chk = Checksec(sofile, so_rel)
+                elf_find = chk.checksec()
+                if elf_find:
+                    elf['elf_analysis'].append(
+                        elf_find)
+                    elf['elf_strings'].append(
+                        {so_rel: chk.strings()})
     except Exception:
         logger.exception('Performing Binary Analysis')
     return elf
