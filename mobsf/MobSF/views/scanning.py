@@ -32,6 +32,7 @@ def add_to_recent_scan(data):
     try:
         db_obj = RecentScansDB.objects.filter(MD5=data['hash'])
         if not db_obj.exists():
+            logger.info('Data to be saved: %s', data)
             new_db_obj = RecentScansDB(
                 ANALYZER=data['analyzer'],
                 SCAN_TYPE=data['scan_type'],
