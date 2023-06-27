@@ -197,8 +197,8 @@ class Scanning(object):
         logger.info(message)
         return self.data
 
-    def distribute_file_to_analyzers(self, full_file_path, file_name):
-        # full_file_path = os.path.join(working_directory, file_name)
+    def distribute_file_to_analyzers(self, working_directory, file_name):
+        full_file_path = os.path.join(working_directory, file_name)
         logger.info('File path: %s, File name: %s', full_file_path, file_name)
         if not os.path.isdir(full_file_path) and os.path.exists(full_file_path):
             if is_zip_magic_local_file(full_file_path) and full_file_path.lower().endswith(allowed_file_types):
