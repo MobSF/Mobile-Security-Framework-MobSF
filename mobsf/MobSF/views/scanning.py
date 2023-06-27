@@ -50,7 +50,7 @@ def handle_uploaded_file(content, extension, istemp=False):
     """Write Uploaded File."""
     md5 = hashlib.md5()
     bfr = False
-    logger.info('Type of content: %s', type(content))
+    # logger.info('Type of content: %s', type(content))
     if isinstance(content, InMemoryUploadedFile) or isinstance(content, TemporaryUploadedFile):
         bfr = True
         # Not File upload
@@ -242,7 +242,7 @@ class Scanning(object):
                 return error_response, True
             else:
                 error_message = "Error: File does not exist."
-                error_response = {'file': file_name, 'error': error_message}
+                error_response = {'fullFilePath': full_file_path, 'file': file_name, 'error': error_message}
                 return error_response, True
 
     def scan_encrypted_zip(self, password=None):
