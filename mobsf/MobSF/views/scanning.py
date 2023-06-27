@@ -291,6 +291,7 @@ class Scanning(object):
                     #         results.append(result)
                 else:
                     result, error = self.distribute_file_to_analyzers(temp_dir, item)
+                    logger.info('Result: %s', result)
                     if error:
                         errors.append(result)
                     else:
