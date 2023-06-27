@@ -247,7 +247,7 @@ class Scanning(object):
 
     def scan_encrypted_zip(self, password=None):
         md5 = handle_uploaded_file(self.file, '.zip', istemp=True)
-        temp_dir = os.path.join(settings.TEMP_DIR, md5 + '/')
+        temp_dir = os.path.join(settings.TEMP_DIR, md5 + '\\')
         file = os.path.join(temp_dir, md5 + '.zip')
         extracted_items = unzip_file_directory(file, temp_dir, password)
 
@@ -270,7 +270,7 @@ class Scanning(object):
             for item in extracted_items:
                 item_path = os.path.join(temp_dir, item)
                 if os.path.isdir(item_path):
-                    pro_type, valid = valid_source_code(item_path + '/')
+                    pro_type, valid = valid_source_code(item_path + '\\')
                     if valid:
                         zip_file_name = os.path.join(temp_dir, item + '.zip')
                         if zip_directory(temp_dir, zip_file_name):
@@ -282,7 +282,7 @@ class Scanning(object):
                             error_response = {'directory': item, 'error': error_message}
                             errors.append(error_response)
                     else:
-                        result, error = self.distribute_file_to_analyzers(item_path + '/', item)
+                        result, error = self.distribute_file_to_analyzers(item_path + '\\', item)
                         if error:
                             errors.append(result)
                         else:
