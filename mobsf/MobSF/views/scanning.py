@@ -199,7 +199,7 @@ class Scanning(object):
 
     def distribute_file_to_analyzers(self, working_directory, file_name):
         full_file_path = os.path.join(working_directory, file_name)
-        if os.path.exists(full_file_path):
+        if os.path.exists(full_file_path) and not os.path.isdir(full_file_path):
             if is_zip_magic_local_file(full_file_path) and full_file_path.lower().endswith(allowed_file_types):
                 logger.info('File format extracted from the ZIP is Supported!')
                 if full_file_path.lower().endswith('.apk'):
@@ -275,7 +275,7 @@ class Scanning(object):
                         else:
                             error_message = "Error: Zipping error"
                             error_response = {'directory': item, 'error': error_message}
-                            return JsonResponse(error_response, status=HTTP_BAD_REQUEST)
+                            errors.append(error_response)
                     else:
                         result, error = self.distribute_file_to_analyzers(item_path + '/', item)
                         if error:
