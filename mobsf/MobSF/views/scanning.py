@@ -282,12 +282,12 @@ class Scanning(object):
                             error_message = "Error: Zipping error"
                             error_response = {'directory': item, 'error': error_message}
                             errors.append(error_response)
-                    else:
-                        result, error = self.distribute_file_to_analyzers(item_path + '/', item)
-                        if error:
-                            errors.append(result)
-                        else:
-                            results.append(result)
+                    # else:
+                    #     result, error = self.distribute_file_to_analyzers(item_path + '/', item)
+                    #     if error:
+                    #         errors.append(result)
+                    #     else:
+                    #         results.append(result)
                 else:
                     result, error = self.distribute_file_to_analyzers(temp_dir, item)
                     if error:
