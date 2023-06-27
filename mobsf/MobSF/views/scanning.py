@@ -199,7 +199,7 @@ class Scanning(object):
 
     def distribute_file_to_analyzers(self, working_directory, file_name):
         full_file_path = os.path.join(working_directory, file_name)
-        if os.path.exists(full_file_path) and not os.path.isdir(full_file_path):
+        if os.path.exists(full_file_path):
             if is_zip_magic_local_file(full_file_path) and full_file_path.lower().endswith(allowed_file_types):
                 logger.info('File format extracted from the ZIP is Supported!')
                 if full_file_path.lower().endswith('.apk'):
@@ -236,14 +236,15 @@ class Scanning(object):
                 error_response = {'file': file_name, 'error': error_message}
                 return error_response, True
         else:
-            if not os.path.isdir(full_file_path):
+            if os.path.isdir(full_file_path):
+                error_message = "Error: File is a directory. Will skip processing..."
+                error_response = {'Directory': full_file_path, 'error': error_message}
+                return error_response, True
+            else:
                 error_message = "Error: File does not exist."
                 error_response = {'file': file_name, 'error': error_message}
                 return error_response, True
-            else:
-                error_message = "Error: File is a directory. Will skip processing..."
-                error_response = {'Directory': file_name, 'error': error_message}
-                return error_response, True
+
     def scan_encrypted_zip(self, password=None):
         md5 = handle_uploaded_file(self.file, '.zip', istemp=True)
         temp_dir = os.path.join(settings.TEMP_DIR, md5 + '/')
