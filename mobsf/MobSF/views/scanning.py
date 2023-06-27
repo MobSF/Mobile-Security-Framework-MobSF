@@ -187,6 +187,7 @@ class Scanning(object):
 
     def scan_generic(self, file_path, file_name, extension, scan_type, message, analyzer=None):
         """Generic file."""
+        logger.info('Processing File Name: %s', file_name)
         md5 = handle_uploaded_file(file_path, extension)
         self.data['hash'] = md5
         self.data['scan_type'] = scan_type
@@ -194,12 +195,11 @@ class Scanning(object):
         if analyzer:
             self.data['analyzer'] = analyzer
         add_to_recent_scan(self.data)
-        logger.info(message)
+        logger.info(message + '\n')
         return self.data
 
     def distribute_file_to_analyzers(self, working_directory, file_name):
         full_file_path = os.path.join(working_directory, file_name)
-        logger.info('File path: %s, File name: %s', full_file_path, file_name)
         if not os.path.isdir(full_file_path) and os.path.exists(full_file_path):
             if is_zip_magic_local_file(full_file_path) and full_file_path.lower().endswith(allowed_file_types):
                 logger.info('File format extracted from the ZIP is Supported!')
