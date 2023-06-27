@@ -252,7 +252,8 @@ class Scanning(object):
         temp_dir = os.path.join(settings.TEMP_DIR, md5 + '/')
         file = os.path.join(temp_dir, md5 + '.zip')
         extracted_items = unzip_file_directory(file, temp_dir, password)
-
+        results = []  # store data
+        errors = []  # store errors
         if len(extracted_items) == 0:
             error_message = "Error: No files/folders extracted from the ZIP."
             error_response = {'error': error_message}
@@ -267,8 +268,6 @@ class Scanning(object):
             logger.info('Performing Static Analysis of Android/iOS Source Code')
             return self.data
         else:
-            results = []  # store data
-            errors = []  # store errors
             for item in extracted_items:
                 item_path = os.path.join(temp_dir, item)
                 if os.path.isdir(item_path):
@@ -295,6 +294,7 @@ class Scanning(object):
                         errors.append(result)
                     else:
                         results.append(result)
+                    logger.info('Results: %s', result)
             response_data = {'results': results, 'errors': errors}
             logger.info('Response Data: %s', response_data)
             return response_data
