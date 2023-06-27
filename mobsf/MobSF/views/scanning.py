@@ -294,7 +294,7 @@ class Scanning(object):
                         errors.append(result)
                     else:
                         results.append(result.copy())
-                    logger.info('Results: %s', results)
+                    # logger.info('Results: %s', results)
             response_data = {'results': results, 'errors': errors}
-            logger.info('Response Data: %s', response_data)
+            # logger.info('Response Data: %s', response_data)
             return response_data
