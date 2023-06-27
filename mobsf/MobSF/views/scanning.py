@@ -236,10 +236,14 @@ class Scanning(object):
                 error_response = {'file': file_name, 'error': error_message}
                 return error_response, True
         else:
-            error_message = "Error: File does not exist."
-            error_response = {'file': file_name, 'error': error_message}
-            return error_response, True
-
+            if not os.path.isdir(full_file_path):
+                error_message = "Error: File does not exist."
+                error_response = {'file': file_name, 'error': error_message}
+                return error_response, True
+            else:
+                error_message = "Error: File is a directory. Will skip processing..."
+                error_response = {'Directory': file_name, 'error': error_message}
+                return error_response, True
     def scan_encrypted_zip(self, password=None):
         md5 = handle_uploaded_file(self.file, '.zip', istemp=True)
         temp_dir = os.path.join(settings.TEMP_DIR, md5 + '/')
