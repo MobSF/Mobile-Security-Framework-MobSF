@@ -1,0 +1,22 @@
+name: Keep clone up to date
+variables:
+  REMOTE_ADDR: 'https://github.com/keatkean/Mobile-Security-Framework-MobSF.git'
+stages:
+  - stage: running_git_commands
+    displayName: running_git_commands
+    jobs:
+      - job: initiate
+        displayName: initiate
+        continueOnError: false
+        steps:
+        - checkout: self
+          clean: true
+          persistCredentials: true
+          displayName: run_commands
+        - bash: | 
+            git checkout master
+            git remote add repoGithub $(REMOTE_ADDR)
+            git fetch repoGithub master
+            git reset --hard repoGithub/master
+            git pull --rebase repoGithub master
+            git push -f origin
