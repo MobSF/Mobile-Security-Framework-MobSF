@@ -14,9 +14,9 @@ stages:
           persistCredentials: true
           displayName: run_commands
         - bash: | 
-            git checkout Development
+            git checkout master
             git remote add Mobile-Security-Framework-MobSF $(REMOTE_ADDR)
-            git fetch Mobile-Security-Framework-MobSF Development
-            git reset --hard Mobile-Security-Framework-MobSF/Development
-            git pull --rebase Mobile-Security-Framework-MobSF Development
-            git push -f origin
+            git fetch Mobile-Security-Framework-MobSF master
+            git reset --hard Mobile-Security-Framework-MobSF/master
+            git pull --rebase Mobile-Security-Framework-MobSF master
+            git push -f origin HEAD:main
