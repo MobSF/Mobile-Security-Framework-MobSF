@@ -104,6 +104,7 @@ class Scanning(object):
     def __init__(self, request):
         self.file = request.FILES['file']
         self.file_name = request.FILES['file'].name
+        self.zip_password = request.POST.get('password')
         self.data = {
             'analyzer': 'static_analyzer',
             'status': 'success',
@@ -245,7 +246,7 @@ class Scanning(object):
                 error_response = {'fullFilePath': full_file_path, 'file': file_name, 'error': error_message}
                 return error_response, True
 
-    def scan_encrypted_zip(self, password=None, full_file_path=None):
+    def scan_encrypted_zip(self, full_file_path=None):
         if full_file_path:
             md5 = handle_uploaded_file(full_file_path, '.zip', istemp=True)
         else:
@@ -253,7 +254,7 @@ class Scanning(object):
 
         temp_dir = os.path.join(settings.TEMP_DIR, md5 + '/')
         file = os.path.join(temp_dir, md5 + '.zip')
-        extracted_items = unzip_file_directory(file, temp_dir, password)
+        extracted_items = unzip_file_directory(file, temp_dir, self.zip_password)
         results = []  # store data
         errors = []  # store errors
         if len(extracted_items) == 0:

@@ -133,11 +133,7 @@ class Upload(object):
         file_name = self.file.name
         logger.info('MIME Type: %s FILE: %s', content_type, file_name)
         if self.file_type.is_zip():
-            zip_password = request.POST.get('password')
-            if zip_password:
-                return scanning.scan_encrypted_zip(zip_password)
-            else:
-                return scanning.scan_encrypted_zip()
+            return scanning.scan_encrypted_zip()
         else:
             return self.upload_scan(scanning)
 
