@@ -51,7 +51,7 @@ def handle_uploaded_file(content, extension, istemp=False):
     """Write Uploaded File."""
     md5 = hashlib.md5()
     bfr = False
-    # logger.info('Type of content: %s', type(content))
+    logger.info('Content: %s, Type of content: %s', content, type(content))
     if isinstance(content, InMemoryUploadedFile) or isinstance(content, TemporaryUploadedFile):
         bfr = True
         # Not File upload
@@ -215,9 +215,7 @@ class Scanning(object):
                                              'Performing Static Analysis of Android XAPK base APK',
                                              analyzer=None), False
                 elif full_file_path.lower().endswith('.zip'):
-                    return self.scan_generic(full_file_path, file_name, '.zip', 'zip',
-                                             'Performing Static Analysis of Android/iOS Source Code',
-                                             analyzer=None), False
+                    return self.scan_encrypted_zip(full_file_path=full_file_path), False
                 elif full_file_path.lower().endswith('.ipa'):
                     return self.scan_generic(full_file_path, file_name, '.ipa', 'ipa',
                                              'Performing Static Analysis of iOS IPA',
@@ -247,8 +245,12 @@ class Scanning(object):
                 error_response = {'fullFilePath': full_file_path, 'file': file_name, 'error': error_message}
                 return error_response, True
 
-    def scan_encrypted_zip(self, password=None):
-        md5 = handle_uploaded_file(self.file, '.zip', istemp=True)
+    def scan_encrypted_zip(self, password=None, full_file_path=None):
+        if full_file_path:
+            md5 = handle_uploaded_file(full_file_path, '.zip', istemp=True)
+        else:
+            md5 = handle_uploaded_file(self.file, '.zip', istemp=True)
+
         temp_dir = os.path.join(settings.TEMP_DIR, md5 + '/')
         file = os.path.join(temp_dir, md5 + '.zip')
         extracted_items = unzip_file_directory(file, temp_dir, password)
