@@ -25,10 +25,13 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Setup Pip
+      run: |
+        python -m pip install pip==22.3.1
     - name: Lint
       if: startsWith(matrix.os, 'ubuntu')
       run: |
-        python -m pip install --upgrade pip tox
+        python -m pip install --upgrade tox
         tox -e lint
     - name: Install Ubuntu Dependencies
       if: startsWith(matrix.os, 'ubuntu')
