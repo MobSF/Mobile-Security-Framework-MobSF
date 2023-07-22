@@ -17,6 +17,7 @@ from OpenSSL import crypto
 from frida import __version__ as frida_version
 
 from mobsf.DynamicAnalyzer.tools.webproxy import (
+    create_ca,
     get_ca_file,
     get_http_tools_url,
     start_proxy,
@@ -35,7 +36,7 @@ from mobsf.MobSF.utils import (
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 
 logger = logging.getLogger(__name__)
-ANDROID_API_SUPPORTED = 29
+ANDROID_API_SUPPORTED = 33
 
 
 class Environment:
@@ -51,8 +52,9 @@ class Environment:
 
     def wait(self, sec):
         """Wait in Seconds."""
-        logger.info('Waiting for %s seconds...', str(sec))
-        time.sleep(sec)
+        if sec > 0:
+            logger.info('Waiting for %s seconds...', str(sec))
+            time.sleep(sec)
 
     def check_connect_error(self, output):
         """Check if connect failed."""
@@ -61,11 +63,18 @@ class Environment:
             return False
         return True
 
-    def run_subprocess_verify_output(self, cmd):
+    def run_subprocess_verify_output(self, cmd, wait=2):
         """Run subprocess and verify execution."""
         out = subprocess.check_output(cmd)  # lgtm [py/command-line-injection]
-        self.wait(2)                        # adb shell is allowed
+        self.wait(wait)                        # adb shell is allowed
         return self.check_connect_error(out)
+
+    def connect(self):
+        """ADB Connect."""
+        logger.info('Connecting to Android %s', self.identifier)
+        self.run_subprocess_verify_output([get_adb(),
+                                           'connect',
+                                           self.identifier], 0)
 
     def connect_n_mount(self):
         """Test ADB Connection."""
@@ -564,6 +573,7 @@ class Environment:
 
     def mobsf_agents_setup(self, agent):
         """Setup MobSF agents."""
+        create_ca()
         # Install MITM RootCA
         self.install_mobsf_ca('install')
         # Install MobSF Agents
