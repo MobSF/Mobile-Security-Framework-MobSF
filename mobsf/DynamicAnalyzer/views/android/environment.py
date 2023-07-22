@@ -36,7 +36,7 @@ from mobsf.MobSF.utils import (
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 
 logger = logging.getLogger(__name__)
-ANDROID_API_SUPPORTED = 33
+ANDROID_API_SUPPORTED = 30
 
 
 class Environment:
