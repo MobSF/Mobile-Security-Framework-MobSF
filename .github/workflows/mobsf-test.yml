@@ -27,7 +27,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Setup Pip
       run: |
-        python -m pip install pip==23.2
+        python -m pip install pip==22.3.1
     - name: Lint
       if: startsWith(matrix.os, 'ubuntu')
       run: |
