@@ -2,6 +2,7 @@ import requests
 import time
 import json
 import os
+import glob
 
 API_KEY = "d3bce791213bf5c2970b32a58a80ba25e328894a8c790218cfd34611e199b928"
 
@@ -42,20 +43,27 @@ def check_url(url):
 # Set to keep track of URLs that have been checked
 checked_urls = set()
 
-with open("mobsf_frida_out_intercept_traffic.txt") as f:
-    for line in f:
-        if "URL: " in line:
-            url = line.replace("URL: ", "").strip()  
-            if url not in checked_urls:
-                results.append(check_url(url))
-                checked_urls.add(url)
-                time.sleep(15)
+main_dir = os.path.expanduser("~/.MobSF/uploads")
+#main_dir = "/path/to/your/main/directory"
+directories = glob.glob(f"{main_dir}/*/")  # all directories in main_dir
+newest_dir = max(directories, key=os.path.getctime)  # most recently created directory
+
+file_path = os.path.join(newest_dir, "mobsf_frida_out.txt")
+
+if os.path.exists(file_path):
+    with open(file_path) as f:
+        for line in f:
+            if "URL: " in line:
+                url = line.replace("URL: ", "").strip()  
+                if url not in checked_urls:
+                    results.append(check_url(url))
+                    checked_urls.add(url)
+                    time.sleep(15)
 
 # Check if the 'urlcheck' directory exists, and if not, create it
-if not os.path.exists('urlcheck'):
+if not os.path.exists('/urlcheck'):
     os.makedirs('urlcheck')
 
 # Write the results to a JSON file in the 'urlcheck' directory
 with open('urlcheck/output.json', 'w') as f:
     json.dump(results, f, indent=4)
-
