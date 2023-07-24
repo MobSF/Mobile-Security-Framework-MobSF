@@ -1,6 +1,12 @@
 Java.perform(function() {
     try {
-        var OkHttpClient = Java.use('okhttp3.OkHttpClient');
+        var OkHttpClient;
+        try {
+            OkHttpClient = Java.use('okhttp3.OkHttpClient');
+        } catch (error) {
+            console.error("Error: Network Traffic not found.");
+            return;
+        }
         var RequestBody = Java.use('okhttp3.RequestBody');
         var Buffer = Java.use('okio.Buffer');
         var ByteString = Java.use('okio.ByteString');
