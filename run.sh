@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 var="$1"
 
 function validate_ip () {
