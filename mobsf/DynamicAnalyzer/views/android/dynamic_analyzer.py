@@ -25,6 +25,7 @@ from mobsf.DynamicAnalyzer.tools.webproxy import (
     stop_httptools,
 )
 from mobsf.MobSF.utils import (
+    get_android_dm_exception_msg,
     get_config_loc,
     get_device,
     get_proxy_ip,
@@ -65,21 +66,17 @@ def dynamic_analysis(request, api=False):
         try:
             identifier = get_device()
         except Exception:
-            msg = ('Is Android VM running? MobSF cannot'
-                   ' find android instance identifier.'
-                   ' Please run an android instance and refresh'
-                   ' this page. If this error persists,'
-                   ' set ANALYZER_IDENTIFIER in '
-                   f'{get_config_loc()}')
-            return print_n_send_error_response(request, msg, api)
+            return print_n_send_error_response(
+                request, get_android_dm_exception_msg(), api)
         try:
             if identifier:
                 env = Environment(identifier)
                 env.connect()
                 device_packages = env.get_device_packages()
-                pkg_file = Path(settings.DWD_DIR) / 'packages.json'
-                with pkg_file.open('w', encoding='utf-8') as target:
-                    dump(device_packages, target)
+                if device_packages:
+                    pkg_file = Path(settings.DWD_DIR) / 'packages.json'
+                    with pkg_file.open('w', encoding='utf-8') as target:
+                        dump(device_packages, target)
                 and_ver = env.get_android_version()
                 and_sdk = env.get_android_sdk()
         except Exception:
@@ -134,13 +131,8 @@ def dynamic_analyzer(request, checksum, api=False):
         except Exception:
             pass
         if not identifier:
-            msg = ('Is the android instance running? MobSF cannot'
-                   ' find android instance identifier. '
-                   'Please run an android instance and refresh'
-                   ' this page. If this error persists,'
-                   ' set ANALYZER_IDENTIFIER in '
-                   f'{get_config_loc()}')
-            return print_n_send_error_response(request, msg, api)
+            return print_n_send_error_response(
+                request, get_android_dm_exception_msg(), api)
 
         # Get activities from the static analyzer results
         try:

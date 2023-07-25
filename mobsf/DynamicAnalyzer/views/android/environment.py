@@ -430,7 +430,9 @@ class Environment:
             'list',
             'packages',
             '-f',
-            '-3'], True)
+            '-3'], True, True)
+        if not out:
+            return device_packages
         for pkg_str in out.decode('utf-8').rstrip().split():
             path_pkg = pkg_str.split('package:', 1)[1].strip()
             parts = path_pkg.split('.apk=', 1)

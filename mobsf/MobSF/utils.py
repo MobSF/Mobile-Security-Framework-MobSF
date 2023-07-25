@@ -333,10 +333,7 @@ def get_device():
         if len(out) > 2:
             dev_id = out[1].decode('utf-8').split('\t')[0]
             return dev_id
-    logger.error('Is the Android VM running?\n'
-                 'MobSF cannot identify device id.\n'
-                 'Please set ''ANALYZER_IDENTIFIER in '
-                 '%s', get_config_loc())
+    logger.error(get_android_dm_exception_msg())
 
 
 def get_adb():
@@ -637,3 +634,14 @@ def android_component(data):
     elif 'Broadcast Receiver' in data:
         cmp = 'receiver_'
     return cmp
+
+
+def get_android_dm_exception_msg():
+    return (
+        'Is your Android VM/emulator running? MobSF cannot'
+        ' find the android device identifier.'
+        ' Please run an android instance and refresh'
+        ' this page. If this error persists,'
+        ' set ANALYZER_IDENTIFIER in '
+        f'{get_config_loc()} or via environment variable'
+        ' MOBSF_ANALYZER_IDENTIFIER')
