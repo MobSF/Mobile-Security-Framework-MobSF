@@ -129,8 +129,6 @@ def dynamic_analyzer(request, checksum, api=False):
         try:
             identifier = get_device()
         except Exception:
-            pass
-        if not identifier:
             return print_n_send_error_response(
                 request, get_android_dm_exception_msg(), api)
 
@@ -303,8 +301,6 @@ def trigger_static_analysis(request, checksum):
         try:
             identifier = get_device()
         except Exception:
-            pass
-        if not identifier:
             err = 'Cannot connect to Android Runtime'
             return print_n_send_error_response(request, err)
         env = Environment(identifier)

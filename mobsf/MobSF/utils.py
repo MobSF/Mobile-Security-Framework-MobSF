@@ -17,6 +17,7 @@ import sqlite3
 import unicodedata
 import threading
 from distutils.version import StrictVersion
+from urllib.parse import urlparse
 
 import distro
 
@@ -321,18 +322,42 @@ def find_process_by(name):
     return proc
 
 
+def docker_translate_localhost(identifier):
+    """Convert localhost to host.docker.internal."""
+    if not identifier:
+        return identifier
+    if not os.getenv('MOBSF_PLATFORM') == 'docker':
+        return identifier
+    try:
+        docker_internal = 'host.docker.internal:'
+        if re.match(r'^emulator-\d{4}$', identifier):
+            adb_port = int(identifier.split('emulator-')[1]) + 1
+            # ADB port is console port + 1
+            return f'{docker_internal}{adb_port}'
+        p = urlparse(identifier)
+        if p.scheme in ('127.0.0.1', 'localhost'):
+            return f'{docker_internal}{p.path}'
+        return identifier
+    except Exception:
+        logger.exception('Failed to convert device '
+                         'identifier for docker connectivity')
+        return identifier
+
+
 def get_device():
     """Get Device."""
     if os.getenv('ANALYZER_IDENTIFIER'):
-        return os.getenv('ANALYZER_IDENTIFIER')
-    if settings.ANALYZER_IDENTIFIER:
-        return settings.ANALYZER_IDENTIFIER
+        return docker_translate_localhost(
+            os.getenv('ANALYZER_IDENTIFIER'))
+    elif settings.ANALYZER_IDENTIFIER:
+        return docker_translate_localhost(
+            settings.ANALYZER_IDENTIFIER)
     else:
         dev_id = ''
         out = subprocess.check_output([get_adb(), 'devices']).splitlines()
         if len(out) > 2:
             dev_id = out[1].decode('utf-8').split('\t')[0]
-            return dev_id
+            return docker_translate_localhost(dev_id)
     logger.error(get_android_dm_exception_msg())
 
 
