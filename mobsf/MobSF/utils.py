@@ -17,7 +17,6 @@ import sqlite3
 import unicodedata
 import threading
 from distutils.version import StrictVersion
-from urllib.parse import urlparse
 
 import distro
 
@@ -329,14 +328,16 @@ def docker_translate_localhost(identifier):
     if not os.getenv('MOBSF_PLATFORM') == 'docker':
         return identifier
     try:
+        identifier = identifier.strip()
         docker_internal = 'host.docker.internal:'
         if re.match(r'^emulator-\d{4}$', identifier):
             adb_port = int(identifier.split('emulator-')[1]) + 1
             # ADB port is console port + 1
             return f'{docker_internal}{adb_port}'
-        p = urlparse(identifier)
-        if p.scheme in ('127.0.0.1', 'localhost'):
-            return f'{docker_internal}{p.path}'
+        m = re.match(r'^(localhost|127\.0\.0\.1):\d{1,5}$', identifier)
+        if m:
+            adb_port = int(identifier.split(m.group(1))[1].replace(':', ''))
+            return f'{docker_internal}{adb_port}'
         return identifier
     except Exception:
         logger.exception('Failed to convert device '

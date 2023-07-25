@@ -74,7 +74,7 @@ class Environment:
         logger.info('Connecting to Android %s', self.identifier)
         self.run_subprocess_verify_output([get_adb(),
                                            'connect',
-                                           self.identifier], 0)
+                                           self.identifier])
 
     def connect_n_mount(self):
         """Test ADB Connection."""
