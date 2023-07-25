@@ -12,7 +12,7 @@ LABEL \
 
 # Environment vars
 ENV DEBIAN_FRONTEND="noninteractive" \
-    ANALYZER_IDENTIFIER="" \
+    MOBSF_PLATFORM="docker" \
     JDK_FILE="openjdk-16.0.1_linux-x64_bin.tar.gz" \
     JDK_FILE_ARM="openjdk-16.0.1_linux-aarch64_bin.tar.gz" \
     WKH_FILE="wkhtmltox_0.12.6-1.focal_amd64.deb" \
