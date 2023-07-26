@@ -238,8 +238,8 @@ from mobsf.MobSF.utils import (
 logger = logging.getLogger(__name__)
 register.filter('key', key)
 
-def filter_frida_logs(app_dir, keyword):
-    """Filter Frida logs for a keyword and save to a file for log analysis (remove noisy data)."""
+def filter_frida_logs(app_dir, keywords):
+    """Filter Frida logs for a list of keywords and save to a file for log analysis (remove noisy data)."""
     frida_log_file = os.path.join(app_dir, 'mobsf_frida_out.txt')
     log_analysis_file = os.path.join(app_dir, 'log_analysis.txt')
     
@@ -248,7 +248,7 @@ def filter_frida_logs(app_dir, keyword):
     
     with open(frida_log_file, 'r') as frida_logs, open(log_analysis_file, 'w') as log_analysis:
         for line in frida_logs:
-            if keyword in line:
+            if any(keyword in line for keyword in keywords):
                 log_analysis.write(line)
 
 
@@ -283,7 +283,7 @@ def view_report(request, checksum, api=False):
         fd_log = os.path.join(app_dir, 'mobsf_frida_out.txt')
         droidmon = droidmon_api_analysis(app_dir, package)
         apimon, b64_strings = apimon_analysis(app_dir)
-        filter_frida_logs(app_dir, 'URL')
+        filter_frida_logs(app_dir, ['URL', 'contact', 'messages'])
         deps = dependency_analysis(package, app_dir)
         analysis_result = run_analysis(app_dir, checksum, package)
         domains = analysis_result['domains']
