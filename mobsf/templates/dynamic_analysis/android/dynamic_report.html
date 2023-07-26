@@ -267,7 +267,7 @@
                       {% endif %}
                           <a class="btn btn-success" target="_blank" role="button" href="../httptools?project={{package}}"><i class="fab fa-hire-a-helper"></i> Start HTTPTools</a>
                       </p>
-                      <p><h6><strong>Raw Logs</strong></h6></p>
+                        <p><h6><strong>Raw Logs</strong></h6></p>
                       <p>
                       {% if droidmon %}
                          <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-x_logcat.txt"><i class="fa fa-mobile"></i> Droidmon API Monitor Logs</a>
@@ -282,6 +282,7 @@
                       <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-logcat.txt"><i class="fas fa-water"></i> Logcat Logs</a>
                       <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-dump.txt"><i class="fas fa-water"></i> Dumpsys Logs</a> 
                       <a class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-app_data.tar"><i class="fas fa-download"></i> Application Data</a>
+                      <a class="btn btn-primary btn-sm" target="_blank" role="button" href="../download/{{ hash }}-testing.txt"><i class="fas fa-vial"></i> Testing</a>
                       </p>
                    </div>
                 </div>
@@ -564,6 +565,27 @@
     </div>
 </section>
  <!-- ===========================end dependencies ================================== -->
+ <a id="loganalysis" class="anchor"></a>
+ <section class="content">
+   <div class="container-fluid">
+     <div class="row">
+         <div class="col-lg-12">
+         <div class="card">
+           <div class="card-body">
+               <p>
+              <strong><i class="fas fa-file-alt"></i> LOG ANALYSIS</strong>
+              </p>
+               <div class="list-group">
+                   <pre>{{ log_analysis }}</pre>
+               </div>
+           </div>
+         </div><!-- /.card -->
+         </div>
+         <!-- end row -->
+         </div>
+     </div>
+ </section>
+ <!-- ===========================end log analysis ================================== -->
  <style>
   #chartdiv {
   width: 100%;

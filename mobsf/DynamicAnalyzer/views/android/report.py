@@ -79,6 +79,14 @@ def view_report(request, checksum, api=False):
         trackers = trk.get_trackers_domains_or_deps(domains, deps)
         generate_download(app_dir, checksum, download_dir, package)
         images = get_screenshots(checksum, download_dir)
+        #
+        log_analysis_file = os.path.join(app_dir, 'log_analysis.txt')  
+        if is_file_exists(log_analysis_file):
+            with open(log_analysis_file, 'r') as file:
+                log_analysis = file.read()
+        else:
+            log_analysis = None
+            
         context = {'hash': checksum,
                    'emails': analysis_result['emails'],
                    'urls': analysis_result['urls'],
@@ -99,7 +107,8 @@ def view_report(request, checksum, api=False):
                    'runtime_dependencies': list(deps),
                    'package': package,
                    'version': settings.MOBSF_VER,
-                   'title': 'Dynamic Analysis'}
+                   'title': 'Dynamic Analysis',
+                   'log_analysis': log_analysis}
         template = 'dynamic_analysis/android/dynamic_report.html'
         if api:
             return context
