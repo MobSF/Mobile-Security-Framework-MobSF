@@ -104,7 +104,7 @@ APPX_MIME = [
 # REST API only mode
 # Set MOBSF_API_ONLY to 1 to enable REST API only mode
 # In this mode, web UI related urls are disabled.
-API_ONLY = os.getenv('MOBSF_API_ONLY', '1')
+API_ONLY = os.getenv('MOBSF_API_ONLY', '0')
 
 # -----External URLS--------------------------
 MALWARE_DB_URL = 'https://www.malwaredomainlist.com/mdlcsv.php'
