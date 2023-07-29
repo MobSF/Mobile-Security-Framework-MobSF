@@ -225,10 +225,10 @@
           // Is valid file extensions
           function isValidExt(file_name){
                 var val = file_name.toLowerCase();
-                var regex = new RegExp("(.*?)\.(ipa|apk|apks|xapk|jar|aar|zip|appx)$");
+                var regex = new RegExp("(.*?)\.(ipa|apk|apks|xapk|jar|aar|so|zip|appx)$");
                 val = val.replace(/^.*[\\\/]/, '');
                 if (!(regex.test(val))) {
-                    _('status').innerText = "Please upload APK/APKS/XAPK/JAR/AAR/IPA/ZIP/APPX only!";
+                    _('status').innerText = "Please upload APK/APKS/XAPK/JAR/AAR/SO/IPA/ZIP/APPX only!";
                     return false;
                 }
                 return true;

@@ -617,6 +617,13 @@ def is_zip_magic(file_obj):
     return bool(magic == b'\x50\x4B\x03\x04')
 
 
+def is_elf_so_magic(file_obj):
+    magic = file_obj.read(4)
+    file_obj.seek(0, 0)
+    # ELF/SO Magic
+    return bool(magic == b'\x7F\x45\x4C\x46')
+
+
 def disable_print():
     sys.stdout = open(os.devnull, 'w')
 

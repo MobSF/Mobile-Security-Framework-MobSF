@@ -116,6 +116,15 @@ class Scanning(object):
         logger.info('Performing Static Analysis of Android AAR')
         return self.data
 
+    def scan_so(self):
+        """Shared object file."""
+        md5 = handle_uploaded_file(self.file, '.so')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'so'
+        add_to_recent_scan(self.data)
+        logger.info('Performing Static Analysis of Shared Object')
+        return self.data
+
     def scan_zip(self):
         """Android /iOS Zipped Source."""
         md5 = handle_uploaded_file(self.file, '.zip')

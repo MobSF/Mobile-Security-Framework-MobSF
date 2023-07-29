@@ -328,7 +328,7 @@
              </a>
             </li>
             {% else %}
-              {% if app_type not in 'jar,aar' %}
+              {% if app_type not in 'jar,aar,so' %}
             <li class="nav-item">
               <a onclick="dynamic_loader()" href="../android_dynamic/{{md5}}" class="nav-link">
               <i class="nav-icon fa fa-play-circle"></i>
@@ -372,6 +372,7 @@
             <div class="card-body">
               <h5 class="card-title"></h5>
                 <div class="row">
+                {% if app_type not in 'so' %}
                 <div class="col-2">
                   <p><strong><i class="fas fa-check-double"></i> APP SCORES</strong></p>
                   <img id="app_icon" src="{% if icon_found %}/download/{{ md5 }}-icon.png{% else %}{% static 'img/no_icon.png' %}{% endif %}"/>
@@ -399,6 +400,7 @@
                   <p> <a href="../appsec_dashboard/{{ md5 }}/" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
 
                 </div>
+                {% endif %}
                 <div class="col-6">
                   <p><strong><i class="fas fa-box-open"></i> FILE INFORMATION </strong></p>
                   <span class="badge bg-primary">File Name</span>
@@ -412,6 +414,7 @@
                   <span class="badge bg-primary">SHA256</span>
                   {{ sha256 }}<br/>
                 </div>
+                {% if app_type not in 'jar,aar,so' %}
                 <div class="col-4">
                   <p><strong><i class="fas fa-info"></i> APP INFORMATION </strong></p>
                   <span class="badge bg-primary">App Name</span>
@@ -431,6 +434,7 @@
                 <span class="badge bg-primary">Android Version Code</span>
                 {{ version_code }}
                 </div>
+                {% endif %}
               </div>
 
             </div>
@@ -486,7 +490,7 @@
       </div>
   </div>
 
-  {% if app_type not in 'jar,aar' %}
+  {% if app_type not in 'jar,aar,so' %}
   <!-- Boxes -->
    <div class="container-fluid">
       <div class="row">
@@ -636,9 +640,14 @@
                 <strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong>
                 </p>
                 <p> <a href="../static_analyzer/?checksum={{ md5 }}&amp;name={{ file_name }}&amp;type={{ app_type }}&amp;rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
+                  {% if app_type in 'so' %}
+                  <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type={{ app_type }}" class="btn btn-warning"> <i class="fa fa-download"></i> Download {{ app_type | upper}}</a>
+                  {% endif %}
+                  {% if app_type not in 'so' %}
                   <a id="supbtn" onclick="list_suppressions()" role="button" class="btn btn-primary" data-target="#sup_list" data-toggle="modal" href="#"><i class="fa fa-list"></i> Manage Suppressions</a>
+                  {% endif %}
                 </p>
-                {% if app_type not in 'jar,aar' %}
+                {% if app_type not in 'jar,aar,so' %}
                 <p>
                   <a onclick="dynamic_loader()" href="../android_dynamic/{{md5}}" class="btn btn-success" role="button"><i class="fa fa-play-circle"></i> Start Dynamic Analysis</a>
                 </p>
@@ -646,6 +655,7 @@
               </div>
             </div><!-- /.card -->
             </div>
+            {% if app_type not in 'so' %}
             <div class="col-lg-8">
               <div class="card">
                 <div class="card-body">
@@ -671,12 +681,14 @@
                 </div>
               </div>
             </div>
+            {% endif %}
 
             <!-- end row -->
             </div>
         </div>
 </section>
   <!-- ===========================end scan options================================== -->
+  {% if app_type not in 'so' %}
 <a id="certificate" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
@@ -1304,6 +1316,7 @@
     </div>
 </section>
  <!-- ===========================end code analysis ================================== -->
+ {% endif %}
  <a id="binary_analysis" class="anchor"></a>
  <section class="content">
   <div class="container-fluid">
@@ -1318,8 +1331,10 @@
               <table id="table_binary" class="table table-bordered table-hover table-striped">
                   <thead>
                       <tr>
+                         {% if app_type not in 'so' %}
                           <th>NO</th>
                           <th>SHARED OBJECT</th>
+                         {% endif %}
                           <th>NX</th>
                           <th>STACK CANARY</th>
                           <th>RPATH</th>
@@ -1334,8 +1349,10 @@
             {% endif %}
              {% for so in binary_analysis %}
              <tr>
+              {% if app_type not in 'so' %}
               <td>{{ forloop.counter }}</td>
               <td>{{so.name}}</td>
+              {% endif %}
               <td><b>{{so.nx.is_nx}}</b>
                 <br/>
                 <span class="badge bg-{% if so.nx.severity == 'high' %}danger{% elif so.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.nx.severity}}</span>
@@ -1374,6 +1391,7 @@
     </div>
 </section>
  <!-- ===========================end binary analysis ================================== -->
+ {% if app_type not in 'so' %}
  <a id="niap_analysis" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
@@ -1598,6 +1616,7 @@
       </div>
   </section>
 <!-- ===========================end quark analysis ================================== -->
+{% endif %}
 {% if virus_total %}
 <a id="virus_total" class="anchor"></a>
 <section class="content">
@@ -1649,6 +1668,7 @@
 </section>
 {% endif %}
 <!-- ===========================end virus total ================================== -->
+{% if app_type not in 'so' %}
 <style>
   #chartdiv {
   width: 100%;
@@ -1951,6 +1971,7 @@
     </div>
 </section>
  <!-- ===========================end trackers ================================== -->
+ {% endif %}
 <a id="strings" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
@@ -2001,7 +2022,7 @@
         </div>
 </section>
  <!-- ===========================end secrets ================================== -->
-
+ {% if app_type not in 'so' %}
  <a id="activities" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
@@ -2153,6 +2174,7 @@
       </div>
 </section>
  <!-- ===========================end files ================================== -->
+ {% endif %}
 <!-- end of contents -->
 </div>
 

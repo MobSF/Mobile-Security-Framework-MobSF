@@ -64,6 +64,9 @@ from mobsf.StaticAnalyzer.views.android.jar_aar import (
     aar_analysis,
     jar_analysis,
 )
+from mobsf.StaticAnalyzer.views.android.so import (
+    so_analysis,
+)
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     firebase_analysis,
     get_avg_cvss,
@@ -105,8 +108,8 @@ def static_analyzer(request, api=False):
         match = re.match('^[0-9a-f]{32}$', checksum)
         if (match
                 and filename.lower().endswith(
-                    ('.apk', '.xapk', '.zip', '.apks', '.jar', '.aar'))
-                and typ in ['zip', 'apk', 'xapk', 'apks', 'jar', 'aar']):
+                    ('.apk', '.xapk', '.zip', '.apks', '.jar', '.aar', '.so'))
+                and typ in ['zip', 'apk', 'xapk', 'apks', 'jar', 'aar', 'so']):
             app_dic['dir'] = Path(settings.BASE_DIR)  # BASE DIR
             app_dic['app_name'] = filename  # APP ORIGINAL NAME
             app_dic['md5'] = checksum  # MD5
@@ -304,6 +307,8 @@ def static_analyzer(request, api=False):
                 return jar_analysis(request, app_dic, rescan, api)
             elif typ == 'aar':
                 return aar_analysis(request, app_dic, rescan, api)
+            elif typ == 'so':
+                return so_analysis(request, app_dic, rescan, api)
             elif typ == 'zip':
                 ret = (
                     '/static_analyzer_ios/?name='
@@ -506,7 +511,7 @@ def static_analyzer(request, api=False):
                 else:
                     return render(request, template, context)
             else:
-                err = ('Only APK, JAR, AAR, IPA and Zipped '
+                err = ('Only APK, JAR, AAR, SO, IPA and Zipped '
                        'Android/iOS Source code supported now!')
                 logger.error(err)
         else:

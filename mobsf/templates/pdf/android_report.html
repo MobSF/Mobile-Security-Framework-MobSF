@@ -183,7 +183,7 @@
       <h5>Android Version Name:</h5> {{ version_name }}</br>
       <h5>Android Version Code:</h5> {{ version_code }}</br>
      
-{% if app_type not in 'jar,aar' %}
+{% if app_type not in 'jar,aar,so' %}
       <h2><i class="fas fa-th-large"></i> APP COMPONENTS </h2>
 
         <h5>Activities:</h5> {{ activities | length }}</br>

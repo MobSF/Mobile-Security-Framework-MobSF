@@ -15,9 +15,9 @@ logger = logging.getLogger(__name__)
 
 
 def run(request):
-    """Generate downloads for apk, jar, aar, java zip and smali zip."""
+    """Generate downloads for apk, jar, aar, so, java zip and smali zip."""
     try:
-        allowed = ('apk', 'smali', 'java', 'jar', 'aar')
+        allowed = ('apk', 'smali', 'java', 'jar', 'aar', 'so')
         logger.info('Generating Downloads')
         md5 = request.GET['hash']
         file_type = request.GET['file_type']
@@ -44,7 +44,7 @@ def run(request):
             shutil.make_archive(
                 dwd_file.as_posix(), 'zip', directory.as_posix())
             file_name = f'{md5}-smali.zip'
-        elif file_type in ('apk', 'ipa', 'jar', 'aar'):
+        elif file_type in ('apk', 'ipa', 'jar', 'aar', 'so'):
             # Binaries
             file_name = f'{md5}.{file_type}'
             src = app_dir / file_name

@@ -195,11 +195,13 @@ def elf_analysis(app_dir: str) -> dict:
         if not getattr(settings, 'SO_ANALYSIS_ENABLED', True):
             return elf
         logger.info('Binary Analysis Started')
+        sdir = Path(app_dir)
         # Supports APK, AAR and JAR
         libs = [
-            Path(app_dir) / 'lib',
-            Path(app_dir) / 'libs',
-            Path(app_dir) / 'jni']
+            sdir,
+            sdir / 'lib',
+            sdir / 'libs',
+            sdir / 'jni']
         for lib_dir in libs:
             if not lib_dir.is_dir():
                 continue
