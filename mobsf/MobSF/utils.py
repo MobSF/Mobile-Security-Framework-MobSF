@@ -47,7 +47,7 @@ def upstream_proxy(flaw_type):
             proxy_port = str(settings.UPSTREAM_PROXY_PORT)
             proxy_host = '{}://{}:{}'.format(
                 settings.UPSTREAM_PROXY_TYPE,
-                settings.UPSTREAM_PROXY_IP,
+                docker_translate_proxy_ip(settings.UPSTREAM_PROXY_IP),
                 proxy_port)
             proxies = {flaw_type: proxy_host}
         else:
@@ -56,7 +56,7 @@ def upstream_proxy(flaw_type):
                 settings.UPSTREAM_PROXY_TYPE,
                 settings.UPSTREAM_PROXY_USERNAME,
                 settings.UPSTREAM_PROXY_PASSWORD,
-                settings.UPSTREAM_PROXY_IP,
+                docker_translate_proxy_ip(settings.UPSTREAM_PROXY_IP),
                 proxy_port)
             proxies = {flaw_type: proxy_host}
     else:
@@ -343,6 +343,15 @@ def docker_translate_localhost(identifier):
         logger.exception('Failed to convert device '
                          'identifier for docker connectivity')
         return identifier
+
+
+def docker_translate_proxy_ip(ip):
+    """Convert localhost proxy ip to host.docker.internal."""
+    if not os.getenv('MOBSF_PLATFORM') == 'docker':
+        return ip
+    if ip and ip.strip() in ('127.0.0.1', 'localhost'):
+        return 'host.docker.internal'
+    return ip
 
 
 def get_device():
