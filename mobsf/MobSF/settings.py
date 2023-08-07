@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 #       MOBSF CONFIGURATION
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 BANNER, VERSION, MOBSF_VER = get_mobsf_version()
-USE_HOME = True
+USE_HOME = False
 # True : All Uploads/Downloads will be stored in user's home directory
 # False : All Uploads/Downloads will be stored under MobSF root directory
 
@@ -417,8 +417,8 @@ else:
     # Get AppMonsta API from https://appmonsta.com/dashboard/get_api_key/
     APPMONSTA_API = os.getenv('MOBSF_APPMONSTA_API', '')
     # ----------VirusTotal--------------------------
-    VT_ENABLED = bool(os.getenv('MOBSF_VT_ENABLED', ''))
-    VT_API_KEY = os.getenv('MOBSF_VT_API_KEY', '')
+    VT_ENABLED = bool(os.getenv('MOBSF_VT_ENABLED', 'True'))
+    VT_API_KEY = os.getenv('MOBSF_VT_API_KEY', 'd3bce791213bf5c2970b32a58a80ba25e328894a8c790218cfd34611e199b928')
     VT_UPLOAD = bool(os.getenv('MOBSF_VT_UPLOAD', ''))
     # Before setting VT_ENABLED to True,
     # Make sure VT_API_KEY is set to your VirusTotal API key
@@ -428,4 +428,14 @@ else:
     # Files will be uploaded to VirusTotal
     # if VT_UPLOAD is set to True.
     # ==============================================
+    # ==============================================
+    # ---------- Frida Log Analysis Keyword Filter --------------------------
+# ---------- Frida Log Analysis Keyword Filter --------------------------
+    FRIDA_LOG_ANALYSIS_KEYWORDS = {
+        'contact': True,
+        'messages': True,
+        'calls': True,
+        'filePath': True,
+        'URL': False,
+    }
     # ^CONFIG-END^: Do not edit this line
