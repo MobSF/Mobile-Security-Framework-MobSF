@@ -430,7 +430,6 @@ else:
     # ==============================================
     # ==============================================
     # ---------- Frida Log Analysis Keyword Filter --------------------------
-# ---------- Frida Log Analysis Keyword Filter --------------------------
     FRIDA_LOG_ANALYSIS_KEYWORDS = {
         'contact': True,
         'messages': True,

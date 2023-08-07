@@ -50,8 +50,17 @@ def filter_frida_logs(app_dir, keywords):
     
     with open(frida_log_file, 'r') as frida_logs, open(log_analysis_file, 'w') as log_analysis:
         for line in frida_logs:
-            if any(keyword in line for keyword, enabled in keywords.items() if enabled):
-                log_analysis.write(line)
+            # Check if keywords is a dictionary and handle it accordingly
+            if isinstance(keywords, dict):
+                if any(keyword in line for keyword, enabled in keywords.items() if enabled):
+                    log_analysis.write(line)
+            # If keywords is a list, handle it this way
+            elif isinstance(keywords, list):
+                if any(keyword in line for keyword in keywords):
+                    log_analysis.write(line)
+            else:
+                raise ValueError("Keywords must be either a dictionary or a list.")
+            
 
 
 def view_report(request, checksum, api=False):
