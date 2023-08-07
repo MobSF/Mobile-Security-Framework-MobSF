@@ -12,12 +12,12 @@ import urllib.request
 import requests
 serverpath = 'http://localhost:8002/'
 #Please change this to your individual Rest API Key found in Mob_SF Rest API Docs
-api_key = "Authorization:240db9b57d360555ce9cff6b00464c7850cf1cb50de7490570c74c6462eb5e78"
+api_key = "Authorization:9adb741acc70d0f088bd47a41ca867c9437c88bf5486051eb35de71922da90b3"
 hash = '056d831fb3f4423ea395c02d68841887'
 venv_base_directory = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-output_folder = os.path.join(venv_base_directory, "mobsf/DynamicAnalyzer/tools/Emulator_tools/MobSF_Reports/{}")
+output_folder = os.path.join(venv_base_directory, "Emulator_tools/MobSF_Reports/{}")
 output_folder = os.path.expanduser(output_folder)
-script_path = os.path.join(venv_base_directory, "mobsf/DynamicAnalyzer/tools/frida_scripts/others")
+script_path = os.path.join(venv_base_directory, "frida_scripts/others")
 script_path = os.path.expanduser(script_path)
 
 
@@ -67,7 +67,7 @@ def analysis_functions(hash):
     get_dependencies(hash)
     time.sleep(10)
     # Run Frida instrumentation
-    frida_instrumentation(hash, "monitor_cpu.js")
+    frida_instrumentation(hash, "monitor_bytes.js")
     time.sleep(10)
     # Stop analysis
     stop_analysis(hash)
