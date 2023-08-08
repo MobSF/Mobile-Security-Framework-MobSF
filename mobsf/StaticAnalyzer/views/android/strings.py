@@ -2,12 +2,20 @@
 """Module for strings-method for java."""
 import logging
 import os
+import re
+from pathlib import Path
 
 from androguard.core.bytecodes import apk
 
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     is_secret,
     url_n_email_extract,
+)
+from mobsf.StaticAnalyzer.views.common.entropy import (
+    get_entropies,
+)
+from mobsf.MobSF.utils import (
+    get_android_src_dir,
 )
 
 logger = logging.getLogger(__name__)
@@ -63,3 +71,29 @@ def strings_from_apk(app_file, app_dir, elf_strings):
     except Exception:
         logger.exception('Extracting Strings from APK')
         return {}
+
+
+def strings_from_code(src_dir, typ, exts):
+    """Extract Strings from code."""
+    logger.info('Extracting Strings from Source Code')
+    data = {
+        'strings': set(),
+        'secrets': set(),
+    }
+    try:
+        src = get_android_src_dir(Path(src_dir), typ)
+        if not src.exists():
+            return data
+        for p in src.rglob('*'):
+            if p.suffix not in exts or not p.exists():
+                continue
+            str_regex = re.compile(r'\".{5,300}?\"')
+            ascii_strs = re.findall(
+                str_regex, p.read_text(encoding='utf-8'))
+            if ascii_strs:
+                data['strings'].update(ascii_strs)
+        if data['strings']:
+            data['secrets'] = get_entropies(data['strings'])
+    except Exception:
+        logger.exception('Extracting Strings from Code')
+    return data

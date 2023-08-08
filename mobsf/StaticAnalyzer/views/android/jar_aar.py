@@ -25,7 +25,10 @@ from mobsf.StaticAnalyzer.views.android.manifest_analysis import (
     manifest_analysis,
     manifest_data,
 )
-from mobsf.StaticAnalyzer.views.android.strings import strings_from_apk
+from mobsf.StaticAnalyzer.views.android.strings import (
+    strings_from_apk,
+    strings_from_code,
+)
 from mobsf.StaticAnalyzer.views.android.binary_analysis import elf_analysis
 from mobsf.StaticAnalyzer.views.android.cert_analysis import (
     cert_info,
@@ -156,6 +159,11 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
             app_dic['app_file'],
             app_dic['app_dir'],
             elf_dict['elf_strings'])
+        # Get strings from JAR/AAR source code
+        code_strings = strings_from_code(
+            app_dic['app_dir'],
+            'apk',
+            ['.java'])
         if string_res:
             app_dic['strings'] = string_res['strings']
             app_dic['secrets'] = string_res['secrets']
@@ -166,6 +174,10 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
         else:
             app_dic['strings'] = []
             app_dic['secrets'] = []
+        if code_strings['strings']:
+            app_dic['strings'].extend(list(code_strings['strings']))
+        if code_strings['secrets']:
+            app_dic['secrets'].extend(list(code_strings['secrets']))
         # Firebase DB Check
         code_an_dic['firebase'] = firebase_analysis(
             list(set(code_an_dic['urls_list'])))

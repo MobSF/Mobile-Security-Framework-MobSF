@@ -358,7 +358,8 @@ def get_device():
         out = subprocess.check_output([get_adb(), 'devices']).splitlines()
         if len(out) > 2:
             dev_id = out[1].decode('utf-8').split('\t')[0]
-            return docker_translate_localhost(dev_id)
+            if 'daemon started successfully' not in dev_id:
+                return docker_translate_localhost(dev_id)
     logger.error(get_android_dm_exception_msg())
 
 
@@ -678,3 +679,17 @@ def get_android_dm_exception_msg():
         ' set ANALYZER_IDENTIFIER in '
         f'{get_config_loc()} or via environment variable'
         ' MOBSF_ANALYZER_IDENTIFIER')
+
+
+def get_android_src_dir(app_dir, typ):
+    """Get Android source code location."""
+    if typ == 'apk':
+        src = app_dir / 'java_source'
+    elif typ == 'studio':
+        src = app_dir / 'app' / 'src' / 'main' / 'java'
+        kt = app_dir / 'app' / 'src' / 'main' / 'kotlin'
+        if not src.exists() and kt.exists():
+            src = kt
+    elif typ == 'eclipse':
+        src = app_dir / 'src'
+    return src
