@@ -46,7 +46,7 @@
     modified by any application.
   type: RegexAnd
   pattern:
-    - \.loadUrl\(.*getExternalStorageDirectory\(
+    - \.loadUrl\(.{0,48}getExternalStorageDirectory\(
     - webkit\.WebView
   severity: high
   input_case: exact
@@ -551,7 +551,7 @@
     scheme is to prevent a number of attacks on RSA that only work when the
     encryption is performed without padding.
   type: Regex
-  pattern: Cipher\.getinstance\(\"rsa/.+/nopadding
+  pattern: Cipher\.getinstance\(\"rsa/.{1,48}/nopadding
   severity: high
   input_case: lower
   metadata:
@@ -565,7 +565,7 @@
   type: RegexOr
   pattern:
     - MODE_WORLD_WRITABLE
-    - 'openFileOutput\(\s*".+"\s*,\s*2\s*\)'
+    - 'openFileOutput\(\s*".{1,48}"\s*,\s*2\s*\)'
   severity: high
   input_case: exact
   metadata:
@@ -579,7 +579,7 @@
   type: RegexOr
   pattern:
     - MODE_WORLD_READABLE
-    - 'openFileOutput\(\s*".+"\s*,\s*1\s*\)'
+    - 'openFileOutput\(\s*".{1,48}"\s*,\s*1\s*\)'
   severity: high
   input_case: exact
   metadata:
@@ -591,7 +591,7 @@
 - id: android_world_read_write
   message: The file is World Readable and Writable. Any App can read/write to the file
   type: Regex
-  pattern: 'openFileOutput\(\s*".+"\s*,\s*3\s*\)'
+  pattern: 'openFileOutput\(\s*".{1,48}"\s*,\s*3\s*\)'
   severity: high
   input_case: exact
   metadata:
@@ -605,8 +605,8 @@
   type: RegexOr
   input_case: exact
   pattern:
-    - \.getInstance\(.*md4
-    - \.getInstance\(.*MD4
+    - \.getInstance\(.{0,48}md4
+    - \.getInstance\(.{0,48}MD4
   severity: high
   metadata:
     cvss: 7.4
@@ -618,14 +618,14 @@
   message: Weak Encryption algorithm used
   input_case: exact
   pattern:
-    - \.getInstance\(.*rc2
-    - \.getInstance\(.*RC2
-    - \.getInstance\(.*rc4
-    - \.getInstance\(.*RC4
-    - \.getInstance\(.*blowfish
-    - \.getInstance\(.*BLOWFISH
-    - Cipher\.getInstance\(.*DES
-    - Cipher\.getInstance\(.*des
+    - \.getInstance\(.{0,48}rc2
+    - \.getInstance\(.{0,48}RC2
+    - \.getInstance\(.{0,48}rc4
+    - \.getInstance\(.{0,48}RC4
+    - \.getInstance\(.{0,48}blowfish
+    - \.getInstance\(.{0,48}BLOWFISH
+    - Cipher\.getInstance\(.{0,48}DES
+    - Cipher\.getInstance\(.{0,48}des
   severity: high
   type: RegexOr
   metadata:
@@ -638,8 +638,8 @@
   message: The App uses the encryption mode CBC with PKCS5/PKCS7 padding. This configuration is vulnerable to padding oracle attacks.
   input_case: exact
   pattern:
-    - \.getInstance\(.*\/CBC\/PKCS5Padding
-    - \.getInstance\(.*\/CBC\/PKCS7Padding
+    - \.getInstance\(.{0,48}\/CBC\/PKCS5Padding
+    - \.getInstance\(.{0,48}\/CBC\/PKCS7Padding
   severity: high
   type: RegexOr
   metadata:
@@ -652,8 +652,8 @@
   message: MD5 is a weak hash known to have hash collisions.
   input_case: exact
   pattern:
-    - \.getInstance\(.*MD5
-    - \.getInstance\(.*md5
+    - \.getInstance\(.{0,48}MD5
+    - \.getInstance\(.{0,48}md5
     - DigestUtils\.md5\(
   severity: warning
   type: RegexOr
@@ -667,10 +667,10 @@
   message: SHA-1 is a weak hash known to have hash collisions.
   input_case: exact
   pattern:
-    - \.getInstance\(.*SHA-1
-    - \.getInstance\(.*sha-1
-    - \.getInstance\(.*SHA1
-    - \.getInstance\(.*sha1
+    - \.getInstance\(.{0,48}SHA-1
+    - \.getInstance\(.{0,48}sha-1
+    - \.getInstance\(.{0,48}SHA1
+    - \.getInstance\(.{0,48}sha1
     - DigestUtils\.sha\(
   severity: warning
   type: RegexOr
@@ -726,7 +726,7 @@
     passwords, keys etc.
   input_case: lower
   pattern: >-
-    (password\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(pass\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(username\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(secret\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(key\s*=\s*[\'|\"].+[\'|\"]\s{0,5})
+    (password\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(pass\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(username\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(secret\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(key\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})
   severity: warning
   type: Regex
   metadata:

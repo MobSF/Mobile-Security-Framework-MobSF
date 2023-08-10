@@ -601,7 +601,7 @@ def cmd_injection_check(data):
 
 def strict_package_check(user_input):
     """Strict package name check."""
-    pat = re.compile(r'^\w+\.*[\w\.\$]+$')
+    pat = re.compile(r'^([\w]{1}[\w\d]*\.)+[\w][\w\d]*$')
     resp = re.match(pat, user_input)
     if not resp:
         logger.error('Invalid package/class name')
