@@ -7,16 +7,11 @@ Java.perform(function() {
             console.error("Error: Network Traffic not found.");
             return;
         }
-        var RequestBody = Java.use('okhttp3.RequestBody');
         var Buffer = Java.use('okio.Buffer');
-        var ByteString = Java.use('okio.ByteString');
-        var MediaType = Java.use('okhttp3.MediaType');
         var ResponseBody = Java.use('okhttp3.ResponseBody');
         var Response = Java.use('okhttp3.Response');
         var Base64 = Java.use('android.util.Base64'); // Import Base64
         var GZIPInputStream = Java.use('java.util.zip.GZIPInputStream');
-        var ByteArrayOutputStream = Java.use('java.io.ByteArrayOutputStream');
-        var InputStream = Java.use('java.io.InputStream');
         var InputStreamReader = Java.use('java.io.InputStreamReader');
         var BufferedReader = Java.use('java.io.BufferedReader');
 
@@ -35,7 +30,7 @@ Java.perform(function() {
                 body.writeTo(buffer);
                 var bodyBytes = buffer.readByteArray();
                 var strBody = Base64.encodeToString(bodyBytes, 0); // use Base64 encoding
-                send("Encoded Request body: " + strBody);
+                // send("Encoded Request body: " + strBody);
                 // Decode and ungzip the body
                 var decodedBytes = Base64.decode(strBody, 0);
                 var byteArrayInputStream = Java.use('java.io.ByteArrayInputStream').$new(decodedBytes);
@@ -48,7 +43,7 @@ Java.perform(function() {
                 }
                 bufferedReader.close();
                 gzipInputStream.close();
-                send("Decoded Request body: " + stringBuilder.toString());
+                send(stringBuilder.toString());
             }
 
             var call = this.newCall(request);

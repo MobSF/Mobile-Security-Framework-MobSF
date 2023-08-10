@@ -41,25 +41,33 @@ logger = logging.getLogger(__name__)
 register.filter('key', key)
 
 def filter_frida_logs(app_dir, keywords):
-    """Filter Frida logs for a list of keywords and save to a file for log analysis (remove noisy data)."""
+    """
+    Filter Frida logs for a list of keywords and save to a file for log analysis (remove noisy data).
+
+    param app_dir: Directory containing the log files.
+    param keywords: A dictionary or list of keywords to filter. If a dictionary, the values must be booleans.
+    """
     frida_log_file = os.path.join(app_dir, 'mobsf_frida_out.txt')
     log_analysis_file = os.path.join(app_dir, 'log_analysis.txt')
-    
+
     if not os.path.exists(frida_log_file):
+        logger.warning(f"Frida log file {frida_log_file} does not exist.")
         return
-    
-    with open(frida_log_file, 'r') as frida_logs, open(log_analysis_file, 'w') as log_analysis:
-        for line in frida_logs:
-            # Check if keywords is a dictionary and handle it accordingly
-            if isinstance(keywords, dict):
-                if any(keyword in line for keyword, enabled in keywords.items() if enabled):
-                    log_analysis.write(line)
-            # If keywords is a list, handle it this way
-            elif isinstance(keywords, list):
-                if any(keyword in line for keyword in keywords):
-                    log_analysis.write(line)
-            else:
-                raise ValueError("Keywords must be either a dictionary or a list.")
+
+    try:
+        with open(frida_log_file, 'r') as frida_logs, open(log_analysis_file, 'w') as log_analysis:
+            for line in frida_logs:
+                if isinstance(keywords, dict):
+                    if any(keyword in line for keyword, enabled in keywords.items() if enabled):
+                        log_analysis.write(line)
+                elif isinstance(keywords, list):
+                    if any(keyword in line for keyword in keywords):
+                        log_analysis.write(line)
+                else:
+                    raise ValueError("Keywords must be either a dictionary or a list.")
+    except Exception as e:
+        logger.error(f"An error occurred while filtering Frida logs: {e}")
+
             
 
 
