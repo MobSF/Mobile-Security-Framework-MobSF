@@ -1,0 +1,1041 @@
+
+{% extends "base/base_layout.html" %}
+{% load static %}
+{% block sidebar_option %}
+    sidebar-collapse
+{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static "others/css/terminal.css" %}" type="text/css">
+<link rel="stylesheet" href="{% static "others/css/devices.min.css" %}" type="text/css">
+<link rel="stylesheet" href="{% static "codemirror/codemirror.css" %}" type="text/css">
+<link rel="stylesheet" href="{% static "codemirror/lint.css" %}" type="text/css">
+<link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
+<style>
+     textarea {
+        width: 100%;
+        height: 170px;
+        -moz-border-bottom-colors: none;
+        -moz-border-left-colors: none;
+        -moz-border-right-colors: none;
+        -moz-border-top-colors: none;
+        background: none repeat scroll 0 0 rgba(0, 0, 0, 0.07);
+        border-color: -moz-use-text-color #FFFFFF #FFFFFF -moz-use-text-color;
+        border-image: none;
+        border-radius: 6px 6px 6px 6px;
+        border-style: none solid solid none;
+        border-width: medium 1px 1px medium;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12) inset;
+        color: #555555;
+        font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+        font-size: 1em;
+        line-height: 1.4em;
+        padding: 5px 8px;
+        transition: background-color 0.2s ease 0s;
+    }
+    textarea:focus {
+        background: none repeat scroll 0 0 #FFFFFF;
+        outline-width: 0;
+    }
+    .highlight { border: solid 2px #1e6dff;}
+    .CodeMirror {
+        height: 610px;
+        font-size: 13px;
+        border: 1px solid #eee;
+      }
+
+      .frida-pre {
+        font-family: "courier new", courier, monospace;
+        font-size: 11px;
+      }
+
+    #start_activity{
+        margin-top: 5px;
+    }
+    #start_activity_form{
+        margin-top: 10px;
+    }
+
+</style>
+
+{% endblock %}
+
+{% block content %}
+
+<script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
+
+<div class="content-wrapper">
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div id="mobsf_header">
+            <h2><strong>Dynamic Analyzer </strong>-</h2>
+          <input type="hidden" id="screen_width" value="">
+          <input type="hidden" id="screen_height" value="">
+        </div>
+      </div>
+    </div>
+  </div>
+   <div class="container-fluid">
+
+   
+   <div class="row">
+          <div class="col-md-12">
+            <div class="card card-default">
+              <!-- /.card-header -->
+              <div class="card-body">
+                 <div id="but" align="center">
+                  <a href="#" id="screen" class="btn btn-primary" role="button"><i class="fa fa-mobile-alt"></i> Show Screen</a>
+                  <a href="#" id="network" class="btn btn-primary" role="button"><i class="fa fa-certificate"></i> Start Network Capture</a>
+       
+                  <a href="#" id="expactt" class="btn btn-primary" role="button"><i class="fa fa-language"></i> Exported Activity Tester</a>
+                  <a href="#" id="actt" class="btn btn-primary" role="button"><i class="fa fa-rocket"></i> Activity Tester</a>
+                  <a href="#" id="deps" class="btn btn-primary" role="button"><i class="fas fa-running"></i> Get Dependencies</a>
+                  <a href="#" id="ss" class="btn btn-primary" role="button"><i class="fa fa-camera"></i> Take a Screenshot</a>
+                  <a href="#" id="logstream" class="btn btn-primary"><i class="fa fa-water"></i> Logcat Stream</a>
+                  <a href="" id="apimon" target="_blank" class="btn btn-primary" style='display: none'><i class="fa fa-search"></i> Live API Monitor</a>
+                  <a href="#" id="stop" class="btn btn-info" role="button" ><i class="fa fa-file-alt"></i> Generate Report</a>
+                </div>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+
+
+          <div class="col-md-4">
+            <div class="card card-default">
+              <!-- /.card-header -->
+              <div class="card-body">
+                
+                <div align="center">
+                  <div class="marvel-device iphone5s">
+                    <div class="top-bar"></div>
+                    <div class="sleep"></div>
+                    <div class="volume"></div>
+                    <div class="camera"></div>
+                    <div class="sensor"></div>
+                    <div class="speaker"></div>
+                  <div class="screen" id="container">
+                  <img width="320" height="580" src="../../download/screen/screen.png" id="my" onerror="$('#my').attr('src','/static/img/loading.jpg')" style="background-color:black;">
+                  </div>
+                  <div class="home"></div>
+                  <div class="bottom-bar"></div>
+                  </div>
+                </div>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+
+           <div class="col-md-4">
+            <div class="card card-default">
+              <!-- /.card-header -->
+              <div class="card-body">
+
+            <div class="card card-primary card-outline card-outline-tabs">
+              <div class="card-header p-0 border-bottom-0">
+                <ul class="nav nav-tabs" id="tabnav" role="tablist">
+                  <li class="nav-item">
+                    <a class="nav-link active" id="dm-tab" data-toggle="pill" href="#dm" role="tab" aria-controls="dm" aria-selected="true">Dynamic Analyzer</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link disabled" id="frida-tab" data-toggle="pill" href="#frida_logs" role="tab" aria-controls="frida" aria-selected="false">Frida Logs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" id="errors-tab" data-toggle="pill" href="#errors" role="tab" aria-controls="errors" aria-selected="false">Errors</a>
+                  </li>
+                </ul>
+              </div>
+              <div class="card-body">
+                <div class="tab-content" id="tabs">
+                  <div class="tab-pane fade active show" id="dm" role="tabpanel" aria-labelledby="dm-tab">
+                  <textarea id="stat"></textarea>
+                <!--box-->
+                <div id="frida_options" class="box box-primary">
+                    <div class="box-header with-border">
+                      <h3 class="box-title">Frida Scripts</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <!-- form start -->
+                    <form role="form">
+                      <div class="box-body">
+                        <div class="form-group">
+                            <hr/>
+                        <h4> Default </h4>
+                          <label>
+                              <input name="default_hooks" type="checkbox" value="api_monitor" checked>
+                              API Monitoring 
+                            </label>
+                             <label>
+                              <input name="default_hooks" type="checkbox" value="ssl_pinning_bypass" checked>
+                              SSL Pinning Bypass 
+                            </label>
+                             <label>
+                             <input name="default_hooks" type="checkbox"  value="root_bypass" checked>
+                              Root Detection Bypass 
+                            </label>
+                             <label>
+                            <input name="default_hooks" type="checkbox" value="debugger_check_bypass" checked>
+                              Debugger Check Bypass
+                            </label>
+                        </div>
+                                           <hr/>
+                        <div class="form-group">
+                        <h4> Auxiliary </h4>
+                            <label>
+                            <input name="auxiliary" type="checkbox" value="enum_class" id="enum_class">
+                              Enumerate Loaded Classes
+                            </label> 
+                             <label>
+                            <input name="auxiliary" type="checkbox" value="string_catch" id="string_catch">
+                               Capture Strings
+                            </label>
+                             <label>
+                            <input name="auxiliary" type="checkbox" value="string_compare" id="string_compare">
+                                Capture String Comparisons
+                            </label>
+                            <br />
+                             <label>
+                              <input onclick="aux_click(this)" name="auxiliary" type="checkbox" value="enum_methods" id="enum_methods">
+                              Enumerate Class methods
+                            </label>
+                             <input type="text" class="form-control" id="class_name" placeholder="java.io.File">
+
+                             <label>
+                              <input onclick="aux_click(this)" name="auxiliary" type="checkbox" value="search_class" id="search_class">
+                              Search Class Pattern
+                            </label>
+                             <input type="text" class="form-control" id="class_search" placeholder="ssl\.Trust*">
+                             <label>
+                             <input onclick="aux_click(this)" name="auxiliary" type="checkbox"  value="trace_class" id="trace_class">
+                              Trace Class Methods
+                            </label>
+                             <input type="text" class="form-control" id="class_trace" placeholder="java.net.Socket,java.io.File,java.lang.String">
+                        </div>
+     
+
+
+                      </div>
+                      <!-- /.box-body -->
+
+                      <div class="box-footer">
+                     
+                      <button id="frida_spawn" type="submit" class="btn btn-success"><i class="fas fa-play"></i> Start Instrumentation</button>
+                      <button id="fd_log" type="button" class="btn btn-primary" disabled><i class="fas fa-file-medical-alt"></i> Frida Live Logs</button>
+                      </div>
+                    </form>
+                  </div>
+
+              <!--tab end-->
+
+                  </div>
+
+                  <div class="tab-pane fade" id="frida_logs" role="tabpanel" aria-labelledby="frida-tab">
+                    <h4 class="page-header"><strong>Frida Logs </strong>- </h4>
+                    <div id="messages"></br>Data refreshed in every 3 seconds.</div>
+                    <pre class="frida-pre" id="logs"></pre>
+                  </div>
+                  <!-- frida logs -->
+                  <div class="tab-pane fade" id="errors" role="tabpanel" aria-labelledby="errors-tab">
+                    
+                    
+                    <iframe sandbox frameborder="0" width="100%" height="650px" id="er"></iframe>
+                    
+                    
+                  </div>
+                </div>
+              </div>
+              <!-- /.card -->
+            </div>
+
+
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+
+           <div class="col-md-4" id="codeedit">
+            <div class="card card-default">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fa fa-code"></i> Frida Code Editor </h3>
+                <!-- /.card-tools -->
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body">
+              <div class="row">
+                  <div class="col-12">
+<textarea id="code-js" rows="100">
+Java.perform(function() {
+  // Use send() for logging
+});
+</textarea>
+                  </div>
+                  <div class="col-12">
+                    <br/>
+                    <div class="form-group">
+                      <span class="box-title">Available Scripts (Use CTRL to choose multiple)  </span>
+                      <button id="loadscript" type="submit" class="btn btn-primary btn-sm">Load</button>
+                    </div>
+                    <div class="form-group">
+                         <select id="fd_scs" size="10" multiple="" class="form-control">
+                          </select>
+                    </div>
+                  </div>
+                </div>
+                <!-- end row-->
+              
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+
+            <div class="col-md-12">
+            <div class="card card-default">
+              <!-- /.card-header -->
+              <div class="card-body">
+                   
+                   <div id="shell">
+                    <output></output>
+                    <div id="input-line" class="input-line">
+                      <div class="prompt"></div><div><input class="cmdline" autofocus /></div>
+                    </div>
+                  </div>
+              
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        
+        </div>
+
+        </div>
+       </div>
+     </div>
+    </div>
+</div>
+<!-- Modal -->
+<div class="modal" id="tls_modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Run TLS/SSL Security Tests -</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form role="form">
+            <div class="form-group">
+                <p>TLS/SSL Security test helps you to evaluate the security of your application's network connections. These tests are applicable only for applications that performs network connections over HTTP protocol. We run multiple TLS/SSL tests against the application.<br>
+                </p>
+                <p>
+                <strong>TLS Misconfiguration Test </strong> - Enable HTTPS MITM Proxy, Remove Root CA, Run the App for 25 seconds.<br>
+                <code>This test will uncover insecure configurations that allow HTTPS connections bypassing certificate errors or SSL/TLS errors in WebViews. This is equivalent to not having TLS.</code><br>
+                </p>
+                <p>
+                <strong>TLS Pinning/Certificate Transparency Test </strong> - Enable HTTPS MITM Proxy, Install Root CA, Run the App for 25 seconds.<br>
+                <code>This test will evaluate the application's TLS/SSL hardening controls and will check if the application implement certificate or public key pinning and or certificate transparency.</code><br>
+                <p>
+                <strong>TLS Pinning/Certificate Transparency Bypass Test </strong> - Enable HTTPS MITM Proxy, Install Root CA, Bypass Certificate/Public Key Pinning or Certificate Transparency.<br>
+                <code>This test tries to bypass certificate or public key pinning and or certificate transparency controls in your application. MobSF can bypass most of the generic implementations.</code><br>
+                </p>
+                <p><strong>NOTE: </strong><i>For Better results, while the application is running, navigate through different business logic flows that will trigger network connections over HTTP protocol. Make sure that no other applications are running during the test.</i></p>
+              </div>
+            <div class="form-group">
+              <label>Test Progress</label>
+              <textarea id="tls_text" class="form-control" rows="10" placeholder="" disabled=""></textarea>
+            </div>
+            <div class="form-group">
+              <table class="table table-bordered table-hover table-striped">
+                <thead>
+                    <tr>
+                      <th>TESTS</th>
+                      <th>RESULT</th>
+                  </tr>
+                </thead>
+                <tbody>
+                   <tr>
+                    <td>TLS Misconfiguration Test</td>
+                    <td id="tls_1">-</td>
+                  </tr>
+                  <tr>
+                    <td>TLS Pinning/Certificate Transparency Test</td>
+                    <td id="tls_2">-</td>
+                  </tr>
+                  <tr>
+                    <td>TLS Pinning/Certificate Transparency Bypass Test</td>
+                    <td id="tls_3">-</td>
+                  </tr>
+                  <tr>
+                    <td>Cleartext Traffic Test</td>
+                    <td id="tls_4">-</td>
+                  </tr>
+              </tbody>
+              </table>
+            </div>
+
+          </form>
+      </div>
+       <div class="modal-footer">
+        <button id="run_tls_tests" type="button" class="btn btn-primary"><i class="fas fa-bolt"></i> Run TLS/SSL Tests</button>
+      </div>
+    </div>
+
+    <!--Loader-->
+<div class="hidden loading">
+  <div class='uil-ring-css' style='transform:scale(0.79);'>
+    <div></div>
+  </div>
+  </div>
+
+
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+<!-- End Modal -->
+
+{% endblock %}
+{% block extra_scripts %}
+<script src="{% static "codemirror/codemirror.js" %}"></script>
+<script src="{% static "codemirror/javascript.js" %}"></script>
+<script src="{% static "codemirror/jshint.js" %}"></script>
+<script src="{% static "codemirror/lint.js" %}"></script>
+<script src="{% static "codemirror/javascript-lint.js" %}"></script>
+<script>
+// Loading Spinner
+function dynamic_loader(){
+    var loadingOverlay = document.querySelector('.loading');
+    loadingOverlay.classList.remove('hidden');
+}
+function stop_loader(){
+    var loadingOverlay = document.querySelector('.loading');
+    loadingOverlay.classList.add('hidden');
+}
+
+// Frida Auxiliary actions
+
+function aux_click(cb) {
+  if (cb.checked && cb.value==='search_class')
+    $('#cls_search').addClass('highlight')
+  else if (!cb.checked && cb.value==='search_class')
+    $('#cls_search').removeClass('highlight')
+  else if (cb.checked && cb.value==='enum_methods')
+    $('#cls_name').addClass('highlight')
+  else if (!cb.checked && cb.value==='enum_methods')
+    $('#cls_name').removeClass('highlight')
+  else if (cb.checked && cb.value==='trace_class')
+    $('#cls_trace').addClass('highlight')
+  else if (!cb.checked && cb.value==='trace_class')
+    $('#cls_trace').removeClass('highlight')
+}
+
+
+
+//For All Ajax
+function action(url, data, on_success){
+  //Add CSRF
+  data.csrfmiddlewaretoken ='{{ csrf_token }}';
+  $.ajax({
+    url : url, 
+    type : "POST",
+    dataType: "json", 
+    data : data,
+    success : function(json){ on_success(json) },
+    error : function(xhr, ajaxOptions, thrownError) {
+      document.getElementById("er").srcdoc = xhr.responseText;
+    }
+  });
+}
+
+// Frida load other scripts
+function load_frida_others(){
+  $.get(document.location.origin + '/list_frida_scripts/', function(json, status){
+      if (json.status == 'ok'){
+        json.files.forEach(function(script) {
+          $('#fd_scs').append('<option value=' + escape(script) + '>' + escape(script) + '</option>');
+        });
+      }
+  });
+}
+
+// Code Editor
+var editor = CodeMirror.fromTextArea(document.getElementById("code-js"), {
+    lineNumbers: true,
+    mode: "javascript",
+    gutters: ["CodeMirror-lint-markers"],
+    lint: true,
+    lineWrapping: true,
+    onLoad: restore(),
+  });
+
+//Restore Code
+function restore(){
+  var custom_code = window.sessionStorage.getItem("code");
+  if (custom_code !== null) {
+    setTimeout(function(){ editor.getDoc().setValue(custom_code); }, 2000);
+  }
+}
+
+// Terminal
+var util = util || {};
+util.toArray = function (list) {
+    return Array.prototype.slice.call(list || [], 0);
+};
+
+var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
+    window.URL = window.URL || window.webkitURL;
+    window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
+
+    var cmdLine_ = document.querySelector(cmdLineContainer);
+    var output_ = document.querySelector(outputContainer);
+
+    const CMDS_ = [
+        'clear', 'date', 'echo', 'help',
+    ];
+
+    var history_ = [];
+    var histpos_ = 0;
+    var histtemp_ = 0;
+    var intro = '<h3 style="letter-spacing: 2px">Shell Access</h3><p>' + new Date() + '</p>';
+    var shell = document.getElementById('shell');
+    shell.addEventListener('click', function (e) {
+        cmdLine_.focus();
+    }, false);
+
+    cmdLine_.addEventListener('click', inputTextClick_, false);
+    cmdLine_.addEventListener('keydown', historyHandler_, false);
+    cmdLine_.addEventListener('keydown', processNewCommand_, false);
+
+    function inputTextClick_(e) {
+        this.value = this.value;
+    }
+
+    function historyHandler_(e) {
+        if (history_.length) {
+            if (e.keyCode == 38 || e.keyCode == 40) {
+                if (history_[histpos_]) {
+                    history_[histpos_] = this.value;
+                } else {
+                    histtemp_ = this.value;
+                }
+            }
+
+            if (e.keyCode == 38) { // up
+                histpos_--;
+                if (histpos_ < 0) {
+                    histpos_ = 0;
+                }
+            } else if (e.keyCode == 40) { // down
+                histpos_++;
+                if (histpos_ > history_.length) {
+                    histpos_ = history_.length;
+                }
+            }
+
+            if (e.keyCode == 38 || e.keyCode == 40) {
+                this.value = history_[histpos_] ? history_[histpos_] : histtemp_;
+                this.value = this.value; // Sets cursor to end of input.
+            }
+        }
+    }
+
+    function escape(data) {
+        var encodedStr = data.replace(/[\u00A0-\u9999<>\&]/gim, function (i) {
+            return '&#' + i.charCodeAt(0) + ';';
+        });
+        return encodedStr;
+    }
+
+    function output(html, escape_=false, pre=false, error=false) {
+        if (escape_)
+            html = escape(html);
+        if (pre)
+         output_.insertAdjacentHTML('beforeEnd', '<pre class="clean-text">' + html + '</pre>');
+        else if (error)
+          output_.insertAdjacentHTML('beforeEnd', '<pre>' + html + '</pre>');
+        else
+         output_.insertAdjacentHTML('beforeEnd', '<p>' + html + '</p>');
+    }
+
+    // Cross-browser impl to get document's height.
+    function getDocHeight_() {
+        var d = document;
+        return Math.max(
+            Math.max(d.body.scrollHeight, d.documentElement.scrollHeight),
+            Math.max(d.body.offsetHeight, d.documentElement.offsetHeight),
+            Math.max(d.body.clientHeight, d.documentElement.clientHeight)
+        );
+    }
+    function get_comp(comp){
+      action(document.location.origin + '/get_component/', { component: comp, hash: '{{ hash }}'}, function(json) {
+          if (json.status==="ok")
+            output(json.message, true, true);
+          else
+            output(json.message, true, true, true);
+      });
+    }
+
+    function ssh_execute(exec_cmd){
+      action('{% url 'ssh_execute' %}', {instance_id: '{{ instance_id }}', cmd: exec_cmd, ssh: '{{ ssh_signed  }}'}, function(json) {
+          if (json.status==="ok")
+            output(json.message, true, true);
+      });
+    }
+    function processNewCommand_(e) {
+
+        if (e.keyCode == 9) { // tab
+            e.preventDefault();
+            // Implement tab suggest.
+        } else if (e.keyCode == 13) { // enter
+            // Save shell history.
+            if (this.value) {
+                history_[history_.length] = this.value;
+                histpos_ = history_.length;
+            }
+
+            // Duplicate current input and append to output section.
+            var line = this.parentNode.parentNode.cloneNode(true);
+            line.removeAttribute('id')
+            line.classList.add('line');
+            var input = line.querySelector('input.cmdline');
+            input.autofocus = false;
+            input.readOnly = true;
+            output_.appendChild(line);
+
+            if (this.value && this.value.trim()) {
+                var args = this.value.split(' ').filter(function (val, i) {
+                    return val;
+                });
+                var cmd = args[0].toLowerCase();
+                var exec_cmd = args.join(' ');
+                args = args.splice(1); // Remove cmd from arg list.
+            }
+
+            switch (cmd) {
+                case 'clear':
+                    output_.innerHTML = '';
+                    this.value = '';
+                    output(intro);
+                    return;
+                case 'date':
+                    output(new Date());
+                    break;
+                case 'echo':
+                    output(exec_cmd, true);
+                    break;
+                case 'help':
+                    output('<div class="ls-files">' + CMDS_.join('<br>') + '</div>');
+                    break;                      
+                default:
+                   if (exec_cmd.length > 0)
+                        ssh_execute(exec_cmd)
+            };
+            window.scrollTo(0, getDocHeight_());
+            this.value = ''; // Clear/setup line for next input.
+        }
+    }
+    return {
+        init: function () {
+            output(intro);
+        },
+        output: output
+    }
+};
+
+$(document).ready(function() {
+
+//Terminal
+$('.prompt').html('[root@iPhone] # ');
+var term = new Terminal('#input-line .cmdline', '#shell output');
+term.init();
+
+
+//Start Specific Activity
+$("#start_activity").click(function(){
+  let activity = $('#activities option:selected').val();
+  print_status("Starting Activity: " + activity)
+  start_activity(activity)
+  return false;
+});
+
+// Start up
+load_frida_others();
+
+
+// Disable Activity Tester and Exported Activity Tester for on Device only apps
+var loc = location.href;
+if (loc.includes('&install=0')){
+    $('#expactt').hide();
+    $('#actt').hide();
+}
+
+
+
+//Print Status
+function print_status(message){
+  $('#stat').append(message + '\n');
+  $('#stat').scrollTop($('#stat')[0].scrollHeight);
+}
+//Print TLS/SSL test progress inside modal
+function print_tls_progress(message){
+  $('#tls_text').append(message + '\n');
+  $('#tls_text').scrollTop($('#tls_text')[0].scrollHeight);
+}
+
+print_status("Setting up MobSF Dynamic Analysis environment...");
+print_status("Running HTTP(S) interception proxy.");
+print_status("Invoking MobSF agents.");
+print_status("Environment is ready for Dynamic Analysis.");
+print_status("Start Instrumentation or Run the application and navigate through the different flows or business logic manually.");
+
+// Frida Logs Tab
+
+function get_logs(){
+      $.ajax({
+        url : '/frida_logs/?hash={{ hash }}&stream=1', 
+        type : "GET",
+        dataType: "json", 
+        success : function(json){ 
+            $('#logs').text(json.data);
+        },
+        error : function(xhr, ajaxOptions, thrownError) {
+          console.log(xhr.responseText);
+        }
+      });
+}
+get_logs();
+setInterval( function () {
+      get_logs();
+}, 3000 );
+
+// Touch Events
+var touch = "off";
+
+$('#my').click(function(e) {
+  if (touch === "on")
+  {
+    var res=[$('#screen_width').val(),$('#screen_height').val()];
+    var width = res[0];
+    var height =res[1];
+    if (width.length > 0 && height.length > 0)
+    {
+        width = parseInt(width);
+        height = parseInt(height);
+        var offset = $(this).offset();
+        var x = e.pageX - offset.left;
+        var y = e.pageY - offset.top;
+        x = x * (width/320); 
+        y = y * (height/580);
+        console.log('X Axis: '+ x + " Y Axis: "+ y);
+        action(document.location.origin + '/touch_events/', {x: x, y: y}, function(json) {
+            if (json.status==='ok')
+              console.log('Clicked!');
+            else
+              console.log(json.message)
+          });
+      }
+  }
+});
+
+// View Screen
+var screenfunc;
+$("#screen").click(function() {
+      var stext = $("#screen").text();
+      if (stext.includes("Show Screen")){
+          $("#screen").html("<i class='fa fa-mobile'></i> Stop Screen");
+          print_status('Screen streaming started.')
+          touch = "on";
+          screenfunc = setInterval(function(){
+              // Capture Screen
+              action('{% url 'take_screenshot' %}', {instance_id: '{{ instance_id }}'}, function(json) {
+                if (json.status==="ok"){
+                    $('#my').attr('src', json.message);
+                } else {
+                  console.log(json.message)
+                }
+              });
+          },3000);
+      } else {
+          $("#screen").html("<i class='fa fa-mobile-alt'></i> Show Screen");
+          print_status("Screen streaming stopped.");
+          $('#my').attr('src', '/static/img/loading.jpg');
+          clearInterval(screenfunc);
+          touch = "off";
+      }
+      return false;  
+}); 
+
+//Screenshot
+$("#ss").click(function() {
+  print_status("Taking a screenshot.");
+  action('{% url 'take_screenshot' %}', {instance_id: '{{ instance_id }}'}, function(json) {
+    if (json.status==="ok"){
+        print_status("Screenshot taken!");
+        console.log(json.message)
+    } else {
+        print_status("Failed to take screenshot!");
+        print_status(json.message);
+    }
+  });
+  return false;  
+});
+
+//Network Capture
+
+$("#network").click(function() {
+  var stext = $("#network").text();
+  let state;
+  if (stext.includes("Start")){
+    state = 'on'
+    $("#network").html("<i class='fa fa-certificate'></i> Stop Network Capture");
+  } else {
+    state = 'off'
+    $("#network").html("<i class='fa fa-certificate'></i> Start Network Capture");
+  }
+  action('{% url 'network_capture' %}', {instance_id: '{{ instance_id }}', state}, function(json) {
+      print_status(json.message);
+    });
+    return false;  
+}); 
+
+
+//MobSF Global Proxy
+
+$("#proxy").click(function() {
+  var stext = $("#proxy").text();
+  var act;
+  if (stext.includes("Unset HTTP(S) Proxy")){
+    $("#proxy").html("<i class='fas fa-eye'></i> Set HTTP(S) Proxy");
+    act = "unset";
+  } else {
+    $("#proxy").html("<i class='fas fa-eye-slash'></i> Unset HTTP(S) Proxy");
+    act = "set";
+  }
+  action(document.location.origin + '/global_proxy/', {action: act}, function(json) {
+      if (json.message === "set")
+        print_status("MobSF Global HTTP(S) interception proxy is applied.");
+      else if (json.message === "unset")
+        print_status("MobSF Global HTTP(S) interception proxy is removed.");
+      else
+        print_status(json.message);
+    });
+    return false;  
+});
+
+function start_activity(activity){
+  action('../start_activity/', {hash: '{{ hash }}', 'activity': activity}, function(json) {
+    if (json.status === "ok")
+        print_status("Activity Started");
+    else
+      print_status(json.message);
+  });
+}
+
+function activity_tester(test){
+  action(document.location.origin + '/activity_tester/', {hash: '{{ hash }}', 'test': test}, function(json) {
+    if (json.status === "ok")
+      if (test === 'exported')
+        print_status("Exported Activity testing completed.");
+      else
+        print_status("Activity testing completed.");
+    else
+      print_status(json.message);
+  });
+}
+//Start ExportedActivity Tester
+$("#expactt").click(function()  {
+  print_status("Starting Exported Activity tester...")
+  activity_tester('exported')
+  return false;  
+});
+
+//Start Activity Tester
+$("#actt").click(function()  {
+  print_status("Starting Activity tester...")
+  activity_tester('all_activities')
+  return false;  
+});
+
+//SSL/TLS Tester
+$('#run_tls_tests').click(function()  {
+  const msg = "TLS/SSL tests will take 75 seconds to complete. While the application is running, please navigate through different activity flows/business logic.";
+  $('#tls_1').text('-');$('#tls_2').text('-');$('#tls_3').text('-');$('#tls_4').text('-');
+  print_status("Running TLS/SSL Security Tester");
+  print_tls_progress("Running TLS Misconfiguration test.")
+  print_tls_progress("Running TLS Pinning/Certificate Transparency test.")
+  print_tls_progress("Running TLS Pinning/Certificate Transparency Bypass test.")
+  print_tls_progress(msg)
+  dynamic_loader();
+  action(document.location.origin + '/tls_tests/', {hash: '{{ hash }}'}, function(json) {
+    if (json.status === "ok"){
+      stop_loader();
+      // print_tls_progress(JSON.stringify(json.tls_tests))
+      if (json.tls_tests.tls_misconfigured === true)
+          $('#tls_1').text('❌')
+      else
+          $('#tls_1').text('✅')
+      if (json.tls_tests.no_tls_pin_or_transparency === true)
+          $('#tls_2').text('❌')
+      else
+          $('#tls_2').text('✅')
+      if (json.tls_tests.pin_or_transparency_bypassed === true)
+          $('#tls_3').text('❌')
+      else
+          $('#tls_3').text('✅')
+      if (json.tls_tests.has_cleartext === true)
+          $('#tls_4').text('❌')
+      else
+          $('#tls_4').text('✅')
+      const ok = "TLS/SSL Security tests completed.";
+      print_status(ok)
+      print_tls_progress(ok)
+    } else {
+      stop_loader();
+      print_status("TLS/SSL Security tests failed.")
+      print_tls_progress("TLS/SSL Security tests failed.")
+      print_tls_progress("[ERROR]")
+      print_tls_progress(json.message)
+    }
+  });
+  return false;  
+}); 
+
+// Run APK for Xposed
+$("#run_app").click(function() {
+    print_status("Launching App");
+    action(document.location.origin + '/run_apk/', {hash: '{{ hash }}'}, function(json) {
+      if (json.status==="ok"){
+          print_status("Application launched.");
+      } else {
+          print_status("Failed to launch the application.");
+      }
+    });
+    return false;  
+});
+
+// Logcat Stream
+$("#logstream").click(function() {
+    print_status("Logcat Steaming started.");
+    setTimeout(function(){ window.open(document.location.origin + '/logcat/?package=', '_blank');}, 500);   
+    return false;  
+}); 
+// Frida logs
+$("#fd_log").click(function() {
+    $('#tabnav a[href="#frida_logs"]').tab('show');
+    document.body.scrollTop = document.documentElement.scrollTop = 0;
+    return false;  
+});
+
+
+// Load Frida Scripts
+$("#loadscript").click(function() {
+   var scripts = $('#fd_scs').val();
+   action(document.location.origin + '/get_script/', {scripts: scripts}, function(json) {
+    if (json.status==="ok"){
+        editor.getDoc().setValue(json.content);
+    }
+  });
+  return false;  
+});
+
+
+// Frida Spawn
+$("#frida_spawn").click(function() {
+    print_status("Instrumenting the application with Frida.");
+    // Save Frida Code to Session Storage
+    var code = editor.getDoc().getValue();
+    window.sessionStorage.setItem('code', code);
+    $('#fd_log').removeAttr('disabled');
+    $('#frida-tab').removeClass('disabled');
+    var default_hooks = [];
+    $.each($("input[name='default_hooks']:checked"), function(){            
+        default_hooks.push($(this).val());
+    });
+    if(default_hooks.includes("api_monitor"))
+      $('#apimon').show();
+    else
+      $('#apimon').hide();
+
+    var auxiliary_hooks = [];
+    $.each($("input[name='auxiliary']:checked"), function(){            
+        auxiliary_hooks.push($(this).val());
+    });
+
+    action('{% url 'run_app' %}', {
+      hash: '{{ hash }}',
+      bundle_id: '{{ bundle_id }}',
+      instance_id: '{{ instance_id}}',
+    }, function(json) {
+    if (json.status === "ok")
+      print_status("Frida instrumentation successful.");
+    else
+      print_status(json.message);
+  });
+  return false;  
+}); 
+
+//Frida Get Runtime Dependencies
+$("#deps").click(function() {
+    print_status("Getting application runtime dependencies.");
+    action(document.location.origin + '/get_dependencies/', {hash: '{{ hash }}'}, function(json) {
+      if (json.status==="ok"){
+          $('#fd_log').removeAttr('disabled');
+          $('#frida-tab').removeClass('disabled');
+          print_status("Dependencies collected!");
+      } else {
+          print_status(json.message);
+      }
+    });
+    return false;  
+});
+
+//Dump App data
+function dump(){
+  action(document.location.origin + '/download_data/', { hash: '{{ hash }}'}, function(json) {
+    if (json.status==="ok"){
+      print_status("Application data dumped!");
+      print_status("Generating Report...Please Wait!");
+      //Call reporting
+      window.location = document.location.origin+"/dynamic_report/{{ hash }}";
+    } else {
+      print_status(json.message);
+    }
+  });
+}
+  
+//Finish & Generate Report
+$("#stop").one( "click", function() {
+  print_status("Collecting data...");
+  //Stop Screen Casting if it's running
+  var stext = $("#screen").text();
+  if (stext.includes("Stop Screen"))
+    $("#screen").click();
+  action(document.location.origin + '/collect_logs/', { hash: '{{ hash }}'}, function(json) {
+    if (json.status==="ok"){
+      $('#stop').addClass("btn btn-success");
+      $('#stop').text("Please Wait...");
+      print_status("Downloading logs.");
+      print_status("Stopping Application.");
+    } else{
+      print_status('Failed to collect data.')
+      print_status(json.message)
+    }
+    dump();
+  });
+  return false;  
+});
+
+//end document.ready
+});
+</script>
+{% endblock %}
