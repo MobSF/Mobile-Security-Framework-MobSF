@@ -40,6 +40,7 @@ from mobsf.MobSF.utils import (
 logger = logging.getLogger(__name__)
 register.filter('key', key)
 
+# Added Frida Log Analysis Function
 def filter_frida_logs(app_dir, keywords):
     """
     Filter Frida logs for a list of keywords and save to a file for log analysis (remove noisy data).
@@ -109,8 +110,8 @@ def view_report(request, checksum, api=False):
         trackers = trk.get_trackers_domains_or_deps(domains, deps)
         generate_download(app_dir, checksum, download_dir, package)
         images = get_screenshots(checksum, download_dir)
+        # Frida Log Analysis
         filter_frida_logs(app_dir, settings.FRIDA_LOG_ANALYSIS_KEYWORDS)
-        #
         log_analysis_file = os.path.join(app_dir, 'log_analysis.txt')  
         if is_file_exists(log_analysis_file):
             with open(log_analysis_file, 'r') as file:
