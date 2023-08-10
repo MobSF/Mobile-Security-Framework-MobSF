@@ -254,6 +254,20 @@
     cwe: ''
     masvs: resilience-5
     owasp-mobile: ''
+- id: ios_biometry_hardened
+  message: 'Biometric authentication uses `.biometryCurrentSet`. This will remove data protected with this ACL from Keychain when device biometry is updated.'
+  input_case: exact
+  pattern:
+    - \.biometryCurrentSet
+    - SecAccessControlCreateWithFlags\(
+  severity: good
+  type: RegexAnd
+  metadata:
+    cvss: 0
+    cwe: ''
+    masvs: auth-8
+    owasp-mobile: m1
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06f-Testing-Local-Authentication.md#local-authentication-framework
 - id: ios_biometric_bool
   message: 'Biometric authentication should be hardware and keychain backed, local authentication returns a boolean that can be bypassed by runtime instrumentation tools like Frida.'
   input_case: exact
