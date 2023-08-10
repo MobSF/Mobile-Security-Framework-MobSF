@@ -12,7 +12,7 @@ import urllib.request
 import requests
 serverpath = 'http://localhost:8002/'
 #Please change this to your individual Rest API Key found in Mob_SF Rest API Docs
-api_key = "Authorization:9adb741acc70d0f088bd47a41ca867c9437c88bf5486051eb35de71922da90b3"
+api_key = "Authorization:e9d5eaa76436e4e8c4aba20350aa34ee0570a4072279880e7049b1a18120b9f1"
 hash = '056d831fb3f4423ea395c02d68841887'
 venv_base_directory = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 output_folder = os.path.join(venv_base_directory, "Emulator_tools/MobSF_Reports/{}")
