@@ -13,7 +13,7 @@
   message: Files may contain hardcoded sensitive information like usernames,
     passwords, keys etc.
   input_case: lower
-  pattern: (password\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(pass\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(username\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(secret\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(key\s*=\s*[\'|\"].+[\'|\"]\s{0,5})
+  pattern: (password\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(pass\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(username\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(secret\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(key\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})
   severity: high
   type: Regex
   metadata:
@@ -112,7 +112,7 @@
 - id: ios_swift_log
   message: The App logs information. Sensitive information should never be logged.
   input_case: exact
-  pattern: (print|NSLog|os_log|OSLog|os_signpost)\(.*\)
+  pattern: (print|NSLog|os_log|OSLog|os_signpost)\(
   severity: info
   type: Regex
   metadata:
@@ -192,7 +192,7 @@
 - id: ios_custom_keyboard_disabled
   message: This App may have custom keyboards disabled.
   input_case: exact
-  pattern: extensionPointIdentifier == .*\.keyboard
+  pattern: extensionPointIdentifier == .{0,100}\.keyboard
   severity: good
   type: Regex
   metadata:
@@ -254,18 +254,88 @@
     cwe: ''
     masvs: resilience-5
     owasp-mobile: ''
-- id: ios_biometric_bool
-  message: 'Biometric authentication should be based on iOS Keychain, not based on bool.'
+- id: ios_biometry_hardened
+  message: 'Biometric authentication uses `.biometryCurrentSet`. This will remove data protected with this ACL from Keychain when device biometry is updated.'
   input_case: exact
-  pattern: \.evaluatePolicy\(.deviceOwnerAuthentication
-  severity: warning
-  type: Regex
+  pattern:
+    - \.biometryCurrentSet
+    - SecAccessControlCreateWithFlags\(
+  severity: good
+  type: RegexAnd
   metadata:
     cvss: 0
     cwe: ''
     masvs: auth-8
     owasp-mobile: m1
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06f-Testing-Local-Authentication.md#local-authentication-framework
+- id: ios_biometric_bool
+  message: 'Biometric authentication should be hardware and keychain backed, local authentication returns a boolean that can be bypassed by runtime instrumentation tools like Frida.'
+  input_case: exact
+  pattern:
+    - \.evaluatePolicy\(
+    - \.deviceOwnerAuthentication
+    - LAContext\(
+  severity: warning
+  type: RegexAnd
+  metadata:
+    cvss: 5
+    cwe: cwe-303
+    masvs: auth-8
+    owasp-mobile: m1
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06f-Testing-Local-Authentication.md#local-authentication-framework
+- id: ios_biometric_acl
+  message: Weak biometric ACL flag is associated with a key stored in Keychain. With `.biometryAny/.userPresence/.touchIDAny` flag, an attacker with the ability to add a biometry to the device can authenticate as the user. Use `.biometryCurrentSet/.touchIDCurrentSet` instead.
+  input_case: exact
+  pattern:
+    - \.biometryAny|\.userPresence|\.touchIDAny
+    - SecAccessControlCreateWithFlags\(
+  severity: high
+  type: RegexAnd
+  metadata:
+    cvss: 2
+    cwe: cwe-305
+    masvs: auth-8
+    owasp-mobile: m1
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06f-Testing-Local-Authentication.md#local-authentication-framework
+- id: ios_keychain_weak_acl_device_passcode
+  message: A key stored in the Keychain is not making use of stronger biometric backed ACL. Use `.biometryCurrentSet` instead.
+  input_case: exact
+  pattern:
+    - \.devicePasscode
+    - SecAccessControlCreateWithFlags\(
+  severity: warning
+  type: RegexAnd
+  metadata:
+    cvss: 2
+    cwe: cwe-305
+    masvs: auth-8
+    owasp-mobile: m1
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06f-Testing-Local-Authentication.md
+- id: ios_keychain_weak_accessibility_value
+  message: A key stored in the Keychain is using a weak accessibility value. Use stronger ACLs like `kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly/kSecAttrAccessibleWhenUnlocked/kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`.
+  input_case: exact
+  pattern: kSecAttrAccessibleAlways|kSecAttrAccessibleAfterFirstUnlock
+  severity: warning
+  type: Regex
+  metadata:
+    cvss: 1
+    cwe: cwe-305
+    masvs: auth-8
+    owasp-mobile: m1
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06f-Testing-Local-Authentication.md
+- id: ios_insecure_random_no_generator
+  message: The App uses an insecure Random Number Generator.
+  input_case: exact
+  pattern: ((Int|Bool|Float|Double)\.random\()|arc4random.{0,10}\(|SystemRandomNumberGenerator\(|rand\(| random\(
+  severity: warning
+  type: Regex
+  metadata:
+    cvss: 2.0
+    input_case: exact
+    cwe: cwe-330
+    owasp-mobile: m5
+    masvs: crypto-6
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#weak-random-number-generators
 - id: ios_file_no_special
   message: The file has no special protections associated with it.
   input_case: exact
@@ -400,7 +470,7 @@
 - id: ios_open_urls
   message: Opening App with URLs can lead to potential security leaks.
   input_case: exact
-  pattern: 'func application\(.*open url: URL'
+  pattern: 'func application\(.{0,48}open url: URL'
   severity: warning
   type: Regex
   metadata:

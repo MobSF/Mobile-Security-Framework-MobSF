@@ -13,7 +13,7 @@
   message: Files may contain hardcoded sensitive information like usernames,
     passwords, keys etc.
   input_case: lower
-  pattern: (password\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(pass\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(username\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(secret\s*=\s*[\'|\"].+[\'|\"]\s{0,5})|(key\s*=\s*[\'|\"].+[\'|\"]\s{0,5})
+  pattern: (password\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(pass\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(username\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(secret\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(key\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})
   severity: high
   type: Regex
   metadata:
@@ -114,7 +114,7 @@
     The App may contain banned API(s). These API(s) are insecure and must not be
     used.
   input_case: exact
-  pattern: '\s+(strcpy\(|memcpy\(|strcat\(|strncat\(|strncpy\(|sprintf\(|sprintf\(|gets\()'
+  pattern: '( strcpy\(| memcpy\(| strcat\(| strncat\(| strncpy\(| sprintf\(| sprintf\(| gets\()'
   severity: high
   type: Regex
   metadata:
