@@ -225,7 +225,6 @@
           // Is valid file extensions
           function isValidExt(file_name){
                 var val = file_name.toLowerCase();
-                alert(val);
                 var regex = new RegExp("^(.{1,300}?)\.(ipa|apk|apks|xapk|jar|aar|zip|appx)$");
                 val = val.replace(/^.{1,300}[\\\/]/, '');
                 if (!(regex.test(val))) {
