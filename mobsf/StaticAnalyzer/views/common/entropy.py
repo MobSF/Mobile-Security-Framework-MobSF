@@ -11,7 +11,7 @@ ENTROPY_PATTERNS = [
         'pattern': re.compile(r'(?m)[a-zA-Z\d+/=]{20,}'),
         'charset': ('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdef'
                     'ghijklmnopqrstuvwxyz0123456789+/='),
-        'score': 3.5,
+        'score': 4.5,
     },
     {
         # Hex
@@ -37,10 +37,12 @@ def entropy(data, charset):
 
 def exclude(secret):
     """Exclude entropies."""
-    excludes = ('abcdefghi', 'Ljava', 'Ldalvik', 'kotlin/')
+    excludes = ('abcdefghi', 'kotlin/')
+    if secret.startswith('L') and '/' in secret:
+        return True
     if any(i in secret for i in excludes):
         return True
-    if secret.count('/') > 2:
+    if secret.count('/') > 1:
         # URLs getting caught
         return True
     if secret.isalpha():

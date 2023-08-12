@@ -61,7 +61,7 @@ def upstream_proxy(flaw_type):
             proxies = {flaw_type: proxy_host}
     else:
         proxies = {flaw_type: None}
-    verify = bool(settings.UPSTREAM_PROXY_SSL_VERIFY)
+    verify = settings.UPSTREAM_PROXY_SSL_VERIFY in ('1', '"1"')
     return proxies, verify
 
 
@@ -693,3 +693,12 @@ def get_android_src_dir(app_dir, typ):
     elif typ == 'eclipse':
         src = app_dir / 'src'
     return src
+
+
+def settings_enabled(attr):
+    """Get settings state if present."""
+    if not getattr(settings, attr, True):
+        return False
+    if getattr(settings, attr) in ('', ' ', '0', '"0"'):
+        return False
+    return True

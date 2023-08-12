@@ -30,6 +30,15 @@ from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.StaticAnalyzer.views.comparer import generic_compare
 
 logger = logging.getLogger(__name__)
+# MobSF Custom regex to catch maximum URL/IP like strings
+URL_REGEX = re.compile(
+    (
+        r'((?:https?://|s?ftps?://|'
+        r'file://|javascript:|data:|www\d{0,3}[.])'
+        r'[\w().=/;,#:@?&~*+!$%\'{}-]+)'
+    ),
+    re.UNICODE)
+EMAIL_REGEX = re.compile(r'[\w.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
 
 
 def hash_gen(app_path) -> tuple:
@@ -91,15 +100,8 @@ def url_n_email_extract(dat, relative_path):
     urllist = []
     url_n_file = []
     email_n_file = []
-    # URLs Extraction My Custom regex
-    pattern = re.compile(
-        (
-            r'((?:https?://|s?ftps?://|'
-            r'file://|javascript:|data:|www\d{0,3}[.])'
-            r'[\w().=/;,#:@?&~*+!$%\'{}-]+)'
-        ),
-        re.UNICODE)
-    urllist = re.findall(pattern, dat)
+    # URL Extraction
+    urllist = re.findall(URL_REGEX, dat)
     uflag = 0
     for url in urllist:
         if url not in urls:
@@ -109,10 +111,9 @@ def url_n_email_extract(dat, relative_path):
         url_n_file.append(
             {'urls': urls, 'path': escape(relative_path)})
 
-    # Email Extraction Regex
-    regex = re.compile(r'[\w.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
+    # Email Extraction
     eflag = 0
-    for email in regex.findall(dat.lower()):
+    for email in EMAIL_REGEX.findall(dat.lower()):
         if (email not in emails) and (not email.startswith('//')):
             emails.append(email)
             eflag = 1
