@@ -75,6 +75,7 @@
               </p>
             </a>
           </li>
+          {% if app_type not in 'so' %}
           <li class="nav-item">
             <a href="#certificate" class="nav-link">
               <i class="nav-icon fas fa-certificate"></i>
@@ -107,7 +108,7 @@
               </p>
             </a>
           </li>
-          
+          {% endif %}
           <li class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon fas fa-shield-alt"></i>
@@ -117,6 +118,7 @@
               </p>
             </a>
             <ul class="nav nav-treeview">
+              {% if app_type not in 'so' %}
               <li class="nav-item">
                 <a href="#network_security" class="nav-link">
                   <i class="nav-icon fas fa-lock"></i>
@@ -145,12 +147,14 @@
                   <p>Code Analysis</p>
                 </a>
               </li>
+              {% endif %}
               <li class="nav-item">
                 <a href="#binary_analysis" class="nav-link">
                   <i class="nav-icon fas fa-flag"></i>
                   <p>Binary Analysis</p>
                 </a>
               </li>
+              {% if app_type not in 'so' %}
               <li class="nav-item">
                 <a href="#niap_analysis" class="nav-link">
                   <i class="fa fa-id-badge nav-icon"></i>
@@ -163,6 +167,7 @@
                   <p>File Analysis</p>
                 </a>
               </li>
+              {% endif %}
             </ul>
           </li>
           <li class="nav-item has-treeview">
@@ -174,6 +179,7 @@
               </p>
             </a>
             <ul class="nav nav-treeview">
+              {% if app_type not in 'so' %}
               <li class="nav-item">
                 <a href="#apkid" class="nav-link">
                   <i class="fas fa-fingerprint nav-icon"></i>
@@ -186,6 +192,7 @@
                   <p>Quark Analysis</p>
                 </a>
               </li>
+              {% endif %}
                {% if virus_total %}
               <li class="nav-item">
                 <a href="#virus_total" class="nav-link">
@@ -235,12 +242,14 @@
                   <p>Emails</p>
                 </a>
               </li>
+              {% if app_type not in 'so' %}
               <li class="nav-item">
                 <a href="#trackers" class="nav-link">
                   <i class="fas fa-user-secret nav-icon"></i>
                   <p>Trackers</p>
                 </a>
               </li>
+              {% endif %}
               <li class="nav-item">
                 <a href="#secrets" class="nav-link">
                   <i class="fas fa-key nav-icon"></i>
@@ -255,6 +264,7 @@
               </li>
             </ul>
           </li>
+          {% if app_type not in 'so' %}
            <li class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon fas fa-th-large"></i>
@@ -302,6 +312,7 @@
               </li>
             </ul>
           </li>
+          {% endif %}
             <li class="nav-item">
               <a href="../pdf/?md5={{ md5 }}" class="nav-link">
               <i class="nav-icon fas fa-file-pdf"></i>
@@ -1668,7 +1679,6 @@
 </section>
 {% endif %}
 <!-- ===========================end virus total ================================== -->
-{% if app_type not in 'so' %}
 <style>
   #chartdiv {
   width: 100%;
@@ -1925,6 +1935,7 @@
     </div>
 </section>
  <!-- ===========================end emails ================================== -->
+{% if app_type not in 'so' %}
 <a id="trackers" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">

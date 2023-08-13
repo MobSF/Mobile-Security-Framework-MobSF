@@ -198,7 +198,7 @@ def elf_analysis(app_dir: str) -> dict:
             return elf
         logger.info('Binary Analysis Started')
         sdir = Path(app_dir)
-        # Supports APK, AAR and JAR
+        # Supports APK, SO, AAR and JAR
         libs = [
             sdir,
             sdir / 'lib',

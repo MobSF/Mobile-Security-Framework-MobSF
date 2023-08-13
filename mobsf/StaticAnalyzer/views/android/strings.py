@@ -22,10 +22,43 @@ logger = logging.getLogger(__name__)
 logging.getLogger('androguard').setLevel(logging.ERROR)
 
 
-def strings_from_apk(app_file, app_dir, elf_strings):
-    """Extract the strings from an app."""
+def strings_from_so(elf_strings):
+    """Extract Strings from so file."""
+    so_strings = []
+    so_secrets = []
+    so_urls = []
+    so_urls_nf = []
+    so_emails_nf = []
     try:
-        logger.info('Extracting Strings from APK')
+        for solib in elf_strings:
+            for so, str_list in solib.items():
+                so_strings.extend(str_list)
+                # extract url, email
+                so_str = ' '.join(str_list)
+                su, suf, sem = url_n_email_extract(
+                    so_str, so)
+                so_urls.extend(su)
+                so_urls_nf.extend(suf)
+                so_emails_nf.extend(sem)
+                # Entropies
+                eps = get_entropies(so_str)
+                if eps:
+                    so_secrets.extend(eps)
+    except Exception:
+        logger.exception('Extracting Data from SO')
+    return {
+        'so_secrets': so_secrets,
+        'so_strings': so_strings,
+        'so_urls_list': so_urls,
+        'so_urls_nf': so_urls_nf,
+        'so_emails_nf': so_emails_nf,
+    }
+
+
+def strings_from_apk(app_file, app_dir, elf_strings):
+    """Extract Strings from an APK file."""
+    try:
+        logger.info('Extracting Data from APK')
         dat = []
         secrets = []
         urls = []
@@ -49,17 +82,12 @@ def strings_from_apk(app_file, app_dir, elf_strings):
             urls, urls_nf, emails_nf = url_n_email_extract(
                 data_string, 'Android String Resource')
         if elf_strings:
-            for solib in elf_strings:
-                for so, str_list in solib.items():
-                    # add to strings from jar
-                    dat.extend(str_list)
-                    # extract url, email
-                    so_str = ' '.join(str_list)
-                    su, suf, sem = url_n_email_extract(
-                        so_str, so)
-                    urls.extend(su)
-                    urls_nf.extend(suf)
-                    emails_nf.extend(sem)
+            elf_data = strings_from_so(elf_strings)
+            urls.extend(elf_data['so_urls_list'])
+            urls_nf.extend(elf_data['so_urls_nf'])
+            emails_nf.extend(elf_data['so_emails_nf'])
+            dat.extend(elf_data['so_strings'])
+            secrets.extend(elf_data['so_secrets'])
         strings_dat = list(set(dat))
         return {
             'strings': strings_dat,
@@ -69,13 +97,13 @@ def strings_from_apk(app_file, app_dir, elf_strings):
             'secrets': secrets,
         }
     except Exception:
-        logger.exception('Extracting Strings from APK')
+        logger.exception('Extracting Data from APK')
         return {}
 
 
 def strings_from_code(src_dir, typ, exts):
     """Extract Strings from code."""
-    logger.info('Extracting Strings from Source Code')
+    logger.info('Extracting Data from Source Code')
     data = {
         'strings': set(),
         'secrets': set(),
@@ -95,5 +123,5 @@ def strings_from_code(src_dir, typ, exts):
         if data['strings']:
             data['secrets'] = get_entropies(data['strings'])
     except Exception:
-        logger.exception('Extracting Strings from Code')
+        logger.exception('Extracting Data from Code')
     return data
