@@ -27,9 +27,17 @@ from mobsf.MobSF.utils import (
     upstream_proxy,
 )
 from mobsf.StaticAnalyzer.models import RecentScansDB
-from mobsf.StaticAnalyzer.views.comparer import generic_compare
+from mobsf.StaticAnalyzer.views.comparer import (
+    generic_compare,
+)
+from mobsf.StaticAnalyzer.views.common.entropy import (
+    get_entropies,
+)
+
 
 logger = logging.getLogger(__name__)
+# Regex to capture strings between quotes or <string> tag
+STRINGS_REGEX = re.compile(r'(?<=\")(.+?)(?=\")|(?<=\<string>)(.+?)(?=\<)')
 # MobSF Custom regex to catch maximum URL/IP like strings
 URL_REGEX = re.compile(
     (
@@ -208,8 +216,8 @@ def find_java_source_folder(base_folder: Path):
                 if p[0].exists())
 
 
-def is_secret(inp):
-    """Check if captures string is a possible secret."""
+def is_secret_key(inp):
+    """Check if the key in the key/value pair is interesting."""
     inp = inp.lower()
     iden = (
         'api"', 'key"', 'api_', 'key_', 'secret"',
@@ -232,3 +240,30 @@ def is_secret(inp):
     )
     not_str = any(i in inp for i in not_string)
     return any(i in inp for i in iden) and not not_str
+
+
+def strings_and_entropies(src, exts):
+    """Get Strings and Entropies."""
+    logger.info('Extracting Data from Source Code')
+    data = {
+        'strings': set(),
+        'secrets': set(),
+    }
+    try:
+        if not src.exists():
+            return data
+        for p in src.rglob('*'):
+            if p.suffix not in exts or not p.exists():
+                continue
+            matches = STRINGS_REGEX.finditer(
+                p.read_text(encoding='utf-8', errors='ignore'),
+                re.MULTILINE)
+            for match in matches:
+                if len(match.group()) < 4:
+                    continue
+                data['strings'].add(match.group())
+        if data['strings']:
+            data['secrets'] = get_entropies(data['strings'])
+    except Exception:
+        logger.exception('Extracting Data from Code')
+    return data

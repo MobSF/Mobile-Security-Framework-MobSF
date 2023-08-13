@@ -30,7 +30,7 @@ from mobsf.StaticAnalyzer.views.ios.app_transport_security import (
     check_transport_security,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
-    is_secret,
+    is_secret_key,
 )
 
 logger = logging.getLogger(__name__)
@@ -234,11 +234,11 @@ def get_plist_secrets(xml_string):
     xml_list = xml_string.split('\n')
 
     for index, line in enumerate(xml_list):
-        if '<key>' in line and is_secret(_remove_tags(line)):
+        if '<key>' in line and is_secret_key(_remove_tags(line)):
             nxt = index + 1
             value = (
                 _remove_tags(xml_list[nxt])if nxt < len(xml_list) else False)
             if value and ' ' not in value:
                 result_list.append(
-                    f'{_remove_tags(line)} : {_remove_tags(value)}')
+                    f'{_remove_tags(line)} : {_remove_tags(value)}')
     return result_list

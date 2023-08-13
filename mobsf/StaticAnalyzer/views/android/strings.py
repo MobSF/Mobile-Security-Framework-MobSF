@@ -2,13 +2,13 @@
 """Module for strings-method for java."""
 import logging
 import os
-import re
 from pathlib import Path
 
 from androguard.core.bytecodes import apk
 
 from mobsf.StaticAnalyzer.views.common.shared_func import (
-    is_secret,
+    is_secret_key,
+    strings_and_entropies,
     url_n_email_extract,
 )
 from mobsf.StaticAnalyzer.views.common.entropy import (
@@ -72,15 +72,18 @@ def strings_from_apk(app_file, app_dir, elf_strings):
             rsrc.get_strings_resources()
             for i in rsrc.values[pkg].keys():
                 res_string = rsrc.values[pkg][i].get('string')
-                if res_string:
-                    for duo in res_string:
-                        cap_str = '"' + duo[0] + '" : "' + duo[1] + '"'
-                        if is_secret(duo[0] + '"') and ' ' not in duo[1]:
-                            secrets.append(cap_str)
-                        dat.append(cap_str)
-            data_string = ''.join(dat)
+                if not res_string:
+                    continue
+                for duo in res_string:
+                    cap_str = '"' + duo[0] + '" : "' + duo[1] + '"'
+                    # Extract possible secret holding keys
+                    if is_secret_key(duo[0] + '"') and ' ' not in duo[1]:
+                        secrets.append(cap_str)
+                    dat.append(cap_str)
+            # Extract URLs and Emails from Android String Resources
             urls, urls_nf, emails_nf = url_n_email_extract(
-                data_string, 'Android String Resource')
+                ''.join(dat), 'Android String Resource')
+        # Extract URLs, Emails, and Secrets from .so files
         if elf_strings:
             elf_data = strings_from_so(elf_strings)
             urls.extend(elf_data['so_urls_list'])
@@ -102,26 +105,14 @@ def strings_from_apk(app_file, app_dir, elf_strings):
 
 
 def strings_from_code(src_dir, typ, exts):
-    """Extract Strings from code."""
-    logger.info('Extracting Data from Source Code')
+    """Extract Strings from Java/Kotlin code."""
     data = {
         'strings': set(),
         'secrets': set(),
     }
     try:
-        src = get_android_src_dir(Path(src_dir), typ)
-        if not src.exists():
-            return data
-        for p in src.rglob('*'):
-            if p.suffix not in exts or not p.exists():
-                continue
-            str_regex = re.compile(r'\".{5,300}?\"')
-            ascii_strs = re.findall(
-                str_regex, p.read_text(encoding='utf-8'))
-            if ascii_strs:
-                data['strings'].update(ascii_strs)
-        if data['strings']:
-            data['secrets'] = get_entropies(data['strings'])
+        src_dir = get_android_src_dir(Path(src_dir), typ)
+        data = strings_and_entropies(src_dir, exts)
     except Exception:
         logger.exception('Extracting Data from Code')
     return data
