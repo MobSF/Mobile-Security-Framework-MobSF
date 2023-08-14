@@ -43,7 +43,7 @@ def exclude(secret):
     if any(i in secret.lower() for i in excludes):
         return True
     if secret.count('/') > 1:
-        # URLs getting caught
+        # URLs/paths, ignore them
         return True
     if secret.isalpha():
         return True
