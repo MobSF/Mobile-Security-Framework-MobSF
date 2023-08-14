@@ -109,7 +109,7 @@ def url_n_email_extract(dat, relative_path):
     url_n_file = []
     email_n_file = []
     # URL Extraction
-    urllist = re.findall(URL_REGEX, dat)
+    urllist = URL_REGEX.findall(dat.lower())
     uflag = 0
     for url in urllist:
         if url not in urls:
