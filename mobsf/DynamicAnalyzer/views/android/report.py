@@ -55,21 +55,26 @@ def filter_frida_logs(app_dir, keywords):
         logger.warning(f"Frida log file {frida_log_file} does not exist.")
         return
 
+    written_lines = set()  # To store lines that have been written
+
     try:
         with open(frida_log_file, 'r') as frida_logs, open(log_analysis_file, 'w') as log_analysis:
             for line in frida_logs:
                 if isinstance(keywords, dict):
                     if any(keyword in line for keyword, enabled in keywords.items() if enabled):
-                        log_analysis.write(line)
+                        if line not in written_lines:
+                            log_analysis.write(line)
+                            written_lines.add(line)
                 elif isinstance(keywords, list):
                     if any(keyword in line for keyword in keywords):
-                        log_analysis.write(line)
+                        if line not in written_lines:
+                            log_analysis.write(line)
+                            written_lines.add(line)
                 else:
                     raise ValueError("Keywords must be either a dictionary or a list.")
     except Exception as e:
         logger.error(f"An error occurred while filtering Frida logs: {e}")
 
-            
 
 
 def view_report(request, checksum, api=False):
