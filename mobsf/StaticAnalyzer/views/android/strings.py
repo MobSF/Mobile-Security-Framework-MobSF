@@ -135,7 +135,7 @@ def get_strings_metadata(app_file, app_dir, elf_strings, typ, exts, code_dic):
     if exts:
         # Source Code
         code_res = strings_from_code(app_dir, typ, exts)
-        strings['strings_code'] = code_res['strings']
+        strings['strings_code'] = list(code_res['strings'])
         secrets.extend(code_res['secrets'])
 
     code_dic['strings'] = strings
