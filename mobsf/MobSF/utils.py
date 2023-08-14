@@ -706,8 +706,9 @@ def get_android_src_dir(app_dir, typ):
 
 def settings_enabled(attr):
     """Get settings state if present."""
+    disabled = ('', ' ', '""', '" "', '0', '"0"')
     if not getattr(settings, attr, True):
         return False
-    if getattr(settings, attr) in ('', ' ', '0', '"0"'):
+    if getattr(settings, attr) in disabled:
         return False
     return True
