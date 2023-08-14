@@ -26,8 +26,7 @@ from mobsf.StaticAnalyzer.views.android.manifest_analysis import (
     manifest_data,
 )
 from mobsf.StaticAnalyzer.views.android.strings import (
-    strings_from_apk,
-    strings_from_code,
+    get_strings_metadata,
 )
 from mobsf.StaticAnalyzer.views.android.binary_analysis import elf_analysis
 from mobsf.StaticAnalyzer.views.android.cert_analysis import (
@@ -154,38 +153,24 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
 
         quark_results = []
 
-        # Get the strings from android resource and shared objects
-        string_res = strings_from_apk(
+        # Get the strings and metadata
+        get_strings_metadata(
             app_dic['app_file'],
             app_dic['app_dir'],
-            elf_dict['elf_strings'])
-        # Get strings from JAR/AAR source code
-        code_strings = strings_from_code(
-            app_dic['app_dir'],
+            elf_dict['elf_strings'],
             'apk',
-            ['.java'])
-        if string_res:
-            app_dic['strings'] = string_res['strings']
-            app_dic['secrets'] = string_res['secrets']
-            code_an_dic['urls_list'].extend(
-                string_res['urls_list'])
-            code_an_dic['urls'].extend(string_res['url_nf'])
-            code_an_dic['emails'].extend(string_res['emails_nf'])
-        else:
-            app_dic['strings'] = []
-            app_dic['secrets'] = []
-        if code_strings['strings']:
-            app_dic['strings'].extend(list(code_strings['strings']))
-        if code_strings['secrets']:
-            app_dic['secrets'].extend(list(code_strings['secrets']))
+            ['.java'],
+            code_an_dic)
+
         # Firebase DB Check
         code_an_dic['firebase'] = firebase_analysis(
-            list(set(code_an_dic['urls_list'])))
+            code_an_dic['urls_list'])
         # Domain Extraction and Malware Check
         logger.info(
             'Performing Malware Check on extracted Domains')
         code_an_dic['domains'] = MalwareDomainCheck().scan(
-            list(set(code_an_dic['urls_list'])))
+            code_an_dic['urls_list'])
+
         app_dic['zipped'] = analysis_type
         app_dic['icon_hidden'] = True
         app_dic['icon_found'] = False

@@ -17,7 +17,7 @@ from mobsf.StaticAnalyzer.views.android.binary_analysis import (
     elf_analysis,
 )
 from mobsf.StaticAnalyzer.views.android.strings import (
-    strings_from_so,
+    get_strings_metadata,
 )
 from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
@@ -96,26 +96,29 @@ def so_analysis(request, app_dic, rescan, api):
             'api': {},
             'findings': {},
             'niap': {},
+            'urls_list': [],
+            'urls': [],
+            'emails': [],
         }
         quark_results = []
 
-        # Get the strings from shared objects
-        so_data = strings_from_so(elf_dict['elf_strings'])
-        app_dic['strings'] = so_data['so_strings']
-        app_dic['secrets'] = so_data['so_secrets']
-        code_an_dic['urls_list'] = so_data['so_urls_list']
-        code_an_dic['urls'] = so_data['so_urls_nf']
-        code_an_dic['emails'] = so_data['so_emails_nf']
+        # Get the strings and metadata from shared object
+        get_strings_metadata(
+            None,
+            None,
+            elf_dict['elf_strings'],
+            None,
+            None,
+            code_an_dic)
 
         # Firebase DB Check
         code_an_dic['firebase'] = firebase_analysis(
-            list(set(code_an_dic['urls_list'])))
-
+            code_an_dic['urls_list'])
         # Domain Extraction and Malware Check
         logger.info(
             'Performing Malware Check on extracted Domains')
         code_an_dic['domains'] = MalwareDomainCheck().scan(
-            list(set(code_an_dic['urls_list'])))
+            code_an_dic['urls_list'])
 
         app_dic['zipped'] = 'so'
         app_dic['icon_hidden'] = True

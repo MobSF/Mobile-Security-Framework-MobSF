@@ -56,8 +56,7 @@ from mobsf.StaticAnalyzer.views.android.manifest_analysis import (
 )
 from mobsf.StaticAnalyzer.views.android.playstore import get_app_details
 from mobsf.StaticAnalyzer.views.android.strings import (
-    strings_from_apk,
-    strings_from_code,
+    get_strings_metadata,
 )
 from mobsf.StaticAnalyzer.views.android.xapk import (
     handle_split_apk,
@@ -219,40 +218,24 @@ def static_analyzer(request, api=False):
                         app_dic['app_dir'],
                         app_dic['app_path'])
 
-                    # Get the strings from android resource and shared objects
-                    string_res = strings_from_apk(
+                    # Get the strings and metadata
+                    get_strings_metadata(
                         app_dic['app_file'],
                         app_dic['app_dir'],
-                        elf_dict['elf_strings'])
-                    # Get strings from android source code
-                    code_strings = strings_from_code(
-                        app_dic['app_dir'],
+                        elf_dict['elf_strings'],
                         'apk',
-                        ['.java'])
-                    if string_res:
-                        app_dic['strings'] = string_res['strings']
-                        app_dic['secrets'] = string_res['secrets']
-                        code_an_dic['urls_list'].extend(
-                            string_res['urls_list'])
-                        code_an_dic['urls'].extend(string_res['url_nf'])
-                        code_an_dic['emails'].extend(string_res['emails_nf'])
-                    else:
-                        app_dic['strings'] = []
-                        app_dic['secrets'] = []
-                    if code_strings['strings']:
-                        app_dic['strings'].extend(
-                            list(code_strings['strings']))
-                    if code_strings['secrets']:
-                        app_dic['secrets'].extend(
-                            list(code_strings['secrets']))
+                        ['.java'],
+                        code_an_dic)
+
                     # Firebase DB Check
                     code_an_dic['firebase'] = firebase_analysis(
-                        list(set(code_an_dic['urls_list'])))
+                        code_an_dic['urls_list'])
                     # Domain Extraction and Malware Check
                     logger.info(
                         'Performing Malware Check on extracted Domains')
                     code_an_dic['domains'] = MalwareDomainCheck().scan(
-                        list(set(code_an_dic['urls_list'])))
+                        code_an_dic['urls_list'])
+
                     app_dic['zipped'] = 'apk'
 
                     logger.info('Connecting to Database')
@@ -443,22 +426,25 @@ def static_analyzer(request, api=False):
                             app_dic['app_dir'],
                             pro_type,
                             app_dic['manifest_file'])
-                        code_strings = strings_from_code(
+
+                        # Get the strings and metadata
+                        get_strings_metadata(
+                            None,
                             app_dic['app_dir'],
+                            None,
                             pro_type,
-                            ['.java', '.kt'])
-                        if code_strings['strings']:
-                            app_dic['strings'] = list(code_strings['strings'])
-                        if code_strings['secrets']:
-                            app_dic['secrets'] = list(code_strings['secrets'])
+                            ['.java', '.kt'],
+                            code_an_dic)
+
                         # Firebase DB Check
                         code_an_dic['firebase'] = firebase_analysis(
-                            list(set(code_an_dic['urls_list'])))
+                            code_an_dic['urls_list'])
                         # Domain Extraction and Malware Check
                         logger.info(
                             'Performing Malware Check on extracted Domains')
                         code_an_dic['domains'] = MalwareDomainCheck().scan(
-                            list(set(code_an_dic['urls_list'])))
+                            code_an_dic['urls_list'])
+
                         # Extract Trackers from Domains
                         trk = Trackers.Trackers(
                             None, app_dic['tools_dir'])

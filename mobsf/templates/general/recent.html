@@ -55,7 +55,7 @@
                         <tr>
                             <td style="text-align: center;">
                                 <img id="app_icon" src="/download/{{ e.MD5 }}-icon.png" onerror="this.src='{% static 'img/no_icon.png' %}'">
-                                {% if e.PACKAGE_NAME %}
+                                {% if e.PACKAGE_NAME or e.APP_NAME %}
                                   <br/><strong>{{ e.APP_NAME }} {% if e.VERSION_NAME %} - {{ e.VERSION_NAME }} {% endif %}</strong>
                                   </br>{{ e.PACKAGE_NAME }}
                                   {% if '.so' != e.FILE_NAME|slice:"-3:"%}

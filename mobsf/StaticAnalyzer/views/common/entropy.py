@@ -40,7 +40,7 @@ def exclude(secret):
     excludes = ('abcdefghi', 'kotlin/')
     if secret.startswith('L') and '/' in secret:
         return True
-    if any(i in secret for i in excludes):
+    if any(i in secret.lower() for i in excludes):
         return True
     if secret.count('/') > 1:
         # URLs getting caught

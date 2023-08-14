@@ -1507,11 +1507,16 @@
                <strong><i class="fas fa-font"></i> STRINGS</strong>
                </p>
                  <div class="list-group">
-                    <p>  
-                      {% for val in strings %}
-                       {{ val }}<br/>
-                      {% endfor %}                  
-                    </p>
+                   <p><strong>From Code</strong></p>
+                  <p>  
+                    {% for key, val in strings.items %}
+                      {% if key == 'strings_code' %}
+                        {% for v in val %}
+                          {{ v }}<br/>
+                        {% endfor %}
+                      {% endif %}
+                    {% endfor %}                  
+                  </p>
                 </div>
               </div>
             </div>

@@ -2019,9 +2019,41 @@
              <strong><i class="fas fa-font"></i> STRINGS</strong>
              </p>
                <div class="list-group">
+              {% if app_type not in 'so' %}
+                  <p><strong>From APK Resource</strong></p>
                   <p>  
-                    {% for val in strings %}
-                     {{ val }}<br/>
+                    {% for key, val in strings.items %}
+                      {% if key == 'strings_apk_res' %}
+                        {% for v in val %}
+                          {{ v }}<br/>
+                        {% endfor %}
+                      {% endif %}
+                    {% endfor %}                  
+                  </p>
+                   <p><strong>From Code</strong></p>
+                  <p>  
+                    {% for key, val in strings.items %}
+                      {% if key == 'strings_code' %}
+                        {% for v in val %}
+                          {{ v }}<br/>
+                        {% endfor %}
+                      {% endif %}
+                    {% endfor %}                  
+                  </p>
+              {% endif %}
+                    <p><strong>From Shared Objects</strong></p>
+                  <p>  
+                    {% for key, val in strings.items %}
+                      {% if key == 'strings_so' %}
+                        {% for ls in val %}
+                          {% for k,v in ls.items %}
+                          <p></br><b><i>{{ k }}</i></b></p>
+                            {% for i in v %}
+                              {{ i }}<br/>
+                            {% endfor %}
+                          {% endfor %}
+                        {% endfor %}
+                      {% endif %}
                     {% endfor %}                  
                   </p>
               </div>
