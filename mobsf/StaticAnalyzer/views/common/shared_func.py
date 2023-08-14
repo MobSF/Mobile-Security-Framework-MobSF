@@ -38,7 +38,7 @@ from mobsf.StaticAnalyzer.views.common.entropy import (
 logger = logging.getLogger(__name__)
 # Regex to capture strings between quotes or <string> tag
 STRINGS_REGEX = re.compile(r'(?<=\")(.+?)(?=\")|(?<=\<string>)(.+?)(?=\<)')
-# MobSF Custom regex to catch maximum URL/IP like strings
+# MobSF Custom regex to catch maximum URI like strings
 URL_REGEX = re.compile(
     (
         r'((?:https?://|s?ftps?://|'
