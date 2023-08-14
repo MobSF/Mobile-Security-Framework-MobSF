@@ -247,7 +247,7 @@ def static_analyzer_ios(request, api=False):
                         'checksec': {},
                         'libraries': [],
                         'bin_code_analysis': {},
-                        'strings': ios_strs['strings'],
+                        'strings': list(ios_strs['strings']),
                         'bin_info': {},
                         'bin_type': code_analysis_dic['source_type'],
                     }
