@@ -47,7 +47,7 @@ def upstream_proxy(flaw_type):
             proxy_port = str(settings.UPSTREAM_PROXY_PORT)
             proxy_host = '{}://{}:{}'.format(
                 settings.UPSTREAM_PROXY_TYPE,
-                settings.UPSTREAM_PROXY_IP,
+                docker_translate_proxy_ip(settings.UPSTREAM_PROXY_IP),
                 proxy_port)
             proxies = {flaw_type: proxy_host}
         else:
@@ -56,7 +56,7 @@ def upstream_proxy(flaw_type):
                 settings.UPSTREAM_PROXY_TYPE,
                 settings.UPSTREAM_PROXY_USERNAME,
                 settings.UPSTREAM_PROXY_PASSWORD,
-                settings.UPSTREAM_PROXY_IP,
+                docker_translate_proxy_ip(settings.UPSTREAM_PROXY_IP),
                 proxy_port)
             proxies = {flaw_type: proxy_host}
     else:
@@ -345,6 +345,15 @@ def docker_translate_localhost(identifier):
         return identifier
 
 
+def docker_translate_proxy_ip(ip):
+    """Convert localhost proxy ip to host.docker.internal."""
+    if not os.getenv('MOBSF_PLATFORM') == 'docker':
+        return ip
+    if ip and ip.strip() in ('127.0.0.1', 'localhost'):
+        return 'host.docker.internal'
+    return ip
+
+
 def get_device():
     """Get Device."""
     if os.getenv('ANALYZER_IDENTIFIER'):
@@ -593,7 +602,7 @@ def cmd_injection_check(data):
 
 def strict_package_check(user_input):
     """Strict package name check."""
-    pat = re.compile(r'^\w+\.*[\w\.\$]+$')
+    pat = re.compile(r'^([A-Za-z]{1}[\w]*\.)+[A-Za-z][\w]*$')
     resp = re.match(pat, user_input)
     if not resp:
         logger.error('Invalid package/class name')

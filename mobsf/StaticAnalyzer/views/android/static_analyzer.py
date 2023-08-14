@@ -638,8 +638,9 @@ def get_app_name_from_file(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
         data = f.read()
 
-    app_name_match = re.search(r'<string name=\"app_name\">(.*)</string>',
-                               data)
+    app_name_match = re.search(
+        r'<string name=\"app_name\">(.{0,300})</string>',
+        data)
 
     if (not app_name_match) or (len(app_name_match.group()) <= 0):
         # Did not find app_name in current file.

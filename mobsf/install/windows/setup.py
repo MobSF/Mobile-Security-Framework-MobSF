@@ -179,7 +179,7 @@ def tools_binskim():
 
     # Search for the version number
     folder = re.search(
-        b'Microsoft\\.CodeAnalysis\\.BinSkim\\..*(\'|\") ', output)
+        b'Microsoft\\.CodeAnalysis\\.BinSkim\\..{0,300}(\'|\") ', output)
     try:
         # Substring-Foo for removing b'X's in python3
         if sys.version_info.major == 3:
