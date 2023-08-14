@@ -66,7 +66,8 @@ class AndroidChecks(forms.Form):
             ('smali', 'smali'),
             ('apk', 'apk'),
             ('jar', 'jar'),
-            ('aar', 'aar')))
+            ('aar', 'aar'),
+            ('so', 'so')))
 
     def clean_file(self):
         """Safe Extension."""

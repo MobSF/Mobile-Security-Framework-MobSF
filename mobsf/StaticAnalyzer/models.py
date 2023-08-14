@@ -50,7 +50,7 @@ class StaticAnalyzerAndroid(models.Model):
     URLS = models.TextField(default=[])
     DOMAINS = models.TextField(default={})
     EMAILS = models.TextField(default=[])
-    STRINGS = models.TextField(default=[])
+    STRINGS = models.TextField(default={})
     FIREBASE_URLS = models.TextField(default=[])
     FILES = models.TextField(default=[])
     EXPORTED_COUNT = models.TextField(default={})

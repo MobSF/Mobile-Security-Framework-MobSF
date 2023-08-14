@@ -27,9 +27,26 @@ from mobsf.MobSF.utils import (
     upstream_proxy,
 )
 from mobsf.StaticAnalyzer.models import RecentScansDB
-from mobsf.StaticAnalyzer.views.comparer import generic_compare
+from mobsf.StaticAnalyzer.views.comparer import (
+    generic_compare,
+)
+from mobsf.StaticAnalyzer.views.common.entropy import (
+    get_entropies,
+)
+
 
 logger = logging.getLogger(__name__)
+# Regex to capture strings between quotes or <string> tag
+STRINGS_REGEX = re.compile(r'(?<=\")(.+?)(?=\")|(?<=\<string>)(.+?)(?=\<)')
+# MobSF Custom regex to catch maximum URI like strings
+URL_REGEX = re.compile(
+    (
+        r'((?:https?://|s?ftps?://|'
+        r'file://|javascript:|data:|www\d{0,3}[.])'
+        r'[\w().=/;,#:@?&~*+!$%\'{}-]+)'
+    ),
+    re.UNICODE)
+EMAIL_REGEX = re.compile(r'[\w.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
 
 
 def hash_gen(app_path) -> tuple:
@@ -91,15 +108,8 @@ def url_n_email_extract(dat, relative_path):
     urllist = []
     url_n_file = []
     email_n_file = []
-    # URLs Extraction My Custom regex
-    pattern = re.compile(
-        (
-            r'((?:https?://|s?ftps?://|'
-            r'file://|javascript:|data:|www\d{0,3}[.])'
-            r'[\w().=/;,#:@?&~*+!$%\'{}-]+)'
-        ),
-        re.UNICODE)
-    urllist = re.findall(pattern, dat)
+    # URL Extraction
+    urllist = URL_REGEX.findall(dat.lower())
     uflag = 0
     for url in urllist:
         if url not in urls:
@@ -109,10 +119,9 @@ def url_n_email_extract(dat, relative_path):
         url_n_file.append(
             {'urls': urls, 'path': escape(relative_path)})
 
-    # Email Extraction Regex
-    regex = re.compile(r'[\w.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
+    # Email Extraction
     eflag = 0
-    for email in regex.findall(dat.lower()):
+    for email in EMAIL_REGEX.findall(dat.lower()):
         if (email not in emails) and (not email.startswith('//')):
             emails.append(email)
             eflag = 1
@@ -207,8 +216,8 @@ def find_java_source_folder(base_folder: Path):
                 if p[0].exists())
 
 
-def is_secret(inp):
-    """Check if captures string is a possible secret."""
+def is_secret_key(inp):
+    """Check if the key in the key/value pair is interesting."""
     inp = inp.lower()
     iden = (
         'api"', 'key"', 'api_', 'key_', 'secret"',
@@ -231,3 +240,30 @@ def is_secret(inp):
     )
     not_str = any(i in inp for i in not_string)
     return any(i in inp for i in iden) and not not_str
+
+
+def strings_and_entropies(src, exts):
+    """Get Strings and Entropies."""
+    logger.info('Extracting Data from Source Code')
+    data = {
+        'strings': set(),
+        'secrets': set(),
+    }
+    try:
+        if not src.exists():
+            return data
+        for p in src.rglob('*'):
+            if p.suffix not in exts or not p.exists():
+                continue
+            matches = STRINGS_REGEX.finditer(
+                p.read_text(encoding='utf-8', errors='ignore'),
+                re.MULTILINE)
+            for match in matches:
+                if len(match.group()) < 4:
+                    continue
+                data['strings'].add(match.group())
+        if data['strings']:
+            data['secrets'] = get_entropies(data['strings'])
+    except Exception:
+        logger.exception('Extracting Data from Code')
+    return data

@@ -561,10 +561,11 @@
     masvs: crypto-3
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#mobile-app-cryptography
 - id: android_world_writable
-  message: The file is World Writable. Any App can write to the file
+  message: The file or SharedPreference is World Writable. Any App can write to the file
   type: RegexOr
   pattern:
     - MODE_WORLD_WRITABLE
+    - \.getSharedPreferences\(.{0,50}2\)
     - 'openFileOutput\(\s*".{1,48}"\s*,\s*2\s*\)'
   severity: high
   input_case: exact
@@ -575,10 +576,11 @@
     masvs: storage-2
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#testing-local-storage-for-sensitive-data-mstg-storage-1-and-mstg-storage-2
 - id: android_world_readable
-  message: The file is World Readable. Any App can read from the file
+  message: The file or SharedPreference is World Readable. Any App can read from the file
   type: RegexOr
   pattern:
     - MODE_WORLD_READABLE
+    - \.getSharedPreferences\(.{0,50}1\)
     - 'openFileOutput\(\s*".{1,48}"\s*,\s*1\s*\)'
   severity: high
   input_case: exact
