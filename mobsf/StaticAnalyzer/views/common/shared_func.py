@@ -252,6 +252,8 @@ def strings_and_entropies(src, exts):
     try:
         if not src.exists():
             return data
+        excludes = ('\\u0', 'com.google.')
+        eslash = ('(L', '[L', '[F', 'Ljava', 'Lkotlin', 'kotlin', 'android')
         for p in src.rglob('*'):
             if p.suffix not in exts or not p.exists():
                 continue
@@ -259,9 +261,14 @@ def strings_and_entropies(src, exts):
                 p.read_text(encoding='utf-8', errors='ignore'),
                 re.MULTILINE)
             for match in matches:
-                if len(match.group()) < 4:
+                string = match.group()
+                if len(string) < 4:
                     continue
-                data['strings'].add(match.group())
+                if any(i in string for i in excludes):
+                    continue
+                if any(i in string and '/' in string for i in eslash):
+                    continue
+                data['strings'].add(string)
         if data['strings']:
             data['secrets'] = get_entropies(data['strings'])
     except Exception:
