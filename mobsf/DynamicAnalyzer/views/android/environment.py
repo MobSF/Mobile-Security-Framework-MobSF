@@ -71,6 +71,8 @@ class Environment:
 
     def connect(self):
         """ADB Connect."""
+        if not self.identifier:
+            return False
         logger.info('Connecting to Android %s', self.identifier)
         self.run_subprocess_verify_output([get_adb(),
                                            'connect',
@@ -78,6 +80,8 @@ class Environment:
 
     def connect_n_mount(self):
         """Test ADB Connection."""
+        if not self.identifier:
+            return False
         self.adb_command(['kill-server'])
         self.adb_command(['start-server'])
         logger.info('ADB Restarted')

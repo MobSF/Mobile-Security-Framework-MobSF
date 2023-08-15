@@ -3,9 +3,11 @@
 import logging
 from pathlib import Path
 
-from django.conf import settings
-
 import lief
+
+from mobsf.MobSF.utils import (
+    settings_enabled,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -192,14 +194,16 @@ def elf_analysis(app_dir: str) -> dict:
     """Perform elf analysis on shared object."""
     elf = {'elf_analysis': [], 'elf_strings': []}
     try:
-        if not getattr(settings, 'SO_ANALYSIS_ENABLED', True):
+        if not settings_enabled('SO_ANALYSIS_ENABLED'):
             return elf
         logger.info('Binary Analysis Started')
-        # Supports APK, AAR and JAR
+        sdir = Path(app_dir)
+        # Supports APK, SO, AAR and JAR
         libs = [
-            Path(app_dir) / 'lib',
-            Path(app_dir) / 'libs',
-            Path(app_dir) / 'jni']
+            sdir,
+            sdir / 'lib',
+            sdir / 'libs',
+            sdir / 'jni']
         for lib_dir in libs:
             if not lib_dir.is_dir():
                 continue

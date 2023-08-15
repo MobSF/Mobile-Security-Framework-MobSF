@@ -64,6 +64,7 @@
         <td class="no_border"><h3>Scan Date:</h3></td>
         <td class="no_border"><h3>{{ timestamp }}</h3></td>
       </tr>
+      {% if app_type not in 'so' %}
       {% if average_cvss %}
       <tr>
         <td class="no_border"><h3>Average CVSS Score:</h3></td>
@@ -122,6 +123,7 @@
           <td class="no_border"><h3><span {% if trackers.detected_trackers > 0 %} class="warning" {% endif %}>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</span></h3></td>
         </tr>
       {% endif %}
+      {% endif %}
       {% if virus_total and virus_total.items|length > 9 and 'request successfully queued' not in virus_total.verbose_msg %}
         <tr>
         <td class="no_border"><h3>VirusTotal Detection:</h3></td>
@@ -130,6 +132,7 @@
       {% endif %}
     
     </table>
+    {% if app_type not in 'so' %}
   </br></br>
 </br></br>
 </br></br>
@@ -159,7 +162,7 @@
       </div>
       
     </article>
-    
+  {% endif %}
     <article id="contents">
 
       
@@ -171,7 +174,7 @@
       <h5>SHA1:</h5> {{ sha1 }}</br>
       <h5>SHA256:</h5> {{ sha256 }}</br>
      
-
+{% if app_type not in 'so' %}
       <h2><i class="fas fa-info"></i> APP INFORMATION</h2>
 
       <h5>App Name:</h5> {{ app_name }}</br>
@@ -182,8 +185,9 @@
       <h5>Max SDK:</h5> {{ max_sdk }}</br>
       <h5>Android Version Name:</h5> {{ version_name }}</br>
       <h5>Android Version Code:</h5> {{ version_code }}</br>
-     
-{% if app_type not in 'jar,aar' %}
+{% endif %}
+
+{% if app_type not in 'jar,aar,so' %}
       <h2><i class="fas fa-th-large"></i> APP COMPONENTS </h2>
 
         <h5>Activities:</h5> {{ activities | length }}</br>
@@ -195,6 +199,7 @@
         <h5>Exported Receivers:</h5> <span {% if exported_count.exported_receivers > 0 %} class="danger" {% endif %}> {{ exported_count.exported_receivers }}</span></br>
         <h5>Exported Providers:</h5> <span {% if exported_count.exported_providers > 0 %} class="danger" {% endif %}> {{ exported_count.exported_providers }}</span></br>
   {% endif %}
+  {% if app_type not in 'so' %}
         <h2><i class="fa fa-certificate"></i> CERTIFICATE INFORMATION</h2>
         {% if certificate_analysis.certificate_info %}
         <div class="panel-body">
@@ -203,6 +208,7 @@
       {% else %}
       <span class="danger">Failed to read Code Signing Certificate or none available.</span>
       {% endif %}
+  {% endif %}
       {% if permissions %}
       <h2><i class="fa fa-list"></i> APPLICATION PERMISSIONS</h2>
 
@@ -400,7 +406,7 @@
                     </tbody>
                     </table>
       {% endif %}
-
+    {% if app_type not in 'so' %}
      <h2><i class="fas fa-lock"></i> NETWORK SECURITY</h2>
      {% if network_security and 'network_summary' in network_security and network_security.network_summary|length > 0 %}
      <span class="danger">HIGH: </span>
@@ -617,7 +623,7 @@
               {% endif %}
           </tbody>
           </table>
-         
+    {% endif %}
             
      {% if binary_analysis  %}
       <h2><i class="fa fa-flag"></i> SHARED LIBRARY BINARY ANALYSIS</h2>
@@ -672,7 +678,7 @@
                   </tbody>
                     </table>
     {% endif %}
-              
+    {% if app_type not in 'so' %}
     <h2><i class="fa fa-id-badge"></i> NIAP ANALYSIS v1.3</h2>
     <table class="basic">
               <thead>
@@ -704,7 +710,7 @@
               {% endfor %} 
             </tbody>
                   </table>
-
+    {% endif %}
 <!-- Added for anyone who needs QUARK Results in Report
        {% if quark %} 
       <h2><i class="fab fa-quora"></i> QUARK </h2>
@@ -802,7 +808,8 @@
                 </tbody>
             </table>
       {% endif %}
-<!--
+<!-- Display urls only for so files-->
+{% if app_type in 'so' %}
        {% if urls %} 
       <h2><i class="fas fa-globe"></i> URLS </h2>
       <table class="basic">
@@ -828,7 +835,7 @@
 										</tbody>
 										</table>
         {% endif %}
--->
+{% endif %}
        {% if firebase_urls %} 
       <h2><i class="fas fa-database"></i> FIREBASE DATABASES</h2>
             <table class="basic">

@@ -61,7 +61,7 @@ def upstream_proxy(flaw_type):
             proxies = {flaw_type: proxy_host}
     else:
         proxies = {flaw_type: None}
-    verify = bool(settings.UPSTREAM_PROXY_SSL_VERIFY)
+    verify = settings.UPSTREAM_PROXY_SSL_VERIFY in ('1', '"1"')
     return proxies, verify
 
 
@@ -367,7 +367,8 @@ def get_device():
         out = subprocess.check_output([get_adb(), 'devices']).splitlines()
         if len(out) > 2:
             dev_id = out[1].decode('utf-8').split('\t')[0]
-            return docker_translate_localhost(dev_id)
+            if 'daemon started successfully' not in dev_id:
+                return docker_translate_localhost(dev_id)
     logger.error(get_android_dm_exception_msg())
 
 
@@ -626,6 +627,13 @@ def is_zip_magic(file_obj):
     return bool(magic == b'\x50\x4B\x03\x04')
 
 
+def is_elf_so_magic(file_obj):
+    magic = file_obj.read(4)
+    file_obj.seek(0, 0)
+    # ELF/SO Magic
+    return bool(magic == b'\x7F\x45\x4C\x46')
+
+
 def disable_print():
     sys.stdout = open(os.devnull, 'w')
 
@@ -680,3 +688,27 @@ def get_android_dm_exception_msg():
         ' set ANALYZER_IDENTIFIER in '
         f'{get_config_loc()} or via environment variable'
         ' MOBSF_ANALYZER_IDENTIFIER')
+
+
+def get_android_src_dir(app_dir, typ):
+    """Get Android source code location."""
+    if typ == 'apk':
+        src = app_dir / 'java_source'
+    elif typ == 'studio':
+        src = app_dir / 'app' / 'src' / 'main' / 'java'
+        kt = app_dir / 'app' / 'src' / 'main' / 'kotlin'
+        if not src.exists() and kt.exists():
+            src = kt
+    elif typ == 'eclipse':
+        src = app_dir / 'src'
+    return src
+
+
+def settings_enabled(attr):
+    """Get settings state if present."""
+    disabled = ('', ' ', '""', '" "', '0', '"0"')
+    if not getattr(settings, attr, True):
+        return False
+    if getattr(settings, attr) in disabled:
+        return False
+    return True
