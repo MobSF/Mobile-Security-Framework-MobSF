@@ -224,9 +224,12 @@ class Checksec:
         return bool(self.macho.encryption_info.crypt_id)
 
     def is_symbols_stripped(self):
-        filter_symbol = 'radr://5614542'
+        filter_symbols = ['radr://5614542', '__mh_execute_header']
         for i in self.macho.symbols:
-            if (i.type & 0xe0) > 0 and i.name.lower().strip() != filter_symbol:
+            strip_bool = i.type & 0xe0
+            strip_type = i.type in [0x0e, 0x1e, 0x0f]
+            sym = i.name.lower().strip()
+            if (strip_bool > 0 or strip_type) and sym not in filter_symbols:
                 return False
         return True
 
