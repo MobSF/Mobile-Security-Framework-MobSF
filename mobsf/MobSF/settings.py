@@ -436,5 +436,6 @@ else:
         'calls': True,
         'filePath': True,
         'URL': False,
+        'map': False,
     }
     # ^CONFIG-END^: Do not edit this line
