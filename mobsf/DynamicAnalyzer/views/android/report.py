@@ -55,12 +55,12 @@ def filter_frida_logs(app_dir, keywords):
         logger.warning(f"Frida log file {frida_log_file} does not exist.")
         return
 
-    written_lines = set()  # To store lines that have been written
+    written_lines = set()  # To store lines that have been written, prevents duplicate data from being displayed
 
     try:
         with open(frida_log_file, 'r') as frida_logs, open(log_analysis_file, 'w') as log_analysis:
             for line in frida_logs:
-                if isinstance(keywords, dict):
+                if isinstance(keywords, dict):  # filtering and writing
                     if any(keyword in line for keyword, enabled in keywords.items() if enabled):
                         if line not in written_lines:
                             log_analysis.write(line)
