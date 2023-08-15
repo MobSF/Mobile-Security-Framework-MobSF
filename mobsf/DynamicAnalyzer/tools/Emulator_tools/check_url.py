@@ -1,3 +1,8 @@
+## This functions has been scrapped, but will just leave it here.
+## Scrapped as MobSF already has a malware domain checker.
+
+
+
 import requests
 import time
 import json
