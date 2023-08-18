@@ -330,6 +330,8 @@ else:
     DEX2SMALI_ENABLED = os.getenv('MOBSF_DEX2SMALI_ENABLED', '1')
     # Android Shared Object Binary Analysis
     SO_ANALYSIS_ENABLED = os.getenv('MOBSF_SO_ANALYSIS_ENABLED', '1')
+    # iOS Dynamic Library Binary Analysis
+    DYLIB_ANALYSIS_ENABLED = os.getenv('MOBSF_DYLIB_ANALYSIS_ENABLED', '1')
     # =================================================
     # --------------------------
     # MALWARE ANALYZER SETTINGS

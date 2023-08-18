@@ -223,22 +223,24 @@ def get_summary(ats):
     return summary
 
 
-def get_plist_secrets(xml_string):
-    """Get possible hardcoded secrets from plist."""
-    result_list = []
+def get_plist_secrets(app_dir):
+    """Get possible hardcoded secrets from plist files."""
+    result_list = set()
 
     def _remove_tags(data):
         """Remove tags from input."""
         return sub('<[^<]+>', '', data).strip()
 
-    xml_list = xml_string.split('\n')
-
-    for index, line in enumerate(xml_list):
-        if '<key>' in line and is_secret_key(_remove_tags(line)):
-            nxt = index + 1
-            value = (
-                _remove_tags(xml_list[nxt])if nxt < len(xml_list) else False)
-            if value and ' ' not in value:
-                result_list.append(
-                    f'{_remove_tags(line)} : {_remove_tags(value)}')
-    return result_list
+    for i in Path(app_dir).rglob('*.plist'):
+        xml_string = i.read_text('utf-8', 'ignore')
+        xml_list = xml_string.split('\n')
+        for index, line in enumerate(xml_list):
+            if '<key>' in line and is_secret_key(_remove_tags(line)):
+                nxt = index + 1
+                value = (
+                    _remove_tags(
+                        xml_list[nxt])if nxt < len(xml_list) else False)
+                if value and ' ' not in value:
+                    result_list.add(
+                        f'{_remove_tags(line)} : {_remove_tags(value)}')
+    return list(result_list)

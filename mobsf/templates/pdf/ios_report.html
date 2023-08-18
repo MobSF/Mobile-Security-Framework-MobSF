@@ -441,7 +441,7 @@
                
         {% endif %}
         {% if macho_analysis  %}
-      <h2><i class="fas fa-flag"></i> IPA BINARY ANALYSIS</h2>
+      <h2><i class="fa fa-braille"></i> IPA BINARY ANALYSIS</h2>
        <table class="basic">
                   <thead>
                     <tr>
@@ -507,6 +507,62 @@
                 </tbody>
                     </table>
         {% endif %}
+
+    {% if dylib_analysis %}
+        <h2><i class="fa fa-flag"></i> DYNAMIC LIBRARY BINARY ANALYSIS</h2>
+        <table class="basic">
+                <thead>
+                    <tr>
+                        <th>NO</th>
+                        <th>DYLIB</th>
+                        <th>NX</th>
+                        <th>STACK CANARY</th>
+                        <th>ARC</th>
+                        <th>RPATH</th>
+                        <th>CODE SIGNATURE</th>
+                        <th>ENCRYPTED</th>
+                        <th>SYMBOLS STRIPPED</th>
+                    </tr>
+                </thead>
+                <tbody>
+          {% for dy in dylib_analysis %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{dy.name}}</td>
+            <td><b>{{dy.nx.has_nx}}</b>
+              <br/>
+              <span class="{% if dy.nx.severity == 'high' %}danger{% elif dy.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.nx.severity}}</span><br/>
+              <br/>{{dy.nx.description}}</td>
+            <td><b>{{dy.stack_canary.has_canary}}</b>
+                <br/>
+                <span class="{% if dy.stack_canary.severity == 'high' %}danger{% elif dy.stack_canary.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.stack_canary.severity}}</span><br/>
+                <br/>{{dy.stack_canary.description}}</td>
+            <td><b>{{dy.arc.has_arc}}</b>
+              <br/>
+              <span class="{% if dy.arc.severity == 'high' %}danger{% elif dy.arc.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.arc.severity}}</span><br/>
+              <br/>{{dy.arc.description}}</td>
+            <td><b>{{dy.rpath.has_rpath}}</b>
+              <br/>
+              <span class="{% if dy.rpath.severity == 'high' %}danger{% elif dy.rpath.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.rpath.severity}}</span><br/>
+              <br/>{{dy.rpath.description}}</td>
+            <td><b>{{dy.code_signature.has_code_signature}}</b>
+                <br/>
+                <span class="{% if dy.code_signature.severity == 'high' %}danger{% elif dy.code_signature.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.code_signature.severity}}</span><br/>
+                <br/>{{dy.code_signature.description}}</td>
+            <td><b>{{dy.encrypted.is_encrypted}}</b>
+                <br/>
+                <span class="{% if dy.encrypted.severity == 'high' %}danger{% elif dy.encrypted.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.encrypted.severity}}</span><br/>
+                <br/>{{dy.encrypted.description}}</td>
+            <td><b>{{dy.symbol.is_stripped}}</b>
+              <br/>
+              <span class="{% if dy.symbol.severity == 'high' %}danger{% elif dy.symbol.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.symbol.severity}}</span><br/>
+              <br/>{{dy.symbol.description}}</td>
+          </tr>
+          {% endfor %}
+                  </tbody>
+                  </table>
+    {% endif %}
+
     {% if code_analysis  %}
       <h2><i class="fas fa-code"></i> CODE ANALYSIS</h2>
       {% if code_analysis and 'summary' in code_analysis and code_analysis.summary|length > 0 %}

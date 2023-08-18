@@ -85,6 +85,7 @@ class StaticAnalyzerIOS(models.Model):
     ATS_ANALYSIS = models.TextField(default=[])
     BINARY_ANALYSIS = models.TextField(default=[])
     MACHO_ANALYSIS = models.TextField(default={})
+    DYLIB_ANALYSIS = models.TextField(default={})
     IOS_API = models.TextField(default={})
     CODE_ANALYSIS = models.TextField(default={})
     FILE_ANALYSIS = models.TextField(default=[])

@@ -253,7 +253,7 @@ def strings_and_entropies(src, exts):
         if not src.exists():
             return data
         excludes = ('\\u0', 'com.google.')
-        eslash = ('(L', '[L', '[F', 'Ljava', 'Lkotlin', 'kotlin', 'android')
+        eslash = ('Ljava', 'Lkotlin', 'kotlin', 'android')
         for p in src.rglob('*'):
             if p.suffix not in exts or not p.exists():
                 continue
@@ -267,6 +267,8 @@ def strings_and_entropies(src, exts):
                 if any(i in string for i in excludes):
                     continue
                 if any(i in string and '/' in string for i in eslash):
+                    continue
+                if not string[0].isalnum():
                     continue
                 data['strings'].add(string)
         if data['strings']:

@@ -1,4 +1,5 @@
 import re
+from pathlib import Path
 
 from django import forms
 
@@ -12,25 +13,20 @@ class AttackDetect(forms.Form):
         if (('../' in file) or ('%2e%2e' in file)
                 or ('..' in file) or ('%252e' in file)):
             raise forms.ValidationError('Attack Detected')
-
+        # Allowed File extensions
+        supported_ext = (r'^\.(java|smali|xml|'
+                         r'plist|m|swift|'
+                         r'db|sqlitedb|sqlite|txt|json)$')
+        if not re.search(supported_ext, Path(file).suffix):
+            raise forms.ValidationError('File Extension not supported')
         return file
 
 
 class IOSChecks(forms.Form):
-    file = forms.CharField()
     type = forms.ChoiceField(  # noqa A003
         choices=(
             ('ipa', 'ipa'),
             ('ios', 'ios')))
-
-    def clean_file(self):
-        """Safe Extension."""
-        file = self.cleaned_data['file']
-        ext = file.split('.')[-1]
-        ext_type = re.search('plist|db|sqlitedb|sqlite|txt|m', ext)
-        if not ext_type:
-            raise forms.ValidationError('File Extension not supported')
-        return file
 
 
 class APIChecks(forms.Form):
@@ -68,15 +64,6 @@ class AndroidChecks(forms.Form):
             ('jar', 'jar'),
             ('aar', 'aar'),
             ('so', 'so')))
-
-    def clean_file(self):
-        """Safe Extension."""
-        file = self.cleaned_data['file']
-        ext = file.split('.')[-1]
-        ext_type = re.search('java|smali', ext)
-        if not ext_type:
-            raise forms.ValidationError('File Extension not supported')
-        return file
 
 
 class ViewSourceIOSApiForm(AttackDetect, IOSChecks, APIChecks):

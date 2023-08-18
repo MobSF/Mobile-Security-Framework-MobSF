@@ -14,12 +14,20 @@ from mobsf.StaticAnalyzer.views.ios.classdump import (
 from mobsf.StaticAnalyzer.views.ios.macho_analysis import (
     macho_analysis,
 )
+from mobsf.StaticAnalyzer.views.ios.strings import (
+    strings_on_binary,
+    strings_on_ipa,
+)
 from mobsf.StaticAnalyzer.views.ios.binary_rule_matcher import (
     binary_rule_matcher,
 )
-from mobsf.StaticAnalyzer.tools.strings import (
-    strings_util,
+from mobsf.MobSF.utils import (
+    settings_enabled,
 )
+from mobsf.StaticAnalyzer.views.ios.macho_analysis import (
+    Checksec,
+)
+
 
 logger = logging.getLogger(__name__)
 
@@ -30,17 +38,6 @@ def detect_bin_type(libs):
         return 'Swift'
     else:
         return 'Objective C'
-
-
-def strings_on_ipa(bin_path):
-    """Extract Strings from IPA."""
-    try:
-        logger.info('Running strings against the Binary')
-        unique_str = []
-        unique_str = list(set(strings_util(bin_path.as_posix())))
-        return unique_str
-    except Exception:
-        logger.exception('Running strings against the Binary')
 
 
 def get_bin_info(bin_file):
@@ -107,13 +104,38 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
             binary_rule_matcher(
                 binary_findings,
                 macho['symbols'], classdump)
-            strings_in_ipa = strings_on_ipa(bin_path)
             bin_dict['checksec'] = macho['checksec']
             bin_dict['libraries'] = macho['libraries']
             bin_dict['bin_code_analysis'] = binary_findings
-            bin_dict['strings'] = strings_in_ipa
             bin_dict['bin_info'] = bin_info
             bin_dict['bin_type'] = bin_type
+            strings_on_ipa(bin_path, bin_dict)
     except Exception:
         logger.exception('IPA Binary Analysis')
     return bin_dict
+
+
+def dylib_analysis(app_dir: str) -> dict:
+    """Perform analysis on dynamic libraries."""
+    dylibs = {'dylib_analysis': [], 'dylib_strings': []}
+    try:
+        if not settings_enabled('DYLIB_ANALYSIS_ENABLED'):
+            return dylibs
+        logger.info('Dynamic Library Analysis Started')
+        sdir = Path(app_dir)
+        # Supports IPA, DYLIB
+        for dylib in sdir.rglob('*.dylib'):
+            dy = (
+                f'{dylib.parents[1].name}/'
+                f'{dylib.parents[0].name}/'
+                f'{dylib.name}')
+            logger.info('Analyzing %s', dy)
+            chk = Checksec(dylib, dy)
+            dy_find = chk.checksec()
+            if dy_find:
+                dylibs['dylib_analysis'].append(dy_find)
+                dylibs['dylib_strings'].append(
+                    {dy: strings_on_binary(dylib)})
+    except Exception:
+        logger.exception('Performing Dynamic Library Analysis')
+    return dylibs
