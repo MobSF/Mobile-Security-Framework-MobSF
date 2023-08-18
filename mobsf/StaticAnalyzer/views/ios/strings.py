@@ -69,11 +69,6 @@ def strings_on_binary(bin_path):
         logger.exception('Extracting strings from binary')
 
 
-def strings_on_ipa(bin_path, bin_dict):
-    logger.info('Running strings against the Binary')
-    bin_dict['strings'] = strings_on_binary(bin_path)
-
-
 def get_strings_metadata(app_dict, bin_dict, all_files, dy_list):
     """Merge strings metadata."""
     # app_dict has secrets from plist secret analysis

@@ -16,7 +16,6 @@ from mobsf.StaticAnalyzer.views.ios.macho_analysis import (
 )
 from mobsf.StaticAnalyzer.views.ios.strings import (
     strings_on_binary,
-    strings_on_ipa,
 )
 from mobsf.StaticAnalyzer.views.ios.binary_rule_matcher import (
     binary_rule_matcher,
@@ -109,7 +108,8 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
             bin_dict['bin_code_analysis'] = binary_findings
             bin_dict['bin_info'] = bin_info
             bin_dict['bin_type'] = bin_type
-            strings_on_ipa(bin_path, bin_dict)
+            logger.info('Running strings against the Binary')
+            bin_dict['strings'] = strings_on_binary(bin_path)
     except Exception:
         logger.exception('IPA Binary Analysis')
     return bin_dict

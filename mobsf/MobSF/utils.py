@@ -708,9 +708,6 @@ def settings_enabled(attr):
     """Get settings state if present."""
     disabled = ('', ' ', '""', '" "', '0', '"0"', False)
     try:
-        if getattr(settings, attr) in disabled:
-            return False
-        else:
-            return True
+        return getattr(settings, attr) not in disabled
     except Exception:
         return False
