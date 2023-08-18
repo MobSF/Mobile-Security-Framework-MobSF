@@ -18,13 +18,14 @@ from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
 from mobsf.StaticAnalyzer.views.ios.appstore import app_search
 from mobsf.StaticAnalyzer.views.ios.binary_analysis import (
     binary_analysis,
-    dylib_analysis,
+    dylibs_analysis,
 )
 from mobsf.StaticAnalyzer.views.ios.code_analysis import ios_source_analysis
 from mobsf.StaticAnalyzer.views.ios.db_interaction import (
     get_context_from_analysis,
     get_context_from_db_entry,
     save_or_update)
+from mobsf.StaticAnalyzer.views.ios.dylib import dylib_analysis
 from mobsf.StaticAnalyzer.views.ios.file_analysis import ios_list_files
 from mobsf.StaticAnalyzer.views.ios.icon_analysis import (
     get_icon,
@@ -77,18 +78,19 @@ def static_analyzer_ios(request, api=False):
         if re_scan == '1':
             rescan = True
         md5_match = re.match('^[0-9a-f]{32}$', checksum)
-        if ((md5_match)
-                and (filename.lower().endswith('.ipa')
-            or filename.lower().endswith('.zip'))
-                and (file_type in ['ipa', 'ios'])):
-            app_dict = {}
+        app_dict = {}
+        if (md5_match
+                and filename.lower().endswith(
+                    ('.ipa', '.zip', '.dylib'))
+                and file_type in ['ipa', 'ios', 'dylib']):
             app_dict['directory'] = Path(settings.BASE_DIR)  # BASE DIR
             app_dict['file_name'] = filename  # APP ORIGINAL NAME
             app_dict['md5_hash'] = checksum  # MD5
             app_dir = Path(settings.UPLD_DIR) / checksum
+            app_dict['app_dir'] = app_dir.as_posix() + '/'
             tools_dir = app_dict[
                 'directory'] / 'StaticAnalyzer' / 'tools' / 'ios'
-            tools_dir = tools_dir.as_posix()
+            app_dict['tools_dir'] = tools_dir.as_posix()
             if file_type == 'ipa':
                 app_dict['app_file'] = app_dict[
                     'md5_hash'] + '.ipa'  # NEW FILENAME
@@ -101,7 +103,6 @@ def static_analyzer_ios(request, api=False):
                     context = get_context_from_db_entry(ipa_db)
                 else:
                     logger.info('iOS Binary (IPA) Analysis Started')
-                    app_dict['app_dir'] = app_dir.as_posix() + '/'
                     app_dict['size'] = str(
                         file_size(app_dict['app_path'])) + 'MB'  # FILE SIZE
                     app_dict['sha1'], app_dict['sha256'] = hash_gen(
@@ -118,16 +119,10 @@ def static_analyzer_ios(request, api=False):
                     else:
                         msg = ('IPA is malformed! '
                                'MobSF cannot find Payload directory')
-                        if api:
-                            return print_n_send_error_response(
-                                request,
-                                msg,
-                                True)
-                        else:
-                            return print_n_send_error_response(
-                                request,
-                                msg,
-                                False)
+                        return print_n_send_error_response(
+                            request,
+                            msg,
+                            api)
                     app_dict['bin_dir'] = app_dict['bin_dir'].as_posix() + '/'
                     # Get Files
                     all_files = ios_list_files(
@@ -139,11 +134,11 @@ def static_analyzer_ios(request, api=False):
                         app_dict['bin_dir'])
                     bin_dict = binary_analysis(
                         app_dict['bin_dir'],
-                        tools_dir,
+                        app_dict['tools_dir'],
                         app_dict['app_dir'],
                         infoplist_dict.get('bin'))
                     # Analyze dylibs
-                    dy = dylib_analysis(app_dict['bin_dir'])
+                    dy = dylibs_analysis(app_dict['bin_dir'])
                     bin_dict['dylib_analysis'] = dy['dylib_analysis']
                     # Get Icon
                     app_dict['icon_found'] = get_icon(
@@ -166,7 +161,7 @@ def static_analyzer_ios(request, api=False):
 
                     # Extract Trackers from Domains
                     trk = Trackers.Trackers(
-                        None, tools_dir)
+                        None, app_dict['tools_dir'])
                     trackers = trk.get_trackers_domains_or_deps(
                         code_dict['domains'], [])
 
@@ -217,6 +212,8 @@ def static_analyzer_ios(request, api=False):
                     return context
                 else:
                     return render(request, template, context)
+            elif file_type == 'dylib':
+                return dylib_analysis(request, app_dict, rescan, api)
             elif file_type == 'ios':
                 ios_zip_db = StaticAnalyzerIOS.objects.filter(
                     MD5=app_dict['md5_hash'])
@@ -228,7 +225,6 @@ def static_analyzer_ios(request, api=False):
                         'md5_hash'] + '.zip'  # NEW FILENAME
                     app_dict['app_path'] = app_dir / app_dict['app_file']
                     app_dict['app_path'] = app_dict['app_path'].as_posix()
-                    app_dict['app_dir'] = app_dir.as_posix() + '/'
                     # ANALYSIS BEGINS - Already Unzipped
                     app_dict['size'] = str(
                         file_size(app_dict['app_path'])) + 'MB'  # FILE SIZE
@@ -259,7 +255,7 @@ def static_analyzer_ios(request, api=False):
                         list(set(code_analysis_dic['urls_list'])))
                     # Extract Trackers from Domains
                     trk = Trackers.Trackers(
-                        None, tools_dir)
+                        None, app_dict['tools_dir'])
                     trackers = trk.get_trackers_domains_or_deps(
                         code_analysis_dic['domains'], [])
                     code_analysis_dic['trackers'] = trackers
@@ -308,7 +304,8 @@ def static_analyzer_ios(request, api=False):
                 else:
                     return render(request, template, context)
             else:
-                msg = 'File Type not supported!'
+                msg = ('File Type not supported, '
+                       'Only IPA and DYLIB files are supported')
                 if api:
                     return print_n_send_error_response(request, msg, True)
                 else:

@@ -634,6 +634,19 @@ def is_elf_so_magic(file_obj):
     return bool(magic == b'\x7F\x45\x4C\x46')
 
 
+def is_dylib_magic(file_obj):
+    magic = file_obj.read(4)
+    file_obj.seek(0, 0)
+    # DYLIB Magic
+    magics = (
+        b'\xFE\xED\xFA\xCE',  # 32 bit
+        b'\xCE\xFA\xED\xFE',  # 32 bit
+        b'\xFE\xED\xFA\xCF',  # 64 bit
+        b'\xCF\xFA\xED\xFE',  # 64 bit
+        b'\xCA\xFE\xBA\xBE')
+    return bool(magic in magics)
+
+
 def disable_print():
     sys.stdout = open(os.devnull, 'w')
 

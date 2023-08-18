@@ -72,6 +72,7 @@ ALLOWED_EXTENSIONS = {
     '.jar': 'application/java-archive',
     '.aar': 'application/octet-stream',
     '.so': 'application/octet-stream',
+    '.dylib': 'application/octet-stream',
 }
 # =============ALLOWED MIMETYPES=================
 APK_MIME = [

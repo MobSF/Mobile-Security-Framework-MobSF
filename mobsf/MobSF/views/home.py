@@ -150,6 +150,8 @@ class Upload(object):
             return scanning.scan_zip()
         elif self.file_type.is_ipa():
             return scanning.scan_ipa()
+        elif self.file_type.is_dylib():
+            return scanning.scan_dylib()
         elif self.file_type.is_appx():
             return scanning.scan_appx()
 
@@ -302,13 +304,14 @@ def download(request):
 def generate_download(request):
     """Generate downloads for uploaded binaries/source."""
     try:
-        allowed = ('apk', 'ipa', 'smali', 'java', 'jar', 'aar', 'so')
+        binary = ('apk', 'ipa', 'jar', 'aar', 'so', 'dylib')
+        source = ('smali', 'java')
         logger.info('Generating Downloads')
         md5 = request.GET['hash']
         file_type = request.GET['file_type']
         match = re.match('^[0-9a-f]{32}$', md5)
         if (not match
-                or file_type not in allowed):
+                or file_type not in binary + source):
             msg = 'Invalid download type or hash'
             logger.exception(msg)
             return print_n_send_error_response(request, msg)
@@ -329,7 +332,7 @@ def generate_download(request):
             shutil.make_archive(
                 dwd_file.as_posix(), 'zip', directory.as_posix())
             file_name = f'{md5}-smali.zip'
-        elif file_type in ('apk', 'ipa', 'jar', 'aar', 'so'):
+        elif file_type in binary:
             # Binaries
             file_name = f'{md5}.{file_type}'
             src = app_dir / file_name

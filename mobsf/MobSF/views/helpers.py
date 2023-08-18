@@ -2,6 +2,7 @@
 import functools
 
 from mobsf.MobSF.utils import (
+    is_dylib_magic,
     is_elf_so_magic,
     is_zip_magic,
 )
@@ -20,6 +21,7 @@ class FileType(object):
         self.file_name_lower = file_obj.name.lower()
         self.zip = is_zip_magic(file_obj)
         self.so = is_elf_so_magic(file_obj)
+        self.dylib = is_dylib_magic(file_obj)
 
     def is_allow_file(self):
         """
@@ -28,6 +30,8 @@ class FileType(object):
         return bool
         """
         if self.so and self.is_so():
+            return True
+        if self.dylib and self.is_dylib():
             return True
         if self.zip and (
             self.is_apk()
@@ -64,6 +68,10 @@ class FileType(object):
     def is_so(self):
         return (self.file_type in settings.APK_MIME
                 and self.file_name_lower.endswith('.so'))
+
+    def is_dylib(self):
+        return (self.file_type in settings.IPA_MIME
+                and self.file_name_lower.endswith('.dylib'))
 
     def is_zip(self):
         return (self.file_type in settings.ZIP_MIME

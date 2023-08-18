@@ -115,9 +115,13 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
     return bin_dict
 
 
-def dylib_analysis(app_dir: str) -> dict:
+def dylibs_analysis(app_dir: str) -> dict:
     """Perform analysis on dynamic libraries."""
-    dylibs = {'dylib_analysis': [], 'dylib_strings': []}
+    dylibs = {
+        'dylib_analysis': [],
+        'dylib_strings': [],
+        'dylib_symbols': [],
+    }
     try:
         if not settings_enabled('DYLIB_ANALYSIS_ENABLED'):
             return dylibs
@@ -132,10 +136,14 @@ def dylib_analysis(app_dir: str) -> dict:
             logger.info('Analyzing %s', dy)
             chk = Checksec(dylib, dy)
             dy_find = chk.checksec()
+            symbols = chk.get_symbols()
             if dy_find:
                 dylibs['dylib_analysis'].append(dy_find)
-                dylibs['dylib_strings'].append(
-                    {dy: strings_on_binary(dylib)})
+            dylibs['dylib_strings'].append(
+                {dy: strings_on_binary(dylib)})
+            if symbols:
+                dylibs['dylib_symbols'].append(
+                    {dy: symbols})
     except Exception:
         logger.exception('Performing Dynamic Library Analysis')
     return dylibs

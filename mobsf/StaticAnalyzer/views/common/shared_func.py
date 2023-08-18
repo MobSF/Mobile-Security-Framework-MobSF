@@ -276,3 +276,10 @@ def strings_and_entropies(src, exts):
     except Exception:
         logger.exception('Extracting Data from Code')
     return data
+
+
+def get_symbols(symbols):
+    for i in symbols:
+        for _, val in i.items():
+            return val
+    return []

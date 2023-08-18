@@ -234,7 +234,10 @@ class Checksec:
             return False
 
     def is_encrypted(self):
-        return bool(self.macho.encryption_info.crypt_id)
+        try:
+            return bool(self.macho.encryption_info.crypt_id)
+        except Exception:
+            return False
 
     def is_symbols_stripped(self):
         filter_symbols = ['radr://5614542', '__mh_execute_header']

@@ -26,6 +26,7 @@ class IOSChecks(forms.Form):
     type = forms.ChoiceField(  # noqa A003
         choices=(
             ('ipa', 'ipa'),
+            ('dylib', 'dylib'),
             ('ios', 'ios')))
 
 

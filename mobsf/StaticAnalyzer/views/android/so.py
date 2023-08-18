@@ -4,12 +4,14 @@ import logging
 from django.conf import settings
 from django.shortcuts import render
 
+import mobsf.MalwareAnalyzer.views.Trackers as Trackers
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.MobSF.utils import (
     file_size,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     firebase_analysis,
+    get_symbols,
     hash_gen,
     update_scan_timestamp,
 )
@@ -90,8 +92,10 @@ def so_analysis(request, app_dic, rescan, api):
         }
         app_dic['real_name'] = ''
         elf_dict = elf_analysis(app_dic['app_dir'])
+        # File Analysis is used to store symbols from so
+        app_dic['certz'] = get_symbols(
+            elf_dict['elf_symbols'])
         apkid_results = {}
-        tracker_res = {}
         code_an_dic = {
             'api': {},
             'findings': {},
@@ -114,11 +118,18 @@ def so_analysis(request, app_dic, rescan, api):
         # Firebase DB Check
         code_an_dic['firebase'] = firebase_analysis(
             code_an_dic['urls_list'])
+
         # Domain Extraction and Malware Check
         logger.info(
             'Performing Malware Check on extracted Domains')
         code_an_dic['domains'] = MalwareDomainCheck().scan(
             code_an_dic['urls_list'])
+
+        # Extract Trackers from Domains
+        trk = Trackers.Trackers(
+            None, app_dic['tools_dir'])
+        trackers = trk.get_trackers_domains_or_deps(
+            code_an_dic['domains'], [])
 
         app_dic['zipped'] = 'so'
         app_dic['icon_hidden'] = True
@@ -138,7 +149,7 @@ def so_analysis(request, app_dic, rescan, api):
                     elf_dict['elf_analysis'],
                     apkid_results,
                     quark_results,
-                    tracker_res,
+                    trackers,
                 )
                 update_scan_timestamp(app_dic['md5'])
             else:
@@ -153,7 +164,7 @@ def so_analysis(request, app_dic, rescan, api):
                     elf_dict['elf_analysis'],
                     apkid_results,
                     quark_results,
-                    tracker_res,
+                    trackers,
                 )
         except Exception:
             logger.exception('Saving to Database Failed')
@@ -166,7 +177,7 @@ def so_analysis(request, app_dic, rescan, api):
             elf_dict['elf_analysis'],
             apkid_results,
             quark_results,
-            tracker_res,
+            trackers,
         )
     context['appsec'] = {}
     context['average_cvss'] = None

@@ -48,7 +48,7 @@ def get_context_from_db_entry(db_entry):
             'ats_analysis': python_dict(db_entry[0].ATS_ANALYSIS),
             'binary_analysis': binary,
             'macho_analysis': python_dict(db_entry[0].MACHO_ANALYSIS),
-            'dylib_analysis': python_dict(db_entry[0].DYLIB_ANALYSIS),
+            'dylib_analysis': python_list(db_entry[0].DYLIB_ANALYSIS),
             'ios_api': python_dict(db_entry[0].IOS_API),
             'code_analysis': code,
             'file_analysis': python_list(db_entry[0].FILE_ANALYSIS),
