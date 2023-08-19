@@ -137,12 +137,12 @@
   message: Cryptographic Asymmetric Key Generation
   selection: 'The application generate asymmetric cryptographic keys {}.'
   choice:
-    - - - 'java\.security\.KeyPairGenerator|\.getInstance\(.*(?:RSA|rsa)'
+    - - - 'java\.security\.KeyPairGenerator|\.getInstance\(.{0,48}(?:RSA|rsa)'
         - 512|768|1024
       - >-
         not in accordance with FCS_CKM.1.1(1) using key generation algorithm RSA
         schemes and cryptographic key sizes of 1024-bit or lower
-    - - - 'java\.security\.KeyPairGenerator|\.getInstance\(.*(?:RSA|rsa)'
+    - - - 'java\.security\.KeyPairGenerator|\.getInstance\(.{0,48}(?:RSA|rsa)'
         - 2048|3072|4096
       - >-
         in accordance with a specified cryptographic key generation algorithm
@@ -156,7 +156,7 @@
     A password/passphrase shall perform [Password-based Key Derivation
     Functions] {}.
   choice:
-    - - \.getInstance\(\"PBKDF2|PBEKeySpec\(.*?\)
+    - - \.getInstance\(\"PBKDF2|PBEKeySpec\(.{0,48}?\)
       - in accordance with a specified cryptographic algorithm.
   class: Selection-Based Security Functional Requirements
 - id: FCS_COP.1.1(1)
@@ -165,9 +165,9 @@
   message: Cryptographic Operation - Encryption/Decryption
   selection: 'The application perform encryption/decryption {}.'
   choice:
-    - - '\.getInstance\(.*(?:AES/ECB/|/aes/ecb/|AES/CTR/|aes/ctr/)'
+    - - '\.getInstance\(.{0,48}(?:AES/ECB/|/aes/ecb/|AES/CTR/|aes/ctr/)'
       - 'not in accordance with FCS_COP.1.1(1), AES-ECB mode is being used'
-    - - '\.getInstance\(.*(?:AES/CBC/|aes/cbc|AES/GCM/|aes/gcm/)'
+    - - '\.getInstance\(.{0,48}(?:AES/CBC/|aes/cbc|AES/GCM/|aes/gcm/)'
       - >-
         in accordance with a specified cryptographic algorithm AES-CBC (as
         defined in NIST SP 800-38A) mode or AES-GCM (as defined in NIST SP
@@ -179,12 +179,12 @@
   message: Cryptographic Operation - Hashing
   selection: 'The application perform cryptographic hashing services {}.'
   choice:
-    - - 'DigestUtils\.md5\(|\.getInstance\(.*(?:md4|md5|rc2|rc4|RC4|RC2|MD4|MD5)'
+    - - 'DigestUtils\.md5\(|\.getInstance\(.{0,48}(?:md4|md5|rc2|rc4|RC4|RC2|MD4|MD5)'
       - >-
         not in accordance with FCS_COP.1.1(2) and uses the cryptographic
         algorithm RC2/RC4/MD4/MD5
     - - >-
-        \.getInstance\(.*(?:\.SHA1|\.SHA256|\.SHA384|\.SHA512|SHA-1|SHA-256|SHA-384|SHA-512|sha-1|sha-256|sha-384|sha-512)
+        \.getInstance\(.{0,48}(?:\.SHA1|\.SHA256|\.SHA384|\.SHA512|SHA-1|SHA-256|SHA-384|SHA-512|sha-1|sha-256|sha-384|sha-512)
       - >-
         in accordance with a specified cryptographic algorithm
         SHA-1/SHA-256/SHA-384/SHA-512 and message digest sizes 160/256/384/512
@@ -200,11 +200,11 @@
   choice:
     - - - >-
           \.VerifyStringENC|\.signStringENC|\.signHashENC|\.initVerify\(|\.verify\(|\.initSign\(|\.sign\(
-        - 'CkRsa\(|\.getInstance\(.*(?:RSA|rsa)'
+        - 'CkRsa\(|\.getInstance\(.{0,48}(?:RSA|rsa)'
       - RSA schemes using cryptographic key sizes of 2048-bit or greater
     - - - >-
           \.VerifyStringENC|\.signStringENC|\.signHashENC|\.initVerify\(|\.verify\(|\.initSign\(|\.sign\(
-        - 'CkEcc\(|\.getInstance\(.*(?:ECDSA|ecdsa)'
+        - 'CkEcc\(|\.getInstance\(.{0,48}(?:ECDSA|ecdsa)'
       - 'ECDSA schemes using "NIST curves" P-256, P-384'
   class: Selection-Based Security Functional Requirements
 - id: FCS_COP.1.1(4)
@@ -243,7 +243,7 @@
   message: HTTPS Protocol
   selection: The application implement HTTPS using TLS.
   choice:
-    - - \.getInstance\(.*TLS|HttpsURLConnection| Scheme \(\"https
+    - - \.getInstance\(.{0,48}TLS|HttpsURLConnection| Scheme \(\"https
       - null
     - - \.tlsVersions\(TlsVersion
       - null
@@ -257,7 +257,7 @@
     invalid.
   choice:
     - - >-
-        SSLPeerUnverifiedException\(|CertificateException|\(.*SSLException|CertPathValidatorException
+        SSLPeerUnverifiedException\(|CertificateException|\(.{0,48}SSLException|CertPathValidatorException
       - >-
         not establish the connection or request application authorization to
         establish the connection
@@ -274,7 +274,7 @@
       - RFC 5280 certificate validation and certificate path validation
     - - checkClientTrusted
       - The certificate path must terminate with a trusted CA certificate
-    - - \.getBasicConstraints\(\).*0|\.getBasicConstraints\(\) >.* -1
+    - - \.getBasicConstraints\(\).{0,48}0|\.getBasicConstraints\(\) >.{0,48} -1
       - >-
         The application validate a certificate path by ensuring the presence of
         the basicConstraints extension and that the CA flag is set to TRUE for
@@ -295,7 +295,7 @@
     The application treat a certificate as a CA certificate only if the
     basicConstraints extension is present and the CA flag is set to TRUE.
   choice:
-    - - \.getBasicConstraints\(\).*0|\.getBasicConstraints\(\) >.* -1
+    - - \.getBasicConstraints\(\).{0,48}0|\.getBasicConstraints\(\) >.{0,48} -1
       - null
   class: Selection-Based Security Functional Requirements
 - id: FIA_X509_EXT.2.1
@@ -351,6 +351,6 @@
         - \.generateKey\(
       - null
     - - - SecureRandom\(
-        - \.generateSecret\(|SecretKeySpec\(.*AES
+        - \.generateSecret\(|SecretKeySpec\(.{0,48}AES
       - null
   class: Optional Security Functional Requirements

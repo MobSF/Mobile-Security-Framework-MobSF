@@ -18,6 +18,7 @@ from mobsf.DynamicAnalyzer.views.android.environment import (
 )
 from mobsf.MobSF.utils import (
     cmd_injection_check,
+    docker_translate_localhost,
     get_adb,
     get_device,
     is_md5,
@@ -92,6 +93,7 @@ def mobsfy(request, api=False):
                 'message': 'Command Injection Detected',
             }
             return send_response(data, api)
+        identifier = docker_translate_localhost(identifier)
         create_env = Environment(identifier)
         if not create_env.connect_n_mount():
             data = {'status': 'failed', 'message': msg}

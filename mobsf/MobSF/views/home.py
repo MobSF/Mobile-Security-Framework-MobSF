@@ -12,7 +12,11 @@ from wsgiref.util import FileWrapper
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.utils import timezone
+from django.shortcuts import (
+    redirect,
+    render,
+)
 from django.template.defaulttags import register
 
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
@@ -141,10 +145,14 @@ class Upload(object):
             return scanning.scan_jar()
         elif self.file_type.is_aar():
             return scanning.scan_aar()
+        elif self.file_type.is_so():
+            return scanning.scan_so()
         elif self.file_type.is_zip():
             return scanning.scan_zip()
         elif self.file_type.is_ipa():
             return scanning.scan_ipa()
+        elif self.file_type.is_dylib():
+            return scanning.scan_dylib()
         elif self.file_type.is_appx():
             return scanning.scan_appx()
 
@@ -294,6 +302,50 @@ def download(request):
     return HttpResponse(status=404)
 
 
+def generate_download(request):
+    """Generate downloads for uploaded binaries/source."""
+    try:
+        binary = ('apk', 'ipa', 'jar', 'aar', 'so', 'dylib')
+        source = ('smali', 'java')
+        logger.info('Generating Downloads')
+        md5 = request.GET['hash']
+        file_type = request.GET['file_type']
+        match = re.match('^[0-9a-f]{32}$', md5)
+        if (not match
+                or file_type not in binary + source):
+            msg = 'Invalid download type or hash'
+            logger.exception(msg)
+            return print_n_send_error_response(request, msg)
+        app_dir = Path(settings.UPLD_DIR) / md5
+        dwd_dir = Path(settings.DWD_DIR)
+        file_name = ''
+        if file_type == 'java':
+            # For Java zipped source code
+            directory = app_dir / 'java_source'
+            dwd_file = dwd_dir / f'{md5}-java'
+            shutil.make_archive(
+                dwd_file.as_posix(), 'zip', directory.as_posix())
+            file_name = f'{md5}-java.zip'
+        elif file_type == 'smali':
+            # For Smali zipped source code
+            directory = app_dir / 'smali_source'
+            dwd_file = dwd_dir / f'{md5}-smali'
+            shutil.make_archive(
+                dwd_file.as_posix(), 'zip', directory.as_posix())
+            file_name = f'{md5}-smali.zip'
+        elif file_type in binary:
+            # Binaries
+            file_name = f'{md5}.{file_type}'
+            src = app_dir / file_name
+            dst = dwd_dir / file_name
+            shutil.copy2(src.as_posix(), dst.as_posix())
+        return redirect(f'/download/{file_name}')
+    except Exception:
+        msg = 'Generating Downloads'
+        logger.exception(msg)
+        return print_n_send_error_response(request, msg)
+
+
 def delete_scan(request, api=False):
     """Delete Scan from DB and remove the scan related files."""
     try:
@@ -361,3 +413,9 @@ class RecentScans(object):
         except Exception as exp:
             data = {'error': str(exp)}
         return data
+
+
+def update_scan_timestamp(scan_hash):
+    # Update the last scan time.
+    tms = timezone.now()
+    RecentScansDB.objects.filter(MD5=scan_hash).update(TIMESTAMP=tms)

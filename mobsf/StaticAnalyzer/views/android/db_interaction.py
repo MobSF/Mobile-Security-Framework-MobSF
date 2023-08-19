@@ -5,6 +5,7 @@ from django.conf import settings
 from django.db.models import QuerySet
 
 from mobsf.MobSF.utils import python_dict, python_list
+from mobsf.MobSF.views.home import update_scan_timestamp
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.StaticAnalyzer.views.common.suppression import (
@@ -69,7 +70,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'urls': python_list(db_entry[0].URLS),
             'domains': python_dict(db_entry[0].DOMAINS),
             'emails': python_list(db_entry[0].EMAILS),
-            'strings': python_list(db_entry[0].STRINGS),
+            'strings': python_dict(db_entry[0].STRINGS),
             'firebase_urls': python_list(db_entry[0].FIREBASE_URLS),
             'files': python_list(db_entry[0].FILES),
             'exported_count': python_dict(db_entry[0].EXPORTED_COUNT),
@@ -140,7 +141,7 @@ def get_context_from_analysis(app_dic,
             'urls': code_an_dic['urls'],
             'domains': code_an_dic['domains'],
             'emails': code_an_dic['emails'],
-            'strings': app_dic['strings'],
+            'strings': code_an_dic['strings'],
             'firebase_urls': code_an_dic['firebase'],
             'files': app_dic['files'],
             'exported_count': man_an_dic['exported_cnt'],
@@ -148,7 +149,7 @@ def get_context_from_analysis(app_dic,
             'quark': quark_report,
             'trackers': trackers,
             'playstore_details': app_dic['playstore'],
-            'secrets': app_dic['secrets'],
+            'secrets': code_an_dic['secrets'],
         }
         return context
     except Exception:
@@ -202,7 +203,7 @@ def save_or_update(update_type,
             'URLS': code_an_dic['urls'],
             'DOMAINS': code_an_dic['domains'],
             'EMAILS': code_an_dic['emails'],
-            'STRINGS': app_dic['strings'],
+            'STRINGS': code_an_dic['strings'],
             'FIREBASE_URLS': code_an_dic['firebase'],
             'FILES': app_dic['files'],
             'EXPORTED_COUNT': man_an_dic['exported_cnt'],
@@ -211,7 +212,7 @@ def save_or_update(update_type,
             'TRACKERS': trackers,
             'PLAYSTORE_DETAILS': app_dic['playstore'],
             'NETWORK_SECURITY': man_an_dic['network_security'],
-            'SECRETS': app_dic['secrets'],
+            'SECRETS': code_an_dic['secrets'],
         }
         if update_type == 'save':
             db_entry = StaticAnalyzerAndroid.objects.filter(
@@ -233,3 +234,47 @@ def save_or_update(update_type,
             MD5=app_dic['md5']).update(**values)
     except Exception:
         logger.exception('Updating RecentScansDB')
+
+
+def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, quark, trk, rscn):
+    # SAVE TO DB
+    if rscn:
+        logger.info('Updating Database...')
+        save_or_update(
+            'update',
+            app,
+            man,
+            m_anal,
+            code,
+            cert,
+            elf,
+            apkid,
+            quark,
+            trk,
+        )
+        update_scan_timestamp(app['md5'])
+    else:
+        logger.info('Saving to Database')
+        save_or_update(
+            'save',
+            app,
+            man,
+            m_anal,
+            code,
+            cert,
+            elf,
+            apkid,
+            quark,
+            trk,
+        )
+    return get_context_from_analysis(
+        app,
+        man,
+        m_anal,
+        code,
+        cert,
+        elf,
+        apkid,
+        quark,
+        trk,
+    )

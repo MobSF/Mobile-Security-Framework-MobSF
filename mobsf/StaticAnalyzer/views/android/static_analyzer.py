@@ -41,9 +41,8 @@ from mobsf.StaticAnalyzer.views.android.converter import (
     dex_2_smali,
 )
 from mobsf.StaticAnalyzer.views.android.db_interaction import (
-    get_context_from_analysis,
     get_context_from_db_entry,
-    save_or_update,
+    save_get_ctx,
 )
 from mobsf.StaticAnalyzer.views.android.icon_analysis import (
     find_icon_path_zip,
@@ -55,7 +54,9 @@ from mobsf.StaticAnalyzer.views.android.manifest_analysis import (
     manifest_data,
 )
 from mobsf.StaticAnalyzer.views.android.playstore import get_app_details
-from mobsf.StaticAnalyzer.views.android.strings import strings_from_apk
+from mobsf.StaticAnalyzer.views.android.strings import (
+    get_strings_metadata,
+)
 from mobsf.StaticAnalyzer.views.android.xapk import (
     handle_split_apk,
     handle_xapk,
@@ -64,12 +65,14 @@ from mobsf.StaticAnalyzer.views.android.jar_aar import (
     aar_analysis,
     jar_analysis,
 )
+from mobsf.StaticAnalyzer.views.android.so import (
+    so_analysis,
+)
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     firebase_analysis,
     get_avg_cvss,
     hash_gen,
     unzip,
-    update_scan_timestamp,
 )
 from mobsf.StaticAnalyzer.views.common.appsec import (
     get_android_dashboard,
@@ -105,8 +108,8 @@ def static_analyzer(request, api=False):
         match = re.match('^[0-9a-f]{32}$', checksum)
         if (match
                 and filename.lower().endswith(
-                    ('.apk', '.xapk', '.zip', '.apks', '.jar', '.aar'))
-                and typ in ['zip', 'apk', 'xapk', 'apks', 'jar', 'aar']):
+                    ('.apk', '.xapk', '.zip', '.apks', '.jar', '.aar', '.so'))
+                and typ in ['zip', 'apk', 'xapk', 'apks', 'jar', 'aar', 'so']):
             app_dic['dir'] = Path(settings.BASE_DIR)  # BASE DIR
             app_dic['app_name'] = filename  # APP ORIGINAL NAME
             app_dic['md5'] = checksum  # MD5
@@ -213,66 +216,26 @@ def static_analyzer(request, api=False):
                         app_dic['app_dir'],
                         app_dic['app_path'])
 
-                    # Get the strings from android resource and shared objects
-                    string_res = strings_from_apk(
+                    # Get the strings and metadata
+                    get_strings_metadata(
                         app_dic['app_file'],
                         app_dic['app_dir'],
-                        elf_dict['elf_strings'])
-                    if string_res:
-                        app_dic['strings'] = string_res['strings']
-                        app_dic['secrets'] = string_res['secrets']
-                        code_an_dic['urls_list'].extend(
-                            string_res['urls_list'])
-                        code_an_dic['urls'].extend(string_res['url_nf'])
-                        code_an_dic['emails'].extend(string_res['emails_nf'])
-                    else:
-                        app_dic['strings'] = []
-                        app_dic['secrets'] = []
+                        elf_dict['elf_strings'],
+                        'apk',
+                        ['.java'],
+                        code_an_dic)
+
                     # Firebase DB Check
                     code_an_dic['firebase'] = firebase_analysis(
-                        list(set(code_an_dic['urls_list'])))
+                        code_an_dic['urls_list'])
                     # Domain Extraction and Malware Check
                     logger.info(
                         'Performing Malware Check on extracted Domains')
                     code_an_dic['domains'] = MalwareDomainCheck().scan(
-                        list(set(code_an_dic['urls_list'])))
-                    app_dic['zipped'] = 'apk'
+                        code_an_dic['urls_list'])
 
-                    logger.info('Connecting to Database')
-                    try:
-                        # SAVE TO DB
-                        if rescan:
-                            logger.info('Updating Database...')
-                            save_or_update(
-                                'update',
-                                app_dic,
-                                man_data_dic,
-                                man_an_dic,
-                                code_an_dic,
-                                cert_dic,
-                                elf_dict['elf_analysis'],
-                                apkid_results,
-                                quark_results,
-                                tracker_res,
-                            )
-                            update_scan_timestamp(app_dic['md5'])
-                        else:
-                            logger.info('Saving to Database')
-                            save_or_update(
-                                'save',
-                                app_dic,
-                                man_data_dic,
-                                man_an_dic,
-                                code_an_dic,
-                                cert_dic,
-                                elf_dict['elf_analysis'],
-                                apkid_results,
-                                quark_results,
-                                tracker_res,
-                            )
-                    except Exception:
-                        logger.exception('Saving to Database Failed')
-                    context = get_context_from_analysis(
+                    app_dic['zipped'] = 'apk'
+                    context = save_get_ctx(
                         app_dic,
                         man_data_dic,
                         man_an_dic,
@@ -282,6 +245,7 @@ def static_analyzer(request, api=False):
                         apkid_results,
                         quark_results,
                         tracker_res,
+                        rescan,
                     )
                 context['appsec'] = get_android_dashboard(context, True)
                 context['average_cvss'] = get_avg_cvss(
@@ -304,6 +268,8 @@ def static_analyzer(request, api=False):
                 return jar_analysis(request, app_dic, rescan, api)
             elif typ == 'aar':
                 return aar_analysis(request, app_dic, rescan, api)
+            elif typ == 'so':
+                return so_analysis(request, app_dic, rescan, api)
             elif typ == 'zip':
                 ret = (
                     '/static_analyzer_ios/?name='
@@ -424,54 +390,31 @@ def static_analyzer(request, api=False):
                             app_dic['app_dir'],
                             pro_type,
                             app_dic['manifest_file'])
+
+                        # Get the strings and metadata
+                        get_strings_metadata(
+                            None,
+                            app_dic['app_dir'],
+                            None,
+                            pro_type,
+                            ['.java', '.kt'],
+                            code_an_dic)
+
                         # Firebase DB Check
                         code_an_dic['firebase'] = firebase_analysis(
-                            list(set(code_an_dic['urls_list'])))
+                            code_an_dic['urls_list'])
                         # Domain Extraction and Malware Check
                         logger.info(
                             'Performing Malware Check on extracted Domains')
                         code_an_dic['domains'] = MalwareDomainCheck().scan(
-                            list(set(code_an_dic['urls_list'])))
+                            code_an_dic['urls_list'])
+
                         # Extract Trackers from Domains
                         trk = Trackers.Trackers(
                             None, app_dic['tools_dir'])
                         trackers = trk.get_trackers_domains_or_deps(
                             code_an_dic['domains'], [])
-                        logger.info('Connecting to Database')
-                        try:
-                            # SAVE TO DB
-                            if rescan:
-                                logger.info('Updating Database...')
-                                save_or_update(
-                                    'update',
-                                    app_dic,
-                                    man_data_dic,
-                                    man_an_dic,
-                                    code_an_dic,
-                                    cert_dic,
-                                    [],
-                                    {},
-                                    [],
-                                    trackers,
-                                )
-                                update_scan_timestamp(app_dic['md5'])
-                            else:
-                                logger.info('Saving to Database')
-                                save_or_update(
-                                    'save',
-                                    app_dic,
-                                    man_data_dic,
-                                    man_an_dic,
-                                    code_an_dic,
-                                    cert_dic,
-                                    [],
-                                    {},
-                                    [],
-                                    trackers,
-                                )
-                        except Exception:
-                            logger.exception('Saving to Database Failed')
-                        context = get_context_from_analysis(
+                        context = save_get_ctx(
                             app_dic,
                             man_data_dic,
                             man_an_dic,
@@ -481,6 +424,7 @@ def static_analyzer(request, api=False):
                             {},
                             [],
                             trackers,
+                            rescan,
                         )
                     else:
                         msg = 'This ZIP Format is not supported'
@@ -506,7 +450,7 @@ def static_analyzer(request, api=False):
                 else:
                     return render(request, template, context)
             else:
-                err = ('Only APK, JAR, AAR, IPA and Zipped '
+                err = ('Only APK, JAR, AAR, SO, IPA and Zipped '
                        'Android/iOS Source code supported now!')
                 logger.error(err)
         else:
@@ -625,8 +569,9 @@ def get_app_name_from_file(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
         data = f.read()
 
-    app_name_match = re.search(r'<string name=\"app_name\">(.*)</string>',
-                               data)
+    app_name_match = re.search(
+        r'<string name=\"app_name\">(.{0,300})</string>',
+        data)
 
     if (not app_name_match) or (len(app_name_match.group()) <= 0):
         # Did not find app_name in current file.

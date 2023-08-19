@@ -178,6 +178,12 @@
                 </a>
               </li>
               <li class="nav-item">
+                <a href="#secrets" class="nav-link">
+                  <i class="fas fa-key nav-icon"></i>
+                  <p>Hardcoded Secrets</p>
+                </a>
+              </li>
+              <li class="nav-item">
                 <a href="#strings" class="nav-link">
                   <i class="fas fa-font nav-icon"></i>
                   <p>Strings</p>
@@ -1184,6 +1190,35 @@
               <div class="table-responsive">
                 <div id="chartdiv"></div>
             </div>
+            
+            <div class="table-responsive">
+              {% if domains %}
+              <p></br>This app may communicate with the following OFAC sanctioned list of countries.</p>
+             <table id="table_ofac" class="table table-bordered table-hover table-striped">
+                  <thead>
+                  <tr>
+                     <th>DOMAIN</th>
+                     <th>COUNTRY/REGION</th>
+                  </tr>
+                 </thead>
+                 <tbody>
+                 {% for domain, details in domains.items %}
+                 {% if details|key:"ofac" == True %}
+                  <tr><td>{{domain}}</td>
+                  <td>
+                    <strong>IP: </strong>{{details|key:"geolocation"|key:"ip"}}  <br/>
+                    <strong>Country: </strong>{{details|key:"geolocation"|key:"country_long"}} <br/>
+                    <strong>Region: </strong>{{details|key:"geolocation"|key:"region"}} <br/>
+                    <strong>City: </strong>{{details|key:"geolocation"|key:"city"}} <br/>
+                  </td>
+                  </tr>
+                  {% endif %}
+                  {% endfor %}
+                </tbody>
+            </table>
+             {% endif %}
+            </div>
+
           </div>
         </div><!-- /.card -->
         </div>
@@ -1436,31 +1471,61 @@
      </div>
  </section>
   <!-- ===========================end trackers ================================== -->
-<a id="strings" class="anchor"></a>
-<section class="content">
-  <div class="container-fluid">
-    <div class="row">
-        <div class="col-lg-12">
-        <div class="card">
-          <div class="card-body">
-             <p>
-             <strong><i class="fas fa-font"></i> STRINGS</strong>
-             </p>
-               <div class="list-group">
-                  <p>  
-                    {% for val in strings %}
-                     {{ val }}<br/>
-                    {% endfor %}                  
-                  </p>
+  <a id="secrets" class="anchor"></a>
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+          <div class="col-lg-12">
+          <div class="card">
+            <div class="card-body">
+               <p>
+               <strong><i class="fas fa-key"></i> POSSIBLE HARDCODED SECRETS</strong>
+               </p>
+                 <div class="list-group">
+                    <p>  
+                      {% for val in secrets %}
+                       {{ val }}<br/>
+                      {% endfor %}                  
+                    </p>
+                </div>
               </div>
             </div>
+          </div><!-- /.card -->
           </div>
-        </div><!-- /.card -->
-        </div>
-        <!-- end row -->
-        </div>
-</section>
- <!-- ===========================end strings ================================== -->
+          <!-- end row -->
+          </div>
+  </section>
+   <!-- ===========================end secrets ================================== -->
+  <a id="strings" class="anchor"></a>
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+          <div class="col-lg-12">
+          <div class="card">
+            <div class="card-body">
+               <p>
+               <strong><i class="fas fa-font"></i> STRINGS</strong>
+               </p>
+                 <div class="list-group">
+                   <p><strong>From Code</strong></p>
+                  <p>  
+                    {% for key, val in strings.items %}
+                      {% if key == 'strings_code' %}
+                        {% for v in val %}
+                          {{ v }}<br/>
+                        {% endfor %}
+                      {% endif %}
+                    {% endfor %}                  
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div><!-- /.card -->
+          </div>
+          <!-- end row -->
+          </div>
+  </section>
+   <!-- ===========================end strings ================================== -->
 <a id="activities" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">

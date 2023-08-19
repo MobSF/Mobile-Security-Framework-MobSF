@@ -8,6 +8,7 @@
  <!-- DataTables -->
 <link rel="stylesheet" href="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.css" %}">
 <link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
+<link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
 <style>
    #app_icon{
             width: 64px;
@@ -70,7 +71,7 @@ textarea:focus {
               </div>
               <!-- /.card-header -->
               <div class="card-body">
-                 <p> MobSF cannot find android instance identifier. Make sure that an android instance is running and refresh this page.</p><p> If this error persists, Please set <i>ANALYZER_IDENTIFIER</i> in <strong>{{ settings_loc }}</strong> or via environment variable <strong>ANALYZER_IDENTIFIER</strong>.
+                 <p> MobSF cannot find android instance identifier. Make sure that an android instance is running and refresh this page.</p><p> If this error persists, Please set <i>ANALYZER_IDENTIFIER</i> in <strong>{{ settings_loc }}</strong> or via environment variable <strong>MOBSF_ANALYZER_IDENTIFIER</strong>.
                       </p>
               </div>
               <!-- /.card-body -->
@@ -87,22 +88,31 @@ textarea:focus {
                      <div class="col-md-9">
                         <h4>MobSF Dynamic Analyzer Supports</h4>
                         <h5>
-                          <strong>• Genymotion Android VM</strong> version 4.1 - 10.0 (x86, upto API 29)<br/>
-                          <strong>• Android Emulator AVD</strong> (non production) version 5.0 - 9.0 (arm, arm64, x86, and x86_64 upto API 28)
+                          <strong>• Genymotion Android VM</strong> version 4.1 - 11.0 (x86, upto API 30)<br/>
+                          <strong>• Android Emulator AVD</strong> (non production) version 5.0 - 9.0 (arm, arm64, x86, and x86_64 upto API 28)<br/>
+                          <strong>• Corellium Android VM</strong> (userdebug builds) version 7.1.2 - 11.0 (arm64 upto API 30)
                         </h5>
                         <p>
                           {% if android_version %}
-                            Recommended Android version is <strong>7.0 +</strong><br/>
+                            Recommended Android version is <strong>9.0</strong><br/>
                             Detected Android Version: <strong>{{android_version}}</strong>, SDK: <strong>{{ android_sdk }}</strong> <br/>
+                            {% if android_sdk|floatformat > android_supported|floatformat %}
+                              <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
+                              <script>
+                                Swal.fire(
+                                        'Android Version/SDK not supported',
+                                        'You are running Android Version <strong>{{ android_version }}</strong> and SDK <strong>{{ android_sdk }}</strong> which is not supported by MobSF. Please use a supported Android version/API level.',
+                                        'error'
+                                        )
+                              </script>
+                            {% endif %}
                           {% endif %}
 
                           {% if android_version < 5 %}
-                          Xposed Framework is used for instrumentation and you must MobSFy and reboot the Android Runtime prior to Dynamic Analysis.
-                          {% if android_version < 4.4 %}
-                           <br/>For Android version <strong>4.1 - 4.3</strong>, set Android VM proxy as <strong>{% if proxy_ip %} {{ proxy_ip }}{% else %} <i>&lt;Host IP&gt;</i>{% endif %}:{{proxy_port}}</strong>
-                          {% endif %}
-                          {% elif android_version %}
-                            Frida will be used for instrumentation.
+                            Xposed Framework is used for instrumentation and you must MobSFy and reboot the Android Runtime prior to Dynamic Analysis.
+                            {% if android_version < 4.4 %}
+                            <br/>For Android version <strong>4.1 - 4.3</strong>, set Android VM proxy as <strong>{% if proxy_ip %} {{ proxy_ip }}{% else %} <i>&lt;Host IP&gt;</i>{% endif %}:{{proxy_port}}</strong>
+                            {% endif %}
                           {% endif %}
                          
                         </p>

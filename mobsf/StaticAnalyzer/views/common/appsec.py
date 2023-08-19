@@ -68,6 +68,9 @@ def common_fields(findings, data):
     cert_files = None
     cfp = []
     for fa in data['file_analysis']:
+        if isinstance(fa, str):
+            # FA is being used by so/dylib
+            continue
         if 'Cert' in fa.get('finding', ''):
             cfp = fa['files']
             break
@@ -96,6 +99,21 @@ def common_fields(findings, data):
         if value['bad'] == 'yes':
             findings['high'].append({
                 'title': f'Malicious domain found - {domain}',
+                'description': str(value['geolocation']),
+                'section': 'domains',
+            })
+        if value.get('ofac') and value['ofac'] is True:
+            country = ''
+            if value['geolocation'].get('country_long'):
+                country = value['geolocation'].get('country_long')
+            elif value['geolocation'].get('region'):
+                country = value['geolocation'].get('region')
+            elif value['geolocation'].get('city'):
+                country = value['geolocation'].get('city')
+            findings['hotspot'].append({
+                'title': ('App may communicate to a server '
+                          f'({domain}) in OFAC sanctioned country '
+                          f'({country})'),
                 'description': str(value['geolocation']),
                 'section': 'domains',
             })
@@ -161,8 +179,10 @@ def common_fields(findings, data):
     warn = len(findings.get('warning'))
     sec = len(findings.get('secure'))
     total = high + warn + sec
-    score = int(100 - (
-        ((high * 1) + (warn * .5) - (sec * .2)) / total) * 100)
+    score = 0
+    if total > 0:
+        score = int(100 - (
+            ((high * 1) + (warn * .5) - (sec * .2)) / total) * 100)
     if score > 100:
         score = 100
     findings['security_score'] = score

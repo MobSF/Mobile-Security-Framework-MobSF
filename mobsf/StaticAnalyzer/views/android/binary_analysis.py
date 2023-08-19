@@ -3,9 +3,11 @@
 import logging
 from pathlib import Path
 
-from django.conf import settings
-
 import lief
+
+from mobsf.MobSF.utils import (
+    settings_enabled,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -187,28 +189,54 @@ class Checksec:
     def strings(self):
         return self.elf.strings
 
+    def get_symbols(self):
+        symbols = []
+        for i in self.elf.symbols:
+            symbols.append(i.name)
+        return symbols
+
 
 def elf_analysis(app_dir: str) -> dict:
     """Perform elf analysis on shared object."""
-    elf = {'elf_analysis': [], 'elf_strings': []}
+    elf = {
+        'elf_analysis': [],
+        'elf_strings': [],
+        'elf_symbols': [],
+    }
     try:
-        if not getattr(settings, 'SO_ANALYSIS_ENABLED', True):
+        if not settings_enabled('SO_ANALYSIS_ENABLED'):
             return elf
         logger.info('Binary Analysis Started')
-        libs = Path(app_dir) / 'lib'
-        if not libs.is_dir():
-            return elf
-        for sofile in libs.rglob('*.so'):
-            so_rel = (
-                f'{sofile.parents[1].name}/'
-                f'{sofile.parents[0].name}/'
-                f'{sofile.name}')
-            logger.info('Analyzing %s', so_rel)
-            chk = Checksec(sofile, so_rel)
-            elf_find = chk.checksec()
-            if elf_find:
-                elf['elf_analysis'].append(elf_find)
-                elf['elf_strings'].append({so_rel: chk.strings()})
+        sdir = Path(app_dir)
+        # Supports APK, SO, AAR and JAR
+        libs = [
+            sdir,
+            sdir / 'lib',
+            sdir / 'libs',
+            sdir / 'jni']
+        for lib_dir in libs:
+            if not lib_dir.is_dir():
+                continue
+            for sofile in lib_dir.rglob('*.so'):
+                so_rel = (
+                    f'{sofile.parents[1].name}/'
+                    f'{sofile.parents[0].name}/'
+                    f'{sofile.name}')
+                logger.info('Analyzing %s', so_rel)
+                chk = Checksec(sofile, so_rel)
+                elf_find = chk.checksec()
+                elf_str = chk.strings()
+                elf_sym = chk.get_symbols()
+                if elf_find:
+                    elf['elf_analysis'].append(
+                        elf_find)
+                if elf_str:
+                    elf['elf_strings'].append(
+                        {so_rel: elf_str})
+                if elf_sym:
+                    elf['elf_symbols'].append(
+                        {so_rel: elf_sym})
+
     except Exception:
         logger.exception('Performing Binary Analysis')
     return elf

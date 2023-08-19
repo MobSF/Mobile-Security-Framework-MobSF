@@ -299,6 +299,8 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
             minsdk = man_data_dic.get('min_sdk')
             ret_list.append(('vulnerable_os_version', (minsdk,), ()))
         # APPLICATIONS
+        # Handle multiple application tags in AAR
+        backupDisabled = False
         for application in applications:
             # Esteve 23.07.2016 - begin - identify permission at the
             # application level
@@ -323,9 +325,10 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
             if application.getAttribute('android:allowBackup') == 'true':
                 ret_list.append(('app_allowbackup', (), ()))
             elif application.getAttribute('android:allowBackup') == 'false':
-                pass
+                backupDisabled = True
             else:
-                ret_list.append(('allowbackup_not_set', (), ()))
+                if not backupDisabled:
+                    ret_list.append(('allowbackup_not_set', (), ()))
             if application.getAttribute('android:testOnly') == 'true':
                 ret_list.append(('app_in_test_mode', (), ()))
             for node in application.childNodes:
@@ -897,7 +900,7 @@ def get_manifest_apk(app_path, app_dir, tools_dir):
                 and is_file_exists(settings.APKTOOL_BINARY)):
             apktool_path = settings.APKTOOL_BINARY
         else:
-            apktool_path = os.path.join(tools_dir, 'apktool_2.7.0.jar')
+            apktool_path = os.path.join(tools_dir, 'apktool_2.8.1.jar')
         output_dir = os.path.join(app_dir, 'apktool_out')
         args = [find_java_binary(),
                 '-jar',
