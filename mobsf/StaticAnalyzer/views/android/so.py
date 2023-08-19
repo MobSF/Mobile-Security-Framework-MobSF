@@ -4,14 +4,15 @@ import logging
 from django.conf import settings
 from django.shortcuts import render
 
+import mobsf.MalwareAnalyzer.views.Trackers as Trackers
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.MobSF.utils import (
     file_size,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     firebase_analysis,
+    get_symbols,
     hash_gen,
-    update_scan_timestamp,
 )
 from mobsf.StaticAnalyzer.views.android.binary_analysis import (
     elf_analysis,
@@ -23,9 +24,8 @@ from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
 )
 from mobsf.StaticAnalyzer.views.android.db_interaction import (
-    get_context_from_analysis,
     get_context_from_db_entry,
-    save_or_update,
+    save_get_ctx,
 )
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import MalwareDomainCheck
 
@@ -90,8 +90,10 @@ def so_analysis(request, app_dic, rescan, api):
         }
         app_dic['real_name'] = ''
         elf_dict = elf_analysis(app_dic['app_dir'])
+        # File Analysis is used to store symbols from so
+        app_dic['certz'] = get_symbols(
+            elf_dict['elf_symbols'])
         apkid_results = {}
-        tracker_res = {}
         code_an_dic = {
             'api': {},
             'findings': {},
@@ -114,50 +116,23 @@ def so_analysis(request, app_dic, rescan, api):
         # Firebase DB Check
         code_an_dic['firebase'] = firebase_analysis(
             code_an_dic['urls_list'])
+
         # Domain Extraction and Malware Check
         logger.info(
             'Performing Malware Check on extracted Domains')
         code_an_dic['domains'] = MalwareDomainCheck().scan(
             code_an_dic['urls_list'])
 
+        # Extract Trackers from Domains
+        trk = Trackers.Trackers(
+            None, app_dic['tools_dir'])
+        trackers = trk.get_trackers_domains_or_deps(
+            code_an_dic['domains'], [])
+
         app_dic['zipped'] = 'so'
         app_dic['icon_hidden'] = True
         app_dic['icon_found'] = False
-        logger.info('Connecting to Database')
-        try:
-            # SAVE TO DB
-            if rescan:
-                logger.info('Updating Database...')
-                save_or_update(
-                    'update',
-                    app_dic,
-                    man_data_dic,
-                    man_an_dic,
-                    code_an_dic,
-                    cert_dic,
-                    elf_dict['elf_analysis'],
-                    apkid_results,
-                    quark_results,
-                    tracker_res,
-                )
-                update_scan_timestamp(app_dic['md5'])
-            else:
-                logger.info('Saving to Database')
-                save_or_update(
-                    'save',
-                    app_dic,
-                    man_data_dic,
-                    man_an_dic,
-                    code_an_dic,
-                    cert_dic,
-                    elf_dict['elf_analysis'],
-                    apkid_results,
-                    quark_results,
-                    tracker_res,
-                )
-        except Exception:
-            logger.exception('Saving to Database Failed')
-        context = get_context_from_analysis(
+        context = save_get_ctx(
             app_dic,
             man_data_dic,
             man_an_dic,
@@ -166,7 +141,8 @@ def so_analysis(request, app_dic, rescan, api):
             elf_dict['elf_analysis'],
             apkid_results,
             quark_results,
-            tracker_res,
+            trackers,
+            rescan,
         )
     context['appsec'] = {}
     context['average_cvss'] = None

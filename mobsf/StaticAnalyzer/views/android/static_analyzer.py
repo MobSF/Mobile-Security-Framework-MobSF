@@ -41,9 +41,8 @@ from mobsf.StaticAnalyzer.views.android.converter import (
     dex_2_smali,
 )
 from mobsf.StaticAnalyzer.views.android.db_interaction import (
-    get_context_from_analysis,
     get_context_from_db_entry,
-    save_or_update,
+    save_get_ctx,
 )
 from mobsf.StaticAnalyzer.views.android.icon_analysis import (
     find_icon_path_zip,
@@ -74,7 +73,6 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
     get_avg_cvss,
     hash_gen,
     unzip,
-    update_scan_timestamp,
 )
 from mobsf.StaticAnalyzer.views.common.appsec import (
     get_android_dashboard,
@@ -237,42 +235,7 @@ def static_analyzer(request, api=False):
                         code_an_dic['urls_list'])
 
                     app_dic['zipped'] = 'apk'
-
-                    logger.info('Connecting to Database')
-                    try:
-                        # SAVE TO DB
-                        if rescan:
-                            logger.info('Updating Database...')
-                            save_or_update(
-                                'update',
-                                app_dic,
-                                man_data_dic,
-                                man_an_dic,
-                                code_an_dic,
-                                cert_dic,
-                                elf_dict['elf_analysis'],
-                                apkid_results,
-                                quark_results,
-                                tracker_res,
-                            )
-                            update_scan_timestamp(app_dic['md5'])
-                        else:
-                            logger.info('Saving to Database')
-                            save_or_update(
-                                'save',
-                                app_dic,
-                                man_data_dic,
-                                man_an_dic,
-                                code_an_dic,
-                                cert_dic,
-                                elf_dict['elf_analysis'],
-                                apkid_results,
-                                quark_results,
-                                tracker_res,
-                            )
-                    except Exception:
-                        logger.exception('Saving to Database Failed')
-                    context = get_context_from_analysis(
+                    context = save_get_ctx(
                         app_dic,
                         man_data_dic,
                         man_an_dic,
@@ -282,6 +245,7 @@ def static_analyzer(request, api=False):
                         apkid_results,
                         quark_results,
                         tracker_res,
+                        rescan,
                     )
                 context['appsec'] = get_android_dashboard(context, True)
                 context['average_cvss'] = get_avg_cvss(
@@ -450,41 +414,7 @@ def static_analyzer(request, api=False):
                             None, app_dic['tools_dir'])
                         trackers = trk.get_trackers_domains_or_deps(
                             code_an_dic['domains'], [])
-                        logger.info('Connecting to Database')
-                        try:
-                            # SAVE TO DB
-                            if rescan:
-                                logger.info('Updating Database...')
-                                save_or_update(
-                                    'update',
-                                    app_dic,
-                                    man_data_dic,
-                                    man_an_dic,
-                                    code_an_dic,
-                                    cert_dic,
-                                    [],
-                                    {},
-                                    [],
-                                    trackers,
-                                )
-                                update_scan_timestamp(app_dic['md5'])
-                            else:
-                                logger.info('Saving to Database')
-                                save_or_update(
-                                    'save',
-                                    app_dic,
-                                    man_data_dic,
-                                    man_an_dic,
-                                    code_an_dic,
-                                    cert_dic,
-                                    [],
-                                    {},
-                                    [],
-                                    trackers,
-                                )
-                        except Exception:
-                            logger.exception('Saving to Database Failed')
-                        context = get_context_from_analysis(
+                        context = save_get_ctx(
                             app_dic,
                             man_data_dic,
                             man_an_dic,
@@ -494,6 +424,7 @@ def static_analyzer(request, api=False):
                             {},
                             [],
                             trackers,
+                            rescan,
                         )
                     else:
                         msg = 'This ZIP Format is not supported'

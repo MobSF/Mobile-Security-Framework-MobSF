@@ -8,13 +8,17 @@ logger = logging.getLogger(__name__)
 
 
 class Checksec:
-    def __init__(self, macho):
+    def __init__(self, macho, rel_path=None):
         self.macho_path = macho.as_posix()
+        if rel_path:
+            self.macho_name = rel_path
+        else:
+            self.macho_name = macho.name
         self.macho = lief.parse(self.macho_path)
 
     def checksec(self):
         macho_dict = {}
-        macho_dict['name'] = self.macho.name
+        macho_dict['name'] = self.macho_name
 
         if not self.is_macho(self.macho_path):
             return {}
@@ -58,6 +62,8 @@ class Checksec:
                 'to execute reliably.')
         else:
             severity = 'high'
+            if self.macho_name.endswith('.dylib'):
+                severity = 'info'
             desc = (
                 'The binary is built without Position '
                 'Independent Code flag. In order to prevent '
@@ -67,7 +73,8 @@ class Checksec:
                 'the address space positions of key data areas of a '
                 'process, including the base of the executable and the '
                 'positions of the stack,heap and libraries. Use compiler '
-                'option -fPIC to enable Position Independent Code.')
+                'option -fPIC to enable Position Independent Code.'
+                'Not applicable for dylibs.')
         macho_dict['pie'] = {
             'has_pie': has_pie,
             'severity': severity,
@@ -88,12 +95,16 @@ class Checksec:
                 'whether stack canary is enabled or not.')
         else:
             severity = 'high'
+            sw_msg = ''
+            if 'libswift' in self.macho_name:
+                severity = 'warning'
+                sw_msg = ' This might be okey for pure Swift dylibs.'
             desc = (
                 'This binary does not have a stack '
                 'canary value added to the stack. Stack canaries '
                 'are used to detect and prevent exploits from '
                 'overwriting return address. Use the option '
-                '-fstack-protector-all to enable stack canaries.')
+                f'-fstack-protector-all to enable stack canaries.{sw_msg}')
         macho_dict['stack_canary'] = {
             'has_canary': has_canary,
             'severity': severity,
@@ -123,7 +134,9 @@ class Checksec:
                 'management of Objective-C objects and '
                 'protects from memory corruption '
                 'vulnerabilities. Use compiler option '
-                '-fobjc-arc to enable ARC.')
+                '-fobjc-arc to enable ARC or set '
+                'Objective-C Automatic Reference Counting '
+                'to YES in project configuration.')
         macho_dict['arc'] = {
             'has_arc': has_arc,
             'severity': severity,
@@ -221,7 +234,10 @@ class Checksec:
             return False
 
     def is_encrypted(self):
-        return bool(self.macho.encryption_info.crypt_id)
+        try:
+            return bool(self.macho.encryption_info.crypt_id)
+        except Exception:
+            return False
 
     def is_symbols_stripped(self):
         filter_symbols = ['radr://5614542', '__mh_execute_header']
@@ -252,7 +268,7 @@ class Checksec:
 
 def macho_analysis(binary):
     try:
-        logger.info('Running MachO Analysis on %s', binary.name)
+        logger.info('Running MachO Analysis on: %s', binary.name)
         cs = Checksec(binary)
         chksec = cs.checksec()
         symbols = cs.get_symbols()

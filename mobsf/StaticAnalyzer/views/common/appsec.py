@@ -68,6 +68,9 @@ def common_fields(findings, data):
     cert_files = None
     cfp = []
     for fa in data['file_analysis']:
+        if isinstance(fa, str):
+            # FA is being used by so/dylib
+            continue
         if 'Cert' in fa.get('finding', ''):
             cfp = fa['files']
             break

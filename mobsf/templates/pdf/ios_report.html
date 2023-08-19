@@ -43,9 +43,14 @@
         <div class="htext">IOS STATIC ANALYSIS REPORT </div>
       </div>
       </br></br></br>
+      
      <div class="app">
+      {% if app_type not in 'Dylib' %}
       <img class="center" id="icon" src="{% if not appstore_details.error %}{{appstore_details.icon}}{% elif icon_found %}{{dwd_dir}}{{ md5 }}-icon.png{% else %}{{base_url}}{% static 'img/no_icon.png' %}{% endif %}" alt="app_icon"/>
-     </div>
+      {% else %}
+      <img class="center" id="icon" src="{{base_url}}{% static 'img/no_icon.png' %}" alt="app_icon"/>
+      {% endif %}
+    </div>
       <div class="center">
         <h1><i class="fab fa-apple"></i> {{ app_name }} {% if app_version %} ({{app_version}}) {% endif %}</h1>
       </div>
@@ -64,6 +69,7 @@
         <td class="no_border"><h3>Scan Date:</h3></td>
         <td class="no_border"><h3>{{ timestamp }}</h3></td>
       </tr>
+    {% if app_type not in 'Dylib' %}
       {% if average_cvss %}
       <tr>
         <td class="no_border"><h3>Average CVSS Score:</h3></td>
@@ -116,6 +122,7 @@
         </h3>
         </td>
       </tr>
+  {% endif %}
       {% if trackers|key:"trackers" %}
       <tr>
         <td class="no_border"><h3>Trackers Detection:</h3></td>
@@ -129,6 +136,7 @@
       </tr>
       {% endif %}
     </table>
+{% if app_type not in 'Dylib' %}
   </br></br>
 </br></br>
 </br></br>
@@ -157,7 +165,7 @@
     </table>
       </div>
     </article>
-    
+{% endif %}   
     <article id="contents">
 
       
@@ -169,7 +177,7 @@
       <h5>SHA1:</h5> {{ sha1 }}</br>
       <h5>SHA256:</h5> {{ sha256 }}</br>
      
-
+{% if app_type not in 'Dylib' %}
       <h2><i class="fas fa-info"></i> APP INFORMATION</h2>
 
       <h5>App Name:</h5> {{ app_name }}</br>
@@ -181,7 +189,7 @@
       <h5>Platform Version:</h5> {{ platform }}</br>
       <h5>Min OS Version:</h5> {{ min_os_version }}</br>
       <h5>Supported Platforms:</h5> {% for pl in bundle_supported_platforms %} {{pl}}, {% endfor %}</br>
-
+{% endif %}
      {% if binary_info %}
       <h2><i class="fas fa-ad"></i> BINARY INFORMATION </h2>
 
@@ -308,7 +316,7 @@
                   
         {% endif %}
 
-      
+{% if app_type not in 'Dylib' %} 
 <!--
          {% if file_analysis %}
       <h2><i class="fa fa-file"></i> FILE ANALYSIS</h2>
@@ -338,6 +346,7 @@
 		</table>
       {% endif %}
 -->
+{% endif %}
         {% if virus_total and virus_total.items|length > 9 and 'request successfully queued' not in virus_total.verbose_msg %}
        <h2><i class="fas fa-spider"></i> VIRUSTOTAL SCAN</h2>
        <p> <h5>{{ virus_total.positives }} / {{ virus_total.total }}</h5> &nbsp; AVs found this file Malicious! </p>
@@ -441,7 +450,7 @@
                
         {% endif %}
         {% if macho_analysis  %}
-      <h2><i class="fas fa-flag"></i> IPA BINARY ANALYSIS</h2>
+      <h2><i class="fa fa-braille"></i> IPA BINARY ANALYSIS</h2>
        <table class="basic">
                   <thead>
                     <tr>
@@ -507,6 +516,62 @@
                 </tbody>
                     </table>
         {% endif %}
+
+    {% if dylib_analysis %}
+        <h2><i class="fa fa-flag"></i> DYNAMIC LIBRARY BINARY ANALYSIS</h2>
+        <table class="basic">
+                <thead>
+                    <tr>
+                        <th>NO</th>
+                        <th>DYLIB</th>
+                        <th>NX</th>
+                        <th>STACK CANARY</th>
+                        <th>ARC</th>
+                        <th>RPATH</th>
+                        <th>CODE SIGNATURE</th>
+                        <th>ENCRYPTED</th>
+                        <th>SYMBOLS STRIPPED</th>
+                    </tr>
+                </thead>
+                <tbody>
+          {% for dy in dylib_analysis %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{dy.name}}</td>
+            <td><b>{{dy.nx.has_nx}}</b>
+              <br/>
+              <span class="{% if dy.nx.severity == 'high' %}danger{% elif dy.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.nx.severity}}</span><br/>
+              <br/>{{dy.nx.description}}</td>
+            <td><b>{{dy.stack_canary.has_canary}}</b>
+                <br/>
+                <span class="{% if dy.stack_canary.severity == 'high' %}danger{% elif dy.stack_canary.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.stack_canary.severity}}</span><br/>
+                <br/>{{dy.stack_canary.description}}</td>
+            <td><b>{{dy.arc.has_arc}}</b>
+              <br/>
+              <span class="{% if dy.arc.severity == 'high' %}danger{% elif dy.arc.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.arc.severity}}</span><br/>
+              <br/>{{dy.arc.description}}</td>
+            <td><b>{{dy.rpath.has_rpath}}</b>
+              <br/>
+              <span class="{% if dy.rpath.severity == 'high' %}danger{% elif dy.rpath.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.rpath.severity}}</span><br/>
+              <br/>{{dy.rpath.description}}</td>
+            <td><b>{{dy.code_signature.has_code_signature}}</b>
+                <br/>
+                <span class="{% if dy.code_signature.severity == 'high' %}danger{% elif dy.code_signature.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.code_signature.severity}}</span><br/>
+                <br/>{{dy.code_signature.description}}</td>
+            <td><b>{{dy.encrypted.is_encrypted}}</b>
+                <br/>
+                <span class="{% if dy.encrypted.severity == 'high' %}danger{% elif dy.encrypted.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.encrypted.severity}}</span><br/>
+                <br/>{{dy.encrypted.description}}</td>
+            <td><b>{{dy.symbol.is_stripped}}</b>
+              <br/>
+              <span class="{% if dy.symbol.severity == 'high' %}danger{% elif dy.symbol.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.symbol.severity}}</span><br/>
+              <br/>{{dy.symbol.description}}</td>
+          </tr>
+          {% endfor %}
+                  </tbody>
+                  </table>
+    {% endif %}
+    {% if app_type not in 'Dylib' %}
     {% if code_analysis  %}
       <h2><i class="fas fa-code"></i> CODE ANALYSIS</h2>
       {% if code_analysis and 'summary' in code_analysis and code_analysis.summary|length > 0 %}
@@ -585,6 +650,7 @@
               </table>
                    
       {% endif %}
+    {% endif %}
       {% if domains  %}
 
       <h2><i class="fa fa-exclamation"></i> OFAC SANCTIONED COUNTRIES</h2>
@@ -655,7 +721,9 @@
                 </tbody>
             </table>
       {% endif %}
-<!--
+
+<!-- Display urls only for dylib files-->
+{% if app_type in 'Dylib' %}
        {% if urls %} 
       <h2><i class="fas fa-globe"></i> URLS </h2>
       <table class="basic">
@@ -681,7 +749,7 @@
 										</tbody>
 										</table>
         {% endif %}
--->
+{% endif %}
        {% if firebase_urls %} 
       <h2><i class="fas fa-database"></i> FIREBASE DATABASES</h2>
             <table class="basic">
@@ -789,6 +857,23 @@
                     </table>
       {% endif %}
 
+    <!--Only for dylib-->
+    {% if app_type in 'Dylib' %}
+    <h2><i class="fa fa-th"></i> SYMBOLS</h2>
+        <table class="basic">
+                <tbody>
+                {% for val in file_analysis %}
+                  <tr>
+                    <td style="word-break:break-all;">
+                    {{ val }}
+                      </td>
+                  </tr>
+                {% endfor %} 
+                  </tbody>
+                  </table>
+    {% endif %}
+
+    {% if app_type not in 'Dylib' %}
     {% if not appstore_details.error %}
     <h2><i class="fab fa-app-store-ios"></i> APP STORE INFORMATION </h2>
 
@@ -837,6 +922,7 @@
                     <p>{{ appstore_details.description }}</p>
                   </p>
        {% endif %}
+    {% endif %}
     </article>
     <article id="columns">
       </br>

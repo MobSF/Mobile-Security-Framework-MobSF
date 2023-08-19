@@ -64,7 +64,7 @@
         <td class="no_border"><h3>Scan Date:</h3></td>
         <td class="no_border"><h3>{{ timestamp }}</h3></td>
       </tr>
-      {% if app_type not in 'so' %}
+{% if app_type not in 'so' %}
       {% if average_cvss %}
       <tr>
         <td class="no_border"><h3>Average CVSS Score:</h3></td>
@@ -117,12 +117,12 @@
         </h3>
         </td>
       </tr>
+{% endif %}
       {% if trackers|key:"trackers" %}
         <tr>
           <td class="no_border"><h3>Trackers Detection:</h3></td>
           <td class="no_border"><h3><span {% if trackers.detected_trackers > 0 %} class="warning" {% endif %}>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</span></h3></td>
         </tr>
-      {% endif %}
       {% endif %}
       {% if virus_total and virus_total.items|length > 9 and 'request successfully queued' not in virus_total.verbose_msg %}
         <tr>
@@ -943,6 +943,22 @@
                       </tbody>
                       </table>
         {% endif %}
+
+        <!--Only for so-->
+        {% if app_type in 'so' %}
+        <h2><i class="fa fa-th"></i> SYMBOLS</h2>
+            <table class="basic">
+                    <tbody>
+                    {% for val in file_analysis %}
+                      <tr>
+                        <td style="word-break:break-all;">
+                        {{ val }}
+                          </td>
+                      </tr>
+                    {% endfor %} 
+                      </tbody>
+                      </table>
+       {% endif %}
 
      {% if not playstore_details.error %}
     <h2><i class="fab fa-google-play"></i> PLAYSTORE INFORMATION </h2>

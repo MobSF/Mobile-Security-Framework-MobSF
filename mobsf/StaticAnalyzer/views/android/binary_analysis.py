@@ -189,10 +189,20 @@ class Checksec:
     def strings(self):
         return self.elf.strings
 
+    def get_symbols(self):
+        symbols = []
+        for i in self.elf.symbols:
+            symbols.append(i.name)
+        return symbols
+
 
 def elf_analysis(app_dir: str) -> dict:
     """Perform elf analysis on shared object."""
-    elf = {'elf_analysis': [], 'elf_strings': []}
+    elf = {
+        'elf_analysis': [],
+        'elf_strings': [],
+        'elf_symbols': [],
+    }
     try:
         if not settings_enabled('SO_ANALYSIS_ENABLED'):
             return elf
@@ -215,11 +225,18 @@ def elf_analysis(app_dir: str) -> dict:
                 logger.info('Analyzing %s', so_rel)
                 chk = Checksec(sofile, so_rel)
                 elf_find = chk.checksec()
+                elf_str = chk.strings()
+                elf_sym = chk.get_symbols()
                 if elf_find:
                     elf['elf_analysis'].append(
                         elf_find)
+                if elf_str:
                     elf['elf_strings'].append(
-                        {so_rel: chk.strings()})
+                        {so_rel: elf_str})
+                if elf_sym:
+                    elf['elf_symbols'].append(
+                        {so_rel: elf_sym})
+
     except Exception:
         logger.exception('Performing Binary Analysis')
     return elf
