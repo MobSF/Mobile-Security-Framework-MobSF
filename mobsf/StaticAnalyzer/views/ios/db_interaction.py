@@ -4,11 +4,9 @@ import logging
 from django.conf import settings
 
 from mobsf.MobSF.utils import python_dict, python_list
+from mobsf.MobSF.views.home import update_scan_timestamp
 from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
 from mobsf.StaticAnalyzer.models import RecentScansDB
-from mobsf.StaticAnalyzer.views.common.shared_func import (
-    update_scan_timestamp,
-)
 from mobsf.StaticAnalyzer.views.common.suppression import (
     process_suppression,
 )

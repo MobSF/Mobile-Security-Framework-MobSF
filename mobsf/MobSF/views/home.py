@@ -12,6 +12,7 @@ from wsgiref.util import FileWrapper
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect
+from django.utils import timezone
 from django.shortcuts import (
     redirect,
     render,
@@ -412,3 +413,9 @@ class RecentScans(object):
         except Exception as exp:
             data = {'error': str(exp)}
         return data
+
+
+def update_scan_timestamp(scan_hash):
+    # Update the last scan time.
+    tms = timezone.now()
+    RecentScansDB.objects.filter(MD5=scan_hash).update(TIMESTAMP=tms)

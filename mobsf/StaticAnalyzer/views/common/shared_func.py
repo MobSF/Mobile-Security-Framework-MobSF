@@ -17,7 +17,6 @@ from pathlib import Path
 
 import requests
 
-from django.utils import timezone
 from django.utils.html import escape
 
 from mobsf.MobSF import settings
@@ -26,7 +25,6 @@ from mobsf.MobSF.utils import (
     print_n_send_error_response,
     upstream_proxy,
 )
-from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.StaticAnalyzer.views.comparer import (
     generic_compare,
 )
@@ -162,12 +160,6 @@ def get_avg_cvss(findings):
     if not getattr(settings, 'CVSS_SCORE_ENABLED', False):
         avg_cvss = None
     return avg_cvss
-
-
-def update_scan_timestamp(scan_hash):
-    # Update the last scan time.
-    tms = timezone.now()
-    RecentScansDB.objects.filter(MD5=scan_hash).update(TIMESTAMP=tms)
 
 
 def open_firebase(url):
