@@ -261,8 +261,11 @@ class Checksec:
 
     def get_symbols(self):
         symbols = []
-        for i in self.macho.symbols:
-            symbols.append(i.name)
+        try:
+            for i in self.macho.symbols:
+                symbols.append(i.name)
+        except Exception:
+            pass
         return symbols
 
 
