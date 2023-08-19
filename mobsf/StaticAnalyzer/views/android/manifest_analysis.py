@@ -452,7 +452,7 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
                                 # are not protected.
                                 if perm_appl_level_exists is False:
                                     ret_list.append(
-                                        ('exported', (itemname, item), (an_or_a, itemname)))
+                                        ('explicitly_exported', (itemname, item), (an_or_a, itemname)))
                                     if itemname in ['Activity', 'Activity-Alias']:
                                         exported.append(item)
                                     exp_count[cnt_id] = exp_count[cnt_id] + 1
@@ -825,6 +825,8 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
                     'name': a_template['name'] % t_name,
                     'component': t_name,
                 })
+            else:
+                logger.warning("No template found for key '%s'", a_key)
 
         for category in man_data_dic['categories']:
             if category == 'android.intent.category.LAUNCHER':
