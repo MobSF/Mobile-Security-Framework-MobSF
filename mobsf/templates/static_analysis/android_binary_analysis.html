@@ -699,7 +699,20 @@
                     <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type=smali" class="btn btn-warning"> <i class="fa fa-download"></i> Download Smali Code</a>
                     {% endif %}
                     <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type={{ app_type }}" class="btn btn-warning"> <i class="fa fa-download"></i> Download {{ app_type | upper}}</a>
+                    
+                    {% if app_type in 'jar,aar' %}
+                    <p>
+                    {% for _, value in apkid.items %}
+                       {% if value %}
+                         The binary might be obfuscated. LocalVariableTable is absent in class file.
+                       {% else %}
+                         The binary might not be obfuscated. LocalVariableTable is present in class file.
+                       {% endif %}
+                    {% endfor %}
                     </p>
+                    {% endif %}
+
+                  </p>
                 </div>
               </div>
             </div>
@@ -1527,7 +1540,7 @@
                       </tr>
                   </thead>
                   <tbody>
-                      {% if apkid %}
+                      {% if apkid and app_type not in 'jar,aar'%}
                        {% for file, details in apkid.items %}
                        <tr>
                          <td>

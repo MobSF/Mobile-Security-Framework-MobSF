@@ -187,12 +187,18 @@ class Checksec:
         return fortified_funcs
 
     def strings(self):
-        return self.elf.strings
+        try:
+            return self.elf.strings
+        except Exception:
+            return []
 
     def get_symbols(self):
         symbols = []
-        for i in self.elf.symbols:
-            symbols.append(i.name)
+        try:
+            for i in self.elf.symbols:
+                symbols.append(i.name)
+        except Exception:
+            pass
         return symbols
 
 
