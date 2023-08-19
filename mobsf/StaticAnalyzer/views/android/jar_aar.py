@@ -1,5 +1,6 @@
 """Handle JAR and AAR files."""
 import logging
+from pathlib import Path
 
 from django.conf import settings
 from django.shortcuts import render
@@ -133,7 +134,7 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
             }
         app_dic['real_name'] = ''
         elf_dict = elf_analysis(app_dic['app_dir'])
-        apkid_results = {}
+        apkid_results = obfuscated_check(app_dic['app_dir'])
         tracker = Trackers.Trackers(
             app_dic['app_dir'],
             app_dic['tools_dir'])
@@ -207,3 +208,28 @@ def jar_analysis(request, app_dic, rescan, api):
 
 def aar_analysis(request, app_dic, rescan, api):
     return common_analysis(request, app_dic, rescan, api, 'aar')
+
+
+def obfuscated_check(src):
+    """Check if JAR/AAR is obfuscated."""
+    logger.info('Checking for Obfuscation')
+    try:
+        app_dir = Path(src)
+        # Extract all jar files
+        for j in app_dir.rglob('*.jar'):
+            if not j.is_file():
+                continue
+            out = app_dir / f'{j.name}_out'
+            if not out.exists():
+                unzip(j, out)
+        # Search all class files
+        for i in app_dir.rglob('*.class'):
+            if not i.is_file():
+                continue
+            cls_dat = i.read_text(
+                encoding='utf-8', errors='ignore')
+            if 'LocalVariableTable' in cls_dat:
+                return {'obfuscated': False}
+    except Exception:
+        logger.exception('Obfuscation Check')
+    return {'obfuscated': True}

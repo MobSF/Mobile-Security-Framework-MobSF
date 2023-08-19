@@ -187,6 +187,18 @@
       <h5>Android Version Code:</h5> {{ version_code }}</br>
 {% endif %}
 
+{% if app_type in 'jar,aar' %}
+<p>
+{% for _, value in apkid.items %}
+   {% if value %}
+     The binary might be obfuscated. LocalVariableTable is absent in class file.
+   {% else %}
+     The binary might not be obfuscated. LocalVariableTable is present in class file.
+   {% endif %}
+{% endfor %}
+</p>
+{% endif %}
+
 {% if app_type not in 'jar,aar,so' %}
       <h2><i class="fas fa-th-large"></i> APP COMPONENTS </h2>
 
@@ -275,7 +287,7 @@
                     </table>
             {% endif %}
       {% endif %}
-      {% if apkid %}
+      {% if apkid and app_type not in 'jar,aar'%}
       <h2><i class="fas fa-fingerprint"></i> APKID ANALYSIS</h2>
 
        <table class="basic">

@@ -216,6 +216,20 @@
     owasp-mobile: m1
     masvs: resilience-2
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04c-Tampering-and-Reverse-Engineering.md#debugging-and-tracing
+- id: android_aar_jar_debug_enabled
+  message: Debug configuration enabled. Production builds must not be debuggable.
+  type: RegexAnd
+  pattern:
+    - ' class BuildConfig'
+    - DEBUG.{1,25}?true
+  severity: high
+  input_case: exact
+  metadata:
+    cvss: 5.4
+    cwe: cwe-919
+    owasp-mobile: m1
+    masvs: resilience-2
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04c-Tampering-and-Reverse-Engineering.md#debugging-and-tracing
 - id: android_clipboard_listen
   message: >-
     This app listens to Clipboard changes. Some malware also listen to
