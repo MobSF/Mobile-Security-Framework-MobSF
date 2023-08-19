@@ -6,7 +6,12 @@ from django.conf import settings
 from mobsf.MobSF.utils import python_dict, python_list
 from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
 from mobsf.StaticAnalyzer.models import RecentScansDB
-from mobsf.StaticAnalyzer.views.common.suppression import process_suppression
+from mobsf.StaticAnalyzer.views.common.shared_func import (
+    update_scan_timestamp,
+)
+from mobsf.StaticAnalyzer.views.common.suppression import (
+    process_suppression,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -196,3 +201,33 @@ def save_or_update(update_type,
             MD5=app_dict['md5_hash']).update(**values)
     except Exception:
         logger.exception('Updating RecentScansDB')
+
+
+def save_get_ctx(app_dict, pdict, code_dict, bin_dict, all_files, rescan):
+    # Saving to DB
+    logger.info('Connecting to DB')
+    if rescan:
+        logger.info('Updating Database...')
+        save_or_update(
+            'update',
+            app_dict,
+            pdict,
+            code_dict,
+            bin_dict,
+            all_files)
+        update_scan_timestamp(app_dict['md5_hash'])
+    else:
+        logger.info('Saving to Database')
+        save_or_update(
+            'save',
+            app_dict,
+            pdict,
+            code_dict,
+            bin_dict,
+            all_files)
+    return get_context_from_analysis(
+        app_dict,
+        pdict,
+        code_dict,
+        bin_dict,
+        all_files)

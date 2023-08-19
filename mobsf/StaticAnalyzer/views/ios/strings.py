@@ -62,9 +62,7 @@ def extract_urls_n_email(src, all_files, strings):
 def strings_on_binary(bin_path):
     """Extract strings from binary."""
     try:
-        unique_str = []
-        unique_str = list(set(strings_util(bin_path.as_posix())))
-        return unique_str
+        return list(set(strings_util(bin_path.as_posix())))
     except Exception:
         logger.exception('Extracting strings from binary')
 

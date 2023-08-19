@@ -22,9 +22,9 @@ from mobsf.StaticAnalyzer.views.ios.binary_analysis import (
 )
 from mobsf.StaticAnalyzer.views.ios.code_analysis import ios_source_analysis
 from mobsf.StaticAnalyzer.views.ios.db_interaction import (
-    get_context_from_analysis,
     get_context_from_db_entry,
-    save_or_update)
+    save_get_ctx,
+)
 from mobsf.StaticAnalyzer.views.ios.dylib import dylib_analysis
 from mobsf.StaticAnalyzer.views.ios.file_analysis import ios_list_files
 from mobsf.StaticAnalyzer.views.ios.icon_analysis import (
@@ -44,7 +44,6 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
     hash_gen,
     strings_and_entropies,
     unzip,
-    update_scan_timestamp,
 )
 from mobsf.StaticAnalyzer.views.common.appsec import (
     get_ios_dashboard,
@@ -170,34 +169,13 @@ def static_analyzer_ios(request, api=False):
                     code_dict['firebase'] = firebase_analysis(
                         code_dict['urls_list'])
                     code_dict['trackers'] = trackers
-
-                    # Saving to DB
-                    logger.info('Connecting to DB')
-                    if rescan:
-                        logger.info('Updating Database...')
-                        save_or_update(
-                            'update',
-                            app_dict,
-                            infoplist_dict,
-                            code_dict,
-                            bin_dict,
-                            all_files)
-                        update_scan_timestamp(app_dict['md5_hash'])
-                    else:
-                        logger.info('Saving to Database')
-                        save_or_update(
-                            'save',
-                            app_dict,
-                            infoplist_dict,
-                            code_dict,
-                            bin_dict,
-                            all_files)
-                    context = get_context_from_analysis(
+                    context = save_get_ctx(
                         app_dict,
                         infoplist_dict,
                         code_dict,
                         bin_dict,
-                        all_files)
+                        all_files,
+                        rescan)
                 context['virus_total'] = None
                 if settings.VT_ENABLED:
                     vt = VirusTotal.VirusTotal()
@@ -268,33 +246,13 @@ def static_analyzer_ios(request, api=False):
                         'bin_type': code_analysis_dic['source_type'],
                         'dylib_analysis': {},
                     }
-                    # Saving to DB
-                    logger.info('Connecting to DB')
-                    if rescan:
-                        logger.info('Updating Database...')
-                        save_or_update(
-                            'update',
-                            app_dict,
-                            infoplist_dict,
-                            code_analysis_dic,
-                            fake_bin_dict,
-                            all_files)
-                        update_scan_timestamp(app_dict['md5_hash'])
-                    else:
-                        logger.info('Saving to Database')
-                        save_or_update(
-                            'save',
-                            app_dict,
-                            infoplist_dict,
-                            code_analysis_dic,
-                            fake_bin_dict,
-                            all_files)
-                    context = get_context_from_analysis(
+                    context = save_get_ctx(
                         app_dict,
                         infoplist_dict,
                         code_analysis_dic,
                         fake_bin_dict,
-                        all_files)
+                        all_files,
+                        rescan)
                 context['appsec'] = get_ios_dashboard(context, True)
                 context['average_cvss'] = get_avg_cvss(
                     context['code_analysis'])
@@ -306,21 +264,12 @@ def static_analyzer_ios(request, api=False):
             else:
                 msg = ('File Type not supported, '
                        'Only IPA and DYLIB files are supported')
-                if api:
-                    return print_n_send_error_response(request, msg, True)
-                else:
-                    return print_n_send_error_response(request, msg, False)
+                return print_n_send_error_response(request, msg, api)
         else:
             msg = 'Hash match failed or Invalid file extension or file type'
-            if api:
-                return print_n_send_error_response(request, msg, True)
-            else:
-                return print_n_send_error_response(request, msg, False)
+            return print_n_send_error_response(request, msg, api)
     except Exception as exp:
         logger.exception('Error Performing Static Analysis')
         msg = str(exp)
         exp_doc = exp.__doc__
-        if api:
-            return print_n_send_error_response(request, msg, True, exp_doc)
-        else:
-            return print_n_send_error_response(request, msg, False, exp_doc)
+        return print_n_send_error_response(request, msg, api, exp_doc)
