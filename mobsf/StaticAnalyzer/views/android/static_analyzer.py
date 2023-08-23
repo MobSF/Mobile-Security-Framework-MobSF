@@ -30,7 +30,9 @@ from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
     StaticAnalyzerIOS,
 )
-from mobsf.StaticAnalyzer.views.android.binary_analysis import elf_analysis
+from mobsf.StaticAnalyzer.views.common.binary.lib_analysis import (
+    library_analysis,
+)
 from mobsf.StaticAnalyzer.views.android.cert_analysis import (
     cert_info,
     get_hardcoded_cert_keystore,
@@ -106,10 +108,13 @@ def static_analyzer(request, api=False):
         # Input validation
         app_dic = {}
         match = re.match('^[0-9a-f]{32}$', checksum)
+        allowed_exts = (
+            '.apk', '.xapk', '.zip', '.apks',
+            '.jar', '.aar', '.so')
+        allowed_typ = [i.replace('.', '') for i in allowed_exts]
         if (match
-                and filename.lower().endswith(
-                    ('.apk', '.xapk', '.zip', '.apks', '.jar', '.aar', '.so'))
-                and typ in ['zip', 'apk', 'xapk', 'apks', 'jar', 'aar', 'so']):
+                and filename.lower().endswith(allowed_exts)
+                and typ in allowed_typ):
             app_dic['dir'] = Path(settings.BASE_DIR)  # BASE DIR
             app_dic['app_name'] = filename  # APP ORIGINAL NAME
             app_dic['md5'] = checksum  # MD5
@@ -191,7 +196,7 @@ def static_analyzer(request, api=False):
                         '',
                         app_dic['app_dir'],
                     )
-                    elf_dict = elf_analysis(app_dic['app_dir'])
+                    elf_dict = library_analysis(app_dic['app_dir'], 'elf')
                     cert_dic = cert_info(
                         app_dic['app_dir'],
                         app_dic['app_file'],
@@ -450,7 +455,7 @@ def static_analyzer(request, api=False):
                 else:
                     return render(request, template, context)
             else:
-                err = ('Only APK, JAR, AAR, SO, IPA and Zipped '
+                err = ('Only APK, JAR, AAR, SO and Zipped '
                        'Android/iOS Source code supported now!')
                 logger.error(err)
         else:

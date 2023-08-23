@@ -269,7 +269,7 @@
     owasp-mobile: m1
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06f-Testing-Local-Authentication.md#local-authentication-framework
 - id: ios_biometric_bool
-  message: 'Biometric authentication should be hardware and keychain backed, local authentication returns a boolean that can be bypassed by runtime instrumentation tools like Frida.'
+  message: 'Biometric authentication should be hardware and keychain backed, local authentication returns a boolean that can be bypassed by runtime instrumentation tools like Frida. This is not applicable if authentication data in keychain is protected with a biometric only access control.'
   input_case: exact
   pattern:
     - \.evaluatePolicy\(

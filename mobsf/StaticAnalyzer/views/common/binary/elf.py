@@ -1,18 +1,9 @@
 # !/usr/bin/python
 # coding=utf-8
-import logging
-from pathlib import Path
-
 import lief
 
-from mobsf.MobSF.utils import (
-    settings_enabled,
-)
 
-logger = logging.getLogger(__name__)
-
-
-class Checksec:
+class ELFChecksec:
     def __init__(self, elf_file, so_rel):
         self.elf_path = elf_file.as_posix()
         self.elf_rel = so_rel
@@ -27,13 +18,13 @@ class Checksec:
         if is_nx:
             severity = 'info'
             desc = (
-                'The shared object has NX bit set. This marks a '
+                'The binary has NX bit set. This marks a '
                 'memory page non-executable making attacker '
                 'injected shellcode non-executable.')
         else:
             severity = 'high'
             desc = (
-                'The shared object does not have NX bit set. NX bit '
+                'The binary does not have NX bit set. NX bit '
                 'offer protection against exploitation of memory corruption '
                 'vulnerabilities by marking memory page as non-executable. '
                 'Use option --noexecstack or -z noexecstack to mark stack as '
@@ -47,7 +38,7 @@ class Checksec:
         if has_canary:
             severity = 'info'
             desc = (
-                'This shared object has a stack canary value '
+                'This binary has a stack canary value '
                 'added to the stack so that it will be overwritten by '
                 'a stack buffer that overflows the return address. '
                 'This allows detection of overflows by verifying the '
@@ -55,11 +46,13 @@ class Checksec:
         else:
             severity = 'high'
             desc = (
-                'This shared object does not have a stack '
+                'This binary does not have a stack '
                 'canary value added to the stack. Stack canaries '
                 'are used to detect and prevent exploits from '
                 'overwriting return address. Use the option '
-                '-fstack-protector-all to enable stack canaries.')
+                '-fstack-protector-all to enable stack canaries. '
+                'Not applicable for Dart/Flutter libraries unless '
+                'Dart FFI is used.')
         elf_dict['stack_canary'] = {
             'has_canary': has_canary,
             'severity': severity,
@@ -69,18 +62,18 @@ class Checksec:
         if rpath:
             severity = 'high'
             desc = (
-                'The shared object has RPATH set. In certain cases '
+                'The binary has RPATH set. In certain cases, '
                 'an attacker can abuse this feature to run arbitrary '
-                'shared objects for code execution and privilege '
-                'escalation. The only time a shared library in '
-                'should set RPATH is if it is linked to private '
-                'shared libraries in the same package. Remove the '
+                'libraries for code execution and privilege '
+                'escalation. The only time a library should '
+                'set RPATH is when it is linked to private '
+                'libraries in the same package. Remove the '
                 'compiler option -rpath to remove RPATH.')
             rpt = rpath.rpath
         else:
             severity = 'info'
             desc = (
-                'The shared object does not have run-time search path '
+                'The binary does not have run-time search path '
                 'or RPATH set.')
             rpt = rpath
         elf_dict['rpath'] = {
@@ -92,19 +85,19 @@ class Checksec:
         if runpath:
             severity = 'high'
             desc = (
-                'The shared object has RUNPATH set. In certain cases '
+                'The binary has RUNPATH set. In certain cases, '
                 'an attacker can abuse this feature and or modify '
                 'environment variables to run arbitrary '
-                'shared objects for code execution and privilege '
-                'escalation. The only time a shared library in should '
-                'set RUNPATH is if it is linked to private shared '
+                'libraries for code execution and privilege '
+                'escalation. The only time a library should '
+                'set RUNPATH is when it is linked to private '
                 'libraries in the same package. Remove the compiler '
                 'option --enable-new-dtags,-rpath to remove RUNPATH.')
             rnp = runpath.runpath
         else:
             severity = 'info'
             desc = (
-                'The shared object does not have RUNPATH set.')
+                'The binary does not have RUNPATH set.')
             rnp = runpath
         elf_dict['runpath'] = {
             'runpath': rnp,
@@ -114,16 +107,21 @@ class Checksec:
         fortified_functions = self.fortify()
         if fortified_functions:
             severity = 'info'
-            desc = ('The shared object has the '
+            desc = ('The binary has the '
                     f'following fortified functions: {fortified_functions}')
         else:
-            severity = 'warning'
-            desc = ('The shared object does not have any '
+            if self.is_dart():
+                severity = 'info'
+            else:
+                severity = 'warning'
+            desc = ('The binary does not have any '
                     'fortified functions. Fortified functions '
                     'provides buffer overflow checks against '
                     'glibc\'s commons insecure functions like '
                     'strcpy, gets etc. Use the compiler option '
-                    '-D_FORTIFY_SOURCE=2 to fortify functions.')
+                    '-D_FORTIFY_SOURCE=2 to fortify functions. '
+                    'This check is not applicable for '
+                    'Dart/Flutter libraries.')
         elf_dict['fortify'] = {
             'is_fortified': bool(fortified_functions),
             'severity': severity,
@@ -149,7 +147,22 @@ class Checksec:
     def is_nx(self):
         return self.elf.has_nx
 
+    def is_dart(self):
+        dart = ('_kDartVmSnapshotInstructions',
+                'Dart_Cleanup')
+        if any(i in self.strings() for i in dart):
+            return True
+        for symbol in dart:
+            try:
+                if self.elf.get_symbol(symbol):
+                    return True
+            except lief.not_found:
+                pass
+        return False
+
     def has_canary(self):
+        if self.is_dart():
+            return True
         for symbol in ('__stack_chk_fail',
                        '__intel_security_cookie'):
             try:
@@ -200,49 +213,3 @@ class Checksec:
         except Exception:
             pass
         return symbols
-
-
-def elf_analysis(app_dir: str) -> dict:
-    """Perform elf analysis on shared object."""
-    elf = {
-        'elf_analysis': [],
-        'elf_strings': [],
-        'elf_symbols': [],
-    }
-    try:
-        if not settings_enabled('SO_ANALYSIS_ENABLED'):
-            return elf
-        logger.info('Binary Analysis Started')
-        sdir = Path(app_dir)
-        # Supports APK, SO, AAR and JAR
-        libs = [
-            sdir,
-            sdir / 'lib',
-            sdir / 'libs',
-            sdir / 'jni']
-        for lib_dir in libs:
-            if not lib_dir.is_dir():
-                continue
-            for sofile in lib_dir.rglob('*.so'):
-                so_rel = (
-                    f'{sofile.parents[1].name}/'
-                    f'{sofile.parents[0].name}/'
-                    f'{sofile.name}')
-                logger.info('Analyzing %s', so_rel)
-                chk = Checksec(sofile, so_rel)
-                elf_find = chk.checksec()
-                elf_str = chk.strings()
-                elf_sym = chk.get_symbols()
-                if elf_find:
-                    elf['elf_analysis'].append(
-                        elf_find)
-                if elf_str:
-                    elf['elf_strings'].append(
-                        {so_rel: elf_str})
-                if elf_sym:
-                    elf['elf_symbols'].append(
-                        {so_rel: elf_sym})
-
-    except Exception:
-        logger.exception('Performing Binary Analysis')
-    return elf

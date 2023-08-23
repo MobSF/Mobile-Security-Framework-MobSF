@@ -7,6 +7,7 @@ Module providing the shared functions for iOS and Android
 import io
 import hashlib
 import logging
+import os
 import platform
 import re
 import shutil
@@ -16,6 +17,8 @@ from urllib.parse import urlparse
 from pathlib import Path
 
 import requests
+
+import arpy
 
 from django.utils.html import escape
 
@@ -97,6 +100,36 @@ def unzip(app_path, ext_path):
                 return files_det
             except Exception:
                 logger.exception('Unzipping Error')
+
+
+def ar_extract(src, dst):
+    """Extract AR archive."""
+    msg = 'Extracting static library archive'
+    logger.info(msg)
+    try:
+        ar = arpy.Archive(src)
+        ar.read_all_headers()
+        for a, val in ar.archived_files.items():
+            # Handle archive slip attacks
+            filtered = a.decode(
+                'utf-8', 'ignore').replace(
+                '../', '').replace('..\\', '')
+            out = Path(dst) / filtered
+            out.write_bytes(val.read())
+    except Exception:
+        # Use os AR utility
+        if platform.system() == 'Windows':
+            return
+        cur = os.getcwd()
+        try:
+            os.chdir(dst)
+            ar = shutil.which('ar')
+            if ar:
+                subprocess.run(
+                    [ar, 'x', src],
+                    stderr=subprocess.STDOUT)
+        finally:
+            os.chdir(cur)
 
 
 def url_n_email_extract(dat, relative_path):
@@ -270,8 +303,20 @@ def strings_and_entropies(src, exts):
     return data
 
 
+def get_os_strings(filename):
+    try:
+        strings_bin = shutil.which('strings')
+        if not strings_bin:
+            return None
+        strings = subprocess.check_output([strings_bin, filename])
+        return strings.decode('utf-8', 'ignore').splitlines()
+    except Exception:
+        return None
+
+
 def get_symbols(symbols):
+    all_symbols = []
     for i in symbols:
         for _, val in i.items():
-            return val
-    return []
+            all_symbols.extend(val)
+    return list(set(all_symbols))

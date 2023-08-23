@@ -30,7 +30,12 @@ def static_analysis_test():
                     '.apk',
                     '.ipa',
                     '.appx',
-                    '.zip')):
+                    '.zip',
+                    '.a',
+                    '.so',
+                    '.dylib',
+                    '.aar',
+                    '.jar')):
                 continue
             if platform.system() == 'Windows' and filename.endswith('.ipa'):
                 continue

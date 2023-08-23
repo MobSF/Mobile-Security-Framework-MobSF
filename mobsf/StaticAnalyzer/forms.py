@@ -64,7 +64,8 @@ class AndroidChecks(forms.Form):
             ('apk', 'apk'),
             ('jar', 'jar'),
             ('aar', 'aar'),
-            ('so', 'so')))
+            ('so', 'so'),
+            ('a', 'a')))
 
 
 class ViewSourceIOSApiForm(AttackDetect, IOSChecks, APIChecks):

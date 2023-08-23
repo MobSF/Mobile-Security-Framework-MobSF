@@ -377,3 +377,19 @@
     masvs: storage-14
     owasp-mobile: ''
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#realm-databases
+- id: ios_biometric_bool
+  message: Biometric authentication should be hardware and keychain backed, local authentication returns a boolean that can be bypassed by runtime instrumentation tools like Frida. This is not applicable if authentication data in keychain is protected with a biometric only access control.
+  input_case: exact
+  pattern:
+    - 'evaluatePolicy:'
+    - LAPolicyDeviceOwnerAuthentication
+    - LAContext
+    - 'reply:'
+  severity: warning
+  type: RegexAnd
+  metadata:
+    cvss: 5
+    cwe: cwe-303
+    masvs: auth-8
+    owasp-mobile: m1
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06f-Testing-Local-Authentication.md#local-authentication-framework

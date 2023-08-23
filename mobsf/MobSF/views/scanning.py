@@ -154,6 +154,16 @@ class Scanning(object):
         logger.info('Performing Static Analysis of iOS IPA')
         return self.data
 
+    def scan_a(self):
+        """Scan static library."""
+        md5 = handle_uploaded_file(self.file, '.a')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'a'
+        self.data['analyzer'] = 'static_analyzer_ios'
+        add_to_recent_scan(self.data)
+        logger.info('Performing Static Analysis of Static Library')
+        return self.data
+
     def scan_appx(self):
         """Windows appx."""
         md5 = handle_uploaded_file(self.file, '.appx')
