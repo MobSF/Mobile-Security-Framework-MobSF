@@ -47,6 +47,7 @@ def library_analysis(src, arch):
                 f'{libfile.name}')
             logger.info('Analyzing %s', rel_path)
             if arch == 'ar':
+                res[f'{arch}_a'] = ''
                 # Handle static library
                 if lief.is_macho(libfile.as_posix()):
                     analysis = MachOChecksec
