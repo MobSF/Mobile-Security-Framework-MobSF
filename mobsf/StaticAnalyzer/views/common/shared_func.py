@@ -106,6 +106,7 @@ def lipo_thin(src, dst):
     """Thin Fat binary."""
     new_src = None
     try:
+        logger.info('Thinning Fat binary')
         lipo = shutil.which('lipo')
         out = Path(dst) / (Path(src).stem + '_thin.a')
         new_src = out.as_posix()
@@ -122,11 +123,14 @@ def lipo_thin(src, dst):
                 arch,
                 '-output',
                 new_src]
-            out = subprocess.run(args)
+            out = subprocess.run(
+                args,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.STDOUT)
             if out.returncode == 0:
                 break
     except Exception:
-        logger.warning('lipo Fat binary thinning failed.')
+        logger.warning('lipo Fat binary thinning failed')
     return new_src
 
 
@@ -161,18 +165,23 @@ def ar_extract(src, dst):
             out = Path(dst) / filtered
             out.write_bytes(val.read())
     except Exception:
+        # Possibly dealing with Fat binary, needs Mac host
         logger.warning('Failed to extract .a archive')
         # Use os ar utility
-        if platform.system() == 'Windows':
+        plat = platform.system()
+        os_err = 'Possibly a Fat binary. Requires MacOS for Analysis'
+        if plat == 'Windows':
+            logger.warning(os_err)
             return
         logger.info('Using OS ar utility to handle archive')
         exp = ar_os(src, dst)
+        if b'file format not recognized' in exp and plat == 'Linux':
+            # Can't convert FAT binary in Linux
+            logger.warning(os_err)
+            return
         if b'lipo(1)' in exp:
-            logger.info('Fat binary archive identified.')
+            logger.info('Fat binary archive identified')
             # Fat binary archive
-            if platform.system() == 'Linux':
-                # Can't convert FAT binary in Linux
-                return
             try:
                 nw_src = lipo_thin(src, dst)
                 if nw_src:
