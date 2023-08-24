@@ -126,7 +126,7 @@ def lipo_thin(src, dst):
             if out.returncode == 0:
                 break
     except Exception:
-        logger.warning('lipo Mac Fat binary thinning failed.')
+        logger.warning('lipo Fat binary thinning failed.')
     return new_src
 
 
@@ -168,8 +168,8 @@ def ar_extract(src, dst):
         logger.info('Using OS ar utility to handle archive')
         exp = ar_os(src, dst)
         if b'lipo(1)' in exp:
-            logger.info('Mac Fat binary identified.')
-            # Mac Fat binary
+            logger.info('Fat binary archive identified.')
+            # Fat binary archive
             if platform.system() == 'Linux':
                 # Can't convert FAT binary in Linux
                 return
