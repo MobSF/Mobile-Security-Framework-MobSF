@@ -37,6 +37,7 @@ def library_analysis(src, arch):
                 return res
         elif arch == 'ar':
             ext = '*.o'
+            res[f'{arch}_a'] = ''
         logger.info('Library Binary Analysis Started')
         # Supports Static Library, Shared objects, Dynamic Library,
         # from APK, SO, AAR, JAR, IPA, DYLIB, and A
@@ -47,7 +48,6 @@ def library_analysis(src, arch):
                 f'{libfile.name}')
             logger.info('Analyzing %s', rel_path)
             if arch == 'ar':
-                res[f'{arch}_a'] = ''
                 # Handle static library
                 if lief.is_macho(libfile.as_posix()):
                     analysis = MachOChecksec

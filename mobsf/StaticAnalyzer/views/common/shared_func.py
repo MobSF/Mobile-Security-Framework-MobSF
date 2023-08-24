@@ -117,9 +117,11 @@ def ar_extract(src, dst):
             out = Path(dst) / filtered
             out.write_bytes(val.read())
     except Exception:
-        # Use os AR utility
+        logger.warning('Failed to extract .a archive')
+        # Use os ar utility
         if platform.system() == 'Windows':
             return
+        logger.info('Using OS ar utility to handle archive')
         cur = os.getcwd()
         try:
             os.chdir(dst)

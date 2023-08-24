@@ -69,7 +69,7 @@ def strings_on_binary(bin_path):
         if isinstance(strings, list):
             return []
         # Only run if OS strings is not present
-        return list(set(strings_util(bin_path.as_posix())))
+        return list(set(strings_util(bin_path)))
     except Exception:
         logger.exception('Extracting strings from binary')
 

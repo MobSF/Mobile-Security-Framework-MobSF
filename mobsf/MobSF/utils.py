@@ -650,7 +650,10 @@ def is_dylib_magic(file_obj):
 def is_a_magic(file_obj):
     magic = file_obj.read(4)
     file_obj.seek(0, 0)
-    return bool(magic == b'\x21\x3C\x61\x72')
+    magics = (
+        b'\x21\x3C\x61\x72'
+        b'\xCA\xFE\xBA\xBE')
+    return bool(magic in magics)
 
 
 def disable_print():
