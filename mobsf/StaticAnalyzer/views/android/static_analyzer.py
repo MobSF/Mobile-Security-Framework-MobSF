@@ -535,25 +535,27 @@ def move_to_parent(inside, app_dir):
 
 def get_app_name(app_path, app_dir, is_apk):
     """Get app name."""
+    base = Path(app_dir)
     if is_apk:
-        a = apk.APK(app_path)
-        real_name = a.get_app_name()
-        return real_name
+        try:
+            a = apk.APK(app_path)
+            real_name = a.get_app_name()
+            return real_name
+        except Exception:
+            val = base / 'apktool_out' / 'res' / 'values'
+            if val.exists():
+                return get_app_name_from_values_folder(val.as_posix())
     else:
-        strings_path = os.path.join(app_dir,
-                                    'app/src/main/res/values/')
-        eclipse_path = os.path.join(app_dir,
-                                    'res/values/')
-        if os.path.exists(strings_path):
-            strings_dir = strings_path
-        elif os.path.exists(eclipse_path):
-            strings_dir = eclipse_path
-        else:
-            strings_dir = ''
-    if not os.path.exists(strings_dir):
-        logger.warning('Cannot find values folder.')
-        return ''
-    return get_app_name_from_values_folder(strings_dir)
+        strings_path = base / 'app' / 'src' / 'main' / 'res' / 'values'
+        eclipse_path = base / 'res' / 'values'
+        if strings_path.exists():
+            get_app_name_from_values_folder(
+                strings_path.as_posix())
+        elif eclipse_path.exists():
+            get_app_name_from_values_folder(
+                eclipse_path.as_posix())
+    logger.warning('Cannot find values folder.')
+    return ''
 
 
 def get_app_name_from_values_folder(values_dir):
