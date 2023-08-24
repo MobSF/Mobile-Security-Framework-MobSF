@@ -175,7 +175,7 @@ def ar_extract(src, dst):
             return
         logger.info('Using OS ar utility to handle archive')
         exp = ar_os(src, dst)
-        if b'file format not recognized' in exp and plat == 'Linux':
+        if len(exp) > 3 and plat == 'Linux':
             # Can't convert FAT binary in Linux
             logger.warning(os_err)
             return
