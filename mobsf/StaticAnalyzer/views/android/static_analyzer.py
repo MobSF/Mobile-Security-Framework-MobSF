@@ -549,10 +549,10 @@ def get_app_name(app_path, app_dir, is_apk):
         strings_path = base / 'app' / 'src' / 'main' / 'res' / 'values'
         eclipse_path = base / 'res' / 'values'
         if strings_path.exists():
-            get_app_name_from_values_folder(
+            return get_app_name_from_values_folder(
                 strings_path.as_posix())
         elif eclipse_path.exists():
-            get_app_name_from_values_folder(
+            return get_app_name_from_values_folder(
                 eclipse_path.as_posix())
     logger.warning('Cannot find values folder.')
     return ''
