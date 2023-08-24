@@ -102,6 +102,40 @@ def unzip(app_path, ext_path):
                 logger.exception('Unzipping Error')
 
 
+def lipo_thin(src, dst):
+    """Thin Fat binary."""
+    new_src = None
+    try:
+        out = Path(dst) / (Path(src).stem + '_arm7.a')
+        new_src = out.as_posix()
+        args = [shutil.which('lipo'),
+                src,
+                '-thin',
+                'armv7',
+                '-output',
+                new_src]
+        subprocess.run(args)
+    except Exception:
+        logger.warning('lipo Mac Fat binary thinning failed.')
+    return new_src
+
+
+def ar_os(src, dst):
+    out = ''
+    """Extract AR using OS utility."""
+    cur = os.getcwd()
+    try:
+        os.chdir(dst)
+        out = subprocess.check_output(
+            [shutil.which('ar'), 'x', src],
+            stderr=subprocess.STDOUT)
+    except Exception as exp:
+        out = exp.output
+    finally:
+        os.chdir(cur)
+    return out
+
+
 def ar_extract(src, dst):
     """Extract AR archive."""
     msg = 'Extracting static library archive'
@@ -122,16 +156,19 @@ def ar_extract(src, dst):
         if platform.system() == 'Windows':
             return
         logger.info('Using OS ar utility to handle archive')
-        cur = os.getcwd()
-        try:
-            os.chdir(dst)
-            ar = shutil.which('ar')
-            if ar:
-                subprocess.run(
-                    [ar, 'x', src],
-                    stderr=subprocess.STDOUT)
-        finally:
-            os.chdir(cur)
+        exp = ar_os(src, dst)
+        if b'lipo(1)' in exp:
+            logger.info('Mac Fat binary identified.')
+            # Mac Fat binary
+            if platform.system() == 'Linux':
+                # Can't convert FAT binary in Linux
+                return
+            try:
+                nw_src = lipo_thin(src, dst)
+                if nw_src:
+                    ar_os(nw_src, dst)
+            except Exception:
+                logger.exception('Failed to thin fat archive.')
 
 
 def url_n_email_extract(dat, relative_path):
