@@ -14,6 +14,17 @@ logger = logging.getLogger(__name__)
 
 RESCAN = False
 # Set RESCAN to True if Static Analyzer Code is modified
+EXTS = (
+    '.xapk',
+    '.apk',
+    '.ipa',
+    '.appx',
+    '.zip',
+    '.a',
+    '.so',
+    '.dylib',
+    '.aar',
+    '.jar')
 
 
 def static_analysis_test():
@@ -25,17 +36,7 @@ def static_analysis_test():
         http_client = Client()
         apk_dir = os.path.join(settings.BASE_DIR, 'StaticAnalyzer/test_files/')
         for filename in os.listdir(apk_dir):
-            if not filename.endswith((
-                    '.xapk',
-                    '.apk',
-                    '.ipa',
-                    '.appx',
-                    '.zip',
-                    '.a',
-                    '.so',
-                    '.dylib',
-                    '.aar',
-                    '.jar')):
+            if not filename.endswith(EXTS):
                 continue
             if platform.system() == 'Windows' and filename.endswith('.ipa'):
                 continue
@@ -172,12 +173,7 @@ def api_test():
         http_client = Client()
         apk_dir = os.path.join(settings.BASE_DIR, 'StaticAnalyzer/test_files/')
         for filename in os.listdir(apk_dir):
-            if not filename.endswith((
-                    '.xapk',
-                    '.apk',
-                    '.ipa',
-                    '.appx',
-                    '.zip')):
+            if not filename.endswith(EXTS):
                 continue
             if platform.system() == 'Windows' and filename.endswith('.ipa'):
                 continue
