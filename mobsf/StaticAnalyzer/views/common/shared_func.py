@@ -106,15 +106,25 @@ def lipo_thin(src, dst):
     """Thin Fat binary."""
     new_src = None
     try:
-        out = Path(dst) / (Path(src).stem + '_arm7.a')
+        lipo = shutil.which('lipo')
+        out = Path(dst) / (Path(src).stem + '_thin.a')
         new_src = out.as_posix()
-        args = [shutil.which('lipo'),
+        archs = [
+            'armv7', 'armv6', 'arm64', 'x86_64',
+            'armv4t', 'armv5', 'armv6m', 'armv7f',
+            'armv7s', 'armv7k', 'armv7m', 'armv7em',
+            'arm64v8']
+        for arch in archs:
+            args = [
+                lipo,
                 src,
                 '-thin',
-                'armv7',
+                arch,
                 '-output',
                 new_src]
-        subprocess.run(args)
+            out = subprocess.run(args)
+            if out.returncode == 0:
+                break
     except Exception:
         logger.warning('lipo Mac Fat binary thinning failed.')
     return new_src
