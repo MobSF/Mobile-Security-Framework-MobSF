@@ -55,7 +55,7 @@ def get_hardcoded_cert_keystore(files):
 
 
 def get_cert_details(data):
-    """Get Certificate Details."""
+    """Get certificate details."""
     certlist = []
     x509_cert = x509.Certificate.load(data)
     subject = get_certificate_name_string(x509_cert.subject, short=True)
@@ -86,10 +86,10 @@ def get_pub_key_details(data):
 
 
 def apksigtool_cert(apk_path):
-    """Use apksigtool for certificate analysis."""
+    """Get Human readable certificate with apksigtool."""
     certlist = []
     certs = []
-    pub_key = []
+    pub_keys = []
     signed, v1, v2, v3, v4 = False, False, False, False, 'Unknown'
     certs_no = 0
     min_sdk = None
@@ -113,10 +113,16 @@ def apksigtool_cert(apk_path):
                 for signer in b.signers:
                     if b.is_v3():
                         min_sdk = signer.min_sdk
+                    certs_no = len(signer.signed_data.certificates)
                     for cert in signer.signed_data.certificates:
-                        certs = get_cert_details(cert.data)
-                    pub_key = get_pub_key_details(signer.public_key.data)
-                certs_no = len(signer.signed_data.certificates)
+                        d = get_cert_details(cert.data)
+                        for i in d:
+                            if i not in certs:
+                                certs.append(i)
+                    p = get_pub_key_details(signer.public_key.data)
+                    for j in p:
+                        if j not in pub_keys:
+                            pub_keys.append(j)
 
         if signed:
             certlist.append('Binary is signed')
@@ -127,7 +133,7 @@ def apksigtool_cert(apk_path):
         certlist.append(f'v3 signature: {v3}')
         certlist.append(f'v4 signature: {v4}')
         certlist.extend(certs)
-        certlist.extend(pub_key)
+        certlist.extend(pub_keys)
         certlist.append(f'Found {certs_no} unique certificates')
     except Exception:
         logger.exception('Failed to parse code signing certificate')
@@ -144,7 +150,7 @@ def apksigtool_cert(apk_path):
 
 
 def get_cert_data(a):
-    """Get Human Readable Cert."""
+    """Get Human readable certificate."""
     certlist = []
     signed, v1, v2, v3, v4 = False, False, False, False, 'Unknown'
     if a.is_signed():
@@ -194,11 +200,6 @@ def cert_info(a, app_path, app_dir, man_dict):
         manidat = ''
         files = []
         summary = {HIGH: 0, WARNING: 0, INFO: 0}
-        cert_path = os.path.join(app_dir, 'META-INF/')
-
-        if os.path.exists(cert_path):
-            files = [f for f in os.listdir(
-                cert_path) if os.path.isfile(os.path.join(cert_path, f))]
 
         if a:
             cert_data = get_cert_data(a)
@@ -207,6 +208,10 @@ def cert_info(a, app_path, app_dir, man_dict):
                            ' switching to apksigtool')
             cert_data = apksigtool_cert(app_path)
 
+        cert_path = os.path.join(app_dir, 'META-INF/')
+        if os.path.exists(cert_path):
+            files = [f for f in os.listdir(
+                cert_path) if os.path.isfile(os.path.join(cert_path, f))]
         if 'MANIFEST.MF' in files:
             manifestfile = os.path.join(cert_path, 'MANIFEST.MF')
         if manifestfile:
