@@ -58,9 +58,9 @@ RUN adduser mobsf --shell /bin/false -u 9901 --ingroup mobsf --gecos "" --disabl
 
 
 # Install Requirements
-COPY requirements.txt .
-RUN pip3 install --upgrade --no-cache-dir setuptools pip && \
-    pip3 install --quiet --no-cache-dir -r requirements.txt
+COPY Pipfile Pipfile.lock ./
+RUN pip3 install --upgrade --no-cache-dir pip pipenv && \
+    pipenv install
 
 # Cleanup
 RUN \

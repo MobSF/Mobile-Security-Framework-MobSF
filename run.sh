@@ -45,4 +45,4 @@ if [ ! -z "$var" ]; then
     IP='[::]'
     PORT='8000'
 fi	 
-. venv/bin/activate && gunicorn -b ${IP}:${PORT} mobsf.MobSF.wsgi:application --workers=1 --threads=10 --timeout=3600
+pipenv run gunicorn -b ${IP}:${PORT} mobsf.MobSF.wsgi:application --workers=1 --threads=10 --timeout=3600
