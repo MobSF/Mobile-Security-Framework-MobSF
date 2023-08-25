@@ -48,6 +48,7 @@ jobs:
       if: startsWith(matrix.os, 'windows')
       run: |
         choco install wkhtmltopdf
+        pipenv lock
     - name: Install Python dependencies
       run: |
         pipenv install

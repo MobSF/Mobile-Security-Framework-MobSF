@@ -57,6 +57,7 @@ where python >nul 2>&1 && (
 
   echo [INSTALL] Installing Requirements
   python -m pip install --no-cache-dir wheel pipenv
+  python -m pipenv lock
   python -m pipenv install
   
   echo [INSTALL] Clean Up
