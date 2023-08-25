@@ -2,7 +2,7 @@
 rem Python Check
 set /a count=0
 where python >nul 2>&1 && (
-  echo [INSTALL] Checking for Python version 3.8+
+  echo [INSTALL] Checking for Python version 3.9+
   :redo
   if %count% lss 3 (
     set /a count+=1
