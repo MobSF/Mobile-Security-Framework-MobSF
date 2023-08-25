@@ -44,10 +44,6 @@ jobs:
       if: startsWith(matrix.os, 'macOS')
       run: |
         brew install --cask wkhtmltopdf
-        pipenv run pip install --no-cache-dir wheel
-        pipenv run pip wheel --wheel-dir=yara-python-dex git+https://github.com/MobSF/yara-python-dex.git
-        pipenv run pip install --no-cache-dir --no-index --find-links=yara-python-dex yara-python-dex
-        rm -rf yara-python-dex
     - name: Install Windows Dependencies
       if: startsWith(matrix.os, 'windows')
       run: |
