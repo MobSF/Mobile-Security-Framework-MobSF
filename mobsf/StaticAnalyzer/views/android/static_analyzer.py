@@ -33,6 +33,10 @@ from mobsf.StaticAnalyzer.models import (
 from mobsf.StaticAnalyzer.views.common.binary.lib_analysis import (
     library_analysis,
 )
+from mobsf.StaticAnalyzer.views.android.app import (
+    get_app_name,
+    parse_apk,
+)
 from mobsf.StaticAnalyzer.views.android.cert_analysis import (
     cert_info,
     get_hardcoded_cert_keystore,
@@ -80,11 +84,9 @@ from mobsf.StaticAnalyzer.views.common.appsec import (
     get_android_dashboard,
 )
 
-from androguard.core.bytecodes import apk
-
 
 logger = logging.getLogger(__name__)
-logging.getLogger('androguard').setLevel(logging.ERROR)
+
 register.filter('key', key)
 register.filter('android_component', android_component)
 
@@ -172,17 +174,18 @@ def static_analyzer(request, api=False):
                     )
                     app_dic['manifest_file'] = mani_file
                     app_dic['parsed_xml'] = mani_xml
-
+                    # Parse APK with Androguard
+                    apk = parse_apk(app_dic['app_path'])
                     # get app_name
                     app_dic['real_name'] = get_app_name(
-                        app_dic['app_path'],
+                        apk,
                         app_dic['app_dir'],
                         True,
                     )
 
                     # Get icon
                     # apktool should run before this
-                    get_icon_apk(app_dic)
+                    get_icon_apk(apk, app_dic)
 
                     # Set Manifest link
                     app_dic['mani'] = (
@@ -198,8 +201,9 @@ def static_analyzer(request, api=False):
                     )
                     elf_dict = library_analysis(app_dic['app_dir'], 'elf')
                     cert_dic = cert_info(
+                        apk,
+                        app_dic['app_path'],
                         app_dic['app_dir'],
-                        app_dic['app_file'],
                         man_data_dic)
                     apkid_results = apkid_analysis(app_dic[
                         'app_dir'], app_dic['app_path'], app_dic['app_name'])
@@ -223,7 +227,7 @@ def static_analyzer(request, api=False):
 
                     # Get the strings and metadata
                     get_strings_metadata(
-                        app_dic['app_file'],
+                        apk,
                         app_dic['app_dir'],
                         elf_dict['elf_strings'],
                         'apk',
@@ -531,58 +535,3 @@ def move_to_parent(inside, app_dir):
         full_path = os.path.join(inside, x)
         shutil.move(full_path, app_dir)
     shutil.rmtree(inside)
-
-
-def get_app_name(app_path, app_dir, is_apk):
-    """Get app name."""
-    base = Path(app_dir)
-    if is_apk:
-        try:
-            a = apk.APK(app_path)
-            real_name = a.get_app_name()
-            return real_name
-        except Exception:
-            val = base / 'apktool_out' / 'res' / 'values'
-            if val.exists():
-                return get_app_name_from_values_folder(val.as_posix())
-    else:
-        strings_path = base / 'app' / 'src' / 'main' / 'res' / 'values'
-        eclipse_path = base / 'res' / 'values'
-        if strings_path.exists():
-            return get_app_name_from_values_folder(
-                strings_path.as_posix())
-        elif eclipse_path.exists():
-            return get_app_name_from_values_folder(
-                eclipse_path.as_posix())
-    logger.warning('Cannot find values folder.')
-    return ''
-
-
-def get_app_name_from_values_folder(values_dir):
-    """Get all the files in values folder and checks them for app_name."""
-    files = [f for f in os.listdir(values_dir) if
-             (os.path.isfile(os.path.join(values_dir, f)))
-             and (f.endswith('.xml'))]
-    for f in files:
-        # Look through each file, searching for app_name.
-        app_name = get_app_name_from_file(os.path.join(values_dir, f))
-        if app_name:
-            return app_name  # we found an app_name, lets return it.
-    return ''  # Didn't find app_name, returning empty string.
-
-
-def get_app_name_from_file(file_path):
-    """Looks for app_name in specific file."""
-    with open(file_path, 'r', encoding='utf-8') as f:
-        data = f.read()
-
-    app_name_match = re.search(
-        r'<string name=\"app_name\">(.{0,300})</string>',
-        data)
-
-    if (not app_name_match) or (len(app_name_match.group()) <= 0):
-        # Did not find app_name in current file.
-        return ''
-
-    # Found app_name!
-    return app_name_match.group(app_name_match.lastindex)

@@ -1,10 +1,7 @@
 # -*- coding: utf_8 -*-
 """Module for strings-method for java."""
 import logging
-import os
 from pathlib import Path
-
-from androguard.core.bytecodes import apk
 
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     is_secret_key,
@@ -19,7 +16,6 @@ from mobsf.MobSF.utils import (
 )
 
 logger = logging.getLogger(__name__)
-logging.getLogger('androguard').setLevel(logging.ERROR)
 
 
 def strings_from_so(elf_strings):
@@ -46,7 +42,7 @@ def strings_from_so(elf_strings):
     return sos
 
 
-def strings_from_apk(app_file, app_dir):
+def strings_from_apk(apk):
     """Extract Strings from an APK."""
     dat = []
     secrets = []
@@ -55,9 +51,7 @@ def strings_from_apk(app_file, app_dir):
     emails_nf = []
     try:
         logger.info('Extracting Data from APK')
-        apk_file = os.path.join(app_dir, app_file)
-        and_a = apk.APK(apk_file)
-        rsrc = and_a.get_android_resources()
+        rsrc = apk.get_android_resources()
         if rsrc:
             pkg = rsrc.get_packages_names()[0]
             rsrc.get_strings_resources()
@@ -99,7 +93,7 @@ def strings_from_code(src_dir, typ, exts):
     return data
 
 
-def get_strings_metadata(app_file, app_dir, elf_strings, typ, exts, code_dic):
+def get_strings_metadata(apk, app_dir, elf_strings, typ, exts, code_dic):
     """Get Strings, secrets, entropies, URLs, emails."""
     strings = {
         'strings_apk_res': {},
@@ -110,9 +104,9 @@ def get_strings_metadata(app_file, app_dir, elf_strings, typ, exts, code_dic):
     urls_n_files = []
     emails_n_files = []
     secrets = []
-    if app_file:
+    if apk:
         # APK
-        apk_res = strings_from_apk(app_file, app_dir)
+        apk_res = strings_from_apk(apk)
         strings['strings_apk_res'] = apk_res['strings']
         urls_list.extend(apk_res['urls_list'])
         urls_n_files.extend(apk_res['urls_nf'])
