@@ -18,7 +18,9 @@ from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
 from mobsf.StaticAnalyzer.views.ios.appstore import app_search
 from mobsf.StaticAnalyzer.views.ios.binary_analysis import (
     binary_analysis,
-    dylibs_analysis,
+)
+from mobsf.StaticAnalyzer.views.common.binary.lib_analysis import (
+    library_analysis,
 )
 from mobsf.StaticAnalyzer.views.ios.code_analysis import ios_source_analysis
 from mobsf.StaticAnalyzer.views.ios.db_interaction import (
@@ -37,6 +39,9 @@ from mobsf.StaticAnalyzer.views.ios.plist_analysis import (
 )
 from mobsf.StaticAnalyzer.views.ios.strings import (
     get_strings_metadata,
+)
+from mobsf.StaticAnalyzer.views.common.a import (
+    a_analysis,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     firebase_analysis,
@@ -62,7 +67,6 @@ logger = logging.getLogger(__name__)
 def static_analyzer_ios(request, api=False):
     """Module that performs iOS IPA/ZIP Static Analysis."""
     try:
-        logger.info('iOS Static Analysis Started')
         rescan = False
         if api:
             file_type = request.POST['scan_type']
@@ -78,10 +82,11 @@ def static_analyzer_ios(request, api=False):
             rescan = True
         md5_match = re.match('^[0-9a-f]{32}$', checksum)
         app_dict = {}
+        allowed_exts = ('ios', '.ipa', '.zip', '.dylib', '.a')
+        allowed_typ = [i.replace('.', '') for i in allowed_exts]
         if (md5_match
-                and filename.lower().endswith(
-                    ('.ipa', '.zip', '.dylib'))
-                and file_type in ['ipa', 'ios', 'dylib']):
+                and filename.lower().endswith(allowed_exts)
+                and file_type in allowed_typ):
             app_dict['directory'] = Path(settings.BASE_DIR)  # BASE DIR
             app_dict['file_name'] = filename  # APP ORIGINAL NAME
             app_dict['md5_hash'] = checksum  # MD5
@@ -137,8 +142,8 @@ def static_analyzer_ios(request, api=False):
                         app_dict['app_dir'],
                         infoplist_dict.get('bin'))
                     # Analyze dylibs
-                    dy = dylibs_analysis(app_dict['bin_dir'])
-                    bin_dict['dylib_analysis'] = dy['dylib_analysis']
+                    dy = library_analysis(app_dict['bin_dir'], 'macho')
+                    bin_dict['dylib_analysis'] = dy['macho_analysis']
                     # Get Icon
                     app_dict['icon_found'] = get_icon(
                         app_dict['md5_hash'],
@@ -149,7 +154,7 @@ def static_analyzer_ios(request, api=False):
                         app_dict,
                         bin_dict,
                         all_files,
-                        dy['dylib_strings'])
+                        dy['macho_strings'])
 
                     # Domain Extraction and Malware Check
                     logger.info('Performing Malware Check on '
@@ -192,6 +197,8 @@ def static_analyzer_ios(request, api=False):
                     return render(request, template, context)
             elif file_type == 'dylib':
                 return dylib_analysis(request, app_dict, rescan, api)
+            elif file_type == 'a':
+                return a_analysis(request, app_dict, rescan, api)
             elif file_type == 'ios':
                 ios_zip_db = StaticAnalyzerIOS.objects.filter(
                     MD5=app_dict['md5_hash'])
@@ -263,7 +270,7 @@ def static_analyzer_ios(request, api=False):
                     return render(request, template, context)
             else:
                 msg = ('File Type not supported, '
-                       'Only IPA and DYLIB files are supported')
+                       'Only IPA, A and DYLIB files are supported')
                 return print_n_send_error_response(request, msg, api)
         else:
             msg = 'Hash match failed or Invalid file extension or file type'

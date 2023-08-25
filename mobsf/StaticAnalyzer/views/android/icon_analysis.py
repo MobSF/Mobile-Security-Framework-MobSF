@@ -12,7 +12,6 @@ import subprocess
 from lxml import etree
 
 from androguard.core.bytecodes import (
-    apk,
     axml,
 )
 
@@ -124,7 +123,7 @@ def find_icon_path_zip(res_dir, icon_paths_from_manifest):
 # SVG/XML icon lookup functions below
 
 
-def get_icon_src(app_dic, res_dir):
+def get_icon_src(a, app_dic, res_dir):
     """
     Returns a dict with isHidden boolean and a relative path.
 
@@ -133,11 +132,11 @@ def get_icon_src(app_dic, res_dir):
     try:
         logger.info('Fetching icon path')
         icon_src = ''
-        apk_path = app_dic['app_path']
         app_dir = Path(app_dic['app_dir'])
-        a = apk.APK(apk_path)
         icon_resolution = 0xFFFE - 1
-        icon_name = a.get_app_icon(max_dpi=icon_resolution)
+        icon_name = None
+        if a:
+            icon_name = a.get_app_icon(max_dpi=icon_resolution)
         if not icon_name:
             # androguard cannot find icon file.
             logger.warning('androguard cannot find icon resource')
@@ -179,7 +178,7 @@ def get_icon_src(app_dic, res_dir):
         logger.exception('Fetching icon function')
 
 
-def get_icon_apk(app_dic):
+def get_icon_apk(apk, app_dic):
     """Get/Guess icon from APK binary."""
     app_dir = Path(app_dic['app_dir'])
     app_dic['icon_path'] = ''
@@ -201,7 +200,9 @@ def get_icon_apk(app_dic):
     if res_path.exists():
         # Icon lookup in res directory
         app_dic['icon_path'] = get_icon_src(
-            app_dic, res_path.as_posix())
+            apk,
+            app_dic,
+            res_path.as_posix())
         app_dic['icon_found'] = bool(app_dic['icon_path'])
         app_dic['icon_hidden'] = not app_dic['icon_found']
 

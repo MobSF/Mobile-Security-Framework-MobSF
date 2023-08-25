@@ -14,8 +14,8 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
     get_symbols,
     hash_gen,
 )
-from mobsf.StaticAnalyzer.views.android.binary_analysis import (
-    elf_analysis,
+from mobsf.StaticAnalyzer.views.common.binary.lib_analysis import (
+    library_analysis,
 )
 from mobsf.StaticAnalyzer.views.android.strings import (
     get_strings_metadata,
@@ -89,7 +89,7 @@ def so_analysis(request, app_dic, rescan, api):
             'certificate_summary': {},
         }
         app_dic['real_name'] = ''
-        elf_dict = elf_analysis(app_dic['app_dir'])
+        elf_dict = library_analysis(app_dic['app_dir'], 'elf')
         # File Analysis is used to store symbols from so
         app_dic['certz'] = get_symbols(
             elf_dict['elf_symbols'])

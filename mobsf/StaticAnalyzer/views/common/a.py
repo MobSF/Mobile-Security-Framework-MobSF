@@ -1,6 +1,7 @@
 # -*- coding: utf_8 -*-
-"""Handle (.dylib) Dynamic library file."""
+"""Handle Static Library .a file (ELF and MachO)."""
 import logging
+import os
 from pathlib import Path
 
 import mobsf.MalwareAnalyzer.views.Trackers as Trackers
@@ -13,9 +14,6 @@ from mobsf.MobSF.utils import (
     file_size,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
-from mobsf.StaticAnalyzer.views.ios.binary_analysis import (
-    get_bin_info,
-)
 from mobsf.StaticAnalyzer.views.common.binary.lib_analysis import (
     library_analysis,
 )
@@ -30,6 +28,7 @@ from mobsf.StaticAnalyzer.views.ios.strings import (
     get_strings_metadata,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
+    ar_extract,
     firebase_analysis,
     get_symbols,
     hash_gen,
@@ -41,11 +40,23 @@ from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
 logger = logging.getLogger(__name__)
 
 
-def dylib_analysis(request, app_dict, rescan, api):
-    """Independent Dylib (.dylib) analysis."""
+def extract_n_get_files(src, dst):
+    """Extract .a archive and get list of files."""
+    files = []
+    dst = Path(dst) / 'static_objects'
+    dst.mkdir(parents=True, exist_ok=True)
+    ar_extract(src, dst.as_posix())
+    for i in dst.rglob('*.a'):
+        files.append(
+            os.path.relpath(dst, i.as_posix()))
+    return files
+
+
+def a_analysis(request, app_dict, rescan, api):
+    """Independent shared library .a analysis."""
     app_dir = Path(app_dict['app_dir'])
     app_dict['app_file'] = app_dict[
-        'md5_hash'] + '.dylib'  # NEW FILENAME
+        'md5_hash'] + '.a'  # NEW FILENAME
     app_dict['app_path'] = app_dir / app_dict['app_file']
     app_dict['app_path'] = app_dict['app_path'].as_posix()
     # DB
@@ -54,15 +65,19 @@ def dylib_analysis(request, app_dict, rescan, api):
     if ipa_db.exists() and not rescan:
         context = get_context_from_db_entry(ipa_db)
     else:
-        logger.info('iOS DYLIB Analysis Started')
+        logger.info('Static Library Analysis Started')
         app_dict['size'] = str(
             file_size(app_dict['app_path'])) + 'MB'  # FILE SIZE
         app_dict['sha1'], app_dict['sha256'] = hash_gen(
             app_dict['app_path'])  # SHA1 & SHA256 HASHES
         app_dict['bin_dir'] = app_dict['app_dir']
+        files = extract_n_get_files(
+            app_dict['app_path'],
+            app_dict['app_dir'],
+        )
         # Get Files
         all_files = {
-            'files_short': [],
+            'files_short': files,
             'files_long': [],
             'special_files': [],
         }
@@ -91,17 +106,22 @@ def dylib_analysis(request, app_dict, rescan, api):
             'libraries': [],
             'bin_code_analysis': {},
             'strings': [],
-            'bin_info': get_bin_info(
-                Path(app_dict['app_path'])),
-            'bin_type': 'Dylib',
+            'bin_info': {
+                'endian': '',
+                'bit': '',
+                'arch': '',
+                'subarch': '',
+            },
+            'bin_type': 'A',
         }
-        # Analyze dylib
-        dy = library_analysis(app_dict['bin_dir'], 'macho')
-        bin_dict['dylib_analysis'] = dy['macho_analysis']
+        # Analyze static library
+        slib = library_analysis(app_dict['bin_dir'], 'ar')
+        bin_dict['bin_info']['arch'] = slib['ar_a']
+        bin_dict['dylib_analysis'] = slib['ar_analysis']
         # Store Symbols in File Analysis
         all_files['special_files'] = get_symbols(
-            dy['macho_symbols'])
-        # Binary code analysis on dylib symbols
+            slib['ar_symbols'])
+        # Binary code analysis on symbols
         binary_rule_matcher(
             bin_dict['bin_code_analysis'],
             all_files['special_files'],
@@ -113,7 +133,7 @@ def dylib_analysis(request, app_dict, rescan, api):
             app_dict,
             bin_dict,
             all_files,
-            dy['macho_strings'])
+            slib['ar_strings'])
 
         # Domain Extraction and Malware Check
         logger.info('Performing Malware Check on '

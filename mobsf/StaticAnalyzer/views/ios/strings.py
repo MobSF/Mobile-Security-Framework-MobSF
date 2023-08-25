@@ -10,6 +10,7 @@ from mobsf.StaticAnalyzer.views.common.entropy import (
     get_entropies,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
+    get_os_strings,
     url_n_email_extract,
 )
 
@@ -62,7 +63,13 @@ def extract_urls_n_email(src, all_files, strings):
 def strings_on_binary(bin_path):
     """Extract strings from binary."""
     try:
-        return list(set(strings_util(bin_path.as_posix())))
+        strings = get_os_strings(bin_path)
+        if strings:
+            return list(set(strings))
+        if isinstance(strings, list):
+            return []
+        # Only run if OS strings is not present
+        return list(set(strings_util(bin_path)))
     except Exception:
         logger.exception('Extracting strings from binary')
 

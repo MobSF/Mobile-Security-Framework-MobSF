@@ -153,6 +153,8 @@ class Upload(object):
             return scanning.scan_ipa()
         elif self.file_type.is_dylib():
             return scanning.scan_dylib()
+        elif self.file_type.is_a():
+            return scanning.scan_a()
         elif self.file_type.is_appx():
             return scanning.scan_appx()
 
@@ -305,7 +307,7 @@ def download(request):
 def generate_download(request):
     """Generate downloads for uploaded binaries/source."""
     try:
-        binary = ('apk', 'ipa', 'jar', 'aar', 'so', 'dylib')
+        binary = ('apk', 'ipa', 'jar', 'aar', 'so', 'dylib', 'a')
         source = ('smali', 'java')
         logger.info('Generating Downloads')
         md5 = request.GET['hash']

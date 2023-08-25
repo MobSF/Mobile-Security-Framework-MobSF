@@ -73,6 +73,7 @@ ALLOWED_EXTENSIONS = {
     '.aar': 'application/octet-stream',
     '.so': 'application/octet-stream',
     '.dylib': 'application/octet-stream',
+    '.a': 'application/octet-stream',
 }
 # =============ALLOWED MIMETYPES=================
 APK_MIME = [
@@ -87,6 +88,7 @@ IPA_MIME = [
     'application/octet-stream',
     'application/x-itunes-ipa',
     'application/x-zip-compressed',
+    'application/x-ar',
     'binary/octet-stream',
 ]
 ZIP_MIME = [

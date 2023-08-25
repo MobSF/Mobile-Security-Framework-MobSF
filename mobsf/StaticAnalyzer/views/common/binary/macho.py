@@ -1,13 +1,13 @@
 # !/usr/bin/python
 # coding=utf-8
-import logging
-
 import lief
 
-logger = logging.getLogger(__name__)
+from mobsf.StaticAnalyzer.views.ios.strings import (
+    strings_on_binary,
+)
 
 
-class Checksec:
+class MachOChecksec:
     def __init__(self, macho, rel_path=None):
         self.macho_path = macho.as_posix()
         if rel_path:
@@ -74,7 +74,7 @@ class Checksec:
                 'process, including the base of the executable and the '
                 'positions of the stack,heap and libraries. Use compiler '
                 'option -fPIC to enable Position Independent Code.'
-                'Not applicable for dylibs.')
+                'Not applicable for dylibs and static libraries.')
         macho_dict['pie'] = {
             'has_pie': has_pie,
             'severity': severity,
@@ -259,6 +259,9 @@ class Checksec:
             libs.append(lib)
         return libs
 
+    def strings(self):
+        return strings_on_binary(self.macho_path)
+
     def get_symbols(self):
         symbols = []
         try:
@@ -267,20 +270,3 @@ class Checksec:
         except Exception:
             pass
         return symbols
-
-
-def macho_analysis(binary):
-    try:
-        logger.info('Running MachO Analysis on: %s', binary.name)
-        cs = Checksec(binary)
-        chksec = cs.checksec()
-        symbols = cs.get_symbols()
-        libs = cs.get_libraries()
-        return {
-            'checksec': chksec,
-            'symbols': symbols,
-            'libraries': libs,
-        }
-    except Exception:
-        logger.exception('Running MachO Analysis')
-        return {}

@@ -7,6 +7,7 @@ Module providing the shared functions for iOS and Android
 import io
 import hashlib
 import logging
+import os
 import platform
 import re
 import shutil
@@ -16,6 +17,8 @@ from urllib.parse import urlparse
 from pathlib import Path
 
 import requests
+
+import arpy
 
 from django.utils.html import escape
 
@@ -97,6 +100,94 @@ def unzip(app_path, ext_path):
                 return files_det
             except Exception:
                 logger.exception('Unzipping Error')
+
+
+def lipo_thin(src, dst):
+    """Thin Fat binary."""
+    new_src = None
+    try:
+        logger.info('Thinning Fat binary')
+        lipo = shutil.which('lipo')
+        out = Path(dst) / (Path(src).stem + '_thin.a')
+        new_src = out.as_posix()
+        archs = [
+            'armv7', 'armv6', 'arm64', 'x86_64',
+            'armv4t', 'armv5', 'armv6m', 'armv7f',
+            'armv7s', 'armv7k', 'armv7m', 'armv7em',
+            'arm64v8']
+        for arch in archs:
+            args = [
+                lipo,
+                src,
+                '-thin',
+                arch,
+                '-output',
+                new_src]
+            out = subprocess.run(
+                args,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.STDOUT)
+            if out.returncode == 0:
+                break
+    except Exception:
+        logger.warning('lipo Fat binary thinning failed')
+    return new_src
+
+
+def ar_os(src, dst):
+    out = ''
+    """Extract AR using OS utility."""
+    cur = os.getcwd()
+    try:
+        os.chdir(dst)
+        out = subprocess.check_output(
+            [shutil.which('ar'), 'x', src],
+            stderr=subprocess.STDOUT)
+    except Exception as exp:
+        out = exp.output
+    finally:
+        os.chdir(cur)
+    return out
+
+
+def ar_extract(src, dst):
+    """Extract AR archive."""
+    msg = 'Extracting static library archive'
+    logger.info(msg)
+    try:
+        ar = arpy.Archive(src)
+        ar.read_all_headers()
+        for a, val in ar.archived_files.items():
+            # Handle archive slip attacks
+            filtered = a.decode(
+                'utf-8', 'ignore').replace(
+                '../', '').replace('..\\', '')
+            out = Path(dst) / filtered
+            out.write_bytes(val.read())
+    except Exception:
+        # Possibly dealing with Fat binary, needs Mac host
+        logger.warning('Failed to extract .a archive')
+        # Use os ar utility
+        plat = platform.system()
+        os_err = 'Possibly a Fat binary. Requires MacOS for Analysis'
+        if plat == 'Windows':
+            logger.warning(os_err)
+            return
+        logger.info('Using OS ar utility to handle archive')
+        exp = ar_os(src, dst)
+        if len(exp) > 3 and plat == 'Linux':
+            # Can't convert FAT binary in Linux
+            logger.warning(os_err)
+            return
+        if b'lipo(1)' in exp:
+            logger.info('Fat binary archive identified')
+            # Fat binary archive
+            try:
+                nw_src = lipo_thin(src, dst)
+                if nw_src:
+                    ar_os(nw_src, dst)
+            except Exception:
+                logger.exception('Failed to thin fat archive.')
 
 
 def url_n_email_extract(dat, relative_path):
@@ -270,8 +361,20 @@ def strings_and_entropies(src, exts):
     return data
 
 
+def get_os_strings(filename):
+    try:
+        strings_bin = shutil.which('strings')
+        if not strings_bin:
+            return None
+        strings = subprocess.check_output([strings_bin, filename])
+        return strings.decode('utf-8', 'ignore').splitlines()
+    except Exception:
+        return None
+
+
 def get_symbols(symbols):
+    all_symbols = []
     for i in symbols:
         for _, val in i.items():
-            return val
-    return []
+            all_symbols.extend(val)
+    return list(set(all_symbols))

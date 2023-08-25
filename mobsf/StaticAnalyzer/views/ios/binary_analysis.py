@@ -4,6 +4,7 @@
 import logging
 from pathlib import Path
 
+
 from macholib.mach_o import (CPU_TYPE_NAMES, MH_CIGAM_64, MH_MAGIC_64,
                              get_cpu_subtype)
 from macholib.MachO import MachO
@@ -11,8 +12,8 @@ from macholib.MachO import MachO
 from mobsf.StaticAnalyzer.views.ios.classdump import (
     get_class_dump,
 )
-from mobsf.StaticAnalyzer.views.ios.macho_analysis import (
-    macho_analysis,
+from mobsf.StaticAnalyzer.views.common.binary.lib_analysis import (
+    MachOChecksec,
 )
 from mobsf.StaticAnalyzer.views.ios.strings import (
     strings_on_binary,
@@ -20,13 +21,6 @@ from mobsf.StaticAnalyzer.views.ios.strings import (
 from mobsf.StaticAnalyzer.views.ios.binary_rule_matcher import (
     binary_rule_matcher,
 )
-from mobsf.MobSF.utils import (
-    settings_enabled,
-)
-from mobsf.StaticAnalyzer.views.ios.macho_analysis import (
-    Checksec,
-)
-
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +50,23 @@ def get_bin_info(bin_file):
                 'bit': sz,
                 'arch': arch,
                 'subarch': subarch}
+
+
+def ipa_macho_analysis(binary):
+    try:
+        logger.info('Running MachO Analysis on: %s', binary.name)
+        cs = MachOChecksec(binary)
+        chksec = cs.checksec()
+        symbols = cs.get_symbols()
+        libs = cs.get_libraries()
+        return {
+            'checksec': chksec,
+            'symbols': symbols,
+            'libraries': libs,
+        }
+    except Exception:
+        logger.exception('Running MachO Analysis')
+        return {}
 
 
 def binary_analysis(src, tools_dir, app_dir, executable_name):
@@ -93,7 +104,7 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
                 'MobSF Cannot find binary in %s', bin_path.as_posix())
             logger.warning('Skipping Binary analysis')
         else:
-            macho = macho_analysis(bin_path)
+            macho = ipa_macho_analysis(bin_path)
             bin_info = get_bin_info(bin_path)
             bin_type = detect_bin_type(macho['libraries'])
             classdump = get_class_dump(
@@ -109,41 +120,8 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
             bin_dict['bin_info'] = bin_info
             bin_dict['bin_type'] = bin_type
             logger.info('Running strings against the Binary')
-            bin_dict['strings'] = strings_on_binary(bin_path)
+            bin_dict['strings'] = strings_on_binary(
+                bin_path.as_posix())
     except Exception:
         logger.exception('IPA Binary Analysis')
     return bin_dict
-
-
-def dylibs_analysis(app_dir: str) -> dict:
-    """Perform analysis on dynamic libraries."""
-    dylibs = {
-        'dylib_analysis': [],
-        'dylib_strings': [],
-        'dylib_symbols': [],
-    }
-    try:
-        if not settings_enabled('DYLIB_ANALYSIS_ENABLED'):
-            return dylibs
-        logger.info('Dynamic Library Analysis Started')
-        sdir = Path(app_dir)
-        # Supports IPA, DYLIB
-        for dylib in sdir.rglob('*.dylib'):
-            dy = (
-                f'{dylib.parents[1].name}/'
-                f'{dylib.parents[0].name}/'
-                f'{dylib.name}')
-            logger.info('Analyzing %s', dy)
-            chk = Checksec(dylib, dy)
-            dy_find = chk.checksec()
-            symbols = chk.get_symbols()
-            if dy_find:
-                dylibs['dylib_analysis'].append(dy_find)
-            dylibs['dylib_strings'].append(
-                {dy: strings_on_binary(dylib)})
-            if symbols:
-                dylibs['dylib_symbols'].append(
-                    {dy: symbols})
-    except Exception:
-        logger.exception('Performing Dynamic Library Analysis')
-    return dylibs
