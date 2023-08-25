@@ -53,8 +53,8 @@ ARG TARGETPLATFORM
 COPY scripts/install_java_wkhtmltopdf.sh .
 RUN ./install_java_wkhtmltopdf.sh
 
-RUN groupadd -g 9901 mobsf
-RUN adduser mobsf --shell /bin/false -u 9901 --ingroup mobsf --gecos "" --disabled-password
+#RUN groupadd -g 9901 mobsf
+#RUN adduser mobsf --shell /bin/false -u 9901 --ingroup mobsf --gecos "" --disabled-password
 
 
 # Install Requirements
@@ -100,7 +100,7 @@ HEALTHCHECK CMD curl --fail http://host.docker.internal:8000/ || exit 1
 # Expose MobSF Port and Proxy Port
 EXPOSE 8000 8000 1337 1337
 
-RUN chown -R mobsf:mobsf /home/mobsf/Mobile-Security-Framework-MobSF
-USER mobsf
+#RUN chown -R mobsf:mobsf /home/mobsf/Mobile-Security-Framework-MobSF
+#USER mobsf
 # Run MobSF
 CMD ["/home/mobsf/Mobile-Security-Framework-MobSF/scripts/entrypoint.sh"]
