@@ -52,7 +52,6 @@ jobs:
       if: startsWith(matrix.os, 'windows')
       run: |
         choco install wkhtmltopdf
-        pipenv run pip install tzdata
     - name: Install Python dependencies
       run: |
         pipenv install
