@@ -13,10 +13,10 @@ jobs:
       matrix:
         os: [ubuntu-20.04, macos-latest, windows-latest]
         python-version: [3.9, '3.10', '3.11']
-        exclude:
-          # Poetry bug in Windows 3.9
-          - os: windows-latest
-            python-version: 3.9
+        # exclude:
+        #   # Poetry bug in Windows 3.9
+        #   - os: windows-latest
+        #     python-version: 3.9
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -25,14 +25,17 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
+
     - name: Setup Pip and Poetry
       run: |
         python -m pip install pip==22.3.1 poetry==1.6.1
+
     - name: Lint
       if: startsWith(matrix.os, 'ubuntu')
       run: |
         python -m pip install --upgrade tox
         tox -e lint
+
     - name: Install Ubuntu Dependencies
       if: startsWith(matrix.os, 'ubuntu')
       run: |
@@ -40,17 +43,21 @@ jobs:
         export WKHTML_URL=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/
         export WKHTML_DEB=wkhtmltox_0.12.6-1.focal_amd64.deb
         wget ${WKHTML_URL}${WKHTML_DEB} && sudo dpkg -i ${WKHTML_DEB} && rm -rf ${WKHTML_DEB}
+
     - name: Install macOS Dependencies
       if: startsWith(matrix.os, 'macOS')
       run: |
         brew install --cask wkhtmltopdf
+
     - name: Install Windows Dependencies
       if: startsWith(matrix.os, 'windows')
       run: |
         choco install wkhtmltopdf
+
     - name: Install Python dependencies
       run: |
-        poetry install --only main --no-interaction --no-ansi
+        poetry install --only main --no-interaction --no-ansi || poetry install --only main --no-interaction --no-ansi || poetry install --only main --no-interaction --no-ansi
+
     - name: Migrate Database
       run: |
         poetry run python manage.py makemigrations
