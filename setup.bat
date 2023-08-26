@@ -56,17 +56,17 @@ where python >nul 2>&1 && (
   set INCLUDE=C:\Program Files\OpenSSL-Win64\include;%INCLUDE%
 
   echo [INSTALL] Installing Requirements
-  python -m pip install --no-cache-dir wheel pipenv
-  python -m pipenv lock
-  python -m pipenv install
+  python -m pip install --no-cache-dir wheel poetry==1.6.1
+  python -m poetry lock
+  python -m poetry install --no-dev --no-interaction --no-ansi
   
   echo [INSTALL] Clean Up
   call scripts/clean.bat y
 
   echo [INSTALL] Migrating Database
-  pipenv run python manage.py makemigrations
-  pipenv run python manage.py makemigrations StaticAnalyzer
-  pipenv run python manage.py migrate
+  poetry run python manage.py makemigrations
+  poetry run python manage.py makemigrations StaticAnalyzer
+  poetry run python manage.py migrate
   echo Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html
   echo [INSTALL] Installation Complete
   exit /b 0

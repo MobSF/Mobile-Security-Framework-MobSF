@@ -25,9 +25,9 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Setup Pip and Pipenv
+    - name: Setup Pip and Poetry
       run: |
-        python -m pip install pip==22.3.1 pipenv
+        python -m pip install pip==22.3.1 poetry==1.6.1
     - name: Lint
       if: startsWith(matrix.os, 'ubuntu')
       run: |
@@ -37,8 +37,8 @@ jobs:
       if: startsWith(matrix.os, 'ubuntu')
       run: |
         sudo apt update && sudo apt install -y xfonts-75dpi xfonts-base
-        export WKHTML_URL=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/
-        export WKHTML_DEB=wkhtmltox_0.12.6-1.focal_amd64.deb
+        export WKHTML_URL=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/
+        export WKHTML_DEB=wkhtmltox_0.12.6.1-2.jammy_amd64.deb
         wget ${WKHTML_URL}${WKHTML_DEB} && sudo dpkg -i ${WKHTML_DEB} && rm -rf ${WKHTML_DEB}
     - name: Install macOS Dependencies
       if: startsWith(matrix.os, 'macOS')
@@ -48,16 +48,15 @@ jobs:
       if: startsWith(matrix.os, 'windows')
       run: |
         choco install wkhtmltopdf
-        pipenv lock
     - name: Install Python dependencies
       run: |
-        pipenv install
+        poetry install --no-dev --no-interaction --no-ansi
     - name: Migrate Database
       run: |
-        pipenv run python manage.py makemigrations
-        pipenv run python manage.py makemigrations StaticAnalyzer
-        pipenv run python manage.py migrate
+        poetry run python manage.py makemigrations
+        poetry run python manage.py makemigrations StaticAnalyzer
+        poetry run python manage.py migrate
     - name: Unit Tests
       run: |
         git submodule update --init --recursive
-        pipenv run python manage.py test mobsf
+        poetry run python manage.py test mobsf

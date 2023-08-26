@@ -46,16 +46,16 @@ if [[ $unamestr == 'Darwin' ]]; then
 fi
 
 echo '[INSTALL] Installing Requirements'
-python3 -m pip install --no-cache-dir wheel pipenv
-python3 -m pipenv install
+python3 -m pip install --no-cache-dir wheel poetry==1.6.1
+python3 -m poetry install --no-dev --no-interaction --no-ansi
 
 echo '[INSTALL] Clean Up'
 bash scripts/clean.sh y
 
 echo '[INSTALL] Migrating Database'
-pipenv run python manage.py makemigrations
-pipenv run python manage.py makemigrations StaticAnalyzer
-pipenv run python manage.py migrate
+poetry run python manage.py makemigrations
+poetry run python manage.py makemigrations StaticAnalyzer
+poetry run python manage.py migrate
 wkhtmltopdf -V
 if ! [ $? -eq 0 ]; then
     echo 'Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html'
