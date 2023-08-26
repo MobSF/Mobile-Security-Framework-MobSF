@@ -24,8 +24,10 @@ from mobsf.StaticAnalyzer.views.android.app import (
     parse_apk,
 )
 from mobsf.StaticAnalyzer.views.android.manifest_analysis import (
-    get_manifest,
     manifest_analysis,
+)
+from mobsf.StaticAnalyzer.views.android.manifest_utils import (
+    get_manifest,
     manifest_data,
 )
 from mobsf.StaticAnalyzer.views.android.strings import (
@@ -77,17 +79,21 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
         apk = parse_apk(app_dic['app_path'])
         if analysis_type == 'aar':
             # AAR has manifest and sometimes certificate
-            app_dic['manifest_file'], app_dic['parsed_xml'] = get_manifest(
+            mani_file, ns, mani_xml = get_manifest(
                 app_dic['app_path'],
                 app_dic['app_dir'],
                 app_dic['tools_dir'],
                 'aar',
             )
+            app_dic['manifest_file'] = mani_file
+            app_dic['ns'] = ns
+            app_dic['parsed_xml'] = mani_xml
             app_dic['mani'] = (
                 f'../manifest_view/?md5={app_dic["md5"]}&type=aar')
-            man_data_dic = manifest_data(app_dic['parsed_xml'])
+            man_data_dic = manifest_data(app_dic['parsed_xml'], ns)
             man_an_dic = manifest_analysis(
                 app_dic['parsed_xml'],
+                ns,
                 man_data_dic,
                 '',
                 app_dic['app_dir'],

@@ -2,208 +2,22 @@
 # flake8: noqa
 """Module for android manifest analysis."""
 import logging
-import os
-import subprocess
-import tempfile
-from pathlib import Path
-from xml.dom import minidom
 
-from django.conf import settings
 
-from mobsf.MobSF.utils import (
-    find_java_binary,
-    is_file_exists,
-)
 from mobsf.StaticAnalyzer.views.android import (
     android_manifest_desc,
     network_security,
 )
 
-# pylint: disable=E0401
-from .dvm_permissions import DVM_PERMISSIONS
 
 logger = logging.getLogger(__name__)
-
-
 ANDROID_4_2_LEVEL = 17
 ANDROID_5_0_LEVEL = 21
 ANDROID_8_0_LEVEL = 26
 ANDROID_MANIFEST_FILE = 'AndroidManifest.xml'
 
-def get_manifest(app_path, app_dir, tools_dir, typ):
-    """Get the manifest file."""
-    try:
-        manifest_file = get_manifest_file(
-            app_dir,
-            app_path,
-            tools_dir,
-            typ)
-        mfile = Path(manifest_file)
-        if mfile.exists():
-            manifest = mfile.read_text('utf-8', 'ignore')
-        else:
-            manifest = ''
-        try:
-            logger.info('Parsing AndroidManifest.xml')
-            manifest = minidom.parseString(manifest)
-        except Exception:
-            err = ('apktool failed to extract '
-                   'AndroidManifest.xml or parsing failed')
-            logger.exception(err)
-            manifest = minidom.parseString(
-                (r'<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android='
-                 r'"http://schemas.android.com/apk/res/android" '
-                 r'android:versionCode="Failed"  '
-                 r'android:versionName="Failed" package="Failed"  '
-                 r'platformBuildVersionCode="Failed" '
-                 r'platformBuildVersionName="Failed XML Parsing" ></manifest>'))
-            logger.warning('Using Fake XML to continue the Analysis')
-        return manifest_file, manifest
-    except Exception:
-        logger.exception('Parsing Manifest file')
 
-
-def manifest_data(mfxml):
-    """Extract manifest data."""
-    try:
-        logger.info('Extracting Manifest Data')
-        svc = []
-        act = []
-        brd = []
-        cnp = []
-        lib = []
-        perm = []
-        cat = []
-        icons = []
-        dvm_perm = {}
-        package = ''
-        minsdk = ''
-        maxsdk = ''
-        targetsdk = ''
-        mainact = ''
-        androidversioncode = ''
-        androidversionname = ''
-        applications = mfxml.getElementsByTagName('application')
-        permissions = mfxml.getElementsByTagName('uses-permission')
-        manifest = mfxml.getElementsByTagName('manifest')
-        activities = mfxml.getElementsByTagName('activity')
-        services = mfxml.getElementsByTagName('service')
-        providers = mfxml.getElementsByTagName('provider')
-        receivers = mfxml.getElementsByTagName('receiver')
-        libs = mfxml.getElementsByTagName('uses-library')
-        sdk = mfxml.getElementsByTagName('uses-sdk')
-        categories = mfxml.getElementsByTagName('category')
-        for node in sdk:
-            minsdk = node.getAttribute('android:minSdkVersion')
-            maxsdk = node.getAttribute('android:maxSdkVersion')
-            # Esteve 08.08.2016 - begin - If android:targetSdkVersion
-            # is not set, the default value is the one of the
-            # android:minSdkVersiontargetsdk
-            # =node.getAttribute('android:targetSdkVersion')
-            if node.getAttribute('android:targetSdkVersion'):
-                targetsdk = node.getAttribute('android:targetSdkVersion')
-            else:
-                targetsdk = node.getAttribute('android:minSdkVersion')
-            # End
-        for node in manifest:
-            package = node.getAttribute('package')
-            androidversioncode = node.getAttribute('android:versionCode')
-            androidversionname = node.getAttribute('android:versionName')
-        alt_main = ''
-        for activity in activities:
-            act_2 = activity.getAttribute('android:name')
-            act.append(act_2)
-            if not mainact:
-                # ^ Some manifest has more than one MAIN, take only
-                # the first occurrence.
-                for sitem in activity.getElementsByTagName('action'):
-                    val = sitem.getAttribute('android:name')
-                    if val == 'android.intent.action.MAIN':
-                        mainact = activity.getAttribute('android:name')
-                # Manifest has no MAIN, look for launch activity.
-                for sitem in activity.getElementsByTagName('category'):
-                    val = sitem.getAttribute('android:name')
-                    if val == 'android.intent.category.LAUNCHER':
-                        alt_main = activity.getAttribute('android:name')
-        if not mainact and alt_main:
-            mainact = alt_main
-
-        for service in services:
-            service_name = service.getAttribute('android:name')
-            svc.append(service_name)
-
-        for provider in providers:
-            provider_name = provider.getAttribute('android:name')
-            cnp.append(provider_name)
-
-        for receiver in receivers:
-            rec = receiver.getAttribute('android:name')
-            brd.append(rec)
-
-        for _lib in libs:
-            library = _lib.getAttribute('android:name')
-            lib.append(library)
-
-        for category in categories:
-            cat.append(category.getAttribute('android:name'))
-
-        for application in applications:
-            try:
-                icon_path = application.getAttribute('android:icon')
-                icons.append(icon_path)
-            except Exception:
-                continue  # No icon attribute?
-
-        android_permission_tags = ('com.google.', 'android.', 'com.google.')
-        for permission in permissions:
-            perm.append(permission.getAttribute('android:name'))
-        for full_perm in perm:
-            # For general android permissions
-            prm = full_perm
-            pos = full_perm.rfind('.')
-            if pos != -1:
-                prm = full_perm[pos + 1:]
-            if not full_perm.startswith(android_permission_tags):
-                prm = full_perm
-            try:
-                dvm_perm[full_perm] = DVM_PERMISSIONS[
-                    'MANIFEST_PERMISSION'][prm]
-            except KeyError:
-                # Handle Special Perms
-                if DVM_PERMISSIONS['SPECIAL_PERMISSIONS'].get(full_perm):
-                    dvm_perm[full_perm] = DVM_PERMISSIONS[
-                        'SPECIAL_PERMISSIONS'][full_perm]
-                else:
-                    dvm_perm[full_perm] = [
-                        'unknown',
-                        'Unknown permission',
-                        'Unknown permission from android reference',
-                    ]
-
-        man_data_dic = {
-            'services': svc,
-            'activities': act,
-            'receivers': brd,
-            'providers': cnp,
-            'libraries': lib,
-            'categories': cat,
-            'perm': dvm_perm,
-            'packagename': package,
-            'mainactivity': mainact,
-            'min_sdk': minsdk,
-            'max_sdk': maxsdk,
-            'target_sdk': targetsdk,
-            'androver': androidversioncode,
-            'androvername': androidversionname,
-            'icons': icons,
-        }
-
-        return man_data_dic
-    except Exception:
-        logger.exception('Extracting Manifest Data')
-
-
-def get_browsable_activities(node):
+def get_browsable_activities(node, ns):
     """Get Browsable Activities."""
     try:
         browse_dic = {}
@@ -216,28 +30,28 @@ def get_browsable_activities(node):
         path_patterns = []
         catg = node.getElementsByTagName('category')
         for cat in catg:
-            if cat.getAttribute('android:name') == 'android.intent.category.BROWSABLE':
+            if cat.getAttribute(f'{ns}:name') == 'android.intent.category.BROWSABLE':
                 data_tag = node.getElementsByTagName('data')
                 for data in data_tag:
-                    scheme = data.getAttribute('android:scheme')
+                    scheme = data.getAttribute(f'{ns}:scheme')
                     if scheme and scheme not in schemes:
                         schemes.append(scheme)
-                    mime = data.getAttribute('android:mimeType')
+                    mime = data.getAttribute(f'{ns}:mimeType')
                     if mime and mime not in mime_types:
                         mime_types.append(mime)
-                    host = data.getAttribute('android:host')
+                    host = data.getAttribute(f'{ns}:host')
                     if host and host not in hosts:
                         hosts.append(host)
-                    port = data.getAttribute('android:port')
+                    port = data.getAttribute(f'{ns}:port')
                     if port and port not in ports:
                         ports.append(port)
-                    path = data.getAttribute('android:path')
+                    path = data.getAttribute(f'{ns}:path')
                     if path and path not in paths:
                         paths.append(path)
-                    path_prefix = data.getAttribute('android:pathPrefix')
+                    path_prefix = data.getAttribute(f'{ns}:pathPrefix')
                     if path_prefix and path_prefix not in path_prefixs:
                         path_prefixs.append(path_prefix)
-                    path_pattern = data.getAttribute('android:pathPattern')
+                    path_pattern = data.getAttribute(f'{ns}:pathPattern')
                     if path_pattern and path_pattern not in path_patterns:
                         path_patterns.append(path_pattern)
         schemes = [scheme + '://' for scheme in schemes]
@@ -254,7 +68,7 @@ def get_browsable_activities(node):
         logger.exception('Getting Browsable Activities')
 
 
-def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
+def manifest_analysis(mfxml, ns, man_data_dic, src_type, app_dir):
     """Analyse manifest file."""
     # pylint: disable=C0301
     try:
@@ -277,9 +91,9 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
         debuggable = False
         # PERMISSION
         for permission in permissions:
-            if permission.getAttribute('android:protectionLevel'):
+            if permission.getAttribute(f'{ns}:protectionLevel'):
                 protectionlevel = permission.getAttribute(
-                    'android:protectionLevel')
+                    f'{ns}:protectionLevel')
                 if protectionlevel == '0x00000000':
                     protectionlevel = 'normal'
                 elif protectionlevel == '0x00000001':
@@ -290,10 +104,10 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
                     protectionlevel = 'signatureOrSystem'
 
                 permission_dict[permission.getAttribute(
-                    'android:name')] = protectionlevel
-            elif permission.getAttribute('android:name'):
+                    f'{ns}:name')] = protectionlevel
+            elif permission.getAttribute(f'{ns}:name'):
                 permission_dict[permission.getAttribute(
-                    'android:name')] = 'normal'
+                    f'{ns}:name')] = 'normal'
         # GENERAL
         if man_data_dic['min_sdk'] and int(man_data_dic['min_sdk']) < ANDROID_8_0_LEVEL:
             minsdk = man_data_dic.get('min_sdk')
@@ -304,32 +118,32 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
         for application in applications:
             # Esteve 23.07.2016 - begin - identify permission at the
             # application level
-            if application.getAttribute('android:permission'):
+            if application.getAttribute(f'{ns}:permission'):
                 perm_appl_level_exists = True
                 perm_appl_level = application.getAttribute(
-                    'android:permission')
+                    f'{ns}:permission')
             else:
                 perm_appl_level_exists = False
             # End
-            if application.getAttribute('android:usesCleartextTraffic') == 'true':
+            if application.getAttribute(f'{ns}:usesCleartextTraffic') == 'true':
                 ret_list.append(('clear_text_traffic', (), ()))
-            if application.getAttribute('android:directBootAware') == 'true':
+            if application.getAttribute(f'{ns}:directBootAware') == 'true':
                 ret_list.append(('direct_boot_aware', (), ()))
-            if application.getAttribute('android:networkSecurityConfig'):
-                item = application.getAttribute('android:networkSecurityConfig')
+            if application.getAttribute(f'{ns}:networkSecurityConfig'):
+                item = application.getAttribute(f'{ns}:networkSecurityConfig')
                 ret_list.append(('has_network_security', (item,), ()))
                 do_netsec = item
-            if application.getAttribute('android:debuggable') == 'true':
+            if application.getAttribute(f'{ns}:debuggable') == 'true':
                 ret_list.append(('app_is_debuggable', (), ()))
                 debuggable = True
-            if application.getAttribute('android:allowBackup') == 'true':
+            if application.getAttribute(f'{ns}:allowBackup') == 'true':
                 ret_list.append(('app_allowbackup', (), ()))
-            elif application.getAttribute('android:allowBackup') == 'false':
+            elif application.getAttribute(f'{ns}:allowBackup') == 'false':
                 backupDisabled = True
             else:
                 if not backupDisabled:
                     ret_list.append(('allowbackup_not_set', (), ()))
-            if application.getAttribute('android:testOnly') == 'true':
+            if application.getAttribute(f'{ns}:testOnly') == 'true':
                 ret_list.append(('app_in_test_mode', (), ()))
             for node in application.childNodes:
                 an_or_a = ''
@@ -337,18 +151,18 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
                     itemname = 'Activity'
                     cnt_id = 'act'
                     an_or_a = 'n'
-                    browse_dic = get_browsable_activities(node)
+                    browse_dic = get_browsable_activities(node, ns)
                     if browse_dic['browsable']:
                         browsable_activities[node.getAttribute(
-                            'android:name')] = browse_dic
+                            f'{ns}:name')] = browse_dic
                 elif node.nodeName == 'activity-alias':
                     itemname = 'Activity-Alias'
                     cnt_id = 'act'
                     an_or_a = 'n'
-                    browse_dic = get_browsable_activities(node)
+                    browse_dic = get_browsable_activities(node, ns)
                     if browse_dic['browsable']:
                         browsable_activities[node.getAttribute(
-                            'android:name')] = browse_dic
+                            f'{ns}:name')] = browse_dic
                 elif node.nodeName == 'provider':
                     itemname = 'Content Provider'
                     cnt_id = 'cnt'
@@ -365,9 +179,9 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
                 # Task Affinity
                 if (
                         itemname in ['Activity', 'Activity-Alias'] and
-                        node.getAttribute('android:taskAffinity')
+                        node.getAttribute(f'{ns}:taskAffinity')
                 ):
-                    item = node.getAttribute('android:name')
+                    item = node.getAttribute(f'{ns}:name')
                     ret_list.append(('task_affinity_set', (item,), ()))
 
                 # LaunchMode
@@ -381,9 +195,9 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
                 if (
                         affected_sdk and
                         itemname in ['Activity', 'Activity-Alias'] and
-                        (node.getAttribute('android:launchMode') == 'singleInstance'
-                            or node.getAttribute('android:launchMode') == 'singleTask')):
-                    item = node.getAttribute('android:name')
+                        (node.getAttribute(f'{ns}:launchMode') == 'singleInstance'
+                            or node.getAttribute(f'{ns}:launchMode') == 'singleTask')):
+                    item = node.getAttribute(f'{ns}:name')
                     ret_list.append(('non_standard_launchmode', (item,), ()))
                 # Exported Check
                 item = ''
@@ -396,20 +210,20 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
                 protlevel = ''
                 # End
                 if itemname != 'NIL':
-                    if node.getAttribute('android:exported') == 'true':
+                    if node.getAttribute(f'{ns}:exported') == 'true':
                         perm = ''
-                        item = node.getAttribute('android:name')
-                        if node.getAttribute('android:permission'):
+                        item = node.getAttribute(f'{ns}:name')
+                        if node.getAttribute(f'{ns}:permission'):
                             # permission exists
                             perm = ('<strong>Permission: </strong>'
-                                    + node.getAttribute('android:permission'))
+                                    + node.getAttribute(f'{ns}:permission'))
                             is_perm_exist = True
                         if item != man_data_dic['mainactivity']:
                             if is_perm_exist:
                                 prot = ''
-                                if node.getAttribute('android:permission') in permission_dict:
+                                if node.getAttribute(f'{ns}:permission') in permission_dict:
                                     prot = ('</br><strong>protectionLevel: </strong>'
-                                            + permission_dict[node.getAttribute('android:permission')])
+                                            + permission_dict[node.getAttribute(f'{ns}:permission')])
                                     # Esteve 23.07.2016 - begin - take into account protection level of the permission when claiming that a component is protected by it;
                                     # - the permission might not be defined in the application being analysed, if so, the protection level is not known;
                                     # - activities (or activity-alias) that are exported and have an unknown or normal or dangerous protection level are
@@ -417,7 +231,7 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
                                     # counted as exported.
                                     prot_level_exist = True
                                     protlevel = permission_dict[
-                                        node.getAttribute('android:permission')]
+                                        node.getAttribute(f'{ns}:permission')]
                                 if prot_level_exist:
                                     if protlevel == 'normal':
                                         ret_list.append(
@@ -502,7 +316,7 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
                                             cnt_id] + 1
                                 # Esteve 24.07.2016 - end
 
-                    elif node.getAttribute('android:exported') != 'false':
+                    elif node.getAttribute(f'{ns}:exported') != 'false':
                         # Check for Implicitly Exported
                         # Logic to support intent-filter
                         intentfilters = node.childNodes
@@ -511,18 +325,18 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
                             if inf == 'intent-filter':
                                 is_inf = True
                         if is_inf:
-                            item = node.getAttribute('android:name')
-                            if node.getAttribute('android:permission'):
+                            item = node.getAttribute(f'{ns}:name')
+                            if node.getAttribute(f'{ns}:permission'):
                                 # permission exists
                                 perm = ('<strong>Permission: </strong>'
-                                        + node.getAttribute('android:permission'))
+                                        + node.getAttribute(f'{ns}:permission'))
                                 is_perm_exist = True
                             if item != man_data_dic['mainactivity']:
                                 if is_perm_exist:
                                     prot = ''
-                                    if node.getAttribute('android:permission') in permission_dict:
+                                    if node.getAttribute(f'{ns}:permission') in permission_dict:
                                         prot = ('</br><strong>protectionLevel: </strong>'
-                                                + permission_dict[node.getAttribute('android:permission')])
+                                                + permission_dict[node.getAttribute(f'{ns}:permission')])
                                         # Esteve 24.07.2016 - begin - take into account protection level of the permission when claiming that a component is protected by it;
                                         # - the permission might not be defined in the application being analysed, if so, the protection level is not known;
                                         # - activities (or activity-alias) that are exported and have an unknown or normal or dangerous protection level are
@@ -530,7 +344,7 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
                                         #  counted as exported.
                                         prot_level_exist = True
                                         protlevel = permission_dict[
-                                            node.getAttribute('android:permission')]
+                                            node.getAttribute(f'{ns}:permission')]
                                         if prot_level_exist:
                                             if protlevel == 'normal':
                                                 ret_list.append(
@@ -626,20 +440,20 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
                             if man_data_dic['min_sdk'] and man_data_dic['target_sdk'] and int(man_data_dic['min_sdk']) < ANDROID_4_2_LEVEL:
                                 if itemname == 'Content Provider' and int(man_data_dic['target_sdk']) < ANDROID_4_2_LEVEL:
                                     perm = ''
-                                    item = node.getAttribute('android:name')
-                                    if node.getAttribute('android:permission'):
+                                    item = node.getAttribute(f'{ns}:name')
+                                    if node.getAttribute(f'{ns}:permission'):
                                         # permission exists
                                         perm = ('<strong>Permission: </strong>'
-                                                + node.getAttribute('android:permission'))
+                                                + node.getAttribute(f'{ns}:permission'))
                                         is_perm_exist = True
                                     if is_perm_exist:
                                         prot = ''
-                                        if node.getAttribute('android:permission') in permission_dict:
+                                        if node.getAttribute(f'{ns}:permission') in permission_dict:
                                             prot = ('</br><strong>protectionLevel: </strong>'
-                                                    + permission_dict[node.getAttribute('android:permission')])
+                                                    + permission_dict[node.getAttribute(f'{ns}:permission')])
                                             prot_level_exist = True
                                             protlevel = permission_dict[
-                                                node.getAttribute('android:permission')]
+                                                node.getAttribute(f'{ns}:permission')]
                                         if prot_level_exist:
                                             if protlevel == 'normal':
                                                 ret_list.append(
@@ -707,20 +521,20 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
                                     if itemname == 'Content Provider' and int(man_data_dic['target_sdk']) >= 17:
                                         perm = ''
                                         item = node.getAttribute(
-                                            'android:name')
-                                        if node.getAttribute('android:permission'):
+                                            f'{ns}:name')
+                                        if node.getAttribute(f'{ns}:permission'):
                                             # permission exists
                                             perm = ('<strong>Permission: </strong>'
-                                                    + node.getAttribute('android:permission'))
+                                                    + node.getAttribute(f'{ns}:permission'))
                                             is_perm_exist = True
                                         if is_perm_exist:
                                             prot = ''
-                                            if node.getAttribute('android:permission') in permission_dict:
+                                            if node.getAttribute(f'{ns}:permission') in permission_dict:
                                                 prot = ('</br><strong>protectionLevel: </strong>'
-                                                        + permission_dict[node.getAttribute('android:permission')])
+                                                        + permission_dict[node.getAttribute(f'{ns}:permission')])
                                                 prot_level_exist = True
                                                 protlevel = permission_dict[
-                                                    node.getAttribute('android:permission')]
+                                                    node.getAttribute(f'{ns}:permission')]
                                             if prot_level_exist:
                                                 if protlevel == 'normal':
                                                     ret_list.append(
@@ -784,33 +598,33 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
 
         # GRANT-URI-PERMISSIONS
         for granturi in granturipermissions:
-            if granturi.getAttribute('android:pathPrefix') == '/':
+            if granturi.getAttribute(f'{ns}:pathPrefix') == '/':
                 ret_list.append(
                     ('improper_provider_permission', ('pathPrefix=/',), ()))
-            elif granturi.getAttribute('android:path') == '/':
+            elif granturi.getAttribute(f'{ns}:path') == '/':
                 ret_list.append(('improper_provider_permission', ('path=/',), ()))
-            elif granturi.getAttribute('android:pathPattern') == '*':
+            elif granturi.getAttribute(f'{ns}:pathPattern') == '*':
                 ret_list.append(('improper_provider_permission', ('path=*',), ()))
         # DATA
         for data in data_tag:
-            if data.getAttribute('android:scheme') == 'android_secret_code':
-                xmlhost = data.getAttribute('android:host')
+            if data.getAttribute(f'{ns}:scheme') == 'android_secret_code':
+                xmlhost = data.getAttribute(f'{ns}:host')
                 ret_list.append(('dialer_code_found', (xmlhost,), ()))
 
-            elif data.getAttribute('android:port'):
-                dataport = data.getAttribute('android:port')
+            elif data.getAttribute(f'{ns}:port'):
+                dataport = data.getAttribute(f'{ns}:port')
                 ret_list.append(('sms_receiver_port_found', (dataport,), ()))
         # INTENTS
         for intent in intents:
-            if intent.getAttribute('android:priority').isdigit():
-                value = intent.getAttribute('android:priority')
+            if intent.getAttribute(f'{ns}:priority').isdigit():
+                value = intent.getAttribute(f'{ns}:priority')
                 if int(value) > 100:
                     ret_list.append(
                         ('high_intent_priority_found', (value,), ()))
         # ACTIONS
         for action in actions:
-            if action.getAttribute('android:priority').isdigit():
-                value = action.getAttribute('android:priority')
+            if action.getAttribute(f'{ns}:priority').isdigit():
+                value = action.getAttribute(f'{ns}:priority')
                 if int(value) > 100:
                     ret_list.append(
                         ('high_action_priority_found', (value,), ()))
@@ -829,7 +643,7 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
                 logger.warning("No template found for key '%s'", a_key)
 
         for category in man_data_dic['categories']:
-            if category == 'android.intent.category.LAUNCHER':
+            if category == f'{ns}.intent.category.LAUNCHER':
                 icon_hidden = False
                 break
 
@@ -864,60 +678,3 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
         return man_an_dic
     except Exception:
         logger.exception('Performing Manifest Analysis')
-
-
-def get_manifest_file(app_dir, app_path, tools_dir, typ):
-    """Read the manifest file."""
-    try:
-        manifest = ''
-        if typ == 'aar':
-            logger.info('Getting AndroidManifest.xml from AAR')
-            manifest = os.path.join(app_dir, ANDROID_MANIFEST_FILE)
-        elif typ == 'apk':
-            logger.info('Getting AndroidManifest.xml from APK')
-            manifest = get_manifest_apk(app_path, app_dir, tools_dir)
-        else:
-            logger.info('Getting AndroidManifest.xml from Source Code')
-            if typ == 'eclipse':
-                manifest = os.path.join(app_dir, ANDROID_MANIFEST_FILE)
-            elif typ == 'studio':
-                manifest = os.path.join(
-                    app_dir,
-                    f'app/src/main/{ANDROID_MANIFEST_FILE}')
-        return manifest
-    except Exception:
-        logger.exception('Getting AndroidManifest.xml file')
-
-
-def get_manifest_apk(app_path, app_dir, tools_dir):
-    """Get readable AndroidManifest.xml.
-
-    Should be called before get_icon_apk() function
-    """
-    try:
-        manifest = None
-        if (len(settings.APKTOOL_BINARY) > 0
-                and is_file_exists(settings.APKTOOL_BINARY)):
-            apktool_path = settings.APKTOOL_BINARY
-        else:
-            apktool_path = os.path.join(tools_dir, 'apktool_2.8.1.jar')
-        output_dir = os.path.join(app_dir, 'apktool_out')
-        args = [find_java_binary(),
-                '-jar',
-                apktool_path,
-                '--match-original',
-                '--frame-path',
-                tempfile.gettempdir(),
-                '-f', '-s', 'd',
-                app_path,
-                '-o',
-                output_dir]
-        manifest = os.path.join(output_dir, ANDROID_MANIFEST_FILE)
-        if is_file_exists(manifest):
-            # APKTool already created readable XML
-            return manifest
-        logger.info('Converting AXML to XML')
-        subprocess.check_output(args)  # lgtm [py/command-line-injection] md5 hash
-        return manifest
-    except Exception:
-        logger.exception('Getting Manifest file')

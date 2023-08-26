@@ -55,8 +55,10 @@ from mobsf.StaticAnalyzer.views.android.icon_analysis import (
     get_icon_apk,
 )
 from mobsf.StaticAnalyzer.views.android.manifest_analysis import (
-    get_manifest,
     manifest_analysis,
+)
+from mobsf.StaticAnalyzer.views.android.manifest_utils import (
+    get_manifest,
     manifest_data,
 )
 from mobsf.StaticAnalyzer.views.android.playstore import get_app_details
@@ -166,7 +168,7 @@ def static_analyzer(request, api=False):
                     app_dic['certz'] = get_hardcoded_cert_keystore(app_dic[
                                                                    'files'])
                     # Manifest XML
-                    mani_file, mani_xml = get_manifest(
+                    mani_file, ns, mani_xml = get_manifest(
                         app_dic['app_path'],
                         app_dic['app_dir'],
                         app_dic['tools_dir'],
@@ -190,11 +192,12 @@ def static_analyzer(request, api=False):
                     # Set Manifest link
                     app_dic['mani'] = (
                         f'../manifest_view/?md5={app_dic["md5"]}&type=apk')
-                    man_data_dic = manifest_data(app_dic['parsed_xml'])
+                    man_data_dic = manifest_data(app_dic['parsed_xml'], ns)
                     app_dic['playstore'] = get_app_details(
                         man_data_dic['packagename'])
                     man_an_dic = manifest_analysis(
                         app_dic['parsed_xml'],
+                        ns,
                         man_data_dic,
                         '',
                         app_dic['app_dir'],
@@ -337,7 +340,7 @@ def static_analyzer(request, api=False):
                             'sha256'] = hash_gen(app_dic['app_path'])
 
                         # Manifest XML
-                        mani_file, mani_xml = get_manifest(
+                        mani_file, ns, mani_xml = get_manifest(
                             '',
                             app_dic['app_dir'],
                             app_dic['tools_dir'],
@@ -357,11 +360,12 @@ def static_analyzer(request, api=False):
                         app_dic['mani'] = (
                             f'../manifest_view/?md5={app_dic["md5"]}'
                             f'&type={pro_type}')
-                        man_data_dic = manifest_data(app_dic['parsed_xml'])
+                        man_data_dic = manifest_data(app_dic['parsed_xml'], ns)
                         app_dic['playstore'] = get_app_details(
                             man_data_dic['packagename'])
                         man_an_dic = manifest_analysis(
                             app_dic['parsed_xml'],
+                            ns,
                             man_data_dic,
                             pro_type,
                             app_dic['app_dir'],
