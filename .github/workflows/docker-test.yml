@@ -1,9 +1,8 @@
 name: 'Docker Images (amd64/arm64) test'
 
 on:
-    push:
-        branches:
-            - dockers
+  pull_request:
+    branches: [ master ]
 
 jobs:
     buildx:
