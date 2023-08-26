@@ -13,10 +13,10 @@ where python >nul 2>&1 && (
   ) else (
     exit /b
   )
-  echo %var%|findstr /R "[3].[910]" >nul
+  echo %var%|findstr /R "[3].[91011]" >nul
   if errorlevel 1 (
       if "%var%"=="" goto redo
-      echo [ERROR] MobSF dependencies require Python 3.9-3.10. Your python points to %var%
+      echo [ERROR] MobSF dependencies require Python 3.9-3.11. Your python points to %var%
       exit /b
   ) else (
       echo [INSTALL] Found %var%

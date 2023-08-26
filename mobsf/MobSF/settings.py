@@ -89,6 +89,7 @@ IPA_MIME = [
     'application/x-itunes-ipa',
     'application/x-zip-compressed',
     'application/x-ar',
+    'text/vnd.a',
     'binary/octet-stream',
 ]
 ZIP_MIME = [
