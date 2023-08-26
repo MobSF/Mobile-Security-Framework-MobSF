@@ -1,4 +1,5 @@
 Django>=3.1.5
+tzdata>2023.3
 lxml>=4.6.2
 rsa>=4.7
 biplist>=1.0.3
@@ -14,12 +15,13 @@ shelljob>=0.6.2
 asn1crypto>=1.4.0
 oscrypto>=1.2.1
 distro>=1.5.0
-IP2Location==8.10.0
 lief>=0.12.3 # pyup: ignore
-http-tools>=2.1.1
+http-tools>=3.0.0
 libsast>=1.5.1
 pdfkit>=0.6.1
 google-play-scraper>=0.1.2
+# pinned versions
+IP2Location==8.10.0
 androguard==3.4.0a1
 apkid==2.1.5
 quark-engine==23.7.1
@@ -29,8 +31,3 @@ openstep-parser==1.5.4
 svgutils==0.3.4
 arpy==2.3.0
 apksigtool==0.1.0 # test before updating
-# For semgrep & mitmproxy
-cryptography==3.3.2 # pyup: ignore
-ruamel.yaml==0.16.13 # pyup: ignore
-click==8.0.1 # pyup: ignore
-decorator==4.4.2 # pyup: ignore

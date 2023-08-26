@@ -39,7 +39,7 @@ setup(
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
-        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Topic :: Security',
         'Topic :: Software Development :: Quality Assurance',
     ],
@@ -47,7 +47,7 @@ setup(
         'mobsf', 'mobsf.*',
     ]),
     include_package_data=True,
-    python_requires='>=3.8',
+    python_requires='>=3.9',
     entry_points={
         'console_scripts': [
             'mobsf = mobsf.__main__:main',
