@@ -206,12 +206,12 @@ def manifest_data(mfxml, ns):
                 # the first occurrence.
                 for sitem in activity.getElementsByTagName('action'):
                     val = sitem.getAttribute(f'{ns}:name')
-                    if val == f'{ns}.intent.action.MAIN':
+                    if val == 'android.intent.action.MAIN':
                         mainact = activity.getAttribute(f'{ns}:name')
                 # Manifest has no MAIN, look for launch activity.
                 for sitem in activity.getElementsByTagName('category'):
                     val = sitem.getAttribute(f'{ns}:name')
-                    if val == f'{ns}.intent.category.LAUNCHER':
+                    if val == 'android.intent.category.LAUNCHER':
                         alt_main = activity.getAttribute(f'{ns}:name')
         if not mainact and alt_main:
             mainact = alt_main
