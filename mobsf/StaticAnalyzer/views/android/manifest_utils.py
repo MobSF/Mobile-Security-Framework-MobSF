@@ -89,7 +89,7 @@ def get_manifest_apk(app_path, app_dir, tools_dir):
 
 def get_xml_namespace(xml_str):
     """Get namespace."""
-    m = re.search(r'manifest (.+?):', xml_str)
+    m = re.search(r'manifest (.{1,250}?):', xml_str)
     if m:
         return m.group(1)
     logger.warning('XML namespace not found')
