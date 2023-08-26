@@ -13,11 +13,6 @@ jobs:
       matrix:
         os: [ubuntu-22.04, macos-latest, windows-latest]
         python-version: [3.9, '3.10', '3.11']
-        exclude:
-          # Poetry bug in Windows 3.9
-          # Also Skip on Mac for speed
-          - os: [windows-latest, macos-latest]
-            python-version: 3.9
 
     runs-on: ${{ matrix.os }}
     steps:
