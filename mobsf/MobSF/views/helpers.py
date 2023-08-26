@@ -1,5 +1,6 @@
 """Helpers."""
 import functools
+import logging
 
 from mobsf.MobSF.utils import (
     is_a_magic,
@@ -13,6 +14,7 @@ from django.http import HttpRequest, HttpResponseNotAllowed
 
 ALLOW_METHODS = ['GET', 'POST', 'PUT', 'DELETE',
                  'PATCH', 'OPTIONS', 'HEAD', 'TRACE']
+logger = logging.getLogger(__name__)
 
 
 class FileType(object):
@@ -24,6 +26,8 @@ class FileType(object):
         self.so = is_elf_so_magic(file_obj)
         self.dylib = is_dylib_magic(file_obj)
         self.a = is_a_magic(file_obj)
+        logger.warning(self.a)
+        logger.warning(self.file_type)
 
     def is_allow_file(self):
         """
