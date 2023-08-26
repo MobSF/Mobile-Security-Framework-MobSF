@@ -47,7 +47,7 @@ fi
 
 echo '[INSTALL] Installing Requirements'
 python3 -m pip install --no-cache-dir wheel poetry==1.6.1
-python3 -m poetry install --no-dev --no-interaction --no-ansi
+python3 -m poetry install --only main --no-interaction --no-ansi
 
 echo '[INSTALL] Clean Up'
 bash scripts/clean.sh y

@@ -44,13 +44,17 @@ jobs:
       if: startsWith(matrix.os, 'macOS')
       run: |
         brew install --cask wkhtmltopdf
+    - name: Poetry bug Windows, Python 3.9
+      if: startsWith(matrix.python-version, '3.9')
+      run: |
+        python -m pip install virtualenv==20.23.1
     - name: Install Windows Dependencies
       if: startsWith(matrix.os, 'windows')
       run: |
         choco install wkhtmltopdf
     - name: Install Python dependencies
       run: |
-        poetry install --no-dev --no-interaction --no-ansi
+        poetry install --only main --no-interaction --no-ansi
     - name: Migrate Database
       run: |
         poetry run python manage.py makemigrations
