@@ -36,9 +36,9 @@ jobs:
     - name: Install Ubuntu Dependencies
       if: startsWith(matrix.os, 'ubuntu')
       run: |
-        sudo apt update && sudo apt install -y xfonts-75dpi xfonts-base libssl3
-        export WKHTML_URL=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/
-        export WKHTML_DEB=wkhtmltox_0.12.6.1-2.jammy_amd64.deb
+        sudo apt update && sudo apt install -y xfonts-75dpi xfonts-base
+        export WKHTML_URL=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/
+        export WKHTML_DEB=wkhtmltox_0.12.6-1.focal_amd64.deb
         wget ${WKHTML_URL}${WKHTML_DEB} && sudo dpkg -i ${WKHTML_DEB} && rm -rf ${WKHTML_DEB}
     - name: Install macOS Dependencies
       if: startsWith(matrix.os, 'macOS')
