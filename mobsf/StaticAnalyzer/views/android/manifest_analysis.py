@@ -643,7 +643,7 @@ def manifest_analysis(mfxml, ns, man_data_dic, src_type, app_dir):
                 logger.warning("No template found for key '%s'", a_key)
 
         for category in man_data_dic['categories']:
-            if category == f'{ns}.intent.category.LAUNCHER':
+            if category == 'android.intent.category.LAUNCHER':
                 icon_hidden = False
                 break
 
