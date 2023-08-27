@@ -10,7 +10,7 @@ from django.conf import settings
 from django.shortcuts import render
 
 from mobsf.MobSF.utils import print_n_send_error_response
-from mobsf.StaticAnalyzer.views.android.manifest_analysis import (
+from mobsf.StaticAnalyzer.views.android.manifest_utils import (
     get_manifest_file,
 )
 

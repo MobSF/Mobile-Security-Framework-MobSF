@@ -5,6 +5,8 @@ import re
 import requests
 
 from bs4 import BeautifulSoup as Soup
+from bs4 import element
+
 
 ANDROID_PERMISSION_DOCS_URL = ('https://developer.android.com/'
                                'reference/android/Manifest.permission')
@@ -26,9 +28,20 @@ for pd in permission_divs:
             r'Protection level\: (\w+)', str(pd)).groups()[0]
     except AttributeError:
         protection_level = 'normal'
-    description = str(pd.find('p').contents[0]).strip()
+    desc = []
+    for a in pd.find('p').contents:
+        if type(a) is element.NavigableString:
+            desc.append(str(a).strip().replace(
+                '\n', '').replace('\t', '').replace('\xa0', ''))
+        elif type(a) is element.Tag:
+            if 'Protection level:' in a.text:
+                break
+            desc.append(str(a.text).strip().replace(
+                '\n', '').replace('\t', '').replace('\xa0', ''))
+
+    description = ' '.join(desc)
     online_permissions[permission_name] = [protection_level,
-                                           'TODO - fill in short description',
+                                           '',
                                            description]
 
 # check the permissions we currently have in dvm_permissions.py
