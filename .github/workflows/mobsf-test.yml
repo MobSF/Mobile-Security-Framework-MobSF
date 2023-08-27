@@ -52,7 +52,7 @@ jobs:
 
     - name: Install Python dependencies
       run: |
-        poetry install --only main --no-interaction --no-ansi || poetry install --only main --no-interaction --no-ansi || poetry install --only main --no-interaction --no-ansi
+        poetry install --no-root --only main --no-interaction --no-ansi || poetry install --no-root --only main --no-interaction --no-ansi || poetry install --no-root --only main --no-interaction --no-ansi
 
     - name: Migrate Database
       run: |
@@ -66,5 +66,5 @@ jobs:
     - name: Python Package Test
       run: |
         poetry build
-        poetry install
+        poetry install --only main --no-interaction --no-ansi
         poetry run mobsf db
