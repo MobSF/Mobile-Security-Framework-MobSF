@@ -63,3 +63,8 @@ jobs:
       run: |
         git submodule update --init --recursive
         poetry run python manage.py test mobsf
+    - name: Python Package Test
+      run: |
+        poetry export --without-hashes --format=requirements.txt > requirements.txt
+        python setup.py sdist
+        python setup.py install
