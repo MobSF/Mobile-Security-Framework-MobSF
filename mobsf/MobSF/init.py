@@ -1,4 +1,5 @@
 """Initialize on first run."""
+import importlib.metadata
 import logging
 import os
 import random
@@ -10,7 +11,7 @@ from mobsf.install.windows.setup import windows_config_local
 
 logger = logging.getLogger(__name__)
 
-VERSION = '3.7.6'
+VERSION = importlib.metadata.version('mobsf')
 BANNER = """
   __  __       _    ____  _____       _____ _____ 
  |  \/  | ___ | |__/ ___||  ___|_   _|___ /|___  |
