@@ -66,5 +66,5 @@ jobs:
     - name: Python Package Test
       run: |
         poetry build
-        poetry install --only main --no-interaction --no-ansi
-        poetry run mobsf db
+        python -m pip install dist/*.whl
+        mobsf db

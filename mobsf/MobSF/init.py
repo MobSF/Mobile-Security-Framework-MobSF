@@ -1,9 +1,7 @@
 """Initialize on first run."""
 import logging
 import os
-from pathlib import Path
 import random
-import re
 import subprocess
 import sys
 import shutil
@@ -13,16 +11,7 @@ from mobsf.install.windows.setup import windows_config_local
 logger = logging.getLogger(__name__)
 
 
-def get_version_from_toml():
-    """Get MobSF version from pyproject.toml."""
-    tomlf = Path(__file__).resolve().parent.parent.parent / 'pyproject.toml'
-    for line in tomlf.read_text('utf-8', 'ignore').splitlines():
-        if line.startswith('version = "'):
-            return re.findall(r'\d\.\d\.\d', line)[0]
-    raise RuntimeError('Unable to find version string.')
-
-
-VERSION = get_version_from_toml()
+VERSION = '3.7.6'
 BANNER = """
   __  __       _    ____  _____       _____ _____ 
  |  \/  | ___ | |__/ ___||  ___|_   _|___ /|___  |
