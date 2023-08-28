@@ -64,7 +64,7 @@ RUN adduser $MOBSF_USER --shell /bin/false -u 9901 --ingroup $MOBSF_USER --gecos
 COPY poetry.lock pyproject.toml ./
 RUN python3 -m pip install --upgrade --no-cache-dir pip poetry==${POETRY_VERSION} && \
     poetry config virtualenvs.create false && \
-    poetry install --no-root --only main --no-interaction --no-ansi
+    poetry install --only main --no-root --no-interaction --no-ansi
 
 # Cleanup
 RUN \
