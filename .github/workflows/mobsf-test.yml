@@ -51,10 +51,8 @@ jobs:
         choco install wkhtmltopdf
 
     - name: Install Python dependencies
-      env:
-        POETRY_INSTALL: poetry install --only main --no-root --no-interaction --no-ansi
       run: |
-        ${POETRY_INSTALL} || ${POETRY_INSTALL} || ${POETRY_INSTALL}
+        poetry install --only main --no-root --no-interaction --no-ansi || poetry install --only main --no-root --no-interaction --no-ansi ||poetry install --only main --no-root --no-interaction --no-ansi
 
     - name: Migrate Database
       run: |
