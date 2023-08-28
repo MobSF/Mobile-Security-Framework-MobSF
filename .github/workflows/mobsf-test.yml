@@ -54,7 +54,7 @@ jobs:
       env:
         POETRY_INSTALL: poetry install --only main --no-root --no-interaction --no-ansi
       run: |
-        $POETRY_INSTALL || $POETRY_INSTALL || $POETRY_INSTALL
+        ${POETRY_INSTALL} || ${POETRY_INSTALL} || ${POETRY_INSTALL}
 
     - name: Migrate Database
       run: |
