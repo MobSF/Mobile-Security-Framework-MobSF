@@ -58,8 +58,8 @@ where python >nul 2>&1 && (
   echo [INSTALL] Installing Requirements
   python -m pip install --no-cache-dir wheel poetry==1.6.1
   python -m poetry lock
-  python -m poetry install --only main --no-interaction --no-ansi || python -m poetry install --only main --no-interaction --no-ansi || python -m poetry install --only main --no-interaction --no-ansi
-  
+  python -m poetry install --only main --no-root --no-interaction --no-ansi || python -m poetry install --only main --no-root --no-interaction --no-ansi || python -m poetry install --only main --no-root --no-interaction --no-ansi
+ 
   echo [INSTALL] Clean Up
   call scripts/clean.bat y
 

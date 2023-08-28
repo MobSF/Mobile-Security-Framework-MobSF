@@ -3,10 +3,13 @@ import sys
 import platform
 
 from django.core.management import execute_from_command_line
+from django.db import connection
+
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mobsf.MobSF.settings')
 
 
 def db():
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mobsf.MobSF.settings')
     execute_from_command_line([
         '',
         'makemigrations',
@@ -23,10 +26,20 @@ def db():
 
 
 def main():
-    if len(sys.argv) == 2:
-        listen = sys.argv[1]
-    else:
-        listen = '127.0.0.1:8000'
+    try:
+        if not connection.introspection.table_names():
+            db()
+    except Exception:
+        db()
+    listen = '127.0.0.1:8000'
+    if len(sys.argv) == 2 and sys.argv[1]:
+        if sys.argv[1] == 'db':
+            db()
+            listen = None
+        elif sys.argv[1]:
+            listen = sys.argv[1]
+    if not listen:
+        exit(0)
     if platform.system() != 'Windows':
         sys.argv = [
             '',
@@ -36,6 +49,11 @@ def main():
             '--workers=1',
             '--threads=10',
             '--timeout=3600',
+            '--log-level=citical',
+            '--log-file=-',
+            '--access-logfile=-',
+            '--error-logfile=-',
+            '--capture-output',
         ]
         from gunicorn.app.wsgiapp import run
         run()
