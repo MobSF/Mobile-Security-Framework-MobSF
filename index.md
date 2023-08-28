@@ -17,7 +17,7 @@ Mobile Security Framework (MobSF) is an automated, all-in-one mobile application
 
 Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82e3a63c-4813-11e6-9430-6015d98aeaab.png) in India
 
-[![python](https://img.shields.io/badge/python-3.8+-blue.svg?logo=python&labelColor=yellow)](https://www.python.org/downloads/)
+[![python](https://img.shields.io/badge/python-3.9+-blue.svg?logo=python&labelColor=yellow)](https://www.python.org/downloads/)
 [![PyPI version](https://badge.fury.io/py/mobsf.svg)](https://badge.fury.io/py/mobsf)
 [![platform](https://img.shields.io/badge/platform-osx%2Flinux%2Fwindows-green.svg)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/)
 [![License](https://img.shields.io/:license-GPL--3.0--only-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
@@ -25,7 +25,6 @@ Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82
 
 [![MobSF tests](https://github.com/MobSF/Mobile-Security-Framework-MobSF/workflows/MobSF%20tests/badge.svg?branch=master)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/actions)
 [![Requirements Status](https://pyup.io/repos/github/MobSF/Mobile-Security-Framework-MobSF/shield.svg)](https://pyup.io/repos/github/MobSF/Mobile-Security-Framework-MobSF/)
-[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/MobSF/Mobile-Security-Framework-MobSF.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/MobSF/Mobile-Security-Framework-MobSF/context:python)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=MobSF_Mobile-Security-Framework-MobSF&metric=alert_status)](https://sonarcloud.io/dashboard?id=MobSF_Mobile-Security-Framework-MobSF)
 ![GitHub closed issues](https://img.shields.io/github/issues-closed/MobSF/Mobile-Security-Framework-MobSF)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6392/badge)](https://bestpractices.coreinfrastructure.org/projects/6392)
@@ -36,7 +35,7 @@ Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82
 [![Blackhat Arsenal Asia 2015](https://img.shields.io/badge/Black%20Hat%20Arsenal-Asia%202015-blue.svg)](https://www.blackhat.com/asia-15/arsenal.html#yso-mobile-security-framework)
 [![Blackhat Arsenal Asia 2018](https://img.shields.io/badge/Black%20Hat%20Arsenal-Asia%202018-blue.svg)](https://www.blackhat.com/asia-18/arsenal.html#mobile-security-framework-mobsf)
 
-MobSF is also bundled with [Android Tamer](https://androidtamer.com/tamer4-release), [BlackArch](https://blackarch.org/mobile.html) and [Pentoo](https://www.pentoo.ch/).
+MobSF is also bundled with [Android Tamer](https://tamerplatform.com), [BlackArch](https://blackarch.org/mobile.html) and [Pentoo](https://www.pentoo.ch/).
 
 ## Support MobSF
 
@@ -47,6 +46,14 @@ If you liked MobSF and find it useful, please consider donating.
 *It's easy to build open source, try maintaining a project once. Long live open source!*
 
 ## Documentation
+
+Quick setup
+
+```
+docker pull opensecurity/mobile-security-framework-mobsf:latest
+docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:latest
+```
+
 [![See MobSF Documentation](https://user-images.githubusercontent.com/4301109/70686099-3855f780-1c79-11ea-8141-899e39459da2.png)](https://mobsf.github.io/docs)
 [![See MobSF Documentation in Chinese](https://user-images.githubusercontent.com/4301109/117404947-b09d0880-aebf-11eb-9db8-3d7360f47914.png)](https://mobsf.github.io/docs/#/zh-cn/)
 [![See MobSF Documentation in Japanese](https://user-images.githubusercontent.com/4301109/148662149-7ee671b4-66a2-4232-9522-276b8e88d924.png)](https://mobsf.github.io/docs/#/ja-jp/)
@@ -78,15 +85,6 @@ If you liked MobSF and find it useful, please consider donating.
 * Read [CONTRIBUTING.md](https://github.com/MobSF/Mobile-Security-Framework-MobSF/blob/master/.github/CONTRIBUTING.md) before opening bugs, feature requests and pull request.
 * For Project updates and announcements, follow [@ajinabraham](https://twitter.com/ajinabraham) or [@OpenSecurity_IN](https://twitter.com/OpenSecurity_IN).
 * Github Issues are only for tracking bugs and feature requests. Do not post support or help queries there. We have a slack channel for that.
-
-### Launching MobSF Rewards
-
-Contributed to MobSF? Here is a big thank you from our community to you. Claim your badge, a soulbound NFT and showcase them with pride. Let us inspire more folks !
-
-![MobSF Badges](https://aviyel.com/assets/uploads/rewards/share/project/7/512/share.png)
-
-[Claim Now!](https://aviyel.com/projects/7/mobile-security-framework/rewards)
-
 
 ### Static Analysis - Android
 
