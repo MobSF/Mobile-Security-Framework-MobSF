@@ -1,3 +1,87 @@
+### v3.7.6 Beta Changelog
+
+- Features or Enhancements
+   - Docker base image update to Ubuntu 22.04
+   - Dockerfile QA
+   - Migrated from Pip to Poetry for dependency management
+   - Migrate from setup.py to use poetry for build and publish
+   - Python 3.11 support
+   - Docker ADB connection improvements (host.docker.internal translation for localhost)
+   -  IOS Swift RulesUpdates `ios_biometric_bool`, `ios_biometric_acl`, `ios_keychain_weak_acl_device_passcode`, `ios_keychain_weak_accessibility_value`, `ios_insecure_random_no_generator`, `ios_biometry_hardened`
+   - Android SCA rules update
+   - Entropies scan support for strings
+   - Regex Hardening: Fixes possible Regex DoS in rules and MobSF code base
+   - Tox QA
+   - Added poetry build test
+   - Updated mobsf PyPI publishing workflow 
+   - Update local DBs
+   - URLs/Email extraction refactor
+   - Static and Dynamic Binary Analysis QA
+   - Refactor Dex permissions
+   - Refactor Androguard `apk.APK()` usage
+   - Fallback certificate analysis using apksigtool
+   - Use BeautifulSoup4 to prettify malformed XML
+   - Detect non standard XML namespace in AndroidManifest.xml, Fixes : #2198
+   - Updated android permissions list
+   - Updated android permission update check script
+   - Github Actions version update
+   - Apktool bump
+   - Bump httptools
+   - Bump yara-python-dex
+   - Docker image build test for PRs
+   - iOS Source Report Fix
+   - Removed unwanted pinned repository
+   - Frida APK Patcher (WIP)
+   - Fix for Recent Scans `scan not completed` for iOS zip
+   - Fix for MachO stripped symbols false positive
+   - Fix bug in IPA download
+   - iOS/Android form validation fix
+   - Fix missing exported components
+ - Enterprise Feature Request
+      - String extraction from APK, Source, AAR, JAR, SO.
+      - Android strings sections to show source of strings extracted
+      - Strings extraction refactor
+      - Support for independent `.so` scan
+      - Dylib analysis support
+      - Dylib string extraction
+      - Improved iOS Plist secret extraction
+      - Support for Independent `.dylib` scan
+      - Symbols view for dylib and so
+      - Trackers support for so
+      - AAR/JAR obfuscation and debug check
+      - Independent Static Library(.a) ELF/MachO Analysis
+      - Mac FAT binary only supported on Mac
+
+
+  
+     
+    
+  
+
+## What's Changed
+* Update dynamic_analysis.html by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2218
+* Hotfix: Handle Docker <-> ADB connectivity internally by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2219
+* update apktool to 2.8.1 by @superpoussin22 in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2220
+* update apktool by @superpoussin22 in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2225
+* HOTFIX: Dynamic Analyzer Support Alert by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2227
+* [HOTFIX] Regex + Rule Update by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2232
+* [EFR06] Independent Shared Object (.so) Scan and Improved String search by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2228
+* Update macho_analysis.py - SYMBOLS STRIPPED False Negative by @Karmaz95 in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2234
+* [EFR-08] Dylib + Symbols + Other Features by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2239
+* Fix missing exported components by @Abb4d0n in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2176
+* [EFR09] AAR/JAR obfuscation and debug check + Exception Handed strings and symbols extraction by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2240
+* [EFR10] Independent Static Library(.a) ELF/MachO Analysis by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2242
+* Pip to poetry and Dockerfile update by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2244
+* Docker Buildx test by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2247
+* [HOTFIX] bs4 malformed xml parsing + xml namespace detection by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2248
+* [HOTFIX] Migrate from setup.py to poetry, tox QA by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2249
+
+## New Contributors
+* @Karmaz95 made their first contribution in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2234
+* @Abb4d0n made their first contribution in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2176
+
+**Full Changelog**: https://github.com/MobSF/Mobile-Security-Framework-MobSF/compare/v3.6.9...v3.7.6
+
 ### v3.6.9 Beta Changelog
 
 - Features or Enhancements
