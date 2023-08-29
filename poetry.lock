@@ -1143,6 +1143,38 @@ MarkupSafe = ">=2.0"
 i18n = ["Babel (>=2.7)"]
 
 [[package]]
+name = "jschema-to-python"
+version = "1.2.3"
+description = "Generate source code for Python classes from a JSON schema."
+optional = false
+python-versions = ">= 2.7"
+files = [
+    {file = "jschema_to_python-1.2.3-py3-none-any.whl", hash = "sha256:8a703ca7604d42d74b2815eecf99a33359a8dccbb80806cce386d5e2dd992b05"},
+    {file = "jschema_to_python-1.2.3.tar.gz", hash = "sha256:76ff14fe5d304708ccad1284e4b11f96a658949a31ee7faed9e0995279549b91"},
+]
+
+[package.dependencies]
+attrs = "*"
+jsonpickle = "*"
+pbr = "*"
+
+[[package]]
+name = "jsonpickle"
+version = "3.0.2"
+description = "Python library for serializing any arbitrary object graph into JSON"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "jsonpickle-3.0.2-py3-none-any.whl", hash = "sha256:4a8442d97ca3f77978afa58068768dba7bff2dbabe79a9647bc3cdafd4ef019f"},
+    {file = "jsonpickle-3.0.2.tar.gz", hash = "sha256:e37abba4bfb3ca4a4647d28bb9f4706436f7b46c8a8333b4a718abafa8e46b37"},
+]
+
+[package.extras]
+docs = ["jaraco.packaging (>=3.2)", "rst.linker (>=1.9)", "sphinx"]
+testing = ["ecdsa", "feedparser", "gmpy2", "numpy", "pandas", "pymongo", "pytest (>=3.5,!=3.7.3)", "pytest-black-multipy", "pytest-checkdocs (>=1.2.3)", "pytest-cov", "pytest-flake8 (>=1.1.1)", "scikit-learn", "sqlalchemy"]
+testing-libs = ["simplejson", "ujson"]
+
+[[package]]
 name = "jsonschema"
 version = "4.17.3"
 description = "An implementation of JSON Schema validation for Python"
@@ -1679,6 +1711,25 @@ files = [
 ]
 
 [[package]]
+name = "mobsfscan"
+version = "0.3.3"
+description = "mobsfscan is a static analysis tool that can find insecure code patterns in your Android and iOS source code. Supports Java, Kotlin, Swift, and Objective C Code."
+optional = false
+python-versions = "*"
+files = [
+    {file = "mobsfscan-0.3.3-py3-none-any.whl", hash = "sha256:f17fca94387d81f389696572caaad2e5bcde7297fb5b73cb5728af3af7ce4541"},
+    {file = "mobsfscan-0.3.3.tar.gz", hash = "sha256:2cb8f2ea1a484d743d7a7689ef70b0d2bc568674d1678cf5c59227cafd68ccb1"},
+]
+
+[package.dependencies]
+colorama = ">=0.4.5"
+jschema-to-python = ">=1.2.3"
+libsast = ">=1.5.3"
+sarif-om = ">=1.0.4"
+tabulate = ">=0.8.10"
+xmltodict = ">=0.13.0"
+
+[[package]]
 name = "msgpack"
 version = "1.0.5"
 description = "MessagePack serializer"
@@ -1872,6 +1923,17 @@ argon2 = ["argon2-cffi (>=18.2.0)"]
 bcrypt = ["bcrypt (>=3.1.0)"]
 build-docs = ["cloud-sptheme (>=1.10.1)", "sphinx (>=1.6)", "sphinxcontrib-fulltoc (>=1.2.0)"]
 totp = ["cryptography"]
+
+[[package]]
+name = "pbr"
+version = "5.11.1"
+description = "Python Build Reasonableness"
+optional = false
+python-versions = ">=2.6"
+files = [
+    {file = "pbr-5.11.1-py2.py3-none-any.whl", hash = "sha256:567f09558bae2b3ab53cb3c1e2e33e726ff3338e7bae3db5dc954b3a44eef12b"},
+    {file = "pbr-5.11.1.tar.gz", hash = "sha256:aefc51675b0b533d56bb5fd1c8c6c0522fe31896679882e1c4c63d5e4a0fccb3"},
+]
 
 [[package]]
 name = "pdfkit"
@@ -2490,6 +2552,21 @@ files = [
 ]
 
 [[package]]
+name = "sarif-om"
+version = "1.0.4"
+description = "Classes implementing the SARIF 2.1.0 object model."
+optional = false
+python-versions = ">= 2.7"
+files = [
+    {file = "sarif_om-1.0.4-py3-none-any.whl", hash = "sha256:539ef47a662329b1c8502388ad92457425e95dc0aaaf995fe46f4984c4771911"},
+    {file = "sarif_om-1.0.4.tar.gz", hash = "sha256:cd5f416b3083e00d402a92e449a7ff67af46f11241073eea0461802a3b5aef98"},
+]
+
+[package.dependencies]
+attrs = "*"
+pbr = "*"
+
+[[package]]
 name = "semgrep"
 version = "0.117.0"
 description = "Lightweight static analysis for many languages. Find bug variants with patterns that look like source code."
@@ -2726,6 +2803,20 @@ files = [
 
 [package.dependencies]
 lxml = "*"
+
+[[package]]
+name = "tabulate"
+version = "0.9.0"
+description = "Pretty-print tabular data"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "tabulate-0.9.0-py3-none-any.whl", hash = "sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f"},
+    {file = "tabulate-0.9.0.tar.gz", hash = "sha256:0095b12bf5966de529c0feb1fa08671671b3368eec77d7ef7ab114be2c068b3c"},
+]
+
+[package.extras]
+widechars = ["wcwidth"]
 
 [[package]]
 name = "tenacity"
@@ -3025,6 +3116,17 @@ files = [
 h11 = ">=0.9.0,<1"
 
 [[package]]
+name = "xmltodict"
+version = "0.13.0"
+description = "Makes working with XML feel like you are working with JSON"
+optional = false
+python-versions = ">=3.4"
+files = [
+    {file = "xmltodict-0.13.0-py2.py3-none-any.whl", hash = "sha256:aa89e8fd76320154a40d19a0df04a4695fb9dc5ba977cbb68ab3e4eb225e7852"},
+    {file = "xmltodict-0.13.0.tar.gz", hash = "sha256:341595a488e3e01a85a9d8911d8912fd922ede5fecc4dce437eb4b6c8d037e56"},
+]
+
+[[package]]
 name = "yara-python-dex"
 version = "1.0.6"
 description = "Python interface for YARA"
@@ -3192,4 +3294,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "e6ca8c06bf69cf393ee2f9087c8ca757c427f72ec7288563cfa9b3e1e5a48137"
+content-hash = "69e628aa28bfe6e0833960b5f6ef25973bf31398ace8077a36a19ce9d5e75b80"
