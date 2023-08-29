@@ -516,6 +516,9 @@ files = [
     {file = "click-8.1.7.tar.gz", hash = "sha256:ca9853ad459e787e2192211578cc907e7594e294c7ccc834310722b41b9ca6de"},
 ]
 
+[package.dependencies]
+colorama = {version = "*", markers = "platform_system == \"Windows\""}
+
 [[package]]
 name = "click-option-group"
 version = "0.5.6"
@@ -1298,18 +1301,19 @@ pyasn1 = ">=0.4.6"
 
 [[package]]
 name = "libsast"
-version = "1.5.2"
-description = "A generic SAST core built on top of semgrep and regex"
+version = "1.5.3"
+description = "A generic SAST library built on top of semgrep and regex"
 optional = false
-python-versions = "*"
+python-versions = ">=3.8,<4.0"
 files = [
-    {file = "libsast-1.5.2.tar.gz", hash = "sha256:38ea83c816d491d911c7db917dc697ff87e631e679cf9e84f9d41e330816af5d"},
+    {file = "libsast-1.5.3-py3-none-any.whl", hash = "sha256:2cf5aabf94bd01e3bad1ab574c779f9fb0504c429b7fdeefb2f47a2e3d2fbb36"},
+    {file = "libsast-1.5.3.tar.gz", hash = "sha256:be31ec06ae42bf1311095a2ae8e21edb246f1cc431e1ba0c49886ef4905ae4d6"},
 ]
 
 [package.dependencies]
 pyyaml = ">=6.0"
 requests = ">=2.27.1"
-semgrep = {version = "0.104.0", markers = "platform_system != \"Windows\""}
+semgrep = {version = "0.117.0", markers = "sys_platform != \"win32\""}
 
 [[package]]
 name = "lief"
@@ -2487,15 +2491,15 @@ files = [
 
 [[package]]
 name = "semgrep"
-version = "0.104.0"
+version = "0.117.0"
 description = "Lightweight static analysis for many languages. Find bug variants with patterns that look like source code."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "semgrep-0.104.0-cp37.cp38.cp39.py37.py38.py39-none-any.whl", hash = "sha256:ea4105fe0d61e4af478340646a5e67221c2b58754d3c0320520a0cc73579cea0"},
-    {file = "semgrep-0.104.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_10_14_x86_64.whl", hash = "sha256:3a68d8e8f5b069a9ab99c69d52923534216b537165650088363df8cf70599170"},
-    {file = "semgrep-0.104.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_11_0_arm64.whl", hash = "sha256:6d71ddc4684f8bab3a75788f7e90dc26cd0c8f686192f9b33a2dedd727c8a871"},
-    {file = "semgrep-0.104.0.tar.gz", hash = "sha256:f84dcfb55b63fb4b91a63f284da2447329fbdeaffd912f0ac44b2e3b456decdc"},
+    {file = "semgrep-0.117.0-cp37.cp38.cp39.py37.py38.py39-none-any.whl", hash = "sha256:eb586ce36ecf4c65a7296ba01d984bfe44f79b5dc5f28fad7a940d4615754b3b"},
+    {file = "semgrep-0.117.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_10_14_x86_64.whl", hash = "sha256:242af25d2a6f4e2c7c7004d7145e8911bb0d6abed2bb9d100404084e169b9238"},
+    {file = "semgrep-0.117.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_11_0_arm64.whl", hash = "sha256:2cfc245221daea507d2649c1baf13cb1ff0e0ef86c2a0f6f6338e52849f49d4d"},
+    {file = "semgrep-0.117.0.tar.gz", hash = "sha256:ac2b06a2b3a2e83d60a3ab80254b68e726d01c953d1a52608804bb0b7e80a76d"},
 ]
 
 [package.dependencies]
@@ -2512,10 +2516,14 @@ peewee = ">=3.14,<4.0"
 python-lsp-jsonrpc = ">=1.0.0,<1.1.0"
 requests = ">=2.22,<3.0"
 "ruamel.yaml" = ">=0.16.0,<0.18"
+tomli = ">=2.0.1,<2.1.0"
 tqdm = ">=4.46,<5.0"
 typing-extensions = ">=4.2,<5.0"
 urllib3 = ">=1.26,<2.0"
 wcmatch = ">=8.3,<9.0"
+
+[package.extras]
+experiments = ["jsonnet (>=0.18,<1.0)"]
 
 [[package]]
 name = "setuptools"
@@ -2751,6 +2759,17 @@ requests = ">=2.1.0"
 requests-file = ">=1.4"
 
 [[package]]
+name = "tomli"
+version = "2.0.1"
+description = "A lil' TOML parser"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
+    {file = "tomli-2.0.1.tar.gz", hash = "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"},
+]
+
+[[package]]
 name = "tornado"
 version = "6.3.3"
 description = "Tornado is a Python web framework and asynchronous networking library, originally developed at FriendFeed."
@@ -2780,6 +2799,9 @@ files = [
     {file = "tqdm-4.66.1-py3-none-any.whl", hash = "sha256:d302b3c5b53d47bce91fea46679d9c3c6508cf6332229aa1e7d8653723793386"},
     {file = "tqdm-4.66.1.tar.gz", hash = "sha256:d88e651f9db8d8551a62556d3cff9e3034274ca5d66e93197cf2490e2dcb69c7"},
 ]
+
+[package.dependencies]
+colorama = {version = "*", markers = "platform_system == \"Windows\""}
 
 [package.extras]
 dev = ["pytest (>=6)", "pytest-cov", "pytest-timeout", "pytest-xdist"]
@@ -3170,4 +3192,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "edb27c4ac14d60405740f3e73b0abcf17c4b9018678ef1b3719a5d28bf96bc5f"
+content-hash = "e6ca8c06bf69cf393ee2f9087c8ca757c427f72ec7288563cfa9b3e1e5a48137"
