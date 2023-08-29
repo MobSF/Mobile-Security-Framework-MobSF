@@ -82,9 +82,9 @@ def get_manifest_apk(app_path, app_dir, tools_dir):
             return manifest
         logger.info('Converting AXML to XML')
         subprocess.check_output(args)  # User input is MD5 and validated
-        return manifest
     except Exception:
         logger.exception('Getting Manifest file')
+    return manifest
 
 
 def get_xml_namespace(xml_str):
