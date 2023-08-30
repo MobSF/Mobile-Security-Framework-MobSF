@@ -10,7 +10,7 @@
   pattern: getSystemService
   input_case: exact
   severity: info
-- id: api_get_system_service
+- id: api_get_running_app_processes
   message: Get Running App Processes
   type: Regex
   pattern: getRunningAppProcesses\(
@@ -135,7 +135,7 @@
   message: Execute OS Command
   type: RegexAnd
   pattern:
-    - getRuntime\(\)\.exec\(
+    - \.exec\(
     - getRuntime\(
   input_case: exact
   severity: info

@@ -2,7 +2,6 @@
 """Module holding the functions for code analysis."""
 
 import logging
-import platform
 from pathlib import Path
 
 from django.conf import settings
@@ -40,16 +39,11 @@ def code_analysis(app_dir, typ, manifest_file):
         logger.info('Code Analysis Started on - %s',
                     filename_from_path(src))
         # Code and API Analysis
-        if platform.system() == 'Windows':
-            code_findings = scan(
-                code_rules.as_posix(),
-                {'.java', '.kt'},
-                [src],
-                skp)
-        else:
-            from mobsfscan.mobsfscan import MobSFScan
-            scanner = MobSFScan([src], True, 'android')
-            code_findings = scanner.scan()
+        code_findings = scan(
+            code_rules.as_posix(),
+            {'.java', '.kt'},
+            [src],
+            skp)
         logger.info('Android SAST Completed')
         logger.info('Android API Analysis Started')
         api_findings = scan(
