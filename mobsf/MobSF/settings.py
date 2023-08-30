@@ -329,7 +329,7 @@ else:
     # Disable CVSSV2 Score by default
     CVSS_SCORE_ENABLED = bool(os.getenv('MOBSF_CVSS_SCORE_ENABLED', ''))
     # NIAP Scan
-    NIAP_ENABLED = os.getenv('MOBSF_NIAP_ENABLED', '1')
+    NIAP_ENABLED = os.getenv('MOBSF_NIAP_ENABLED', '')
     # Dex 2 Smali Conversion
     DEX2SMALI_ENABLED = os.getenv('MOBSF_DEX2SMALI_ENABLED', '1')
     # Android Shared Object Binary Analysis

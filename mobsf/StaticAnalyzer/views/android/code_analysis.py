@@ -44,6 +44,8 @@ def code_analysis(app_dir, typ, manifest_file):
             {'.java', '.kt'},
             [src],
             skp)
+        logger.info('Android SAST Completed')
+        logger.info('Android API Analysis Started')
         api_findings = scan(
             api_rules.as_posix(),
             {'.java', '.kt'},
