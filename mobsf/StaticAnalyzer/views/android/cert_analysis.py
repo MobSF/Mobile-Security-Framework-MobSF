@@ -6,6 +6,8 @@ import hashlib
 import logging
 import os
 import re
+import subprocess
+from pathlib import Path
 
 from androguard.util import get_certificate_name_string
 
@@ -14,6 +16,10 @@ from asn1crypto import x509
 from oscrypto import asymmetric
 
 from django.utils.html import escape
+
+from mobsf.MobSF.utils import (
+    find_java_binary,
+)
 
 logger = logging.getLogger(__name__)
 ANDROID_8_1_LEVEL = 27
@@ -85,14 +91,41 @@ def get_pub_key_details(data):
     return certlist
 
 
-def apksigtool_cert(apk_path):
+def get_signature_versions(app_path, tools_dir):
+    """Get signature versions using apksigner."""
+    v1, v2, v3, v4 = False, False, False, False
+    try:
+        logger.info('Getting Signature Versions')
+        apksigner = Path(tools_dir) / 'apksigner.jar'
+        args = [find_java_binary(), '-Xmx1024M',
+                '-Djava.library.path=', '-jar', apksigner,
+                'verify', '--verbose', app_path]
+        out = subprocess.check_output(
+            args, stderr=subprocess.STDOUT)
+        out = out.decode('utf-8', 'ignore')
+        if re.findall(r'v1 scheme \(JAR signing\): true', out):
+            v1 = True
+        if re.findall(r'\(APK Signature Scheme v2\): true', out):
+            v2 = True
+        if re.findall(r'\(APK Signature Scheme v3\): true', out):
+            v3 = True
+        if re.findall(r'\(APK Signature Scheme v4\): true', out):
+            v4 = True
+    except Exception:
+        logger.exception('Failed to get signature versions')
+    return v1, v2, v3, v4
+
+
+def apksigtool_cert(apk_path, tools_dir):
     """Get Human readable certificate with apksigtool."""
     certlist = []
     certs = []
     pub_keys = []
-    signed, v1, v2, v3, v4 = False, False, False, False, 'Unknown'
+    signed = False
     certs_no = 0
     min_sdk = None
+    v1, v2, v3, v4 = get_signature_versions(
+        apk_path, tools_dir)
     try:
         from apksigtool import (
             APKSignatureSchemeBlock,
@@ -104,12 +137,6 @@ def apksigtool_cert(apk_path):
             b = pair.value
             if isinstance(b, APKSignatureSchemeBlock):
                 signed = True
-                if b.version == 1:
-                    v1 = True
-                if b.version == 2:
-                    v2 = True
-                if b.version == 3:
-                    v3 = True
                 for signer in b.signers:
                     if b.is_v3():
                         min_sdk = signer.min_sdk
@@ -149,19 +176,18 @@ def apksigtool_cert(apk_path):
     }
 
 
-def get_cert_data(a):
+def get_cert_data(a, app_path, tools_dir):
     """Get Human readable certificate."""
     certlist = []
-    signed, v1, v2, v3, v4 = False, False, False, False, 'Unknown'
+    signed = False
+    v1, v2, v3, v4 = get_signature_versions(
+        app_path, tools_dir)
     if a.is_signed():
         signed = True
         certlist.append('Binary is signed')
     else:
         certlist.append('Binary is not signed')
         certlist.append('Missing certificate')
-    v1 = a.is_signed_v1()
-    v2 = a.is_signed_v2()
-    v3 = a.is_signed_v3()
     certlist.append(f'v1 signature: {v1}')
     certlist.append(f'v2 signature: {v2}')
     certlist.append(f'v3 signature: {v3}')
@@ -192,7 +218,7 @@ def get_cert_data(a):
     }
 
 
-def cert_info(a, app_path, app_dir, man_dict):
+def cert_info(a, app_dic, man_dict):
     """Return certificate information."""
     try:
         logger.info('Reading Code Signing Certificate')
@@ -202,13 +228,15 @@ def cert_info(a, app_path, app_dir, man_dict):
         summary = {HIGH: 0, WARNING: 0, INFO: 0}
 
         if a:
-            cert_data = get_cert_data(a)
+            cert_data = get_cert_data(
+                a, app_dic['app_path'], app_dic['tools_dir'])
         else:
             logger.warning('androguard certificate parsing failed,'
                            ' switching to apksigtool')
-            cert_data = apksigtool_cert(app_path)
+            cert_data = apksigtool_cert(
+                app_dic['app_path'], app_dic['tools_dir'])
 
-        cert_path = os.path.join(app_dir, 'META-INF/')
+        cert_path = os.path.join(app_dic['app_dir'], 'META-INF/')
         if os.path.exists(cert_path):
             files = [f for f in os.listdir(
                 cert_path) if os.path.isfile(os.path.join(cert_path, f))]

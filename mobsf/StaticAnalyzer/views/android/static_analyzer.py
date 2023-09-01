@@ -205,8 +205,7 @@ def static_analyzer(request, api=False):
                     elf_dict = library_analysis(app_dic['app_dir'], 'elf')
                     cert_dic = cert_info(
                         apk,
-                        app_dic['app_path'],
-                        app_dic['app_dir'],
+                        app_dic,
                         man_data_dic)
                     apkid_results = apkid_analysis(app_dic[
                         'app_dir'], app_dic['app_path'], app_dic['app_name'])
