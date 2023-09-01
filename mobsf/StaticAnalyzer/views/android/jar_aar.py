@@ -100,8 +100,7 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
             )
             cert_dic = cert_info(
                 apk,
-                app_dic['app_path'],
-                app_dic['app_dir'],
+                app_dic,
                 man_data_dic)
         else:
             app_dic['manifest_file'] = None
