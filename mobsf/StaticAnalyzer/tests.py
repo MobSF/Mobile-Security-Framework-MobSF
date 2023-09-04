@@ -197,7 +197,9 @@ def api_test():
         logger.info('Running Static Analysis API Test')
         for upl in uploaded:
             resp = http_client.post(
-                '/api/v1/scan', upl, HTTP_AUTHORIZATION=auth)
+                '/api/v1/scan',
+                {'hash': upl['hash']},
+                HTTP_AUTHORIZATION=auth)
             if resp.status_code == 200:
                 logger.info('[OK] Static Analysis Complete: %s',
                             upl['file_name'])
