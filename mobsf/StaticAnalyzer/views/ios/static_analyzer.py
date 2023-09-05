@@ -141,9 +141,10 @@ def static_analyzer_ios(request, api=False):
                         app_dict['tools_dir'],
                         app_dict['app_dir'],
                         infoplist_dict.get('bin'))
-                    # Analyze dylibs
-                    dy = library_analysis(app_dict['bin_dir'], 'macho')
-                    bin_dict['dylib_analysis'] = dy['macho_analysis']
+                    # Analyze dylibs and frameworks
+                    lb = library_analysis(app_dict['bin_dir'], 'macho')
+                    bin_dict['dylib_analysis'] = lb['macho_analysis']
+                    bin_dict['framework_analysis'] = lb['framework_analysis']
                     # Get Icon
                     app_dict['icon_found'] = get_icon(
                         app_dict['md5_hash'],
@@ -154,7 +155,7 @@ def static_analyzer_ios(request, api=False):
                         app_dict,
                         bin_dict,
                         all_files,
-                        dy['macho_strings'])
+                        lb['macho_strings'])
 
                     # Domain Extraction and Malware Check
                     logger.info('Performing Malware Check on '
@@ -252,6 +253,7 @@ def static_analyzer_ios(request, api=False):
                         'bin_info': {},
                         'bin_type': code_analysis_dic['source_type'],
                         'dylib_analysis': {},
+                        'framework_analysis': {},
                     }
                     context = save_get_ctx(
                         app_dict,
