@@ -98,7 +98,7 @@ def dylib_analysis(request, app_dict, rescan, api):
         # Analyze dylib
         dy = library_analysis(app_dict['bin_dir'], 'macho')
         bin_dict['dylib_analysis'] = dy['macho_analysis']
-        bin_dict['framework_analysis'] = []
+        bin_dict['framework_analysis'] = {}
         # Store Symbols in File Analysis
         all_files['special_files'] = get_symbols(
             dy['macho_symbols'])
