@@ -93,17 +93,23 @@ if settings.API_ONLY == '0':
 
         # Static Analysis
         # Android
-        re_path(r'^static_analyzer/$', android_sa.static_analyzer),
+        re_path(r'^static_analyzer/(?P<checksum>[0-9a-f]{32})/$',
+                android_sa.static_analyzer,
+                name='static_analyzer'),
         # Remove this is version 4/5
         re_path(r'^source_code/$', source_tree.run, name='tree_view'),
         re_path(r'^view_file/$', view_source.run, name='view_source'),
         re_path(r'^find/$', find.run, name='find_files'),
         re_path(r'^manifest_view/$', manifest_view.run),
         # IOS
-        re_path(r'^static_analyzer_ios/$', ios_sa.static_analyzer_ios),
+        re_path(r'^static_analyzer_ios/(?P<checksum>[0-9a-f]{32})/$',
+                ios_sa.static_analyzer_ios,
+                name='static_analyzer_ios'),
         re_path(r'^view_file_ios/$', io_view_source.run),
         # Windows
-        re_path(r'^static_analyzer_windows/$', windows.staticanalyzer_windows),
+        re_path(r'^static_analyzer_windows/$',
+                windows.staticanalyzer_windows,
+                name='static_analyzer_windows'),
         # Shared
         re_path(r'^pdf/$', pdf.pdf),
         re_path(r'^appsec_dashboard/(?P<checksum>[0-9a-f]{32})/$',

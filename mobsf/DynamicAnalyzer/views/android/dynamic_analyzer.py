@@ -320,10 +320,7 @@ def trigger_static_analysis(request, checksum):
             'file_name': f'{package}.apk',
         }
         add_to_recent_scan(data)
-        return HttpResponseRedirect(
-            f'/static_analyzer/?name='  # lgtm [py/url-redirection]
-            f'{package}.apk&checksum={checksum}'
-            f'&type=apk')
+        return HttpResponseRedirect(f'/static_analyzer/{checksum}/')
     except Exception:
         msg = 'On device APK Static Analysis'
         logger.exception(msg)
