@@ -113,6 +113,7 @@ def a_analysis(request, app_dict, rescan, api):
                 'subarch': '',
             },
             'bin_type': 'A',
+            'framework_analysis': {},
         }
         # Analyze static library
         slib = library_analysis(app_dict['bin_dir'], 'ar')
