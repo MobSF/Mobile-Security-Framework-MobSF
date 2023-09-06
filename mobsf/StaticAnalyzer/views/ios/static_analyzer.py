@@ -33,7 +33,7 @@ from mobsf.StaticAnalyzer.views.ios.db_interaction import (
 from mobsf.StaticAnalyzer.views.ios.dylib import dylib_analysis
 from mobsf.StaticAnalyzer.views.ios.file_analysis import ios_list_files
 from mobsf.StaticAnalyzer.views.ios.icon_analysis import (
-    get_icon,
+    get_icon_from_ipa,
     get_icon_source,
 )
 from mobsf.StaticAnalyzer.views.ios.plist_analysis import (
@@ -102,6 +102,7 @@ def static_analyzer_ios(request, checksum, api=False):
         tools_dir = app_dict[
             'directory'] / 'StaticAnalyzer' / 'tools' / 'ios'
         app_dict['tools_dir'] = tools_dir.as_posix()
+        app_dict['icon_path'] = ''
         if file_type == 'ipa':
             app_dict['app_file'] = app_dict[
                 'md5_hash'] + '.ipa'  # NEW FILENAME
@@ -153,9 +154,8 @@ def static_analyzer_ios(request, checksum, api=False):
                 bin_dict['dylib_analysis'] = lb['macho_analysis']
                 bin_dict['framework_analysis'] = lb['framework_analysis']
                 # Get Icon
-                app_dict['icon_found'] = get_icon(
-                    app_dict['md5_hash'],
-                    app_dict['bin_dir'],
+                get_icon_from_ipa(
+                    app_dict,
                     infoplist_dict.get('bin'))
                 # Extract String metadata
                 code_dict = get_strings_metadata(
@@ -240,9 +240,7 @@ def static_analyzer_ios(request, checksum, api=False):
                 if ios_strs['secrets']:
                     app_dict['secrets'].extend(list(ios_strs['secrets']))
                 # Get App Icon
-                app_dict['icon_found'] = get_icon_source(
-                    app_dict['md5_hash'],
-                    app_dict['app_dir'])
+                get_icon_source(app_dict)
                 # Firebase DB Check
                 code_analysis_dic['firebase'] = firebase_analysis(
                     list(set(code_analysis_dic['urls_list'])))

@@ -46,7 +46,7 @@
       
      <div class="app">
       {% if app_type not in 'Dylib,A' %}
-      <img class="center" id="icon" src="{% if not appstore_details.error %}{{appstore_details.icon}}{% elif icon_found %}{{dwd_dir}}{{ md5 }}-icon.png{% else %}{{base_url}}{% static 'img/no_icon.png' %}{% endif %}" alt="app_icon"/>
+      <img class="center" id="icon" src="{% if not appstore_details.error %}{{appstore_details.icon}}{% elif icon_path %}{{dwd_dir}}{{ icon_path }}{% else %}{{base_url}}{% static 'img/no_icon.png' %}{% endif %}" alt="app_icon"/>
       {% else %}
       <img class="center" id="icon" src="{{base_url}}{% static 'img/no_icon.png' %}" alt="app_icon"/>
       {% endif %}

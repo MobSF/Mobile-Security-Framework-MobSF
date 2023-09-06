@@ -131,7 +131,6 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
                 },
                 'browsable_activities': {},
                 'permissions': {},
-                'icon_hidden': True,
                 'network_security': {
                     'network_findings': [],
                     'network_summary': {},
@@ -180,8 +179,6 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
             code_an_dic['urls_list'])
 
         app_dic['zipped'] = analysis_type
-        app_dic['icon_hidden'] = True
-        app_dic['icon_found'] = False
         context = save_get_ctx(
             app_dic,
             man_data_dic,

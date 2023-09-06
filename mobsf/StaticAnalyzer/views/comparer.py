@@ -120,7 +120,7 @@ def generic_compare(request,
         'apkid': {},
     }
     static_fields = ['md5', 'file_name', 'size', 'icon_found',
-                     'icon_hidden', 'activities', 'services', 'providers',
+                     'activities', 'services', 'providers',
                      'receivers', 'exported_count', 'apkid']
 
     # For now - support only android

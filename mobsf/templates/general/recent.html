@@ -54,11 +54,7 @@
                     {% for e in entries %}
                         <tr>
                             <td style="text-align: center;">
-                                <img id="app_icon" src="/download/{{ e.MD5 }}-icon.png" 
-                                {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:"%}
-                                onerror="this.onerror=null;this.src='/download/{{ e.MD5 }}-icon.svg';"
-                                {% else %} onerror="this.src='{% static 'img/no_icon.png' %}'"
-                                {% endif %}>
+                                <img id="app_icon" src="{% if e.ICON_PATH %}/download/{{ e.ICON_PATH }}{% else %}{% static 'img/no_icon.png' %}{% endif %}">
                                 {% if e.PACKAGE_NAME or e.APP_NAME %}
                                   <br/><strong>{{ e.APP_NAME }} {% if e.VERSION_NAME %} - {{ e.VERSION_NAME }} {% endif %}</strong>
                                   </br>{{ e.PACKAGE_NAME }}

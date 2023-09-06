@@ -86,7 +86,6 @@ def manifest_analysis(mfxml, ns, man_data_dic, src_type, app_dir):
         exported = []
         browsable_activities = {}
         permission_dict = {}
-        icon_hidden = True
         do_netsec = False
         debuggable = False
         # PERMISSION
@@ -644,7 +643,6 @@ def manifest_analysis(mfxml, ns, man_data_dic, src_type, app_dir):
 
         for category in man_data_dic['categories']:
             if category == 'android.intent.category.LAUNCHER':
-                icon_hidden = False
                 break
 
         permissions = {}
@@ -668,7 +666,6 @@ def manifest_analysis(mfxml, ns, man_data_dic, src_type, app_dir):
             'exported_cnt': exported_comp,
             'browsable_activities': browsable_activities,
             'permissions': permissions,
-            'icon_hidden': icon_hidden,
             'network_security': network_security.analysis(
                 app_dir,
                 do_netsec,

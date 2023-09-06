@@ -395,10 +395,7 @@
                 <div class="col-2">
                   <p><strong><i class="fas fa-check-double"></i> APP SCORES</strong></p>
           {% if app_type not in 'so' %}
-                  <img id="app_icon" onerror="this.onerror=null;this.src='/download/{{ md5 }}-icon.svg';" src="{% if icon_found %}/download/{{ md5 }}-icon.png{% else %}{% static 'img/no_icon.png' %}{% endif %}"/>
-                  {% if icon_hidden %}
-                    <strong>Hidden Icon!</strong>
-                  {% endif %}
+                  <img id="app_icon" src="{% if icon_path %}/download/{{icon_path}}{% else %}{% static 'img/no_icon.png' %}{% endif %}"/>
                   <p>
                   {% if average_cvss %}
                   <span class="badge bg-info">Average CVSS</span> <strong>{{ average_cvss }} </strong><br/>

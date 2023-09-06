@@ -52,8 +52,8 @@ from mobsf.StaticAnalyzer.views.android.db_interaction import (
     save_get_ctx,
 )
 from mobsf.StaticAnalyzer.views.android.icon_analysis import (
-    find_icon_path_zip,
     get_icon_apk,
+    get_icon_from_src,
 )
 from mobsf.StaticAnalyzer.views.android.manifest_analysis import (
     manifest_analysis,
@@ -132,6 +132,7 @@ def static_analyzer(request, checksum, api=False):
         app_dic['app_dir'] = Path(settings.UPLD_DIR) / checksum
         app_dic['tools_dir'] = app_dic['dir'] / 'StaticAnalyzer' / 'tools'
         app_dic['tools_dir'] = app_dic['tools_dir'].as_posix()
+        app_dic['icon_path'] = ''
         logger.info('Starting Analysis on: %s', app_dic['app_name'])
         if typ == 'xapk':
             # Handle XAPK
@@ -365,33 +366,7 @@ def static_analyzer(request, checksum, api=False):
                         app_dic['app_dir'],
                     )
                     # Get icon
-                    eclipse_res_path = os.path.join(
-                        app_dic['app_dir'], 'res')
-                    studio_res_path = os.path.join(
-                        app_dic['app_dir'], 'app', 'src', 'main', 'res')
-                    if os.path.exists(eclipse_res_path):
-                        res_path = eclipse_res_path
-                    elif os.path.exists(studio_res_path):
-                        res_path = studio_res_path
-                    else:
-                        res_path = ''
-
-                    app_dic['icon_hidden'] = man_an_dic['icon_hidden']
-                    app_dic['icon_found'] = False
-                    app_dic['icon_path'] = ''
-                    if res_path:
-                        app_dic['icon_path'] = find_icon_path_zip(
-                            res_path, man_data_dic['icons'])
-                        if app_dic['icon_path']:
-                            app_dic['icon_found'] = True
-
-                    if app_dic['icon_path']:
-                        if os.path.exists(app_dic['icon_path']):
-                            shutil.copy2(
-                                app_dic['icon_path'],
-                                os.path.join(
-                                    settings.DWD_DIR,
-                                    app_dic['md5'] + '-icon.png'))
+                    get_icon_from_src(app_dic, man_data_dic['icons'])
 
                     code_an_dic = code_analysis(
                         app_dic['app_dir'],

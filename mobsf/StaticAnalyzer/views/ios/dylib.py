@@ -107,8 +107,6 @@ def dylib_analysis(request, app_dict, rescan, api):
             bin_dict['bin_code_analysis'],
             all_files['special_files'],
             b'')
-        # Get Icon
-        app_dict['icon_found'] = False
         # Extract String metadata
         code_dict = get_strings_metadata(
             app_dict,

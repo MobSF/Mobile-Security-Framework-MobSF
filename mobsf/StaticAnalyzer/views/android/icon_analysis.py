@@ -76,6 +76,25 @@ def guess_icon_path(res_dir):
     return ''
 
 
+def get_icon_from_src(app_dic, icon_from_mfst):
+    res_path = ''
+    eclipse = Path(app_dic['app_dir']) / 'res'
+    studio = Path(app_dic['app_dir']) / 'app' / 'src' / 'main' / 'res'
+    if eclipse.exists():
+        res_path = eclipse.as_posix()
+    elif studio.exists():
+        res_path = studio.as_posix()
+    if not res_path:
+        return
+
+    icon_file = find_icon_path_zip(res_path, icon_from_mfst)
+    if icon_file and Path(icon_file).exists():
+        dwd = Path(settings.DWD_DIR)
+        out = dwd / (app_dic['md5'] + '-icon' + Path(icon_file).suffix)
+        copy2(icon_file, out)
+        app_dic['icon_path'] = out.name
+
+
 def find_icon_path_zip(res_dir, icon_paths_from_manifest):
     """
     Find icon.
@@ -181,9 +200,7 @@ def get_icon_src(a, app_dic, res_dir):
 def get_icon_apk(apk, app_dic):
     """Get/Guess icon from APK binary."""
     app_dir = Path(app_dic['app_dir'])
-    app_dic['icon_path'] = ''
-    app_dic['icon_found'] = False
-    app_dic['icon_hidden'] = True
+    icon_file = ''
 
     res_path = app_dir / 'res'
     if not res_path.exists():
@@ -196,25 +213,20 @@ def get_icon_apk(apk, app_dic):
             copytree(apk_tool_res, res_path)
         except Exception:
             pass
-    # Set app_dic with icon details
     if res_path.exists():
         # Icon lookup in res directory
-        app_dic['icon_path'] = get_icon_src(
+        icon_file = get_icon_src(
             apk,
             app_dic,
             res_path.as_posix())
-        app_dic['icon_found'] = bool(app_dic['icon_path'])
-        app_dic['icon_hidden'] = not app_dic['icon_found']
 
-    if app_dic['icon_path']:
-        src = Path(app_dic['icon_path'])
-        # Convert SVG icon to PNG
-        if src.as_posix().endswith('.svg'):
-            src = convert_svg_to_png(src, app_dic['tools_dir'])
-        # Copy PNG to Downloads
+    if icon_file:
+        src = Path(icon_file)
+        # Copy PNG/SVG to Downloads
         out = Path(settings.DWD_DIR) / (app_dic['md5'] + '-icon' + src.suffix)
         if src and src.exists() and src.is_file():
             copy2(src.as_posix(), out.as_posix())
+        app_dic['icon_path'] = out.name
 
 
 def transform_svg(fpath, bpath, output):
@@ -338,35 +350,3 @@ def convert_vector_to_svg(app_dir, tools_dir, icon_name, apktool_res):
             timeout=30)
     except Exception:
         logger.exception('Android vector to svg conversion failed')
-
-
-def convert_svg_to_png(svg_file, tools_dir):
-    """Convert SVG to PNG."""
-    try:
-        fnull = open(os.devnull, 'w')
-        userbin = getattr(settings, 'BATIK_BINARY', '')
-        if userbin and is_file_exists(userbin):
-            batik = userbin
-        else:
-            batik = Path(tools_dir) / 'batik' / 'batik-rasterizer-1.15.jar'
-        out = svg_file.parent / (svg_file.stem + '.png')
-        args = [
-            find_java_binary(),
-            '-jar',
-            batik.as_posix(),
-            svg_file.as_posix(),
-            '-d',
-            out.as_posix(),
-        ]
-        logger.info('Converting icon svg to png')
-        subprocess.run(
-            args,
-            stdout=fnull,
-            stderr=subprocess.STDOUT,
-            timeout=30)
-        if out.stat().st_size == 0:
-            return svg_file
-        return out
-    except Exception:
-        logger.exception('Icon conversion from svg to png failed')
-    return None

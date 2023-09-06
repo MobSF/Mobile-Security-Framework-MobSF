@@ -57,7 +57,7 @@ def dynamic_analysis(request, api=False):
 
             logcat = Path(settings.UPLD_DIR) / apk.MD5 / 'logcat.txt'
             temp_dict = {
-                'ICON_FOUND': apk.ICON_FOUND,
+                'ICON_PATH': apk.ICON_PATH,
                 'MD5': apk.MD5,
                 'APP_NAME': apk.APP_NAME,
                 'VERSION_NAME': apk.VERSION_NAME,
@@ -238,8 +238,7 @@ def httptools_start(request):
         else:
             project = ''
         url = f'{httptools_url}/dashboard/{project}'
-        return HttpResponseRedirect(
-            url)  # lgtm [py/reflective-xss] lgtm [py/url-redirection]
+        return HttpResponseRedirect(url)
     except Exception:
         logger.exception('Starting httptools Web UI')
         err = 'Error Starting httptools UI'
