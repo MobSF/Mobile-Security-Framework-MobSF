@@ -77,7 +77,7 @@
             </a>
           </li>
             <li class="nav-item">
-              <a href="../pdf/?md5={{ md5 }}" class="nav-link">
+              <a href="{% url "pdf" checksum=md5 %}" class="nav-link">
               <i class="nav-icon fas fa-file-pdf"></i>
               <p>
                 PDF Report

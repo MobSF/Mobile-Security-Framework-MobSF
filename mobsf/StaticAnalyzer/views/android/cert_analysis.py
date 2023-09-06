@@ -91,10 +91,12 @@ def get_pub_key_details(data):
     return certlist
 
 
-def get_signature_versions(app_path, tools_dir):
+def get_signature_versions(app_path, tools_dir, signed):
     """Get signature versions using apksigner."""
     v1, v2, v3, v4 = False, False, False, False
     try:
+        if not signed:
+            return v1, v2, v3, v4
         logger.info('Getting Signature Versions')
         apksigner = Path(tools_dir) / 'apksigner.jar'
         args = [find_java_binary(), '-Xmx1024M',
@@ -124,8 +126,6 @@ def apksigtool_cert(apk_path, tools_dir):
     signed = False
     certs_no = 0
     min_sdk = None
-    v1, v2, v3, v4 = get_signature_versions(
-        apk_path, tools_dir)
     try:
         from apksigtool import (
             APKSignatureSchemeBlock,
@@ -155,6 +155,7 @@ def apksigtool_cert(apk_path, tools_dir):
             certlist.append('Binary is signed')
         else:
             certlist.append('Binary is not signed')
+        v1, v2, v3, v4 = get_signature_versions(apk_path, tools_dir, signed)
         certlist.append(f'v1 signature: {v1}')
         certlist.append(f'v2 signature: {v2}')
         certlist.append(f'v3 signature: {v3}')
@@ -180,14 +181,13 @@ def get_cert_data(a, app_path, tools_dir):
     """Get Human readable certificate."""
     certlist = []
     signed = False
-    v1, v2, v3, v4 = get_signature_versions(
-        app_path, tools_dir)
     if a.is_signed():
         signed = True
         certlist.append('Binary is signed')
     else:
         certlist.append('Binary is not signed')
         certlist.append('Missing certificate')
+    v1, v2, v3, v4 = get_signature_versions(app_path, tools_dir, signed)
     certlist.append(f'v1 signature: {v1}')
     certlist.append(f'v2 signature: {v2}')
     certlist.append(f'v3 signature: {v3}')

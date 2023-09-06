@@ -254,7 +254,7 @@
           </li>
           {% endif %}
             <li class="nav-item">
-              <a href="../pdf/?md5={{ md5 }}" class="nav-link">
+              <a href="{% url "pdf" checksum=md5 %}" class="nav-link">
               <i class="nav-icon fas fa-file-pdf"></i>
               <p>
                 PDF Report
@@ -326,7 +326,7 @@
                   {% endif %}
                 </p>
                 {% if app_type not in 'Dylib,A' %}
-                  <p> <a href="../appsec_dashboard/{{ md5 }}/" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
+                  <p> <a href="{% url 'appsec_dashboard' checksum=md5 %}" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
                 {% endif %}
                 </div>
                 <div class="col-4">
@@ -467,9 +467,9 @@
                     <a role="button" class="btn btn-primary" data-target="#mplist" data-toggle="modal" href="#"><i class="fa fa-list"></i> View Info.plist</a>
                     {% endif %}
                     {% if app_type not in 'Dylib,A' %}
-                    <a target="_blank" href="../view_file_ios/?file=classdump.txt&amp;md5={{ md5 }}&amp;type=ios" class="btn btn-warning" role="button"><i class="fa fa-code"></i> View Class Dump</a>
+                    <a target="_blank" href="{% url 'view_file_ios' %}?file=classdump.txt&amp;md5={{ md5 }}&amp;type=ios" class="btn btn-warning" role="button"><i class="fa fa-code"></i> View Class Dump</a>
                     {% endif %}
-                    <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type={% if app_type in 'Dylib' %}dylib{% elif app_type in 'A' %}a{% else %}ipa{% endif %}" class="btn btn-warning"> <i class="fa fa-download"></i> Download {% if app_type in 'Dylib' %}DYLIB{% elif app_type in 'A' %}A{% else %}IPA{% endif %}</a>
+                    <a href="{% url 'generate_downloads' %}?hash={{ md5 }}&amp;file_type={% if app_type in 'Dylib' %}dylib{% elif app_type in 'A' %}a{% else %}ipa{% endif %}" class="btn btn-warning"> <i class="fa fa-download"></i> Download {% if app_type in 'Dylib' %}DYLIB{% elif app_type in 'A' %}A{% else %}IPA{% endif %}</a>
                  </p>
                 </div>
               </div>
@@ -1230,7 +1230,7 @@
                       <td>
                         {% for file in item.files %}
                           {% if file.type %}
-                          <a href="../view_file_ios/?file={{file.file_path}}&amp;type={{file.type}}&amp;md5={{file.hash}}">{{ file.file_path }}</a>
+                          <a href="{% url 'view_file_ios' %}?file={{file.file_path}}&amp;type={{file.type}}&amp;md5={{file.hash}}">{{ file.file_path }}</a>
                           {% else %}
                           {{ file.file_path }}
                           {% endif %}
@@ -1451,7 +1451,7 @@
                        {% endfor %}
                         </td>
                        <td>
-                          <a href="../view_file_ios/?file={{urldict|key:"path"}}&amp;md5={{ md5}}&amp;type=ipa">{{urldict|key:"path"}}</a>
+                          <a href="{% url 'view_file_ios' %}?file={{urldict|key:"path"}}&amp;md5={{ md5}}&amp;type=ipa">{{urldict|key:"path"}}</a>
                        </td>
                     </tr>
                   {% endfor %} 
@@ -1542,7 +1542,7 @@
                        {% endfor %}
                         </td>
                        <td>
-                          <a href="../view_file_ios/?file={{email_dict|key:"path"}}&amp;md5={{ md5}}&amp;type=ipa">{{email_dict|key:"path"}}</a>   
+                          <a href="{% url 'view_file_ios' %}?file={{email_dict|key:"path"}}&amp;md5={{ md5}}&amp;type=ipa">{{email_dict|key:"path"}}</a>   
                        </td>
                     </tr>
                   {% endfor %} 

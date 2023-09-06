@@ -112,7 +112,10 @@ def api_pdf_report(request):
     if 'hash' not in request.POST:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
-    resp = pdf(request, api=True)
+    resp = pdf(
+        request,
+        request.POST['hash'],
+        api=True)
     if 'error' in resp:
         if resp.get('error') == 'Invalid scan hash':
             response = make_api_response(resp, 400)
@@ -137,7 +140,11 @@ def api_json_report(request):
     if 'hash' not in request.POST:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
-    resp = pdf(request, api=True, jsonres=True)
+    resp = pdf(
+        request,
+        request.POST['hash'],
+        api=True,
+        jsonres=True)
     if 'error' in resp:
         if resp.get('error') == 'Invalid scan hash':
             response = make_api_response(resp, 400)

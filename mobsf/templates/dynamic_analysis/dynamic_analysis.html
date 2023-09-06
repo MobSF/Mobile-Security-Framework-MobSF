@@ -166,13 +166,13 @@ textarea:focus {
                            </td>
                             <td align="center"> 
                               <p>
-                                <a class="btn btn-success disable" onclick="dynamic_loader()" href="../android_dynamic/{{e.MD5}}"><i class="fab fa-android"></i> Start Dynamic Analysis</a>
+                                <a class="btn btn-success disable" onclick="dynamic_loader()" href="{% url "dynamic_analyzer" checksum=e.MD5 %}"><i class="fab fa-android"></i> Start Dynamic Analysis</a>
                               </p>
                               <p>
-                                <a class="btn btn-primary btn-sm disable" onclick="dynamic_loader()" href="../android_dynamic/{{e.MD5}}?re_install=0"><i class="fab fa-android"></i> Start Dynamic Analysis (without Re-install)</a>
+                                <a class="btn btn-primary btn-sm disable" onclick="dynamic_loader()" href="{% url "dynamic_analyzer" checksum=e.MD5 %}?re_install=0"><i class="fab fa-android"></i> Start Dynamic Analysis (without Re-install)</a>
                               </p>
                               <p>
-                                 <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="../dynamic_report/{{ e.MD5 }}"><i class="fa fa-mobile"></i> View Report </a>
+                                 <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url "dynamic_report" checksum=e.MD5 %}"><i class="fa fa-mobile"></i> View Report </a>
                               </p>
                             </td>
                         </tr>
@@ -203,13 +203,13 @@ textarea:focus {
                          </td>
                           <td align="center"> 
                             <p>
-                              <a class="btn btn-primary disable" onclick="dynamic_loader()" href="../android_dynamic/{{hash}}?re_install=0&install=0"><i class="fab fa-android"></i> Start Dynamic Analysis</a>
+                              <a class="btn btn-primary disable" onclick="dynamic_loader()" href={% url "dynamic_analyzer" checksum=hash %}?re_install=0&install=0"><i class="fab fa-android"></i> Start Dynamic Analysis</a>
                             </p>
                             <p>
-                              <a class="btn btn-warning disable" onclick="dynamic_loader()" href="../static_scan/{{hash}}"><i class="fa fa-download"></i> Pull &amp; Static Analysis</a>
+                              <a class="btn btn-warning disable" onclick="dynamic_loader()" href="{% url "static_scan" checksum=hash %}"><i class="fa fa-download"></i> Pull &amp; Static Analysis</a>
                               </p>
                             <p>
-                               <a class="btn btn-info" href="../dynamic_report/{{hash}}"><i class="fa fa-mobile"></i> View Report </a>
+                               <a class="btn btn-info" href="{% url "dynamic_report" checksum=hash %}"><i class="fa fa-mobile"></i> View Report </a>
                             </p>
                           </td>
                       </tr>
@@ -288,7 +288,7 @@ function dynamic_loader(){
  $("#mobsfy").one( "click", function() {
         $('#stat').append("\nMobSFying Android Runtime\n");
         $.ajax({
-                url : "../mobsfy/", 
+                url : "{% url 'mobsfy' %}", 
                 type : "POST",
                 dataType: "json", 
                 data : {

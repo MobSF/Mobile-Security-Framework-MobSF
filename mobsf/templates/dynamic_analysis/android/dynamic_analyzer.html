@@ -97,7 +97,7 @@
                   {% endif %}
                   <a href="#" id="ss" class="btn btn-primary" role="button"><i class="fa fa-camera"></i> Take a Screenshot</a>
                   <a href="#" id="logstream" class="btn btn-primary"><i class="fa fa-water"></i> Logcat Stream</a>
-                  <a href="../../live_api/?hash={{ hash }}&amp;package={{ package }}" id="apimon" target="_blank" class="btn btn-primary" style='display: none'><i class="fa fa-search"></i> Live API Monitor</a>
+                  <a href="{% url 'live_api' %}?hash={{ hash }}&amp;package={{ package }}" id="apimon" target="_blank" class="btn btn-primary" style='display: none'><i class="fa fa-search"></i> Live API Monitor</a>
                   <a href="#" id="stop" class="btn btn-info" role="button" ><i class="fa fa-file-alt"></i> Generate Report</a>
                 </div>
               </div>
@@ -119,7 +119,7 @@
                   <div class="sensor"></div>
                   <div class="speaker"></div>
                   <div class="screen" id="container">
-                  <img width="320" height="580" src="../../download/screen/screen.png" id="my" onerror="$('#my').attr('src','/static/img/loading.jpg')" style="background-color:black;">
+                  <img width="320" height="580" src="{% url 'download' %}screen/screen.png" id="my" onerror="$('#my').attr('src','/static/img/loading.jpg')" style="background-color:black;">
                   </div>
                   </div>
                 </div>
@@ -892,7 +892,7 @@ $("#proxy").click(function() {
 });
 
 function start_activity(activity){
-  action('../start_activity/', {hash: '{{ hash }}', 'activity': activity}, function(json) {
+  action('{% url "start_activity" %}', {hash: '{{ hash }}', 'activity': activity}, function(json) {
     if (json.status === "ok")
         print_status("Activity Started");
     else

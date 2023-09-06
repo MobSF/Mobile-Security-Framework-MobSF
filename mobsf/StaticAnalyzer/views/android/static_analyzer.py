@@ -195,8 +195,6 @@ def static_analyzer(request, checksum, api=False):
                 get_icon_apk(apk, app_dic)
 
                 # Set Manifest link
-                app_dic['mani'] = (
-                    f'../manifest_view/?md5={app_dic["md5"]}&type=apk')
                 man_data_dic = manifest_data(app_dic['parsed_xml'], ns)
                 app_dic['playstore'] = get_app_details(
                     man_data_dic['packagename'])
@@ -356,9 +354,6 @@ def static_analyzer(request, checksum, api=False):
                     )
 
                     # Set manifest view link
-                    app_dic['mani'] = (
-                        f'../manifest_view/?md5={app_dic["md5"]}'
-                        f'&type={pro_type}')
                     man_data_dic = manifest_data(app_dic['parsed_xml'], ns)
                     app_dic['playstore'] = get_app_details(
                         man_data_dic['packagename'])

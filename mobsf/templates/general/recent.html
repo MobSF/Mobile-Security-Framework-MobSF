@@ -61,13 +61,13 @@
                                   {% if e.FILE_NAME|slice:"-6:" != '.dylib' %}
                                     {% if e.FILE_NAME|slice:"-3:" != '.so' %}
                                       {% if e.FILE_NAME|slice:"-2:" != '.a' %}
-                                    <p> <a href="../appsec_dashboard/{{ e.MD5 }}/" class="btn btn-sm btn-outline-primary" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
+                                    <p> <a href="{% url "appsec_dashboard" checksum=e.MD5 %}" class="btn btn-sm btn-outline-primary" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
                                       {% endif %}
                                     {% endif %}
                                   {% endif %}
                                   <p><a class="btn btn-primary btn-sm" href="../{{ e.ANALYZER }}/{{e.MD5}}/"><i class="fas fa-eye"></i> Static Report</a>
                                   {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:"%}
-                                    <a  class="btn btn-success btn-sm {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="../dynamic_report/{{ e.MD5  }}"><i class="fa fa-mobile"></i> Dynamic Report</a>
+                                    <a  class="btn btn-success btn-sm {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url "dynamic_report" checksum=e.MD5 %}"><i class="fa fa-mobile"></i> Dynamic Report</a>
                                   {% endif %}
                                   </p>
                                 {% else %}
@@ -93,7 +93,7 @@
                             <td>{{ e.MD5 }}</td>
                             <td>{{ e.TIMESTAMP }}</td>
                             <td><p>
-                                   <a class="btn btn-outline-primary btn-sm" href="../pdf/?md5={{ e.MD5 }}"><i class="fas fa-file-pdf"></i></a>
+                                   <a class="btn btn-outline-primary btn-sm" href="{% url "pdf" checksum=e.MD5%}"><i class="fas fa-file-pdf"></i></a>
                                    <a class="btn btn-outline-info btn-sm" href="../{{ e.ANALYZER }}/{{e.MD5}}/?rescan=1"><i class="fas fa-sync-alt"></i></a>
                                 </p>
                             {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:"%}
@@ -222,7 +222,7 @@
         if (result.value) {
             var md5_hash = item.id;
             $.ajax({
-                    url: '../delete_scan/',
+                    url: '{% url "delete_scan" %}',
                         type : 'POST',
                     dataType: 'json',
                         data : {

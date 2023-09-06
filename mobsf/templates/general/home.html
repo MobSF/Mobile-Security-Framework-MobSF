@@ -134,7 +134,7 @@
                     _("status").innerText = 'Trying to download ...';
                     show_loader();
                     $.ajax({
-                        url : '../download_scan/', 
+                        url : '{% url "download_scan" %}', 
                         type : "POST",
                         dataType: "json", 
                         data : {
