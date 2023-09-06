@@ -212,7 +212,7 @@ def get_icon_apk(apk, app_dic):
         if src.as_posix().endswith('.svg'):
             src = convert_svg_to_png(src, app_dic['tools_dir'])
         # Copy PNG to Downloads
-        out = Path(settings.DWD_DIR) / (app_dic['md5'] + '-icon.png')
+        out = Path(settings.DWD_DIR) / (app_dic['md5'] + '-icon' + src.suffix)
         if src and src.exists() and src.is_file():
             copy2(src.as_posix(), out.as_posix())
 
@@ -364,6 +364,8 @@ def convert_svg_to_png(svg_file, tools_dir):
             stdout=fnull,
             stderr=subprocess.STDOUT,
             timeout=30)
+        if out.stat().st_size == 0:
+            return svg_file
         return out
     except Exception:
         logger.exception('Icon conversion from svg to png failed')

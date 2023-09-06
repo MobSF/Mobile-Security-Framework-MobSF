@@ -65,6 +65,7 @@ SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MobSF_HOME)
 ALLOWED_EXTENSIONS = {
     '.txt': 'text/plain',
     '.png': 'image/png',
+    '.svg': 'image/svg+xml',
     '.zip': 'application/zip',
     '.tar': 'application/x-tar',
     '.apk': 'application/octet-stream',
