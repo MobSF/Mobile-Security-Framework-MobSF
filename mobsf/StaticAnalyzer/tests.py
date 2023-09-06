@@ -70,22 +70,22 @@ def static_analysis_test():
         logger.info('Running PDF Generation Test')
         if platform.system() in ['Darwin', 'Linux']:
             pdfs = [
-                '/pdf/?md5=02e7989c457ab67eb514a8328779f256',
-                '/pdf/?md5=3a552566097a8de588b8184b059b0158',
-                '/pdf/?md5=6c23c2970551be15f32bbab0b5db0c71',
-                '/pdf/?md5=52c50ae824e329ba8b5b7a0f523efffe',
-                '/pdf/?md5=57bb5be0ea44a755ada4a93885c3825e',
-                '/pdf/?md5=8179b557433835827a70510584f3143e',
-                '/pdf/?md5=7b0a23bffc80bac05739ea1af898daad',
+                '/pdf/02e7989c457ab67eb514a8328779f256/',
+                '/pdf/3a552566097a8de588b8184b059b0158/',
+                '/pdf/6c23c2970551be15f32bbab0b5db0c71/',
+                '/pdf/52c50ae824e329ba8b5b7a0f523efffe/',
+                '/pdf/57bb5be0ea44a755ada4a93885c3825e/',
+                '/pdf/8179b557433835827a70510584f3143e/',
+                '/pdf/7b0a23bffc80bac05739ea1af898daad/',
             ]
         else:
             pdfs = [
-                '/pdf/?md5=02e7989c457ab67eb514a8328779f256',
-                '/pdf/?md5=3a552566097a8de588b8184b059b0158',
-                '/pdf/?md5=52c50ae824e329ba8b5b7a0f523efffe',
-                '/pdf/?md5=57bb5be0ea44a755ada4a93885c3825e',
-                '/pdf/?md5=8179b557433835827a70510584f3143e',
-                '/pdf/?md5=7b0a23bffc80bac05739ea1af898daad',
+                '/pdf/02e7989c457ab67eb514a8328779f256/',
+                '/pdf/3a552566097a8de588b8184b059b0158/',
+                '/pdf/52c50ae824e329ba8b5b7a0f523efffe/',
+                '/pdf/57bb5be0ea44a755ada4a93885c3825e/',
+                '/pdf/8179b557433835827a70510584f3143e/',
+                '/pdf/7b0a23bffc80bac05739ea1af898daad/',
             ]
 
         for pdf in pdfs:
