@@ -192,6 +192,9 @@ def get_icon_src(a, app_dic, res_dir):
         else:
             # We found png icon, the easy path
             icon_src = (app_dir / icon_name).as_posix()
+        if icon_src.endswith('.xml'):
+            logger.warning('Cannot find icon file from xml')
+            icon_src = ''
         return icon_src
     except Exception:
         logger.exception('Fetching icon function')
@@ -277,15 +280,20 @@ def get_icon_svg_from_xml(app_dir, icon_xml_file):
             search_loc = app_dir / 'apktool_out' / 'res' / 'drawable'
             if not search_loc.exists():
                 return None
+            rand_icon = ''
             for f in search_loc.rglob('*.svg'):
+                rand_icon = f.as_posix()
                 if 'ic_launcher_foreground.svg' in f.name:
                     fsvg = f
                 if 'ic_launcher_background.svg' in f.name:
                     bsvg = f
                 if fsvg and bsvg:
                     break
-            output = search_loc / 'ic_launcher.svg'
-            return transform_svg(fsvg, bsvg, output)
+            if fsvg and bsvg:
+                output = search_loc / 'ic_launcher.svg'
+                return transform_svg(fsvg, bsvg, output)
+            else:
+                return rand_icon
         except Exception:
             logger.exception('Guessing icon svg')
 

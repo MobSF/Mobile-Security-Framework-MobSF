@@ -190,11 +190,6 @@ def static_analyzer(request, checksum, api=False):
                     app_dic['app_dir'],
                     True,
                 )
-
-                # Get icon
-                # apktool should run before this
-                get_icon_apk(apk, app_dic)
-
                 # Set Manifest link
                 man_data_dic = manifest_data(app_dic['parsed_xml'], ns)
                 app_dic['playstore'] = get_app_details(
@@ -206,6 +201,10 @@ def static_analyzer(request, checksum, api=False):
                     '',
                     app_dic['app_dir'],
                 )
+                # Get icon
+                # apktool should run before this
+                get_icon_apk(apk, app_dic)
+
                 elf_dict = library_analysis(app_dic['app_dir'], 'elf')
                 cert_dic = cert_info(
                     apk,
