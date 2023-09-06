@@ -133,7 +133,8 @@ def staticanalyzer_windows(request, checksum, api=False):
                                                 xml_dic,
                                                 bin_an_dic)
             context['virus_total'] = None
-            template = 'static_analysis/windows_binary_analysis.html'
+        template = 'static_analysis/windows_binary_analysis.html'
+        context['virus_total'] = None
         if settings.VT_ENABLED:
             vt = VirusTotal.VirusTotal()
             context['virus_total'] = vt.get_result(
