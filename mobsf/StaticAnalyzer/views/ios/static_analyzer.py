@@ -207,7 +207,7 @@ def static_analyzer_ios(request, checksum, api=False):
             return dylib_analysis(request, app_dict, rescan, api)
         elif file_type == 'a':
             return a_analysis(request, app_dict, rescan, api)
-        elif file_type == 'ios':
+        elif file_type in ('ios', 'zip'):
             ios_zip_db = StaticAnalyzerIOS.objects.filter(
                 MD5=app_dict['md5_hash'])
             if ios_zip_db.exists() and not rescan:
@@ -279,7 +279,7 @@ def static_analyzer_ios(request, checksum, api=False):
                 return render(request, template, context)
         else:
             msg = ('File Type not supported, '
-                   'Only IPA, A and DYLIB files are supported')
+                   'Only IPA, A, DYLIB and ZIP are supported')
             return print_n_send_error_response(request, msg, api)
     except Exception as exp:
         logger.exception('Error Performing Static Analysis')
