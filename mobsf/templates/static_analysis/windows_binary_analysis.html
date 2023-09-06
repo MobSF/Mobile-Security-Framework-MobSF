@@ -390,6 +390,10 @@
 <script src="{% static "adminlte/plugins/datatables/jquery.dataTables.min.js" %} "></script>
 <script src="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.js" %}"></script>
 <script>
+
+  // Remove rescan parameter
+  window.history.replaceState({}, '', window.location.pathname);
+
   $(function () {
     // Datatable
     $('table').DataTable({

@@ -1808,6 +1808,11 @@
 </script>
 <script src="{% static "others/js/suppression.js" %}"></script>
 <script>
+
+  // Remove rescan parameter
+  window.history.replaceState({}, '', window.location.pathname);
+
+
   // Globals
   const csrf = '{{ csrf_token }}'
   const pkg = '{{ bundle_id }}'
