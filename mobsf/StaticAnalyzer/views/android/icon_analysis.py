@@ -217,6 +217,21 @@ def get_icon_apk(apk, app_dic):
             copy2(src.as_posix(), out.as_posix())
 
 
+def transform_svg(fpath, bpath, output):
+    """Transform SVG from foreground and background."""
+    try:
+        import svgutils.transform as sg
+        background = sg.fromfile(bpath)
+        logo = sg.fromfile(fpath)
+        root = logo.getroot()
+        root.moveto(1, 1)
+        background.append([root])
+        background.save(output)
+        return output.as_posix()
+    except Exception:
+        return None
+
+
 def get_icon_svg_from_xml(app_dir, icon_xml_file):
     """
     Parse XML file for icon path.
@@ -242,17 +257,25 @@ def get_icon_svg_from_xml(app_dir, icon_xml_file):
             if fpath and bpath:
                 break
         # To not break existing users
-        import svgutils.transform as sg
-        background = sg.fromfile(bpath)
-        logo = sg.fromfile(fpath)
-        root = logo.getroot()
-        root.moveto(1, 1)
-        background.append([root])
         output = icon_xml.parent / f'{icon_xml.stem}.svg'
-        background.save(output)
-        return output.as_posix()
+        return transform_svg(fpath, bpath, output)
     except Exception:
-        return None
+        try:
+            fsvg, bsvg = None, None
+            search_loc = app_dir / 'apktool_out' / 'res' / 'drawable'
+            if not search_loc.exists():
+                return None
+            for f in search_loc.rglob('*.svg'):
+                if 'ic_launcher_foreground.svg' in f.name:
+                    fsvg = f
+                if 'ic_launcher_background.svg' in f.name:
+                    bsvg = f
+                if fsvg and bsvg:
+                    break
+            output = search_loc / 'ic_launcher.svg'
+            return transform_svg(fsvg, bsvg, output)
+        except Exception:
+            logger.exception('Guessing icon svg')
 
 
 def convert_axml_to_xml(app_dir, icon_file):
@@ -265,9 +288,9 @@ def convert_axml_to_xml(app_dir, icon_file):
             icon_bin_xml.read_bytes()).get_xml_obj()
         xml_txt = etree.tostring(
             aobj, pretty_print=True, encoding='utf-8')
+        out_xml.write_bytes(xml_txt)
         if b'<adaptive-icon' in xml_txt:
             return False
-        out_xml.write_bytes(xml_txt)
         return True
     except Exception:
         logger.exception('Failed to convert axml to xml')
