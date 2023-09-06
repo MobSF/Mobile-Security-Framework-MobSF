@@ -119,7 +119,7 @@ def generic_compare(request,
         'common_browsable_activities': {},
         'apkid': {},
     }
-    static_fields = ['md5', 'file_name', 'size', 'icon_found',
+    static_fields = ['md5', 'file_name', 'size', 'icon_path',
                      'activities', 'services', 'providers',
                      'receivers', 'exported_count', 'apkid']
 
