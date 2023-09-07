@@ -47,7 +47,7 @@ setup(
         'mobsf', 'mobsf.*',
     ]),
     include_package_data=True,
-    python_requires='>=3.8<=3.9',
+    python_requires='>=3.8<=3.10',
     entry_points={
         'console_scripts': [
             'mobsf = mobsf.__main__:main',

@@ -41,6 +41,17 @@ MANIFEST_DESC = {
         'name': ('App has a Network Security Configuration '
                  '[android:networkSecurityConfig=%s]'),
     },
+    'vulnerable_os_version': {
+        'title': ('App can be installed on a vulnerable Android version'
+                  '<br>[minSdk=%s]'),
+        'level': 'warning',
+        'description': ('This application can be installed on an older version'
+                        ' of android that has multiple unfixed '
+                        'vulnerabilities. Support an Android version > 8, '
+                        'API 26 to receive reasonable security updates.'),
+        'name': ('App can be installed on a vulnerable Android version'
+                 '[minSdk=%s]'),
+    },
     'app_is_debuggable': {
         'title': 'Debug Enabled For App<br>[android:debuggable=true]',
         'level': 'high',

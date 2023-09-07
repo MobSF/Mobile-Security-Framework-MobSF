@@ -31,6 +31,8 @@ def get_dex_files(app_dir):
 def dex_2_smali(app_dir, tools_dir):
     """Run dex2smali."""
     try:
+        if not getattr(settings, 'DEX2SMALI_ENABLED', True):
+            return
         logger.info('DEX -> SMALI')
         dexes = get_dex_files(app_dir)
         for dex_path in dexes:

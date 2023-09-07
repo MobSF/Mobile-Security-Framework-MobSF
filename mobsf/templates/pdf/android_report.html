@@ -182,7 +182,8 @@
       <h5>Max SDK:</h5> {{ max_sdk }}</br>
       <h5>Android Version Name:</h5> {{ version_name }}</br>
       <h5>Android Version Code:</h5> {{ version_code }}</br>
-
+     
+{% if app_type not in 'jar,aar' %}
       <h2><i class="fas fa-th-large"></i> APP COMPONENTS </h2>
 
         <h5>Activities:</h5> {{ activities | length }}</br>
@@ -193,40 +194,11 @@
         <h5>Exported Services:</h5> <span {% if exported_count.exported_services > 0 %} class="danger" {% endif %}> {{ exported_count.exported_services }}</span></br>
         <h5>Exported Receivers:</h5> <span {% if exported_count.exported_receivers > 0 %} class="danger" {% endif %}> {{ exported_count.exported_receivers }}</span></br>
         <h5>Exported Providers:</h5> <span {% if exported_count.exported_providers > 0 %} class="danger" {% endif %}> {{ exported_count.exported_providers }}</span></br>
-     
+  {% endif %}
         <h2><i class="fa fa-certificate"></i> CERTIFICATE INFORMATION</h2>
         {% if certificate_analysis.certificate_info %}
         <div class="panel-body">
               <p class="wrapped-text">{{ certificate_analysis.certificate_info }}</p>
-              <!--Cert status-->
-                 <table class="basic">
-                      <thead>
-                          <tr>
-                              <th>TITLE</th>
-                              <th>SEVERITY</th>
-                              <th>DESCRIPTION</th>
-                          </tr>
-                      </thead>
-                      <tbody>
-                          {% for find in certificate_analysis.certificate_findings %}
-                          <tr>
-                          <td>{{ find.2 }}</td>
-                          <td>
-                          {% if find.0 == 'high' %}
-                            <span class="danger">high</span>
-                          {% elif find.0  == 'secure' %}
-                            <span class="success">secure</span>
-                          {% elif find.0  == 'warning' %}
-                            <span class="warning">warning</span>
-                            {% elif find.0  == 'info' %}
-                            <span class="info">info</span>
-                          {% endif %}
-                          </td>
-                          <td>{{ find.1 }}</td>
-                          </tr>
-                          {% endfor %}
-                      </tbody>
-                  </table>
         </div>
       {% else %}
       <span class="danger">Failed to read Code Signing Certificate or none available.</span>
@@ -267,7 +239,6 @@
             </tbody>
             </table>
       {% endif %}
-
       
        {% if virus_total and virus_total.items|length > 9 and 'request successfully queued' not in virus_total.verbose_msg %}
        <h2><i class="fas fa-spider"></i> VIRUSTOTAL SCAN</h2>
@@ -430,46 +401,107 @@
                     </table>
       {% endif %}
 
-
      <h2><i class="fas fa-lock"></i> NETWORK SECURITY</h2>
+     {% if network_security and 'network_summary' in network_security and network_security.network_summary|length > 0 %}
+     <span class="danger">HIGH: </span>
+     <h5 class="description-header">{{ network_security.network_summary.high }}</h5> | 
+     <span class="warning"></i> WARNING: </span>
+     <h5 class="description-header">{{ network_security.network_summary.warning }}</h5> |
+     <span class="info">INFO: </span>
+     <h5 class="description-header">{{ network_security.network_summary.info }}</h5> |
+     <span class="success">SECURE: </span>
+     <h5 class="description-header">{{ network_security.network_summary.secure }}</h5>
+   {% endif %}</br>
      <table class="basic">
-                    <thead>
-                        <tr>
-                          <th>NO</th>
-                          <th>SCOPE</th>
-                          <th>SEVERITY</th>
-                          <th>DESCRIPTION</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                    {% for item in network_security %}
-                      <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>
-                         {% for url in item.scope %}
-                          {{ url }}</br>
-                        {% endfor %}
-                        </td>
-                        <td>
-                          {% if item.severity == "high" %}
-                            <span class="danger">high</span>
-                          {% elif item.severity == "secure" %}
-                            <span class="good">secure</span>
-                          {% elif item.severity == "info" %}
-                            <span class="info">info</span>
-                          {% elif item.severity == "warning" %}
-                             <span class="warning">warning</span>
-                          {% endif %}
-                        </td>
-                        <td>
-                        {{item.description }}
-                        </td>
-                       </tr>
-                     {% endfor %}
-										</tbody>
-										</table>
-    
+        <thead>
+            <tr>
+              <th>NO</th>
+              <th>SCOPE</th>
+              <th>SEVERITY</th>
+              <th>DESCRIPTION</th>
+                    </tr>
+                </thead>
+                <tbody>
+        {% if network_security and 'network_findings' in network_security %}
+        {% for item in network_security.network_findings %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>
+              {% for url in item.scope %}
+              {{ url }}</br>
+            {% endfor %}
+            </td>
+            <td>
+              {% if item.severity == "high" %}
+                <span class="danger">high</span>
+              {% elif item.severity == "secure" %}
+                <span class="success">secure</span>
+              {% elif item.severity == "info" %}
+                <span class="info">info</span>
+              {% elif item.severity == "warning" %}
+                  <span class="warning">warning</span>
+              {% endif %}
+            </td>
+            <td>
+            {{item.description }}
+            </td>
+            </tr>
+          {% endfor %}
+          {% endif %}
+        </tbody>
+        </table>
+       
+      <h2><i class="fas fa fa-id-card"></i> CERTIFICATE ANALYSIS</h2>
+      {% if certificate_analysis and 'certificate_summary' in certificate_analysis and certificate_analysis.certificate_summary|length > 0 %}
+      <span class="danger">HIGH: </span>
+      <h5 class="description-header">{{ certificate_analysis.certificate_summary.high }}</h5> | 
+      <span class="warning"></i> WARNING: </span>
+      <h5 class="description-header">{{ certificate_analysis.certificate_summary.warning }}</h5> |
+      <span class="info">INFO: </span>
+      <h5 class="description-header">{{ certificate_analysis.certificate_summary.info }}</h5>
+    {% endif %}</br>
+      <table class="basic">
+        <thead>
+            <tr>
+                <th>TITLE</th>
+                <th>SEVERITY</th>
+                <th>DESCRIPTION</th>
+            </tr>
+        </thead>
+        <tbody>
+          {% if certificate_analysis and 'certificate_findings' in certificate_analysis %}
+            {% for find in certificate_analysis.certificate_findings %}
+            <tr>
+            <td>{{ find.2 }}</td>
+            <td>
+            {% if find.0 == 'high' %}
+              <span class="danger">high</span>
+            {% elif find.0  == 'secure' %}
+              <span class="success">secure</span>
+            {% elif find.0  == 'warning' %}
+              <span class="warning">warning</span>
+              {% elif find.0  == 'info' %}
+              <span class="info">info</span>
+            {% endif %}
+            </td>
+            <td>{{ find.1 }}</td>
+            </tr>
+            {% endfor %}
+          {% endif %}
+        </tbody>
+    </table>
+   
     <h2><i class="fas fa-search"></i> MANIFEST ANALYSIS</h2>
+    {% if manifest_analysis and 'manifest_summary' in manifest_analysis and manifest_analysis.manifest_summary|length > 0 %}
+    <span class="danger">HIGH: </span>
+    <h5 class="description-header">{{ manifest_analysis.manifest_summary.high }}</h5> | 
+    <span class="warning"></i> WARNING: </span>
+    <h5 class="description-header">{{ manifest_analysis.manifest_summary.warning }}</h5> |
+    <span class="info">INFO: </span>
+    <h5 class="description-header">{{ manifest_analysis.manifest_summary.info }}</h5> |
+    <span class="disabled">SUPPRESSED: </span>
+    <h5 class="description-header">{{ manifest_analysis.manifest_summary.suppressed }}</h5>
+  {% endif %}</br>
      <table class="basic">
                     <thead>
                         <tr>
@@ -480,35 +512,48 @@
                                 </tr>
                             </thead>
                             <tbody>
-									  {% for item in manifest_analysis %}
-                      <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>
-                        {{item|key:"title" | safe}}
-                        </td>
-                        <td>
+                    {% if manifest_analysis and 'manifest_findings' in manifest_analysis %}
+                    {% for item in manifest_analysis.manifest_findings %}
+                    <tr>
+                      <td>{{ forloop.counter }}</td>
+                      <td>
+                      {{item|key:"title" | safe}}
+                      </td>
+                      <td>
 
-                          {% if item|key:"severity" == "high" %}
-                            <span class="danger">high</span>
-                          {% elif item|key:"severity" == "info" %}
-                            <span class="info">info</span>
-                          {% elif item|key:"severity" == "warning" %}
-                            <span class="warning">warning</span>
-                          {% endif %}
-                         
-                        </td>
-                        <td>
-                        {{item|key:"description"}}
-                        </td>
-   
-                       </tr>
+                        {% if item|key:"severity" == "high" %}
+                          <span class="danger">high</span>
+                        {% elif item|key:"severity" == "info" %}
+                          <span class="info">info</span>
+                        {% elif item|key:"severity" == "warning" %}
+                          <span class="warning">warning</span>
+                        {% endif %}
+                       
+                      </td>
+                      <td>
+                      {{item|key:"description"}}
+                      </td>
+ 
+                     </tr>
                      {% endfor %}
-
+                     {% endif %}
 
 										</tbody>
 										</table>
-
+                   
       <h2><i class="fas fa-code"></i> CODE ANALYSIS</h2>
+      {% if code_analysis and 'summary' in code_analysis and code_analysis.summary|length > 0 %}
+      <span class="danger">HIGH: </span>
+      <h5 class="description-header">{{ code_analysis.summary.high }}</h5> | 
+      <span class="warning"></i> WARNING: </span>
+      <h5 class="description-header">{{ code_analysis.summary.warning }}</h5> |
+      <span class="info">INFO: </span>
+      <h5 class="description-header">{{ code_analysis.summary.info }}</h5> |
+      <span class="success">SECURE: </span>
+      <h5 class="description-header">{{ code_analysis.summary.secure }}</h5> |
+      <span class="disabled">SUPPRESSED: </span>
+      <h5 class="description-header">{{ code_analysis.summary.suppressed }}</h5>
+    {% endif %}</br>
        <table class="basic">
                 <thead>
                     <tr>
@@ -520,7 +565,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                   {% for rule, details in code_analysis.items %}
+                   {% if code_analysis and 'findings' in code_analysis %}
+                   {% for rule, details in code_analysis.findings.items %}
                   <tr>
                   <td>{{ forloop.counter }}</td>
                   <td width="25%">
@@ -568,8 +614,10 @@
                   </td>
                 </tr>    
               {% endfor %} 
-										</tbody>
-										</table>
+              {% endif %}
+          </tbody>
+          </table>
+         
             
      {% if binary_analysis  %}
       <h2><i class="fa fa-flag"></i> SHARED LIBRARY BINARY ANALYSIS</h2>
@@ -686,6 +734,31 @@
         {% endif %}
 -->
       {% if domains  %}
+      <h2><i class="fa fa-exclamation"></i> OFAC SANCTIONED COUNTRIES</h2>
+      <p>This app may communicate with the following OFAC sanctioned list of countries.</p>
+      <table id="table_ofac" class="table table-bordered table-hover table-striped">
+           <thead>
+           <tr>
+              <th>DOMAIN</th>
+              <th>COUNTRY/REGION</th>
+           </tr>
+          </thead>
+          <tbody>
+          {% for domain, details in domains.items %}
+          {% if details|key:"ofac" == True %}
+           <tr><td>{{domain}}</td>
+           <td>
+             <strong>IP: </strong>{{details|key:"geolocation"|key:"ip"}}  <br/>
+             <strong>Country: </strong>{{details|key:"geolocation"|key:"country_long"}} <br/>
+             <strong>Region: </strong>{{details|key:"geolocation"|key:"region"}} <br/>
+             <strong>City: </strong>{{details|key:"geolocation"|key:"city"}} <br/>
+           </td>
+           </tr>
+           {% endif %}
+           {% endfor %}
+         </tbody>
+     </table>
+
       <h2><i class="fab fa-searchengin"></i> DOMAIN MALWARE CHECK</h2>
          <table  class="basic">
                   <thead>

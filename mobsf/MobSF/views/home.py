@@ -176,6 +176,10 @@ class Upload(object):
             return self.scan.scan_xapk()
         elif self.scan.file_type.is_apks():
             return self.scan.scan_apks()
+        elif self.scan.file_type.is_jar():
+            return self.scan.scan_jar()
+        elif self.scan.file_type.is_aar():
+            return self.scan.scan_aar()
         elif self.scan.file_type.is_zip():
             return self.scan.scan_zip()
         elif self.scan.file_type.is_ipa():
@@ -230,6 +234,16 @@ def about(request):
         'is_admin': is_admin(request),
     }
     template = 'general/about.html'
+    return render(request, template, context)
+
+
+def donate(request):
+    """Donate Route."""
+    context = {
+        'title': 'Donate',
+        'version': settings.MOBSF_VER,
+    }
+    template = 'general/donate.html'
     return render(request, template, context)
 
 

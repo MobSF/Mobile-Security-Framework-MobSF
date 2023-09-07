@@ -40,6 +40,7 @@ RUN apt update -y && apt install -y  --no-install-recommends \
     wget \
     curl \
     git \
+    jq \
     android-tools-adb
 
 # Set locales
@@ -79,9 +80,9 @@ WORKDIR /home/mobsf/Mobile-Security-Framework-MobSF
 # Copy source code
 COPY . .
 
-# Set adb binary path and apktool directory
-RUN sed -i "s#ADB_BINARY = ''#ADB_BINARY = '/usr/bin/adb'#" mobsf/MobSF/settings.py && \
-    mkdir -p /home/mobsf/.local/share/apktool/framework
+# Set adb binary path and create apktool framework directory
+ENV MOBSF_ADB_BINARY=/usr/bin/adb
+RUN mkdir -p /home/mobsf/.local/share/apktool/framework
 
 # Enable Postgres support by default
 ARG POSTGRES=True

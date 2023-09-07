@@ -61,6 +61,10 @@ from mobsf.StaticAnalyzer.views.android.xapk import (
     handle_split_apk,
     handle_xapk,
 )
+from mobsf.StaticAnalyzer.views.android.jar_aar import (
+    aar_analysis,
+    jar_analysis,
+)
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     firebase_analysis,
     get_avg_cvss,
@@ -108,11 +112,12 @@ def static_analyzer(request_data, api=False):
         match = re.match('^[0-9a-f]{32}$', checksum)
         if (match
                 and filename.lower().endswith(
-                    ('.apk', '.xapk', '.zip', '.apks'))
-                and typ in ['zip', 'apk', 'xapk', 'apks']):
+                    ('.apk', '.xapk', '.zip', '.apks', '.jar', '.aar'))
+                and typ in ['zip', 'apk', 'xapk', 'apks', 'jar', 'aar']):
             app_dic['dir'] = Path(settings.BASE_DIR)  # BASE DIR
             app_dic['app_name'] = filename  # APP ORIGINAL NAME
             app_dic['md5'] = checksum  # MD5
+            logger.info('Scan Hash: %s', checksum)
             # APP DIRECTORY
             app_dic['app_dir'] = Path(settings.UPLD_DIR) / checksum
             app_dic['tools_dir'] = app_dic['dir'] / 'StaticAnalyzer' / 'tools'
@@ -159,8 +164,7 @@ def static_analyzer(request_data, api=False):
                         app_dic['app_path'],
                         app_dic['app_dir'],
                         app_dic['tools_dir'],
-                        '',
-                        True,
+                        'apk',
                     )
                     app_dic['manifest_file'] = mani_file
                     app_dic['parsed_xml'] = mani_xml
@@ -169,7 +173,6 @@ def static_analyzer(request_data, api=False):
                     app_dic['real_name'] = get_app_name(
                         app_dic['app_path'],
                         app_dic['app_dir'],
-                        app_dic['tools_dir'],
                         True,
                     )
 
@@ -178,9 +181,8 @@ def static_analyzer(request_data, api=False):
                     get_icon_apk(app_dic)
 
                     # Set Manifest link
-                    app_dic['mani'] = ('../manifest_view/?md5='
-                                       + app_dic['md5']
-                                       + '&type=apk&bin=1')
+                    app_dic['mani'] = (
+                        f'../manifest_view/?md5={app_dic["md5"]}&type=apk')
                     man_data_dic = manifest_data(app_dic['parsed_xml'])
                     app_dic['playstore'] = get_app_details(
                         man_data_dic['packagename'])
@@ -193,7 +195,8 @@ def static_analyzer(request_data, api=False):
                     elf_dict = elf_analysis(app_dic['app_dir'])
                     cert_dic = cert_info(
                         app_dic['app_dir'],
-                        app_dic['app_file'])
+                        app_dic['app_file'],
+                        man_data_dic)
                     apkid_results = apkid_analysis(app_dic[
                         'app_dir'], app_dic['app_path'], app_dic['app_name'])
                     tracker = Trackers.Trackers(
@@ -237,8 +240,6 @@ def static_analyzer(request_data, api=False):
                         'Performing Malware Check on extracted Domains')
                     code_an_dic['domains'] = MalwareDomainCheck().scan(
                         list(set(code_an_dic['urls_list'])))
-                    # Copy App icon
-                    copy_icon(app_dic['md5'], app_dic['icon_path'])
                     app_dic['zipped'] = 'apk'
 
                     logger.info('Connecting to Database')
@@ -304,6 +305,10 @@ def static_analyzer(request_data, api=False):
                 context['template'] = \
                     'static_analysis/android_binary_analysis.html'
                 return context
+            elif typ == 'jar':
+                return jar_analysis(request_data, app_dic, rescan, api)
+            elif typ == 'aar':
+                return aar_analysis(request_data, app_dic, rescan, api)
             elif typ == 'zip':
                 ret = (
                     '/static_analyzer_ios/?file_name='
@@ -367,7 +372,6 @@ def static_analyzer(request_data, api=False):
                             app_dic['app_dir'],
                             app_dic['tools_dir'],
                             pro_type,
-                            False,
                         )
                         app_dic['manifest_file'] = mani_file
                         app_dic['parsed_xml'] = mani_xml
@@ -376,17 +380,13 @@ def static_analyzer(request_data, api=False):
                         app_dic['real_name'] = get_app_name(
                             app_dic['app_path'],
                             app_dic['app_dir'],
-                            app_dic['tools_dir'],
                             False,
                         )
 
                         # Set manifest view link
                         app_dic['mani'] = (
-                            '../manifest_view/?md5='
-                            + app_dic['md5'] + '&type='
-                            + pro_type + '&bin=0'
-                        )
-
+                            f'../manifest_view/?md5={app_dic["md5"]}'
+                            f'&type={pro_type}')
                         man_data_dic = manifest_data(app_dic['parsed_xml'])
                         app_dic['playstore'] = get_app_details(
                             man_data_dic['packagename'])
@@ -503,7 +503,7 @@ def static_analyzer(request_data, api=False):
                     'static_analysis/android_source_analysis.html'
                 return context
             else:
-                err = ('Only APK, IPA and Zipped '
+                err = ('Only APK, JAR, AAR, IPA and Zipped '
                        'Android/iOS Source code supported!')
                 logger.error(err)
         else:
@@ -574,20 +574,7 @@ def move_to_parent(inside, app_dir):
     shutil.rmtree(inside)
 
 
-def copy_icon(md5, icon_path=''):
-    """Copy app icon."""
-    try:
-        # Icon
-        icon_path = icon_path.encode('utf-8')
-        if icon_path:
-            if os.path.exists(icon_path):
-                shutil.copy2(icon_path, os.path.join(
-                    settings.DWD_DIR, md5 + '-icon.png'))
-    except Exception:
-        logger.exception('Generating Downloads')
-
-
-def get_app_name(app_path, app_dir, tools_dir, is_apk):
+def get_app_name(app_path, app_dir, is_apk):
     """Get app name."""
     if is_apk:
         a = apk.APK(app_path)

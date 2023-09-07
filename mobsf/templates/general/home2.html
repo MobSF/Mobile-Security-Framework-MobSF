@@ -156,7 +156,7 @@ sidebar-collapse
                       File
                     </label>
                     <input class="form-control" type="file" name="file" id="uploadFile"
-                      placeholder="Choose Mobile App File" accept=".apk, .apks, .appx, .ipa, .xapk, .zip">
+                      placeholder="Choose Mobile App File" accept=".aar, .apk, .apks, .appx, .ipa, .jar, .xapk, .zip">
                     <div id="err_file" class="hidden"><span class="error">Mobile App File Required!</span></div>
                   </div>
 
@@ -293,16 +293,16 @@ sidebar-collapse
     }
   }
 
-  // Is valid file extensions
-  function isValidExt(file_name) {
-    var val = file_name.toLowerCase();
-    var regex = new RegExp("(.*?)\.(ipa|apk|apks|xapk|zip|appx)$");
-    val = val.replace(/^.*[\\\/]/, '');
-    if (!(regex.test(val))) {
-      _('status').innerText = "Please upload APK/APKS/XAPK/IPA/ZIP/APPX only!";
-      return false;
-    }
-    return true;
+  // Is valid file extension
+  function isValidExt(file_name){
+        var val = file_name.toLowerCase();
+        var regex = new RegExp("(.*?)\.(ipa|apk|apks|xapk|jar|aar|zip|appx)$");
+        val = val.replace(/^.*[\\\/]/, '');
+        if (!(regex.test(val))) {
+            _('status').innerText = "Please upload APK/APKS/XAPK/JAR/AAR/IPA/ZIP/APPX only!";
+            return false;
+        }
+        return true;
   }
 
   // Is allowed mimetype

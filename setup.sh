@@ -11,10 +11,10 @@ fi
 python_version="$(python3 --version 2>&1 | awk '{print $2}')"
 py_major=$(echo "$python_version" | cut -d'.' -f1)
 py_minor=$(echo "$python_version" | cut -d'.' -f2)
-if [ "$py_major" -eq "3" ] && [ "$py_minor" -gt "7" ]; then
+if [ "$py_major" -eq "3" ] && [ "$py_minor" -gt "7" ] && [ "$py_minor" -lt "11" ]; then
     echo "[INSTALL] Found Python ${python_version}"
 else
-    echo "[ERROR] MobSF dependencies require Python 3.8/3.9. You have Python version ${python_version} or python3 points to Python ${python_version}."
+    echo "[ERROR] MobSF dependencies require Python 3.8 - 3.10. You have Python version ${python_version} or python3 points to Python ${python_version}."
     exit 1
 fi
 

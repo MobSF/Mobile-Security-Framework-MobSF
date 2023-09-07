@@ -75,6 +75,7 @@ def dynamic_analysis(request, api=False):
         try:
             if identifier:
                 env = Environment(identifier)
+                env.connect()
                 device_packages = env.get_device_packages()
                 pkg_file = Path(settings.DWD_DIR) / 'packages.json'
                 with pkg_file.open('w', encoding='utf-8') as target:

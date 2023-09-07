@@ -27,17 +27,17 @@ logger = logging.getLogger(__name__)
 
 ANDROID_4_2_LEVEL = 17
 ANDROID_5_0_LEVEL = 21
+ANDROID_8_0_LEVEL = 26
+ANDROID_MANIFEST_FILE = 'AndroidManifest.xml'
 
-
-def get_manifest(app_path, app_dir, tools_dir, typ, binary):
+def get_manifest(app_path, app_dir, tools_dir, typ):
     """Get the manifest file."""
     try:
         manifest_file = get_manifest_file(
             app_dir,
             app_path,
             tools_dir,
-            typ,
-            binary)
+            typ)
         mfile = Path(manifest_file)
         if mfile.exists():
             manifest = mfile.read_text('utf-8', 'ignore')
@@ -294,8 +294,13 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
             elif permission.getAttribute('android:name'):
                 permission_dict[permission.getAttribute(
                     'android:name')] = 'normal'
-
+        # GENERAL
+        if man_data_dic['min_sdk'] and int(man_data_dic['min_sdk']) < ANDROID_8_0_LEVEL:
+            minsdk = man_data_dic.get('min_sdk')
+            ret_list.append(('vulnerable_os_version', (minsdk,), ()))
         # APPLICATIONS
+        # Handle multiple application tags in AAR
+        backupDisabled = False
         for application in applications:
             # Esteve 23.07.2016 - begin - identify permission at the
             # application level
@@ -320,9 +325,9 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
             if application.getAttribute('android:allowBackup') == 'true':
                 ret_list.append(('app_allowbackup', (), ()))
             elif application.getAttribute('android:allowBackup') == 'false':
-                pass
+                backupDisabled = True
             else:
-                ret_list.append(('allowbackup_not_set', (), ()))
+                ret_list.append(('a_allowbackup_miss', (), ()))
             if application.getAttribute('android:testOnly') == 'true':
                 ret_list.append(('app_in_test_mode', (), ()))
             for node in application.childNodes:
@@ -858,21 +863,24 @@ def manifest_analysis(mfxml, man_data_dic, src_type, app_dir):
         logger.exception('Performing Manifest Analysis')
 
 
-def get_manifest_file(app_dir, app_path, tools_dir, typ, apk):
+def get_manifest_file(app_dir, app_path, tools_dir, typ):
     """Read the manifest file."""
     try:
         manifest = ''
-        if apk:
+        if typ == 'aar':
+            logger.info('Getting AndroidManifest.xml from AAR')
+            manifest = os.path.join(app_dir, ANDROID_MANIFEST_FILE)
+        elif typ == 'apk':
             logger.info('Getting AndroidManifest.xml from APK')
             manifest = get_manifest_apk(app_path, app_dir, tools_dir)
         else:
             logger.info('Getting AndroidManifest.xml from Source Code')
             if typ == 'eclipse':
-                manifest = os.path.join(app_dir, 'AndroidManifest.xml')
+                manifest = os.path.join(app_dir, ANDROID_MANIFEST_FILE)
             elif typ == 'studio':
                 manifest = os.path.join(
                     app_dir,
-                    'app/src/main/AndroidManifest.xml')
+                    f'app/src/main/{ANDROID_MANIFEST_FILE}')
         return manifest
     except Exception:
         logger.exception('Getting AndroidManifest.xml file')
@@ -889,7 +897,7 @@ def get_manifest_apk(app_path, app_dir, tools_dir):
                 and is_file_exists(settings.APKTOOL_BINARY)):
             apktool_path = settings.APKTOOL_BINARY
         else:
-            apktool_path = os.path.join(tools_dir, 'apktool_2.6.1.jar')
+            apktool_path = os.path.join(tools_dir, 'apktool_2.7.0.jar')
         output_dir = os.path.join(app_dir, 'apktool_out')
         args = [find_java_binary(),
                 '-jar',
@@ -901,7 +909,7 @@ def get_manifest_apk(app_path, app_dir, tools_dir):
                 app_path,
                 '-o',
                 output_dir]
-        manifest = os.path.join(output_dir, 'AndroidManifest.xml')
+        manifest = os.path.join(output_dir, ANDROID_MANIFEST_FILE)
         if is_file_exists(manifest):
             # APKTool already created readable XML
             return manifest

@@ -42,7 +42,7 @@ if [ ! -z "$var" ]; then
     validate_ip $IP
     validate_port $PORT
  else
-    IP='0.0.0.0'
+    IP='[::]'
     PORT='8000'
 fi	 
 . venv/bin/activate && gunicorn -b ${IP}:${PORT} mobsf.MobSF.wsgi:application --workers=1 --threads=10 --timeout=3600

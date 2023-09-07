@@ -177,6 +177,24 @@ class Scanning(object):
         logger.info('Performing Static Analysis of Android Split APK')
         return data
 
+    def scan_jar(self):
+        """Java JAR file."""
+        self.scan_type = 'jar'
+        data = self.populate_data_dict()
+        data['analyzer'] = 'static_analyzer'
+        add_to_recent_scan(data)
+        logger.info('Performing Static Analysis of Java JAR')
+        return data
+
+    def scan_aar(self):
+        """Android AAR file."""
+        self.scan_type = 'aar'
+        data = self.populate_data_dict()
+        data['analyzer'] = 'static_analyzer'
+        add_to_recent_scan(data)
+        logger.info('Performing Static Analysis of Android AAR')
+        return self.data
+
     def scan_zip(self):
         """Android /iOS Zipped Source."""
         self.scan_type = 'zip'

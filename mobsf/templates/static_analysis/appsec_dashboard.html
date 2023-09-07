@@ -503,10 +503,11 @@ sidebar-collapse
     const warn = {{warning | length}};
     const info = {{ info | length}};
     const secure = {{ secure | length}};
-    const hp = Math.floor(high/ (high + warn + info + secure) * 100)
-    const wp = Math.floor(warn/ (high + warn + info + secure) * 100)
-    const ip = Math.floor(info/ (warn + warn + info + secure) * 100)
-    const sp = Math.floor(secure/ (warn + warn + info + secure) * 100)
+    const total = Math.max(1, high + warn + info + secure);
+    const hp = Math.floor(high/ total * 100)
+    const wp = Math.floor(warn/ total * 100)
+    const ip = Math.floor(info/ total * 100)
+    const sp = Math.floor(secure/ total * 100)
     var ctx = document.getElementById("severity").getContext('2d');
     var myChart = new Chart(ctx, {
     type: 'pie',

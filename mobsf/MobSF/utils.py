@@ -133,6 +133,9 @@ def check_update():
         response = requests.head(github_url, timeout=5,
                                  proxies=proxies, verify=verify)
         remote_version = response.next.path_url.split('v')[1]
+        response = requests.head(github_url, timeout=5,
+                                 proxies=proxies, verify=verify)
+        remote_version = response.next.path_url.split('v')[1]
         if remote_version:
             sem_loc = StrictVersion(local_version)
             sem_rem = StrictVersion(remote_version)

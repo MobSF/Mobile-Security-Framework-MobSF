@@ -410,6 +410,7 @@ def scan(request_data):
         update_cyberspect_scan(data)
 
         # APK, Android ZIP and iOS ZIP
+        response = None
         scan_type = request_data['scan_type']
         if scan_type in {'xapk', 'apk', 'apks', 'zip'}:
             resp = static_analyzer(request_data, True)
@@ -439,7 +440,7 @@ def scan(request_data):
                 response = make_api_response(resp, 200)
 
         # Record scan end time and failure
-        if response.status_code == 500:
+        if response and response.status_code == 500:
             data['success'] = False
             data['failure_source'] = 'SAST'
             data['failure_message'] = resp['error']
