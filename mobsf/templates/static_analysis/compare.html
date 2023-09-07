@@ -159,27 +159,21 @@
                                         <tr>
                                             <td>
                                                 <img id="app_icon" src="
-                                        {% if first_app.icon_found %}
-                                            /download/{{ first_app.md5 }}-icon.png
+                                        {% if first_app.icon_path %}
+                                            /download/{{ first_app.icon_path }}
                                         {% else %}
                                             {% static 'img/no_icon.png' %}
                                         {% endif %}
                                         "/><br/>
-                                                {% if first_app.icon_hidden %}
-                                                    <strong>Hidden Icon!</strong>
-                                                {% endif %}
                                             </td>
                                             <td>
                                                 <img id="app_icon" src="
-                                        {% if second_app.icon_found %}
-                                            /download/{{ second_app.md5 }}-icon.png
+                                        {% if second_app.icon_path %}
+                                            /download/{{ second_app.icon_path }}
                                         {% else %}
                                             {% static 'img/no_icon.png' %}
                                         {% endif %}
                                         "/><br/>
-                                                {% if second_app.icon_hidden %}
-                                                    <strong>Hidden Icon!</strong>
-                                                {% endif %}
                                             </td>
                                         </tr>
                                         <tr>

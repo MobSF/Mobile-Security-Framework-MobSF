@@ -88,8 +88,6 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
             app_dic['manifest_file'] = mani_file
             app_dic['ns'] = ns
             app_dic['parsed_xml'] = mani_xml
-            app_dic['mani'] = (
-                f'../manifest_view/?md5={app_dic["md5"]}&type=aar')
             man_data_dic = manifest_data(app_dic['parsed_xml'], ns)
             man_an_dic = manifest_analysis(
                 app_dic['parsed_xml'],
@@ -105,7 +103,6 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
         else:
             app_dic['manifest_file'] = None
             app_dic['parsed_xml'] = ''
-            app_dic['mani'] = ''
             man_data_dic = {
                 'services': [],
                 'activities': [],
@@ -134,7 +131,6 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
                 },
                 'browsable_activities': {},
                 'permissions': {},
-                'icon_hidden': True,
                 'network_security': {
                     'network_findings': [],
                     'network_summary': {},
@@ -183,8 +179,6 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
             code_an_dic['urls_list'])
 
         app_dic['zipped'] = analysis_type
-        app_dic['icon_hidden'] = True
-        app_dic['icon_found'] = False
         context = save_get_ctx(
             app_dic,
             man_data_dic,

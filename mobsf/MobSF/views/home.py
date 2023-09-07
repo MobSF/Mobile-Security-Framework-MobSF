@@ -225,14 +225,20 @@ def recent_scans(request):
     entries = []
     db_obj = RecentScansDB.objects.all().order_by('-TIMESTAMP').values()
     android = StaticAnalyzerAndroid.objects.all()
+    ios = StaticAnalyzerIOS.objects.all()
+    icon_mapping = {}
     package_mapping = {}
     for item in android:
         package_mapping[item.MD5] = item.PACKAGE_NAME
+        icon_mapping[item.MD5] = item.ICON_PATH
+    for item in ios:
+        icon_mapping[item.MD5] = item.ICON_PATH
     for entry in db_obj:
         if entry['MD5'] in package_mapping.keys():
             entry['PACKAGE'] = package_mapping[entry['MD5']]
         else:
             entry['PACKAGE'] = ''
+        entry['ICON_PATH'] = icon_mapping.get(entry['MD5'], '')
         logcat = Path(settings.UPLD_DIR) / entry['MD5'] / 'logcat.txt'
         entry['DYNAMIC_REPORT_EXISTS'] = logcat.exists()
         entries.append(entry)
@@ -271,8 +277,7 @@ def search(request):
         db_obj = RecentScansDB.objects.filter(MD5=md5)
         if db_obj.exists():
             e = db_obj[0]
-            url = (f'/{e.ANALYZER }/?name={e.FILE_NAME}&'
-                   f'checksum={e.MD5}&type={e.SCAN_TYPE}')
+            url = f'/{e.ANALYZER }/{e.MD5}/'
             return HttpResponseRedirect(url)
         else:
             return HttpResponseRedirect('/not_found/')

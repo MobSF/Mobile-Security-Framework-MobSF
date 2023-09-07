@@ -64,30 +64,25 @@ def api_scan(request):
         return make_api_response(
             {'error': 'The file is not uploaded/available'}, 500)
     scan_type = robj[0].SCAN_TYPE
-    request.POST._mutable = True
-    request.POST['scan_type'] = scan_type
-    request.POST['file_name'] = robj[0].FILE_NAME
     # APK, Source Code (Android/iOS) ZIP, SO, JAR, AAR
     if scan_type in {'xapk', 'apk', 'apks', 'zip', 'so', 'jar', 'aar'}:
-        resp = static_analyzer(request, True)
+        resp = static_analyzer(request, checksum, True)
         if 'type' in resp:
-            # For now it's only ios_zip
-            request.POST['scan_type'] = 'ios'
-            resp = static_analyzer_ios(request, True)
+            resp = static_analyzer_ios(request, checksum, True)
         if 'error' in resp:
             response = make_api_response(resp, 500)
         else:
             response = make_api_response(resp, 200)
     # IPA
     elif scan_type in {'ipa', 'dylib', 'a'}:
-        resp = static_analyzer_ios(request, True)
+        resp = static_analyzer_ios(request, checksum, True)
         if 'error' in resp:
             response = make_api_response(resp, 500)
         else:
             response = make_api_response(resp, 200)
     # APPX
     elif scan_type == 'appx':
-        resp = windows.staticanalyzer_windows(request, True)
+        resp = windows.staticanalyzer_windows(request, checksum, True)
         if 'error' in resp:
             response = make_api_response(resp, 500)
         else:
@@ -117,7 +112,10 @@ def api_pdf_report(request):
     if 'hash' not in request.POST:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
-    resp = pdf(request, api=True)
+    resp = pdf(
+        request,
+        request.POST['hash'],
+        api=True)
     if 'error' in resp:
         if resp.get('error') == 'Invalid scan hash':
             response = make_api_response(resp, 400)
@@ -142,7 +140,11 @@ def api_json_report(request):
     if 'hash' not in request.POST:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
-    resp = pdf(request, api=True, jsonres=True)
+    resp = pdf(
+        request,
+        request.POST['hash'],
+        api=True,
+        jsonres=True)
     if 'error' in resp:
         if resp.get('error') == 'Invalid scan hash':
             response = make_api_response(resp, 400)

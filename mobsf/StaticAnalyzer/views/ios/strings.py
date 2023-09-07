@@ -93,7 +93,7 @@ def get_strings_metadata(app_dict, bin_dict, all_files, dy_list):
     emails_n_files = str_meta['emailnfile']
 
     if dy_list:
-        # DYLIB (.dylib) by file
+        # DYLIB (.dylib)/Framework by file
         dy_strings = []
         for dy in dy_list:
             for dy_file, s in dy.items():

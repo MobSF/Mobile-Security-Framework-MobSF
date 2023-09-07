@@ -122,6 +122,12 @@
               <p>Dylib Analysis</p>
             </a>
           </li>
+          <li class="nav-item">
+            <a href="#framework_analysis" class="nav-link">
+              <i class="nav-icon fa fa-archive"></i>
+              <p>Framework Analysis</p>
+            </a>
+          </li>
           {% endif %}
           {% if app_type in 'A' %}
           <li class="nav-item">
@@ -248,7 +254,7 @@
           </li>
           {% endif %}
             <li class="nav-item">
-              <a href="../pdf/?md5={{ md5 }}" class="nav-link">
+              <a href="{% url "pdf" checksum=md5 %}" class="nav-link">
               <i class="nav-icon fas fa-file-pdf"></i>
               <p>
                 PDF Report
@@ -299,7 +305,7 @@
                 <div class="col-2">
                   <p><strong><i class="fas fa-check-double"></i> APP SCORES</strong></p>
               {% if app_type not in 'Dylib,A' %}
-                  <img id="app_icon" src="{% if not appstore_details.error %}{{appstore_details.icon}}{% elif icon_found %}/download/{{ md5 }}-icon.png{% else %}{% static 'img/no_icon.png' %}{% endif %}"/>
+                  <img id="app_icon" src="{% if not appstore_details.error %}{{appstore_details.icon}}{% elif icon_path %}/download/{{ icon_path }}{% else %}{% static 'img/no_icon.png' %}{% endif %}"/>
                   <p>
                   {% if average_cvss %}
                   <span class="badge bg-info">Average CVSS</span> <strong>{{ average_cvss }} </strong><br/>
@@ -320,7 +326,7 @@
                   {% endif %}
                 </p>
                 {% if app_type not in 'Dylib,A' %}
-                  <p> <a href="../appsec_dashboard/{{ md5 }}/" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
+                  <p> <a href="{% url 'appsec_dashboard' checksum=md5 %}" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
                 {% endif %}
                 </div>
                 <div class="col-4">
@@ -444,7 +450,7 @@
                 <p>
                 <strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong>
                 </p>
-                 <a role="button" class="btn btn-info" href="../static_analyzer_ios/?checksum={{ md5 }}&amp;name={{ file_name }}&amp;type={% if app_type in 'Dylib' %}dylib{% elif app_type in 'A' %}a{% else %}ipa{% endif %}&amp;rescan=1" ><i class="fa fa-sync"></i> Rescan</a>
+                 <a role="button" class="btn btn-info" href="{% url 'static_analyzer_ios' checksum=md5 %}?rescan=1" ><i class="fa fa-sync"></i> Rescan</a>
                  <a id="supbtn" onclick="list_suppressions()" role="button" class="btn btn-primary" data-target="#sup_list" data-toggle="modal" href="#"><i class="fa fa-list"></i> Manage Suppressions</a>
                 </p>
               </div>
@@ -461,9 +467,9 @@
                     <a role="button" class="btn btn-primary" data-target="#mplist" data-toggle="modal" href="#"><i class="fa fa-list"></i> View Info.plist</a>
                     {% endif %}
                     {% if app_type not in 'Dylib,A' %}
-                    <a target="_blank" href="../view_file_ios/?file=classdump.txt&amp;md5={{ md5 }}&amp;type=ios" class="btn btn-warning" role="button"><i class="fa fa-code"></i> View Class Dump</a>
+                    <a target="_blank" href="{% url 'view_file_ios' %}?file=classdump.txt&amp;md5={{ md5 }}&amp;type=ios" class="btn btn-warning" role="button"><i class="fa fa-code"></i> View Class Dump</a>
                     {% endif %}
-                    <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type={% if app_type in 'Dylib' %}dylib{% elif app_type in 'A' %}a{% else %}ipa{% endif %}" class="btn btn-warning"> <i class="fa fa-download"></i> Download {% if app_type in 'Dylib' %}DYLIB{% elif app_type in 'A' %}A{% else %}IPA{% endif %}</a>
+                    <a href="{% url 'generate_downloads' %}?hash={{ md5 }}&amp;file_type={% if app_type in 'Dylib' %}dylib{% elif app_type in 'A' %}a{% else %}ipa{% endif %}" class="btn btn-warning"> <i class="fa fa-download"></i> Download {% if app_type in 'Dylib' %}DYLIB{% elif app_type in 'A' %}A{% else %}IPA{% endif %}</a>
                  </p>
                 </div>
               </div>
@@ -990,6 +996,81 @@
     </div>
 </section>
  <!-- ===========================end dylib analysis ================================== -->
+ <a id="framework_analysis" class="anchor"></a>
+ <section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+              <p>
+             <strong><i class="fa fa-archive"></i> FRAMEWORK BINARY ANALYSIS</strong>
+             </p>
+              <div class="table-responsive">
+              <table id="table_framework" class="table table-bordered table-hover table-striped">
+                  <thead>
+                      <tr>
+                          <th>NO</th>
+                          <th>FRAMEWORK</th>
+                          <th>NX</th>
+                          <th>STACK CANARY</th>
+                          <th>ARC</th>
+                          <th>RPATH</th>
+                          <th>CODE SIGNATURE</th>
+                          <th>ENCRYPTED</th>
+                          <th>SYMBOLS STRIPPED</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+            {% if not framework_analysis %}
+              No Frameworks found.
+            {% endif %}
+             {% for frm in framework_analysis %}
+             <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{frm.name}}</td>
+              <td><b>{{frm.nx.has_nx}}</b>
+                <br/>
+                <span class="badge bg-{% if frm.nx.severity == 'high' %}danger{% elif frm.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{frm.nx.severity}}</span>
+                <br/>{{frm.nx.description}}</td>
+              <td><b>{{frm.stack_canary.has_canary}}</b>
+                  <br/>
+                  <span class="badge bg-{% if frm.stack_canary.severity == 'high' %}danger{% elif frm.stack_canary.severity == 'warning' %}warning{% else %}info{% endif %}">{{frm.stack_canary.severity}}</span>
+                  <br/>{{frm.stack_canary.description}}</td>
+              <td><b>{{frm.arc.has_arc}}</b>
+                <br/>
+                <span class="badge bg-{% if frm.arc.severity == 'high' %}danger{% elif frm.arc.severity == 'warning' %}warning{% else %}info{% endif %}">{{frm.arc.severity}}</span>
+                <br/>{{frm.arc.description}}</td>
+              <td><b>{{frm.rpath.has_rpath}}</b>
+                <br/>
+                <span class="badge bg-{% if frm.rpath.severity == 'high' %}danger{% elif frm.rpath.severity == 'warning' %}warning{% else %}info{% endif %}">{{frm.rpath.severity}}</span>
+                <br/>{{frm.rpath.description}}</td>
+              <td><b>{{frm.code_signature.has_code_signature}}</b>
+                  <br/>
+                  <span class="badge bg-{% if frm.code_signature.severity == 'high' %}danger{% elif frm.code_signature.severity == 'warning' %}warning{% else %}info{% endif %}">{{frm.code_signature.severity}}</span>
+                  <br/>{{frm.code_signature.description}}</td>
+              <td><b>{{frm.encrypted.is_encrypted}}</b>
+                  <br/>
+                  <span class="badge bg-{% if frm.encrypted.severity == 'high' %}danger{% elif frm.encrypted.severity == 'warning' %}warning{% else %}info{% endif %}">{{frm.encrypted.severity}}</span>
+                  <br/>{{frm.encrypted.description}}</td>
+              <td><b>{{frm.symbol.is_stripped}}</b>
+                <br/>
+                <span class="badge bg-{% if frm.symbol.severity == 'high' %}danger{% elif frm.symbol.severity == 'warning' %}warning{% else %}info{% endif %}">{{frm.symbol.severity}}</span>
+                <br/>{{frm.symbol.description}}</td>
+            </tr>
+             {% endfor %}
+                    </tbody>
+                    </table>
+                  </div>
+              
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end framework analysis ================================== -->
  {% endif %}
  <!--static library-->
 {% if app_type in 'A' %}
@@ -1149,7 +1230,7 @@
                       <td>
                         {% for file in item.files %}
                           {% if file.type %}
-                          <a href="../view_file_ios/?file={{file.file_path}}&amp;type={{file.type}}&amp;md5={{file.hash}}">{{ file.file_path }}</a>
+                          <a href="{% url 'view_file_ios' %}?file={{file.file_path}}&amp;type={{file.type}}&amp;md5={{file.hash}}">{{ file.file_path }}</a>
                           {% else %}
                           {{ file.file_path }}
                           {% endif %}
@@ -1370,7 +1451,7 @@
                        {% endfor %}
                         </td>
                        <td>
-                          <a href="../view_file_ios/?file={{urldict|key:"path"}}&amp;md5={{ md5}}&amp;type=ipa">{{urldict|key:"path"}}</a>
+                          <a href="{% url 'view_file_ios' %}?file={{urldict|key:"path"}}&amp;md5={{ md5}}&amp;type=ipa">{{urldict|key:"path"}}</a>
                        </td>
                     </tr>
                   {% endfor %} 
@@ -1461,7 +1542,7 @@
                        {% endfor %}
                         </td>
                        <td>
-                          <a href="../view_file_ios/?file={{email_dict|key:"path"}}&amp;md5={{ md5}}&amp;type=ipa">{{email_dict|key:"path"}}</a>   
+                          <a href="{% url 'view_file_ios' %}?file={{email_dict|key:"path"}}&amp;md5={{ md5}}&amp;type=ipa">{{email_dict|key:"path"}}</a>   
                        </td>
                     </tr>
                   {% endfor %} 
@@ -1727,6 +1808,11 @@
 </script>
 <script src="{% static "others/js/suppression.js" %}"></script>
 <script>
+
+  // Remove rescan parameter
+  window.history.replaceState({}, '', window.location.pathname);
+
+
   // Globals
   const csrf = '{{ csrf_token }}'
   const pkg = '{{ bundle_id }}'

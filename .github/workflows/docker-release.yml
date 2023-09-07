@@ -32,7 +32,7 @@ jobs:
                 VERSION=${GITHUB_REF#refs/tags/v}
                 TAG="${DOCKER_IMAGE}:v${VERSION}"
               fi
-              echo ::set-output name=tag::${TAG}
+              echo "tag=${TAG}" >> $GITHUB_OUTPUT
         -
             name: Build and push release
             id: docker_build

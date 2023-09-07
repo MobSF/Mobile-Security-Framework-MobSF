@@ -113,6 +113,7 @@ def a_analysis(request, app_dict, rescan, api):
                 'subarch': '',
             },
             'bin_type': 'A',
+            'framework_analysis': {},
         }
         # Analyze static library
         slib = library_analysis(app_dict['bin_dir'], 'ar')
@@ -126,8 +127,6 @@ def a_analysis(request, app_dict, rescan, api):
             bin_dict['bin_code_analysis'],
             all_files['special_files'],
             b'')
-        # Get Icon
-        app_dict['icon_found'] = False
         # Extract String metadata
         code_dict = get_strings_metadata(
             app_dict,
