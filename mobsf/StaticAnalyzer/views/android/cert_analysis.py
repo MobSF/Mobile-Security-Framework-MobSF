@@ -100,7 +100,8 @@ def get_signature_versions(app_path, tools_dir, signed):
         logger.info('Getting Signature Versions')
         apksigner = Path(tools_dir) / 'apksigner.jar'
         args = [find_java_binary(), '-Xmx1024M',
-                '-Djava.library.path=', '-jar', apksigner,
+                '-Djava.library.path=', '-jar',
+                apksigner.as_posix(),
                 'verify', '--verbose', app_path]
         out = subprocess.check_output(
             args, stderr=subprocess.STDOUT)
