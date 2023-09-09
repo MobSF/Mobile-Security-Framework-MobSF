@@ -226,7 +226,7 @@ def get_icon_apk(apk, app_dic):
     if icon_file:
         src = Path(icon_file)
         # Copy PNG/SVG to Downloads
-        out = Path(settings.DWD_DIR) / (app_dic['md5'] + '-icon' + src.suffix)
+        out = Path(settings.DWD_DIR) / (app_dic['md5'] + '-icon' + src.suffix.lower())
         if src and src.exists() and src.is_file():
             copy2(src.as_posix(), out.as_posix())
         app_dic['icon_path'] = out.name
