@@ -43,7 +43,7 @@ sidebar-collapse
                       <td>{{ e.ROLE_NAME }}</td>
                       <td>{{ e.KEY_PREFIX }}</td>
                       <td>{{ e.CREATE_DATE|date:"M j, Y" }} {{ e.CREATE_DATE|time:"g:i A" }}</td>
-                      <td>{{ e.EXPIRE_DATE|date:"M j, Y" }}</td>
+                      <td {% if e.EXPIRED %}class="expired"{% endif %}>{{ e.EXPIRE_DATE|date:"M j, Y" }}</td>
                       <td><a class="btn btn-primary btn-sm" href="#" onclick="edit_apikey({{ e.ID }})"
                           style="margin-right: 12px;"><i class="fas fa-pen"></i> Edit </a><a
                           class="btn btn-warning btn-sm" onclick="revoke_apikey({{ e.ID }})"><i class="fa fa-ban"></i>
@@ -96,7 +96,7 @@ sidebar-collapse
               <label>Expiration Date</label>
               <input id="expire_date" class="form-control" type="date" min="{{ min_date }}" max="{{ max_date }}"
                 value="{{ default_exp_date }}" required>
-              <div class="invalid-feedback">Please provide an expiration date before {{ max_date }}.</div>
+              <div class="invalid-feedback">Please provide an expiration date between tomorrow and one year from now.</div>
             </div>
           </form>
         </div>
@@ -144,7 +144,7 @@ sidebar-collapse
               <label>Expiration Date</label>
               <input id="edit_expire_date" class="form-control" type="date" min="{{ min_date }}" max="{{ max_date }}"
                 value="{{ default_exp_date }}" required>
-              <div class="invalid-feedback">Please provide an expiration date within one year of creation date.</div>
+              <div class="invalid-feedback">Please provide an expiration date between tomorrow and one year from now.</div>
             </div>
             <input id="edit_apikey_id" type="hidden" />
           </form>

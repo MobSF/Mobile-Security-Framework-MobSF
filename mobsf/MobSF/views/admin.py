@@ -84,6 +84,7 @@ def admin_view(request):
         entry['ROLE_NAME'] = ApiKeys.Role(entry['ROLE']).name
         entry['KEY_PREFIX'] = entry['KEY_PREFIX'] + '******'
         entry['KEY_HASH'] = None
+        entry['EXPIRED'] = entry['EXPIRE_DATE'] <= utcnow()
         entries.append(entry)
     context = {
         'title': 'Admin Settings',
