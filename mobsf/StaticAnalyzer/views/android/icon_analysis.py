@@ -158,10 +158,11 @@ def get_icon_src(a, app_dic, res_dir):
             icon_name = a.get_app_icon(max_dpi=icon_resolution)
         if not icon_name:
             # androguard cannot find icon file.
+            icon_name = ''
             logger.warning('androguard cannot find icon resource')
             icon_name = guess_icon_path(res_dir)
             icon_src = icon_name
-        if icon_name and icon_name.endswith('.xml'):
+        if icon_name.endswith('.xml'):
             apktool_res = False
             # Can be vector XML/XML pointing to vector files
             # Convert AXML to XML for vector
@@ -194,6 +195,9 @@ def get_icon_src(a, app_dic, res_dir):
             icon_src = (app_dir / icon_name).as_posix()
         if icon_src.endswith('.xml'):
             logger.warning('Cannot find icon file from xml')
+            icon_src = ''
+        if not icon_name:
+            logger.warning('Cannot find icon file')
             icon_src = ''
         return icon_src
     except Exception:
