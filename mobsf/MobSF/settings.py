@@ -66,6 +66,7 @@ ALLOWED_EXTENSIONS = {
     '.txt': 'text/plain',
     '.png': 'image/png',
     '.svg': 'image/svg+xml',
+    '.webp': 'image/webp',
     '.zip': 'application/zip',
     '.tar': 'application/x-tar',
     '.apk': 'application/octet-stream',
