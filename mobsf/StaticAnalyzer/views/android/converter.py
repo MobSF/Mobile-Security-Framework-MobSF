@@ -89,7 +89,7 @@ def apk_2_java(app_path, app_dir, tools_dir):
             os.chmod(jadx, stat.S_IEXEC)
         java_opts = {
             'JAVA_OPTS': ('-Djdk.util.zip.disable'
-                          'Zip64ExtraFieldValidation=true')
+                          'Zip64ExtraFieldValidation=true'),
         }
         args = [
             jadx,
