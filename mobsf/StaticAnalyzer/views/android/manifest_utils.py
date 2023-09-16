@@ -68,6 +68,7 @@ def get_manifest_apk(app_path, app_dir, tools_dir):
         output_dir = os.path.join(app_dir, 'apktool_out')
         args = [find_java_binary(),
                 '-jar',
+                '-Djdk.util.zip.disableZip64ExtraFieldValidation=true',
                 apktool_path,
                 '--match-original',
                 '--frame-path',
