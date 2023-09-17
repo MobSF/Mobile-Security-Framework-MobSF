@@ -87,10 +87,6 @@ def apk_2_java(app_path, app_dir, tools_dir):
         # Set execute permission, if JADX is not executable
         if not os.access(jadx, os.X_OK):
             os.chmod(jadx, stat.S_IEXEC)
-        java_opts = {
-            'JAVA_OPTS': ('-Djdk.util.zip.disable'
-                          'Zip64ExtraFieldValidation=true'),
-        }
         args = [
             jadx,
             '-ds',
@@ -104,8 +100,7 @@ def apk_2_java(app_path, app_dir, tools_dir):
         subprocess.run(args,
                        stdout=fnull,
                        stderr=subprocess.STDOUT,
-                       timeout=settings.JADX_TIMEOUT,
-                       env=java_opts)
+                       timeout=settings.JADX_TIMEOUT)
     except subprocess.TimeoutExpired:
         logger.warning('Decompiling with jadx timed out')
     except Exception:
