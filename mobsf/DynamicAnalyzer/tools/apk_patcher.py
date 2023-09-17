@@ -37,6 +37,7 @@ class GadgetPatcher:
     def decompile_apk(self):
         """Decompile APK."""
         args = [find_java_binary(),
+                '-Djdk.util.zip.disableZip64ExtraFieldValidation=true',
                 '-jar',
                 self.apktool_path,
                 '--frame-path',
@@ -53,6 +54,7 @@ class GadgetPatcher:
     def recompile_apk(self):
         """Recompile APK."""
         args = [find_java_binary(),
+                '-Djdk.util.zip.disableZip64ExtraFieldValidation=true',
                 '-jar',
                 self.apktool_path,
                 '-f', 'b',
