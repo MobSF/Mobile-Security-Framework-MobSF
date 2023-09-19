@@ -69,6 +69,9 @@ def common_fields(findings, data):
     cert_files = None
     cfp = []
     for fa in data['file_analysis']:
+        if isinstance(fa, str):
+            # FA is being used by so/dylib
+            continue
         if 'Cert' in fa.get('finding', ''):
             cfp = fa['files']
             break
@@ -177,7 +180,7 @@ def common_fields(findings, data):
     warn = len(findings.get('warning'))
     sec = len(findings.get('secure'))
     total = high + warn + sec
-    score = 100
+    score = 0
     if total > 0:
         score = int(100 - (
             ((high * 1) + (warn * .5) - (sec * .2)) / total) * 100)

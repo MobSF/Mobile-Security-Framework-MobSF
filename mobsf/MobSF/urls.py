@@ -20,7 +20,6 @@ from mobsf.StaticAnalyzer.views.common import (
 )
 from mobsf.StaticAnalyzer.views.android import (
     find,
-    generate_downloads,
     manifest_view,
     source_tree,
     view_source,
@@ -43,7 +42,6 @@ urlpatterns = [
     re_path(r'^api/v1/update_scan$', api_sz.api_update_scan),
     re_path(r'^api/v1/scan_metadata$', api_sz.api_scan_metadata),
     re_path(r'^api/v1/delete_scan$', api_sz.api_delete_scan),
-    re_path(r'^api/v1/download$', generate_downloads.run),
     re_path(r'^api/v1/download_pdf$', api_sz.api_pdf_report),
     re_path(r'^api/v1/report_json$', api_sz.api_json_report),
     re_path(r'^api/v1/view_source$', api_sz.api_view_source,
@@ -93,6 +91,7 @@ if settings.API_ONLY == '0':
         re_path(r'^upload/$', home.Upload.as_view),
         re_path(r'^download/', home.download),
         re_path(r'^download_scan/', home.download_apk),
+        re_path(r'^generate_downloads/$', home.generate_download),
         re_path(r'^support$', home.support, name='support'),
         re_path(r'^about$', home.about, name='about'),
         re_path(r'^donate$', home.donate, name='donate'),
@@ -119,7 +118,6 @@ if settings.API_ONLY == '0':
         re_path(r'^source_code/$', source_tree.run, name='tree_view'),
         re_path(r'^view_file/$', view_source.run, name='view_source'),
         re_path(r'^find/$', find.run, name='find_files'),
-        re_path(r'^generate_downloads/$', generate_downloads.run),
         re_path(r'^manifest_view/$', manifest_view.run),
         # IOS
         re_path(r'^static_analyzer_ios/$', ios_sa.static_analyzer_ios_request),
@@ -132,19 +130,6 @@ if settings.API_ONLY == '0':
         re_path(r'^appsec_dashboard/(?P<checksum>[0-9a-f]{32})/$',
                 appsec.appsec_dashboard,
                 name='appsec_dashboard'),
-        # Suppression
-        re_path(r'^suppress_by_rule/$',
-                suppression.suppress_by_rule_id,
-                name='suppress_by_rule'),
-        re_path(r'^suppress_by_files/$',
-                suppression.suppress_by_files,
-                name='suppress_by_files'),
-        re_path(r'^list_suppressions/$',
-                suppression.list_suppressions,
-                name='list_suppressions'),
-        re_path(r'^delete_suppression/$',
-                suppression.delete_suppression,
-                name='delete_suppression'),
         # Suppression
         re_path(r'^suppress_by_rule/$',
                 suppression.suppress_by_rule_id,

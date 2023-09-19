@@ -94,7 +94,10 @@
                                 {% elif '.apks' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-android fa-3x"></i>
                                 {% elif '.jar' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-java fa-3x"></i>
                                 {% elif '.aar' == e.FILE_NAME|slice:"-4:"%}<i class="fas fa-table fa-3x"></i>
+                                {% elif '.so' == e.FILE_NAME|slice:"-3:"%}<i class="fa fa-th-large fa-3x"></i>
                                 {% elif '.ipa' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-apple fa-3x"></i>
+                                {% elif '.dylib' == e.FILE_NAME|slice:"-6:"%}<i class="fa fa-th-large fa-3x"></i>
+                                {% elif '.a' == e.FILE_NAME|slice:"-2:"%}<i class="fa fa-th-large fa-3x"></i>
                                 {% elif '.zip' == e.FILE_NAME|slice:"-4:"%}<i class="fas fa-file-archive fa-3x"></i>
                                 {% elif '.appx' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-windows fa-3x"></i>
                                 {% endif %}
@@ -141,7 +144,13 @@
                                 <p>                                    
                                     {% if e.APP_NAME %}
                                     <a class="btn btn-primary btn-sm" style="margin-bottom: 3px; width: 125px;" href="../{{ e.ANALYZER }}/?file_name={{e.FILE_NAME}}&amp;hash={{e.MD5}}&amp;scan_type={{e.SCAN_TYPE}}"><i class="fas fa-eye" title="View static analysis scan details"></i> Scan Details</a><br/>
-                                    <a class="btn btn-primary btn-warning btn-sm" style="margin-bottom: 3px;  width: 125px;" href="../appsec_dashboard/{{ e.MD5 }}/"><i class="fas fa-user-shield" title="View security scorecard"></i> Scorecard</a><br/>
+                                        {% if e.FILE_NAME|slice:"-6:" != '.dylib' %}
+                                            {% if e.FILE_NAME|slice:"-3:" != '.so' %}
+                                                {% if e.FILE_NAME|slice:"-2:" != '.a' %}
+                                                <a class="btn btn-primary btn-warning btn-sm" style="margin-bottom: 3px;  width: 125px;" href="../appsec_dashboard/{{ e.MD5 }}/"><i class="fas fa-user-shield" title="View security scorecard"></i> Scorecard</a><br/>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endif %}
                                         {% if e.DT_PROJECT_ID %}
                                         <a class="btn btn-primary btn-sm" style="width: 125px;" href="{{dependency_track_url}}/projects/{{ e.DT_PROJECT_ID }}/components"><i class="fas fa-link" title="View third party dependency details"></i> Dependencies</a><br/>
                                         {% else %}

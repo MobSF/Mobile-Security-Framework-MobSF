@@ -53,7 +53,7 @@ def run(request, api=False):
             try:
                 src, syntax, _ = find_java_source_folder(base)
             except StopIteration:
-                msg = 'Invalid Directory Structure'
+                msg = 'Invalid directory or file extension'
                 return error_response(request, msg, api)
 
         sfile = src / fil

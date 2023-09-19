@@ -15,7 +15,10 @@ from django.conf import settings
 from django.shortcuts import render
 from django.db.models import ObjectDoesNotExist
 
-from mobsf.DynamicAnalyzer.views.android.environment import Environment
+from mobsf.DynamicAnalyzer.views.android.environment import (
+    ANDROID_API_SUPPORTED,
+    Environment,
+)
 from mobsf.DynamicAnalyzer.views.android.operations import (
     get_package_name,
 )
@@ -26,6 +29,7 @@ from mobsf.DynamicAnalyzer.tools.webproxy import (
 )
 from mobsf.MobSF.utils import (
     error_response,
+    get_android_dm_exception_msg,
     get_config_loc,
     get_device,
     get_proxy_ip,
@@ -65,21 +69,17 @@ def dynamic_analysis(request, api=False):
         try:
             identifier = get_device()
         except Exception:
-            msg = ('Is Android VM running? MobSF cannot'
-                   ' find android instance identifier.'
-                   ' Please run an android instance and refresh'
-                   ' this page. If this error persists,'
-                   ' set ANALYZER_IDENTIFIER in '
-                   f'{get_config_loc()}')
-            return error_response(request, msg, api)
+            return error_response(
+                request, get_android_dm_exception_msg(), api)
         try:
             if identifier:
                 env = Environment(identifier)
                 env.connect()
                 device_packages = env.get_device_packages()
-                pkg_file = Path(settings.DWD_DIR) / 'packages.json'
-                with pkg_file.open('w', encoding='utf-8') as target:
-                    dump(device_packages, target)
+                if device_packages:
+                    pkg_file = Path(settings.DWD_DIR) / 'packages.json'
+                    with pkg_file.open('w', encoding='utf-8') as target:
+                        dump(device_packages, target)
                 and_ver = env.get_android_version()
                 and_sdk = env.get_android_sdk()
         except Exception:
@@ -88,6 +88,7 @@ def dynamic_analysis(request, api=False):
                    'identifier': identifier,
                    'android_version': and_ver,
                    'android_sdk': and_sdk,
+                   'android_supported': ANDROID_API_SUPPORTED,
                    'proxy_ip': get_proxy_ip(identifier),
                    'proxy_port': settings.PROXY_PORT,
                    'settings_loc': get_config_loc(),
@@ -132,15 +133,8 @@ def dynamic_analyzer(request, checksum, api=False):
         try:
             identifier = get_device()
         except Exception:
-            pass
-        if not identifier:
-            msg = ('Is the android instance running? MobSF cannot'
-                   ' find android instance identifier. '
-                   'Please run an android instance and refresh'
-                   ' this page. If this error persists,'
-                   ' set ANALYZER_IDENTIFIER in '
-                   f'{get_config_loc()}')
-            return error_response(request, msg, api)
+            return error_response(
+                request, get_android_dm_exception_msg(), api)
 
         # Get activities from the static analyzer results
         try:
@@ -311,8 +305,6 @@ def trigger_static_analysis(request, checksum):
         try:
             identifier = get_device()
         except Exception:
-            pass
-        if not identifier:
             err = 'Cannot connect to Android Runtime'
             return error_response(request, err)
         env = Environment(identifier)

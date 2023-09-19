@@ -1,8 +1,8 @@
 """Handle JAR and AAR files."""
 import logging
+from pathlib import Path
 
 from django.conf import settings
-from django.shortcuts import render
 
 import mobsf.MalwareAnalyzer.views.Trackers as Trackers
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
@@ -15,18 +15,26 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
     get_avg_cvss,
     hash_gen,
     unzip,
-    update_scan_timestamp,
 )
 from mobsf.StaticAnalyzer.views.common.appsec import (
     get_android_dashboard,
 )
+from mobsf.StaticAnalyzer.views.android.app import (
+    parse_apk,
+)
 from mobsf.StaticAnalyzer.views.android.manifest_analysis import (
-    get_manifest,
     manifest_analysis,
+)
+from mobsf.StaticAnalyzer.views.android.manifest_utils import (
+    get_manifest,
     manifest_data,
 )
-from mobsf.StaticAnalyzer.views.android.strings import strings_from_apk
-from mobsf.StaticAnalyzer.views.android.binary_analysis import elf_analysis
+from mobsf.StaticAnalyzer.views.android.strings import (
+    get_strings_metadata,
+)
+from mobsf.StaticAnalyzer.views.common.binary.lib_analysis import (
+    library_analysis,
+)
 from mobsf.StaticAnalyzer.views.android.cert_analysis import (
     cert_info,
     get_hardcoded_cert_keystore,
@@ -39,9 +47,8 @@ from mobsf.StaticAnalyzer.views.android.converter import (
     apk_2_java,
 )
 from mobsf.StaticAnalyzer.views.android.db_interaction import (
-    get_context_from_analysis,
     get_context_from_db_entry,
-    save_or_update,
+    save_get_ctx,
 )
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import MalwareDomainCheck
 
@@ -67,26 +74,33 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
                 api)
         app_dic['certz'] = get_hardcoded_cert_keystore(app_dic['files'])
         app_dic['playstore'] = {'error': True}
+        # Parse APK with Androguard
+        apk = parse_apk(app_dic['app_path'])
         if analysis_type == 'aar':
             # AAR has manifest and sometimes certificate
-            app_dic['manifest_file'], app_dic['parsed_xml'] = get_manifest(
+            mani_file, ns, mani_xml = get_manifest(
                 app_dic['app_path'],
                 app_dic['app_dir'],
                 app_dic['tools_dir'],
                 'aar',
             )
+            app_dic['manifest_file'] = mani_file
+            app_dic['ns'] = ns
+            app_dic['parsed_xml'] = mani_xml
             app_dic['mani'] = (
                 f'../manifest_view/?md5={app_dic["md5"]}&type=aar')
-            man_data_dic = manifest_data(app_dic['parsed_xml'])
+            man_data_dic = manifest_data(app_dic['parsed_xml'], ns)
             man_an_dic = manifest_analysis(
                 app_dic['parsed_xml'],
+                ns,
                 man_data_dic,
                 '',
                 app_dic['app_dir'],
             )
             cert_dic = cert_info(
+                apk,
+                app_dic['app_path'],
                 app_dic['app_dir'],
-                app_dic['app_file'],
                 man_data_dic)
         else:
             app_dic['manifest_file'] = None
@@ -132,8 +146,8 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
                 'certificate_summary': {},
             }
         app_dic['real_name'] = ''
-        elf_dict = elf_analysis(app_dic['app_dir'])
-        apkid_results = {}
+        elf_dict = library_analysis(app_dic['app_dir'], 'elf')
+        apkid_results = obfuscated_check(app_dic['app_dir'])
         tracker = Trackers.Trackers(
             app_dic['app_dir'],
             app_dic['tools_dir'])
@@ -150,68 +164,28 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
             app_dic['manifest_file'])
 
         quark_results = []
-
-        # Get the strings from android resource and shared objects
-        string_res = strings_from_apk(
-            app_dic['app_file'],
+        # Get the strings and metadata
+        get_strings_metadata(
+            apk,
             app_dic['app_dir'],
-            elf_dict['elf_strings'])
-        if string_res:
-            app_dic['strings'] = string_res['strings']
-            app_dic['secrets'] = string_res['secrets']
-            code_an_dic['urls_list'].extend(
-                string_res['urls_list'])
-            code_an_dic['urls'].extend(string_res['url_nf'])
-            code_an_dic['emails'].extend(string_res['emails_nf'])
-        else:
-            app_dic['strings'] = []
-            app_dic['secrets'] = []
+            elf_dict['elf_strings'],
+            'apk',
+            ['.java'],
+            code_an_dic)
+
         # Firebase DB Check
         code_an_dic['firebase'] = firebase_analysis(
-            list(set(code_an_dic['urls_list'])))
+            code_an_dic['urls_list'])
         # Domain Extraction and Malware Check
         logger.info(
             'Performing Malware Check on extracted Domains')
         code_an_dic['domains'] = MalwareDomainCheck().scan(
-            list(set(code_an_dic['urls_list'])))
+            code_an_dic['urls_list'])
+
         app_dic['zipped'] = analysis_type
         app_dic['icon_hidden'] = True
         app_dic['icon_found'] = False
-        logger.info('Connecting to Database')
-        try:
-            # SAVE TO DB
-            if rescan:
-                logger.info('Updating Database...')
-                save_or_update(
-                    'update',
-                    app_dic,
-                    man_data_dic,
-                    man_an_dic,
-                    code_an_dic,
-                    cert_dic,
-                    elf_dict['elf_analysis'],
-                    apkid_results,
-                    quark_results,
-                    tracker_res,
-                )
-                update_scan_timestamp(app_dic['md5'])
-            else:
-                logger.info('Saving to Database')
-                save_or_update(
-                    'save',
-                    app_dic,
-                    man_data_dic,
-                    man_an_dic,
-                    code_an_dic,
-                    cert_dic,
-                    elf_dict['elf_analysis'],
-                    apkid_results,
-                    quark_results,
-                    tracker_res,
-                )
-        except Exception:
-            logger.exception('Saving to Database Failed')
-        context = get_context_from_analysis(
+        context = save_get_ctx(
             app_dic,
             man_data_dic,
             man_an_dic,
@@ -221,6 +195,7 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
             apkid_results,
             quark_results,
             tracker_res,
+            rescan,
         )
     context['appsec'] = get_android_dashboard(context, True)
     context['average_cvss'] = get_avg_cvss(
@@ -232,11 +207,10 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
         context['virus_total'] = vt.get_result(
             app_dic['app_path'],
             app_dic['md5'])
-    template = 'static_analysis/android_binary_analysis.html'
-    if api:
-        return context
-    else:
-        return render(request, template, context)
+    context['template'] = \
+        'static_analysis/android_binary_analysis.html'
+    logger.info('Scan complete')
+    return context
 
 
 def jar_analysis(request, app_dic, rescan, api):
@@ -245,3 +219,28 @@ def jar_analysis(request, app_dic, rescan, api):
 
 def aar_analysis(request, app_dic, rescan, api):
     return common_analysis(request, app_dic, rescan, api, 'aar')
+
+
+def obfuscated_check(src):
+    """Check if JAR/AAR is obfuscated."""
+    logger.info('Checking for Obfuscation')
+    try:
+        app_dir = Path(src)
+        # Extract all jar files
+        for j in app_dir.rglob('*.jar'):
+            if not j.is_file():
+                continue
+            out = app_dir / f'{j.name}_out'
+            if not out.exists():
+                unzip(j, out)
+        # Search all class files
+        for i in app_dir.rglob('*.class'):
+            if not i.is_file():
+                continue
+            cls_dat = i.read_text(
+                encoding='utf-8', errors='ignore')
+            if 'LocalVariableTable' in cls_dat:
+                return {'obfuscated': False}
+    except Exception:
+        logger.exception('Obfuscation Check')
+    return {'obfuscated': True}

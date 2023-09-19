@@ -34,7 +34,6 @@ from mobsf.StaticAnalyzer.tools.strings import strings_util
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     hash_gen,
     unzip,
-    update_scan_timestamp,
 )
 from mobsf.StaticAnalyzer.views.windows.db_interaction import (
     get_context_from_analysis,
@@ -121,7 +120,6 @@ def staticanalyzer_windows(request_data, api=False):
                                        app_dic,
                                        xml_dic,
                                        bin_an_dic)
-                        update_scan_timestamp(app_dic['md5'])
                     else:
                         logger.info('Saving to Database')
                         save_or_update('save',
@@ -138,10 +136,9 @@ def staticanalyzer_windows(request_data, api=False):
                         os.path.join(app_dic['app_dir'], app_dic[
                                      'md5']) + '.appx',
                         app_dic['md5'])
-                context['logo'] = os.getenv('LOGO',
-                                            '../static/img/mobsf_logo.png')
                 context['template'] = \
                     'static_analysis/windows_binary_analysis.html'
+                logger.info('Scan complete')
                 return context
             else:
                 msg = 'File type not supported'

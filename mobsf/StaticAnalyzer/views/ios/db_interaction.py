@@ -2,11 +2,14 @@
 import logging
 
 from django.conf import settings
+from django.utils import timezone
 
 from mobsf.MobSF.utils import python_dict, python_list
 from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
 from mobsf.StaticAnalyzer.models import RecentScansDB
-from mobsf.StaticAnalyzer.views.common.suppression import process_suppression
+from mobsf.StaticAnalyzer.views.common.suppression import (
+    process_suppression,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +51,7 @@ def get_context_from_db_entry(db_entry):
             'ats_analysis': python_dict(db_entry[0].ATS_ANALYSIS),
             'binary_analysis': binary,
             'macho_analysis': python_dict(db_entry[0].MACHO_ANALYSIS),
+            'dylib_analysis': python_list(db_entry[0].DYLIB_ANALYSIS),
             'ios_api': python_dict(db_entry[0].IOS_API),
             'code_analysis': code,
             'file_analysis': python_list(db_entry[0].FILE_ANALYSIS),
@@ -108,6 +112,7 @@ def get_context_from_analysis(app_dict,
             'ats_analysis': info_dict['inseccon'],
             'binary_analysis': binary,
             'macho_analysis': bin_dict['checksec'],
+            'dylib_analysis': bin_dict['dylib_analysis'],
             'ios_api': code_dict['api'],
             'code_analysis': code,
             'file_analysis': all_files['special_files'],
@@ -159,6 +164,7 @@ def save_or_update(update_type,
             'ATS_ANALYSIS': info_dict['inseccon'],
             'BINARY_ANALYSIS': bin_dict['bin_code_analysis'],
             'MACHO_ANALYSIS': bin_dict['checksec'],
+            'DYLIB_ANALYSIS': bin_dict['dylib_analysis'],
             'IOS_API': code_dict['api'],
             'CODE_ANALYSIS': code_dict['code_anal'],
             'FILE_ANALYSIS': all_files['special_files'],
@@ -179,6 +185,7 @@ def save_or_update(update_type,
             if not db_entry.exists():
                 StaticAnalyzerIOS.objects.create(**values)
         else:
+            values['TIMESTAMP'] = timezone.now()
             StaticAnalyzerIOS.objects.filter(
                 MD5=app_dict['md5_hash']).update(**values)
     except Exception:
@@ -193,3 +200,32 @@ def save_or_update(update_type,
             MD5=app_dict['md5_hash']).update(**values)
     except Exception:
         logger.exception('Updating RecentScansDB')
+
+
+def save_get_ctx(app_dict, pdict, code_dict, bin_dict, all_files, rescan):
+    # Saving to DB
+    logger.info('Connecting to DB')
+    if rescan:
+        logger.info('Updating Database...')
+        save_or_update(
+            'update',
+            app_dict,
+            pdict,
+            code_dict,
+            bin_dict,
+            all_files)
+    else:
+        logger.info('Saving to Database')
+        save_or_update(
+            'save',
+            app_dict,
+            pdict,
+            code_dict,
+            bin_dict,
+            all_files)
+    return get_context_from_analysis(
+        app_dict,
+        pdict,
+        code_dict,
+        bin_dict,
+        all_files)

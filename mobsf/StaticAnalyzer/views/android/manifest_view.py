@@ -13,7 +13,7 @@ from mobsf.MobSF.utils import (
     error_response,
     is_admin,
 )
-from mobsf.StaticAnalyzer.views.android.manifest_analysis import (
+from mobsf.StaticAnalyzer.views.android.manifest_utils import (
     get_manifest_file,
 )
 

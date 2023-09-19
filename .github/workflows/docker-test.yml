@@ -1,0 +1,28 @@
+name: 'Docker Images (amd64/arm64) test'
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+    buildx:
+        runs-on: ubuntu-latest
+        steps:
+        -
+            name: Checkout
+            uses: actions/checkout@v3
+        - 
+            name: Set up QEMU
+            uses: docker/setup-qemu-action@v2
+        -   
+            name: Set up Docker Buildx
+            uses: docker/setup-buildx-action@v2
+        -
+            name: Build and push
+            id: docker_build
+            uses: docker/build-push-action@v4
+            with:
+                push: false
+                context: .
+                platforms: linux/amd64,linux/arm64
+                tags: opensecurity/mobile-security-framework-mobsf:latest

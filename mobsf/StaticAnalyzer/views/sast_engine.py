@@ -2,9 +2,11 @@
 """SAST engine."""
 import logging
 
-from django.conf import settings
-
 from libsast import Scanner
+
+from mobsf.MobSF.utils import (
+    settings_enabled,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +30,7 @@ def scan(rule, extensions, paths, ignore_paths=None):
 
 def niap_scan(rule, extensions, paths, apath, ignore_paths=None):
     """NIAP scan."""
-    if not getattr(settings, 'NIAP_ENABLED', True):
+    if not settings_enabled('NIAP_ENABLED'):
         return {}
     try:
         logger.info('Running NIAP Analyzer')

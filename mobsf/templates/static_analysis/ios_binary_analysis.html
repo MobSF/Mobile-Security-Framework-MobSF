@@ -36,7 +36,7 @@
         <!-- Sidebar user panel (optional) -->
       <div class="user-panel mt-3 pb-3 mb-3 d-flex">
         <div class="info">
-          <a href="#" class="d-block">Static Analyzer</a>
+          <a href="#" class="d-block">Scan Details</a>
         </div>
       </div>
 
@@ -60,6 +60,7 @@
               </p>
             </a>
           </li>
+          {% if app_type not in 'Dylib,A' %}
            <li class="nav-item">
             <a href="#url_schemes" class="nav-link">
               <i class="nav-icon fas fa-hashtag"></i>
@@ -76,6 +77,7 @@
               </p>
             </a>
           </li>
+          {% endif %}
              <li class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon fas fa-shield-alt"></i>
@@ -85,6 +87,7 @@
               </p>
             </a>
             <ul class="nav nav-treeview">
+            {% if app_type not in 'Dylib,A' %}
              <li class="nav-item">
             <a href="#transport_security" class="nav-link">
               <i class="nav-icon fas fa-lock"></i>
@@ -93,6 +96,7 @@
               </p>
             </a>
           </li>
+          {% endif %}
           <li class="nav-item">
             <a href="#binary_code_analysis" class="nav-link">
               <i class="fa fa-code nav-icon"></i>
@@ -101,14 +105,33 @@
               </p>
             </a>
           </li>
+          {% if app_type not in 'Dylib,A' %}
           <li class="nav-item">
             <a href="#binary_analysis" class="nav-link">
-              <i class="nav-icon fas fa-flag"></i>
+              <i class="nav-icon fa fa-braille"></i>
               <p>
                 Binary Analysis
               </p>
             </a>
           </li>
+          {% endif %}
+          {% if app_type not in 'A' %}
+          <li class="nav-item">
+            <a href="#dylib_analysis" class="nav-link">
+              <i class="nav-icon fas fa-flag"></i>
+              <p>Dylib Analysis</p>
+            </a>
+          </li>
+          {% endif %}
+          {% if app_type in 'A' %}
+          <li class="nav-item">
+            <a href="#a_analysis" class="nav-link">
+              <i class="nav-icon fas fa-flag"></i>
+              <p>Static Library Analysis</p>
+            </a>
+          </li>
+          {% endif %}
+          {% if app_type not in 'Dylib,A' %}
           <li class="nav-item">
             <a href="#file_analysis" class="nav-link">
               <i class="nav-icon fa fa-file"></i>
@@ -117,6 +140,7 @@
               </p>
             </a>
              </li>
+            {% endif %}
             </ul>
           </li>
           <li class="nav-item has-treeview">
@@ -191,8 +215,23 @@
                   <p>Hardcoded Secrets</p>
                 </a>
               </li>
+              <li class="nav-item">
+                <a href="#strings" class="nav-link">
+                  <i class="fas fa-font nav-icon"></i>
+                  <p>Strings</p>
+                </a>
+              </li>
             </ul>
           </li>
+          {% if app_type in 'Dylib,A' %}
+          <li class="nav-item">
+            <a href="#symbols" class="nav-link">
+              <i class="fa fa-th nav-icon"></i>
+                <p>Symbols</p>
+            </a>
+          </li>
+          {% endif %}
+          {% if app_type not in 'Dylib,A' %}
           <li class="nav-item">
             <a href="#libraries" class="nav-link">
               <i class="fab fa-buffer nav-icon"></i>
@@ -207,6 +246,7 @@
               </p>
             </a>
           </li>
+          {% endif %}
             <li class="nav-item">
               <a href="../pdf/?md5={{ md5 }}" class="nav-link" target="_blank">
               <i class="nav-icon fas fa-file-pdf"></i>
@@ -258,12 +298,14 @@
                 <div class="row">
                 <div class="col-2">
                   <p><strong><i class="fas fa-check-double"></i> APP SCORES</strong></p>
+              {% if app_type not in 'Dylib,A' %}
                   <img id="app_icon" src="{% if not appstore_details.error %}{{appstore_details.icon}}{% elif icon_found %}/download/{{ md5 }}-icon.png{% else %}{% static 'img/no_icon.png' %}{% endif %}"/>
                   <p>
                   {% if average_cvss %}
                   <span class="badge bg-info">Average CVSS</span> <strong>{{ average_cvss }} </strong><br/>
                   {% endif %}
                   <span class="badge bg-{% if appsec.security_score < 40 %}danger{% elif appsec.security_score == 100 %}success{% else %}warning{% endif %}">Security Score</span> <strong>{{ appsec.security_score }}/100 </strong><br/>
+              {% endif %}
                   {% if trackers.detected_trackers > 0 %}
                   <span class="badge bg-warning">Trackers Detection</span> <strong>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</strong><br/>
                 {% else %}
@@ -277,7 +319,9 @@
                     {% endif %}
                   {% endif %}
                 </p>
+                {% if app_type not in 'Dylib,A' %}
                   <p> <a href="../appsec_dashboard/{{ md5 }}/" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> Security Scorecard</a></p>
+                {% endif %}
                 </div>
                 <div class="col-4">
                   <p><strong><i class="fas fa-box-open"></i> FILE INFORMATION </strong></p>                         
@@ -292,6 +336,7 @@
                   <span class="badge bg-primary">SHA256</span>
                   {{ sha256 }}<br/>
                 </div>
+                {% if app_type not in 'Dylib,A' %}
                 <div class="col-3">
                   <p><strong><i class="fas fa-info"></i> APP INFORMATION </strong></p>                                       
                   <span class="badge bg-primary">App Name</span>
@@ -314,7 +359,8 @@
                   {% for pl in bundle_supported_platforms %}
                     {{pl}},
                   {% endfor %}
-                </div> 
+                </div>
+                {% endif %}
                  <div class="col-3">
                   <p><strong><i class="fas fa-ad"></i> BINARY INFORMATION </strong></p>                                       
                   <span class="badge bg-primary">Arch</span>
@@ -332,6 +378,7 @@
             </div>
           </div>
           </div>
+          {% if app_type not in 'Dylib,A' %}
           <!-- App Store -->
           {% if not appstore_details.error %}
           <div class="col-lg-12">
@@ -376,6 +423,7 @@
           </div><!-- /.card -->
           </div>
           {% endif %}
+          {% endif %}
       <!-- /.col -->
       <!-- row and container-->
       </div>
@@ -410,10 +458,13 @@
                     <strong><i class="fas fa-file-code"></i> DECOMPILED ASSETS</strong>
                   </p>
                   <p>
+                    {% if app_type not in 'Dylib,A' %}
                     <a role="button" class="btn btn-primary" data-target="#mplist" data-toggle="modal" href="#"><i class="fa fa-list"></i> View Info.plist</a>
-                    <a role="button" class="btn btn-primary" data-target="#mstrings" data-toggle="modal" href="#"><i class="fas fa-font"></i> View Strings</a>
+                    {% endif %}
+                    {% if app_type not in 'Dylib,A' %}
                     <a target="_blank" href="../view_file_ios/?file=classdump.txt&amp;md5={{ md5 }}&amp;type=ios" class="btn btn-warning" role="button"><i class="fa fa-code"></i> View Class Dump</a>
-                    <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type=ipa" class="btn btn-warning"> <i class="fa fa-download"></i> Download IPA</a>
+                    {% endif %}
+                    <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type={% if app_type in 'Dylib' %}dylib{% elif app_type in 'A' %}a{% else %}ipa{% endif %}" class="btn btn-warning"> <i class="fa fa-download"></i> Download {% if app_type in 'Dylib' %}DYLIB{% elif app_type in 'A' %}A{% else %}IPA{% endif %}</a>
                  </p>
                 </div>
               </div>
@@ -424,6 +475,7 @@
         </div>
 </section>
   <!-- ===========================end scan options================================== -->
+{% if app_type not in 'Dylib,A' %}
 <a id="url_schemes" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
@@ -634,7 +686,7 @@
 </section>
 
  <!-- ===========================end transport security ================================== -->
-
+{% endif %}
  <a id="binary_code_analysis" class="anchor"></a>
  <section class="content">
   <div class="container-fluid">
@@ -643,7 +695,7 @@
         <div class="card">
           <div class="card-body">
               <p>
-             <strong><i class="fa fa-code"></i> IPA BINARY CODE ANALYSIS</strong>
+             <strong><i class="fa fa-code"></i> {% if app_type not in 'Dylib,A' %}IPA {% endif %}BINARY CODE ANALYSIS</strong>
              </p>
               <div class="table-responsive">
                 {% if binary_analysis and 'summary' in binary_analysis and binary_analysis.summary|length > 0 %}
@@ -771,6 +823,7 @@
     </div>
 </section>
 <!-- ===========================end binary code analysis ================================== -->
+{% if app_type not in 'Dylib,A' %}
 <a id="binary_analysis" class="anchor"></a>
 <section class="content">
  <div class="container-fluid">
@@ -779,7 +832,7 @@
        <div class="card">
          <div class="card-body">
              <p>
-            <strong><i class="fa fa-flag"></i> IPA BINARY ANALYSIS</strong>
+            <strong><i class="fa fa-braille"></i> IPA BINARY ANALYSIS</strong>
             </p>
              <div class="table-responsive">
               <table class="table table-bordered table-hover table-striped">
@@ -857,6 +910,217 @@
 </section>
 
  <!-- ===========================end binary analysis ================================== -->
+ {% endif %}
+ {% if app_type not in 'A' %}
+ <a id="dylib_analysis" class="anchor"></a>
+ <section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+              <p>
+             <strong><i class="fa fa-flag"></i> DYNAMIC LIBRARY BINARY ANALYSIS</strong>
+             </p>
+              <div class="table-responsive">
+              <table id="table_dylib" class="table table-bordered table-hover table-striped">
+                  <thead>
+                      <tr>
+                      {% if app_type not in 'Dylib' %}
+                          <th>NO</th>
+                          <th>DYLIB</th>
+                      {% endif %}
+                          <th>NX</th>
+                          <th>STACK CANARY</th>
+                          <th>ARC</th>
+                          <th>RPATH</th>
+                          <th>CODE SIGNATURE</th>
+                          <th>ENCRYPTED</th>
+                          <th>SYMBOLS STRIPPED</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+            {% if not dylib_analysis %}
+              No Dylibs found.
+            {% endif %}
+             {% for dy in dylib_analysis %}
+             <tr>
+              {% if app_type not in 'Dylib' %}
+              <td>{{ forloop.counter }}</td>
+              <td>{{dy.name}}</td>
+              {% endif %}
+              <td><b>{{dy.nx.has_nx}}</b>
+                <br/>
+                <span class="badge bg-{% if dy.nx.severity == 'high' %}danger{% elif dy.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.nx.severity}}</span>
+                <br/>{{dy.nx.description}}</td>
+              <td><b>{{dy.stack_canary.has_canary}}</b>
+                  <br/>
+                  <span class="badge bg-{% if dy.stack_canary.severity == 'high' %}danger{% elif dy.stack_canary.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.stack_canary.severity}}</span>
+                  <br/>{{dy.stack_canary.description}}</td>
+              <td><b>{{dy.arc.has_arc}}</b>
+                <br/>
+                <span class="badge bg-{% if dy.arc.severity == 'high' %}danger{% elif dy.arc.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.arc.severity}}</span>
+                <br/>{{dy.arc.description}}</td>
+              <td><b>{{dy.rpath.has_rpath}}</b>
+                <br/>
+                <span class="badge bg-{% if dy.rpath.severity == 'high' %}danger{% elif dy.rpath.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.rpath.severity}}</span>
+                <br/>{{dy.rpath.description}}</td>
+              <td><b>{{dy.code_signature.has_code_signature}}</b>
+                  <br/>
+                  <span class="badge bg-{% if dy.code_signature.severity == 'high' %}danger{% elif dy.code_signature.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.code_signature.severity}}</span>
+                  <br/>{{dy.code_signature.description}}</td>
+              <td><b>{{dy.encrypted.is_encrypted}}</b>
+                  <br/>
+                  <span class="badge bg-{% if dy.encrypted.severity == 'high' %}danger{% elif dy.encrypted.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.encrypted.severity}}</span>
+                  <br/>{{dy.encrypted.description}}</td>
+              <td><b>{{dy.symbol.is_stripped}}</b>
+                <br/>
+                <span class="badge bg-{% if dy.symbol.severity == 'high' %}danger{% elif dy.symbol.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.symbol.severity}}</span>
+                <br/>{{dy.symbol.description}}</td>
+            </tr>
+             {% endfor %}
+                    </tbody>
+                    </table>
+                  </div>
+              
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end dylib analysis ================================== -->
+ {% endif %}
+ <!--static library-->
+{% if app_type in 'A' %}
+
+<a id="a_analysis" class="anchor"></a>
+<section class="content">
+ <div class="container-fluid">
+   <div class="row">
+       <div class="col-lg-12">
+       <div class="card">
+         <div class="card-body">
+             <p>
+            <strong><i class="fa fa-flag"></i> STATIC LIBRARY BINARY ANALYSIS</strong>
+            </p>
+             <div class="table-responsive">
+
+  {% if binary_info.arch == 'MachO' %}
+
+            <table id="table_macho_static" class="table table-bordered table-hover table-striped">
+              <thead>
+                  <tr>
+                      <th>NO</th>
+                      <th>STATIC OBJECT</th>
+                      <th>NX</th>
+                      <th>STACK CANARY</th>
+                      <th>ARC</th>
+                      <th>RPATH</th>
+                      <th>SYMBOLS STRIPPED</th>
+                  </tr>
+              </thead>
+              <tbody>
+          {% if not dylib_analysis %}
+          No Static Objects found.
+          {% endif %}
+          {% for dy in dylib_analysis %}
+          <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{dy.name}}</td>
+          <td><b>{{dy.nx.has_nx}}</b>
+            <br/>
+            <span class="badge bg-{% if dy.nx.severity == 'high' %}danger{% elif dy.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.nx.severity}}</span>
+            <br/>{{dy.nx.description}}</td>
+          <td><b>{{dy.stack_canary.has_canary}}</b>
+              <br/>
+              <span class="badge bg-{% if dy.stack_canary.severity == 'high' %}danger{% elif dy.stack_canary.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.stack_canary.severity}}</span>
+              <br/>{{dy.stack_canary.description}}</td>
+          <td><b>{{dy.arc.has_arc}}</b>
+            <br/>
+            <span class="badge bg-{% if dy.arc.severity == 'high' %}danger{% elif dy.arc.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.arc.severity}}</span>
+            <br/>{{dy.arc.description}}</td>
+          <td><b>{{dy.rpath.has_rpath}}</b>
+            <br/>
+            <span class="badge bg-{% if dy.rpath.severity == 'high' %}danger{% elif dy.rpath.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.rpath.severity}}</span>
+            <br/>{{dy.rpath.description}}</td>
+          <td><b>{{dy.symbol.is_stripped}}</b>
+            <br/>
+            <span class="badge bg-{% if dy.symbol.severity == 'high' %}danger{% elif dy.symbol.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.symbol.severity}}</span>
+            <br/>{{dy.symbol.description}}</td>
+          </tr>
+          {% endfor %}
+                </tbody>
+                </table>
+  {% else %}
+
+          <table id="table_elf_static" class="table table-bordered table-hover table-striped">
+            <thead>
+                <tr>
+                    <th>NO</th>
+                    <th>SHARED OBJECT</th>
+                    <th>NX</th>
+                    <th>STACK CANARY</th>
+                    <th>RPATH</th>
+                    <th>RUNPATH</th>
+                    <th>FORTIFY</th>
+                    <th>SYMBOLS STRIPPED</th>
+                </tr>
+            </thead>
+            <tbody>
+        {% if not dylib_analysis %}
+        No Static Objects found.
+        {% endif %}
+        {% for so in dylib_analysis %}
+        <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{so.name}}</td>
+        <td><b>{{so.nx.is_nx}}</b>
+          <br/>
+          <span class="badge bg-{% if so.nx.severity == 'high' %}danger{% elif so.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.nx.severity}}</span>
+          <br/>{{so.nx.description}}</td>
+        <td><b>{{so.stack_canary.has_canary}}</b>
+            <br/>
+            <span class="badge bg-{% if so.stack_canary.severity == 'high' %}danger{% elif so.stack_canary.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.stack_canary.severity}}</span>
+            <br/>{{so.stack_canary.description}}</td>
+        <td><b>{{so.rpath.rpath}}</b>
+          <br/>
+          <span class="badge bg-{% if so.rpath.severity == 'high' %}danger{% elif so.rpath.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.rpath.severity}}</span>
+          <br/>{{so.rpath.description}}</td>
+        <td><b>{{so.runpath.runpath}}</b>
+          <br/>
+          <span class="badge bg-{% if so.runpath.severity == 'high' %}danger{% elif so.runpath.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.runpath.severity}}</span>
+          <br/>{{so.runpath.description}}</td>
+        <td><b>{{so.fortify.is_fortified}}</b>
+          <br/>
+          <span class="badge bg-{% if so.fortify.severity == 'high' %}danger{% elif so.fortify.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.fortify.severity}}</span>
+          <br/>{{so.fortify.description}}</td>
+        <td><b>{{so.symbol.is_stripped}}</b>
+          <br/>
+          <span class="badge bg-{% if so.symbol.severity == 'high' %}danger{% elif so.symbol.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.symbol.severity}}</span>
+          <br/>{{so.symbol.description}}</td>
+        </tr>
+        {% endfor %}
+              </tbody>
+              </table>
+
+  {% endif %}
+
+            </div>
+              
+        </div>
+    </div><!-- /.card -->
+  </div>
+<!-- end row -->
+</div>
+</div>
+</section>
+<!-- ===========================end a analysis ================================== -->
+
+{% endif %}
+<!-- end static library-->
+ {% if app_type not in 'Dylib,A' %}
 <a id="file_analysis" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
@@ -907,6 +1171,7 @@
     </div>
 </section>
  <!-- ===========================end file analysis ================================== -->
+ {% endif %}
 {% if virus_total %}
 <a id="virus_total" class="anchor"></a>
 <section class="content">
@@ -1284,6 +1549,57 @@
          </div>
  </section>
   <!-- ===========================end secrets ================================== -->
+<a id="strings" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-font"></i> STRINGS</strong>
+             </p>
+               <div class="list-group">
+                {% for string in strings %}
+                  {{string}} <br>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+</section>
+ <!-- ===========================end strings ================================== -->
+  {% if app_type in 'Dylib,A' %}
+  <a id="symbols" class="anchor"></a>
+ <section class="content">
+   <div class="container-fluid">
+     <div class="row">
+         <div class="col-lg-12">
+         <div class="card">
+           <div class="card-body">
+              <p>
+              <strong><i class="fa fa-th"></i> SYMBOLS</strong>
+              </p>
+                <div class="list-group">
+                   <p>  
+                      {% for val in file_analysis %}
+                        {{ val }}<br/>
+                      {% endfor %}
+                   </p>
+               </div>
+             </div>
+           </div>
+         </div><!-- /.card -->
+         </div>
+         <!-- end row -->
+         </div>
+ </section>
+  <!-- ===========================end symbols (only for dylibs) ================================== -->
+  {% endif %}
+  {% if app_type not in 'Dylib,A' %}
  <a id="libraries" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
@@ -1335,9 +1651,11 @@
       </div>
 </section>
  <!-- ===========================end files ================================== -->
+ {% endif %}
 <!-- end of contents -->
 </div>
 
+{% if app_type not in 'Dylib,A' %}
 <!-- Modal -->
 
 <div class="modal" id="mplist" tabindex="-1" role="dialog">
@@ -1359,29 +1677,7 @@
       </div>
       <!-- /.modal-dialog -->
     </div>
-
-<div class="modal" id="mstrings" tabindex="-1" role="dialog">
-      <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h4 class="modal-title">Strings</h4>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">×</span>
-            </button>
-          </div>
-          <div class="modal-body">
-           <pre><code>
-           {% for string in strings %}
-           {{string}}
-           {% endfor %}
-          </code></pre>
-          </div>
-        </div>
-        <!-- /.modal-content -->
-      </div>
-      <!-- /.modal-dialog -->
-    </div>
-
+{% endif %}
 
     <!--Modals-->
 <div class="modal" id="sup_list" tabindex="-1" role="dialog">

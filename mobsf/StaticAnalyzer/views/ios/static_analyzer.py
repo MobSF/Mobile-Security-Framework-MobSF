@@ -1,6 +1,5 @@
 # -*- coding: utf_8 -*-
 """iOS Static Code Analysis."""
-import os
 import logging
 import re
 from pathlib import Path
@@ -18,14 +17,19 @@ from mobsf.MobSF.utils import (
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
 from mobsf.StaticAnalyzer.views.ios.appstore import app_search
-from mobsf.StaticAnalyzer.views.ios.binary_analysis import binary_analysis
+from mobsf.StaticAnalyzer.views.ios.binary_analysis import (
+    binary_analysis,
+)
+from mobsf.StaticAnalyzer.views.common.binary.lib_analysis import (
+    library_analysis,
+)
 from mobsf.StaticAnalyzer.views.ios.code_analysis import ios_source_analysis
 from mobsf.StaticAnalyzer.views.ios.db_interaction import (
-    get_context_from_analysis,
     get_context_from_db_entry,
-    save_or_update)
+    save_get_ctx,
+)
+from mobsf.StaticAnalyzer.views.ios.dylib import dylib_analysis
 from mobsf.StaticAnalyzer.views.ios.file_analysis import ios_list_files
-from mobsf.StaticAnalyzer.views.ios.file_recon import extract_urls_n_email
 from mobsf.StaticAnalyzer.views.ios.icon_analysis import (
     get_icon,
     get_icon_source,
@@ -34,15 +38,24 @@ from mobsf.StaticAnalyzer.views.ios.plist_analysis import (
     get_plist_secrets,
     plist_analysis,
 )
+from mobsf.StaticAnalyzer.views.ios.strings import (
+    get_strings_metadata,
+)
+from mobsf.StaticAnalyzer.views.common.a import (
+    a_analysis,
+)
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     firebase_analysis,
     get_avg_cvss,
     hash_gen,
+    strings_and_entropies,
     unzip,
-    update_scan_timestamp,
 )
 from mobsf.StaticAnalyzer.views.common.appsec import (
     get_ios_dashboard,
+)
+from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
+    MalwareDomainCheck,
 )
 
 logger = logging.getLogger(__name__)
@@ -75,18 +88,20 @@ def static_analyzer_ios(request_data, api=False):
         if re_scan == '1':
             rescan = True
         md5_match = re.match('^[0-9a-f]{32}$', checksum)
-        if ((md5_match)
-                and (filename.lower().endswith('.ipa')
-            or filename.lower().endswith('.zip'))
-                and (file_type in ['ipa', 'ios'])):
-            app_dict = {}
+        app_dict = {}
+        allowed_exts = ('ios', '.ipa', '.zip', '.dylib', '.a')
+        allowed_typ = [i.replace('.', '') for i in allowed_exts]
+        if (md5_match
+                and filename.lower().endswith(allowed_exts)
+                and file_type in allowed_typ):
             app_dict['directory'] = Path(settings.BASE_DIR)  # BASE DIR
             app_dict['file_name'] = filename  # APP ORIGINAL NAME
             app_dict['md5_hash'] = checksum  # MD5
             app_dir = Path(settings.UPLD_DIR) / checksum
+            app_dict['app_dir'] = app_dir.as_posix() + '/'
             tools_dir = app_dict[
                 'directory'] / 'StaticAnalyzer' / 'tools' / 'ios'
-            tools_dir = tools_dir.as_posix()
+            app_dict['tools_dir'] = tools_dir.as_posix()
             if file_type == 'ipa':
                 app_dict['app_file'] = app_dict[
                     'md5_hash'] + '.ipa'  # NEW FILENAME
@@ -99,7 +114,6 @@ def static_analyzer_ios(request_data, api=False):
                     context = get_context_from_db_entry(ipa_db)
                 else:
                     logger.info('iOS Binary (IPA) Analysis Started')
-                    app_dict['app_dir'] = app_dir.as_posix() + '/'
                     app_dict['size'] = str(
                         file_size(app_dict['app_path'])) + 'MB'  # FILE SIZE
                     app_dict['sha1'], app_dict['sha256'] = hash_gen(
@@ -116,71 +130,64 @@ def static_analyzer_ios(request_data, api=False):
                     else:
                         msg = ('IPA is malformed! '
                                'MobSF cannot find Payload directory')
-                        logger.error(msg)
+                        return error_response(
+                            request_data,
+                            msg,
+                            api)
                     app_dict['bin_dir'] = app_dict['bin_dir'].as_posix() + '/'
                     # Get Files
                     all_files = ios_list_files(
                         app_dict['bin_dir'], app_dict['md5_hash'], True, 'ipa')
+                    # Plist files are converted to xml/readable
                     infoplist_dict = plist_analysis(app_dict['bin_dir'], False)
                     app_dict['appstore'] = app_search(infoplist_dict.get('id'))
                     app_dict['secrets'] = get_plist_secrets(
-                        infoplist_dict['plist_xml'])
-                    bin_analysis_dict = binary_analysis(
+                        app_dict['bin_dir'])
+                    bin_dict = binary_analysis(
                         app_dict['bin_dir'],
-                        tools_dir,
+                        app_dict['tools_dir'],
                         app_dict['app_dir'],
                         infoplist_dict.get('bin'))
+                    # Analyze dylibs
+                    dy = library_analysis(app_dict['bin_dir'], 'macho')
+                    bin_dict['dylib_analysis'] = dy['macho_analysis']
                     # Get Icon
                     app_dict['icon_found'] = get_icon(
                         app_dict['md5_hash'],
                         app_dict['bin_dir'],
                         infoplist_dict.get('bin'))
-                    # IPA URL and Email Extract
-                    recon = extract_urls_n_email(app_dict['bin_dir'],
-                                                 all_files['files_long'],
-                                                 bin_analysis_dict['strings'])
+                    # Extract String metadata
+                    code_dict = get_strings_metadata(
+                        app_dict,
+                        bin_dict,
+                        all_files,
+                        dy['macho_strings'])
+
+                    # Domain Extraction and Malware Check
+                    logger.info('Performing Malware Check on '
+                                'extracted Domains')
+                    code_dict['domains'] = MalwareDomainCheck().scan(
+                        code_dict['urls_list'])
+                    logger.info('Finished URL and Email Extraction')
+
                     # Extract Trackers from Domains
                     trk = Trackers.Trackers(
-                        None, tools_dir)
+                        None, app_dict['tools_dir'])
                     trackers = trk.get_trackers_domains_or_deps(
-                        recon['domains'], [])
-                    code_dict = {
-                        'api': {},
-                        'code_anal': {},
-                        'urlnfile': recon['urlnfile'],
-                        'domains': recon['domains'],
-                        'emailnfile': recon['emailnfile'],
-                        'firebase': firebase_analysis(recon['urls_list']),
-                        'trackers': trackers,
-                    }
-                    # Saving to DB
-                    logger.info('Connecting to DB')
-                    if rescan:
-                        logger.info('Updating Database...')
-                        save_or_update(
-                            'update',
-                            app_dict,
-                            infoplist_dict,
-                            code_dict,
-                            bin_analysis_dict,
-                            all_files)
-                        update_scan_timestamp(app_dict['md5_hash'])
-                    else:
-                        logger.info('Saving to Database')
-                        save_or_update(
-                            'save',
-                            app_dict,
-                            infoplist_dict,
-                            code_dict,
-                            bin_analysis_dict,
-                            all_files)
-                    context = get_context_from_analysis(
+                        code_dict['domains'], [])
+
+                    code_dict['api'] = {}
+                    code_dict['code_anal'] = {}
+                    code_dict['firebase'] = firebase_analysis(
+                        code_dict['urls_list'])
+                    code_dict['trackers'] = trackers
+                    context = save_get_ctx(
                         app_dict,
                         infoplist_dict,
                         code_dict,
-                        bin_analysis_dict,
-                        all_files)
-
+                        bin_dict,
+                        all_files,
+                        rescan)
                 context['virus_total'] = None
                 if settings.VT_ENABLED:
                     vt = VirusTotal.VirusTotal()
@@ -190,12 +197,14 @@ def static_analyzer_ios(request_data, api=False):
                 context['appsec'] = get_ios_dashboard(context, True)
                 context['average_cvss'] = get_avg_cvss(
                     context['binary_analysis'])
-                context['logo'] = os.getenv('LOGO',
-                                            '/static/img/mobsf_logo.png')
                 context['template'] = \
                     'static_analysis/ios_binary_analysis.html'
                 return context
-            elif file_type == 'ios':
+            elif file_type == 'dylib':
+                return dylib_analysis(request_data, app_dict, rescan, api)
+            elif file_type == 'a':
+                return a_analysis(request_data, app_dict, rescan, api)
+            elif file_type in ('ios', 'zip'):
                 ios_zip_db = StaticAnalyzerIOS.objects.filter(
                     MD5=app_dict['md5_hash'])
                 if ios_zip_db.exists() and not rescan:
@@ -206,7 +215,6 @@ def static_analyzer_ios(request_data, api=False):
                         'md5_hash'] + '.zip'  # NEW FILENAME
                     app_dict['app_path'] = app_dir / app_dict['app_file']
                     app_dict['app_path'] = app_dict['app_path'].as_posix()
-                    app_dict['app_dir'] = app_dir.as_posix() + '/'
                     # ANALYSIS BEGINS - Already Unzipped
                     app_dict['size'] = str(
                         file_size(app_dict['app_path'])) + 'MB'  # FILE SIZE
@@ -220,9 +228,14 @@ def static_analyzer_ios(request_data, api=False):
                     infoplist_dict = plist_analysis(app_dict['app_dir'], True)
                     app_dict['appstore'] = app_search(infoplist_dict.get('id'))
                     app_dict['secrets'] = get_plist_secrets(
-                        infoplist_dict['plist_xml'])
+                        app_dict['app_dir'])
                     code_analysis_dic = ios_source_analysis(
                         app_dict['app_dir'])
+                    ios_strs = strings_and_entropies(
+                        Path(app_dict['app_dir']),
+                        ['.swift', '.m', '.h', '.plist'])
+                    if ios_strs['secrets']:
+                        app_dict['secrets'].extend(list(ios_strs['secrets']))
                     # Get App Icon
                     app_dict['icon_found'] = get_icon_source(
                         app_dict['md5_hash'],
@@ -232,7 +245,7 @@ def static_analyzer_ios(request_data, api=False):
                         list(set(code_analysis_dic['urls_list'])))
                     # Extract Trackers from Domains
                     trk = Trackers.Trackers(
-                        None, tools_dir)
+                        None, app_dict['tools_dir'])
                     trackers = trk.get_trackers_domains_or_deps(
                         code_analysis_dic['domains'], [])
                     code_analysis_dic['trackers'] = trackers
@@ -240,54 +253,34 @@ def static_analyzer_ios(request_data, api=False):
                         'checksec': {},
                         'libraries': [],
                         'bin_code_analysis': {},
-                        'strings': [],
+                        'strings': list(ios_strs['strings']),
                         'bin_info': {},
                         'bin_type': code_analysis_dic['source_type'],
+                        'dylib_analysis': {},
                     }
-                    # Saving to DB
-                    logger.info('Connecting to DB')
-                    if rescan:
-                        logger.info('Updating Database...')
-                        save_or_update(
-                            'update',
-                            app_dict,
-                            infoplist_dict,
-                            code_analysis_dic,
-                            fake_bin_dict,
-                            all_files)
-                        update_scan_timestamp(app_dict['md5_hash'])
-                    else:
-                        logger.info('Saving to Database')
-                        save_or_update(
-                            'save',
-                            app_dict,
-                            infoplist_dict,
-                            code_analysis_dic,
-                            fake_bin_dict,
-                            all_files)
-                    context = get_context_from_analysis(
+                    context = save_get_ctx(
                         app_dict,
                         infoplist_dict,
                         code_analysis_dic,
                         fake_bin_dict,
-                        all_files)
+                        all_files,
+                        rescan)
                 context['appsec'] = get_ios_dashboard(context, True)
                 context['average_cvss'] = get_avg_cvss(
                     context['code_analysis'])
-                context['logo'] = os.getenv('LOGO',
-                                            '/static/img/mobsf_logo.png')
                 context['template'] = \
                     'static_analysis/ios_source_analysis.html'
+                logger.info('Scan complete')
                 return context
             else:
-                msg = 'File Type not supported!'
-                logger.error(msg)
-                return {'error': msg}
+                msg = ('File Type not supported, '
+                       'Only IPA, A and DYLIB files are supported')
+                return error_response(request_data, msg, api)
         else:
             msg = 'Hash match failed or Invalid file extension or file type'
-            logger.error(msg)
-            return {'error': msg}
+            return error_response(request_data, msg, api)
     except Exception as exp:
         logger.exception('Error Performing Static Analysis')
         msg = str(exp)
-        return {'error': msg}
+        exp_doc = exp.__doc__
+        return error_response(request_data, msg, api, exp_doc)

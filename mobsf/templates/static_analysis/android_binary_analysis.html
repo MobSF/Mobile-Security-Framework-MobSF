@@ -5,7 +5,6 @@
      {% endblock %}
     {% block extra_css %}
     <link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
-    <link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
     <!-- DataTables -->
     <link rel="stylesheet" href="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.css" %}">
     <link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
@@ -52,7 +51,7 @@
         <!-- Sidebar user panel (optional) -->
       <div class="user-panel mt-3 pb-3 mb-3 d-flex">
         <div class="info">
-          <a href="#" class="d-block">Static Analyzer</a>
+          <a href="#" class="d-block">Scan Details</a>
         </div>
       </div>
 
@@ -76,6 +75,7 @@
               </p>
             </a>
           </li>
+          {% if app_type not in 'so' %}
           <li class="nav-item">
             <a href="#certificate" class="nav-link">
               <i class="nav-icon fas fa-certificate"></i>
@@ -108,7 +108,7 @@
               </p>
             </a>
           </li>
-          
+          {% endif %}
           <li class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon fas fa-shield-alt"></i>
@@ -118,6 +118,7 @@
               </p>
             </a>
             <ul class="nav nav-treeview">
+              {% if app_type not in 'so' %}
               <li class="nav-item">
                 <a href="#network_security" class="nav-link">
                   <i class="nav-icon fas fa-lock"></i>
@@ -146,12 +147,14 @@
                   <p>Code Analysis</p>
                 </a>
               </li>
+              {% endif %}
               <li class="nav-item">
                 <a href="#binary_analysis" class="nav-link">
                   <i class="nav-icon fas fa-flag"></i>
                   <p>Binary Analysis</p>
                 </a>
               </li>
+              {% if app_type not in 'so' %}
               <li class="nav-item">
                 <a href="#niap_analysis" class="nav-link">
                   <i class="fa fa-id-badge nav-icon"></i>
@@ -164,6 +167,7 @@
                   <p>File Analysis</p>
                 </a>
               </li>
+              {% endif %}
             </ul>
           </li>
           <li class="nav-item has-treeview">
@@ -175,6 +179,7 @@
               </p>
             </a>
             <ul class="nav nav-treeview">
+              {% if app_type not in 'so' %}
               <li class="nav-item">
                 <a href="#apkid" class="nav-link">
                   <i class="fas fa-fingerprint nav-icon"></i>
@@ -187,6 +192,7 @@
                   <p>Quark Analysis</p>
                 </a>
               </li>
+              {% endif %}
                {% if virus_total %}
               <li class="nav-item">
                 <a href="#virus_total" class="nav-link">
@@ -236,10 +242,18 @@
                   <p>Emails</p>
                 </a>
               </li>
+              {% if app_type not in 'so' %}
               <li class="nav-item">
                 <a href="#trackers" class="nav-link">
                   <i class="fas fa-user-secret nav-icon"></i>
                   <p>Trackers</p>
+                </a>
+              </li>
+              {% endif %}
+              <li class="nav-item">
+                <a href="#secrets" class="nav-link">
+                  <i class="fas fa-key nav-icon"></i>
+                  <p>Hardcoded Secrets</p>
                 </a>
               </li>
               <li class="nav-item">
@@ -248,14 +262,17 @@
                   <p>Strings</p>
                 </a>
               </li>
-              <li class="nav-item">
-                <a href="#secrets" class="nav-link">
-                  <i class="fas fa-key nav-icon"></i>
-                  <p>Hardcoded Secrets</p>
-                </a>
-              </li>
             </ul>
           </li>
+          {% if app_type in 'so' %}
+          <li class="nav-item">
+            <a href="#symbols" class="nav-link">
+              <i class="fa fa-th nav-icon"></i>
+                <p>Symbols</p>
+            </a>
+          </li>
+          {% endif %}
+          {% if app_type not in 'so' %}
            <li class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon fas fa-th-large"></i>
@@ -303,6 +320,7 @@
               </li>
             </ul>
           </li>
+          {% endif %}
             <li class="nav-item">
               <a href="../pdf/?md5={{ md5 }}" class="nav-link" target="_blank">
               <i class="nav-icon fas fa-file-pdf"></i>
@@ -329,7 +347,7 @@
              </a>
             </li>
             {% else %}
-              {% if app_type not in 'jar,aar' %}
+              {% if app_type not in 'jar,aar,so' %}
               <li class="nav-item">
                 <a onclick="dynamic_loader()" href="../android_dynamic/{{md5}}" class="nav-link">
                 <i class="nav-icon fa fa-play-circle"></i>
@@ -373,8 +391,10 @@
             <div class="card-body">
               <h5 class="card-title"></h5>
                 <div class="row">
+       
                 <div class="col-2">
                   <p><strong><i class="fas fa-check-double"></i> APP SCORES</strong></p>
+          {% if app_type not in 'so' %}
                   <img id="app_icon" src="{% if icon_found %}/download/{{ md5 }}-icon.png{% else %}{% static 'img/no_icon.png' %}{% endif %}"/>
                   {% if icon_hidden %}
                     <strong>Hidden Icon!</strong>
@@ -384,6 +404,7 @@
                   <span class="badge bg-info">Average CVSS</span> <strong>{{ average_cvss }} </strong><br/>
                   {% endif %}
                   <span class="badge bg-{% if appsec.security_score < 40 %}danger{% elif appsec.security_score == 100 %}success{% else %}warning{% endif %}">Security Score</span> <strong>{{ appsec.security_score }}/100 </strong><br/>
+           {% endif %}
                   {% if trackers.detected_trackers > 0 %}
                     <span class="badge bg-warning">Trackers Detection</span> <strong>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</strong><br/>
                   {% else %}
@@ -397,9 +418,11 @@
                     {% endif %}
                   {% endif %}
                 </p>
+                {% if app_type not in 'so' %}
                   <p> <a href="../appsec_dashboard/{{ md5 }}/" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> Security Scorecard</a></p>
-
+                {% endif %}
                 </div>
+   
                 <div class="col-6">
                   <p><strong><i class="fas fa-box-open"></i> FILE INFORMATION </strong></p>
                   <span class="badge bg-primary">File Name</span>
@@ -413,6 +436,7 @@
                   <span class="badge bg-primary">SHA256</span>
                   {{ sha256 }}<br/>
                 </div>
+                {% if app_type not in 'jar,aar,so' %}
                 <div class="col-4">
                   <p><strong><i class="fas fa-info"></i> APP INFORMATION </strong></p>
                   <span class="badge bg-primary">App Name</span>
@@ -432,6 +456,7 @@
                 <span class="badge bg-primary">Android Version Code</span>
                 {{ version_code }}
                 </div>
+                {% endif %}
               </div>
 
             </div>
@@ -487,7 +512,7 @@
       </div>
   </div>
 
-  {% if app_type not in 'jar,aar' %}
+  {% if app_type not in 'jar,aar,so' %}
   <!-- Boxes -->
    <div class="container-fluid">
       <div class="row">
@@ -639,13 +664,22 @@
                   <p>
                     <!--<a href="../static_analyzer/?hash={{ md5 }}&amp;file_name={{ file_name }}&amp;scan_type=apk&amp;rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>-->
                     <a id="supbtn" onclick="list_suppressions()" role="button" class="btn btn-primary" data-target="#sup_list" data-toggle="modal" href="#"><i class="fa fa-list"></i> Manage Suppressions</a>
+                    {% if app_type in 'so' %}
+                    <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type={{ app_type }}" class="btn btn-warning"> <i class="fa fa-download"></i> Download {{ app_type | upper}}</a>
+                    {% endif %}
+                    {% if app_type not in 'so' %}
+                    <a id="supbtn" onclick="list_suppressions()" role="button" class="btn btn-primary" data-target="#sup_list" data-toggle="modal" href="#"><i class="fa fa-list"></i> Manage Suppressions</a>
+                    {% endif %}
                   </p>
-                  <!--<p>
-                    <a onclick="dynamic_loader()" href="../android_dynamic/{{md5}}" class="btn btn-success" role="button"><i class="fa fa-play-circle"></i> Start Dynamic Analysis</a>
-                  </p>-->
+                  <!--{% if app_type not in 'jar,aar,so' %}
+                <p>
+                  <a onclick="dynamic_loader()" href="../android_dynamic/{{md5}}" class="btn btn-success" role="button"><i class="fa fa-play-circle"></i> Start Dynamic Analysis</a>
+                </p>
+                {% endif %}-->
                 </div>
               </div>
             </div>
+            {% if app_type not in 'so' %}
             <div class="col-lg-8">
               <div class="card">
                 <div class="card-body">
@@ -667,16 +701,31 @@
                     <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type=smali" class="btn btn-warning"> <i class="fa fa-download"></i> Download Smali Code</a>
                     {% endif %}
                     <a href="../generate_downloads/?hash={{ md5 }}&amp;file_type={{ app_type }}" class="btn btn-warning"> <i class="fa fa-download"></i> Download {{ app_type | upper}}</a>
+                    
+                    {% if app_type in 'jar,aar' %}
+                    <p>
+                    {% for _, value in apkid.items %}
+                       {% if value %}
+                         The binary might be obfuscated. LocalVariableTable is absent in class file.
+                       {% else %}
+                         The binary might not be obfuscated. LocalVariableTable is present in class file.
+                       {% endif %}
+                    {% endfor %}
                     </p>
+                    {% endif %}
+
+                  </p>
                 </div>
               </div>
             </div>
+            {% endif %}
 
             <!-- end row -->
             </div>
         </div>
 </section>
   <!-- ===========================end scan options================================== -->
+  {% if app_type not in 'so' %}
 <a id="certificate" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
@@ -1140,7 +1189,7 @@
                             </a>
       
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                              <a style="cursor:pointer;" class="dropdown-item" onclick="suppress('{{ item|key:"title" | android_component}}{{item|key:'rule' | escapejs }}', false, $(this.closest('tr')), true)">Suppress the rule <b>{{ item|key:"title" | android_component}}{{ item|key:'rule' }}</b> in <b>{{package_name}}</b></a>
+                              <a style="cursor:pointer;" class="dropdown-item" onclick="suppress('{{ item|key:"title" | android_component}}{{item|key:'rule' | escapejs }}', false, $(this.closest('tr')), true)">Suppression the rule <b>{{ item|key:"title" | android_component}}{{ item|key:'rule' }}</b> in <b>{{package_name}}</b></a>
                             </div>
                           </div>
                         </td>
@@ -1304,6 +1353,7 @@
     </div>
 </section>
  <!-- ===========================end code analysis ================================== -->
+ {% endif %}
  <a id="binary_analysis" class="anchor"></a>
  <section class="content">
   <div class="container-fluid">
@@ -1318,8 +1368,10 @@
               <table id="table_binary" class="table table-bordered table-hover table-striped">
                   <thead>
                       <tr>
+                         {% if app_type not in 'so' %}
                           <th>NO</th>
                           <th>SHARED OBJECT</th>
+                         {% endif %}
                           <th>NX</th>
                           <th>STACK CANARY</th>
                           <th>RPATH</th>
@@ -1334,8 +1386,10 @@
             {% endif %}
              {% for so in binary_analysis %}
              <tr>
+              {% if app_type not in 'so' %}
               <td>{{ forloop.counter }}</td>
               <td>{{so.name}}</td>
+              {% endif %}
               <td><b>{{so.nx.is_nx}}</b>
                 <br/>
                 <span class="badge bg-{% if so.nx.severity == 'high' %}danger{% elif so.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.nx.severity}}</span>
@@ -1374,6 +1428,7 @@
     </div>
 </section>
  <!-- ===========================end binary analysis ================================== -->
+ {% if app_type not in 'so' %}
  <a id="niap_analysis" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
@@ -1487,7 +1542,7 @@
                       </tr>
                   </thead>
                   <tbody>
-                      {% if apkid %}
+                      {% if apkid and app_type not in 'jar,aar'%}
                        {% for file, details in apkid.items %}
                        <tr>
                          <td>
@@ -1598,6 +1653,7 @@
       </div>
   </section>
 <!-- ===========================end quark analysis ================================== -->
+{% endif %}
 {% if virus_total %}
 <a id="virus_total" class="anchor"></a>
 <section class="content">
@@ -1905,6 +1961,7 @@
     </div>
 </section>
  <!-- ===========================end emails ================================== -->
+{% if app_type not in 'so' %}
 <a id="trackers" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
@@ -1951,6 +2008,32 @@
     </div>
 </section>
  <!-- ===========================end trackers ================================== -->
+ {% endif %}
+ <a id="secrets" class="anchor"></a>
+ <section class="content">
+   <div class="container-fluid">
+     <div class="row">
+         <div class="col-lg-12">
+         <div class="card">
+           <div class="card-body">
+              <p>
+              <strong><i class="fas fa-key"></i> POSSIBLE HARDCODED SECRETS</strong>
+              </p>
+                <div class="list-group">
+                   <p>  
+                     {% for val in secrets %}
+                      {{ val }}<br/>
+                     {% endfor %}                  
+                   </p>
+               </div>
+             </div>
+           </div>
+         </div><!-- /.card -->
+         </div>
+         <!-- end row -->
+         </div>
+ </section>
+  <!-- ===========================end secrets ================================== -->
 <a id="strings" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
@@ -1962,9 +2045,41 @@
              <strong><i class="fas fa-font"></i> STRINGS</strong>
              </p>
                <div class="list-group">
+              {% if app_type not in 'so' %}
+                  <p><strong>From APK Resource</strong></p>
                   <p>  
-                    {% for val in strings %}
-                     {{ val }}<br/>
+                    {% for key, val in strings.items %}
+                      {% if key == 'strings_apk_res' %}
+                        {% for v in val %}
+                          {{ v }}<br/>
+                        {% endfor %}
+                      {% endif %}
+                    {% endfor %}                  
+                  </p>
+                   <p><strong>From Code</strong></p>
+                  <p>  
+                    {% for key, val in strings.items %}
+                      {% if key == 'strings_code' %}
+                        {% for v in val %}
+                          {{ v }}<br/>
+                        {% endfor %}
+                      {% endif %}
+                    {% endfor %}                  
+                  </p>
+              {% endif %}
+                    <p><strong>From Shared Objects</strong></p>
+                  <p>  
+                    {% for key, val in strings.items %}
+                      {% if key == 'strings_so' %}
+                        {% for ls in val %}
+                          {% for k,v in ls.items %}
+                          <p></br><b><i>{{ k }}</i></b></p>
+                            {% for i in v %}
+                              {{ i }}<br/>
+                            {% endfor %}
+                          {% endfor %}
+                        {% endfor %}
+                      {% endif %}
                     {% endfor %}                  
                   </p>
               </div>
@@ -1976,7 +2091,8 @@
         </div>
 </section>
  <!-- ===========================end strings ================================== -->
- <a id="secrets" class="anchor"></a>
+ {% if app_type in 'so' %}
+ <a id="symbols" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
     <div class="row">
@@ -1984,13 +2100,13 @@
         <div class="card">
           <div class="card-body">
              <p>
-             <strong><i class="fas fa-key"></i> POSSIBLE HARDCODED SECRETS</strong>
+             <strong><i class="fa fa-th"></i> SYMBOLS</strong>
              </p>
                <div class="list-group">
                   <p>  
-                    {% for val in secrets %}
-                     {{ val }}<br/>
-                    {% endfor %}                  
+                     {% for val in file_analysis %}
+                       {{ val }}<br/>
+                     {% endfor %}
                   </p>
               </div>
             </div>
@@ -2000,8 +2116,9 @@
         <!-- end row -->
         </div>
 </section>
- <!-- ===========================end secrets ================================== -->
-
+ <!-- ===========================end symbols (only for shared object) ================================== -->
+ {% endif %}
+ {% if app_type not in 'so' %}
  <a id="activities" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
@@ -2153,6 +2270,7 @@
       </div>
 </section>
  <!-- ===========================end files ================================== -->
+ {% endif %}
 <!-- end of contents -->
 </div>
 

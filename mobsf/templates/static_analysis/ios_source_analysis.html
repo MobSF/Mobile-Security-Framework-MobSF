@@ -37,7 +37,7 @@
         <!-- Sidebar user panel (optional) -->
       <div class="user-panel mt-3 pb-3 mb-3 d-flex">
         <div class="info">
-          <a href="#" class="d-block">Static Analyzer</a>
+          <a href="#" class="d-block">Scan Details</a>
         </div>
       </div>
 
@@ -176,6 +176,12 @@
                 <a href="#secrets" class="nav-link">
                   <i class="fas fa-key nav-icon"></i>
                   <p>Hardcoded Secrets</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#strings" class="nav-link">
+                  <i class="fas fa-font nav-icon"></i>
+                  <p>Strings</p>
                 </a>
               </li>
             </ul>
@@ -1063,7 +1069,7 @@
                        {% endfor %}
                         </td>
                        <td>
-                          <a href="../?file={{email_dict|key:"path"}}&amp;md5={{ md5}}&amp;type=ios">{{email_dict|key:"path"}}</a>   
+                          <a href="../view_file_ios/?file={{email_dict|key:"path"}}&amp;md5={{ md5}}&amp;type=ios">{{email_dict|key:"path"}}</a>
                        </td>
                     </tr>
                   {% endfor %} 
@@ -1150,6 +1156,31 @@
          </div>
  </section>
   <!-- ===========================end secrets ================================== -->
+  <a id="strings" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-font"></i> STRINGS</strong>
+             </p>
+               <div class="list-group">
+                  <p>  
+                    {% for val in strings %}
+                     {{ val }}<br/>
+                    {% endfor %}                  
+                  </p>
+              </div>
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+</section>
+ <!-- ===========================end strings ================================== -->
 <a id="files" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
