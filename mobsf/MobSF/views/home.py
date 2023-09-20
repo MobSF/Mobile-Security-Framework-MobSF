@@ -845,6 +845,8 @@ class RecentScans(object):
                         scan['VERSION_NAME'] = scan_result.VERSION_NAME
                         scan['PACKAGE_NAME'] = scan_result.PACKAGE_NAME
                         scan['SCAN_TYPE'] = scan_result.SCAN_TYPE
+                        scan['DATA_PRIVACY_CLASSIFICATION'] = \
+                            scan_result.DATA_PRIVACY_CLASSIFICATION
                         scan['EMAIL'] = scan_result.EMAIL
 
                         # Get scan vulnerability counts

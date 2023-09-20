@@ -28,6 +28,7 @@ import requests
 
 import siphash
 
+from django.core.handlers.wsgi import WSGIRequest
 from django.forms.models import model_to_dict
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -754,7 +755,7 @@ def settings_enabled(attr):
 
 
 def is_admin(request):
-    if ('META' not in request):
+    if (not isinstance(request, WSGIRequest)):
         return False
     if ('role' in request.META and request.META['role'] == 'FULL_ACCESS'):
         return True
