@@ -2,7 +2,6 @@
 import logging
 
 from django.conf import settings
-from django.utils import timezone
 
 from mobsf.MobSF.utils import python_list
 from mobsf.StaticAnalyzer.models import StaticAnalyzerWindows
@@ -115,7 +114,6 @@ def save_or_update(update_type,
             if not db_entry.exists():
                 StaticAnalyzerWindows.objects.create(**values)
         else:
-            values['TIMESTAMP'] = timezone.now()
             StaticAnalyzerWindows.objects.filter(
                 MD5=app_dic['md5']).update(**values)
     except Exception:

@@ -185,7 +185,6 @@ def save_or_update(update_type,
             if not db_entry.exists():
                 StaticAnalyzerIOS.objects.create(**values)
         else:
-            values['TIMESTAMP'] = timezone.now()
             StaticAnalyzerIOS.objects.filter(
                 MD5=app_dict['md5_hash']).update(**values)
     except Exception:
@@ -214,6 +213,7 @@ def save_get_ctx(app_dict, pdict, code_dict, bin_dict, all_files, rescan):
             code_dict,
             bin_dict,
             all_files)
+        update_scan_timestamp(app_dict['md5_hash'])
     else:
         logger.info('Saving to Database')
         save_or_update(
@@ -229,3 +229,9 @@ def save_get_ctx(app_dict, pdict, code_dict, bin_dict, all_files, rescan):
         code_dict,
         bin_dict,
         all_files)
+
+
+def update_scan_timestamp(scan_hash):
+    # Update the last scan time.
+    tms = timezone.now()
+    RecentScansDB.objects.filter(MD5=scan_hash).update(TIMESTAMP=tms)

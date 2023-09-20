@@ -220,7 +220,6 @@ def save_or_update(update_type,
             if not db_entry.exists():
                 StaticAnalyzerAndroid.objects.create(**values)
         else:
-            values['TIMESTAMP'] = timezone.now()
             StaticAnalyzerAndroid.objects.filter(
                 MD5=app_dic['md5']).update(**values)
     except Exception:
@@ -253,6 +252,7 @@ def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, quark, trk, rscn):
             quark,
             trk,
         )
+        update_scan_timestamp(app['md5'])
     else:
         logger.info('Saving to Database')
         save_or_update(
@@ -278,3 +278,9 @@ def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, quark, trk, rscn):
         quark,
         trk,
     )
+
+
+def update_scan_timestamp(scan_hash):
+    # Update the last scan time.
+    tms = timezone.now()
+    RecentScansDB.objects.filter(MD5=scan_hash).update(TIMESTAMP=tms)
