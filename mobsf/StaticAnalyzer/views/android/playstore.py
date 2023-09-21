@@ -34,7 +34,9 @@ def get_app_details(package_id):
 def app_search(app_id):
     """Get App Details from AppMonsta."""
     det = {'error': True}
-    if not settings.APPMONSTA_API:
+    appmonsta_api = getattr(settings, 'APPMONSTA_API', '')
+    if not appmonsta_api:
+        logger.warning('settings.APPMONSTA_API not configured')
         return det
     logger.info('Fetching Details from AppMonsta: %s', app_id)
     lookup_url = settings.APPMONSTA_URL
@@ -48,7 +50,7 @@ def app_search(app_id):
     try:
         proxies, verify = upstream_proxy('https')
         req = requests.get(req_url,
-                           auth=(settings.APPMONSTA_API, 'X'),
+                           auth=(appmonsta_api, 'X'),
                            headers=headers,
                            proxies=proxies,
                            verify=verify,
