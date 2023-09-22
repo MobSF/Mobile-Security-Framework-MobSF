@@ -1,3 +1,5 @@
+import urllib3
+
 from django.urls import re_path
 
 from mobsf.DynamicAnalyzer.views.android import dynamic_analyzer as dz
@@ -192,4 +194,5 @@ if settings.API_ONLY == '0':
         re_path(r'^tests/$', tests.start_test),
     ])
 
+urllib3.disable_warnings()
 utils.print_version()
