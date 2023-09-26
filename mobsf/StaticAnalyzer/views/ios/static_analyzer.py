@@ -82,11 +82,10 @@ def static_analyzer_ios(request_data, api=False):
         logger.info('iOS Static Analysis Started')
         file_type = request_data['scan_type']
         checksum = request_data['hash']
-        re_scan = request_data.get('re_scan', 0)
         filename = request_data['file_name']
-        rescan = False
-        if re_scan == '1':
-            rescan = True
+        rescan = (request_data.get('rescan', 0) == '1')
+        if rescan:
+            logger.info('Performing rescan')
         md5_match = re.match('^[0-9a-f]{32}$', checksum)
         app_dict = {}
         allowed_exts = ('ios', '.ipa', '.zip', '.dylib', '.a')

@@ -110,10 +110,7 @@ def static_analyzer(request_data, api=False):
         typ = request_data['scan_type']
         checksum = request_data['hash']
         filename = request_data['file_name']
-        re_scan = request_data.get('rescan', 0)
-        rescan = False
-        if re_scan == '1':
-            rescan = True
+        rescan = (request_data.get('rescan', 0) == '1')
 
         # Input validation
         app_dic = {}
@@ -134,6 +131,8 @@ def static_analyzer(request_data, api=False):
             app_dic['tools_dir'] = app_dic['dir'] / 'StaticAnalyzer' / 'tools'
             app_dic['tools_dir'] = app_dic['tools_dir'].as_posix()
             logger.info('Starting Analysis on: %s', app_dic['app_name'])
+            if rescan:
+                logger.info('Performing rescan')
             if typ == 'xapk':
                 # Handle XAPK
                 # Base APK will have the MD5 of XAPK

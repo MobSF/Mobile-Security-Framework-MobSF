@@ -72,12 +72,11 @@ def staticanalyzer_windows(request_data, api=False):
         logger.info('Windows Static Analysis Started')
         app_dic = {}  # Dict to store the binary attributes
         typ = request_data['scan_type']
-        re_scan = request_data.get('rescan', 0)
         checksum = request_data['hash']
         filename = request_data['file_name']
-        rescan = False
-        if re_scan == '1':
-            rescan = True
+        rescan = (request_data.get('rescan', 0) == '1')
+        if rescan:
+            logger.info('Performing rescan')
         md5_regex = re.match('^[0-9a-f]{32}$', checksum)
         if (md5_regex) and (typ in ['appx']):
             app_dic['app_name'] = filename  # APP ORIGINAL NAME

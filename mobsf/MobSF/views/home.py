@@ -170,6 +170,7 @@ class Upload(object):
         return api_response, 200
 
     def upload(self):
+        self.scan.rescan = '0'
         content_type = self.scan.file.content_type
         file_name = self.scan.file.name
         logger.info('MIME Type: %s FILE: %s', content_type, file_name)
