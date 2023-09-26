@@ -321,18 +321,16 @@ def recent_scans(request):
             entry['PACKAGE'] = ''
         logcat = Path(settings.UPLD_DIR) / entry['MD5'] / 'logcat.txt'
         entry['DYNAMIC_REPORT_EXISTS'] = logcat.exists()
-        entry['ERROR'] = (utcnow()
-                          > entry['TIMESTAMP']
-                          + datetime.timedelta(minutes=30))
         entry['CAN_RELEASE'] = (utcnow()
                                 < entry['TIMESTAMP']
                                 + datetime.timedelta(days=30))
-        item = CyberspectScans.objects.filter(MOBSF_MD5=entry['MD5']) \
-            .exclude(DT_PROJECT_ID=None).first()
-        if item:
-            entry['DT_PROJECT_ID'] = item.DT_PROJECT_ID
+        item = CyberspectScans.objects.filter(MOBSF_MD5=entry['MD5']).last()
+        entry['DT_PROJECT_ID'] = item.DT_PROJECT_ID
+        entry['COMPLETE'] = item.SAST_END
+        if (item.FAILURE_SOURCE == 'SAST'):
+            entry['ERROR'] = item.FAILURE_MESSAGE
         else:
-            entry['DT_PROJECT_ID'] = None
+            entry['ERROR'] = None
         entries.append(entry)
     context = {
         'title': 'Scanned Apps',

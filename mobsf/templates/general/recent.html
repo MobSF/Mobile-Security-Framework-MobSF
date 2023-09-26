@@ -66,9 +66,9 @@
                                 <div>{{ e.MD5 }}</div>
                                 <div><span class="scandate">{{ e.TIMESTAMP|date:'c' }}</span></div>
                                 <div>
-                                {% if not e.APP_NAME %}
+                                {% if not e.COMPLETE %}
                                     {% if e.ERROR %}
-                                        <span class="badge bg-danger">scan error</span>
+                                        <span class="badge bg-danger" title="{{e.ERROR}}">scan error</span>
                                     {% else %}
                                         <span class="badge bg-warning">scan in progress</span>
                                     {% endif %}
@@ -80,7 +80,7 @@
                             <td align="center" style="word-wrap: break-word; max-width: 200px;">
                                 <strong>{{e.USER_APP_NAME}} - {{e.USER_APP_VERSION}}</strong></br>
                                 <img id="app_icon" src="/download/{{ e.MD5 }}-icon.png" onerror="this.src='{% static 'img/no_icon.png' %}'">
-                                {% if e.APP_NAME %}
+                                {% if e.COMPLETE %}
                                   <br/>{{ e.APP_NAME }} {% if e.VERSION_NAME %} - {{ e.VERSION_NAME }} {% endif %}
                                   <br/>{{ e.PACKAGE_NAME }}                                 
                                 {% endif %}                                
@@ -142,7 +142,7 @@
                             {% endif %}
                             <td>
                                 <p>                                    
-                                    {% if e.APP_NAME %}
+                                    {% if e.COMPLETE %}
                                     <a class="btn btn-primary btn-sm" style="margin-bottom: 3px; width: 125px;" href="../{{ e.ANALYZER }}/?file_name={{e.FILE_NAME}}&amp;hash={{e.MD5}}&amp;scan_type={{e.SCAN_TYPE}}"><i class="fas fa-eye" title="View static analysis scan details"></i> Scan Details</a><br/>
                                         {% if e.FILE_NAME|slice:"-6:" != '.dylib' %}
                                             {% if e.FILE_NAME|slice:"-3:" != '.so' %}
@@ -159,12 +159,12 @@
                                     {% endif %}
                                 </p>
                                 <p>
-                                    {% if e.APP_NAME and is_admin %}
+                                    {% if e.COMPLETE and is_admin %}
                                         <a class="btn btn-outline-primary btn-sm" id="adminEdit{{e.MD5}}" onclick="admin_edit('{{e.MD5}}')" href="javascript:void(0);"><i class="fas fa-pen" title="Edit Scan"></i></a>
                                         <a class="btn btn-outline-primary btn-sm" id="adminSave{{e.MD5}}" onclick="admin_save('{{e.MD5}}')" href="javascript:void(0);" style="display:none"><i class="fas fa-save" title="Save Changes"></i></a>
                                     {% endif %}
                                     <a class="btn btn-outline-primary btn-sm" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="javascript:void(0);"><i class="fas fa-trash" title="Delete Scan"></i></a>
-                                    {% if e.APP_NAME %}                                        
+                                    {% if e.COMPLETE %}                                        
                                         <a class="btn btn-outline-primary btn-sm" href="../pdf/?md5={{ e.MD5 }}"><i class="fas fa-file-pdf" title="PDF Report"></i></a>                                                                                                                  
                                     {% endif %}                                    
                                 </p>
