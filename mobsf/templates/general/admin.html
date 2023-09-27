@@ -298,15 +298,12 @@ sidebar-collapse
     var description = '';
     var email = '';
     var expiredate = '';
-    var maxdate = '';
     for (var i = 0; i < api_keys.length; i++) {
       if (api_keys[i]['ID'] == id) {
         description = api_keys[i]['DESCRIPTION'];
         role = api_keys[i]['ROLE'];
         email = api_keys[i]['EMAIL'];
         expiredate = api_keys[i]['EXPIRE_DATE'];
-        maxdate = new Date(api_keys[i]['CREATE_DATE']);
-        maxdate.setFullYear(maxdate.getFullYear() + 1);
       }
     }
     $('#edit_apikey_id').val(id);
@@ -322,7 +319,6 @@ sidebar-collapse
     $('#edit_email').val(email);
     var expire_date_input = $('#edit_expire_date');
     expire_date_input.val(expiredate.split('T')[0]);
-    expire_date_input.attr('max', maxdate.toISOString().split('T')[0]);
     $('#edit_api_key_form').removeClass('was-validated');
     $('#edit_api_key').modal('show');
   }

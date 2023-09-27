@@ -78,6 +78,9 @@ def admin_view(request):
     min_exp_date = utcnow() + datetime.timedelta(days=1)
     max_exp_date = utcnow() + datetime.timedelta(days=365)
     default_exp_date = utcnow() + datetime.timedelta(days=90)
+    print(min_exp_date)
+    print(max_exp_date)
+    print(default_exp_date)
     entries = []
     api_keys = get_api_keys()
     for entry in api_keys:
@@ -106,8 +109,7 @@ def create_api_key_post(request):
         if (not is_admin(request)):
             return error_response(request, 'Unauthorized')
 
-        max_date = utcnow()
-        max_date = max_date.replace(year=max_date.year + 1)
+        max_date = utcnow() + datetime.timedelta(days=365)
         # Validate input parameters
         description = request.POST['description']
         email = request.POST['email']
@@ -186,8 +188,7 @@ def edit_api_key_post(request):
         if (not is_admin(request)):
             return error_response(request, 'Unauthorized')
 
-        max_date = utcnow()
-        max_date = max_date.replace(year=max_date.year + 1)
+        max_date = utcnow() + datetime.timedelta(days=365)
         # Validate input parameters
         key_id = request.POST['id']
         description = request.POST['description']
