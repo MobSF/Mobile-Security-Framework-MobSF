@@ -302,7 +302,7 @@ def recent_scans(request):
                         | Q(USER_APP_NAME__icontains=sfilter))
     else:
         db_obj = RecentScansDB.objects.all()
-    db_obj = db_obj.order_by('-TIMESTAMP')
+    db_obj = db_obj.order_by('-TIMESTAMP')[:100]
     isadmin = is_admin(request)
     if (not isadmin):
         email_filter = sso_email(request)
@@ -326,12 +326,17 @@ def recent_scans(request):
                                 < entry['TIMESTAMP']
                                 + datetime.timedelta(days=30))
         item = CyberspectScans.objects.filter(MOBSF_MD5=entry['MD5']).last()
-        entry['DT_PROJECT_ID'] = item.DT_PROJECT_ID
-        entry['COMPLETE'] = item.SAST_END
-        if (item.FAILURE_SOURCE == 'SAST'):
-            entry['ERROR'] = item.FAILURE_MESSAGE
+        if item:
+            entry['DT_PROJECT_ID'] = item.DT_PROJECT_ID
+            entry['COMPLETE'] = item.SAST_END
+            if (item.FAILURE_SOURCE == 'SAST'):
+                entry['ERROR'] = item.FAILURE_MESSAGE
+            else:
+                entry['ERROR'] = None
         else:
-            entry['ERROR'] = None
+            entry['DT_PROJECT_ID'] = None
+            entry['COMPLETE'] = entry['TIMESTAMP']
+            entry['ERROR'] = 'Unable to find cyberspect_scans record'
         entries.append(entry)
     context = {
         'title': 'Scanned Apps',
