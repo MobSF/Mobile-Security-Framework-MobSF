@@ -3,14 +3,10 @@
 import io
 import logging
 
-from mobsf.StaticAnalyzer.tools.strings import (
-    strings_util,
-)
 from mobsf.StaticAnalyzer.views.common.entropy import (
     get_entropies,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
-    get_os_strings,
     url_n_email_extract,
 )
 
@@ -58,20 +54,6 @@ def extract_urls_n_email(src, all_files, strings):
         'urlnfile': url_n_file,
         'emailnfile': email_n_file,
     }
-
-
-def strings_on_binary(bin_path):
-    """Extract strings from binary."""
-    try:
-        strings = get_os_strings(bin_path)
-        if strings:
-            return list(set(strings))
-        if isinstance(strings, list):
-            return []
-        # Only run if OS strings is not present
-        return list(set(strings_util(bin_path)))
-    except Exception:
-        logger.exception('Extracting strings from binary')
 
 
 def get_strings_metadata(app_dict, bin_dict, all_files, dy_list):

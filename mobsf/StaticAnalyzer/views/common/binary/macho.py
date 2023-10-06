@@ -2,7 +2,7 @@
 # coding=utf-8
 import lief
 
-from mobsf.StaticAnalyzer.views.ios.strings import (
+from mobsf.StaticAnalyzer.views.common.binary.strings import (
     strings_on_binary,
 )
 
