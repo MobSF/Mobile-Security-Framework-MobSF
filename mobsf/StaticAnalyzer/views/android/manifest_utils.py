@@ -136,6 +136,8 @@ def get_manifest(app_path, app_dir, tools_dir, typ):
         logger.info('Parsing AndroidManifest.xml')
         xml_str = mfile.read_text('utf-8', 'ignore')
         ns = get_xml_namespace(xml_str)
+        if ns and ns == 'xmlns':
+            ns = 'android'
         if ns and ns != 'android':
             logger.warning('Non standard XML namespace: %s', ns)
         try:
