@@ -2,6 +2,10 @@
 # coding=utf-8
 import lief
 
+from mobsf.StaticAnalyzer.views.common.binary.strings import (
+    strings_on_binary,
+)
+
 
 class ELFChecksec:
     def __init__(self, elf_file, so_rel):
@@ -200,10 +204,14 @@ class ELFChecksec:
         return fortified_funcs
 
     def strings(self):
+        elf_strings = None
         try:
-            return self.elf.strings
+            elf_strings = self.elf.strings
         except Exception:
-            return []
+            elf_strings = None
+        if not elf_strings:
+            elf_strings = strings_on_binary(self.elf_path)
+        return elf_strings
 
     def get_symbols(self):
         symbols = []
