@@ -361,17 +361,6 @@ def strings_and_entropies(src, exts):
     return data
 
 
-def get_os_strings(filename):
-    try:
-        strings_bin = shutil.which('strings')
-        if not strings_bin:
-            return None
-        strings = subprocess.check_output([strings_bin, filename])
-        return strings.decode('utf-8', 'ignore').splitlines()
-    except Exception:
-        return None
-
-
 def get_symbols(symbols):
     all_symbols = []
     for i in symbols:
