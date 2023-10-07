@@ -91,7 +91,7 @@ class MachOChecksec:
         elif is_stripped:
             severity = 'warning'
             desc = (
-                'This binary has symbols stripped. We cannot identify '
+                'This binary has debug symbols stripped. We cannot identify '
                 'whether stack canary is enabled or not.')
         else:
             severity = 'high'
@@ -123,7 +123,7 @@ class MachOChecksec:
         elif is_stripped:
             severity = 'warning'
             desc = (
-                'This binary has symbols stripped. We cannot identify '
+                'This binary has debug symbols stripped. We cannot identify '
                 'whether ARC is enabled or not.')
         else:
             severity = 'high'
@@ -184,11 +184,11 @@ class MachOChecksec:
         }
         if is_stripped:
             severity = 'info'
-            desc = 'Symbols are stripped'
+            desc = 'Debug Symbols are stripped'
         else:
             severity = 'warning'
             desc = (
-                'Symbols are available. To strip '
+                'Debug Symbols are available. To strip '
                 'debugging symbols, set Strip Debug '
                 'Symbols During Copy to YES, '
                 'Deployment Postprocessing to YES, '
@@ -240,14 +240,34 @@ class MachOChecksec:
             return False
 
     def is_symbols_stripped(self):
-        filter_symbols = ['radr://5614542', '__mh_execute_header']
+        # Based on issues/1917#issuecomment-1238078359
+        # and issues/2233#issue-1846914047
+        stripped_sym = 'radr://5614542'
+        # radr://5614542 symbol is added back for
+        # debug symbols stripped binaries
         for i in self.macho.symbols:
-            strip_bool = i.type & 0xe0
-            strip_type = i.type in [0x0e, 0x1e, 0x0f]
-            sym = i.name.lower().strip()
-            if (strip_bool > 0 or strip_type) and sym not in filter_symbols:
+            if i.name.lower().strip() in ('__mh_execute_header', stripped_sym):
+                # __mh_execute_header is present in both
+                # stripped and unstripped binaries
+                # also ignore radr://5614542
+                continue
+            if (i.type & 0xe0) > 0 or i.type in (0x0e, 0x1e):
+                # N_STAB set or 14, 30
+
+                # N_STAB	0xe0  /* if any of these bits set,
+                # a symbolic debugging entry */ -> 224
+                # From https://opensource.apple.com/source/xnu/xnu-201/
+                # EXTERNAL_HEADERS/mach-o/nlist.h
+                # Only symbolic debugging entries have
+                # some of the N_STAB bits set and if any
+                # of these bits are set then it is a
+                # symbolic debugging entry (a stab).
+
+                # Identified a debugging symbol
                 return False
-        return True
+        if stripped_sym in self.get_symbols():
+            return True
+        return False
 
     def get_libraries(self):
         libs = []
