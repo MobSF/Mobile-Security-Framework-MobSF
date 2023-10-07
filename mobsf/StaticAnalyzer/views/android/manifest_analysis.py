@@ -431,7 +431,7 @@ def manifest_analysis(mfxml, ns, man_data_dic, src_type, app_dir):
                                     # Esteve 24.07.2016 - end
                                     # Esteve 29.07.2016 - begin The component is not explicitly exported (android:exported is not 'true'). It is not implicitly exported either (it does not
                                     # make use of an intent filter). Despite that, it could still be exported by default, if it is a content provider and the android:targetSdkVersion
-                                    # is older than 17 (Jelly Bean, Android versionn 4.2). This is true regardless of the system's API level.
+                                    # is older than 17 (Jelly Bean, Android version 4.2). This is true regardless of the system's API level.
                                     # Finally, it must also be taken into account that, if the minSdkVersion is greater or equal than 17, this check is unnecessary, because the
                                     # app will not be run on a system where the
                                     # system's API level is below 17.
