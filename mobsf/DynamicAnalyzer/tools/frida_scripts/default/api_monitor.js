@@ -77,8 +77,7 @@ var apis = [{
     class: 'libcore.io.IoBridge',
     method: 'open',
     name: 'File IO'
-},
-/* {
+}, {
     // so much calls
     class: 'java.io.FileOutputStream',
     method: 'write',
@@ -87,7 +86,13 @@ var apis = [{
     class: 'java.io.FileInputStream',
     method: 'read',
     name: 'File IO'
-}, */
+},
+{
+    // get system info
+    class: 'android.content.ContextWrapper',
+    method: 'getSystemService',
+    name: 'System Query'
+},
 {
     class: 'android.content.ContextWrapper',
     method: 'openFileInput',
@@ -355,6 +360,10 @@ var apis = [{
     name: 'Device Info'
 }, {
     class: 'android.content.pm.PackageManager',
+    method: 'queryIntentActivities',
+    name: 'Device Info'
+}, {
+    class: 'android.content.pm.PackageManager',
     method: 'getInstalledApplications',
     name: 'Device Info'
 }, {
@@ -406,19 +415,21 @@ var apis = [{
     class: 'dalvik.system.DexClassLoader',
     method: '$init',
     name: 'Dex Class Loader'
-}, {
-    class: 'android.util.Base64',
-    method: 'decode',
-    name: 'Base64'
-}, {
-    class: 'android.util.Base64',
-    method: 'encode',
-    name: 'Base64'
-}, {
-    class: 'android.util.Base64',
-    method: 'encodeToString',
-    name: 'Base64'
-}, {
+}, 
+// {
+//     class: 'android.util.Base64',
+//     method: 'decode',
+//     name: 'Base64'
+// }, {
+//     class: 'android.util.Base64',
+//     method: 'encode',
+//     name: 'Base64'
+// }, {
+//     class: 'android.util.Base64',
+//     method: 'encodeToString',
+//     name: 'Base64'
+// }, 
+{
     class: 'android.app.ApplicationPackageManager',
     method: 'setComponentEnabledSetting',
     name: 'System Manager'
