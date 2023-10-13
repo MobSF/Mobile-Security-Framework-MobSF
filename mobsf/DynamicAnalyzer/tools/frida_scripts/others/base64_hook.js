@@ -1,3 +1,5 @@
+// Adapted from https://codeshare.frida.re/@masihyeganeh/re/
+
 Java.perform(function() {
 
     // Config
