@@ -22,7 +22,7 @@ Java.perform(function () {
         dump_hex_If_Path_NOT_contains: [".png", "/proc/self/task", "/system/lib", "base.apk", "cacert"],
         // to filter the file path whose data want to be NOT dumped fron libc read/write (useful for big chunk and excessive reads) 
         dump_raw_If_Path_NOT_contains: [".png", "/proc/self/task", "/system/lib", "base.apk", "cacert"]
-    }
+    };
 
     // =============  Keep a trace of file descriptor, path, and so
     var TraceFD = {};
@@ -80,6 +80,11 @@ Java.perform(function () {
 
 
 
+    // ============= Get application name
+    var applicationName = Java.use('android.app.ActivityThread').currentApplication().getPackageName();
+
+
+
     // ============= Hook implementation
 
     File.new[1].implementation = function (a0) {
@@ -91,16 +96,16 @@ Java.perform(function () {
 
 
         return ret;
-    }
+    };
     File.new[2].implementation = function (a0, a1) {
         prettyLog("[Java::File.read.2] New file : " + a0 + "/" + a1);
 
-        var ret = File.new[2].call(this, a0, a1);;
+        var ret = File.new[2].call(this, a0, a1);
         var f = Java.cast(this, CLS.File);
         TraceFile["f" + this.hashCode()] = a0 + "/" + a1;
 
         return ret;
-    }
+    };
 
 
     FileInputStream.new[0].implementation = function (a0) {
@@ -113,11 +118,11 @@ Java.perform(function () {
                 fname = TraceFile["f" + file.hashCode()] = p;
         }
         if (fname == null)
-            fname = "[unknow]"
+            fname = "[unknown]";
 
         prettyLog("[Java::FileInputStream.new.0] New input stream from file (" + fname + "): ");
 
-        var fis = FileInputStream.new[0].call(this, a0)
+        var fis = FileInputStream.new[0].call(this, a0);
         var f = Java.cast(this, CLS.FileInputStream);
 
         TraceFS["fd" + this.hashCode()] = fname;
@@ -127,7 +132,7 @@ Java.perform(function () {
         TraceFD["fd" + fd.hashCode()] = fname;
 
         return fis;
-    }
+    };
 
 
 
@@ -136,7 +141,7 @@ Java.perform(function () {
         var fd = null;
         if (fname == null) {
             fd = Java.cast(this.getFD(), CLS.FileDescriptor);
-            fname = TraceFD["fd" + fd.hashCode()]
+            fname = TraceFD["fd" + fd.hashCode()];
         }
         if (fname == null)
             fname = "[unknow]";
@@ -147,13 +152,13 @@ Java.perform(function () {
             prettyPrint(fname, b));
 
         return FileInputStream.read[1].call(this, a0);
-    }
+    };
     FileInputStream.read[2].implementation = function (a0, a1, a2) {
         var fname = TraceFS["fd" + this.hashCode()];
         var fd = null;
         if (fname == null) {
             fd = Java.cast(this.getFD(), CLS.FileDescriptor);
-            fname = TraceFD["fd" + fd.hashCode()]
+            fname = TraceFD["fd" + fd.hashCode()];
         }
         if (fname == null)
             fname = "[unknow]";
@@ -164,7 +169,7 @@ Java.perform(function () {
             prettyPrint(fname, b));
 
         return FileInputStream.read[2].call(this, a0, a1, a2);
-    }
+    };
 
 
 
@@ -190,7 +195,7 @@ Java.perform(function () {
         TraceFD["fd" + fd.hashCode()] = fname;
 
         return fis;
-    }
+    };
 
     FileOuputStream.new[1].implementation = function (a0) {
         var file = Java.cast(a0, CLS.File);
@@ -211,7 +216,7 @@ Java.perform(function () {
         TraceFD["fd" + fd.hashCode()] = fname;
 
         return fis;
-    }
+    };
 
     FileOuputStream.new[2].implementation = function (a0) {
         var fd = Java.cast(a0, CLS.FileDescriptor);
@@ -222,33 +227,33 @@ Java.perform(function () {
 
 
         prettyLog("[Java::FileOuputStream.new.2] New output stream to FileDescriptor (" + fname + "): \n");
-        var fis = FileOuputStream.new[1].call(this, a0)
+        var fis = FileOuputStream.new[1].call(this, a0);
 
         TraceFS["fd" + this.hashCode()] = fname;
 
         return fis;
-    }
+    };
     FileOuputStream.new[3].implementation = function (a0) {
         prettyLog("[Java::FileOuputStream.new.3] New output stream to file (str=" + a0 + "): \n");
 
-        var fis = FileOuputStream.new[1].call(this, a0)
+        var fis = FileOuputStream.new[1].call(this, a0);
 
         TraceFS["fd" + this.hashCode()] = a0;
         var fd = Java.cast(this.getFD(), CLS.FileDescriptor);
         TraceFD["fd" + fd.hashCode()] = a0;
 
         return fis;
-    }
+    };
     FileOuputStream.new[4].implementation = function (a0) {
         prettyLog("[Java::FileOuputStream.new.4] New output stream to file (str=" + a0 + ",bool): \n");
 
-        var fis = FileOuputStream.new[1].call(this, a0)
+        var fis = FileOuputStream.new[1].call(this, a0);
         TraceFS["fd" + this.hashCode()] = a0;
         var fd = Java.cast(this.getFD(), CLS.FileDescriptor);
         TraceFD["fd" + fd.hashCode()] = a0;
 
         return fis;
-    }
+    };
 
 
 
@@ -258,7 +263,7 @@ Java.perform(function () {
 
         if (fname == null) {
             fd = Java.cast(this.getFD(), CLS.FileDescriptor);
-            fname = TraceFD["fd" + fd.hashCode()]
+            fname = TraceFD["fd" + fd.hashCode()];
         }
         if (fname == null)
             fname = "[unknow]";
@@ -267,14 +272,14 @@ Java.perform(function () {
             prettyPrint(fname, a0));
 
         return FileOuputStream.write[0].call(this, a0);
-    }
+    };
     FileOuputStream.write[1].implementation = function (a0) {
 
         var fname = TraceFS["fd" + this.hashCode()];
         var fd = null;
         if (fname == null) {
             fd = Java.cast(this.getFD(), CLS.FileDescriptor);
-            fname = TraceFD["fd" + fd.hashCode()]
+            fname = TraceFD["fd" + fd.hashCode()];
         }
         if (fname == null)
             fname = "[unknow]";
@@ -283,14 +288,14 @@ Java.perform(function () {
 
 
         return FileOuputStream.write[1].call(this, a0);
-    }
+    };
     FileOuputStream.write[2].implementation = function (a0, a1, a2) {
 
         var fname = TraceFS["fd" + this.hashCode()];
         var fd = null;
         if (fname == null) {
             fd = Java.cast(this.getFD(), CLS.FileDescriptor);
-            fname = TraceFD["fd" + fd.hashCode()]
+            fname = TraceFD["fd" + fd.hashCode()];
             if (fname == null)
                 fname = "[unknow], fd=" + this.hashCode();
         }
@@ -299,7 +304,7 @@ Java.perform(function () {
             prettyPrint(fname, a0));
 
         return FileOuputStream.write[2].call(this, a0, a1, a2);
-    }
+    };
 
     // native hooks    
     Interceptor.attach(
@@ -437,7 +442,7 @@ Java.perform(function () {
         if (prevZero) {
             lines.push("\t [" + ctrZero + "] bytes of zeroes");
         }
-        return lines.join("\\n");
+        return lines.join("\n");
     }
 
     function b2s(array) {
