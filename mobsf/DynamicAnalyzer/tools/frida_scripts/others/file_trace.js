@@ -17,7 +17,7 @@ Java.perform(function () {
         // if TRUE print the stack trace for each hook
         printStackTrace: false,
         // to filter the file path whose data want to be dumped in ASCII 
-        dump_ascii_If_Path_contains: [".log", ".xml", ".prop"],
+        dump_ascii_If_Path_contains: [".log", ".xml", ".prop", ".json"],
         // to filter the file path whose data want to be NOT dumped in hexdump (useful for big chunk and excessive reads) 
         dump_hex_If_Path_NOT_contains: [".png", "/proc/self/task", "/system/lib", "base.apk", "cacert"],
         // to filter the file path whose data want to be NOT dumped fron libc read/write (useful for big chunk and excessive reads) 
@@ -376,7 +376,7 @@ Java.perform(function () {
         if (contains(path, CONFIG.dump_ascii_If_Path_contains)) {
             return b2s(buffer);
         } else if (!contains(path, CONFIG.dump_hex_If_Path_NOT_contains)) {
-            return hexdump(b2s(buffer));
+            return b2s(buffer);
         }
         return "[dump skipped by config]";
     }
