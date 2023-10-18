@@ -279,15 +279,17 @@ var apis = [{
     class: 'android.app.Activity',
     method: 'startActivity',
     name: 'Binder'
-}, {
-    class: 'javax.crypto.spec.SecretKeySpec',
-    method: '$init',
-    name: 'Crypto'
-}, {
-    class: 'javax.crypto.Cipher',
-    method: 'doFinal',
-    name: 'Crypto'
-}, {
+}, 
+// {
+//     class: 'javax.crypto.spec.SecretKeySpec',
+//     method: '$init',
+//     name: 'Crypto'
+// }, {
+//     class: 'javax.crypto.Cipher',
+//     method: 'doFinal',
+//     name: 'Crypto'
+// }, 
+{
     class: 'java.security.MessageDigest',
     method: 'digest',
     name: 'Crypto - Hash'

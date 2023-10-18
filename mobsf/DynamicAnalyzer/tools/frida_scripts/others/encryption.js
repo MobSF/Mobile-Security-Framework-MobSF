@@ -1,48 +1,67 @@
 // https://codeshare.frida.re/@dzonerzy/aesinfo/
 
 Java.perform(function () {
+
+    // Config
+    var CONFIG = {
+        // if TRUE print Key as hex dump
+        keyHexDump: false,
+        // if TRUE print Initialization Vector as hex dump
+        ivHexDump: false,
+        // if TRUE print Encryption/Decryption input as hex dump
+        operationInput: false,
+        // if TRUE print Encryption/Decryption output as hex dump
+        operationOutput: false
+    };
+
     var complete_bytes = new Array();
     var index = 0;
+
     var secretKeySpecDef = Java.use('javax.crypto.spec.SecretKeySpec');
     var ivParameterSpecDef = Java.use('javax.crypto.spec.IvParameterSpec');
     var cipherDef = Java.use('javax.crypto.Cipher');
+
     var cipherDoFinal_1 = cipherDef.doFinal.overload();
     var cipherDoFinal_2 = cipherDef.doFinal.overload('[B');
     var cipherDoFinal_3 = cipherDef.doFinal.overload('[B', 'int');
     var cipherDoFinal_4 = cipherDef.doFinal.overload('[B', 'int', 'int');
     var cipherDoFinal_5 = cipherDef.doFinal.overload('[B', 'int', 'int', '[B');
     var cipherDoFinal_6 = cipherDef.doFinal.overload('[B', 'int', 'int', '[B', 'int');
+
     var cipherUpdate_1 = cipherDef.update.overload('[B');
     var cipherUpdate_2 = cipherDef.update.overload('[B', 'int', 'int');
     var cipherUpdate_3 = cipherDef.update.overload('[B', 'int', 'int', '[B');
     var cipherUpdate_4 = cipherDef.update.overload('[B', 'int', 'int', '[B', 'int');
+
     var secretKeySpecDef_init_1 = secretKeySpecDef.$init.overload('[B', 'java.lang.String');
     var secretKeySpecDef_init_2 = secretKeySpecDef.$init.overload('[B', 'int', 'int', 'java.lang.String');
+
     var ivParameterSpecDef_init_1 = ivParameterSpecDef.$init.overload('[B');
     var ivParameterSpecDef_init_2 = ivParameterSpecDef.$init.overload('[B', 'int', 'int');
+
     secretKeySpecDef_init_1.implementation = function (arr, alg) {
         var key = b2s(arr);
-        send("Creating " + alg + " secret key, plaintext:\\n" + hexdump(key));
+        send("--------------------\n[Encryption] Creating " + alg + " secret key, plaintext: " + (CONFIG.keyHexDump ? ("\n" + hexdump(key)) : key));
         return secretKeySpecDef_init_1.call(this, arr, alg);
     }
 
     secretKeySpecDef_init_2.implementation = function (arr, off, len, alg) {
         var key = b2s(arr);
-        send("Creating " + alg + " secret key, plaintext:\\n" + hexdump(key));
+        send("--------------------\n[Encryption] Creating " + alg + " secret key, plaintext: " + (CONFIG.keyHexDump ? ("\n" + hexdump(key)) : key));
         return secretKeySpecDef_init_2.call(this, arr, off, len, alg);
     }
 
     ivParameterSpecDef_init_1.implementation = function(arr)
     {
         var iv = b2s(arr);
-        send("Creating IV:\\n" + hexdump(iv));
+        send("--------------------\n[Encryption] Creating IV: " + (CONFIG.ivHexDump ? ("\n" + hexdump(key)) : key));
         return ivParameterSpecDef_init_1.call(this, arr);
     }
 
     ivParameterSpecDef_init_2.implementation = function(arr, off, len)
     {
         var iv = b2s(arr);
-        send("Creating IV, plaintext:\\n" + hexdump(iv));
+        send("--------------------\n[Encryption] Creating IV, plaintext: " + (CONFIG.ivHexDump ? ("\n" + hexdump(key)) : key));
         return ivParameterSpecDef_init_2.call(this, arr, off, len);
     }
 
@@ -107,16 +126,14 @@ Java.perform(function () {
         return cipherUpdate_4.call(this, arr, a, b, c, d);
     }
 
+
+    // Formatting functions
     function info(iv, alg, plain, encoded) {
-        send("Performing encryption/decryption");
-        if (iv) {
-            send("Initialization Vector: \\n" + hexdump(b2s(iv)));
-        } else {
-            send("Initialization Vector: " + iv);
-        }
-        send("Algorithm: " + alg);
-        send("In: \\n" + hexdump(b2s(plain)));
-        send("Out: \\n" + hexdump(b2s(encoded)));
+        send("--------------------\n[Encryption] Performing encryption/decryption" + 
+        (iv ? ("\n[Encryption] Initialization Vector: \n" + hexdump(b2s(iv))) : ("\n[Encryption] Initialization Vector: " + iv)) + 
+        "\n[Encryption] Algorithm: " + alg + 
+        "\n[Encryption] In: \n" + (CONFIG.operationInput ? hexdump(b2s(plain)) : b2s(plain)) + 
+        "\n[Encryption] Out: \n" + (CONFIG.operationOutput ? hexdump(b2s(encoded)) : b2s(encoded)));
         complete_bytes = [];
         index = 0;
     }
@@ -137,7 +154,7 @@ Java.perform(function () {
             chars += " ".repeat(blockSize - block.length);
             lines.push(addr + " " + codes + "  " + chars);
         }
-        return lines.join("\\n");
+        return lines.join("\n");
     }
 
     function b2s(array) {
