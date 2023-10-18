@@ -1,5 +1,12 @@
 // Based on  https://codeshare.frida.re/@dzonerzy/fridantiroot/
 Java.performNow(function () {
+
+    // Config
+    var CONFIG = {
+        // if TRUE print stack trace
+        printStackTrace: false
+    };
+
     var RootPackages = ["com.noshufou.android.su", "com.noshufou.android.su.elite", "eu.chainfire.supersu",
         "com.koushikdutta.superuser", "com.thirdparty.superuser", "com.yellowes.su", "com.koushikdutta.rommanager",
         "com.koushikdutta.rommanager.license", "com.dimonvideo.luckypatcher", "com.chelpus.lackypatch",
@@ -25,7 +32,12 @@ Java.performNow(function () {
     NativeFile.exists.implementation = function () {
         var name = NativeFile.getName.call(this);
         if (RootBinaries.indexOf(name) > -1) {
-            send("[RootDetection Bypass] return value for binary: " + name);
+            send("[RootDetection Bypass] Check for existence return value for binary: " + name);
+            if (CONFIG.printStackTrace) {
+                Java.perform(function() {
+                    send(Java.use("android.util.Log").getStackTraceString(Java.use("java.lang.Exception").$new()));
+                });
+            }
             return false;
         } else {
             return this.exists.call(this);
@@ -37,6 +49,11 @@ Java.performNow(function () {
     String.contains.implementation = function (name) {
         if (name == "test-keys") {
             send("[RootDetection Bypass] test-keys check");
+            if (CONFIG.printStackTrace) {
+                Java.perform(function() {
+                    send(Java.use("android.util.Log").getStackTraceString(Java.use("java.lang.Exception").$new()));
+                });
+            }
             return false;
         }
         return this.contains.call(this, name);
@@ -48,11 +65,21 @@ Java.performNow(function () {
         if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id" || cmd == "sh") {
             fakeCmd = "grep";
             send("[RootDetection Bypass] " + cmd + " command");
+            if (CONFIG.printStackTrace) {
+                Java.perform(function() {
+                    send(Java.use("android.util.Log").getStackTraceString(Java.use("java.lang.Exception").$new()));
+                });
+            }
             return fakeCmd;
         }
         if (cmd == "su") {
             fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
             send("[RootDetection Bypass] " + cmd + " command");
+            if (CONFIG.printStackTrace) {
+                Java.perform(function() {
+                    send(Java.use("android.util.Log").getStackTraceString(Java.use("java.lang.Exception").$new()));
+                });
+            }
             return fakeCmd;
         }
         return false;
