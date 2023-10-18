@@ -77,22 +77,23 @@ var apis = [{
     class: 'libcore.io.IoBridge',
     method: 'open',
     name: 'File IO'
-}, {
-    // so much calls
-    class: 'java.io.FileOutputStream',
-    method: 'write',
-    name: 'File IO'
-}, {
-    class: 'java.io.FileInputStream',
-    method: 'read',
-    name: 'File IO'
 },
-{
-    // get system info
-    class: 'android.content.ContextWrapper',
-    method: 'getSystemService',
-    name: 'System Query'
-},
+// {
+//     // so much calls
+//     class: 'java.io.FileOutputStream',
+//     method: 'write',
+//     name: 'File IO'
+// }, {
+//     class: 'java.io.FileInputStream',
+//     method: 'read',
+//     name: 'File IO'
+// },
+// {
+//     // get system info
+//     class: 'android.content.ContextWrapper',
+//     method: 'getSystemService',
+//     name: 'System Query'
+// },
 {
     class: 'android.content.ContextWrapper',
     method: 'openFileInput',
@@ -294,11 +295,13 @@ var apis = [{
     class: 'java.security.MessageDigest',
     method: 'update',
     name: 'Crypto - Hash'
-}, {
-    class: 'android.telephony.TelephonyManager',
-    method: 'getDeviceId',
-    name: 'Device Info'
-}, {
+}, 
+// {
+//     class: 'android.telephony.TelephonyManager',
+//     method: 'getDeviceId',
+//     name: 'Device Info'
+// }, 
+{
     class: 'android.telephony.TelephonyManager',
     method: 'getSubscriberId',
     name: 'Device Info'
@@ -314,11 +317,13 @@ var apis = [{
     class: 'android.telephony.TelephonyManager',
     method: 'getNetworkOperatorName',
     name: 'Device Info'
-}, {
-    class: 'android.telephony.TelephonyManager',
-    method: 'getSimOperatorName',
-    name: 'Device Info'
-}, {
+}, 
+// {
+//     class: 'android.telephony.TelephonyManager',
+//     method: 'getSimOperatorName',
+//     name: 'Device Info'
+// }, 
+{
     class: 'android.net.wifi.WifiInfo',
     method: 'getMacAddress',
     name: 'Device Info'
@@ -334,19 +339,23 @@ var apis = [{
     class: 'android.net.wifi.WifiInfo',
     method: 'getNetworkId',
     name: 'Device Info'
-}, {
-    class: 'android.telephony.TelephonyManager',
-    method: 'getSimCountryIso',
-    name: 'Device Info'
-}, {
+}, 
+// {
+//     class: 'android.telephony.TelephonyManager',
+//     method: 'getSimCountryIso',
+//     name: 'Device Info'
+// }, 
+{
     class: 'android.telephony.TelephonyManager',
     method: 'getSimSerialNumber',
     name: 'Device Info'
-}, {
-    class: 'android.telephony.TelephonyManager',
-    method: 'getNetworkCountryIso',
-    name: 'Device Info'
-}, {
+}, 
+// {
+//     class: 'android.telephony.TelephonyManager',
+//     method: 'getNetworkCountryIso',
+//     name: 'Device Info'
+// }, 
+{
     class: 'android.telephony.TelephonyManager',
     method: 'getDeviceSoftwareVersion',
     name: 'Device Info'
@@ -391,7 +400,8 @@ var apis = [{
     class: 'com.android.okhttp.internal.http.HttpURLConnectionImpl',
     method: 'getInputStream',
     name: 'Network'
-}, {
+},
+{
     class: 'dalvik.system.BaseDexClassLoader',
     method: 'findResource',
     name: 'Dex Class Loader'
