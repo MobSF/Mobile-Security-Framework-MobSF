@@ -43,5 +43,5 @@ Java.perform(function() {
         send("Total Packets Received: " + totalPacketsReceived);
     }
 
-    setInterval(trackPackets, 10000);
+    setInterval(trackPackets, 3000);
 });

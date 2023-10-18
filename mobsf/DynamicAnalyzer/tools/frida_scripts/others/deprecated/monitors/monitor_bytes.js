@@ -22,5 +22,6 @@ Java.perform(function() {
         return result;
     };
 
-    setInterval(trackBytes, 10000);
+    // Execute every second
+    setInterval(trackBytes, 3000);
 });
