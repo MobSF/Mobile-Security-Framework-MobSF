@@ -178,13 +178,11 @@ def common_fields(findings, data):
     high = len(findings.get('high'))
     warn = len(findings.get('warning'))
     sec = len(findings.get('secure'))
-    total = high + warn + sec
-    score = 0
-    if total > 0:
-        score = int(100 - (
-            ((high * 1) + (warn * .5) - (sec * .2)) / total) * 100)
+    score = 100 - (high * 15) - (warn * 10) + (sec * 5)
     if score > 100:
         score = 100
+    elif score < 0:
+        score = 10
     findings['security_score'] = score
     findings['app_name'] = data.get('app_name', '')
     findings['file_name'] = data.get('file_name', '')
