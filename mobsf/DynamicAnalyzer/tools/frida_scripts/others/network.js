@@ -1,5 +1,17 @@
 Java.perform(function() {
 
+    // Config
+    var CONFIG = {
+        // if TRUE monitor network packets metric
+        networkPacketsMetric: false,
+        // if TRUE monitor network bytes metric
+        networkBytesMetric: false,
+        // polling interval for network metrics in milliseconds (checks will only run if networkPacketsMetric or networkBytesMetric is set to true)
+        metricPollingInterval: 1000,
+    };
+
+
+
     // Network Sockets
     var SocketOutputStream = Java.use('java.net.SocketOutputStream');
     var SocketInputStream = Java.use('java.net.SocketInputStream');
@@ -9,8 +21,7 @@ Java.perform(function() {
     var totalBytesReceived = 0;
 
     function trackBytes() {
-        send("Total Bytes Sent: " + totalBytesSent);
-        send("Total Bytes Received: " + totalBytesReceived);
+        return("Total Bytes Sent: " + totalBytesSent + "\nTotal Bytes Received: " + totalBytesReceived);
     }
 
     SocketOutputStream.write.overload('[B', 'int', 'int').implementation = function(buffer, byteOffset, byteCount) {
@@ -33,8 +44,7 @@ Java.perform(function() {
     var totalPacketsReceived = 0;
 
     function trackPackets() {
-        send("Total Packets Sent: " + totalPacketsSent);
-        send("Total Packets Received: " + totalPacketsReceived);
+        return("Total Packets Sent: " + totalPacketsSent + "\nTotal Packets Received: " + totalPacketsReceived);
     }
 
     function byteArrayToAscii(byteArr, off, len) {
@@ -52,7 +62,7 @@ Java.perform(function() {
         if (result > 0) {
             totalPacketsReceived++;
             var asciiData = byteArrayToAscii(byteArr, off, result);
-            var logMessage = 'Received data:\nASCII: ' + asciiData;
+            var logMessage = '--------------------\nReceived data:\nASCII: ' + asciiData;
             send(logMessage);
         }
         return result;
@@ -64,9 +74,18 @@ Java.perform(function() {
         if (len > 0) {
             totalPacketsSent++;
             var asciiData = byteArrayToAscii(byteArr, off, len);
-            var logMessage = 'Sent data:\nASCII: ' + asciiData;
+            var logMessage = '--------------------\nSent data:\nASCII: ' + asciiData;
             send(logMessage);
         }
         return result;
     };
+
+
+
+    // Monitor Network Metrics every second
+    setInterval(function() {
+        if (CONFIG.networkBytesMetric || CONFIG.networkPacketsMetric) {
+            send('--------------------\n' + (CONFIG.networkBytesMetric ? (trackBytes() + '\n') : '') + (CONFIG.networkPacketsMetric ? trackPackets() : ''));
+        }
+    }, CONFIG.metricPollingInterval);
 });
