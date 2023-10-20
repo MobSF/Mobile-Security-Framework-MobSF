@@ -1,5 +1,13 @@
 Java.perform(function() {
 
+    // Config
+    var CONFIG = {
+        // polling interval for metrics in milliseconds
+        metricPollingInterval: 1000,
+    };
+
+
+
     // CPU Usage
     // Java class for obtaining the PID
     var process = Java.use('android.os.Process');
@@ -53,7 +61,7 @@ Java.perform(function() {
 
     var trackCPU = function() {
         updateCPU();
-        send('CPU usage: ' + cpuUsage.toFixed(2) + '%');
+        return('CPU usage: ' + cpuUsage.toFixed(2) + '%');
     };
 
 
@@ -66,21 +74,13 @@ Java.perform(function() {
         var usedMemory = totalMemory - freeMemory;
         var memoryUsagePercentage = (usedMemory / totalMemory) * 100;
 
-        send('Total Memory (bytes): ' + totalMemory);
-        send('Free Memory (bytes): ' + freeMemory);
-        send('Used Memory (bytes): ' + usedMemory);
-        send('Memory Usage (%): ' + memoryUsagePercentage.toFixed(2));
+        return('Total Memory (bytes): ' + totalMemory + '\nFree Memory (bytes): ' + freeMemory + '\nUsed Memory (bytes): ' + usedMemory + '\nMemory Usage (%): ' + memoryUsagePercentage.toFixed(2));
     }
 
 
 
     // Monitor Metrics every second
     setInterval(function() {
-        send('\n--------------------');
-        trackBytes();
-        trackPackets();
-        trackCPU();
-        monitorMemoryUsage();
-        send('--------------------\n');
-    }, 1000);
+        send('--------------------\n' + trackCPU() + '\n' + monitorMemoryUsage());
+    }, CONFIG.metricPollingInterval);
 });
