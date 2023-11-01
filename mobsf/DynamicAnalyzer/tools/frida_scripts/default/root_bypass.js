@@ -157,12 +157,12 @@ Java.performNow(function () {
             }
         }
         if (shouldModifyCommand) {
-            send("[RootDetection Bypass] ProcessBuilder " + cmd);
+            send("[RootDetection Bypass] ProcessBuilder " + "[" + listIterator(cmd) + "]");
             this.command.call(this, ["grep"]);
             return this.start.call(this);
         }
         if (cmd.indexOf("su") != -1) {
-            send("[RootDetection Bypass] ProcessBuilder " + cmd);
+            send("[RootDetection Bypass] ProcessBuilder " + "[" + listIterator(cmd) + "]");
             this.command.call(this, ["justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled"]);
             return this.start.call(this);
         }
@@ -284,4 +284,13 @@ Java.performNow(function () {
     int execvpe(const char *file, char *const argv[], char *const envp[]);
 
     */
+
+    // List iterator helper function
+    function listIterator(cmd) {
+        var return_list = []
+        for (var i = 0; i < cmd.size(); i++) {
+            return_list.push(cmd.get(i).toString());
+        }
+        return return_list;
+    }
 });
