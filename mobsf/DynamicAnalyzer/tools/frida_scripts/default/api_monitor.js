@@ -398,11 +398,12 @@ var apis = [{
     class: 'com.android.okhttp.internal.huc.HttpURLConnectionImpl',
     method: 'getInputStream',
     name: 'Network'
-}, {
-    class: 'com.android.okhttp.internal.http.HttpURLConnectionImpl',
-    method: 'getInputStream',
-    name: 'Network'
 },
+// {
+//     class: 'com.android.okhttp.internal.http.HttpURLConnectionImpl',
+//     method: 'getInputStream',
+//     name: 'Network'
+// },
 {
     class: 'dalvik.system.BaseDexClassLoader',
     method: 'findResource',
@@ -423,11 +424,12 @@ var apis = [{
     class: 'dalvik.system.DexFile',
     method: 'loadClass',
     name: 'Dex Class Loader'
-}, {
-    class: 'dalvik.system.DexClassLoader',
-    method: '$init',
-    name: 'Dex Class Loader'
-}, 
+},
+// {
+//     class: 'dalvik.system.DexClassLoader',
+//     method: '$init',
+//     name: 'Dex Class Loader'
+// }, 
 // {
 //     class: 'android.util.Base64',
 //     method: 'decode',
