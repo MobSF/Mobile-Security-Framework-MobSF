@@ -3,7 +3,7 @@ Java.perform(function() {
     // Config
     var CONFIG = {
         // if TRUE print stack trace
-        printStackTrace: true
+        printStackTrace: false
     };
 
 
