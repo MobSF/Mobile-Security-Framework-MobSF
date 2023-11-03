@@ -50,12 +50,8 @@ logger = logging.getLogger(__name__)
 ctype = 'application/json; charset=utf-8'
 
 
-def pdf(request, api=False, jsonres=False):
+def pdf(request, checksum, api=False, jsonres=False):
     try:
-        if api:
-            checksum = request.POST['hash']
-        else:
-            checksum = request.GET['md5']
         hash_match = re.match('^[0-9a-f]{32}$', checksum)
         if not hash_match:
             if api:

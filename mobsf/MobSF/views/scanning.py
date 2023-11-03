@@ -116,6 +116,15 @@ class Scanning(object):
         logger.info('Performing Static Analysis of Android AAR')
         return self.data
 
+    def scan_so(self):
+        """Shared object file."""
+        md5 = handle_uploaded_file(self.file, '.so')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'so'
+        add_to_recent_scan(self.data)
+        logger.info('Performing Static Analysis of Shared Object')
+        return self.data
+
     def scan_zip(self):
         """Android /iOS Zipped Source."""
         md5 = handle_uploaded_file(self.file, '.zip')
@@ -133,6 +142,26 @@ class Scanning(object):
         self.data['analyzer'] = 'static_analyzer_ios'
         add_to_recent_scan(self.data)
         logger.info('Performing Static Analysis of iOS IPA')
+        return self.data
+
+    def scan_dylib(self):
+        """IOS Dylib."""
+        md5 = handle_uploaded_file(self.file, '.dylib')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'dylib'
+        self.data['analyzer'] = 'static_analyzer_ios'
+        add_to_recent_scan(self.data)
+        logger.info('Performing Static Analysis of iOS IPA')
+        return self.data
+
+    def scan_a(self):
+        """Scan static library."""
+        md5 = handle_uploaded_file(self.file, '.a')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'a'
+        self.data['analyzer'] = 'static_analyzer_ios'
+        add_to_recent_scan(self.data)
+        logger.info('Performing Static Analysis of Static Library')
         return self.data
 
     def scan_appx(self):

@@ -4,9 +4,12 @@ import logging
 from django.conf import settings
 
 from mobsf.MobSF.utils import python_dict, python_list
+from mobsf.MobSF.views.home import update_scan_timestamp
 from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
 from mobsf.StaticAnalyzer.models import RecentScansDB
-from mobsf.StaticAnalyzer.views.common.suppression import process_suppression
+from mobsf.StaticAnalyzer.views.common.suppression import (
+    process_suppression,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -41,13 +44,15 @@ def get_context_from_db_entry(db_entry):
             'bundle_url_types': python_list(db_entry[0].BUNDLE_URL_TYPES),
             'bundle_supported_platforms':
                 python_list(db_entry[0].BUNDLE_SUPPORTED_PLATFORMS),
-            'icon_found': db_entry[0].ICON_FOUND,
+            'icon_path': db_entry[0].ICON_PATH,
             'info_plist': db_entry[0].INFO_PLIST,
             'binary_info': python_dict(db_entry[0].BINARY_INFO),
             'permissions': python_dict(db_entry[0].PERMISSIONS),
             'ats_analysis': python_dict(db_entry[0].ATS_ANALYSIS),
             'binary_analysis': binary,
             'macho_analysis': python_dict(db_entry[0].MACHO_ANALYSIS),
+            'dylib_analysis': python_list(db_entry[0].DYLIB_ANALYSIS),
+            'framework_analysis': python_list(db_entry[0].FRAMEWORK_ANALYSIS),
             'ios_api': python_dict(db_entry[0].IOS_API),
             'code_analysis': code,
             'file_analysis': python_list(db_entry[0].FILE_ANALYSIS),
@@ -101,13 +106,15 @@ def get_context_from_analysis(app_dict,
             'bundle_url_types': info_dict['bundle_url_types'],
             'bundle_supported_platforms':
                 info_dict['bundle_supported_platforms'],
-            'icon_found': app_dict['icon_found'],
+            'icon_path': app_dict['icon_path'],
             'info_plist': info_dict['plist_xml'],
             'binary_info': bin_dict['bin_info'],
             'permissions': info_dict['permissions'],
             'ats_analysis': info_dict['inseccon'],
             'binary_analysis': binary,
             'macho_analysis': bin_dict['checksec'],
+            'dylib_analysis': bin_dict['dylib_analysis'],
+            'framework_analysis': bin_dict['framework_analysis'],
             'ios_api': code_dict['api'],
             'code_analysis': code,
             'file_analysis': all_files['special_files'],
@@ -152,13 +159,15 @@ def save_or_update(update_type,
             'BUNDLE_URL_TYPES': info_dict['bundle_url_types'],
             'BUNDLE_SUPPORTED_PLATFORMS':
                 info_dict['bundle_supported_platforms'],
-            'ICON_FOUND': app_dict['icon_found'],
+            'ICON_PATH': app_dict['icon_path'],
             'INFO_PLIST': info_dict['plist_xml'],
             'BINARY_INFO': bin_dict['bin_info'],
             'PERMISSIONS': info_dict['permissions'],
             'ATS_ANALYSIS': info_dict['inseccon'],
             'BINARY_ANALYSIS': bin_dict['bin_code_analysis'],
             'MACHO_ANALYSIS': bin_dict['checksec'],
+            'DYLIB_ANALYSIS': bin_dict['dylib_analysis'],
+            'FRAMEWORK_ANALYSIS': bin_dict['framework_analysis'],
             'IOS_API': code_dict['api'],
             'CODE_ANALYSIS': code_dict['code_anal'],
             'FILE_ANALYSIS': all_files['special_files'],
@@ -193,3 +202,33 @@ def save_or_update(update_type,
             MD5=app_dict['md5_hash']).update(**values)
     except Exception:
         logger.exception('Updating RecentScansDB')
+
+
+def save_get_ctx(app_dict, pdict, code_dict, bin_dict, all_files, rescan):
+    # Saving to DB
+    logger.info('Connecting to DB')
+    if rescan:
+        logger.info('Updating Database...')
+        save_or_update(
+            'update',
+            app_dict,
+            pdict,
+            code_dict,
+            bin_dict,
+            all_files)
+        update_scan_timestamp(app_dict['md5_hash'])
+    else:
+        logger.info('Saving to Database')
+        save_or_update(
+            'save',
+            app_dict,
+            pdict,
+            code_dict,
+            bin_dict,
+            all_files)
+    return get_context_from_analysis(
+        app_dict,
+        pdict,
+        code_dict,
+        bin_dict,
+        all_files)

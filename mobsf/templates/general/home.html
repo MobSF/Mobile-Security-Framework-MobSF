@@ -134,7 +134,7 @@
                     _("status").innerText = 'Trying to download ...';
                     show_loader();
                     $.ajax({
-                        url : '../download_scan/', 
+                        url : '{% url "download_scan" %}', 
                         type : "POST",
                         dataType: "json", 
                         data : {
@@ -156,7 +156,7 @@
                                     }
                                 }, 2000);
 
-                                url = json.analyzer + '/?name=' + encodeURIComponent(json.file_name) + '&checksum=' + json.hash + '&type=' + json.scan_type
+                                url = json.analyzer + '/' + json.hash + '/';
                                 load_result(url);
                             } else {
                                 hide_loader();
@@ -199,10 +199,7 @@
                             i = 1;
                         }
                     }, 2000);
-                    var url = json.analyzer + '/';
-                    if (json.hash){
-                        url += '?name=' + encodeURIComponent(json.file_name) + '&checksum=' + json.hash + '&type=' + json.scan_type
-                    }
+                    var url = json.analyzer + '/' + json.hash + '/';
                     load_result(url);
                 }
             }
@@ -225,10 +222,10 @@
           // Is valid file extensions
           function isValidExt(file_name){
                 var val = file_name.toLowerCase();
-                var regex = new RegExp("(.*?)\.(ipa|apk|apks|xapk|jar|aar|zip|appx)$");
+                var regex = new RegExp("^(.{1,300}?)\.(ipa|apk|apks|xapk|jar|aar|so|dylib|a|zip|appx)$");
                 val = val.replace(/^.*[\\\/]/, '');
                 if (!(regex.test(val))) {
-                    _('status').innerText = "Please upload APK/APKS/XAPK/JAR/AAR/IPA/ZIP/APPX only!";
+                    _('status').innerText = "Please upload APK/APKS/XAPK/JAR/AAR/SO/IPA/DYLIB/A/ZIP/APPX only!";
                     return false;
                 }
                 return true;

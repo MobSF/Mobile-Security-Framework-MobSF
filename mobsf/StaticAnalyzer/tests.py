@@ -14,6 +14,17 @@ logger = logging.getLogger(__name__)
 
 RESCAN = False
 # Set RESCAN to True if Static Analyzer Code is modified
+EXTS = (
+    '.xapk',
+    '.apk',
+    '.ipa',
+    '.appx',
+    '.zip',
+    '.a',
+    '.so',
+    '.dylib',
+    '.aar',
+    '.jar')
 
 
 def static_analysis_test():
@@ -25,12 +36,7 @@ def static_analysis_test():
         http_client = Client()
         apk_dir = os.path.join(settings.BASE_DIR, 'StaticAnalyzer/test_files/')
         for filename in os.listdir(apk_dir):
-            if not filename.endswith((
-                    '.xapk',
-                    '.apk',
-                    '.ipa',
-                    '.appx',
-                    '.zip')):
+            if not filename.endswith(EXTS):
                 continue
             if platform.system() == 'Windows' and filename.endswith('.ipa'):
                 continue
@@ -49,11 +55,11 @@ def static_analysis_test():
         logger.info('[OK] Completed Upload test')
         logger.info('Running Static Analysis Test')
         for upl in uploaded:
-            scan_url = '/{}/?name={}&checksum={}&type={}'.format(
-                upl['analyzer'], upl['file_name'],
-                upl['hash'], upl['scan_type'])
+            scan_url = '/{}/{}/'.format(
+                upl['analyzer'],
+                upl['hash'])
             if RESCAN:
-                scan_url = scan_url + '&rescan=1'
+                scan_url = scan_url + '?rescan=1'
             resp = http_client.get(scan_url, follow=True)
             if resp.status_code == 200:
                 logger.info('[OK] Static Analysis Complete: %s', scan_url)
@@ -64,22 +70,22 @@ def static_analysis_test():
         logger.info('Running PDF Generation Test')
         if platform.system() in ['Darwin', 'Linux']:
             pdfs = [
-                '/pdf/?md5=02e7989c457ab67eb514a8328779f256',
-                '/pdf/?md5=3a552566097a8de588b8184b059b0158',
-                '/pdf/?md5=6c23c2970551be15f32bbab0b5db0c71',
-                '/pdf/?md5=52c50ae824e329ba8b5b7a0f523efffe',
-                '/pdf/?md5=57bb5be0ea44a755ada4a93885c3825e',
-                '/pdf/?md5=8179b557433835827a70510584f3143e',
-                '/pdf/?md5=7b0a23bffc80bac05739ea1af898daad',
+                '/pdf/02e7989c457ab67eb514a8328779f256/',
+                '/pdf/3a552566097a8de588b8184b059b0158/',
+                '/pdf/6c23c2970551be15f32bbab0b5db0c71/',
+                '/pdf/52c50ae824e329ba8b5b7a0f523efffe/',
+                '/pdf/57bb5be0ea44a755ada4a93885c3825e/',
+                '/pdf/8179b557433835827a70510584f3143e/',
+                '/pdf/7b0a23bffc80bac05739ea1af898daad/',
             ]
         else:
             pdfs = [
-                '/pdf/?md5=02e7989c457ab67eb514a8328779f256',
-                '/pdf/?md5=3a552566097a8de588b8184b059b0158',
-                '/pdf/?md5=52c50ae824e329ba8b5b7a0f523efffe',
-                '/pdf/?md5=57bb5be0ea44a755ada4a93885c3825e',
-                '/pdf/?md5=8179b557433835827a70510584f3143e',
-                '/pdf/?md5=7b0a23bffc80bac05739ea1af898daad',
+                '/pdf/02e7989c457ab67eb514a8328779f256/',
+                '/pdf/3a552566097a8de588b8184b059b0158/',
+                '/pdf/52c50ae824e329ba8b5b7a0f523efffe/',
+                '/pdf/57bb5be0ea44a755ada4a93885c3825e/',
+                '/pdf/8179b557433835827a70510584f3143e/',
+                '/pdf/7b0a23bffc80bac05739ea1af898daad/',
             ]
 
         for pdf in pdfs:
@@ -167,12 +173,7 @@ def api_test():
         http_client = Client()
         apk_dir = os.path.join(settings.BASE_DIR, 'StaticAnalyzer/test_files/')
         for filename in os.listdir(apk_dir):
-            if not filename.endswith((
-                    '.xapk',
-                    '.apk',
-                    '.ipa',
-                    '.appx',
-                    '.zip')):
+            if not filename.endswith(EXTS):
                 continue
             if platform.system() == 'Windows' and filename.endswith('.ipa'):
                 continue
@@ -196,7 +197,9 @@ def api_test():
         logger.info('Running Static Analysis API Test')
         for upl in uploaded:
             resp = http_client.post(
-                '/api/v1/scan', upl, HTTP_AUTHORIZATION=auth)
+                '/api/v1/scan',
+                {'hash': upl['hash']},
+                HTTP_AUTHORIZATION=auth)
             if resp.status_code == 200:
                 logger.info('[OK] Static Analysis Complete: %s',
                             upl['file_name'])

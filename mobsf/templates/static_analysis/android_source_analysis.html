@@ -178,6 +178,12 @@
                 </a>
               </li>
               <li class="nav-item">
+                <a href="#secrets" class="nav-link">
+                  <i class="fas fa-key nav-icon"></i>
+                  <p>Hardcoded Secrets</p>
+                </a>
+              </li>
+              <li class="nav-item">
                 <a href="#strings" class="nav-link">
                   <i class="fas fa-font nav-icon"></i>
                   <p>Strings</p>
@@ -233,7 +239,7 @@
             </ul>
           </li>
             <li class="nav-item">
-              <a href="../pdf/?md5={{ md5 }}" class="nav-link">
+              <a href="{% url "pdf" checksum=md5 %}" class="nav-link">
               <i class="nav-icon fas fa-file-pdf"></i>
               <p>
                 PDF Report
@@ -283,10 +289,7 @@
                 <div class="row">
                 <div class="col-2">
                   <p><strong><i class="fas fa-check-double"></i> APP SCORES</strong></p>
-                  <img id="app_icon" src="{% if icon_found %}/download/{{ md5 }}-icon.png{% else %}{% static 'img/no_icon.png' %}{% endif %}"/>
-                  {% if icon_hidden %}
-                    <strong>Hidden Icon!</strong>
-                  {% endif %}
+                  <img id="app_icon" src="{% if icon_path %}/download/{{ icon_path }}{% else %}{% static 'img/no_icon.png' %}{% endif %}"/>
                   <p>
                   {% if average_cvss %}
                   <span class="badge bg-info">Average CVSS</span> <b>{{ average_cvss }} </b><br/>
@@ -298,7 +301,7 @@
                     <span class="badge bg-success">Trackers Detection</span> <strong>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</strong><br/>
                   {% endif %}  
                 </p>
-                  <p> <a href="../appsec_dashboard/{{ md5 }}/" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
+                  <p> <a href="{% url 'appsec_dashboard' checksum=md5 %}" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
 
                 </div>
                 <div class="col-6">
@@ -533,9 +536,9 @@
                 <strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong>
                 </p>
                 <p align="center">
-                  <a href="../static_analyzer/?checksum={{ md5 }}&amp;name={{ file_name }}&amp;type=zip&amp;rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
+                  <a href="{% url 'static_analyzer' checksum=md5 %}?rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
                   <a id="supbtn" onclick="list_suppressions()" role="button" class="btn btn-primary" data-target="#sup_list" data-toggle="modal" href="#"><i class="fa fa-list"></i> Manage Suppressions</a>
-                  <a target="_blank" href="../manifest_view/?md5={{ md5 }}&amp;type={{ app_type }}" role="button" class="btn btn-primary"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
+                  <a target="_blank" href="{% url "manifest_view" checksum=md5 %}?type={{ app_type }}" role="button" class="btn btn-primary"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
                   <a href="{% url "tree_view" %}?md5={{ md5 }}&amp;type=java" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Source</a>
                 </p>
               </div>
@@ -1465,31 +1468,61 @@
      </div>
  </section>
   <!-- ===========================end trackers ================================== -->
-<a id="strings" class="anchor"></a>
-<section class="content">
-  <div class="container-fluid">
-    <div class="row">
-        <div class="col-lg-12">
-        <div class="card">
-          <div class="card-body">
-             <p>
-             <strong><i class="fas fa-font"></i> STRINGS</strong>
-             </p>
-               <div class="list-group">
-                  <p>  
-                    {% for val in strings %}
-                     {{ val }}<br/>
-                    {% endfor %}                  
-                  </p>
+  <a id="secrets" class="anchor"></a>
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+          <div class="col-lg-12">
+          <div class="card">
+            <div class="card-body">
+               <p>
+               <strong><i class="fas fa-key"></i> POSSIBLE HARDCODED SECRETS</strong>
+               </p>
+                 <div class="list-group">
+                    <p>  
+                      {% for val in secrets %}
+                       {{ val }}<br/>
+                      {% endfor %}                  
+                    </p>
+                </div>
               </div>
             </div>
+          </div><!-- /.card -->
           </div>
-        </div><!-- /.card -->
-        </div>
-        <!-- end row -->
-        </div>
-</section>
- <!-- ===========================end strings ================================== -->
+          <!-- end row -->
+          </div>
+  </section>
+   <!-- ===========================end secrets ================================== -->
+  <a id="strings" class="anchor"></a>
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+          <div class="col-lg-12">
+          <div class="card">
+            <div class="card-body">
+               <p>
+               <strong><i class="fas fa-font"></i> STRINGS</strong>
+               </p>
+                 <div class="list-group">
+                   <p><strong>From Code</strong></p>
+                  <p>  
+                    {% for key, val in strings.items %}
+                      {% if key == 'strings_code' %}
+                        {% for v in val %}
+                          {{ v }}<br/>
+                        {% endfor %}
+                      {% endif %}
+                    {% endfor %}                  
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div><!-- /.card -->
+          </div>
+          <!-- end row -->
+          </div>
+  </section>
+   <!-- ===========================end strings ================================== -->
 <a id="activities" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
@@ -1694,6 +1727,9 @@
 </script>
 <script src="{% static "others/js/suppression.js" %}"></script>
 <script>
+
+  // Remove rescan parameter
+  window.history.replaceState({}, '', window.location.pathname);
 
   // Globals
   const csrf = '{{ csrf_token }}'

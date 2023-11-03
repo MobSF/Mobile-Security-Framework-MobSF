@@ -1,9 +1,13 @@
 # -*- coding: utf_8 -*-
 """MobSF REST API V 1."""
+import re
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
+from mobsf.StaticAnalyzer.models import (
+    RecentScansDB,
+)
 from mobsf.MobSF.views.helpers import request_method
 from mobsf.MobSF.views.home import RecentScans, Upload, delete_scan
 from mobsf.MobSF.views.api.api_middleware import make_api_response
@@ -48,33 +52,37 @@ def api_recent_scans(request):
 @csrf_exempt
 def api_scan(request):
     """POST - Scan API."""
-    params = {'scan_type', 'hash', 'file_name'}
-    if set(request.POST) < params:
+    if 'hash' not in request.POST:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
-    scan_type = request.POST['scan_type']
-    # APK, Android ZIP and iOS ZIP
-    if scan_type in {'xapk', 'apk', 'apks', 'zip'}:
-        resp = static_analyzer(request, True)
+    checksum = request.POST['hash']
+    if not re.match('^[0-9a-f]{32}$', checksum):
+        return make_api_response(
+            {'error': 'Invalid Checksum'}, 500)
+    robj = RecentScansDB.objects.filter(MD5=checksum)
+    if not robj.exists():
+        return make_api_response(
+            {'error': 'The file is not uploaded/available'}, 500)
+    scan_type = robj[0].SCAN_TYPE
+    # APK, Source Code (Android/iOS) ZIP, SO, JAR, AAR
+    if scan_type in {'xapk', 'apk', 'apks', 'zip', 'so', 'jar', 'aar'}:
+        resp = static_analyzer(request, checksum, True)
         if 'type' in resp:
-            # For now it's only ios_zip
-            request.POST._mutable = True
-            request.POST['scan_type'] = 'ios'
-            resp = static_analyzer_ios(request, True)
+            resp = static_analyzer_ios(request, checksum, True)
         if 'error' in resp:
             response = make_api_response(resp, 500)
         else:
             response = make_api_response(resp, 200)
     # IPA
-    elif scan_type == 'ipa':
-        resp = static_analyzer_ios(request, True)
+    elif scan_type in {'ipa', 'dylib', 'a'}:
+        resp = static_analyzer_ios(request, checksum, True)
         if 'error' in resp:
             response = make_api_response(resp, 500)
         else:
             response = make_api_response(resp, 200)
     # APPX
     elif scan_type == 'appx':
-        resp = windows.staticanalyzer_windows(request, True)
+        resp = windows.staticanalyzer_windows(request, checksum, True)
         if 'error' in resp:
             response = make_api_response(resp, 500)
         else:
@@ -104,7 +112,10 @@ def api_pdf_report(request):
     if 'hash' not in request.POST:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
-    resp = pdf(request, api=True)
+    resp = pdf(
+        request,
+        request.POST['hash'],
+        api=True)
     if 'error' in resp:
         if resp.get('error') == 'Invalid scan hash':
             response = make_api_response(resp, 400)
@@ -129,7 +140,11 @@ def api_json_report(request):
     if 'hash' not in request.POST:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
-    resp = pdf(request, api=True, jsonres=True)
+    resp = pdf(
+        request,
+        request.POST['hash'],
+        api=True,
+        jsonres=True)
     if 'error' in resp:
         if resp.get('error') == 'Invalid scan hash':
             response = make_api_response(resp, 400)

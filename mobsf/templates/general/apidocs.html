@@ -148,7 +148,7 @@
             </ul>
             <hr />
             <h2><a id="scan-file-api"></a><strong>Scan File API</strong></h2>
-            <p>API to scan a file that is already uploaded.</p>
+            <p>API to scan a file that is already uploaded. Supports scanning apk, xapk, apks, jar, aar, zip, ipa, so, dylib, a, and appx extensions.</p>
             <ul>
               <li>
                 <p><strong>URL:</strong> <code>/api/v1/scan</code></p>
@@ -172,16 +172,6 @@
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>scan_type</td>
-                  <td>xapk, apk, apks, zip, ipa, or appx</td>
-                  <td>Yes</td>
-                </tr>
-                <tr>
-                  <td>file_name</td>
-                  <td>Name of the app with extension</td>
-                  <td>Yes</td>
-                </tr>
                 <tr>
                   <td>hash</td>
                   <td>hash of the scan</td>
@@ -237,14 +227,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/scan --data &quot;scan_type=apk&amp;file_name=diva-beta.apk&amp;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization:{{ api_key}}&quot;
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/scan --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization:{{ api_key}}&quot;
                   </code></pre>
                   </li>
                 </ul>
                 <p>OR</p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/scan --data &quot;scan_type=apk&amp;file_name=diva-beta.apk&amp;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;X-Mobsf-Api-Key:{{ api_key}}&quot;
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/scan --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;X-Mobsf-Api-Key:{{ api_key}}&quot;
                   </code></pre>
                   </li>
                 </ul>
@@ -1241,7 +1231,6 @@
                     <strong>Content:</strong> <code>{
   "apks": [
     {
-      "ICON_FOUND": true,
       "MD5": "3a552566097a8de588b8184b059b0158",
       "APP_NAME": "HelloWorld",
       "VERSION_NAME": "1.0",
@@ -1249,7 +1238,6 @@
       "PACKAGE_NAME": "opensecurity.helloworld"
     },
     {
-      "ICON_FOUND": true,
       "MD5": "6825bb9fde2fc671322df005976755a1",
       "APP_NAME": "Wikipedia",
       "VERSION_NAME": "2.7.277-r-2019-12-11",

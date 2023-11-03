@@ -1,0 +1,63 @@
+[tool.poetry]
+name = "mobsf"
+version = "3.7.8"
+description = "Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis."
+keywords = ["mobsf", "mobile security framework", "mobile security", "security tool", "static analysis", "dynamic analysis", "malware analysis"]
+authors = ["Ajin Abraham <ajin@opensecurity.in>"]
+license = "GPL-3.0-only"
+readme = "README.md"
+repository = "https://github.com/MobSF/Mobile-Security-Framework-MobSF"
+documentation = "https://mobsf.github.io/docs/"
+packages = [{ include = "mobsf", format = ["sdist", "wheel"]}]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Security",
+    "Topic :: Software Development :: Quality Assurance",
+]
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/MobSF/Mobile-Security-Framework-MobSF/issues"
+
+[tool.poetry.scripts]
+mobsf = "mobsf.__main__:main"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+django = ">=3.1.5"
+lxml = ">=4.6.2"
+rsa = ">=4.7"
+biplist = ">=1.0.3"
+requests = ">=2.25.1"
+bs4 = ">=0.0.1"
+colorlog = ">=4.7.2"
+macholib = ">=1.14"
+whitenoise = ">=5.2.0"
+waitress = {version = ">=1.4.4", markers = "sys_platform == 'win32'"}
+gunicorn = {version = ">=20.0.4", markers = "sys_platform != 'win32'"}
+psutil = ">=5.8.0"
+shelljob = ">=0.6.2"
+asn1crypto = ">=1.4.0"
+oscrypto = ">=1.2.1"
+distro = ">=1.5.0"
+ip2location = "8.10.0"
+lief = ">=0.12.3"
+http-tools = ">=3.0.0"
+pdfkit = ">=0.6.1"
+google-play-scraper = ">=0.1.2"
+androguard = "3.4.0a1"
+apkid = "2.1.5"
+quark-engine = "23.7.1"
+frida = ">=16.1.4"
+tldextract = "3.4.4"
+openstep-parser = "1.5.4"
+svgutils = "0.3.4"
+arpy = "2.3.0"
+apksigtool = "0.1.0"
+tzdata = "^2023.3"
+libsast = "^2.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -65,12 +65,18 @@ SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MobSF_HOME)
 ALLOWED_EXTENSIONS = {
     '.txt': 'text/plain',
     '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.svg': 'image/svg+xml',
+    '.webp': 'image/webp',
     '.zip': 'application/zip',
     '.tar': 'application/x-tar',
     '.apk': 'application/octet-stream',
     '.ipa': 'application/octet-stream',
     '.jar': 'application/java-archive',
     '.aar': 'application/octet-stream',
+    '.so': 'application/octet-stream',
+    '.dylib': 'application/octet-stream',
+    '.a': 'application/octet-stream',
 }
 # =============ALLOWED MIMETYPES=================
 APK_MIME = [
@@ -85,6 +91,8 @@ IPA_MIME = [
     'application/octet-stream',
     'application/x-itunes-ipa',
     'application/x-zip-compressed',
+    'application/x-ar',
+    'text/vnd.a',
     'binary/octet-stream',
 ]
 ZIP_MIME = [
@@ -324,18 +332,20 @@ else:
     # Disable CVSSV2 Score by default
     CVSS_SCORE_ENABLED = bool(os.getenv('MOBSF_CVSS_SCORE_ENABLED', ''))
     # NIAP Scan
-    NIAP_ENABLED = bool(os.getenv('MOBSF_NIAP_ENABLED', '1'))
+    NIAP_ENABLED = os.getenv('MOBSF_NIAP_ENABLED', '')
     # Dex 2 Smali Conversion
-    DEX2SMALI_ENABLED = bool(os.getenv('MOBSF_DEX2SMALI_ENABLED', '1'))
+    DEX2SMALI_ENABLED = os.getenv('MOBSF_DEX2SMALI_ENABLED', '1')
     # Android Shared Object Binary Analysis
-    SO_ANALYSIS_ENABLED = bool(os.getenv('MOBSF_SO_ANALYSIS_ENABLED', '1'))
+    SO_ANALYSIS_ENABLED = os.getenv('MOBSF_SO_ANALYSIS_ENABLED', '1')
+    # iOS Dynamic Library Binary Analysis
+    DYLIB_ANALYSIS_ENABLED = os.getenv('MOBSF_DYLIB_ANALYSIS_ENABLED', '1')
     # =================================================
     # --------------------------
     # MALWARE ANALYZER SETTINGS
     # --------------------------
 
-    DOMAIN_MALWARE_SCAN = bool(os.getenv('MOBSF_DOMAIN_MALWARE_SCAN', '1'))
-    APKID_ENABLED = bool(os.getenv('MOBSF_APKID_ENABLED', '1'))
+    DOMAIN_MALWARE_SCAN = os.getenv('MOBSF_DOMAIN_MALWARE_SCAN', '1')
+    APKID_ENABLED = os.getenv('MOBSF_APKID_ENABLED', '1')
     QUARK_ENABLED = bool(os.getenv('MOBSF_QUARK_ENABLED', ''))
     # ==================================================
     # ======WINDOWS STATIC ANALYSIS SETTINGS ===========
@@ -402,8 +412,8 @@ else:
     # If you are behind a Proxy
     UPSTREAM_PROXY_ENABLED = bool(os.getenv(
         'MOBSF_UPSTREAM_PROXY_ENABLED', ''))
-    UPSTREAM_PROXY_SSL_VERIFY = bool(os.getenv(
-        'MOBSF_UPSTREAM_PROXY_SSL_VERIFY', '1'))
+    UPSTREAM_PROXY_SSL_VERIFY = os.getenv(
+        'MOBSF_UPSTREAM_PROXY_SSL_VERIFY', '1')
     UPSTREAM_PROXY_TYPE = os.getenv('MOBSF_UPSTREAM_PROXY_TYPE', 'http')
     UPSTREAM_PROXY_IP = os.getenv('MOBSF_UPSTREAM_PROXY_IP', '127.0.0.1')
     UPSTREAM_PROXY_PORT = int(os.getenv('MOBSF_UPSTREAM_PROXY_PORT', '3128'))

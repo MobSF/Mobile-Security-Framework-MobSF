@@ -71,13 +71,17 @@ class Environment:
 
     def connect(self):
         """ADB Connect."""
+        if not self.identifier:
+            return False
         logger.info('Connecting to Android %s', self.identifier)
         self.run_subprocess_verify_output([get_adb(),
                                            'connect',
-                                           self.identifier], 0)
+                                           self.identifier])
 
     def connect_n_mount(self):
         """Test ADB Connection."""
+        if not self.identifier:
+            return False
         self.adb_command(['kill-server'])
         self.adb_command(['start-server'])
         logger.info('ADB Restarted')
@@ -430,7 +434,9 @@ class Environment:
             'list',
             'packages',
             '-f',
-            '-3'], True)
+            '-3'], True, True)
+        if not out:
+            return device_packages
         for pkg_str in out.decode('utf-8').rstrip().split():
             path_pkg = pkg_str.split('package:', 1)[1].strip()
             parts = path_pkg.split('.apk=', 1)

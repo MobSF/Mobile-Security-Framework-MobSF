@@ -47,7 +47,7 @@ def upstream_proxy(flaw_type):
             proxy_port = str(settings.UPSTREAM_PROXY_PORT)
             proxy_host = '{}://{}:{}'.format(
                 settings.UPSTREAM_PROXY_TYPE,
-                settings.UPSTREAM_PROXY_IP,
+                docker_translate_proxy_ip(settings.UPSTREAM_PROXY_IP),
                 proxy_port)
             proxies = {flaw_type: proxy_host}
         else:
@@ -56,12 +56,12 @@ def upstream_proxy(flaw_type):
                 settings.UPSTREAM_PROXY_TYPE,
                 settings.UPSTREAM_PROXY_USERNAME,
                 settings.UPSTREAM_PROXY_PASSWORD,
-                settings.UPSTREAM_PROXY_IP,
+                docker_translate_proxy_ip(settings.UPSTREAM_PROXY_IP),
                 proxy_port)
             proxies = {flaw_type: proxy_host}
     else:
         proxies = {flaw_type: None}
-    verify = bool(settings.UPSTREAM_PROXY_SSL_VERIFY)
+    verify = settings.UPSTREAM_PROXY_SSL_VERIFY in ('1', '"1"')
     return proxies, verify
 
 
@@ -321,22 +321,55 @@ def find_process_by(name):
     return proc
 
 
+def docker_translate_localhost(identifier):
+    """Convert localhost to host.docker.internal."""
+    if not identifier:
+        return identifier
+    if not os.getenv('MOBSF_PLATFORM') == 'docker':
+        return identifier
+    try:
+        identifier = identifier.strip()
+        docker_internal = 'host.docker.internal:'
+        if re.match(r'^emulator-\d{4}$', identifier):
+            adb_port = int(identifier.split('emulator-')[1]) + 1
+            # ADB port is console port + 1
+            return f'{docker_internal}{adb_port}'
+        m = re.match(r'^(localhost|127\.0\.0\.1):\d{1,5}$', identifier)
+        if m:
+            adb_port = int(identifier.split(m.group(1))[1].replace(':', ''))
+            return f'{docker_internal}{adb_port}'
+        return identifier
+    except Exception:
+        logger.exception('Failed to convert device '
+                         'identifier for docker connectivity')
+        return identifier
+
+
+def docker_translate_proxy_ip(ip):
+    """Convert localhost proxy ip to host.docker.internal."""
+    if not os.getenv('MOBSF_PLATFORM') == 'docker':
+        return ip
+    if ip and ip.strip() in ('127.0.0.1', 'localhost'):
+        return 'host.docker.internal'
+    return ip
+
+
 def get_device():
     """Get Device."""
     if os.getenv('ANALYZER_IDENTIFIER'):
-        return os.getenv('ANALYZER_IDENTIFIER')
-    if settings.ANALYZER_IDENTIFIER:
-        return settings.ANALYZER_IDENTIFIER
+        return docker_translate_localhost(
+            os.getenv('ANALYZER_IDENTIFIER'))
+    elif settings.ANALYZER_IDENTIFIER:
+        return docker_translate_localhost(
+            settings.ANALYZER_IDENTIFIER)
     else:
         dev_id = ''
         out = subprocess.check_output([get_adb(), 'devices']).splitlines()
         if len(out) > 2:
             dev_id = out[1].decode('utf-8').split('\t')[0]
-            return dev_id
-    logger.error('Is the Android VM running?\n'
-                 'MobSF cannot identify device id.\n'
-                 'Please set ''ANALYZER_IDENTIFIER in '
-                 '%s', get_config_loc())
+            if 'daemon started successfully' not in dev_id:
+                return docker_translate_localhost(dev_id)
+    logger.error(get_android_dm_exception_msg())
 
 
 def get_adb():
@@ -569,7 +602,7 @@ def cmd_injection_check(data):
 
 def strict_package_check(user_input):
     """Strict package name check."""
-    pat = re.compile(r'^\w+\.*[\w\.\$]+$')
+    pat = re.compile(r'^([A-Za-z]{1}[\w]*\.)+[A-Za-z][\w]*$')
     resp = re.match(pat, user_input)
     if not resp:
         logger.error('Invalid package/class name')
@@ -592,6 +625,39 @@ def is_zip_magic(file_obj):
     file_obj.seek(0, 0)
     # ZIP magic PK.. no support for spanned and empty arch
     return bool(magic == b'\x50\x4B\x03\x04')
+
+
+def is_elf_so_magic(file_obj):
+    magic = file_obj.read(4)
+    file_obj.seek(0, 0)
+    # ELF/SO Magic
+    return bool(magic == b'\x7F\x45\x4C\x46')
+
+
+def is_dylib_magic(file_obj):
+    magic = file_obj.read(4)
+    file_obj.seek(0, 0)
+    # DYLIB Magic
+    magics = (
+        b'\xCA\xFE\xBA\xBE',  # 32 bit
+        b'\xFE\xED\xFA\xCE',  # 32 bit
+        b'\xCE\xFA\xED\xFE',  # 32 bit
+        b'\xFE\xED\xFA\xCF',  # 64 bit
+        b'\xCF\xFA\xED\xFE',  # 64 bit
+        b'\xCA\xFE\xBA\xBF',  # 64 bit
+    )
+    return bool(magic in magics)
+
+
+def is_a_magic(file_obj):
+    magic = file_obj.read(4)
+    file_obj.seek(0, 0)
+    magics = (
+        b'\x21\x3C\x61\x72',
+        b'\xCA\xFE\xBA\xBF',  # 64 bit
+        b'\xCA\xFE\xBA\xBE',  # 32 bit
+    )
+    return bool(magic in magics)
 
 
 def disable_print():
@@ -637,3 +703,37 @@ def android_component(data):
     elif 'Broadcast Receiver' in data:
         cmp = 'receiver_'
     return cmp
+
+
+def get_android_dm_exception_msg():
+    return (
+        'Is your Android VM/emulator running? MobSF cannot'
+        ' find the android device identifier.'
+        ' Please run an android instance and refresh'
+        ' this page. If this error persists,'
+        ' set ANALYZER_IDENTIFIER in '
+        f'{get_config_loc()} or via environment variable'
+        ' MOBSF_ANALYZER_IDENTIFIER')
+
+
+def get_android_src_dir(app_dir, typ):
+    """Get Android source code location."""
+    if typ == 'apk':
+        src = app_dir / 'java_source'
+    elif typ == 'studio':
+        src = app_dir / 'app' / 'src' / 'main' / 'java'
+        kt = app_dir / 'app' / 'src' / 'main' / 'kotlin'
+        if not src.exists() and kt.exists():
+            src = kt
+    elif typ == 'eclipse':
+        src = app_dir / 'src'
+    return src
+
+
+def settings_enabled(attr):
+    """Get settings state if present."""
+    disabled = ('', ' ', '""', '" "', '0', '"0"', False)
+    try:
+        return getattr(settings, attr) not in disabled
+    except Exception:
+        return False

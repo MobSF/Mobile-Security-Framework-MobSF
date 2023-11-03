@@ -2,7 +2,7 @@
 rem Python Check
 set /a count=0
 where python >nul 2>&1 && (
-  echo [INSTALL] Checking for Python version 3.8+
+  echo [INSTALL] Checking for Python version 3.9+
   :redo
   if %count% lss 3 (
     set /a count+=1
@@ -13,10 +13,10 @@ where python >nul 2>&1 && (
   ) else (
     exit /b
   )
-  echo %var%|findstr /R "[3].[8910]" >nul
+  echo %var%|findstr /R "[3].[91011]" >nul
   if errorlevel 1 (
       if "%var%"=="" goto redo
-      echo [ERROR] MobSF dependencies require Python 3.8-3.10. Your python points to %var%
+      echo [ERROR] MobSF dependencies require Python 3.9-3.11. Your python points to %var%
       exit /b
   ) else (
       echo [INSTALL] Found %var%
@@ -52,30 +52,23 @@ where python >nul 2>&1 && (
     exit /b
   )
 
-  rem Create venv
-  echo [INSTALL] Creating venv
-  rmdir "venv" /q /s >nul 2>&1
-  python -m venv ./venv
-  set venv=.\venv\Scripts\python
-  %venv% -m pip install --upgrade pip
-
   set LIB=C:\Program Files\OpenSSL-Win64\lib;%LIB%
   set INCLUDE=C:\Program Files\OpenSSL-Win64\include;%INCLUDE%
 
   echo [INSTALL] Installing Requirements
-  %venv% -m pip install --no-cache-dir wheel
-  %venv% -m pip install --no-cache-dir --use-deprecated=legacy-resolver -r requirements.txt
-  
+  python -m pip install --no-cache-dir wheel poetry==1.6.1
+  python -m poetry lock
+  python -m poetry install --only main --no-root --no-interaction --no-ansi || python -m poetry install --only main --no-root --no-interaction --no-ansi || python -m poetry install --only main --no-root --no-interaction --no-ansi
+ 
   echo [INSTALL] Clean Up
   call scripts/clean.bat y
 
   echo [INSTALL] Migrating Database
-  %venv% manage.py makemigrations
-  %venv% manage.py makemigrations StaticAnalyzer
-  %venv% manage.py migrate
+  poetry run python manage.py makemigrations
+  poetry run python manage.py makemigrations StaticAnalyzer
+  poetry run python manage.py migrate
   echo Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html
   echo [INSTALL] Installation Complete
-  %venv% scripts/check_install.py
   exit /b 0
 ) || (
   echo [ERROR] python3 is not installed

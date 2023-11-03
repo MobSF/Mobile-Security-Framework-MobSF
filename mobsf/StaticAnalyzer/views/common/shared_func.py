@@ -7,6 +7,7 @@ Module providing the shared functions for iOS and Android
 import io
 import hashlib
 import logging
+import os
 import platform
 import re
 import shutil
@@ -17,7 +18,8 @@ from pathlib import Path
 
 import requests
 
-from django.utils import timezone
+import arpy
+
 from django.utils.html import escape
 
 from mobsf.MobSF import settings
@@ -26,10 +28,26 @@ from mobsf.MobSF.utils import (
     print_n_send_error_response,
     upstream_proxy,
 )
-from mobsf.StaticAnalyzer.models import RecentScansDB
-from mobsf.StaticAnalyzer.views.comparer import generic_compare
+from mobsf.StaticAnalyzer.views.comparer import (
+    generic_compare,
+)
+from mobsf.StaticAnalyzer.views.common.entropy import (
+    get_entropies,
+)
+
 
 logger = logging.getLogger(__name__)
+# Regex to capture strings between quotes or <string> tag
+STRINGS_REGEX = re.compile(r'(?<=\")(.+?)(?=\")|(?<=\<string>)(.+?)(?=\<)')
+# MobSF Custom regex to catch maximum URI like strings
+URL_REGEX = re.compile(
+    (
+        r'((?:https?://|s?ftps?://|'
+        r'file://|javascript:|data:|www\d{0,3}[.])'
+        r'[\w().=/;,#:@?&~*+!$%\'{}-]+)'
+    ),
+    re.UNICODE)
+EMAIL_REGEX = re.compile(r'[\w.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
 
 
 def hash_gen(app_path) -> tuple:
@@ -84,6 +102,94 @@ def unzip(app_path, ext_path):
                 logger.exception('Unzipping Error')
 
 
+def lipo_thin(src, dst):
+    """Thin Fat binary."""
+    new_src = None
+    try:
+        logger.info('Thinning Fat binary')
+        lipo = shutil.which('lipo')
+        out = Path(dst) / (Path(src).stem + '_thin.a')
+        new_src = out.as_posix()
+        archs = [
+            'armv7', 'armv6', 'arm64', 'x86_64',
+            'armv4t', 'armv5', 'armv6m', 'armv7f',
+            'armv7s', 'armv7k', 'armv7m', 'armv7em',
+            'arm64v8']
+        for arch in archs:
+            args = [
+                lipo,
+                src,
+                '-thin',
+                arch,
+                '-output',
+                new_src]
+            out = subprocess.run(
+                args,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.STDOUT)
+            if out.returncode == 0:
+                break
+    except Exception:
+        logger.warning('lipo Fat binary thinning failed')
+    return new_src
+
+
+def ar_os(src, dst):
+    out = ''
+    """Extract AR using OS utility."""
+    cur = os.getcwd()
+    try:
+        os.chdir(dst)
+        out = subprocess.check_output(
+            [shutil.which('ar'), 'x', src],
+            stderr=subprocess.STDOUT)
+    except Exception as exp:
+        out = exp.output
+    finally:
+        os.chdir(cur)
+    return out
+
+
+def ar_extract(src, dst):
+    """Extract AR archive."""
+    msg = 'Extracting static library archive'
+    logger.info(msg)
+    try:
+        ar = arpy.Archive(src)
+        ar.read_all_headers()
+        for a, val in ar.archived_files.items():
+            # Handle archive slip attacks
+            filtered = a.decode(
+                'utf-8', 'ignore').replace(
+                '../', '').replace('..\\', '')
+            out = Path(dst) / filtered
+            out.write_bytes(val.read())
+    except Exception:
+        # Possibly dealing with Fat binary, needs Mac host
+        logger.warning('Failed to extract .a archive')
+        # Use os ar utility
+        plat = platform.system()
+        os_err = 'Possibly a Fat binary. Requires MacOS for Analysis'
+        if plat == 'Windows':
+            logger.warning(os_err)
+            return
+        logger.info('Using OS ar utility to handle archive')
+        exp = ar_os(src, dst)
+        if len(exp) > 3 and plat == 'Linux':
+            # Can't convert FAT binary in Linux
+            logger.warning(os_err)
+            return
+        if b'lipo(1)' in exp:
+            logger.info('Fat binary archive identified')
+            # Fat binary archive
+            try:
+                nw_src = lipo_thin(src, dst)
+                if nw_src:
+                    ar_os(nw_src, dst)
+            except Exception:
+                logger.exception('Failed to thin fat archive.')
+
+
 def url_n_email_extract(dat, relative_path):
     """Extract URLs and Emails from Source Code."""
     urls = []
@@ -91,15 +197,8 @@ def url_n_email_extract(dat, relative_path):
     urllist = []
     url_n_file = []
     email_n_file = []
-    # URLs Extraction My Custom regex
-    pattern = re.compile(
-        (
-            r'((?:https?://|s?ftps?://|'
-            r'file://|javascript:|data:|www\d{0,3}[.])'
-            r'[\w().=/;,#:@?&~*+!$%\'{}-]+)'
-        ),
-        re.UNICODE)
-    urllist = re.findall(pattern, dat)
+    # URL Extraction
+    urllist = URL_REGEX.findall(dat.lower())
     uflag = 0
     for url in urllist:
         if url not in urls:
@@ -109,10 +208,9 @@ def url_n_email_extract(dat, relative_path):
         url_n_file.append(
             {'urls': urls, 'path': escape(relative_path)})
 
-    # Email Extraction Regex
-    regex = re.compile(r'[\w.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
+    # Email Extraction
     eflag = 0
-    for email in regex.findall(dat.lower()):
+    for email in EMAIL_REGEX.findall(dat.lower()):
         if (email not in emails) and (not email.startswith('//')):
             emails.append(email)
             eflag = 1
@@ -153,12 +251,6 @@ def get_avg_cvss(findings):
     if not getattr(settings, 'CVSS_SCORE_ENABLED', False):
         avg_cvss = None
     return avg_cvss
-
-
-def update_scan_timestamp(scan_hash):
-    # Update the last scan time.
-    tms = timezone.now()
-    RecentScansDB.objects.filter(MD5=scan_hash).update(TIMESTAMP=tms)
 
 
 def open_firebase(url):
@@ -207,8 +299,8 @@ def find_java_source_folder(base_folder: Path):
                 if p[0].exists())
 
 
-def is_secret(inp):
-    """Check if captures string is a possible secret."""
+def is_secret_key(inp):
+    """Check if the key in the key/value pair is interesting."""
     inp = inp.lower()
     iden = (
         'api"', 'key"', 'api_', 'key_', 'secret"',
@@ -231,3 +323,47 @@ def is_secret(inp):
     )
     not_str = any(i in inp for i in not_string)
     return any(i in inp for i in iden) and not not_str
+
+
+def strings_and_entropies(src, exts):
+    """Get Strings and Entropies."""
+    logger.info('Extracting Data from Source Code')
+    data = {
+        'strings': set(),
+        'secrets': set(),
+    }
+    try:
+        if not src.exists():
+            return data
+        excludes = ('\\u0', 'com.google.')
+        eslash = ('Ljava', 'Lkotlin', 'kotlin', 'android')
+        for p in src.rglob('*'):
+            if p.suffix not in exts or not p.exists():
+                continue
+            matches = STRINGS_REGEX.finditer(
+                p.read_text(encoding='utf-8', errors='ignore'),
+                re.MULTILINE)
+            for match in matches:
+                string = match.group()
+                if len(string) < 4:
+                    continue
+                if any(i in string for i in excludes):
+                    continue
+                if any(i in string and '/' in string for i in eslash):
+                    continue
+                if not string[0].isalnum():
+                    continue
+                data['strings'].add(string)
+        if data['strings']:
+            data['secrets'] = get_entropies(data['strings'])
+    except Exception:
+        logger.exception('Extracting Data from Code')
+    return data
+
+
+def get_symbols(symbols):
+    all_symbols = []
+    for i in symbols:
+        for _, val in i.items():
+            all_symbols.extend(val)
+    return list(set(all_symbols))

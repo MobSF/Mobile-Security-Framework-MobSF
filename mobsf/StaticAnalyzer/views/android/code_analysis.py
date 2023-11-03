@@ -6,7 +6,10 @@ from pathlib import Path
 
 from django.conf import settings
 
-from mobsf.MobSF.utils import filename_from_path
+from mobsf.MobSF.utils import (
+    filename_from_path,
+    get_android_src_dir,
+)
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     url_n_email_extract,
 )
@@ -31,16 +34,7 @@ def code_analysis(app_dir, typ, manifest_file):
         url_n_file = []
         url_list = []
         app_dir = Path(app_dir)
-        if typ == 'apk':
-            src = app_dir / 'java_source'
-        elif typ == 'studio':
-            src = app_dir / 'app' / 'src' / 'main' / 'java'
-            kt = app_dir / 'app' / 'src' / 'main' / 'kotlin'
-            if not src.exists() and kt.exists():
-                src = kt
-        elif typ == 'eclipse':
-            src = app_dir / 'src'
-        src = src.as_posix() + '/'
+        src = get_android_src_dir(app_dir, typ).as_posix() + '/'
         skp = settings.SKIP_CLASS_PATH
         logger.info('Code Analysis Started on - %s',
                     filename_from_path(src))
@@ -50,6 +44,8 @@ def code_analysis(app_dir, typ, manifest_file):
             {'.java', '.kt'},
             [src],
             skp)
+        logger.info('Android SAST Completed')
+        logger.info('Android API Analysis Started')
         api_findings = scan(
             api_rules.as_posix(),
             {'.java', '.kt'},

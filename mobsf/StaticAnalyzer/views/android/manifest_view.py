@@ -10,26 +10,25 @@ from django.conf import settings
 from django.shortcuts import render
 
 from mobsf.MobSF.utils import print_n_send_error_response
-from mobsf.StaticAnalyzer.views.android.manifest_analysis import (
+from mobsf.StaticAnalyzer.views.android.manifest_utils import (
     get_manifest_file,
 )
 
 logger = logging.getLogger(__name__)
 
 
-def run(request):
+def run(request, checksum):
     """View the manifest."""
     try:
         directory = settings.BASE_DIR  # BASE DIR
-        md5 = request.GET['md5']  # MD5
         typ = request.GET['type']  # APK or SOURCE
-        match = re.match('^[0-9a-f]{32}$', md5)
+        match = re.match('^[0-9a-f]{32}$', checksum)
         if match and (typ in ['eclipse', 'studio', 'apk', 'aar']):
             app_dir = os.path.join(
-                settings.UPLD_DIR, md5 + '/')  # APP DIRECTORY
+                settings.UPLD_DIR, checksum + '/')  # APP DIRECTORY
             tools_dir = os.path.join(
                 directory, 'StaticAnalyzer/tools/')  # TOOLS DIR
-            app_path = os.path.join(app_dir, md5 + '.apk')
+            app_path = os.path.join(app_dir, checksum + '.apk')
             manifest_file = get_manifest_file(
                 app_dir,
                 app_path,
@@ -52,5 +51,6 @@ def run(request):
             return render(request, template, context)
     except Exception:
         logger.exception('Viewing AndroidManifest.xml')
-        return print_n_send_error_response(request,
-                                           'Error Viewing AndroidManifest.xml')
+        return print_n_send_error_response(
+            request,
+            'Error Viewing AndroidManifest.xml')
