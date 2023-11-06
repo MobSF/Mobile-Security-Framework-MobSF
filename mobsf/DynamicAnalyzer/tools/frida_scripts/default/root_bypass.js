@@ -78,25 +78,31 @@ Java.perform(function() {
         send("KeyInfo hook not loaded");
     }
 
+
+
     PackageManager.getPackageInfo.overload('java.lang.String', 'int').implementation = function(pname, flags) {
         var shouldFakePackage = (RootPackages.indexOf(pname) > -1);
         if (shouldFakePackage) {
-            send("Bypass root check for package: " + pname);
+            send("[RootDetection Bypass] Bypass root check for package: " + pname);
             pname = "set.package.name.to.a.fake.one.so.we.can.bypass.it";
         }
         return this.getPackageInfo.overload('java.lang.String', 'int').call(this, pname, flags);
     };
 
+
+
     NativeFile.exists.implementation = function() {
         var name = NativeFile.getName.call(this);
         var shouldFakeReturn = (RootBinaries.indexOf(name) > -1);
         if (shouldFakeReturn) {
-            send("Bypass return value for binary: " + name);
+            send("[RootDetection Bypass] Bypass return value for binary: " + name);
             return false;
         } else {
             return this.exists.call(this);
         }
     };
+
+
 
     var exec = Runtime.exec.overload('[Ljava.lang.String;');
     var exec1 = Runtime.exec.overload('java.lang.String');
@@ -108,12 +114,12 @@ Java.perform(function() {
     exec5.implementation = function(cmd, env, dir) {
         if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id" || cmd == "sh") {
             var fakeCmd = "grep";
-            send("Bypass " + cmd + " command");
+            send("[RootDetection Bypass] Bypass command [" + cmd + "]");
             return exec1.call(this, fakeCmd);
         }
         if (cmd == "su") {
             var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
-            send("Bypass " + cmd + " command");
+            send("[RootDetection Bypass] Bypass command [" + cmd + "]");
             return exec1.call(this, fakeCmd);
         }
         return exec5.call(this, cmd, env, dir);
@@ -124,13 +130,13 @@ Java.perform(function() {
             var tmp_cmd = cmdarr[i];
             if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id" || tmp_cmd == "sh") {
                 var fakeCmd = "grep";
-                send("Bypass " + cmdarr + " command");
+                send("[RootDetection Bypass] Bypass command [" + cmd + "]");
                 return exec1.call(this, fakeCmd);
             }
 
             if (tmp_cmd == "su") {
                 var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
-                send("Bypass " + cmdarr + " command");
+                send("[RootDetection Bypass] Bypass command [" + cmd + "]");
                 return exec1.call(this, fakeCmd);
             }
         }
@@ -142,13 +148,13 @@ Java.perform(function() {
             var tmp_cmd = cmdarr[i];
             if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id" || tmp_cmd == "sh") {
                 var fakeCmd = "grep";
-                send("Bypass " + cmdarr + " command");
+                send("[RootDetection Bypass] Bypass command [" + cmd + "]");
                 return exec1.call(this, fakeCmd);
             }
 
             if (tmp_cmd == "su") {
                 var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
-                send("Bypass " + cmdarr + " command");
+                send("[RootDetection Bypass] Bypass command [" + cmd + "]");
                 return exec1.call(this, fakeCmd);
             }
         }
@@ -158,12 +164,12 @@ Java.perform(function() {
     exec2.implementation = function(cmd, env) {
         if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id" || cmd == "sh") {
             var fakeCmd = "grep";
-            send("Bypass " + cmd + " command");
+            send("[RootDetection Bypass] Bypass command [" + cmd + "]");
             return exec1.call(this, fakeCmd);
         }
         if (cmd == "su") {
             var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
-            send("Bypass " + cmd + " command");
+            send("[RootDetection Bypass] Bypass command [" + cmd + "]");
             return exec1.call(this, fakeCmd);
         }
         return exec2.call(this, cmd, env);
@@ -174,13 +180,13 @@ Java.perform(function() {
             var tmp_cmd = cmd[i];
             if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id" || tmp_cmd == "sh") {
                 var fakeCmd = "grep";
-                send("Bypass " + cmd + " command");
+                send("[RootDetection Bypass] Bypass command [" + cmd + "]");
                 return exec1.call(this, fakeCmd);
             }
 
             if (tmp_cmd == "su") {
                 var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
-                send("Bypass " + cmd + " command");
+                send("[RootDetection Bypass] Bypass command [" + cmd + "]");
                 return exec1.call(this, fakeCmd);
             }
         }
@@ -191,34 +197,40 @@ Java.perform(function() {
     exec1.implementation = function(cmd) {
         if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id" || cmd == "sh") {
             var fakeCmd = "grep";
-            send("Bypass " + cmd + " command");
+            send("[RootDetection Bypass] Bypass command [" + cmd + "]");
             return exec1.call(this, fakeCmd);
         }
         if (cmd == "su") {
             var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
-            send("Bypass " + cmd + " command");
+            send("[RootDetection Bypass] Bypass command [" + cmd + "]");
             return exec1.call(this, fakeCmd);
         }
         return exec1.call(this, cmd);
     };
 
+
+
     String.contains.implementation = function(name) {
         if (name == "test-keys") {
-            send("Bypass test-keys check");
+            send("[RootDetection Bypass] Bypass test-keys check");
             return false;
         }
         return this.contains.call(this, name);
     };
 
+
+
     var get = SystemProperties.get.overload('java.lang.String');
 
     get.implementation = function(name) {
         if (RootPropertiesKeys.indexOf(name) != -1) {
-            send("Bypass " + name);
+            send("[RootDetection Bypass] Bypass " + name);
             return RootProperties[name];
         }
         return this.get.call(this, name);
     };
+
+
 
     Interceptor.attach(Module.findExportByName("libc.so", "fopen"), {
         onEnter: function(args) {
@@ -228,7 +240,7 @@ Java.perform(function() {
             var shouldFakeReturn = (RootBinaries.indexOf(executable) > -1)
             if (shouldFakeReturn) {
                 Memory.writeUtf8String(args[0], "/notexists");
-                send("Bypass native fopen");
+                send("[RootDetection Bypass] Bypass native fopen");
             }
         },
         onLeave: function(retval) {
@@ -241,11 +253,11 @@ Java.perform(function() {
             var cmd = Memory.readCString(args[0]);
             send("SYSTEM CMD: " + cmd);
             if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id") {
-                send("Bypass native system: " + cmd);
+                send("[RootDetection Bypass] Bypass native system: " + cmd);
                 Memory.writeUtf8String(args[0], "grep");
             }
             if (cmd == "su") {
-                send("Bypass native system: " + cmd);
+                send("[RootDetection Bypass] Bypass native system: " + cmd);
                 Memory.writeUtf8String(args[0], "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled");
             }
         },
@@ -279,7 +291,7 @@ Java.perform(function() {
         } else {
             var shouldFakeRead = (text.indexOf("ro.build.tags=test-keys") > -1);
             if (shouldFakeRead) {
-                send("Bypass build.prop file read");
+                send("[RootDetection Bypass] Bypass build.prop file read");
                 text = text.replace("ro.build.tags=test-keys", "ro.build.tags=release-keys");
             }
         }
@@ -298,18 +310,20 @@ Java.perform(function() {
             }
         }
         if (shouldModifyCommand) {
-            send("Bypass ProcessBuilder " + cmd);
+            send("[RootDetection Bypass] Bypass ProcessBuilder " + cmd);
             this.command.call(this, ["grep"]);
             return this.start.call(this);
         }
         if (cmd.indexOf("su") != -1) {
-            send("Bypass ProcessBuilder " + cmd);
+            send("[RootDetection Bypass] Bypass ProcessBuilder " + cmd);
             this.command.call(this, ["justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled"]);
             return this.start.call(this);
         }
 
         return this.start.call(this);
     };
+
+
 
     if (useProcessManager) {
         var ProcManExec = ProcessManager.exec.overload('[Ljava.lang.String;', '[Ljava.lang.String;', 'java.io.File', 'boolean');
@@ -321,12 +335,12 @@ Java.perform(function() {
                 var tmp_cmd = cmd[i];
                 if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id") {
                     var fake_cmd = ["grep"];
-                    send("Bypass " + cmdarr + " command");
+                    send("[RootDetection Bypass] Bypass " + cmdarr + " command");
                 }
 
                 if (tmp_cmd == "su") {
                     var fake_cmd = ["justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled"];
-                    send("Bypass " + cmdarr + " command");
+                    send("[RootDetection Bypass] Bypass " + cmdarr + " command");
                 }
             }
             return ProcManExec.call(this, fake_cmd, env, workdir, redirectstderr);
@@ -338,12 +352,12 @@ Java.perform(function() {
                 var tmp_cmd = cmd[i];
                 if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id") {
                     var fake_cmd = ["grep"];
-                    send("Bypass " + cmdarr + " command");
+                    send("[RootDetection Bypass] Bypass " + cmdarr + " command");
                 }
 
                 if (tmp_cmd == "su") {
                     var fake_cmd = ["justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled"];
-                    send("Bypass " + cmdarr + " command");
+                    send("[RootDetection Bypass] Bypass " + cmdarr + " command");
                 }
             }
             return ProcManExecVariant.call(this, fake_cmd, env, directory, stdin, stdout, stderr, redirect);
@@ -352,7 +366,7 @@ Java.perform(function() {
 
     if (useKeyInfo) {
         KeyInfo.isInsideSecureHardware.implementation = function() {
-            send("Bypass isInsideSecureHardware");
+            send("[RootDetection Bypass] Bypass isInsideSecureHardware");
             return true;
         }
     }
