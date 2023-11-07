@@ -35,6 +35,9 @@ from mobsf.MobSF.utils import (
     print_n_send_error_response,
     read_sqlite,
 )
+from mobsf.DynamicAnalyzer.views.android.scoring import (
+    scoring
+)
 
 
 logger = logging.getLogger(__name__)
@@ -124,6 +127,13 @@ def view_report(request, checksum, api=False):
         else:
             log_analysis = None
 
+        # Frida Log scoring system
+        mobsf_frida_out_file = os.path.join(app_dir, 'mobsf_frida_out.txt')
+        if is_file_exists(mobsf_frida_out_file):
+            malware_score = scoring(mobsf_frida_out_file)
+        else:
+            malware_score = None
+
         context = {'hash': checksum,
                    'emails': analysis_result['emails'],
                    'urls': analysis_result['urls'],
@@ -145,7 +155,9 @@ def view_report(request, checksum, api=False):
                    'package': package,
                    'version': settings.MOBSF_VER,
                    'title': 'Dynamic Analysis',
-                   'log_analysis': log_analysis}
+                   'log_analysis': log_analysis,
+                   'high_risk_score': malware_score['high_risk_score'],
+                   'suspicious_score': malware_score['suspicious_score']}
         template = 'dynamic_analysis/android/dynamic_report.html'
         if api:
             return context
