@@ -41,27 +41,27 @@ Java.perform(function () {
 
     secretKeySpecDef_init_1.implementation = function (arr, alg) {
         var key = b2s(arr);
-        send("--------------------\n[Encryption] Creating " + alg + " secret key, plaintext: " + (CONFIG.keyHexDump ? ("\n" + hexdump(key)) : key));
+        send("[Encryption] Creating " + alg + " secret key, plaintext: " + (CONFIG.keyHexDump ? ("\n" + hexdump(key)) : key));
         return secretKeySpecDef_init_1.call(this, arr, alg);
     }
 
     secretKeySpecDef_init_2.implementation = function (arr, off, len, alg) {
         var key = b2s(arr);
-        send("--------------------\n[Encryption] Creating " + alg + " secret key, plaintext: " + (CONFIG.keyHexDump ? ("\n" + hexdump(key)) : key));
+        send("[Encryption] Creating " + alg + " secret key, plaintext: " + (CONFIG.keyHexDump ? ("\n" + hexdump(key)) : key));
         return secretKeySpecDef_init_2.call(this, arr, off, len, alg);
     }
 
     ivParameterSpecDef_init_1.implementation = function(arr)
     {
         var iv = b2s(arr);
-        send("--------------------\n[Encryption] Creating IV: " + (CONFIG.ivHexDump ? ("\n" + hexdump(key)) : key));
+        send("[Encryption] Creating IV: " + (CONFIG.ivHexDump ? ("\n" + hexdump(key)) : key));
         return ivParameterSpecDef_init_1.call(this, arr);
     }
 
     ivParameterSpecDef_init_2.implementation = function(arr, off, len)
     {
         var iv = b2s(arr);
-        send("--------------------\n[Encryption] Creating IV, plaintext: " + (CONFIG.ivHexDump ? ("\n" + hexdump(key)) : key));
+        send("[Encryption] Creating IV, plaintext: " + (CONFIG.ivHexDump ? ("\n" + hexdump(key)) : key));
         return ivParameterSpecDef_init_2.call(this, arr, off, len);
     }
 
@@ -129,11 +129,11 @@ Java.perform(function () {
 
     // Formatting functions
     function info(iv, alg, plain, encoded) {
-        send("--------------------\n[Encryption] Performing encryption/decryption" + 
-        (iv ? ("\n[Encryption] Initialization Vector: \n" + hexdump(b2s(iv))) : ("\n[Encryption] Initialization Vector: " + iv)) + 
-        "\n[Encryption] Algorithm: " + alg + 
-        "\n[Encryption] In: \n" + (CONFIG.operationInput ? hexdump(b2s(plain)) : b2s(plain)) + 
-        "\n[Encryption] Out: \n" + (CONFIG.operationOutput ? hexdump(b2s(encoded)) : b2s(encoded)));
+        send("[Encryption] Performing encryption/decryption" + 
+        (iv ? ("\nInitialization Vector: \n" + hexdump(b2s(iv))) : ("\nInitialization Vector: " + iv)) + 
+        "\nAlgorithm: " + alg + 
+        "\nIn: \n" + (CONFIG.operationInput ? hexdump(b2s(plain)) : b2s(plain)) + 
+        "\nOut: \n" + (CONFIG.operationOutput ? hexdump(b2s(encoded)) : b2s(encoded)));
         complete_bytes = [];
         index = 0;
     }

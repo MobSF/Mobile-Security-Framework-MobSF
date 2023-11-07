@@ -1,3 +1,5 @@
+// Code Adapted from dzonerzy fridantiroot at https://codeshare.frida.re/@dzonerzy/fridantiroot/
+
 /*
 Original author: Daniele Linguaglossa
 28/07/2021 -    Edited by Simone Quatrini
@@ -52,7 +54,7 @@ Java.perform(function() {
 
     var useProcessManager = false;
 
-    send("loaded: " + loaded_classes.indexOf('java.lang.ProcessManager'));
+    //send("loaded: " + loaded_classes.indexOf('java.lang.ProcessManager'));
 
     if (loaded_classes.indexOf('java.lang.ProcessManager') != -1) {
         try {
@@ -130,13 +132,13 @@ Java.perform(function() {
             var tmp_cmd = cmdarr[i];
             if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id" || tmp_cmd == "sh") {
                 var fakeCmd = "grep";
-                send("[RootDetection Bypass] Bypass command [" + cmd + "]");
+                send("[RootDetection Bypass] Bypass command [" + cmdarr.join(' ') + "]");
                 return exec1.call(this, fakeCmd);
             }
 
             if (tmp_cmd == "su") {
                 var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
-                send("[RootDetection Bypass] Bypass command [" + cmd + "]");
+                send("[RootDetection Bypass] Bypass command [" + cmdarr.join(' ') + "]");
                 return exec1.call(this, fakeCmd);
             }
         }
@@ -148,13 +150,13 @@ Java.perform(function() {
             var tmp_cmd = cmdarr[i];
             if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id" || tmp_cmd == "sh") {
                 var fakeCmd = "grep";
-                send("[RootDetection Bypass] Bypass command [" + cmd + "]");
+                send("[RootDetection Bypass] Bypass command [" + cmdarr.join(' ') + "]");
                 return exec1.call(this, fakeCmd);
             }
 
             if (tmp_cmd == "su") {
                 var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
-                send("[RootDetection Bypass] Bypass command [" + cmd + "]");
+                send("[RootDetection Bypass] Bypass command [" + cmdarr.join(' ') + "]");
                 return exec1.call(this, fakeCmd);
             }
         }

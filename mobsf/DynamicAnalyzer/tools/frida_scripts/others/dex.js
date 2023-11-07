@@ -4,6 +4,7 @@ Java.perform(function() {
     var CONFIG = {
         // if TRUE print stack trace
         printStackTrace: false,
+        // if TRUE print dex file contents
         dump_files: true,
     };
 
@@ -15,7 +16,7 @@ Java.perform(function() {
 
 
     dalvikDexClassLoader.$init.implementation = function (dexPath, optimizedDirectory, librarySearchPath, parent) {
-        send("[+] DexClassLoader Catched -> " + dexPath + "," + optimizedDirectory + "," + librarySearchPath + "," + parent);
+        send("[DexClassLoader] DexClassLoader Catched -> " + dexPath + "," + optimizedDirectory + "," + librarySearchPath + "," + parent);
         //if (CONFIG.dump_files) {b2s(buffer);}
         if (CONFIG.printStackTrace) {stackTrace();}
         return this.$init(dexPath, optimizedDirectory, librarySearchPath, parent);
