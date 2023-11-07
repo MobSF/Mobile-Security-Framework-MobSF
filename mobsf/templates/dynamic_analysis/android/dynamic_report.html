@@ -307,10 +307,8 @@
               <strong><i class="fas fa-file-alt"></i> Malware Score</strong>
             </p>
             <div class="list-group">
-              <pre>{{ high_risk_score }}</pre>
-            </div>
-            <div class="list-group">
-              <pre>{{ suspicious_score }}</pre>
+              <pre>Critical Behaviours Detected: {{ critical_score }} / {{ critical_score_max }}</pre>
+              <pre>Suspicious Behavious Detected: {{ suspicious_score }} / {{ suspicious_score_max }}</pre>
             </div>
           </div>
         </div><!-- /.card -->

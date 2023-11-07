@@ -156,8 +156,10 @@ def view_report(request, checksum, api=False):
                    'version': settings.MOBSF_VER,
                    'title': 'Dynamic Analysis',
                    'log_analysis': log_analysis,
-                   'high_risk_score': malware_score['high_risk_score'],
-                   'suspicious_score': malware_score['suspicious_score']}
+                   'critical_score': malware_score['critical_score'],
+                   'critical_score_max': malware_score['critical_score_max'],
+                   'suspicious_score': malware_score['suspicious_score'],
+                   'suspicious_score_max': malware_score['suspicious_score_max']}
         template = 'dynamic_analysis/android/dynamic_report.html'
         if api:
             return context
