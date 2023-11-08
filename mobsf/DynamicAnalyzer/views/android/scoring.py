@@ -1,4 +1,5 @@
 import logging
+import math
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,9 @@ def scoring(file_path: str):
     critical_score = combine(critical_score)
     suspicious_score = combine(suspicious_score)
 
-    return {'critical_score': critical_score[0], 'critical_score_max': critical_score[1], 'suspicious_score': suspicious_score[0], 'suspicious_score_max': suspicious_score[1]}
+    malware_score = malware_scoring(critical_score, suspicious_score)
+
+    return {'malware_score': malware_score,'critical_score': critical_score[0], 'critical_score_max': critical_score[1], 'suspicious_score': suspicious_score[0], 'suspicious_score_max': suspicious_score[1]}
 
 
 
@@ -63,6 +66,10 @@ def systemChecksScoring(logs) -> tuple[int, int]:
     return 0, 1
 
 
+
+def malware_scoring(critical_score: tuple[int, int], suspicious_score):
+    malware_score = round(100 * (1 - (math.exp(-critical_score[0])) + (math.exp(-critical_score[0]) * suspicious_score[0] / suspicious_score [1])), 2)
+    return malware_score
 
 def combine(score_list) -> tuple[int, int]:
     score = 0

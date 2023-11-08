@@ -156,6 +156,7 @@ def view_report(request, checksum, api=False):
                    'version': settings.MOBSF_VER,
                    'title': 'Dynamic Analysis',
                    'log_analysis': log_analysis,
+                   'malware_score': malware_score['malware_score'],
                    'critical_score': malware_score['critical_score'],
                    'critical_score_max': malware_score['critical_score_max'],
                    'suspicious_score': malware_score['suspicious_score'],
