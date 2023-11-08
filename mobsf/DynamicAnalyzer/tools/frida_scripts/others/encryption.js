@@ -54,14 +54,14 @@ Java.perform(function () {
     ivParameterSpecDef_init_1.implementation = function(arr)
     {
         var iv = b2s(arr);
-        send("[Encryption] Creating IV: " + (CONFIG.ivHexDump ? ("\n" + hexdump(key)) : key));
+        send("[Encryption] Creating IV: " + (CONFIG.ivHexDump ? ("\n" + hexdump(iv)) : iv));
         return ivParameterSpecDef_init_1.call(this, arr);
     }
 
     ivParameterSpecDef_init_2.implementation = function(arr, off, len)
     {
         var iv = b2s(arr);
-        send("[Encryption] Creating IV, plaintext: " + (CONFIG.ivHexDump ? ("\n" + hexdump(key)) : key));
+        send("[Encryption] Creating IV, plaintext: " + (CONFIG.ivHexDump ? ("\n" + hexdump(iv)) : iv));
         return ivParameterSpecDef_init_2.call(this, arr, off, len);
     }
 
