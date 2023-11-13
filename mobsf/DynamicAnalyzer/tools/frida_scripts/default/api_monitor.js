@@ -443,11 +443,12 @@ var apis = [{
 //     method: 'encodeToString',
 //     name: 'Base64'
 // }, 
+// {
+//     class: 'android.app.ApplicationPackageManager',
+//     method: 'setComponentEnabledSetting',
+//     name: 'System Manager'
+// },
 {
-    class: 'android.app.ApplicationPackageManager',
-    method: 'setComponentEnabledSetting',
-    name: 'System Manager'
-}, {
     class: 'android.app.NotificationManager',
     method: 'notify',
     name: 'System Manager'
@@ -499,15 +500,17 @@ var apis = [{
     class: 'android.location.Location',
     method: 'getLongitude',
     name: 'Device Data'
-}, {
-    class: 'android.media.AudioRecord',
-    method: 'startRecording',
-    name: 'Device Data'
-}, {
-    class: 'android.media.MediaRecorder',
-    method: 'start',
-    name: 'Device Data'
-}, {
+},
+// {
+//     class: 'android.media.AudioRecord',
+//     method: 'startRecording',
+//     name: 'Device Data'
+// },{
+//     class: 'android.media.MediaRecorder',
+//     method: 'start',
+//     name: 'Device Data'
+// },
+{
     class: 'android.os.SystemProperties',
     method: 'get',
     name: 'Device Data'

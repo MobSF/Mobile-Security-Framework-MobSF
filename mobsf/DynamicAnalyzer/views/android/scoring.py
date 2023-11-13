@@ -12,12 +12,14 @@ def scoring(file_path: str):
     # High risk api calls scoring
     critical_score.append(rootDetectionScoring(logs))
     critical_score.append(debuggerCheckBypassScoring(logs))
+    critical_score.append(hideAppIconScoring(logs))
 
     # Suspricious api calls scoring
     suspicious_score.append(dexScoring(logs))
     suspicious_score.append(systemChecksScoring(logs))
     suspicious_score.append(encodingScoring(logs))
     suspicious_score.append(encryptionScoring(logs))
+    suspicious_score.append(mediaRecorderScoring(logs))
 
     # Combining Scores
     critical_score = combine(critical_score)
@@ -29,40 +31,58 @@ def scoring(file_path: str):
 
 
 
-def rootDetectionScoring(logs) -> tuple[int, int]:
+def rootDetectionScoring(logs: list[str]) -> tuple[int, int]:
     for line in logs:
         if "[RootDetection Bypass]" in line:
             return 1, 1
     return 0, 1
 
-def debuggerCheckBypassScoring(logs) -> tuple[int, int]:
+def debuggerCheckBypassScoring(logs: list[str]) -> tuple[int, int]:
     for line in logs:
         if "[Debugger Check Bypass]" in line:
             return 1, 1
     return 0, 1
 
-def dexScoring(logs) -> tuple[int, int]:
+def dexScoring(logs: list[str]) -> tuple[int, int]:
     for line in logs:
         if "[DexClassLoader]" in line:
             return 1, 1
     return 0, 1
 
-def encodingScoring(logs) -> tuple[int, int]:
+def encodingScoring(logs: list[str]) -> tuple[int, int]:
     for line in logs:
         if "[Base64]" in line:
             return 1, 1
     return 0, 1
 
-def encryptionScoring(logs) -> tuple[int, int]:
+def encryptionScoring(logs: list[str]) -> tuple[int, int]:
     for line in logs:
         if "[Encryption]" in line:
             return 1, 1
     return 0, 1
 
-def systemChecksScoring(logs) -> tuple[int, int]:
+def systemChecksScoring(logs: list[str]) -> tuple[int, int]:
     for line in logs:
         if "[System Check]" in line:
+            return 1, 1
+    return 0, 1
+
+def mediaRecorderScoring(logs: list[str]) -> tuple[int, int]:
+    count = 0
+    for line in logs:
+        if "[Media Recorder.Audio]" or "[Audio Record]" in line:
             count += 1
+            break
+    for line in logs:
+        if "[Media Recorder.Video]" in line:
+            count += 1
+            break
+    return count, 2
+
+def hideAppIconScoring(logs: list[str]) -> tuple[int, int]:
+    for line in logs:
+        if "[Hide App]" in line:
+            return 1, 1
     return 0, 1
 
 
