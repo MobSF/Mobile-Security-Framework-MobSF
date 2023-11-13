@@ -114,7 +114,7 @@ Java.perform(function() {
     var exec5 = Runtime.exec.overload('java.lang.String', '[Ljava.lang.String;', 'java.io.File');
 
     exec5.implementation = function(cmd, env, dir) {
-        if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id" || cmd == "sh") {
+        if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id") {
             var fakeCmd = "grep";
             send("[RootDetection Bypass] Bypass command [" + cmd + "]");
             return exec1.call(this, fakeCmd);
@@ -124,13 +124,16 @@ Java.perform(function() {
             send("[RootDetection Bypass] Bypass command [" + cmd + "]");
             return exec1.call(this, fakeCmd);
         }
+        if (cmd.includes("ps")) {
+            send("[List Processes] Command [" + cmd + "]");
+        }
         return exec5.call(this, cmd, env, dir);
     };
 
     exec4.implementation = function(cmdarr, env, file) {
         for (var i = 0; i < cmdarr.length; i = i + 1) {
             var tmp_cmd = cmdarr[i];
-            if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id" || tmp_cmd == "sh") {
+            if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id") {
                 var fakeCmd = "grep";
                 send("[RootDetection Bypass] Bypass command [" + cmdarr.join(' ') + "]");
                 return exec1.call(this, fakeCmd);
@@ -140,6 +143,11 @@ Java.perform(function() {
                 var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
                 send("[RootDetection Bypass] Bypass command [" + cmdarr.join(' ') + "]");
                 return exec1.call(this, fakeCmd);
+            }
+
+            if (tmp_cmd.includes("ps")) {
+                send("[List Processes] Command [" + cmdarr.join(' ') + "]");
+                return exec4.call(this, cmdarr, env, file);
             }
         }
         return exec4.call(this, cmdarr, env, file);
@@ -148,7 +156,7 @@ Java.perform(function() {
     exec3.implementation = function(cmdarr, envp) {
         for (var i = 0; i < cmdarr.length; i = i + 1) {
             var tmp_cmd = cmdarr[i];
-            if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id" || tmp_cmd == "sh") {
+            if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id") {
                 var fakeCmd = "grep";
                 send("[RootDetection Bypass] Bypass command [" + cmdarr.join(' ') + "]");
                 return exec1.call(this, fakeCmd);
@@ -158,6 +166,11 @@ Java.perform(function() {
                 var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
                 send("[RootDetection Bypass] Bypass command [" + cmdarr.join(' ') + "]");
                 return exec1.call(this, fakeCmd);
+            }
+
+            if (tmp_cmd.includes("ps")) {
+                send("[List Processes] Command [" + cmdarr.join(' ') + "]");
+                return exec3.call(this, cmdarr, envp);
             }
         }
         return exec3.call(this, cmdarr, envp);
@@ -169,43 +182,58 @@ Java.perform(function() {
             send("[RootDetection Bypass] Bypass command [" + cmd + "]");
             return exec1.call(this, fakeCmd);
         }
+
         if (cmd == "su") {
             var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
             send("[RootDetection Bypass] Bypass command [" + cmd + "]");
             return exec1.call(this, fakeCmd);
         }
+
+        if (cmd.includes("ps")) {
+            send("[List Processes] Command [" + cmd + "]");
+        }
         return exec2.call(this, cmd, env);
     };
 
-    exec.implementation = function(cmd) {
-        for (var i = 0; i < cmd.length; i = i + 1) {
-            var tmp_cmd = cmd[i];
-            if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id" || tmp_cmd == "sh") {
+    exec.implementation = function(cmdarr) {
+        for (var i = 0; i < cmdarr.length; i = i + 1) {
+            var tmp_cmd = cmdarr[i];
+            if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id") {
                 var fakeCmd = "grep";
-                send("[RootDetection Bypass] Bypass command [" + cmd + "]");
+                send("[RootDetection Bypass] Bypass command [" + cmdarr.join(' ') + "]");
                 return exec1.call(this, fakeCmd);
             }
 
             if (tmp_cmd == "su") {
                 var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
-                send("[RootDetection Bypass] Bypass command [" + cmd + "]");
+                send("[RootDetection Bypass] Bypass command [" + cmdarr.join(' ') + "]");
                 return exec1.call(this, fakeCmd);
+            }
+
+            if (tmp_cmd.includes("ps")) {
+                send("[List Processes] Command [" + cmdarr.join(' ') + "]");
+                return exec.call(this, cmdarr);
             }
         }
 
-        return exec.call(this, cmd);
+        return exec.call(this, cmdarr);
     };
 
     exec1.implementation = function(cmd) {
-        if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id" || cmd == "sh") {
+        if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id") {
             var fakeCmd = "grep";
             send("[RootDetection Bypass] Bypass command [" + cmd + "]");
             return exec1.call(this, fakeCmd);
         }
+
         if (cmd == "su") {
             var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
             send("[RootDetection Bypass] Bypass command [" + cmd + "]");
             return exec1.call(this, fakeCmd);
+        }
+
+        if (cmd.includes("ps")) {
+            send("[List Processes] Command [" + cmd + "]");
         }
         return exec1.call(this, cmd);
     };
