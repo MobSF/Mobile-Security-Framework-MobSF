@@ -468,11 +468,13 @@ var apis = [{
     class: 'android.telephony.SmsManager',
     method: 'sendMultipartTextMessage',
     name: 'SMS'
-}, {
-    class: 'android.content.ContentResolver',
-    method: 'query',
-    name: 'Device Data'
-}, {
+},
+// {
+//     class: 'android.content.ContentResolver',
+//     method: 'query',
+//     name: 'Device Data'
+// },
+{
     class: 'android.content.ContentResolver',
     method: 'registerContentObserver',
     name: 'Device Data'
