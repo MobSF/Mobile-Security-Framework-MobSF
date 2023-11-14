@@ -9,15 +9,15 @@ Java.perform(function() {
 
 
     // Spoofed Data
-    phoneNumber = '+49 1522 343333';
-    IMEINumber = '35253108' + '852947' + '2';
-    SIMOperatorCode = '049' + '262';
-    SIMOperatorName = 'Vodafone';
-    countryCode = 'deu';
-    bluetoothMACAddress = 'F7:B0:AB:E9:2B:B1';
-    wifiMACAddress = 'EB:FD:C5:32:9D:75';
-    routerMACAddress = '84:29:CD:A7:35:BA';
-    wifiSSID = 'CorporateNetwork01';
+    var phoneNumber = '+49 1522 343333';
+    var IMEINumber = '35253108' + '852947' + '2';
+    var SIMOperatorCode = '049' + '262';
+    var SIMOperatorName = 'Vodafone';
+    var countryCode = 'deu';
+    var bluetoothMACAddress = 'F7:B0:AB:E9:2B:B1';
+    var wifiMACAddress = 'EB:FD:C5:32:9D:75';
+    var routerMACAddress = '84:29:CD:A7:35:BA';
+    var wifiSSID = 'CorporateNetwork01';
 
 
 
@@ -33,7 +33,7 @@ Java.perform(function() {
     // BUILD Get Serial Number
     build.getSerial.implementation = function() {
         serialNumber = this.getSerial();
-        send('[System Check] Application checking for OS serial, returning -> ' + serialNumber);
+        send('[SystemCheck.DeviceSerial] Application checking for Device serial, returning -> ' + serialNumber);
         if (CONFIG.printStackTrace) {stackTrace();}
         return serialNumber;
     };
@@ -42,7 +42,7 @@ Java.perform(function() {
 
     // Telephony Manager Get Phone Number
     telephonyManager.getLine1Number.overloads[0].implementation = function() {
-        send('[System Check] Application checking for Phone Number, returning -> ' + phoneNumber);
+        send('[SystemCheck.PhoneNumber] Application checking for Phone Number, returning -> ' + phoneNumber);
         if (CONFIG.printStackTrace) {stackTrace();}
         return phoneNumber;
     };
@@ -50,50 +50,50 @@ Java.perform(function() {
     // Telephony Manager Get Subscriber ID (IMSI)
     telephonyManager.getSubscriberId.overload().implementation = function() {
         exception = securityExecption.$init();
-        send('[System Check] Application checking for Subscriber ID, returning -> ' + exception);
+        send('[SystemCheck.SubscriberID] Application checking for Subscriber ID, returning -> ' + exception);
         if (CONFIG.printStackTrace) {stackTrace();}
         return exception;
     };
 
     // Telephony Manager Get Device ID (IMEI)
     telephonyManager.getDeviceId.overloads().implementation = function() {
-        console.log('[i] Application asks for device IMEI, returning -> ' + IMEINumber);
+        send('[SystemCheck.IMEI] Application asks for device IMEI, returning -> ' + IMEINumber);
         if (CONFIG.printStackTrace) {stackTrace();}
         return IMEINumber;
     };
     telephonyManager.getDeviceId.overloads('int').implementation = function(slot) {
-        console.log('[i] Application asks for device IMEI, returning -> ' + IMEINumber);
+        send('[SystemCheck.IMEI] Application asks for device IMEI, returning -> ' + IMEINumber);
         if (CONFIG.printStackTrace) {stackTrace();}
         return IMEINumber;
     };
 
     // Telephony Manager Get IMEI Number
     telephonyManager.getImei.overloads[0].implementation = function() {
-        send('[System Check] Application checking for device IMEI, returning -> ' + IMEINumber);
+        send('[SystemCheck.IMEI] Application checking for device IMEI, returning -> ' + IMEINumber);
         if (CONFIG.printStackTrace) {stackTrace();}
         return IMEINumber;
     };
     telephonyManager.getImei.overloads[1].implementation = function(slot) {
-        send('[System Check] Application checking for device IMEI, returning -> ' + IMEINumber);
+        send('[SystemCheck.IMEI] Application checking for device IMEI, returning -> ' + IMEINumber);
         if (CONFIG.printStackTrace) {stackTrace();}
         return IMEINumber;
     };
 
     // Telephony Manager Get SIM Operator
     telephonyManager.getSimOperator.overload().implementation = function() {
-        send('[System Check] Application checking for SIM operator, returning -> ' + SIMOperatorCode);
+        send('[SystemCheck.SIMOperator] Application checking for SIM operator, returning -> ' + SIMOperatorCode);
         if (CONFIG.printStackTrace) {stackTrace();}
         return SIMOperatorCode;
     };
     telephonyManager.getSimOperator.overload('int').implementation = function(sm) {
-        send('[System Check] Applicaiton checking for SIM operator, returning -> ' + SIMOperatorCode);
+        send('[SystemCheck.SIMOperator] Applicaiton checking for SIM operator, returning -> ' + SIMOperatorCode);
         if (CONFIG.printStackTrace) {stackTrace();}
         return SIMOperatorCode;
     };
 
     // Telephony Manager Get SIM Operator Name
     telephonyManager.getSimOperatorName.overload().implementation = function() {
-        send('[System Check] Application checking for SIM operator name, returning -> ' + SIMOperatorName);
+        send('[SystemCheck.SIMOperatorName] Application checking for SIM operator name, returning -> ' + SIMOperatorName);
         if (CONFIG.printStackTrace) {stackTrace();}
         return SIMOperatorName;
     };
@@ -101,26 +101,26 @@ Java.perform(function() {
     // Telephony Manager Get SIM Serial Number
     telephonyManager.getSimSerialNumber.overload().implementation = function() {
         exception = securityExecption.$init();
-        send('[System Check] Application checking for SIM Serial Number, returning -> ' + exception);
+        send('[SystemCheck.SIMSerial] Application checking for SIM Serial Number, returning -> ' + exception);
         if (CONFIG.printStackTrace) {stackTrace();}
         return exception;
     }
 
     // Telephony Manager Get SIM Country ISO
     telephonyManager.getSimCountryIso.overload().implementation = function() {
-        send('[System Check] Application checking for SIM Country ISO, returning -> ' + countryCode);
+        send('[SystemCheck.Country] Application checking for SIM Country ISO, returning -> ' + countryCode);
         if (CONFIG.printStackTrace) {stackTrace();}
         return countryCode;
     };
 
     // Telephony Manager Get Network Country ISO
     telephonyManager.getNetworkCountryIso.overload().implementation = function() {
-        send('[System Check] Application checking for Network Country ISO, returning -> ' + countryCode);
+        send('[SystemCheck.Country] Application checking for Network Country ISO, returning -> ' + countryCode);
         if (CONFIG.printStackTrace) {stackTrace();}
         return countryCode;
     };
     telephonyManager.getNetworkCountryIso.overload('int').implementation = function() {
-        send('[System Check] Application checking for Network Country ISO, returning -> ' + countryCode);
+        send('[SystemCheck.Country] Application checking for Network Country ISO, returning -> ' + countryCode);
         if (CONFIG.printStackTrace) {stackTrace();}
         return countryCode;
     };
@@ -129,7 +129,7 @@ Java.perform(function() {
 
     // Bluetooth Addapter Get MAC Address
     bluetoothAdapter.getAddress.implementation = function() {
-        send('[System Check] Application chekcing Bluetooth MAC Address, returning -> ' + bluetoothMACAddress);
+        send('[NetworkCheck.BluetoothMAC] Application chekcing Bluetooth MAC Address, returning -> ' + bluetoothMACAddress);
         if (CONFIG.printStackTrace) {stackTrace();}
         return bluetoothMACAddress;
     };
@@ -138,21 +138,21 @@ Java.perform(function() {
 
     // Wifi Info Get MAC Address
     wifiInfo.getMacAddress.implementation = function() {
-        send('[System Check] Application checking Wifi MAC Address, returning -> ' + wifiMACAddress);
+        send('[NetworkCheck.WifiMAC] Application checking Wifi MAC Address, returning -> ' + wifiMACAddress);
         if (CONFIG.printStackTrace) {stackTrace();}
         return wifiMACAddress;
     };
 
     // Wifi Info Get SSID
     wifiInfo.getSSID.implementation = function() {
-        send('[System Check] Applicaiton checking Wifi SSID, returning -> ' + wifiSSID);
+        send('[NetworkCheck.WifiSSID] Applicaiton checking Wifi SSID, returning -> ' + wifiSSID);
         if (CONFIG.printStackTrace) {stackTrace();}
         return wifiSSID;
     };
 
     // Wifi Info Get Router MAC Address
     wifiInfo.getBSSID.implementation = function() {
-        send('[System Check] Application checking Router MAC Address, returning -> ' + routerMACAddress);
+        send('[NetworkCheck.RouterMAC] Application checking Router MAC Address, returning -> ' + routerMACAddress);
         if (CONFIG.printStackTrace) {stackTrace();}
         return routerMACAddress;
     };

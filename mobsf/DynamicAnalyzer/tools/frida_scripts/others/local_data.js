@@ -39,13 +39,13 @@ Java.perform(function() {
     }
     function ContentType(uri) {
         if (uri === 'content://com.android.contacts/contacts') {
-            send("[Access Contacts] Application Accessing Contacts from -> content://com.android.contacts/contacts");
+            send("[Access.Contacts] Application Accessing Contacts from -> content://com.android.contacts/contacts");
             if (CONFIG.printStackTrace) {stackTrace();}
         } else if (uri === 'content://call_log/calls') {
-            send("[Access Call Logs] Application Accessing Call Logs from -> content://call_log/calls");
+            send("[Access.CallLogs] Application Accessing Call Logs from -> content://call_log/calls");
             if (CONFIG.printStackTrace) {stackTrace();}
         } else if (uri === 'content://sms/') {
-            send("[Access Call Logs] Application Accessing Call Logs from -> content://call_log/calls");
+            send("[Access.SMS] Application Accessing Call Logs from -> content://sms/");
             if (CONFIG.printStackTrace) {stackTrace();}
         }
     }

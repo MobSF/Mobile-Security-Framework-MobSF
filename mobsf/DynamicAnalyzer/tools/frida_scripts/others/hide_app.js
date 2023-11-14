@@ -17,7 +17,7 @@ Java.perform(function() {
     // Hide Application (Application Pacakge Manager)
     applicationPackageManager.setComponentEnabledSetting.overload('android.content.ComponentName', 'int', 'int').implementation = function (componentName, newState, flags) {
         if (newState === 2 && flags === 1) {
-            send("[Hide App] Hidding Application");
+            send("[HideApp] Hidding Application");
             if (CONFIG.printStackTrace) {stackTrace();}
         }
         return this.setComponentEnabledSetting(componentName, newState, flags);
@@ -26,7 +26,7 @@ Java.perform(function() {
     // Hide Application (Package Manager)
     packageManager.setComponentEnabledSetting.overload('android.content.ComponentName', 'int', 'int').implementation = function (componentName, newState, flags) {
         if (newState === 2 && flags === 1) {
-            send("[Hide App] Hidding Application");
+            send("[HideApp] Hidding Application");
             if (CONFIG.printStackTrace) {stackTrace();}
         }
         return this.setComponentEnabledSetting(componentName, newState, flags);

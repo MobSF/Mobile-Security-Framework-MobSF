@@ -37,6 +37,12 @@ def rootDetectionScoring(logs: list[str]) -> tuple[int, int]:
             return 1, 1
     return 0, 1
 
+def listProcessScoring(logs: list[str]) -> tuple[int, int]:
+    for line in logs:
+        if "[List Processes]" in line:
+            return 1, 1
+    return 0, 1
+
 def debuggerCheckBypassScoring(logs: list[str]) -> tuple[int, int]:
     for line in logs:
         if "[Debugger Check Bypass]" in line:
@@ -62,28 +68,92 @@ def encryptionScoring(logs: list[str]) -> tuple[int, int]:
     return 0, 1
 
 def systemChecksScoring(logs: list[str]) -> tuple[int, int]:
+    filteredLogs = list[str]
+    deviceSerial = False
+    phoneNumber = False
+    subscriberId = False
+    imei = False
+    simOperator = False
+    simOperatorName = False
+    simSerial = False
+    country = False
+    bluetoothMAC = False
+    wifiMAC = False
+    wifiSSID = False
+    routerMAC = False
+
     for line in logs:
-        if "[System Check]" in line:
-            return 1, 1
-    return 0, 1
+        if "[System Check" in line:
+            filteredLogs.append(line)
+
+    for line in filteredLogs:
+        if "[SystemCheck.DeviceSerial]" in line:
+            deviceSerial = True
+        elif "[SystemCheck.PhoneNumber]" in line:
+            phoneNumber = True
+        elif "[SystemCheck.SubscriberID]" in line:
+            subscriberId = True
+        elif "[SystemCheck.IMEI]" in line:
+            imei = True
+        elif "[SystemCheck.SIMOperator]" in line:
+            simOperator = True
+        elif "[SystemCheck.SIMOperatorName]" in line:
+            simOperatorName = True
+        elif "[SystemCheck.Country]" in line:
+            country = True
+        elif "[NetworkCheck.BluetoothMAC]" in line:
+            bluetoothMAC = True
+        elif "[NetworkCheck.WifiMAC]" in line:
+            wifiMAC = True
+        elif "[NetworkCheck.WifiSSID]" in line:
+            wifiSSID = True
+        elif "[NetworkCheck.RouterMAC]" in line:
+            routerMAC = True
+
+    return (deviceSerial + phoneNumber + subscriberId + imei + simOperator + simOperatorName + simSerial + country + bluetoothMAC + wifiMAC + wifiSSID + routerMAC), 11
 
 def mediaRecorderScoring(logs: list[str]) -> tuple[int, int]:
-    count = 0
+    filteredLogs = list[str]
+    audio = False
+    video = False
+
     for line in logs:
+        if "[Media Recorder" or "[Audio Record]" in line:
+            filteredLogs.append(line)
+
+    for line in filteredLogs:
         if "[Media Recorder.Audio]" or "[Audio Record]" in line:
-            count += 1
-            break
-    for line in logs:
-        if "[Media Recorder.Video]" in line:
-            count += 1
-            break
-    return count, 2
+            audio = True
+        elif "[Media Recorder.Video]" in line:
+            video = True
+
+    return (audio + video), 2
 
 def hideAppIconScoring(logs: list[str]) -> tuple[int, int]:
     for line in logs:
         if "[Hide App]" in line:
             return 1, 1
     return 0, 1
+
+def localDataScoring(logs: list[str]) -> tuple[int, int]:
+    filteredLogs = list[str]
+    contacts = False
+    callLog = False
+    sms = False
+
+    for line in logs:
+        if "[Access" in line:
+            filteredLogs.append(line)
+
+    for line in filteredLogs:
+        if "[Access.Contacts]" in line:
+            contacts = True
+        elif "[Access.CallLogs]" in line:
+            callLog = True
+        elif "[Access.SMS]" in line:
+            sms = True
+
+    return (contacts + callLog + sms), 3
 
 
 

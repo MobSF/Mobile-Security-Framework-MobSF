@@ -16,14 +16,14 @@ Java.perform(function () {
 
     // Set audio source
     mediaRecorder.setAudioSource.overload('int').implementation = function (audioSource) {
-        send('[Media Recorder.Audio] Setting audio source to -> ' + audioSource);
+        send('[MediaRecorder.Audio] Setting audio source to -> ' + audioSource);
         if (CONFIG.printStackTrace) {stackTrace();}
         return this.setAudioSource(audioSource);
     };
 
     // Set video source
     mediaRecorder.setVideoSource.overload('int').implementation = function (videoSource) {
-        send('[Media Recorder.Video] Setting video source to -> ' + videoSource);
+        send('[MediaRecorder.Video] Setting video source to -> ' + videoSource);
         if (CONFIG.printStackTrace) {stackTrace();}
         return this.setVideoSource(audioSource);
     };
@@ -41,9 +41,9 @@ Java.perform(function () {
         };
 
         try {
-            send('[Media Recorder] Setting output format -> ' + outputFormatValue[outputFormat]);
+            send('[MediaRecorder] Setting output format -> ' + outputFormatValue[outputFormat]);
         } catch (err) {
-            send('[Media Recorder] Setting output format -> ' + outputFormat);
+            send('[MediaRecorder] Setting output format -> ' + outputFormat);
         }
         if (CONFIG.printStackTrace) {stackTrace();}
         return this.setOutputFormat(outputFormat);
@@ -59,9 +59,9 @@ Java.perform(function () {
         };
 
         try {
-            send('[Media Recorder.Audio] Setting audio encoder -> ' + audioEncoderValue[audioEncoder]);
+            send('[MediaRecorder.Audio] Setting audio encoder -> ' + audioEncoderValue[audioEncoder]);
         } catch (err) {
-            send('[Media Recorder.Audio] Setting audio encoder -> ' + audioEncoder);
+            send('[MediaRecorder.Audio] Setting audio encoder -> ' + audioEncoder);
         }
         if (CONFIG.printStackTrace) {stackTrace();}
         return this.setAudioEncoder(audioEncoder);
@@ -81,9 +81,9 @@ Java.perform(function () {
         };
 
         try {
-            send('[Media Recorder.Video] Setting video encoder -> ' + videoEncoderValue[videoEncoder]);
+            send('[MediaRecorder.Video] Setting video encoder -> ' + videoEncoderValue[videoEncoder]);
         } catch (err) {
-            send('[Media Recorder.Video] Setting video encoder -> ' + videoEncoder);
+            send('[MediaRecorder.Video] Setting video encoder -> ' + videoEncoder);
         }
         if (CONFIG.printStackTrace) {stackTrace();}
         return this.setVideoEncoder(videoEncoder);
@@ -91,24 +91,24 @@ Java.perform(function () {
 
     // Set output file
     mediaRecorder.setOutputFile.overload('java.io.FileDescriptor').implementation = function (fileDescriptor) {
-        send('[Media Recorder] Setting output file');
+        send('[MediaRecorder] Setting output file');
         if (CONFIG.printStackTrace) {stackTrace();}
         return this.setOutputFile(fileDescriptor);
     };
     mediaRecorder.setOutputFile.overload('java.lang.String').implementation = function (filePath) {
-        send('[Media Recorder] Setting output file -> ' + filePath);
+        send('[MediaRecorder] Setting output file -> ' + filePath);
         if (CONFIG.printStackTrace) {stackTrace();}
         return this.setOutputFile(filePath);
     };
     mediaRecorder.setOutputFile.overload('java.io.File').implementation = function (file) {
-        send('[Media Recorder] Setting output file -> ' + file.getPath());
+        send('[MediaRecorder] Setting output file -> ' + file.getPath());
         if (CONFIG.printStackTrace) {stackTrace();}
         return this.setOutputFile(file);
     };
 
     // Start recording
     mediaRecorder.start.implementation = function () {
-        send('[Media Recorder] Starting recording');
+        send('[MediaRecorder] Starting recording');
         if (CONFIG.printStackTrace) {stackTrace();}
         return this.start();
     };
@@ -117,12 +117,12 @@ Java.perform(function () {
 
     // Set audio source
     audioRecord.startRecording.overload().implementation = function () {
-        send('[Audio Record] Starting Audio Recording');
+        send('[AudioRecord] Starting Audio Recording');
         if (CONFIG.printStackTrace) {stackTrace();}
         return this.startRecording();
     };
     audioRecord.startRecording.overload('android.media.MediaSyncEvent').implementation = function (mediaSyncEvent) {
-        send('[Audio Record] Starting Audio Recording');
+        send('[AudioRecord] Starting Audio Recording');
         if (CONFIG.printStackTrace) {stackTrace();}
         return this.startRecording(mediaSyncEvent);
     };
