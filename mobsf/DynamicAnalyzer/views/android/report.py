@@ -4,6 +4,7 @@ import logging
 import ntpath
 import os
 import io
+import math
 
 from django.conf import settings
 from django.shortcuts import render
@@ -168,7 +169,8 @@ def view_report(request, checksum, api=False):
                    'suspicious_score': malware_score['suspicious_score'],
                    'suspicious_score_max': malware_score['suspicious_score_max'],
                    'permission_prediction': permission_score['prediction'],
-                   'permission_accuracy': permission_score['accuracy']}
+                   'permission_accuracy': permission_score['accuracy'],
+                   'overall_score': round((malware_score['malware_score'] + (permission_score['prediction'] * permission_score['accuracy'] * 100)) / 2, 2)}
         template = 'dynamic_analysis/android/dynamic_report.html'
         if api:
             return context
