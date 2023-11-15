@@ -15,7 +15,7 @@ Java.perform(function() {
 
     // Content Resolver Query
     ContentResolver.query.overload('android.net.Uri', '[Ljava.lang.String;', 'android.os.Bundle', 'android.os.CancellationSignal').implementation = function (uri, projection, queryArgs, cancellationSignal) {
-        ContentType(uri);
+        ContentType(uri.toString());
         return this.query(uri, projection, queryArgs, cancellationSignal);
     };
     // ContentResolver.query.overload('android.net.Uri', '[Ljava.lang.String;', 'java.lang.String', '[Ljava.lang.String;', 'java.lang.String', 'android.os.CancellationSignal').implementation = function (uri, projection, selection, selectionArgs, sortOrder, cancellationSignal) {
