@@ -296,23 +296,92 @@
   </div>
   </section>
 <!-- =========================end information==================================== -->
+<style>
+  .ring {
+  position: relative;
+  width: 20vmin;
+  height: 20vmin;
+  background-image: radial-gradient(#C816CDFF 0, #C816CDFF 50%, transparent 50%, transparent 100%),
+  radial-gradient(#C816CDFF 0, #C816CDFF 50%, transparent 50%, transparent 100%),
+  radial-gradient(white 0, white 60%, transparent 60%),
+  conic-gradient(#C816CDFF 0, #c816cd 150deg, white 60deg, white 210deg, #C816CDFF 210deg, #C816CDFF 360deg);
+  background-size: 10.0% 10.0%, 10.0% 10.0%, 100% 100%, 100% 100%;
+  background-repeat: no-repeat;
+  background-position: 24% 94.2%, 76% 94.2%, center center, center center;
+  border-radius: 50%;
+  border-style: none;
+}
+
+  .speed {
+    display: inline-block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    text-align: center;
+    color: gray;
+  }
+
+  .speed .number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: black;
+  }
+
+  .speed .units {
+    font-size: 2rem;
+    color: black;
+  }
+</style>
 <a id="malwarescoring" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
     <div class="row">
-        <div class="col-lg-12">
-        <div class="card">
-          <div class="card-body">
-            <p>
-              <strong><i class="fas fa-file-alt"></i> Malware Score</strong>
-            </p>
-            <div class="list-group">
-              <pre>Overall Malware Score: {{ malware_score }}</pre>
-              <pre>Critical Behaviours Detected: {{ critical_score }} / {{ critical_score_max }}</pre>
-              <pre>Suspicious Behavious Detected: {{ suspicious_score }} / {{ suspicious_score_max }}</pre>
+        <div class="col d-flex">
+          <div class="card flex-grow-1">
+            <div class="card-body">
+              <p>
+                <strong><i class="fas fa-file-alt"></i> Malware Score</strong>
+              </p>
+              <div class="list-group d-flex justify-content-center align-items-center">
+                <div class="ring">
+                  <div class="speed">
+                    <div class="number">Score</div>
+                    <div class="units" >{{ malware_score }}%</div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div><!-- /.card -->
+          </div><!-- /.card -->
+        </div>
+
+        <div class="col d-flex">
+          <div class="card flex-grow-1">
+            <div class="card-body">
+              <p>
+                <strong><i class="fas fa-file-alt"></i> Behavioural Scoring</strong>
+              </p>
+              <div class="list-group">
+                <pre>Behaviour Rating: {{ malware_score }}</pre>
+                <pre>Critical Behaviours Detected: {{ critical_score }} / {{ critical_score_max }}</pre>
+                <pre>Suspicious Behavious Detected: {{ suspicious_score }} / {{ suspicious_score_max }}</pre>
+              </div>
+            </div>
+          </div><!-- /.card -->
+        </div>
+
+        <div class="col d-flex">
+          <div class="card flex-grow-1">
+            <div class="card-body">
+              <p>
+                <strong><i class="fas fa-file-alt"></i> Permission Scoring</strong>
+              </p>
+              <div class="list-group">
+                <pre>Malware Prediction (from permissions): {{ permission_prediction }}</pre>
+                <pre>AI Model Accuracy: {{ permission_accuracy }}</pre>
+              </div>
+            </div>
+          </div><!-- /.card -->
         </div>
         <!-- end row -->
         </div>

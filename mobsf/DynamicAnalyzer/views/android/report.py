@@ -38,6 +38,9 @@ from mobsf.MobSF.utils import (
 from mobsf.DynamicAnalyzer.views.android.scoring import (
     scoring
 )
+from mobsf.DynamicAnalyzer.views.android.permission_scoring import (
+    permissionScoring
+)
 
 
 logger = logging.getLogger(__name__)
@@ -134,6 +137,9 @@ def view_report(request, checksum, api=False):
         else:
             malware_score = None
 
+        # Permissions AI Scoring
+        permission_score = permissionScoring(settings.CSV_DIR, mobsf_frida_out_file)
+
         context = {'hash': checksum,
                    'emails': analysis_result['emails'],
                    'urls': analysis_result['urls'],
@@ -160,7 +166,9 @@ def view_report(request, checksum, api=False):
                    'critical_score': malware_score['critical_score'],
                    'critical_score_max': malware_score['critical_score_max'],
                    'suspicious_score': malware_score['suspicious_score'],
-                   'suspicious_score_max': malware_score['suspicious_score_max']}
+                   'suspicious_score_max': malware_score['suspicious_score_max'],
+                   'permission_prediction': permission_score['prediction'],
+                   'permission_accuracy': permission_score['accuracy']}
         template = 'dynamic_analysis/android/dynamic_report.html'
         if api:
             return context

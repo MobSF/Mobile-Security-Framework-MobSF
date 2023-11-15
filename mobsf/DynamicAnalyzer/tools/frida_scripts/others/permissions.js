@@ -1,25 +1,24 @@
 Java.perform(function() {
     // Permission and Malware Score states
     var permissionList = [];
-    var malwareScore = 0;
+    var malwareScore = '';
     var test = '';
   
     // Declare permission malware scoring mapping
     var permissionMap = {
-      "WRITE_SECURE_SETTINGS" :'uid',
       "ACCESS_ASSISTED_GPS" :'uid',
       "ACCESS_CACHE_FILESYSTEM" :'uid',
       "ACCESS_CELL_ID" :'uid',
       "ACCESS_CHECKIN_PROPERTIES" :'uid',
-      "ACCESS_COARSE_LOCATION" :'uid',
+      "ACCESS_COARSE_LOCATION" :'spyware(location)',
       "ACCESS_COARSE_UPDATES" :'uid',
       "ACCESS_DOWNLOAD_MANAGER" :'uid',
       "ACCESS_DOWNLOAD_MANAGER_ADVANCED" :'uid',
       "ACCESS_DRM" :'uid',
-      "ACCESS_FINE_LOCATION" :'uid',
-      "ACCESS_GPS" :'uid',
-      "ACCESS_LOCATION" :'uid',
-      "ACCESS_LOCATION_EXTRA_COMMANDS" :'uid',
+      "ACCESS_FINE_LOCATION" :'spyware(location)',
+      "ACCESS_GPS" :'spyware(location)',
+      "ACCESS_LOCATION" :'spyware(location)',
+      "ACCESS_LOCATION_EXTRA_COMMANDS" :'spyware(location)',
       "ACCESS_LOCATTON_MOCK_LOCATION" :'uid',
       "ACCESS_MOCK_LOCATION" :'uid',
       "ACCESS_NETWORK_STATE" :'uid',
@@ -74,13 +73,13 @@ Java.perform(function() {
       "HARDWARE_TEST" :'uid',
       "INJECT_EVENTS" :'uid',
       "INSTALL_DRM" :'uid',
-      "INSTALL_LOCATION_PROVIDER" :'uid',
+      "INSTALL_LOCATION_PROVIDER" :'spyware(location)',
       "INSTALL_PACKAGES" :'uid',
       "INTERNAL_SYSTEM_WINDOW" :'uid',
       "INTERNET" :'uid',
       "KILL_BACKGROUND_PROCESSES" :'uid',
       "LISTEN_CALL_STATE" :'uid',
-      "LOCATION" :'uid',
+      "LOCATION" :'spyware(location)',
       "MANAGE_ACCOUNTS" :'uid',
       "MANAGE_APP_TOKENS" :'uid',
       "MASTER_CLEAR" :'uid',
@@ -108,7 +107,6 @@ Java.perform(function() {
       "READ_SETTINGS" :'uid',
       "READ_SMS" :'uid',
       "READ_SYNC_SETTINGS" :'uid',
-      "READ_SYNC_STATS" :'uid',
       "READ_USER_DICTIONARY" :'uid',
       "REBOOT" :'uid',
       "RECEIVE_BOOT_COMPLETED" :'uid',
@@ -171,28 +169,30 @@ Java.perform(function() {
         var ProcessClass = Java.use('android.os.Process');
         var context = Java.use('android.app.ActivityThread').currentApplication().getApplicationContext();
         
-        if (context == null) {
+        /*if (context == null) {
             send('[] Context is null. Unable to check permission.');
             return;
-        }
+        }*/
   
         var permissionStatus = PackageManagerClass.PERMISSION_DENIED.value;
   
         try {
             permissionStatus = context.checkPermission(ManifestPermission[permission].value, ProcessClass.myPid(), ProcessClass.myUid());
         } catch (e) {
-            send('[] Error occurred while checking permission: ' + e);
+            send('[Permission] Error occurred while checking permission: ' + e);
             //test +='0';
         }
   
         if (permissionStatus === PackageManagerClass.PERMISSION_GRANTED.value) {
-            send('[+] Permission ' + permission + ' is used in the application.');
-            test +='1,';
+            send('[Permission] [+] ' + permission + ' is used in the application.');
+            //test +='1,';
+            test +='"'+permission+'": [1],';
             // Adds to permission list
             permissionList.push(permission);
         } else {
-            send('[-] Permission ' + permission + ' is NOT used in the application.');
-            test +='0,';
+            send('[Permission] [-] ' + permission + ' is NOT used in the application.');
+            //test +='0,';
+            test +='"'+permission+'": [0],';
         }
     };
   
@@ -209,20 +209,19 @@ Java.perform(function() {
         }
   
         //send('[*] Malware score is ' + malwareScore);
-        test = test.slice(0,-1)
-        send('[*] Malware score is ' + test);
-        /*if (malwareScore.includes("uid14")||malwareScore.includes("uid4")||malwareScore.includes("uid1")||malwareScore.includes("uid2")||malwareScore.includes("uid15")||malwareScore.includes("uid3")||malwareScore.includes("uid16")){
-            send('[*] malware Probably __-----');}
+        test = test.slice(0,-1);
+        send('[Permission.Score] [*] Malware score is ' + test);
+        if (malwareScore.includes("spyware(location)")){
+            send('[Permission] [*] Spyware(Location) capability');}
   
-        if (malwareScore.includes("uid13")){
-            send('[*] Dropper or CMC____________');
+        if (malwareScore.includes("")){
+            send('[Permission] [*] Dropper capability');
         }
-        if (malwareScore.includes("uid11")){
-            send('[*] Ransomeware____________');
-        }*/
+        if (malwareScore.includes("ransomeware")){
+            send('[Permission] [*] Ransomeware capability');
+        }
     };
   
-    checkPermission("WRITE_SECURE_SETTINGS");
     checkPermission("ACCESS_ASSISTED_GPS");
     checkPermission("ACCESS_CACHE_FILESYSTEM");
     checkPermission("ACCESS_CELL_ID");
@@ -369,7 +368,6 @@ Java.perform(function() {
     checkPermission("WRITE_SETTINGS");
     checkPermission("WRITE_SMS");
     checkPermission("WRITE_SYNC_SETTINGS");
-    checkPermission("WRITE_USER_DICTIONARY");
     
     
     

@@ -13,6 +13,7 @@ def scoring(file_path: str):
     critical_score.append(rootDetectionScoring(logs))
     critical_score.append(debuggerCheckBypassScoring(logs))
     critical_score.append(hideAppIconScoring(logs))
+    critical_score.append(listProcessScoring(logs))
 
     # Suspricious api calls scoring
     suspicious_score.append(dexScoring(logs))
@@ -20,6 +21,7 @@ def scoring(file_path: str):
     suspicious_score.append(encodingScoring(logs))
     suspicious_score.append(encryptionScoring(logs))
     suspicious_score.append(mediaRecorderScoring(logs))
+    suspicious_score.append(localDataScoring(logs))
 
     # Combining Scores
     critical_score = combine(critical_score)
@@ -68,7 +70,7 @@ def encryptionScoring(logs: list[str]) -> tuple[int, int]:
     return 0, 1
 
 def systemChecksScoring(logs: list[str]) -> tuple[int, int]:
-    filteredLogs = list[str]
+    filteredLogs = []
     deviceSerial = False
     phoneNumber = False
     subscriberId = False
@@ -113,7 +115,7 @@ def systemChecksScoring(logs: list[str]) -> tuple[int, int]:
     return (deviceSerial + phoneNumber + subscriberId + imei + simOperator + simOperatorName + simSerial + country + bluetoothMAC + wifiMAC + wifiSSID + routerMAC), 11
 
 def mediaRecorderScoring(logs: list[str]) -> tuple[int, int]:
-    filteredLogs = list[str]
+    filteredLogs = []
     audio = False
     video = False
 
@@ -136,7 +138,7 @@ def hideAppIconScoring(logs: list[str]) -> tuple[int, int]:
     return 0, 1
 
 def localDataScoring(logs: list[str]) -> tuple[int, int]:
-    filteredLogs = list[str]
+    filteredLogs = []
     contacts = False
     callLog = False
     sms = False

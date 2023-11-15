@@ -35,6 +35,7 @@ SCREEN_DIR = os.path.join(MobSF_HOME, 'downloads/screen/')
 # Upload Directory
 UPLD_DIR = os.path.join(MobSF_HOME, 'uploads/')
 # Database Directory
+CSV_DIR = os.path.join(MobSF_HOME, 'stats.csv')
 DB_DIR = os.path.join(MobSF_HOME, 'db.sqlite3')
 # Signatures used by modules
 SIGNATURE_DIR = os.path.join(MobSF_HOME, 'signatures/')
