@@ -8,6 +8,10 @@ Original author: Daniele Linguaglossa
 */
 
 Java.perform(function() {
+
+    // Print Initalisation
+    send('[Initialised] RootDetection Bypass')
+
     var RootPackages = ["com.noshufou.android.su", "com.noshufou.android.su.elite", "eu.chainfire.supersu",
         "com.koushikdutta.superuser", "com.thirdparty.superuser", "com.yellowes.su", "com.koushikdutta.rommanager",
         "com.koushikdutta.rommanager.license", "com.dimonvideo.luckypatcher", "com.chelpus.lackypatch",

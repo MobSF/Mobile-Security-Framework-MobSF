@@ -2,6 +2,9 @@
 
 Java.perform(function () {
 
+    // Print Initalisation
+    send("[Initialised] Encryption");
+
     // Config
     var CONFIG = {
         // if TRUE print Key as hex dump

@@ -1,5 +1,8 @@
 Java.perform(function() {
 
+    // Print Initalisation
+    send("[Initialised] HideApp");
+
     // Config
     var CONFIG = {
         // if TRUE print stack trace

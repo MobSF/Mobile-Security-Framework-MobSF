@@ -1,4 +1,8 @@
 Java.perform(function() {
+
+    // Print Initalisation
+    send("[Initialised] Permissions");
+
     // Permission and Malware Score states
     var permissionList = [];
     var malwareScore = '';

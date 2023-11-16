@@ -2,6 +2,9 @@
 
 Java.perform(function() {
 
+    // Print Initalisation
+    send("[Initialised] Base64");
+
     // Config
     var CONFIG = {
         // if TRUE print stack trace

@@ -6,22 +6,37 @@ logger = logging.getLogger(__name__)
 def scoring(file_path: str):
     logs = open(file_path, 'r').read().split('\n')
 
+    # Detect Initialised Scripts
+    initialisations = []
+    for line in logs:
+        if "[Initialised]" in line:
+            initialisations.append(line)
+
     critical_score = []
     suspicious_score = []
 
     # High risk api calls scoring
-    critical_score.append(rootDetectionScoring(logs))
-    critical_score.append(debuggerCheckBypassScoring(logs))
-    critical_score.append(hideAppIconScoring(logs))
-    critical_score.append(listProcessScoring(logs))
+    if "[Initialised] RootDetection Bypass" in initialisations:
+        critical_score.append(rootDetectionScoring(logs))
+        critical_score.append(listProcessScoring(logs))
+    if "[Initialised] DebuggerCheck Bypass" in initialisations:
+        critical_score.append(debuggerCheckBypassScoring(logs))
+    if "[Initialised] HideApp" in initialisations:
+        critical_score.append(hideAppIconScoring(logs))
 
     # Suspricious api calls scoring
-    suspicious_score.append(dexScoring(logs))
-    suspicious_score.append(systemChecksScoring(logs))
-    suspicious_score.append(encodingScoring(logs))
-    suspicious_score.append(encryptionScoring(logs))
-    suspicious_score.append(mediaRecorderScoring(logs))
-    suspicious_score.append(localDataScoring(logs))
+    if "[Initialised] DexClassLoader" in initialisations:
+        suspicious_score.append(dexScoring(logs))
+    if "[Initialised] SystemChecks" in initialisations:
+        suspicious_score.append(systemChecksScoring(logs))
+    if "[Initialised] Base64" in initialisations:
+        suspicious_score.append(encodingScoring(logs))
+    if "[Initialised] Encryption" in initialisations:
+        suspicious_score.append(encryptionScoring(logs))
+    if "[Initialised] MediaRecorder" in initialisations:
+        suspicious_score.append(mediaRecorderScoring(logs))
+    if "[Initialised] SensitiveDataAccess" in initialisations:
+        suspicious_score.append(localDataScoring(logs))
 
     # Combining Scores
     critical_score = combine(critical_score)
@@ -33,6 +48,7 @@ def scoring(file_path: str):
 
 
 
+# Individual Category Scoring
 def rootDetectionScoring(logs: list[str]) -> tuple[int, int]:
     for line in logs:
         if "[RootDetection Bypass]" in line:
