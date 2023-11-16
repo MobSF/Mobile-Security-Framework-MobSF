@@ -141,6 +141,10 @@ def view_report(request, checksum, api=False):
         # Permissions AI Scoring
         permission_score = permissionScoring(settings.CSV_DIR, mobsf_frida_out_file)
 
+        # Calculations
+        overall_score = (malware_score['malware_score'] + (permission_score['prediction'] * permission_score['accuracy'] * 100)) / (1 + permission_score['accuracy'])
+        dial_degree = (overall_score * 3) - 150
+
         context = {'hash': checksum,
                    'emails': analysis_result['emails'],
                    'urls': analysis_result['urls'],
@@ -170,7 +174,8 @@ def view_report(request, checksum, api=False):
                    'suspicious_score_max': malware_score['suspicious_score_max'],
                    'permission_prediction': permission_score['prediction'],
                    'permission_accuracy': permission_score['accuracy'],
-                   'overall_score': round((malware_score['malware_score'] + (permission_score['prediction'] * permission_score['accuracy'] * 100)) / 2, 2)}
+                   'overall_score': round(overall_score, 2),
+                   'dial_degree': int(dial_degree)}
         template = 'dynamic_analysis/android/dynamic_report.html'
         if api:
             return context

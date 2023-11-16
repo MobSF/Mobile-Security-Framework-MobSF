@@ -301,13 +301,17 @@
   position: relative;
   width: 20vmin;
   height: 20vmin;
-  background-image: radial-gradient(#C816CDFF 0, #C816CDFF 50%, transparent 50%, transparent 100%),
-  radial-gradient(#C816CDFF 0, #C816CDFF 50%, transparent 50%, transparent 100%),
-  radial-gradient(white 0, white 60%, transparent 60%),
-  conic-gradient(#C816CDFF 0, #c816cd 150deg, white 60deg, white 210deg, #C816CDFF 210deg, #C816CDFF 360deg);
-  background-size: 10.0% 10.0%, 10.0% 10.0%, 100% 100%, 100% 100%;
+  background-image: radial-gradient(white 0, white 60%, transparent 60%),
+  {% if overall_score <= 30 %}
+    conic-gradient(#28a745FF 0, #28a745 {{ dial_degree }}deg, white {{ dial_degree }}deg, white 210deg, #28a745FF 210deg, #28a745FF 360deg)
+  {% elif overall_score <= 80 %}
+    conic-gradient(#ffc107FF 0, #ffc107 {{ dial_degree }}deg, white {{ dial_degree }}deg, white 210deg, #ffc107FF 210deg, #ffc107FF 360deg)
+  {% else %}
+    conic-gradient(#ff0018FF 0, #ff0018 {{ dial_degree }}deg, white {{ dial_degree }}deg, white 210deg, #ff0018FF 210deg, #ff0018FF 360deg)
+  {% endif %};
+  background-size: 100% 100%, 100% 100%;
   background-repeat: no-repeat;
-  background-position: 24% 94.2%, 76% 94.2%, center center, center center;
+  background-position: center center, center center;
   border-radius: 50%;
   border-style: none;
 }
