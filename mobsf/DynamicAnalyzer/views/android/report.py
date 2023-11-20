@@ -144,7 +144,6 @@ def view_report(request, checksum, api=False):
         # Calculations
         overall_score = (malware_score['malware_score'] + (permission_score['prediction'] * permission_score['accuracy'] * 100)) / (1 + permission_score['accuracy'])
         dial_degree = ((overall_score * 3) - 150) % 360
-        print(dial_degree)
 
         context = {'hash': checksum,
                    'emails': analysis_result['emails'],
