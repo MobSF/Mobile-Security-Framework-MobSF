@@ -266,7 +266,10 @@ class Scanning(object):
 
         # Scan as apk file
         md5sum = hashlib.md5(open(f'{temp_dir}{extracted_items[0]}','rb').read()).hexdigest()
+        logger.info('File md5 hash is: %s', md5sum)
         anal_dir = os.path.join(settings.UPLD_DIR, md5sum + '/')
+        if not os.path.exists(anal_dir):
+            os.makedirs(anal_dir)
         with open(f'{anal_dir}{md5sum}.apk', 'wb+') as destination:
             logger.info(f'Writing to {anal_dir}{md5sum}.apk')
             with open(f'{temp_dir}{extracted_items[0]}', 'rb') as file_obj:
