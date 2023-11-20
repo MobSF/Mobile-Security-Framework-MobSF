@@ -176,7 +176,11 @@ def localDataScoring(logs: list[str]) -> tuple[int, int]:
 
 
 def malware_scoring(critical_score: tuple[int, int], suspicious_score):
-    malware_score = round(100 * (1 - (math.exp(-critical_score[0])) + (math.exp(-critical_score[0]) * suspicious_score[0] / suspicious_score [1])), 2)
+    malware_score = 0
+    if suspicious_score[1] != 0:
+        malware_score = round(100 * (1 - (math.exp(-critical_score[0])) + (math.exp(-critical_score[0]) * suspicious_score[0] / suspicious_score[1])), 2)
+    else:
+        malware_score = round(100 * (1 - (math.exp(-critical_score[0]))), 2)
     return malware_score
 
 def combine(score_list) -> tuple[int, int]:
