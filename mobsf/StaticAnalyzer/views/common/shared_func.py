@@ -90,6 +90,7 @@ def unzip_file_directory(app_path, ext_path, password=None):
         extracted_items = []  # List to store extracted files and directories
         with zipfile.ZipFile(app_path, 'r') as zipptr:
             if is_encrypted(app_path) and password:
+                logger.info('Unzipping Files and Directories using password: %s', password)
                 zipptr.setpassword(password.encode())
             for fileinfo in zipptr.infolist():
                 filename = fileinfo.filename
@@ -101,6 +102,7 @@ def unzip_file_directory(app_path, ext_path, password=None):
                     os.makedirs(extracted_path, exist_ok=True)
                 else:  # File entry
                     extracted_items.append(filename)  # Add file name to the list
+                    logger.info('Saving Unzipped Files and Directories to: %s', ext_path)
                     zipptr.extract(filename, ext_path)
         return extracted_items
     except RuntimeError as e:

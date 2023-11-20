@@ -83,7 +83,7 @@
                   </form>
                </div>
                <div class="mastfoot">
-                
+                <input type="password" id="password" class="form-control mb-4" placeholder="Encrypted ZIP password (if applicable)"/>
                   <input type="download" id="package" class="form-control" placeholder="Download & Scan by package name"/>
 
 
@@ -244,6 +244,11 @@
                  _('status').innerText = "MIME type (" + file_mime + ") is not supported!";
                 return false;
           }
+          // Get encrypted zip password
+          function getPassword() {
+            return document.getElementById('password').value
+          }
+
          // File Upload
          function uploadFile(file, i) {
            try {
@@ -262,6 +267,11 @@
                 xhr.addEventListener("abort", abortHandler, false);
                 var formdata = new FormData();
                 formdata.append("file", file);
+                // Append encrypted ZIP password if required
+                var password = getPassword();
+                if (password !== "") {
+                    formdata.append("password", password);
+                }
                 xhr.send(formdata)
             } catch (e) {
                 alert("Error:" + e);

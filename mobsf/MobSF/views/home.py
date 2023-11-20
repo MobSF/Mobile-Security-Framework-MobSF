@@ -132,8 +132,12 @@ class Upload(object):
         content_type = self.file.content_type
         file_name = self.file.name
         logger.info('MIME Type: %s FILE: %s', content_type, file_name)
-        if self.file_type.is_zip():
-            return scanning.scan_encrypted_zip()
+        if self.file_type.is_zip() and is_encrypted_zip(self.file):
+            if request.POST.get('password') != None:
+                logger.info('Password for encrypted zip is: %s', request.POST.get('password'))
+                return scanning.scan_encrypted_zip()
+            else:
+                return {'error': 'No password provided'}, HTTP_BAD_REQUEST
         else:
             return self.upload_scan(scanning)
 
@@ -148,8 +152,8 @@ class Upload(object):
             return scanning.scan_jar()
         elif self.file_type.is_aar():
             return scanning.scan_aar()
-        # elif self.file_type.is_zip():
-        #     return scanning.scan_zip()
+        elif self.file_type.is_zip():
+            return scanning.scan_zip()
         elif self.file_type.is_ipa():
             return scanning.scan_ipa()
         elif self.file_type.is_appx():
@@ -347,6 +351,15 @@ def delete_scan(request, api=False):
         else:
             return print_n_send_error_response(request, msg, False, exp_doc)
 
+def is_encrypted_zip(file):
+    zf = zipfile.ZipFile(file)
+    for zinfo in zf.infolist():
+        is_encrypted = zinfo.flag_bits & 0x1 
+        if is_encrypted:
+            logger.info('ZIP is Encrypted')
+            return True
+    logger.info('ZIP is Unencrypted')
+    return False
 
 class RecentScans(object):
 

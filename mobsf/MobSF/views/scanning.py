@@ -86,6 +86,7 @@ def handle_uploaded_file(content, extension, istemp=False):
                         logger.error('Error while deleting directory in temp directory: %s', e)
 
     with open(f'{anal_dir}{md5sum}{extension}', 'wb+') as destination:
+        logger.info(f'Writing to {anal_dir}{md5sum}{extension}')
         if bfr:
             content.seek(0, 0)
             while chunk := content.read(8192):
@@ -253,12 +254,29 @@ class Scanning(object):
         temp_dir = os.path.join(settings.TEMP_DIR, md5 + '/')
         file = os.path.join(temp_dir, md5 + '.zip')
         extracted_items = unzip_file_directory(file, temp_dir, self.zip_password)
+        logger.info('Extracted items are: %s', extracted_items)
         results = []  # store data
         errors = []  # store errors
         if len(extracted_items) == 0:
             error_message = "Error: No files/folders extracted from the ZIP."
             error_response = {'error': error_message}
             return JsonResponse(error_response, status=HTTP_BAD_REQUEST)
+        
+        logger.info('File object is: %s', self.file)
+
+        # Scan as apk file
+        md5sum = hashlib.md5(open(f'{temp_dir}{extracted_items[0]}','rb').read()).hexdigest()
+        anal_dir = os.path.join(settings.UPLD_DIR, md5sum + '/')
+        with open(f'{anal_dir}{md5sum}.apk', 'wb+') as destination:
+            logger.info(f'Writing to {anal_dir}{md5sum}.apk')
+            with open(f'{temp_dir}{extracted_items[0]}', 'rb') as file_obj:
+                for chunk in iter(lambda: file_obj.read(8192), b''):
+                    destination.write(chunk)
+        self.data['hash'] = md5sum
+        self.data['scan_type'] = 'apk'
+        add_to_recent_scan(self.data)
+        logger.info('Performing Static Analysis of Android APK')
+        return self.data
 
         pro_type, valid = valid_source_code(temp_dir)
         if valid:
@@ -280,6 +298,7 @@ class Scanning(object):
                                                              'Performing Static Analysis of Android/iOS Source Code',
                                                              analyzer=None))
                         else:
+                            # Try to parse as apk file
                             error_message = "Error: Zipping error"
                             error_response = {'directory': item, 'error': error_message}
                             errors.append(error_response)
