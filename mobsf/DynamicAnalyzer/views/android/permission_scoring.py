@@ -51,7 +51,7 @@ def permissionScoring(csv_file: str, file_path: str):
             predictions = model.predict(new_data)
             return {'prediction': predictions[0], 'accuracy': accuracy}
 
-    return {'predication': 0, 'accuracy': 0}
+    return {'prediction': 0, 'accuracy': 0}
 
 
 
