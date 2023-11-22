@@ -383,6 +383,7 @@
               <div class="list-group">
                 <pre>Malware Prediction (from permissions): {{ permission_prediction }}</pre>
                 <pre>AI Model Accuracy: {{ permission_accuracy }}</pre>
+                <pre>{% for capability in capabilities %}[*] Possible {{ capability }}<br>{% endfor %}</pre>
               </div>
             </div>
           </div><!-- /.card -->

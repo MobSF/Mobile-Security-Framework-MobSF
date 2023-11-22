@@ -1,8 +1,4 @@
 Java.perform(function() {
-
-    // Print Initalisation
-    send("[Initialised] Permissions");
-
     // Permission and Malware Score states
     var permissionList = [];
     var malwareScore = '';
@@ -10,7 +6,7 @@ Java.perform(function() {
   
     // Declare permission malware scoring mapping
     var permissionMap = {
-      "ACCESS_ASSISTED_GPS" :'uid',
+      "ACCESS_ASSISTED_GPS" :'spyware(location)',
       "ACCESS_CACHE_FILESYSTEM" :'uid',
       "ACCESS_CELL_ID" :'uid',
       "ACCESS_CHECKIN_PROPERTIES" :'uid',
@@ -42,12 +38,12 @@ Java.perform(function() {
       "BRICK" :'uid',
       "BROADCAST_PACKAGE_ADDED" :'uid',
       "BROADCAST_PACKAGE_REMOVED" :'uid',
-      "BROADCAST_SMS" :'uid',
+      "BROADCAST_SMS" :'spyware(msg)',
       "BROADCAST_STICKY" :'uid',
       "BROADCAST_WAP_PUSH" :'uid',
       "CALL_PHONE" :'uid',
       "CALL_PRIVILEGED" :'uid',
-      "CAMERA" :'uid',
+      "CAMERA" :'spyware(camera)',
       "CHANGE_COMPONENT_ENABLED_STATE" :'uid',
       "CHANGE_CONFIGURATION" :'uid',
       "CHANGE_NETWORK_STATE" :'uid',
@@ -78,7 +74,7 @@ Java.perform(function() {
       "INJECT_EVENTS" :'uid',
       "INSTALL_DRM" :'uid',
       "INSTALL_LOCATION_PROVIDER" :'spyware(location)',
-      "INSTALL_PACKAGES" :'uid',
+      "INSTALL_PACKAGES" :'dropper',
       "INTERNAL_SYSTEM_WINDOW" :'uid',
       "INTERNET" :'uid',
       "KILL_BACKGROUND_PROCESSES" :'uid',
@@ -109,19 +105,19 @@ Java.perform(function() {
       "READ_PHONE_STATE" :'uid',
       "READ_SECURE_SETTINGS" :'uid',
       "READ_SETTINGS" :'uid',
-      "READ_SMS" :'uid',
+      "READ_SMS" :'spyware(msg)',
       "READ_SYNC_SETTINGS" :'uid',
       "READ_USER_DICTIONARY" :'uid',
       "REBOOT" :'uid',
       "RECEIVE_BOOT_COMPLETED" :'uid',
-      "RECEIVE_SMS" :'uid',
+      "RECEIVE_SMS" :'spyware(msg)',
       "RECEIVE_WAP_PUSH" :'uid',
-      "RECORD_AUDIO" :'uid',
-      "RECORD_VIDEO" :'uid',
+      "RECORD_AUDIO" :'spyware(audio)',
+      "RECORD_VIDEO" :'spyware(camera)',
       "REORDER_TASKS" :'uid',
       "RESTART_PACKAGES" :'uid',
       "SEND_DOWNLOAD_COMPLETED_INTENTS" :'uid',
-      "SEND_SMS" :'uid',
+      "SEND_SMS" :'spyware(msg)',
       "SET_ACTIVITY_WATCHER" :'uid',
       "SET_ALWAYS_FINISH" :'uid',
       "SET_ANIMATION_SCALE" :'uid',
@@ -137,7 +133,7 @@ Java.perform(function() {
       "STATUS_BAR" :'uid',
       "SUBSCRIBED_FEEDS_READ" :'uid',
       "SUBSCRIBED_FEEDS_WRITE" :'uid',
-      "SYSTEM_ALERT_WINDOW" :'uid',
+      "SYSTEM_ALERT_WINDOW" :'ransomware',
       "UPDATE_DEVICE_STATS" :'uid',
       "USE_CREDENTIALS" :'uid',
       "VIBRATE" :'uid',
@@ -154,7 +150,7 @@ Java.perform(function() {
       "WRITE_SECURE" :'uid',
       "WRITE_SECURE_SETTINGS" :'uid',
       "WRITE_SETTINGS" :'uid',
-      "WRITE_SMS" :'uid',
+      "WRITE_SMS" :'spyware(msg)',
       "WRITE_SYNC_SETTINGS" :'uid',
       "WRITE_USER_DICTIONARY" :'uid'
       
@@ -216,12 +212,23 @@ Java.perform(function() {
         test = test.slice(0,-1);
         send('[Permission.Score] [*] Malware score is ' + test);
         if (malwareScore.includes("spyware(location)")){
-            send('[Permission] [*] Spyware(Location) capability');}
+            send('[Permission] [*] Location based spyware');}
   
-        if (malwareScore.includes("")){
+        if (malwareScore.includes("dropper")){
             send('[Permission] [*] Dropper capability');
         }
-        if (malwareScore.includes("ransomeware")){
+        if (malwareScore.includes("spyware(camera)")){
+            send('[Permission] [*] Camera based spyware');
+        }
+      
+        if (malwareScore.includes("spyware(audio)")){
+            send('[Permission] [*] Audio based spyware');
+        }
+       
+        if (malwareScore.includes("spyware(msg)")){
+            send('[Permission] [*] Message based spyware');
+        }   
+        if (malwareScore.includes("ransomware")){
             send('[Permission] [*] Ransomeware capability');
         }
     };

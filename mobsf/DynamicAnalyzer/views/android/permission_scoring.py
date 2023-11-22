@@ -53,7 +53,25 @@ def permissionScoring(csv_file: str, file_path: str):
 
     return {'prediction': 0, 'accuracy': 0}
 
+def permissionMalwareType(file_path: str):
+    capabilities = []
 
+    logs = open(file_path, 'r').read().split('\n')
+    for line in logs:
+        if '[Permission] [*] Location based spyware' in line:
+            capabilities.append('Spyware (Location)')
+        elif '[Permission] [*] Camera based spyware' in line:
+            capabilities.append('Spyware (Camera)')
+        elif '[Permission] [*] Audio based spyware' in line:
+            capabilities.append('Spyware (Audio)')
+        elif '[Permission] [*] Message based spyware' in line:
+            capabilities.append('Spyware (Message)')
+        elif '[Permission] [*] Ransomeware capability' in line:
+            capabilities.append('Ransomware')
+        elif '[Permission] [*] Dropper capability' in line:
+            capabilities.append('Dropper')
+
+    return capabilities
 
 
 
