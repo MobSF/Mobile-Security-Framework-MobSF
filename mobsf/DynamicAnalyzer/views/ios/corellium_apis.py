@@ -1,10 +1,10 @@
 # -*- coding: utf_8 -*-
-"""Corellium APIs"""
+"""Corellium APIs."""
 import logging
+from copy import deepcopy
 
 import requests
 
-from copy import deepcopy
 
 SUCCESS_RESP = (200, 204)
 ERROR_RESP = (400, 403, 404, 409)
@@ -15,17 +15,31 @@ logger = logging.getLogger(__name__)
 class CorelliumAPI:
 
     def __init__(self, api_key, project_id) -> None:
-        self.api = f'https://app.corellium.com/api/v1'
+        self.api = 'https://app.corellium.com/api/v1'
         self.headers = {
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {api_key}',  
+            'Authorization': f'Bearer {api_key}',
         }
         self.project_id = project_id
 
     def api_ready(self):
         """Check API Availability."""
         r = requests.get(f'{self.api}/ready')
-        return r.status_code in SUCCESS_RESP
+        if r.status_code in SUCCESS_RESP:
+            return True
+        else:
+            logger.error('Corellium API is not ready.'
+                         ' Status code: %s', r.status_code)
+        return False
+
+    def api_auth(self):
+        """Check Corellium API Auth."""
+        r = requests.get(
+            f'{self.api}/projects',
+            headers=self.headers)
+        if r.status_code in ERROR_RESP:
+            return False
+        return True
 
     def get_projects(self):
         """Get Projects."""
@@ -40,7 +54,7 @@ class CorelliumAPI:
             if r.status_code in SUCCESS_RESP:
                 for i in r.json():
                     ids.append(i['id'])
-            if ids:    
+            if ids:
                 self.project_id = ids[0]
                 return True
         return False
@@ -78,11 +92,11 @@ class CorelliumAPI:
 class CorelliumModelsAPI:
 
     def __init__(self, api_key) -> None:
-        self.api = f'https://app.corellium.com/api/v1'
+        self.api = 'https://app.corellium.com/api/v1'
         self.headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {api_key}',  
+            'Authorization': f'Bearer {api_key}',
         }
 
     def get_models(self):
@@ -115,13 +129,13 @@ class CorelliumModelsAPI:
 
 
 class CorelliumInstanceAPI:
-    
+
     def __init__(self, api_key, instance_id) -> None:
-        self.api = f'https://app.corellium.com/api/v1'
+        self.api = 'https://app.corellium.com/api/v1'
         self.headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {api_key}',  
+            'Authorization': f'Bearer {api_key}',
         }
         self.instance_id = instance_id
 
@@ -192,7 +206,7 @@ class CorelliumInstanceAPI:
         if r.status_code in SUCCESS_RESP:
             return r.json()
         return False
-    
+
     def agent_ready(self):
         """Check if corellium agent is ready."""
         r = requests.get(
@@ -202,14 +216,12 @@ class CorelliumInstanceAPI:
             return r.json()['ready']
         return False
 
-
     def unlock_instance(self):
         """Unlock the instance."""
         r = requests.post(
             f'{self.api}/instances/{self.instance_id}/agent/v1/system/unlock',
             headers=self.headers)
         return r.status_code in SUCCESS_RESP
-
 
     def list_apps(self):
         """List all apps installed."""
@@ -222,7 +234,7 @@ class CorelliumInstanceAPI:
             return r.json()
         else:
             return False
-    
+
     def screenshot(self):
         """Take screenshot inside VM."""
         r = requests.get(
@@ -233,7 +245,7 @@ class CorelliumInstanceAPI:
             return r.content
         logger.error('Failed to take a screenshot. %s', r.json()['error'])
         return False
-    
+
     def start_network_capture(self):
         """Start network capture."""
         r = requests.post(
@@ -255,18 +267,29 @@ class CorelliumInstanceAPI:
         logger.error(
             'Failed to disable network monitoring. %s', r.json()['error'])
         return r.json()['error']
-    
+
+    def download_network_capture(self):
+        """Download network capture."""
+        r = requests.get(
+            f'{self.api}/instances/{self.instance_id}/networkMonitor.pcap',
+            headers=self.headers)
+        if r.status_code in SUCCESS_RESP:
+            return r.content
+        logger.error(
+            'Failed to download pcap. %s', r.json()['error'])
+        return None
+
     def console_log(self):
         """Get Console Log."""
         r = requests.get(
             f'{self.api}/instances/{self.instance_id}/consoleLog',
             headers=self.headers)
         if r.status_code in SUCCESS_RESP:
-            return OK
+            return r.content.decode('utf-8', 'ignore')
         logger.error(
             'Failed to disable network monitoring. %s', r.json()['error'])
         return r.json()['error']
-    
+
     def get_ssh_connection_string(self):
         """Get SSH connection string."""
         r = requests.get(
@@ -277,24 +300,94 @@ class CorelliumInstanceAPI:
         logger.error(
             'Failed to get SSH connection string %s', r.json()['error'])
         return r.json()['error']
-        
 
-def read_in_chunks(file_object, chunk_size=65536):
-    while True:
-        data = file_object.read(chunk_size)
-        if not data:
-            break
-        yield data
+    def device_input(self, event, x, y):
+        """Provide touch/button event to VM."""
+        if event == 'home':
+            data = [{
+                'buttons': ['holdButton'],
+            }]
+        elif event == 'text':
+            data = [{
+                'text': x,
+            }]
+        elif event == 'enter':
+            data = [{
+                'buttons': ['enter'],
+            }]
+        elif event == 'backspace':
+            data = [{
+                'buttons': ['backspace'],
+            }]
+        elif event == 'left':
+            data = [{
+                'buttons': ['left'],
+            }]
+        elif event == 'right':
+            data = [{
+                'buttons': ['right'],
+            }]
+        elif event == 'swipe_up':
+            data = [{
+                'startButtons': ['finger'],
+                'start': [[300, 600]],
+                'bezierPoints': [[[350, 700]], [[375, 850]]],
+                'end': [[400, 950]],
+                'endButtons': [],
+                'duration': 200,
+            }]
+        elif event == 'swipe_down':
+            data = [{
+                'startButtons': ['finger'],
+                'start': [[300, 600]],
+                'bezierPoints': [[[700, 350]], [[850, 375]]],
+                'end': [[950, 400]],
+                'endButtons': [],
+                'duration': 200,
+            }]
+        elif event == 'swipe_left':
+            data = [{
+                'startButtons': ['finger'],
+                'start': [[200, 200]],
+                'bezierPoints': [[[700, 350]], [[850, 375]]],
+                'end': [[950, 400]],
+                'endButtons': [],
+                'duration': 200,
+            }]
+        elif event == 'swipe_right':
+            data = [{
+                'startButtons': ['finger'],
+                'start': [[700, 100]],
+                'bezierPoints': [[[350, 750]], [[375, 875]]],
+                'end': [[300, 600]],
+                'endButtons': [],
+                'duration': 200,
+            }]
+        else:
+            data = [
+                {'buttons': ['finger'],
+                 'position': [[x, y]],
+                 'wait': 0},
+                {'buttons': [], 'wait': 100}]
+        r = requests.post(
+            f'{self.api}/instances/{self.instance_id}/input',
+            headers=self.headers,
+            json=data)
+        if r.status_code in SUCCESS_RESP:
+            return OK
+        logger.error(
+            'Failed to send touch event. %s', r.json()['error'])
+        return r.json()['error']
 
 
 class CorelliumAgentAPI:
-    
+
     def __init__(self, api_key, instance_id) -> None:
-        self.api = f'https://app.corellium.com/api/v1'
+        self.api = 'https://app.corellium.com/api/v1'
         self.headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {api_key}',  
+            'Authorization': f'Bearer {api_key}',
         }
         self.instance_id = instance_id
 
@@ -323,13 +416,14 @@ class CorelliumAgentAPI:
             logger.error('Failed to unlock device')
             return r.json()['error']
         return False
-    
+
     def upload_ipa(self, ipa_file):
         """Upload IPA."""
         headers = deepcopy(self.headers)
         headers['Content-Type'] = 'application/octet-stream'
         r = requests.put(
-            f'{self.api}/instances/{self.instance_id}/agent/v1/file/device/%2Ftmp%2Fapp.ipa',
+            (f'{self.api}/instances/{self.instance_id}'
+             f'/agent/v1/file/device/%2Ftmp%2Fapp.ipa'),
             data=open(ipa_file, 'rb').read(),
             headers=headers)
         if r.status_code in SUCCESS_RESP:
@@ -350,11 +444,12 @@ class CorelliumAgentAPI:
             return OK
         logger.error('Failed to install the IPA. %s', r.json()['error'])
         return r.json()['error']
-    
+
     def run_app(self, bundle_id):
         """Run an App."""
         r = requests.post(
-            f'{self.api}/instances/{self.instance_id}/agent/v1/app/apps/{bundle_id}/run',
+            (f'{self.api}/instances/{self.instance_id}'
+             f'/agent/v1/app/apps/{bundle_id}/run'),
             headers=self.headers)
         if r.status_code in SUCCESS_RESP:
             logger.info('App Started')
@@ -365,18 +460,20 @@ class CorelliumAgentAPI:
     def stop_app(self, bundle_id):
         """Stop an App."""
         r = requests.post(
-            f'{self.api}/instances/{self.instance_id}/agent/v1/app/apps/{bundle_id}/kill',
+            (f'{self.api}/instances/{self.instance_id}'
+             f'/agent/v1/app/apps/{bundle_id}/kill'),
             headers=self.headers)
         if r.status_code in SUCCESS_RESP:
             logger.info('App Killed')
             return OK
         logger.error('Failed to stop the app. %s', r.json()['error'])
         return r.json()['error']
-    
+
     def remove_app(self, bundle_id):
         """Remove an app from VM."""
         r = requests.post(
-            f'{self.api}/instances/{self.instance_id}/agent/v1/app/apps/{bundle_id}/uninstall',
+            (f'{self.api}/instances/{self.instance_id}'
+             f'/agent/v1/app/apps/{bundle_id}/uninstall'),
             headers=self.headers)
         if r.status_code in SUCCESS_RESP:
             logger.info('App Removed')

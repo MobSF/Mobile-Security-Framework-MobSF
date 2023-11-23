@@ -18,6 +18,10 @@ from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
     MalwareDomainCheck,
 )
+from mobsf.StaticAnalyzer.views.common.shared_func import (
+    EMAIL_REGEX,
+    URL_REGEX,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -39,12 +43,8 @@ def run_analysis(apk_dir, md5_hash, package):
         if clip_tag2 in log_line:
             log_line = log_line.split(clip_tag2)[1]
             clipboard.append(log_line)
-    # URLs My Custom regex
-    url_pattern = re.compile(
-        r'((?:https?://|s?ftps?://|file://|'
-        r'javascript:|data:|www\d{0,3}'
-        r'[.])[\w().=/;,#:@?&~*+!$%\'{}-]+)', re.UNICODE)
-    urls = re.findall(url_pattern, data['traffic'].lower())
+    # URL Extraction
+    urls = re.findall(URL_REGEX, data['traffic'].lower())
     if urls:
         urls = list(set(urls))
     else:
@@ -55,12 +55,11 @@ def run_analysis(apk_dir, md5_hash, package):
 
     # Email Etraction Regex
     emails = []
-    regex = re.compile(r'[\w.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
-    for email in regex.findall(data['traffic'].lower()):
+    for email in EMAIL_REGEX.findall(data['traffic'].lower()):
         if (email not in emails) and (not email.startswith('//')):
             emails.append(email)
     # Tar dump and fetch files
-    all_files = get_app_files(apk_dir, md5_hash, package)
+    all_files = get_app_files(apk_dir, package)
     analysis_result['urls'] = urls
     analysis_result['domains'] = domains
     analysis_result['emails'] = emails
@@ -181,7 +180,7 @@ def safe_paths(tar_meta):
         yield fh
 
 
-def get_app_files(apk_dir, md5_hash, package):
+def get_app_files(apk_dir, package):
     """Get files from device."""
     logger.info('Getting app files')
     all_files = {'xml': [], 'sqlite': [], 'others': []}

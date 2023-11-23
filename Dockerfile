@@ -33,7 +33,8 @@ RUN apt update -y && apt install -y  --no-install-recommends \
     git \
     jq \
     android-tools-adb && \
-    locale-gen en_US.UTF-8 
+    locale-gen en_US.UTF-8 && \
+    apt upgrade -y
 
 ENV MOBSF_USER=mobsf \
     MOBSF_PLATFORM=docker \

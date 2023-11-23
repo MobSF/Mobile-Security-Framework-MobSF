@@ -1,39 +1,35 @@
 # -*- coding: utf_8 -*-
 """Instance Operation APIs."""
-
-import json
 import logging
-import os
-import random
 import re
-import subprocess
-import threading
+import os
 from base64 import b64encode
 from pathlib import Path
+from stat import S_ISDIR
+
+from paramiko.ssh_exception import SSHException
 
 from django.conf import settings
-from django.http import HttpResponse
 from django.views.decorators.http import require_http_methods
-from django.core.signing import (
-    BadSignature,
-    Signer)
+from django.http import HttpResponse
+from django.shortcuts import render
 
 from mobsf.MobSF.utils import (
-    cmd_injection_check,
-    get_adb,
-    get_device,
+    id_generator,
     is_md5,
     is_number,
+    print_n_send_error_response,
     strict_package_check,
 )
 from mobsf.DynamicAnalyzer.views.android.operations import (
     invalid_params,
-    is_attack_pattern,
     send_response,
+)
+from mobsf.DynamicAnalyzer.views.ios.corellium_frida_ssh import (
+    ssh_jump_host,
 )
 from mobsf.DynamicAnalyzer.views.ios.utils import (
     common_check,
-    SALT,
 )
 from mobsf.DynamicAnalyzer.views.ios.corellium_apis import (
     CorelliumAPI,
@@ -42,8 +38,6 @@ from mobsf.DynamicAnalyzer.views.ios.corellium_apis import (
     CorelliumModelsAPI,
     OK,
 )
-from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
-
 
 
 logger = logging.getLogger(__name__)
@@ -292,13 +286,12 @@ def create_vm_instance(request, api=False):
         r = c.create_ios_instance(flavor, version)
         if r:
             data = {
-                'status': OK, 
+                'status': OK,
                 'message': f'Created a new instance with id: {r}'}
     except Exception as exp:
         logger.exception('Creating Corellium iOS VM')
         data['message'] = str(exp)
     return send_response(data, api)
-
 # AJAX
 
 
@@ -309,6 +302,10 @@ def setup_environment(request, checksum, api=False):
         'status': 'failed',
         'message': 'Failed to Setup Dynamic Analysis Environment'}
     try:
+        if not is_md5(checksum):
+            # Additional Check for REST API
+            data['message'] = 'Invalid MD5 Hash'
+            return send_response(data, api)
         instance_id = request.POST['instance_id']
         failed = common_check(instance_id)
         if failed:
@@ -360,7 +357,9 @@ def run_app(request, api=False):
             data['message'] = 'Invalid iOS Bundle id'
             return send_response(data, api)
         ca = CorelliumAgentAPI(apikey, instance_id)
-        if ca.agent_ready() and ca.unlock_instance() and ca.run_app(bundle_id) == OK:
+        if (ca.agent_ready()
+                and ca.unlock_instance()
+                and ca.run_app(bundle_id) == OK):
             data['status'] = OK
             data['message'] = 'App Started'
     except Exception as exp:
@@ -378,6 +377,13 @@ def take_screenshot(request, api=False):
         'message': 'Failed to take screenshot'}
     try:
         instance_id = request.POST['instance_id']
+        save = request.POST.get('save')
+        checksum = request.POST.get('checksum')
+        dwd = Path(settings.DWD_DIR)
+        if save and checksum:
+            if not is_md5(checksum):
+                data['message'] = 'Invaid MD5 Hash'
+                return send_response(data, api)
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
@@ -385,9 +391,14 @@ def take_screenshot(request, api=False):
         ci = CorelliumInstanceAPI(apikey, instance_id)
         r = ci.screenshot()
         if r:
-            b64dat = b64encode(r).decode('utf-8')
             data['status'] = OK
-            data['message'] = f'data:image/png;base64,{b64dat}'
+            if save == '1':
+                sfile = dwd / f'{checksum}-{id_generator()}.png'
+                sfile.write_bytes(r)
+                data['message'] = 'Screenshot saved!'
+            else:
+                b64dat = b64encode(r).decode('utf-8')
+                data['message'] = f'data:image/png;base64,{b64dat}'
     except Exception as exp:
         logger.exception('Failed to take screenshot')
         data['message'] = str(exp)
@@ -428,48 +439,229 @@ def network_capture(request, api=False):
         logger.exception('Enabling/Disabling network capture')
         data['message'] = str(exp)
     return send_response(data, api)
-# AJAX
+# File Download
 
 
-@require_http_methods(['POST'])
-def ssh_execute(request, api=False):
-    """Execute commands in VM over SSH."""
+@require_http_methods(['GET'])
+def live_pcap_download(request, api=False):
+    """Download Network Capture."""
     data = {
         'status': 'failed',
-        'message': 'Failed to execute command'}
+        'message': 'Failed to download network capture'}
     try:
-        instance_id = request.POST['instance_id']
+        instance_id = request.GET['instance_id']
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
         apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
         ci = CorelliumInstanceAPI(apikey, instance_id)
+        pcap = ci.download_network_capture()
+        if pcap:
+            res = HttpResponse(
+                pcap,
+                content_type='application/vnd.tcpdump.pcap')
+            res['Content-Disposition'] = (
+                f'inline; filename={instance_id}-network.pcap')
+            return res
+        else:
+            data['message'] = 'Failed to download pcap'
+    except Exception as exp:
+        logger.exception('Download network capture')
+        data['message'] = str(exp)
+    return send_response(data, api)
+
+
+# AJAX
+SSH_TARGET = None
+
+
+@require_http_methods(['POST'])
+def ssh_execute(request, api=False):
+    """Execute commands in VM over SSH."""
+    global SSH_TARGET
+    data = {
+        'status': 'failed',
+        'message': 'Failed to execute command'}
+    try:
+        instance_id = request.POST['instance_id']
         cmd = request.POST.get('cmd')
-        ssh = request.POST.get('ssh')
+        failed = common_check(instance_id)
+        if failed:
+            return send_response(failed, api)
+        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
+        ci = CorelliumInstanceAPI(apikey, instance_id)
+        if not SSH_TARGET:
+            logger.info('Setting up SSH tunnel')
+            SSH_TARGET, _jmp = ssh_jump_host(
+                ci.get_ssh_connection_string())
         try:
-            signer = Signer(salt=SALT)
-            ssh = signer.unsign_object(ssh)
-        except (TypeError, BadSignature, json.decoder.JSONDecodeError):
-            ssh = None
-        if not ssh:
-            # Fallback when session does not exist.
-            # For ex: REST API
-            logger.warning('Invalid signature, generating SSH connection string')
-            ssh = ci.get_ssh_connection_string()
-        argz = ssh.split(' ') + cmd.split(' ')
-        out = subprocess.Popen(
-            argz,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE).communicate()
-        err_str = ''
-        err = out[1].decode('utf8', 'ignore').split('\n')
-        if len(err) > 1:
-            err = err[1:]
-            err_str = '\n'.join(err)
-        res = (f"{out[0].decode('utf8', 'ignore')}{err_str}")
+            _stdin, _stdout, _stderr = SSH_TARGET.exec_command(cmd)
+        except SSHException:
+            logger.info('SSH session not active, setting up again')
+            SSH_TARGET, _jmp = ssh_jump_host(
+                ci.get_ssh_connection_string())
+            _stdin, _stdout, _stderr = SSH_TARGET.exec_command(cmd)
+        stdout = _stdout.read().decode(encoding='utf-8', errors='ignore')
+        stderr = _stderr.read().decode(encoding='utf-8', errors='ignore')
+        res = f'{stdout}{stderr}'
         data = {'status': OK, 'message': res}
     except Exception as exp:
         data['message'] = str(exp)
         logger.exception('Executing Commands')
         return send_response(data, api)
     return send_response(data, api)
+# Helper Download app data tarfile
+
+
+def download_app_data(ci, checksum):
+    """Download App data from device."""
+    app_dir = Path(settings.UPLD_DIR) / checksum
+    container_file = app_dir / 'mobsf_app_container_path.txt'
+    app_container = container_file.read_text('utf-8').splitlines()[0].strip()
+    target, jumpbox = ssh_jump_host(ci.get_ssh_connection_string())
+    tarfile = f'/tmp/{checksum}-app-container.tar'
+    localtar = app_dir / f'{checksum}-app-container.tar'
+    target.exec_command(f'tar -C {app_container} -cvf {tarfile} .')
+    with target.open_sftp() as sftp:
+        sftp.get(tarfile, localtar)
+    target.close()
+    jumpbox.close()
+# AJAX
+
+
+@require_http_methods(['POST'])
+def download_data(request, checksum, api=False):
+    """Download Application Data from Device."""
+    logger.info('Downloading application data')
+    data = {
+        'status': 'failed',
+        'message': 'Failed to Download application data'}
+    try:
+        if not is_md5(checksum):
+            # Additional Check for REST API
+            data['message'] = 'Invalid MD5 Hash'
+            return send_response(data, api)
+        instance_id = request.POST['instance_id']
+        failed = common_check(instance_id)
+        if failed:
+            return send_response(failed, api)
+        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
+        ci = CorelliumInstanceAPI(apikey, instance_id)
+        # App Container download
+        logger.info('Downloading app container data')
+        download_app_data(ci, checksum)
+        # Pcap download
+        logger.info('Downloading network capture')
+        pcap = ci.download_network_capture()
+        if pcap:
+            dwd = Path(settings.DWD_DIR)
+            pcap_file = dwd / f'{checksum}-network.pcap'
+            pcap_file.write_bytes(pcap)
+            data = {
+                'status': OK,
+                'message': 'Downloaded application data',
+            }
+        else:
+            data['message'] = 'Failed to download pcap'
+            return send_response(data, api)
+    except Exception as exp:
+        logger.exception('Downloading application data')
+        data['message'] = str(exp)
+    return send_response(data, api)
+
+
+# TODO: If directory listing is needed
+def generate_nested_directory(sftp, root_path, current_path):
+    directories = []
+    for item in sftp.listdir_attr(current_path):
+        if S_ISDIR(item.st_mode):
+            nested_path = os.path.join(current_path, item.filename)
+            nested_directories = generate_nested_directory(
+                sftp, root_path, nested_path)
+            directories.append({
+                'name': item.filename,
+                'path': os.path.relpath(nested_path, root_path),
+                'directories': nested_directories,
+            })
+    return directories
+
+
+def get_app_container_list(ssh_conn_string, app_container_dir):
+    """Get app container paths recursively."""
+    transport, jumpbox = ssh_jump_host(ssh_conn_string)
+    sftp = transport.open_sftp()
+    recursive = generate_nested_directory(
+        sftp,
+        app_container_dir,
+        app_container_dir)
+    print(recursive)
+    transport.close()
+    jumpbox.close()
+# AJAX
+
+
+@require_http_methods(['POST'])
+def touch(request, api=False):
+    """Sending Touch Events."""
+    data = {
+        'status': 'failed',
+        'message': '',
+    }
+    try:
+        x_axis = request.POST['x']
+        y_axis = request.POST['y']
+        event = request.POST['event']
+        instance_id = request.POST['instance_id']
+        if not is_number(x_axis) and not is_number(y_axis):
+            logger.error('Axis parameters must be numbers')
+            return invalid_params()
+        failed = common_check(instance_id)
+        if failed:
+            return send_response(failed, api)
+        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
+        ci = CorelliumInstanceAPI(apikey, instance_id)
+        ci.device_input(event, x_axis, y_axis)
+        data = {'status': 'ok'}
+    except Exception as exp:
+        logger.exception('Sending Touch Events')
+        data['message'] = str(exp)
+    return send_response(data)
+# AJAX + HTML
+
+
+@require_http_methods(['POST', 'GET'])
+def system_logs(request, api=False):
+    """Show system logs."""
+    data = {
+        'status': 'failed',
+        'message': 'Failed to get system logs',
+    }
+    try:
+        if request.method == 'POST':
+            instance_id = request.POST['instance_id']
+            failed = common_check(instance_id)
+            if failed:
+                return send_response(failed, api)
+            apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
+            ci = CorelliumInstanceAPI(apikey, instance_id)
+            data = {'status': 'ok', 'message': ci.console_log()}
+            return send_response(data)
+        logger.info('Getting system logs')
+        instance_id = request.GET['instance_id']
+        failed = common_check(instance_id)
+        if failed:
+            return print_n_send_error_response(
+                request, failed['message'], api)
+        template = 'dynamic_analysis/ios/system_logs.html'
+        return render(request,
+                      template,
+                      {'instance_id': instance_id,
+                       'version': settings.MOBSF_VER,
+                       'title': 'Live System logs'})
+    except Exception as exp:
+        err = 'Getting system logs'
+        logger.exception(err)
+        if request.method == 'POST':
+            data['message'] = str(exp)
+            return send_response(data)
+        return print_n_send_error_response(request, err, api)

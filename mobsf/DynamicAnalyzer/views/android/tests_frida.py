@@ -42,6 +42,7 @@ def list_frida_scripts(request, api=False):
     files = glob.glob(others + '**/*.js', recursive=True)
     for item in files:
         scripts.append(Path(item).stem)
+    scripts.sort()
     return send_response({'status': 'ok',
                           'files': scripts},
                          api)
@@ -119,6 +120,7 @@ def instrument(request, api=False):
         if cls_trace:
             extras['class_trace'] = cls_trace.strip()
         if (is_attack_pattern(default_hooks)
+                or is_attack_pattern(auxiliary_hooks)
                 or not is_md5(md5_hash)):
             return invalid_params(api)
         package = get_package_name(md5_hash)

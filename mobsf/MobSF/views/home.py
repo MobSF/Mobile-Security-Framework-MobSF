@@ -210,6 +210,16 @@ def zip_format(request):
     return render(request, template, context)
 
 
+def dynamic_analysis(request):
+    """Dynamic Analysis Landing."""
+    context = {
+        'title': 'Dynamic Analysis',
+        'version': settings.MOBSF_VER,
+    }
+    template = 'general/dynamic.html'
+    return render(request, template, context)
+
+
 def not_found(request):
     """Not Found Route."""
     context = {

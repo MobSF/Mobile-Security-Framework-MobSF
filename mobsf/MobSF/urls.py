@@ -8,8 +8,10 @@ from mobsf.DynamicAnalyzer.views.android import (
     tests_frida,
 )
 from mobsf.DynamicAnalyzer.views.ios import dynamic_analyzer as idz
-from mobsf.DynamicAnalyzer.views.ios import(
-    instance,
+from mobsf.DynamicAnalyzer.views.ios import (
+    corellium_instance as instance,
+    report as ios_view_report,
+    tests_frida as ios_tests_frida,
 )
 from mobsf.MobSF import utils
 from mobsf.MobSF.views import home
@@ -96,6 +98,7 @@ if settings.API_ONLY == '0':
         re_path(r'^error/$', home.error, name='error'),
         re_path(r'^not_found/$', home.not_found),
         re_path(r'^zip_format/$', home.zip_format),
+        re_path(r'^dynamic_analysis/$', home.dynamic_analysis, name='dynamic'),
 
         # Static Analysis
         # Android
@@ -143,9 +146,9 @@ if settings.API_ONLY == '0':
                 shared_func.compare_apps),
 
         # Dynamic Analysis
-        re_path(r'^dynamic_analysis/$',
-                dz.dynamic_analysis,
-                name='dynamic'),
+        re_path(r'^android/dynamic_analysis/$',
+                dz.android_dynamic_analysis,
+                name='dynamic_android'),
         re_path(r'^android_dynamic/(?P<checksum>[0-9a-f]{32})$',
                 dz.dynamic_analyzer,
                 name='dynamic_analyzer'),
@@ -229,6 +232,9 @@ if settings.API_ONLY == '0':
         re_path(r'^ios/dynamic_analyzer/(?P<checksum>[0-9a-f]{32})$',
                 idz.dynamic_analyzer,
                 name='dynamic_analyzer_ios'),
+        re_path(r'^ios/dynamic_analyzer/$',
+                idz.dynamic_analyzer_from_device,
+                name='dynamic_ios_installed'),
         re_path(r'^ios/run_app/$',
                 instance.run_app,
                 name='run_app'),
@@ -238,9 +244,34 @@ if settings.API_ONLY == '0':
         re_path(r'^ios/network_capture/$',
                 instance.network_capture,
                 name='network_capture'),
+        re_path(r'^ios/live_pcap_download/$',
+                instance.live_pcap_download,
+                name='ios_live_pcap_download'),
         re_path(r'^ios/ssh_execute/$',
                 instance.ssh_execute,
                 name='ssh_execute'),
+        re_path(r'^ios/touch/$',
+                instance.touch,
+                name='ios_touch'),
+        re_path(r'^ios/system_logs/$',
+                instance.system_logs,
+                name='ios_system_logs'),
+        re_path(r'^ios/download_data/(?P<checksum>[0-9a-f]{32})$',
+                instance.download_data,
+                name='ios_download_data'),
+        re_path(r'^ios/instrument/$',
+                ios_tests_frida.ios_instrument,
+                name='ios_instrument'),
+        re_path(r'^ios/list_frida_scripts/$',
+                ios_tests_frida.list_ios_frida_scripts,
+                name='list_ios_frida_scripts'),
+        re_path(r'^ios/get_script/$',
+                ios_tests_frida.ios_get_script,
+                name='ios_get_script'),
+        re_path(r'^ios/view_report/(?P<checksum>[0-9a-f]{32})$',
+                ios_view_report.ios_view_report,
+                name='ios_view_report'),
+
         # Test
         re_path(r'^tests/$', tests.start_test),
     ])

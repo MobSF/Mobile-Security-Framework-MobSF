@@ -47,7 +47,7 @@ URL_REGEX = re.compile(
         r'[\w().=/;,#:@?&~*+!$%\'{}-]+)'
     ),
     re.UNICODE)
-EMAIL_REGEX = re.compile(r'[\w.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
+EMAIL_REGEX = re.compile(r'[\w+.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
 
 
 def hash_gen(app_path) -> tuple:

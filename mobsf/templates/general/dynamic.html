@@ -1,0 +1,45 @@
+{% extends "base/base_layout.html" %}
+ {% block sidebar_option %}
+      sidebar-collapse
+{% endblock %}
+{% block content %}
+<div class="content-wrapper">
+  <div class="content-header">
+  </div>
+   <div class="container-fluid">
+        <div class="row">
+        
+
+            <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                <h1>MobSF Dynamic Analyzer</h1>
+              </br></br>
+                  <div class="h-100 d-flex align-items-center justify-content-center">
+                    <div class="card justify-content-center" style="width: 25rem;">
+
+                      
+                        <i style="color:#A4C639;" class="fab fa-android fa-10x d-flex justify-content-center"></i>
+                        <div class="card-body">
+                          <h4 class="d-flex justify-content-center">Android Dynamic Analyzer</h4>
+                          <p class="card-text">Perform Dynamic Analysis of Android Applications.</p>
+                          <a href="{% url 'dynamic_android' %}" class="btn btn-primary d-flex justify-content-center">Android Dynamic Analyzer</a>
+                        </div>
+                      </div>
+                      <div class="h-100 d-flex align-items-center justify-content-center">&nbsp;&nbsp;&nbsp;</div>
+                      <div class="card justify-content-center" style="width: 25rem;">
+                        <i style="color:#cccccc;" class="fab fa-apple fa-10x d-flex justify-content-center"></i>
+                        <div class="card-body">
+                          <h4 class="d-flex justify-content-center">iOS Dynamic Analyzer</h4>
+                          <p class="card-text">Perform Dynamic Analysis of iOS Applications.</p>
+                          <a href="{% url 'dynamic_ios' %}" class="btn btn-primary d-flex justify-content-center">iOS Dynamic Analyzer</a>
+                        </div>
+                      </div>
+                    </div>
+          </div>
+        </div>
+       </div>
+     </div>
+    </div>
+</div>
+{% endblock %}

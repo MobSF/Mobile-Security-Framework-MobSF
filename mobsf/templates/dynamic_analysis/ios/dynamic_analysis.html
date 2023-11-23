@@ -64,6 +64,7 @@ textarea:focus {
                         <h4>MobSF iOS Dynamic Analyzer</h4>
                         <div class="card-body">
                           <div class="table-responsive">
+                           {% if not corellium_auth %}<h5 style="color:#FFA500">Cannot authenticate with Corellium. Please ensure that <strong>MOBSF_CORELLIUM_API_KEY</strong> is configured.</h5>{% endif %}
                            <h6> Correllium Project ID: <strong>{{ project_id }}</strong>  </h6>
                            <a class="btn btn-info" onclick="javascript:location.reload()"><i class="fa fa-retweet"></i> Refresh</a>
                            <a class="btn btn-success" role="button" data-toggle="modal" data-target="#create_instance"><i class="fab fa-apple"></i> Create VM</a>
@@ -156,10 +157,10 @@ textarea:focus {
                            </td>
                             <td align="center"> 
                               <p>
-                                <a class="btn btn-success disable" onclick="start_ios_dynamic('{% url 'setup_environment' checksum=e.MD5 %}', '{% url 'dynamic_analyzer_ios' checksum=e.MD5 %}')"><i class="fab fa-apple"></i> Start Dynamic Analysis</a>
+                                <a class="btn btn-success disable" onclick="upload_start_ios_dynamic('{% url 'setup_environment' checksum=e.MD5 %}', '{% url 'dynamic_analyzer_ios' checksum=e.MD5 %}')"><i class="fab fa-apple"></i> Upload &amp; Start Dynamic Analysis</a>
                               </p>
                               <p>
-                                 <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="../dynamic_report/{{ e.MD5 }}"><i class="fa fa-mobile"></i> View Report </a>
+                                 <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url 'ios_view_report' checksum=e.MD5 %}"><i class="fa fa-mobile"></i> View Report </a>
                               </p>
                             </td>
                         </tr>
@@ -170,15 +171,8 @@ textarea:focus {
               </br>
                 <h4> Apps in Device</h4>
                 <table id="in_device" class="table table-bordered table-hover table-striped">
-                  <thead>
-                  <tr>
-                      <th>APP</th>
-                      <th>BUNDLE ID</th>
-                      <th>APP TYPE</th>
-                      <th>ACTION</th>
-                  </tr>
-                  </thead>
                   <tbody>
+                 
                   </tbody>
               </table>
 
@@ -370,11 +364,18 @@ function list_apps(){
                     },
                 success : function(json) {
                     if (json.status==='ok'){
+                      $('#in_device').append('<thead><tr> <th>APP</th> <th>BUNDLE ID</th> <th>APP TYPE</th> <th>ACTION</th> </tr></thead><tbody></tbody>');
                         for(var i=0; i < json.message.length; i++) {
                               let name = json.message[i].name;
                               let bundle = json.message[i].bundleID;
                               let type = json.message[i].applicationType;
-                              $('#in_device > tbody:last-child').append(`<tr><td>${name}</td><td>${bundle}</td><td>${type}</td><td><a class="btn btn-success disable" onclick="dynamic_loader()" href=""><i class="fab fa-apple"></i> Start Dynamic Analysis</a></td></tr>`);
+                              var order;
+                              if (type === 'User')
+                                order = 'first';
+                              else
+                                order = 'last';
+                              var url = '{% url 'dynamic_ios_installed'%}?bundleid='+ bundle +'&instance_id=' + $('#ios_dynamic').val();
+                              $('#in_device > tbody:' + order + '-child').append(`<tr><td>${name}</td><td>${bundle}</td><td>${type}</td><td><a class="btn btn-success disable" onclick="dynamic_loader()" href="${url}"><i class="fab fa-apple"></i> Start Dynamic Analysis</a></td></tr>`);
                         }
                     }
                     else {
@@ -693,9 +694,9 @@ $("#create_vm").click(function() {
         });
 });
 
-// Start iOS Dynamic Analyzer
+// Upload and start iOS Dynamic Analyzer
 
-function start_ios_dynamic(url, dm_url){
+function upload_start_ios_dynamic(url, dm_url){
   dynamic_loader();
   $.ajax({
           url: url,
@@ -728,6 +729,7 @@ function start_ios_dynamic(url, dm_url){
                   }
       });
 }
+
 
 
 </script>

@@ -9,6 +9,7 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 SALT = 'i0s_m0bsf'
 
+
 def is_instance_id(user_input):
     """Check if string is valid instance id."""
     reg = r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'

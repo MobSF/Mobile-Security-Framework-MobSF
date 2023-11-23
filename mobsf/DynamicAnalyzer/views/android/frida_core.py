@@ -90,7 +90,7 @@ class Frida:
         scripts = [self.code]
         scripts.extend(self.get_default_scripts())
         scripts.extend(self.get_auxiliary())
-        final = 'setTimeout(function() {{ {} }}, 0)'.format(
+        final = 'setTimeout(function() {{ {} }}, 1000)'.format(
             '\n'.join(scripts))
         return final
 

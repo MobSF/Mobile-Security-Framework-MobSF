@@ -43,7 +43,7 @@ from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 logger = logging.getLogger(__name__)
 
 
-def dynamic_analysis(request, api=False):
+def android_dynamic_analysis(request, api=False):
     """Android Dynamic Analysis Entry point."""
     try:
         scan_apps = []
@@ -97,7 +97,7 @@ def dynamic_analysis(request, api=False):
                    'version': settings.MOBSF_VER}
         if api:
             return context
-        template = 'dynamic_analysis/dynamic_analysis.html'
+        template = 'dynamic_analysis/android/dynamic_analysis.html'
         return render(request, template, context)
     except Exception as exp:
         logger.exception('Dynamic Analysis')

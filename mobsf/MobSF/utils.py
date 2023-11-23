@@ -6,6 +6,7 @@ import logging
 import ntpath
 import os
 import platform
+import random
 import re
 import sys
 import shutil
@@ -601,11 +602,23 @@ def cmd_injection_check(data):
 
 
 def strict_package_check(user_input):
-    """Strict package name check."""
-    pat = re.compile(r'^([A-Za-z]{1}[\w]*\.)+[A-Za-z][\w]*$')
+    """Strict package name check.
+
+    For android package and ios bundle id
+    """
+    pat = re.compile(r'^([\w]*\.)+[\w]*$')
     resp = re.match(pat, user_input)
     if not resp:
-        logger.error('Invalid package/class name')
+        logger.error('Invalid package name/bundle id/class name')
+    return resp
+
+
+def strict_ios_class(user_input):
+    """Strict check to see if input is valid iOS class."""
+    pat = re.compile(r'^([\w\.]+)$')
+    resp = re.match(pat, user_input)
+    if not resp:
+        logger.error('Invalid class name')
     return resp
 
 
@@ -737,3 +750,8 @@ def settings_enabled(attr):
         return getattr(settings, attr) not in disabled
     except Exception:
         return False
+
+
+def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
+    """Generate random string."""
+    return ''.join(random.choice(chars) for _ in range(size))
