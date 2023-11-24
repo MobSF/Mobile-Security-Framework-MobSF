@@ -425,7 +425,7 @@ def take_screenshot(request, api=False):
         if r:
             data['status'] = OK
             if save == '1':
-                sfile = dwd / f'{checksum}-{id_generator()}.png'
+                sfile = dwd / f'{checksum}-sshot-{id_generator()}.png'
                 sfile.write_bytes(r)
                 data['message'] = 'Screenshot saved!'
             else:

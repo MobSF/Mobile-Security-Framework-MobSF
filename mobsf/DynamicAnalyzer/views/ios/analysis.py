@@ -24,7 +24,8 @@ def get_screenshots(checksum, download_dir):
     screenshots = []
     screen_dir = Path(download_dir)
     for img in screen_dir.glob('*.png'):
-        if img.name.startswith(checksum):
+        if (img.name.startswith(checksum)
+                and 'sshot' in img.name):
             screenshots.append(img.name)
     return screenshots
 
