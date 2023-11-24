@@ -20,11 +20,13 @@ from mobsf.MobSF.utils import (
     is_md5,
     key,
     print_n_send_error_response,
+    replace,
 )
 
 
 logger = logging.getLogger(__name__)
 register.filter('key', key)
+register.filter('replace', replace)
 
 
 def ios_view_report(request, checksum, api=False):

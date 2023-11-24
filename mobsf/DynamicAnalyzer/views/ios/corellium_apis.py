@@ -232,8 +232,19 @@ class CorelliumInstanceAPI:
             return r.json()
         elif r.status_code in ERROR_RESP:
             return r.json()
-        else:
-            return False
+        return False
+
+    def get_icons(self, bundleids):
+        """Get app icons by bundleId."""
+        r = requests.get(
+            (f'{self.api}/instances/{self.instance_id}'
+             f'/agent/v1/app/icons?{bundleids}'),
+            headers=self.headers)
+        if r.status_code in SUCCESS_RESP:
+            return r.json()
+        elif r.status_code in ERROR_RESP:
+            return r.json()
+        return False
 
     def screenshot(self):
         """Take screenshot inside VM."""

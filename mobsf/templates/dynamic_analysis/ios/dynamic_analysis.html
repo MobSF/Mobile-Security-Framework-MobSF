@@ -239,6 +239,16 @@ textarea:focus {
 <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
 <script>
 
+// Escape HTML
+function escapeHtml(unsafe){
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 // Load Modal Data
 // Load Supported Models
 $('#create_instance').on('shown.bs.modal', function () {
@@ -351,6 +361,7 @@ if ($('#ios_dynamic').val()){
 $('#ios_dynamic').on('change', function() {
   list_apps();
 });
+
 // List installed apps
 function list_apps(){
   $('#in_device tbody tr').remove();
@@ -365,17 +376,30 @@ function list_apps(){
                 success : function(json) {
                     if (json.status==='ok'){
                       $('#in_device').append('<thead><tr> <th>APP</th> <th>BUNDLE ID</th> <th>APP TYPE</th> <th>ACTION</th> </tr></thead><tbody></tbody>');
-                        for(var i=0; i < json.message.length; i++) {
+                      for(var i=0; i < json.message.length; i++) {
                               let name = json.message[i].name;
                               let bundle = json.message[i].bundleID;
                               let type = json.message[i].applicationType;
+                              let checksum = json.message[i].checksum;
+                              let reportExists = json.message[i].reportExists;
+                              let iconb64;
+                              if (json.message[i].icon)
+                                iconb64 = json.message[i].icon;
+                              else
+                                iconb64 = '';
+                              var buttonState = 'disabled';
+                              if (reportExists)
+                                buttonState = '';
                               var order;
                               if (type === 'User')
                                 order = 'first';
                               else
                                 order = 'last';
-                              var url = '{% url 'dynamic_ios_installed'%}?bundleid='+ bundle +'&instance_id=' + $('#ios_dynamic').val();
-                              $('#in_device > tbody:' + order + '-child').append(`<tr><td>${name}</td><td>${bundle}</td><td>${type}</td><td><a class="btn btn-success disable" onclick="dynamic_loader()" href="${url}"><i class="fab fa-apple"></i> Start Dynamic Analysis</a></td></tr>`);
+
+                              var url = `{% url 'dynamic_ios_installed'%}?bundleid=${escapeHtml(bundle)}&instance_id=${$('#ios_dynamic').val()}`;
+                              $('#in_device > tbody:' + order + '-child').append(
+                                `<tr><td align="center"><img id="app_icon" src="data:image/png;base64,${escapeHtml(iconb64)}"/><br/><strong>${escapeHtml(name)}</strong></td><td>${escapeHtml(bundle)}</td><td>${escapeHtml(type)}</td><td><p><a class="btn btn-success disable" onclick="dynamic_loader()" href="${url}"><i class="fab fa-apple"></i> Start Dynamic Analysis</a> <a class="btn btn-info ${buttonState}" href="../../ios/view_report/${checksum}"><i class="fa fa-mobile"></i> View Report </a></p></td></tr>`);
+                                
                         }
                     }
                     else {

@@ -702,6 +702,19 @@ def key(data, key_name):
     return data.get(key_name)
 
 
+def replace(value, arg):
+    """
+    Replacing filter.
+
+    Use `{{ "aaa"|replace:"a|b" }}`
+    """
+    if len(arg.split('|')) != 2:
+        return value
+
+    what, to = arg.split('|')
+    return value.replace(what, to)
+
+
 def android_component(data):
     """Return Android component from data."""
     cmp = ''

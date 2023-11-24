@@ -15,6 +15,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 
 from mobsf.MobSF.utils import (
+    get_md5,
     id_generator,
     is_md5,
     is_number,
@@ -189,7 +190,7 @@ def destroy_instance(request, api=False):
 @require_http_methods(['POST'])
 def list_apps(request, api=False):
     """List installed apps."""
-    logger.info('Listing installed apps')
+    logger.info('Listing installed applications')
     data = {
         'status': 'failed',
         'message': 'Failed to list installed apps'}
@@ -200,13 +201,44 @@ def list_apps(request, api=False):
             return send_response(failed, api)
         apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
         ci = CorelliumInstanceAPI(apikey, instance_id)
+        # Get apps in device
         r = ci.list_apps()
+        app_list = []
+        bundle_ids = []
         if r and r.get('apps'):
-            data = {
-                'status': OK,
-                'message': r['apps']}
+            for i in r.get('apps'):
+                bundle = i['bundleID']
+                bundle_ids.append(f'bundleID={bundle}')
         elif r and r.get('error'):
             data['message'] = r.get('error')
+            return send_response(failed, api)
+        else:
+            data['message'] = 'Failed to list apps'
+            return send_response(failed, api)
+        # Get app icons
+        logger.info('Getting all application icons')
+        ic = ci.get_icons('&'.join(bundle_ids))
+        for i in r.get('apps'):
+            bundleid = i['bundleID']
+            checksum = get_md5(bundleid.encode('utf-8'))
+            dump_file = Path(
+                settings.UPLD_DIR) / checksum / 'mobsf_dump_file.txt'
+            if ic and ic.get('icons'):
+                icon_url = ic['icons'].get(bundleid)
+            else:
+                icon_url = ''
+            app_list.append({
+                'applicationType': i['applicationType'],
+                'name': i['name'],
+                'bundleID': bundleid,
+                'icon': icon_url,
+                'checksum': checksum,
+                'reportExists': dump_file.exists(),
+            })
+        data = {
+            'status': OK,
+            'message': app_list}
+
     except Exception as exp:
         logger.exception('Listing installed apps')
         data['message'] = str(exp)
@@ -471,6 +503,35 @@ def live_pcap_download(request, api=False):
     return send_response(data, api)
 
 
+# TODO: If directory listing is needed
+def generate_nested_directory(sftp, root_path, current_path):
+    directories = []
+    for item in sftp.listdir_attr(current_path):
+        if S_ISDIR(item.st_mode):
+            nested_path = os.path.join(current_path, item.filename)
+            nested_directories = generate_nested_directory(
+                sftp, root_path, nested_path)
+            directories.append({
+                'name': item.filename,
+                'path': os.path.relpath(nested_path, root_path),
+                'directories': nested_directories,
+            })
+    return directories
+
+
+def get_app_container_list(ssh_conn_string, app_container_dir):
+    """Get app container paths recursively."""
+    transport, jumpbox = ssh_jump_host(ssh_conn_string)
+    sftp = transport.open_sftp()
+    recursive = generate_nested_directory(
+        sftp,
+        app_container_dir,
+        app_container_dir)
+    print(recursive)
+    transport.close()
+    jumpbox.close()
+
+
 # AJAX
 SSH_TARGET = None
 
@@ -568,35 +629,6 @@ def download_data(request, checksum, api=False):
         logger.exception('Downloading application data')
         data['message'] = str(exp)
     return send_response(data, api)
-
-
-# TODO: If directory listing is needed
-def generate_nested_directory(sftp, root_path, current_path):
-    directories = []
-    for item in sftp.listdir_attr(current_path):
-        if S_ISDIR(item.st_mode):
-            nested_path = os.path.join(current_path, item.filename)
-            nested_directories = generate_nested_directory(
-                sftp, root_path, nested_path)
-            directories.append({
-                'name': item.filename,
-                'path': os.path.relpath(nested_path, root_path),
-                'directories': nested_directories,
-            })
-    return directories
-
-
-def get_app_container_list(ssh_conn_string, app_container_dir):
-    """Get app container paths recursively."""
-    transport, jumpbox = ssh_jump_host(ssh_conn_string)
-    sftp = transport.open_sftp()
-    recursive = generate_nested_directory(
-        sftp,
-        app_container_dir,
-        app_container_dir)
-    print(recursive)
-    transport.close()
-    jumpbox.close()
 # AJAX
 
 

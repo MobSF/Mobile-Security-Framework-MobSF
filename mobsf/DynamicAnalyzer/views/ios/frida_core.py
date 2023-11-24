@@ -62,7 +62,7 @@ class Frida:
         header = []
         # Do not add interceptor hooks more than once.
         tracers = ('file-access', 'nslog', 'pasteboard', 'network',
-                   'text-inputs', 'jailbreak_bypass', 'crypto')
+                   'text-inputs', 'jailbreak_bypass', 'crypto', 'sqlite')
         if not selected_scripts:
             return header
         all_scripts = self.frida_dir / script_type
@@ -144,7 +144,7 @@ class Frida:
         else:
             logger.error('[Frida] %s', message)
 
-    def frida_ssh(self):
+    def frida_ssh_forward(self):
         """Setup SSH tunnel and port forwarding for corellium."""
         try:
             logger.info('Setting up SSH tunnel and port forwarding')
@@ -168,7 +168,7 @@ class Frida:
                 _DEVICE = frida.get_remote_device()
                 _PID = _DEVICE.spawn([self.bundle_id])
             except frida.ServerNotRunningError:
-                self.frida_ssh()
+                self.frida_ssh_forward()
             if not _PID:
                 _PID = _DEVICE.spawn([self.bundle_id])
             logger.info('Spawning %s', self.bundle_id)
@@ -233,7 +233,7 @@ class Frida:
                 device = frida.get_remote_device()
                 processes = device.enumerate_applications(scope='minimal')
             except frida.ServerNotRunningError:
-                self.frida_ssh()
+                self.frida_ssh_forward()
                 device = frida.get_remote_device()
                 processes = device.enumerate_applications(scope='minimal')
             if device and processes:
