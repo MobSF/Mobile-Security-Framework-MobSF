@@ -63,9 +63,12 @@ def run_analysis(app_dir, checksum):
     for email in EMAIL_REGEX.findall(data.lower()):
         if (email not in emails) and (not email.startswith('//')):
             emails.append(email)
-    analysis_result['appdata'] = get_app_files(
+    pfiles = get_app_files(
         app_dir,
         f'{checksum}-app-container')
+    analysis_result['sqlite'] = pfiles['sqlite']
+    analysis_result['plist'] = pfiles['plist']
+    analysis_result['others'] = pfiles['others']
     analysis_result['urls'] = urls
     analysis_result['domains'] = domains
     analysis_result['emails'] = emails
@@ -86,7 +89,7 @@ def ios_api_analysis(app_dir):
         'pasteboard': [],
         'textinputs': [],
         'datadir': [],
-        'sqlite': [],
+        'sql': [],
     }
     try:
         dump_file = app_dir / 'mobsf_dump_file.txt'
@@ -121,7 +124,7 @@ def ios_api_analysis(app_dir):
             elif parsed.get('datadir'):
                 dump['datadir'] = parsed['datadir']
             elif parsed.get('sql'):
-                dump['sqlite'].append(parsed['sql'])
+                dump['sql'].append(parsed['sql'])
             if len(dump['network']) > 0:
                 dump['network'] = list(
                     {v['url']: v for v in dump['network']}.values())

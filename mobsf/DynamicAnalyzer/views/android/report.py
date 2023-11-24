@@ -4,6 +4,7 @@ import logging
 import ntpath
 import os
 import io
+from pathlib import Path
 
 from django.conf import settings
 from django.shortcuts import render
@@ -34,6 +35,10 @@ from mobsf.MobSF.utils import (
     key,
     print_n_send_error_response,
     read_sqlite,
+)
+
+from biplist import (
+    writePlistToString,
 )
 
 
@@ -130,11 +135,10 @@ def view_file(request, api=False):
             return print_n_send_error_response(request,
                                                'Invalid Parameters',
                                                api)
-        src = os.path.join(
-            settings.UPLD_DIR,
-            md5_hash,
-            'DYNAMIC_DeviceData/')
-        sfile = os.path.join(src, fil)
+        src = Path(settings.UPLD_DIR) / md5_hash / 'DYNAMIC_DeviceData'
+        sfile = src / fil
+        src = src.as_posix()
+        sfile = sfile.as_posix()
         if not is_safe_path(src, sfile) or is_path_traversal(fil):
             err = 'Path Traversal Attack Detected'
             return print_n_send_error_response(request, err, api)
@@ -143,7 +147,9 @@ def view_file(request, api=False):
                 mode='r',
                 encoding='ISO-8859-1') as flip:
             dat = flip.read()
-        if fil.endswith('.xml') and typ == 'xml':
+        if fil.endswith('.plist') and 'bplist00' in dat:
+            dat = writePlistToString(dat).decode('utf-8', 'ignore')
+        if fil.endswith(('.xml', '.plist')) and typ in ['xml', 'plist']:
             rtyp = 'xml'
         elif typ == 'db':
             dat = None

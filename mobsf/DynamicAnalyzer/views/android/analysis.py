@@ -180,20 +180,19 @@ def safe_paths(tar_meta):
         yield fh
 
 
-def get_app_files(apk_dir, package):
-    """Get files from device."""
-    logger.info('Getting app files')
-    all_files = {'xml': [], 'sqlite': [], 'others': []}
+def untar_files(tar_loc, untar_dir):
+    """Untar files."""
+    logger.info('Extracting Tar files')
     # Extract Device Data
-    tar_loc = os.path.join(apk_dir, package + '.tar')
-    untar_dir = os.path.join(apk_dir, 'DYNAMIC_DeviceData/')
-    if not is_file_exists(tar_loc):
-        return all_files
-    if os.path.exists(untar_dir):
+    if not tar_loc.exists():
+        return False
+    if untar_dir.exists():
         # fix for permission errors
         shutil.rmtree(untar_dir)
+    else:
+        os.makedirs(untar_dir)
     try:
-        with tarfile.open(tar_loc, errorlevel=1) as tar:
+        with tarfile.open(tar_loc.as_posix(), errorlevel=1) as tar:
 
             def is_within_directory(directory, target):
                 abs_directory = os.path.abspath(directory)
@@ -216,14 +215,26 @@ def get_app_files(apk_dir, package):
         pass
     except Exception:
         logger.exception('Tar extraction failed')
+    return True
+
+
+def get_app_files(apk_dir, package):
+    """Get files from device."""
+    logger.info('Getting app files')
+    all_files = {'xml': [], 'sqlite': [], 'others': [], 'plist': []}
+    app_dir = Path(apk_dir)
+    tar_loc = app_dir / f'{package}.tar'
+    untar_dir = app_dir / 'DYNAMIC_DeviceData'
+    success = untar_files(tar_loc, untar_dir)
+    if not success:
+        return all_files
     # Do Static Analysis on Data from Device
     try:
-        if not os.path.exists(untar_dir):
-            os.makedirs(untar_dir)
+        untar_dir = untar_dir.as_posix()
         for dir_name, _, files in os.walk(untar_dir):
             for jfile in files:
                 file_path = os.path.join(untar_dir, dir_name, jfile)
-                fileparam = file_path.replace(untar_dir, '')
+                fileparam = file_path.replace(f'{untar_dir}/', '')
                 if is_pipe_or_link(file_path):
                     continue
                 if jfile == 'lib':
@@ -232,6 +243,9 @@ def get_app_files(apk_dir, package):
                     if jfile.endswith('.xml'):
                         all_files['xml'].append(
                             {'type': 'xml', 'file': fileparam})
+                    elif jfile.endswith('.plist'):
+                        all_files['plist'].append(
+                            {'type': 'plist', 'file': fileparam})
                     else:
                         with open(file_path,  # lgtm [py/path-injection]
                                   'r',
