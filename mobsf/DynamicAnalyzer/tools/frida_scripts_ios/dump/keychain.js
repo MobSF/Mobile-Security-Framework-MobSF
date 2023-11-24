@@ -303,7 +303,7 @@ function dumpKeyChain(){
             }
         }
     }
-    send('Dumping iOS keychain')
+    send('Dumping Application Keychain')
     send(JSON.stringify({'[MBSFDUMP] keychain': keychain_items}));
     }
     dumpKeyChain();

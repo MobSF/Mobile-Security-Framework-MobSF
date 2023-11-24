@@ -21,7 +21,7 @@ function convertNsDictionaryToJson(nsDict) {
 }
 
 function ns_userdefaults() {
-    send("Dumping NSUserDefaults plist file");
+    send("Dumping NSUserDefaults Data");
     var NSUserDefaults = ObjC.classes.NSUserDefaults;
     var NSDictionary = NSUserDefaults.alloc().init().dictionaryRepresentation();
     send(JSON.stringify({'[MBSFDUMP] nsuserdefaults': convertNsDictionaryToJson(NSDictionary)}));

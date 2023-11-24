@@ -1,4 +1,4 @@
-send('Tracing Network calls');
+send('Tracing Network Calls');
 // NSURLSession
 try {
     var hook = ObjC.classes.NSURLSession["- dataTaskWithRequest:completionHandler:"];

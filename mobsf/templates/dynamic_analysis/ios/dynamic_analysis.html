@@ -157,11 +157,11 @@ textarea:focus {
                            </td>
                             <td align="center"> 
                               <p>
-                                <a class="btn btn-success disable" onclick="upload_start_ios_dynamic('{% url 'setup_environment' checksum=e.MD5 %}', '{% url 'dynamic_analyzer_ios' checksum=e.MD5 %}')"><i class="fab fa-apple"></i> Upload &amp; Start Dynamic Analysis</a>
+                                <a class="btn btn-success disable" onclick="upload_start_ios_dynamic('{% url 'setup_environment' checksum=e.MD5 %}')"><i class="fab fa-apple"></i> Upload &amp; Install</a>
                               </p>
                               <p>
-                                 <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url 'ios_view_report' checksum=e.MD5 %}"><i class="fa fa-mobile"></i> View Report </a>
-                              </p>
+                                <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url 'ios_view_report' checksum=e.BUNDLE_HASH %}"><i class="fa fa-mobile"></i> View Report </a>
+                             </p>
                             </td>
                         </tr>
                     {% endfor %}
@@ -396,7 +396,7 @@ function list_apps(){
                               else
                                 order = 'last';
 
-                              var url = `{% url 'dynamic_ios_installed'%}?bundleid=${escapeHtml(bundle)}&instance_id=${$('#ios_dynamic').val()}`;
+                              var url = `{% url 'dynamic_analyzer_ios'%}?bundleid=${escapeHtml(bundle)}&instance_id=${$('#ios_dynamic').val()}`;
                               $('#in_device > tbody:' + order + '-child').append(
                                 `<tr><td align="center"><img id="app_icon" src="data:image/png;base64,${escapeHtml(iconb64)}"/><br/><strong>${escapeHtml(name)}</strong></td><td>${escapeHtml(bundle)}</td><td>${escapeHtml(type)}</td><td><p><a class="btn btn-success disable" onclick="dynamic_loader()" href="${url}"><i class="fab fa-apple"></i> Start Dynamic Analysis</a> <a class="btn btn-info ${buttonState}" href="../../ios/view_report/${checksum}"><i class="fa fa-mobile"></i> View Report </a></p></td></tr>`);
                                 
@@ -720,7 +720,7 @@ $("#create_vm").click(function() {
 
 // Upload and start iOS Dynamic Analyzer
 
-function upload_start_ios_dynamic(url, dm_url){
+function upload_start_ios_dynamic(url){
   dynamic_loader();
   $.ajax({
           url: url,
@@ -731,7 +731,7 @@ function upload_start_ios_dynamic(url, dm_url){
                       instance_id: $('#ios_dynamic').val(),
                       },
                   success : function(json) {
-                      if (json.status!=='ok'){
+                      if (json.status !== 'ok'){
                           stop_loader();
                           Swal.fire(
                           'IPA Install Failed',
@@ -740,7 +740,13 @@ function upload_start_ios_dynamic(url, dm_url){
                           )
                       } else {
                         stop_loader();
-                        location.href = dm_url + '?instance_id=' + $('#ios_dynamic').val();
+                        Swal.fire(
+                          'IPA Installed',
+                          'The IPA is successfully installed',
+                          'success'
+                          ).then(function () {
+                              location.reload();
+                          })
                       }
                   },
                   error : function(xhr,errmsg,err) {

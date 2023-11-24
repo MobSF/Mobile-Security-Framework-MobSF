@@ -1,5 +1,5 @@
 // From: https://node-security.com/posts/frida-for-ios/
-send('Tracing all file access calls');
+send('Tracing File Access Calls');
 Interceptor.attach(ObjC.classes.NSFileManager['- fileExistsAtPath:'].implementation, {
 	onEnter: function (args) {
         var filename = ObjC.Object(args[2]).toString();

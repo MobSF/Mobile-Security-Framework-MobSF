@@ -57,7 +57,7 @@ function getDataProtectionKeysForAllPaths() {
     return dict;
 }
 
-send('Getting files in app data directory');
+send('Dumping Application Directory File Information');
 send(JSON.stringify({'[MBSFDUMP] datadir': getDataProtectionKeysForAllPaths()}));
 
 

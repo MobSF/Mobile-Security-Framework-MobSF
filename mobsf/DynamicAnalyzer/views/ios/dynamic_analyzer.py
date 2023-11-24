@@ -8,7 +8,6 @@ from django.shortcuts import render
 
 from mobsf.MobSF.utils import (
     get_md5,
-    is_md5,
     print_n_send_error_response,
     strict_package_check,
 )
@@ -31,14 +30,16 @@ def dynamic_analysis(request, api=False):
         ipas = StaticAnalyzerIOS.objects.filter(
             FILE_NAME__endswith='.ipa')
         for ipa in reversed(ipas):
+            bundle_hash = get_md5(ipa.BUNDLE_ID.encode('utf-8'))
             frida_dump = Path(
-                settings.UPLD_DIR) / ipa.MD5 / 'mobsf_dump_file.txt'
+                settings.UPLD_DIR) / bundle_hash / 'mobsf_dump_file.txt'
             temp_dict = {
                 'MD5': ipa.MD5,
                 'APP_NAME': ipa.APP_NAME,
                 'APP_VERSION': ipa.APP_VERSION,
                 'FILE_NAME': ipa.FILE_NAME,
                 'BUNDLE_ID': ipa.BUNDLE_ID,
+                'BUNDLE_HASH': bundle_hash,
                 'DYNAMIC_REPORT_EXISTS': frida_dump.exists(),
             }
             scan_apps.append(temp_dict)
@@ -69,43 +70,7 @@ def dynamic_analysis(request, api=False):
         return print_n_send_error_response(request, exp, api)
 
 
-def dynamic_analyzer(request, checksum, api=False):
-    """The iOS Dynamic Analyzer."""
-    try:
-        if not is_md5(checksum):
-            # Additional Check for REST API
-            return print_n_send_error_response(
-                request,
-                'Invalid MD5 Hash',
-                api)
-        instance_id = request.GET.get('instance_id')
-        failed = common_check(instance_id)
-        if failed:
-            return print_n_send_error_response(
-                request,
-                failed['message'],
-                api)
-        db_entry = StaticAnalyzerIOS.objects.filter(
-            MD5=checksum)
-        context = {
-            'hash': checksum,
-            'instance_id': instance_id,
-            'bundle_id': db_entry[0].BUNDLE_ID,
-            'version': settings.MOBSF_VER,
-            'title': 'iOS Dynamic Analyzer'}
-        template = 'dynamic_analysis/ios/dynamic_analyzer.html'
-        if api:
-            return context
-        return render(request, template, context)
-    except Exception:
-        logger.exception('iOS Dynamic Analyzer')
-        return print_n_send_error_response(
-            request,
-            'iOS Dynamic Analysis Failed.',
-            api)
-
-
-def dynamic_analyzer_from_device(request, api=False):
+def dynamic_analyzer(request, api=False):
     """Dynamic Analyzer for in-device iOS apps."""
     try:
         bundleid = request.GET.get('bundleid')
@@ -121,12 +86,12 @@ def dynamic_analyzer_from_device(request, api=False):
                 request,
                 failed['message'],
                 api)
-        checksum = get_md5(bundleid.encode('utf-8'))
-        app_dir = Path(settings.UPLD_DIR) / checksum
+        bundle_hash = get_md5(bundleid.encode('utf-8'))
+        app_dir = Path(settings.UPLD_DIR) / bundle_hash
         if not app_dir.exists():
             app_dir.mkdir()
         context = {
-            'hash': checksum,
+            'hash': bundle_hash,
             'instance_id': instance_id,
             'bundle_id': bundleid,
             'version': settings.MOBSF_VER,

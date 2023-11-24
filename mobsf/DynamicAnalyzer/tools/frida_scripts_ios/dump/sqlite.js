@@ -1,4 +1,4 @@
-send("Tracing Sqlite Queries");
+send("Tracing SQLite Queries");
 
 function hookSql(func, position, pretext) {
     var to_hook = Module.findExportByName('libsqlite3.dylib', func);

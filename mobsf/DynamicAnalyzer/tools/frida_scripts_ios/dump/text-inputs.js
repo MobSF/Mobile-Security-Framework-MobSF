@@ -1,6 +1,6 @@
 // Based on https://codeshare.frida.re/@lichao890427/ios-utils/
 function dump_inputs() {
-    send("Tracing all text inputs to the device");
+    send("Tracing all Text inputs to the device");
     var UIApplication = ObjC.classes.UIApplication;
     Interceptor.attach(UIApplication["- sendAction:to:from:forEvent:"].implementation, {
         onEnter:function(args) {

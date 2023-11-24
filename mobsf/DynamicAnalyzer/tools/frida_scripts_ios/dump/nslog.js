@@ -21,4 +21,4 @@ Interceptor.attach(Module.findExportByName("Foundation", "NSLogv"), {
 		send(JSON.stringify({'[MBSFDUMP] nslog': 'NSLogv -> ' + ObjC.Object(ptr(args[0])).toString()}));
 	}
 });
-send('Tracing all NSLog calls');
+send('Tracing NSLog Calls');

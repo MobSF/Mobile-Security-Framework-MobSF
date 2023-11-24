@@ -5,7 +5,7 @@
  * Author: @federicodotta
  */
 
-send("Tracing Cryoto Operations");
+send("Tracing Crypto Operations");
 Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCrypt"),
     {
     onEnter: function(args) {
