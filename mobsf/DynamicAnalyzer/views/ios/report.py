@@ -17,8 +17,10 @@ from mobsf.DynamicAnalyzer.views.ios.utils import (
     common_check,
 )
 from mobsf.MobSF.utils import (
+    base64_decode,
     is_md5,
     key,
+    pretty_json,
     print_n_send_error_response,
     replace,
 )
@@ -27,6 +29,8 @@ from mobsf.MobSF.utils import (
 logger = logging.getLogger(__name__)
 register.filter('key', key)
 register.filter('replace', replace)
+register.filter('pretty_json', pretty_json)
+register.filter('base64_decode', base64_decode)
 
 
 def ios_view_report(request, checksum, api=False):

@@ -257,7 +257,7 @@ def get_supported_models(request, api=False):
         if not apikey:
             data = {
                 'status': 'failed',
-                'message': 'Missing corellium API key'}
+                'message': 'Missing Corellium API key'}
             return send_response(data, api)
         cm = CorelliumModelsAPI(apikey)
         r = cm.get_models()
@@ -280,7 +280,7 @@ def get_supported_os(request, api=False):
         model = request.POST['model']
         apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
         if not apikey:
-            data['message'] = 'Missing corellium API key'
+            data['message'] = 'Missing Corellium API key'
             return send_response(data, api)
         cm = CorelliumModelsAPI(apikey)
         r = cm.get_supported_os(model)

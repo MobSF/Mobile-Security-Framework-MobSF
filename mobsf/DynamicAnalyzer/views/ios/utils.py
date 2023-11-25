@@ -24,7 +24,7 @@ def common_check(instance_id):
     if not getattr(settings, 'CORELLIUM_API_KEY', ''):
         return {
             'status': 'failed',
-            'message': 'Missing corellium API key'}
+            'message': 'Missing Corellium API key'}
     elif not is_instance_id(instance_id):
         return {
             'status': 'failed',

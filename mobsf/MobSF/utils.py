@@ -1,7 +1,9 @@
 """Common Utils."""
 import ast
+import base64
 import hashlib
 import io
+import json
 import logging
 import ntpath
 import os
@@ -31,6 +33,7 @@ from . import settings
 
 logger = logging.getLogger(__name__)
 ADB_PATH = None
+BASE64_REGEX = re.compile(r'^[-A-Za-z0-9+/]*={0,3}$')
 
 
 class Color(object):
@@ -243,7 +246,7 @@ def python_dict(value):
 
 
 def is_base64(b_str):
-    return re.match('^[A-Za-z0-9+/]+[=]{0,2}$', b_str)
+    return BASE64_REGEX.match(b_str)
 
 
 def is_internet_available():
@@ -713,6 +716,31 @@ def replace(value, arg):
 
     what, to = arg.split('|')
     return value.replace(what, to)
+
+
+def pretty_json(value):
+    """Pretty print JSON."""
+    try:
+        return json.dumps(json.loads(value), indent=4)
+    except Exception:
+        return value
+
+
+def base64_decode(value):
+    """Try Base64 decode."""
+    commonb64s = ('eyJ0')
+    decoded = None
+    try:
+        if is_base64(value) or value.startswith(commonb64s):
+            decoded = base64.b64decode(
+                value).decode('ISO-8859-1')
+            if set(decoded).difference(string.printable):
+                decoded = None
+    except Exception:
+        pass
+    if decoded:
+        return f'{value}\nBase64 Decoded: {decoded}'
+    return value
 
 
 def android_component(data):

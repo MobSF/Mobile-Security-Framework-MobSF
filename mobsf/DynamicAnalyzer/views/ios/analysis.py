@@ -45,7 +45,7 @@ def get_logs_data(app_dir):
 def run_analysis(app_dir, checksum):
     """Run Dynamic File Analysis."""
     analysis_result = {}
-    logger.info('iOS Dynamic File Analysis')
+    logger.info('Dynamic File Analysis')
     domains = {}
     # Collect Log data
     data = get_logs_data(app_dir)
@@ -57,21 +57,22 @@ def run_analysis(app_dir, checksum):
     # Domain Extraction and Malware Check
     logger.info('Performing Malware Check on extracted Domains')
     domains = MalwareDomainCheck().scan(urls)
-
     # Email Etraction Regex
-    emails = []
+    emails = set()
     for email in EMAIL_REGEX.findall(data.lower()):
-        if (email not in emails) and (not email.startswith('//')):
-            emails.append(email)
-    pfiles = get_app_files(
-        app_dir,
-        f'{checksum}-app-container')
+        if email.startswith('//'):
+            continue
+        if email.endswith('.png'):
+            continue
+        emails.add(email)
+    # App data files analysis
+    pfiles = get_app_files(app_dir, f'{checksum}-app-container')
     analysis_result['sqlite'] = pfiles['sqlite']
     analysis_result['plist'] = pfiles['plist']
     analysis_result['others'] = pfiles['others']
     analysis_result['urls'] = urls
     analysis_result['domains'] = domains
-    analysis_result['emails'] = emails
+    analysis_result['emails'] = list(emails)
     return analysis_result
 
 
@@ -95,7 +96,7 @@ def ios_api_analysis(app_dir):
         dump_file = app_dir / 'mobsf_dump_file.txt'
         if not dump_file.exists():
             return dump
-        logger.info('Frida Analyzing Dump data')
+        logger.info('Analyzing Frida Data Dump')
         data = dump_file.read_text(
             encoding='utf-8',
             errors='ignore').splitlines()

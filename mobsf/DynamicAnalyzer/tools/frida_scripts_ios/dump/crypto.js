@@ -17,25 +17,25 @@ Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCrypt"),
         }
 
         if(ptr(args[3]) != 0 ) {
-            cccrypt['key'] = base64ArrayBuffer(Memory.readByteArray(ptr(args[3]),parseInt(args[4])));
+            cccrypt['Key'] = base64ArrayBuffer(Memory.readByteArray(ptr(args[3]),parseInt(args[4])));
         } else {
-            cccrypt['key'] = 0;
+            cccrypt['Key'] = 0;
         }
 
         if(ptr(args[5]) != 0 ) {
-            cccrypt['iv'] = base64ArrayBuffer(Memory.readByteArray(ptr(args[5]),16));
+            cccrypt['IV'] = base64ArrayBuffer(Memory.readByteArray(ptr(args[5]),16));
         } else {
-            cccrypt['iv'] = 0;
+            cccrypt['IV'] = 0;
         }
 
         this.dataInLength = parseInt(args[7]);
 
         if(ptr(args[6]) != 0 ) {
 
-            cccrypt['dataIn'] = base64ArrayBuffer(Memory.readByteArray(ptr(args[6]),this.dataInLength))
+            cccrypt['dataInput'] = base64ArrayBuffer(Memory.readByteArray(ptr(args[6]),this.dataInLength))
 
         } else {
-            cccrypt['dataIn'] = null;
+            cccrypt['dataInput'] = null;
         }
 
         this.dataOut = args[8];
@@ -47,10 +47,10 @@ Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCrypt"),
     onLeave: function(retval) {
         var cccrypt_re = {};
         if(ptr(this.dataOut) != 0 ) {
-            cccrypt_re['dataOut'] = base64ArrayBuffer(Memory.readByteArray(this.dataOut,parseInt(ptr(Memory.readU32(ptr(this.dataOutLength),4)))));
+            cccrypt_re['dataOutput'] = base64ArrayBuffer(Memory.readByteArray(this.dataOut,parseInt(ptr(Memory.readU32(ptr(this.dataOutLength),4)))));
 
         } else {
-            cccrypt_re['dataOut'] = null;
+            cccrypt_re['dataOutput'] = null;
         }
         send(JSON.stringify({'[MBSFDUMP] crypto': cccrypt_re}));
 
@@ -69,16 +69,16 @@ Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCryptorCreate"
         }
 
         if(ptr(args[3]) != 0 ) {
-            cccryptorcreate['key'] = base64ArrayBuffer(Memory.readByteArray(ptr(args[3]),parseInt(args[4])));
+            cccryptorcreate['Key'] = base64ArrayBuffer(Memory.readByteArray(ptr(args[3]),parseInt(args[4])));
 
         } else {
-            cccryptorcreate['key'] = 0;
+            cccryptorcreate['Key'] = 0;
         }
 
         if(ptr(args[5]) != 0 ) {
-            cccryptorcreate['iv'] = base64ArrayBuffer(Memory.readByteArray(ptr(args[5]),16));
+            cccryptorcreate['IV'] = base64ArrayBuffer(Memory.readByteArray(ptr(args[5]),16));
         } else {
-            cccryptorcreate['iv'] = 0; 
+            cccryptorcreate['IV'] = 0; 
         }
         send(JSON.stringify({'[MBSFDUMP] crypto': cccryptorcreate}));
 
@@ -94,10 +94,10 @@ Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCryptorUpdate"
     onEnter: function(args) {
         var cryptorupdate = {}
         if(ptr(args[1]) != 0) {
-            cryptorupdate['dataIn'] = base64ArrayBuffer(Memory.readByteArray(ptr(args[1]),parseInt(args[2])));
+            cryptorupdate['dataInput'] = base64ArrayBuffer(Memory.readByteArray(ptr(args[1]),parseInt(args[2])));
 
         } else {
-            cryptorupdate['dataIn'] = null;
+            cryptorupdate['dataInput'] = null;
         }
 
         //this.len = args[4];
@@ -110,9 +110,9 @@ Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCryptorUpdate"
     onLeave: function(retval) {
         var cryptorupdate_re = {}
         if(ptr(this.out) != 0) {
-            cryptorupdate_re['dataOut'] = base64ArrayBuffer(Memory.readByteArray(this.out,parseInt(ptr(Memory.readU32(ptr(this.len),4)))))
+            cryptorupdate_re['dataOutput'] = base64ArrayBuffer(Memory.readByteArray(this.out,parseInt(ptr(Memory.readU32(ptr(this.len),4)))))
         } else {
-            cryptorupdate_re['dataOut'] = null;
+            cryptorupdate_re['dataOutput'] = null;
         }
         send(JSON.stringify({'[MBSFDUMP] crypto': cryptorupdate_re}));
     }
@@ -129,9 +129,9 @@ Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCryptorFinal")
     onLeave: function(retval) {
         var cccryptorfinal_re = {}
         if(ptr(this.out2) != 0) {
-            cccryptorfinal_re['dataOut'] = base64ArrayBuffer(Memory.readByteArray(this.out2,parseInt(ptr(Memory.readU32(ptr(this.len2),4)))))
+            cccryptorfinal_re['dataOutput'] = base64ArrayBuffer(Memory.readByteArray(this.out2,parseInt(ptr(Memory.readU32(ptr(this.len2),4)))))
         } else {
-            cccryptorfinal_re['dataOut'] = null;
+            cccryptorfinal_re['dataOutput'] = null;
         }
         send(JSON.stringify({'[MBSFDUMP] crypto': cccryptorfinal_re}));
     }

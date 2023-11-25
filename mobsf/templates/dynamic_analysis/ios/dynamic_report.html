@@ -57,23 +57,23 @@ pre {
             </a>
           </li>
           <li class="nav-item">
-            <a href="#tls_tests" class="nav-link">
-              <i class="nav-icon fas fa-lock"></i>
+            <a href="#userdefaults" class="nav-link">
+              <i class="nav-icon fas fa-shapes"></i>
               <p>
-                URLs Invoked
+                UserDefaults Data
               </p>
             </a>
           </li>
            <li class="nav-item">
-            <a href="#exportedactivitytester" class="nav-link">
+            <a href="#keychain" class="nav-link">
               <i class="nav-icon fas fa-shapes"></i>
               <p>
-                User Defaults
+                Keychain Data
               </p>
             </a>
           </li>
           <li class="nav-item">
-            <a href="#activitytester" class="nav-link">
+            <a href="#fileaccess" class="nav-link">
               <i class="nav-icon fa fa-language"></i>
               <p>
                 File Access
@@ -81,7 +81,23 @@ pre {
             </a>
           </li>
           <li class="nav-item">
-            <a href="#deps" class="nav-link">
+            <a href="#appdata" class="nav-link">
+              <i class="nav-icon fas fa-running"></i>
+              <p>
+                App Data Directory
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#network" class="nav-link">
+              <i class="nav-icon fas fa-running"></i>
+              <p>
+                URLs Invoked
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#logs" class="nav-link">
               <i class="nav-icon fas fa-running"></i>
               <p>
                 App Logs
@@ -89,7 +105,7 @@ pre {
             </a>
           </li>
           <li class="nav-item">
-            <a href="#deps" class="nav-link">
+            <a href="#textinput" class="nav-link">
               <i class="nav-icon fas fa-running"></i>
               <p>
                 Text Inputs
@@ -97,15 +113,16 @@ pre {
             </a>
           </li>
           <li class="nav-item">
-            <a href="#deps" class="nav-link">
-              <i class="nav-icon fas fa-running"></i>
+            <a href="#pasteboard" class="nav-link">
+              <i class="nav-icon fas fa-images"></i>
               <p>
                 Pasteboard
               </p>
             </a>
           </li>
+
           <li class="nav-item">
-            <a href="#deps" class="nav-link">
+            <a href="#cookies" class="nav-link">
               <i class="nav-icon fas fa-running"></i>
               <p>
                 App Cookies
@@ -113,16 +130,7 @@ pre {
             </a>
           </li>
           <li class="nav-item">
-            <a href="#screenshots" class="nav-link">
-              <i class="nav-icon fas fa-images"></i>
-              <p>
-                Screenshots
-              </p>
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a href="#deps" class="nav-link">
+            <a href="#crypto" class="nav-link">
               <i class="nav-icon fas fa-running"></i>
               <p>
                 Crypto Operations
@@ -130,14 +138,29 @@ pre {
             </a>
           </li>
           <li class="nav-item">
-            <a href="#deps" class="nav-link">
+            <a href="#credentials" class="nav-link">
               <i class="nav-icon fas fa-running"></i>
               <p>
-                App Keychain
+                Credential Storage
               </p>
             </a>
           </li>
-         
+          <li class="nav-item">
+            <a href="#sql" class="nav-link">
+              <i class="nav-icon fas fa-running"></i>
+              <p>
+                SQLite Queries
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#screenshots" class="nav-link">
+              <i class="nav-icon fas fa-running"></i>
+              <p>
+                Screenshots
+              </p>
+            </a>
+          </li>
           <li class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-bug"></i>
@@ -188,12 +211,6 @@ pre {
                   <p>Trackers</p>
                 </a>
               </li>
-              <li class="nav-item">
-                <a href="#b64" class="nav-link">
-                  <i class="fas fa-puzzle-piece nav-icon"></i>
-                  <p>Base64 Strings</p>
-                </a>
-              </li>
             </ul>
           </li>
           <li class="nav-item has-treeview">
@@ -212,9 +229,9 @@ pre {
                 </a>
               </li>
               <li class="nav-item">
-                <a href="#xmlfiles" class="nav-link">
+                <a href="#plistfiles" class="nav-link">
                   <i class="fas fa-file-code nav-icon"></i>
-                  <p>XML Files</p>
+                  <p>Plist Files</p>
                 </a>
               </li>
               <li class="nav-item">
@@ -290,48 +307,6 @@ pre {
   </section>
 <!-- =========================end information==================================== -->
 
- <a id="network" class="anchor"></a>
- <section class="content">
-   <div class="container-fluid">
-     <div class="row">
-         <div class="col-lg-12">
-         <div class="card">
-           <div class="card-body">
-              <p>
-              <strong><i class="fas fa-user-secret"></i> URLS INVOKED</strong>
-              </p>
-               <div class="table-responsive">
-               {% if network %}
-                <table id="table_network" class="table table-bordered table-hover table-striped">
-                 <thead>
-                   <tr>
-                     <th>Source</th> 
-                     <th>URL</th>
-                   </tr>
-                 </thead>
-                <tbody>
-                 {% for item in network %}
-                 <tr>
-                   <td>
-                     {{item.source}}
-                   </td>
-                   <td>
-                     {{item.url}}
-                   </td>
-                 </tr>
-                 {% endfor %}
-               </tbody>
-             </table>
-              {% endif %}
-             </div>
-           </div>
-         </div><!-- /.card -->
-         </div>
-         <!-- end row -->
-         </div>
-     </div>
- </section>
-  <!-- ===========================end network calls ================================== -->
  <a id="userdefaults" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
@@ -340,15 +315,15 @@ pre {
         <div class="card">
           <div class="card-body">
              <p>
-             <strong><i class="fas fa-user-secret"></i> USERDEFAULTS</strong>
+             <strong><i class="fas fa-user-secret"></i> USERDEFAULTS DATA</strong>
              </p>
               <div class="table-responsive">
               {% if userdefaults %}
                <table id="table_userdefaults" class="table table-bordered table-hover table-striped">
                 <thead>
                   <tr>
-                    <th>Key</th> 
-                    <th>Value</th>
+                    <th>KEY</th> 
+                    <th>VALUE</th>
                   </tr>
                 </thead>
                <tbody>
@@ -375,7 +350,77 @@ pre {
 </section>
  <!-- ===========================end userdefaults ================================== -->
 
-<a id="files" class="anchor"></a>
+ <a id="keychain" class="anchor"></a>
+ <section class="content">
+   <div class="container-fluid">
+     <div class="row">
+         <div class="col-lg-12">
+         <div class="card">
+           <div class="card-body">
+              <p>
+              <strong><i class="fas fa-user-secret"></i> KEYCHAIN DATA</strong>
+              </p>
+               <div class="table-responsive">
+               {% if keychain %}
+                <table id="table_keychain" class="table table-bordered table-hover table-striped">
+                 <thead>
+                   <tr>
+                     <th>ITEM</th>
+                     <th>DATA</th>
+                     <th>CREATE DATE</th>
+                     <th>MODIFICATION DATE</th>
+                     
+                   </tr>
+                 </thead>
+                <tbody>
+                 {% for item in keychain %}
+                 <tr>
+                   <td>
+                    <strong>Entitlement Group:</strong> {{item.entitlement_group}} </br>
+                    <strong>Item Class:</strong> {{item.item_class}} </br>
+                    <strong>Accessible Attribute:</strong> {{item.accessible_attribute}} </br>
+                    <strong>Generic:</strong> {{item.generic}} </br>
+                    <strong>Service:</strong> {{item.service}} </br>
+                    <strong>Account:</strong> {{item.account}} </br>
+                    <hr>
+                    <strong>Protected:</strong>  {{item.protected}} </br>
+                    <strong>Label:</strong> {{item.label}} </br>
+                    <strong>Access Control:</strong> {{item.access_control}} </br>
+                    <strong>Description:</strong> {{item.description}} </br>
+                    <strong>Comment:</strong> {{item.comment}} </br>
+                    <strong>Creator:</strong>  {{item.creator}} </br>
+                    <strong>Type:</strong> {{item.type}} </br>
+                    <strong>Script Code:</strong>  {{item.script_code}} </br>
+                    <strong>Alias:</strong>  {{item.alias}} </br>
+                    <strong>Invisible:</strong> {{item.invisible}} </br>
+                    <strong>Negative:</strong>  {{item.negative}} </br>
+                    <strong>Custom Icon:</strong> {{item.custom_icon}} </br>
+                   </td>
+                   <td>
+                    <pre>{{item.data | pretty_json | base64_decode}}</pre>
+                   </td>
+                  <td>
+                    {{item.create_date}}
+                  </td>
+                  <td>
+                    {{item.modification_date}}
+                  </td>
+                 </tr>
+                 {% endfor %}
+               </tbody>
+             </table>
+              {% endif %}
+             </div>
+           </div>
+         </div><!-- /.card -->
+         </div>
+         <!-- end row -->
+         </div>
+     </div>
+ </section>
+  <!-- ===========================end keychain ================================== -->
+
+<a id="fileaccess" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
     <div class="row">
@@ -387,7 +432,7 @@ pre {
              </p>
               <div class="table-responsive">
               {% if files %}
-               <table id="table_files" class="table table-bordered table-hover table-striped">
+               <table id="table_fileaccess" class="table table-bordered table-hover table-striped">
                 <thead>
                   <tr>
                     <th>FILE PATH</th>
@@ -412,6 +457,7 @@ pre {
         </div>
     </div>
 </section>
+
  <!-- ===========================end files ================================== -->
 
 <a id="appdata" class="anchor"></a>
@@ -456,6 +502,49 @@ pre {
     </div>
 </section>
  <!-- ===========================end data dir ================================== -->
+
+ <a id="network" class="anchor"></a>
+ <section class="content">
+   <div class="container-fluid">
+     <div class="row">
+         <div class="col-lg-12">
+         <div class="card">
+           <div class="card-body">
+              <p>
+              <strong><i class="fas fa-user-secret"></i> URLS INVOKED</strong>
+              </p>
+               <div class="table-responsive">
+               {% if network %}
+                <table id="table_network" class="table table-bordered table-hover table-striped">
+                 <thead>
+                   <tr>
+                     <th>SOURCE</th> 
+                     <th>URL</th>
+                   </tr>
+                 </thead>
+                <tbody>
+                 {% for item in network %}
+                 <tr>
+                   <td>
+                     {{item.source}}
+                   </td>
+                   <td>
+                     {{item.url}}
+                   </td>
+                 </tr>
+                 {% endfor %}
+               </tbody>
+             </table>
+              {% endif %}
+             </div>
+           </div>
+         </div><!-- /.card -->
+         </div>
+         <!-- end row -->
+         </div>
+     </div>
+ </section>
+  <!-- ===========================end network calls ================================== -->
 
  <a id="logs" class="anchor"></a>
 <section class="content">
@@ -588,14 +677,14 @@ pre {
                 <table id="table_cookies" class="table table-bordered table-hover table-striped">
                  <thead>
                    <tr>
-                     <th>Name</th>
-                     <th>Value</th>
-                     <th>Domain</th>
-                     <th>Path</th>
-                     <th>Expiry</th>
-                     <th>HttpOnly</th>
-                     <th>Secure</th>
-                     <th>Version</th>
+                     <th>NAME</th>
+                     <th>VALUE</th>
+                     <th>DOMAIN</th>
+                     <th>PATH</th>
+                     <th>EXPIRY</th>
+                     <th>HTTPONLY</th>
+                     <th>SECURE</th>
+                     <th>VERSION</th>
                    </tr>
                  </thead>
                 <tbody>
@@ -656,27 +745,19 @@ pre {
                <table id="table_files" class="table table-bordered table-hover table-striped">
                 <thead>
                   <tr>
-                    <th>Operation</th>
-                    <!-- <th>Value</th> -->
                   </tr>
                 </thead>
                <tbody>
-                <!-- {% for item in crypto %}
-                  {% for k, v in item.items %}
-                  <tr>
-                    <td>
-                      {{k}}
-                    </td>
-                    <td>
-                      {{v}}
-                    </td>
-                  </tr>
-                  {% endfor %}
-                {% endfor %} -->
-                {% for item in crypto %}
+              {% for item in crypto %}
+                <tr>
                 {% for k, v in item.items %}
-                <code>{{ k }}: {{v}}</br></code>
-                  {% endfor %}
+                  {% if v %}
+                    <td>
+                      <strong>{{ k }}: </strong><code><pre> {{ v | base64_decode | pretty_json}}</pre></code>
+                    </td>
+                  {% endif %}
+                {% endfor %}
+                </tr>
               {% endfor %}
 
               </tbody>
@@ -692,110 +773,6 @@ pre {
 </section>
  <!-- ===========================end crypto ================================== -->
 
- <a id="keychain" class="anchor"></a>
- <section class="content">
-   <div class="container-fluid">
-     <div class="row">
-         <div class="col-lg-12">
-         <div class="card">
-           <div class="card-body">
-              <p>
-              <strong><i class="fas fa-user-secret"></i> APP KEYCHAIN</strong>
-              </p>
-               <div class="table-responsive">
-               {% if keychain %}
-                <table id="table_keychain" class="table table-bordered table-hover table-striped">
-                 <thead>
-                   <tr>
-                     <th>Item</th>
-                     <th>Data</th>
-                     <th>Create Date</th>
-                     <th>Modification Date</th>
-                     <th>Protected</th>
-                     <th>Label</th>
-                     <th>Access_control</th>
-                     <th>Description</th>
-                     <th>Comment</th>
-                     <th>Creator</th>
-                     <th>Type</th>
-                     <th>Script Code</th>
-                     <th>Alias</th>
-                     <th>Invisible</th>
-                     <th>Negative</th>
-                     <th>Custom Icon</th>
-                     
-                   </tr>
-                 </thead>
-                <tbody>
-                 {% for item in keychain %}
-                 <tr>
-                   <td>
-                    <strong>Entitlement Group:</strong> {{item.entitlement_group}} </br>
-                    <strong>Item Class:</strong> {{item.item_class}} </br>
-                    <strong>Accessible Attribute:</strong> {{item.accessible_attribute}} </br>
-                    <strong>Generic:</strong> {{item.generic}} </br>
-                    <strong>Service:</strong> {{item.service}} </br>
-                    <strong>Account:</strong> {{item.account}} </br>
-                   </td>
-                   <td>
-                    {{item.data}}
-                   </td>
-                  <td>
-                    {{item.create_date}}
-                  </td>
-                  <td>
-                    {{item.modification_date}}
-                  </td>
-                   <td>
-                     {{item.protected}}
-                   </td>
-                   <td>
-                    {{item.label}}
-                  </td>
-                   <td>
-                     {{item.access_control}}
-                   </td>
-                   <td>
-                     {{item.description}}
-                   </td>
-                   <td>
-                     {{item.comment}}
-                   </td>
-                   <td>
-                     {{item.creator}}
-                   </td>
-                   <td>
-                     {{item.type}}
-                   </td>
-                   <td>
-                     {{item.script_code}}
-                   </td>
-                   <td>
-                     {{item.alias}}
-                   </td>
-                   <td>
-                     {{item.invisible}}
-                   </td>
-                   <td>
-                     {{item.negative}}
-                   </td>
-                   <td>
-                     {{item.custom_icon}}
-                   </td>
-                 </tr>
-                 {% endfor %}
-               </tbody>
-             </table>
-              {% endif %}
-             </div>
-           </div>
-         </div><!-- /.card -->
-         </div>
-         <!-- end row -->
-         </div>
-     </div>
- </section>
-  <!-- ===========================end keychain ================================== -->
   <a id="credentials" class="anchor"></a>
   <section class="content">
     <div class="container-fluid">
@@ -811,12 +788,12 @@ pre {
                  <table id="table_credentials" class="table table-bordered table-hover table-striped">
                   <thead>
                     <tr>
-                      <th>Host</th>
-                      <th>Authentication Method</th>
-                      <th>Protocol</th>
-                      <th>Port</th>
-                      <th>User</th>
-                      <th>Password</th>
+                      <th>HOST</th>
+                      <th>AUTHENTICATION METHOD</th>
+                      <th>PROTOCOL</th>
+                      <th>PORT</th>
+                      <th>USER</th>
+                      <th>PASSWORD</th>
                     </tr>
                   </thead>
                  <tbody>
@@ -906,9 +883,9 @@ pre {
              <strong><i class="fas fa-images"></i> SCREENSHOTS</strong>
              </p>
                <div >
-                      {% for i in screenshots %}
-                        <img alt="Screenshot" src="{% url 'download' %}{{ i }}" class="img-thumbnail" height="300" width="175">
-                      {% endfor %}
+                {% for i in screenshots %}
+                  <img alt="Screenshot" src="{% url 'download' %}{{ i }}" class="img-thumbnail" height="300" width="175">
+                {% endfor %}
               </div>
               
           </div>
@@ -1372,7 +1349,6 @@ pre {
   {% endif %}
   ];
 
-// Cat view
 
 //For All Ajax
 function action(url, data, on_success){
@@ -1396,7 +1372,7 @@ function action(url, data, on_success){
     var code_title = document.getElementById('cat_title');
     code_title.innerText = '';
     code_block.innerText = '';
-    action('{% url 'ssh_execute' %}', {instance_id: '{{ instance_id }}', cmd:  'cat "' + file_name + '"' }, function(json) {
+    action('{% url 'ssh_execute' %}', {instance_id: '{{ instance_id }}', cmd:  `cat -v "${file_name}"` }, function(json) {
       if (json.status==="ok")
         code_title.innerText = file_name;
         code_block.innerText = json.message;

@@ -147,7 +147,7 @@ def view_file(request, api=False):
                 mode='r',
                 encoding='ISO-8859-1') as flip:
             dat = flip.read()
-        if fil.endswith('.plist') and 'bplist00' in dat:
+        if fil.endswith('.plist') and dat.startswith('bplist0'):
             dat = writePlistToString(dat).decode('utf-8', 'ignore')
         if fil.endswith(('.xml', '.plist')) and typ in ['xml', 'plist']:
             rtyp = 'xml'

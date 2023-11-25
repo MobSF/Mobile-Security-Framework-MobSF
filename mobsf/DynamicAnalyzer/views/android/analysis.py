@@ -211,8 +211,8 @@ def untar_files(tar_loc, untar_dir):
                 tar.extractall(path, members, numeric_owner=numeric_owner)
 
             safe_extract(tar, untar_dir, members=safe_paths(tar))
-    except FileExistsError:
-        pass
+    except (FileExistsError, tarfile.ReadError):
+        logger.warning('Failed to extract tar file')
     except Exception:
         logger.exception('Tar extraction failed')
     return True
@@ -247,7 +247,7 @@ def get_app_files(apk_dir, package):
                         all_files['plist'].append(
                             {'type': 'plist', 'file': fileparam})
                     else:
-                        with open(file_path,  # lgtm [py/path-injection]
+                        with open(file_path,
                                   'r',
                                   encoding='ISO-8859-1') as flip:
                             file_cnt_sig = flip.read(6)
