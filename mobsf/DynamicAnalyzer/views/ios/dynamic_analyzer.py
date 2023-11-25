@@ -9,6 +9,7 @@ from django.shortcuts import render
 from mobsf.MobSF.utils import (
     get_md5,
     print_n_send_error_response,
+    python_dict,
     strict_package_check,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
@@ -33,6 +34,8 @@ def dynamic_analysis(request, api=False):
             bundle_hash = get_md5(ipa.BUNDLE_ID.encode('utf-8'))
             frida_dump = Path(
                 settings.UPLD_DIR) / bundle_hash / 'mobsf_dump_file.txt'
+            encrypted = python_dict(
+                ipa.MACHO_ANALYSIS)['encrypted']['is_encrypted']
             temp_dict = {
                 'MD5': ipa.MD5,
                 'APP_NAME': ipa.APP_NAME,
@@ -40,6 +43,7 @@ def dynamic_analysis(request, api=False):
                 'FILE_NAME': ipa.FILE_NAME,
                 'BUNDLE_ID': ipa.BUNDLE_ID,
                 'BUNDLE_HASH': bundle_hash,
+                'ENCRYPTED': encrypted,
                 'DYNAMIC_REPORT_EXISTS': frida_dump.exists(),
             }
             scan_apps.append(temp_dict)

@@ -10,41 +10,10 @@
 <link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
 <link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
 <style>
-   #app_icon{
-            width: 64px;
-            height: 64px;
-          }
-
-   textarea {
- 
-  width: 100%;
-  height: 500px;
-  -moz-border-bottom-colors: none;
-  -moz-border-left-colors: none;
-  -moz-border-right-colors: none;
-  -moz-border-top-colors: none;
-  background: none repeat scroll 0 0 rgba(0, 0, 0, 0.07);
-  border-color: -moz-use-text-color #FFFFFF #FFFFFF -moz-use-text-color;
-  border-image: none;
-  border-radius: 6px 6px 6px 6px;
-  border-style: none solid solid none;
-  border-width: medium 1px 1px medium;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12) inset;
-  color: #555555;
-  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-  font-size: 1em;
-  line-height: 1.4em;
-  padding: 5px 8px;
-  transition: background-color 0.2s ease 0s;
+#app_icon{
+  width: 64px;
+  height: 64px;
 }
-
-
-textarea:focus {
-    background: none repeat scroll 0 0 #FFFFFF;
-    outline-width: 0;
-}
-
-
 </style>
 {% endblock %}
 {% block content %}
@@ -68,7 +37,7 @@ textarea:focus {
                            <h6> Correllium Project ID: <strong>{{ project_id }}</strong>  </h6>
                            <a class="btn btn-info" onclick="javascript:location.reload()"><i class="fa fa-retweet"></i> Refresh</a>
                            <a class="btn btn-success" role="button" data-toggle="modal" data-target="#create_instance"><i class="fab fa-apple"></i> Create VM</a>
-                           <table class="table table-bordered table-hover table-striped">
+                           <table class="dattbl table table-bordered table-hover table-striped">
                              <thead>
                              <tr>
                                  <th>VM</th>
@@ -132,7 +101,7 @@ textarea:focus {
               <div class="card-body">
                  <div class="table-responsive">
                   <h4> Apps Available</h4>
-                <table class="table table-bordered table-hover table-striped">
+                <table class="dattbl table table-bordered table-hover table-striped">
                     <thead>
                     <tr>
                         <th>APP</th>
@@ -156,12 +125,17 @@ textarea:focus {
                                 {{ e.BUNDLE_ID }}
                            </td>
                             <td align="center"> 
+                              {% if e.ENCRYPTED %}
+                                <span class="badge badge-danger">ENCRYPTED IPA</span></br>
+                                <small>You need decrypted IPA for dynamic analysis.</small>
+                              {% else %}
                               <p>
-                                <a class="btn btn-success disable" onclick="upload_start_ios_dynamic('{% url 'setup_environment' checksum=e.MD5 %}')"><i class="fab fa-apple"></i> Upload &amp; Install</a>
+                                  <a class="btn btn-success disable" onclick="upload_and_install('{% url 'setup_environment' checksum=e.MD5 %}')"><i class="fab fa-apple"></i> Upload &amp; Install</a>
                               </p>
                               <p>
                                 <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url 'ios_view_report' checksum=e.BUNDLE_HASH %}"><i class="fa fa-mobile"></i> View Report </a>
                              </p>
+                             {% endif %}
                             </td>
                         </tr>
                     {% endfor %}
@@ -172,10 +146,8 @@ textarea:focus {
                 <h4> Apps in Device</h4>
                 <table id="in_device" class="table table-bordered table-hover table-striped">
                   <tbody>
-                 
                   </tbody>
               </table>
-
             </div>
               </div>
               <!-- /.card-body -->
@@ -327,10 +299,10 @@ function stop_loader(){
   loadingOverlay.classList.add('hidden');
 }
 
-//Datatables
+// Datatables
   $(function () {
     // Datatable
-    $('table').DataTable({
+    $('.dattbl').DataTable({
       "paging": true,
       "lengthChange": false,
       "searching": true,
@@ -400,11 +372,15 @@ function list_apps(){
                               $('#in_device > tbody:' + order + '-child').append(
                                 `<tr><td align="center">
                                   <img id="app_icon" src="data:image/png;base64,${escapeHtml(iconb64)}"/><br/>
-                                  <strong>${escapeHtml(name)}</strong></td><td>${escapeHtml(bundle)}</td>
+                                  <strong>${escapeHtml(name)}</strong></td>
+                                  <td>${escapeHtml(bundle)}</td>
                                   <td>${escapeHtml(type)}</td>
-                                  <td><p><a class="btn btn-success disable" onclick="dynamic_loader()" href="${url}"><i class="fab fa-apple"></i> Start Dynamic Analysis</a> 
+                                  <td><p>
+                                      <a class="btn btn-success disable" onclick="dynamic_loader()" href="${url}"><i class="fab fa-apple"></i> Start Dynamic Analysis</a> 
                                       <a class="btn btn-info ${buttonState}" href="../../ios/view_report/${checksum}"><i class="fa fa-mobile"></i> View Report </a>
-                                      <a class="btn btn-danger" id="${$('#ios_dynamic').val()}" onclick="remove_app(this, '${bundle}')"><i class="fas fa-trash-alt"></i>  Uninstall</a></p></td></tr>`);
+                                      <a class="btn btn-warning" id="${$('#ios_dynamic').val()}" onclick="remove_app(this, '${bundle}')"><i class="fas fa-trash-alt"></i>  Uninstall</a>
+                                      </p>
+                                  </td></tr>`);
                         }
                     }
                     else {
@@ -474,7 +450,7 @@ function remove_app(item, bundle_id){
       });
 }
 
-//Start VM
+// Start VM
 function start_vm(item){
       Swal.fire({
       title: 'Are you sure?',
@@ -527,7 +503,7 @@ function start_vm(item){
 }
 
 
-//Stop VM
+// Stop VM
 function stop_vm(item){
       Swal.fire({
       title: 'Are you sure?',
@@ -581,7 +557,7 @@ function stop_vm(item){
 
 
 
-//Unpause VM
+// Unpause VM
 function unpause_vm(item){
   $.ajax({
           url: '{% url 'unpause_instance' %}',
@@ -619,7 +595,7 @@ function unpause_vm(item){
     });
 }
 
-//Reboot VM
+// Reboot VM
 function reboot_vm(item){
       Swal.fire({
       title: 'Are you sure?',
@@ -671,7 +647,7 @@ function reboot_vm(item){
         });
 }
 
-//Destroy VM
+// Destroy VM
 function destroy_vm(item){
       Swal.fire({
       title: 'Are you sure?',
@@ -777,9 +753,8 @@ $("#create_vm").click(function() {
         });
 });
 
-// Upload and start iOS Dynamic Analyzer
-
-function upload_start_ios_dynamic(url){
+// Upload and Install IPA to device
+function upload_and_install(url){
   dynamic_loader();
   $.ajax({
           url: url,
@@ -818,8 +793,5 @@ function upload_start_ios_dynamic(url){
                   }
       });
 }
-
-
-
 </script>
 {% endblock %}

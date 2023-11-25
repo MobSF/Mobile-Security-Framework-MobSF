@@ -55,4 +55,7 @@ function run_get_app_methods_in_class()
     }
 }
 
-run_get_app_methods_in_class()
+
+try {
+    run_get_app_methods_in_class()
+} catch(err) {}

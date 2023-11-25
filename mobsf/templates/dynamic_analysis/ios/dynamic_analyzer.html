@@ -42,12 +42,10 @@
         font-size: 13px;
         border: 1px solid #eee;
       }
-
-      .frida-pre {
-        font-family: "courier new", courier, monospace;
-        font-size: 11px;
-      }
-
+    .frida-pre {
+      font-family: "courier new", courier, monospace;
+      font-size: 11px;
+    }
     #start_activity{
         margin-top: 5px;
     }
@@ -58,7 +56,6 @@
 </style>
 
 {% endblock %}
-
 {% block content %}
 
 <script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
@@ -69,8 +66,6 @@
       <div class="row mb-2">
         <div id="mobsf_header">
             <h2><strong>Dynamic Analyzer </strong>- {{ bundle_id }}</h2>
-          <input type="hidden" id="screen_width" value="">
-          <input type="hidden" id="screen_height" value="">
         </div>
       </div>
     </div>
@@ -89,7 +84,7 @@
                   <a href="{% url 'ios_live_pcap_download' %}?instance_id={{instance_id}}" id="pcap" class="btn btn-primary" role="button"><i class="fas fa-globe"></i> Download Live Packet Capture</a>
                   <a href="#" id="ss" class="btn btn-primary" role="button"><i class="fa fa-camera"></i> Take a Screenshot</a>
                   <a href="{% url 'ios_system_logs' %}?instance_id={{instance_id}}" target="_blank" id="system_logs" class="btn btn-primary"><i class="fa fa-water"></i> System Logs</a>
-                  <a href="#" id="report" class="btn btn-info disabled" role="button" ><i class="fa fa-file-alt"></i> Generate Report</a>
+                  <a href="#" id="report" class="btn btn-info disabled" role="button"><i class="fa fa-file-alt"></i> Generate Report</a>
                 </div>
               </div>
               <!-- /.card-body -->
@@ -152,9 +147,6 @@
                   <li class="nav-item">
                     <a class="nav-link active" id="dm-tab" data-toggle="pill" href="#dm" role="tab" aria-controls="dm" aria-selected="true">Dynamic Analyzer</a>
                   </li>
-                  <!-- <li class="nav-item">
-                    <a class="nav-link disabled" id="frida-tab" data-toggle="pill" href="#frida_logs" role="tab" aria-controls="frida" aria-selected="false">Frida Logs</a>
-                  </li> -->
                   <li class="nav-item">
                     <a class="nav-link" id="errors-tab" data-toggle="pill" href="#errors" role="tab" aria-controls="errors" aria-selected="false">Errors</a>
                   </li>
@@ -177,11 +169,11 @@
                             <hr/>
                         <h4> Default </h4>
                              <label>
-                             <input name="default_hooks" type="checkbox"  value="jailbreak_bypass" checked>
+                             <input name="default_hooks" type="checkbox" value="jailbreak_bypass" checked>
                               Jailbreak Detection Bypass 
                             </label>
                             <label>
-                            <input name="default_hooks" type="checkbox"  value="jailbreak_bypass2">
+                            <input name="default_hooks" type="checkbox" value="jailbreak_bypass2">
                               Jailbreak Detection Bypass 2
                             </label>
                         </div>
@@ -189,11 +181,11 @@
                           <div class="form-group">
                       <h4> Dump </h4>
                         <label>
-                          <input name="dump_hooks" type="checkbox"  value="network" checked>
+                          <input name="dump_hooks" type="checkbox" value="network" checked>
                             Network
                           </label>
                           <label>
-                          <input name="dump_hooks" type="checkbox"  value="crypto" checked>
+                          <input name="dump_hooks" type="checkbox" value="crypto" checked>
                             Crypto
                           </label>
                           <label>
@@ -201,44 +193,43 @@
                             Cookies 
                           </label>
                             <label>
-                            <input name="dump_hooks" type="checkbox"  value="file-access" checked>
+                            <input name="dump_hooks" type="checkbox" value="file-access" checked>
                             File Access 
                           </label>
                           <label>
-                            <input name="dump_hooks" type="checkbox"  value="sqlite" checked>
+                            <input name="dump_hooks" type="checkbox" value="sqlite" checked>
                             Sqlite Query
                           </label>
                           <label>
-                          <input name="dump_hooks" type="checkbox"  value="data-dir" checked>
+                          <input name="dump_hooks" type="checkbox" value="data-dir" checked>
                             Data Directory
                           </label>
                           <label>
-                          <input name="dump_hooks" type="checkbox"  value="keychain" checked>
+                          <input name="dump_hooks" type="checkbox" value="keychain" checked>
                             Keychain
                           </label>
                           <label>
-                          <input name="dump_hooks" type="checkbox"  value="nslog" checked>
+                          <input name="dump_hooks" type="checkbox" value="nslog" checked>
                             NSLog
                           </label>
                           <label>
-                            <input name="dump_hooks" type="checkbox"  value="text-inputs" checked>
-                              Text Inputs
-                            </label>
+                          <input name="dump_hooks" type="checkbox" value="text-inputs" checked>
+                            Text Inputs
+                          </label>
                           <label>
-                          <input name="dump_hooks" type="checkbox"  value="nsurlcredentialstorage" checked>
+                          <input name="dump_hooks" type="checkbox" value="nsurlcredentialstorage" checked>
                             URL Credential Storage
                           </label>
                           <label>
-                          <input name="dump_hooks" type="checkbox"  value="nsuserdefaults" checked>
+                          <input name="dump_hooks" type="checkbox" value="nsuserdefaults" checked>
                             User Defaults
                           </label>
                           <label>
-                          <input name="dump_hooks" type="checkbox"  value="pasteboard" checked>
+                          <input name="dump_hooks" type="checkbox" value="pasteboard" checked>
                             Pasteboard
                           </label>
-          
                       </div>
-                                          <hr/>
+                     <hr/>
                         <div class="form-group">
                         <h4> Auxiliary </h4>
                             <label>

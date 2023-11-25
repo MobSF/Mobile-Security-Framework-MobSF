@@ -134,8 +134,10 @@ function bypassJailbreakDetection(){
     }
 }
 
-if (ObjC.available) {
-    bypassJailbreakDetection();
-} else {
-    send('[Jailbreak Detection Bypass] error: Objective-C Runtime is not available!');
-}
+try {
+    if (ObjC.available) {
+        bypassJailbreakDetection();
+    } else {
+        send('[Jailbreak Detection Bypass] error: Objective-C Runtime is not available!');
+    }
+} catch(err) {}

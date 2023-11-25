@@ -306,4 +306,7 @@ function dumpKeyChain(){
     send('Dumping Application Keychain')
     send(JSON.stringify({'[MBSFDUMP] keychain': keychain_items}));
     }
+
+try {
     dumpKeyChain();
+} catch(err) {}

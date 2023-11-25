@@ -58,8 +58,9 @@ function getDataProtectionKeysForAllPaths() {
 }
 
 send('Dumping Application Directory File Information');
-send(JSON.stringify({'[MBSFDUMP] datadir': getDataProtectionKeysForAllPaths()}));
-
+try {
+    send(JSON.stringify({'[MBSFDUMP] datadir': getDataProtectionKeysForAllPaths()}));
+} catch(err) {}
 
 // /********************************************************************************
 //  * Name: Dump iOS Data Protection Keys

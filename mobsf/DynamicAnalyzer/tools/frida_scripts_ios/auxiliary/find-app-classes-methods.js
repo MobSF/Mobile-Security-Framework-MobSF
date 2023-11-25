@@ -44,7 +44,9 @@ function run_show_app_classes_methods_only()
 
 function show_app_classes_methods_only()
 {
-    setImmediate(run_show_app_classes_methods_only)
+    try {
+        setImmediate(run_show_app_classes_methods_only)
+	} catch(err) {}
 }
 
 show_app_classes_methods_only()

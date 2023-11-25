@@ -34,4 +34,6 @@ function dumpNSURLCredentialStorage () {
 }
 
 send('Dumping Credentials from NSURLCredentialStorage')
-dumpNSURLCredentialStorage();
+try {
+    dumpNSURLCredentialStorage();
+} catch(err) {}

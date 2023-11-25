@@ -1,5 +1,5 @@
 getContainer: function () {
-    try{
+    try {
         var libPath = ObjC.classes.NSFileManager.defaultManager().URLsForDirectory_inDomains_(5, 1).lastObject().path().toString();
         const sep = 'Library'
         var split = libPath.split(sep);

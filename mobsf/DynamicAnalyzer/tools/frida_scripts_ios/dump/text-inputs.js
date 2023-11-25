@@ -11,4 +11,6 @@ function dump_inputs() {
         }
     });
 }
-dump_inputs();
+try {
+  dump_inputs();
+} catch(err) {}

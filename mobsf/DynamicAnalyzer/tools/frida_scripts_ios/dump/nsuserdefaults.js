@@ -26,4 +26,7 @@ function ns_userdefaults() {
     var NSDictionary = NSUserDefaults.alloc().init().dictionaryRepresentation();
     send(JSON.stringify({'[MBSFDUMP] nsuserdefaults': convertNsDictionaryToJson(NSDictionary)}));
 }
-ns_userdefaults();
+
+try{
+    ns_userdefaults();
+} catch(err) {}

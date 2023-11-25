@@ -48,5 +48,6 @@ function find_specific_method_in_all_classes(func_name)
 
 //Your function name goes here
 var METHOD = '{{METHOD}}'
-find_specific_method_in_all_classes(METHOD)
-
+try {
+    find_specific_method_in_all_classes(METHOD)
+} catch(err) {}

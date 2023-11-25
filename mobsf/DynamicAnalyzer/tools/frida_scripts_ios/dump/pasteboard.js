@@ -26,4 +26,6 @@ function start_pasteboard_monitoring(interval_value)
 }
 //start_pasteboard_monitoring(INTERVAL_VALUE_HERE_MILLISECONDS)
 send("Tracing iOS Pasteboard Entries");
-start_pasteboard_monitoring(2000);
+try {
+    start_pasteboard_monitoring(2000);
+} catch(err) {}

@@ -39,7 +39,9 @@ function run_hook_all_methods_of_specific_class(className_arg)
 
 function hook_all_methods_of_specific_class(className_arg)
 {
-	setImmediate(run_hook_all_methods_of_specific_class,[className_arg])
+	try {
+		setImmediate(run_hook_all_methods_of_specific_class,[className_arg])
+	} catch(err) {}
 }
 
 

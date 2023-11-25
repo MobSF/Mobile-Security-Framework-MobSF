@@ -445,7 +445,6 @@ def check_basic_env():
                     'Java/jdk1.7.0_17/bin/"'
                     '\nJAVA_DIRECTORY = "/usr/bin/"')
         os.kill(os.getpid(), signal.SIGTERM)
-    get_adb()
 
 
 def update_local_db(db_name, url, local_file):
@@ -761,9 +760,8 @@ def get_android_dm_exception_msg():
     return (
         'Is your Android VM/emulator running? MobSF cannot'
         ' find the android device identifier.'
-        ' Please run an android instance and refresh'
-        ' this page. If this error persists,'
-        ' set ANALYZER_IDENTIFIER in '
+        ' Please read official documentation.'
+        ' If this error persists, set ANALYZER_IDENTIFIER in '
         f'{get_config_loc()} or via environment variable'
         ' MOBSF_ANALYZER_IDENTIFIER')
 

@@ -31,7 +31,9 @@ function run_show_app_classes_only()
 
 function show_app_classes_only()
 {
-    setImmediate(run_show_app_classes_only)
+    try {
+        setImmediate(run_show_app_classes_only)
+	} catch(err) {}
 }
 
 show_app_classes_only()

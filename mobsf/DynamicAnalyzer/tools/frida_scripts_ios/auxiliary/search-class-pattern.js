@@ -52,4 +52,6 @@ function getMatches(){
 }
 
 
-getMatches();
+try {
+    getMatches();
+} catch(err) {}
