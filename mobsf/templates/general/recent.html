@@ -70,6 +70,8 @@
                                   <p><a class="btn btn-primary btn-sm" href="../{{ e.ANALYZER }}/{{e.MD5}}/"><i class="fas fa-eye"></i> Static Report</a>
                                   {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:"%}
                                     <a  class="btn btn-success btn-sm {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url "dynamic_report" checksum=e.MD5 %}"><i class="fa fa-mobile"></i> Dynamic Report</a>
+                                  {% elif '.ipa' == e.FILE_NAME|slice:"-4:" %}
+                                    <a  class="btn btn-success btn-sm {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url "ios_view_report" checksum=e.BUNDLE_HASH %}"><i class="fa fa-mobile"></i> Dynamic Report</a>
                                   {% endif %}
                                   </p>
                                 {% else %}

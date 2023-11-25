@@ -66,7 +66,7 @@ pre {
           </li>
            <li class="nav-item">
             <a href="#keychain" class="nav-link">
-              <i class="nav-icon fas fa-shapes"></i>
+              <i class="nav-icon fas fa-key"></i>
               <p>
                 Keychain Data
               </p>
@@ -74,7 +74,7 @@ pre {
           </li>
           <li class="nav-item">
             <a href="#fileaccess" class="nav-link">
-              <i class="nav-icon fa fa-language"></i>
+              <i class="nav-icon fas fa-file-signature"></i>
               <p>
                 File Access
               </p>
@@ -82,7 +82,7 @@ pre {
           </li>
           <li class="nav-item">
             <a href="#appdata" class="nav-link">
-              <i class="nav-icon fas fa-running"></i>
+              <i class="nav-icon fas fa-folder-open"></i>
               <p>
                 App Data Directory
               </p>
@@ -90,7 +90,7 @@ pre {
           </li>
           <li class="nav-item">
             <a href="#network" class="nav-link">
-              <i class="nav-icon fas fa-running"></i>
+              <i class="nav-icon fas fa-project-diagram"></i>
               <p>
                 URLs Invoked
               </p>
@@ -98,7 +98,7 @@ pre {
           </li>
           <li class="nav-item">
             <a href="#logs" class="nav-link">
-              <i class="nav-icon fas fa-running"></i>
+              <i class="nav-icon fas fa-sticky-note"></i>
               <p>
                 App Logs
               </p>
@@ -106,7 +106,7 @@ pre {
           </li>
           <li class="nav-item">
             <a href="#textinput" class="nav-link">
-              <i class="nav-icon fas fa-running"></i>
+              <i class="nav-icon far fa-keyboard"></i>
               <p>
                 Text Inputs
               </p>
@@ -114,7 +114,7 @@ pre {
           </li>
           <li class="nav-item">
             <a href="#pasteboard" class="nav-link">
-              <i class="nav-icon fas fa-images"></i>
+              <i class="nav-icon fas fa-clipboard-list"></i>
               <p>
                 Pasteboard
               </p>
@@ -123,7 +123,7 @@ pre {
 
           <li class="nav-item">
             <a href="#cookies" class="nav-link">
-              <i class="nav-icon fas fa-running"></i>
+              <i class="nav-icon fas fa-cookie"></i>
               <p>
                 App Cookies
               </p>
@@ -131,7 +131,7 @@ pre {
           </li>
           <li class="nav-item">
             <a href="#crypto" class="nav-link">
-              <i class="nav-icon fas fa-running"></i>
+              <i class="nav-icon fas fa-lock"></i>
               <p>
                 Crypto Operations
               </p>
@@ -139,7 +139,7 @@ pre {
           </li>
           <li class="nav-item">
             <a href="#credentials" class="nav-link">
-              <i class="nav-icon fas fa-running"></i>
+              <i class="nav-icon fas fa-asterisk"></i>
               <p>
                 Credential Storage
               </p>
@@ -147,7 +147,7 @@ pre {
           </li>
           <li class="nav-item">
             <a href="#sql" class="nav-link">
-              <i class="nav-icon fas fa-running"></i>
+              <i class="nav-icon fas fa-database"></i>
               <p>
                 SQLite Queries
               </p>
@@ -155,7 +155,7 @@ pre {
           </li>
           <li class="nav-item">
             <a href="#screenshots" class="nav-link">
-              <i class="nav-icon fas fa-running"></i>
+              <i class="nav-icon fas fa-images"></i>
               <p>
                 Screenshots
               </p>
@@ -315,7 +315,7 @@ pre {
         <div class="card">
           <div class="card-body">
              <p>
-             <strong><i class="fas fa-user-secret"></i> USERDEFAULTS DATA</strong>
+             <strong><i class="fas fa-shapes"></i> USERDEFAULTS DATA</strong>
              </p>
               <div class="table-responsive">
               {% if userdefaults %}
@@ -333,7 +333,7 @@ pre {
                     {{k}}
                   </td>
                   <td>
-                    {{v}}
+                    {{v | base64_decode }}
                   </td>
                 </tr>
                 {% endfor %}
@@ -358,7 +358,7 @@ pre {
          <div class="card">
            <div class="card-body">
               <p>
-              <strong><i class="fas fa-user-secret"></i> KEYCHAIN DATA</strong>
+              <strong><i class="fas fa-key"></i> KEYCHAIN DATA</strong>
               </p>
                <div class="table-responsive">
                {% if keychain %}
@@ -428,7 +428,7 @@ pre {
         <div class="card">
           <div class="card-body">
              <p>
-             <strong><i class="fas fa-user-secret"></i> FILE ACCESS</strong>
+             <strong><i class="fas fa-file-signature"></i> FILE ACCESS</strong>
              </p>
               <div class="table-responsive">
               {% if files %}
@@ -468,7 +468,7 @@ pre {
         <div class="card">
           <div class="card-body">
              <p>
-             <strong><i class="fas fa-user-secret"></i> APP DATA DIRECTORY</strong>
+             <strong><i class="fas fa-folder-open"></i> APP DATA DIRECTORY</strong>
              </p>
               <div class="table-responsive">
               {% if datadir %}
@@ -511,7 +511,7 @@ pre {
          <div class="card">
            <div class="card-body">
               <p>
-              <strong><i class="fas fa-user-secret"></i> URLS INVOKED</strong>
+              <strong><i class="fas fa-project-diagram"></i> URLS INVOKED</strong>
               </p>
                <div class="table-responsive">
                {% if network %}
@@ -554,7 +554,7 @@ pre {
         <div class="card">
           <div class="card-body">
              <p>
-             <strong><i class="fas fa-user-secret"></i> APP LOGS</strong>
+             <strong><i class="fas fa-sticky-note"></i> APP LOGS</strong>
              </p>
               <div class="table-responsive">
               {% if logs %}
@@ -592,7 +592,7 @@ pre {
         <div class="card">
           <div class="card-body">
              <p>
-             <strong><i class="fas fa-user-secret"></i> TEXT INPUTS</strong>
+             <strong><i class="far fa-keyboard"></i> TEXT INPUTS</strong>
              </p>
               <div class="table-responsive">
               {% if textinputs %}
@@ -631,7 +631,7 @@ pre {
         <div class="card">
           <div class="card-body">
              <p>
-             <strong><i class="fas fa-user-secret"></i> PASTEBOARD</strong>
+             <strong><i class="fas fa-clipboard-list"></i> PASTEBOARD</strong>
              </p>
               <div class="table-responsive">
               {% if pasteboard %}
@@ -670,7 +670,7 @@ pre {
          <div class="card">
            <div class="card-body">
               <p>
-              <strong><i class="fas fa-user-secret"></i> APP COOKIES</strong>
+              <strong><i class="fas fa-cookie"></i> APP COOKIES</strong>
               </p>
                <div class="table-responsive">
                {% if cookies %}
@@ -738,7 +738,7 @@ pre {
         <div class="card">
           <div class="card-body">
              <p>
-             <strong><i class="fas fa-user-secret"></i> CRYPTO OPERATIONS</strong>
+             <strong><i class="fas fa-lock"></i> CRYPTO OPERATIONS</strong>
              </p>
               <div class="table-responsive">
               {% if crypto %}
@@ -781,7 +781,7 @@ pre {
           <div class="card">
             <div class="card-body">
                <p>
-               <strong><i class="fas fa-user-secret"></i> CREDENTIAL STORAGE</strong>
+               <strong><i class="fas fa-asterisk"></i> CREDENTIAL STORAGE</strong>
                </p>
                 <div class="table-responsive">
                 {% if credentials %}
@@ -840,7 +840,7 @@ pre {
         <div class="card">
           <div class="card-body">
              <p>
-             <strong><i class="fas fa-user-secret"></i> SQLITE QUERIES</strong>
+             <strong><i class="fas fa-database"></i> SQLITE QUERIES</strong>
              </p>
               <div class="table-responsive">
               {% if sql %}

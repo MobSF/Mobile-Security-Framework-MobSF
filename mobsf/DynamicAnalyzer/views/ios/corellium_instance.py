@@ -402,6 +402,34 @@ def run_app(request, api=False):
 
 
 @require_http_methods(['POST'])
+def remove_app(request, api=False):
+    """Remove an app from the device."""
+    data = {
+        'status': 'failed',
+        'message': 'Failed to uninstall the app'}
+    try:
+        instance_id = request.POST['instance_id']
+        bundle_id = request.POST['bundle_id']
+        failed = common_check(instance_id)
+        if failed:
+            return send_response(failed, api)
+        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
+        if not strict_package_check(bundle_id):
+            data['message'] = 'Invalid iOS Bundle id'
+            return send_response(data, api)
+        ca = CorelliumAgentAPI(apikey, instance_id)
+        if (ca.agent_ready()
+                and ca.remove_app(bundle_id) == OK):
+            data['status'] = OK
+            data['message'] = 'App uninstalled'
+    except Exception as exp:
+        logger.exception('Failed to uninstall the app')
+        data['message'] = str(exp)
+    return send_response(data, api)
+# AJAX
+
+
+@require_http_methods(['POST'])
 def take_screenshot(request, api=False):
     """Take a Screenshot."""
     data = {

@@ -167,6 +167,9 @@ class Frida:
             try:
                 _DEVICE = frida.get_remote_device()
                 _PID = _DEVICE.spawn([self.bundle_id])
+            except frida.NotSupportedError:
+                logger.exception('Not Supported Error')
+                return
             except frida.ServerNotRunningError:
                 self.frida_ssh_forward()
             if not _PID:
@@ -175,6 +178,9 @@ class Frida:
             time.sleep(2)
         except frida.TimedOutError:
             logger.error('Timed out while waiting for device to appear')
+        except frida.NotSupportedError:
+            logger.exception('Not Supported Error')
+            return
         except (frida.ProcessNotFoundError,
                 frida.TransportError,
                 frida.InvalidOperationError):
@@ -203,6 +209,9 @@ class Frida:
                     _PID = _DEVICE.spawn([self.bundle_id])
                 # pid is the forntmost app
                 session = _DEVICE.attach(_PID)
+            except frida.NotSupportedError:
+                logger.exception('Not Supported Error')
+                return
             except Exception:
                 logger.warning('Cannot attach to pid, spawning again')
                 self.spawn()
@@ -218,6 +227,8 @@ class Frida:
                 sys.stdin.read()
                 script.unload()
                 session.detach()
+        except frida.NotSupportedError:
+            logger.exception('Not Supported Error')
         except (frida.ProcessNotFoundError,
                 frida.TransportError,
                 frida.InvalidOperationError):

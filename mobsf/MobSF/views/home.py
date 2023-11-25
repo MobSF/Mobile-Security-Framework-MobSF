@@ -22,6 +22,7 @@ from django.template.defaulttags import register
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
     api_key,
+    get_md5,
     is_dir_exists,
     is_file_exists,
     is_safe_path,
@@ -236,6 +237,7 @@ def recent_scans(request):
     db_obj = RecentScansDB.objects.all().order_by('-TIMESTAMP').values()
     android = StaticAnalyzerAndroid.objects.all()
     ios = StaticAnalyzerIOS.objects.all()
+    updir = Path(settings.UPLD_DIR)
     icon_mapping = {}
     package_mapping = {}
     for item in android:
@@ -249,8 +251,13 @@ def recent_scans(request):
         else:
             entry['PACKAGE'] = ''
         entry['ICON_PATH'] = icon_mapping.get(entry['MD5'], '')
-        logcat = Path(settings.UPLD_DIR) / entry['MD5'] / 'logcat.txt'
-        entry['DYNAMIC_REPORT_EXISTS'] = logcat.exists()
+        if entry['FILE_NAME'].endswith('.ipa'):
+            entry['BUNDLE_HASH'] = get_md5(
+                entry['PACKAGE_NAME'].encode('utf-8'))
+            report_file = updir / entry['BUNDLE_HASH'] / 'mobsf_dump_file.txt'
+        else:
+            report_file = updir / entry['MD5'] / 'logcat.txt'
+        entry['DYNAMIC_REPORT_EXISTS'] = report_file.exists()
         entries.append(entry)
     context = {
         'title': 'Recent Scans',

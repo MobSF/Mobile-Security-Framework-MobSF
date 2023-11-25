@@ -398,8 +398,13 @@ function list_apps(){
 
                               var url = `{% url 'dynamic_analyzer_ios'%}?bundleid=${escapeHtml(bundle)}&instance_id=${$('#ios_dynamic').val()}`;
                               $('#in_device > tbody:' + order + '-child').append(
-                                `<tr><td align="center"><img id="app_icon" src="data:image/png;base64,${escapeHtml(iconb64)}"/><br/><strong>${escapeHtml(name)}</strong></td><td>${escapeHtml(bundle)}</td><td>${escapeHtml(type)}</td><td><p><a class="btn btn-success disable" onclick="dynamic_loader()" href="${url}"><i class="fab fa-apple"></i> Start Dynamic Analysis</a> <a class="btn btn-info ${buttonState}" href="../../ios/view_report/${checksum}"><i class="fa fa-mobile"></i> View Report </a></p></td></tr>`);
-                                
+                                `<tr><td align="center">
+                                  <img id="app_icon" src="data:image/png;base64,${escapeHtml(iconb64)}"/><br/>
+                                  <strong>${escapeHtml(name)}</strong></td><td>${escapeHtml(bundle)}</td>
+                                  <td>${escapeHtml(type)}</td>
+                                  <td><p><a class="btn btn-success disable" onclick="dynamic_loader()" href="${url}"><i class="fab fa-apple"></i> Start Dynamic Analysis</a> 
+                                      <a class="btn btn-info ${buttonState}" href="../../ios/view_report/${checksum}"><i class="fa fa-mobile"></i> View Report </a>
+                                      <a class="btn btn-danger" id="${$('#ios_dynamic').val()}" onclick="remove_app(this, '${bundle}')"><i class="fas fa-trash-alt"></i>  Uninstall</a></p></td></tr>`);
                         }
                     }
                     else {
@@ -415,6 +420,60 @@ function list_apps(){
                 }
     });
 }
+
+// Remove app from device
+function remove_app(item, bundle_id){
+  Swal.fire({
+      title: 'Are you sure?',
+      text: "This will remove the app from the device",
+      type: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#2da532',
+    }).then((result) => {
+        if (result.value) {
+
+          $.ajax({
+                  url: '{% url 'remove_app' %}',
+                  type : 'POST',
+                  dataType: 'json',
+                      data : {
+                              csrfmiddlewaretoken: '{{ csrf_token }}',
+                              instance_id: item.id,
+                              bundle_id: bundle_id,
+                          },
+                          success : function(json) {
+                              if (json.status==='ok'){
+                                  Swal.fire(
+                                      'Uninstalled!',
+                                      'Application is uninstalled',
+                                      'success'
+                                  ).then(function () {
+                                      location.reload();
+                                  })
+                              }
+                              else {
+                                  Swal.fire(
+                                  'Uninstall Failed',
+                                  'Failed to uninstall the app: ' + json.message,
+                                  'error'
+                                  )
+                              }
+                          },
+                          error : function(xhr,errmsg,err) {
+                              Swal.fire(
+                                  'Uninstall Errored',
+                                  errmsg,
+                                  'error'
+                                  )
+                          }
+            });
+          }
+      });
+}
+
 //Start VM
 function start_vm(item){
       Swal.fire({

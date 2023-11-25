@@ -734,12 +734,10 @@ def base64_decode(value):
         if is_base64(value) or value.startswith(commonb64s):
             decoded = base64.b64decode(
                 value).decode('ISO-8859-1')
-            if set(decoded).difference(string.printable):
-                decoded = None
     except Exception:
         pass
     if decoded:
-        return f'{value}\nBase64 Decoded: {decoded}'
+        return f'{value}\n\nBase64 Decoded: {decoded}'
     return value
 
 
