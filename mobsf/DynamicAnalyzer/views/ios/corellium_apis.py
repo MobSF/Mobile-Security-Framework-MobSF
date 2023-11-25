@@ -264,8 +264,11 @@ class CorelliumInstanceAPI:
             headers=self.headers)
         if r.status_code in SUCCESS_RESP:
             return OK
+        err = r.json()['error']
+        if 'network monitoring enabled' in err:
+            return OK
         logger.error(
-            'Failed to enable network monitoring. %s', r.json()['error'])
+            'Failed to enable network monitoring. %s', err)
         return r.json()['error']
 
     def stop_network_capture(self):

@@ -24,7 +24,7 @@ from mobsf.DynamicAnalyzer.views.ios.corellium_frida_ssh import (
 
 
 logger = logging.getLogger(__name__)
-_DEVICE, _PID = None, None
+_PID = None
 
 
 class Frida:
@@ -161,19 +161,18 @@ class Frida:
 
     def spawn(self):
         """Connect to Frida Server and spawn the app."""
-        global _DEVICE, _PID
+        global _PID
         try:
             self.clean_up()
             try:
-                _DEVICE = frida.get_remote_device()
-                _PID = _DEVICE.spawn([self.bundle_id])
+                _PID = frida.get_remote_device().spawn([self.bundle_id])
             except frida.NotSupportedError:
                 logger.exception('Not Supported Error')
                 return
             except frida.ServerNotRunningError:
                 self.frida_ssh_forward()
             if not _PID:
-                _PID = _DEVICE.spawn([self.bundle_id])
+                _PID = frida.get_remote_device().spawn([self.bundle_id])
             logger.info('Spawning %s', self.bundle_id)
             time.sleep(2)
         except frida.TimedOutError:
@@ -190,38 +189,36 @@ class Frida:
 
     def session(self, pid, bundle_id):
         """Use existing session to inject frida scripts."""
-        global _DEVICE, _PID
+        global _PID
         try:
             self.clean_up()
             try:
+                device = frida.get_remote_device()
                 if pid and bundle_id:
                     _PID = pid
                     self.bundle_id = bundle_id
-                if not _DEVICE:
-                    # If Attach is used before spawning/session
-                    _DEVICE = frida.get_remote_device()
-                front = _DEVICE.get_frontmost_application()
+                front = device.get_frontmost_application()
                 if not front:
                     # No frontmost app, spawn the app
-                    _PID = _DEVICE.spawn([self.bundle_id])
+                    _PID = device.spawn([self.bundle_id])
                 elif front.pid != _PID:
                     # pid is not the frontmost app
-                    _PID = _DEVICE.spawn([self.bundle_id])
+                    _PID = device.spawn([self.bundle_id])
                 # pid is the forntmost app
-                session = _DEVICE.attach(_PID)
+                session = device.attach(_PID)
             except frida.NotSupportedError:
                 logger.exception('Not Supported Error')
                 return
             except Exception:
                 logger.warning('Cannot attach to pid, spawning again')
                 self.spawn()
-                session = _DEVICE.attach(_PID)
-            if session and _DEVICE and _PID:
+                session = device.attach(_PID)
+            if session and device and _PID:
                 script = session.create_script(self.get_script())
                 script.on('message', self.frida_response)
                 script.load()
                 api = script.exports_sync
-                _DEVICE.resume(_PID)
+                device.resume(_PID)
                 self.app_container = api.get_container()
                 self.container_file.write_text(self.app_container)
                 sys.stdin.read()
