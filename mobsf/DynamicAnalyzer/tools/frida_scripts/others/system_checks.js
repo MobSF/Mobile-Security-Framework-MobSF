@@ -21,6 +21,7 @@ Java.perform(function() {
     var wifiMACAddress = 'EB:FD:C5:32:9D:75';
     var routerMACAddress = '84:29:CD:A7:35:BA';
     var wifiSSID = 'CorporateNetwork01';
+    var serial = ''
 
 
 
@@ -35,10 +36,9 @@ Java.perform(function() {
 
     // BUILD Get Serial Number
     build.getSerial.implementation = function() {
-        serialNumber = this.getSerial();
-        send('[SystemCheck.DeviceSerial] Application checking for Device serial, returning -> ' + serialNumber);
+        send('[SystemCheck.DeviceSerial] Application checking for Device serial, returning -> ' + serial);
         if (CONFIG.printStackTrace) {stackTrace();}
-        return serialNumber;
+        return serial;
     };
 
 
@@ -164,6 +164,8 @@ Java.perform(function() {
 
     // Stack Trace Function
     function stackTrace() {
-        send(Java.use("android.util.Log").getStackTraceString(Java.use("java.lang.Exception").$new()));
+        Java.perform(function() {
+            send(Java.use("android.util.Log").getStackTraceString(Java.use("java.lang.Exception").$new()));
+        });
     };
 });

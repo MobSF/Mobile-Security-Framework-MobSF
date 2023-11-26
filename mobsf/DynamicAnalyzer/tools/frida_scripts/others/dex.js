@@ -29,6 +29,8 @@ Java.perform(function() {
 
     // helper functions
     function stackTrace() {
-        send(Java.use("android.util.Log").getStackTraceString(Java.use("java.lang.Exception").$new()));
+        Java.perform(function() {
+            send(Java.use("android.util.Log").getStackTraceString(Java.use("java.lang.Exception").$new()));
+        });
     }
 });
