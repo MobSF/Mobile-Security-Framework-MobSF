@@ -87,7 +87,7 @@ def ios_api_analysis(app_dir):
         'logs': set(),
         'credentials': [],
         'userdefaults': {},
-        'pasteboard': [],
+        'pasteboard': set(),
         'textinputs': [],
         'datadir': [],
         'sql': [],
@@ -118,7 +118,7 @@ def ios_api_analysis(app_dir):
             elif parsed.get('nsuserdefaults'):
                 dump['userdefaults'] = parsed['nsuserdefaults']
             elif parsed.get('pasteboard'):
-                dump['pasteboard'].append(parsed['pasteboard'])
+                dump['pasteboard'].add(parsed['pasteboard'])
             elif parsed.get('textinput'):
                 dump['textinputs'].append(parsed['textinput'])
             elif parsed.get('network'):

@@ -185,7 +185,6 @@ class Frida:
         """Use existing session to inject frida scripts."""
         global _PID
         try:
-            self.clean_up()
             try:
                 device = frida.get_remote_device()
                 if pid and bundle_id:
