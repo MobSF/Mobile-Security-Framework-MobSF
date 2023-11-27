@@ -3,6 +3,7 @@
 import logging
 import re
 import os
+import time
 from base64 import b64encode
 from pathlib import Path
 from stat import S_ISDIR
@@ -27,6 +28,7 @@ from mobsf.DynamicAnalyzer.views.android.operations import (
     send_response,
 )
 from mobsf.DynamicAnalyzer.views.ios.corellium_frida_ssh import (
+    ssh_execute_cmd,
     ssh_jump_host,
 )
 from mobsf.DynamicAnalyzer.views.ios.utils import (
@@ -324,6 +326,54 @@ def create_vm_instance(request, api=False):
         logger.exception('Creating Corellium iOS VM')
         data['message'] = str(exp)
     return send_response(data, api)
+# Helpers for AppSync Install Check & IPA Install
+
+
+def check_appsync(target):
+    """Check and install AppSync Unified."""
+    check_install = 'apt list --installed | grep \'ai.akemi.appinst\''
+    # Check if AppSync Unified is installed
+    out = ssh_execute_cmd(target, check_install)
+    if 'ai.akemi.appinst' not in out:
+        # Install AppSync Unified
+        logger.info('AppSync Unified is not installed. '
+                    'Attempting to install...')
+        src_file = '/etc/apt/sources.list.d/cydia.list'
+        src = 'deb https://cydia.akemi.ai/ ./'
+        install_cmds = [
+            f'grep -qxF \'{src}\' {src_file} || echo \'{src}\' >> {src_file}',
+            'apt update',
+            'apt install -y --allow-unauthenticated ai.akemi.appinst',
+            'launchctl reboot userspace',
+        ]
+        for i in install_cmds:
+            out = ssh_execute_cmd(target, i)
+            logger.info(out)
+        logger.info('Please wait for 15 seconds for the userspace to reboot.')
+        time.sleep(15)
+
+
+def appsync_ipa_install(ssh_string):
+    """Install app using AppSync Unified."""
+    target, jumpbox = ssh_jump_host(ssh_string)
+    # AppSync Unified install check
+    check_appsync(target)   # This will terminate SSH session
+    if target:
+        target.close()
+    if jumpbox:
+        jumpbox.close()
+    # Install IPA with AppSync United
+    logger.info('Attempting to install the IPA '
+                'using AppSync Unified.')
+    target, jumpbox = ssh_jump_host(ssh_string)
+    out = ssh_execute_cmd(target, 'appinst /tmp/app.ipa')
+    target.close()
+    jumpbox.close()
+    if 'Failed' in out:
+        logger.error('AppSync IPA Install Failed.\n%s', out)
+        return out
+    logger.info(out)
+    return OK
 # AJAX
 
 
@@ -351,16 +401,23 @@ def setup_environment(request, checksum, api=False):
             return send_response(data, api)
         # Unlock iOS Device
         ca.unlock_instance()
-        # Install IPA
+        # Upload IPA
         ipa_path = Path(settings.UPLD_DIR) / checksum / f'{checksum}.ipa'
         msg = ca.upload_ipa(ipa_path)
         if msg != OK:
             data['message'] = msg
             return send_response(data, api)
+        # Install IPA
         msg = ca.install_ipa()
         if msg != OK:
-            data['message'] = msg
-            return send_response(data, api)
+            out = ''
+            if 'Please re-sign.' in msg:
+                # Try AppSync IPA Install
+                ci = CorelliumInstanceAPI(apikey, instance_id)
+                out = appsync_ipa_install(ci.get_ssh_connection_string())
+            if out != OK:
+                data['message'] = out
+                return send_response(data, api)
         msg = 'Testing Environment is Ready!'
         logger.info(msg)
         data['status'] = OK
@@ -568,6 +625,7 @@ SSH_TARGET = None
 def ssh_execute(request, api=False):
     """Execute commands in VM over SSH."""
     global SSH_TARGET
+    res = ''
     data = {
         'status': 'failed',
         'message': 'Failed to execute command'}
@@ -584,15 +642,12 @@ def ssh_execute(request, api=False):
             SSH_TARGET, _jmp = ssh_jump_host(
                 ci.get_ssh_connection_string())
         try:
-            _stdin, _stdout, _stderr = SSH_TARGET.exec_command(cmd)
+            res = ssh_execute_cmd(SSH_TARGET, cmd)
         except SSHException:
             logger.info('SSH session not active, setting up again')
             SSH_TARGET, _jmp = ssh_jump_host(
                 ci.get_ssh_connection_string())
-            _stdin, _stdout, _stderr = SSH_TARGET.exec_command(cmd)
-        stdout = _stdout.read().decode(encoding='utf-8', errors='ignore')
-        stderr = _stderr.read().decode(encoding='utf-8', errors='ignore')
-        res = f'{stdout}{stderr}'
+            res = ssh_execute_cmd(SSH_TARGET, cmd)
         data = {'status': OK, 'message': res}
     except Exception as exp:
         data['message'] = str(exp)
@@ -606,15 +661,19 @@ def download_app_data(ci, checksum):
     """Download App data from device."""
     app_dir = Path(settings.UPLD_DIR) / checksum
     container_file = app_dir / 'mobsf_app_container_path.txt'
-    app_container = container_file.read_text('utf-8').splitlines()[0].strip()
-    target, jumpbox = ssh_jump_host(ci.get_ssh_connection_string())
-    tarfile = f'/tmp/{checksum}-app-container.tar'
-    localtar = app_dir / f'{checksum}-app-container.tar'
-    target.exec_command(f'tar -C {app_container} -cvf {tarfile} .')
-    with target.open_sftp() as sftp:
-        sftp.get(tarfile, localtar)
-    target.close()
-    jumpbox.close()
+    if container_file.exists():
+        app_container = container_file.read_text(
+            'utf-8').splitlines()[0].strip()
+        target, jumpbox = ssh_jump_host(
+            ci.get_ssh_connection_string())
+        tarfile = f'/tmp/{checksum}-app-container.tar'
+        localtar = app_dir / f'{checksum}-app-container.tar'
+        ssh_execute_cmd(
+            target, f'tar -C {app_container} -cvf {tarfile} .')
+        with target.open_sftp() as sftp:
+            sftp.get(tarfile, localtar)
+        target.close()
+        jumpbox.close()
 # AJAX
 
 

@@ -22,6 +22,7 @@ Corellium SSH over Jump Host withLocal Port Forwarding for Frida Connection.
 # 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
 # Modified for MobSF.
 
+import os
 import logging
 import socketserver
 import select
@@ -145,11 +146,23 @@ def ssh_jumphost_port_forward(ssh_string):
     target, _jumpbox = ssh_jump_host(ssh_string)
     # Frida port
     forward_port = 27042
+    if os.getenv('MOBSF_PLATFORM') == 'docker':
+        remote_host = 'host.docker.internal'
+    else:
+        remote_host = '127.0.0.1'
     forward_tunnel(
         forward_port,
-        '127.0.0.1',
+        remote_host,
         forward_port,
         target.get_transport(),
         ssh_string)
     # target close()
     # jumpbox close()
+
+
+def ssh_execute_cmd(target, cmd):
+    """Execute SSH command."""
+    _stdin, _stdout, _stderr = target.exec_command(cmd)
+    stdout = _stdout.read().decode(encoding='utf-8', errors='ignore')
+    stderr = _stderr.read().decode(encoding='utf-8', errors='ignore')
+    return f'{stdout}\n{stderr}'

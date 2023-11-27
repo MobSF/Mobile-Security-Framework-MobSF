@@ -16,9 +16,10 @@ class CorelliumAPI:
 
     def __init__(self, api_key, project_id) -> None:
         self.api = 'https://app.corellium.com/api/v1'
+        self.api_key = api_key
         self.headers = {
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {api_key}',
+            'Authorization': f'Bearer {self.api_key}',
         }
         self.project_id = project_id
 
@@ -93,10 +94,11 @@ class CorelliumModelsAPI:
 
     def __init__(self, api_key) -> None:
         self.api = 'https://app.corellium.com/api/v1'
+        self.api_key = api_key
         self.headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {api_key}',
+            'Authorization': f'Bearer {self.api_key}',
         }
 
     def get_models(self):
@@ -132,10 +134,11 @@ class CorelliumInstanceAPI:
 
     def __init__(self, api_key, instance_id) -> None:
         self.api = 'https://app.corellium.com/api/v1'
+        self.api_key = api_key
         self.headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {api_key}',
+            'Authorization': f'Bearer {self.api_key}',
         }
         self.instance_id = instance_id
 
@@ -398,10 +401,11 @@ class CorelliumAgentAPI:
 
     def __init__(self, api_key, instance_id) -> None:
         self.api = 'https://app.corellium.com/api/v1'
+        self.api_key = api_key
         self.headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {api_key}',
+            'Authorization': f'Bearer {self.api_key}',
         }
         self.instance_id = instance_id
 
@@ -433,6 +437,7 @@ class CorelliumAgentAPI:
 
     def upload_ipa(self, ipa_file):
         """Upload IPA."""
+        logger.info('Uploading IPA to iOS instance...')
         headers = deepcopy(self.headers)
         headers['Content-Type'] = 'application/octet-stream'
         r = requests.put(

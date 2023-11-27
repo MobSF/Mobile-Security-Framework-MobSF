@@ -321,7 +321,7 @@ function stop_loader(){
   {% if i.state in 'on,paused' %} 
     $('#ios_dynamic').append($('<option>',{
                                   value: '{{ i.id}}',
-                                  text: '{{i.name}}',
+                                  text: '{{i.name}} ({{ i.os }}) - {{ i.id}}',
                                 }));
   {% endif %}
 {% endfor %}
