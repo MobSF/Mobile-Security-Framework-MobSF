@@ -1,9 +1,9 @@
 function captureStringCompare() {
   send('Capturing string comparisons')
-  Interceptor.attach(ObjC.classes.NSString['- isEqualToString:'].implementation, {
+  Interceptor.attach(ObjC.classes.__NSCFString['- isEqualToString:'].implementation, {
     onEnter: function (args) {
       var str = new ObjC.Object(ptr(args[2])).toString()
-      send('[AUXILIARY] [NSString isEqualToString:] -> '+ str);
+      send('[AUXILIARY] [__NSCFString isEqualToString:] -> '+ str);
     }
   });
 }
