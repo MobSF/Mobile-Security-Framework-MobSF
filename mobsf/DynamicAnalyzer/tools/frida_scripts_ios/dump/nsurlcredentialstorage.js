@@ -1,6 +1,7 @@
 // Dumps contents of NSURLCredentialStorage for all protection spaces
 // Based on https://github.com/sensepost/objection/blob/f8e78d8a29574c6dadd2b953a63207b45a19b1cf/objection/hooks/ios/keychain/dump.js#L3
 function dumpNSURLCredentialStorage () {
+    send('Dumping Credentials from NSURLCredentialStorage')
     var data = [];
     var credentialstorage = [];
     var credentialsDict = ObjC.classes.NSURLCredentialStorage.sharedCredentialStorage().allCredentials();
@@ -33,7 +34,6 @@ function dumpNSURLCredentialStorage () {
     send(JSON.stringify({'[MBSFDUMP] credentialstorage': credentialstorage}));
 }
 
-send('Dumping Credentials from NSURLCredentialStorage')
 try {
     dumpNSURLCredentialStorage();
 } catch(err) {}

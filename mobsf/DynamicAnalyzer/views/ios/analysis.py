@@ -91,6 +91,7 @@ def ios_api_analysis(app_dir):
         'textinputs': [],
         'datadir': [],
         'sql': [],
+        'json': [],
     }
     try:
         dump_file = app_dir / 'mobsf_dump_file.txt'
@@ -126,6 +127,8 @@ def ios_api_analysis(app_dir):
                 dump['datadir'] = parsed['datadir']
             elif parsed.get('sql'):
                 dump['sql'].append(parsed['sql'])
+            elif parsed.get('json'):
+                dump['json'].append(parsed['json'])
             if len(dump['network']) > 0:
                 dump['network'] = list(
                     {v['url']: v for v in dump['network']}.values())

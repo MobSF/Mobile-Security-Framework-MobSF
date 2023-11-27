@@ -60,17 +60,12 @@ class Frida:
         """Get Frida Scripts."""
         combined_script = []
         header = []
-        # Do not add interceptor hooks more than once.
-        tracers = ('file-access', 'nslog', 'pasteboard', 'network',
-                   'text-inputs', 'jailbreak_bypass', 'crypto', 'sqlite')
         if not selected_scripts:
             return header
         all_scripts = self.frida_dir / script_type
         for script in all_scripts.rglob('*.js'):
             if '*' in selected_scripts:
                 combined_script.append(script.read_text())
-            if self.action != 'spawn' and script.stem in tracers:
-                continue
             if script.stem in selected_scripts:
                 header.append(f'send("Loaded Frida Script - {script.stem}");')
                 combined_script.append(script.read_text())
@@ -108,7 +103,6 @@ class Frida:
         """Get final script."""
         if not self.code:
             self.code = ''
-        # Load custom code first
         rpc_list = []
         scripts = [self.code]
         scripts.extend(self.get_scripts('default', self.defaults))

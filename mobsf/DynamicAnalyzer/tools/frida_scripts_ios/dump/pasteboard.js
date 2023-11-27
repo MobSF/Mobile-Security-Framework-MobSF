@@ -8,6 +8,7 @@
 //GitHub: https://github.com/interference-security
 function start_pasteboard_monitoring(interval_value)
 {
+    send("Tracing iOS Pasteboard Entries");
     var pasteboard = (ObjC.classes.UIPasteboard).generalPasteboard();
     var latest_word = "";
     setInterval(function(){
@@ -25,7 +26,6 @@ function start_pasteboard_monitoring(interval_value)
 
 }
 //start_pasteboard_monitoring(INTERVAL_VALUE_HERE_MILLISECONDS)
-send("Tracing iOS Pasteboard Entries");
 try {
     start_pasteboard_monitoring(2000);
 } catch(err) {}

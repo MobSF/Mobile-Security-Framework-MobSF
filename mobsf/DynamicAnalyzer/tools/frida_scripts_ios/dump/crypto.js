@@ -5,61 +5,60 @@
  * Author: @federicodotta
  */
 
-send("Tracing Crypto Operations");
-try {
+function CCCrypt(){
     Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCrypt"),
-        {
-        onEnter: function(args) {
+    {
+    onEnter: function(args) {
 
-            var cccrypt = {
-                'CCOperation': parseInt(args[0]),
-                'CCAlgorithm': parseInt(args[1]),
-                'CCOptions': parseInt(args[2]),
-            }
-
-            if(ptr(args[3]) != 0 ) {
-                cccrypt['Key'] = base64ArrayBuffer(Memory.readByteArray(ptr(args[3]),parseInt(args[4])));
-            } else {
-                cccrypt['Key'] = 0;
-            }
-
-            if(ptr(args[5]) != 0 ) {
-                cccrypt['IV'] = base64ArrayBuffer(Memory.readByteArray(ptr(args[5]),16));
-            } else {
-                cccrypt['IV'] = 0;
-            }
-
-            this.dataInLength = parseInt(args[7]);
-
-            if(ptr(args[6]) != 0 ) {
-
-                cccrypt['dataInput'] = base64ArrayBuffer(Memory.readByteArray(ptr(args[6]),this.dataInLength))
-
-            } else {
-                cccrypt['dataInput'] = null;
-            }
-
-            this.dataOut = args[8];
-            this.dataOutLength = args[10];
-            send(JSON.stringify({'[MBSFDUMP] crypto': cccrypt}));
-
-        },
-
-        onLeave: function(retval) {
-            var cccrypt_re = {};
-            if(ptr(this.dataOut) != 0 ) {
-                cccrypt_re['dataOutput'] = base64ArrayBuffer(Memory.readByteArray(this.dataOut,parseInt(ptr(Memory.readU32(ptr(this.dataOutLength),4)))));
-
-            } else {
-                cccrypt_re['dataOutput'] = null;
-            }
-            send(JSON.stringify({'[MBSFDUMP] crypto': cccrypt_re}));
-
+        var cccrypt = {
+            'CCOperation': parseInt(args[0]),
+            'CCAlgorithm': parseInt(args[1]),
+            'CCOptions': parseInt(args[2]),
         }
 
-    });
-} catch(err) {}
-try {
+        if(ptr(args[3]) != 0 ) {
+            cccrypt['Key'] = base64ArrayBuffer(Memory.readByteArray(ptr(args[3]),parseInt(args[4])));
+        } else {
+            cccrypt['Key'] = 0;
+        }
+
+        if(ptr(args[5]) != 0 ) {
+            cccrypt['IV'] = base64ArrayBuffer(Memory.readByteArray(ptr(args[5]),16));
+        } else {
+            cccrypt['IV'] = 0;
+        }
+
+        this.dataInLength = parseInt(args[7]);
+
+        if(ptr(args[6]) != 0 ) {
+
+            cccrypt['dataInput'] = base64ArrayBuffer(Memory.readByteArray(ptr(args[6]),this.dataInLength))
+
+        } else {
+            cccrypt['dataInput'] = null;
+        }
+
+        this.dataOut = args[8];
+        this.dataOutLength = args[10];
+        send(JSON.stringify({'[MBSFDUMP] crypto': cccrypt}));
+
+    },
+
+    onLeave: function(retval) {
+        var cccrypt_re = {};
+        if(ptr(this.dataOut) != 0 ) {
+            cccrypt_re['dataOutput'] = base64ArrayBuffer(Memory.readByteArray(this.dataOut,parseInt(ptr(Memory.readU32(ptr(this.dataOutLength),4)))));
+
+        } else {
+            cccrypt_re['dataOutput'] = null;
+        }
+        send(JSON.stringify({'[MBSFDUMP] crypto': cccrypt_re}));
+
+    }
+
+});
+}
+function CCCryptorCreate(){
     Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCryptorCreate"),
         {
         onEnter: function(args) {
@@ -89,62 +88,61 @@ try {
         }
 
     });
-} catch(err) {}
-
-try {
+}
+function CCCryptorUpdate(){
     Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCryptorUpdate"),
-        {
-        onEnter: function(args) {
-            var cryptorupdate = {}
-            if(ptr(args[1]) != 0) {
-                cryptorupdate['dataInput'] = base64ArrayBuffer(Memory.readByteArray(ptr(args[1]),parseInt(args[2])));
+    {
+    onEnter: function(args) {
+        var cryptorupdate = {}
+        if(ptr(args[1]) != 0) {
+            cryptorupdate['dataInput'] = base64ArrayBuffer(Memory.readByteArray(ptr(args[1]),parseInt(args[2])));
 
-            } else {
-                cryptorupdate['dataInput'] = null;
-            }
-
-            //this.len = args[4];
-            this.len = args[5];
-            this.out = args[3];
-            send(JSON.stringify({'[MBSFDUMP] crypto': cryptorupdate}));
-
-        },
-
-        onLeave: function(retval) {
-            var cryptorupdate_re = {}
-            if(ptr(this.out) != 0) {
-                cryptorupdate_re['dataOutput'] = base64ArrayBuffer(Memory.readByteArray(this.out,parseInt(ptr(Memory.readU32(ptr(this.len),4)))))
-            } else {
-                cryptorupdate_re['dataOutput'] = null;
-            }
-            send(JSON.stringify({'[MBSFDUMP] crypto': cryptorupdate_re}));
+        } else {
+            cryptorupdate['dataInput'] = null;
         }
 
-    });
-} catch(err) {}
+        //this.len = args[4];
+        this.len = args[5];
+        this.out = args[3];
+        send(JSON.stringify({'[MBSFDUMP] crypto': cryptorupdate}));
 
-try {
+    },
+
+    onLeave: function(retval) {
+        var cryptorupdate_re = {}
+        if(ptr(this.out) != 0) {
+            cryptorupdate_re['dataOutput'] = base64ArrayBuffer(Memory.readByteArray(this.out,parseInt(ptr(Memory.readU32(ptr(this.len),4)))))
+        } else {
+            cryptorupdate_re['dataOutput'] = null;
+        }
+        send(JSON.stringify({'[MBSFDUMP] crypto': cryptorupdate_re}));
+    }
+
+});
+}
+
+function CCCryptorFinal(){
     Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCryptorFinal"),
-        {
-        onEnter: function(args) {
-            //this.len2 = args[2];
-            this.len2 = args[3];
-            this.out2 = args[1];
-        },
-        onLeave: function(retval) {
-            var cccryptorfinal_re = {}
-            if(ptr(this.out2) != 0) {
-                cccryptorfinal_re['dataOutput'] = base64ArrayBuffer(Memory.readByteArray(this.out2,parseInt(ptr(Memory.readU32(ptr(this.len2),4)))))
-            } else {
-                cccryptorfinal_re['dataOutput'] = null;
-            }
-            send(JSON.stringify({'[MBSFDUMP] crypto': cccryptorfinal_re}));
+    {
+    onEnter: function(args) {
+        //this.len2 = args[2];
+        this.len2 = args[3];
+        this.out2 = args[1];
+    },
+    onLeave: function(retval) {
+        var cccryptorfinal_re = {}
+        if(ptr(this.out2) != 0) {
+            cccryptorfinal_re['dataOutput'] = base64ArrayBuffer(Memory.readByteArray(this.out2,parseInt(ptr(Memory.readU32(ptr(this.len2),4)))))
+        } else {
+            cccryptorfinal_re['dataOutput'] = null;
         }
+        send(JSON.stringify({'[MBSFDUMP] crypto': cccryptorfinal_re}));
+    }
 
-    });
-} catch(err) {}
+});
+}
 
-try {
+function CC_SHA1_Init(){
     //CC_SHA1_Init(CC_SHA1_CTX *c);
     Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CC_SHA1_Init"),
     {
@@ -155,9 +153,9 @@ try {
             }}));
         }
     });
-} catch(err) {}
+}
 
-try {
+function CC_SHA1_Update(){
     //CC_SHA1_Update(CC_SHA1_CTX *c, const void *data, CC_LONG len);
     Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CC_SHA1_Update"),
     {
@@ -174,9 +172,9 @@ try {
             send(JSON.stringify({'[MBSFDUMP] crypto': ccsha1update}));
         }
     });
-} catch(err) {}
+}
 
-try {
+function CC_SHA1_Final(){
     //CC_SHA1_Final(unsigned char *md, CC_SHA1_CTX *c);
     Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CC_SHA1_Final"),
     {
@@ -198,6 +196,35 @@ try {
             send(JSON.stringify({'[MBSFDUMP] crypto': ccsha1final_ret}));
         }
     });
+}
+
+
+try {
+    send("Tracing Crypto Operations");
+    CCCrypt();
+} catch(err) {}
+try {
+    CCCryptorCreate();
+} catch(err) {}
+
+try {
+   CCCryptorUpdate();
+} catch(err) {}
+
+try {
+    CCCryptorFinal();
+} catch(err) {}
+
+try {
+    CC_SHA1_Init();
+} catch(err) {}
+
+try {
+    CC_SHA1_Update();
+} catch(err) {}
+
+try {
+    CC_SHA1_Final();
 } catch(err) {}
 
 // Native ArrayBuffer to Base64

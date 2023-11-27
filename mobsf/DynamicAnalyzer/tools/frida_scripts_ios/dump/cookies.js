@@ -1,5 +1,5 @@
-send('Dumping Cookies');
-try {
+function dumpCookies(){
+  send('Dumping Cookies');
   var cookieArr = [];
   var cookies = ObjC.classes.NSHTTPCookieStorage.sharedHTTPCookieStorage().cookies();
   for (var i = 0, l = cookies.count(); i < l; i++) {
@@ -17,4 +17,7 @@ try {
       });
       send(JSON.stringify({'[MBSFDUMP] cookies': cookieArr}));
   }
+}
+try {
+  dumpCookies();
 } catch(err) {}
