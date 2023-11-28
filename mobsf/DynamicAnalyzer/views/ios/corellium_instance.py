@@ -386,7 +386,7 @@ def setup_environment(request, checksum, api=False):
     try:
         if not is_md5(checksum):
             # Additional Check for REST API
-            data['message'] = 'Invalid MD5 Hash'
+            data['message'] = 'Invalid Hash'
             return send_response(data, api)
         instance_id = request.POST['instance_id']
         failed = common_check(instance_id)
@@ -410,13 +410,16 @@ def setup_environment(request, checksum, api=False):
         # Install IPA
         msg = ca.install_ipa()
         if msg != OK:
-            out = ''
             if 'Please re-sign.' in msg:
                 # Try AppSync IPA Install
                 ci = CorelliumInstanceAPI(apikey, instance_id)
                 out = appsync_ipa_install(ci.get_ssh_connection_string())
-            if out != OK:
-                data['message'] = out
+                if out and out != OK:
+                    data['message'] = out
+                    return send_response(data, api)
+            else:
+                # Other install errors
+                data['message'] = msg
                 return send_response(data, api)
         msg = 'Testing Environment is Ready!'
         logger.info(msg)
@@ -687,7 +690,7 @@ def download_data(request, checksum, api=False):
     try:
         if not is_md5(checksum):
             # Additional Check for REST API
-            data['message'] = 'Invalid MD5 Hash'
+            data['message'] = 'Invalid Hash'
             return send_response(data, api)
         instance_id = request.POST['instance_id']
         failed = common_check(instance_id)

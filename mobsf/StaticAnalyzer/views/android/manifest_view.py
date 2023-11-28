@@ -3,13 +3,15 @@
 
 import logging
 import os
-import re
 from pathlib import Path
 
 from django.conf import settings
 from django.shortcuts import render
 
-from mobsf.MobSF.utils import print_n_send_error_response
+from mobsf.MobSF.utils import (
+    is_md5,
+    print_n_send_error_response,
+)
 from mobsf.StaticAnalyzer.views.android.manifest_utils import (
     get_manifest_file,
 )
@@ -20,10 +22,10 @@ logger = logging.getLogger(__name__)
 def run(request, checksum):
     """View the manifest."""
     try:
+        supported = ['eclipse', 'studio', 'apk', 'aar']
         directory = settings.BASE_DIR  # BASE DIR
         typ = request.GET['type']  # APK or SOURCE
-        match = re.match('^[0-9a-f]{32}$', checksum)
-        if match and (typ in ['eclipse', 'studio', 'apk', 'aar']):
+        if is_md5(checksum) and (typ in supported):
             app_dir = os.path.join(
                 settings.UPLD_DIR, checksum + '/')  # APP DIRECTORY
             tools_dir = os.path.join(

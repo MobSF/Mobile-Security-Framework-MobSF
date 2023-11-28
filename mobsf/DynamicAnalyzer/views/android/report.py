@@ -58,7 +58,7 @@ def view_report(request, checksum, api=False):
             # in REST API
             return print_n_send_error_response(
                 request,
-                'Invalid Parameters',
+                'Invalid Hash',
                 api)
         package = get_package_name(checksum)
         if not package:

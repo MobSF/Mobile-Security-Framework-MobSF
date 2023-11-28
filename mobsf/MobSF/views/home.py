@@ -25,6 +25,7 @@ from mobsf.MobSF.utils import (
     get_md5,
     is_dir_exists,
     is_file_exists,
+    is_md5,
     is_safe_path,
     key,
     print_n_send_error_response,
@@ -334,8 +335,7 @@ def generate_download(request):
         logger.info('Generating Downloads')
         md5 = request.GET['hash']
         file_type = request.GET['file_type']
-        match = re.match('^[0-9a-f]{32}$', md5)
-        if (not match
+        if (not is_md5(md5)
                 or file_type not in binary + source):
             msg = 'Invalid download type or hash'
             logger.exception(msg)

@@ -1,7 +1,6 @@
 # -*- coding: utf_8 -*-
 """iOS Static Code Analysis."""
 import logging
-import re
 from pathlib import Path
 
 import mobsf.MalwareAnalyzer.views.Trackers as Trackers
@@ -12,6 +11,7 @@ from django.shortcuts import render
 
 from mobsf.MobSF.utils import (
     file_size,
+    is_md5,
     print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.models import (
@@ -78,21 +78,27 @@ def static_analyzer_ios(request, checksum, api=False):
         if re_scan == '1':
             rescan = True
         app_dict = {}
-        if not re.match('^[0-9a-f]{32}$', checksum):
-            msg = 'Invalid checksum'
-            return print_n_send_error_response(request, msg, api)
+        if not is_md5(checksum):
+            return print_n_send_error_response(
+                request,
+                'Invalid Hash',
+                api)
         robj = RecentScansDB.objects.filter(MD5=checksum)
         if not robj.exists():
-            msg = 'The file is not uploaded/available'
-            return print_n_send_error_response(request, msg, api)
+            return print_n_send_error_response(
+                request,
+                'The file is not uploaded/available',
+                api)
         file_type = robj[0].SCAN_TYPE
         filename = robj[0].FILE_NAME
         allowed_exts = ('ios', '.ipa', '.zip', '.dylib', '.a')
         allowed_typ = [i.replace('.', '') for i in allowed_exts]
         if (not filename.lower().endswith(allowed_exts)
                 or file_type not in allowed_typ):
-            msg = 'Invalid file extension or file type'
-            return print_n_send_error_response(request, msg, api)
+            return print_n_send_error_response(
+                request,
+                'Invalid file extension or file type',
+                api)
 
         app_dict['directory'] = Path(settings.BASE_DIR)  # BASE DIR
         app_dict['file_name'] = filename  # APP ORIGINAL NAME

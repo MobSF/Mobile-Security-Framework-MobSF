@@ -42,7 +42,7 @@ def ios_view_report(request, checksum, api=False):
             # in REST API
             return print_n_send_error_response(
                 request,
-                'Invalid Parameters',
+                'Invalid Hash',
                 api)
         instance_id = request.GET.get('instance_id')
         if instance_id and not common_check(instance_id):
