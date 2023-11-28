@@ -7,15 +7,13 @@ from django.conf import settings
 from django.shortcuts import render
 
 from mobsf.MobSF.utils import (
+    common_check,
     get_md5,
     print_n_send_error_response,
     python_dict,
     strict_package_check,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
-from mobsf.DynamicAnalyzer.views.ios.utils import (
-    common_check,
-)
 from mobsf.DynamicAnalyzer.views.ios.corellium_apis import (
     CorelliumAPI,
 )

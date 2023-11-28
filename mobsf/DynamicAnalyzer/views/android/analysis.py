@@ -4,15 +4,15 @@ import logging
 import os
 import re
 import shutil
-import tarfile
 from json import load
 from pathlib import Path
 
 from mobsf.MobSF.utils import (
-    clean_filename,
     is_file_exists,
-    is_pipe_or_link,
     python_list,
+)
+from mobsf.DynamicAnalyzer.views.common.shared import (
+    get_app_files,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
@@ -171,95 +171,6 @@ def get_log_data(apk_dir, package):
                + apimon_data + frida_logs)
     return {'logcat': logcat_data,
             'traffic': traffic}
-
-
-def safe_paths(tar_meta):
-    """Safe filenames in windows."""
-    for fh in tar_meta:
-        fh.name = clean_filename(fh.name)
-        yield fh
-
-
-def untar_files(tar_loc, untar_dir):
-    """Untar files."""
-    logger.info('Extracting Tar files')
-    # Extract Device Data
-    if not tar_loc.exists():
-        return False
-    if untar_dir.exists():
-        # fix for permission errors
-        shutil.rmtree(untar_dir)
-    else:
-        os.makedirs(untar_dir)
-    try:
-        with tarfile.open(tar_loc.as_posix(), errorlevel=1) as tar:
-
-            def is_within_directory(directory, target):
-                abs_directory = os.path.abspath(directory)
-                abs_target = os.path.abspath(target)
-                prefix = os.path.commonprefix([abs_directory, abs_target])
-                return prefix == abs_directory
-
-            def safe_extract(tar, path='.',
-                             members=None,
-                             *,
-                             numeric_owner=False):
-                for member in tar.getmembers():
-                    member_path = os.path.join(path, member.name)
-                    if not is_within_directory(path, member_path):
-                        raise Exception('Attempted Path Traversal in Tar File')
-                tar.extractall(path, members, numeric_owner=numeric_owner)
-
-            safe_extract(tar, untar_dir, members=safe_paths(tar))
-    except (FileExistsError, tarfile.ReadError):
-        logger.warning('Failed to extract tar file')
-    except Exception:
-        logger.exception('Tar extraction failed')
-    return True
-
-
-def get_app_files(apk_dir, package):
-    """Get files from device."""
-    logger.info('Getting app files')
-    all_files = {'xml': [], 'sqlite': [], 'others': [], 'plist': []}
-    app_dir = Path(apk_dir)
-    tar_loc = app_dir / f'{package}.tar'
-    untar_dir = app_dir / 'DYNAMIC_DeviceData'
-    success = untar_files(tar_loc, untar_dir)
-    if not success:
-        return all_files
-    # Do Static Analysis on Data from Device
-    try:
-        untar_dir = untar_dir.as_posix()
-        for dir_name, _, files in os.walk(untar_dir):
-            for jfile in files:
-                file_path = os.path.join(untar_dir, dir_name, jfile)
-                fileparam = file_path.replace(f'{untar_dir}/', '')
-                if is_pipe_or_link(file_path):
-                    continue
-                if jfile == 'lib':
-                    pass
-                else:
-                    if jfile.endswith('.xml'):
-                        all_files['xml'].append(
-                            {'type': 'xml', 'file': fileparam})
-                    elif jfile.endswith('.plist'):
-                        all_files['plist'].append(
-                            {'type': 'plist', 'file': fileparam})
-                    else:
-                        with open(file_path,
-                                  'r',
-                                  encoding='ISO-8859-1') as flip:
-                            file_cnt_sig = flip.read(6)
-                        if file_cnt_sig == 'SQLite':
-                            all_files['sqlite'].append(
-                                {'type': 'db', 'file': fileparam})
-                        elif not jfile.endswith('.DS_Store'):
-                            all_files['others'].append(
-                                {'type': 'others', 'file': fileparam})
-    except Exception:
-        logger.exception('Getting app files')
-    return all_files
 
 
 def generate_download(apk_dir, md5_hash, download_dir, package):

@@ -13,11 +13,9 @@ from mobsf.DynamicAnalyzer.views.ios.analysis import (
     ios_api_analysis,
     run_analysis,
 )
-from mobsf.DynamicAnalyzer.views.ios.utils import (
-    common_check,
-)
 from mobsf.MobSF.utils import (
     base64_decode,
+    common_check,
     is_md5,
     key,
     pretty_json,

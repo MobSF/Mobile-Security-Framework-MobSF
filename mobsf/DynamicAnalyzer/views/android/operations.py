@@ -4,15 +4,18 @@ import json
 import logging
 import os
 import random
-import re
 import subprocess
 import threading
 from pathlib import Path
 
 from django.conf import settings
-from django.http import HttpResponse
 from django.views.decorators.http import require_http_methods
 
+from mobsf.DynamicAnalyzer.views.common.shared import (
+    invalid_params,
+    is_attack_pattern,
+    send_response,
+)
 from mobsf.DynamicAnalyzer.views.android.environment import (
     Environment,
 )
@@ -46,35 +49,6 @@ def get_package_name(checksum):
         if packages.get(checksum):
             return packages[checksum][0]
         return None
-
-
-def send_response(data, api=False):
-    """Return JSON Response."""
-    if api:
-        return data
-    return HttpResponse(
-        json.dumps(data),  # lgtm [py/stack-trace-exposure]
-        content_type='application/json')
-
-
-def is_attack_pattern(user_input):
-    """Check for attacks."""
-    atk_pattern = re.compile(r';|\$\(|\|\||&&')
-    stat = re.findall(atk_pattern, user_input)
-    if stat:
-        logger.error('Possible RCE attack detected')
-    return stat
-
-
-def invalid_params(api=False):
-    """Standard response for invalid params."""
-    msg = 'Invalid Parameters'
-    logger.error(msg)
-    data = {'status': 'failed', 'message': msg}
-    if api:
-        return data
-    return send_response(data)
-
 # AJAX
 
 

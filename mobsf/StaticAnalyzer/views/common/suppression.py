@@ -13,7 +13,7 @@ from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
     StaticAnalyzerIOS,
 )
-from mobsf.DynamicAnalyzer.views.android.operations import (
+from mobsf.DynamicAnalyzer.views.common.shared import (
     invalid_params,
     is_attack_pattern,
     send_response,

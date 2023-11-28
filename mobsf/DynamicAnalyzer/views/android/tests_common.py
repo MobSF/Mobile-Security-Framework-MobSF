@@ -7,10 +7,12 @@ import re
 from django.conf import settings
 from django.views.decorators.http import require_http_methods
 
-from mobsf.DynamicAnalyzer.views.android.operations import (
-    get_package_name,
+from mobsf.DynamicAnalyzer.views.common.shared import (
     invalid_params,
     send_response,
+)
+from mobsf.DynamicAnalyzer.views.android.operations import (
+    get_package_name,
 )
 from mobsf.DynamicAnalyzer.views.android.environment import (
     Environment,

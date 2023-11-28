@@ -14,11 +14,13 @@ from django.conf import settings
 from django.views.decorators.http import require_http_methods
 
 from mobsf.DynamicAnalyzer.views.android.frida_core import Frida
-from mobsf.DynamicAnalyzer.views.android.operations import (
-    get_package_name,
+from mobsf.DynamicAnalyzer.views.common.shared import (
     invalid_params,
     is_attack_pattern,
     send_response,
+)
+from mobsf.DynamicAnalyzer.views.android.operations import (
+    get_package_name,
 )
 from mobsf.MobSF.utils import (
     is_file_exists,

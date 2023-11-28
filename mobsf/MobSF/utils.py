@@ -34,6 +34,7 @@ from . import settings
 logger = logging.getLogger(__name__)
 ADB_PATH = None
 BASE64_REGEX = re.compile(r'^[-A-Za-z0-9+/]*={0,3}$')
+MD5_REGEX = re.compile(r'^[0-9a-f]{32}$')
 
 
 class Color(object):
@@ -561,7 +562,7 @@ def file_size(app_path):
 
 def is_md5(user_input):
     """Check if string is valid MD5."""
-    stat = re.match(r'^[0-9a-f]{32}$', user_input)
+    stat = MD5_REGEX.match(user_input)
     if not stat:
         logger.error('Invalid scan hash')
     return stat
@@ -622,6 +623,29 @@ def strict_ios_class(user_input):
     if not resp:
         logger.error('Invalid class name')
     return resp
+
+
+def is_instance_id(user_input):
+    """Check if string is valid instance id."""
+    reg = r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    stat = re.match(reg, user_input)
+    if not stat:
+        logger.error('Invalid instance identifier')
+    return stat
+
+
+def common_check(instance_id):
+    """Common checks for instance APIs."""
+    if not getattr(settings, 'CORELLIUM_API_KEY', ''):
+        return {
+            'status': 'failed',
+            'message': 'Missing Corellium API key'}
+    elif not is_instance_id(instance_id):
+        return {
+            'status': 'failed',
+            'message': 'Invalid instance identifier'}
+    else:
+        return None
 
 
 def is_path_traversal(user_input):

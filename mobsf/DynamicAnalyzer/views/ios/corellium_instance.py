@@ -16,6 +16,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 
 from mobsf.MobSF.utils import (
+    common_check,
     get_md5,
     id_generator,
     is_md5,
@@ -23,16 +24,13 @@ from mobsf.MobSF.utils import (
     print_n_send_error_response,
     strict_package_check,
 )
-from mobsf.DynamicAnalyzer.views.android.operations import (
+from mobsf.DynamicAnalyzer.views.common.shared import (
     invalid_params,
     send_response,
 )
 from mobsf.DynamicAnalyzer.views.ios.corellium_frida_ssh import (
     ssh_execute_cmd,
     ssh_jump_host,
-)
-from mobsf.DynamicAnalyzer.views.ios.utils import (
-    common_check,
 )
 from mobsf.DynamicAnalyzer.views.ios.corellium_apis import (
     CorelliumAPI,

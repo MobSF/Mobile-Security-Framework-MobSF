@@ -12,19 +12,17 @@ from django.views.decorators.http import require_http_methods
 from mobsf.DynamicAnalyzer.views.ios.frida_core import (
     Frida,
 )
-from mobsf.DynamicAnalyzer.views.android.operations import (
+from mobsf.DynamicAnalyzer.views.common.shared import (
     invalid_params,
     is_attack_pattern,
     send_response,
-)
-from mobsf.DynamicAnalyzer.views.ios.utils import (
-    common_check,
 )
 from mobsf.DynamicAnalyzer.views.ios.corellium_apis import (
     CorelliumInstanceAPI,
     OK,
 )
 from mobsf.MobSF.utils import (
+    common_check,
     is_file_exists,
     is_md5,
     is_safe_path,

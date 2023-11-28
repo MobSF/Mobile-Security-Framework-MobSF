@@ -9,7 +9,7 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
     EMAIL_REGEX,
     URL_REGEX,
 )
-from mobsf.DynamicAnalyzer.views.android.analysis import (
+from mobsf.DynamicAnalyzer.views.common.shared import (
     get_app_files,
 )
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
