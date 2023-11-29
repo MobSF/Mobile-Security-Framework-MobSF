@@ -525,6 +525,32 @@ def take_screenshot(request, api=False):
 
 
 @require_http_methods(['POST'])
+def get_container_path(request, api=False):
+    """Get App Container path."""
+    err_msg = 'Failed to get app container path'
+    data = {
+        'status': 'failed',
+        'message': err_msg}
+    try:
+        bundle_id = request.POST['bundle_id']
+        if not strict_package_check(bundle_id):
+            data['message'] = 'Invalid iOS Bundle id'
+            return send_response(data, api)
+        checksum = get_md5(bundle_id.encode('utf-8'))
+        cfile = 'mobsf_app_container_path.txt'
+        acfile = Path(settings.UPLD_DIR) / checksum / cfile
+        if acfile.exists():
+            data['status'] = OK
+            data['message'] = acfile.read_text(
+                'utf-8').splitlines()[0].strip()
+    except Exception as exp:
+        logger.exception(err_msg)
+        data['message'] = str(exp)
+    return send_response(data, api)
+# AJAX
+
+
+@require_http_methods(['POST'])
 def network_capture(request, api=False):
     """Enable/Disable Network Capture."""
     data = {

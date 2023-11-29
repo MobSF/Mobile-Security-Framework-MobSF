@@ -179,7 +179,7 @@
                         </div>
                         <hr/>
                           <div class="form-group">
-                      <h4> Dump </h4>
+                      <h4> Trace </h4>
                         <label>
                           <input name="dump_hooks" type="checkbox" value="network" checked>
                             Network
@@ -292,12 +292,6 @@
               <!--tab end-->
 
                   </div>
-                  <!-- <div class="tab-pane fade" id="frida_logs" role="tabpanel" aria-labelledby="frida-tab">
-                    <h4 class="page-header"><strong>Frida Logs </strong>- </h4>
-                    <div id="messages"></br>Data refreshed in every 3 seconds.</div>
-                    <pre class="frida-pre" id="logs"></pre>
-                  </div> -->
-                  <!-- frida logs -->
                   <div class="tab-pane fade" id="errors" role="tabpanel" aria-labelledby="errors-tab">
                     <iframe sandbox frameborder="0" width="100%" height="650px" id="er"></iframe>
                   </div>
@@ -357,7 +351,7 @@
                    <div id="shell">
                     <output></output>
                     <div id="input-line" class="input-line">
-                      <div class="prompt"></div><div><input class="cmdline" autofocus /></div>
+                      <div class="prompt"></div><div><input id="cmdinp" class="cmdline" autofocus /></div>
                     </div>
                   </div>
               
@@ -374,7 +368,7 @@
             <div class="card card-default">
               <!-- /.card-header -->
               <div class="card-body">
-                   <div id="frida_output">
+                   <div>
                     <h4 class="page-header"><strong>Frida Logs </strong></h4>
                     <div id="messages"></br>Data refreshed in every 3 seconds.</div>
                     <pre class="frida-pre" id="frida-logs"></pre>
@@ -447,6 +441,8 @@
 <script src="{% static "codemirror/javascript-lint.js" %}"></script>
 <script src="{% static "others/js/swipe.js" %}"></script>
 <script>
+
+var appContainerPath;
 // Loading Spinner
 function dynamic_loader(){
     var loadingOverlay = document.querySelector('.loading');
@@ -458,6 +454,9 @@ function stop_loader(){
 }
 // Prevent screen image drag
 document.getElementById('my').ondragstart = function() { return false; };
+
+// Hide Frida Logs on page load
+document.getElementById('frida-logs').style.display = 'none';
 
 // Frida Auxiliary actions
 function aux_click(cb) {
@@ -556,7 +555,7 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
     var output_ = document.querySelector(outputContainer);
 
     const CMDS_ = [
-        'clear', 'date', 'help',
+        'clear', 'date', 'help', 'app_path'
     ];
 
     var history_ = [];
@@ -616,16 +615,13 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
          output_.insertAdjacentHTML('beforeEnd', '<p>' + html + '</p>');
     }
 
-    // Cross-browser impl to get document's height.
-    function getDocHeight_() {
-        var d = document;
-        return Math.max(
-            Math.max(d.body.scrollHeight, d.documentElement.scrollHeight),
-            Math.max(d.body.offsetHeight, d.documentElement.offsetHeight),
-            Math.max(d.body.clientHeight, d.documentElement.clientHeight)
-        );
+    function scrollToShellBottom(){
+      // Scroll to shell bottom
+      var myElement = document.getElementById('shell');
+      myElement.scrollTop = myElement.scrollHeight;
+      myElement.scrollIntoView({ block: 'end' });
     }
-
+  
     var pwd = '/private/var/root';
     var cd = '';
     var cwd_string = '';
@@ -720,12 +716,16 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
                     break;
                 case 'help':
                     output('<div class="ls-files">' + CMDS_.join('<br>') + '</div>');
-                    break;                      
+                    break;    
+                case 'app_path':
+                    if (appContainerPath)
+                      output(appContainerPath);
+                    break;                  
                 default:
                    if (exec_cmd.length > 0)
                         ssh_execute(exec_cmd)
             };
-            window.scrollTo(0, getDocHeight_());
+            scrollToShellBottom();
             this.value = ''; // Clear/setup line for next input.
         }
     }
@@ -773,7 +773,16 @@ setInterval( function () {
     });
 }, 3000);
 
-//Screenshot
+// Get App Container path
+function getContainerPath(){
+  action('{% url 'get_container_path' %}', {bundle_id: '{{ bundle_id }}'}, function(json) {
+    if (json.status==="ok"){
+        appContainerPath = json.message;
+    }
+  });
+}
+
+// Screenshot
 $("#ss").click(function() {
   print_status("Taking a screenshot.");
   action('{% url 'take_screenshot' %}', {instance_id: '{{ instance_id }}', save: '1', checksum: '{{ hash }}'}, function(json) {
@@ -992,13 +1001,6 @@ $("#logstream").click(function() {
     return false;  
 }); 
 
-// // Frida logs
-// $("#fd_log").click(function() {
-//     $('#tabnav a[href="#frida_logs"]').tab('show');
-//     document.body.scrollTop = document.documentElement.scrollTop = 0;
-//     return false;  
-// });
-
 // App Run
 
 $("#run").click(function() {
@@ -1035,8 +1037,8 @@ function frida_instrument(frida_action, pid=null, new_bundle_id=null){
     // Save Frida Code to Session Storage
     var code = editor.getDoc().getValue();
     window.sessionStorage.setItem('code', code);
-    // $('#fd_log').removeAttr('disabled');
-    // $('#frida-tab').removeClass('disabled');
+    //Show Frida logs
+    document.getElementById('frida-logs').style.display = 'block';
     var default_hooks = [];
     var dump_hooks = [];
 
@@ -1078,6 +1080,8 @@ function frida_instrument(frida_action, pid=null, new_bundle_id=null){
     }, function(json) {
     if (json.status !== "ok")
       print_status(json.message);
+      if (!appContainerPath)
+        setTimeout(function(){ getContainerPath(); }, 5000);
     else {
       // Attach to a running process
       if (frida_action == 'ps' && json.message && json.message.length > 0 && Array.isArray(json.message)){
