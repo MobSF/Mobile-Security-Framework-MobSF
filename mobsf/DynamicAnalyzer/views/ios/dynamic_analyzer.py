@@ -14,6 +14,7 @@ from mobsf.MobSF.utils import (
     strict_package_check,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
+from mobsf.DynamicAnalyzer.forms import UploadFileForm
 from mobsf.DynamicAnalyzer.views.ios.corellium_apis import (
     CorelliumAPI,
 )
@@ -97,6 +98,7 @@ def dynamic_analyzer(request, api=False):
             'instance_id': instance_id,
             'bundle_id': bundleid,
             'version': settings.MOBSF_VER,
+            'form': UploadFileForm(),
             'title': 'iOS Dynamic Analyzer'}
         template = 'dynamic_analysis/ios/dynamic_analyzer.html'
         if api:

@@ -22,11 +22,10 @@ Corellium SSH over Jump Host withLocal Port Forwarding for Frida Connection.
 # 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
 # Modified for MobSF.
 
-import os
 import logging
 import socketserver
 import select
-
+from pathlib import Path
 
 import paramiko
 
@@ -146,10 +145,7 @@ def ssh_jumphost_port_forward(ssh_string):
     target, _jumpbox = ssh_jump_host(ssh_string)
     # Frida port
     forward_port = 27042
-    if os.getenv('MOBSF_PLATFORM') == 'docker':
-        remote_host = 'host.docker.internal'
-    else:
-        remote_host = '127.0.0.1'
+    remote_host = '127.0.0.1'
     forward_tunnel(
         forward_port,
         remote_host,
@@ -166,3 +162,22 @@ def ssh_execute_cmd(target, cmd):
     stdout = _stdout.read().decode(encoding='utf-8', errors='ignore')
     stderr = _stderr.read().decode(encoding='utf-8', errors='ignore')
     return f'{stdout}\n{stderr}'
+
+
+def ssh_file_upload(ssh_conn_string, fobject, fname):
+    """File Upload over SSH."""
+    target, jumpbox = ssh_jump_host(ssh_conn_string)
+    with target.open_sftp() as sftp:
+        rfile = Path(fname.replace('..', '')).name
+        sftp.putfo(fobject, f'/tmp/{rfile}')
+    target.close()
+    jumpbox.close()
+
+
+def ssh_file_download(ssh_conn_string, remote_path, local_path):
+    """File Download over SSH."""
+    target, jumpbox = ssh_jump_host(ssh_conn_string)
+    with target.open_sftp() as sftp:
+        sftp.get(remote_path, local_path)
+    target.close()
+    jumpbox.close()

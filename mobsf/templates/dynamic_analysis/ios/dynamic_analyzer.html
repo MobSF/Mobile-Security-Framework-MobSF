@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="{% static "codemirror/codemirror.css" %}" type="text/css">
 <link rel="stylesheet" href="{% static "codemirror/lint.css" %}" type="text/css">
 <link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
+<link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
 <style>
      textarea {
         width: 100%;
@@ -283,9 +284,7 @@
                       <button id="frida_spawn" type="submit" class="btn btn-success"><i class="far fa-play-circle"></i> Spawn & Inject</button>
                       <button id="frida_session" type="submit" class="btn btn-success"><i class="fas fa-redo"></i> Inject </button>
                       <button id="frida_attach" type="submit" class="btn btn-success"><i class="fas fa-bug"></i> Attach </button>
-                      <!-- | 
-                      <button id="fd_log" type="button" class="btn btn-primary" disabled><i class="fas fa-file-medical-alt"></i> Frida Live Logs</button> -->
-                      </div>
+                    </div>
                     </form>
                   </div>
 
@@ -347,7 +346,10 @@
             <div class="card card-default">
               <!-- /.card-header -->
               <div class="card-body">
-                   
+                <form style="display: flex; justify-content: flex-end">
+                  <label for="id_file" class="btn btn-primary btn-sm"><i class="fas fa-file-upload"></i> Upload to Device</label>
+                  <input type="file" style="visibility:hidden; width: 0%;" name="file" required="" id="id_file" onchange="uploadFile()">
+                </form>
                    <div id="shell">
                     <output></output>
                     <div id="input-line" class="input-line">
@@ -440,6 +442,7 @@
 <script src="{% static "codemirror/lint.js" %}"></script>
 <script src="{% static "codemirror/javascript-lint.js" %}"></script>
 <script src="{% static "others/js/swipe.js" %}"></script>
+<script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
 <script>
 
 var appContainerPath;
@@ -747,12 +750,6 @@ term.init();
 // Start up
 load_frida_others();
 
-
-//Print Status
-function print_status(message){
-  $('#stat').append(message + '\n');
-  $('#stat').scrollTop($('#stat')[0].scrollHeight);
-}
 
 print_status("Setting up MobSF Dynamic Analysis environment...");
 print_status("Environment is ready for Dynamic Analysis.");
@@ -1154,5 +1151,54 @@ $("#report").one( "click", function() {
 
 //end document.ready
 });
+
+
+// Upload file to device
+function uploadFile(){
+  try {
+    var file = id_file.files[0];
+    if (!file){
+      return;
+    }
+    var formdata = new FormData();
+    formdata.append("file", id_file.files[0]);
+    formdata.append("instance_id", '{{ instance_id }}');
+    $.ajax({
+        url: '{% url 'upload_file' %}', 
+        type: "POST",
+        data: formdata,
+        contentType: false,
+        cache: false,
+        processData: false,
+        beforeSend: function(request) {
+          request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+          request.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+        },
+        success : function(json){ 
+          if (json.status==="ok"){
+            print_status("File uploaded successfully.");
+            Swal.fire(
+                      'Uploaded!',
+                      'File uploaded to: <b>/tmp/' + escape(id_file.files[0].name) + '</b>',
+                      'success')
+          } else {
+            print_status("Failed to upload file.");
+          }
+        },
+        error : function(xhr, ajaxOptions, thrownError) {
+          document.getElementById("er").srcdoc = xhr.responseText;
+        }
+      });
+  } catch (e) {
+      print_status("Failed to upload file: " + e);
+  }
+}
+
+//Print Status
+function print_status(message){
+  $('#stat').append(message + '\n');
+  $('#stat').scrollTop($('#stat')[0].scrollHeight);
+}
+
 </script>
 {% endblock %}

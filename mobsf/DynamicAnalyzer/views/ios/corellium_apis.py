@@ -210,45 +210,6 @@ class CorelliumInstanceAPI:
             return r.json()
         return False
 
-    def agent_ready(self):
-        """Check if corellium agent is ready."""
-        r = requests.get(
-            f'{self.api}/instances/{self.instance_id}/agent/v1/app/ready',
-            headers=self.headers)
-        if r.status_code in SUCCESS_RESP:
-            return r.json()['ready']
-        return False
-
-    def unlock_instance(self):
-        """Unlock the instance."""
-        r = requests.post(
-            f'{self.api}/instances/{self.instance_id}/agent/v1/system/unlock',
-            headers=self.headers)
-        return r.status_code in SUCCESS_RESP
-
-    def list_apps(self):
-        """List all apps installed."""
-        r = requests.get(
-            f'{self.api}/instances/{self.instance_id}/agent/v1/app/apps',
-            headers=self.headers)
-        if r.status_code in SUCCESS_RESP:
-            return r.json()
-        elif r.status_code in ERROR_RESP:
-            return r.json()
-        return False
-
-    def get_icons(self, bundleids):
-        """Get app icons by bundleId."""
-        r = requests.get(
-            (f'{self.api}/instances/{self.instance_id}'
-             f'/agent/v1/app/icons?{bundleids}'),
-            headers=self.headers)
-        if r.status_code in SUCCESS_RESP:
-            return r.json()
-        elif r.status_code in ERROR_RESP:
-            return r.json()
-        return False
-
     def screenshot(self):
         """Take screenshot inside VM."""
         r = requests.get(
@@ -422,8 +383,8 @@ class CorelliumAgentAPI:
             return r.json()['error']
         return False
 
-    def unlock_instance(self):
-        """Unlock instance."""
+    def unlock_device(self):
+        """Unlock iOS device."""
         r = requests.post(
             f'{self.api}/instances/{self.instance_id}/agent/v1/system/unlock',
             headers=self.headers)
@@ -499,3 +460,26 @@ class CorelliumAgentAPI:
             return OK
         logger.error('Failed to remove the app. %s', r.json()['error'])
         return r.json()['error']
+
+    def list_apps(self):
+        """List all apps installed."""
+        r = requests.get(
+            f'{self.api}/instances/{self.instance_id}/agent/v1/app/apps',
+            headers=self.headers)
+        if r.status_code in SUCCESS_RESP:
+            return r.json()
+        elif r.status_code in ERROR_RESP:
+            return r.json()
+        return False
+
+    def get_icons(self, bundleids):
+        """Get app icons by bundleId."""
+        r = requests.get(
+            (f'{self.api}/instances/{self.instance_id}'
+             f'/agent/v1/app/icons?{bundleids}'),
+            headers=self.headers)
+        if r.status_code in SUCCESS_RESP:
+            return r.json()
+        elif r.status_code in ERROR_RESP:
+            return r.json()
+        return False

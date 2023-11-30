@@ -24,12 +24,14 @@ from mobsf.MobSF.utils import (
     print_n_send_error_response,
     strict_package_check,
 )
+from mobsf.DynamicAnalyzer.forms import UploadFileForm
 from mobsf.DynamicAnalyzer.views.common.shared import (
     invalid_params,
     send_response,
 )
 from mobsf.DynamicAnalyzer.views.ios.corellium_frida_ssh import (
     ssh_execute_cmd,
+    ssh_file_upload,
     ssh_jump_host,
 )
 from mobsf.DynamicAnalyzer.views.ios.corellium_apis import (
@@ -200,9 +202,9 @@ def list_apps(request, api=False):
         if failed:
             return send_response(failed, api)
         apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
-        ci = CorelliumInstanceAPI(apikey, instance_id)
+        ca = CorelliumAgentAPI(apikey, instance_id)
         # Get apps in device
-        r = ci.list_apps()
+        r = ca.list_apps()
         app_list = []
         bundle_ids = []
         if r and r.get('apps'):
@@ -217,7 +219,7 @@ def list_apps(request, api=False):
             return send_response(failed, api)
         # Get app icons
         logger.info('Getting all application icons')
-        ic = ci.get_icons('&'.join(bundle_ids))
+        ic = ca.get_icons('&'.join(bundle_ids))
         for i in r.get('apps'):
             bundleid = i['bundleID']
             checksum = get_md5(bundleid.encode('utf-8'))
@@ -398,7 +400,7 @@ def setup_environment(request, checksum, api=False):
                 ', please wait.')
             return send_response(data, api)
         # Unlock iOS Device
-        ca.unlock_instance()
+        ca.unlock_device()
         # Upload IPA
         ipa_path = Path(settings.UPLD_DIR) / checksum / f'{checksum}.ipa'
         msg = ca.upload_ipa(ipa_path)
@@ -448,7 +450,7 @@ def run_app(request, api=False):
             return send_response(data, api)
         ca = CorelliumAgentAPI(apikey, instance_id)
         if (ca.agent_ready()
-                and ca.unlock_instance()
+                and ca.unlock_device()
                 and ca.run_app(bundle_id) == OK):
             data['status'] = OK
             data['message'] = 'App Started'
@@ -811,3 +813,33 @@ def system_logs(request, api=False):
             data['message'] = str(exp)
             return send_response(data)
         return print_n_send_error_response(request, err, api)
+# AJAX
+
+
+@require_http_methods(['POST'])
+def upload_file(request, api=False):
+    """Upload files to device."""
+    err_msg = 'Failed to upload file'
+    data = {
+        'status': 'failed',
+        'message': err_msg,
+    }
+    try:
+        instance_id = request.POST['instance_id']
+        failed = common_check(instance_id)
+        if failed:
+            return send_response(failed, api)
+        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            ci = CorelliumInstanceAPI(apikey, instance_id)
+            fobject = request.FILES['file']
+            ssh_file_upload(
+                ci.get_ssh_connection_string(),
+                fobject,
+                fobject.name)
+            data = {'status': 'ok'}
+    except Exception as exp:
+        logger.exception(err_msg)
+        data['message'] = str(exp)
+    return send_response(data)
