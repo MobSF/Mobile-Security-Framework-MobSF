@@ -15,6 +15,9 @@ from mobsf.MobSF.utils import (
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
 from mobsf.DynamicAnalyzer.forms import UploadFileForm
+from mobsf.DynamicAnalyzer.views.ios.corellium_ssh import (
+    generate_keypair_if_not_exists,
+)
 from mobsf.DynamicAnalyzer.views.ios.corellium_apis import (
     CorelliumAPI,
 )
@@ -57,6 +60,7 @@ def dynamic_analysis(request, api=False):
         if c.api_ready() and c.api_auth() and c.get_projects():
             instances = c.get_instances()
             project_id = c.project_id
+            setup_ssh_keys(c)
         context = {'apps': scan_apps,
                    'dynamic_analyzer': ios_dynamic,
                    'project_id': project_id,
@@ -110,3 +114,35 @@ def dynamic_analyzer(request, api=False):
             request,
             'iOS Dynamic Analysis Failed.',
             api)
+
+
+def setup_ssh_keys(c):
+    # Get Authorized keys for the project
+    pkeys = c.get_authorized_keys()
+    location = Path(settings.UPLD_DIR).parent
+    _prv, pub = generate_keypair_if_not_exists(location)
+    add_keys = False
+    if not pkeys:
+        # No SSH Keys associated with the project
+        # let's add one
+        add_keys = True
+    else:
+        # SSH Keys are already associated with the project
+        # Check if our key is associated
+        pub_key_exists = False
+        for pkey in pkeys:
+            if pkey['project'] == c.project_id:
+                ckey = get_md5(pkey['key'].encode('utf-8'))
+                lkey = get_md5(pub)
+                if ckey == lkey:
+                    pub_key_exists = True
+                    break
+        # Out key is not asscoiated with the project, let's add it
+        if not pub_key_exists:
+            add_keys = True
+    if add_keys:
+        iden = c.add_authorized_key(pub)
+        if not iden:
+            logger.error('Failed to add SSH Key to Corellium project')
+            return
+        logger.info('Added SSH Key to Corellium project')

@@ -2,9 +2,9 @@
 """Corellium APIs."""
 import logging
 from copy import deepcopy
+from socket import gethostname
 
 import requests
-
 
 SUCCESS_RESP = (200, 204)
 ERROR_RESP = (400, 403, 404, 409)
@@ -58,6 +58,31 @@ class CorelliumAPI:
             if ids:
                 self.project_id = ids[0]
                 return True
+        return False
+
+    def get_authorized_keys(self):
+        """Get SSH public keys associated with a project."""
+        r = requests.get(
+            f'{self.api}/projects/{self.project_id}/keys',
+            headers=self.headers)
+        if r.status_code in SUCCESS_RESP:
+            return r.json()
+        return False
+
+    def add_authorized_key(self, key):
+        """Add SSH public key to the Project."""
+        logger.info('Adding SSH public key to Corellium project')
+        data = {
+            'kind': 'ssh',
+            'label': f'MobSF SSH Key - {gethostname()}',
+            'key': key,
+        }
+        r = requests.post(
+            f'{self.api}/projects/{self.project_id}/keys',
+            headers=self.headers,
+            json=data)
+        if r.status_code in SUCCESS_RESP:
+            return r.json()['identifier']
         return False
 
     def get_instances(self):

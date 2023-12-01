@@ -18,7 +18,7 @@ from mobsf.DynamicAnalyzer.views.ios.frida_auxiliary_scripts import (
     string_capture,
     string_compare,
 )
-from mobsf.DynamicAnalyzer.views.ios.corellium_frida_ssh import (
+from mobsf.DynamicAnalyzer.views.ios.corellium_ssh import (
     ssh_jumphost_port_forward,
 )
 

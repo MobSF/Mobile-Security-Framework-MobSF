@@ -29,7 +29,7 @@ from mobsf.DynamicAnalyzer.views.common.shared import (
     invalid_params,
     send_response,
 )
-from mobsf.DynamicAnalyzer.views.ios.corellium_frida_ssh import (
+from mobsf.DynamicAnalyzer.views.ios.corellium_ssh import (
     ssh_execute_cmd,
     ssh_file_upload,
     ssh_jump_host,

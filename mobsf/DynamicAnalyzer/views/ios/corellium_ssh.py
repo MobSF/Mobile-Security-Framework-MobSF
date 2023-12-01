@@ -29,8 +29,40 @@ from pathlib import Path
 
 import paramiko
 
+from django.conf import settings
+
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+
 
 logger = logging.getLogger(__name__)
+
+
+def generate_keypair_if_not_exists(location):
+    """Generate RSA key pair."""
+    prv = location / 'ssh_key.private'
+    pub = location / 'ssh_key.public'
+    if prv.exists() and pub.exists():
+        # Keys Exists
+        return prv.read_bytes(), pub.read_bytes()
+    logger.info('Generating RSA key pair for Corellium SSH')
+
+    # Generate private/public key pair
+    private_key = Ed25519PrivateKey.generate()
+    public_key = private_key.public_key()
+
+    # OpenSSH friendly
+    private_bytes = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.OpenSSH,
+        encryption_algorithm=serialization.NoEncryption())
+
+    public_bytes = public_key.public_bytes(
+        encoding=serialization.Encoding.OpenSSH,
+        format=serialization.PublicFormat.OpenSSH)
+    prv.write_bytes(private_bytes)
+    pub.write_bytes(public_bytes)
+    return private_bytes, public_bytes
 
 
 def parse_ssh_string(ssh):
@@ -124,9 +156,15 @@ def ssh_jump_host(ssh_string):
     user = ssh_dict['private_user']
     private_ip = ssh_dict['private_ip']
 
+    home = Path(settings.UPLD_DIR).parent
+    generate_keypair_if_not_exists(home)
+    keyf = home / 'ssh_key.private'
     jumpbox = paramiko.SSHClient()
     jumpbox.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    jumpbox.connect(bastion_host, username=bastion_user)
+    jumpbox.connect(
+        bastion_host,
+        username=bastion_user,
+        key_filename=keyf.as_posix())
 
     jumpbox_transport = jumpbox.get_transport()
     src_addr = (private_ip, 22)
@@ -136,7 +174,11 @@ def ssh_jump_host(ssh_string):
 
     target = paramiko.SSHClient()
     target.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    target.connect(private_ip, username=user, sock=jumpbox_channel)
+    target.connect(
+        private_ip,
+        username=user,
+        sock=jumpbox_channel,
+        password='alpine')
     return target, jumpbox
 
 

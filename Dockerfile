@@ -32,6 +32,7 @@ RUN apt update -y && apt install -y  --no-install-recommends \
     curl \
     git \
     jq \
+    unzip \
     android-tools-adb && \
     locale-gen en_US.UTF-8 && \
     apt upgrade -y
