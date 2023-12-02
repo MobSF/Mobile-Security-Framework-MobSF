@@ -5,7 +5,7 @@ import json
 import re
 from pathlib import Path
 
-from mobsf.StaticAnalyzer.views.common.shared_func import (
+from mobsf.MobSF.utils import (
     EMAIL_REGEX,
     URL_REGEX,
 )

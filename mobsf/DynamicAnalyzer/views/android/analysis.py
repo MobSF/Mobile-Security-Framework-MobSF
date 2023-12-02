@@ -8,6 +8,8 @@ from json import load
 from pathlib import Path
 
 from mobsf.MobSF.utils import (
+    EMAIL_REGEX,
+    URL_REGEX,
     is_file_exists,
     python_list,
 )
@@ -18,10 +20,7 @@ from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
     MalwareDomainCheck,
 )
-from mobsf.StaticAnalyzer.views.common.shared_func import (
-    EMAIL_REGEX,
-    URL_REGEX,
-)
+
 
 logger = logging.getLogger(__name__)
 
