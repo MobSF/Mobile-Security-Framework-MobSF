@@ -355,6 +355,14 @@ function list_apps(){
                     instance_id: $('#ios_dynamic').val(),
                     },
                 success : function(json) {
+                    if(!json.status){
+                      stop_loader();
+                      Swal.fire(
+                                'Listing apps failed',
+                                'VM is not ready',
+                                'error'
+                                )
+                    }
                     if (json.status==='ok'){
                       $('#in_device').append('<thead><tr> <th>APP</th> <th>BUNDLE ID</th> <th>APP TYPE</th> <th>ACTION</th> </tr></thead><tbody></tbody>');
                       for(var i=0; i < json.message.length; i++) {
