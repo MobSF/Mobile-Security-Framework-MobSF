@@ -295,7 +295,9 @@ def sha256_object(file_obj):
 
 def gen_sha256_hash(msg):
     """Generate SHA 256 Hash of the message."""
-    hash_object = hashlib.sha256(msg.encode('utf-8'))
+    if isinstance(msg, str):
+        msg = msg.encode('utf-8')
+    hash_object = hashlib.sha256(msg)
     return hash_object.hexdigest()
 
 
