@@ -112,7 +112,7 @@ def get_pub_key_details(data):
         alg = 'ec'
         to_hash = f'{x509_public_key.public_numbers().curve.name}:'
         to_hash = to_hash.encode('utf-8')
-        # Untested possibly wrong key size and fingerprint
+        # Untested, possibly wrong key size and fingerprint
         to_hash += data[25:]
     fingerprint = gen_sha256_hash(to_hash)
     certlist.append(f'PublicKey Algorithm: {alg}')
