@@ -16,7 +16,7 @@ class AttackDetect(forms.Form):
                 or ('..' in file) or ('%252e' in file)):
             raise forms.ValidationError('Attack Detected')
         # Allowed File extensions
-        supported_ext = (r'^\.(java|smali|xml|'
+        supported_ext = (r'^\.(kt|java|smali|xml|'
                          r'plist|m|swift|'
                          r'db|sqlitedb|sqlite|txt|json)$')
         if not re.search(supported_ext, Path(file).suffix):
