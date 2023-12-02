@@ -145,8 +145,7 @@ def download_data(request, api=False):
                     'message': 'App details not found in database'}
             return send_response(data, api)
         apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
-        httptools_url = get_http_tools_url(request)
-        stop_httptools(httptools_url)
+        stop_httptools(get_http_tools_url(request))
         files_loc = '/data/local/'
         logger.info('Archiving files created by app')
         env.adb_command(['tar', '-cvf', files_loc + package + '.tar',

@@ -16,11 +16,12 @@ from mobsf.DynamicAnalyzer.views.ios.analysis import (
 from mobsf.MobSF.utils import (
     base64_decode,
     common_check,
-    is_md5,
+    get_md5,
     key,
     pretty_json,
     print_n_send_error_response,
     replace,
+    strict_package_check,
 )
 
 
@@ -31,22 +32,23 @@ register.filter('pretty_json', pretty_json)
 register.filter('base64_decode', base64_decode)
 
 
-def ios_view_report(request, checksum, api=False):
+def ios_view_report(request, bundle_id, api=False):
     """Dynamic Analysis Report Generation."""
     logger.info('iOS Dynamic Analysis Report Generation')
     try:
-        if not is_md5(checksum):
-            # We need this check since checksum is not validated
-            # in REST API
-            return print_n_send_error_response(
-                request,
-                'Invalid Hash',
-                api)
         instance_id = request.GET.get('instance_id')
         if instance_id and not common_check(instance_id):
             dev = instance_id
         else:
             dev = ''
+        if not strict_package_check(bundle_id):
+            # We need this check since bundleid
+            # is not validated in REST API
+            return print_n_send_error_response(
+                request,
+                'Invalid iOS Bundle id',
+                api)
+        checksum = get_md5(bundle_id.encode('utf-8'))
         app_dir = Path(settings.UPLD_DIR) / checksum
         download_dir = settings.DWD_DIR
         tools_dir = settings.TOOLS_DIR
@@ -56,8 +58,8 @@ def ios_view_report(request, checksum, api=False):
                    'for this app. Perform Dynamic Analysis '
                    'and generate the report.')
             return print_n_send_error_response(request, msg, api)
-        dynamic_dump = ios_api_analysis(app_dir)
-        dump_analaysis = run_analysis(app_dir, checksum)
+        api_analysis = ios_api_analysis(app_dir)
+        dump_analaysis = run_analysis(app_dir, bundle_id, checksum)
         trk = Trackers.Trackers(app_dir, tools_dir)
         trackers = trk.get_trackers_domains_or_deps(
             dump_analaysis['domains'], None)
@@ -67,11 +69,12 @@ def ios_view_report(request, checksum, api=False):
             'version': settings.MOBSF_VER,
             'title': 'iOS Dynamic Analysis Report',
             'instance_id': dev,
+            'bundleid': bundle_id,
             'trackers': trackers,
             'screenshots': screenshots,
             'frida_logs': frida_log.exists(),
         }
-        context.update(dynamic_dump)
+        context.update(api_analysis)
         context.update(dump_analaysis)
         template = 'dynamic_analysis/ios/dynamic_report.html'
         if api:

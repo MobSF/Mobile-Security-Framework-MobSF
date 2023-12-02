@@ -23,8 +23,10 @@ Corellium SSH over Jump Host withLocal Port Forwarding for Frida Connection.
 # Modified for MobSF.
 
 import logging
-import socketserver
 import select
+import socket
+import socketserver
+from threading import Thread
 from pathlib import Path
 
 import paramiko
@@ -78,6 +80,7 @@ def parse_ssh_string(ssh):
     return ssh_dict
 
 
+# Local Port Forward
 class ForwardServer(socketserver.ThreadingTCPServer):
     daemon_threads = True
     allow_reuse_address = True
@@ -148,6 +151,57 @@ def forward_tunnel(local_port, remote_host, remote_port, transport, ssh):
         logger.info('Port Forwarding Already in place')
 
 
+# Remote Port Forward
+def handler(chan, host, port):
+    sock = socket.socket()
+    try:
+        sock.connect((host, port))
+    except ConnectionRefusedError:
+        # Proxy server is stopped
+        return
+    except Exception:
+        logger.info('Forwarding request to %s:%d failed', host, port)
+        return
+    try:
+        while True:
+            r, w, x = select.select([sock, chan], [], [])
+            if sock in r:
+                data = sock.recv(1024)
+                if len(data) == 0:
+                    break
+                chan.send(data)
+            if chan in r:
+                data = chan.recv(1024)
+                if len(data) == 0:
+                    break
+                sock.send(data)
+    except ConnectionResetError:
+        pass
+    finally:
+        chan.close()
+        sock.close()
+
+
+def reverse_forward_tunnel(server_port, remote_host, remote_port, transport):
+    try:
+        transport.request_port_forward('', server_port)
+        while True:
+            chan = transport.accept(1000)
+            if chan is None:
+                continue
+            Thread(
+                target=handler,
+                args=(chan, remote_host, remote_port),
+                daemon=True).start()
+    except paramiko.SSHException as exp:
+        if 'forwarding request denied' in str(exp):
+            # Handle TCP forwarding request denied
+            # Happens if already forwarding port
+            pass
+        else:
+            logger.exception('SSH Remote Port Forward Exception')
+
+
 def ssh_jump_host(ssh_string):
     """Connect to SSH over a bastion."""
     ssh_dict = parse_ssh_string(ssh_string)
@@ -160,7 +214,8 @@ def ssh_jump_host(ssh_string):
     generate_keypair_if_not_exists(home)
     keyf = home / 'ssh_key.private'
     jumpbox = paramiko.SSHClient()
-    jumpbox.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    jumpbox.load_system_host_keys()
+    jumpbox.set_missing_host_key_policy(paramiko.WarningPolicy())
     jumpbox.connect(
         bastion_host,
         username=bastion_user,
@@ -173,7 +228,8 @@ def ssh_jump_host(ssh_string):
         'direct-tcpip', dest_addr, src_addr)
 
     target = paramiko.SSHClient()
-    target.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    target.load_system_host_keys()
+    target.set_missing_host_key_policy(paramiko.WarningPolicy())
     target.connect(
         private_ip,
         username=user,
@@ -194,8 +250,20 @@ def ssh_jumphost_port_forward(ssh_string):
         forward_port,
         target.get_transport(),
         ssh_string)
-    # target close()
-    # jumpbox close()
+
+
+def ssh_jumphost_reverse_port_forward(ssh_string):
+    """SSH over Jump Host and Remote Port Forward."""
+    target, _jumpbox = ssh_jump_host(ssh_string)
+    # HTTPS proxy port
+    port = settings.PROXY_PORT
+    remote_host = '127.0.0.1'
+    reverse_forward_tunnel(
+        port,
+        remote_host,
+        port,
+        target.get_transport(),
+    )
 
 
 def ssh_execute_cmd(target, cmd):

@@ -43,7 +43,7 @@
                                  <th>VM</th>
                                  <th>VERSION</th>
                                  <th>STATE</th>
-                                 <th>META</th>
+                                 <th>PROGRESS</th>
                                  <th>ACTIONS</th>
                              </tr>
                              </thead>
@@ -60,8 +60,15 @@
                                      <td>
                                        {{i.state}}
                                     </td>
-                                     <td> 
-                                      <pre> {{ i.restoreStatus}}</pre>
+                                     <td>
+                                      {% if 'progress' in i.restoreStatus %}
+                                      <div class="progress">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{i.restoreStatus.progress}}%" aria-valuenow="{{i.restoreStatus.progress}}" aria-valuemin="0" aria-valuemax="100">{{i.restoreStatus.progress| floatformat:"0"}}%</div>
+                                      </div>
+                                      {% endif %}
+                                      {% if 'stage' in i.restoreStatus %}
+                                      <small><pre> {{ i.restoreStatus.stage}}</pre></small>
+                                      {% endif %}
                                      </td>
                                      <td>
                                       <p>
@@ -133,7 +140,7 @@
                                   <a class="btn btn-success disable" onclick="upload_and_install('{% url 'setup_environment' checksum=e.MD5 %}')"><i class="fab fa-apple"></i> Upload &amp; Install</a>
                               </p>
                               <p>
-                                <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url 'ios_view_report' checksum=e.BUNDLE_HASH %}"><i class="fa fa-mobile"></i> View Report </a>
+                                <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url 'ios_view_report' bundle_id=e.BUNDLE_ID %}"><i class="fa fa-mobile"></i> View Report </a>
                              </p>
                              {% endif %}
                             </td>
@@ -337,6 +344,8 @@ $('#ios_dynamic').on('change', function() {
 // List installed apps
 function list_apps(){
   $('#in_device tbody tr').remove();
+  $('#in_device thead').remove();
+  dynamic_loader();
   $.ajax({
         url: '{% url 'list_apps' %}',
         type : 'POST',
@@ -377,13 +386,15 @@ function list_apps(){
                                   <td>${escapeHtml(type)}</td>
                                   <td><p>
                                       <a class="btn btn-success disable" onclick="dynamic_loader()" href="${url}"><i class="fab fa-apple"></i> Start Dynamic Analysis</a> 
-                                      <a class="btn btn-info ${buttonState}" href="../../ios/view_report/${checksum}"><i class="fa fa-mobile"></i> View Report </a>
+                                      <a class="btn btn-info ${buttonState}" href="../../ios/view_report/${escapeHtml(bundle)}"><i class="fa fa-mobile"></i> View Report </a>
                                       <a class="btn btn-warning" id="${$('#ios_dynamic').val()}" onclick="remove_app(this, '${bundle}')"><i class="fas fa-trash-alt"></i>  Uninstall</a>
                                       </p>
                                   </td></tr>`);
                         }
+                        stop_loader();
                     }
                     else {
+                      stop_loader();
                       Swal.fire(
                                 'Listing apps failed',
                                 'Is VM ready?: ' + json.message,
@@ -392,6 +403,7 @@ function list_apps(){
                     }
                 },
                 error : function(xhr,errmsg,err) {
+                  stop_loader();
                   console.log(errmsg)
                 }
     });

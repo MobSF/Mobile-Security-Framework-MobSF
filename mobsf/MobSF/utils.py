@@ -609,9 +609,9 @@ def strict_package_check(user_input):
 
     For android package and ios bundle id
     """
-    pat = re.compile(r'^([\w]*\.)+[\w]*$')
+    pat = re.compile(r'^([\w]*\.)+[\w]{2,155}$')
     resp = re.match(pat, user_input)
-    if not resp:
+    if not resp or '..' in user_input:
         logger.error('Invalid package name/bundle id/class name')
     return resp
 

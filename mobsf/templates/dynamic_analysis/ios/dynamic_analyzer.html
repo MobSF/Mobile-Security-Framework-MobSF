@@ -1138,11 +1138,11 @@ $("#report").one( "click", function() {
   stop_network_capture();
   // Download app data
   print_status("Downloading application data.");
-  action('{% url 'ios_download_data' checksum=hash %}', {instance_id: '{{ instance_id }}'}, function(json) {
+  action('{% url 'ios_download_data' bundle_id=bundle_id %}', {instance_id: '{{ instance_id }}'}, function(json) {
     if (json.status==="ok"){
       // Generate Report
       print_status("Generating report");
-      location.href = '{% url 'ios_view_report' checksum=hash %}?instance_id={{ instance_id }}';
+      location.href = '{% url 'ios_view_report' bundle_id=bundle_id %}?instance_id={{ instance_id }}';
     } else {
       print_status("Failed to download application data");
     }

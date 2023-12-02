@@ -1,7 +1,9 @@
 # -*- coding: utf_8 -*-
 """iOS Dynamic Analysis."""
 import logging
+import os
 from pathlib import Path
+from threading import Thread
 
 from django.conf import settings
 from django.shortcuts import render
@@ -18,8 +20,17 @@ from mobsf.DynamicAnalyzer.forms import UploadFileForm
 from mobsf.DynamicAnalyzer.views.ios.corellium_ssh import (
     generate_keypair_if_not_exists,
 )
+from mobsf.DynamicAnalyzer.tools.webproxy import (
+    get_http_tools_url,
+    start_proxy,
+    stop_httptools,
+)
 from mobsf.DynamicAnalyzer.views.ios.corellium_apis import (
     CorelliumAPI,
+    CorelliumInstanceAPI,
+)
+from mobsf.DynamicAnalyzer.views.ios.corellium_ssh import (
+    ssh_jumphost_reverse_port_forward,
 )
 
 logger = logging.getLogger(__name__)
@@ -97,6 +108,9 @@ def dynamic_analyzer(request, api=False):
         app_dir = Path(settings.UPLD_DIR) / bundle_hash
         if not app_dir.exists():
             app_dir.mkdir()
+        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
+        ci = CorelliumInstanceAPI(apikey, instance_id)
+        configure_proxy(request, bundleid, ci)
         context = {
             'hash': bundle_hash,
             'instance_id': instance_id,
@@ -122,6 +136,7 @@ def setup_ssh_keys(c):
     location = Path(settings.UPLD_DIR).parent
     _prv, pub = generate_keypair_if_not_exists(location)
     add_keys = False
+    is_docker = os.getenv('MOBSF_PLATFORM') == 'docker'
     if not pkeys:
         # No SSH Keys associated with the project
         # let's add one
@@ -132,12 +147,17 @@ def setup_ssh_keys(c):
         pub_key_exists = False
         for pkey in pkeys:
             if pkey['project'] == c.project_id:
-                ckey = get_md5(pkey['key'].encode('utf-8'))
-                lkey = get_md5(pub)
-                if ckey == lkey:
+                rkey = get_md5(pkey['key'].encode('utf-8'))
+                if rkey == get_md5(pub):
                     pub_key_exists = True
                     break
-        # Out key is not asscoiated with the project, let's add it
+            if is_docker and pkey['label'].endswith('(docker)'):
+                # Delete all docker generated keys
+                # This is done to avoid multiple stale keys being
+                # added on each run.
+                logger.info('Removing old stale SSH public key')
+                c.delete_authorized_key(pkey['identifier'])
+        # Our key is not asscoiated with the project, let's add it
         if not pub_key_exists:
             add_keys = True
     if add_keys:
@@ -146,3 +166,16 @@ def setup_ssh_keys(c):
             logger.error('Failed to add SSH Key to Corellium project')
             return
         logger.info('Added SSH Key to Corellium project')
+
+
+def configure_proxy(request, project, ci):
+    """Configure HTTPS Proxy."""
+    proxy_port = settings.PROXY_PORT
+    logger.info('Starting HTTPS Proxy on %s', proxy_port)
+    stop_httptools(get_http_tools_url(request))
+    start_proxy(proxy_port, project)
+    # Remote Port forward for HTTPS Proxy
+    logger.info('Starting Remote Port Forward over SSH')
+    Thread(target=ssh_jumphost_reverse_port_forward,
+           args=(ci.get_ssh_connection_string(),),
+           daemon=True).start()

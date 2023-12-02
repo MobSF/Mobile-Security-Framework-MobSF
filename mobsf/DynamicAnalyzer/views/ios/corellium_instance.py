@@ -3,6 +3,7 @@
 import logging
 import re
 import os
+import shutil
 import time
 from base64 import b64encode
 from pathlib import Path
@@ -25,6 +26,10 @@ from mobsf.MobSF.utils import (
     strict_package_check,
 )
 from mobsf.DynamicAnalyzer.forms import UploadFileForm
+from mobsf.DynamicAnalyzer.tools.webproxy import (
+    get_http_tools_url,
+    stop_httptools,
+)
 from mobsf.DynamicAnalyzer.views.common.shared import (
     invalid_params,
     send_response,
@@ -707,26 +712,35 @@ def download_app_data(ci, checksum):
 
 
 @require_http_methods(['POST'])
-def download_data(request, checksum, api=False):
+def download_data(request, bundle_id, api=False):
     """Download Application Data from Device."""
     logger.info('Downloading application data')
     data = {
         'status': 'failed',
         'message': 'Failed to Download application data'}
     try:
-        if not is_md5(checksum):
-            # Additional Check for REST API
-            data['message'] = 'Invalid Hash'
-            return send_response(data, api)
         instance_id = request.POST['instance_id']
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
+        if not strict_package_check(bundle_id):
+            data['message'] = 'Invalid iOS Bundle id'
+            return send_response(data, api)
         apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
         ci = CorelliumInstanceAPI(apikey, instance_id)
+        checksum = get_md5(bundle_id.encode('utf-8'))
         # App Container download
         logger.info('Downloading app container data')
         download_app_data(ci, checksum)
+        # Stop HTTPS Proxy
+        stop_httptools(get_http_tools_url(request))
+        # Move HTTP raw logs to download directory
+        flows = Path.home() / '.httptools' / 'flows'
+        webf = flows / f'{bundle_id}.flow.txt'
+        dwd = Path(settings.DWD_DIR)
+        dweb = dwd / f'{checksum}-web_traffic.txt'
+        if webf.exists():
+            shutil.copyfile(webf, dweb)
         # Pcap download
         logger.info('Downloading network capture')
         pcap = ci.download_network_capture()

@@ -269,13 +269,16 @@ pre {
 <div class="content-wrapper">
   <!-- Content Header (Page header) -->
   <div class="content-header">
-  <!--
+  
     <div class="container-fluid">
       <div class="row mb-2">
+        <div class="col-lg-12">
         <div id="mobsf_header" align="center">
+          <h2>Dynamic Analysis Report - <strong>{{ bundleid }}</strong></h2>
+        </div>
         </div>
       </div>
-    </div>-->
+    </div>
   </div>
   <!-- /.content-header -->
 
@@ -297,9 +300,11 @@ pre {
                       {% if frida_logs %}
                           <a target="_blank" class="btn btn-primary" role="button" href="{% url 'frida_logs' %}?hash={{ hash }}"><i class="fas fa-spider"></i> Frida Logs View</a>
                       {% endif %}
+                        <a class="btn btn-success" target="_blank" role="button" href="{% url 'httptools' %}?project={{bundleid}}"><i class="fab fa-hire-a-helper"></i> Start HTTPTools</a>
                       </p>
                       <p><h6><strong>Raw Logs</strong></h6></p>
                       <p>
+                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="{% url 'download' %}{{ hash }}-web_traffic.txt"><i class="fas fa-water"></i> HTTP(S) Traffic</a>
                       <a target="_blank" class="btn btn-primary btn-sm" role="button" href="{% url 'download' %}{{ hash }}-network.pcap"><i class="fas fa-water"></i> Network Pcap</a>
                       </p>
                    </div>

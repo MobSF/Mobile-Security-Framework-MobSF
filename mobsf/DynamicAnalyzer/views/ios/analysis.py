@@ -30,25 +30,29 @@ def get_screenshots(checksum, download_dir):
     return screenshots
 
 
-def get_logs_data(app_dir):
+def get_logs_data(app_dir, bundle_id):
     """Get Data for analysis."""
     data = []
     dump_file = Path(app_dir) / 'mobsf_dump_file.txt'
     fd_log_file = Path(app_dir) / 'mobsf_frida_out.txt'
+    flows = Path.home() / '.httptools' / 'flows'
+    web_file = flows / f'{bundle_id}.flow.txt'
     if dump_file.exists():
         data.append(dump_file.read_text('utf-8', 'ignore'))
     if fd_log_file.exists():
         data.append(fd_log_file.read_text('utf-8', 'ignore'))
+    if web_file.exists():
+        data.append(web_file.read_text('utf-8', 'ignore'))
     return '\n'.join(data)
 
 
-def run_analysis(app_dir, checksum):
+def run_analysis(app_dir, bundle_id, checksum):
     """Run Dynamic File Analysis."""
     analysis_result = {}
     logger.info('Dynamic File Analysis')
     domains = {}
     # Collect Log data
-    data = get_logs_data(app_dir)
+    data = get_logs_data(app_dir, bundle_id)
     urls = re.findall(URL_REGEX, data.lower())
     if urls:
         urls = list(set(urls))

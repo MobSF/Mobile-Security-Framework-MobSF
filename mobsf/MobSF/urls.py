@@ -262,7 +262,7 @@ if settings.API_ONLY == '0':
         re_path(r'^ios/system_logs/$',
                 instance.system_logs,
                 name='ios_system_logs'),
-        re_path(r'^ios/download_data/(?P<checksum>[0-9a-f]{32})$',
+        re_path(r'^ios/download_data/(?P<bundle_id>([\w]*\.)+[\w]{2,155})$',
                 instance.download_data,
                 name='ios_download_data'),
         re_path(r'^ios/instrument/$',
@@ -274,7 +274,7 @@ if settings.API_ONLY == '0':
         re_path(r'^ios/get_script/$',
                 ios_tests_frida.ios_get_script,
                 name='ios_get_script'),
-        re_path(r'^ios/view_report/(?P<checksum>[0-9a-f]{32})$',
+        re_path(r'^ios/view_report/(?P<bundle_id>([\w]*\.)+[\w]{2,155})$',
                 ios_view_report.ios_view_report,
                 name='ios_view_report'),
 

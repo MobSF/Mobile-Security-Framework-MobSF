@@ -1,6 +1,7 @@
 # -*- coding: utf_8 -*-
 """Corellium APIs."""
 import logging
+import os
 from copy import deepcopy
 from socket import gethostname
 
@@ -72,9 +73,12 @@ class CorelliumAPI:
     def add_authorized_key(self, key):
         """Add SSH public key to the Project."""
         logger.info('Adding SSH public key to Corellium project')
+        extras = ''
+        if os.getenv('MOBSF_PLATFORM') == 'docker':
+            extras = ' - (docker)'
         data = {
             'kind': 'ssh',
-            'label': f'MobSF SSH Key - {gethostname()}',
+            'label': f'MobSF SSH Key - {gethostname()}{extras}',
             'key': key,
         }
         r = requests.post(
@@ -83,6 +87,15 @@ class CorelliumAPI:
             json=data)
         if r.status_code in SUCCESS_RESP:
             return r.json()['identifier']
+        return False
+
+    def delete_authorized_key(self, key_id):
+        """Delete SSH public key from the Project."""
+        r = requests.delete(
+            f'{self.api}/projects/{self.project_id}/keys/{key_id}',
+            headers=self.headers)
+        if r.status_code in SUCCESS_RESP:
+            return OK
         return False
 
     def get_instances(self):

@@ -191,9 +191,8 @@ class Environment:
         """HTTPS Proxy."""
         self.install_mobsf_ca('install')
         proxy_port = settings.PROXY_PORT
-        logger.info('Starting HTTPs Proxy on %s', proxy_port)
-        httptools_url = get_http_tools_url(request)
-        stop_httptools(httptools_url)
+        logger.info('Starting HTTPS Proxy on %s', proxy_port)
+        stop_httptools(get_http_tools_url(request))
         start_proxy(proxy_port, project)
 
     def install_mobsf_ca(self, action):
