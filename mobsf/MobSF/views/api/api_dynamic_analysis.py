@@ -12,6 +12,10 @@ from mobsf.DynamicAnalyzer.views.android import (
     tests_common,
     tests_frida,
 )
+from mobsf.DynamicAnalyzer.views.common import (
+    device,
+    frida,
+)
 
 
 # Dynamic Analyzer APIs
@@ -19,7 +23,7 @@ from mobsf.DynamicAnalyzer.views.android import (
 @csrf_exempt
 def api_get_apps(request):
     """GET - Get Apps for dynamic analysis API."""
-    resp = dynamic_analyzer.dynamic_analysis(request, True)
+    resp = dynamic_analyzer.android_dynamic_analysis(request, True)
     if 'error' in resp:
         return make_api_response(resp, 500)
     return make_api_response(resp, 200)
@@ -225,11 +229,14 @@ def api_frida_logs(request):
     return make_api_response(resp, 500)
 
 
-@request_method(['GET'])
+@request_method(['POST'])
 @csrf_exempt
 def api_list_frida_scripts(request):
-    """GET - List Frida Scripts."""
-    resp = tests_frida.list_frida_scripts(request, True)
+    """POST - List Frida Scripts."""
+    if 'device' not in request.POST:
+        return make_api_response(
+            {'error': 'Missing Parameters'}, 422)
+    resp = frida.list_frida_scripts(request, True)
     if resp['status'] == 'ok':
         return make_api_response(resp, 200)
     return make_api_response(resp, 500)
@@ -242,7 +249,10 @@ def api_get_script(request):
     if not request.POST.getlist('scripts[]'):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
-    resp = tests_frida.get_script(request, True)
+    if 'device' not in request.POST:
+        return make_api_response(
+            {'error': 'Missing Parameters'}, 422)
+    resp = frida.get_script(request, True)
     if resp['status'] == 'ok':
         return make_api_response(resp, 200)
     return make_api_response(resp, 500)
@@ -286,7 +296,7 @@ def api_dynamic_view_file(request):
     if set(request.POST) < params:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
-    resp = report.view_file(request, True)
+    resp = device.view_file(request, True)
     if 'error' in resp:
         return make_api_response(resp, 500)
     return make_api_response(resp, 200)

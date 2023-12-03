@@ -2336,12 +2336,31 @@
                 <p><strong>URL:</strong> <code>/api/v1/frida/list_scripts</code></p>
               </li>
               <li>
-                <p><strong>Method:</strong> <code>GET</code></p>
+                <p><strong>Method:</strong> <code>POST</code></p>
               </li>
               <li>
                 <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
               </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
             </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>device</td>
+                  <td>android/ios</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
             <br />
             <ul>
               <li>
@@ -2391,7 +2410,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl --url http://localhost:8000/api/v1/frida/list_scripts -H "Authorization:{{ api_key}}"
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/list_scripts --data "device=android" -H "Authorization:{{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>
@@ -2430,6 +2449,11 @@
                   <td>name of the script from the output of Frida List Scripts (/api/v1/frida/list_scripts) API.</td>
                   <td>Yes</td>
                 </tr>
+                <tr>
+                  <td>device</td>
+                  <td>android/ios</td>
+                  <td>Yes</td>
+                </tr>
               </tbody>
             </table>
             <br />
@@ -2466,7 +2490,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/get_script --data "scripts[]=hook_java_reflection&amp;scripts[]=jni_hook_by_address&amp;scripts[]=default&amp;scripts[]=get_android_id" -H "Authorization:{{ api_key}}"
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/get_script --data "device=android&amp;scripts[]=hook_java_reflection&amp;scripts[]=jni_hook_by_address&amp;scripts[]=default&amp;scripts[]=get_android_id" -H "Authorization:{{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>

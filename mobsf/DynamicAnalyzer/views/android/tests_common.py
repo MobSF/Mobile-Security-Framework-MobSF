@@ -7,10 +7,12 @@ import re
 from django.conf import settings
 from django.views.decorators.http import require_http_methods
 
-from mobsf.DynamicAnalyzer.views.android.operations import (
-    get_package_name,
+from mobsf.DynamicAnalyzer.views.common.shared import (
     invalid_params,
     send_response,
+)
+from mobsf.DynamicAnalyzer.views.android.operations import (
+    get_package_name,
 )
 from mobsf.DynamicAnalyzer.views.android.environment import (
     Environment,
@@ -143,8 +145,7 @@ def download_data(request, api=False):
                     'message': 'App details not found in database'}
             return send_response(data, api)
         apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
-        httptools_url = get_http_tools_url(request)
-        stop_httptools(httptools_url)
+        stop_httptools(get_http_tools_url(request))
         files_loc = '/data/local/'
         logger.info('Archiving files created by app')
         env.adb_command(['tar', '-cvf', files_loc + package + '.tar',

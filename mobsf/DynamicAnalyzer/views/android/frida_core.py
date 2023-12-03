@@ -37,7 +37,7 @@ class Frida:
         self.extras = extras
         self.code = code
         self.frida_dir = os.path.join(settings.TOOLS_DIR,
-                                      'frida_scripts')
+                                      'frida_scripts', 'android')
         self.apk_dir = os.path.join(settings.UPLD_DIR, self.hash + '/')
         self.api_mon = os.path.join(self.apk_dir, 'mobsf_api_monitor.txt')
         self.frida_log = os.path.join(self.apk_dir, 'mobsf_frida_out.txt')
@@ -90,8 +90,8 @@ class Frida:
         scripts = [self.code]
         scripts.extend(self.get_default_scripts())
         scripts.extend(self.get_auxiliary())
-        final = 'setTimeout(function() {{ {} }}, 0)'.format(
-            '\n'.join(scripts))
+        combined = '\n'.join(scripts)
+        final = f'setTimeout(function() {{ \n{combined}\n}}, 1000)'
         return final
 
     def frida_response(self, message, data):

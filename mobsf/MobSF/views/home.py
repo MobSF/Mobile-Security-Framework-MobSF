@@ -22,8 +22,10 @@ from django.template.defaulttags import register
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
     api_key,
+    get_md5,
     is_dir_exists,
     is_file_exists,
+    is_md5,
     is_safe_path,
     key,
     print_n_send_error_response,
@@ -210,6 +212,16 @@ def zip_format(request):
     return render(request, template, context)
 
 
+def dynamic_analysis(request):
+    """Dynamic Analysis Landing."""
+    context = {
+        'title': 'Dynamic Analysis',
+        'version': settings.MOBSF_VER,
+    }
+    template = 'general/dynamic.html'
+    return render(request, template, context)
+
+
 def not_found(request):
     """Not Found Route."""
     context = {
@@ -226,6 +238,7 @@ def recent_scans(request):
     db_obj = RecentScansDB.objects.all().order_by('-TIMESTAMP').values()
     android = StaticAnalyzerAndroid.objects.all()
     ios = StaticAnalyzerIOS.objects.all()
+    updir = Path(settings.UPLD_DIR)
     icon_mapping = {}
     package_mapping = {}
     for item in android:
@@ -239,8 +252,13 @@ def recent_scans(request):
         else:
             entry['PACKAGE'] = ''
         entry['ICON_PATH'] = icon_mapping.get(entry['MD5'], '')
-        logcat = Path(settings.UPLD_DIR) / entry['MD5'] / 'logcat.txt'
-        entry['DYNAMIC_REPORT_EXISTS'] = logcat.exists()
+        if entry['FILE_NAME'].endswith('.ipa'):
+            entry['BUNDLE_HASH'] = get_md5(
+                entry['PACKAGE_NAME'].encode('utf-8'))
+            report_file = updir / entry['BUNDLE_HASH'] / 'mobsf_dump_file.txt'
+        else:
+            report_file = updir / entry['MD5'] / 'logcat.txt'
+        entry['DYNAMIC_REPORT_EXISTS'] = report_file.exists()
         entries.append(entry)
     context = {
         'title': 'Recent Scans',
@@ -317,8 +335,7 @@ def generate_download(request):
         logger.info('Generating Downloads')
         md5 = request.GET['hash']
         file_type = request.GET['file_type']
-        match = re.match('^[0-9a-f]{32}$', md5)
-        if (not match
+        if (not is_md5(md5)
                 or file_type not in binary + source):
             msg = 'Invalid download type or hash'
             logger.exception(msg)

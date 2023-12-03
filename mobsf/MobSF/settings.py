@@ -77,6 +77,7 @@ ALLOWED_EXTENSIONS = {
     '.so': 'application/octet-stream',
     '.dylib': 'application/octet-stream',
     '.a': 'application/octet-stream',
+    '.pcap': 'application/vnd.tcpdump.pcap',
 }
 # =============ALLOWED MIMETYPES=================
 APK_MIME = [
@@ -180,7 +181,6 @@ INSTALLED_APPS = (
 MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -190,6 +190,7 @@ MIDDLEWARE_CLASSES = (
 )
 MIDDLEWARE = (
     'mobsf.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
 )
 ROOT_URLCONF = 'mobsf.MobSF.urls'
 WSGI_APPLICATION = 'mobsf.MobSF.wsgi.application'
@@ -435,5 +436,10 @@ else:
     # https://www.virustotal.com/en/user/<username>/apikey/
     # Files will be uploaded to VirusTotal
     # if VT_UPLOAD is set to True.
-    # ==============================================
+    # ===============================================
+    # =======IOS DYNAMIC ANALYSIS SETTINGS===========
+    CORELLIUM_API_KEY = os.getenv('MOBSF_CORELLIUM_API_KEY', '')
+    CORELLIUM_PROJECT_ID = os.getenv('MOBSF_CORELLIUM_PROJECT_ID', '')
+    # CORELLIUM_PROJECT_ID is optional, MobSF will use any available project id
+    # ===============================================
     # ^CONFIG-END^: Do not edit this line
