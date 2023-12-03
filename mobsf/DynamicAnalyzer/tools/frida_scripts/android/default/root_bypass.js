@@ -33,8 +33,8 @@ Java.performNow(function () {
     };
 
     // String.contains check
-    var String = Java.use('java.lang.String');
-    String.contains.implementation = function (name) {
+    var javaString = Java.use('java.lang.String');
+    javaString.contains.implementation = function (name) {
         if (name == "test-keys") {
             send("[RootDetection Bypass] test-keys check");
             return false;
