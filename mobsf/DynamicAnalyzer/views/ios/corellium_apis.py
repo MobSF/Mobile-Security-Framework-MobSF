@@ -38,6 +38,9 @@ class CorelliumAPI:
 
     def api_auth(self):
         """Check Corellium API Auth."""
+        if not self.api_key:
+            logger.error('Corellium API key is not set')
+            return False
         r = requests.get(
             f'{self.api}/projects',
             headers=self.headers)

@@ -631,7 +631,6 @@ def ssh_execute(request, api=False):
     except Exception as exp:
         data['message'] = str(exp)
         logger.exception('Executing Commands')
-        return send_response(data, api)
     return send_response(data, api)
 # Helper Download app data tarfile
 

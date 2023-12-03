@@ -1,7 +1,6 @@
 # -*- coding: utf_8 -*-
 """Frida tests."""
 import base64
-import glob
 import os
 import re
 import json
@@ -25,30 +24,11 @@ from mobsf.DynamicAnalyzer.views.android.operations import (
 from mobsf.MobSF.utils import (
     is_file_exists,
     is_md5,
-    is_safe_path,
     print_n_send_error_response,
 )
 
 logger = logging.getLogger(__name__)
 
-# AJAX
-
-
-@require_http_methods(['GET'])
-def list_frida_scripts(request, api=False):
-    """Get frida scripts from others."""
-    scripts = []
-    others = os.path.join(settings.TOOLS_DIR,
-                          'frida_scripts',
-                          'android'
-                          'others')
-    files = glob.glob(others + '**/*.js', recursive=True)
-    for item in files:
-        scripts.append(Path(item).stem)
-    scripts.sort()
-    return send_response({'status': 'ok',
-                          'files': scripts},
-                         api)
 # AJAX
 
 
@@ -69,33 +49,6 @@ def get_runtime_dependencies(request, api=False):
         return send_response(
             {'status': 'ok'},
             api)
-    except Exception:
-        pass
-    return send_response(data, api)
-# AJAX
-
-
-@require_http_methods(['POST'])
-def get_script(request, api=False):
-    """Get frida scripts from others."""
-    data = {'status': 'ok', 'content': ''}
-    try:
-        scripts = request.POST.getlist('scripts[]')
-        others = os.path.join(settings.TOOLS_DIR,
-                              'frida_scripts',
-                              'android'
-                              'others')
-        script_ct = []
-        for script in scripts:
-            script_file = os.path.join(others, script + '.js')
-            if not is_safe_path(others, script_file):
-                data = {
-                    'status': 'failed',
-                    'message': 'Path traversal detected.'}
-                return send_response(data, api)
-            if is_file_exists(script_file):
-                script_ct.append(Path(script_file).read_text())
-        data['content'] = '\n'.join(script_ct)
     except Exception:
         pass
     return send_response(data, api)

@@ -14,6 +14,7 @@ from mobsf.DynamicAnalyzer.views.android import (
 )
 from mobsf.DynamicAnalyzer.views.common import (
     device,
+    frida,
 )
 
 
@@ -228,11 +229,14 @@ def api_frida_logs(request):
     return make_api_response(resp, 500)
 
 
-@request_method(['GET'])
+@request_method(['POST'])
 @csrf_exempt
 def api_list_frida_scripts(request):
-    """GET - List Frida Scripts."""
-    resp = tests_frida.list_frida_scripts(request, True)
+    """POST - List Frida Scripts."""
+    if 'device' not in request.POST:
+        return make_api_response(
+            {'error': 'Missing Parameters'}, 422)
+    resp = frida.list_frida_scripts(request, True)
     if resp['status'] == 'ok':
         return make_api_response(resp, 200)
     return make_api_response(resp, 500)
@@ -245,7 +249,10 @@ def api_get_script(request):
     if not request.POST.getlist('scripts[]'):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
-    resp = tests_frida.get_script(request, True)
+    if 'device' not in request.POST:
+        return make_api_response(
+            {'error': 'Missing Parameters'}, 422)
+    resp = frida.get_script(request, True)
     if resp['status'] == 'ok':
         return make_api_response(resp, 200)
     return make_api_response(resp, 500)

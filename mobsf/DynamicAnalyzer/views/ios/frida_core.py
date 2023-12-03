@@ -65,10 +65,10 @@ class Frida:
         all_scripts = self.frida_dir / script_type
         for script in all_scripts.rglob('*.js'):
             if '*' in selected_scripts:
-                combined_script.append(script.read_text())
+                combined_script.append(script.read_text('utf-8', 'ignore'))
             if script.stem in selected_scripts:
                 header.append(f'send("Loaded Frida Script - {script.stem}");')
-                combined_script.append(script.read_text())
+                combined_script.append(script.read_text('utf-8', 'ignore'))
         return header + combined_script
 
     def get_auxiliary(self):
@@ -110,9 +110,9 @@ class Frida:
         rpc_list.extend(self.get_scripts('rpc', ['*']))
         scripts.extend(self.get_auxiliary())
         rpc_script = ','.join(rpc_list)
-        rpc = f'rpc.exports = {{ {rpc_script} }};'
+        rpc = f'rpc.exports = {{ \n{rpc_script}\n }};'
         combined = '\n'.join(scripts)
-        final = f'{rpc} setTimeout(function() {{ \n{combined}\n }}, 1000)'
+        final = f'{rpc}\n setTimeout(function() {{ \n{combined}\n }}, 1000)'
         return final
 
     def frida_response(self, message, data):
@@ -125,15 +125,16 @@ class Frida:
             if not isinstance(msg, str):
                 msg = str(msg)
             if dump in msg:
-                self.write_log(self.dump_file, msg.replace(dump, '') + '\n')
+                msg = msg.replace(dump, '')
+                self.write_log(self.dump_file, f'{msg}\n')
             elif msg.startswith(jb):
-                self.write_log(self.frida_log, msg + '\n')
+                self.write_log(self.frida_log, f'{msg}\n')
             elif msg.startswith(aux):
-                self.write_log(self.frida_log,
-                               msg.replace(aux, '[*] ') + '\n')
+                msg = msg.replace(aux, '[*] ')
+                self.write_log(self.frida_log, f'{msg}\n')
             else:
                 logger.debug('[Frida] %s', msg)
-                self.write_log(self.frida_log, msg + '\n')
+                self.write_log(self.frida_log, f'{msg}\n')
         else:
             logger.error('[Frida] %s', message)
 
@@ -190,13 +191,11 @@ class Frida:
                     _PID = pid
                     self.bundle_id = bundle_id
                 front = device.get_frontmost_application()
-                if not front:
-                    # No frontmost app, spawn the app
+                if not front or front.pid != _PID:
+                    # No front most app, spawn the app or
+                    # pid is not the front most app
                     _PID = device.spawn([self.bundle_id])
-                elif front.pid != _PID:
-                    # pid is not the frontmost app
-                    _PID = device.spawn([self.bundle_id])
-                # pid is the forntmost app
+                # pid is the fornt most app
                 session = device.attach(_PID)
             except frida.NotSupportedError:
                 logger.exception('Not Supported Error')

@@ -1,6 +1,9 @@
 from django.urls import re_path
 
-from mobsf.DynamicAnalyzer.views.common import device
+from mobsf.DynamicAnalyzer.views.common import (
+    device,
+    frida,
+)
 from mobsf.DynamicAnalyzer.views.android import dynamic_analyzer as dz
 from mobsf.DynamicAnalyzer.views.android import (
     operations,
@@ -76,9 +79,10 @@ urlpatterns = [
     re_path(r'^api/v1/frida/instrument$', api_dz.api_instrument),
     re_path(r'^api/v1/frida/api_monitor$', api_dz.api_api_monitor),
     re_path(r'^api/v1/frida/logs$', api_dz.api_frida_logs),
+    re_path(r'^api/v1/frida/get_dependencies$', api_dz.api_get_dependencies),
+    # Shared
     re_path(r'^api/v1/frida/list_scripts$', api_dz.api_list_frida_scripts),
     re_path(r'^api/v1/frida/get_script$', api_dz.api_get_script),
-    re_path(r'^api/v1/frida/get_dependencies$', api_dz.api_get_dependencies),
 ]
 if settings.API_ONLY == '0':
     urlpatterns.extend([
@@ -186,14 +190,18 @@ if settings.API_ONLY == '0':
         re_path(r'^frida_logs/$',
                 tests_frida.frida_logs,
                 name='frida_logs'),
-        re_path(r'^list_frida_scripts/$', tests_frida.list_frida_scripts),
-        re_path(r'^get_script/$', tests_frida.get_script),
         re_path(r'^get_dependencies/$', tests_frida.get_runtime_dependencies),
         # Report
         re_path(r'^dynamic_report/(?P<checksum>[0-9a-f]{32})$',
                 report.view_report,
                 name='dynamic_report'),
         # Shared
+        re_path(r'^list_frida_scripts/$',
+                frida.list_frida_scripts,
+                name='list_frida_scripts'),
+        re_path(r'^get_script/$',
+                frida.get_script,
+                name='get_script'),
         re_path(r'^dynamic_view_file/$',
                 device.view_file,
                 name='dynamic_view_file'),
@@ -270,12 +278,6 @@ if settings.API_ONLY == '0':
         re_path(r'^ios/instrument/$',
                 ios_tests_frida.ios_instrument,
                 name='ios_instrument'),
-        re_path(r'^ios/list_frida_scripts/$',
-                ios_tests_frida.list_ios_frida_scripts,
-                name='list_ios_frida_scripts'),
-        re_path(r'^ios/get_script/$',
-                ios_tests_frida.ios_get_script,
-                name='ios_get_script'),
         re_path(r'^ios/view_report/(?P<bundle_id>([\w]*\.)+[\w]{2,155})$',
                 ios_view_report.ios_view_report,
                 name='ios_view_report'),

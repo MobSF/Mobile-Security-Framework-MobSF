@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 from django.conf import settings
 
@@ -8,18 +8,13 @@ from mobsf.MobSF.utils import (
 
 
 def get_content(file_name):
-    content = ''
-    script = os.path.join(settings.TOOLS_DIR,
-                          'frida_scripts'
-                          'ios',
-                          'auxiliary',
-                          file_name)
+    tools_dir = Path(settings.TOOLS_DIR)
+    aux_dir = tools_dir / 'frida_scripts' / 'ios' / 'auxiliary'
+    script = aux_dir / file_name
 
-    with open(script, 'r',
-              encoding='utf8',
-              errors='ignore') as scp:
-        content = scp.read()
-    return content
+    if script.exists():
+        return script.read_text('utf-8', 'ignore')
+    return ''
 
 
 def get_loaded_classes():

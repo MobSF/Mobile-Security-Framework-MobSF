@@ -40,15 +40,18 @@ def dynamic_analysis(request, api=False):
     """The iOS Dynamic Analysis Entry point."""
     try:
         scan_apps = []
-        ios_dynamic = False
         ipas = StaticAnalyzerIOS.objects.filter(
             FILE_NAME__endswith='.ipa')
         for ipa in reversed(ipas):
             bundle_hash = get_md5(ipa.BUNDLE_ID.encode('utf-8'))
             frida_dump = Path(
                 settings.UPLD_DIR) / bundle_hash / 'mobsf_dump_file.txt'
-            encrypted = python_dict(
-                ipa.MACHO_ANALYSIS)['encrypted']['is_encrypted']
+            macho = python_dict(ipa.MACHO_ANALYSIS)
+            encrypted = False
+            if (macho
+                    and macho.get('encrypted')
+                    and macho.get('encrypted').get('is_encrypted')):
+                encrypted = macho['encrypted']['is_encrypted']
             temp_dict = {
                 'MD5': ipa.MD5,
                 'APP_NAME': ipa.APP_NAME,
@@ -63,16 +66,15 @@ def dynamic_analysis(request, api=False):
         # Corellium
         instances = []
         project_id = None
-        ios_dynamic = bool(getattr(settings, 'CORELLIUM_API_KEY', ''))
         c = CorelliumAPI(getattr(settings, 'CORELLIUM_PROJECT_ID', ''))
-        if c.api_ready() and c.api_auth() and c.get_projects():
+        corellium_auth = c.api_ready() and c.api_auth()
+        if corellium_auth and c.get_projects():
             instances = c.get_instances()
             project_id = c.project_id
             setup_ssh_keys(c)
         context = {'apps': scan_apps,
-                   'dynamic_analyzer': ios_dynamic,
+                   'dynamic_analyzer': corellium_auth,
                    'project_id': project_id,
-                   'corellium_auth': c.api_auth(),
                    'instances': instances,
                    'title': 'MobSF Dynamic Analysis',
                    'version': settings.MOBSF_VER}

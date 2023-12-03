@@ -1,12 +1,8 @@
 # -*- coding: utf_8 -*-
 """Frida tests for iOS."""
-import glob
-import os
-from pathlib import Path
 from threading import Thread
 import logging
 
-from django.conf import settings
 from django.views.decorators.http import require_http_methods
 
 from mobsf.DynamicAnalyzer.views.ios.frida_core import (
@@ -23,59 +19,12 @@ from mobsf.DynamicAnalyzer.views.ios.corellium_apis import (
 )
 from mobsf.MobSF.utils import (
     common_check,
-    is_file_exists,
     is_md5,
-    is_safe_path,
     strict_package_check,
 )
 
 logger = logging.getLogger(__name__)
-# AJAX
 
-
-@require_http_methods(['GET'])
-def list_ios_frida_scripts(request, api=False):
-    """List frida scripts from others."""
-    scripts = []
-    others = os.path.join(settings.TOOLS_DIR,
-                          'frida_scripts'
-                          'ios',
-                          'others')
-    files = glob.glob(others + '**/*.js', recursive=True)
-    for item in files:
-        scripts.append(Path(item).stem)
-    scripts.sort()
-    return send_response(
-        {'status': OK,
-         'files': scripts},
-        api)
-# AJAX
-
-
-@require_http_methods(['POST'])
-def ios_get_script(request, api=False):
-    """Get frida scripts from others."""
-    data = {'status': OK, 'content': ''}
-    try:
-        scripts = request.POST.getlist('scripts[]')
-        others = os.path.join(settings.TOOLS_DIR,
-                              'frida_scripts'
-                              'ios',
-                              'others')
-        script_ct = []
-        for script in scripts:
-            script_file = os.path.join(others, script + '.js')
-            if not is_safe_path(others, script_file):
-                data = {
-                    'status': 'failed',
-                    'message': 'Path traversal detected.'}
-                return send_response(data, api)
-            if is_file_exists(script_file):
-                script_ct.append(Path(script_file).read_text())
-        data['content'] = '\n'.join(script_ct)
-    except Exception:
-        pass
-    return send_response(data, api)
 # AJAX
 
 

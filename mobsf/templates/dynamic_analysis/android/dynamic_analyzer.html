@@ -481,12 +481,12 @@ function action(url, data, on_success){
 
 // Frida load other scripts
 function load_frida_others(){
-  $.get(document.location.origin + '/list_frida_scripts/', function(json, status){
-      if (json.status == 'ok'){
+  action('{% url 'list_frida_scripts' %}', {device: 'android'}, function(json) {
+    if (json.status==="ok"){
         json.files.forEach(function(script) {
           $('#fd_scs').append('<option value=' + escape(script) + '>' + escape(script) + '</option>');
         });
-      }
+    }
   });
 }
 
@@ -1001,7 +1001,7 @@ $("#fd_log").click(function() {
 // Load Frida Scripts
 $("#loadscript").click(function() {
    var scripts = $('#fd_scs').val();
-   action(document.location.origin + '/get_script/', {scripts: scripts}, function(json) {
+   action('{% url 'get_script' %}', {scripts: scripts, device: 'android'}, function(json) {
     if (json.status==="ok"){
         editor.getDoc().setValue(json.content);
     }

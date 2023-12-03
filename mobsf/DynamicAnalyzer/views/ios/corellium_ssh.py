@@ -1,7 +1,13 @@
 # -*- coding: utf_8 -*-
 """Corellium SSH.
 
-Corellium SSH over Jump Host withLocal Port Forwarding for Frida Connection.
+Corellium SSH Utilities , modified for MobSF.
+Supports SSH over Jump Host
+Local Port Forward
+Remote Port Forward
+SSH Shell Exec
+SFTP File Upload
+SFTP File Download
 """
 # Copyright (C) 2003-2007  Robey Pointer <robeypointer@gmail.com>
 #
@@ -80,6 +86,30 @@ def parse_ssh_string(ssh):
     return ssh_dict
 
 
+def sock_chan_handler(sock, chan):
+    """Socket and Channel Handler."""
+    try:
+        while True:
+            r, w, x = select.select([sock, chan], [], [])
+            if sock in r:
+                data = sock.recv(1024)
+                if len(data) == 0:
+                    break
+                chan.send(data)
+            if chan in r:
+                data = chan.recv(1024)
+                if len(data) == 0:
+                    break
+                sock.send(data)
+    except ConnectionResetError:
+        pass
+    finally:
+        if chan:
+            chan.close()
+        if sock:
+            sock.close()
+
+
 # Local Port Forward
 class ForwardServer(socketserver.ThreadingTCPServer):
     daemon_threads = True
@@ -89,11 +119,12 @@ class ForwardServer(socketserver.ThreadingTCPServer):
 class Handler(socketserver.BaseRequestHandler):
     def handle(self):
         chan = None
+        sock = self.request
         try:
             chan = self.ssh_transport.open_channel(
                 'direct-tcpip',
                 (self.chain_host, self.chain_port),
-                self.request.getpeername(),
+                sock.getpeername(),
             )
         except paramiko.SSHException:
             # SSH tunnel closed, try opening again
@@ -111,27 +142,11 @@ class Handler(socketserver.BaseRequestHandler):
 
         logger.info(
             'Connected!  Tunnel open %r -> %r -> %r',
-            self.request.getpeername(),
+            sock.getpeername(),
             chan.getpeername(),
             (self.chain_host, self.chain_port))
-        while True:
-            r, w, x = select.select([self.request, chan], [], [])
-            if self.request in r:
-                data = self.request.recv(1024)
-                if len(data) == 0:
-                    break
-                chan.send(data)
-            if chan in r:
-                data = chan.recv(1024)
-                if len(data) == 0:
-                    break
-                self.request.send(data)
-
-        peername = self.request.getpeername()
-        if chan:
-            chan.close()
-        if self.request:
-            self.request.close()
+        peername = sock.getpeername()
+        sock_chan_handler(sock, chan)
         logger.info('Tunnel closed from %r', peername)
 
 
@@ -162,24 +177,7 @@ def handler(chan, host, port):
     except Exception:
         logger.info('Forwarding request to %s:%d failed', host, port)
         return
-    try:
-        while True:
-            r, w, x = select.select([sock, chan], [], [])
-            if sock in r:
-                data = sock.recv(1024)
-                if len(data) == 0:
-                    break
-                chan.send(data)
-            if chan in r:
-                data = chan.recv(1024)
-                if len(data) == 0:
-                    break
-                sock.send(data)
-    except ConnectionResetError:
-        pass
-    finally:
-        chan.close()
-        sock.close()
+    sock_chan_handler(sock, chan)
 
 
 def reverse_forward_tunnel(server_port, remote_host, remote_port, transport):
@@ -275,7 +273,7 @@ def ssh_execute_cmd(target, cmd):
 
 
 def ssh_file_upload(ssh_conn_string, fobject, fname):
-    """File Upload over SSH."""
+    """File Upload over SFTP."""
     target, jumpbox = ssh_jump_host(ssh_conn_string)
     with target.open_sftp() as sftp:
         rfile = Path(fname.replace('..', '')).name
@@ -285,7 +283,7 @@ def ssh_file_upload(ssh_conn_string, fobject, fname):
 
 
 def ssh_file_download(ssh_conn_string, remote_path, local_path):
-    """File Download over SSH."""
+    """File Download over SFTP."""
     target, jumpbox = ssh_jump_host(ssh_conn_string)
     with target.open_sftp() as sftp:
         sftp.get(remote_path, local_path)

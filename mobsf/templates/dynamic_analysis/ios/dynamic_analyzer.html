@@ -516,8 +516,8 @@ function escapeHtml(unsafe){
 
 // Frida load other scripts
 function load_frida_others(){
-  $.get('{% url 'list_ios_frida_scripts' %}', function(json, status){
-      if (json.status == 'ok'){
+  action('{% url 'list_frida_scripts' %}', {device: 'ios'}, function(json) {
+    if (json.status == 'ok'){
         json.files.forEach(function(script) {
           $('#fd_scs').append('<option value=' + escape(script) + '>' + escape(script) + '</option>');
         });
@@ -1020,7 +1020,7 @@ function enableReportBtn(seconds){
 // Load Frida Scripts
 $("#loadscript").click(function() {
    var scripts = $('#fd_scs').val();
-   action('{% url 'ios_get_script' %}', {scripts: scripts}, function(json) {
+   action('{% url 'get_script' %}', {scripts: scripts, device: 'ios'}, function(json) {
     if (json.status==="ok"){
         editor.getDoc().setValue(json.content);
     }
