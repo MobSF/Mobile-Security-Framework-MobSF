@@ -316,7 +316,7 @@
               <!-- /.card-header -->
               <div class="card-body">
               <div class="row">
-                  <div class="col-12">
+                  <div class="col-12" id="code-editor">
 <textarea id="code-js" rows="100">
   // Use send() for logging
 </textarea>
@@ -447,10 +447,12 @@
 var appContainerPath;
 // Loading Spinner
 function dynamic_loader(){
+    document.getElementById("code-editor").style.visibility = "hidden";
     var loadingOverlay = document.querySelector('.loading');
     loadingOverlay.classList.remove('hidden');
 }
 function stop_loader(){
+    document.getElementById("code-editor").style.visibility = "visible";
     var loadingOverlay = document.querySelector('.loading');
     loadingOverlay.classList.add('hidden');
 }

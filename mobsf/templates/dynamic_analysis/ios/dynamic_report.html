@@ -1443,36 +1443,30 @@ function action(url, data, on_success){
 
   // Download file
   function download_file(path){
-    // action('{% url 'download_file' %}', {instance_id: '{{ instance_id }}', file: path }, function(json) {
-    //   alert(json);    
-    // });
+    var form = document.createElement('form');
+    var element1 = document.createElement('input'); 
+    var element2 = document.createElement('input');
+    var element3 = document.createElement('input');  
 
-    var form = document.createElement("form");
-    var element1 = document.createElement("input"); 
-    var element2 = document.createElement("input");
-    var element3 = document.createElement("input");  
+    form.method = 'POST';
+    form.action = '{% url 'download_file' %}';   
 
-    form.method = "POST";
-    form.action = "{% url 'download_file' %}";   
-
-    element1.value= "{{ instance_id }}";
-    element1.name="instance_id";
+    element1.value = '{{ instance_id }}';
+    element1.name = 'instance_id';
     form.appendChild(element1);
 
 
-    element2.value=path;
-    element2.name="file";
+    element2.value = path;
+    element2.name = 'file';
     form.appendChild(element2);
 
-    element3.value= "{{ csrf_token }}";
-    element3.name="csrf_token";
+    element3.value = '{{ csrf_token }}';
+    element3.name = 'csrf_token';
     form.appendChild(element3);
 
     document.body.appendChild(form);
-
     form.submit();
     form.remove();
-
   }
   </script>
 {% endblock %}
