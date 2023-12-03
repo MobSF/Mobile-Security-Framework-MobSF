@@ -40,6 +40,7 @@ def list_frida_scripts(request, api=False):
     scripts = []
     others = os.path.join(settings.TOOLS_DIR,
                           'frida_scripts',
+                          'android'
                           'others')
     files = glob.glob(others + '**/*.js', recursive=True)
     for item in files:
@@ -82,6 +83,7 @@ def get_script(request, api=False):
         scripts = request.POST.getlist('scripts[]')
         others = os.path.join(settings.TOOLS_DIR,
                               'frida_scripts',
+                              'android'
                               'others')
         script_ct = []
         for script in scripts:

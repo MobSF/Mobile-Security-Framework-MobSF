@@ -306,7 +306,8 @@ pre {
                       <p>
                       <a target="_blank" class="btn btn-primary btn-sm" role="button" href="{% url 'download' %}{{ hash }}-web_traffic.txt"><i class="fas fa-water"></i> HTTP(S) Traffic</a>
                       <a target="_blank" class="btn btn-primary btn-sm" role="button" href="{% url 'download' %}{{ hash }}-network.pcap"><i class="fas fa-water"></i> Network Pcap</a>
-                      </p>
+                      <a class="btn btn-primary btn-sm" role="button" href="{% url 'download' %}{{ hash }}-app_data.tar"><i class="fas fa-download"></i> Application Data</a>
+                    </p>
                    </div>
                 </div>
               </div>

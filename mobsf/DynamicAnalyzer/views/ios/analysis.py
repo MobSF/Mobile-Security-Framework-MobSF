@@ -2,18 +2,11 @@
 """iOS Dynamic Analysis."""
 import logging
 import json
-import re
 from pathlib import Path
 
-from mobsf.MobSF.utils import (
-    EMAIL_REGEX,
-    URL_REGEX,
-)
 from mobsf.DynamicAnalyzer.views.common.shared import (
+    extract_urls_domains_emails,
     get_app_files,
-)
-from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
-    MalwareDomainCheck,
 )
 
 logger = logging.getLogger(__name__)
@@ -53,22 +46,7 @@ def run_analysis(app_dir, bundle_id, checksum):
     domains = {}
     # Collect Log data
     data = get_logs_data(app_dir, bundle_id)
-    urls = re.findall(URL_REGEX, data.lower())
-    if urls:
-        urls = list(set(urls))
-    else:
-        urls = []
-    # Domain Extraction and Malware Check
-    logger.info('Performing Malware Check on extracted Domains')
-    domains = MalwareDomainCheck().scan(urls)
-    # Email Etraction Regex
-    emails = set()
-    for email in EMAIL_REGEX.findall(data.lower()):
-        if email.startswith('//'):
-            continue
-        if email.endswith('.png'):
-            continue
-        emails.add(email)
+    urls, domains, emails = extract_urls_domains_emails(data)
     # App data files analysis
     pfiles = get_app_files(app_dir, f'{checksum}-app-container')
     analysis_result['sqlite'] = pfiles['sqlite']

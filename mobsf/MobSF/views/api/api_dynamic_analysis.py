@@ -12,6 +12,9 @@ from mobsf.DynamicAnalyzer.views.android import (
     tests_common,
     tests_frida,
 )
+from mobsf.DynamicAnalyzer.views.common import (
+    device,
+)
 
 
 # Dynamic Analyzer APIs
@@ -286,7 +289,7 @@ def api_dynamic_view_file(request):
     if set(request.POST) < params:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
-    resp = report.view_file(request, True)
+    resp = device.view_file(request, True)
     if 'error' in resp:
         return make_api_response(resp, 500)
     return make_api_response(resp, 200)

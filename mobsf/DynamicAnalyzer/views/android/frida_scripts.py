@@ -9,6 +9,7 @@ def get_content(file_name):
     content = ''
     script = os.path.join(settings.TOOLS_DIR,
                           'frida_scripts',
+                          'android'
                           'auxiliary',
                           file_name)
 

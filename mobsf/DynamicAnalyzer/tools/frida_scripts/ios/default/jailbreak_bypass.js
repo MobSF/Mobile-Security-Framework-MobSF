@@ -94,7 +94,7 @@ function bypassJailbreakDetection(){
                 var arg = Memory.readUtf8String(args[0]);
                 for (var path in paths) {
                     if (arg.indexOf(paths[path]) > -1) {
-                        send("[Jailbreak Detection Bypass] Hooking native function stat64: " + arg);
+                        send('[Jailbreak Detection Bypass] Hooking native function stat64: ' + arg);
                         this.is_common_path = true;
                         return -1;
                     }
@@ -114,7 +114,7 @@ function bypassJailbreakDetection(){
                 var arg = Memory.readUtf8String(args[0]);
                 for (var path in paths) {
                     if (arg.indexOf(paths[path]) > -1) {
-                        send("[Jailbreak Detection Bypass] Hooking native function stat: " + arg);
+                        send('[Jailbreak Detection Bypass] Hooking native function stat: ' + arg);
                         this.is_common_path = true;
                         return -1;
                     }
@@ -127,7 +127,7 @@ function bypassJailbreakDetection(){
                 }
             }
         });
-        send("[Jailbreak Detection Bypass] success");
+        send('[Jailbreak Detection Bypass] success');
     }
     catch(e) {
         send('[Jailbreak Detection Bypass] script error: ' + e.toString());

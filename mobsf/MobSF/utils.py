@@ -777,6 +777,13 @@ def base64_decode(value):
     return value
 
 
+def base64_encode(value):
+    """Base64 encode."""
+    if isinstance(value, str):
+        value = value.encode('utf-8')
+    return base64.b64encode(value)
+
+
 def android_component(data):
     """Return Android component from data."""
     cmp = ''

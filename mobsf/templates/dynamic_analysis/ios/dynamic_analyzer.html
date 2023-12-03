@@ -391,6 +391,13 @@
     </div>
 </div>
 
+<!--Loader-->
+<div class="hidden loading">
+  <div class='uil-ring-css' style='transform:scale(0.79);'>
+    <div></div>
+  </div>
+  </div>
+
 
 <!-- Modal -->
 <div class="modal fade" id="frida_attach_mdl" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -413,14 +420,6 @@
       <div class="modal-footer">
         <button id="attach_to_pid" type="button" class="btn btn-primary"><i class="fas fa-bug"></i> Attach</button>
       </div>
-
-          <!--Loader-->
-<div class="hidden loading">
-  <div class='uil-ring-css' style='transform:scale(0.79);'>
-    <div></div>
-  </div>
-  </div>
-
 
     </div>
   </div>
@@ -1130,6 +1129,7 @@ $("#attach_to_pid").click(function() {
 
 //Finish & Generate Report
 $("#report").one( "click", function() {
+  dynamic_loader();
   // Stop Screen Casting if it's running
   var stext = $("#screen").text();
   if (stext.includes("Stop Screen"))
@@ -1139,6 +1139,7 @@ $("#report").one( "click", function() {
   // Download app data
   print_status("Downloading application data.");
   action('{% url 'ios_download_data' bundle_id=bundle_id %}', {instance_id: '{{ instance_id }}'}, function(json) {
+    stop_loader();
     if (json.status==="ok"){
       // Generate Report
       print_status("Generating report");
@@ -1163,6 +1164,7 @@ function uploadFile(){
     var formdata = new FormData();
     formdata.append("file", id_file.files[0]);
     formdata.append("instance_id", '{{ instance_id }}');
+    dynamic_loader();
     $.ajax({
         url: '{% url 'upload_file' %}', 
         type: "POST",
@@ -1174,7 +1176,8 @@ function uploadFile(){
           request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
           request.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
         },
-        success : function(json){ 
+        success : function(json){
+          stop_loader();
           if (json.status==="ok"){
             print_status("File uploaded successfully.");
             Swal.fire(
@@ -1186,10 +1189,12 @@ function uploadFile(){
           }
         },
         error : function(xhr, ajaxOptions, thrownError) {
+          stop_loader();
           document.getElementById("er").srcdoc = xhr.responseText;
         }
       });
   } catch (e) {
+      stop_loader();
       print_status("Failed to upload file: " + e);
   }
 }

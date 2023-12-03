@@ -10,7 +10,8 @@ from mobsf.MobSF.utils import (
 def get_content(file_name):
     content = ''
     script = os.path.join(settings.TOOLS_DIR,
-                          'frida_scripts_ios',
+                          'frida_scripts'
+                          'ios',
                           'auxiliary',
                           file_name)
 

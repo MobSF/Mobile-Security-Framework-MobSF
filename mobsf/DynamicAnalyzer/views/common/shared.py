@@ -10,12 +10,39 @@ from pathlib import Path
 
 from django.http import HttpResponse
 
+from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
+    MalwareDomainCheck,
+)
 from mobsf.MobSF.utils import (
+    EMAIL_REGEX,
+    URL_REGEX,
     clean_filename,
     is_pipe_or_link,
 )
 
 logger = logging.getLogger(__name__)
+
+
+def extract_urls_domains_emails(data):
+    """Extract URLs, Domains and Emails."""
+    # URL Extraction
+    urls = re.findall(URL_REGEX, data.lower())
+    if urls:
+        urls = list(set(urls))
+    else:
+        urls = []
+    # Domain Extraction and Malware Check
+    logger.info('Performing Malware Check on extracted Domains')
+    domains = MalwareDomainCheck().scan(urls)
+    # Email Etraction Regex
+    emails = set()
+    for email in EMAIL_REGEX.findall(data.lower()):
+        if email.startswith('//'):
+            continue
+        if email.endswith('.png'):
+            continue
+        emails.add(email)
+    return urls, domains, emails
 
 
 def safe_paths(tar_meta):

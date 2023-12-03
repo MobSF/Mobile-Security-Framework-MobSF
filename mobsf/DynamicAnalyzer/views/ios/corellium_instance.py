@@ -2,12 +2,10 @@
 """Instance Operation APIs."""
 import logging
 import re
-import os
 import shutil
 import time
 from base64 import b64encode
 from pathlib import Path
-from stat import S_ISDIR
 
 from paramiko.ssh_exception import SSHException
 
@@ -622,35 +620,6 @@ def live_pcap_download(request, api=False):
     return send_response(data, api)
 
 
-# TODO: If directory listing is needed
-def generate_nested_directory(sftp, root_path, current_path):
-    directories = []
-    for item in sftp.listdir_attr(current_path):
-        if S_ISDIR(item.st_mode):
-            nested_path = os.path.join(current_path, item.filename)
-            nested_directories = generate_nested_directory(
-                sftp, root_path, nested_path)
-            directories.append({
-                'name': item.filename,
-                'path': os.path.relpath(nested_path, root_path),
-                'directories': nested_directories,
-            })
-    return directories
-
-
-def get_app_container_list(ssh_conn_string, app_container_dir):
-    """Get app container paths recursively."""
-    transport, jumpbox = ssh_jump_host(ssh_conn_string)
-    sftp = transport.open_sftp()
-    recursive = generate_nested_directory(
-        sftp,
-        app_container_dir,
-        app_container_dir)
-    print(recursive)
-    transport.close()
-    jumpbox.close()
-
-
 # AJAX
 SSH_TARGET = None
 
@@ -708,6 +677,9 @@ def download_app_data(ci, checksum):
             sftp.get(tarfile, localtar)
         target.close()
         jumpbox.close()
+        if localtar.exists():
+            dst = Path(settings.DWD_DIR) / f'{checksum}-app_data.tar'
+            shutil.copyfile(localtar, dst)
 # AJAX
 
 

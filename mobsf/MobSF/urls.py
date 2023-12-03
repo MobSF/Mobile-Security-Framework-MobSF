@@ -1,5 +1,6 @@
 from django.urls import re_path
 
+from mobsf.DynamicAnalyzer.views.common import device
 from mobsf.DynamicAnalyzer.views.android import dynamic_analyzer as dz
 from mobsf.DynamicAnalyzer.views.android import (
     operations,
@@ -192,8 +193,9 @@ if settings.API_ONLY == '0':
         re_path(r'^dynamic_report/(?P<checksum>[0-9a-f]{32})$',
                 report.view_report,
                 name='dynamic_report'),
+        # Shared
         re_path(r'^dynamic_view_file/$',
-                report.view_file,
+                device.view_file,
                 name='dynamic_view_file'),
         # iOS Dynamic Analysis
         re_path(r'^ios/dynamic_analysis/$',

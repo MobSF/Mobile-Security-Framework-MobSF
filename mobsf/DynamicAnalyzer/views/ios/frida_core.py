@@ -50,7 +50,7 @@ class Frida:
         self.extras = extras
         self.code = code
         self.action = action
-        self.frida_dir = Path(settings.TOOLS_DIR) / 'frida_scripts_ios'
+        self.frida_dir = Path(settings.TOOLS_DIR) / 'frida_scripts' / 'ios'
         self.ipa_dir = Path(settings.UPLD_DIR) / self.hash
         self.frida_log = self.ipa_dir / 'mobsf_frida_out.txt'
         self.dump_file = self.ipa_dir / 'mobsf_dump_file.txt'
@@ -112,7 +112,7 @@ class Frida:
         rpc_script = ','.join(rpc_list)
         rpc = f'rpc.exports = {{ {rpc_script} }};'
         combined = '\n'.join(scripts)
-        final = f'{rpc} setTimeout(function() {{ {combined} }}, 2000)'
+        final = f'{rpc} setTimeout(function() {{ \n{combined}\n }}, 1000)'
         return final
 
     def frida_response(self, message, data):
@@ -124,7 +124,6 @@ class Frida:
             dump = '[MBSFDUMP] '
             if not isinstance(msg, str):
                 msg = str(msg)
-
             if dump in msg:
                 self.write_log(self.dump_file, msg.replace(dump, '') + '\n')
             elif msg.startswith(jb):

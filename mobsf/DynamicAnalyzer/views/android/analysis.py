@@ -2,24 +2,19 @@
 import io
 import logging
 import os
-import re
 import shutil
 from json import load
 from pathlib import Path
 
 from mobsf.MobSF.utils import (
-    EMAIL_REGEX,
-    URL_REGEX,
     is_file_exists,
     python_list,
 )
 from mobsf.DynamicAnalyzer.views.common.shared import (
+    extract_urls_domains_emails,
     get_app_files,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
-from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
-    MalwareDomainCheck,
-)
 
 
 logger = logging.getLogger(__name__)
@@ -42,26 +37,13 @@ def run_analysis(apk_dir, md5_hash, package):
         if clip_tag2 in log_line:
             log_line = log_line.split(clip_tag2)[1]
             clipboard.append(log_line)
-    # URL Extraction
-    urls = re.findall(URL_REGEX, data['traffic'].lower())
-    if urls:
-        urls = list(set(urls))
-    else:
-        urls = []
-    # Domain Extraction and Malware Check
-    logger.info('Performing Malware Check on extracted Domains')
-    domains = MalwareDomainCheck().scan(urls)
-
-    # Email Etraction Regex
-    emails = []
-    for email in EMAIL_REGEX.findall(data['traffic'].lower()):
-        if (email not in emails) and (not email.startswith('//')):
-            emails.append(email)
+    urls, domains, emails = extract_urls_domains_emails(
+        data['traffic'].lower())
     # Tar dump and fetch files
     all_files = get_app_files(apk_dir, package)
     analysis_result['urls'] = urls
     analysis_result['domains'] = domains
-    analysis_result['emails'] = emails
+    analysis_result['emails'] = list(emails)
     analysis_result['clipboard'] = clipboard
     analysis_result['xml'] = all_files['xml']
     analysis_result['sqlite'] = all_files['sqlite']

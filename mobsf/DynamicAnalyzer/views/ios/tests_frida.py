@@ -38,7 +38,8 @@ def list_ios_frida_scripts(request, api=False):
     """List frida scripts from others."""
     scripts = []
     others = os.path.join(settings.TOOLS_DIR,
-                          'frida_scripts_ios',
+                          'frida_scripts'
+                          'ios',
                           'others')
     files = glob.glob(others + '**/*.js', recursive=True)
     for item in files:
@@ -58,7 +59,8 @@ def ios_get_script(request, api=False):
     try:
         scripts = request.POST.getlist('scripts[]')
         others = os.path.join(settings.TOOLS_DIR,
-                              'frida_scripts_ios',
+                              'frida_scripts'
+                              'ios',
                               'others')
         script_ct = []
         for script in scripts:
