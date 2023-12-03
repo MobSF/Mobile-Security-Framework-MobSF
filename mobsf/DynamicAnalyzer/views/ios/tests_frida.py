@@ -106,8 +106,7 @@ def ios_instrument(request, api=False):
         if new_bundle_id and not strict_package_check(new_bundle_id):
             data['message'] = 'Invalid iOS Bundle id'
             return send_response(data, api)
-        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
-        ci = CorelliumInstanceAPI(apikey, instance_id)
+        ci = CorelliumInstanceAPI(instance_id)
 
         # Fill extras
         extras = {}
@@ -130,7 +129,7 @@ def ios_instrument(request, api=False):
             return invalid_params(api)
 
         frida_obj = Frida(
-            ci,
+            ci.get_ssh_connection_string(),
             md5_hash,
             bundle_id,
             default_hooks.split(','),

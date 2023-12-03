@@ -31,7 +31,7 @@ class Frida:
 
     def __init__(
             self,
-            ci,
+            ssh_string,
             app_hash,
             bundle_id,
             defaults,
@@ -40,7 +40,7 @@ class Frida:
             extras,
             code,
             action):
-        self.ssh_connection_string = ci.get_ssh_connection_string()
+        self.ssh_connection_string = ssh_string
         self.app_container = None
         self.hash = app_hash
         self.bundle_id = bundle_id

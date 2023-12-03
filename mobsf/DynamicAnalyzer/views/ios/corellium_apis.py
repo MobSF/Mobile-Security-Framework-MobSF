@@ -5,6 +5,8 @@ import os
 from copy import deepcopy
 from socket import gethostname
 
+from django.conf import settings
+
 import requests
 
 SUCCESS_RESP = (200, 204)
@@ -15,9 +17,9 @@ logger = logging.getLogger(__name__)
 
 class CorelliumAPI:
 
-    def __init__(self, api_key, project_id) -> None:
+    def __init__(self, project_id) -> None:
         self.api = 'https://app.corellium.com/api/v1'
-        self.api_key = api_key
+        self.api_key = getattr(settings, 'CORELLIUM_API_KEY', '')
         self.headers = {
             'Content-Type': 'application/json',
             'Authorization': f'Bearer {self.api_key}',
@@ -130,9 +132,9 @@ class CorelliumAPI:
 
 class CorelliumModelsAPI:
 
-    def __init__(self, api_key) -> None:
+    def __init__(self) -> None:
         self.api = 'https://app.corellium.com/api/v1'
-        self.api_key = api_key
+        self.api_key = getattr(settings, 'CORELLIUM_API_KEY', '')
         self.headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -170,9 +172,9 @@ class CorelliumModelsAPI:
 
 class CorelliumInstanceAPI:
 
-    def __init__(self, api_key, instance_id) -> None:
+    def __init__(self, instance_id) -> None:
         self.api = 'https://app.corellium.com/api/v1'
-        self.api_key = api_key
+        self.api_key = getattr(settings, 'CORELLIUM_API_KEY', '')
         self.headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -398,9 +400,9 @@ class CorelliumInstanceAPI:
 
 class CorelliumAgentAPI:
 
-    def __init__(self, api_key, instance_id) -> None:
+    def __init__(self, instance_id) -> None:
         self.api = 'https://app.corellium.com/api/v1'
-        self.api_key = api_key
+        self.api_key = getattr(settings, 'CORELLIUM_API_KEY', '')
         self.headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',

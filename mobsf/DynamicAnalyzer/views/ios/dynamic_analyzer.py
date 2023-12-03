@@ -63,11 +63,8 @@ def dynamic_analysis(request, api=False):
         # Corellium
         instances = []
         project_id = None
-        corellium_api_key = getattr(settings, 'CORELLIUM_API_KEY', '')
-        corellium_project_id = getattr(settings, 'CORELLIUM_PROJECT_ID', '')
-        if corellium_api_key:
-            ios_dynamic = True
-        c = CorelliumAPI(corellium_api_key, corellium_project_id)
+        ios_dynamic = bool(getattr(settings, 'CORELLIUM_API_KEY', ''))
+        c = CorelliumAPI(getattr(settings, 'CORELLIUM_PROJECT_ID', ''))
         if c.api_ready() and c.api_auth() and c.get_projects():
             instances = c.get_instances()
             project_id = c.project_id
@@ -108,8 +105,7 @@ def dynamic_analyzer(request, api=False):
         app_dir = Path(settings.UPLD_DIR) / bundle_hash
         if not app_dir.exists():
             app_dir.mkdir()
-        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
-        ci = CorelliumInstanceAPI(apikey, instance_id)
+        ci = CorelliumInstanceAPI(instance_id)
         configure_proxy(request, bundleid, ci)
         context = {
             'hash': bundle_hash,

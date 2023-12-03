@@ -64,8 +64,7 @@ def start_instance(request, api=False):
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
-        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
-        ci = CorelliumInstanceAPI(apikey, instance_id)
+        ci = CorelliumInstanceAPI(instance_id)
         r = ci.start_instance()
         if r == OK:
             data = {
@@ -92,8 +91,7 @@ def stop_instance(request, api=False):
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
-        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
-        ci = CorelliumInstanceAPI(apikey, instance_id)
+        ci = CorelliumInstanceAPI(instance_id)
         r = ci.stop_instance()
         if r == OK:
             data = {
@@ -120,8 +118,7 @@ def unpause_instance(request, api=False):
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
-        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
-        ci = CorelliumInstanceAPI(apikey, instance_id)
+        ci = CorelliumInstanceAPI(instance_id)
         r = ci.unpause_instance()
         if r == OK:
             data = {
@@ -148,8 +145,7 @@ def reboot_instance(request, api=False):
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
-        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
-        ci = CorelliumInstanceAPI(apikey, instance_id)
+        ci = CorelliumInstanceAPI(instance_id)
         r = ci.reboot_instance()
         if r == OK:
             data = {
@@ -176,8 +172,7 @@ def destroy_instance(request, api=False):
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
-        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
-        ci = CorelliumInstanceAPI(apikey, instance_id)
+        ci = CorelliumInstanceAPI(instance_id)
         r = ci.remove_instance()
         if r == OK:
             data = {
@@ -204,8 +199,7 @@ def list_apps(request, api=False):
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
-        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
-        ca = CorelliumAgentAPI(apikey, instance_id)
+        ca = CorelliumAgentAPI(instance_id)
         # Get apps in device
         r = ca.list_apps()
         app_list = []
@@ -258,13 +252,7 @@ def get_supported_models(request, api=False):
         'status': 'failed',
         'message': 'Failed to obtain iOS models'}
     try:
-        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
-        if not apikey:
-            data = {
-                'status': 'failed',
-                'message': 'Missing Corellium API key'}
-            return send_response(data, api)
-        cm = CorelliumModelsAPI(apikey)
+        cm = CorelliumModelsAPI()
         r = cm.get_models()
         if r:
             data = {'status': OK, 'message': r}
@@ -283,11 +271,7 @@ def get_supported_os(request, api=False):
         'message': 'Failed to obtain iOS versions'}
     try:
         model = request.POST['model']
-        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
-        if not apikey:
-            data['message'] = 'Missing Corellium API key'
-            return send_response(data, api)
-        cm = CorelliumModelsAPI(apikey)
+        cm = CorelliumModelsAPI()
         r = cm.get_supported_os(model)
         if r:
             data = {'status': OK, 'message': r}
@@ -318,8 +302,7 @@ def create_vm_instance(request, api=False):
         failed = common_check(project_id)
         if failed:
             return send_response(failed, api)
-        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
-        c = CorelliumAPI(apikey, project_id)
+        c = CorelliumAPI(project_id)
         r = c.create_ios_instance(flavor, version)
         if r:
             data = {
@@ -395,8 +378,7 @@ def setup_environment(request, checksum, api=False):
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
-        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
-        ca = CorelliumAgentAPI(apikey, instance_id)
+        ca = CorelliumAgentAPI(instance_id)
         if not ca.agent_ready():
             data['message'] = (
                 f'Agent is not ready with {instance_id}'
@@ -415,7 +397,7 @@ def setup_environment(request, checksum, api=False):
         if msg != OK:
             if 'Please re-sign.' in msg:
                 # Try AppSync IPA Install
-                ci = CorelliumInstanceAPI(apikey, instance_id)
+                ci = CorelliumInstanceAPI(instance_id)
                 out = appsync_ipa_install(ci.get_ssh_connection_string())
                 if out and out != OK:
                     data['message'] = out
@@ -447,11 +429,10 @@ def run_app(request, api=False):
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
-        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
         if not strict_package_check(bundle_id):
             data['message'] = 'Invalid iOS Bundle id'
             return send_response(data, api)
-        ca = CorelliumAgentAPI(apikey, instance_id)
+        ca = CorelliumAgentAPI(instance_id)
         if (ca.agent_ready()
                 and ca.unlock_device()
                 and ca.run_app(bundle_id) == OK):
@@ -476,11 +457,10 @@ def remove_app(request, api=False):
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
-        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
         if not strict_package_check(bundle_id):
             data['message'] = 'Invalid iOS Bundle id'
             return send_response(data, api)
-        ca = CorelliumAgentAPI(apikey, instance_id)
+        ca = CorelliumAgentAPI(instance_id)
         if (ca.agent_ready()
                 and ca.remove_app(bundle_id) == OK):
             data['status'] = OK
@@ -510,8 +490,7 @@ def take_screenshot(request, api=False):
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
-        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
-        ci = CorelliumInstanceAPI(apikey, instance_id)
+        ci = CorelliumInstanceAPI(instance_id)
         r = ci.screenshot()
         if r:
             data['status'] = OK
@@ -566,8 +545,7 @@ def network_capture(request, api=False):
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
-        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
-        ci = CorelliumInstanceAPI(apikey, instance_id)
+        ci = CorelliumInstanceAPI(instance_id)
         state = request.POST.get('state')
         if state == 'on':
             msg = 'Enabled'
@@ -602,8 +580,7 @@ def live_pcap_download(request, api=False):
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
-        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
-        ci = CorelliumInstanceAPI(apikey, instance_id)
+        ci = CorelliumInstanceAPI(instance_id)
         pcap = ci.download_network_capture()
         if pcap:
             res = HttpResponse(
@@ -638,8 +615,7 @@ def ssh_execute(request, api=False):
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
-        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
-        ci = CorelliumInstanceAPI(apikey, instance_id)
+        ci = CorelliumInstanceAPI(instance_id)
         if not SSH_TARGET:
             logger.info('Setting up SSH tunnel')
             SSH_TARGET, _jmp = ssh_jump_host(
@@ -698,8 +674,7 @@ def download_data(request, bundle_id, api=False):
         if not strict_package_check(bundle_id):
             data['message'] = 'Invalid iOS Bundle id'
             return send_response(data, api)
-        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
-        ci = CorelliumInstanceAPI(apikey, instance_id)
+        ci = CorelliumInstanceAPI(instance_id)
         checksum = get_md5(bundle_id.encode('utf-8'))
         # App Container download
         logger.info('Downloading app container data')
@@ -752,8 +727,7 @@ def touch(request, api=False):
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
-        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
-        ci = CorelliumInstanceAPI(apikey, instance_id)
+        ci = CorelliumInstanceAPI(instance_id)
         ci.device_input(event, x_axis, y_axis)
         data = {'status': 'ok'}
     except Exception as exp:
@@ -776,8 +750,7 @@ def system_logs(request, api=False):
             failed = common_check(instance_id)
             if failed:
                 return send_response(failed, api)
-            apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
-            ci = CorelliumInstanceAPI(apikey, instance_id)
+            ci = CorelliumInstanceAPI(instance_id)
             data = {'status': 'ok', 'message': ci.console_log()}
             return send_response(data)
         logger.info('Getting system logs')
@@ -815,10 +788,9 @@ def upload_file(request, api=False):
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
-        apikey = getattr(settings, 'CORELLIUM_API_KEY', '')
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            ci = CorelliumInstanceAPI(apikey, instance_id)
+            ci = CorelliumInstanceAPI(instance_id)
             fobject = request.FILES['file']
             ssh_file_upload(
                 ci.get_ssh_connection_string(),
