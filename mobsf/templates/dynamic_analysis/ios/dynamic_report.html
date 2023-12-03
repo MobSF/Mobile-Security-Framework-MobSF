@@ -450,6 +450,7 @@ pre {
                 <thead>
                   <tr>
                     <th>FILE PATH</th>
+                    <th>DOWNLOAD</th>
                   </tr>
                 </thead>
                <tbody>
@@ -457,6 +458,9 @@ pre {
                 <tr>
                   <td>
                     <a href="javascript:cat_file('{{ item }}')">{{item}}</a>
+                  </td>
+                  <td>
+                    <a class="btn btn-info btn-sm"  href="javascript:download_file('{{ item }}')"><i class="fa fa-solid fa-download"></i></a>
                   </td>
                 </tr>
                 {% endfor %}
@@ -490,6 +494,7 @@ pre {
                 <thead>
                   <tr>
                     <th>FILE PATH</th>
+                    <th>DOWNLOAD</th>
                     <th>FILE PROTECTION</th>
                   </tr>
                 </thead>
@@ -498,6 +503,9 @@ pre {
                 <tr>
                   <td>
                     <a href="javascript:cat_file('{{ item.path }}')">{{ item.path | replace:"/private/var/mobile/Containers/Data/Application/|" }}</a>
+                  </td>
+                  <td>
+                    <a class="btn btn-info btn-sm"  href="javascript:download_file('{{ item.path }}')"><i class="fa fa-solid fa-download"></i></a>
                   </td>
                   <td>
                     {{ item.fileProtectionKey }}
@@ -1431,6 +1439,40 @@ function action(url, data, on_success){
         code_block.innerText = json.message;
         $('#cat').modal('toggle');
     });
+  }
+
+  // Download file
+  function download_file(path){
+    // action('{% url 'download_file' %}', {instance_id: '{{ instance_id }}', file: path }, function(json) {
+    //   alert(json);    
+    // });
+
+    var form = document.createElement("form");
+    var element1 = document.createElement("input"); 
+    var element2 = document.createElement("input");
+    var element3 = document.createElement("input");  
+
+    form.method = "POST";
+    form.action = "{% url 'download_file' %}";   
+
+    element1.value= "{{ instance_id }}";
+    element1.name="instance_id";
+    form.appendChild(element1);
+
+
+    element2.value=path;
+    element2.name="file";
+    form.appendChild(element2);
+
+    element3.value= "{{ csrf_token }}";
+    element3.name="csrf_token";
+    form.appendChild(element3);
+
+    document.body.appendChild(form);
+
+    form.submit();
+    form.remove();
+
   }
   </script>
 {% endblock %}

@@ -27,7 +27,7 @@ SFTP File Download
 # along with Paramiko; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
 # Modified for MobSF.
-
+import io
 import logging
 import select
 import socket
@@ -282,10 +282,13 @@ def ssh_file_upload(ssh_conn_string, fobject, fname):
     jumpbox.close()
 
 
-def ssh_file_download(ssh_conn_string, remote_path, local_path):
+def ssh_file_download(target, remote_path):
     """File Download over SFTP."""
-    target, jumpbox = ssh_jump_host(ssh_conn_string)
-    with target.open_sftp() as sftp:
-        sftp.get(remote_path, local_path)
-    target.close()
-    jumpbox.close()
+    try:
+        with io.BytesIO() as fl:
+            with target.open_sftp() as sftp:
+                sftp.getfo(remote_path, fl)
+                fl.seek(0)
+                return fl.read()
+    except Exception:
+        return None

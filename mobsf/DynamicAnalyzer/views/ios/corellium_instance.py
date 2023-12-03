@@ -11,8 +11,12 @@ from paramiko.ssh_exception import SSHException
 
 from django.conf import settings
 from django.views.decorators.http import require_http_methods
-from django.http import HttpResponse
-from django.shortcuts import render
+from django.http import (
+    HttpResponse,
+)
+from django.shortcuts import (
+    render,
+)
 
 from mobsf.MobSF.utils import (
     common_check,
@@ -34,6 +38,7 @@ from mobsf.DynamicAnalyzer.views.common.shared import (
 )
 from mobsf.DynamicAnalyzer.views.ios.corellium_ssh import (
     ssh_execute_cmd,
+    ssh_file_download,
     ssh_file_upload,
     ssh_jump_host,
 )
@@ -776,7 +781,7 @@ def system_logs(request, api=False):
 
 @require_http_methods(['POST'])
 def upload_file(request, api=False):
-    """Upload files to device."""
+    """Upload file to device."""
     err_msg = 'Failed to upload file'
     data = {
         'status': 'failed',
@@ -800,3 +805,35 @@ def upload_file(request, api=False):
         logger.exception(err_msg)
         data['message'] = str(exp)
     return send_response(data)
+# File Download
+
+
+@require_http_methods(['POST'])
+def download_file(request, api=False):
+    """Download file from device."""
+    try:
+        global SSH_TARGET
+        instance_id = request.POST['instance_id']
+        rfile = request.POST['file']
+        failed = common_check(instance_id)
+        if failed:
+            return send_response(failed, api)
+        ci = CorelliumInstanceAPI(instance_id)
+        if not SSH_TARGET:
+            logger.info('Setting up SSH tunnel')
+            SSH_TARGET, _jmp = ssh_jump_host(
+                ci.get_ssh_connection_string())
+        try:
+            fl = ssh_file_download(SSH_TARGET, rfile)
+        except SSHException:
+            logger.info('SSH session not active, setting up again')
+            SSH_TARGET, _jmp = ssh_jump_host(
+                ci.get_ssh_connection_string())
+            fl = ssh_file_download(SSH_TARGET, rfile)
+        if not fl:
+            fl = b'File not found'
+    except Exception:
+        logger.exception('Failed to download file')
+    response = HttpResponse(fl, content_type='application/octet-stream')
+    response['Content-Disposition'] = f'inline; filename={Path(rfile).name}'
+    return response

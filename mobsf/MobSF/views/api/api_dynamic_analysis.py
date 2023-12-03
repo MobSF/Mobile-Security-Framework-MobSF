@@ -23,7 +23,7 @@ from mobsf.DynamicAnalyzer.views.common import (
 @csrf_exempt
 def api_get_apps(request):
     """GET - Get Apps for dynamic analysis API."""
-    resp = dynamic_analyzer.dynamic_analysis(request, True)
+    resp = dynamic_analyzer.android_dynamic_analysis(request, True)
     if 'error' in resp:
         return make_api_response(resp, 500)
     return make_api_response(resp, 200)
