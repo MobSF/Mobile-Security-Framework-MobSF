@@ -355,6 +355,8 @@ function list_apps(){
                     instance_id: $('#ios_dynamic').val(),
                     },
                 success : function(json) {
+                    if(!json)
+                      stop_loader();
                     if(!json.status){
                       stop_loader();
                       Swal.fire(

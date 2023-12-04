@@ -184,8 +184,6 @@ def dynamic_analyzer(request, checksum, api=False):
         env.set_global_proxy(version)
         # Start Clipboard monitor
         env.start_clipmon()
-        # Get Screen Resolution
-        screen_width, screen_height = env.get_screen_res()
         if install == '1':
             # Install APK
             apk_path = Path(settings.UPLD_DIR) / checksum / f'{checksum}.apk'
@@ -203,9 +201,7 @@ def dynamic_analyzer(request, checksum, api=False):
                     msg,
                     api)
         logger.info('Testing Environment is Ready!')
-        context = {'screen_width': screen_width,
-                   'screen_height': screen_height,
-                   'package': package,
+        context = {'package': package,
                    'hash': checksum,
                    'android_version': version,
                    'version': settings.MOBSF_VER,

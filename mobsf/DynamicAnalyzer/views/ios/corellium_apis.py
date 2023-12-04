@@ -9,6 +9,9 @@ from django.conf import settings
 
 import requests
 
+from mobsf.MobSF.utils import is_number
+
+
 SUCCESS_RESP = (200, 204)
 ERROR_RESP = (400, 403, 404, 409)
 OK = 'ok'
@@ -322,74 +325,81 @@ class CorelliumInstanceAPI:
             'Failed to get SSH connection string %s', r.json()['error'])
         return r.json()['error']
 
-    def device_input(self, event, x, y):
+    def device_input(self, event, x, y, max_x, max_y):
         """Provide touch/button event to VM."""
-        if event == 'home':
-            data = [{
-                'buttons': ['holdButton'],
-            }]
-        elif event == 'text':
+        if event == 'text':
             data = [{
                 'text': x,
             }]
-        elif event == 'enter':
-            data = [{
-                'buttons': ['enter'],
-            }]
-        elif event == 'backspace':
-            data = [{
-                'buttons': ['backspace'],
-            }]
-        elif event == 'left':
-            data = [{
-                'buttons': ['left'],
-            }]
-        elif event == 'right':
-            data = [{
-                'buttons': ['right'],
-            }]
-        elif event == 'swipe_up':
-            data = [{
-                'startButtons': ['finger'],
-                'start': [[300, 600]],
-                'bezierPoints': [[[350, 700]], [[375, 850]]],
-                'end': [[400, 950]],
-                'endButtons': [],
-                'duration': 200,
-            }]
-        elif event == 'swipe_down':
-            data = [{
-                'startButtons': ['finger'],
-                'start': [[300, 600]],
-                'bezierPoints': [[[700, 350]], [[850, 375]]],
-                'end': [[950, 400]],
-                'endButtons': [],
-                'duration': 200,
-            }]
-        elif event == 'swipe_left':
-            data = [{
-                'startButtons': ['finger'],
-                'start': [[200, 200]],
-                'bezierPoints': [[[700, 350]], [[850, 375]]],
-                'end': [[950, 400]],
-                'endButtons': [],
-                'duration': 200,
-            }]
-        elif event == 'swipe_right':
-            data = [{
-                'startButtons': ['finger'],
-                'start': [[700, 100]],
-                'bezierPoints': [[[350, 750]], [[375, 875]]],
-                'end': [[300, 600]],
-                'endButtons': [],
-                'duration': 200,
-            }]
         else:
-            data = [
-                {'buttons': ['finger'],
-                 'position': [[x, y]],
-                 'wait': 0},
-                {'buttons': [], 'wait': 100}]
+            if (not is_number(x)
+                    or not is_number(y)
+                    or not is_number(max_x)
+                    or not is_number(max_y)):
+                return
+            # Should not be greater than max screen size
+            swipe_x = min(int(x) + 300, int(max_x))
+            swipe_y = min(int(y) + 300, int(max_y))
+            if event == 'home':
+                data = [{
+                    'buttons': ['holdButton'],
+                }]
+            elif event == 'enter':
+                data = [{
+                    'buttons': ['enter'],
+                }]
+            elif event == 'backspace':
+                data = [{
+                    'buttons': ['backspace'],
+                }]
+            elif event == 'left':
+                data = [{
+                    'buttons': ['left'],
+                }]
+            elif event == 'right':
+                data = [{
+                    'buttons': ['right'],
+                }]
+            elif event == 'swipe_up':
+                data = [{
+                    'startButtons': ['finger'],
+                    'start': [[x, y]],
+                    'end': [[x, swipe_y]],
+                    'endButtons': [],
+                    'duration': 200,
+                }]
+            elif event == 'swipe_down':
+                data = [{
+                    'startButtons': ['finger'],
+                    'start': [[x, swipe_y]],
+                    'end': [[x, y]],
+                    'endButtons': [],
+                    'duration': 200,
+                }]
+            elif event == 'swipe_left':
+                data = [{
+                    'startButtons': ['finger'],
+                    'start': [[x, y]],
+                    'end': [[swipe_x, y]],
+                    'endButtons': [],
+                    'duration': 200,
+                }]
+            elif event == 'swipe_right':
+                data = [{
+                    'startButtons': ['finger'],
+                    'start': [[swipe_x, y]],
+                    'end': [[x, y]],
+                    'endButtons': [],
+                    'duration': 200,
+                }]
+            else:
+                if not is_number(x) or not is_number(y):
+                    return
+                data = [
+                    {'buttons': ['finger'],
+                     'position': [[x, y]],
+                     'wait': 0},
+                    {'buttons': [], 'wait': 100}]
         r = requests.post(
             f'{self.api}/instances/{self.instance_id}/input',
             headers=self.headers,

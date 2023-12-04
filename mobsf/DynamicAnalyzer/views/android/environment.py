@@ -2,12 +2,12 @@
 """Dynamic Analyzer Helpers."""
 import logging
 import os
-import re
 import shutil
 import subprocess
 import tempfile
 import threading
 import time
+from base64 import b64encode
 from hashlib import md5
 
 from django.conf import settings
@@ -305,29 +305,6 @@ class Environment:
                 'opensecurity.clipdump/.ClipDumper']
         self.adb_command(args, True)
 
-    def get_screen_res(self):
-        """Get Screen Resolution of Android Instance."""
-        logger.info('Getting screen resolution')
-        try:
-            resp = self.adb_command(['dumpsys', 'window'], True)
-            scn_rgx = re.compile(r'mUnrestrictedScreen=\(0,0\) .*')
-            scn_rgx2 = re.compile(r'mUnrestricted=\[0,0\]\[.*\]')
-            match = scn_rgx.search(resp.decode('utf-8'))
-            if match:
-                screen_res = match.group().split(' ')[1]
-                width, height = screen_res.split('x', 1)
-                return width, height
-            match = scn_rgx2.search(resp.decode('utf-8'))
-            if match:
-                res = match.group().split('][')[1].replace(']', '')
-                width, height = res.split(',', 1)
-                return width, height
-            else:
-                logger.error('Error getting screen resolution')
-        except Exception:
-            logger.exception('Getting screen resolution')
-        return '1440', '2560'
-
     def screen_shot(self, outfile):
         """Take Screenshot."""
         self.adb_command(['screencap',
@@ -343,9 +320,10 @@ class Environment:
                           '-p',
                           '/data/local/stream.png'],
                          True)
-        self.adb_command(['pull',
-                          '/data/local/stream.png',
-                          '{}screen.png'.format(settings.SCREEN_DIR)])
+        out = self.adb_command(['cat', '/data/local/stream.png'], True)
+        if out:
+            return b64encode(out).decode('utf-8')
+        return ''
 
     def android_component(self, bin_hash, comp):
         """Get APK Components."""

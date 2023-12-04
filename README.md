@@ -14,7 +14,6 @@ Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82
 [![Docker Pulls](https://img.shields.io/docker/pulls/opensecurity/mobile-security-framework-mobsf?style=social)](https://hub.docker.com/r/opensecurity/mobile-security-framework-mobsf/)
 
 [![MobSF tests](https://github.com/MobSF/Mobile-Security-Framework-MobSF/workflows/MobSF%20tests/badge.svg?branch=master)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/actions)
-[![Requirements Status](https://pyup.io/repos/github/MobSF/Mobile-Security-Framework-MobSF/shield.svg)](https://pyup.io/repos/github/MobSF/Mobile-Security-Framework-MobSF/)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=MobSF_Mobile-Security-Framework-MobSF&metric=alert_status)](https://sonarcloud.io/dashboard?id=MobSF_Mobile-Security-Framework-MobSF)
 ![GitHub closed issues](https://img.shields.io/github/issues-closed/MobSF/Mobile-Security-Framework-MobSF)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6392/badge)](https://bestpractices.coreinfrastructure.org/projects/6392)

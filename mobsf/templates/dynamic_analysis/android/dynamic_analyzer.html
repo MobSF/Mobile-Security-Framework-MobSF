@@ -69,8 +69,6 @@
       <div class="row mb-2">
         <div id="mobsf_header">
             <h2><strong>Dynamic Analyzer </strong>- {{ package }}</h2>
-          <input type="hidden" id="screen_width" value="{{ screen_width }}">
-          <input type="hidden" id="screen_height" value="{{ screen_height }}">
         </div>
       </div>
     </div>
@@ -118,11 +116,25 @@
                   <div class="camera"></div>
                   <div class="sensor"></div>
                   <div class="speaker"></div>
-                  <div class="screen" id="container">
+                  <div class="screen" id="container" tabindex="0" style="outline: none;">
                   <img width="320" height="580" src="{% url 'download' %}screen/screen.png" id="my" onerror="$('#my').attr('src','/static/img/loading.jpg')" style="background-color:black;">
                   </div>
                   </div>
                 </div>
+
+                <div class="card-body">
+                  <p>
+                  <div class="input-group input-group-sm">
+                    <input class="form-control form-control-navbar" id="android_text" type="text" placeholder="Text Input" >
+                    <div class="input-group-append">
+                      <button id="android_text_btn" class="btn btn-primary">
+                        <i class="far fa-paper-plane"></i>
+                      </button>
+                    </div>
+                  </div>
+                </p>
+              </div>
+
               </div>
               <!-- /.card-body -->
             </div>
@@ -140,9 +152,6 @@
                 <ul class="nav nav-tabs" id="tabnav" role="tablist">
                   <li class="nav-item">
                     <a class="nav-link active" id="dm-tab" data-toggle="pill" href="#dm" role="tab" aria-controls="dm" aria-selected="true">Dynamic Analyzer</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link disabled" id="frida-tab" data-toggle="pill" href="#frida_logs" role="tab" aria-controls="frida" aria-selected="false">Frida Logs</a>
                   </li>
                   <li class="nav-item">
                     <a class="nav-link" id="errors-tab" data-toggle="pill" href="#errors" role="tab" aria-controls="errors" aria-selected="false">Errors</a>
@@ -229,7 +238,6 @@
                       <div class="box-footer">
                      
                       <button id="frida_spawn" type="submit" class="btn btn-success"><i class="fas fa-play"></i> Start Instrumentation</button>
-                      <button id="fd_log" type="button" class="btn btn-primary" disabled><i class="fas fa-file-medical-alt"></i> Frida Live Logs</button>
                       </div>
                     </form>
                   </div>
@@ -255,12 +263,6 @@
 
                   </div>
 
-                  <div class="tab-pane fade" id="frida_logs" role="tabpanel" aria-labelledby="frida-tab">
-                    <h4 class="page-header"><strong>Frida Logs </strong>- {{ package }}</h4>
-                    <div id="messages"></br>Data refreshed in every 3 seconds.</div>
-                    <pre class="frida-pre" id="logs"></pre>
-                  </div>
-                  <!-- frida logs -->
                   <div class="tab-pane fade" id="errors" role="tabpanel" aria-labelledby="errors-tab">
                     
                     
@@ -336,6 +338,24 @@ Java.perform(function() {
             <!-- /.card -->
           </div>
           <!-- /.col -->
+
+
+          <div class="col-md-12">
+            <div class="card card-default">
+              <!-- /.card-header -->
+              <div class="card-body">
+                   <div>
+                    <h4 class="page-header"><strong>Frida Logs </strong></h4>
+                    <div id="messages"></br>Data refreshed in every 3 seconds.</div>
+                    <pre class="frida-pre" id="frida-logs"></pre>
+                  </div>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+
         
         </div>
 
@@ -433,6 +453,7 @@ Java.perform(function() {
 <script src="{% static "codemirror/jshint.js" %}"></script>
 <script src="{% static "codemirror/lint.js" %}"></script>
 <script src="{% static "codemirror/javascript-lint.js" %}"></script>
+<script src="{% static "others/js/swipe.js" %}"></script>
 <script>
 // Loading Spinner
 function dynamic_loader(){
@@ -443,6 +464,12 @@ function stop_loader(){
     var loadingOverlay = document.querySelector('.loading');
     loadingOverlay.classList.add('hidden');
 }
+
+// Prevent screen image drag
+document.getElementById('my').ondragstart = function() { return false; };
+
+// Hide Frida Logs on page load
+document.getElementById('frida-logs').style.display = 'none';
 
 // Frida Auxiliary actions
 
@@ -754,7 +781,7 @@ print_status("Invoking MobSF agents.");
 print_status("Environment is ready for Dynamic Analysis.");
 print_status("Start Instrumentation or Run the application and navigate through the different flows or business logic manually.");
 
-// Frida Logs Tab
+// Frida Logs
 
 function get_logs(){
       $.ajax({
@@ -762,7 +789,7 @@ function get_logs(){
         type : "GET",
         dataType: "json", 
         success : function(json){ 
-            $('#logs').text(json.data);
+            $('#frida-logs').text(json.data);
         },
         error : function(xhr, ajaxOptions, thrownError) {
           console.log(xhr.responseText);
@@ -774,36 +801,8 @@ setInterval( function () {
       get_logs();
 }, 3000 );
 
-// Touch Events
-var touch = "off";
-
-$('#my').click(function(e) {
-  if (touch === "on")
-  {
-    var res=[$('#screen_width').val(),$('#screen_height').val()];
-    var width = res[0];
-    var height =res[1];
-    if (width.length > 0 && height.length > 0)
-    {
-        width = parseInt(width);
-        height = parseInt(height);
-        var offset = $(this).offset();
-        var x = e.pageX - offset.left;
-        var y = e.pageY - offset.top;
-        x = x * (width/320); 
-        y = y * (height/580);
-        console.log('X Axis: '+ x + " Y Axis: "+ y);
-        action(document.location.origin + '/touch_events/', {x: x, y: y}, function(json) {
-            if (json.status==='ok')
-              console.log('Clicked!');
-            else
-              console.log(json.message)
-          });
-      }
-  }
-});
-
 // View Screen
+var screen_width, screen_height;
 var screenfunc;
 $("#screen").click(function() {
       var stext = $("#screen").text();
@@ -813,13 +812,24 @@ $("#screen").click(function() {
           touch = "on";
           screenfunc = setInterval(function(){
               // Capture Screen
-              action(document.location.origin + '/screen_cast/', {}, function(json) {
-                if (json.status == 'ok')
-                  $('#my').attr('src', document.location.origin + '/download/screen/screen.png?'+ new Date().getTime());
-                else
+              action('{% url 'screen_cast' %}', {}, function(json) {
+                if (json.status == 'ok'){
+                  if (screen_width === undefined || screen_height === undefined){
+                    // Get Screen Resolution from Image
+                    var i = new Image();
+                    i.onload = function(){
+                      screen_width = i.width;
+                      screen_height = i.height;
+                      console.log('Screen Resolution: ' + screen_width + 'x' + screen_height)
+                      i = null;
+                    };
+                    i.src = json.message;
+                  }
+                  $('#my').attr('src', json.message);
+                } else
                   console.log(json.message)
                });
-          },3000);
+          }, 2000);
       } else {
           $("#screen").html("<i class='fa fa-mobile-alt'></i> Show Screen");
           print_status("Screen streaming stopped.");
@@ -829,6 +839,141 @@ $("#screen").click(function() {
       }
       return false;  
 }); 
+
+
+// Touch Events
+var touch = "off";
+function android_input(event, x, y){
+  if ( touch === "on"){
+    action('{% url 'android_touch' %}', { event, x, y, max_x: screen_width, max_y:screen_height}, function(json) {
+        if (json.status==='ok')
+          console.log('Event: ' + event);
+        else
+          console.log(json.message)
+    });
+  }
+}
+
+var xaxis, yaxis = 0;
+
+function getXY(e, t){
+      // X-Y axis for clicks
+      var offset = $(t).offset();
+      var x = e.pageX - offset.left;
+      var y = e.pageY - offset.top;
+      xaxis = x * (screen_width/320); 
+      yaxis = y * (screen_height/580);
+      console.log('X Axis: '+ xaxis + " Y Axis: "+ yaxis);
+}
+
+// Touch Screen Click Events
+var pressedTime;
+var releaseTime;
+$("#my").on( "mousedown", function() {
+  pressedTime = new Date().getTime();
+});
+
+$("#my").on( "mouseup", function(e) {
+  releaseTime = new Date().getTime();
+  getXY(e, this);
+  if (releaseTime - pressedTime < 300 && touch === "on") {
+          android_input('touch', xaxis, yaxis);
+      }
+});
+
+
+// Touch Text Input
+$('#android_text_btn').click(function(e) {
+  if ($('#android_text').val()){
+    // Send the text to device
+    android_input('text', $('#android_text').val(), 0);
+    $('#android_text').val('');
+  } else {
+    // send the enter event
+    android_input('enter', 0, 0);
+  }
+});
+
+// Keyboard Events
+$('#container').on('keypress', function(event) {
+    // Detect printable characters
+    if (touch === "on"){
+        switch(event.keyCode){
+          case 13:
+            // Enter
+            // Send text to VM
+            $('#android_text_btn').click();
+            break;
+          case 32:
+            // Space
+            // Prevent space propagation to page scroll
+            $('#android_text').val($('#android_text').val() + ' ');
+            event.preventDefault();
+            break;
+          default:
+          $('#android_text').val($('#android_text').val() + String.fromCharCode(event.keyCode));
+        }
+    }
+ });
+ $('#container').on('keydown', function(event) {
+    // Detect Backspace etc.
+    if (touch === "on")
+    {
+        switch(event.keyCode){
+          case 8:
+            // Backspace
+            android_input('backspace', 0, 0)
+            break;
+          case 37:
+            // Left
+            android_input('left', 0, 0)
+            break;
+          case 39:
+            // Left
+            android_input('right', 0, 0)
+            break;
+        }
+    }
+ });
+ // Send text on enter from text box
+ $('#android_text').keypress(function(event){
+  if (touch === "on"){
+    var keycode = (event.keyCode ? event.keyCode : event.which);
+    if(keycode === 13){
+      $('#android_text_btn').click();
+    }
+	event.stopPropagation();
+  }
+});
+
+
+// Touch Swipe Events
+const box = document.getElementById("my");
+const classes = Swipe.directions();
+const swipe = new Swipe(box, {
+  corners: true,
+  minDistance: 100
+});
+
+swipe.addEventListener("after", direction => {
+  if (touch === "on") {
+    switch(direction){
+      case 'up': case 'leftup': case 'rightup':
+        android_input('swipe_down', xaxis, yaxis)
+        break;
+      case 'down': case 'leftdown': case 'rightdown':
+        android_input('swipe_up', xaxis, yaxis)
+        break;
+      case 'left':
+        android_input('swipe_right', xaxis, yaxis)
+        break;
+      case 'right':
+        android_input('swipe_left', xaxis, yaxis)
+        break;
+    }
+}
+});
+
 
 //Screenshot
 $("#ss").click(function() {
@@ -988,14 +1133,6 @@ $("#logstream").click(function() {
     setTimeout(function(){ window.open(document.location.origin + '/logcat/?package={{ package }}', '_blank');}, 500);   
     return false;  
 }); 
-// Frida logs
-$("#fd_log").click(function() {
-    $('#tabnav a[href="#frida_logs"]').tab('show');
-    // print_status("Streaming Frida logs");
-    // setTimeout(function(){ window.open(document.location.origin + '/frida_logs/?hash={{ hash }}&package={{ package }}', '_blank');}, 100);   
-    document.body.scrollTop = document.documentElement.scrollTop = 0;
-    return false;  
-});
 
 
 // Load Frida Scripts
@@ -1016,8 +1153,8 @@ $("#frida_spawn").click(function() {
     // Save Frida Code to Session Storage
     var code = editor.getDoc().getValue();
     window.sessionStorage.setItem('code', code);
-    $('#fd_log').removeAttr('disabled');
-    $('#frida-tab').removeClass('disabled');
+    //Show Frida logs
+    document.getElementById('frida-logs').style.display = 'block';
     var default_hooks = [];
     $.each($("input[name='default_hooks']:checked"), function(){            
         default_hooks.push($(this).val());
@@ -1054,8 +1191,6 @@ $("#deps").click(function() {
     print_status("Getting application runtime dependencies.");
     action(document.location.origin + '/get_dependencies/', {hash: '{{ hash }}'}, function(json) {
       if (json.status==="ok"){
-          $('#fd_log').removeAttr('disabled');
-          $('#frida-tab').removeClass('disabled');
           print_status("Dependencies collected!");
       } else {
           print_status(json.message);

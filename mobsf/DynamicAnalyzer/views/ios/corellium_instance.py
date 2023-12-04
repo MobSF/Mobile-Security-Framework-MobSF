@@ -23,7 +23,6 @@ from mobsf.MobSF.utils import (
     get_md5,
     id_generator,
     is_md5,
-    is_number,
     print_n_send_error_response,
     strict_package_check,
 )
@@ -33,7 +32,6 @@ from mobsf.DynamicAnalyzer.tools.webproxy import (
     stop_httptools,
 )
 from mobsf.DynamicAnalyzer.views.common.shared import (
-    invalid_params,
     send_response,
 )
 from mobsf.DynamicAnalyzer.views.ios.corellium_ssh import (
@@ -715,7 +713,7 @@ def download_data(request, bundle_id, api=False):
 
 @require_http_methods(['POST'])
 def touch(request, api=False):
-    """Sending Touch Events."""
+    """Sending Touch/Swipe/Text Events."""
     data = {
         'status': 'failed',
         'message': '',
@@ -724,18 +722,18 @@ def touch(request, api=False):
         x_axis = request.POST['x']
         y_axis = request.POST['y']
         event = request.POST['event']
+
+        max_x = request.POST.get('max_x', 0)
+        max_y = request.POST.get('max_y', 0)
         instance_id = request.POST['instance_id']
-        if not is_number(x_axis) and not is_number(y_axis):
-            logger.error('Axis parameters must be numbers')
-            return invalid_params()
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
         ci = CorelliumInstanceAPI(instance_id)
-        ci.device_input(event, x_axis, y_axis)
+        ci.device_input(event, x_axis, y_axis, max_x, max_y)
         data = {'status': 'ok'}
     except Exception as exp:
-        logger.exception('Sending Touch Events')
+        logger.exception('Sending Touchscreen Events')
         data['message'] = str(exp)
     return send_response(data)
 # AJAX + HTML
