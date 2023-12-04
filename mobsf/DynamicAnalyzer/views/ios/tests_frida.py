@@ -85,8 +85,7 @@ def ios_instrument(request, api=False):
             dump_hooks.split(','),
             auxiliary_hooks.split(','),
             extras,
-            code,
-            action)
+            code)
         if action == 'spawn':
             logger.info('Starting Instrumentation')
             frida_obj.spawn()
@@ -107,5 +106,5 @@ def ios_instrument(request, api=False):
         data['status'] = OK
     except Exception as exp:
         logger.exception('Frida Instrumentation failed')
-        data = {'status': 'failed', 'message': str(exp)}
+        data['message'] = str(exp)
     return send_response(data, api)

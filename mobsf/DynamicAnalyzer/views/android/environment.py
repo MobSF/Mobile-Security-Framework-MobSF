@@ -83,7 +83,7 @@ class Environment:
         if not self.identifier:
             return False
         self.adb_command(['kill-server'])
-        self.adb_command(['start-server'])
+        self.adb_command(['start-server'], False, True)
         logger.info('ADB Restarted')
         self.wait(2)
         logger.info('Connecting to Android %s', self.identifier)
@@ -309,18 +309,18 @@ class Environment:
         """Take Screenshot."""
         self.adb_command(['screencap',
                           '-p',
-                          '/data/local/screen.png'], True)
+                          '/data/local/screen.png'], True, True)
         self.adb_command(['pull',
                           '/data/local/screen.png',
-                          outfile])
+                          outfile], False, True)
 
     def screen_stream(self):
         """Screen Stream."""
         self.adb_command(['screencap',
                           '-p',
                           '/data/local/stream.png'],
-                         True)
-        out = self.adb_command(['cat', '/data/local/stream.png'], True)
+                         True, True)
+        out = self.adb_command(['cat', '/data/local/stream.png'], True, True)
         if out:
             return b64encode(out).decode('utf-8')
         return ''
@@ -349,18 +349,20 @@ class Environment:
     def get_environment(self):
         """Identify the environment."""
         out = self.adb_command(['getprop',
-                                'ro.boot.serialno'], True)
+                                'ro.boot.serialno'], True, False)
         out += self.adb_command(['getprop',
-                                 'ro.serialno'], True)
+                                 'ro.serialno'], True, False)
         out += self.adb_command(['getprop',
-                                 'ro.build.user'], True)
+                                 'ro.build.user'], True, False)
         out += self.adb_command(['getprop',
-                                 'ro.manufacturer.geny-def'], True)
+                                 'ro.manufacturer.geny-def'],
+                                True, False)
         out += self.adb_command(['getprop',
-                                 'ro.product.manufacturer.geny-def'], True)
+                                 'ro.product.manufacturer.geny-def'],
+                                True, False)
         ver = self.adb_command(['getprop',
                                 'ro.genymotion.version'],
-                               True).decode('utf-8', 'ignore')
+                               True, False).decode('utf-8', 'ignore')
         if b'EMULATOR' in out:
             logger.info('Found Android Studio Emulator')
             return 'emulator'

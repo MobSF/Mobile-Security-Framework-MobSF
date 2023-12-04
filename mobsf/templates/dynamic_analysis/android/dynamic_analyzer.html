@@ -234,11 +234,12 @@
 
                       </div>
                       <!-- /.box-body -->
-
                       <div class="box-footer">
-                     
-                      <button id="frida_spawn" type="submit" class="btn btn-success"><i class="fas fa-play"></i> Start Instrumentation</button>
+                        <button id="frida_spawn" type="submit" class="btn btn-success"><i class="far fa-play-circle"></i> Spawn & Inject</button>
+                        <button id="frida_session" type="submit" class="btn btn-success"><i class="fas fa-redo"></i> Inject </button>
+                        <button id="frida_attach" type="submit" class="btn btn-success"><i class="fas fa-bug"></i> Attach </button>
                       </div>
+
                     </form>
                   </div>
             {% if activities or exported_activities %}
@@ -364,6 +365,39 @@ Java.perform(function() {
      </div>
     </div>
 </div>
+
+<!--Loader-->
+<div class="hidden loading">
+  <div class='uil-ring-css' style='transform:scale(0.79);'>
+    <div></div>
+  </div>
+  </div>
+<!-- Modal -->
+<div class="modal fade" id="frida_attach_mdl" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Attach to a Running Process</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form role="form">
+          <div class="form-group">
+            <select id="process_select" class="form-select" aria-label="Select a process">
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button id="attach_to_pid" type="button" class="btn btn-primary"><i class="fas fa-bug"></i> Attach</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <!-- Modal -->
 <div class="modal" id="tls_modal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl">
@@ -432,12 +466,6 @@ Java.perform(function() {
       </div>
     </div>
 
-    <!--Loader-->
-<div class="hidden loading">
-  <div class='uil-ring-css' style='transform:scale(0.79);'>
-    <div></div>
-  </div>
-  </div>
 
 
     <!-- /.modal-content -->
@@ -506,6 +534,24 @@ function action(url, data, on_success){
   });
 }
 
+// Escape
+function escape(data_string) {
+    var encodedStr = data_string.replace(/[\u00A0-\u9999<>\&]/gim, function (i) {
+        return '&#' + i.charCodeAt(0) + ';';
+    });
+    return encodedStr;
+}
+
+// Escape HTML
+function escapeHtml(unsafe){
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 // Frida load other scripts
 function load_frida_others(){
   action('{% url 'list_frida_scripts' %}', {device: 'android'}, function(json) {
@@ -529,7 +575,7 @@ var editor = CodeMirror.fromTextArea(document.getElementById("code-js"), {
 
 //Restore Code
 function restore(){
-  var custom_code = window.sessionStorage.getItem("code");
+  var custom_code = window.sessionStorage.getItem("code_android");
   if (custom_code !== null) {
     setTimeout(function(){ editor.getDoc().setValue(custom_code); }, 2000);
   }
@@ -607,12 +653,6 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
         }
     }
 
-    function escape(data) {
-        var encodedStr = data.replace(/[\u00A0-\u9999<>\&]/gim, function (i) {
-            return '&#' + i.charCodeAt(0) + ';';
-        });
-        return encodedStr;
-    }
 
     function output(html, escape_=false, pre=false, error=false) {
         if (escape_)
@@ -1146,16 +1186,15 @@ $("#loadscript").click(function() {
   return false;  
 });
 
-
-// Frida Spawn
-$("#frida_spawn").click(function() {
-    print_status("Instrumenting the application with Frida.");
+// Frida Spawn, Session and Ps
+function frida_instrument(frida_action, pid=null, new_pkg=null){
     // Save Frida Code to Session Storage
     var code = editor.getDoc().getValue();
-    window.sessionStorage.setItem('code', code);
+    window.sessionStorage.setItem('code_android', code);
     //Show Frida logs
     document.getElementById('frida-logs').style.display = 'block';
     var default_hooks = [];
+
     $.each($("input[name='default_hooks']:checked"), function(){            
         default_hooks.push($(this).val());
     });
@@ -1163,13 +1202,24 @@ $("#frida_spawn").click(function() {
       $('#apimon').show();
     else
       $('#apimon').hide();
-
     var auxiliary_hooks = [];
     $.each($("input[name='auxiliary']:checked"), function(){            
         auxiliary_hooks.push($(this).val());
     });
 
-    action(document.location.origin + '/frida_instrument/', {
+    if (frida_action === 'spawn'){
+      print_status("Instrumenting the application with Frida.");
+    } else if (frida_action === 'session' && pid === null){
+      print_status("Injecting Frida script to existing session.");
+    } else if (pid){
+      print_status("Attaching to PID: " + parseInt(pid));
+    } else if (frida_action == 'ps'){
+      print_status("Enumerating running processes.");
+    }
+    action('{% url 'android_instrument' %}', {
+      frida_action,
+      pid, // attach pid
+      new_package: new_pkg, // attach package
       hash: '{{ hash }}',
       default_hooks: default_hooks.join(","),
       auxiliary_hooks: auxiliary_hooks.join(","),
@@ -1178,13 +1228,50 @@ $("#frida_spawn").click(function() {
       class_trace:  $('#class_trace').val(),
       frida_code: editor.getDoc().getValue(),
     }, function(json) {
-    if (json.status === "ok")
-      print_status("Frida instrumentation successful.");
-    else
+    if (json.status !== "ok")
       print_status(json.message);
+      // Attach to a running process
+      if (frida_action == 'ps' && json.message && json.message.length > 0 && Array.isArray(json.message)){
+        $("#process_select").empty();
+        json.message.forEach(function(p) {
+          $('#process_select').append(
+            '<option value=' + escape(p.pid.toString()) + ',' + escape(p.identifier.toString()) + '>' +  escape(p.pid.toString()) + ': ' + escapeHtml(p.name.toString()) + ' - ' + escape(p.identifier.toString()) + '</option>');
+        });
+        $('#frida_attach_mdl').modal('toggle');
+      }
   });
+}
+
+
+// Frida Spawn
+$("#frida_spawn").click(function() {
+  frida_instrument('spawn');
   return false;  
 }); 
+
+// Frida Session
+$("#frida_session").click(function() {
+  frida_instrument('session');
+  return false;  
+}); 
+
+
+// Frida Get Processes to attach
+$("#frida_attach").click(function() {
+  frida_instrument('ps');
+  return false;  
+}); 
+
+// Frida Attach to Pid
+$("#attach_to_pid").click(function() {
+  var values = $('#process_select').val();
+  var pid = values.split(',')[0];
+  var package = values.split(',')[1];
+  frida_instrument('session', pid, package);
+  $('#frida_attach_mdl').modal('hide');
+  return false;  
+}); 
+
 
 //Frida Get Runtime Dependencies
 $("#deps").click(function() {

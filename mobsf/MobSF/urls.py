@@ -187,7 +187,9 @@ if settings.API_ONLY == '0':
         re_path(r'^collect_logs/$', tests_common.collect_logs),
         re_path(r'^tls_tests/$', tests_common.tls_tests),
         # Frida
-        re_path(r'^frida_instrument/$', tests_frida.instrument),
+        re_path(r'^frida_instrument/$',
+                tests_frida.instrument,
+                name='android_instrument'),
         re_path(r'^live_api/$',
                 tests_frida.live_api,
                 name='live_api'),

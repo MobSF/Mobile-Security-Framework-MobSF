@@ -38,8 +38,7 @@ class Frida:
             dump,
             auxiliary,
             extras,
-            code,
-            action):
+            code):
         self.ssh_connection_string = ssh_string
         self.app_container = None
         self.hash = app_hash
@@ -49,7 +48,6 @@ class Frida:
         self.auxiliary = auxiliary
         self.extras = extras
         self.code = code
-        self.action = action
         self.frida_dir = Path(settings.TOOLS_DIR) / 'frida_scripts' / 'ios'
         self.ipa_dir = Path(settings.UPLD_DIR) / self.hash
         self.frida_log = self.ipa_dir / 'mobsf_frida_out.txt'
@@ -157,8 +155,8 @@ class Frida:
         """Connect to Frida Server and spawn the app."""
         global _PID
         try:
-            self.clean_up()
             try:
+                self.clean_up()
                 _PID = frida.get_remote_device().spawn([self.bundle_id])
             except frida.NotSupportedError:
                 logger.exception('Not Supported Error')
