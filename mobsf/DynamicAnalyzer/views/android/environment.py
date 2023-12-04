@@ -580,8 +580,8 @@ class Environment:
         xposed_modules = xposed_dir + 'modules/'
         # Install MobSF Agents for Xposed
         clip_dump_apk = os.path.join(self.tools_dir,
-                                      xposed_dir,
-                                      'ClipDump.apk')
+                                     xposed_dir,
+                                     'ClipDump.apk')
         logger.info('Installing MobSF Clipboard Dumper')
         self.adb_command(['install', '-r', clip_dump_apk])
         if android_version < 5:
