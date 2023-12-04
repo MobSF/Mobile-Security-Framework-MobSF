@@ -762,7 +762,6 @@ setInterval( function () {
       type : "GET",
       dataType: "json", 
       success : function(json){ 
-          // $('#logs').text(json.data);
           $('#frida-logs').text(json.data);
       },
       error : function(xhr, ajaxOptions, thrownError) {
@@ -820,12 +819,11 @@ $("#screen").click(function() {
                     i.src = json.message;
                   }
                   $('#my').attr('src', json.message);
-
                 } else {
                   console.log(json.message)
                 }
               });
-          },3000);
+          },2000);
       } else {
           $("#screen").html("<i class='fa fa-mobile-alt'></i> Show Screen");
           print_status("Screen streaming stopped.");
@@ -841,13 +839,25 @@ $("#screen").click(function() {
 var touch = "off";
 function ios_input(event, x, y){
   if ( touch === "on"){
-    action('{% url 'ios_touch' %}', { event, instance_id: '{{ instance_id }}', x, y}, function(json) {
+    action('{% url 'ios_touch' %}', { event, instance_id: '{{ instance_id }}', x, y, max_x: screen_width, max_y: screen_height}, function(json) {
         if (json.status==='ok')
           console.log('Event: ' + event);
         else
           console.log(json.message)
     });
   }
+}
+
+var xaxis, yaxis = 0;
+
+function getXY(e, t){
+    // X-Y axis for clicks
+    var offset = $(t).offset();
+    var x = e.pageX - offset.left;
+    var y = e.pageY - offset.top;
+    xaxis = Math.trunc(x * (screen_width/320)); 
+    yaxis = Math.trunc(y * (screen_height/570));
+    console.log('X Axis: '+ xaxis + " Y Axis: "+ yaxis);
 }
 
 // Touch Screen Click Events
@@ -859,15 +869,9 @@ $("#my").on( "mousedown", function() {
 
 $("#my").on( "mouseup", function(e) {
   releaseTime = new Date().getTime();
+  getXY(e, this);
   if (releaseTime - pressedTime < 300 && touch === "on") {
-      // X-Y axis for clicks
-      var offset = $(this).offset();
-      var x = e.pageX - offset.left;
-      var y = e.pageY - offset.top;
-      x = Math.trunc(x * (screen_width/320)); 
-      y = Math.trunc(y * (screen_height/570));
-      console.log('X Axis: '+ x + " Y Axis: "+ y);
-      ios_input('touch', x, y);
+      ios_input('touch', xaxis, yaxis);
   }
 });
 
@@ -892,12 +896,17 @@ $('#ios_text_btn').click(function(e) {
 $('#container').on('keypress', function(event) {
     // Detect printable characters
     if (touch === "on"){
-        console.log(String.fromCharCode(event.keyCode));
         switch(event.keyCode){
           case 13:
             // Enter
             // Send text to VM
             $('#ios_text_btn').click();
+            break;
+          case 32:
+            // Space
+            // Prevent space propagation to page scroll
+            $('#ios_text').val($('#ios_text').val() + ' ');
+            event.preventDefault();
             break;
           default:
           $('#ios_text').val($('#ios_text').val() + String.fromCharCode(event.keyCode));
@@ -912,9 +921,6 @@ $('#container').on('keypress', function(event) {
           case 8:
             // Backspace
             ios_input('backspace', 0, 0)
-            // // Update text box as well
-            // var text_val = $('#ios_text').val();
-            // $('#ios_text').val(text_val.substring(0, text_val.length - 1));
             break;
           case 37:
             // Left
@@ -950,16 +956,16 @@ swipe.addEventListener("after", direction => {
   if (touch === "on") {
     switch(direction){
       case 'up': case 'leftup': case 'rightup':
-        ios_input('swipe_down', 0, 0)
+        ios_input('swipe_down', xaxis, yaxis)
         break;
       case 'down': case 'leftdown': case 'rightdown':
-        ios_input('swipe_up', 0, 0)
+        ios_input('swipe_up', xaxis, yaxis)
         break;
       case 'left':
-        ios_input('swipe_right', 0, 0)
+        ios_input('swipe_right', xaxis, yaxis)
         break;
       case 'right':
-        ios_input('swipe_left', 0, 0)
+        ios_input('swipe_left', xaxis, yaxis)
         break;
     }
 }
@@ -1104,6 +1110,8 @@ $("#frida_spawn").click(function() {
 
 // Frida Session
 $("#frida_session").click(function() {
+  $( "input[name='default_hooks']:checkbox" ).prop( "checked", false );
+  $( "input[name='dump_hooks']:checkbox" ).prop( "checked", false );
   start_network_capture();
   frida_instrument('session');
   enableReportBtn(2);

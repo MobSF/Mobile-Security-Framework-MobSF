@@ -130,12 +130,12 @@ Java.performNow(function () {
             }
         }
         if (shouldModifyCommand) {
-            send("[RootDetection Bypass] ProcessBuilder " + cmd);
+            send("[RootDetection Bypass] ProcessBuilder " + JSON.stringify(cmd));
             this.command.call(this, ["grep"]);
             return this.start.call(this);
         }
         if (cmd.indexOf("su") != -1) {
-            send("[RootDetection Bypass] ProcessBuilder " + cmd);
+            send("[RootDetection Bypass] ProcessBuilder " + JSON.stringify(cmd));
             this.command.call(this, ["justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled"]);
             return this.start.call(this);
         }

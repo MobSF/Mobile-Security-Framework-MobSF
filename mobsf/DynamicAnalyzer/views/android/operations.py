@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import random
+import shlex
 import subprocess
 import threading
 from pathlib import Path
@@ -188,43 +189,74 @@ def take_screenshot(request, api=False):
 @require_http_methods(['POST'])
 def screen_cast(request):
     """ScreenCast."""
-    data = {}
+    data = {
+        'status': 'failed',
+        'message': 'Failed to stream screen'}
     try:
         env = Environment()
-        trd = threading.Thread(target=env.screen_stream)
-        trd.daemon = True
-        trd.start()
-        data = {'status': 'ok'}
+        b64dat = env.screen_stream()
+        data = {
+            'status': 'ok',
+            'message': f'data:image/png;base64,{b64dat}'}
     except Exception as exp:
         logger.exception('Screen streaming')
-        data = {'status': 'failed', 'message': str(exp)}
+        data['message'] = str(exp)
     return send_response(data)
 # AJAX
 
 
 @require_http_methods(['POST'])
 def touch(request):
-    """Sending Touch Events."""
-    data = {}
+    """Sending Touch/Swipe/Text Events."""
+    data = {
+        'status': 'failed',
+        'message': '',
+    }
     try:
         env = Environment()
-        x_axis = request.POST['x']
-        y_axis = request.POST['y']
-        if not is_number(x_axis) and not is_number(y_axis):
-            logger.error('Axis parameters must be numbers')
-            return invalid_params()
-        args = ['input',
-                'tap',
-                x_axis,
-                y_axis]
-        trd = threading.Thread(target=env.adb_command,
-                               args=(args, True))
-        trd.daemon = True
-        trd.start()
+        x = request.POST['x']
+        y = request.POST['y']
+        event = request.POST['event']
+        max_x = request.POST.get('max_x', 0)
+        max_y = request.POST.get('max_y', 0)
+
+        if event == 'text':
+            args = ['text', shlex.quote(x)]
+        else:
+            if (not is_number(x)
+                    or not is_number(y)
+                    or not is_number(max_x)
+                    or not is_number(max_y)):
+                return
+            # Should not be greater than max screen size
+            swipe_x = str(min(int(float(x)) + 500, int(float(max_x))))
+            swipe_y = str(min(int(float(y)) + 500, int(float(max_y))))
+
+            if event == 'enter':
+                args = ['keyevent', '66']
+            elif event == 'backspace':
+                args = ['keyevent', '67']
+            elif event == 'left':
+                args = ['keyevent', '21']
+            elif event == 'right':
+                args = ['keyevent', '22']
+            elif event == 'swipe_up':
+                args = ['swipe', x, y, x, swipe_y]
+            elif event == 'swipe_down':
+                args = ['swipe', x, swipe_y, x, y]
+            elif event == 'swipe_left':
+                args = ['swipe', x, y, swipe_x, y]
+            elif event == 'swipe_right':
+                args = ['swipe', swipe_x, y, x, y]
+            else:
+                args = ['tap', x, y]
+        threading.Thread(target=env.adb_command,
+                         args=(['input'] + args, True),
+                         daemon=True).start()
         data = {'status': 'ok'}
     except Exception as exp:
-        logger.exception('Sending Touch Events')
-        data = {'status': 'failed', 'message': str(exp)}
+        logger.exception('Sending Touchscreen Events')
+        data['message'] = str(exp)
     return send_response(data)
 # AJAX
 

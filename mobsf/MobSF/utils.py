@@ -228,6 +228,8 @@ def find_between(s, first, last):
 
 
 def is_number(s):
+    if s == 'NaN':
+        return False
     try:
         float(s)
         return True

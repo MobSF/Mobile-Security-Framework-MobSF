@@ -28,15 +28,21 @@ def run_analysis(apk_dir, md5_hash, package):
     clipboard = []
     # Collect Log data
     data = get_log_data(apk_dir, package)
-    clip_tag = 'I/CLIPDUMP-INFO-LOG'
-    clip_tag2 = 'I CLIPDUMP-INFO-LOG'
-    # Collect Clipboard
-    for log_line in data['logcat']:
-        if clip_tag in log_line:
-            clipboard.append(log_line.replace(clip_tag, 'Process ID '))
-        if clip_tag2 in log_line:
-            log_line = log_line.split(clip_tag2)[1]
-            clipboard.append(log_line)
+    clip = Path(apk_dir) / 'mobsf_app_clipboard.txt'
+    if clip.exists():
+        clipboard = clip.read_text('utf-8', 'ignore').split('\n')
+    else:
+        # For Xposed
+        clip_tag = 'I/CLIPDUMP-INFO-LOG'
+        clip_tag2 = 'I CLIPDUMP-INFO-LOG'
+        # Collect Clipboard
+        for log_line in data['logcat']:
+            if clip_tag in log_line:
+                clipboard.append(
+                    log_line.replace(clip_tag, 'Process ID '))
+            if clip_tag2 in log_line:
+                log_line = log_line.split(clip_tag2)[1]
+                clipboard.append(log_line)
     urls, domains, emails = extract_urls_domains_emails(
         data['traffic'].lower())
     # Tar dump and fetch files

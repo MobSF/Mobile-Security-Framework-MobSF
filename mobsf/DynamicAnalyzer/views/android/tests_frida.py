@@ -5,7 +5,7 @@ import os
 import re
 import json
 from pathlib import Path
-import threading
+from threading import Thread
 import logging
 
 from django.shortcuts import render
@@ -25,6 +25,7 @@ from mobsf.MobSF.utils import (
     is_file_exists,
     is_md5,
     print_n_send_error_response,
+    strict_package_check,
 )
 
 logger = logging.getLogger(__name__)
@@ -58,9 +59,13 @@ def get_runtime_dependencies(request, api=False):
 @require_http_methods(['POST'])
 def instrument(request, api=False):
     """Instrument app with frida."""
-    data = {}
+    data = {
+        'status': 'failed',
+        'message': 'Failed to instrument app'}
     try:
-        logger.info('Starting Instrumentation')
+        action = request.POST.get('frida_action', 'spawn')
+        pid = request.POST.get('pid')
+        new_pkg = request.POST.get('new_package')
         md5_hash = request.POST['hash']
         default_hooks = request.POST['default_hooks']
         auxiliary_hooks = request.POST['auxiliary_hooks']
@@ -76,12 +81,14 @@ def instrument(request, api=False):
         cls_trace = request.POST.get('class_trace')
         if cls_trace:
             extras['class_trace'] = cls_trace.strip()
+
         if (is_attack_pattern(default_hooks)
                 or is_attack_pattern(auxiliary_hooks)
-                or not is_md5(md5_hash)):
+                or not is_md5(md5_hash)
+                or (new_pkg and not strict_package_check(new_pkg))):
             return invalid_params(api)
         package = get_package_name(md5_hash)
-        if not package:
+        if not package and not new_pkg:
             return invalid_params(api)
         frida_obj = Frida(md5_hash,
                           package,
@@ -89,10 +96,24 @@ def instrument(request, api=False):
                           auxiliary_hooks.split(','),
                           extras,
                           code)
-        trd = threading.Thread(target=frida_obj.connect)
-        trd.daemon = True
-        trd.start()
-        data = {'status': 'ok'}
+        if action == 'spawn':
+            logger.info('Starting Instrumentation')
+            frida_obj.spawn()
+        elif action == 'ps':
+            logger.info('Enumerating running applications')
+            data['message'] = frida_obj.ps()
+        if action in ('spawn', 'session'):
+            if pid and pid.isdigit():
+                # Attach to a different pid/bundle id
+                args = (int(pid), new_pkg)
+                logger.info('Attaching to %s [PID: %s]', new_pkg, pid)
+            else:
+                # Injecting to existing session/spawn
+                if action == 'session':
+                    logger.info('Injecting to existing frida session')
+                args = (None, None)
+            Thread(target=frida_obj.session, args=args, daemon=True).start()
+        data['status'] = 'ok'
     except Exception as exp:
         logger.exception('Instrumentation failed')
         data = {'status': 'failed', 'message': str(exp)}
@@ -271,9 +292,8 @@ def get_dependencies(package, checksum):
     location = Path(frd.deps)
     if location.exists():
         location.write_text('')
-    trd = threading.Thread(target=frd.connect)
-    trd.daemon = True
-    trd.start()
+    frd.spawn()
+    Thread(target=frd.session, args=(None, None), daemon=True).start()
 
 
 def dependency_analysis(package, app_dir):

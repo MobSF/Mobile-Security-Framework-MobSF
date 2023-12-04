@@ -140,6 +140,43 @@ textarea:focus {
               </div>
               <div class="card-body">
                  <div class="table-responsive">
+                  <h4> Apps in Device</h4>
+                  <table class="table table-bordered table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th>APP</th>
+                        <th>LOCATION IN DEVICE</th>
+                        <th>ACTION</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% if device_packages %}
+                    {% for hash, det in device_packages.items %}
+                        <tr>
+                            <td align="center">
+                              <img id="app_icon" src="/download/{{ hash }}-icon.png" onerror="this.onerror=null;this.src='{% static 'img/no_icon.png' %}'"/>
+                              <br/><strong>{{ det.0 }}</strong>
+                            </td>
+                            <td>
+                                {{ det.1}}
+                           </td>
+                            <td align="center"> 
+                              <p>
+                                <a class="btn btn-primary disable" onclick="dynamic_loader()" href={% url "dynamic_analyzer" checksum=hash %}?re_install=0&install=0"><i class="fab fa-android"></i> Start Dynamic Analysis</a>
+                              </p>
+                              <p>
+                                <a class="btn btn-warning disable" onclick="dynamic_loader()" href="{% url "static_scan" checksum=hash %}"><i class="fa fa-download"></i> Pull &amp; Static Analysis</a>
+                                </p>
+                              <p>
+                                 <a class="btn btn-info" href="{% url "dynamic_report" checksum=hash %}"><i class="fa fa-mobile"></i> View Report </a>
+                              </p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    {% endif %}
+                    </tbody>
+                </table>
+              </br>
                   <h4> Apps Available</h4>
                 <table class="table table-bordered table-hover table-striped">
                     <thead>
@@ -169,7 +206,7 @@ textarea:focus {
                                 <a class="btn btn-success disable" onclick="dynamic_loader()" href="{% url "dynamic_analyzer" checksum=e.MD5 %}"><i class="fab fa-android"></i> Start Dynamic Analysis</a>
                               </p>
                               <p>
-                                <a class="btn btn-primary btn-sm disable" onclick="dynamic_loader()" href="{% url "dynamic_analyzer" checksum=e.MD5 %}?re_install=0"><i class="fab fa-android"></i> Start Dynamic Analysis (without Re-install)</a>
+                                <a class="btn btn-primary btn-sm disable" onclick="dynamic_loader()" href="{% url "dynamic_analyzer" checksum=e.MD5 %}?re_install=0"><i class="fab fa-android"></i> Start Dynamic Analysis (No reinstall)</a>
                               </p>
                               <p>
                                  <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url "dynamic_report" checksum=e.MD5 %}"><i class="fa fa-mobile"></i> View Report </a>
@@ -180,43 +217,8 @@ textarea:focus {
                     {% endif %}
                     </tbody>
                 </table>
-              </br>
-                <h4> Apps in Device</h4>
-                <table class="table table-bordered table-hover table-striped">
-                  <thead>
-                  <tr>
-                      <th>APP</th>
-                      <th>LOCATION IN DEVICE</th>
-                      <th>ACTION</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  {% if device_packages %}
-                  {% for hash, det in device_packages.items %}
-                      <tr>
-                          <td align="center">
-                            <img id="app_icon" src="/download/{{ hash }}-icon.png" onerror="this.onerror=null;this.src='{% static 'img/no_icon.png' %}'"/>
-                            <br/><strong>{{ det.0 }}</strong>
-                          </td>
-                          <td>
-                              {{ det.1}}
-                         </td>
-                          <td align="center"> 
-                            <p>
-                              <a class="btn btn-primary disable" onclick="dynamic_loader()" href={% url "dynamic_analyzer" checksum=hash %}?re_install=0&install=0"><i class="fab fa-android"></i> Start Dynamic Analysis</a>
-                            </p>
-                            <p>
-                              <a class="btn btn-warning disable" onclick="dynamic_loader()" href="{% url "static_scan" checksum=hash %}"><i class="fa fa-download"></i> Pull &amp; Static Analysis</a>
-                              </p>
-                            <p>
-                               <a class="btn btn-info" href="{% url "dynamic_report" checksum=hash %}"><i class="fa fa-mobile"></i> View Report </a>
-                            </p>
-                          </td>
-                      </tr>
-                  {% endfor %}
-                  {% endif %}
-                  </tbody>
-              </table>
+          
+               
 
             </div>
               </div>

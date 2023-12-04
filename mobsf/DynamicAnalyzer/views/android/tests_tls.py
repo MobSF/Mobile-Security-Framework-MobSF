@@ -2,7 +2,7 @@
 """Security tests on data in transit."""
 import re
 import logging
-import threading
+from threading import Thread
 from json import dump
 from pathlib import Path
 
@@ -90,9 +90,8 @@ def run_tls_tests(request, md5_hash, env, package, test_pkg, duration):
         None,
         None,
     )
-    trd = threading.Thread(target=frd.connect)
-    trd.daemon = True
-    trd.start()
+    frd.spawn()
+    Thread(target=frd.session, args=(None, None), daemon=True).start()
     env.wait(duration)
     stop_httptools(get_http_tools_url(request))
     traffic = get_traffic(test_pkg)
