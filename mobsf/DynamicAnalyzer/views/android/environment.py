@@ -383,7 +383,8 @@ class Environment:
     def get_android_version(self):
         """Get Android version."""
         out = self.adb_command(['getprop',
-                                'ro.build.version.release'], True)
+                                'ro.build.version.release'],
+                               True, False)
         and_version = out.decode('utf-8').rstrip()
         if and_version.count('.') > 1:
             and_version = and_version.rsplit('.', 1)[0]
