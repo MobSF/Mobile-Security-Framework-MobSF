@@ -561,13 +561,6 @@ class Environment:
         create_ca()
         # Install MITM RootCA
         self.install_mobsf_ca('install')
-        # Install MobSF Agents
-        mobsf_agents = 'onDevice/mobsf_agents/'
-        clip_dump = os.path.join(self.tools_dir,
-                                 mobsf_agents,
-                                 'ClipDump.apk')
-        logger.info('Installing MobSF Clipboard Dumper')
-        self.adb_command(['install', '-r', clip_dump])
         if agent == 'frida':
             agent_file = '.mobsf-f'
             agent_str = self.frida_str
@@ -584,6 +577,13 @@ class Environment:
         """Setup Xposed."""
         xposed_dir = 'onDevice/xposed/'
         xposed_modules = xposed_dir + 'modules/'
+        # Install MobSF Agents
+        mobsf_agents = 'onDevice/mobsf_agents/'
+        clip_dump = os.path.join(self.tools_dir,
+                                 mobsf_agents,
+                                 'ClipDump.apk')
+        logger.info('Installing MobSF Clipboard Dumper')
+        self.adb_command(['install', '-r', clip_dump])
         if android_version < 5:
             logger.info('Installing Xposed for Kitkat and below')
             xposed_apk = os.path.join(self.tools_dir,

@@ -31,8 +31,7 @@ function check_clipboard_data() {
 
             // Update the data with the new string and report back.
             string_data = data;
-            send(JSON.stringify(data, null, 2));
-            
+            send('mobsf-android-clipboard:' + data);
         }
     });
 }

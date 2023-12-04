@@ -43,6 +43,7 @@ class Frida:
         self.api_mon = os.path.join(self.apk_dir, 'mobsf_api_monitor.txt')
         self.frida_log = os.path.join(self.apk_dir, 'mobsf_frida_out.txt')
         self.deps = os.path.join(self.apk_dir, 'mobsf_app_deps.txt')
+        self.clipboard = os.path.join(self.apk_dir, 'mobsf_app_clipboard.txt')
 
     def get_default_scripts(self):
         """Get default Frida Scripts."""
@@ -102,10 +103,14 @@ class Frida:
             api_mon = 'MobSF-API-Monitor: '
             aux = '[AUXILIARY] '
             deps = '[RUNTIME-DEPS] '
+            clip = 'mobsf-android-clipboard:'
             if not isinstance(msg, str):
                 msg = str(msg)
             if msg.startswith(api_mon):
                 self.write_log(self.api_mon, msg.replace(api_mon, ''))
+            elif clip in msg:
+                msg = msg.replace(clip, '')
+                self.write_log(self.clipboard, f'{msg}\n')
             elif msg.startswith(deps):
                 info = msg.replace(deps, '') + '\n'
                 self.write_log(self.deps, info)
@@ -210,6 +215,8 @@ class Frida:
             os.remove(self.api_mon)
         if is_file_exists(self.frida_log):
             os.remove(self.frida_log)
+        if is_file_exists(self.clipboard):
+            os.remove(self.clipboard)
 
     def write_log(self, file_path, data):
         with io.open(

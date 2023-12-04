@@ -165,6 +165,8 @@ def dynamic_analyzer(request, checksum, api=False):
                     'Failed to MobSFy the instance',
                     api)
             if version < 5:
+                # Start Clipboard monitor
+                env.start_clipmon()
                 xposed_first_run = True
         if xposed_first_run:
             msg = ('Have you MobSFyed the instance before'
@@ -182,8 +184,6 @@ def dynamic_analyzer(request, checksum, api=False):
         env.enable_adb_reverse_tcp(version)
         # Apply Global Proxy to device
         env.set_global_proxy(version)
-        # Start Clipboard monitor
-        env.start_clipmon()
         if install == '1':
             # Install APK
             apk_path = Path(settings.UPLD_DIR) / checksum / f'{checksum}.apk'
