@@ -1110,6 +1110,8 @@ $("#frida_spawn").click(function() {
 
 // Frida Session
 $("#frida_session").click(function() {
+  $( "input[name='default_hooks']:checkbox" ).prop( "checked", false );
+  $( "input[name='dump_hooks']:checkbox" ).prop( "checked", false );
   start_network_capture();
   frida_instrument('session');
   enableReportBtn(2);

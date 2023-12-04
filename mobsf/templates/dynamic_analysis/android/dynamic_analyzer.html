@@ -1251,6 +1251,7 @@ $("#frida_spawn").click(function() {
 
 // Frida Session
 $("#frida_session").click(function() {
+  $( "input[name='default_hooks']:checkbox" ).prop( "checked", false );
   frida_instrument('session');
   return false;  
 }); 
