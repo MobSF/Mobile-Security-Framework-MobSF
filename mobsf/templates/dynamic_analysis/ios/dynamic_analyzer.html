@@ -1082,21 +1082,21 @@ function frida_instrument(frida_action, pid=null, new_bundle_id=null){
       class_trace:  $('#class_trace').val(),
       frida_code: editor.getDoc().getValue(),
     }, function(json) {
-    if (json.status !== "ok")
-      print_status(json.message);
-      if (!appContainerPath)
-        setTimeout(function(){ getContainerPath(); }, 5000);
-    else {
-      // Attach to a running process
-      if (frida_action == 'ps' && json.message && json.message.length > 0 && Array.isArray(json.message)){
-        $("#process_select").empty();
-        json.message.forEach(function(p) {
-          $('#process_select').append(
-            '<option value=' + escape(p.pid.toString()) + ',' + escape(p.identifier.toString()) + '>' +  escape(p.pid.toString()) + ': ' + escapeHtml(p.name.toString()) + ' - ' + escape(p.identifier.toString()) + '</option>');
-        });
-        $('#frida_attach_mdl').modal('toggle');
+      if (json.status !== "ok")
+          print_status(json.message);
+      else {
+        if (!appContainerPath)
+          setTimeout(function(){ getContainerPath(); }, 5000);
+        // Attach to a running process
+        if (frida_action == 'ps' && json.message && json.message.length > 0 && Array.isArray(json.message)){
+          $("#process_select").empty();
+          json.message.forEach(function(p) {
+            $('#process_select').append(
+              '<option value=' + escape(p.pid.toString()) + ',' + escape(p.identifier.toString()) + '>' +  escape(p.pid.toString()) + ': ' + escapeHtml(p.name.toString()) + ' - ' + escape(p.identifier.toString()) + '</option>');
+          });
+          $('#frida_attach_mdl').modal('toggle');
+        }
       }
-    }
   });
 }
 
