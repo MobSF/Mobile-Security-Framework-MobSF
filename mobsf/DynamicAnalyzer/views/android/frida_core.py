@@ -108,7 +108,7 @@ class Frida:
                 msg = str(msg)
             if msg.startswith(api_mon):
                 self.write_log(self.api_mon, msg.replace(api_mon, ''))
-            elif clip in msg:
+            elif msg.startswith(clip):
                 msg = msg.replace(clip, '')
                 self.write_log(self.clipboard, f'{msg}\n')
             elif msg.startswith(deps):
