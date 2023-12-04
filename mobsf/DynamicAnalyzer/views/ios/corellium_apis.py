@@ -338,8 +338,8 @@ class CorelliumInstanceAPI:
                     or not is_number(max_y)):
                 return
             # Should not be greater than max screen size
-            swipe_x = min(int(x) + 300, int(max_x))
-            swipe_y = min(int(y) + 300, int(max_y))
+            swipe_x = min(int(x) + 200, int(max_x))
+            swipe_y = min(int(y) + 400, int(max_y))
             if event == 'home':
                 data = [{
                     'buttons': ['holdButton'],
@@ -363,33 +363,31 @@ class CorelliumInstanceAPI:
             elif event == 'swipe_up':
                 data = [{
                     'startButtons': ['finger'],
-                    'start': [[x, y]],
-                    'end': [[x, swipe_y]],
-                    'endButtons': [],
+                    'start': [[x, 600]],
+                    'end': [[400, y]],
                     'duration': 200,
                 }]
             elif event == 'swipe_down':
                 data = [{
                     'startButtons': ['finger'],
                     'start': [[x, swipe_y]],
-                    'end': [[x, y]],
-                    'endButtons': [],
+                    'end': [[swipe_x, y]],
                     'duration': 200,
                 }]
             elif event == 'swipe_left':
                 data = [{
                     'startButtons': ['finger'],
-                    'start': [[x, y]],
-                    'end': [[swipe_x, y]],
-                    'endButtons': [],
+                    'start': [[100, 900]],
+                    'bezierPoints': [[[700, 350]], [[850, 375]]],
+                    'end': [[900, 100]],
                     'duration': 200,
                 }]
             elif event == 'swipe_right':
                 data = [{
                     'startButtons': ['finger'],
-                    'start': [[swipe_x, y]],
-                    'end': [[x, y]],
-                    'endButtons': [],
+                    'start': [[700, 100]],
+                    'bezierPoints': [[[350, 750]], [[375, 875]]],
+                    'end': [[100, 700]],
                     'duration': 200,
                 }]
             else:

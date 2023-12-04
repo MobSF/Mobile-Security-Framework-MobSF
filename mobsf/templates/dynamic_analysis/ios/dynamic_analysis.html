@@ -107,54 +107,56 @@
               </div>
               <div class="card-body">
                  <div class="table-responsive">
-                  <h4> Apps Available</h4>
-                <table class="dattbl table table-bordered table-hover table-striped">
-                    <thead>
-                    <tr>
-                        <th>APP</th>
-                        <th>FILE NAME</th>
-                        <th>BUNDLE ID</th>
-                        <th>ACTION</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% if apps %}
-                    {% for e in apps %}
-                        <tr>
-                            <td align="center">
-                              <img id="app_icon" src="/download/{{ e.MD5 }}-icon.png"/>
-                              <br/><strong>{{ e.APP_NAME }} - {{ e.APP_VERSION }}</strong>
-                            </td>
-                            <td>
-                                {{ e.FILE_NAME }}
-                            </td>
-                            <td>
-                                {{ e.BUNDLE_ID }}
-                           </td>
-                            <td align="center"> 
-                              {% if e.ENCRYPTED %}
-                                <span class="badge badge-danger">ENCRYPTED IPA</span></br>
-                                <small>You need decrypted IPA for dynamic analysis.</small>
-                              {% else %}
-                              <p>
-                                  <a class="btn btn-success disable" onclick="upload_and_install('{% url 'setup_environment' checksum=e.MD5 %}')"><i class="fab fa-apple"></i> Upload &amp; Install</a>
-                              </p>
-                              <p>
-                                <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url 'ios_view_report' bundle_id=e.BUNDLE_ID %}"><i class="fa fa-mobile"></i> View Report </a>
-                             </p>
-                             {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    {% endif %}
-                    </tbody>
-                </table>
-              </br>
                 <h4> Apps in Device</h4>
                 <table id="in_device" class="table table-bordered table-hover table-striped">
                   <tbody>
                   </tbody>
               </table>
+            </br>
+
+            <h4> Apps Available</h4>
+            <table class="dattbl table table-bordered table-hover table-striped">
+                <thead>
+                <tr>
+                    <th>APP</th>
+                    <th>FILE NAME</th>
+                    <th>BUNDLE ID</th>
+                    <th>ACTION</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if apps %}
+                {% for e in apps %}
+                    <tr>
+                        <td align="center">
+                          <img id="app_icon" src="/download/{{ e.MD5 }}-icon.png"/>
+                          <br/><strong>{{ e.APP_NAME }} - {{ e.APP_VERSION }}</strong>
+                        </td>
+                        <td>
+                            {{ e.FILE_NAME }}
+                        </td>
+                        <td>
+                            {{ e.BUNDLE_ID }}
+                       </td>
+                        <td align="center"> 
+                          {% if e.ENCRYPTED %}
+                            <span class="badge badge-danger">ENCRYPTED IPA</span></br>
+                            <small>You need decrypted IPA for dynamic analysis.</small>
+                          {% else %}
+                          <p>
+                              <a class="btn btn-success disable" onclick="upload_and_install('{% url 'setup_environment' checksum=e.MD5 %}')"><i class="fab fa-apple"></i> Upload &amp; Install</a>
+                          </p>
+                          <p>
+                            <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url 'ios_view_report' bundle_id=e.BUNDLE_ID %}"><i class="fa fa-mobile"></i> View Report </a>
+                         </p>
+                         {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% endif %}
+                </tbody>
+            </table>
+
             </div>
               </div>
               <!-- /.card-body -->
