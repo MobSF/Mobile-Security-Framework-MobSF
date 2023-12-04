@@ -578,13 +578,12 @@ class Environment:
         """Setup Xposed."""
         xposed_dir = 'onDevice/xposed/'
         xposed_modules = xposed_dir + 'modules/'
-        # Install MobSF Agents
-        mobsf_agents = 'onDevice/mobsf_agents/'
-        clip_dump = os.path.join(self.tools_dir,
-                                 mobsf_agents,
-                                 'ClipDump.apk')
+        # Install MobSF Agents for Xposed
+        clip_dump_apk = os.path.join(self.tools_dir,
+                                      xposed_dir,
+                                      'ClipDump.apk')
         logger.info('Installing MobSF Clipboard Dumper')
-        self.adb_command(['install', '-r', clip_dump])
+        self.adb_command(['install', '-r', clip_dump_apk])
         if android_version < 5:
             logger.info('Installing Xposed for Kitkat and below')
             xposed_apk = os.path.join(self.tools_dir,
