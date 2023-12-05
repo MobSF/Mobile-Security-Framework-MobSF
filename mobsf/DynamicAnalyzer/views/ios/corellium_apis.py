@@ -31,12 +31,16 @@ class CorelliumAPI:
 
     def api_ready(self):
         """Check API Availability."""
-        r = requests.get(f'{self.api}/ready')
-        if r.status_code in SUCCESS_RESP:
-            return True
-        else:
-            logger.error('Corellium API is not ready.'
-                         ' Status code: %s', r.status_code)
+        try:
+            r = requests.get(f'{self.api}/ready')
+            if r.status_code in SUCCESS_RESP:
+                return True
+            else:
+                logger.error('Corellium API is not ready.'
+                             ' Status code: %s', r.status_code)
+        except Exception:
+            logger.error('Network unreachable.')
+            return False
         return False
 
     def api_auth(self):
@@ -336,7 +340,7 @@ class CorelliumInstanceAPI:
                     or not is_number(y)
                     or not is_number(max_x)
                     or not is_number(max_y)):
-                return
+                return 'Invalid coordinates'
             # Should not be greater than max screen size
             swipe_x = min(int(x) + 200, int(max_x))
             swipe_y = min(int(y) + 400, int(max_y))
@@ -391,8 +395,6 @@ class CorelliumInstanceAPI:
                     'duration': 200,
                 }]
             else:
-                if not is_number(x) or not is_number(y):
-                    return
                 data = [
                     {'buttons': ['finger'],
                      'position': [[x, y]],
