@@ -181,7 +181,6 @@ function bypass_system_properties()
     */
     console.log("System Properties - Bypass Loaded")
     const SystemProperties = Java.use('android.os.SystemProperties')
-    const String = Java.use('java.lang.String')
     const Properties = 
     {
         "init.svc.qemud": null,

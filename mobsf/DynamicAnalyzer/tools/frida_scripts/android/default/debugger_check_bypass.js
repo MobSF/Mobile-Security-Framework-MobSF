@@ -110,7 +110,7 @@ Java.perform(function() {
                     var StacktraceEle = Java.use("java.lang.StackTraceElement");
                     StacktraceEle.getClassName.overload().implementation = function() {
                         var gMN = this.getMethodName();
-                        if (gMN.indexOf("handleHookedMethod") >= 0 || gMN.indexOf("handleHookedMethod") >= 0 || gMN.indexOf("invoked") >= 0) {
+                        if (gMN.indexOf("handleHookedMethod") >= 0 || gMN.indexOf("invoked") >= 0) {
                             send("[Debugger Check] Debugger detection check bypassed for method: " + this.getMethodName());
                             return "bye.pass";
                         }
