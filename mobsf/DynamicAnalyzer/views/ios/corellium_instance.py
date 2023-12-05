@@ -730,12 +730,20 @@ def touch(request, api=False):
         if failed:
             return send_response(failed, api)
         ci = CorelliumInstanceAPI(instance_id)
-        ci.device_input(event, x_axis, y_axis, max_x, max_y)
-        data = {'status': 'ok'}
+        res = ci.device_input(
+            event,
+            x_axis,
+            y_axis,
+            max_x,
+            max_y)
+        if res != 'ok':
+            data['message'] = res
+        else:
+            data = {'status': 'ok'}
     except Exception as exp:
         logger.exception('Sending Touchscreen Events')
         data['message'] = str(exp)
-    return send_response(data)
+    return send_response(data, api)
 # AJAX + HTML
 
 
