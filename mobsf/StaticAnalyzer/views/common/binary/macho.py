@@ -213,14 +213,17 @@ class MachOChecksec:
     def has_canary(self):
         stk_check = '___stack_chk_fail'
         stk_guard = '___stack_chk_guard'
-        ipt_list = set()
-        for ipt in self.macho.imported_functions:
-            ipt_list.add(str(ipt))
-        return stk_check in ipt_list and stk_guard in ipt_list
+        imp_func_gen = self.macho.imported_functions
+        has_stk_check = any(
+            str(func).strip() == stk_check for func in imp_func_gen)
+        has_stk_guard = any(
+            str(func).strip() == stk_guard for func in imp_func_gen)
+
+        return has_stk_check and has_stk_guard
 
     def has_arc(self):
         for func in self.macho.imported_functions:
-            if str(func).strip() == '_objc_release':
+            if str(func).strip() in ('_objc_release', '_swift_release'):
                 return True
         return False
 
