@@ -1,11 +1,14 @@
 """Common Utils."""
 import ast
+import base64
 import hashlib
 import io
+import json
 import logging
 import ntpath
 import os
 import platform
+import random
 import re
 import sys
 import shutil
@@ -30,6 +33,19 @@ from . import settings
 
 logger = logging.getLogger(__name__)
 ADB_PATH = None
+BASE64_REGEX = re.compile(r'^[-A-Za-z0-9+/]*={0,3}$')
+MD5_REGEX = re.compile(r'^[0-9a-f]{32}$')
+# Regex to capture strings between quotes or <string> tag
+STRINGS_REGEX = re.compile(r'(?<=\")(.+?)(?=\")|(?<=\<string>)(.+?)(?=\<)')
+# MobSF Custom regex to catch maximum URI like strings
+URL_REGEX = re.compile(
+    (
+        r'((?:https?://|s?ftps?://|'
+        r'file://|javascript:|data:|www\d{0,3}[.])'
+        r'[\w().=/;,#:@?&~*+!$%\'{}-]+)'
+    ),
+    re.UNICODE)
+EMAIL_REGEX = re.compile(r'[\w+.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
 
 
 class Color(object):
@@ -212,6 +228,8 @@ def find_between(s, first, last):
 
 
 def is_number(s):
+    if s == 'NaN':
+        return False
     try:
         float(s)
         return True
@@ -242,7 +260,7 @@ def python_dict(value):
 
 
 def is_base64(b_str):
-    return re.match('^[A-Za-z0-9+/]+[=]{0,2}$', b_str)
+    return BASE64_REGEX.match(b_str)
 
 
 def is_internet_available():
@@ -290,7 +308,9 @@ def sha256_object(file_obj):
 
 def gen_sha256_hash(msg):
     """Generate SHA 256 Hash of the message."""
-    hash_object = hashlib.sha256(msg.encode('utf-8'))
+    if isinstance(msg, str):
+        msg = msg.encode('utf-8')
+    hash_object = hashlib.sha256(msg)
     return hash_object.hexdigest()
 
 
@@ -441,7 +461,6 @@ def check_basic_env():
                     'Java/jdk1.7.0_17/bin/"'
                     '\nJAVA_DIRECTORY = "/usr/bin/"')
         os.kill(os.getpid(), signal.SIGTERM)
-    get_adb()
 
 
 def update_local_db(db_name, url, local_file):
@@ -558,7 +577,7 @@ def file_size(app_path):
 
 def is_md5(user_input):
     """Check if string is valid MD5."""
-    stat = re.match(r'^[0-9a-f]{32}$', user_input)
+    stat = MD5_REGEX.match(user_input)
     if not stat:
         logger.error('Invalid scan hash')
     return stat
@@ -601,12 +620,47 @@ def cmd_injection_check(data):
 
 
 def strict_package_check(user_input):
-    """Strict package name check."""
-    pat = re.compile(r'^([A-Za-z]{1}[\w]*\.)+[A-Za-z][\w]*$')
+    """Strict package name check.
+
+    For android package and ios bundle id
+    """
+    pat = re.compile(r'^([\w]*\.)+[\w-]{2,155}$')
+    resp = re.match(pat, user_input)
+    if not resp or '..' in user_input:
+        logger.error('Invalid package name/bundle id/class name')
+    return resp
+
+
+def strict_ios_class(user_input):
+    """Strict check to see if input is valid iOS class."""
+    pat = re.compile(r'^([\w\.]+)$')
     resp = re.match(pat, user_input)
     if not resp:
-        logger.error('Invalid package/class name')
+        logger.error('Invalid class name')
     return resp
+
+
+def is_instance_id(user_input):
+    """Check if string is valid instance id."""
+    reg = r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    stat = re.match(reg, user_input)
+    if not stat:
+        logger.error('Invalid instance identifier')
+    return stat
+
+
+def common_check(instance_id):
+    """Common checks for instance APIs."""
+    if not getattr(settings, 'CORELLIUM_API_KEY', ''):
+        return {
+            'status': 'failed',
+            'message': 'Missing Corellium API key'}
+    elif not is_instance_id(instance_id):
+        return {
+            'status': 'failed',
+            'message': 'Invalid instance identifier'}
+    else:
+        return None
 
 
 def is_path_traversal(user_input):
@@ -689,6 +743,49 @@ def key(data, key_name):
     return data.get(key_name)
 
 
+def replace(value, arg):
+    """
+    Replacing filter.
+
+    Use `{{ "aaa"|replace:"a|b" }}`
+    """
+    if len(arg.split('|')) != 2:
+        return value
+
+    what, to = arg.split('|')
+    return value.replace(what, to)
+
+
+def pretty_json(value):
+    """Pretty print JSON."""
+    try:
+        return json.dumps(json.loads(value), indent=4)
+    except Exception:
+        return value
+
+
+def base64_decode(value):
+    """Try Base64 decode."""
+    commonb64s = ('eyJ0')
+    decoded = None
+    try:
+        if is_base64(value) or value.startswith(commonb64s):
+            decoded = base64.b64decode(
+                value).decode('ISO-8859-1')
+    except Exception:
+        pass
+    if decoded:
+        return f'{value}\n\nBase64 Decoded: {decoded}'
+    return value
+
+
+def base64_encode(value):
+    """Base64 encode."""
+    if isinstance(value, str):
+        value = value.encode('utf-8')
+    return base64.b64encode(value)
+
+
 def android_component(data):
     """Return Android component from data."""
     cmp = ''
@@ -709,9 +806,8 @@ def get_android_dm_exception_msg():
     return (
         'Is your Android VM/emulator running? MobSF cannot'
         ' find the android device identifier.'
-        ' Please run an android instance and refresh'
-        ' this page. If this error persists,'
-        ' set ANALYZER_IDENTIFIER in '
+        ' Please read official documentation.'
+        ' If this error persists, set ANALYZER_IDENTIFIER in '
         f'{get_config_loc()} or via environment variable'
         ' MOBSF_ANALYZER_IDENTIFIER')
 
@@ -737,3 +833,8 @@ def settings_enabled(attr):
         return getattr(settings, attr) not in disabled
     except Exception:
         return False
+
+
+def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
+    """Generate random string."""
+    return ''.join(random.choice(chars) for _ in range(size))

@@ -13,7 +13,7 @@ import subprocess
 import sys
 from os.path import expanduser
 
-from six.moves import input
+from six.moves import input as sinput
 
 try:
     import urllib.request as urlrequest
@@ -315,7 +315,7 @@ def generate_secret():
         'mobsf/MobSF/windows_vm_priv_key.asc)'
         .format(CONFIG['MobSF']['priv_key'], config_path)
     ))
-    input('Please press any key when done..')
+    sinput('Please press any key when done..')
 
 
 def autostart():

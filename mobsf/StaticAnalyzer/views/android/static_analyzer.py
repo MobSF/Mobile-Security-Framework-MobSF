@@ -3,7 +3,6 @@
 
 import logging
 import os
-import re
 import shutil
 from pathlib import Path
 
@@ -23,6 +22,7 @@ from mobsf.MobSF.utils import (
     file_size,
     is_dir_exists,
     is_file_exists,
+    is_md5,
     key,
     print_n_send_error_response,
 )
@@ -106,13 +106,17 @@ def static_analyzer(request, checksum, api=False):
             rescan = True
         # Input validation
         app_dic = {}
-        if not re.match('^[0-9a-f]{32}$', checksum):
-            msg = 'Invalid checksum'
-            return print_n_send_error_response(request, msg, api)
+        if not is_md5(checksum):
+            return print_n_send_error_response(
+                request,
+                'Invalid Hash',
+                api)
         robj = RecentScansDB.objects.filter(MD5=checksum)
         if not robj.exists():
-            msg = 'The file is not uploaded/available'
-            return print_n_send_error_response(request, msg, api)
+            return print_n_send_error_response(
+                request,
+                'The file is not uploaded/available',
+                api)
         typ = robj[0].SCAN_TYPE
         filename = robj[0].FILE_NAME
         allowed_exts = (
@@ -121,8 +125,10 @@ def static_analyzer(request, checksum, api=False):
         allowed_typ = [i.replace('.', '') for i in allowed_exts]
         if (not filename.lower().endswith(allowed_exts)
                 or typ not in allowed_typ):
-            msg = 'Invalid file extension or file type'
-            return print_n_send_error_response(request, msg, api)
+            return print_n_send_error_response(
+                request,
+                'Invalid file extension or file type',
+                api)
 
         app_dic['dir'] = Path(settings.BASE_DIR)  # BASE DIR
         app_dic['app_name'] = filename  # APP ORIGINAL NAME

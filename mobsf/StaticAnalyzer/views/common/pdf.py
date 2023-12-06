@@ -7,7 +7,6 @@ PDF Generation
 import json
 import logging
 import os
-import re
 import platform
 
 from django.http import HttpResponse
@@ -16,6 +15,7 @@ from django.template.loader import get_template
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.MobSF import settings
 from mobsf.MobSF.utils import (
+    is_md5,
     print_n_send_error_response,
     upstream_proxy,
 )
@@ -52,13 +52,12 @@ ctype = 'application/json; charset=utf-8'
 
 def pdf(request, checksum, api=False, jsonres=False):
     try:
-        hash_match = re.match('^[0-9a-f]{32}$', checksum)
-        if not hash_match:
+        if not is_md5(checksum):
             if api:
-                return {'error': 'Invalid scan hash'}
+                return {'error': 'Invalid Hash'}
             else:
                 return HttpResponse(
-                    json.dumps({'md5': 'Invalid scan hash'}),
+                    json.dumps({'md5': 'Invalid Hash'}),
                     content_type=ctype, status=500)
         # Do Lookups
         android_static_db = StaticAnalyzerAndroid.objects.filter(

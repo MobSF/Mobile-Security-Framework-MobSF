@@ -10,6 +10,7 @@ from django.shortcuts import render
 
 from mobsf.MobSF import settings
 from mobsf.MobSF.utils import (
+    is_md5,
     print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.models import (
@@ -349,6 +350,13 @@ def get_ios_dashboard(context, from_ctx=False):
 def appsec_dashboard(request, checksum, api=False):
     """Provide data for appsec dashboard."""
     try:
+        if not is_md5(checksum):
+            # We need this check since checksum is not validated
+            # in REST API
+            return print_n_send_error_response(
+                request,
+                'Invalid Hash',
+                api)
         android_static_db = StaticAnalyzerAndroid.objects.filter(
             MD5=checksum)
         ios_static_db = StaticAnalyzerIOS.objects.filter(
@@ -362,7 +370,7 @@ def appsec_dashboard(request, checksum, api=False):
                 return {'not_found': 'Report not found or supported'}
             else:
                 msg = 'Report not found or supported'
-                return print_n_send_error_response(request, msg)
+                return print_n_send_error_response(request, msg, api)
         context['version'] = settings.MOBSF_VER
         context['title'] = 'AppSec Scorecard'
         context['efr01'] = True if settings.EFR_01 == '1' else False

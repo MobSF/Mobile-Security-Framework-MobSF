@@ -43,7 +43,7 @@ from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 logger = logging.getLogger(__name__)
 
 
-def dynamic_analysis(request, api=False):
+def android_dynamic_analysis(request, api=False):
     """Android Dynamic Analysis Entry point."""
     try:
         scan_apps = []
@@ -97,7 +97,7 @@ def dynamic_analysis(request, api=False):
                    'version': settings.MOBSF_VER}
         if api:
             return context
-        template = 'dynamic_analysis/dynamic_analysis.html'
+        template = 'dynamic_analysis/android/dynamic_analysis.html'
         return render(request, template, context)
     except Exception as exp:
         logger.exception('Dynamic Analysis')
@@ -121,7 +121,7 @@ def dynamic_analyzer(request, checksum, api=False):
             # in REST API
             return print_n_send_error_response(
                 request,
-                'Invalid Parameters',
+                'Invalid Hash',
                 api)
         package = get_package_name(checksum)
         if not package:
@@ -165,6 +165,8 @@ def dynamic_analyzer(request, checksum, api=False):
                     'Failed to MobSFy the instance',
                     api)
             if version < 5:
+                # Start Clipboard monitor
+                env.start_clipmon()
                 xposed_first_run = True
         if xposed_first_run:
             msg = ('Have you MobSFyed the instance before'
@@ -182,10 +184,6 @@ def dynamic_analyzer(request, checksum, api=False):
         env.enable_adb_reverse_tcp(version)
         # Apply Global Proxy to device
         env.set_global_proxy(version)
-        # Start Clipboard monitor
-        env.start_clipmon()
-        # Get Screen Resolution
-        screen_width, screen_height = env.get_screen_res()
         if install == '1':
             # Install APK
             apk_path = Path(settings.UPLD_DIR) / checksum / f'{checksum}.apk'
@@ -203,9 +201,7 @@ def dynamic_analyzer(request, checksum, api=False):
                     msg,
                     api)
         logger.info('Testing Environment is Ready!')
-        context = {'screen_width': screen_width,
-                   'screen_height': screen_height,
-                   'package': package,
+        context = {'package': package,
                    'hash': checksum,
                    'android_version': version,
                    'version': settings.MOBSF_VER,

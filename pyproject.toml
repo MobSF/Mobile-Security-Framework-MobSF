@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mobsf"
-version = "3.7.8"
+version = "3.8.4"
 description = "Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis."
 keywords = ["mobsf", "mobile security framework", "mobile security", "security tool", "static analysis", "dynamic analysis", "malware analysis"]
 authors = ["Ajin Abraham <ajin@opensecurity.in>"]
@@ -23,7 +23,7 @@ classifiers = [
 mobsf = "mobsf.__main__:main"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 django = ">=3.1.5"
 lxml = ">=4.6.2"
 rsa = ">=4.7"
@@ -38,11 +38,10 @@ gunicorn = {version = ">=20.0.4", markers = "sys_platform != 'win32'"}
 psutil = ">=5.8.0"
 shelljob = ">=0.6.2"
 asn1crypto = ">=1.4.0"
-oscrypto = ">=1.2.1"
 distro = ">=1.5.0"
 ip2location = "8.10.0"
 lief = ">=0.12.3"
-http-tools = ">=3.0.0"
+http-tools = ">=4.0.0"
 pdfkit = ">=0.6.1"
 google-play-scraper = ">=0.1.2"
 androguard = "3.4.0a1"
@@ -56,6 +55,7 @@ arpy = "2.3.0"
 apksigtool = "0.1.0"
 tzdata = "^2023.3"
 libsast = "^2.0.0"
+paramiko = "^3.3.1"
 
 
 [build-system]

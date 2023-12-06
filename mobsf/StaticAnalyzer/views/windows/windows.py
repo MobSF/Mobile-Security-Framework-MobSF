@@ -25,6 +25,7 @@ from django.utils.html import escape
 from mobsf.MobSF.utils import (
     file_size,
     get_config_loc,
+    is_md5,
     print_n_send_error_response,
 )
 from mobsf.MobSF.views.home import update_scan_timestamp
@@ -70,18 +71,24 @@ def staticanalyzer_windows(request, checksum, api=False):
             re_scan = request.GET.get('rescan', 0)
         if re_scan == '1':
             rescan = True
-        if not re.match('^[0-9a-f]{32}$', checksum):
-            msg = 'Invalid checksum'
-            return print_n_send_error_response(request, msg, api)
+        if not is_md5(checksum):
+            return print_n_send_error_response(
+                request,
+                'Invalid Hash',
+                api)
         robj = RecentScansDB.objects.filter(MD5=checksum)
         if not robj.exists():
-            msg = 'The file is not uploaded/available'
-            return print_n_send_error_response(request, msg, api)
+            return print_n_send_error_response(
+                request,
+                'The file is not uploaded/available',
+                api)
         typ = robj[0].SCAN_TYPE
         filename = robj[0].FILE_NAME
         if typ != 'appx':
-            msg = 'File type not supported'
-            return print_n_send_error_response(request, msg, api)
+            return print_n_send_error_response(
+                request,
+                'File type not supported',
+                api)
 
         app_dic['app_name'] = filename  # APP ORIGINAL NAME
         app_dic['md5'] = checksum

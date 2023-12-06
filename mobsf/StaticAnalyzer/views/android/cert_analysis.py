@@ -1,7 +1,6 @@
 # -*- coding: utf_8 -*-
 """Module holding the functions for code analysis."""
 
-import binascii
 import hashlib
 import logging
 import os
@@ -13,12 +12,19 @@ from androguard.util import get_certificate_name_string
 
 from asn1crypto import x509
 
-from oscrypto import asymmetric
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import (
+    dsa,
+    ec,
+    rsa,
+)
 
 from django.utils.html import escape
 
 from mobsf.MobSF.utils import (
     find_java_binary,
+    gen_sha256_hash,
 )
 
 logger = logging.getLogger(__name__)
@@ -83,11 +89,35 @@ def get_cert_details(data):
 def get_pub_key_details(data):
     """Get public key details."""
     certlist = []
-    x509_public_key = asymmetric.load_public_key(data)
-    certlist.append(f'PublicKey Algorithm: {x509_public_key.algorithm}')
-    certlist.append(f'Bit Size: {x509_public_key.bit_size}')
-    fp = binascii.hexlify(x509_public_key.fingerprint).decode('utf-8')
-    certlist.append(f'Fingerprint: {fp}')
+
+    x509_public_key = serialization.load_der_public_key(
+        data,
+        backend=default_backend())
+    alg = 'unknown'
+    fingerprint = ''
+    if isinstance(x509_public_key, rsa.RSAPublicKey):
+        alg = 'rsa'
+        modulus = x509_public_key.public_numbers().n
+        public_exponent = x509_public_key.public_numbers().e
+        to_hash = f'{modulus}:{public_exponent}'
+    elif isinstance(x509_public_key, dsa.DSAPublicKey):
+        alg = 'dsa'
+        dsa_parameters = x509_public_key.parameters()
+        p = dsa_parameters.p
+        q = dsa_parameters.q
+        g = dsa_parameters.g
+        y = x509_public_key.public_numbers().y
+        to_hash = f'{p}:{q}:{g}:{y}'
+    elif isinstance(x509_public_key, ec.EllipticCurvePublicKey):
+        alg = 'ec'
+        to_hash = f'{x509_public_key.public_numbers().curve.name}:'
+        to_hash = to_hash.encode('utf-8')
+        # Untested, possibly wrong key size and fingerprint
+        to_hash += data[25:]
+    fingerprint = gen_sha256_hash(to_hash)
+    certlist.append(f'PublicKey Algorithm: {alg}')
+    certlist.append(f'Bit Size: {x509_public_key.key_size}')
+    certlist.append(f'Fingerprint: {fingerprint}')
     return certlist
 
 

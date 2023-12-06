@@ -1,12 +1,13 @@
 # -*- coding: utf_8 -*-
 """MobSF REST API V 1."""
-import re
-
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from mobsf.StaticAnalyzer.models import (
     RecentScansDB,
+)
+from mobsf.MobSF.utils import (
+    is_md5,
 )
 from mobsf.MobSF.views.helpers import request_method
 from mobsf.MobSF.views.home import RecentScans, Upload, delete_scan
@@ -56,7 +57,7 @@ def api_scan(request):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     checksum = request.POST['hash']
-    if not re.match('^[0-9a-f]{32}$', checksum):
+    if not is_md5(checksum):
         return make_api_response(
             {'error': 'Invalid Checksum'}, 500)
     robj = RecentScansDB.objects.filter(MD5=checksum)

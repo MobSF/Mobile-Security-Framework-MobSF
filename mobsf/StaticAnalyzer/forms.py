@@ -3,6 +3,8 @@ from pathlib import Path
 
 from django import forms
 
+from mobsf.MobSF.utils import is_md5
+
 
 class AttackDetect(forms.Form):
     file = forms.CharField()
@@ -14,7 +16,7 @@ class AttackDetect(forms.Form):
                 or ('..' in file) or ('%252e' in file)):
             raise forms.ValidationError('Attack Detected')
         # Allowed File extensions
-        supported_ext = (r'^\.(java|smali|xml|'
+        supported_ext = (r'^\.(kt|java|smali|xml|'
                          r'plist|m|swift|'
                          r'db|sqlitedb|sqlite|txt|json)$')
         if not re.search(supported_ext, Path(file).suffix):
@@ -36,8 +38,7 @@ class APIChecks(forms.Form):
     def clean_hash(self):
         """Hash is valid."""
         md5 = self.cleaned_data['hash']
-        md5_match = re.match('^[0-9a-f]{32}$', md5)
-        if not md5_match:
+        if not is_md5(md5):
             raise forms.ValidationError('Invalid Hash')
         return md5
 
@@ -48,8 +49,7 @@ class WebChecks(forms.Form):
     def clean_md5(self):
         """Hash is valid."""
         md5 = self.cleaned_data['md5']
-        md5_match = re.match('^[0-9a-f]{32}$', md5)
-        if not md5_match:
+        if not is_md5(md5):
             raise forms.ValidationError('Invalid Hash')
         return md5
 

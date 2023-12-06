@@ -2,7 +2,6 @@
 """List all java files."""
 
 import logging
-import re
 from pathlib import Path
 
 from django.conf import settings
@@ -13,6 +12,7 @@ from django.shortcuts import (
 
 from mobsf.MobSF.utils import (
     api_key,
+    is_md5,
     print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
@@ -45,8 +45,7 @@ def run(request):
     """Source Tree - Java/Smali view."""
     try:
         logger.info('Listing Source files')
-        match = re.match('^[0-9a-f]{32}$', request.GET['md5'])
-        if not match:
+        if not is_md5(request.GET['md5']):
             return print_n_send_error_response(request, 'Scan hash not found')
         md5 = request.GET['md5']
         typ = request.GET['type']
