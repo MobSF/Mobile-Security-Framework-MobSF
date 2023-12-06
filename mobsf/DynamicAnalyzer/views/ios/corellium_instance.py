@@ -358,7 +358,7 @@ def appsync_ipa_install(ssh_string):
     out = ssh_execute_cmd(target, 'appinst /tmp/app.ipa')
     target.close()
     jumpbox.close()
-    if 'Failed' in out:
+    if 'Successfully installed' not in out:
         logger.error('AppSync IPA Install Failed.\n%s', out)
         return out
     logger.info(out)

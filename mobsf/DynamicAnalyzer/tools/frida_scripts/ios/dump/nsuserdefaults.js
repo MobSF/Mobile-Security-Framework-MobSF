@@ -28,5 +28,8 @@ function ns_userdefaults() {
 }
 
 try{
-    ns_userdefaults();
+    setTimeout(() => {
+        ns_userdefaults();
+    }, "2000");
+   
 } catch(err) {}

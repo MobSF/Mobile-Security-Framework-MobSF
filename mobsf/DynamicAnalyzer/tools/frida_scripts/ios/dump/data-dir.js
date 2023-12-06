@@ -59,7 +59,9 @@ function getDataProtectionKeysForAllPaths() {
 
 send('Dumping Application Directory file information');
 try {
-    send(JSON.stringify({'[MBSFDUMP] datadir': getDataProtectionKeysForAllPaths()}));
+    setTimeout(() => {
+        send(JSON.stringify({'[MBSFDUMP] datadir': getDataProtectionKeysForAllPaths()}));
+    }, "2000");
 } catch(err) {}
 
 // /********************************************************************************

@@ -7,7 +7,7 @@ from mobsf.MobSF.utils import strict_package_check
 
 def get_content(file_name):
     tools_dir = Path(settings.TOOLS_DIR)
-    aux_dir = tools_dir / 'frida_scripts' / 'ios' / 'auxiliary'
+    aux_dir = tools_dir / 'frida_scripts' / 'android' / 'auxiliary'
     script = aux_dir / file_name
 
     if script.exists():

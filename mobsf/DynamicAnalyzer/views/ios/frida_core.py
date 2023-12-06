@@ -193,6 +193,7 @@ class Frida:
                     # No front most app, spawn the app or
                     # pid is not the front most app
                     _PID = device.spawn([self.bundle_id])
+                    logger.info('Spawning %s', self.bundle_id)
                 # pid is the fornt most app
                 session = device.attach(_PID)
             except frida.NotSupportedError:

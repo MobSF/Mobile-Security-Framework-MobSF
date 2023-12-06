@@ -212,8 +212,7 @@ def ssh_jump_host(ssh_string):
     generate_keypair_if_not_exists(home)
     keyf = home / 'ssh_key.private'
     jumpbox = paramiko.SSHClient()
-    jumpbox.load_system_host_keys()
-    jumpbox.set_missing_host_key_policy(paramiko.WarningPolicy())
+    jumpbox.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     jumpbox.connect(
         bastion_host,
         username=bastion_user,
@@ -226,8 +225,7 @@ def ssh_jump_host(ssh_string):
         'direct-tcpip', dest_addr, src_addr)
 
     target = paramiko.SSHClient()
-    target.load_system_host_keys()
-    target.set_missing_host_key_policy(paramiko.WarningPolicy())
+    target.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     target.connect(
         private_ip,
         username=user,
