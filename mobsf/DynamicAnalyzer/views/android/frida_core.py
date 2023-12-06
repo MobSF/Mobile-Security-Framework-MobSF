@@ -1,6 +1,3 @@
-import io
-import os
-import glob
 import logging
 from pathlib import Path
 import sys
@@ -21,7 +18,6 @@ from mobsf.DynamicAnalyzer.views.android.frida_scripts import (
 )
 from mobsf.MobSF.utils import (
     get_device,
-    is_file_exists,
 )
 
 logger = logging.getLogger(__name__)
@@ -37,28 +33,26 @@ class Frida:
         self.auxiliary = auxiliary
         self.extras = extras
         self.code = code
-        self.frida_dir = os.path.join(settings.TOOLS_DIR,
-                                      'frida_scripts', 'android')
-        self.apk_dir = os.path.join(settings.UPLD_DIR, self.hash + '/')
-        self.api_mon = os.path.join(self.apk_dir, 'mobsf_api_monitor.txt')
-        self.frida_log = os.path.join(self.apk_dir, 'mobsf_frida_out.txt')
-        self.deps = os.path.join(self.apk_dir, 'mobsf_app_deps.txt')
-        self.clipboard = os.path.join(self.apk_dir, 'mobsf_app_clipboard.txt')
+        self.frida_dir = Path(settings.TOOLS_DIR) / 'frida_scripts' / 'android'
+        self.apk_dir = Path(settings.UPLD_DIR) / self.hash
+        self.api_mon = self.apk_dir / 'mobsf_api_monitor.txt'
+        self.frida_log = self.apk_dir / 'mobsf_frida_out.txt'
+        self.deps = self.apk_dir / 'mobsf_app_deps.txt'
+        self.clipboard = self.apk_dir / 'mobsf_app_clipboard.txt'
 
-    def get_default_scripts(self):
-        """Get default Frida Scripts."""
+    def get_scripts(self, script_type, selected_scripts):
+        """Get Frida Scripts."""
         combined_script = []
         header = []
-        if not self.defaults:
+        if not selected_scripts:
             return header
-        def_scripts = os.path.join(self.frida_dir, 'default')
-        files = glob.glob(def_scripts + '**/*.js', recursive=True)
-        for item in files:
-            script = Path(item)
-            if script.stem in self.defaults:
-                header.append('send("Loaded Frida Script - {}");'.format(
-                    script.stem))
-                combined_script.append(script.read_text())
+        all_scripts = self.frida_dir / script_type
+        for script in all_scripts.rglob('*.js'):
+            if '*' in selected_scripts:
+                combined_script.append(script.read_text('utf-8', 'ignore'))
+            if script.stem in selected_scripts:
+                header.append(f'send("Loaded Frida Script - {script.stem}");')
+                combined_script.append(script.read_text('utf-8', 'ignore'))
         return header + combined_script
 
     def get_auxiliary(self):
@@ -88,12 +82,16 @@ class Frida:
         """Get final script."""
         if not self.code:
             self.code = ''
+        rpc_list = []
         # Load custom code first
         scripts = [self.code]
-        scripts.extend(self.get_default_scripts())
+        scripts.extend(self.get_scripts('default', self.defaults))
+        rpc_list.extend(self.get_scripts('rpc', ['*']))
         scripts.extend(self.get_auxiliary())
+        rpc_script = ','.join(rpc_list)
+        rpc = f'rpc.exports = {{ \n{rpc_script}\n }};'
         combined = '\n'.join(scripts)
-        final = f'setTimeout(function() {{ \n{combined}\n}}, 1000)'
+        final = f'{rpc}\n setTimeout(function() {{ \n{combined}\n }}, 1000)'
         return final
 
     def frida_response(self, message, data):
@@ -112,15 +110,15 @@ class Frida:
                 msg = msg.replace(clip, '')
                 self.write_log(self.clipboard, f'{msg}\n')
             elif msg.startswith(deps):
-                info = msg.replace(deps, '') + '\n'
-                self.write_log(self.deps, info)
-                self.write_log(self.frida_log, info)
+                info = msg.replace(deps, '')
+                self.write_log(self.deps, f'{info}\n')
+                self.write_log(self.frida_log, f'{info}\n')
             elif msg.startswith(aux):
-                self.write_log(self.frida_log,
-                               msg.replace(aux, '[*] ') + '\n')
+                msg = msg.replace(aux, '[*] ')
+                self.write_log(self.frida_log, f'{msg}\n')
             else:
                 logger.debug('[Frida] %s', msg)
-                self.write_log(self.frida_log, msg + '\n')
+                self.write_log(self.frida_log, f'{msg}\n')
         else:
             logger.error('[Frida] %s', message)
 
@@ -165,6 +163,13 @@ class Frida:
                 if pid and package:
                     _FPID = pid
                     self.package = package
+                front = device.get_frontmost_application()
+                if not front or front.pid != _FPID:
+                    # No front most app, spawn the app or
+                    # pid is not the front most app
+                    _FPID = device.spawn([self.package])
+                    logger.info('Spawning %s', self.package)
+                # pid is the fornt most app
                 session = device.attach(_FPID)
                 time.sleep(2)
             except frida.NotSupportedError:
@@ -179,6 +184,8 @@ class Frida:
                 script = session.create_script(self.get_script())
                 script.on('message', self.frida_response)
                 script.load()
+                api = script.exports_sync
+                self.api_handler(api)
                 sys.stdin.read()
                 script.unload()
                 session.detach()
@@ -212,18 +219,57 @@ class Frida:
             logger.exception('Failed to enumerate running applications')
         return ps_dict
 
+    def api_handler(self, api):
+        """Call Frida rpc functions."""
+        loaded_classes = []
+        loaded_class_methods = []
+        implementations = []
+        try:
+            raction = self.extras.get('rclass_action')
+            rclass = self.extras.get('rclass_name')
+            rclass_pattern = self.extras.get('rclass_pattern')
+            rmethod = self.extras.get('rmethod_name')
+            rmethod_pattern = self.extras.get('rmethod_pattern')
+            if raction == 'raction':
+                loaded_classes = api.getLoadedClasses()
+            elif raction == 'getclasses' and rclass_pattern:
+                loaded_classes = api.getLoadedClasses(f'/{rclass_pattern}/i')
+            elif raction == 'getmethods' and rclass and rmethod:
+                loaded_class_methods = api.getMethods(rclass)
+            elif raction == 'getmethods' and rclass and rmethod_pattern:
+                loaded_class_methods = api.getMethods(
+                    rclass,
+                    f'/{rmethod_pattern}/i')
+            elif raction == 'getimplementations' and rclass and rmethod:
+                implementations = api.getImplementations(rclass, rmethod)
+        except Exception:
+            logger.exception('Error while calling Frida RPC functions')
+        if loaded_classes:
+            rpc_classes = self.apk_dir / 'mobsf_rpc_classes.txt'
+            loaded_classes = sorted(loaded_classes)
+            rpc_classes.write_text('\n'.join(
+                loaded_classes), 'utf-8')
+        if loaded_class_methods:
+            rpc_methods = self.apk_dir / 'mobsf_rpc_methods.txt'
+            loaded_class_methods = sorted(loaded_class_methods)
+            rpc_methods.write_text('\n'.join(
+                loaded_class_methods), 'utf-8')
+        if implementations:
+            implementations = sorted(implementations)
+            rpc_impl = self.apk_dir / 'mobsf_rpc_impl.txt'
+            rpc_impl.write_text('\n'.join(
+                implementations), 'utf-8')
+
     def clean_up(self):
-        if is_file_exists(self.api_mon):
-            os.remove(self.api_mon)
-        if is_file_exists(self.frida_log):
-            os.remove(self.frida_log)
-        if is_file_exists(self.clipboard):
-            os.remove(self.clipboard)
+        if self.api_mon.exists():
+            self.api_mon.unlink()
+        if self.frida_log.exists():
+            self.frida_log.unlink()
+        if self.clipboard.exists():
+            self.clipboard.unlink()
 
     def write_log(self, file_path, data):
-        with io.open(
-                file_path,
-                'a',
-                encoding='utf-8',
-                errors='replace') as flip:
+        with file_path.open('a',
+                            encoding='utf-8',
+                            errors='replace') as flip:
             flip.write(data)

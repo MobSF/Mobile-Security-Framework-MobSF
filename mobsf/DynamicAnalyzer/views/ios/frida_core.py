@@ -215,8 +215,7 @@ class Frida:
                 script.load()
                 api = script.exports_sync
                 device.resume(_PID)
-                self.app_container = api.get_container()
-                self.container_file.write_text(self.app_container)
+                self.api_handler(api)
                 sys.stdin.read()
                 script.unload()
                 session.detach()
@@ -252,6 +251,49 @@ class Frida:
         except Exception:
             logger.exception('Failed to enumerate running applications')
         return ps_dict
+
+    def api_handler(self, api):
+        """Call Frida rpc functions."""
+        loaded_classes = []
+        loaded_class_methods = []
+        implementations = []
+        try:
+            self.app_container = api.get_container()
+            self.container_file.write_text(self.app_container)
+            raction = self.extras.get('rclass_action')
+            rclass = self.extras.get('rclass_name')
+            rclass_pattern = self.extras.get('rclass_pattern')
+            rmethod = self.extras.get('rmethod_name')
+            rmethod_pattern = self.extras.get('rmethod_pattern')
+            if raction == 'raction':
+                loaded_classes = api.getLoadedClasses()
+            elif raction == 'getclasses' and rclass_pattern:
+                loaded_classes = api.getLoadedClasses(f'/{rclass_pattern}/i')
+            elif raction == 'getmethods' and rclass and rmethod:
+                loaded_class_methods = api.getMethods(rclass)
+            elif raction == 'getmethods' and rclass and rmethod_pattern:
+                loaded_class_methods = api.getMethods(
+                    rclass,
+                    f'/{rmethod_pattern}/i')
+            elif raction == 'getimplementations' and rclass and rmethod:
+                implementations = api.getImplementations(rclass, rmethod)
+        except Exception:
+            logger.exception('Error while calling Frida RPC functions')
+        if loaded_classes:
+            loaded_classes = sorted(loaded_classes)
+            rpc_classes = self.ipa_dir / 'mobsf_rpc_classes.txt'
+            rpc_classes.write_text('\n'.join(
+                loaded_classes), 'utf-8')
+        if loaded_class_methods:
+            loaded_class_methods = sorted(loaded_class_methods)
+            rpc_methods = self.ipa_dir / 'mobsf_rpc_methods.txt'
+            rpc_methods.write_text('\n'.join(
+                loaded_class_methods), 'utf-8')
+        if implementations:
+            implementations = sorted(implementations)
+            rpc_impl = self.ipa_dir / 'mobsf_rpc_impl.txt'
+            rpc_impl.write_text('\n'.join(
+                implementations), 'utf-8')
 
     def clean_up(self):
         if self.frida_log.exists():
