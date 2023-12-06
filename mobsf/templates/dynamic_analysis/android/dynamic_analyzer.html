@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="{% static "others/css/terminal.css" %}" type="text/css">
 <link rel="stylesheet" href="{% static "others/css/devices.min.css" %}" type="text/css">
 <link rel="stylesheet" href="{% static "codemirror/codemirror.css" %}" type="text/css">
+<link rel="stylesheet" href="{% static "enlighterjs/enlighterjs.min.css" %}" />
 <link rel="stylesheet" href="{% static "codemirror/lint.css" %}" type="text/css">
 <link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
 <style>
@@ -239,9 +240,10 @@
                       </div>
                       <!-- /.box-body -->
                       <div class="box-footer">
-                        <button id="frida_spawn" type="submit" class="btn btn-success"><i class="far fa-play-circle"></i> Spawn & Inject</button>
-                        <button id="frida_session" type="submit" class="btn btn-success"><i class="fas fa-redo"></i> Inject </button>
-                        <button id="frida_attach" type="submit" class="btn btn-success"><i class="fas fa-bug"></i> Attach </button>
+                        <button id="frida_spawn" type="submit" class="btn btn-success btn-sm"><i class="far fa-play-circle"></i> Spawn & Inject</button>
+                        <button id="frida_session" type="submit" class="btn btn-success btn-sm"><i class="fas fa-redo"></i> Inject </button>
+                        <button id="frida_attach" type="submit" class="btn btn-success btn-sm"><i class="fas fa-bug"></i> Attach </button>
+                        <button id="frida_get" class="btn btn-primary btn-sm" hidden><i class="fas fa-code"></i> Injected Code</button>
                       </div>
 
                     </form>
@@ -402,6 +404,21 @@ Java.perform(function() {
   </div>
 </div>
 
+ <!-- Modal -->
+ <div class="modal fade" id="get_code_modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Injected Frida Script</h4>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body" id="injected_content">
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <!-- Modal -->
 <div class="modal" id="tls_modal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl">
@@ -486,6 +503,7 @@ Java.perform(function() {
 <script src="{% static "codemirror/lint.js" %}"></script>
 <script src="{% static "codemirror/javascript-lint.js" %}"></script>
 <script src="{% static "others/js/swipe.js" %}"></script>
+<script src="{% static "enlighterjs/enlighterjs.min.js" %}"></script>
 <script>
 // Loading Spinner
 function dynamic_loader(){
@@ -1195,9 +1213,11 @@ function frida_instrument(frida_action, pid=null, new_pkg=null){
     // Save Frida Code to Session Storage
     var code = editor.getDoc().getValue();
     window.sessionStorage.setItem('code_android', code);
-    //Show Frida logs
+    // Show Frida logs
     document.getElementById('frida-logs').style.display = 'block';
-    var default_hooks = [];
+    // Show Frida inject button
+    document.getElementById('frida_get').hidden = false;
+     var default_hooks = [];
 
     $.each($("input[name='default_hooks']:checked"), function(){            
         default_hooks.push($(this).val());
@@ -1219,6 +1239,8 @@ function frida_instrument(frida_action, pid=null, new_pkg=null){
       print_status("Attaching to PID: " + parseInt(pid));
     } else if (frida_action == 'ps'){
       print_status("Enumerating running processes.");
+    } else if (frida_action == 'get'){
+      print_status("Getting injected frida script.");
     }
     action('{% url 'android_instrument' %}', {
       frida_action,
@@ -1232,8 +1254,8 @@ function frida_instrument(frida_action, pid=null, new_pkg=null){
       class_trace:  $('#class_trace').val(),
       frida_code: editor.getDoc().getValue(),
     }, function(json) {
-    if (json.status !== "ok")
-      print_status(json.message);
+      if (json.status !== "ok")
+        print_status(json.message);
       // Attach to a running process
       if (frida_action == 'ps' && json.message && json.message.length > 0 && Array.isArray(json.message)){
         $("#process_select").empty();
@@ -1242,10 +1264,20 @@ function frida_instrument(frida_action, pid=null, new_pkg=null){
             '<option value=' + escape(p.pid.toString()) + ',' + escape(p.identifier.toString()) + '>' +  escape(p.pid.toString()) + ': ' + escapeHtml(p.name.toString()) + ' - ' + escape(p.identifier.toString()) + '</option>');
         });
         $('#frida_attach_mdl').modal('toggle');
+      } else if (frida_action =='get'){
+        var injected = document.getElementById("injected_content");
+        injected.innerHTML = '<pre id="injected-pre"></pre>';
+        document.getElementById("injected-pre").textContent = json.message;
+        EnlighterJS.enlight( document.getElementById('injected-pre'), {
+          theme: 'enlighter',
+          linehover: false,
+          textOverflow: 'scroll',
+          language: 'javascript',
+        });
+        $('#get_code_modal').modal('toggle');
       }
   });
 }
-
 
 // Frida Spawn
 $("#frida_spawn").click(function() {
@@ -1255,7 +1287,10 @@ $("#frida_spawn").click(function() {
 
 // Frida Session
 $("#frida_session").click(function() {
-  $( "input[name='default_hooks']:checkbox" ).prop( "checked", false );
+  var default_hooks = "input[name='default_hooks']";
+  if ($(default_hooks + ":checked").length == $(default_hooks).length)
+      // If all default hooks are selected, uncheck all during injection
+      $(default_hooks + ':checkbox').prop("checked", false );
   frida_instrument('session');
   return false;  
 }); 
@@ -1277,6 +1312,11 @@ $("#attach_to_pid").click(function() {
   return false;  
 }); 
 
+// Frida Get Injected Script
+$("#frida_get").click(function() {
+  frida_instrument('get');
+  return false;  
+});
 
 //Frida Get Runtime Dependencies
 $("#deps").click(function() {

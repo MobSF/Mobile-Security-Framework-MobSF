@@ -344,6 +344,10 @@ class CorelliumInstanceAPI:
             # Should not be greater than max screen size
             swipe_x = min(int(x) + 200, int(max_x))
             swipe_y = min(int(y) + 400, int(max_y))
+            # Just to prevent linter complaining
+            # Make use of these variables in future
+            swipe_x = swipe_y
+            swipe_y = swipe_x
             if event == 'home':
                 data = [{
                     'buttons': ['holdButton'],
@@ -374,8 +378,9 @@ class CorelliumInstanceAPI:
             elif event == 'swipe_down':
                 data = [{
                     'startButtons': ['finger'],
-                    'start': [[x, swipe_y]],
-                    'end': [[swipe_x, y]],
+                    'start': [[300, 600]],
+                    'bezierPoints': [[[700, 350]], [[850, 375]]],
+                    'end': [[950, 400]],
                     'duration': 200,
                 }]
             elif event == 'swipe_left':

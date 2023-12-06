@@ -53,6 +53,11 @@ class Frida:
         self.frida_log = self.ipa_dir / 'mobsf_frida_out.txt'
         self.dump_file = self.ipa_dir / 'mobsf_dump_file.txt'
         self.container_file = self.ipa_dir / 'mobsf_app_container_path.txt'
+        self.not_supported_text = (
+            'Failed to instrument the app with Frida. '
+            'This app is not supported by Frida. '
+            'Are you able to run the app on '
+            'this device?')
 
     def get_scripts(self, script_type, selected_scripts):
         """Get Frida Scripts."""
@@ -159,7 +164,7 @@ class Frida:
                 self.clean_up()
                 _PID = frida.get_remote_device().spawn([self.bundle_id])
             except frida.NotSupportedError:
-                logger.exception('Not Supported Error')
+                logger.error(self.not_supported_text)
                 return
             except frida.ServerNotRunningError:
                 self.frida_ssh_forward()
@@ -170,9 +175,10 @@ class Frida:
         except frida.TimedOutError:
             logger.error('Timed out while waiting for device to appear')
         except frida.NotSupportedError:
-            logger.exception('Not Supported Error')
+            logger.error(self.not_supported_text)
             return
         except (frida.ProcessNotFoundError,
+                frida.ProcessNotRespondingError,
                 frida.TransportError,
                 frida.InvalidOperationError):
             pass
@@ -193,10 +199,11 @@ class Frida:
                     # No front most app, spawn the app or
                     # pid is not the front most app
                     _PID = device.spawn([self.bundle_id])
+                    logger.info('Spawning %s', self.bundle_id)
                 # pid is the fornt most app
                 session = device.attach(_PID)
             except frida.NotSupportedError:
-                logger.exception('Not Supported Error')
+                logger.error(self.not_supported_text)
                 return
             except Exception:
                 logger.warning('Cannot attach to pid, spawning again')
@@ -214,8 +221,9 @@ class Frida:
                 script.unload()
                 session.detach()
         except frida.NotSupportedError:
-            logger.exception('Not Supported Error')
+            logger.error(self.not_supported_text)
         except (frida.ProcessNotFoundError,
+                frida.ProcessNotRespondingError,
                 frida.TransportError,
                 frida.InvalidOperationError):
             pass

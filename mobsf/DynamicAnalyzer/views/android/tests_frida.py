@@ -102,6 +102,9 @@ def instrument(request, api=False):
         elif action == 'ps':
             logger.info('Enumerating running applications')
             data['message'] = frida_obj.ps()
+        elif action == 'get':
+            # Get injected Frida script.
+            data['message'] = frida_obj.get_script()
         if action in ('spawn', 'session'):
             if pid and pid.isdigit():
                 # Attach to a different pid/bundle id

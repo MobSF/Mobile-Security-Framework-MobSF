@@ -134,10 +134,84 @@ function bypassJailbreakDetection(){
     }
 }
 
-try {
-    if (ObjC.available) {
-        bypassJailbreakDetection();
-    } else {
-        send('[Jailbreak Detection Bypass] error: Objective-C Runtime is not available!');
+
+function bypassJailbreakDetection2() {
+    try {
+        
+            var resolver = new ApiResolver('objc');
+    
+            resolver.enumerateMatches('*[* *jail**]', {
+                onMatch: function(match) {
+                    var ptr = match["address"];
+                    Interceptor.attach(ptr, {
+                        onEnter: function() {},
+                        onLeave: function(retval) {
+                            retval.replace(0x0);
+                        }
+                    });
+                },
+                onComplete: function() {}
+            });
+    
+            resolver.enumerateMatches('*[* fileExistsAtPath*]', {
+                onMatch: function(match) {
+                    var ptr = match["address"];
+                    Interceptor.attach(ptr, {
+                        onEnter: function(args) {
+                            var path = ObjC.Object(args[2]).toString();
+                            this.jailbreakCall = false;
+                            for (var i = 0; i < paths.length; i++) {
+                                if (paths[i] == path) {
+                                    this.jailbreakCall = true;
+                                }
+                            }
+                        },
+                        onLeave: function(retval) {
+                            if (this.jailbreakCall) {
+                                retval.replace(0x0);
+                            }
+                        }
+                    });
+                },
+                onComplete: function() {}
+            });
+    
+            resolver.enumerateMatches('*[* canOpenURL*]', {
+                onMatch: function(match) {
+                    var ptr = match["address"];
+                    Interceptor.attach(ptr, {
+                        onEnter: function(args) {
+                            var url = ObjC.Object(args[2]).toString();
+                            this.jailbreakCall = false;
+                            if (url.indexOf("cydia") >= 0) {
+                                this.jailbreakCall = true;
+                            }
+                        },
+                        onLeave: function(retval) {
+                            if (this.jailbreakCall) {
+                                retval.replace(0x0);
+                            }
+                        }
+                    });
+                },
+                onComplete: function() {}
+            });
+            send("[Jailbreak Detection Bypass 2] success");
+        }
+        catch(e) {
+            send('[Jailbreak Detection Bypass 2] script error:' + e.toString());
+        }
     }
-} catch(err) {}
+    
+    try {
+        if (ObjC.available) {
+            bypassJailbreakDetection();
+            // Disable the below if the app is crashing
+            setTimeout(() => {
+                bypassJailbreakDetection2();
+            }, "1000");
+        } else {
+            send('[Jailbreak Detection Bypass] error: Objective-C Runtime is not available!');
+        }
+    } catch(err) {}
+    
