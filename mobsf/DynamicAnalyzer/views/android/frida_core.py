@@ -147,6 +147,7 @@ class Frida:
         except frida.TimedOutError:
             logger.error('Timed out while waiting for device to appear')
         except (frida.ProcessNotFoundError,
+                frida.ProcessNotRespondingError,
                 frida.TransportError,
                 frida.InvalidOperationError):
             pass
@@ -184,6 +185,7 @@ class Frida:
         except frida.NotSupportedError:
             logger.exception('Not Supported Error')
         except (frida.ProcessNotFoundError,
+                frida.ProcessNotRespondingError,
                 frida.TransportError,
                 frida.InvalidOperationError):
             pass

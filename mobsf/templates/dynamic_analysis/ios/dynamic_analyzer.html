@@ -1029,6 +1029,7 @@ $("#run").click(function() {
         print_status('Runnning application');
     } else {
         print_status('Failed to run the application');
+        Swal.fire('Failed!', escape(json.message), 'error')
     }
   });
   return false;  
@@ -1117,7 +1118,6 @@ function frida_instrument(frida_action, pid=null, new_bundle_id=null){
           $('#frida_attach_mdl').modal('toggle');
         } else if (frida_action =='get'){
           var injected = document.getElementById("injected_content");
-          injected.innerHTML = '';
           injected.innerHTML = '<pre id="injected-pre"></pre>';
           document.getElementById("injected-pre").textContent = json.message;
           EnlighterJS.enlight( document.getElementById('injected-pre'), {

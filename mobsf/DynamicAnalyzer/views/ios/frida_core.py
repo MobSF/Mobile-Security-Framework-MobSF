@@ -54,8 +54,8 @@ class Frida:
         self.dump_file = self.ipa_dir / 'mobsf_dump_file.txt'
         self.container_file = self.ipa_dir / 'mobsf_app_container_path.txt'
         self.not_supported_text = (
-            'Failed to instrument the app with Frida.'
-            'This app is not supported by Frida.'
+            'Failed to instrument the app with Frida. '
+            'This app is not supported by Frida. '
             'Are you able to run the app on '
             'this device?')
 
@@ -178,6 +178,7 @@ class Frida:
             logger.error(self.not_supported_text)
             return
         except (frida.ProcessNotFoundError,
+                frida.ProcessNotRespondingError,
                 frida.TransportError,
                 frida.InvalidOperationError):
             pass
@@ -222,6 +223,7 @@ class Frida:
         except frida.NotSupportedError:
             logger.error(self.not_supported_text)
         except (frida.ProcessNotFoundError,
+                frida.ProcessNotRespondingError,
                 frida.TransportError,
                 frida.InvalidOperationError):
             pass
