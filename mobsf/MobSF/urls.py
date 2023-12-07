@@ -194,7 +194,7 @@ if settings.API_ONLY == '0':
                 tests_frida.live_api,
                 name='live_api'),
         re_path(r'^frida_logs/$',
-                tests_frida.frida_logs,
+                frida.frida_logs,
                 name='frida_logs'),
         re_path(r'^get_dependencies/$', tests_frida.get_runtime_dependencies),
         # Report

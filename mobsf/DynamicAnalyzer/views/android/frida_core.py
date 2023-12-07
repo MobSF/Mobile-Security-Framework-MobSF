@@ -163,12 +163,15 @@ class Frida:
                 if pid and package:
                     _FPID = pid
                     self.package = package
-                front = device.get_frontmost_application()
-                if not front or front.pid != _FPID:
-                    # No front most app, spawn the app or
-                    # pid is not the front most app
-                    _FPID = device.spawn([self.package])
-                    logger.info('Spawning %s', self.package)
+                try:
+                    front = device.get_frontmost_application()
+                    if front and front.pid != _FPID:
+                        # Not the front most app.
+                        # Get the pid of the front most app
+                        logger.warning('Front most app has PID %s', front.pid)
+                        _FPID = front.pid
+                except Exception:
+                    pass
                 # pid is the fornt most app
                 session = device.attach(_FPID)
                 time.sleep(2)
@@ -176,7 +179,7 @@ class Frida:
                 logger.exception('Not Supported Error')
                 return
             except Exception:
-                logger.warning('Cannot attach to pid, spawning again')
+                logger.exception('Cannot attach to pid, spawning again')
                 self.spawn()
                 session = device.attach(_FPID)
                 time.sleep(2)

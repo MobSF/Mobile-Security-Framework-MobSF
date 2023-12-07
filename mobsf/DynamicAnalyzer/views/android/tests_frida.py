@@ -163,44 +163,6 @@ def live_api(request, api=False):
         return print_n_send_error_response(request, err, api)
 
 
-def frida_logs(request, api=False):
-    try:
-        if api:
-            apphash = request.POST['hash']
-            stream = True
-        else:
-            apphash = request.GET.get('hash', '')
-            stream = request.GET.get('stream', '')
-        if not is_md5(apphash):
-            return invalid_params(api)
-        if stream:
-            apk_dir = os.path.join(settings.UPLD_DIR, apphash + '/')
-            frida_logs = os.path.join(apk_dir, 'mobsf_frida_out.txt')
-            data = {}
-            if not is_file_exists(frida_logs):
-                data = {
-                    'status': 'failed',
-                    'message': 'Data does not exist.'}
-                return send_response(data, api)
-            with open(frida_logs, 'r',
-                      encoding='utf8',
-                      errors='ignore') as flip:
-                data = {'data': flip.read()}
-            return send_response(data, api)
-        logger.info('Frida Logs live streaming')
-        template = 'dynamic_analysis/android/frida_logs.html'
-        return render(request,
-                      template,
-                      {'hash': apphash,
-                       'package': request.GET.get('package', ''),
-                       'version': settings.MOBSF_VER,
-                       'title': 'Live Frida logs'})
-    except Exception:
-        logger.exception('Frida log streaming')
-        err = 'Error in Frida log streaming'
-        return print_n_send_error_response(request, err, api)
-
-
 def decode_base64(data, altchars=b'+/'):
     """Decode base64, padding being optional.
 

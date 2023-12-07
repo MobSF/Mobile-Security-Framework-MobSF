@@ -222,7 +222,7 @@ def api_frida_logs(request):
     if 'hash' not in request.POST:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
-    resp = tests_frida.frida_logs(request, True)
+    resp = frida.frida_logs(request, True)
     # frida logs can be json or html
     if resp.get('data'):
         return make_api_response(resp, 200)

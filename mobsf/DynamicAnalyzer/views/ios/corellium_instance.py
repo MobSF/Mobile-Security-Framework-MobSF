@@ -719,9 +719,9 @@ def touch(request, api=False):
         'message': '',
     }
     try:
-        x_axis = request.POST['x']
-        y_axis = request.POST['y']
-        event = request.POST['event']
+        x_axis = request.POST.get('x')
+        y_axis = request.POST.get('y')
+        event = request.POST.get('event')
 
         max_x = request.POST.get('max_x', 0)
         max_y = request.POST.get('max_y', 0)

@@ -168,12 +168,15 @@ class Frida:
                 return
             except frida.ServerNotRunningError:
                 self.frida_ssh_forward()
+                _PID = None
             if not _PID:
                 _PID = frida.get_remote_device().spawn([self.bundle_id])
             logger.info('Spawning %s', self.bundle_id)
             time.sleep(2)
         except frida.TimedOutError:
             logger.error('Timed out while waiting for device to appear')
+        except frida.ServerNotRunningError:
+            logger.error('Frida Server is not running')
         except frida.NotSupportedError:
             logger.error(self.not_supported_text)
             return
@@ -194,19 +197,21 @@ class Frida:
                 if pid and bundle_id:
                     _PID = pid
                     self.bundle_id = bundle_id
-                front = device.get_frontmost_application()
-                if not front or front.pid != _PID:
-                    # No front most app, spawn the app or
-                    # pid is not the front most app
-                    _PID = device.spawn([self.bundle_id])
-                    logger.info('Spawning %s', self.bundle_id)
-                # pid is the fornt most app
+                try:
+                    front = device.get_frontmost_application()
+                    if front or front.pid != _PID:
+                        # Not the front most app.
+                        # Get the pid of the front most app
+                        logger.warning('Front most app has PID %s', front.pid)
+                        _PID = front.pid
+                except Exception:
+                    pass
                 session = device.attach(_PID)
             except frida.NotSupportedError:
                 logger.error(self.not_supported_text)
                 return
             except Exception:
-                logger.warning('Cannot attach to pid, spawning again')
+                logger.warning('Cannot attach to pid, spawning again.')
                 self.spawn()
                 session = device.attach(_PID)
             if session and device and _PID:
@@ -258,8 +263,11 @@ class Frida:
         loaded_class_methods = []
         implementations = []
         try:
-            self.app_container = api.get_container()
-            self.container_file.write_text(self.app_container)
+            try:
+                self.app_container = api.get_container()
+                self.container_file.write_text(self.app_container)
+            except frida.InvalidOperationError:
+                pass
             raction = self.extras.get('rclass_action')
             rclass = self.extras.get('rclass_name')
             rclass_pattern = self.extras.get('rclass_pattern')
