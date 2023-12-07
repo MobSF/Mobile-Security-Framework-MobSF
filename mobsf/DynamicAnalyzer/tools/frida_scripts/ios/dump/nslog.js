@@ -26,8 +26,13 @@ function NSLogv(){
 }
 
 try {
-	NSlog();
+	setTimeout(() => {
+		NSlog();
+	}, 1000);
+
 } catch(err) {}
 try {
-	NSLogv();
+	setTimeout(() => {
+		NSLogv();
+	}, 1000);
 } catch(err) {}
