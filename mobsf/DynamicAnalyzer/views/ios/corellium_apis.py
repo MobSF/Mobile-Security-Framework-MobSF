@@ -262,13 +262,20 @@ class CorelliumInstanceAPI:
 
     def screenshot(self):
         """Take screenshot inside VM."""
-        r = requests.get(
-            f'{self.api}/instances/{self.instance_id}/screenshot.png?scale=1',
-            headers=self.headers,
-            stream=True)
-        if r.status_code == 200:
-            return r.content
-        logger.error('Failed to take a screenshot. %s', r.json()['error'])
+        r = None
+        err = ''
+        try:
+            r = requests.get(
+                (f'{self.api}/instances/{self.instance_id}'
+                 '/screenshot.png?scale=1'),
+                headers=self.headers,
+                stream=True)
+            if r.status_code == 200:
+                return r.content
+        except Exception:
+            if r and r.json().get('error'):
+                err = r.json()['error']
+            logger.error('Failed to take a screenshot. %s', err)
         return False
 
     def start_network_capture(self):

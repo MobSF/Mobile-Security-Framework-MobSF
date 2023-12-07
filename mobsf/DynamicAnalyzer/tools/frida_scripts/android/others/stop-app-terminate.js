@@ -132,38 +132,46 @@ Java.perform(function() {
         console.error(e);
     }
 })
-Interceptor.attach(Module.findExportByName(null, "exit"), {
-    onEnter: function(args) {
-        console.warn("Native Exit() Called :-->:\n" + Thread.backtrace(this.context, Backtracer.ACCURATE).map(DebugSymbol.fromAddress).join("\n") + "\n");
-    },
-    onLeave: function(retval) {}
-});
-Interceptor.attach(Module.findExportByName(null, "abort"), {
-    onEnter: function(args) {
-        console.warn("Native Abort() Called :-->:\n" + Thread.backtrace(this.context, Backtracer.ACCURATE).map(DebugSymbol.fromAddress).join("\n") + "\n");
-    },
-    onLeave: function(retval) {}
-});
-var fork = Module.findExportByName(null, "fork")
-Interceptor.attach(fork, {
-    onEnter: function(args) {},
-    onLeave: function(retval) {
-        var pid = parseInt(retval.toString(16), 16)
-        console.log("Second Process PID : ", pid)
-    }
-})
-Interceptor.attach(Module.findExportByName("libc.so", "system"), {
-    onEnter: function(args) {
-        var cmd = Memory.readCString(args[0]);
-        if (cmd.indexOf("kill") != -1) {
-            console.log("Bypass native system: " + cmd);
-            var NewKill = args[0].writeUtf8String("bypassed");
-            args[0] = ptr(NewKill);
+try {
+    Interceptor.attach(Module.findExportByName(null, "exit"), {
+        onEnter: function(args) {
+            console.warn("Native Exit() Called :-->:\n" + Thread.backtrace(this.context, Backtracer.ACCURATE).map(DebugSymbol.fromAddress).join("\n") + "\n");
+        },
+        onLeave: function(retval) {}
+    });
+} catch (e) {}
+try {
+    Interceptor.attach(Module.findExportByName(null, "abort"), {
+        onEnter: function(args) {
+            console.warn("Native Abort() Called :-->:\n" + Thread.backtrace(this.context, Backtracer.ACCURATE).map(DebugSymbol.fromAddress).join("\n") + "\n");
+        },
+        onLeave: function(retval) {}
+    });
+} catch (e) {}
+try {
+    var fork = Module.findExportByName(null, "fork")
+    Interceptor.attach(fork, {
+        onEnter: function(args) {},
+        onLeave: function(retval) {
+            var pid = parseInt(retval.toString(16), 16)
+            console.log("Second Process PID : ", pid)
         }
-    },
-    onLeave: function(retval) {}
-});
-
+    })
+} catch (e) {}
+try {
+    Interceptor.attach(Module.findExportByName("libc.so", "system"), {
+        onEnter: function(args) {
+            var cmd = Memory.readCString(args[0]);
+            if (cmd.indexOf("kill") != -1) {
+                console.log("Bypass native system: " + cmd);
+                var NewKill = args[0].writeUtf8String("bypassed");
+                args[0] = ptr(NewKill);
+            }
+        },
+        onLeave: function(retval) {}
+    });
+} catch (e) {}
+try {
     var abortPtr = Module.getExportByName('libc.so', 'abort');
     var abort = new NativeFunction(abortPtr, 'int', ['int']);
     var exitPtr = Module.getExportByName('libc.so', 'exit');
@@ -200,4 +208,4 @@ Interceptor.attach(Module.findExportByName("libc.so", "system"), {
         console.log('Shutdown Replaced');
         return 0;
     }, 'int', ['int', 'int']));
-
+} catch (e) {}

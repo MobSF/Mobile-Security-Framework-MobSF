@@ -61,7 +61,7 @@ send('Dumping Application Directory file information');
 try {
     setTimeout(() => {
         send(JSON.stringify({'[MBSFDUMP] datadir': getDataProtectionKeysForAllPaths()}));
-    }, "2000");
+    }, 2000);
 } catch(err) {}
 
 // /********************************************************************************

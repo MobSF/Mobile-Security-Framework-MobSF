@@ -241,7 +241,7 @@
                       <!-- /.box-body -->
                       <div class="box-footer">
                         <button id="frida_spawn" type="submit" class="btn btn-success btn-sm"><i class="far fa-play-circle"></i> Spawn & Inject</button>
-                        <button id="frida_session" type="submit" class="btn btn-success btn-sm"><i class="fas fa-redo"></i> Inject </button>
+                        <button id="frida_session" type="submit" class="btn btn-success btn-sm" disabled><i class="fas fa-redo"></i> Inject </button>
                         <button id="frida_attach" type="submit" class="btn btn-success btn-sm"><i class="fas fa-bug"></i> Attach </button>
                         <button id="frida_get" class="btn btn-primary btn-sm" hidden><i class="fas fa-code"></i> Injected Code</button>
                       </div>
@@ -847,11 +847,15 @@ print_status("Start Instrumentation or Run the application and navigate through 
 
 function get_logs(){
       $.ajax({
-        url : '/frida_logs/?hash={{ hash }}&stream=1', 
+        url : '{% url 'frida_logs' %}?hash={{ hash }}&stream=1', 
         type : "GET",
         dataType: "json", 
         success : function(json){ 
-            $('#frida-logs').text(json.data);
+          if (json.status==="ok"){
+            $('#frida-logs').text(json.message);
+          } else {
+            $('#frida-logs').text('')
+          }
         },
         error : function(xhr, ajaxOptions, thrownError) {
           console.log(xhr.responseText);
@@ -1232,6 +1236,7 @@ function frida_instrument(frida_action, pid=null, new_pkg=null){
     });
 
     if (frida_action === 'spawn'){
+      document.getElementById('frida_session').disabled = false;
       print_status("Instrumenting the application with Frida.");
     } else if (frida_action === 'session' && pid === null){
       print_status("Injecting Frida script to existing session.");

@@ -1,9 +1,11 @@
 """Shared Frida Views."""
+import logging
 import glob
 import os
 from pathlib import Path
 
 from django.conf import settings
+from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
 from mobsf.DynamicAnalyzer.views.common.shared import (
@@ -11,8 +13,15 @@ from mobsf.DynamicAnalyzer.views.common.shared import (
 )
 from mobsf.MobSF.utils import (
     is_file_exists,
+    is_md5,
     is_safe_path,
+    print_n_send_error_response,
 )
+
+
+logger = logging.getLogger(__name__)
+
+
 # AJAX
 
 
@@ -65,3 +74,45 @@ def get_script(request, api=False):
     except Exception:
         pass
     return send_response(data, api)
+# AJAX + HTML
+
+
+def frida_logs(request, api=False):
+    try:
+        data = {
+            'status': 'failed',
+            'message': 'Data does not exist.'}
+        if api:
+            apphash = request.POST['hash']
+            stream = True
+        else:
+            apphash = request.GET.get('hash', '')
+            stream = request.GET.get('stream', '')
+        if not is_md5(apphash):
+            data['message'] = 'Invalid hash'
+            return send_response(data, api)
+        if stream:
+            apk_dir = os.path.join(settings.UPLD_DIR, apphash + '/')
+            frida_logs = os.path.join(apk_dir, 'mobsf_frida_out.txt')
+            if not is_file_exists(frida_logs):
+                return send_response(data, api)
+            with open(frida_logs, 'r',
+                      encoding='utf8',
+                      errors='ignore') as flip:
+                data = {
+                    'status': 'ok',
+                    'message': flip.read(),
+                }
+            return send_response(data, api)
+        logger.info('Frida Logs live streaming')
+        template = 'dynamic_analysis/android/frida_logs.html'
+        return render(request,
+                      template,
+                      {'hash': apphash,
+                       'package': request.GET.get('package', ''),
+                       'version': settings.MOBSF_VER,
+                       'title': 'Live Frida logs'})
+    except Exception:
+        logger.exception('Frida log streaming')
+        err = 'Error in Frida log streaming'
+        return print_n_send_error_response(request, err, api)

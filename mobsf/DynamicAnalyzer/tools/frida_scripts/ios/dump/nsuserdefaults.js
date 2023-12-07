@@ -30,6 +30,6 @@ function ns_userdefaults() {
 try{
     setTimeout(() => {
         ns_userdefaults();
-    }, "2000");
+    }, 2000);
    
 } catch(err) {}

@@ -802,9 +802,8 @@ function upload_and_install(url){
                           'IPA Installed',
                           'The IPA is successfully installed',
                           'success'
-                          ).then(function () {
-                              location.reload();
-                          })
+                          );
+                        location.reload();
                       }
                   },
                   error : function(xhr,errmsg,err) {
