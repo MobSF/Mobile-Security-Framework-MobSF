@@ -10,6 +10,15 @@ from mobsf.StaticAnalyzer.views.common.binary.strings import (
 )
 
 
+NA = 'Not Applicable'
+NO_RELRO = 'No RELRO'
+PARTIAL_RELRO = 'Partial RELRO'
+FULL_RELRO = 'Full RELRO'
+INFO = 'info'
+WARNING = 'warning'
+HIGH = 'high'
+
+
 def nm_is_debug_symbol_stripped(elf_file):
     """Check if debug symbols are stripped using OS utility."""
     # https://linux.die.net/man/1/nm
@@ -32,13 +41,13 @@ class ELFChecksec:
             return
         is_nx = self.is_nx()
         if is_nx:
-            severity = 'info'
+            severity = INFO
             desc = (
                 'The binary has NX bit set. This marks a '
                 'memory page non-executable making attacker '
                 'injected shellcode non-executable.')
         else:
-            severity = 'high'
+            severity = HIGH
             desc = (
                 'The binary does not have NX bit set. NX bit '
                 'offer protection against exploitation of memory corruption '
@@ -52,7 +61,7 @@ class ELFChecksec:
         }
         has_canary = self.has_canary()
         if has_canary:
-            severity = 'info'
+            severity = INFO
             desc = (
                 'This binary has a stack canary value '
                 'added to the stack so that it will be overwritten by '
@@ -60,7 +69,7 @@ class ELFChecksec:
                 'This allows detection of overflows by verifying the '
                 'integrity of the canary before function return.')
         else:
-            severity = 'high'
+            severity = HIGH
             desc = (
                 'This binary does not have a stack '
                 'canary value added to the stack. Stack canaries '
@@ -74,9 +83,47 @@ class ELFChecksec:
             'severity': severity,
             'description': desc,
         }
+        relro = self.relro()
+        if relro == NA:
+            severity = INFO
+            desc = ('RELRO checks are not applicable for '
+                    'Flutter/Dart binaries')
+        elif relro == FULL_RELRO:
+            severity = INFO
+            desc = (
+                'This shared object has full RELRO '
+                'enabled. RELRO ensures that the GOT cannot be '
+                'overwritten in vulnerable ELF binaries. '
+                'In Full RELRO, the entire GOT (.got and '
+                '.got.plt both) is marked as read-only.')
+        elif relro == PARTIAL_RELRO:
+            severity = WARNING
+            desc = (
+                'This shared object has partial RELRO '
+                'enabled. RELRO ensures that the GOT cannot be '
+                'overwritten in vulnerable ELF binaries. '
+                'In partial RELRO, the non-PLT part of the GOT '
+                'section is read only but .got.plt is still '
+                'writeable. Use the option -z,relro,-z,now to '
+                'enable full RELRO.')
+        else:
+            severity = HIGH
+            desc = (
+                'This shared object does not have RELRO '
+                'enabled. The entire GOT (.got and '
+                '.got.plt both) are writable. Without this compiler '
+                'flag, buffer overflows on a global variable can '
+                'overwrite GOT entries. Use the option '
+                '-z,relro,-z,now to enable full RELRO and only '
+                '-z,relro to enable partial RELRO.')
+        elf_dict['relocation_readonly'] = {
+            'relro': relro,
+            'severity': severity,
+            'description': desc,
+        }
         rpath = self.rpath()
         if rpath:
-            severity = 'high'
+            severity = HIGH
             desc = (
                 'The binary has RPATH set. In certain cases, '
                 'an attacker can abuse this feature to run arbitrary '
@@ -87,7 +134,7 @@ class ELFChecksec:
                 'compiler option -rpath to remove RPATH.')
             rpt = rpath.rpath
         else:
-            severity = 'info'
+            severity = INFO
             desc = (
                 'The binary does not have run-time search path '
                 'or RPATH set.')
@@ -99,7 +146,7 @@ class ELFChecksec:
         }
         runpath = self.runpath()
         if runpath:
-            severity = 'high'
+            severity = HIGH
             desc = (
                 'The binary has RUNPATH set. In certain cases, '
                 'an attacker can abuse this feature and or modify '
@@ -111,7 +158,7 @@ class ELFChecksec:
                 'option --enable-new-dtags,-rpath to remove RUNPATH.')
             rnp = runpath.runpath
         else:
-            severity = 'info'
+            severity = INFO
             desc = (
                 'The binary does not have RUNPATH set.')
             rnp = runpath
@@ -122,14 +169,14 @@ class ELFChecksec:
         }
         fortified_functions = self.fortify()
         if fortified_functions:
-            severity = 'info'
+            severity = INFO
             desc = ('The binary has the '
                     f'following fortified functions: {fortified_functions}')
         else:
             if self.is_dart():
-                severity = 'info'
+                severity = INFO
             else:
-                severity = 'warning'
+                severity = WARNING
             desc = ('The binary does not have any '
                     'fortified functions. Fortified functions '
                     'provides buffer overflow checks against '
@@ -145,10 +192,10 @@ class ELFChecksec:
         }
         is_stripped = self.is_symbols_stripped()
         if is_stripped:
-            severity = 'info'
+            severity = INFO
             desc = 'Symbols are stripped.'
         else:
-            severity = 'warning'
+            severity = WARNING
             desc = 'Symbols are available.'
         elf_dict['symbol'] = {
             'is_stripped': is_stripped,
@@ -187,6 +234,34 @@ class ELFChecksec:
             except lief.not_found:
                 pass
         return False
+
+    def relro(self):
+        try:
+            gnu_relro = lief.ELF.SEGMENT_TYPES.GNU_RELRO
+            bind_now_flag = lief.ELF.DYNAMIC_FLAGS.BIND_NOW
+            flags_tag = lief.ELF.DYNAMIC_TAGS.FLAGS
+            flags1_tag = lief.ELF.DYNAMIC_TAGS.FLAGS_1
+            now_flag = lief.ELF.DYNAMIC_FLAGS_1.NOW
+
+            if self.is_dart():
+                return NA
+
+            if not self.elf.get(gnu_relro):
+                return NO_RELRO
+
+            flags = self.elf.get(flags_tag)
+            bind_now = flags and bind_now_flag in flags
+
+            flags1 = self.elf.get(flags1_tag)
+            now = flags1 and now_flag in flags1
+
+            if bind_now or now:
+                return FULL_RELRO
+            else:
+                return PARTIAL_RELRO
+        except lief.not_found:
+            pass
+        return NO_RELRO
 
     def rpath(self):
         try:
