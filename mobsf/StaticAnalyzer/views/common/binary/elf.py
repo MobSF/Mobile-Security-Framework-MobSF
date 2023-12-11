@@ -1,10 +1,22 @@
 # !/usr/bin/python
 # coding=utf-8
+import shutil
+import subprocess
+
 import lief
 
 from mobsf.StaticAnalyzer.views.common.binary.strings import (
     strings_on_binary,
 )
+
+
+def nm_is_debug_symbol_stripped(elf_file):
+    """Check if debug symbols are stripped using OS utility."""
+    # https://linux.die.net/man/1/nm
+    out = subprocess.check_output(
+        [shutil.which('nm'), '--debug-syms', elf_file],
+        stderr=subprocess.STDOUT)
+    return b'no debug symbols' in out
 
 
 class ELFChecksec:
@@ -191,10 +203,14 @@ class ELFChecksec:
             return False
 
     def is_symbols_stripped(self):
-        for i in self.elf.static_symbols:
-            if i:
-                return False
-        return True
+        try:
+            return nm_is_debug_symbol_stripped(
+                self.elf_path)
+        except Exception:
+            for i in self.elf.static_symbols:
+                if i:
+                    return False
+            return True
 
     def fortify(self):
         fortified_funcs = []
