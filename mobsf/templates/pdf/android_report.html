@@ -649,7 +649,7 @@
                        {% for so in binary_analysis %}
                        <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td width="20%">{{so.name}}</td>
+                        <td width="20%">{{so.name | relative_path}}</td>
                         <td style="vertical-align: top;"><b>{{so.nx.is_nx}}</b>
                           <br/>
                           <span class="{% if so.nx.severity == 'high' %}danger{% elif so.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.nx.severity}}</span>

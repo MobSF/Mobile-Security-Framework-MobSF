@@ -537,7 +537,7 @@
           {% for dy in dylib_analysis %}
           <tr>
             <td>{{ forloop.counter }}</td>
-            <td>{{dy.name}}</td>
+            <td>{{dy.name | relative_path}}</td>
             <td><b>{{dy.nx.has_nx}}</b>
               <br/>
               <span class="{% if dy.nx.severity == 'high' %}danger{% elif dy.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.nx.severity}}</span><br/>
