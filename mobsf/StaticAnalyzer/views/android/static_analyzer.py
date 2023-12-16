@@ -25,6 +25,7 @@ from mobsf.MobSF.utils import (
     is_md5,
     key,
     print_n_send_error_response,
+    relative_path,
 )
 from mobsf.StaticAnalyzer.models import (
     RecentScansDB,
@@ -92,6 +93,7 @@ logger = logging.getLogger(__name__)
 
 register.filter('key', key)
 register.filter('android_component', android_component)
+register.filter('relative_path', relative_path)
 
 
 def static_analyzer(request, checksum, api=False):
@@ -211,7 +213,10 @@ def static_analyzer(request, checksum, api=False):
                 # apktool should run before this
                 get_icon_apk(apk, app_dic)
 
-                elf_dict = library_analysis(app_dic['app_dir'], 'elf')
+                elf_dict = library_analysis(
+                    app_dic['app_dir'],
+                    app_dic['md5'],
+                    'elf')
                 cert_dic = cert_info(
                     apk,
                     app_dic,

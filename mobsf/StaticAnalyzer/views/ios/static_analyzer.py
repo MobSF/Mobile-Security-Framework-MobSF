@@ -8,11 +8,13 @@ import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 
 from django.conf import settings
 from django.shortcuts import render
+from django.template.defaulttags import register
 
 from mobsf.MobSF.utils import (
     file_size,
     is_md5,
     print_n_send_error_response,
+    relative_path,
 )
 from mobsf.StaticAnalyzer.models import (
     RecentScansDB,
@@ -62,6 +64,8 @@ from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
 
 logger = logging.getLogger(__name__)
 
+register.filter('relative_path', relative_path)
+
 ##############################################################
 # iOS Static Code Analysis IPA and Source Code
 ##############################################################
@@ -91,6 +95,9 @@ def static_analyzer_ios(request, checksum, api=False):
                 api)
         file_type = robj[0].SCAN_TYPE
         filename = robj[0].FILE_NAME
+        if file_type == 'dylib' and not Path(filename).suffix:
+            # Force dylib extension on Frameworks
+            filename = f'{filename}.dylib'
         allowed_exts = ('ios', '.ipa', '.zip', '.dylib', '.a')
         allowed_typ = [i.replace('.', '') for i in allowed_exts]
         if (not filename.lower().endswith(allowed_exts)
@@ -156,7 +163,10 @@ def static_analyzer_ios(request, checksum, api=False):
                     app_dict['app_dir'],
                     infoplist_dict.get('bin'))
                 # Analyze dylibs and frameworks
-                lb = library_analysis(app_dict['bin_dir'], 'macho')
+                lb = library_analysis(
+                    app_dict['bin_dir'],
+                    app_dict['md5_hash'],
+                    'macho')
                 bin_dict['dylib_analysis'] = lb['macho_analysis']
                 bin_dict['framework_analysis'] = lb['framework_analysis']
                 # Get Icon

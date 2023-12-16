@@ -1,10 +1,23 @@
 # !/usr/bin/python
 # coding=utf-8
+import shutil
+import subprocess
+
 import lief
 
 from mobsf.StaticAnalyzer.views.common.binary.strings import (
     strings_on_binary,
 )
+
+
+def objdump_is_debug_symbol_stripped(macho_file):
+    """Check if debug symbols are stripped using OS utility."""
+    # https://www.unix.com/man-page/osx/1/objdump/
+    # Works only on MacOS
+    out = subprocess.check_output(
+        [shutil.which('objdump'), '--syms', macho_file],
+        stderr=subprocess.STDOUT)
+    return b' d  ' not in out
 
 
 class MachOChecksec:
@@ -243,34 +256,38 @@ class MachOChecksec:
             return False
 
     def is_symbols_stripped(self):
-        # Based on issues/1917#issuecomment-1238078359
-        # and issues/2233#issue-1846914047
-        stripped_sym = 'radr://5614542'
-        # radr://5614542 symbol is added back for
-        # debug symbols stripped binaries
-        for i in self.macho.symbols:
-            if i.name.lower().strip() in ('__mh_execute_header', stripped_sym):
-                # __mh_execute_header is present in both
-                # stripped and unstripped binaries
-                # also ignore radr://5614542
-                continue
-            if (i.type & 0xe0) > 0 or i.type in (0x0e, 0x1e):
-                # N_STAB set or 14, 30
+        try:
+            return objdump_is_debug_symbol_stripped(self.macho_path)
+        except Exception:
+            # Based on issues/1917#issuecomment-1238078359
+            # and issues/2233#issue-1846914047
+            stripped_sym = 'radr://5614542'
+            # radr://5614542 symbol is added back for
+            # debug symbols stripped binaries
+            for i in self.macho.symbols:
+                if i.name.lower().strip() in (
+                        '__mh_execute_header', stripped_sym):
+                    # __mh_execute_header is present in both
+                    # stripped and unstripped binaries
+                    # also ignore radr://5614542
+                    continue
+                if (i.type & 0xe0) > 0 or i.type in (0x0e, 0x1e):
+                    # N_STAB set or 14, 30
 
-                # N_STAB	0xe0  /* if any of these bits set,
-                # a symbolic debugging entry */ -> 224
-                # From https://opensource.apple.com/source/xnu/xnu-201/
-                # EXTERNAL_HEADERS/mach-o/nlist.h
-                # Only symbolic debugging entries have
-                # some of the N_STAB bits set and if any
-                # of these bits are set then it is a
-                # symbolic debugging entry (a stab).
+                    # N_STAB	0xe0  /* if any of these bits set,
+                    # a symbolic debugging entry */ -> 224
+                    # https://opensource.apple.com/source/xnu/xnu-201/
+                    # EXTERNAL_HEADERS/mach-o/nlist.h
+                    # Only symbolic debugging entries have
+                    # some of the N_STAB bits set and if any
+                    # of these bits are set then it is a
+                    # symbolic debugging entry (a stab).
 
-                # Identified a debugging symbol
-                return False
-        if stripped_sym in self.get_symbols():
-            return True
-        return False
+                    # Identified a debugging symbol
+                    return False
+            if stripped_sym in self.get_symbols():
+                return True
+            return False
 
     def get_libraries(self):
         libs = []

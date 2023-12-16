@@ -19,6 +19,7 @@ import stat
 import sqlite3
 import unicodedata
 import threading
+from pathlib import Path
 from distutils.version import StrictVersion
 
 import distro
@@ -491,6 +492,8 @@ def update_local_db(db_name, url, local_file):
         else:
             logger.info('%s Database is up-to-date', db_name)
         return update
+    except requests.exceptions.ReadTimeout:
+        logger.warning('Failed to download %s DB.', db_name)
     except Exception:
         logger.exception('[ERROR] %s DB Update', db_name)
         return update
@@ -756,6 +759,21 @@ def replace(value, arg):
 
     what, to = arg.split('|')
     return value.replace(what, to)
+
+
+def relative_path(value):
+    """Show relative path to two parents."""
+    sep = None
+    if '/' in value:
+        sep = '/'
+    elif '\\\\' in value:
+        sep = '\\\\'
+    elif '\\' in value:
+        sep = '\\'
+    if not sep or value.count(sep) < 2:
+        return value
+    path = Path(value)
+    return path.relative_to(path.parent.parent).as_posix()
 
 
 def pretty_json(value):

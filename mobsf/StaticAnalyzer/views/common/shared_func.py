@@ -21,6 +21,7 @@ import requests
 import arpy
 
 from django.utils.html import escape
+from django.http import HttpResponseRedirect
 
 from mobsf.MobSF import settings
 from mobsf.MobSF.utils import (
@@ -28,8 +29,13 @@ from mobsf.MobSF.utils import (
     STRINGS_REGEX,
     URL_REGEX,
     is_md5,
+    is_safe_path,
     print_n_send_error_response,
     upstream_proxy,
+)
+from mobsf.MobSF.views.scanning import (
+    add_to_recent_scan,
+    handle_uploaded_file,
 )
 from mobsf.StaticAnalyzer.views.comparer import (
     generic_compare,
@@ -359,3 +365,52 @@ def get_symbols(symbols):
         for _, val in i.items():
             all_symbols.extend(val)
     return list(set(all_symbols))
+
+
+def scan_library(request, checksum):
+    """Scan a shared library or framework from path name."""
+    try:
+        libchecksum = None
+        if not is_md5(checksum):
+            return print_n_send_error_response(
+                request,
+                'Invalid MD5')
+        relative_path = request.GET['library']
+        lib_dir = Path(settings.UPLD_DIR) / checksum
+
+        sfile = lib_dir / relative_path
+        if not is_safe_path(lib_dir.as_posix(), sfile.as_posix()):
+            msg = 'Path Traversal Detected!'
+            return print_n_send_error_response(request, msg)
+        ext = sfile.suffix
+        if not ext and 'Frameworks' in relative_path:
+            # Force Dylib on Frameworks
+            ext = '.dylib'
+        if not sfile.exists():
+            msg = 'Library File not found'
+            return print_n_send_error_response(request, msg)
+        with open(sfile, 'rb') as f:
+            libchecksum = handle_uploaded_file(f, ext)
+        if ext in ('.ipa', '.dylib', '.a'):
+            static_analyzer = 'static_analyzer_ios'
+        elif ext == '.appx':
+            # Not applicable, but still set it
+            static_analyzer = 'windows_static_analyzer'
+        elif ext in ('.zip', '.so', '.jar', '.aar', '.apk', '.xapk'):
+            static_analyzer = 'static_analyzer'
+        else:
+            msg = 'Extension not supported'
+            return print_n_send_error_response(request, msg)
+        data = {
+            'analyzer': static_analyzer,
+            'status': 'success',
+            'hash': libchecksum,
+            'scan_type': ext.replace('.', ''),
+            'file_name': sfile.name,
+        }
+        add_to_recent_scan(data)
+        return HttpResponseRedirect(f'/{static_analyzer}/{libchecksum}/')
+    except Exception:
+        msg = 'Failed to perform Static Analysis of library'
+        logger.exception(msg)
+        return print_n_send_error_response(request, msg)

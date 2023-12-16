@@ -88,7 +88,10 @@ def so_analysis(request, app_dic, rescan, api):
             'certificate_summary': {},
         }
         app_dic['real_name'] = ''
-        elf_dict = library_analysis(app_dic['app_dir'], 'elf')
+        elf_dict = library_analysis(
+            app_dic['app_dir'],
+            app_dic['md5'],
+            'elf')
         # File Analysis is used to store symbols from so
         app_dic['certz'] = get_symbols(
             elf_dict['elf_symbols'])

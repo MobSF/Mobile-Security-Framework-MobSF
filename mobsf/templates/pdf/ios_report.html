@@ -516,14 +516,14 @@
                 </tbody>
                     </table>
         {% endif %}
-
-    {% if dylib_analysis and app_type not in 'A' %}
-        <h2><i class="fa fa-flag"></i> DYNAMIC LIBRARY BINARY ANALYSIS</h2>
+  {% if app_type not in 'A' %}
+    {% if dylib_analysis or framework_analysis %}
+        <h2><i class="fa fa-flag"></i> DYNAMIC LIBRARY & FRAMEWORK BINARY ANALYSIS</h2>
         <table class="basic">
                 <thead>
                     <tr>
                         <th>NO</th>
-                        <th>DYLIB</th>
+                        <th>DYLIB/FRAMEWORK</th>
                         <th>NX</th>
                         <th>STACK CANARY</th>
                         <th>ARC</th>
@@ -537,7 +537,7 @@
           {% for dy in dylib_analysis %}
           <tr>
             <td>{{ forloop.counter }}</td>
-            <td>{{dy.name}}</td>
+            <td>{{dy.name | relative_path}}</td>
             <td><b>{{dy.nx.has_nx}}</b>
               <br/>
               <span class="{% if dy.nx.severity == 'high' %}danger{% elif dy.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.nx.severity}}</span><br/>
@@ -568,28 +568,7 @@
               <br/>{{dy.symbol.description}}</td>
           </tr>
           {% endfor %}
-                  </tbody>
-                  </table>
-    {% endif %}
-
-    {% if framework_analysis and app_type not in 'A' %}
-    <h2><i class="fa fa-archive"></i> FRAMEWORK BINARY ANALYSIS</h2>
-    <table class="basic">
-            <thead>
-                <tr>
-                    <th>NO</th>
-                    <th>FRAMEWORK</th>
-                    <th>NX</th>
-                    <th>STACK CANARY</th>
-                    <th>ARC</th>
-                    <th>RPATH</th>
-                    <th>CODE SIGNATURE</th>
-                    <th>ENCRYPTED</th>
-                    <th>SYMBOLS STRIPPED</th>
-                </tr>
-            </thead>
-            <tbody>
-      {% for frm in framework_analysis %}
+          {% for frm in framework_analysis %}
       <tr>
         <td>{{ forloop.counter }}</td>
         <td>{{frm.name}}</td>
@@ -623,10 +602,10 @@
           <br/>{{frm.symbol.description}}</td>
       </tr>
       {% endfor %}
-              </tbody>
-              </table>
-   {% endif %}
-
+                  </tbody>
+                  </table>
+    {% endif %}
+  {% endif %}
 <!--static library-->
 {% if app_type in 'A' %}
   <h2><i class="fa fa-flag"></i> STATIC LIBRARY BINARY ANALYSIS</h2>
