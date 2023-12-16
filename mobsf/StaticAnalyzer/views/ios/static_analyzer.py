@@ -95,6 +95,9 @@ def static_analyzer_ios(request, checksum, api=False):
                 api)
         file_type = robj[0].SCAN_TYPE
         filename = robj[0].FILE_NAME
+        if file_type == 'dylib' and not Path(filename).suffix:
+            # Force dylib extension on Frameworks
+            filename = f'{filename}.dylib'
         allowed_exts = ('ios', '.ipa', '.zip', '.dylib', '.a')
         allowed_typ = [i.replace('.', '') for i in allowed_exts]
         if (not filename.lower().endswith(allowed_exts)

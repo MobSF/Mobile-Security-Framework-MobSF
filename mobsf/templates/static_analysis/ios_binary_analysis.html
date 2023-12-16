@@ -119,13 +119,7 @@
           <li class="nav-item">
             <a href="#dylib_analysis" class="nav-link">
               <i class="nav-icon fas fa-flag"></i>
-              <p>Dylib Analysis</p>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="#framework_analysis" class="nav-link">
-              <i class="nav-icon fa fa-archive"></i>
-              <p>Framework Analysis</p>
+              <p>Dylib & Framework Analysis</p>
             </a>
           </li>
           {% endif %}
@@ -925,7 +919,7 @@
         <div class="card">
           <div class="card-body">
               <p>
-             <strong><i class="fa fa-flag"></i> DYNAMIC LIBRARY BINARY ANALYSIS</strong>
+             <strong><i class="fa fa-flag"></i> DYNAMIC LIBRARY & FRAMEWORK BINARY ANALYSIS</strong>
              </p>
               <div class="table-responsive">
               <table id="table_dylib" class="table table-bordered table-hover table-striped">
@@ -933,7 +927,7 @@
                       <tr>
                       {% if app_type not in 'Dylib' %}
                           <th>NO</th>
-                          <th>DYLIB</th>
+                          <th>DYLIB/FRAMEWORK</th>
                       {% endif %}
                           <th>NX</th>
                           <th>STACK CANARY</th>
@@ -945,8 +939,8 @@
                       </tr>
                   </thead>
                   <tbody>
-            {% if not dylib_analysis %}
-              No Dylibs found.
+            {% if not dylib_analysis and not framework_analysis %}
+              No Dylibs/Frameworks found.
             {% endif %}
              {% for dy in dylib_analysis %}
              <tr>
@@ -986,51 +980,12 @@
                 <br/>{{dy.symbol.description}}</td>
             </tr>
              {% endfor %}
-                    </tbody>
-                    </table>
-                  </div>
-              
-          </div>
-        </div><!-- /.card -->
-        </div>
-        <!-- end row -->
-        </div>
-    </div>
-</section>
- <!-- ===========================end dylib analysis ================================== -->
- <a id="framework_analysis" class="anchor"></a>
- <section class="content">
-  <div class="container-fluid">
-    <div class="row">
-        <div class="col-lg-12">
-        <div class="card">
-          <div class="card-body">
-              <p>
-             <strong><i class="fa fa-archive"></i> FRAMEWORK BINARY ANALYSIS</strong>
-             </p>
-              <div class="table-responsive">
-              <table id="table_framework" class="table table-bordered table-hover table-striped">
-                  <thead>
-                      <tr>
-                          <th>NO</th>
-                          <th>FRAMEWORK</th>
-                          <th>NX</th>
-                          <th>STACK CANARY</th>
-                          <th>ARC</th>
-                          <th>RPATH</th>
-                          <th>CODE SIGNATURE</th>
-                          <th>ENCRYPTED</th>
-                          <th>SYMBOLS STRIPPED</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-            {% if not framework_analysis %}
-              No Frameworks found.
-            {% endif %}
              {% for frm in framework_analysis %}
              <tr>
               <td>{{ forloop.counter }}</td>
-              <td>{{frm.name}}</td>
+              <td>{{frm.name | relative_path}}</br>
+                <a class="btn btn-primary btn-xs" href="{% url 'scan_library' checksum=md5 %}?library={{ frm.name }}" target="_blank" rel="noopener noreferrer"><i class="fa fa-search"></i> Analyze</a> 
+              </td>
               <td><b>{{frm.nx.has_nx}}</b>
                 <br/>
                 <span class="badge bg-{% if frm.nx.severity == 'high' %}danger{% elif frm.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{frm.nx.severity}}</span>
@@ -1072,7 +1027,7 @@
         </div>
     </div>
 </section>
- <!-- ===========================end framework analysis ================================== -->
+ <!-- ===========================end dylib analysis ================================== -->
  {% endif %}
  <!--static library-->
 {% if app_type in 'A' %}

@@ -382,8 +382,10 @@ def scan_library(request, checksum):
         if not is_safe_path(lib_dir.as_posix(), sfile.as_posix()):
             msg = 'Path Traversal Detected!'
             return print_n_send_error_response(request, msg)
-
         ext = sfile.suffix
+        if not ext and 'Frameworks' in relative_path:
+            # Force Dylib on Frameworks
+            ext = '.dylib'
         if not sfile.exists():
             msg = 'Library File not found'
             return print_n_send_error_response(request, msg)

@@ -763,13 +763,14 @@ def replace(value, arg):
 
 def relative_path(value):
     """Show relative path to two parents."""
+    sep = None
     if '/' in value:
         sep = '/'
     elif '\\\\' in value:
         sep = '\\\\'
     elif '\\' in value:
         sep = '\\'
-    if value.count(sep) < 2:
+    if not sep or value.count(sep) < 2:
         return value
     path = Path(value)
     return path.relative_to(path.parent.parent).as_posix()
