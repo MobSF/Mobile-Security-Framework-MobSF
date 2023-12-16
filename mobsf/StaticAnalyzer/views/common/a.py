@@ -116,7 +116,10 @@ def a_analysis(request, app_dict, rescan, api):
             'framework_analysis': {},
         }
         # Analyze static library
-        slib = library_analysis(app_dict['bin_dir'], 'ar')
+        slib = library_analysis(
+            app_dict['bin_dir'],
+            app_dict['md5_hash'],
+            'ar')
         bin_dict['bin_info']['arch'] = slib['ar_a']
         bin_dict['dylib_analysis'] = slib['ar_analysis']
         # Store Symbols in File Analysis

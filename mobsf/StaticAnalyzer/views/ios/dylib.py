@@ -96,7 +96,10 @@ def dylib_analysis(request, app_dict, rescan, api):
             'bin_type': 'Dylib',
         }
         # Analyze dylib
-        dy = library_analysis(app_dict['bin_dir'], 'macho')
+        dy = library_analysis(
+            app_dict['bin_dir'],
+            app_dict['md5_hash'],
+            'macho')
         bin_dict['dylib_analysis'] = dy['macho_analysis']
         bin_dict['framework_analysis'] = {}
         # Store Symbols in File Analysis

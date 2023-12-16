@@ -142,7 +142,10 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
                 'certificate_summary': {},
             }
         app_dic['real_name'] = ''
-        elf_dict = library_analysis(app_dic['app_dir'], 'elf')
+        elf_dict = library_analysis(
+            app_dic['app_dir'],
+            app_dic['md5'],
+            'elf')
         tracker = Trackers.Trackers(
             app_dic['app_dir'],
             app_dic['tools_dir'])

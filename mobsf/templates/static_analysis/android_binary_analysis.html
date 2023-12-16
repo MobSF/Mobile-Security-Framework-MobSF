@@ -1372,7 +1372,9 @@
              <tr>
               {% if app_type not in 'so' %}
               <td>{{ forloop.counter }}</td>
-              <td>{{so.name}}</td>
+              <td>{{so.name | relative_path}}</br>
+                <a class="btn btn-primary btn-xs" href="{% url 'scan_library' checksum=md5 %}?library={{ so.name }}" target="_blank" rel="noopener noreferrer"><i class="fa fa-search"></i> Analyze</a> 
+              </td>
               {% endif %}
               <td><b>{{so.nx.is_nx}}</b>
                 <br/>

@@ -13,6 +13,7 @@ from mobsf.StaticAnalyzer.views.common.binary.strings import (
 def objdump_is_debug_symbol_stripped(macho_file):
     """Check if debug symbols are stripped using OS utility."""
     # https://www.unix.com/man-page/osx/1/objdump/
+    # Works only on MacOS
     out = subprocess.check_output(
         [shutil.which('objdump'), '--syms', macho_file],
         stderr=subprocess.STDOUT)
