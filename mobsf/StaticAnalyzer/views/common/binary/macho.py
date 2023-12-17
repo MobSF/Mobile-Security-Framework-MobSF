@@ -2,6 +2,7 @@
 # coding=utf-8
 import shutil
 import subprocess
+from pathlib import Path
 
 import lief
 
@@ -75,7 +76,10 @@ class MachOChecksec:
                 'to execute reliably.')
         else:
             severity = 'high'
-            if self.macho_name.endswith('.dylib'):
+            ext = Path(self.macho_name).suffix
+            # PIE check not applicable for static and dynamic libraries
+            if (ext == '.dylib'
+                    or (not ext and '.framework' in self.macho_name)):
                 severity = 'info'
             desc = (
                 'The binary is built without Position '
