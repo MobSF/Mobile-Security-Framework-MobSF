@@ -78,6 +78,8 @@ class MachOChecksec:
             severity = 'high'
             ext = Path(self.macho_name).suffix
             # PIE check not applicable for static and dynamic libraries
+            # https://github.com/MobSF/Mobile-Security-Framework-MobSF/
+            # issues/2290#issuecomment-1837272113
             if (ext == '.dylib'
                     or (not ext and '.framework' in self.macho_name)):
                 severity = 'info'
@@ -90,7 +92,7 @@ class MachOChecksec:
                 'the address space positions of key data areas of a '
                 'process, including the base of the executable and the '
                 'positions of the stack,heap and libraries. Use compiler '
-                'option -fPIC to enable Position Independent Code.'
+                'option -fPIC to enable Position Independent Code. '
                 'Not applicable for dylibs and static libraries.')
         macho_dict['pie'] = {
             'has_pie': has_pie,

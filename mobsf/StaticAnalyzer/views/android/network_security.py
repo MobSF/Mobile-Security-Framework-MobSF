@@ -4,6 +4,10 @@ import logging
 from xml.dom import minidom
 from pathlib import Path
 
+from mobsf.MobSF.utils import (
+    is_path_traversal,
+)
+
 logger = logging.getLogger(__name__)
 HIGH = 'high'
 WARNING = 'warning'
@@ -13,7 +17,7 @@ SECURE = 'secure'
 
 def read_netsec_config(app_dir, config, src_type):
     """Read the manifest file."""
-    msg = 'Reading Network Security Config'
+    msg = 'Reading Network Security config'
     try:
         config_file = None
         config = config.replace('@xml/', '', 1)
@@ -24,14 +28,20 @@ def read_netsec_config(app_dir, config, src_type):
         else:
             # APK
             xml_dir = base / 'apktool_out' / 'res' / 'xml'
+        if not is_path_traversal(config):
+            netsec_file = xml_dir / f'{config}.xml'
+            if netsec_file.exists():
+                logger.info('%s from %s.xml', msg, config)
+                return netsec_file.read_text('utf8', 'ignore')
+        # Couldn't find the file defined in manifest
         xmls = Path(xml_dir).glob('*.xml')
         for xml in xmls:
-            if xml.stem in [config, 'network_security_config']:
+            if 'network_security' in xml.stem:
                 config_file = xml
                 break
         if not config_file:
             return None
-        logger.info(msg)
+        logger.info('%s from %s', msg, config_file.name)
         return config_file.read_text('utf8', 'ignore')
     except Exception:
         logger.exception(msg)
@@ -50,7 +60,7 @@ def analysis(app_dir, config, is_debuggable, src_type):
         netsec_conf = read_netsec_config(app_dir, config, src_type)
         if not netsec_conf:
             return netsec
-        logger.info('Parsing Network Security Config')
+        logger.info('Parsing Network Security config')
         parsed = minidom.parseString(netsec_conf)
         finds = []
         summary = {HIGH: 0, WARNING: 0, INFO: 0, SECURE: 0}
