@@ -50,10 +50,11 @@ def get_hardcoded_cert_keystore(files):
         for file_name in files:
             if '.' not in file_name:
                 continue
-            ext = file_name.split('.')[-1]
-            if re.search('cer|pem|cert|crt|pub|key|pfx|p12|der', ext):
+            ext = Path(file_name).suffix
+            if ext in ('.cer', '.pem', '.cert', '.crt',
+                       '.pub', '.key', '.pfx', '.p12', '.der'):
                 certz.append(escape(file_name))
-            if re.search('jks|bks', ext):
+            if ext in ('.jks', '.bks'):
                 key_store.append(escape(file_name))
         if certz:
             desc = 'Certificate/Key files hardcoded inside the app.'

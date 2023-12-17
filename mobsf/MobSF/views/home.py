@@ -164,7 +164,7 @@ class Upload(object):
 def api_docs(request):
     """Api Docs Route."""
     context = {
-        'title': 'REST API Docs',
+        'title': 'API Docs',
         'api_key': api_key(),
         'version': settings.MOBSF_VER,
     }

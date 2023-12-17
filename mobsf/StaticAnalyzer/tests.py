@@ -71,7 +71,7 @@ def static_analysis_test():
         if platform.system() in ['Darwin', 'Linux']:
             pdfs = [
                 '/pdf/02e7989c457ab67eb514a8328779f256/',
-                '/pdf/3a552566097a8de588b8184b059b0158/',
+                '/pdf/82ab8b2193b3cfb1c737e3a786be363a/',
                 '/pdf/6c23c2970551be15f32bbab0b5db0c71/',
                 '/pdf/52c50ae824e329ba8b5b7a0f523efffe/',
                 '/pdf/57bb5be0ea44a755ada4a93885c3825e/',
@@ -81,7 +81,7 @@ def static_analysis_test():
         else:
             pdfs = [
                 '/pdf/02e7989c457ab67eb514a8328779f256/',
-                '/pdf/3a552566097a8de588b8184b059b0158/',
+                '/pdf/82ab8b2193b3cfb1c737e3a786be363a/',
                 '/pdf/52c50ae824e329ba8b5b7a0f523efffe/',
                 '/pdf/57bb5be0ea44a755ada4a93885c3825e/',
                 '/pdf/8179b557433835827a70510584f3143e/',
@@ -101,7 +101,7 @@ def static_analysis_test():
 
         # Compare apps test
         logger.info('Running App Compare tests')
-        first_app = '3a552566097a8de588b8184b059b0158'
+        first_app = '82ab8b2193b3cfb1c737e3a786be363a'
         second_app = '52c50ae824e329ba8b5b7a0f523efffe'
         url = '/compare/{}/{}/'.format(first_app, second_app)
         resp = http_client.get(url, follow=True)
@@ -113,10 +113,24 @@ def static_analysis_test():
             logger.info(resp.content)
             return True
 
+        # Scan shared object or dylib from binaries.
+        logger.info('Running Library Analysis test')
+        md5 = '82ab8b2193b3cfb1c737e3a786be363a'
+        lib = 'apktool_out/lib/arm64-v8a/libdivajni.so'
+        url = f'/scan_library/{md5}?library={lib}'
+        resp = http_client.get(url, follow=True)
+        assert (resp.status_code == 200)
+        if resp.status_code == 200:
+            logger.info('[OK] Library Analysis test passed successfully')
+        else:
+            logger.error('Library Analysis test failed')
+            logger.info(resp.content)
+            return True
+
         # Search by MD5
         if platform.system() in ['Darwin', 'Linux']:
             scan_md5s = ['02e7989c457ab67eb514a8328779f256',
-                         '3a552566097a8de588b8184b059b0158',
+                         '82ab8b2193b3cfb1c737e3a786be363a',
                          '6c23c2970551be15f32bbab0b5db0c71',
                          '52c50ae824e329ba8b5b7a0f523efffe',
                          '57bb5be0ea44a755ada4a93885c3825e',
@@ -124,7 +138,7 @@ def static_analysis_test():
                          '7b0a23bffc80bac05739ea1af898daad']
         else:
             scan_md5s = ['02e7989c457ab67eb514a8328779f256',
-                         '3a552566097a8de588b8184b059b0158',
+                         '82ab8b2193b3cfb1c737e3a786be363a',
                          '52c50ae824e329ba8b5b7a0f523efffe',
                          '57bb5be0ea44a755ada4a93885c3825e',
                          '8179b557433835827a70510584f3143e',
@@ -242,7 +256,7 @@ def api_test():
         if platform.system() in ['Darwin', 'Linux']:
             pdfs = [
                 {'hash': '02e7989c457ab67eb514a8328779f256'},
-                {'hash': '3a552566097a8de588b8184b059b0158'},
+                {'hash': '82ab8b2193b3cfb1c737e3a786be363a'},
                 {'hash': '6c23c2970551be15f32bbab0b5db0c71'},
                 {'hash': '52c50ae824e329ba8b5b7a0f523efffe'},
                 {'hash': '57bb5be0ea44a755ada4a93885c3825e'},
@@ -252,7 +266,7 @@ def api_test():
         else:
             pdfs = [
                 {'hash': '02e7989c457ab67eb514a8328779f256'},
-                {'hash': '3a552566097a8de588b8184b059b0158'},
+                {'hash': '82ab8b2193b3cfb1c737e3a786be363a'},
                 {'hash': '52c50ae824e329ba8b5b7a0f523efffe'},
                 {'hash': '57bb5be0ea44a755ada4a93885c3825e'},
                 {'hash': '8179b557433835827a70510584f3143e'},
@@ -314,9 +328,9 @@ def api_test():
         logger.info('[OK] Scorecard API test completed')
         logger.info('Running View Source API test')
         # View Source tests
-        files = [{'file': 'opensecurity/helloworld/MainActivity.java',
+        files = [{'file': 'jakhar/aseem/diva/MainActivity.java',
                   'type': 'apk',
-                  'hash': '3a552566097a8de588b8184b059b0158'},
+                  'hash': '82ab8b2193b3cfb1c737e3a786be363a'},
                  {'file': 'opensecurity/webviewignoressl/MainActivity.java',
                   'type': 'studio',
                   'hash': '52c50ae824e329ba8b5b7a0f523efffe'},
@@ -351,7 +365,7 @@ def api_test():
         resp = http_client.post(
             '/api/v1/compare',
             {
-                'hash1': '3a552566097a8de588b8184b059b0158',
+                'hash1': '82ab8b2193b3cfb1c737e3a786be363a',
                 'hash2': '52c50ae824e329ba8b5b7a0f523efffe',
             },
             HTTP_AUTHORIZATION=auth)
@@ -359,7 +373,7 @@ def api_test():
         resp_custom = http_client.post(
             '/api/v1/compare',
             {
-                'hash1': '3a552566097a8de588b8184b059b0158',
+                'hash1': '82ab8b2193b3cfb1c737e3a786be363a',
                 'hash2': '52c50ae824e329ba8b5b7a0f523efffe',
             },
             HTTP_X_MOBSF_API_KEY=auth)
@@ -373,7 +387,7 @@ def api_test():
         logger.info('Running Delete Scan Results test')
         # Suppression tests
         # Android Manifest by rule
-        and_hash = '3a552566097a8de588b8184b059b0158'
+        and_hash = '82ab8b2193b3cfb1c737e3a786be363a'
         rule = 'app_is_debuggable'
         typ = 'manifest'
         logger.info('Running Suppression disable by rule for APK manifest')
@@ -489,7 +503,7 @@ def api_test():
         # Deleting Scan Results
         if platform.system() in ['Darwin', 'Linux']:
             scan_md5s = ['02e7989c457ab67eb514a8328779f256',
-                         '3a552566097a8de588b8184b059b0158',
+                         '82ab8b2193b3cfb1c737e3a786be363a',
                          '6c23c2970551be15f32bbab0b5db0c71',
                          '52c50ae824e329ba8b5b7a0f523efffe',
                          '57bb5be0ea44a755ada4a93885c3825e',
@@ -498,7 +512,7 @@ def api_test():
                          ]
         else:
             scan_md5s = ['02e7989c457ab67eb514a8328779f256',
-                         '3a552566097a8de588b8184b059b0158',
+                         '82ab8b2193b3cfb1c737e3a786be363a',
                          '52c50ae824e329ba8b5b7a0f523efffe',
                          '57bb5be0ea44a755ada4a93885c3825e',
                          '8179b557433835827a70510584f3143e',

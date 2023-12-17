@@ -492,7 +492,8 @@ def update_local_db(db_name, url, local_file):
         else:
             logger.info('%s Database is up-to-date', db_name)
         return update
-    except requests.exceptions.ReadTimeout:
+    except (requests.exceptions.ReadTimeout,
+            requests.exceptions.ConnectionError):
         logger.warning('Failed to download %s DB.', db_name)
     except Exception:
         logger.exception('[ERROR] %s DB Update', db_name)

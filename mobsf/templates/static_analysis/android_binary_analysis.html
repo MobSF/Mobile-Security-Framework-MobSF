@@ -812,10 +812,17 @@
                     {{ details.metadata.description }}
                     </td>
                     <td>
-                     {% for file_path, lines in details.files.items %}
-                    <a href="{% url "view_source" %}?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines }}"> {{ file_path }}</a>
-                    <br/>
-                    {% endfor %}
+                      <a class="btn btn-primary btn-xs" data-toggle="collapse" href="#collapseapi{{forloop.counter}}" role="button" aria-expanded="false" aria-controls="collapseapi{{forloop.counter}}">
+                        Show Files
+                      </a>
+                      <div class="collapse" id="collapseapi{{forloop.counter}}">
+                        {% for file_path, lines in details.files.items %}
+                          <small>
+                            <a href="{% url "view_source" %}?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines }}"> {{ file_path }}</a>
+                          </small>
+                        </br>
+                        {% endfor %}
+                      </div>
                     </td>
                   </tr>    
                     {% endfor %} 
@@ -1301,10 +1308,26 @@
                       {% if details.metadata.masvs %}</br> <strong>OWASP MASVS: </strong>{{ details.metadata.masvs }}{% endif %}
                   </td>
                   <td>
-                  {% for file_path, lines in details.files.items %}
-                   <a href="{% url "view_source" %}?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines}}"> {{ file_path }}</a>
-                  <br/>
-                  {% endfor %}
+                    {% if details.files|length < 4 %}
+                      {% for file_path, lines in details.files.items %}
+                        <small>
+                          <a href="{% url "view_source" %}?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines}}"> {{ file_path }}</a>
+                        </small>
+                      </br>
+                      {% endfor %}
+                    {% else %}
+                      <a class="btn btn-primary btn-xs" data-toggle="collapse" href="#collapsecode{{forloop.counter}}" role="button" aria-expanded="false" aria-controls="collapsecode{{forloop.counter}}">
+                        Show Files
+                      </a>
+                      <div class="collapse" id="collapsecode{{forloop.counter}}">
+                        {% for file_path, lines in details.files.items %}
+                          <small>
+                            <a href="{% url "view_source" %}?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines}}"> {{ file_path }}</a>
+                          </small>
+                        </br>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
                   </td>
                   <td>
 

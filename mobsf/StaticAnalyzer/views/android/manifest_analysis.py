@@ -14,8 +14,42 @@ logger = logging.getLogger(__name__)
 ANDROID_4_2_LEVEL = 17
 ANDROID_5_0_LEVEL = 21
 ANDROID_8_0_LEVEL = 26
+ANDROID_9_0_LEVEL = 28
+ANDROID_10_0_LEVEL = 29
 ANDROID_MANIFEST_FILE = 'AndroidManifest.xml'
-
+ANDROID_API_LEVEL_MAP = {
+    '1': '1.0',
+    '2': '1.1',
+    '3': '1.5',
+    '4': '1.6',
+    '5': '2.0-2.1',
+    '8': '2.2-2.2.3',
+    '9': '2.3-2.3.2',
+    '10': '2.3.3-2.3.7',
+    '11': '3.0',
+    '12': '3.1',
+    '13': '3.2-3.2.6',
+    '14': '4.0-4.0.2',
+    '15': '4.0.3-4.0.4',
+    '16': '4.1-4.1.2',
+    '17': '4.2-4.2.2',
+    '18': '4.3-4.3.1',
+    '19': '4.4-4.4.4',
+    '20': '4.4W-4.4W.2',
+    '21': '5.0-5.0.2',
+    '22': '5.1-5.1.1',
+    '23': '6.0-6.0.1',
+    '24': '7.0',
+    '25': '7.1-7.1.2',
+    '26': '8.0',
+    '27': '8.1',
+    '28': '9',
+    '29': '10',
+    '30': '11',
+    '31': '12',
+    '32': '12L',
+    '33': '13',
+}
 
 def get_browsable_activities(node, ns):
     """Get Browsable Activities."""
@@ -110,7 +144,12 @@ def manifest_analysis(mfxml, ns, man_data_dic, src_type, app_dir):
         # GENERAL
         if man_data_dic['min_sdk'] and int(man_data_dic['min_sdk']) < ANDROID_8_0_LEVEL:
             minsdk = man_data_dic.get('min_sdk')
-            ret_list.append(('vulnerable_os_version', (minsdk,), ()))
+            android_version = ANDROID_API_LEVEL_MAP.get(minsdk, 'XX')
+            ret_list.append(('vulnerable_os_version', (android_version, minsdk,), ()))
+        elif man_data_dic['min_sdk'] and int(man_data_dic['min_sdk']) < ANDROID_10_0_LEVEL:
+            minsdk = man_data_dic.get('min_sdk')
+            android_version = ANDROID_API_LEVEL_MAP.get(minsdk, 'XX')
+            ret_list.append(('vulnerable_os_version2', (android_version, minsdk,), ()))
         # APPLICATIONS
         # Handle multiple application tags in AAR
         backupDisabled = False
@@ -174,30 +213,44 @@ def manifest_analysis(mfxml, ns, man_data_dic, src_type, app_dir):
                 else:
                     itemname = 'NIL'
                 item = ''
+                if itemname in ['Activity', 'Activity-Alias']:
+                    # Task Affinity
+                    task_affinity = node.getAttribute(f'{ns}:taskAffinity')
+                    if (task_affinity):
+                        item = node.getAttribute(f'{ns}:name')
+                        ret_list.append(('task_affinity_set', (item,), ()))
 
-                # Task Affinity
-                if (
-                        itemname in ['Activity', 'Activity-Alias'] and
-                        node.getAttribute(f'{ns}:taskAffinity')
-                ):
+                    # LaunchMode
+                    try:
+                        affected_sdk = int(
+                            man_data_dic['min_sdk']) < ANDROID_5_0_LEVEL
+                    except Exception:
+                        # in case min_sdk is not defined we assume vulnerability
+                        affected_sdk = True
+                    launchmode = node.getAttribute(f'{ns}:launchMode')
                     item = node.getAttribute(f'{ns}:name')
-                    ret_list.append(('task_affinity_set', (item,), ()))
+                    modes = ('singleTask', 'singleInstance')
+                    if (affected_sdk
+                            and launchmode in modes):
+                        ret_list.append(('non_standard_launchmode', (item,), ()))
 
-                # LaunchMode
-                try:
-                    affected_sdk = int(
-                        man_data_dic['min_sdk']) < ANDROID_5_0_LEVEL
-                except Exception:
-                    # in case min_sdk is not defined we assume vulnerability
-                    affected_sdk = True
+                    # Android Task Hijacking or StrandHogg 1.0
+                    try:
+                        target_sdk = int(man_data_dic['target_sdk'])
+                    except Exception:
+                        target_sdk = ANDROID_8_0_LEVEL
+                    if (target_sdk < ANDROID_9_0_LEVEL
+                            and launchmode == 'singleTask'):
+                        ret_list.append(('task_hijacking', (item,), ()))
 
-                if (
-                        affected_sdk and
-                        itemname in ['Activity', 'Activity-Alias'] and
-                        (node.getAttribute(f'{ns}:launchMode') == 'singleInstance'
-                            or node.getAttribute(f'{ns}:launchMode') == 'singleTask')):
-                    item = node.getAttribute(f'{ns}:name')
-                    ret_list.append(('non_standard_launchmode', (item,), ()))
+                    # Android StrandHogg 2.0
+                    exported_act = node.getAttribute(f'{ns}:exported')
+                    if (target_sdk < ANDROID_10_0_LEVEL
+                            and itemname in ['Activity', 'Activity-Alias']
+                            and exported_act == 'true'
+                            and (launchmode != 'singleInstance' or task_affinity != '')):
+                        ret_list.append(('task_hijacking2', (item,), ()))
+
                 # Exported Check
                 item = ''
                 is_inf = False
