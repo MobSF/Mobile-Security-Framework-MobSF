@@ -112,6 +112,7 @@ sidebar-collapse
 // @Version: 0.0.2 (2015-02-18)
 */
 </style>
+<link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
 {% endblock %}
 {% block content %}
     <!-- Content Wrapper. Contains page content -->
@@ -490,13 +491,31 @@ sidebar-collapse
     <!-- /.content -->
   </div>
   <!-- /.content-wrapper -->
+<!--Loader-->
+<div class="hidden loading">
+  <div class='uil-ring-css' style='transform:scale(0.79);'>
+    <div></div>
+  </div>
+  </div>
 {% endblock %}
 {% block extra_scripts %}
 <script src="{% static "chartjs/Chart.bundle.js" %}"></script>
 <script src="{% static "chartjs/chartjs-gauge.js" %}"></script>
 <script src="{% static "jqueryknob/jquery.knob.min.js" %}"></script>
 <script>
-
+    function dynamic_loader(){
+        var loadingOverlay = document.querySelector('.loading');
+        loadingOverlay.classList.remove('hidden');
+    }
+    function stop_loader(){
+        var loadingOverlay = document.querySelector('.loading');
+        loadingOverlay.classList.add('hidden');
+    }
+    dynamic_loader();
+    document.onreadystatechange = function(){
+      if(document.readyState=='loaded' || document.readyState=='complete')
+        stop_loader();
+    }
     // Severity
 
     const high = {{ high | length }};
