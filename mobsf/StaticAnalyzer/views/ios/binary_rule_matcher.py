@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 def get_desc(desc_str, match):
     """Generate formatted detailed description with matches."""
     return desc_str.format(
-        b', '.join(list(set(match))).decode('utf-8', 'ignore'))
+        b', '.join(sorted(set(match))).decode('utf-8', 'ignore'))
 
 
 def _add_bfindings(findings, desc, detailed_desc, rule):
