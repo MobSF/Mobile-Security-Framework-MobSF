@@ -66,6 +66,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'android_api': python_dict(db_entry[0].ANDROID_API),
             'code_analysis': code,
             'niap_analysis': python_dict(db_entry[0].NIAP_ANALYSIS),
+            'permission_mapping': python_dict(db_entry[0].PERMISSION_MAPPING),
             'urls': python_list(db_entry[0].URLS),
             'domains': python_dict(db_entry[0].DOMAINS),
             'emails': python_list(db_entry[0].EMAILS),
@@ -136,6 +137,7 @@ def get_context_from_analysis(app_dic,
             'android_api': code_an_dic['api'],
             'code_analysis': code,
             'niap_analysis': code_an_dic['niap'],
+            'permission_mapping': code_an_dic['perm_mappings'],
             'urls': code_an_dic['urls'],
             'domains': code_an_dic['domains'],
             'emails': code_an_dic['emails'],
@@ -197,6 +199,7 @@ def save_or_update(update_type,
             'ANDROID_API': code_an_dic['api'],
             'CODE_ANALYSIS': code_an_dic['findings'],
             'NIAP_ANALYSIS': code_an_dic['niap'],
+            'PERMISSION_MAPPING': code_an_dic['perm_mappings'],
             'URLS': code_an_dic['urls'],
             'DOMAINS': code_an_dic['domains'],
             'EMAILS': code_an_dic['emails'],
@@ -237,33 +240,23 @@ def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, quark, trk, rscn):
     # SAVE TO DB
     if rscn:
         logger.info('Updating Database...')
-        save_or_update(
-            'update',
-            app,
-            man,
-            m_anal,
-            code,
-            cert,
-            elf,
-            apkid,
-            quark,
-            trk,
-        )
+        action = 'update'
         update_scan_timestamp(app['md5'])
     else:
         logger.info('Saving to Database')
-        save_or_update(
-            'save',
-            app,
-            man,
-            m_anal,
-            code,
-            cert,
-            elf,
-            apkid,
-            quark,
-            trk,
-        )
+        action = 'save'
+    save_or_update(
+        action,
+        app,
+        man,
+        m_anal,
+        code,
+        cert,
+        elf,
+        apkid,
+        quark,
+        trk,
+    )
     return get_context_from_analysis(
         app,
         man,

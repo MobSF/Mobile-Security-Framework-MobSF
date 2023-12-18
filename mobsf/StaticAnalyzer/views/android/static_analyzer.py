@@ -235,7 +235,8 @@ def static_analyzer(request, checksum, api=False):
                 code_an_dic = code_analysis(
                     app_dic['app_dir'],
                     'apk',
-                    app_dic['manifest_file'])
+                    app_dic['manifest_file'],
+                    man_data_dic['perm'])
 
                 quark_results = quark_analysis(
                     app_dic['app_dir'],
@@ -381,7 +382,8 @@ def static_analyzer(request, checksum, api=False):
                     code_an_dic = code_analysis(
                         app_dic['app_dir'],
                         pro_type,
-                        app_dic['manifest_file'])
+                        app_dic['manifest_file'],
+                        man_data_dic['perm'])
 
                     # Get the strings and metadata
                     get_strings_metadata(

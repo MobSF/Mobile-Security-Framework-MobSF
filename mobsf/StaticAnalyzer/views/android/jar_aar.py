@@ -159,7 +159,8 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
         code_an_dic = code_analysis(
             app_dic['app_dir'],
             'apk',
-            app_dic['manifest_file'])
+            app_dic['manifest_file'],
+            man_data_dic['perm'])
         obfuscated_check(app_dic['app_dir'], code_an_dic)
         quark_results = []
         # Get the strings and metadata

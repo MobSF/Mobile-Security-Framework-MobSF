@@ -567,6 +567,7 @@
                               <th>STATUS</th>
                               <th>INFO </th>
                               <th>DESCRIPTION</th>
+                              <th>CODE MAPPINGS</th>
                           </tr>
                       </thead>
                       <tbody>
@@ -588,6 +589,25 @@
                           </td>
                           <td>{{ desc.info }}</td>
                           <td>{{ desc.description }}</td>
+                          <td>
+                            {% if perm in permission_mapping %}
+                              <a class="btn btn-primary btn-xs" data-toggle="collapse" href="#collapseperm{{forloop.counter}}" role="button" aria-expanded="false" aria-controls="collapseperm{{forloop.counter}}">
+                                Show Files
+                              </a>
+                              <div class="collapse" id="collapseperm{{forloop.counter}}">
+                                {% for k, v in permission_mapping.items %}
+                                  {% if k == perm %}
+                                    {% for file_path, lines in v.items %}
+                                      <small>
+                                        <a href="{% url "view_source" %}?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines }}"> {{ file_path }}</a>
+                                      </small>
+                                      </br>
+                                    {% endfor %}
+                                  {% endif %}
+                                {% endfor %}
+                              </div>
+                            {% endif %}
+                          </td>
                           </tr>
                           {% endfor %}
                       </tbody>

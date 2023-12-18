@@ -2,9 +2,12 @@
 """Module holding the functions for code analysis."""
 
 import logging
+import tempfile
 from pathlib import Path
 
 from django.conf import settings
+
+import yaml
 
 from mobsf.MobSF.utils import (
     filename_from_path,
@@ -21,15 +24,46 @@ from mobsf.StaticAnalyzer.views.sast_engine import (
 logger = logging.getLogger(__name__)
 
 
-def code_analysis(app_dir, typ, manifest_file):
+def get_perm_rules(perm_rules, android_permissions):
+    """Get applicablepermission rules."""
+    try:
+        dynamic_rules = []
+        with perm_rules.open('r') as perm_file:
+            prules = yaml.load(perm_file, Loader=yaml.FullLoader)
+        for p in prules:
+            if p['id'] in android_permissions.keys():
+                dynamic_rules.append(p)
+        rules = yaml.dump(dynamic_rules)
+        if rules:
+            tmp = tempfile.NamedTemporaryFile(mode='w')
+            tmp.write(rules)
+            tmp.flush()
+            return tmp
+    except Exception:
+        logger.error('Getting Permission Rules')
+    return None
+
+
+def permission_transform(perm_mappings):
+    """Simply permission mappings."""
+    mappings = {}
+    for k, v in perm_mappings.items():
+        mappings[k] = v['files']
+    return mappings
+
+
+def code_analysis(app_dir, typ, manifest_file, android_permissions):
     """Perform the code analysis."""
     try:
         root = Path(settings.BASE_DIR) / 'StaticAnalyzer' / 'views'
-        code_rules = root / 'android' / 'rules' / 'android_rules.yaml'
-        api_rules = root / 'android' / 'rules' / 'android_apis.yaml'
-        niap_rules = root / 'android' / 'rules' / 'android_niap.yaml'
+        and_rules = root / 'android' / 'rules'
+        code_rules = and_rules / 'android_rules.yaml'
+        api_rules = and_rules / 'android_apis.yaml'
+        perm_rules = and_rules / 'android_permissions.yaml'
+        niap_rules = and_rules / 'android_niap.yaml'
         code_findings = {}
         api_findings = {}
+        perm_mappings = {}
         email_n_file = []
         url_n_file = []
         url_list = []
@@ -38,19 +72,31 @@ def code_analysis(app_dir, typ, manifest_file):
         skp = settings.SKIP_CLASS_PATH
         logger.info('Code Analysis Started on - %s',
                     filename_from_path(src))
-        # Code and API Analysis
+        # Code Analysis
         code_findings = scan(
             code_rules.as_posix(),
             {'.java', '.kt'},
             [src],
             skp)
         logger.info('Android SAST Completed')
+        # API Analysis
         logger.info('Android API Analysis Started')
         api_findings = scan(
             api_rules.as_posix(),
             {'.java', '.kt'},
             [src],
             skp)
+        # Permission Mapping
+        logger.info('Android Permission Mapping Started')
+        rule_file = get_perm_rules(perm_rules, android_permissions)
+        if rule_file:
+            perm_mappings = permission_transform(scan(
+                rule_file.name,
+                {'.java', '.kt'},
+                [src],
+                skp))
+            logger.info('Android Permission Mapping Completed')
+            rule_file.close()
         # NIAP Scan
         niap_findings = niap_scan(
             niap_rules.as_posix(),
@@ -80,6 +126,7 @@ def code_analysis(app_dir, typ, manifest_file):
         logger.info('Finished Code Analysis, Email and URL Extraction')
         code_an_dic = {
             'api': api_findings,
+            'perm_mappings': perm_mappings,
             'findings': code_findings,
             'niap': niap_findings,
             'urls_list': url_list,

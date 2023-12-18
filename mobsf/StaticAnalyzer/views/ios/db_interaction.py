@@ -209,23 +209,18 @@ def save_get_ctx(app_dict, pdict, code_dict, bin_dict, all_files, rescan):
     logger.info('Connecting to DB')
     if rescan:
         logger.info('Updating Database...')
-        save_or_update(
-            'update',
-            app_dict,
-            pdict,
-            code_dict,
-            bin_dict,
-            all_files)
+        action = 'update'
         update_scan_timestamp(app_dict['md5_hash'])
     else:
         logger.info('Saving to Database')
-        save_or_update(
-            'save',
-            app_dict,
-            pdict,
-            code_dict,
-            bin_dict,
-            all_files)
+        action = 'save'
+    save_or_update(
+        action,
+        app_dict,
+        pdict,
+        code_dict,
+        bin_dict,
+        all_files)
     return get_context_from_analysis(
         app_dict,
         pdict,
