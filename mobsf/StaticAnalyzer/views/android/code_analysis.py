@@ -87,16 +87,17 @@ def code_analysis(app_dir, typ, manifest_file, android_permissions):
             [src],
             skp)
         # Permission Mapping
-        logger.info('Android Permission Mapping Started')
-        rule_file = get_perm_rules(perm_rules, android_permissions)
-        if rule_file:
-            perm_mappings = permission_transform(scan(
-                rule_file.name,
-                {'.java', '.kt'},
-                [src],
-                {}))
-            logger.info('Android Permission Mapping Completed')
-            rule_file.close()
+        if android_permissions:
+            logger.info('Android Permission Mapping Started')
+            rule_file = get_perm_rules(perm_rules, android_permissions)
+            if rule_file:
+                perm_mappings = permission_transform(scan(
+                    rule_file.name,
+                    {'.java', '.kt'},
+                    [src],
+                    {}))
+                logger.info('Android Permission Mapping Completed')
+                rule_file.close()
         # NIAP Scan
         niap_findings = niap_scan(
             niap_rules.as_posix(),
