@@ -98,6 +98,7 @@ def so_analysis(request, app_dic, rescan, api):
         apkid_results = {}
         code_an_dic = {
             'api': {},
+            'perm_mappings': {},
             'findings': {},
             'niap': {},
             'urls_list': [],
