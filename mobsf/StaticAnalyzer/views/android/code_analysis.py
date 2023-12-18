@@ -27,6 +27,8 @@ logger = logging.getLogger(__name__)
 def get_perm_rules(perm_rules, android_permissions):
     """Get applicablepermission rules."""
     try:
+        if not android_permissions:
+            return None
         dynamic_rules = []
         with perm_rules.open('r') as perm_file:
             prules = yaml.load(perm_file, Loader=yaml.FullLoader)
@@ -87,17 +89,16 @@ def code_analysis(app_dir, typ, manifest_file, android_permissions):
             [src],
             skp)
         # Permission Mapping
-        if android_permissions:
+        rule_file = get_perm_rules(perm_rules, android_permissions)
+        if rule_file:
             logger.info('Android Permission Mapping Started')
-            rule_file = get_perm_rules(perm_rules, android_permissions)
-            if rule_file:
-                perm_mappings = permission_transform(scan(
-                    rule_file.name,
-                    {'.java', '.kt'},
-                    [src],
-                    {}))
-                logger.info('Android Permission Mapping Completed')
-                rule_file.close()
+            perm_mappings = permission_transform(scan(
+                rule_file.name,
+                {'.java', '.kt'},
+                [src],
+                {}))
+            logger.info('Android Permission Mapping Completed')
+            rule_file.close()
         # NIAP Scan
         niap_findings = niap_scan(
             niap_rules.as_posix(),
