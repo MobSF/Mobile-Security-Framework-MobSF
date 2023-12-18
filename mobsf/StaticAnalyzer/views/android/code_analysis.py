@@ -94,7 +94,7 @@ def code_analysis(app_dir, typ, manifest_file, android_permissions):
                 rule_file.name,
                 {'.java', '.kt'},
                 [src],
-                skp))
+                {}))
             logger.info('Android Permission Mapping Completed')
             rule_file.close()
         # NIAP Scan

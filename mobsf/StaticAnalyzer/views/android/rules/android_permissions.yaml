@@ -19,7 +19,7 @@
   message: android.permission.BROADCAST_STICKY
   type: RegexAndOr
   pattern:
-  - android\.accounts\.AccountAuthenticatorActivity|android\.app\.Activity|android\.app\.ActivityGroup|android\.app\.ActivityManager|android\.app\.AliasActivity|android\.app\.Application|android\.app\.ExpandableListActivity|android\.app\.ListActivity|android\.app\.NativeActivity|android\.app\.Service|android\.app\.TabActivity|android\.app\.backup|android\.bluetooth\.BluetoothAdapter|android\.content\.ContextWrapper|android\.content\.MutableContextWrapper|android\.inputmethodservice\.InputMethodService|android\.media\.MediaScannerConnection|android\.media\.browse|android\.net\.VpnService|android\.security\.KeyChain|android\.service\.dreams|android\.service\.quicksettings|android\.service\.voice|android\.speech\.SpeechRecognizer|android\.speech\.tts|android\.test\.IsolatedContext|android\.test\.RenamingDelegatingContext|android\.test\.mock|android\.view\.ContextThemeWrapper|com\.android\.server|android\.accounts\.AccountManager|android\.widget\.ZoomButtonsController|android\.content\.BroadcastReceiver\$PendingResult
+  - android\.accounts\.AccountAuthenticatorActivity|android\.app\.Activity|android\.app\.ActivityGroup|android\.app\.ActivityManager|android\.app\.AliasActivity|android\.app\.Application|android\.app\.ExpandableListActivity|android\.app\.ListActivity|android\.app\.NativeActivity|android\.app\.Service|android\.app\.TabActivity|android\.app\.backup|android\.bluetooth\.BluetoothAdapter|android\.content\.ContextWrapper|android\.content\.MutableContextWrapper|android\.inputmethodservice\.InputMethodService|android\.media\.MediaScannerConnection|android\.media\.browse|android\.net\.VpnService|android\.security\.KeyChain|android\.service\.dreams|android\.service\.quicksettings|android\.service\.voice|android\.speech\.SpeechRecognizer|android\.speech\.tts|android\.test\.IsolatedContext|android\.test\.RenamingDelegatingContext|android\.test\.mock|android\.view\.ContextThemeWrapper|com\.android\.server|android\.accounts\.AccountManager|android\.widget\.ZoomButtonsController|android\.content\.BroadcastReceiver
   - - finishActivity\(
     - removeContentProvider\(
     - activityStopped\(
@@ -214,7 +214,7 @@
   message: android.permission.DISABLE_KEYGUARD
   type: RegexAndOr
   pattern:
-  - android\.app\.KeyguardManager\$KeyguardLock|android\.app\.KeyguardManager|com\.android\.server
+  - android\.app\.KeyguardManager|android\.app\.KeyguardManager|com\.android\.server
   - - disableKeyguard\(
     - exitKeyguardSecurely\(
     - keyguardGoingAway\(
@@ -304,7 +304,7 @@
   message: android.permission.BLUETOOTH
   type: RegexAndOr
   pattern:
-  - android\.bluetooth\.BluetoothA2dp|android\.bluetooth\.BluetoothAdapter|android\.bluetooth\.BluetoothDevice|android\.bluetooth\.BluetoothGatt|android\.bluetooth\.BluetoothGattServer|android\.bluetooth\.BluetoothHeadset|android\.bluetooth\.BluetoothHealth|android\.bluetooth\.BluetoothManager|android\.bluetooth\.BluetoothSocket|android\.bluetooth\.le|android\.media\.AudioManager|android\.media\.MediaRouter\$RouteGroup|android\.media\.MediaRouter\$RouteInfo|com\.android\.bluetooth|com\.android\.server|android\.net\.ConnectivityManager|android\.server\.BluetoothA2dpService|android\.server\.BluetoothService
+  - android\.bluetooth\.BluetoothA2dp|android\.bluetooth\.BluetoothAdapter|android\.bluetooth\.BluetoothDevice|android\.bluetooth\.BluetoothGatt|android\.bluetooth\.BluetoothGattServer|android\.bluetooth\.BluetoothHeadset|android\.bluetooth\.BluetoothHealth|android\.bluetooth\.BluetoothManager|android\.bluetooth\.BluetoothSocket|android\.bluetooth\.le|android\.media\.AudioManager|android\.media\.MediaRouter|com\.android\.bluetooth|com\.android\.server|android\.net\.ConnectivityManager|android\.server\.BluetoothA2dpService|android\.server\.BluetoothService
   - - phoneStateChanged\(
     - getAdapterConnectionState\(
     - removeService\(
@@ -704,7 +704,7 @@
   message: android.permission.WAKE_LOCK
   type: RegexAndOr
   pattern:
-  - android\.media\.AsyncPlayer|android\.media\.MediaPlayer|android\.media\.Ringtone|android\.media\.RingtoneManager|android\.net\.sip|android\.net\.wifi|android\.os\.PowerManager\$WakeLock|android\.widget\.VideoView|com\.android\.server
+  - android\.media\.AsyncPlayer|android\.media\.MediaPlayer|android\.media\.Ringtone|android\.media\.RingtoneManager|android\.net\.sip|android\.net\.wifi|android\.os\.PowerManager|android\.widget\.VideoView|com\.android\.server
   - - stopPreviousRingtone\(
     - acquire\(
     - endCall\(
@@ -4351,7 +4351,7 @@
   message: android.permission.ACCOUNT_MANAGER
   type: RegexAndOr
   pattern:
-  - android\.accounts\.AbstractAccountAuthenticator\$Transport
+  - android\.accounts\.AbstractAccountAuthenticator
   - - addAccount\(
     - addAccountFromCredentials\(
     - confirmCredentials\(
@@ -5409,5 +5409,40 @@
     - readEventsAsync\(
     - getCalendarsById\(
     - setEventsQueryToken\(
+  input_case: exact
+  severity: info
+- id: android.permission.QUERY_ALL_PACKAGES
+  message: android.permission.QUERY_ALL_PACKAGES
+  type: RegexAndOr
+  pattern:
+  - android\.content\.pm\.PackageManager
+  - - queryIntentActivities\(
+  input_case: exact
+  severity: info
+- id: android.permission.FLASHLIGHT
+  message: android.permission.FLASHLIGHT
+  type: RegexAndOr
+  pattern:
+  - android\.hardware\.camera
+  - - TorchCallback\(
+    - setTorchMode\(
+    - unregisterTorchCallback\(
+    - registerTorchCallback\(
+  input_case: exact
+  severity: info
+- id: com.google.android.c2dm.permission.RECEIVE
+  message: com.google.android.c2dm.permission.RECEIVE
+  type: RegexAndOr
+  pattern:
+  - android\.content\.Intent
+  - - com\.google\.android\.c2dm\.intent\.REGISTRATION"
+  input_case: exact
+  severity: info
+- id: com.google.android.c2dm.permission.SEND
+  message: com.google.android.c2dm.permission.SEND
+  type: RegexAndOr
+  pattern:
+  - android\.content\.Intent
+  - - com\.google\.android\.c2dm\.intent\.REGISTER
   input_case: exact
   severity: info
