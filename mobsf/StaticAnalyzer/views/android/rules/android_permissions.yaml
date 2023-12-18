@@ -1674,7 +1674,7 @@
   message: android.permission.READ_CONTACTS
   type: RegexAndOr
   pattern:
-  - com\.android\.internal|com\.android\.server|android\.provider\.ContactsContract\.Contacts
+  - com\.android\.internal|com\.android\.server|android\.provider\.ContactsContract
   - - query\(
     - getAdnRecordsInEfForSubscriber\(
     - getSeparateProfileChallengeEnabled\(
@@ -1682,15 +1682,14 @@
     - getAdnRecordsInEf\(
     - systemReady\(
     - getString\(
-    - getLong\(
-    - getBoolean\(
+    - lookupContact\(
   input_case: exact
   severity: info
 - id: android.permission.WRITE_CONTACTS
   message: android.permission.WRITE_CONTACTS
   type: RegexAndOr
   pattern:
-  - com\.android\.internal|android\.provider\.ContactsContract\.RawContacts
+  - com\.android\.internal|android\.provider\.ContactsContract
   - - update\(
     - updateAdnRecordsInEfBySearch\(
     - updateAdnRecordsInEfByIndex\(
@@ -1745,12 +1744,13 @@
   message: android.permission.CALL_PHONE
   type: RegexAndOr
   pattern:
-  - com\.android\.phone|android\.telecom\.TelecomManager
+  - com\.android\.phone|android\.telecom\.TelecomManager|android\.content\.Intent
   - - placeCall\(
     - endCallForSubscriber\(
     - acceptRingingCall\(
     - endCall\(
     - call\(
+    - ACTION_CALL
   input_case: exact
   severity: info
 - id: android.permission.CONTROL_LOCATION_UPDATES
