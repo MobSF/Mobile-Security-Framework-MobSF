@@ -46,6 +46,7 @@ class StaticAnalyzerAndroid(models.Model):
     ANDROID_API = models.TextField(default={})
     CODE_ANALYSIS = models.TextField(default={})
     NIAP_ANALYSIS = models.TextField(default={})
+    PERMISSION_MAPPING = models.TextField(default={})
     URLS = models.TextField(default=[])
     DOMAINS = models.TextField(default={})
     EMAILS = models.TextField(default=[])
