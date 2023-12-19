@@ -37,9 +37,10 @@ def get_perm_rules(perm_rules, android_permissions):
                 dynamic_rules.append(p)
         rules = yaml.dump(dynamic_rules)
         if rules:
-            tmp = tempfile.NamedTemporaryFile(mode='w')
+            tmp = tempfile.NamedTemporaryFile(mode='w', delete=False)
             tmp.write(rules)
             tmp.flush()
+            tmp.close()
             return tmp
     except Exception:
         logger.error('Getting Permission Rules')
@@ -98,7 +99,10 @@ def code_analysis(app_dir, typ, manifest_file, android_permissions):
                 [src],
                 {}))
             logger.info('Android Permission Mapping Completed')
-            rule_file.close()
+            try:
+                os.remove(rule_file.name)
+            except:
+                pass
         # NIAP Scan
         niap_findings = niap_scan(
             niap_rules.as_posix(),
