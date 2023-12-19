@@ -1,4 +1,25 @@
 MANIFEST_DESC = {
+    'well_known_assetlinks': {
+        'title': ('App Link assetlinks.json file not found'
+                  '<br>[android:name=%s]<br>[android:host=%s]'),
+        'level': 'high',
+        'description': ('App Link asset verification URL (%s) not found or '
+                        'configured incorrectly. (Status Code: %s). '
+                        'App Links allow users to redirect from a web '
+                        'URL/email to the mobile app. If this file is '
+                        'missing or incorrectly configured for the '
+                        'App Link host/domain, a malicious app can '
+                        'hijack such URLs. This may lead to phishing '
+                        'attacks, leak sensitive data in the URI, such '
+                        'as PII, OAuth tokens, magic link/password '
+                        'reset tokens and more. You must verify the '
+                        'App Link domain by hosting the assetlinks.json '
+                        'file and enabling verification via '
+                        '[android:autoVerify="true"] in the Activity '
+                        'intent-filter.'),
+        'name': ('App Link assetlinks.json file not found '
+                 '[android:name=%s], [android:host=%s]'),
+    },
     'clear_text_traffic': {
         'title': ('Clear text traffic is Enabled For App'
                   '<br>[android:usesCleartextTraffic=true]'),
