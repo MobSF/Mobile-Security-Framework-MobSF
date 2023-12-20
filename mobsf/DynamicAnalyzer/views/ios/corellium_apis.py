@@ -9,7 +9,10 @@ from django.conf import settings
 
 import requests
 
-from mobsf.MobSF.utils import is_number
+from mobsf.MobSF.utils import (
+    is_number,
+    upstream_proxy,
+)
 
 
 SUCCESS_RESP = (200, 204)
@@ -28,11 +31,14 @@ class CorelliumAPI:
             'Authorization': f'Bearer {self.api_key}',
         }
         self.project_id = project_id
+        self.proxies, self.verify = upstream_proxy('https')
 
     def api_ready(self):
         """Check API Availability."""
         try:
-            r = requests.get(f'{self.api}/ready')
+            r = requests.get(f'{self.api}/ready',
+                             proxies=self.proxies,
+                             verify=self.verify)
             if r.status_code in SUCCESS_RESP:
                 return True
             else:
@@ -50,7 +56,9 @@ class CorelliumAPI:
             return False
         r = requests.get(
             f'{self.api}/projects',
-            headers=self.headers)
+            headers=self.headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in ERROR_RESP:
             return False
         return True
@@ -64,7 +72,9 @@ class CorelliumAPI:
             ids = []
             r = requests.get(
                 f'{self.api}/projects?ids_only=true',
-                headers=self.headers)
+                headers=self.headers,
+                proxies=self.proxies,
+                verify=self.verify)
             if r.status_code in SUCCESS_RESP:
                 for i in r.json():
                     ids.append(i['id'])
@@ -77,7 +87,9 @@ class CorelliumAPI:
         """Get SSH public keys associated with a project."""
         r = requests.get(
             f'{self.api}/projects/{self.project_id}/keys',
-            headers=self.headers)
+            headers=self.headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             return r.json()
         return False
@@ -96,7 +108,9 @@ class CorelliumAPI:
         r = requests.post(
             f'{self.api}/projects/{self.project_id}/keys',
             headers=self.headers,
-            json=data)
+            json=data,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             return r.json()['identifier']
         return False
@@ -105,7 +119,9 @@ class CorelliumAPI:
         """Delete SSH public key from the Project."""
         r = requests.delete(
             f'{self.api}/projects/{self.project_id}/keys/{key_id}',
-            headers=self.headers)
+            headers=self.headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             return OK
         return False
@@ -116,7 +132,9 @@ class CorelliumAPI:
         instances = []
         r = requests.get(
             f'{self.api}/instances',
-            headers=self.headers)
+            headers=self.headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             for i in r.json():
                 if i['type'] == 'ios' and 'jailbroken' in i['patches']:
@@ -134,7 +152,9 @@ class CorelliumAPI:
         r = requests.post(
             f'{self.api}/instances',
             headers=self.headers,
-            json=data)
+            json=data,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             return r.json()['id']
         return False
@@ -150,11 +170,14 @@ class CorelliumModelsAPI:
             'Content-Type': 'application/json',
             'Authorization': f'Bearer {self.api_key}',
         }
+        self.proxies, self.verify = upstream_proxy('https')
 
     def get_models(self):
         r = requests.get(
             f'{self.api}/models',
-            headers=self.headers)
+            headers=self.headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             return r.json()
         return False
@@ -172,7 +195,9 @@ class CorelliumModelsAPI:
             return False
         r = requests.get(
             f'{self.api}/models/{model}/software',
-            headers=self.headers)
+            headers=self.headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             return r.json()
         elif r.status_code in ERROR_RESP:
@@ -191,6 +216,7 @@ class CorelliumInstanceAPI:
             'Authorization': f'Bearer {self.api_key}',
         }
         self.instance_id = instance_id
+        self.proxies, self.verify = upstream_proxy('https')
 
     def start_instance(self):
         """Start instance."""
@@ -198,7 +224,9 @@ class CorelliumInstanceAPI:
         r = requests.post(
             f'{self.api}/instances/{self.instance_id}/start',
             headers=self.headers,
-            json=data)
+            json=data,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             return OK
         elif r.status_code in ERROR_RESP:
@@ -211,7 +239,9 @@ class CorelliumInstanceAPI:
         r = requests.post(
             f'{self.api}/instances/{self.instance_id}/stop',
             headers=self.headers,
-            json=data)
+            json=data,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             return OK
         elif r.status_code in ERROR_RESP:
@@ -222,7 +252,9 @@ class CorelliumInstanceAPI:
         """Unpause instance."""
         r = requests.post(
             f'{self.api}/instances/{self.instance_id}/unpause',
-            headers=self.headers)
+            headers=self.headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             return OK
         elif r.status_code in ERROR_RESP:
@@ -233,7 +265,9 @@ class CorelliumInstanceAPI:
         """Reboot instance."""
         r = requests.post(
             f'{self.api}/instances/{self.instance_id}/reboot',
-            headers=self.headers)
+            headers=self.headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             return OK
         elif r.status_code in ERROR_RESP:
@@ -244,7 +278,9 @@ class CorelliumInstanceAPI:
         """Remove instance."""
         r = requests.delete(
             f'{self.api}/instances/{self.instance_id}',
-            headers=self.headers)
+            headers=self.headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             return OK
         elif r.status_code in ERROR_RESP:
@@ -255,7 +291,9 @@ class CorelliumInstanceAPI:
         """Check instance status."""
         r = requests.get(
             f'{self.api}/instances/{self.instance_id}',
-            headers=self.headers)
+            headers=self.headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             return r.json()
         return False
@@ -269,7 +307,9 @@ class CorelliumInstanceAPI:
                 (f'{self.api}/instances/{self.instance_id}'
                  '/screenshot.png?scale=1'),
                 headers=self.headers,
-                stream=True)
+                stream=True,
+                proxies=self.proxies,
+                verify=self.verify)
             if r.status_code == 200:
                 return r.content
         except Exception:
@@ -282,7 +322,9 @@ class CorelliumInstanceAPI:
         """Start network capture."""
         r = requests.post(
             f'{self.api}/instances/{self.instance_id}/sslsplit/enable',
-            headers=self.headers)
+            headers=self.headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             return OK
         err = r.json()['error']
@@ -296,7 +338,9 @@ class CorelliumInstanceAPI:
         """Stop network capture."""
         r = requests.post(
             f'{self.api}/instances/{self.instance_id}/sslsplit/disable',
-            headers=self.headers)
+            headers=self.headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             return OK
         logger.error(
@@ -307,7 +351,9 @@ class CorelliumInstanceAPI:
         """Download network capture."""
         r = requests.get(
             f'{self.api}/instances/{self.instance_id}/networkMonitor.pcap',
-            headers=self.headers)
+            headers=self.headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             return r.content
         logger.error(
@@ -318,7 +364,9 @@ class CorelliumInstanceAPI:
         """Get Console Log."""
         r = requests.get(
             f'{self.api}/instances/{self.instance_id}/consoleLog',
-            headers=self.headers)
+            headers=self.headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             return r.content.decode('utf-8', 'ignore')
         logger.error(
@@ -329,7 +377,9 @@ class CorelliumInstanceAPI:
         """Get SSH connection string."""
         r = requests.get(
             f'{self.api}/instances/{self.instance_id}/quickConnectCommand',
-            headers=self.headers)
+            headers=self.headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             return r.text
         logger.error(
@@ -415,7 +465,9 @@ class CorelliumInstanceAPI:
         r = requests.post(
             f'{self.api}/instances/{self.instance_id}/input',
             headers=self.headers,
-            json=data)
+            json=data,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             return OK
         logger.error(
@@ -434,12 +486,15 @@ class CorelliumAgentAPI:
             'Authorization': f'Bearer {self.api_key}',
         }
         self.instance_id = instance_id
+        self.proxies, self.verify = upstream_proxy('https')
 
     def agent_ready(self):
         """Agent ready."""
         r = requests.get(
             f'{self.api}/instances/{self.instance_id}/agent/v1/app/ready',
-            headers=self.headers)
+            headers=self.headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             logger.info('Corellium Agent is Ready!')
             return r.json()['ready']
@@ -452,7 +507,9 @@ class CorelliumAgentAPI:
         """Unlock iOS device."""
         r = requests.post(
             f'{self.api}/instances/{self.instance_id}/agent/v1/system/unlock',
-            headers=self.headers)
+            headers=self.headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             logger.info('Device unlocked')
             return OK
@@ -470,7 +527,9 @@ class CorelliumAgentAPI:
             (f'{self.api}/instances/{self.instance_id}'
              f'/agent/v1/file/device/%2Ftmp%2Fapp.ipa'),
             data=open(ipa_file, 'rb').read(),
-            headers=headers)
+            headers=headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             logger.info('IPA uploaded to instance')
             return OK
@@ -483,7 +542,9 @@ class CorelliumAgentAPI:
         r = requests.post(
             f'{self.api}/instances/{self.instance_id}/agent/v1/app/install',
             headers=self.headers,
-            json=data)
+            json=data,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             logger.info('App installed')
             return OK
@@ -495,7 +556,9 @@ class CorelliumAgentAPI:
         r = requests.post(
             (f'{self.api}/instances/{self.instance_id}'
              f'/agent/v1/app/apps/{bundle_id}/run'),
-            headers=self.headers)
+            headers=self.headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             logger.info('App Started')
             return OK
@@ -507,7 +570,9 @@ class CorelliumAgentAPI:
         r = requests.post(
             (f'{self.api}/instances/{self.instance_id}'
              f'/agent/v1/app/apps/{bundle_id}/kill'),
-            headers=self.headers)
+            headers=self.headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             logger.info('App Killed')
             return OK
@@ -519,7 +584,9 @@ class CorelliumAgentAPI:
         r = requests.post(
             (f'{self.api}/instances/{self.instance_id}'
              f'/agent/v1/app/apps/{bundle_id}/uninstall'),
-            headers=self.headers)
+            headers=self.headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             logger.info('App Removed')
             return OK
@@ -530,7 +597,9 @@ class CorelliumAgentAPI:
         """List all apps installed."""
         r = requests.get(
             f'{self.api}/instances/{self.instance_id}/agent/v1/app/apps',
-            headers=self.headers)
+            headers=self.headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             return r.json()
         elif r.status_code in ERROR_RESP:
@@ -542,7 +611,9 @@ class CorelliumAgentAPI:
         r = requests.get(
             (f'{self.api}/instances/{self.instance_id}'
              f'/agent/v1/app/icons?{bundleids}'),
-            headers=self.headers)
+            headers=self.headers,
+            proxies=self.proxies,
+            verify=self.verify)
         if r.status_code in SUCCESS_RESP:
             return r.json()
         elif r.status_code in ERROR_RESP:

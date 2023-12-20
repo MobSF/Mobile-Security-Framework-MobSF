@@ -200,6 +200,19 @@ def static_analyzer(request, checksum, api=False):
                 )
                 # Set Manifest link
                 man_data_dic = manifest_data(app_dic['parsed_xml'], ns)
+
+                app_name = app_dic['real_name']
+                pkg_name = man_data_dic['packagename']
+                if app_name or pkg_name:
+                    if app_name and pkg_name:
+                        subject = f'{app_name} ({pkg_name})'
+                    elif app_name:
+                        subject = app_name
+                    elif pkg_name:
+                        subject = pkg_name
+                    msg = f'Performing Static Analysis on: {subject}'
+                    logger.info(msg)
+
                 app_dic['playstore'] = get_app_details(
                     man_data_dic['packagename'])
                 man_an_dic = manifest_analysis(
@@ -367,6 +380,19 @@ def static_analyzer(request, checksum, api=False):
 
                     # Set manifest view link
                     man_data_dic = manifest_data(app_dic['parsed_xml'], ns)
+
+                    app_name = app_dic['real_name']
+                    pkg_name = man_data_dic['packagename']
+                    if app_name or pkg_name:
+                        if app_name and pkg_name:
+                            subject = f'{app_name} ({pkg_name})'
+                        elif app_name:
+                            subject = app_name
+                        elif pkg_name:
+                            subject = pkg_name
+                        msg = f'Performing Static Analysis on: {subject}'
+                        logger.info(msg)
+
                     app_dic['playstore'] = get_app_details(
                         man_data_dic['packagename'])
                     man_an_dic = manifest_analysis(

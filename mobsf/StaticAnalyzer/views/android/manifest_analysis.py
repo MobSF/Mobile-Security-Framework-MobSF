@@ -3,7 +3,11 @@
 """Module for android manifest analysis."""
 import logging
 
+import requests
 
+from mobsf.MobSF.utils import (
+    upstream_proxy,
+)
 from mobsf.StaticAnalyzer.views.android import (
     android_manifest_desc,
     network_security,
@@ -51,6 +55,39 @@ ANDROID_API_LEVEL_MAP = {
     '33': '13',
 }
 
+
+def assetlinks_check(act_name, well_knowns):
+    """Well known assetlink check."""
+    findings = []
+    iden = 'sha256_cert_fingerprints'
+    try:
+        proxies, verify = upstream_proxy('https')
+        for host, w_url in well_knowns:
+            logger.info(
+                'App Link Assetlinks Check - [%s] %s', act_name, host)
+            status = False
+            status_code = 0
+            try:
+                r = requests.get(w_url,
+                    allow_redirects=True,
+                    proxies=proxies,
+                    verify=verify)
+                status_code = r.status_code
+                if (str(r.status_code).startswith('2')
+                        and iden in str(r.json())):
+                    status = True
+            except Exception:
+                pass
+            findings.append({
+                'url': w_url,
+                'host': host,
+                'status_code': status_code,
+                'status': status})
+    except Exception:
+        logger.exception('Well Known Assetlinks Check')
+    return findings
+
+
 def get_browsable_activities(node, ns):
     """Get Browsable Activities."""
     try:
@@ -62,6 +99,8 @@ def get_browsable_activities(node, ns):
         paths = []
         path_prefixs = []
         path_patterns = []
+        well_known = []
+        well_known_path = '/.well-known/assetlinks.json'
         catg = node.getElementsByTagName('category')
         for cat in catg:
             if cat.getAttribute(f'{ns}:name') == 'android.intent.category.BROWSABLE':
@@ -88,6 +127,14 @@ def get_browsable_activities(node, ns):
                     path_pattern = data.getAttribute(f'{ns}:pathPattern')
                     if path_pattern and path_pattern not in path_patterns:
                         path_patterns.append(path_pattern)
+                    # Collect possible well-known paths
+                    if scheme and scheme in ('http', 'https') and host:
+                        if port:
+                            c_url = f'{scheme}://{host}:{port}{well_known_path}'
+                        else:
+                            c_url = f'{scheme}://{host}{well_known_path}'
+                        if (host, c_url) not in well_known:
+                            well_known.append((host, c_url))
         schemes = [scheme + '://' for scheme in schemes]
         browse_dic['schemes'] = schemes
         browse_dic['mime_types'] = mime_types
@@ -97,6 +144,7 @@ def get_browsable_activities(node, ns):
         browse_dic['path_prefixs'] = path_prefixs
         browse_dic['path_patterns'] = path_patterns
         browse_dic['browsable'] = bool(browse_dic['schemes'])
+        browse_dic['well_known'] = well_known
         return browse_dic
     except Exception:
         logger.exception('Getting Browsable Activities')
@@ -189,18 +237,10 @@ def manifest_analysis(mfxml, ns, man_data_dic, src_type, app_dir):
                     itemname = 'Activity'
                     cnt_id = 'act'
                     an_or_a = 'n'
-                    browse_dic = get_browsable_activities(node, ns)
-                    if browse_dic['browsable']:
-                        browsable_activities[node.getAttribute(
-                            f'{ns}:name')] = browse_dic
                 elif node.nodeName == 'activity-alias':
                     itemname = 'Activity-Alias'
                     cnt_id = 'act'
                     an_or_a = 'n'
-                    browse_dic = get_browsable_activities(node, ns)
-                    if browse_dic['browsable']:
-                        browsable_activities[node.getAttribute(
-                            f'{ns}:name')] = browse_dic
                 elif node.nodeName == 'provider':
                     itemname = 'Content Provider'
                     cnt_id = 'cnt'
@@ -213,11 +253,24 @@ def manifest_analysis(mfxml, ns, man_data_dic, src_type, app_dir):
                 else:
                     itemname = 'NIL'
                 item = ''
+                # Checks for Activities
                 if itemname in ['Activity', 'Activity-Alias']:
+                    item = node.getAttribute(f'{ns}:name')
+                    # Browsable Activities
+                    browse_dic = get_browsable_activities(node, ns)
+                    if browse_dic['browsable']:
+                        browsable_activities[node.getAttribute(
+                            f'{ns}:name')] = browse_dic
+                    for finding in assetlinks_check(item, browse_dic['well_known']):
+                        if not finding['status']:
+                            ret_list.append(('well_known_assetlinks',
+                                            (item, finding['host']),
+                                            (finding['url'],
+                                             finding['status_code'])))
+
                     # Task Affinity
                     task_affinity = node.getAttribute(f'{ns}:taskAffinity')
                     if (task_affinity):
-                        item = node.getAttribute(f'{ns}:name')
                         ret_list.append(('task_affinity_set', (item,), ()))
 
                     # LaunchMode
@@ -228,7 +281,6 @@ def manifest_analysis(mfxml, ns, man_data_dic, src_type, app_dir):
                         # in case min_sdk is not defined we assume vulnerability
                         affected_sdk = True
                     launchmode = node.getAttribute(f'{ns}:launchMode')
-                    item = node.getAttribute(f'{ns}:name')
                     modes = ('singleTask', 'singleInstance')
                     if (affected_sdk
                             and launchmode in modes):

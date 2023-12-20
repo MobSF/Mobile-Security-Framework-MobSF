@@ -243,6 +243,20 @@ $('#content_search').keyup(function() {
 		});
 	}, 1000);
 });
+
+// Use browser find with search string
+$('#filetree').click(function(){
+	var search_string = $('#content_search').val();
+	if (search_string.length > 0){
+		setTimeout(() => {
+			document.getElementById("content").click();
+			$('#content_search').val('');
+			window.find(search_string, aCaseSensitive=false);
+			$('#content_search').val(search_string);
+		}, 1000);
+	}
+});
+
 const get_lines = function() {
 	const pat = new RegExp(/^[\d,]{1,1000}$/);
 	const urlParams = new URLSearchParams(window.location.search);

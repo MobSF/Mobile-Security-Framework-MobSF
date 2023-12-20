@@ -1028,22 +1028,9 @@
   message: android.permission.READ_EXTERNAL_STORAGE
   type: RegexAndOr
   pattern:
-  - android\.telephony\.SmsManager|android\.telephony\.gsm|android\.view\.inputmethod|com\.android\.internal|com\.android\.server|com\.android\.providers|android\.content\.Context|java\.io\.FileInputStream
-  - - sendTextMessage\(
-    - sendDataForSubscriberWithSelfPermissions\(
-    - sendTextForSubscriber\(
-    - openFile\(
-    - sendTextForSubscriberWithSelfPermissions\(
-    - sendDataMessage\(
-    - showInputMethodAndSubtypeEnablerFromClient\(
-    - sendStoredText\(
-    - sendDataForSubscriber\(
-    - showInputMethodAndSubtypeEnabler\(
-    - sendMultipartTextMessage\(
+  - com\.android\.internal|com\.android\.server|com\.android\.providers|android\.content\.Context|java\.io\.FileInputStream
+  - - openFile\(
     - InputStreamReader\(
-    - send\(
-    - sendStoredMultipartText\(
-    - sendMultipartTextForSubscriber\(
     - FileInputStream\(
   input_case: exact
   severity: info
@@ -1147,7 +1134,6 @@
     - registerSink\(
     - getNanoAppInstanceInfo\(
     - findNanoAppOnHub\(
-    - sendMessage\(
     - getP2pStateMachineMessenger\(
     - startScan\(
     - getSupportedActivities\(
@@ -5248,8 +5234,11 @@
   message: android.permission.USE_BIOMETRIC
   type: RegexAndOr
   pattern:
-  - android\.hardware\.biometrics\.BiometricPrompt
+  - android\.hardware\.biometrics\.BiometricPrompt|androidx\.biometric
   - - authenticate\(
+    - CryptoObject\(
+    - getIdentityCredential\(
+    - onAuthenticationSucceeded\(
   input_case: exact
   severity: info
 - id: android.permission.READ_VOICEMAIL
@@ -5269,6 +5258,16 @@
     - setRepeating\(
     - setInexactRepeating\(
     - set\(
+  input_case: exact
+  severity: info
+- id: android.permission.INSTALL_SHORTCUT
+  message: android.permission.INSTALL_SHORTCUT
+  type: RegexAndOr
+  pattern:
+  - android\.content\.pm\.ShortcutManager|android\.content\.Intent
+  - - Intent\.EXTRA_SHORTCUT_INTENT
+    - getShortCutIconResource\(
+    - EXTRA_SHORTCUT_ICON_RESOURCE
   input_case: exact
   severity: info
 - id: android.permission.UNINSTALL_SHORTCUT
@@ -5352,6 +5351,11 @@
   - android\.app\.NotificationManager
   - - notify\(
     - notifyAsPackage\(
+    - \.NOTIFICATION_SERVICE
+    - NotificationChannel\(
+    - createNotificationChannel\(
+    - NotificationManager\.IMPORTANCE_HIGH
+    - android\.Manifest\.permission\.POST_NOTIFICATIONS
   input_case: exact
   severity: info
 - id: android.permission.BLUETOOTH_CONNECT
@@ -5444,5 +5448,34 @@
   pattern:
   - android\.content\.Intent
   - - com\.google\.android\.c2dm\.intent\.REGISTER
+  input_case: exact
+  severity: info
+- id: android.permission.MANAGE_EXTERNAL_STORAGE
+  message: android.permission.MANAGE_EXTERNAL_STORAGE
+  type: RegexAndOr
+  pattern:
+  - android\.os\.Environment
+  - - isExternalStorageManager\(
+    - getManageSpaceActivityIntent\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_MEDIA_IMAGES
+  message: android.permission.READ_MEDIA_IMAGES
+  type: RegexAndOr
+  pattern:
+  - android\.os\.Environment
+  - - Manifest\.permission\.READ_MEDIA_IMAGES
+    - FileInputStream\(
+    - getExternalStorageDirectory\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_MEDIA_VIDEO
+  message: android.permission.READ_MEDIA_VIDEO
+  type: RegexAndOr
+  pattern:
+  - android\.os\.Environment
+  - - Manifest\.permission\.READ_MEDIA_VIDEO
+    - FileInputStream\(
+    - getExternalStorageDirectory\(
   input_case: exact
   severity: info

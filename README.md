@@ -3,7 +3,7 @@ Version: v3.8 beta
 
 ![](https://cloud.githubusercontent.com/assets/4301109/20019521/cc61f7fc-a2f2-11e6-95f3-407030d9fdde.png)
 
-Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis. MobSF supports mobile app binaries (APK, XAPK, IPA & APPX) along with zipped source code and provides REST APIs for seamless integration with your CI/CD or DevSecOps pipeline.The Dynamic Analyzer helps you to perform runtime security assessment and interactive instrumented testing.
+Mobile Security Framework (MobSF) is a security research platform for mobile applications in Android, iOS and Windows Mobile. MobSF can be used for a variety of use cases such as mobile application security, penetration testing, malware analysis, and privacy analysis. The Static Analyzer supports popular mobile app binaries like APK, IPA, APPX and source code. Meanwhile, the Dynamic Analyzer supports both Android and iOS applications and offers a platform for interactive instrumented testing, runtime data and network traffic analysis. MobSF seamlessly integrates with your DevSecOps or CI/CD pipeline, facilitated by REST APIs and CLI tools, enhancing your security workflow with ease.
 
 Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82e3a63c-4813-11e6-9430-6015d98aeaab.png) in India
 
@@ -23,6 +23,8 @@ Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82
 [![ToolsWatch Best Security Tools 2017](https://img.shields.io/badge/ToolsWatch-Rank%209%20%7C%20Year%202017-red.svg)](http://www.toolswatch.org/2018/01/black-hat-arsenal-top-10-security-tools/)
 [![Blackhat Arsenal Asia 2015](https://img.shields.io/badge/Black%20Hat%20Arsenal-Asia%202015-blue.svg)](https://www.blackhat.com/asia-15/arsenal.html#yso-mobile-security-framework)
 [![Blackhat Arsenal Asia 2018](https://img.shields.io/badge/Black%20Hat%20Arsenal-Asia%202018-blue.svg)](https://www.blackhat.com/asia-18/arsenal.html#mobile-security-framework-mobsf)
+[![Blackhat Arsenal Europe 2023](https://img.shields.io/badge/Black%20Hat%20Arsenal-Europe%202023-blue.svg)](https://www.blackhat.com/eu-23/arsenal/schedule/index.html#mobile-security-framework---mobsf-35327)
+
 
 MobSF is also bundled with [Android Tamer](https://tamerplatform.com), [BlackArch](https://blackarch.org/mobile.html) and [Pentoo](https://www.pentoo.ch/).
 
@@ -32,7 +34,7 @@ MobSF is also bundled with [Android Tamer](https://tamerplatform.com), [BlackArc
 
 If you liked MobSF and find it useful, please consider donating.
 
-*It's easy to build open source, try maintaining a project once. Long live open source!*
+*It's easy to build open source, maintaining one is a different another story. Long live open source!*
 
 ## Documentation
 
@@ -78,10 +80,6 @@ docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:la
 ### Static Analysis - Android
 
 ![mobsf_android_static_analysis](https://user-images.githubusercontent.com/4301109/95506503-f9b6c980-097d-11eb-803a-f88321e1feb7.gif)
-
-### Static Analysis - Android Source Tree-view
-
-![mobsf_android_static_analysis_tree_view](https://user-images.githubusercontent.com/6709304/101240296-1578ea80-36f7-11eb-810a-3827f238c231.gif)
 
 ### Static Analysis - iOS
 
