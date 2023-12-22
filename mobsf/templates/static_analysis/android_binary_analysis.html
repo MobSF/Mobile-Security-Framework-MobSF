@@ -1766,7 +1766,7 @@
                   <strong>Top Malware Permissions</strong>
                   <span class="float-right"><b>{{ malware_permissions.top_malware_permissions | length}}</b>/{{malware_permissions.total_malware_permissions}}</span>
                   <div class="progress progress-sm">
-                  <div class="progress-bar bg-danger" aria-valuemin="0" style="width: {{ malware_permissions.top_malware_permissions | length}}%;" aria-valuenow="{{ malware_permissions.top_malware_permissions | length}}" aria-valuemax="{{malware_permissions.total_malware_permissions}}"></div>
+                  <div class="progress-bar bg-danger" aria-valuemin="0" style="width: {% widthratio malware_permissions.top_malware_permissions|length malware_permissions.total_malware_permissions 100 %}%;" aria-valuenow="{{ malware_permissions.top_malware_permissions | length}}" aria-valuemax="{{malware_permissions.total_malware_permissions}}"></div>
                 </div>
                   <span class="product-description">
                       {{ malware_permissions.top_malware_permissions | join:", "}}
@@ -1778,7 +1778,7 @@
                   <strong>Other Common Permissions</strong>
                   <span class="float-right"><b>{{ malware_permissions.other_abused_permissions | length}}</b>/{{ malware_permissions.total_other_permissions}}</span>
                   <div class="progress progress-sm">
-                  <div class="progress-bar bg-warning" aria-valuemin="0" style="width: {{ malware_permissions.other_abused_permissions | length}}%;" aria-valuenow="{{ malware_permissions.other_abused_permissions | length}}" aria-valuemax="{{ malware_permissions.total_other_permissions}}"></div>
+                  <div class="progress-bar bg-warning" aria-valuemin="0" style="width: {% widthratio malware_permissions.other_abused_permissions|length malware_permissions.total_other_permissions 100 %}%;" aria-valuenow="{{ malware_permissions.other_abused_permissions | length}}" aria-valuemax="{{ malware_permissions.total_other_permissions}}"></div>
                 </div>
                 <span class="product-description">
                   {{ malware_permissions.other_abused_permissions | join:", "}}
