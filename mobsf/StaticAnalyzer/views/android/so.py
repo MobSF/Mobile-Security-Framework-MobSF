@@ -81,6 +81,7 @@ def so_analysis(request, app_dic, rescan, api):
                 'network_findings': [],
                 'network_summary': {},
             },
+            'malware_permissions': {},
         }
         cert_dic = {
             'certificate_info': '',

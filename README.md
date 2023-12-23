@@ -1,5 +1,5 @@
 # Mobile Security Framework (MobSF)
-Version: v3.8 beta
+Version: v3.9 beta
 
 ![](https://cloud.githubusercontent.com/assets/4301109/20019521/cc61f7fc-a2f2-11e6-95f3-407030d9fdde.png)
 
@@ -28,13 +28,13 @@ Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82
 
 MobSF is also bundled with [Android Tamer](https://tamerplatform.com), [BlackArch](https://blackarch.org/mobile.html) and [Pentoo](https://www.pentoo.ch/).
 
-## Support MobSF
+### Support MobSF
 
 [![Donate to MobSF](https://user-images.githubusercontent.com/4301109/117404264-7aab5480-aebe-11eb-9cbd-da82d7346bb3.png)](https://opensecurity.in/donate)
 
 If you liked MobSF and find it useful, please consider donating.
 
-*It's easy to build open source, maintaining one is a different another story. Long live open source!*
+*It's easy to build open source, maintaining one is a different story. Long live open source!*
 
 ## Documentation
 
@@ -87,11 +87,15 @@ docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:la
 
 ### Dynamic Analysis - Android APK
 
-![mobsf_dynamic_analysis](https://user-images.githubusercontent.com/4301109/95514697-5e782100-098a-11eb-8390-47bb3822a2d7.gif)
+![mobsf_android_dynamic_analysis](https://user-images.githubusercontent.com/4301109/95514697-5e782100-098a-11eb-8390-47bb3822a2d7.gif)
 
 ### Web API Viewer
 
-![ mobsf_web_api_fuzzing_with_burp](https://user-images.githubusercontent.com/4301109/95516560-69808080-098d-11eb-9e0b-fb5a25e96585.gif)
+![mobsf_web_api_fuzzing_with_burp](https://user-images.githubusercontent.com/4301109/95516560-69808080-098d-11eb-9e0b-fb5a25e96585.gif)
+
+### Dynamic Analysis - iOS IPA
+
+![mobsf_ios_dynamic_analysis](https://github.com/MobSF/Mobile-Security-Framework-MobSF/assets/4301109/34014c4d-1535-48ad-9944-a4b1b728a030)
 
 ## Past Collaborators
 

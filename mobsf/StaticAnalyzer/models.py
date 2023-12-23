@@ -39,6 +39,7 @@ class StaticAnalyzerAndroid(models.Model):
     VERSION_CODE = models.CharField(max_length=50, default='')
     ICON_PATH = models.TextField(default='')
     PERMISSIONS = models.TextField(default={})
+    MALWARE_PERMISSIONS = models.TextField(default={})
     CERTIFICATE_ANALYSIS = models.TextField(default={})
     MANIFEST_ANALYSIS = models.TextField(default=[])
     BINARY_ANALYSIS = models.TextField(default=[])

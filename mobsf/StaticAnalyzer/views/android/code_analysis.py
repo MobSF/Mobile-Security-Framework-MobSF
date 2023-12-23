@@ -13,6 +13,7 @@ import yaml
 from mobsf.MobSF.utils import (
     filename_from_path,
     get_android_src_dir,
+    settings_enabled,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     url_n_email_extract,
@@ -28,6 +29,8 @@ logger = logging.getLogger(__name__)
 def get_perm_rules(perm_rules, android_permissions):
     """Get applicablepermission rules."""
     try:
+        if not settings_enabled('PERM_MAPPING_ENABLED'):
+            return None
         if not android_permissions:
             return None
         dynamic_rules = []
