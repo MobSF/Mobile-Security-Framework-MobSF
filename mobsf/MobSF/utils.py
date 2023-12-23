@@ -101,17 +101,22 @@ def print_version():
     """Print MobSF Version."""
     logger.info(settings.BANNER)
     ver = settings.MOBSF_VER
+    logger.info('Author: Ajin Abraham | opensecurity.in')
     if platform.system() == 'Windows':
         logger.info('Mobile Security Framework %s', ver)
         print('REST API Key: ' + api_key())
     else:
         logger.info('\033[1m\033[34mMobile Security Framework %s\033[0m', ver)
         print('REST API Key: ' + Color.BOLD + api_key() + Color.END)
-    logger.info('OS: %s', platform.system())
-    logger.info('Platform: %s', platform.platform())
-    dist = ' '.join(distro.linux_distribution(full_distribution_name=False))
-    if dist.strip():
-        logger.info('Dist: %s', dist)
+    os = platform.system()
+    pltfm = platform.platform()
+    dist = ' '.join(distro.linux_distribution(
+        full_distribution_name=False)).strip()
+    dst_str = ' '
+    if dist:
+        dst_str = f' ({dist}) '
+    env_str = f'OS Environment: {os}{dst_str}{pltfm}'
+    logger.info(env_str)
     find_java_binary()
     check_basic_env()
     thread = threading.Thread(target=check_update, name='check_update')
