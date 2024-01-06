@@ -156,7 +156,7 @@ MANIFEST_DESC = {
                         'attribute set to "singleTask". It is then '
                         'possible for other applications to place a '
                         'malicious activity on top of the activity stack '
-                        'resulting in Task Hijacking/StrandHogg 1.0'
+                        'resulting in Task Hijacking/StrandHogg 1.0 '
                         'vulnerability. This makes the application an easy '
                         'target for phishing attacks. The vulnerability can '
                         'be remediated by setting the launch mode attribute '

@@ -71,7 +71,8 @@ def assetlinks_check(act_name, well_knowns):
                 r = requests.get(w_url,
                     allow_redirects=True,
                     proxies=proxies,
-                    verify=verify)
+                    verify=verify,
+                    timeout=5)
                 status_code = r.status_code
                 if (str(r.status_code).startswith('2')
                         and iden in str(r.json())):
@@ -293,15 +294,14 @@ def manifest_analysis(mfxml, ns, man_data_dic, src_type, app_dir):
                         target_sdk = ANDROID_8_0_LEVEL
                     if (target_sdk < ANDROID_9_0_LEVEL
                             and launchmode == 'singleTask'):
-                        ret_list.append(('task_hijacking', (item,), ()))
+                        ret_list.append(('task_hijacking', (item,), (target_sdk,)))
 
                     # Android StrandHogg 2.0
                     exported_act = node.getAttribute(f'{ns}:exported')
                     if (target_sdk < ANDROID_10_0_LEVEL
-                            and itemname in ['Activity', 'Activity-Alias']
                             and exported_act == 'true'
                             and (launchmode != 'singleInstance' or task_affinity != '')):
-                        ret_list.append(('task_hijacking2', (item,), ()))
+                        ret_list.append(('task_hijacking2', (item,), (target_sdk,)))
 
                 # Exported Check
                 item = ''
