@@ -4,6 +4,8 @@
 import logging
 
 import requests
+import threading
+from concurrent.futures import ThreadPoolExecutor
 
 from mobsf.MobSF.utils import (
     upstream_proxy,
@@ -60,32 +62,40 @@ def assetlinks_check(act_name, well_knowns):
     """Well known assetlink check."""
     findings = []
     iden = 'sha256_cert_fingerprints'
+
+    with ThreadPoolExecutor() as executor:
+        futures = []
+        for host, w_url in well_knowns:
+            futures.append(executor.submit(_check_url, act_name, host, w_url))
+
+        for future in futures:
+            findings.append(future.result())
+
+    return findings
+
+def _check_url(act_name, host, w_url):
     try:
         proxies, verify = upstream_proxy('https')
-        for host, w_url in well_knowns:
-            logger.info(
-                'App Link Assetlinks Check - [%s] %s', act_name, host)
-            status = False
-            status_code = 0
-            try:
-                r = requests.get(w_url,
-                    allow_redirects=True,
-                    proxies=proxies,
-                    verify=verify)
-                status_code = r.status_code
-                if (str(r.status_code).startswith('2')
-                        and iden in str(r.json())):
-                    status = True
-            except Exception:
-                pass
-            findings.append({
-                'url': w_url,
-                'host': host,
-                'status_code': status_code,
-                'status': status})
-    except Exception:
-        logger.exception('Well Known Assetlinks Check')
-    return findings
+        logger.info(
+            'App Link Assetlinks Check - [%s] %s', act_name, host)
+        status = False
+        status_code = 0
+
+        r = requests.get(w_url,
+            allow_redirects=True,
+            proxies=proxies,
+            verify=verify,
+            timeout=5)
+
+        status_code = r.status_code
+        if (str(status_code).startswith('2') and iden in str(r.json())):
+            status = True
+
+        return {'url': w_url, 'host': host, 'status_code': status_code, 'status': status}
+
+    except Exception as e:
+        logger.exception(f'Error checking URL: {w_url}')
+        return {'url': w_url, 'host': host, 'status_code': None, 'status': False, 'error': str(e)}
 
 
 def get_browsable_activities(node, ns):
