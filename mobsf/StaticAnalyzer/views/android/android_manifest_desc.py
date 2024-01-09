@@ -162,7 +162,7 @@ MANIFEST_DESC = {
                         'be remediated by setting the launch mode attribute '
                         'to "singleInstance" or by setting an empty '
                         'taskAffinity (taskAffinity="") attribute. You can '
-                        'also update the target SDK version of the app to '
+                        'also update the target SDK version (%s) of the app to '
                         '28 or higher to fix this issue at platform level.'),
         'name': ('Activity (%s) is vulnerable to Android '
                  'Task Hijacking/StrandHogg.'),
@@ -180,7 +180,7 @@ MANIFEST_DESC = {
                         'be remediated by setting the launch mode attribute '
                         'to "singleInstance" and by setting an empty '
                         'taskAffinity (taskAffinity=""). You can also update '
-                        'the target SDK version of the app to 29 or higher '
+                        'the target SDK version (%s) of the app to 29 or higher '
                         'to fix this issue at platform level.'),
         'name': 'Activity (%s) is vulnerable to StrandHogg 2.0',
     },
