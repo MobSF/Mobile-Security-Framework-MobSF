@@ -4,7 +4,6 @@
 import logging
 
 import requests
-import threading
 from concurrent.futures import ThreadPoolExecutor
 
 from mobsf.MobSF.utils import (
@@ -61,23 +60,24 @@ ANDROID_API_LEVEL_MAP = {
 def assetlinks_check(act_name, well_knowns):
     """Well known assetlink check."""
     findings = []
-    iden = 'sha256_cert_fingerprints'
 
     with ThreadPoolExecutor() as executor:
         futures = []
-        for host, w_url in well_knowns:
-            futures.append(executor.submit(_check_url, act_name, host, w_url))
+        for w_url, host in well_knowns.items():
+            logger.info(
+                'App Link Assetlinks Check - [%s] %s', act_name, host)
+            futures.append(
+                executor.submit(_check_url, host, w_url))
 
         for future in futures:
             findings.append(future.result())
 
     return findings
 
-def _check_url(act_name, host, w_url):
+def _check_url(host, w_url):
     try:
+        iden = 'sha256_cert_fingerprints'
         proxies, verify = upstream_proxy('https')
-        logger.info(
-            'App Link Assetlinks Check - [%s] %s', act_name, host)
         status = False
         status_code = 0
 
@@ -91,11 +91,17 @@ def _check_url(act_name, host, w_url):
         if (str(status_code).startswith('2') and iden in str(r.json())):
             status = True
 
-        return {'url': w_url, 'host': host, 'status_code': status_code, 'status': status}
+        return {'url': w_url,
+                'host': host,
+                'status_code': status_code,
+                'status': status}
 
     except Exception as e:
-        logger.exception(f'Error checking URL: {w_url}')
-        return {'url': w_url, 'host': host, 'status_code': None, 'status': False, 'error': str(e)}
+        logger.exception(f'Well Known Assetlinks Check for URL: {w_url}')
+        return {'url': w_url, 
+                'host': host,
+                'status_code': None,
+                'status': False}
 
 
 def get_browsable_activities(node, ns):
@@ -109,7 +115,7 @@ def get_browsable_activities(node, ns):
         paths = []
         path_prefixs = []
         path_patterns = []
-        well_known = []
+        well_known = {}
         well_known_path = '/.well-known/assetlinks.json'
         catg = node.getElementsByTagName('category')
         for cat in catg:
@@ -139,12 +145,13 @@ def get_browsable_activities(node, ns):
                         path_patterns.append(path_pattern)
                     # Collect possible well-known paths
                     if scheme and scheme in ('http', 'https') and host:
+                        host = host.replace('*.', '')
+                        shost = f'{scheme}://{host}'
                         if port:
-                            c_url = f'{scheme}://{host}:{port}{well_known_path}'
+                            c_url = f'{shost}:{port}{well_known_path}'
                         else:
-                            c_url = f'{scheme}://{host}{well_known_path}'
-                        if (host, c_url) not in well_known:
-                            well_known.append((host, c_url))
+                            c_url = f'{shost}{well_known_path}'
+                        well_known[c_url] = shost
         schemes = [scheme + '://' for scheme in schemes]
         browse_dic['schemes'] = schemes
         browse_dic['mime_types'] = mime_types
