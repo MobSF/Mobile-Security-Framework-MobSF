@@ -66,8 +66,10 @@ def assetlinks_check(act_name, well_knowns):
         for w_url, host in well_knowns.items():
             logger.info(
                 'App Link Assetlinks Check - [%s] %s', act_name, host)
-            findings.append(
-                executor.submit(_check_url, host, w_url).result())
+            futures.append(
+                executor.submit(_check_url, host, w_url))
+        for future in futures:
+            findings.append(future.result())
 
     return findings
 
