@@ -64,6 +64,8 @@ def assetlinks_check(act_name, well_knowns):
     with ThreadPoolExecutor() as executor:
         futures = []
         for w_url, host in well_knowns.items():
+            if host.startswith(("http://*", "https://*")):
+                continue
             logger.info(
                 'App Link Assetlinks Check - [%s] %s', act_name, host)
             futures.append(
@@ -96,7 +98,7 @@ def _check_url(host, w_url):
                 'status': status}
 
     except Exception:
-        logger.exception(f'Well Known Assetlinks Check for URL: {w_url}')
+        # logger.exception(f'Well Known Assetlinks Check for URL: {w_url}')
         return {'url': w_url, 
                 'host': host,
                 'status_code': None,
