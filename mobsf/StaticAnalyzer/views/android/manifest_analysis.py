@@ -54,6 +54,7 @@ ANDROID_API_LEVEL_MAP = {
     '31': '12',
     '32': '12L',
     '33': '13',
+    '34': '14',
 }
 
 
@@ -312,15 +313,14 @@ def manifest_analysis(mfxml, ns, man_data_dic, src_type, app_dir):
                         target_sdk = ANDROID_8_0_LEVEL
                     if (target_sdk < ANDROID_9_0_LEVEL
                             and launchmode == 'singleTask'):
-                        ret_list.append(('task_hijacking', (item,), ()))
+                        ret_list.append(('task_hijacking', (item,), (target_sdk,)))
 
                     # Android StrandHogg 2.0
                     exported_act = node.getAttribute(f'{ns}:exported')
                     if (target_sdk < ANDROID_10_0_LEVEL
-                            and itemname in ['Activity', 'Activity-Alias']
                             and exported_act == 'true'
                             and (launchmode != 'singleInstance' or task_affinity != '')):
-                        ret_list.append(('task_hijacking2', (item,), ()))
+                        ret_list.append(('task_hijacking2', (item,), (target_sdk,)))
 
                 # Exported Check
                 item = ''
