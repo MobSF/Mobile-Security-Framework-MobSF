@@ -64,8 +64,6 @@ def assetlinks_check(act_name, well_knowns):
     with ThreadPoolExecutor() as executor:
         futures = []
         for w_url, host in well_knowns.items():
-            if host.startswith(("http://*", "https://*")):
-                continue
             logger.info(
                 'App Link Assetlinks Check - [%s] %s', act_name, host)
             futures.append(
@@ -98,7 +96,7 @@ def _check_url(host, w_url):
                 'status': status}
 
     except Exception:
-        # logger.exception(f'Well Known Assetlinks Check for URL: {w_url}')
+        logger.exception(f'Well Known Assetlinks Check for URL: {w_url}')
         return {'url': w_url, 
                 'host': host,
                 'status_code': None,
@@ -145,7 +143,10 @@ def get_browsable_activities(node, ns):
                     if path_pattern and path_pattern not in path_patterns:
                         path_patterns.append(path_pattern)
                     # Collect possible well-known paths
-                    if scheme and scheme in ('http', 'https') and host:
+                    if (scheme
+                          and scheme in ('http', 'https')
+                          and host
+                          and host != '*'):
                         host = host.replace('*.', '')
                         shost = f'{scheme}://{host}'
                         if port:
