@@ -156,14 +156,15 @@ MANIFEST_DESC = {
                         'attribute set to "singleTask". It is then '
                         'possible for other applications to place a '
                         'malicious activity on top of the activity stack '
-                        'resulting in Task Hijacking/StrandHogg 1.0'
+                        'resulting in Task Hijacking/StrandHogg 1.0 '
                         'vulnerability. This makes the application an easy '
                         'target for phishing attacks. The vulnerability can '
                         'be remediated by setting the launch mode attribute '
                         'to "singleInstance" or by setting an empty '
                         'taskAffinity (taskAffinity="") attribute. You can '
-                        'also update the target SDK version of the app to '
-                        '28 or higher to fix this issue at platform level.'),
+                        'also update the target SDK version (%s) of the '
+                        'app to 28 or higher to fix this issue at '
+                        'platform level.'),
         'name': ('Activity (%s) is vulnerable to Android '
                  'Task Hijacking/StrandHogg.'),
     },
@@ -180,8 +181,9 @@ MANIFEST_DESC = {
                         'be remediated by setting the launch mode attribute '
                         'to "singleInstance" and by setting an empty '
                         'taskAffinity (taskAffinity=""). You can also update '
-                        'the target SDK version of the app to 29 or higher '
-                        'to fix this issue at platform level.'),
+                        'the target SDK version (%s) of the app '
+                        'to 29 or higher to fix this issue at '
+                        'platform level.'),
         'name': 'Activity (%s) is vulnerable to StrandHogg 2.0',
     },
     'improper_provider_permission': {
