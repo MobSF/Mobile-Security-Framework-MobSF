@@ -16,6 +16,9 @@ Please report all security issues [here](https://github.com/MobSF/Mobile-Securit
 
 ## Past Security Issues
 
-* [Local file reading regression < 3.0.0](https://github.com/MobSF/Mobile-Security-Framework-MobSF/issues/1197)
-* [Upload a malicious zip file can overwrite arbitary files >=v0.9.3.2 && <=0.9.4.1](https://github.com/MobSF/Mobile-Security-Framework-MobSF/issues/358)
-* [Fix Local File Inclusion Vulnerability in ViewSource Function. Version <= v0.9.2](https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/166)
+| Vulnerability | Affected Versions |
+| ------- | ------------------ |
+| [Remote Code Execution via arbitrary file overwrite vulnerability in apktool <2.9.2](https://github.com/MobSF/Mobile-Security-Framework-MobSF/commit/19c1b55c2c59596f2d43439926c9dc976cbeaec4),  [[CVE-2024-21633]](https://github.com/0x33c0unt/CVE-2024-21633) | `<=3.9.1` |
+| [Arbitrary Local file read regression](https://github.com/MobSF/Mobile-Security-Framework-MobSF/issues/1197)  | `<3.0.0` |
+| [Upload a malicious zip file can overwrite arbitary files](https://github.com/MobSF/Mobile-Security-Framework-MobSF/issues/358)  | `>=0.9.3.2` && `<=0.9.4.1` |
+| [Arbitrary Local file read](https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/166) | `<=0.9.2` |
