@@ -20,6 +20,7 @@ from django.conf import settings
 from mobsf.MobSF.utils import (
     find_java_binary,
     is_file_exists,
+    is_path_traversal,
 )
 
 
@@ -156,6 +157,8 @@ def get_icon_src(a, app_dic, res_dir):
         icon_name = None
         if a:
             icon_name = a.get_app_icon(max_dpi=icon_resolution)
+            if is_path_traversal(icon_name):
+                icon_name = None
         if not icon_name:
             # androguard cannot find icon file.
             icon_name = ''
@@ -195,6 +198,9 @@ def get_icon_src(a, app_dic, res_dir):
             icon_src = (app_dir / icon_name).as_posix()
         if icon_src.endswith('.xml'):
             logger.warning('Cannot find icon file from xml')
+            icon_src = ''
+        elif not icon_src.endswith(('.png', '.svg', '.webp')):
+            logger.warning('Cannot find a valid icon file')
             icon_src = ''
         if not icon_name:
             logger.warning('Cannot find icon file')

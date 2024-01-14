@@ -97,7 +97,7 @@ def _check_url(host, w_url):
                 'status': status}
 
     except Exception:
-        logger.exception(f'Well Known Assetlinks Check for URL: {w_url}')
+        logger.error(f'Well Known Assetlinks Check for URL: {w_url}')
         return {'url': w_url, 
                 'host': host,
                 'status_code': None,
