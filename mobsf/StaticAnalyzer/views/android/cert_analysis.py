@@ -104,9 +104,9 @@ def get_pub_key_details(data):
     elif isinstance(x509_public_key, dsa.DSAPublicKey):
         alg = 'dsa'
         dsa_parameters = x509_public_key.parameters()
-        p = dsa_parameters.p
-        q = dsa_parameters.q
-        g = dsa_parameters.g
+        p = dsa_parameters.parameter_numbers().p
+        q = dsa_parameters.parameter_numbers().q
+        g = dsa_parameters.parameter_numbers().g
         y = x509_public_key.public_numbers().y
         to_hash = f'{p}:{q}:{g}:{y}'
     elif isinstance(x509_public_key, ec.EllipticCurvePublicKey):
