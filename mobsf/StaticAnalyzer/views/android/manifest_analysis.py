@@ -144,7 +144,10 @@ def get_browsable_activities(node, ns):
                     if path_pattern and path_pattern not in path_patterns:
                         path_patterns.append(path_pattern)
                     # Collect possible well-known paths
-                    if scheme and scheme in ('http', 'https') and host:
+                    if (scheme
+                          and scheme in ('http', 'https')
+                          and host
+                          and host != '*'):
                         host = host.replace('*.', '')
                         shost = f'{scheme}://{host}'
                         if port:
