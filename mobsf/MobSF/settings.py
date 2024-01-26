@@ -372,7 +372,6 @@ else:
     JADX_BINARY = os.getenv('MOBSF_JADX_BINARY', '')
     BACKSMALI_BINARY = os.getenv('MOBSF_BACKSMALI_BINARY', '')
     VD2SVG_BINARY = os.getenv('MOBSF_VD2SVG_BINARY', '')
-    BATIK_BINARY = os.getenv('MOBSF_BATIK_BINARY', '')
     APKTOOL_BINARY = os.getenv('MOBSF_APKTOOL_BINARY', '')
     ADB_BINARY = os.getenv('MOBSF_ADB_BINARY', '')
 
@@ -383,15 +382,11 @@ else:
 
     # COMMON
     JAVA_DIRECTORY = os.getenv('MOBSF_JAVA_DIRECTORY', '')
-    VBOXMANAGE_BINARY = os.getenv('MOBSF_VBOXMANAGE_BINARY', '')
-    PYTHON3_PATH = os.getenv('MOBSF_PYTHON3_PATH', '')
 
     """
     Examples:
     JAVA_DIRECTORY = 'C:/Program Files/Java/jdk1.7.0_17/bin/'
     JAVA_DIRECTORY = '/usr/bin/'
-    VBOXMANAGE_BINARY = '/usr/bin/VBoxManage'
-    PYTHON3_PATH = 'C:/Users/Ajin/AppData/Local/Programs/Python/Python35-32/'
     JADX_BINARY = 'C:/Users/Ajin/AppData/Local/Programs/jadx/bin/jadx.bat'
     JADX_BINARY = '/Users/ajin/jadx/bin/jadx'
     """

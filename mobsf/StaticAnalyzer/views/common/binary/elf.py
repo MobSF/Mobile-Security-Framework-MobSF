@@ -302,6 +302,11 @@ class ELFChecksec:
             elf_strings = None
         if not elf_strings:
             elf_strings = strings_on_binary(self.elf_path)
+        for i in elf_strings:
+            if isinstance(i, bytes):
+                tmp = i.decode('utf-8', errors='ignore')
+                elf_strings.remove(i)
+                elf_strings.append(tmp)
         return elf_strings
 
     def get_symbols(self):

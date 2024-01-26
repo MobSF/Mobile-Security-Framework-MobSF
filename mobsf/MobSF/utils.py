@@ -179,22 +179,6 @@ def find_java_binary():
     return 'java'
 
 
-def run_process(args):
-    try:
-        proc = subprocess.Popen(
-            args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        dat = ''
-        while True:
-            line = proc.stdout.readline()
-            if not line:
-                break
-            dat += str(line)
-        return dat
-    except Exception:
-        logger.error('Finding Java path - Cannot Run Process')
-        return ''
-
-
 def print_n_send_error_response(request,
                                 msg,
                                 api=False,

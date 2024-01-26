@@ -18,6 +18,10 @@ from mobsf.DynamicAnalyzer.views.ios import (
     tests_frida as ios_tests_frida,
 )
 from mobsf.MobSF import utils
+from mobsf.MobSF.security import (
+    init_exec_hooks,
+    store_exec_hashes_at_first_run,
+)
 from mobsf.MobSF.views import home
 from mobsf.MobSF.views.api import api_static_analysis as api_sz
 from mobsf.MobSF.views.api import api_dynamic_analysis as api_dz
@@ -299,3 +303,5 @@ if settings.API_ONLY == '0':
     ])
 
 utils.print_version()
+init_exec_hooks()
+store_exec_hashes_at_first_run()
