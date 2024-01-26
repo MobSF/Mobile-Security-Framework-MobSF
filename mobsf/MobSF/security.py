@@ -37,9 +37,13 @@ def get_all_files(dirlocs):
         if dirloc.is_file() and dirloc.suffix not in _SKIP:
             yield dirloc
         elif dirloc.is_dir():
-            for efile in dirloc.rglob('*'):
-                if efile.is_file() and efile.suffix not in _SKIP:
-                    yield efile
+            # Use a generator expression for efficient filtering
+            files_in_dir = (
+                efile for efile in dirloc.rglob('*')
+                if efile.is_file() and efile.suffix not in _SKIP
+            )
+            # Yield all files from the filtered generator
+            yield from files_in_dir
 
 
 def generate_hashes(dirlocs):
