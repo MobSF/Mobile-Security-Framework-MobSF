@@ -21,7 +21,7 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 # Non executable files at host level
 _SKIP = [
-    '.pyc', '.py', '.js',
+    '.pyc', '.js',
     '.json', '.txt', '.md']
 EXECUTABLE_HASH_MAP = None
 
@@ -63,9 +63,11 @@ def generate_hashes(dirlocs):
 def get_executable_hashes():
     # Internal Binaries shipped with MobSF
     base = Path(settings.BASE_DIR)
-    exe_dirs = [
+    manage_py = base.parent / 'manage.py'
+    exec_loc = [
         base / 'DynamicAnalyzer' / 'tools',
         base / 'StaticAnalyzer' / 'tools',
+        manage_py,
     ]
     # External binaries used directly by MobSF
     system_bins = [
@@ -85,10 +87,10 @@ def get_executable_hashes():
     for sbin in system_bins:
         bin_path = which(sbin)
         if bin_path:
-            exe_dirs.append(Path(bin_path))
+            exec_loc.append(Path(bin_path))
     # User defined path/binaries
     if settings.JAVA_DIRECTORY:
-        exe_dirs.append(Path(settings.JAVA_DIRECTORY))
+        exec_loc.append(Path(settings.JAVA_DIRECTORY))
     user_defined_bins = [
         sys.executable,
         settings.JADX_BINARY,
@@ -102,7 +104,7 @@ def get_executable_hashes():
     ]
     for ubin in user_defined_bins:
         if ubin:
-            exe_dirs.append(Path(ubin))
+            exec_loc.append(Path(ubin))
     # Add ADB and Java binaries
     adb = get_adb()
     java = find_java_binary()
@@ -111,10 +113,10 @@ def get_executable_hashes():
     if java == 'java':
         java = which('java')
     if adb:
-        exe_dirs.append(Path(adb))
+        exec_loc.append(Path(adb))
     if java:
-        exe_dirs.append(Path(java))
-    return generate_hashes(exe_dirs)
+        exec_loc.append(Path(java))
+    return generate_hashes(exec_loc)
 
 
 def store_exec_hashes_at_first_run():
@@ -130,7 +132,7 @@ def store_exec_hashes_at_first_run():
                        'tampering detection')
 
 
-def cmd_hook(oldfunc, *args, **kwargs):
+def subprocess_hook(oldfunc, *args, **kwargs):
     global EXECUTABLE_HASH_MAP
     exec1 = args[0][0]  # executable
     exec2 = None  # secondary executable
@@ -145,23 +147,35 @@ def cmd_hook(oldfunc, *args, **kwargs):
     if exec1 in EXECUTABLE_HASH_MAP:
         executable_in_hash_map = True
         if EXECUTABLE_HASH_MAP[exec1] != sha256(exec1):
-            raise Exception('Executable Tampering Detected')
+            msg = (
+                f'Executable Tampering Detected. [{exec1}]'
+                ' has been modified during runtime')
+            logger.error(msg)
+            raise Exception(msg)
     if exec2 and exec1 in EXECUTABLE_HASH_MAP:
         executable_in_hash_map = True
         if EXECUTABLE_HASH_MAP[exec2] != sha256(exec2):
-            raise Exception('JAR Tampering Detected')
+            msg = (
+                f'JAR Tampering Detected. [{exec2}]'
+                ' has been modified during runtime')
+            logger.error(msg)
+            raise Exception(msg)
     if not executable_in_hash_map:
         logger.warning('Executable [%s] not found in known hashes, '
                        'skipping runtime executable '
                        'tampering detection', exec1)
         _, signature = get_executable_hashes()
         if EXECUTABLE_HASH_MAP['signature'] != signature:
-            raise Exception('Executable/Library Tampering Detected')
+            msg = 'Executable/Library Tampering Detected'
+            logger.error(msg)
+            raise Exception(msg)
     return oldfunc(*args, **kwargs)
 
 
 def init_exec_hooks():
-    subprocess.Popen = wrap_function(subprocess.Popen, cmd_hook)
+    subprocess.Popen = wrap_function(
+        subprocess.Popen,
+        subprocess_hook)
 
 
 def wrap_function(oldfunction, newfunction):
