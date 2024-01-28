@@ -24,7 +24,7 @@ from mobsf.MobSF.security import (
 )
 from mobsf.MobSF.views import home
 from mobsf.MobSF.views.api import api_static_analysis as api_sz
-from mobsf.MobSF.views.api import api_dynamic_analysis as api_dz
+from mobsf.MobSF.views.api import api_android_dynamic_analysis as api_dz
 from mobsf.StaticAnalyzer import tests
 from mobsf.StaticAnalyzer.views.common import (
     appsec,
