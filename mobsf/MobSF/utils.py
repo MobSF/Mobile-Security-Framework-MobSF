@@ -480,9 +480,16 @@ def update_local_db(db_name, url, local_file):
     except Exception:
         logger.exception('[ERROR] Setting upstream proxy')
     try:
+        headers = {
+            'User-Agent': 'Python',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Pragma': 'no-cache',
+            'Cache-Control': 'no-cache',
+        }
         response = requests.get(url,
                                 timeout=3,
                                 proxies=proxies,
+                                headers=headers,
                                 verify=verify)
         resp = response.content
         inmemoryfile = io.BytesIO(resp)
