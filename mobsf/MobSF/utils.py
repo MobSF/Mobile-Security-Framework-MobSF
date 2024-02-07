@@ -475,17 +475,21 @@ def update_local_db(db_name, url, local_file):
     """Update Local DBs."""
     update = None
     inmemoryfile = None
+    headers = None
     try:
         proxies, verify = upstream_proxy('https')
     except Exception:
         logger.exception('[ERROR] Setting upstream proxy')
     try:
-        headers = {
-            'User-Agent': 'Python',
-            'Accept-Language': 'en-US,en;q=0.5',
-            'Pragma': 'no-cache',
-            'Cache-Control': 'no-cache',
-        }
+        # Minmal header to avoid 500 on exodus-privacy.eu.org
+        if(db_name == 'Trackers'):
+            headers = {
+                    'User-Agent': '',
+                    'Accept-Language': '',
+                    'Pragma': 'no-cache',
+                    'Cache-Control': 'no-cache',
+            }
+
         response = requests.get(url,
                                 timeout=3,
                                 proxies=proxies,
