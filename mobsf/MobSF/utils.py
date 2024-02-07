@@ -481,13 +481,13 @@ def update_local_db(db_name, url, local_file):
     except Exception:
         logger.exception('[ERROR] Setting upstream proxy')
     try:
-        # Minmal header to avoid 500 on exodus-privacy.eu.org
-        if(db_name == 'Trackers'):
+        # Minimal header to avoid 500 on exodus-privacy.eu.org for Trackers
+        if (db_name == 'Trackers'):
             headers = {
-                    'User-Agent': '',
-                    'Accept-Language': '',
-                    'Pragma': 'no-cache',
-                    'Cache-Control': 'no-cache',
+                'User-Agent': '',
+                'Accept-Language': '',
+                'Pragma': 'no-cache',
+                'Cache-Control': 'no-cache',
             }
 
         response = requests.get(url,
