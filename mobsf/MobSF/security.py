@@ -71,6 +71,9 @@ def get_executable_hashes():
     ]
     # External binaries used directly by MobSF
     system_bins = [
+        'adb',
+        'which',
+        'wkhtmltopdf',
         'httptools',
         'mitmdump',
         'unzip',

@@ -213,10 +213,13 @@ def list_apps(request, api=False):
                 bundle_ids.append(f'bundleID={bundle}')
         elif r and r.get('error'):
             data['message'] = r.get('error')
-            return send_response(failed, api)
+            verbose = r.get('originalError')
+            if verbose:
+                data['message'] += f' {verbose}'
+            return send_response(data, api)
         else:
             data['message'] = 'Failed to list apps'
-            return send_response(failed, api)
+            return send_response(data, api)
         # Get app icons
         logger.info('Getting all application icons')
         ic = ca.get_icons('&'.join(bundle_ids))
@@ -572,14 +575,17 @@ def network_capture(request, api=False):
 # File Download
 
 
-@require_http_methods(['GET'])
+@require_http_methods(['GET', 'POST'])
 def live_pcap_download(request, api=False):
     """Download Network Capture."""
     data = {
         'status': 'failed',
         'message': 'Failed to download network capture'}
     try:
-        instance_id = request.GET['instance_id']
+        if api:
+            instance_id = request.POST['instance_id']
+        else:
+            instance_id = request.GET['instance_id']
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
@@ -614,7 +620,7 @@ def ssh_execute(request, api=False):
         'message': 'Failed to execute command'}
     try:
         instance_id = request.POST['instance_id']
-        cmd = request.POST.get('cmd')
+        cmd = request.POST['cmd']
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
@@ -762,7 +768,7 @@ def system_logs(request, api=False):
                 return send_response(failed, api)
             ci = CorelliumInstanceAPI(instance_id)
             data = {'status': 'ok', 'message': ci.console_log()}
-            return send_response(data)
+            return send_response(data, api)
         logger.info('Getting system logs')
         instance_id = request.GET['instance_id']
         failed = common_check(instance_id)
@@ -780,7 +786,7 @@ def system_logs(request, api=False):
         logger.exception(err)
         if request.method == 'POST':
             data['message'] = str(exp)
-            return send_response(data)
+            return send_response(data, api)
         return print_n_send_error_response(request, err, api)
 # AJAX
 
@@ -810,7 +816,7 @@ def upload_file(request, api=False):
     except Exception as exp:
         logger.exception(err_msg)
         data['message'] = str(exp)
-    return send_response(data)
+    return send_response(data, api)
 # File Download
 
 

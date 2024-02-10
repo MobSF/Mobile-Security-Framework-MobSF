@@ -5,7 +5,7 @@
      {% endblock %}
     {% block extra_css %}
     <!-- DataTables -->
-    <link rel="stylesheet" href="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.css" %}">
+    <link href="{% static "datatables/css/datatables.combined.min.css" %}" rel="stylesheet">
     <link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
      <style type="text/css" media="print">
         @page { size: landscape; }
@@ -1750,8 +1750,10 @@
 <!--end new UI-->
 {% block extra_scripts %}
 <!-- DataTables -->
-<script src="{% static "adminlte/plugins/datatables/jquery.dataTables.min.js" %} "></script>
-<script src="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.js" %}"></script>
+<script src="{% static "datatables/js/pdfmake.min.js" %}"></script>
+<script src="{% static "datatables/js/vfs_fonts.js" %}"></script>
+<script src="{% static "datatables/js/datatables.combined.min.js" %}"></script>
+<script src="{% static "others/js/datatables_init.js" %}"></script>
 <script src="{% static "amcharts/core.js" %}"></script>
 <script src="{% static "amcharts/maps.js" %}"></script>
 <script src="{% static "amcharts/worldIndiaLow.js" %}"></script>
@@ -1775,18 +1777,7 @@
   const pkg = '{{ bundle_id }}'
   const hash = '{{ md5 }}'
   
-  $(function () {
-    // Datatable
-    $('table').DataTable({
-      "paging": true,
-      "lengthChange": false,
-      "searching": true,
-      "ordering": true,
-      "info": true,
-      "autoWidth": true,
-      "responsive": true,
-    });
-  });
+
   // Navbar Active
     $(".nav-link").on("click", function() {
     $(".nav-link").removeClass("active");
