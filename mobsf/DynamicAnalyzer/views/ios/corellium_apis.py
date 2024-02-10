@@ -18,20 +18,34 @@ from mobsf.MobSF.utils import (
 SUCCESS_RESP = (200, 204)
 ERROR_RESP = (400, 403, 404, 409)
 OK = 'ok'
+CORELLIUM_API_DOMAIN = getattr(
+    settings,
+    'CORELLIUM_API_DOMAIN',
+    'https://app.corellium.com')
+CORELLIUM_API_KEY = getattr(
+    settings,
+    'CORELLIUM_API_KEY', '')
 logger = logging.getLogger(__name__)
 
 
-class CorelliumAPI:
+class CorelliumInit:
 
-    def __init__(self, project_id) -> None:
-        self.api = 'https://app.corellium.com/api/v1'
-        self.api_key = getattr(settings, 'CORELLIUM_API_KEY', '')
+    def __init__(self) -> None:
+        self.api = f'{CORELLIUM_API_DOMAIN}/api/v1'
+        self.api_key = CORELLIUM_API_KEY
         self.headers = {
+            'Accept': 'application/json',
             'Content-Type': 'application/json',
             'Authorization': f'Bearer {self.api_key}',
         }
-        self.project_id = project_id
         self.proxies, self.verify = upstream_proxy('https')
+
+
+class CorelliumAPI(CorelliumInit):
+
+    def __init__(self, project_id) -> None:
+        super().__init__()
+        self.project_id = project_id
 
     def api_ready(self):
         """Check API Availability."""
@@ -160,17 +174,7 @@ class CorelliumAPI:
         return False
 
 
-class CorelliumModelsAPI:
-
-    def __init__(self) -> None:
-        self.api = 'https://app.corellium.com/api/v1'
-        self.api_key = getattr(settings, 'CORELLIUM_API_KEY', '')
-        self.headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self.api_key}',
-        }
-        self.proxies, self.verify = upstream_proxy('https')
+class CorelliumModelsAPI(CorelliumInit):
 
     def get_models(self):
         r = requests.get(
@@ -205,18 +209,11 @@ class CorelliumModelsAPI:
         return False
 
 
-class CorelliumInstanceAPI:
+class CorelliumInstanceAPI(CorelliumInit):
 
     def __init__(self, instance_id) -> None:
-        self.api = 'https://app.corellium.com/api/v1'
-        self.api_key = getattr(settings, 'CORELLIUM_API_KEY', '')
-        self.headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self.api_key}',
-        }
+        super().__init__()
         self.instance_id = instance_id
-        self.proxies, self.verify = upstream_proxy('https')
 
     def start_instance(self):
         """Start instance."""
@@ -475,18 +472,11 @@ class CorelliumInstanceAPI:
         return r.json()['error']
 
 
-class CorelliumAgentAPI:
+class CorelliumAgentAPI(CorelliumInit):
 
     def __init__(self, instance_id) -> None:
-        self.api = 'https://app.corellium.com/api/v1'
-        self.api_key = getattr(settings, 'CORELLIUM_API_KEY', '')
-        self.headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self.api_key}',
-        }
+        super().__init__()
         self.instance_id = instance_id
-        self.proxies, self.verify = upstream_proxy('https')
 
     def agent_ready(self):
         """Agent ready."""

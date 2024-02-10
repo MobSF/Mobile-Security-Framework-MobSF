@@ -18,9 +18,14 @@ from mobsf.DynamicAnalyzer.views.ios import (
     tests_frida as ios_tests_frida,
 )
 from mobsf.MobSF import utils
+from mobsf.MobSF.security import (
+    init_exec_hooks,
+    store_exec_hashes_at_first_run,
+)
 from mobsf.MobSF.views import home
 from mobsf.MobSF.views.api import api_static_analysis as api_sz
-from mobsf.MobSF.views.api import api_dynamic_analysis as api_dz
+from mobsf.MobSF.views.api import api_android_dynamic_analysis as api_dz
+from mobsf.MobSF.views.api import api_ios_dynamic_analysis as api_idz
 from mobsf.StaticAnalyzer import tests
 from mobsf.StaticAnalyzer.views.common import (
     appsec,
@@ -65,7 +70,6 @@ urlpatterns = [
     re_path(r'^api/v1/dynamic/start_analysis$', api_dz.api_start_analysis),
     re_path(r'^api/v1/dynamic/stop_analysis$', api_dz.api_stop_analysis),
     re_path(r'^api/v1/dynamic/report_json$', api_dz.api_dynamic_report),
-    re_path(r'^api/v1/dynamic/view_source$', api_dz.api_dynamic_view_file),
     # Android Specific
     re_path(r'^api/v1/android/logcat$', api_dz.api_logcat),
     re_path(r'^api/v1/android/mobsfy$', api_dz.api_mobsfy),
@@ -78,11 +82,64 @@ urlpatterns = [
     # Frida
     re_path(r'^api/v1/frida/instrument$', api_dz.api_instrument),
     re_path(r'^api/v1/frida/api_monitor$', api_dz.api_api_monitor),
-    re_path(r'^api/v1/frida/logs$', api_dz.api_frida_logs),
     re_path(r'^api/v1/frida/get_dependencies$', api_dz.api_get_dependencies),
     # Shared
+    re_path(r'^api/v1/frida/logs$', api_dz.api_frida_logs),
     re_path(r'^api/v1/frida/list_scripts$', api_dz.api_list_frida_scripts),
     re_path(r'^api/v1/frida/get_script$', api_dz.api_get_script),
+    re_path(r'^api/v1/dynamic/view_source$', api_dz.api_dynamic_view_file),
+    # iOS Specific
+    re_path(r'^api/v1/ios/corellium_supported_models$',
+            api_idz.api_corellium_get_supported_models),
+    re_path(r'^api/v1/ios/corellium_ios_versions$',
+            api_idz.api_corellium_get_supported_ios_versions),
+    re_path(r'^api/v1/ios/corellium_create_ios_instance$',
+            api_idz.api_corellium_create_ios_instance),
+    re_path(r'^api/v1/ios/dynamic_analysis$',
+            api_idz.api_ios_dynamic_analysis),
+    re_path(r'^api/v1/ios/corellium_start_instance$',
+            api_idz.api_corellium_start_instance),
+    re_path(r'^api/v1/ios/corellium_stop_instance$',
+            api_idz.api_corellium_stop_instance),
+    re_path(r'^api/v1/ios/corellium_unpause_instance$',
+            api_idz.api_corellium_unpause_instance),
+    re_path(r'^api/v1/ios/corellium_reboot_instance$',
+            api_idz.api_corellium_reboot_instance),
+    re_path(r'^api/v1/ios/corellium_destroy_instance$',
+            api_idz.api_corellium_destroy_instance),
+    re_path(r'^api/v1/ios/corellium_list_apps$',
+            api_idz.api_corellium_instance_list_apps),
+    re_path(r'^api/v1/ios/setup_environment$',
+            api_idz.api_setup_environment),
+    re_path(r'^api/v1/ios/dynamic_analyzer$',
+            api_idz.api_ios_dynamic_analyzer),
+    re_path(r'^api/v1/ios/run_app$',
+            api_idz.api_run_app),
+    re_path(r'^api/v1/ios/remove_app$',
+            api_idz.api_remove_app),
+    re_path(r'^api/v1/ios/take_screenshot$',
+            api_idz.api_take_screenshot),
+    re_path(r'^api/v1/ios/get_app_container_path$',
+            api_idz.api_get_app_container_path),
+    re_path(r'^api/v1/ios/network_capture$',
+            api_idz.api_network_capture),
+    re_path(r'^api/v1/ios/live_pcap_download$',
+            api_idz.api_live_pcap_download),
+    re_path(r'^api/v1/ios/ssh_execute$',
+            api_idz.api_ssh_execute),
+    re_path(r'^api/v1/ios/download_app_data$',
+            api_idz.api_download_app_data),
+    re_path(r'^api/v1/ios/instance_input$',
+            api_idz.api_instance_input),
+    re_path(r'^api/v1/ios/system_logs$',
+            api_idz.api_system_logs),
+    re_path(r'^api/v1/ios/file_upload$',
+            api_idz.api_device_file_upload),
+    re_path(r'^api/v1/ios/file_download$',
+            api_idz.api_device_file_download),
+    # Frida
+    re_path(r'^api/v1/frida/ios_instrument$', api_idz.api_ios_instrument),
+    re_path(r'^api/v1/dynamic/ios_report_json$', api_idz.api_ios_view_report),
 ]
 if settings.API_ONLY == '0':
     urlpatterns.extend([
@@ -299,3 +356,5 @@ if settings.API_ONLY == '0':
     ])
 
 utils.print_version()
+init_exec_hooks()
+store_exec_hashes_at_first_run()

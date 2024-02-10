@@ -90,13 +90,19 @@ def dynamic_analysis(request, api=False):
 def dynamic_analyzer(request, api=False):
     """Dynamic Analyzer for in-device iOS apps."""
     try:
-        bundleid = request.GET.get('bundleid')
+        if api:
+            bundleid = request.POST.get('bundle_id')
+        else:
+            bundleid = request.GET.get('bundleid')
         if not bundleid or not strict_package_check(bundleid):
             return print_n_send_error_response(
                 request,
                 'Invalid iOS Bundle id',
                 api)
-        instance_id = request.GET.get('instance_id')
+        if api:
+            instance_id = request.POST.get('instance_id')
+        else:
+            instance_id = request.GET.get('instance_id')
         failed = common_check(instance_id)
         if failed:
             return print_n_send_error_response(
@@ -109,12 +115,16 @@ def dynamic_analyzer(request, api=False):
             app_dir.mkdir()
         ci = CorelliumInstanceAPI(instance_id)
         configure_proxy(request, bundleid, ci)
+        if api:
+            form = None
+        else:
+            form = UploadFileForm()
         context = {
             'hash': bundle_hash,
             'instance_id': instance_id,
             'bundle_id': bundleid,
             'version': settings.MOBSF_VER,
-            'form': UploadFileForm(),
+            'form': form,
             'title': 'iOS Dynamic Analyzer'}
         template = 'dynamic_analysis/ios/dynamic_analyzer.html'
         if api:

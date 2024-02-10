@@ -36,7 +36,10 @@ def ios_view_report(request, bundle_id, api=False):
     """Dynamic Analysis Report Generation."""
     logger.info('iOS Dynamic Analysis Report Generation')
     try:
-        instance_id = request.GET.get('instance_id')
+        if api:
+            instance_id = request.POST.get('instance_id')
+        else:
+            instance_id = request.GET.get('instance_id')
         if instance_id and not common_check(instance_id):
             dev = instance_id
         else:

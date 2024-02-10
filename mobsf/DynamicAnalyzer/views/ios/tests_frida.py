@@ -107,6 +107,7 @@ def ios_instrument(request, api=False):
                 args = (None, None)
             Thread(target=frida_obj.session, args=args, daemon=True).start()
         data['status'] = OK
+        data['message'] = 'Frida Instrumentation successful'
     except Exception as exp:
         logger.exception('Frida Instrumentation failed')
         data['message'] = str(exp)

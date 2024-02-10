@@ -64,12 +64,12 @@ def ios_api_analysis(app_dir):
         'cookies': [],
         'crypto': [],
         'network': [],
-        'files': set(),
+        'files': [],
         'keychain': [],
-        'logs': set(),
+        'logs': [],
         'credentials': [],
         'userdefaults': {},
-        'pasteboard': set(),
+        'pasteboard': [],
         'textinputs': [],
         'datadir': [],
         'sql': [],
@@ -90,17 +90,18 @@ def ios_api_analysis(app_dir):
             elif parsed.get('crypto'):
                 dump['crypto'].append(parsed['crypto'])
             elif parsed.get('filename'):
-                dump['files'].add(parsed['filename'])
+                dump['files'].append(parsed['filename'])
             elif parsed.get('keychain'):
                 dump['keychain'] = parsed['keychain']
             elif parsed.get('nslog'):
-                dump['logs'].add(parsed['nslog'])
+                dump['logs'].append(parsed['nslog'])
             elif parsed.get('credentialstorage'):
                 dump['credentials'] = parsed['credentialstorage']
             elif parsed.get('nsuserdefaults'):
                 dump['userdefaults'] = parsed['nsuserdefaults']
-            elif parsed.get('pasteboard'):
-                dump['pasteboard'].add(parsed['pasteboard'])
+            elif (parsed.get('pasteboard')
+                    and parsed.get('pasteboard') not in dump['pasteboard']):
+                dump['pasteboard'].append(parsed['pasteboard'])
             elif parsed.get('textinput'):
                 dump['textinputs'].append(parsed['textinput'])
             elif parsed.get('network'):
@@ -111,6 +112,8 @@ def ios_api_analysis(app_dir):
                 dump['sql'].append(parsed['sql'])
             elif parsed.get('json'):
                 dump['json'].append(parsed['json'])
+            dump['files'] = list(set(dump['files']))
+            dump['logs'] = list(set(dump['logs']))
             if len(dump['network']) > 0:
                 dump['network'] = list(
                     {v['url']: v for v in dump['network']}.values())
