@@ -33,7 +33,7 @@ def ios_instrument(request, api=False):
     """Instrument app with frida."""
     data = {
         'status': 'failed',
-        'message': 'Failed to instrument app'}
+        'message': ''}
     try:
         action = request.POST.get('frida_action', 'spawn')
         pid = request.POST.get('pid')
@@ -107,7 +107,6 @@ def ios_instrument(request, api=False):
                 args = (None, None)
             Thread(target=frida_obj.session, args=args, daemon=True).start()
         data['status'] = OK
-        data['message'] = 'Frida Instrumentation successful'
     except Exception as exp:
         logger.exception('Frida Instrumentation failed')
         data['message'] = str(exp)
