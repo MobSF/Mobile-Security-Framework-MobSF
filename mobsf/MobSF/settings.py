@@ -435,7 +435,7 @@ else:
     # if VT_UPLOAD is set to True.
     # ===============================================
     # =======IOS DYNAMIC ANALYSIS SETTINGS===========
-    CORELLIUM_API_DOMAIN = os.getenv('MOBSF_CORELLIUM_API_DOMAIN', 'https://app.corellium.com')
+    CORELLIUM_API_DOMAIN = os.getenv('MOBSF_CORELLIUM_API_DOMAIN', '')
     CORELLIUM_API_KEY = os.getenv('MOBSF_CORELLIUM_API_KEY', '')
     CORELLIUM_PROJECT_ID = os.getenv('MOBSF_CORELLIUM_PROJECT_ID', '')
     # CORELLIUM_PROJECT_ID is optional, MobSF will use any available project id
