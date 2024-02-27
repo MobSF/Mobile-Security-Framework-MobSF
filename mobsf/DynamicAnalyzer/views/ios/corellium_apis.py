@@ -18,10 +18,13 @@ from mobsf.MobSF.utils import (
 SUCCESS_RESP = (200, 204)
 ERROR_RESP = (400, 403, 404, 409)
 OK = 'ok'
+CORELLIUM_DEFAULT = 'https://app.corellium.com'
 CORELLIUM_API_DOMAIN = getattr(
     settings,
     'CORELLIUM_API_DOMAIN',
-    'https://app.corellium.com')
+    CORELLIUM_DEFAULT)
+if not CORELLIUM_API_DOMAIN:
+    CORELLIUM_API_DOMAIN = CORELLIUM_DEFAULT
 CORELLIUM_API_KEY = getattr(
     settings,
     'CORELLIUM_API_KEY', '')
