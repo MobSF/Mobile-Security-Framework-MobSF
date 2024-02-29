@@ -186,6 +186,10 @@
           </div>
           <div class="modal-body">
             <form role="form">
+                 <div class="form-group">
+                  <label>Name</label>
+                  <input type="text" value="MobSF iOS" class="form-control" id="vm_name">
+                </div>
                 <div class="form-group">
                     <label>Device</label>
                      <select class="form-control" id="ios_models"></select>
@@ -743,6 +747,7 @@ $("#create_vm").click(function() {
                         data : {
                                 csrfmiddlewaretoken: '{{ csrf_token }}',
                                 project_id: '{{ project_id }}',
+                                name: $('#vm_name').val(),
                                 flavor: $('#ios_models').find(':selected').data('flavor'),
                                 version: $('#ios_versions').find(':selected').val(),
                                 },
