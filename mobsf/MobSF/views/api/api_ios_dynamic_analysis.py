@@ -72,7 +72,7 @@ def api_corellium_get_supported_ios_versions(request):
 @csrf_exempt
 def api_corellium_create_ios_instance(request):
     """POST - Corellium Create an iOS Instance."""
-    params = {'project_id', 'flavor', 'version'}
+    params = {'name', 'project_id', 'flavor', 'version'}
     if set(request.POST) < params:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)

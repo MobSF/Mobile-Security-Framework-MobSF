@@ -158,11 +158,11 @@ class CorelliumAPI(CorelliumInit):
                     instances.append(i)
         return instances
 
-    def create_ios_instance(self, flavor, version):
+    def create_ios_instance(self, name, flavor, version):
         """Create a Jailbroken iOS instance."""
         data = {
             'project': self.project_id,
-            'name': f'MobSF iOS - {flavor.upper()}',
+            'name': f'{name} - {flavor.upper()}',
             'flavor': flavor,
             'os': version,
         }

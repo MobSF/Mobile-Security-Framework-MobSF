@@ -299,6 +299,17 @@ def create_vm_instance(request, api=False):
         project_id = request.POST['project_id']
         flavor = request.POST['flavor']
         version = request.POST['version']
+        name = request.POST.get('name')
+        if not name:
+            name = 'MobSF iOS'
+        if not re.match(r'^[a-zA-Z0-9 _-]+$', name):
+            data['message'] = (
+                'Invalid VM name. '
+                'Can only contain '
+                'letters, numbers, '
+                'spaces, hyphens, '
+                'and underscores')
+            return send_response(data, api)
         if not re.match(r'^iphone\d*\w+', flavor):
             data['message'] = 'Invalid iOS flavor'
             return send_response(data, api)
@@ -309,7 +320,7 @@ def create_vm_instance(request, api=False):
         if failed:
             return send_response(failed, api)
         c = CorelliumAPI(project_id)
-        r = c.create_ios_instance(flavor, version)
+        r = c.create_ios_instance(name, flavor, version)
         if r:
             data = {
                 'status': OK,

@@ -2941,6 +2941,11 @@
                   <td>Yes</td>
                 </tr>
                 <tr>
+                  <td>name</td>
+                  <td>Name of the VM</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
                   <td>flavor</td>
                   <td>iOS Flavor</td>
                   <td>Yes</td>
@@ -2986,7 +2991,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_create_ios_instance --data "project_id=728bb423-68bc-4300-a484-6e32a43be9cf&flavor=iphone15p&version=16.0" -H "Authorization:{{ api_key}}"
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_create_ios_instance --data "project_id=728bb423-68bc-4300-a484-6e32a43be9cf&name=iosvm&flavor=iphone15p&version=16.0" -H "Authorization:{{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>
