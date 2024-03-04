@@ -2118,11 +2118,7 @@
               <strong><i class="fas fa-key"></i> POSSIBLE HARDCODED SECRETS</strong>
               </p>
                 <div class="list-group">
-                   <p>  
-                     {% for val in secrets %}
-                      {{ val }}<br/>
-                     {% endfor %}                  
-                   </p>
+                  {% include 'base/list.html' with list=secrets type="secrets" %}
                </div>
              </div>
            </div>
@@ -2145,28 +2141,13 @@
                <div class="list-group">
               {% if app_type not in 'so' %}
                   <p><strong>From APK Resource</strong></p>
-                  <p>  
-                    {% for key, val in strings.items %}
-                      {% if key == 'strings_apk_res' %}
-                        {% for v in val %}
-                          {{ v }}<br/>
-                        {% endfor %}
-                      {% endif %}
-                    {% endfor %}                  
-                  </p>
-                   <p><strong>From Code</strong></p>
-                  <p>  
-                    {% for key, val in strings.items %}
-                      {% if key == 'strings_code' %}
-                        {% for v in val %}
-                          {{ v }}<br/>
-                        {% endfor %}
-                      {% endif %}
-                    {% endfor %}                  
-                  </p>
+                  {% include 'base/list.html' with list=strings.strings_apk_res type="strings" %}
+                  <p><strong>From Code</strong></p>
+                  {% include 'base/list.html' with list=strings.strings_code type="strings" %}
               {% endif %}
                     <p><strong>From Shared Objects</strong></p>
-                  <p>  
+                    {% include 'base/list.html' with list=strings.strings_so type="strings" %}
+                  <p>
                     {% for key, val in strings.items %}
                       {% if key == 'strings_so' %}
                         {% for ls in val %}
@@ -2201,11 +2182,7 @@
              <strong><i class="fa fa-th"></i> SYMBOLS</strong>
              </p>
                <div class="list-group">
-                  <p>  
-                     {% for val in file_analysis %}
-                       {{ val }}<br/>
-                     {% endfor %}
-                  </p>
+                {% include 'base/list.html' with list=file_analysis type="symbols" %}
               </div>
             </div>
           </div>
@@ -2329,11 +2306,7 @@
             <strong><i class="fab fa-buffer"></i> LIBRARIES</strong>
             </p>
               <div class="list-group">
-                <p>  
-                {% for lib in libraries %}
-                  {{ lib }} <br/>
-                {% endfor %}                                       
-                </p>
+                {% include 'base/list.html' with list=libraries type="libraries" %}
             </div>
           </div>
         </div>
@@ -2354,11 +2327,7 @@
             <strong><i class="far fa-copy"></i> FILES</strong>
             </p>
               <div class="list-group">
-                <p>  
-                {% for file in files %}
-                  {{ file}} <br/>
-                {% endfor %}                                      
-                </p>
+                {% include 'base/list.html' with list=files type="files" %}
             </div>
           </div>
         </div>

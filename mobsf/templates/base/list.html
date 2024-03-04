@@ -1,0 +1,7 @@
+<!-- "strings" on big binaries can easily result in millions of hits, avoid rendering them unless needed: -->
+<details {% if list|length < 100 %}open{% endif %}>
+  <summary>Show all {{ list | length }} {{ type }}</summary>
+  {% for val in list %}
+    {{ val }}<br/>
+  {% endfor %}
+</details>

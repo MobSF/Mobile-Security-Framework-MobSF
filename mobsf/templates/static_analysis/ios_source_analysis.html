@@ -1190,11 +1190,7 @@
              <strong><i class="fas fa-font"></i> STRINGS</strong>
              </p>
                <div class="list-group">
-                  <p>  
-                    {% for val in strings %}
-                     {{ val }}<br/>
-                    {% endfor %}                  
-                  </p>
+                 {% include 'base/list.html' with list=strings type="strings" %}
               </div>
             </div>
           </div>
@@ -1215,11 +1211,7 @@
             <strong><i class="far fa-copy"></i> FILES</strong>
             </p>
               <div class="list-group">
-                <p>  
-                {% for file in files %}
-                  {{ file}} <br/>
-                {% endfor %}                               
-                </p>
+                {% include 'base/list.html' with list=files type="files" %}
             </div>
           </div>
         </div>
