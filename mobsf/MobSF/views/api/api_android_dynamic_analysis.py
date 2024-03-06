@@ -224,7 +224,7 @@ def api_frida_logs(request):
             {'error': 'Missing Parameters'}, 422)
     resp = frida.frida_logs(request, True)
     # frida logs can be json or html
-    if resp.get('data'):
+    if resp.get('data') or resp.get('message'):
         return make_api_response(resp, 200)
     return make_api_response(resp, 500)
 
