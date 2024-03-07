@@ -194,6 +194,20 @@ def api_run_app(request):
 
 @request_method(['POST'])
 @csrf_exempt
+def api_stop_app(request):
+    """POST - Run an App."""
+    params = {INSTANCE_ID, BUNDLE_ID}
+    if set(request.POST) < params:
+        return make_api_response(
+            {'error': 'Missing Parameters'}, 422)
+    resp = corellium_instance.stop_app(request, True)
+    if resp.get('status') == FAILED:
+        return make_api_response(resp, 500)
+    return make_api_response(resp, 200)
+
+
+@request_method(['POST'])
+@csrf_exempt
 def api_remove_app(request):
     """POST - Remove an App from Device."""
     params = {INSTANCE_ID, BUNDLE_ID}

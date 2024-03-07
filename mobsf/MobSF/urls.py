@@ -115,6 +115,8 @@ urlpatterns = [
             api_idz.api_ios_dynamic_analyzer),
     re_path(r'^api/v1/ios/run_app$',
             api_idz.api_run_app),
+    re_path(r'^api/v1/ios/stop_app$',
+            api_idz.api_stop_app),
     re_path(r'^api/v1/ios/remove_app$',
             api_idz.api_remove_app),
     re_path(r'^api/v1/ios/take_screenshot$',

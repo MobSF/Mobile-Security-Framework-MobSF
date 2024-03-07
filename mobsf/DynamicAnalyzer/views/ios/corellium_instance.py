@@ -463,6 +463,34 @@ def run_app(request, api=False):
 
 
 @require_http_methods(['POST'])
+def stop_app(request, api=False):
+    """Stop an App."""
+    data = {
+        'status': 'failed',
+        'message': 'Failed to stop the app'}
+    try:
+        instance_id = request.POST['instance_id']
+        bundle_id = request.POST['bundle_id']
+        failed = common_check(instance_id)
+        if failed:
+            return send_response(failed, api)
+        if not strict_package_check(bundle_id):
+            data['message'] = 'Invalid iOS Bundle id'
+            return send_response(data, api)
+        ca = CorelliumAgentAPI(instance_id)
+        if (ca.agent_ready()
+                and ca.unlock_device()
+                and ca.stop_app(bundle_id) == OK):
+            data['status'] = OK
+            data['message'] = 'App Killed'
+    except Exception as exp:
+        logger.exception('Failed to stop the app')
+        data['message'] = str(exp)
+    return send_response(data, api)
+# AJAX
+
+
+@require_http_methods(['POST'])
 def remove_app(request, api=False):
     """Remove an app from the device."""
     data = {
