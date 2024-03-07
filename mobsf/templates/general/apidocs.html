@@ -81,6 +81,7 @@
               <li><code>api/v1/ios/setup_environment</code> - <a href="#ios-setup-environment-api">Setup iOS Dynamic Analysis Environment</a></li>
               <li><code>api/v1/ios/dynamic_analyzer</code> - <a href="#ios-dynamic-analyzer-api">iOS Dynamic Analyzer</a></li>
               <li><code>api/v1/ios/run_app</code> - <a href="#ios-run-app-api">Run App</a></li>
+              <li><code>api/v1/ios/stop_app</code> - <a href="#ios-stop-app-api">Stop App</a></li>
               <li><code>api/v1/ios/remove_app</code> - <a href="#ios-remove-app-api">Remove App</a></li>
               <li><code>api/v1/ios/take_screenshot</code> - <a href="#ios-takescreenshot-api">Take Screenshot</a></li>
               <li><code>api/v1/ios/get_app_container_path</code> - <a href="#ios-get-app-container-path-api">Get App Container Path</a></li>
@@ -3727,6 +3728,82 @@
                 <ul>
                   <li>
                     <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/run_app --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="ios-stop-app-api"></a><strong>Stop App API</strong></h2>
+            <p>Kill the app in the Corellium VM.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/stop_app</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS instance id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>bundle_id</td>
+                  <td>iOS app bundle id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok", "message": "App Killed"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/stop_app --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization:{{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>
