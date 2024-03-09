@@ -531,11 +531,10 @@ class CorelliumAgentAPI(CorelliumInit):
 
     def install_ipa(self):
         """Install IPA."""
-        data = {'path': '/tmp/app.ipa'}
         r = requests.post(
             f'{self.api}/instances/{self.instance_id}/agent/v1/app/install',
             headers=self.headers,
-            json=data,
+            json={'path': '/tmp/app.ipa'},
             proxies=self.proxies,
             verify=self.verify)
         if r.status_code in SUCCESS_RESP:

@@ -310,7 +310,10 @@ def manifest_analysis(mfxml, ns, man_data_dic, src_type, app_dir):
                     try:
                         target_sdk = int(man_data_dic['target_sdk'])
                     except Exception:
-                        target_sdk = ANDROID_8_0_LEVEL
+                        if man_an_dic.get('min_sdk'):
+                            target_sdk = int(man_an_dic['min_sdk'])
+                        else:
+                            target_sdk = ANDROID_8_0_LEVEL
                     if (target_sdk < ANDROID_9_0_LEVEL
                             and launchmode == 'singleTask'):
                         ret_list.append(('task_hijacking', (item,), (target_sdk,)))
