@@ -137,9 +137,16 @@ def store_exec_hashes_at_first_run():
 
 def subprocess_hook(oldfunc, *args, **kwargs):
     global EXECUTABLE_HASH_MAP
-    exec1 = args[0][0]  # executable
+    if isinstance(args[0], str):
+        # arg is a string
+        agmtz = args[0].split()
+        exec1 = agmtz[0]
+    else:
+        # list of args
+        agmtz = args[0]
+        exec1 = agmtz[0]  # executable
     exec2 = None  # secondary executable
-    for arg in args[0]:
+    for arg in agmtz:
         if arg.endswith('.jar'):
             exec2 = Path(arg).as_posix()
     if '/' in exec1 or '\\' in exec1:
