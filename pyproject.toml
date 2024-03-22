@@ -57,8 +57,8 @@ libsast = "^2.0.0"
 paramiko = "^3.3.1"
 # For androguard/apkinspector
 pyqt5-qt5 = [
-    {version = ">=5.15.13", markers = "sys_platform == 'darwin'" },
-    {version = "<=5.15.2", markers = "sys_platform != 'darwin'"}
+    {version = ">=5.15.13", markers = "platform_machine == 'arm64'"},
+    {version = "<=5.15.2", markers = "sys_platform != 'darwin' and platform_machine != 'arm64'"}
 ]
 
 [build-system]
