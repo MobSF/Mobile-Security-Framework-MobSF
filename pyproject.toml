@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mobsf"
-version = "3.9.6"
+version = "3.9.7"
 description = "Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis."
 keywords = ["mobsf", "mobile security framework", "mobile security", "security tool", "static analysis", "dynamic analysis", "malware analysis"]
 authors = ["Ajin Abraham <ajin@opensecurity.in>"]
@@ -44,7 +44,6 @@ lief = ">=0.12.3"
 http-tools = ">=4.0.0"
 pdfkit = ">=0.6.1"
 google-play-scraper = ">=0.1.2"
-androguard = ">=4.1.0"
 apkid = "2.1.5"
 frida = ">=16.1.4"
 tldextract = "3.4.4"
@@ -55,8 +54,7 @@ apksigtool = "0.1.0"
 tzdata = "^2023.3"
 libsast = "^2.0.0"
 paramiko = "^3.3.1"
-# For androguard/apkinspector
-pyqt5-qt5 = {version = "=5.15.2"}
+six = ">=1.16.0"
 
 [build-system]
 requires = ["poetry-core"]

@@ -11,11 +11,6 @@ import subprocess
 
 from lxml import etree
 
-from androguard.core import (
-    androconf,
-    axml,
-)
-
 from django.conf import settings
 
 from mobsf.MobSF.utils import (
@@ -23,10 +18,12 @@ from mobsf.MobSF.utils import (
     is_file_exists,
     is_path_traversal,
 )
+from mobsf.StaticAnalyzer.tools.androguard4 import (
+    axml,
+)
 
-androconf.logger.remove()
+
 logger = logging.getLogger(__name__)
-logging.getLogger('androguard').setLevel(logging.ERROR)
 
 
 # relative to res folder
