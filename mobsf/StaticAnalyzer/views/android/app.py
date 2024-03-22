@@ -5,15 +5,11 @@ import re
 import logging
 from pathlib import Path
 
-from androguard.core import (
-    androconf,
+from mobsf.StaticAnalyzer.tools.androguard4 import (
     apk,
 )
 
-
-androconf.logger.remove()
 logger = logging.getLogger(__name__)
-logging.getLogger('androguard').setLevel(logging.ERROR)
 
 
 def parse_apk(app_path):
