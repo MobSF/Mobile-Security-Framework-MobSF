@@ -1,4 +1,5 @@
-
+# -*- coding: utf_8 -*-
+# flake8: noqa
 import os
 from xml.dom import minidom
 

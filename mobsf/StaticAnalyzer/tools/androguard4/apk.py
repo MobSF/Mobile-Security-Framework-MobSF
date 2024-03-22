@@ -2,7 +2,7 @@
 # flake8: noqa
 # Androguard
 
-from .axml import ARSCParser, AXMLPrinter, ARSCResTableConfig, AXMLParser, format_value, START_TAG, END_TAG, TEXT, END_DOCUMENT
+from .axml import ARSCParser, AXMLPrinter, ARSCResTableConfig
 from .zipfile import ZipEntry
 
 # Python core
@@ -2199,59 +2199,3 @@ def ensure_final_value(packageName, arsc, value):
                 pass
         return returnValue
     return ''
-
-
-def get_apkid(apkfile):
-    """Read (appid, versionCode, versionName) from an APK
-
-    This first tries to do quick binary XML parsing to just get the
-    values that are needed.  It will fallback to full androguard
-    parsing, which is slow, if it can't find the versionName value or
-    versionName is set to a Android String Resource (e.g. an integer
-    hex value that starts with @).
-
-    """
-    logger.debug("GET_APKID")
-
-    if not os.path.exists(apkfile):
-        logger.error("'{apkfile}' does not exist!".format(apkfile=apkfile))
-
-    appid = None
-    versionCode = None
-    versionName = None
-    apk = ZipEntry.parse(apkfile, False)
-    manifest = apk.read('AndroidManifest.xml')
-    axml = AXMLParser(manifest)
-    count = 0
-    while axml.is_valid():
-        _type = next(axml)
-        count += 1
-        if _type == START_TAG:
-            for i in range(0, axml.getAttributeCount()):
-                name = axml.getAttributeName(i)
-                _type = axml.getAttributeValueType(i)
-                _data = axml.getAttributeValueData(i)
-                value = format_value(_type, _data, lambda _: axml.getAttributeValue(i))
-                if appid is None and name == 'package':
-                    appid = value
-                elif versionCode is None and name == 'versionCode':
-                    if value.startswith('0x'):
-                        versionCode = str(int(value, 16))
-                    else:
-                        versionCode = value
-                elif versionName is None and name == 'versionName':
-                    versionName = value
-
-            if axml.name == 'manifest':
-                break
-        elif _type == END_TAG or _type == TEXT or _type == END_DOCUMENT:
-            raise RuntimeError('{path}: <manifest> must be the first element in AndroidManifest.xml'
-                               .format(path=apkfile))
-
-    if not versionName or versionName[0] == '@':
-        a = APK(apkfile)
-        versionName = ensure_final_value(a.package, a.get_android_resources(), a.get_androidversion_name())
-    if not versionName:
-        versionName = ''  # versionName is expected to always be a str
-
-    return appid, versionCode, versionName.strip('\0')
