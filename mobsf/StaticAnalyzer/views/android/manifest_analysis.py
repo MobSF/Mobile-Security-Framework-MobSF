@@ -7,7 +7,9 @@ import requests
 from concurrent.futures import ThreadPoolExecutor
 
 from mobsf.MobSF.utils import (
+    is_number,
     upstream_proxy,
+    valid_host,
 )
 from mobsf.StaticAnalyzer.views.android import (
     android_manifest_desc,
@@ -148,9 +150,11 @@ def get_browsable_activities(node, ns):
                           and scheme in ('http', 'https')
                           and host
                           and host != '*'):
-                        host = host.replace('*.', '')
+                        host = host.replace('*.', '').replace('#', '')
+                        if not valid_host(host):
+                            continue
                         shost = f'{scheme}://{host}'
-                        if port:
+                        if port and is_number(port):
                             c_url = f'{shost}:{port}{well_known_path}'
                         else:
                             c_url = f'{shost}{well_known_path}'
