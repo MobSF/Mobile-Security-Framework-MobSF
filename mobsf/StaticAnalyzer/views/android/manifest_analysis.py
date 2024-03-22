@@ -84,12 +84,15 @@ def _check_url(host, w_url):
         status_code = 0
 
         r = requests.get(w_url,
-            allow_redirects=True,
+            allow_redirects=False,
             proxies=proxies,
             verify=verify,
             timeout=5)
 
         status_code = r.status_code
+        if status_code == 302:
+            logger.warning('302 Redirect detected, skipping check')
+            status = False
         if (str(status_code).startswith('2') and iden in str(r.json())):
             status = True
 
