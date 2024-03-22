@@ -1190,7 +1190,7 @@
              <strong><i class="fas fa-font"></i> STRINGS</strong>
              </p>
                <div class="list-group">
-                 {% include 'base/list.html' with list=strings type="strings" %}
+                 {% include 'base/list.html' with list=strings type="strings"  limit=100 %}
               </div>
             </div>
           </div>
@@ -1211,7 +1211,7 @@
             <strong><i class="far fa-copy"></i> FILES</strong>
             </p>
               <div class="list-group">
-                {% include 'base/list.html' with list=files type="files" %}
+                {% include 'base/list.html' with list=files type="files"  limit=200 %}
             </div>
           </div>
         </div>

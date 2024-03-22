@@ -1587,7 +1587,7 @@
                <strong><i class="fas fa-key"></i> POSSIBLE HARDCODED SECRETS</strong>
                </p>
                  <div class="list-group">
-                  {% include 'base/list.html' with list=secrets type="secrets" %}
+                  {% include 'base/list.html' with list=secrets type="secrets" limit=100 %}
                 </div>
               </div>
             </div>
@@ -1609,7 +1609,7 @@
                </p>
                  <div class="list-group">
                    <p><strong>From Code</strong></p>
-                   {% include 'base/list.html' with list=strings.strings_code type="strings" %}
+                   {% include 'base/list.html' with list=strings.strings_code type="strings" limit=100 %}
                 </div>
               </div>
             </div>
@@ -1630,7 +1630,7 @@
              <strong><i class="fa fa-language"></i> ACTIVITIES</strong>
              </p>
                <div class="list-group">
-                  {% include 'base/list.html' with list=activities type="activities" %}
+                  {% include 'base/list.html' with list=activities type="activities" limit=50 %}
               </div>
             </div>
           </div>
@@ -1651,7 +1651,7 @@
              <strong><i class="fa fa-cogs"></i> SERVICES</strong>
              </p>
                <div class="list-group">
-                {% include 'base/list.html' with list=services type="services" %}
+                {% include 'base/list.html' with list=services type="services" limit=50 %}
               </div>
             </div>
           </div>
@@ -1672,7 +1672,7 @@
              <strong><i class="fa fa-assistive-listening-systems"></i> RECEIVERS</strong>
              </p>
                <div class="list-group">
-                 {% include 'base/list.html' with list=receivers type="receivers" %}
+                 {% include 'base/list.html' with list=receivers type="receivers" limit=50%}
               </div>
             </div>
           </div>
@@ -1694,7 +1694,7 @@
              <strong><i class="fa fa-database"></i> PROVIDERS</strong>
              </p>
                <div class="list-group">
-                 {% include 'base/list.html' with list=providers type="providers" %}
+                 {% include 'base/list.html' with list=providers type="providers" limit=50 %}
               </div>
             </div>
           </div>
@@ -1715,7 +1715,7 @@
             <strong><i class="fab fa-buffer"></i> LIBRARIES</strong>
             </p>
               <div class="list-group">
-                {% include 'base/list.html' with list=libraries type="libraries" %}
+                {% include 'base/list.html' with list=libraries type="libraries" limit=50 %}
             </div>
           </div>
         </div>
@@ -1736,7 +1736,7 @@
             <strong><i class="far fa-copy"></i> FILES</strong>
             </p>
               <div class="list-group">
-                {% include 'base/list.html' with list=files type="files" %}
+                {% include 'base/list.html' with list=files type="files" limit=200 %}
             </div>
           </div>
         </div>
