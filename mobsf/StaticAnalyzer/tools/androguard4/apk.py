@@ -423,7 +423,7 @@ class APK:
                     self.declared_permissions[d_perm_name] = d_perm_details
 
                 self.valid_apk = True
-                logger.info("APK file was successfully validated!")
+                logger.debug("APK file was successfully validated!")
 
         # self.permission_module = androconf.load_api_specific_resource_module(
         #     "aosp_permissions", self.get_target_sdk_version())
