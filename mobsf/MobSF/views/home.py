@@ -217,7 +217,7 @@ def zip_format(request):
     return render(request, template, context)
 
 
-def not_found(request):
+def not_found(request, *args):
     """Not Found Route."""
     context = {
         'title': 'Not Found',
