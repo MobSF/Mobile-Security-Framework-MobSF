@@ -58,8 +58,12 @@
         </div>
       </div>
     </form>
-
-
+    {% if user.is_authenticated %}
+      <ul class="navbar-nav">
+        <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'logout' %}" class="nav-link"><i class="fa fa-power-off" aria-hidden="true"></i></a></li>
+      </ul>
+    {% endif %}
+    
   </nav>
   <!-- /.navbar -->
  <!-- sidebar-->

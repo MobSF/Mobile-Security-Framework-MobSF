@@ -43,7 +43,7 @@
                         <a class="nav-link" target="_blank" href="https://mobsf.github.io/docs/#/">DOCS</a>
                     </li>
                     <li class="nav-item">
-                        <a  class="nav-link" href="{% url 'about' %}">ABOUT</a>
+                        <a class="nav-link" href="{% url 'about' %}">ABOUT</a>
                     </li>
                     <li class="nav-item">
                         <a>
@@ -52,6 +52,14 @@
                         </form>
                         </a>
                     </li>
+                    <li class="nav-item">
+                    {% if user.is_authenticated %}
+                    <ul class="navbar-nav">
+                      <a class="nav-link" href="{% url 'logout' %}"><i class="fa fa-power-off" aria-hidden="true"></i></a>
+                    </ul>
+                    {% endif %}
+                    </li>
+
                 </ul>
             </div>
         </div>
