@@ -18,7 +18,7 @@ jobs:
             name: Set up Docker Buildx
             uses: docker/setup-buildx-action@v3
         -
-            name: Build and push AMD64 image
+            name: Build AMD64 image
             id: docker_build_amd
             uses: docker/build-push-action@v5
             with:
@@ -27,7 +27,7 @@ jobs:
                 platforms: linux/amd64
                 tags: opensecurity/mobile-security-framework-mobsf:latest
         -
-            name: Build and push ARM64 image
+            name: Build ARM64 image
             id: docker_build_arm
             uses: docker/build-push-action@v5
             with:

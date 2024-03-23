@@ -34,20 +34,11 @@ jobs:
               fi
               echo "tag=${TAG}" >> $GITHUB_OUTPUT
         -
-            name: Build and push AMD64 image release
-            id: docker_build_amd
+            name: Build and push AMD64, ARM64 image release
+            id: docker_build
             uses: docker/build-push-action@v5
             with:
                 push: true
                 context: .
-                platforms: linux/amd64
-                tags: ${{ steps.release.outputs.tag }}
-        -
-            name: Build and push ARM64 image release
-            id: docker_build_arm
-            uses: docker/build-push-action@v5
-            with:
-                push: true
-                context: .
-                platforms: linux/arm64
+                platforms: linux/amd64,linux/arm64
                 tags: ${{ steps.release.outputs.tag }}

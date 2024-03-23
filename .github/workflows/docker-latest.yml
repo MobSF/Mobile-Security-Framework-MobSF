@@ -25,20 +25,11 @@ jobs:
                 username: ${{ secrets.DOCKER_USERNAME }}
                 password: ${{ secrets.DOCKER_TOKEN }}
         -
-            name: Build and push AMD64 image
-            id: docker_build_amd
+            name: Build and push AMD64, ARM64 images
+            id: docker_build
             uses: docker/build-push-action@v5
             with:
                 push: true
                 context: .
-                platforms: linux/amd64
-                tags: opensecurity/mobile-security-framework-mobsf:latest
-        -
-            name: Build and push ARM64 image
-            id: docker_build_arm
-            uses: docker/build-push-action@v5
-            with:
-                push: true
-                context: .
-                platforms: linux/arm64
+                platforms: linux/amd64,linux/arm64
                 tags: opensecurity/mobile-security-framework-mobsf:latest
