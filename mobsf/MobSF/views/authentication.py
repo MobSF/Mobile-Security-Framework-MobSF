@@ -9,6 +9,7 @@ from django.contrib.auth import (
 from django.conf import settings
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required as lg
 
 from inspect import signature
 
@@ -20,18 +21,18 @@ def login_required(func):
     def wrapper(request, *args, **kwargs):
         arguments = sig.bind(request, *args, **kwargs)
         api = arguments.arguments.get('api')
-        # Handle functions that are used by API and Web
-        if not api and not request.user.is_authenticated:
-            return redirect('/login/')
-        return func(request, *args, **kwargs)
+        # # Handle functions that are used by API and Web
+        if api:
+            return func(request, *args, **kwargs)
+        else:
+            return lg(func)(request, *args, **kwargs)
     return wrapper
 
 
 def login_view(request):
     """Login Controller."""
-    nextp = request.POST.get('next', '')
-    default_url = settings.LOGIN_REDIRECT_URL
-    redirect_url = nextp if nextp.startswith('/') else default_url
+    nextp = request.GET.get('next', '')
+    redirect_url = nextp if nextp.startswith('/') else '/'
     if request.user.is_authenticated:
         return redirect(redirect_url)
     if request.method == 'POST':
@@ -45,6 +46,7 @@ def login_view(request):
     context = {
         'title': 'Sign In',
         'version': settings.VERSION,
+        'next': redirect_url,
         'form': form,
     }
     return render(request, 'auth/login.html', context)

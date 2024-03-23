@@ -22,7 +22,7 @@ sidebar-collapse
                               <h1 class="display-2 h-100 d-flex align-items-center justify-content-center">
                                  Mob<strong>SF</strong>
                               </h1>
-                              <form method="post">
+                              <form method="post" action="{% url 'login' %}?next={{next}}">
                                  {% csrf_token %}
                                  {{ form.non_field_errors }}
                                  <div class="input-group mb-3">
