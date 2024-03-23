@@ -14,12 +14,13 @@ from inspect import signature
 
 
 def login_required(func):
-    """Login Required Decorator for functions that are used by API."""
+    """Login required decorator."""
     sig = signature(func)
 
     def wrapper(request, *args, **kwargs):
         arguments = sig.bind(request, *args, **kwargs)
         api = arguments.arguments.get('api')
+        # Handle functions that are used by API and Web
         if not api and not request.user.is_authenticated:
             return redirect('/login/')
         return func(request, *args, **kwargs)

@@ -53,7 +53,6 @@ from . import settings
 admin.site.site_header = 'MobSF Administration'
 
 urlpatterns = [
-    re_path(r'^admin/', admin.site.urls),
     re_path(r'^login/$', authentication.login_view, name='login'),
     re_path(r'^logout$', authentication.logout_view, name='logout'),
     # REST API
@@ -365,6 +364,7 @@ if settings.API_ONLY == '0':
         re_path(r'^tests/$', tests.start_test),
     ])
 
+handler404 = 'mobsf.MobSF.views.home.not_found'
 utils.print_version()
 init_exec_hooks()
 store_exec_hashes_at_first_run()
