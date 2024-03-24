@@ -303,6 +303,7 @@ LOGGING = {
 }
 JADX_TIMEOUT = int(os.getenv('MOBSF_JADX_TIMEOUT', 1800))
 DISABLE_AUTHENTICATION = os.getenv('MOBSF_DISABLE_AUTHENTICATION')
+RATELIMIT = os.getenv('MOBSF_RATELIMIT', '7/1m')
 # ===========================
 # ENTERPRISE FEATURE REQUESTS
 # ===========================

@@ -14,6 +14,8 @@ from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 
+from brake.decorators import ratelimit
+
 from inspect import signature
 
 
@@ -39,6 +41,10 @@ def login_required(func):
     return wrapper
 
 
+@ratelimit(ip=True,
+           method='POST',
+           rate=settings.RATELIMIT,
+           block=True)
 def login_view(request):
     """Login Controller."""
     nextp = request.GET.get('next', '')
