@@ -39,10 +39,14 @@ from mobsf.MobSF.utils import (
 )
 from mobsf.MobSF.views.scanning import add_to_recent_scan
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
 
 logger = logging.getLogger(__name__)
 
 
+@login_required
 def android_dynamic_analysis(request, api=False):
     """Android Dynamic Analysis Entry point."""
     try:
@@ -104,6 +108,7 @@ def android_dynamic_analysis(request, api=False):
         return print_n_send_error_response(request, exp, api)
 
 
+@login_required
 def dynamic_analyzer(request, checksum, api=False):
     """Android Dynamic Analyzer Environment."""
     try:
@@ -220,6 +225,7 @@ def dynamic_analyzer(request, checksum, api=False):
             api)
 
 
+@login_required
 def httptools_start(request):
     """Start httprools UI."""
     logger.info('Starting httptools Web UI')
@@ -241,6 +247,7 @@ def httptools_start(request):
         return print_n_send_error_response(request, err)
 
 
+@login_required
 def logcat(request, api=False):
     logger.info('Starting Logcat streaming')
     try:
@@ -284,6 +291,7 @@ def logcat(request, api=False):
         return print_n_send_error_response(request, err, api)
 
 
+@login_required
 def trigger_static_analysis(request, checksum):
     """On device APK Static Analysis."""
     try:

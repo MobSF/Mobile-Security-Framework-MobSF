@@ -29,12 +29,15 @@ from mobsf.MobSF.utils import (
     key,
     print_n_send_error_response,
 )
-
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
 
 logger = logging.getLogger(__name__)
 register.filter('key', key)
 
 
+@login_required
 def view_report(request, checksum, api=False):
     """Dynamic Analysis Report Generation."""
     logger.info('Dynamic Analysis Report Generation')

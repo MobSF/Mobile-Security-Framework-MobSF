@@ -22,12 +22,16 @@ from mobsf.MobSF.utils import (
     is_md5,
     strict_package_check,
 )
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
 
 logger = logging.getLogger(__name__)
 
 # AJAX
 
 
+@login_required
 @require_http_methods(['POST'])
 def ios_instrument(request, api=False):
     """Instrument app with frida."""

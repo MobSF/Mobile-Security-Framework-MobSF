@@ -61,6 +61,9 @@ from mobsf.StaticAnalyzer.views.common.appsec import (
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
     MalwareDomainCheck,
 )
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +74,7 @@ register.filter('relative_path', relative_path)
 ##############################################################
 
 
+@login_required
 def static_analyzer_ios(request, checksum, api=False):
     """Module that performs iOS IPA/ZIP Static Analysis."""
     try:

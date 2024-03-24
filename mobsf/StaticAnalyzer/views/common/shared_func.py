@@ -43,6 +43,9 @@ from mobsf.StaticAnalyzer.views.comparer import (
 from mobsf.StaticAnalyzer.views.common.entropy import (
     get_entropies,
 )
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -219,6 +222,7 @@ def url_n_email_extract(dat, relative_path):
 
 
 # This is just the first sanity check that triggers generic_compare
+@login_required
 def compare_apps(request, hash1: str, hash2: str, api=False):
     if hash1 == hash2:
         error_msg = 'Results with same hash cannot be compared'
@@ -367,6 +371,7 @@ def get_symbols(symbols):
     return list(set(all_symbols))
 
 
+@login_required
 def scan_library(request, checksum):
     """Scan a shared library or framework from path name."""
     try:

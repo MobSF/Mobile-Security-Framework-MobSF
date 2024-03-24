@@ -8,6 +8,9 @@ from django.conf import settings
 from django.shortcuts import render
 from django.utils.html import escape
 
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
 from mobsf.MobSF.utils import (
     is_md5,
     is_path_traversal,
@@ -24,6 +27,7 @@ from biplist import (
 logger = logging.getLogger(__name__)
 
 
+@login_required
 def view_file(request, api=False):
     """View File in app data directory."""
     logger.info('Viewing File')
