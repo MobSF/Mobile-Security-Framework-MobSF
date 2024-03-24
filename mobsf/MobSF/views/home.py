@@ -74,6 +74,7 @@ class Upload(object):
         self.file = None
 
     @staticmethod
+    @login_required
     def as_view(request):
         upload = Upload(request)
         return upload.upload_html()
