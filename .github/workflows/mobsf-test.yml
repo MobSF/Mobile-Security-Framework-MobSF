@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  MOBSF_DISABLE_AUTHENTICATION: "1"
+
 jobs:
   build:
     strategy:
