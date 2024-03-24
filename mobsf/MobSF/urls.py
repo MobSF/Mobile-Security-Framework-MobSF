@@ -53,8 +53,15 @@ from . import settings
 admin.site.site_header = 'MobSF Administration'
 
 urlpatterns = [
-    re_path(r'^login/$', authentication.login_view, name='login'),
-    re_path(r'^logout$', authentication.logout_view, name='logout'),
+    re_path(r'^login/$',
+            authentication.login_view,
+            name='login'),
+    re_path(r'^logout$',
+            authentication.logout_view,
+            name='logout'),
+    re_path(r'^change_password/$',
+            authentication.change_password,
+            name='change_password'),
     # REST API
     # Static Analysis
     re_path(r'^api/v1/upload$', api_sz.api_upload),

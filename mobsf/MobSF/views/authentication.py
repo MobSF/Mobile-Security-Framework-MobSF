@@ -10,6 +10,9 @@ from django.conf import settings
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required as lg
+from django.contrib import messages
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
 
 from inspect import signature
 
@@ -21,10 +24,17 @@ def login_required(func):
     def wrapper(request, *args, **kwargs):
         arguments = sig.bind(request, *args, **kwargs)
         api = arguments.arguments.get('api')
-        # # Handle functions that are used by API and Web
+        # Handle functions that are used by API and Web
+        if settings.DISABLE_AUTHENTICATION == '1':
+            # Disable authentication for all functions
+            return func(request, *args, **kwargs)
         if api:
+            # Disable additional authentication
+            # for API function calls
             return func(request, *args, **kwargs)
         else:
+            # Force authentication for all
+            # web function calls
             return lg(func)(request, *args, **kwargs)
     return wrapper
 
@@ -56,3 +66,31 @@ def logout_view(request):
     """Logout Controller."""
     logout(request)
     return redirect(settings.LOGIN_URL)
+
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)
+            messages.success(
+                request,
+                'Your password was successfully updated!')
+            return redirect('change_password')
+        else:
+            messages.error(
+                request,
+                'Please correct the error below.')
+    else:
+        form = PasswordChangeForm(request.user)
+    context = {
+        'title': 'Change Password',
+        'version': settings.VERSION,
+        'form': form,
+    }
+    return render(
+        request,
+        'auth/change_password.html',
+        context)
