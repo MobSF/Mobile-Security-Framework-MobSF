@@ -32,6 +32,7 @@ from mobsf.MobSF.utils import (
     is_safe_path,
     print_n_send_error_response,
     upstream_proxy,
+    valid_host,
 )
 from mobsf.MobSF.views.scanning import (
     add_to_recent_scan,
@@ -254,6 +255,9 @@ def get_avg_cvss(findings):
 def open_firebase(url):
     # Detect Open Firebase Database
     try:
+        if not valid_host(url):
+            logger.warning('Invalid Firebase URL')
+            return url, False
         purl = urlparse(url)
         base_url = '{}://{}/.json'.format(purl.scheme, purl.netloc)
         proxies, verify = upstream_proxy('https')
