@@ -1,3 +1,106 @@
+### v3.9.7 Beta Changelog
+
+- Features or Enhancements
+   - iOS Dynamic Analyzer with Corellium
+   - Dynamic Analysis refactoring for Android and iOS
+   - Exposed iOS Dynamic Analysis REST APIs
+   - Added more helper Frida Scripts for Android and iOS Dynamic Analyzer
+   - Frida support improvements Injected Frida Code View, Injection, Spawn, Attach and Session
+   - Corellium Reverse SSH connection support
+   - Enhancements to ARC and Stack Canary Checks in Mach-O Parsing
+   - Frida RPC Hooks support
+   - Frida Script QA
+   - Runtime Executable Tampering Detection
+   - iOS Dynamic Analysis REST API Docs
+   - Global Datatables Export as PDF, CSV, XLS, Copy and Print
+   - Corellium custom host domain support
+   - Huge improvements in Static Analysis report generation page rendering for APKs/IPAs with large amount of data by @JPSxzy8 
+   -  Scan independent library file (.so, .dylib, Framework dylib) from APK/IPA Static Analysis Report
+   -  Library analysis refactored relative path helper for Django template.
+   - Re-introduced RELRO checks for Android, added Dart binary check to avoid Flutter false positives.
+   - Improved stripped debug symbol check for ELF and MachO using native OS tools such as nm and objdump when available.
+   - Merge iOS Framework and Dylib Analysis.
+   - SAST Performance improvements
+   - Android API Analysis rule QA
+   - Apksigner.jar fallback for signature parsing
+   - Simplify MobSF `scan` REST API
+   - Support for analysis of iOS Frameworks
+   - Android SVG icon parsing improvments
+   - Icon analysis refactor and support jpeg and webp icons
+   - Github action QA
+   - iOS merge findings from swift and objective c rules with same rule identifier. Fixes #2287 
+   - iOS Binary analysis, sort regex matches. Fixes #2252
+   - Framework dylibs with no extensions to skip PIE checks. Fixes #2307
+   - Select correct network_security config. Fixes #2049
+   - Android Manifest Analysis added support for detecting task hijacking (StrandHogg 1.0 and StrandHogg 2.0) . Fixes #2124
+   - Added new manifest analysis rule to warn on apps targeting older Android OS
+   - Updated severity of findings
+   - UI improvement for AppSec dashboard to show a loader
+   - UI changes in Static Analysis to collapse large no of files in API and Code Analysis for better real estate
+   - Improved certificate file analysis for android, jar, aar, and iOS
+   - AppLink asset json check multithreading performance improvements
+   - Code QA and ruleset improvements with ChatGPT
+   - Fixes #2324 , Bug in parsing DSA Public Key parameters for fingerprint calculation.
+   - AssetLink check QA
+   - Remove Androguard dependency use only features required by MobSF
+   
+ - Security
+   -  Arbitrary file writes on Windows with apktool fixed
+   -  Fixed an LFI reported by @0x33c0unt
+   -  Fixed SSRF in AppLinks and Firebase database checks
+     
+## What's Changed
+* Performance Improvements on SAST by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2251
+* add apksigner.jar for reading signatures by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2254
+* [HOTFIX] add jar by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2255
+* Bump Frida to address crash on M1 Mac by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2258
+* Simplify Scan API by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2259
+* [HOTFIX] iOS Framework Analysis + Multiple Feature QA by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2260
+* [HOTFIX] Support webp for icon by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2267
+* fixed that the icon cannot be found by @ohyeah521 in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2265
+* [HOTFIX] Allow jpeg icons by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2268
+* Fix jadx and apktool failure due to JDK changes by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2269
+* [HOTFIX][EFR] Priority Bug Fixes by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2275
+* update apktool to 2.9.0 by @superpoussin22 in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2278
+* Build(deps): Bump django from 4.1.12 to 4.1.13 by @dependabot in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2282
+* iOS Dynamic Analysis with Corellium by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2194
+* Dynamic Analysis Improvements Android & iOS by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2295
+* Dec 2023 QA by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2297
+* [HOTFIX] More Android & iOS Frida Scripts by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2299
+* [HOTFIX] Android script loading,  frida injected code view, paramiko SSH issues by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2300
+* Enhancements to ARC and Stack Canary Checks in Mach-O Parsing by @cpuu in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2284
+* [HOTFIX] RPC hook suggestions + Bug Fix by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2301
+* update apktool to 2.9.1 by @superpoussin22 in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2304
+* [EFR] QA Request by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2306
+* Bug Fixes + Improvements by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2307
+* ChatGPT Permission Mapping + Improved Description by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2308
+* Windows Python tempfile permission error fix by @ohyeah521 in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2309
+* Multiple Features Improved or Added by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2310
+* Malware Permission Check for Android by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2313
+* [HOTFIX] Bug Fix and QA by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2315
+* Using multithreading to improve code efficiency by @ohyeah521 in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2319
+* GPT Goodness by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2318
+* Update SECURITY.md by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2323
+* [HOTFIX][SECURITY] Fix an LFI, DSA Pub Key parsing bug and dependencies  by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2326
+* Filter out invalid links by @ohyeah521 in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2322
+* [SECURITY] Fix Arbitrary file writes on Windows by @superpoussin22 in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2328
+* Runtime Exec Tampering Detection, iOS Dynamic REST APIs, Datatables Export  by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2339
+* MOBSF_CORELLIUM_API_DOMAIN Update by @HackJJ in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2347
+* poetry pyqt5 fixes by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2362
+* Remove Androguard dependency use only features required by MobSF by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2363
+* Optimize rendering of big lists by @JPSxzy8 in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2351
+* Update SECURITY.md by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2364
+* Update SECURITY.md by @ajinabraham in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2365
+* Resolve the situation where the function name is bytes by @ohyeah521 in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2367
+
+## New Contributors
+* @cpuu made their first contribution in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2284
+* @HackJJ made their first contribution in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2347
+* @JPSxzy8 made their first contribution in https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/2351
+
+**Full Changelog**: https://github.com/MobSF/Mobile-Security-Framework-MobSF/compare/v3.7.6...v3.9.7
+
+
 ### v3.7.6 Beta Changelog
 
 - Features or Enhancements
