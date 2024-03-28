@@ -155,7 +155,7 @@ def get_icon_src(a, app_dic, res_dir):
         icon_name = None
         if a:
             icon_name = a.get_app_icon(max_dpi=icon_resolution)
-            if is_path_traversal(icon_name):
+            if icon_name and is_path_traversal(icon_name):
                 icon_name = None
         if not icon_name:
             # androguard cannot find icon file.
