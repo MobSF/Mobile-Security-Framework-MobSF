@@ -297,6 +297,8 @@ class MachOChecksec:
 
     def get_libraries(self):
         libs = []
+        if not self.macho:
+            return libs
         for i in self.macho.libraries:
             curr = '.'.join(str(x) for x in i.current_version)
             comp = '.'.join(str(x) for x in i.compatibility_version)

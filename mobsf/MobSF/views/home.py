@@ -39,6 +39,9 @@ from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerIOS,
     StaticAnalyzerWindows,
 )
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
 
 LINUX_PLATFORM = ['Darwin', 'Linux']
 HTTP_BAD_REQUEST = 400
@@ -46,6 +49,7 @@ logger = logging.getLogger(__name__)
 register.filter('key', key)
 
 
+@login_required
 def index(request):
     """Index Route."""
     mimes = (settings.APK_MIME
@@ -70,6 +74,7 @@ class Upload(object):
         self.file = None
 
     @staticmethod
+    @login_required
     def as_view(request):
         upload = Upload(request)
         return upload.upload_html()
@@ -161,6 +166,7 @@ class Upload(object):
             return scanning.scan_appx()
 
 
+@login_required
 def api_docs(request):
     """Api Docs Route."""
     context = {
@@ -212,6 +218,17 @@ def zip_format(request):
     return render(request, template, context)
 
 
+def not_found(request, *args):
+    """Not Found Route."""
+    context = {
+        'title': 'Not Found',
+        'version': settings.MOBSF_VER,
+    }
+    template = 'general/not_found.html'
+    return render(request, template, context)
+
+
+@login_required
 def dynamic_analysis(request):
     """Dynamic Analysis Landing."""
     context = {
@@ -222,16 +239,7 @@ def dynamic_analysis(request):
     return render(request, template, context)
 
 
-def not_found(request):
-    """Not Found Route."""
-    context = {
-        'title': 'Not Found',
-        'version': settings.MOBSF_VER,
-    }
-    template = 'general/not_found.html'
-    return render(request, template, context)
-
-
+@login_required
 def recent_scans(request):
     """Show Recent Scans Route."""
     entries = []
@@ -269,6 +277,7 @@ def recent_scans(request):
     return render(request, template, context)
 
 
+@login_required
 def download_apk(request):
     """Download and APK by package name."""
     package = request.POST['package']
@@ -288,6 +297,7 @@ def download_apk(request):
     return resp
 
 
+@login_required
 def search(request):
     """Search Scan by MD5 Route."""
     md5 = request.GET['md5']
@@ -302,6 +312,7 @@ def search(request):
     return print_n_send_error_response(request, 'Invalid Scan Hash')
 
 
+@login_required
 def download(request):
     """Download from mobsf.MobSF Route."""
     if request.method == 'GET':
@@ -327,6 +338,7 @@ def download(request):
     return HttpResponse(status=404)
 
 
+@login_required
 def generate_download(request):
     """Generate downloads for uploaded binaries/source."""
     try:
@@ -370,6 +382,7 @@ def generate_download(request):
         return print_n_send_error_response(request, msg)
 
 
+@login_required
 def delete_scan(request, api=False):
     """Delete Scan from DB and remove the scan related files."""
     try:

@@ -27,12 +27,16 @@ from mobsf.MobSF.utils import (
     print_n_send_error_response,
     strict_package_check,
 )
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
 
 logger = logging.getLogger(__name__)
 
 # AJAX
 
 
+@login_required
 @require_http_methods(['POST'])
 def get_runtime_dependencies(request, api=False):
     """Get App runtime dependencies."""
@@ -56,6 +60,7 @@ def get_runtime_dependencies(request, api=False):
 # AJAX
 
 
+@login_required
 @require_http_methods(['POST'])
 def instrument(request, api=False):
     """Instrument app with frida."""
@@ -123,6 +128,7 @@ def instrument(request, api=False):
     return send_response(data, api)
 
 
+@login_required
 def live_api(request, api=False):
     try:
         if api:

@@ -44,6 +44,9 @@ from mobsf.StaticAnalyzer.views.windows.db_interaction import (
     get_context_from_db_entry,
     save_or_update,
 )
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +61,7 @@ config = None
 # Windows Support Functions
 
 
+@login_required
 def staticanalyzer_windows(request, checksum, api=False):
     """Analyse a windows app."""
     try:

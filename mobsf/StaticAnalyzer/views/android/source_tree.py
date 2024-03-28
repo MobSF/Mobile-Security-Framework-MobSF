@@ -18,6 +18,9 @@ from mobsf.MobSF.utils import (
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     find_java_source_folder,
 )
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +44,7 @@ def tree_index_maker(root_dir: Path, original_root_dir_len: int):
     return _index(root_dir, original_root_dir_len)
 
 
+@login_required
 def run(request):
     """Source Tree - Java/Smali view."""
     try:

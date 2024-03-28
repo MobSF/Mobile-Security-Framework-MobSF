@@ -1,4 +1,7 @@
-from django.urls import re_path
+from django.urls import (
+    re_path,
+)
+from django.contrib import admin
 
 from mobsf.DynamicAnalyzer.views.common import (
     device,
@@ -23,6 +26,7 @@ from mobsf.MobSF.security import (
     store_exec_hashes_at_first_run,
 )
 from mobsf.MobSF.views import home
+from mobsf.MobSF.views import authentication
 from mobsf.MobSF.views.api import api_static_analysis as api_sz
 from mobsf.MobSF.views.api import api_android_dynamic_analysis as api_dz
 from mobsf.MobSF.views.api import api_ios_dynamic_analysis as api_idz
@@ -46,8 +50,18 @@ from mobsf.StaticAnalyzer.views.ios import view_source as io_view_source
 
 from . import settings
 
+admin.site.site_header = 'MobSF Administration'
 
 urlpatterns = [
+    re_path(r'^login/$',
+            authentication.login_view,
+            name='login'),
+    re_path(r'^logout$',
+            authentication.logout_view,
+            name='logout'),
+    re_path(r'^change_password/$',
+            authentication.change_password,
+            name='change_password'),
     # REST API
     # Static Analysis
     re_path(r'^api/v1/upload$', api_sz.api_upload),
@@ -357,6 +371,7 @@ if settings.API_ONLY == '0':
         re_path(r'^tests/$', tests.start_test),
     ])
 
+handler404 = 'mobsf.MobSF.views.home.not_found'
 utils.print_version()
 init_exec_hooks()
 store_exec_hashes_at_first_run()

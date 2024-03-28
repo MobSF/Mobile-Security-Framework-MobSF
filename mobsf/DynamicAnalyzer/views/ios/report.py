@@ -23,6 +23,9 @@ from mobsf.MobSF.utils import (
     replace,
     strict_package_check,
 )
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -32,6 +35,7 @@ register.filter('pretty_json', pretty_json)
 register.filter('base64_decode', base64_decode)
 
 
+@login_required
 def ios_view_report(request, bundle_id, api=False):
     """Dynamic Analysis Report Generation."""
     logger.info('iOS Dynamic Analysis Report Generation')

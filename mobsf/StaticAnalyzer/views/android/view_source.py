@@ -21,10 +21,14 @@ from mobsf.StaticAnalyzer.forms import (
     ViewSourceAndroidApiForm,
     ViewSourceAndroidForm,
 )
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
 
 logger = logging.getLogger(__name__)
 
 
+@login_required
 def run(request, api=False):
     """View the source of a file."""
     try:

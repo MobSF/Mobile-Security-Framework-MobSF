@@ -25,6 +25,9 @@ from mobsf.StaticAnalyzer.forms import (
     ViewSourceIOSApiForm,
     ViewSourceIOSForm,
 )
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +47,7 @@ def set_ext_api(file_path):
         return 'txt'
 
 
+@login_required
 def run(request, api=False):
     """View iOS Files."""
     try:

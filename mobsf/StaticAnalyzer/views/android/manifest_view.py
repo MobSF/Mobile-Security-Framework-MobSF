@@ -15,10 +15,14 @@ from mobsf.MobSF.utils import (
 from mobsf.StaticAnalyzer.views.android.manifest_utils import (
     get_manifest_file,
 )
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
 
 logger = logging.getLogger(__name__)
 
 
+@login_required
 def run(request, checksum):
     """View the manifest."""
     try:

@@ -17,6 +17,9 @@ from mobsf.MobSF.utils import (
     is_safe_path,
     print_n_send_error_response,
 )
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -25,6 +28,7 @@ logger = logging.getLogger(__name__)
 # AJAX
 
 
+@login_required
 @require_http_methods(['POST'])
 def list_frida_scripts(request, api=False):
     """List frida scripts from others."""
@@ -47,6 +51,7 @@ def list_frida_scripts(request, api=False):
 # AJAX
 
 
+@login_required
 @require_http_methods(['POST'])
 def get_script(request, api=False):
     """Get frida scripts from others."""
@@ -77,6 +82,7 @@ def get_script(request, api=False):
 # AJAX + HTML
 
 
+@login_required
 def frida_logs(request, api=False):
     try:
         data = {

@@ -162,7 +162,7 @@ def subprocess_hook(oldfunc, *args, **kwargs):
                 ' has been modified during runtime')
             logger.error(msg)
             raise Exception(msg)
-    if exec2 and exec1 in EXECUTABLE_HASH_MAP:
+    if exec2 and exec2 in EXECUTABLE_HASH_MAP:
         executable_in_hash_map = True
         if EXECUTABLE_HASH_MAP[exec2] != sha256(exec2):
             msg = (
