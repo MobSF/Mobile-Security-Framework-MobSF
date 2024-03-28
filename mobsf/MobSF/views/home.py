@@ -234,10 +234,17 @@ def not_found(request):
 
 def recent_scans(request):
     """Show Recent Scans Route."""
+    # recent scans add default page and page_size, list 100 items
+    page = request.GET.get('page', 1)
+    page_size = request.GET.get('page_size', 100)
+    offset = (page-1)*page_size
+    limit = page_size
+    #
+    db_obj = RecentScansDB.objects.all().order_by('-TIMESTAMP').values()[offset:limit]
+    android = StaticAnalyzerAndroid.objects.only(
+        "PACKAGE_NAME", "VERSION_NAME", "FILE_NAME", "MD5")[offset:limit]
+    ios = StaticAnalyzerIOS.objects.all()[offset:limit]
     entries = []
-    db_obj = RecentScansDB.objects.all().order_by('-TIMESTAMP').values()
-    android = StaticAnalyzerAndroid.objects.all()
-    ios = StaticAnalyzerIOS.objects.all()
     updir = Path(settings.UPLD_DIR)
     icon_mapping = {}
     package_mapping = {}
