@@ -5,10 +5,11 @@ import re
 import logging
 from pathlib import Path
 
-from androguard.core.bytecodes import apk
+from mobsf.StaticAnalyzer.tools.androguard4 import (
+    apk,
+)
 
 logger = logging.getLogger(__name__)
-logging.getLogger('androguard').setLevel(logging.ERROR)
 
 
 def parse_apk(app_path):

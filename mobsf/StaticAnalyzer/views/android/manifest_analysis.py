@@ -7,7 +7,9 @@ import requests
 from concurrent.futures import ThreadPoolExecutor
 
 from mobsf.MobSF.utils import (
+    is_number,
     upstream_proxy,
+    valid_host,
 )
 from mobsf.StaticAnalyzer.views.android import (
     android_manifest_desc,
@@ -82,12 +84,15 @@ def _check_url(host, w_url):
         status_code = 0
 
         r = requests.get(w_url,
-            allow_redirects=True,
+            allow_redirects=False,
             proxies=proxies,
             verify=verify,
             timeout=5)
 
         status_code = r.status_code
+        if status_code == 302:
+            logger.warning('302 Redirect detected, skipping check')
+            status = False
         if (str(status_code).startswith('2') and iden in str(r.json())):
             status = True
 
@@ -148,9 +153,11 @@ def get_browsable_activities(node, ns):
                           and scheme in ('http', 'https')
                           and host
                           and host != '*'):
-                        host = host.replace('*.', '')
+                        host = host.replace('*.', '').replace('#', '')
+                        if not valid_host(host):
+                            continue
                         shost = f'{scheme}://{host}'
-                        if port:
+                        if port and is_number(port):
                             c_url = f'{shost}:{port}{well_known_path}'
                         else:
                             c_url = f'{shost}{well_known_path}'
@@ -310,7 +317,10 @@ def manifest_analysis(mfxml, ns, man_data_dic, src_type, app_dir):
                     try:
                         target_sdk = int(man_data_dic['target_sdk'])
                     except Exception:
-                        target_sdk = ANDROID_8_0_LEVEL
+                        try:
+                            target_sdk = int(man_data_dic['min_sdk'])
+                        except Exception:
+                            target_sdk = ANDROID_8_0_LEVEL
                     if (target_sdk < ANDROID_9_0_LEVEL
                             and launchmode == 'singleTask'):
                         ret_list.append(('task_hijacking', (item,), (target_sdk,)))

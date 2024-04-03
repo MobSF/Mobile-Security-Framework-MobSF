@@ -8,9 +8,7 @@ import re
 import subprocess
 from pathlib import Path
 
-from androguard.util import get_certificate_name_string
-
-from asn1crypto import x509
+import asn1crypto
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
@@ -25,6 +23,9 @@ from django.utils.html import escape
 from mobsf.MobSF.utils import (
     find_java_binary,
     gen_sha256_hash,
+)
+from mobsf.StaticAnalyzer.tools.androguard4.apk import (
+    get_certificate_name_string,
 )
 
 logger = logging.getLogger(__name__)
@@ -70,7 +71,7 @@ def get_hardcoded_cert_keystore(files):
 def get_cert_details(data):
     """Get certificate details."""
     certlist = []
-    x509_cert = x509.Certificate.load(data)
+    x509_cert = asn1crypto.x509.Certificate.load(data)
     subject = get_certificate_name_string(x509_cert.subject, short=True)
     certlist.append(f'X.509 Subject: {subject}')
     certlist.append(f'Signature Algorithm: {x509_cert.signature_algo}')

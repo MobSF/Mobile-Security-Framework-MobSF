@@ -290,7 +290,14 @@ class ELFChecksec:
     def fortify(self):
         fortified_funcs = []
         for function in self.elf.symbols:
-            if function.name.endswith('_chk'):
+            if isinstance(function.name, bytes):
+                try:
+                    function_name = function.name.decode('utf-8')
+                except UnicodeDecodeError:
+                    function_name = function.name.decode('utf-8', 'replace')
+            else:
+                function_name = function.name
+            if function_name.endswith('_chk'):
                 fortified_funcs.append(function.name)
         return fortified_funcs
 

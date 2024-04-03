@@ -16,9 +16,11 @@ import signal
 import string
 import subprocess
 import stat
+import socket
 import sqlite3
 import unicodedata
 import threading
+from urllib.parse import urlparse
 from pathlib import Path
 from distutils.version import StrictVersion
 
@@ -848,3 +850,41 @@ def settings_enabled(attr):
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     """Generate random string."""
     return ''.join(random.choice(chars) for _ in range(size))
+
+
+def valid_host(host):
+    """Check if host is valid."""
+    try:
+        prefixs = ('http://', 'https://')
+        if not host.startswith(prefixs):
+            host = f'http://{host}'
+        parsed = urlparse(host)
+        domain = parsed.netloc
+        path = parsed.path
+        if len(domain) == 0:
+            # No valid domain
+            return False
+        if len(path) > 0:
+            # Only host is allowed
+            return False
+        if ':' in domain:
+            # IPv6
+            return False
+        # Local network
+        invalid_prefix = (
+            '127.',
+            '192.',
+            '10.',
+            '172.',
+            '169',
+            '0.',
+            'localhost')
+        if domain.startswith(invalid_prefix):
+            return False
+        ip = socket.gethostbyname(domain)
+        if ip.startswith(invalid_prefix):
+            # Resolve dns to get IP
+            return False
+        return True
+    except Exception:
+        return False

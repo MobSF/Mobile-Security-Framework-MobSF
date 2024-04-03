@@ -18,8 +18,11 @@ Please report all security issues [here](https://github.com/MobSF/Mobile-Securit
 
 | Vulnerability | Affected Versions |
 | ------- | ------------------ |
+| [SSRF in AppLink check via abusing url redirect](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-m435-9v6r-v5f6) | `<=3.9.6` |
+| [SSRF in AppLink check via crafted android:host](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-wfgj-wrgh-h3r3) | `<=3.9.5`|
 | [Arbitrary Local file read in APK icon resource](https://github.com/MobSF/Mobile-Security-Framework-MobSF/commit/a58f8a8c0aa49e1581d97e19e8e2255ca96cd838)  | `>=1.0.4, <=3.9.2` |
 | [Remote Code Execution via arbitrary file overwrite vulnerability in apktool <2.9.2](https://github.com/MobSF/Mobile-Security-Framework-MobSF/commit/19c1b55c2c59596f2d43439926c9dc976cbeaec4),  [[CVE-2024-21633]](https://github.com/0x33c0unt/CVE-2024-21633) | `<=3.9.1` |
 | [Arbitrary Local file read regression](https://github.com/MobSF/Mobile-Security-Framework-MobSF/issues/1197)  | `<3.0.0` |
 | [Upload a malicious zip file can overwrite arbitary files](https://github.com/MobSF/Mobile-Security-Framework-MobSF/issues/358)  | `>=0.9.3.2, <=0.9.4.1` |
 | [Arbitrary Local file read](https://github.com/MobSF/Mobile-Security-Framework-MobSF/pull/166) | `<=0.9.2` |
+

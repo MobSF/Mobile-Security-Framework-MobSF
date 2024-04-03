@@ -1185,14 +1185,36 @@
                         {{ item.issue }}
                       </td>
                       <td>
-                        {% for file in item.files %}
+                    {% if item.files|length < 4 %}
+                       {% for file in item.files %}
+                        <small>
                           {% if file.type %}
                           <a href="{% url 'view_file_ios' %}?file={{file.file_path}}&amp;type={{file.type}}&amp;md5={{file.hash}}">{{ file.file_path }}</a>
                           {% else %}
                           {{ file.file_path }}
                           {% endif %}
-                          <br/>
+                        </small>
+                      </br>
+                      {% endfor %}
+                    {% else %}
+                      <a class="btn btn-primary btn-xs" data-toggle="collapse" href="#collapsefiles{{forloop.counter}}" role="button" aria-expanded="false" aria-controls="collapsefiles{{forloop.counter}}">
+                        Show Files
+                      </a>
+                      <div class="collapse" id="collapsefiles{{forloop.counter}}">
+                        {% for file in item.files %}
+                          <small>
+                            {% if file.type %}
+                            <a href="{% url 'view_file_ios' %}?file={{file.file_path}}&amp;type={{file.type}}&amp;md5={{file.hash}}">{{ file.file_path }}</a>
+                            {% else %}
+                            {{ file.file_path }}
+                            {% endif %}
+                          </small>
+                        </br>
                         {% endfor %}
+                      </div>
+                    {% endif %}
+
+
                       </td>
                   
                     </tr>
@@ -1572,11 +1594,7 @@
               <strong><i class="fas fa-key"></i> POSSIBLE HARDCODED SECRETS</strong>
               </p>
                 <div class="list-group">
-                   <p>  
-                      {% for val in secrets %}
-                        {{ val }}<br/>
-                      {% endfor %}
-                   </p>
+                  {% include 'base/list.html' with list=secrets type="secrets" limit=100 %}
                </div>
              </div>
            </div>
@@ -1597,9 +1615,7 @@
              <strong><i class="fas fa-font"></i> STRINGS</strong>
              </p>
                <div class="list-group">
-                {% for string in strings %}
-                  {{string}} <br>
-                {% endfor %}
+                 {% include 'base/list.html' with list=strings type="strings"  limit=100 %}
               </div>
             </div>
           </div>
@@ -1621,11 +1637,7 @@
               <strong><i class="fa fa-th"></i> SYMBOLS</strong>
               </p>
                 <div class="list-group">
-                   <p>  
-                      {% for val in file_analysis %}
-                        {{ val }}<br/>
-                      {% endfor %}
-                   </p>
+                  {% include 'base/list.html' with list=file_analysis type="symbols"  limit=100 %}
                </div>
              </div>
            </div>
@@ -1648,12 +1660,7 @@
             <strong><i class="fab fa-buffer"></i> LIBRARIES</strong>
             </p>
               <div class="list-group">
-                <p>  
-                    {% for lib in libraries %}
-                      {{ lib }}
-                    <br/>
-                    {% endfor %}                             
-                </p>
+                {% include 'base/list.html' with list=libraries type="libraries"  limit=100 %}
             </div>
           </div>
         </div>
@@ -1674,11 +1681,7 @@
             <strong><i class="far fa-copy"></i> FILES</strong>
             </p>
               <div class="list-group">
-                <p>  
-                {% for file in files %}
-                  {{ file}} <br/>
-                {% endfor %}                               
-                </p>
+                {% include 'base/list.html' with list=files type="files" limit=200 %}
             </div>
           </div>
         </div>
