@@ -255,10 +255,14 @@ def get_avg_cvss(findings):
 def open_firebase(url):
     # Detect Open Firebase Database
     try:
+        invalid = 'Invalid Firebase URL'
         if not valid_host(url):
-            logger.warning('Invalid Firebase URL')
+            logger.warning(invalid)
             return url, False
         purl = urlparse(url)
+        if not purl.netloc.endswith('firebaseio.com'):
+            logger.warning(invalid)
+            return url, False
         base_url = '{}://{}/.json'.format(purl.scheme, purl.netloc)
         proxies, verify = upstream_proxy('https')
         headers = {
@@ -266,7 +270,8 @@ def open_firebase(url):
                            ' AppleWebKit/537.36 (KHTML, like Gecko) '
                            'Chrome/39.0.2171.95 Safari/537.36')}
         resp = requests.get(base_url, headers=headers,
-                            proxies=proxies, verify=verify)
+                            proxies=proxies, verify=verify,
+                            allow_redirects=False)
         if resp.status_code == 200:
             return base_url, True
     except Exception:
@@ -279,11 +284,12 @@ def firebase_analysis(urls):
     firebase_db = []
     logger.info('Detecting Firebase URL(s)')
     for url in urls:
-        if 'firebaseio.com' in url:
-            returl, is_open = open_firebase(url)
-            fbdic = {'url': returl, 'open': is_open}
-            if fbdic not in firebase_db:
-                firebase_db.append(fbdic)
+        if 'firebaseio.com' not in url:
+            continue
+        returl, is_open = open_firebase(url)
+        fbdic = {'url': returl, 'open': is_open}
+        if fbdic not in firebase_db:
+            firebase_db.append(fbdic)
     return firebase_db
 
 
