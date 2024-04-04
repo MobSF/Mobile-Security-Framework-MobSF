@@ -234,18 +234,20 @@ def not_found(request):
 
 def recent_scans(request):
     """Show Recent Scans Route."""
-    # recent scans add default page and page_size, list 100 items
-    page = request.GET.get('page', 1)
-    page_size = request.GET.get('page_size', 100)
-    offset = (page-1)*page_size
-    limit = page_size
-    #
-    db_obj = RecentScansDB.objects.all().order_by('-TIMESTAMP').values()[offset:limit]
-    android = StaticAnalyzerAndroid.objects.only(
-        "PACKAGE_NAME", "VERSION_NAME", "FILE_NAME", "MD5")[offset:limit]
-    ios = StaticAnalyzerIOS.objects.all()[offset:limit]
     entries = []
+    #
+    page_number = request.GET.get('page', 1)
+    page_size = request.GET.get('page_size', 10)
+
+    paginator = Paginator(RecentScansDB.objects.all().order_by('-TIMESTAMP').values(), page_size)
+    page_obj = paginator.get_page(page_number)
+    md5_list = [i["MD5"] for i in page_obj]
+    #
+    android = StaticAnalyzerAndroid.objects.filter(MD5__in=md5_list).only(
+        "PACKAGE_NAME", "VERSION_NAME", "FILE_NAME", "MD5")
+    ios = StaticAnalyzerIOS.objects.filter(MD5__in=md5_list).only("FILE_NAME", "MD5")
     updir = Path(settings.UPLD_DIR)
+
     icon_mapping = {}
     package_mapping = {}
     for item in android:
@@ -253,12 +255,14 @@ def recent_scans(request):
         icon_mapping[item.MD5] = item.ICON_PATH
     for item in ios:
         icon_mapping[item.MD5] = item.ICON_PATH
-    for entry in db_obj:
+
+    for entry in page_obj:
         if entry['MD5'] in package_mapping.keys():
             entry['PACKAGE'] = package_mapping[entry['MD5']]
         else:
             entry['PACKAGE'] = ''
         entry['ICON_PATH'] = icon_mapping.get(entry['MD5'], '')
+
         if entry['FILE_NAME'].endswith('.ipa'):
             entry['BUNDLE_HASH'] = get_md5(
                 entry['PACKAGE_NAME'].encode('utf-8'))
@@ -271,6 +275,7 @@ def recent_scans(request):
         'title': 'Recent Scans',
         'entries': entries,
         'version': settings.MOBSF_VER,
+        'page_obj': page_obj
     }
     template = 'general/recent.html'
     return render(request, template, context)
