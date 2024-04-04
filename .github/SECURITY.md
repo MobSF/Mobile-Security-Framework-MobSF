@@ -18,6 +18,7 @@ Please report all security issues [here](https://github.com/MobSF/Mobile-Securit
 
 | Vulnerability | Affected Versions |
 | ------- | ------------------ |
+| [SSRF in firebase database check](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-wpff-wm84-x5cx) | `<=3.9.7` |
 | [SSRF in AppLink check via abusing url redirect](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-m435-9v6r-v5f6) | `<=3.9.6` |
 | [SSRF in AppLink check via crafted android:host](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-wfgj-wrgh-h3r3) | `<=3.9.5`|
 | [Arbitrary Local file read in APK icon resource](https://github.com/MobSF/Mobile-Security-Framework-MobSF/commit/a58f8a8c0aa49e1581d97e19e8e2255ca96cd838)  | `>=1.0.4, <=3.9.2` |
