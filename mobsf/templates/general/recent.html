@@ -113,6 +113,35 @@
                     </tbody>
                 </table>
             </div>
+            <div class="pagination">
+                <!-- Paging Link -->
+                <span class="step-links">
+                    {% if page_obj.number > 4 %}
+                        <a href="?page=1">1</a>
+                        <span>...</span>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            {% if page_obj.number == num %}
+                                <span class="current">{{ num }}</span>
+                            {% else %}
+                                <a href="?page={{ num }}">{{ num }}</a>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.paginator.num_pages > page_obj.number|add:'3' %}
+                        <span>...</span>
+                        <a href="?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }}</a>
+                    {% endif %}
+                </span>
+                <!-- Paging Jump -->
+                <form action="" method="get">
+                    <input type="text"  name="page" required placeholder="page" style="width:40px;">
+                    <input type="submit" value="Go">
+                </form>
+            </div>
 
         </div>
         <!-- /.box-body -->
