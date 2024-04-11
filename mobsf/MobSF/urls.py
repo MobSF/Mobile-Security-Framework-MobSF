@@ -1,7 +1,6 @@
 from django.urls import (
     re_path,
 )
-from django.contrib import admin
 
 from mobsf.DynamicAnalyzer.views.common import (
     device,
@@ -50,7 +49,6 @@ from mobsf.StaticAnalyzer.views.ios import view_source as io_view_source
 
 from . import settings
 
-admin.site.site_header = 'MobSF Administration'
 
 urlpatterns = [
     re_path(r'^login/$',

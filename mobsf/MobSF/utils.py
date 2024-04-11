@@ -872,13 +872,27 @@ def valid_host(host):
             return False
         # Local network
         invalid_prefix = (
+            '100.64.',
             '127.',
             '192.',
+            '198.',
             '10.',
             '172.',
-            '169',
+            '169.',
             '0.',
-            'localhost')
+            '203.0.',
+            '224.0.',
+            '240.0',
+            '255.255.',
+            'localhost',
+            '::1',
+            '64::ff9b::',
+            '100::',
+            '2001::',
+            '2002::',
+            'fc00::',
+            'fe80::',
+            'ff00::')
         if domain.startswith(invalid_prefix):
             return False
         ip = socket.gethostbyname(domain)
