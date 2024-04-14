@@ -6,7 +6,7 @@
 {% endblock %}
 {% block extra_css %}
  <!-- DataTables -->
-<link rel="stylesheet" href="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.css" %}">
+<link href="{% static "datatables/css/datatables.combined.min.css" %}" rel="stylesheet">
 <link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
 <link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
 <style>
@@ -278,8 +278,10 @@ textarea:focus {
 {% endblock %}
 {% block extra_scripts %}
 <!-- DataTables -->
-<script src="{% static "adminlte/plugins/datatables/jquery.dataTables.min.js" %} "></script>
-<script src="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.js" %}"></script>
+<script src="{% static "datatables/js/pdfmake.min.js" %}"></script>
+<script src="{% static "datatables/js/vfs_fonts.js" %}"></script>
+<script src="{% static "datatables/js/datatables.combined.min.js" %}"></script>
+<script src="{% static "others/js/datatables_init.js" %}"></script>
 <script>
 function dynamic_loader(){
     var loadingOverlay = document.querySelector('.loading');
@@ -320,21 +322,6 @@ function dynamic_loader(){
         });
     return false;  
 }); 
-
-
-//Datatables
-  $(function () {
-    // Datatable
-    $('table').DataTable({
-      "paging": true,
-      "lengthChange": false,
-      "searching": true,
-      "ordering": false,
-      "info": true,
-      "autoWidth": true,
-      "responsive": true,
-    });
-  });
 
 </script>
 {% endblock %}

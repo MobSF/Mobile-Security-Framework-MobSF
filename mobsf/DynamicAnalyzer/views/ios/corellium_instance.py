@@ -213,10 +213,13 @@ def list_apps(request, api=False):
                 bundle_ids.append(f'bundleID={bundle}')
         elif r and r.get('error'):
             data['message'] = r.get('error')
-            return send_response(failed, api)
+            verbose = r.get('originalError')
+            if verbose:
+                data['message'] += f' {verbose}'
+            return send_response(data, api)
         else:
             data['message'] = 'Failed to list apps'
-            return send_response(failed, api)
+            return send_response(data, api)
         # Get app icons
         logger.info('Getting all application icons')
         ic = ca.get_icons('&'.join(bundle_ids))
@@ -296,6 +299,17 @@ def create_vm_instance(request, api=False):
         project_id = request.POST['project_id']
         flavor = request.POST['flavor']
         version = request.POST['version']
+        name = request.POST.get('name')
+        if not name:
+            name = 'MobSF iOS'
+        if not re.match(r'^[a-zA-Z0-9 _-]+$', name):
+            data['message'] = (
+                'Invalid VM name. '
+                'Can only contain '
+                'letters, numbers, '
+                'spaces, hyphens, '
+                'and underscores')
+            return send_response(data, api)
         if not re.match(r'^iphone\d*\w+', flavor):
             data['message'] = 'Invalid iOS flavor'
             return send_response(data, api)
@@ -306,7 +320,7 @@ def create_vm_instance(request, api=False):
         if failed:
             return send_response(failed, api)
         c = CorelliumAPI(project_id)
-        r = c.create_ios_instance(flavor, version)
+        r = c.create_ios_instance(name, flavor, version)
         if r:
             data = {
                 'status': OK,
@@ -449,6 +463,34 @@ def run_app(request, api=False):
 
 
 @require_http_methods(['POST'])
+def stop_app(request, api=False):
+    """Stop an App."""
+    data = {
+        'status': 'failed',
+        'message': 'Failed to stop the app'}
+    try:
+        instance_id = request.POST['instance_id']
+        bundle_id = request.POST['bundle_id']
+        failed = common_check(instance_id)
+        if failed:
+            return send_response(failed, api)
+        if not strict_package_check(bundle_id):
+            data['message'] = 'Invalid iOS Bundle id'
+            return send_response(data, api)
+        ca = CorelliumAgentAPI(instance_id)
+        if (ca.agent_ready()
+                and ca.unlock_device()
+                and ca.stop_app(bundle_id) == OK):
+            data['status'] = OK
+            data['message'] = 'App Killed'
+    except Exception as exp:
+        logger.exception('Failed to stop the app')
+        data['message'] = str(exp)
+    return send_response(data, api)
+# AJAX
+
+
+@require_http_methods(['POST'])
 def remove_app(request, api=False):
     """Remove an app from the device."""
     data = {
@@ -572,14 +614,17 @@ def network_capture(request, api=False):
 # File Download
 
 
-@require_http_methods(['GET'])
+@require_http_methods(['GET', 'POST'])
 def live_pcap_download(request, api=False):
     """Download Network Capture."""
     data = {
         'status': 'failed',
         'message': 'Failed to download network capture'}
     try:
-        instance_id = request.GET['instance_id']
+        if api:
+            instance_id = request.POST['instance_id']
+        else:
+            instance_id = request.GET['instance_id']
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
@@ -614,7 +659,7 @@ def ssh_execute(request, api=False):
         'message': 'Failed to execute command'}
     try:
         instance_id = request.POST['instance_id']
-        cmd = request.POST.get('cmd')
+        cmd = request.POST['cmd']
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
@@ -762,7 +807,7 @@ def system_logs(request, api=False):
                 return send_response(failed, api)
             ci = CorelliumInstanceAPI(instance_id)
             data = {'status': 'ok', 'message': ci.console_log()}
-            return send_response(data)
+            return send_response(data, api)
         logger.info('Getting system logs')
         instance_id = request.GET['instance_id']
         failed = common_check(instance_id)
@@ -780,7 +825,7 @@ def system_logs(request, api=False):
         logger.exception(err)
         if request.method == 'POST':
             data['message'] = str(exp)
-            return send_response(data)
+            return send_response(data, api)
         return print_n_send_error_response(request, err, api)
 # AJAX
 
@@ -810,7 +855,7 @@ def upload_file(request, api=False):
     except Exception as exp:
         logger.exception(err_msg)
         data['message'] = str(exp)
-    return send_response(data)
+    return send_response(data, api)
 # File Download
 
 

@@ -1,6 +1,7 @@
 # -*- coding: utf_8 -*-
 """Module holding the functions for code analysis."""
 
+import os
 import logging
 import tempfile
 from pathlib import Path
@@ -12,6 +13,7 @@ import yaml
 from mobsf.MobSF.utils import (
     filename_from_path,
     get_android_src_dir,
+    settings_enabled,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     url_n_email_extract,
@@ -27,6 +29,8 @@ logger = logging.getLogger(__name__)
 def get_perm_rules(perm_rules, android_permissions):
     """Get applicablepermission rules."""
     try:
+        if not settings_enabled('PERM_MAPPING_ENABLED'):
+            return None
         if not android_permissions:
             return None
         dynamic_rules = []
@@ -37,9 +41,11 @@ def get_perm_rules(perm_rules, android_permissions):
                 dynamic_rules.append(p)
         rules = yaml.dump(dynamic_rules)
         if rules:
-            tmp = tempfile.NamedTemporaryFile(mode='w')
+            tmp = tempfile.NamedTemporaryFile(
+                mode='w',
+                delete=False)
             tmp.write(rules)
-            tmp.flush()
+            tmp.close()
             return tmp
     except Exception:
         logger.error('Getting Permission Rules')
@@ -98,7 +104,7 @@ def code_analysis(app_dir, typ, manifest_file, android_permissions):
                 [src],
                 {}))
             logger.info('Android Permission Mapping Completed')
-            rule_file.close()
+            os.unlink(rule_file.name)
         # NIAP Scan
         niap_findings = niap_scan(
             niap_rules.as_posix(),

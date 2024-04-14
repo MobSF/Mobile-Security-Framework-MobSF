@@ -8,8 +8,11 @@ from pathlib import Path
 
 import mobsf.MalwareAnalyzer.views.Trackers as Trackers
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
-from mobsf.MalwareAnalyzer.views.apkid import apkid_analysis
-from mobsf.MalwareAnalyzer.views.quark import quark_analysis
+from mobsf.MalwareAnalyzer.views.android import (
+    apkid,
+    permissions,
+    quark,
+)
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import MalwareDomainCheck
 
 from django.conf import settings
@@ -200,6 +203,19 @@ def static_analyzer(request, checksum, api=False):
                 )
                 # Set Manifest link
                 man_data_dic = manifest_data(app_dic['parsed_xml'], ns)
+
+                app_name = app_dic['real_name']
+                pkg_name = man_data_dic['packagename']
+                if app_name or pkg_name:
+                    if app_name and pkg_name:
+                        subject = f'{app_name} ({pkg_name})'
+                    elif app_name:
+                        subject = app_name
+                    elif pkg_name:
+                        subject = pkg_name
+                    msg = f'Performing Static Analysis on: {subject}'
+                    logger.info(msg)
+
                 app_dic['playstore'] = get_app_details(
                     man_data_dic['packagename'])
                 man_an_dic = manifest_analysis(
@@ -209,6 +225,11 @@ def static_analyzer(request, checksum, api=False):
                     '',
                     app_dic['app_dir'],
                 )
+                # Malware Permission check
+                mal_perms = permissions.check_malware_permission(
+                    man_data_dic['perm'])
+                man_an_dic['malware_permissions'] = mal_perms
+
                 # Get icon
                 # apktool should run before this
                 get_icon_apk(apk, app_dic)
@@ -221,7 +242,7 @@ def static_analyzer(request, checksum, api=False):
                     apk,
                     app_dic,
                     man_data_dic)
-                apkid_results = apkid_analysis(app_dic[
+                apkid_results = apkid.apkid_analysis(app_dic[
                     'app_dir'], app_dic['app_path'], app_dic['app_name'])
                 tracker = Trackers.Trackers(
                     app_dic['app_dir'], app_dic['tools_dir'])
@@ -238,7 +259,7 @@ def static_analyzer(request, checksum, api=False):
                     app_dic['manifest_file'],
                     man_data_dic['perm'])
 
-                quark_results = quark_analysis(
+                quark_results = quark.quark_analysis(
                     app_dic['app_dir'],
                     app_dic['app_path'])
 
@@ -367,6 +388,19 @@ def static_analyzer(request, checksum, api=False):
 
                     # Set manifest view link
                     man_data_dic = manifest_data(app_dic['parsed_xml'], ns)
+
+                    app_name = app_dic['real_name']
+                    pkg_name = man_data_dic['packagename']
+                    if app_name or pkg_name:
+                        if app_name and pkg_name:
+                            subject = f'{app_name} ({pkg_name})'
+                        elif app_name:
+                            subject = app_name
+                        elif pkg_name:
+                            subject = pkg_name
+                        msg = f'Performing Static Analysis on: {subject}'
+                        logger.info(msg)
+
                     app_dic['playstore'] = get_app_details(
                         man_data_dic['packagename'])
                     man_an_dic = manifest_analysis(
@@ -376,6 +410,12 @@ def static_analyzer(request, checksum, api=False):
                         pro_type,
                         app_dic['app_dir'],
                     )
+
+                    # Malware Permission check
+                    mal_perms = permissions.check_malware_permission(
+                        man_data_dic['perm'])
+                    man_an_dic['malware_permissions'] = mal_perms
+
                     # Get icon
                     get_icon_from_src(app_dic, man_data_dic['icons'])
 

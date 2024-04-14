@@ -6,8 +6,8 @@
     {% block extra_css %}
     <link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
     <!-- DataTables -->
-    <link rel="stylesheet" href="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.css" %}">
-     <style type="text/css" media="print">
+    <link href="{% static "datatables/css/datatables.combined.min.css" %}" rel="stylesheet">
+    <style type="text/css" media="print">
         @page { size: landscape; }
         @media print {
           .btn, #scan_options  {
@@ -130,6 +130,12 @@
               </p>
             </a>
             <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="#malware_permissions" class="nav-link">
+                  <i class="fa fa-braille nav-icon"></i>
+                  <p>Abused Permissions</p>
+                </a>
+              </li>
               <li class="nav-item">
                 <a href="#serverlocations" class="nav-link">
                   <i class="fas fa-globe-asia nav-icon"></i>
@@ -1211,6 +1217,64 @@
     </div>
 </section>
  <!-- ===========================end file analysis ================================== -->
+ <a id="malware_permissions" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <p>
+             <strong><i class="fa fa-braille"></i> ABUSED PERMISSIONS</strong>
+             </p>
+              <div class="table-responsive">
+                
+                {% if malware_permissions %}
+              
+                <div class="container">
+                  <div class="row">
+                    <div class="col-sm">
+                <div class="progress-group">
+                  <strong>Top Malware Permissions</strong>
+                  <span class="float-right"><b>{{ malware_permissions.top_malware_permissions | length}}</b>/{{malware_permissions.total_malware_permissions}}</span>
+                  <div class="progress progress-sm">
+                  <div class="progress-bar bg-danger" aria-valuemin="0" style="width: {% widthratio malware_permissions.top_malware_permissions|length malware_permissions.total_malware_permissions 100 %}%;" aria-valuenow="{{ malware_permissions.top_malware_permissions | length}}" aria-valuemax="{{malware_permissions.total_malware_permissions}}"></div>
+                </div>
+                  <span class="product-description">
+                      {{ malware_permissions.top_malware_permissions | join:", "}}
+                    </span>  
+                </div>
+              </div>
+              <div class="col-sm">
+                <div class="progress-group">
+                  <strong>Other Common Permissions</strong>
+                  <span class="float-right"><b>{{ malware_permissions.other_abused_permissions | length}}</b>/{{ malware_permissions.total_other_permissions}}</span>
+                  <div class="progress progress-sm">
+                  <div class="progress-bar bg-warning" aria-valuemin="0" style="width: {% widthratio malware_permissions.other_abused_permissions|length malware_permissions.total_other_permissions 100 %}%;" aria-valuenow="{{ malware_permissions.other_abused_permissions | length}}" aria-valuemax="{{ malware_permissions.total_other_permissions}}"></div>
+                </div>
+                <span class="product-description">
+                  {{ malware_permissions.other_abused_permissions | join:", "}}
+                  </span>
+                  </div>
+                  </div>
+                 </div>
+                </div>
+                <hr>
+                <p>
+                  <strong>Malware Permissions</strong> are the top permissions that are widely abused by known malware. 
+                  <br/>
+                  <strong>Other Common Permissions</strong> are permissions that are commonly abused by known malware. 
+                </p>
+                 {% endif %}
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end malware permissions  ================================== -->
  <style>
   #chartdiv {
   width: 100%;
@@ -1523,11 +1587,7 @@
                <strong><i class="fas fa-key"></i> POSSIBLE HARDCODED SECRETS</strong>
                </p>
                  <div class="list-group">
-                    <p>  
-                      {% for val in secrets %}
-                       {{ val }}<br/>
-                      {% endfor %}                  
-                    </p>
+                  {% include 'base/list.html' with list=secrets type="secrets" limit=100 %}
                 </div>
               </div>
             </div>
@@ -1549,15 +1609,7 @@
                </p>
                  <div class="list-group">
                    <p><strong>From Code</strong></p>
-                  <p>  
-                    {% for key, val in strings.items %}
-                      {% if key == 'strings_code' %}
-                        {% for v in val %}
-                          {{ v }}<br/>
-                        {% endfor %}
-                      {% endif %}
-                    {% endfor %}                  
-                  </p>
+                   {% include 'base/list.html' with list=strings.strings_code type="strings" limit=100 %}
                 </div>
               </div>
             </div>
@@ -1578,11 +1630,7 @@
              <strong><i class="fa fa-language"></i> ACTIVITIES</strong>
              </p>
                <div class="list-group">
-                  <p>  
-                    {% for act in activities %}
-                      {{ act}} <br/>
-                    {% endfor %}               
-                  </p>
+                  {% include 'base/list.html' with list=activities type="activities" limit=50 %}
               </div>
             </div>
           </div>
@@ -1603,11 +1651,7 @@
              <strong><i class="fa fa-cogs"></i> SERVICES</strong>
              </p>
                <div class="list-group">
-                  <p>  
-                     {% for srv in services %}
-                        {{ srv}} <br/>
-                    {% endfor %}                  
-                  </p>
+                {% include 'base/list.html' with list=services type="services" limit=50 %}
               </div>
             </div>
           </div>
@@ -1628,11 +1672,7 @@
              <strong><i class="fa fa-assistive-listening-systems"></i> RECEIVERS</strong>
              </p>
                <div class="list-group">
-                  <p>  
-                      {% for rcv in receivers %}
-                    {{ rcv}} <br/>
-                  {% endfor %}               
-                  </p>
+                 {% include 'base/list.html' with list=receivers type="receivers" limit=50%}
               </div>
             </div>
           </div>
@@ -1654,11 +1694,7 @@
              <strong><i class="fa fa-database"></i> PROVIDERS</strong>
              </p>
                <div class="list-group">
-                  <p>  
-                  {% for prv in providers %}
-                    {{ prv }} <br/>
-                  {% endfor %}                            
-                  </p>
+                 {% include 'base/list.html' with list=providers type="providers" limit=50 %}
               </div>
             </div>
           </div>
@@ -1679,11 +1715,7 @@
             <strong><i class="fab fa-buffer"></i> LIBRARIES</strong>
             </p>
               <div class="list-group">
-                <p>  
-                {% for lib in libraries %}
-                  {{ lib }} <br/>
-                {% endfor %}                                       
-                </p>
+                {% include 'base/list.html' with list=libraries type="libraries" limit=50 %}
             </div>
           </div>
         </div>
@@ -1704,11 +1736,7 @@
             <strong><i class="far fa-copy"></i> FILES</strong>
             </p>
               <div class="list-group">
-                <p>  
-                {% for file in files %}
-                  {{ file}} <br/>
-                {% endfor %}                                      
-                </p>
+                {% include 'base/list.html' with list=files type="files" limit=200 %}
             </div>
           </div>
         </div>
@@ -1757,8 +1785,10 @@
 {% block extra_scripts %}
 <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
 <!-- DataTables -->
-<script src="{% static "adminlte/plugins/datatables/jquery.dataTables.min.js" %} "></script>
-<script src="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.js" %}"></script>
+<script src="{% static "datatables/js/pdfmake.min.js" %}"></script>
+<script src="{% static "datatables/js/vfs_fonts.js" %}"></script>
+<script src="{% static "datatables/js/datatables.combined.min.js" %}"></script>
+<script src="{% static "others/js/datatables_init.js" %}"></script>
 <script src="{% static "amcharts/core.js" %}"></script>
 <script src="{% static "amcharts/maps.js" %}"></script>
 <script src="{% static "amcharts/worldIndiaLow.js" %}"></script>
@@ -1780,18 +1810,6 @@
   const pkg = '{{ package_name }}'
   const hash = '{{md5}}'
 
-  $(function () {
-    // Datatable
-    $('table').DataTable({
-      "paging": true,
-      "lengthChange": false,
-      "searching": true,
-      "ordering": true,
-      "info": true,
-      "autoWidth": true,
-      "responsive": true,
-    });
-  });
   // Navbar Active
     $(".nav-link").on("click", function() {
     $(".nav-link").removeClass("active");

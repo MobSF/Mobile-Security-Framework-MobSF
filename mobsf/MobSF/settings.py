@@ -334,6 +334,8 @@ else:
     CVSS_SCORE_ENABLED = bool(os.getenv('MOBSF_CVSS_SCORE_ENABLED', ''))
     # NIAP Scan
     NIAP_ENABLED = os.getenv('MOBSF_NIAP_ENABLED', '')
+    # Permission to Code Mapping
+    PERM_MAPPING_ENABLED = os.getenv('MOBSF_PERM_MAPPING_ENABLED', '1')
     # Dex 2 Smali Conversion
     DEX2SMALI_ENABLED = os.getenv('MOBSF_DEX2SMALI_ENABLED', '1')
     # Android Shared Object Binary Analysis
@@ -370,7 +372,6 @@ else:
     JADX_BINARY = os.getenv('MOBSF_JADX_BINARY', '')
     BACKSMALI_BINARY = os.getenv('MOBSF_BACKSMALI_BINARY', '')
     VD2SVG_BINARY = os.getenv('MOBSF_VD2SVG_BINARY', '')
-    BATIK_BINARY = os.getenv('MOBSF_BATIK_BINARY', '')
     APKTOOL_BINARY = os.getenv('MOBSF_APKTOOL_BINARY', '')
     ADB_BINARY = os.getenv('MOBSF_ADB_BINARY', '')
 
@@ -381,15 +382,11 @@ else:
 
     # COMMON
     JAVA_DIRECTORY = os.getenv('MOBSF_JAVA_DIRECTORY', '')
-    VBOXMANAGE_BINARY = os.getenv('MOBSF_VBOXMANAGE_BINARY', '')
-    PYTHON3_PATH = os.getenv('MOBSF_PYTHON3_PATH', '')
 
     """
     Examples:
     JAVA_DIRECTORY = 'C:/Program Files/Java/jdk1.7.0_17/bin/'
     JAVA_DIRECTORY = '/usr/bin/'
-    VBOXMANAGE_BINARY = '/usr/bin/VBoxManage'
-    PYTHON3_PATH = 'C:/Users/Ajin/AppData/Local/Programs/Python/Python35-32/'
     JADX_BINARY = 'C:/Users/Ajin/AppData/Local/Programs/jadx/bin/jadx.bat'
     JADX_BINARY = '/Users/ajin/jadx/bin/jadx'
     """
@@ -438,6 +435,7 @@ else:
     # if VT_UPLOAD is set to True.
     # ===============================================
     # =======IOS DYNAMIC ANALYSIS SETTINGS===========
+    CORELLIUM_API_DOMAIN = os.getenv('MOBSF_CORELLIUM_API_DOMAIN', '')
     CORELLIUM_API_KEY = os.getenv('MOBSF_CORELLIUM_API_KEY', '')
     CORELLIUM_PROJECT_ID = os.getenv('MOBSF_CORELLIUM_PROJECT_ID', '')
     # CORELLIUM_PROJECT_ID is optional, MobSF will use any available project id

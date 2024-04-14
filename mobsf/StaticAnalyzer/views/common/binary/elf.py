@@ -290,19 +290,30 @@ class ELFChecksec:
     def fortify(self):
         fortified_funcs = []
         for function in self.elf.symbols:
-            if function.name.endswith('_chk'):
+            if isinstance(function.name, bytes):
+                try:
+                    function_name = function.name.decode('utf-8')
+                except UnicodeDecodeError:
+                    function_name = function.name.decode('utf-8', 'replace')
+            else:
+                function_name = function.name
+            if function_name.endswith('_chk'):
                 fortified_funcs.append(function.name)
         return fortified_funcs
 
     def strings(self):
-        elf_strings = None
+        normalized = set()
         try:
             elf_strings = self.elf.strings
         except Exception:
             elf_strings = None
         if not elf_strings:
             elf_strings = strings_on_binary(self.elf_path)
-        return elf_strings
+        for i in elf_strings:
+            if isinstance(i, bytes):
+                continue
+            normalized.add(i)
+        return list(normalized)
 
     def get_symbols(self):
         symbols = []

@@ -16,9 +16,11 @@ import signal
 import string
 import subprocess
 import stat
+import socket
 import sqlite3
 import unicodedata
 import threading
+from urllib.parse import urlparse
 from pathlib import Path
 from distutils.version import StrictVersion
 
@@ -101,17 +103,22 @@ def print_version():
     """Print MobSF Version."""
     logger.info(settings.BANNER)
     ver = settings.MOBSF_VER
+    logger.info('Author: Ajin Abraham | opensecurity.in')
     if platform.system() == 'Windows':
         logger.info('Mobile Security Framework %s', ver)
         print('REST API Key: ' + api_key())
     else:
         logger.info('\033[1m\033[34mMobile Security Framework %s\033[0m', ver)
         print('REST API Key: ' + Color.BOLD + api_key() + Color.END)
-    logger.info('OS: %s', platform.system())
-    logger.info('Platform: %s', platform.platform())
-    dist = ' '.join(distro.linux_distribution(full_distribution_name=False))
-    if dist.strip():
-        logger.info('Dist: %s', dist)
+    os = platform.system()
+    pltfm = platform.platform()
+    dist = ' '.join(distro.linux_distribution(
+        full_distribution_name=False)).strip()
+    dst_str = ' '
+    if dist:
+        dst_str = f' ({dist}) '
+    env_str = f'OS Environment: {os}{dst_str}{pltfm}'
+    logger.info(env_str)
     find_java_binary()
     check_basic_env()
     thread = threading.Thread(target=check_update, name='check_update')
@@ -172,22 +179,6 @@ def find_java_binary():
         if is_file_exists(java):
             return java
     return 'java'
-
-
-def run_process(args):
-    try:
-        proc = subprocess.Popen(
-            args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        dat = ''
-        while True:
-            line = proc.stdout.readline()
-            if not line:
-                break
-            dat += str(line)
-        return dat
-    except Exception:
-        logger.error('Finding Java path - Cannot Run Process')
-        return ''
 
 
 def print_n_send_error_response(request,
@@ -630,7 +621,7 @@ def strict_package_check(user_input):
 
     For android package and ios bundle id
     """
-    pat = re.compile(r'^([\w]*\.)+[\w-]{2,155}$')
+    pat = re.compile(r'^([\w-]*\.)+[\w-]{2,155}$')
     resp = re.match(pat, user_input)
     if not resp or '..' in user_input:
         logger.error('Invalid package name/bundle id/class name')
@@ -859,3 +850,41 @@ def settings_enabled(attr):
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     """Generate random string."""
     return ''.join(random.choice(chars) for _ in range(size))
+
+
+def valid_host(host):
+    """Check if host is valid."""
+    try:
+        prefixs = ('http://', 'https://')
+        if not host.startswith(prefixs):
+            host = f'http://{host}'
+        parsed = urlparse(host)
+        domain = parsed.netloc
+        path = parsed.path
+        if len(domain) == 0:
+            # No valid domain
+            return False
+        if len(path) > 0:
+            # Only host is allowed
+            return False
+        if ':' in domain:
+            # IPv6
+            return False
+        # Local network
+        invalid_prefix = (
+            '127.',
+            '192.',
+            '10.',
+            '172.',
+            '169',
+            '0.',
+            'localhost')
+        if domain.startswith(invalid_prefix):
+            return False
+        ip = socket.gethostbyname(domain)
+        if ip.startswith(invalid_prefix):
+            # Resolve dns to get IP
+            return False
+        return True
+    except Exception:
+        return False

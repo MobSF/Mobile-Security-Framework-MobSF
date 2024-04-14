@@ -459,3 +459,15 @@
   pattern: \.SSLSocketFactory
   input_case: exact
   severity: info
+- id: api_javascript_interface_methods
+  message: JavaScript Interface Methods
+  type: Regex
+  pattern: \@JavascriptInterface|\@android\.webkit\.JavascriptInterface
+  input_case: exact
+  severity: info
+- id: api_passkeys
+  message: Passkeys
+  type: Regex
+  pattern: CredentialManager\.create\(|GetPublicKeyCredentialOption\(|\.getAuthenticationResponseJson\(|CreatePublicKeyCredentialRequest\(
+  input_case: exact
+  severity: info

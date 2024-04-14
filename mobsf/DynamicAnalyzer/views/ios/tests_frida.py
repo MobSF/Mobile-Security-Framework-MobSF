@@ -33,7 +33,7 @@ def ios_instrument(request, api=False):
     """Instrument app with frida."""
     data = {
         'status': 'failed',
-        'message': 'Failed to instrument app'}
+        'message': ''}
     try:
         action = request.POST.get('frida_action', 'spawn')
         pid = request.POST.get('pid')

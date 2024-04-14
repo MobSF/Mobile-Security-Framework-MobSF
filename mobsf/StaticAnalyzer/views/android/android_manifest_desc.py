@@ -1,4 +1,25 @@
 MANIFEST_DESC = {
+    'well_known_assetlinks': {
+        'title': ('App Link assetlinks.json file not found'
+                  '<br>[android:name=%s]<br>[android:host=%s]'),
+        'level': 'high',
+        'description': ('App Link asset verification URL (%s) not found or '
+                        'configured incorrectly. (Status Code: %s). '
+                        'App Links allow users to redirect from a web '
+                        'URL/email to the mobile app. If this file is '
+                        'missing or incorrectly configured for the '
+                        'App Link host/domain, a malicious app can '
+                        'hijack such URLs. This may lead to phishing '
+                        'attacks, leak sensitive data in the URI, such '
+                        'as PII, OAuth tokens, magic link/password '
+                        'reset tokens and more. You must verify the '
+                        'App Link domain by hosting the assetlinks.json '
+                        'file and enabling verification via '
+                        '[android:autoVerify="true"] in the Activity '
+                        'intent-filter.'),
+        'name': ('App Link assetlinks.json file not found '
+                 '[android:name=%s], [android:host=%s]'),
+    },
     'clear_text_traffic': {
         'title': ('Clear text traffic is Enabled For App'
                   '<br>[android:usesCleartextTraffic=true]'),
@@ -135,14 +156,15 @@ MANIFEST_DESC = {
                         'attribute set to "singleTask". It is then '
                         'possible for other applications to place a '
                         'malicious activity on top of the activity stack '
-                        'resulting in Task Hijacking/StrandHogg 1.0'
+                        'resulting in Task Hijacking/StrandHogg 1.0 '
                         'vulnerability. This makes the application an easy '
                         'target for phishing attacks. The vulnerability can '
                         'be remediated by setting the launch mode attribute '
                         'to "singleInstance" or by setting an empty '
                         'taskAffinity (taskAffinity="") attribute. You can '
-                        'also update the target SDK version of the app to '
-                        '28 or higher to fix this issue at platform level.'),
+                        'also update the target SDK version (%s) of the '
+                        'app to 28 or higher to fix this issue at '
+                        'platform level.'),
         'name': ('Activity (%s) is vulnerable to Android '
                  'Task Hijacking/StrandHogg.'),
     },
@@ -159,8 +181,9 @@ MANIFEST_DESC = {
                         'be remediated by setting the launch mode attribute '
                         'to "singleInstance" and by setting an empty '
                         'taskAffinity (taskAffinity=""). You can also update '
-                        'the target SDK version of the app to 29 or higher '
-                        'to fix this issue at platform level.'),
+                        'the target SDK version (%s) of the app '
+                        'to 29 or higher to fix this issue at '
+                        'platform level.'),
         'name': 'Activity (%s) is vulnerable to StrandHogg 2.0',
     },
     'improper_provider_permission': {

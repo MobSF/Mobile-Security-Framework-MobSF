@@ -89,7 +89,10 @@ class GadgetPatcher:
             if not url:
                 return None
             logger.info('Downloading frida-gadget %s', fgadget)
-            with requests.get(url, stream=True) as r:
+            with requests.get(url,
+                              stream=True,
+                              proxies=proxies,
+                              verify=verify) as r:
                 with LZMAFile(r.raw) as f:
                     with open(gadget_bin, 'wb') as flip:
                         copyfileobj(f, flip)

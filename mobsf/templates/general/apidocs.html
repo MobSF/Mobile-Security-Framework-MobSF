@@ -42,7 +42,7 @@
               <li><code>api/v1/delete_suppression</code> - <a href="#delete-suppression-api">Delete Suppressions</a></li>
             </ol>
 
-            <h1>Dynamic Analysis</h1>
+            <h1>Dynamic Analysis Android</h1>
             <ol>
             
               <li><code>api/v1/dynamic/get_apps</code> - <a href="#get-apps-api">Get Apps for Dynamic Analysis</a></li>
@@ -64,9 +64,39 @@
               <li><code>api/v1/dynamic/stop_analysis</code> - <a href="#stop-analysis-api">Stop Dynamic Analysis</a></li>
               <li><code>api/v1/dynamic/report_json</code> - <a href="#dynamic-report-json-api">Dynamic Analysis JSON report</a></li>
               <li><code>api/v1/dynamic/view_source</code> - <a href="#dynamic-view-source-api">Dynamic Analysis View Source</a></li>
-
             </ol>
 
+            <h1>Dynamic Analysis iOS</h1>
+            <ol>
+              <li><code>api/v1/ios/corellium_supported_models</code> - <a href="#supported-models-api">Supported Corellium iOS Models</a></li>
+              <li><code>api/v1/ios/corellium_ios_versions</code> - <a href="#supported-ios-versions-api">Supported Corellium iOS Versions</a></li>
+              <li><code>api/v1/ios/corellium_create_ios_instance</code> - <a href="#create-ios-instance-api">Create an iOS VM in Corellium</a></li>
+              <li><code>api/v1/ios/dynamic_analysis</code> - <a href="#ios-dynamic-analysis-api">iOS Dynamic Analysis</a></li>
+              <li><code>api/v1/ios/corellium_start_instance</code> - <a href="#start-ios-instance-api">Start iOS VM in Corellium</a></li>
+              <li><code>api/v1/ios/corellium_stop_instance</code> - <a href="#stop-ios-instance-api">Stop iOS VM in Corellium</a></li>
+              <li><code>api/v1/ios/corellium_unpause_instance</code> - <a href="#unpause-ios-instance-api">Unpause iOS VM in Corellium</a></li>
+              <li><code>api/v1/ios/corellium_reboot_instance</code> - <a href="#reboot-ios-instance-api">Reboot iOS VM in Corellium</a></li>
+              <li><code>api/v1/ios/corellium_destroy_instance</code> - <a href="#destroy-ios-instance-api">Destroy iOS VM in Corellium</a></li>
+              <li><code>api/v1/ios/corellium_list_apps</code> - <a href="#corellium-list-apps-api">List Apps in Corellium iOS VM</a></li>
+              <li><code>api/v1/ios/setup_environment</code> - <a href="#ios-setup-environment-api">Setup iOS Dynamic Analysis Environment</a></li>
+              <li><code>api/v1/ios/dynamic_analyzer</code> - <a href="#ios-dynamic-analyzer-api">iOS Dynamic Analyzer</a></li>
+              <li><code>api/v1/ios/run_app</code> - <a href="#ios-run-app-api">Run App</a></li>
+              <li><code>api/v1/ios/stop_app</code> - <a href="#ios-stop-app-api">Stop App</a></li>
+              <li><code>api/v1/ios/remove_app</code> - <a href="#ios-remove-app-api">Remove App</a></li>
+              <li><code>api/v1/ios/take_screenshot</code> - <a href="#ios-takescreenshot-api">Take Screenshot</a></li>
+              <li><code>api/v1/ios/get_app_container_path</code> - <a href="#ios-get-app-container-path-api">Get App Container Path</a></li>
+              <li><code>api/v1/ios/network_capture</code> - <a href="#ios-network-capture-api">Network Capture</a></li>
+              <li><code>api/v1/ios/live_pcap_download</code> - <a href="#ios-live-pcap-download-api">Live PCAP Download</a></li>
+              <li><code>api/v1/ios/ssh_execute</code> - <a href="#ios-ssh-execute-api">SSH Execute</a></li>
+              <li><code>api/v1/ios/download_app_data</code> - <a href="#download-app-data-api">Download App Data</a></li>
+              <li><code>api/v1/ios/instance_input</code> - <a href="#instance-input-api">Instance Input</a></li>
+              <li><code>api/v1/ios/system_logs</code> - <a href="#system-logs-api">System Logs</a></li>
+              <li><code>api/v1/ios/file_upload</code> - <a href="#file-upload-api">File Upload</a></li>
+              <li><code>api/v1/ios/file_download</code> - <a href="#file-download-api">File Download</a></li>
+              <li><code>api/v1/frida/ios_instrument</code> - <a href="#ios-instrument-api">Frida Instrument App</a></li>
+              <li><code>api/v1/dynamic/ios_report_json</code> - <a href="#ios-report-json-api">iOS Dynamic Analysis Report</a></li>
+            </ol>
+          <hr>
             <h2><a id="upload-file-api"></a><strong>Upload File API</strong></h2>
             <p>API to upload a file. Supported file types are apk, zip, ipa and appx.</p>
             <ul>
@@ -2746,7 +2776,2090 @@
                 </ul>
               </li>
             </ul>
+
+
+            <hr />
+            <h2><a id="supported-models-api"></a><strong>Supported Corellium iOS Models API</strong></h2>
+            <p>List out supported iOS Corellium VMs.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/corellium_supported_models</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>JSON Contents</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_supported_models -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
             
+          
+            <hr />
+            <h2><a id="supported-ios-versions-api"></a><strong>Supported Corellium iOS Versions API</strong></h2>
+            <p>List out supported iOS versions for a device.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/corellium_ios_versions</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>model</td>
+                  <td>iOS model</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>JSON Contents</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_ios_versions --data "model=iPhone15,3" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+
+
+            <hr />
+            <h2><a id="create-ios-instance-api"></a><strong>Corellium Create iOS Instance API</strong></h2>
+            <p>Create a jailbroken iOS instance in Corellium with desired flavor and iOS version.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/corellium_create_ios_instance</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>project_id</td>
+                  <td>Corellium Project ID</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>name</td>
+                  <td>Name of the VM</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>flavor</td>
+                  <td>iOS Flavor</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>version</td>
+                  <td>iOS Version</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>JSON Contents</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_create_ios_instance --data "project_id=728bb423-68bc-4300-a484-6e32a43be9cf&name=iosvm&flavor=iphone15p&version=16.0" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+
+
+            <hr />
+            <h2><a id="ios-dynamic-analysis-api"></a><strong>iOS Dynamic Analysis API</strong></h2>
+            <p>List iOS Instance & Apps Available for Dynamic Analysis.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/dynamic_analysis</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>JSON Contents</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/dynamic_analysis -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="start-ios-instance-api"></a><strong>Corellium Start iOS Instance API</strong></h2>
+            <p>Start iOS VM in previously created in Corellium by instance identifier.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/corellium_start_instance</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS VM instance identifier</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok", "message": "Starting VM Instance"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_start_instance --data "instance_id=ce9cf65d-5ce5-4fad-823f-5d784c802d21" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="stop-ios-instance-api"></a><strong>Corellium Stop iOS Instance API</strong></h2>
+            <p>Stop iOS VM in Corellium by instance identifier.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/corellium_stop_instance</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS VM instance identifier</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok", "message": "Instance stopped"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_stop_instance --data "instance_id=ce9cf65d-5ce5-4fad-823f-5d784c802d21" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="unpause-ios-instance-api"></a><strong>Corellium Unpause iOS Instance API</strong></h2>
+            <p>Unpause iOS VM in Corellium by instance identifier.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/corellium_unpause_instance</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS VM instance identifier</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok", "message": "Instance unpaused"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_unpause_instance --data "instance_id=ce9cf65d-5ce5-4fad-823f-5d784c802d21" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="reboot-ios-instance-api"></a><strong>Corellium Reboot iOS Instance API</strong></h2>
+            <p>Reboot iOS VM in Corellium by instance identifier.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/corellium_reboot_instance</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS VM instance identifier</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok", "message": "Rebooting instance"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_reboot_instance --data "instance_id=ce9cf65d-5ce5-4fad-823f-5d784c802d21" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+            
+
+            <hr />
+            <h2><a id="destroy-ios-instance-api"></a><strong>Corellium Destroy iOS Instance API</strong></h2>
+            <p>Destroy iOS VM in Corellium by instance identifier.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/corellium_destroy_instance</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS VM instance identifier</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok", "message": "Destroying instance"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_destroy_instance --data "instance_id=ce9cf65d-5ce5-4fad-823f-5d784c802d21" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="corellium-list-apps-api"></a><strong>Corellium List Apps in Instance API</strong></h2>
+            <p>List all apps present in the Corellium iOS VM.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/corellium_list_apps</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS VM instance identifier</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>JSON Contents</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_list_apps --data "instance_id=ce9cf65d-5ce5-4fad-823f-5d784c802d21" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+            
+
+            <hr />
+            <h2><a id="ios-setup-environment-api"></a><strong>Setup iOS Dynamic Analysis Environment API</strong></h2>
+            <p>Setup iOS Dynamic Analysis Environment for an IPA. This API call is required for apps not installed in the Corellium iOS VM.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/setup_environment</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS instance id</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>hash</td>
+                  <td>MD5 hash of the IPA file</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok", "message": "Testing Environment is Ready!"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/setup_environment --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&hash=35469622303ba10a2195557a3ad1810a" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+
+            <hr />
+            <h2><a id="ios-dynamic-analyzer-api"></a><strong>iOS Dynamic Analyzer API</strong></h2>
+            <p>Start iOS Dynamic Analyzer with an app. Setup environment (api/v1/ios/setup_environment) API should be called before running dynamic analyzer for IPAs not installed in the Corellium VM.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/dynamic_analyzer</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS instance id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>bundle_id</td>
+                  <td>iOS app bundle id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"hash": "9d6698108e706f669183737f8d20e1e4", "instance_id": "bd057756-87a8-45a6-945d-35c7ce48eafe", "bundle_id": "com.highaltitudehacks.DVIAswiftv2", "version": "v3.9.4 Beta", "form": null, "title": "iOS Dynamic Analyzer"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/dynamic_analyzer --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="ios-run-app-api"></a><strong>Run App API</strong></h2>
+            <p>Run the app in the Corellium VM.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/run_app</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS instance id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>bundle_id</td>
+                  <td>iOS app bundle id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok", "message": "App Started"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/run_app --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="ios-stop-app-api"></a><strong>Stop App API</strong></h2>
+            <p>Kill the app in the Corellium VM.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/stop_app</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS instance id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>bundle_id</td>
+                  <td>iOS app bundle id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok", "message": "App Killed"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/stop_app --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="ios-remove-app-api"></a><strong>Remove App API</strong></h2>
+            <p>Remove an app from the Corellium VM.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/remove_app</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS instance id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>bundle_id</td>
+                  <td>iOS app bundle id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok", "message": "App uninstalled"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/remove_app --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="ios-takescreenshot-api"></a><strong>Take Screenshot API</strong></h2>
+            <p>Take a screenshot.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/take_screenshot</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS instance id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok", "message": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA..."}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/take_screenshot --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+
+            <hr />
+            <h2><a id="ios-get-app-container-path-api"></a><strong>Get App Container Path API</strong></h2>
+            <p>Get App container path. App must be instrumented before calling this API.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/get_app_container_path</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>bundle_id</td>
+                  <td>iOS app bundle id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok", "message": "/var/mobile/Containers/Data/Application/DDEACD38-727E-491C-AB9B-5DE80BB9EA71/"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/get_app_container_path --data "bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="ios-network-capture-api"></a><strong>Network Capture API</strong></h2>
+            <p>Enable/Disable Network Capture.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/network_capture</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS instance id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>state</td>
+                  <td>on/off</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok", "message": "Enabled network capture"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/network_capture --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&state=on" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="ios-live-pcap-download-api"></a><strong>Live PCAP Download API</strong></h2>
+            <p>Download live packet capture.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/live_pcap_download</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS instance id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/vnd.tcpdump.pcap</code> <br />
+                    <strong>Content:</strong> <code>PCAP File</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/live_pcap_download --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="ios-ssh-execute-api"></a><strong>SSH Execute API</strong></h2>
+            <p>Execute OS Commands inside the VM over SSH.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/ssh_execute</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS instance id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>cmd</td>
+                  <td>OS Command</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok", "message": "Library\nMedia\n\n"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/ssh_execute --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&cmd=ls" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="download-app-data-api"></a><strong>Download App Data API</strong></h2>
+            <p>Download app data from the VM.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/download_app_data</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS instance id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>bundle_id</td>
+                  <td>iOS app bundle id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok", "message": "Downloaded application data"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/download_app_data --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="instance-input-api"></a><strong>Instance Input API</strong></h2>
+            <p>Provide text, swipe and touch events to the VM</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/instance_input</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS instance id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>x</td>
+                  <td>x-axis integer / Text input text when <b>event</b> parameter is set to <b>text</b></td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>y</td>
+                  <td>y-axis integer</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>event</td>
+                  <td>text/home/enter/backspace/left/right/swipe_up/swipe_down/swipe_left/swipe_right/touch.</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>max_x</td>
+                  <td>Max Screen size x-axis</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>max_y</td>
+                  <td>Max Screen size y-axis</td>
+                  <td>No</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/instance_input --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&x=264&y=824&event=finger&max_x=750&max_y=1334" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="system-logs-api"></a><strong>System Logs API</strong></h2>
+            <p>Get VM system logs.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/system_logs</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS instance id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok", "message": "iBoot version: iHoot-1975.1.46.1.2\r\ncorecrypto_kex..."}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/system_logs --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="file-upload-api"></a><strong>File Upload API</strong></h2>
+            <p>Upload a file to the the VM.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/file_upload</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS instance id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>file</td>
+                  <td>multipart/form-data</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -F "file=@/Users/foo/foo.sh" -F "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe" --url http://localhost:8000/api/v1/ios/file_upload -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="file-download-api"></a><strong>File Download API</strong></h2>
+            <p>Download a file from the VM.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/file_download</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS instance id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>file</td>
+                  <td>Path to the file in VM</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/octet-stream</code> <br />
+                    <strong>Content:</strong> <code>File Data</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/file_download --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&file=/var/mobile/Containers/Data/Application/6DC4F886-537F-4F6D-87EE-ED976F4F4682/Library/Application Support/com.braze.core.persistence/data/61cbc3f/remote-configuration.json" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <hr />
+            <h2><a id="ios-instrument-api"></a><strong>Frida Instrument API</strong></h2>
+            <p>Instrument iOS App.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/frida/ios_instrument</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS instance id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>bundle_id</td>
+                  <td>iOS app bundle id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>hash</td>
+                  <td>MD5 hash of the IPA file</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>default_hooks</td>
+                  <td>comma separated default hooks to load</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>dump_hooks</td>
+                  <td>comma separated dump hooks to load (network,crypto,cookies,file-access,json,sqlite,data-dir,keychain,nslog,text-inputs,nsurlcredentialstorage,nsuserdefaults,pasteboard)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>auxiliary_hooks</td>
+                  <td>comma separated auxiliary hooks to load</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>frida_code</td>
+                  <td>user defined frida code to load</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>class_name</td>
+                  <td>class name to perform method enumeration when `enum_methods` auxiliary_hook is specified</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>class_search</td>
+                  <td>pattern to search when `search_class` auxiliary_hook is specified</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>class_trace</td>
+                  <td>class name to trace when `trace_class` auxiliary_hook is specified</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>method_search</td>
+                  <td>look for classes with this method</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>frida_action</td>
+                  <td>spawn/session/ps. The default action is spawn</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>new_package</td>
+                  <td>New package name to attach</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>pid</td>
+                  <td>Process id of the new package to attach</td>
+                  <td>No</td>
+                </tr>
+                
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok", "message": "Frida Instrumentation successful"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/ios_instrument --data "frida_action=spawn&pid=&new_bundle_id=&hash=f49355aa96053a36248905f78d5419a8&bundle_id=com.1debit.beta.ChimeApp&instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&default_hooks=jailbreak_bypass&dump_hooks=network,crypto,cookies,file-access,json,sqlite,data-dir,keychain,nslog,text-inputs,nsurlcredentialstorage,nsuserdefaults,pasteboard&auxiliary_hooks=&class_name=&class_search=&method_search=asdad&class_trace=&frida_code=" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+
+            <hr />
+            <h2><a id="ios-report-json-api"></a><strong>iOS Dynamic Analysis Report API</strong></h2>
+            <p>Get iOS Dynamic Analysis Report.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/dynamic/ios_report_json</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization:&lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key:&lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>instance_id</td>
+                  <td>iOS instance id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>bundle_id</td>
+                  <td>iOS app bundle id (Available from /api/v1/ios/dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"hash": "9d6698108e706f669183737f8d20e1e4", "version": "v3.9.4 Beta", "title": "iOS Dynamic Analysis Report", "instance_id": "bd057756-87a8-45a6-945d-35c7ce48eafe", "bundleid": "com.highaltitudehacks.DVIAswiftv2", "trackers": {"detected_trackers": 0, "total_trackers": 432,...."}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/ios_report_json --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization:{{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
 
             <!-- end API Docs-->
           </div>

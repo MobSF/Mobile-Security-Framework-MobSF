@@ -5,8 +5,8 @@
      {% endblock %}
     {% block extra_css %}
     <!-- DataTables -->
+    <link href="{% static "datatables/css/datatables.combined.min.css" %}" rel="stylesheet">
     <link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
-    <link rel="stylesheet" href="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.css" %}">
 
     <style type="text/css" media="print">
         @page { size: landscape; }
@@ -1190,11 +1190,7 @@
              <strong><i class="fas fa-font"></i> STRINGS</strong>
              </p>
                <div class="list-group">
-                  <p>  
-                    {% for val in strings %}
-                     {{ val }}<br/>
-                    {% endfor %}                  
-                  </p>
+                 {% include 'base/list.html' with list=strings type="strings"  limit=100 %}
               </div>
             </div>
           </div>
@@ -1215,11 +1211,7 @@
             <strong><i class="far fa-copy"></i> FILES</strong>
             </p>
               <div class="list-group">
-                <p>  
-                {% for file in files %}
-                  {{ file}} <br/>
-                {% endfor %}                               
-                </p>
+                {% include 'base/list.html' with list=files type="files"  limit=200 %}
             </div>
           </div>
         </div>
@@ -1287,8 +1279,10 @@
 <!--end new UI-->
 {% block extra_scripts %}
 <!-- DataTables -->
-<script src="{% static "adminlte/plugins/datatables/jquery.dataTables.min.js" %} "></script>
-<script src="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.js" %}"></script>
+<script src="{% static "datatables/js/pdfmake.min.js" %}"></script>
+<script src="{% static "datatables/js/vfs_fonts.js" %}"></script>
+<script src="{% static "datatables/js/datatables.combined.min.js" %}"></script>
+<script src="{% static "others/js/datatables_init.js" %}"></script>
 <script src="{% static "amcharts/core.js" %}"></script>
 <script src="{% static "amcharts/maps.js" %}"></script>
 <script src="{% static "amcharts/worldIndiaLow.js" %}"></script>
@@ -1311,18 +1305,7 @@
   const pkg = '{{ bundle_id }}'
   const hash = '{{ md5 }}'
 
-  $(function () {
-    // Datatable
-    $('table').DataTable({
-      "paging": true,
-      "lengthChange": false,
-      "searching": true,
-      "ordering": true,
-      "info": true,
-      "autoWidth": true,
-      "responsive": true,
-    });
-  });
+  
   // Navbar Active
     $(".nav-link").on("click", function() {
     $(".nav-link").removeClass("active");

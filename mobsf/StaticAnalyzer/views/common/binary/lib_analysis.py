@@ -45,6 +45,8 @@ def library_analysis(src, checksum, arch):
         # Supports Static Library, Shared objects, Dynamic Library,
         # from APK, SO, AAR, JAR, IPA, DYLIB, and A
         for libfile in Path(src).rglob(ext):
+            if '__MACOSX' in libfile.as_posix():
+                continue
             rel_path = libfile.relative_to(base_dir).as_posix()
             logger.info('Analyzing %s', rel_path)
             if arch == 'ar':

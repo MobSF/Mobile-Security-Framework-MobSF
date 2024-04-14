@@ -401,6 +401,13 @@ DVM_PERMISSIONS = {
         'com.google.android.gms.permission.AD_ID': ['normal', 'application shows advertisements', 'This app uses a Google advertising ID and can possibly serve advertisements.'],
         'com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE': ['normal', 'permission defined by google', 'A custom permission defined by Google.'],
         'com.google.android.c2dm.permission.RECEIVE': ['normal', 'recieve push notifications', 'Allows an application to receive push notifications from cloud.'],
+        'com.android.vending.BILLING': ['normal', 'application has in-app purchases', 'Allows an application to make in-app purchases from Google Play.'],
+        'android.permission.ACCESS_ADSERVICES_TOPICS': ['normal', 'allow applications to access advertising service topics', 'This enables the app to retrieve information related to advertising topics or interests, which can be used for targeted advertising purposes.'],
+        'android.permission.ACCESS_ADSERVICES_ATTRIBUTION': ['normal', 'allow applications to access advertising service attribution', 'This enables the app to retrieve information related to advertising attribution, which can be used for targeted advertising purposes. App can gather data about how users interact with ads, such as clicks or impressions, to measure the effectiveness of advertising campaigns.'],
+        'android.permission.ACCESS_ADSERVICES_AD_ID': ['normal', 'allow app to access the device\'s advertising ID.', 'This ID is a unique, user-resettable identifier provided by Google\'s advertising services, allowing apps to track user behavior for advertising purposes while maintaining user privacy.'],
+        'oppo.permission.OPPO_COMPONENT_SAFE': ['signature', 'permission specific to OPPO devices', 'It is used to grant apps the ability to access certain system-level features or components that are otherwise restricted for security reasons. This permission ensures that only trusted applications can interact with sensitive parts of the OPPO system.'],
+        'com.huawei.permission.external_app_settings.USE_COMPONENT': ['signature', 'permission specific to Huawei devices', 'It is used to grant apps the ability to access certain system-level features or components that are otherwise restricted for security reasons. This permission ensures that only trusted applications can interact with sensitive parts of the Huawei system.'],
+
     },
 
     'MANIFEST_PERMISSION_GROUP': {
