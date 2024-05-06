@@ -163,6 +163,7 @@ class CyberspectScans(models.Model):
     FILE_SIZE_PACKAGE = models.IntegerField(null=True)
     FILE_SIZE_SOURCE = models.IntegerField(null=True)
     DEPENDENCY_TYPES = models.CharField(max_length=50, null=True)
+    EMAIL = models.CharField(max_length=260, null=True)
 
 
 class ApiKeys(models.Model):

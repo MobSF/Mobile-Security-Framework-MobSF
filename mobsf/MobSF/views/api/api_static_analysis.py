@@ -6,7 +6,7 @@ import traceback as tb
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from mobsf.MobSF.utils import make_api_response, utcnow
+from mobsf.MobSF.utils import make_api_response, sso_email, utcnow
 from mobsf.MobSF.views.helpers import request_method
 from mobsf.MobSF.views.home import (RecentScans, Upload, cyberspect_rescan,
                                     delete_scan, get_cyberspect_scan,
@@ -124,7 +124,8 @@ def api_rescan(request):
     if ('hash' in request.POST):
         # Create a new CyberspectScans record for an app
         scheduled = request.POST.get('scheduled', True)
-        scan_data = cyberspect_rescan(request.POST['hash'], scheduled)
+        scan_data = cyberspect_rescan(request.POST['hash'], scheduled,
+                                      sso_email(request))
         if not scan_data:
             make_api_response({'error': 'Scan hash not found'}, 404)
     else:

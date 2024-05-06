@@ -133,7 +133,8 @@ class Upload(object):
                 new_cyberspect_scan(False, response_data['hash'],
                                     start_time,
                                     self.scan.file_size,
-                                    self.scan.source_file_size)
+                                    self.scan.source_file_size,
+                                    sso_email(self.request))
             cyberspect_scan_intake(self.scan.populate_data_dict())
             return self.resp_json(response_data)
         except Exception as exp:
@@ -163,7 +164,8 @@ class Upload(object):
             new_cyberspect_scan(False, api_response['hash'],
                                 start_time,
                                 self.scan.file_size,
-                                self.scan.source_file_size)
+                                self.scan.source_file_size,
+                                sso_email(self.request))
         api_response['cyberspect_scan_id'] = self.scan.cyberspect_scan_id
         cyberspect_scan_intake(self.scan.populate_data_dict())
         return api_response, 200
@@ -371,7 +373,7 @@ def get_cyberspect_scan(csid):
 
 
 def new_cyberspect_scan(scheduled, md5, start_time,
-                        file_size, source_file_size):
+                        file_size, source_file_size, sso_user):
     # Insert new record into CyberspectScans
     new_db_obj = CyberspectScans(
         SCHEDULED=scheduled,
@@ -379,6 +381,7 @@ def new_cyberspect_scan(scheduled, md5, start_time,
         INTAKE_START=start_time,
         FILE_SIZE_PACKAGE=file_size,
         FILE_SIZE_SOURCE=source_file_size,
+        EMAIL=sso_user,
     )
     new_db_obj.save()
     logger.info('Hash: %s, Cyberspect Scan ID: %s', md5, new_db_obj.ID)
@@ -693,7 +696,7 @@ def delete_scan(request, api=False):
             return error_response(request, msg, False, exp_doc)
 
 
-def cyberspect_rescan(apphash, scheduled):
+def cyberspect_rescan(apphash, scheduled, sso_user):
     """Get cyberspect scan by hash."""
     rs_obj = RecentScansDB.objects.filter(MD5=apphash).first()
     if not rs_obj:
@@ -708,7 +711,7 @@ def cyberspect_rescan(apphash, scheduled):
 
     start_time = utcnow()
     scan_id = new_cyberspect_scan(scheduled, apphash, start_time,
-                                  file_size, source_file_size)
+                                  file_size, source_file_size, sso_user)
     scan_data = {
         'cyberspect_scan_id': scan_id,
         'hash': apphash,

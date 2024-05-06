@@ -118,7 +118,7 @@ sidebar-collapse
                       </i>
                     </label>
                     <select class="custom-select d-block w-100" id="data_privacy_classification" size="1" required>
-                      <option value="">Select Data Privacy</option>
+                      <option value=""></option>
                       <option>Highly Restricted</option>
                       <option>Restricted</option>
                       <option>Internal Use Only</option>
@@ -396,7 +396,7 @@ sidebar-collapse
     fetch(divisionsUrl)
       .then(response => response.json())
       .then(data => {
-        var options = '<option value="">Select Division</option>';
+        var options = '<option value=""></option>';
         for (i = 0; i < data.length; i++) {
           options += '<option value="' + data[i].id + '">' + data[i].name + '</option>';
         }
@@ -440,6 +440,20 @@ sidebar-collapse
     $('.select2').select2();
     $('.select2bs4').select2({
       theme: 'bootstrap4'
+    });
+
+    $('#country').change(function() {
+      // If GLOBAL and other options are selected in country dropdown, remove GLOBAL
+      console.log($('#country').val());
+      console.log($('#country').val().join(',').replace('GLOBAL,', ''));
+      if ($('#country').val().indexOf('GLOBAL') >= 0 && $('#country').val().length > 1) {
+        if ($('#country').val().length > 2) {
+          $('#country').val('GLOBAL');
+        } else {
+          $('#country').val($('#country').val().join(',').replace('GLOBAL,', '')); 
+        }
+        $("#country").trigger('change');
+      }
     });
 
     $('#but').click(function () {
