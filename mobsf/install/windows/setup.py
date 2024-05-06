@@ -13,7 +13,7 @@ import subprocess
 import sys
 from os.path import expanduser
 
-from six.moves import input
+from six.moves import input  # noqa: A004
 
 try:
     import urllib.request as urlrequest
