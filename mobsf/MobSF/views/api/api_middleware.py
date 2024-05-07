@@ -46,6 +46,7 @@ class RestApiAuthMiddleware(MiddlewareMixin):
         apikey = self.get_api_key(request.META)
         if apikey == api_key():
             request.META['role'] = 'FULL_ACCESS'
+            request.META['email'] = 'admin@cyberspect.com'
             return
 
         key_hash = hashlib.sha256(apikey.encode('utf-8')).hexdigest()
