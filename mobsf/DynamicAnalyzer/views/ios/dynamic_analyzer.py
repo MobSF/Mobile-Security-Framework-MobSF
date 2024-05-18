@@ -7,6 +7,7 @@ from threading import Thread
 
 from django.conf import settings
 from django.shortcuts import render
+from django.contrib.auth.decorators import permission_required
 
 from mobsf.MobSF.utils import (
     common_check,
@@ -35,11 +36,16 @@ from mobsf.DynamicAnalyzer.views.ios.corellium_ssh import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
+from mobsf.MobSF.views.authorization import (
+    PERMISSIONS_MAP,
+)
 
 logger = logging.getLogger(__name__)
+PERMISSIONS = PERMISSIONS_MAP['keys']
 
 
 @login_required
+@permission_required(PERMISSIONS['SCAN'], raise_exception=True)
 def dynamic_analysis(request, api=False):
     """The iOS Dynamic Analysis Entry point."""
     try:
@@ -92,6 +98,7 @@ def dynamic_analysis(request, api=False):
 
 
 @login_required
+@permission_required(PERMISSIONS['SCAN'], raise_exception=True)
 def dynamic_analyzer(request, api=False):
     """Dynamic Analyzer for in-device iOS apps."""
     try:

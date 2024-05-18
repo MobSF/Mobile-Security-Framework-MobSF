@@ -92,6 +92,7 @@ def migrate(base_dir):
     try:
         django_operation(['migrate'], base_dir)
         django_operation(['migrate', '--run-syncdb'], base_dir)
+        django_operation(['create_roles'], base_dir)
     except Exception:
         logger.exception('Cannot Migrate')
 

@@ -18,6 +18,7 @@ from django.shortcuts import (
     render,
 )
 from django.template.defaulttags import register
+from django.contrib.auth.decorators import permission_required
 
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
@@ -42,9 +43,13 @@ from mobsf.StaticAnalyzer.models import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
+from mobsf.MobSF.views.authorization import (
+    PERMISSIONS_MAP,
+)
 
 LINUX_PLATFORM = ['Darwin', 'Linux']
 HTTP_BAD_REQUEST = 400
+PERMISSIONS = PERMISSIONS_MAP['keys']
 logger = logging.getLogger(__name__)
 register.filter('key', key)
 
@@ -75,6 +80,7 @@ class Upload(object):
 
     @staticmethod
     @login_required
+    @permission_required(PERMISSIONS['SCAN'], raise_exception=True)
     def as_view(request):
         upload = Upload(request)
         return upload.upload_html()
@@ -383,6 +389,7 @@ def generate_download(request):
 
 
 @login_required
+@permission_required(PERMISSIONS['DELETE'], raise_exception=True)
 def delete_scan(request, api=False):
     """Delete Scan from DB and remove the scan related files."""
     try:

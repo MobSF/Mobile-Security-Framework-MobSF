@@ -23,6 +23,10 @@ def db():
         '',
         'migrate',
     ])
+    execute_from_command_line([
+        '',
+        'create_roles',
+    ])
 
 
 def main():

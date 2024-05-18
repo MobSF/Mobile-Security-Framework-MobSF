@@ -8,6 +8,7 @@ import logging
 from copy import copy, deepcopy
 
 from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import permission_required
 
 from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
@@ -30,6 +31,9 @@ from mobsf.StaticAnalyzer.models import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
+from mobsf.MobSF.views.authorization import (
+    PERMISSIONS_MAP,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +43,7 @@ INFO = 'info'
 SECURE = 'secure'
 GOOD = 'good'
 SUPPRESSED = 'suppressed'
+PERMISSIONS = PERMISSIONS_MAP['keys']
 
 
 def get_package(checksum):
@@ -62,6 +67,7 @@ def get_package(checksum):
 
 @login_required
 @require_http_methods(['POST'])
+@permission_required(PERMISSIONS['SUPPRESS'], raise_exception=True)
 def suppress_by_rule_id(request, api=False):
     """Suppress finding by rule id."""
     data = {
@@ -108,6 +114,7 @@ def suppress_by_rule_id(request, api=False):
 
 @login_required
 @require_http_methods(['POST'])
+@permission_required(PERMISSIONS['SUPPRESS'], raise_exception=True)
 def suppress_by_files(request, api=False):
     """Suppress finding by files."""
     data = {
@@ -206,6 +213,7 @@ def list_suppressions(request, api=False):
 
 @login_required
 @require_http_methods(['POST'])
+@permission_required(PERMISSIONS['DELETE'], raise_exception=True)
 def delete_suppression(request, api=False):
     """Delete suppression rule."""
     data = {

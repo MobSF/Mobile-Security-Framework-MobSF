@@ -19,6 +19,7 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.template.defaulttags import register
+from django.contrib.auth.decorators import permission_required
 
 from mobsf.MobSF.utils import (
     android_component,
@@ -93,16 +94,20 @@ from mobsf.StaticAnalyzer.views.common.appsec import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
+from mobsf.MobSF.views.authorization import (
+    PERMISSIONS_MAP,
+)
 
 
 logger = logging.getLogger(__name__)
-
+PERMISSIONS = PERMISSIONS_MAP['keys']
 register.filter('key', key)
 register.filter('android_component', android_component)
 register.filter('relative_path', relative_path)
 
 
 @login_required
+@permission_required(PERMISSIONS['SCAN'], raise_exception=True)
 def static_analyzer(request, checksum, api=False):
     """Do static analysis on an request and save to db."""
     try:

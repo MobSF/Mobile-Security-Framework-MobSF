@@ -21,6 +21,7 @@ from lxml import etree
 from django.conf import settings
 from django.shortcuts import render
 from django.utils.html import escape
+from django.contrib.auth.decorators import permission_required
 
 from mobsf.MobSF.utils import (
     file_size,
@@ -47,9 +48,12 @@ from mobsf.StaticAnalyzer.views.windows.db_interaction import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
+from mobsf.MobSF.views.authorization import (
+    PERMISSIONS_MAP,
+)
 
 logger = logging.getLogger(__name__)
-
+PERMISSIONS = PERMISSIONS_MAP['keys']
 # Only used when xmlrpc is used
 proxy = None
 # Used to store the local config if windows analysis happens local
@@ -62,6 +66,7 @@ config = None
 
 
 @login_required
+@permission_required(PERMISSIONS['SCAN'], raise_exception=True)
 def staticanalyzer_windows(request, checksum, api=False):
     """Analyse a windows app."""
     try:

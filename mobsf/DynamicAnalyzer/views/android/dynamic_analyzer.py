@@ -14,6 +14,7 @@ from django.http import (HttpResponseRedirect,
 from django.conf import settings
 from django.shortcuts import render
 from django.db.models import ObjectDoesNotExist
+from django.contrib.auth.decorators import permission_required
 
 from mobsf.DynamicAnalyzer.views.android.environment import (
     ANDROID_API_SUPPORTED,
@@ -42,11 +43,16 @@ from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
+from mobsf.MobSF.views.authorization import (
+    PERMISSIONS_MAP,
+)
 
 logger = logging.getLogger(__name__)
+PERMISSIONS = PERMISSIONS_MAP['keys']
 
 
 @login_required
+@permission_required(PERMISSIONS['SCAN'], raise_exception=True)
 def android_dynamic_analysis(request, api=False):
     """Android Dynamic Analysis Entry point."""
     try:
@@ -109,6 +115,7 @@ def android_dynamic_analysis(request, api=False):
 
 
 @login_required
+@permission_required(PERMISSIONS['SCAN'], raise_exception=True)
 def dynamic_analyzer(request, checksum, api=False):
     """Android Dynamic Analyzer Environment."""
     try:
@@ -226,6 +233,7 @@ def dynamic_analyzer(request, checksum, api=False):
 
 
 @login_required
+@permission_required(PERMISSIONS['SCAN'], raise_exception=True)
 def httptools_start(request):
     """Start httprools UI."""
     logger.info('Starting httptools Web UI')
@@ -248,6 +256,7 @@ def httptools_start(request):
 
 
 @login_required
+@permission_required(PERMISSIONS['SCAN'], raise_exception=True)
 def logcat(request, api=False):
     logger.info('Starting Logcat streaming')
     try:
@@ -292,6 +301,7 @@ def logcat(request, api=False):
 
 
 @login_required
+@permission_required(PERMISSIONS['SCAN'], raise_exception=True)
 def trigger_static_analysis(request, checksum):
     """On device APK Static Analysis."""
     try:

@@ -9,6 +9,7 @@ import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from django.conf import settings
 from django.shortcuts import render
 from django.template.defaulttags import register
+from django.contrib.auth.decorators import permission_required
 
 from mobsf.MobSF.utils import (
     file_size,
@@ -64,9 +65,12 @@ from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
+from mobsf.MobSF.views.authorization import (
+    PERMISSIONS_MAP,
+)
 
 logger = logging.getLogger(__name__)
-
+PERMISSIONS = PERMISSIONS_MAP['keys']
 register.filter('relative_path', relative_path)
 
 ##############################################################
@@ -75,6 +79,7 @@ register.filter('relative_path', relative_path)
 
 
 @login_required
+@permission_required(PERMISSIONS['SCAN'], raise_exception=True)
 def static_analyzer_ios(request, checksum, api=False):
     """Module that performs iOS IPA/ZIP Static Analysis."""
     try:
