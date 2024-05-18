@@ -24,8 +24,11 @@ from mobsf.MobSF.security import (
     init_exec_hooks,
     store_exec_hashes_at_first_run,
 )
-from mobsf.MobSF.views import home
-from mobsf.MobSF.views import authentication
+from mobsf.MobSF.views import (
+    authentication,
+    authorization,
+    home,
+)
 from mobsf.MobSF.views.api import api_static_analysis as api_sz
 from mobsf.MobSF.views.api import api_android_dynamic_analysis as api_dz
 from mobsf.MobSF.views.api import api_ios_dynamic_analysis as api_idz
@@ -61,6 +64,12 @@ urlpatterns = [
     re_path(r'^change_password/$',
             authentication.change_password,
             name='change_password'),
+    re_path(r'^users/$',
+            authorization.users,
+            name='users'),
+    re_path(r'^create_user/$',
+            authorization.create_user,
+            name='create_user'),
     # REST API
     # Static Analysis
     re_path(r'^api/v1/upload$', api_sz.api_upload),

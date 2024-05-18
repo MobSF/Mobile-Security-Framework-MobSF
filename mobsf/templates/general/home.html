@@ -173,6 +173,9 @@
                         },
                         error : function(xhr, ajaxOptions, thrownError) {
                             hide_loader();
+                            if (thrownError === 'Forbidden'){
+                                _("status").innerText = "You do not have permission to download and scan!";
+                            }
                         }
                     });
                 }
@@ -218,8 +221,13 @@
                 _("status").innerText = Math.round(percent) + "% Uploaded...";
             }
             function completeHandler(event) {
-                var json = JSON.parse(event.target.responseText);
-                responseHandler(json);
+                if    (event.currentTarget.status === 403){
+                    _("status").innerText = "You do not have permission to upload!";
+                    return;
+                } else{
+                    var json = JSON.parse(event.target.responseText);
+                    responseHandler(json);
+                }
             }
             function errorHandler(event) {
                 _("status").innerText = "Upload Failed!";
@@ -263,7 +271,7 @@
                 xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
                 xhr.upload.addEventListener("progress", progressHandler, false);
                 xhr.addEventListener("load", completeHandler, false);
-                xhr.addEventListener("error", errorHandler, false);
+                xhr.addEventListener("error", errorHandler);
                 xhr.addEventListener("abort", abortHandler, false);
                 var formdata = new FormData();
                 formdata.append("file", file);

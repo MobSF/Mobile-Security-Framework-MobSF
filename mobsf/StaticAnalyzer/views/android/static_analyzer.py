@@ -95,12 +95,11 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 from mobsf.MobSF.views.authorization import (
-    PERMISSIONS_MAP,
+    PERMISSIONS,
 )
 
 
 logger = logging.getLogger(__name__)
-PERMISSIONS = PERMISSIONS_MAP['keys']
 register.filter('key', key)
 register.filter('android_component', android_component)
 register.filter('relative_path', relative_path)

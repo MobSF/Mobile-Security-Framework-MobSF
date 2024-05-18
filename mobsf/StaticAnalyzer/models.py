@@ -3,12 +3,10 @@ from datetime import datetime
 from django.db import models
 
 from mobsf.MobSF.views.authorization import (
-    PERMISSIONS_MAP,
+    DJANGO_PERMISSIONS as P,
 )
 
 # Create your models here.
-
-P = PERMISSIONS_MAP['perms']
 
 
 class RecentScansDB(models.Model):

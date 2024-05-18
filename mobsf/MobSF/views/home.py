@@ -44,12 +44,11 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 from mobsf.MobSF.views.authorization import (
-    PERMISSIONS_MAP,
+    PERMISSIONS,
 )
 
 LINUX_PLATFORM = ['Darwin', 'Linux']
 HTTP_BAD_REQUEST = 400
-PERMISSIONS = PERMISSIONS_MAP['keys']
 logger = logging.getLogger(__name__)
 register.filter('key', key)
 
@@ -284,6 +283,7 @@ def recent_scans(request):
 
 
 @login_required
+@permission_required(PERMISSIONS['SCAN'], raise_exception=True)
 def download_apk(request):
     """Download and APK by package name."""
     package = request.POST['package']

@@ -71,9 +71,7 @@ def login_view(request):
 def logout_view(request):
     """Logout Controller."""
     logout(request)
-    response = redirect(settings.LOGIN_URL)
-    response['Clear-Site-Data'] = '"*"'
-    return response
+    return redirect(settings.LOGIN_URL)
 
 
 @login_required

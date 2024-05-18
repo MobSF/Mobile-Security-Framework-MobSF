@@ -1,0 +1,64 @@
+{% extends "base/base_layout.html" %}
+{% load static %}
+{% block sidebar_option %}
+sidebar-collapse
+{% endblock %}
+{% block content %}
+<div class="content-wrapper">
+   <div class="content-header">
+   </div>
+   <div class="container-fluid">
+      <div class="row">
+         <div class="col-lg-12">
+            <div class="card">
+               <div class="card-body">
+                  <div class="h-100 d-flex align-items-center justify-content-center">
+                     <div class="">
+                        <div class="login-logo">
+                           <a href="">User Management</a>  <a href="{% url 'create_user' %}" id="add_user" class="btn btn-success" role="button"><i class="fa fa-user"></i> Add User</a>
+                        </div>
+                        <div class="card">
+                           <div class="card-body login-card-body">
+                            {% if not users %}
+                            <h3>No Users Available</h3>
+                            {% else %}
+                            <div class="table-responsive">
+                                <table class="table table-responsive-md">
+                                    <thead>
+                                        <tr>
+                                            <th><strong>User</strong></th>
+                                            <th><strong>Email</strong></th>
+                                            <th><strong>Role</strong></th>
+                                            <th><strong>Manage</strong></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for user in users %}
+                                                <tr>
+                                                    <td>
+                                                            <div class="profile-photo">
+                                                                <img src="https://www.gravatar.com/avatar/{{ user.email | md5}}" width="30" class="img-fluid rounded-circle" alt="">
+                                                                <p>{{user.username}}</p>
+                                                            </div>
+                                                       
+                                                     </td>
+                                                    <td>{{user.email}}</td>
+                                                    <td> {% if user.is_staff %}Admin{% else %} {{user.groups.all.0}}  {% endif %}</td>
+                                                    <td> {% if not user.is_staff %}Delete{% endif %}</td>
+                                                </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% endif %}
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
+{% endblock %}

@@ -44,11 +44,10 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 from mobsf.MobSF.views.authorization import (
-    PERMISSIONS_MAP,
+    PERMISSIONS,
 )
 
 logger = logging.getLogger(__name__)
-PERMISSIONS = PERMISSIONS_MAP['keys']
 
 
 @login_required

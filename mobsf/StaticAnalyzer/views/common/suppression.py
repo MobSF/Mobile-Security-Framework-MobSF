@@ -32,7 +32,7 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 from mobsf.MobSF.views.authorization import (
-    PERMISSIONS_MAP,
+    PERMISSIONS,
 )
 
 logger = logging.getLogger(__name__)
@@ -43,7 +43,6 @@ INFO = 'info'
 SECURE = 'secure'
 GOOD = 'good'
 SUPPRESSED = 'suppressed'
-PERMISSIONS = PERMISSIONS_MAP['keys']
 
 
 def get_package(checksum):

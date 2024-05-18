@@ -49,11 +49,10 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 from mobsf.MobSF.views.authorization import (
-    PERMISSIONS_MAP,
+    PERMISSIONS,
 )
 
 logger = logging.getLogger(__name__)
-PERMISSIONS = PERMISSIONS_MAP['keys']
 # Only used when xmlrpc is used
 proxy = None
 # Used to store the local config if windows analysis happens local
