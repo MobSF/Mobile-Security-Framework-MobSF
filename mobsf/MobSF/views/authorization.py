@@ -124,10 +124,8 @@ def delete_user(request):
         u.groups.clear()
         u.delete()
         data = {'deleted': 'yes'}
-        return send_response(data)
     except User.DoesNotExist:
         data = {'deleted': 'User does not exist'}
-        return send_response(data)
     except Exception as e:
         data = {'deleted': e.message}
     return send_response(data)
