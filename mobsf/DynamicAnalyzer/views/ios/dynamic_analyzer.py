@@ -7,7 +7,6 @@ from threading import Thread
 
 from django.conf import settings
 from django.shortcuts import render
-from django.contrib.auth.decorators import permission_required
 
 from mobsf.MobSF.utils import (
     common_check,
@@ -38,6 +37,7 @@ from mobsf.MobSF.views.authentication import (
 )
 from mobsf.MobSF.views.authorization import (
     PERMISSIONS,
+    permission_required,
 )
 
 logger = logging.getLogger(__name__)

@@ -8,7 +8,6 @@ import logging
 from copy import copy, deepcopy
 
 from django.views.decorators.http import require_http_methods
-from django.contrib.auth.decorators import permission_required
 
 from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
@@ -33,6 +32,7 @@ from mobsf.MobSF.views.authentication import (
 )
 from mobsf.MobSF.views.authorization import (
     PERMISSIONS,
+    permission_required,
 )
 
 logger = logging.getLogger(__name__)

@@ -14,7 +14,6 @@ from django.http import (HttpResponseRedirect,
 from django.conf import settings
 from django.shortcuts import render
 from django.db.models import ObjectDoesNotExist
-from django.contrib.auth.decorators import permission_required
 
 from mobsf.DynamicAnalyzer.views.android.environment import (
     ANDROID_API_SUPPORTED,
@@ -45,6 +44,7 @@ from mobsf.MobSF.views.authentication import (
 )
 from mobsf.MobSF.views.authorization import (
     PERMISSIONS,
+    permission_required,
 )
 
 logger = logging.getLogger(__name__)

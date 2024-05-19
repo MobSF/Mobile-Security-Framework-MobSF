@@ -9,7 +9,6 @@ import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from django.conf import settings
 from django.shortcuts import render
 from django.template.defaulttags import register
-from django.contrib.auth.decorators import permission_required
 
 from mobsf.MobSF.utils import (
     file_size,
@@ -67,6 +66,7 @@ from mobsf.MobSF.views.authentication import (
 )
 from mobsf.MobSF.views.authorization import (
     PERMISSIONS,
+    permission_required,
 )
 
 logger = logging.getLogger(__name__)
