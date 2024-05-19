@@ -53,6 +53,10 @@ from mobsf.StaticAnalyzer.views.android.db_interaction import (
     save_get_ctx,
 )
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import MalwareDomainCheck
+from mobsf.MobSF.views.authorization import (
+    PERMISSIONS,
+    has_permission,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +69,11 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
     if db_entry.exists() and not rescan:
         context = get_context_from_db_entry(db_entry)
     else:
+        if not has_permission(request, PERMISSIONS['SCAN'], api):
+            return print_n_send_error_response(
+                request,
+                'Permission Denied',
+                False)
         app_dic['size'] = f'{str(file_size(app_dic["app_path"]))}MB'
         app_dic['sha1'], app_dic['sha256'] = hash_gen(app_dic['app_path'])
         app_dic['files'] = unzip(app_dic['app_path'], app_dic['app_dir'])

@@ -63,6 +63,17 @@ def permission_required(perm):
     return decorator
 
 
+def has_permission(request, permission, api):
+    """Check if user has permission."""
+    if request.user.is_staff:
+        return True
+    if settings.DISABLE_AUTHENTICATION == '1' or api:
+        return True
+    if not request.user.has_perm(permission):
+        return False
+    return True
+
+
 def create_authorization_roles():
     """Create Authorization Roles."""
     maintainer, _created = Group.objects.get_or_create(name=MAINTAINER_GROUP)

@@ -66,7 +66,7 @@ from mobsf.MobSF.views.authentication import (
 )
 from mobsf.MobSF.views.authorization import (
     PERMISSIONS,
-    permission_required,
+    has_permission,
 )
 
 logger = logging.getLogger(__name__)
@@ -78,7 +78,6 @@ register.filter('relative_path', relative_path)
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
 def static_analyzer_ios(request, checksum, api=False):
     """Module that performs iOS IPA/ZIP Static Analysis."""
     try:
@@ -135,6 +134,11 @@ def static_analyzer_ios(request, checksum, api=False):
             if ipa_db.exists() and not rescan:
                 context = get_context_from_db_entry(ipa_db)
             else:
+                if not has_permission(request, PERMISSIONS['SCAN'], api):
+                    return print_n_send_error_response(
+                        request,
+                        'Permission Denied',
+                        False)
                 logger.info('iOS Binary (IPA) Analysis Started')
                 app_dict['size'] = str(
                     file_size(app_dict['app_path'])) + 'MB'  # FILE SIZE
@@ -237,6 +241,11 @@ def static_analyzer_ios(request, checksum, api=False):
             if ios_zip_db.exists() and not rescan:
                 context = get_context_from_db_entry(ios_zip_db)
             else:
+                if not has_permission(request, PERMISSIONS['SCAN'], api):
+                    return print_n_send_error_response(
+                        request,
+                        'Permission Denied',
+                        False)
                 logger.info('iOS Source Code Analysis Started')
                 app_dict['app_file'] = app_dict[
                     'md5_hash'] + '.zip'  # NEW FILENAME
