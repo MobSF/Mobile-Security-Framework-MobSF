@@ -111,6 +111,9 @@ def create_user(request):
         if form.is_valid():
             role = request.POST.get('role')
             username = request.POST.get('username')
+            if not username:
+                messages.error(request, 'No Username Provided')
+                return redirect('create_user')
             if not USERNAME_REGEX.match(username):
                 messages.error(request, 'Invalid Username')
                 return redirect('create_user')
@@ -146,6 +149,9 @@ def delete_user(request):
     data = {'deleted': 'Failed to delete user'}
     try:
         username = request.POST.get('username')
+        if not username:
+            data = {'deleted': 'No Username Provided'}
+            return send_response(data)
         if not USERNAME_REGEX.match(username):
             data = {'deleted': 'Invalid Username'}
             return send_response(data)

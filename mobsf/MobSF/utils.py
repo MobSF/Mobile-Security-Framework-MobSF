@@ -49,7 +49,7 @@ URL_REGEX = re.compile(
     ),
     re.UNICODE)
 EMAIL_REGEX = re.compile(r'[\w+.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
-USERNAME_REGEX = re.compile(r'[\w+.-]{1,50}')
+USERNAME_REGEX = re.compile(r'^[\w+.-@]{1,50}$')
 
 
 class Color(object):
@@ -108,9 +108,11 @@ def print_version():
     if platform.system() == 'Windows':
         logger.info('Mobile Security Framework %s', ver)
         print('REST API Key: ' + api_key())
+        print('Default Credentials: mobsf/mobsf')
     else:
         logger.info('\033[1m\033[34mMobile Security Framework %s\033[0m', ver)
-        print('REST API Key: ' + Color.BOLD + api_key() + Color.END)
+        print(f'REST API Key: {Color.BOLD}{api_key()}{Color.END}')
+        print(f'Default Credentials: {Color.BOLD}mobsf/mobsf{Color.END}')
     os = platform.system()
     pltfm = platform.platform()
     dist = ' '.join(distro.linux_distribution(
