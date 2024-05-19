@@ -43,6 +43,7 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 from mobsf.MobSF.views.authorization import (
+    MAINTAINER_GROUP,
     PERMISSIONS,
     permission_required,
 )
@@ -79,7 +80,7 @@ class Upload(object):
 
     @staticmethod
     @login_required
-    @permission_required(PERMISSIONS['SCAN'], raise_exception=True)
+    @permission_required(PERMISSIONS['SCAN'])
     def as_view(request):
         upload = Upload(request)
         return upload.upload_html()
@@ -174,9 +175,14 @@ class Upload(object):
 @login_required
 def api_docs(request):
     """Api Docs Route."""
+    key = '*******'
+    if (settings.DISABLE_AUTHENTICATION == '1'
+            or request.user.is_staff
+            or request.user.groups.filter(name=MAINTAINER_GROUP).exists()):
+        key = api_key()
     context = {
         'title': 'API Docs',
-        'api_key': api_key(),
+        'api_key': key,
         'version': settings.MOBSF_VER,
     }
     template = 'general/apidocs.html'
@@ -283,7 +289,7 @@ def recent_scans(request):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'], raise_exception=True)
+@permission_required(PERMISSIONS['SCAN'])
 def download_apk(request):
     """Download and APK by package name."""
     package = request.POST['package']
@@ -389,7 +395,7 @@ def generate_download(request):
 
 
 @login_required
-@permission_required(PERMISSIONS['DELETE'], raise_exception=True)
+@permission_required(PERMISSIONS['DELETE'])
 def delete_scan(request, api=False):
     """Delete Scan from DB and remove the scan related files."""
     try:

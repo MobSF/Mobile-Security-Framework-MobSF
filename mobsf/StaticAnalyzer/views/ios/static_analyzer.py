@@ -78,7 +78,7 @@ register.filter('relative_path', relative_path)
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'], raise_exception=True)
+@permission_required(PERMISSIONS['SCAN'])
 def static_analyzer_ios(request, checksum, api=False):
     """Module that performs iOS IPA/ZIP Static Analysis."""
     try:

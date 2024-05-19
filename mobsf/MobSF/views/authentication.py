@@ -27,17 +27,12 @@ def login_required(func):
         arguments = sig.bind(request, *args, **kwargs)
         api = arguments.arguments.get('api')
         # Handle functions that are used by API and Web
-        if settings.DISABLE_AUTHENTICATION == '1':
+        if settings.DISABLE_AUTHENTICATION == '1' or api:
             # Disable authentication for all functions
             return func(request, *args, **kwargs)
-        if api:
-            # Disable additional authentication
-            # for API function calls
-            return func(request, *args, **kwargs)
-        else:
-            # Force authentication for all
-            # web function calls
-            return lg(func)(request, *args, **kwargs)
+        # Force authentication for all
+        # web function calls
+        return lg(func)(request, *args, **kwargs)
     return wrapper
 
 

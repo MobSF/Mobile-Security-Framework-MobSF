@@ -1,6 +1,7 @@
 """User management and authorization."""
 from itertools import chain
 from inspect import signature
+from functools import wraps
 
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group, Permission
@@ -44,26 +45,22 @@ MAINTAINER_GROUP = 'Maintainer'
 VIEWER_GROUP = 'Viewer'
 
 
-def permission_required(func):
-    """Permission required decorator."""
-    sig = signature(func)
-
-    def wrapper(request, *args, **kwargs):
-        arguments = sig.bind(request, *args, **kwargs)
-        api = arguments.arguments.get('api')
-        # Handle functions that are used by API and Web
-        if settings.DISABLE_AUTHENTICATION == '1':
-            # Disable authorization for all functions
-            return func(request, *args, **kwargs)
-        if api:
-            # Disable additional authorization
-            # for API function calls
-            return func(request, *args, **kwargs)
-        else:
-            # Force authorization for all
-            # web function calls
-            return pr(func)(request, *args, **kwargs)
-    return wrapper
+def permission_required(perm):
+    def decorator(view):
+        @wraps(view)
+        def wrapper(request, *args, **kwargs):
+            sig = signature(view)
+            arguments = sig.bind(request, *args, **kwargs)
+            api = arguments.arguments.get('api')
+            if settings.DISABLE_AUTHENTICATION == '1' or api:
+                # Disable authorization for all functions
+                return view(request, *args, **kwargs)
+            # Enforce authorization for all web function calls
+            return pr(
+                perm,
+                raise_exception=True)(view)(request, *args, **kwargs)
+        return wrapper
+    return decorator
 
 
 def create_authorization_roles():

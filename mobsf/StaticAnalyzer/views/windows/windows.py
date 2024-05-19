@@ -65,7 +65,7 @@ config = None
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'], raise_exception=True)
+@permission_required(PERMISSIONS['SCAN'])
 def staticanalyzer_windows(request, checksum, api=False):
     """Analyse a windows app."""
     try:
