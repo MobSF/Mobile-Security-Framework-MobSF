@@ -49,7 +49,7 @@ from mobsf.MobSF.views.authentication import (
 )
 from mobsf.MobSF.views.authorization import (
     PERMISSIONS,
-    permission_required,
+    has_permission,
 )
 
 logger = logging.getLogger(__name__)
@@ -65,7 +65,6 @@ config = None
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
 def staticanalyzer_windows(request, checksum, api=False):
     """Analyse a windows app."""
     try:
@@ -114,6 +113,11 @@ def staticanalyzer_windows(request, checksum, api=False):
                 ' Fetching data from the DB...')
             context = get_context_from_db_entry(db_entry)
         else:
+            if not has_permission(request, PERMISSIONS['SCAN'], api):
+                return print_n_send_error_response(
+                    request,
+                    'Permission Denied',
+                    False)
             logger.info('Windows Binary Analysis Started')
             app_dic['app_path'] = os.path.join(
                 app_dic['app_dir'], app_dic['md5'] + '.appx')

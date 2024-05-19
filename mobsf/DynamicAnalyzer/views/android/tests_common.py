@@ -35,6 +35,10 @@ from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
+from mobsf.MobSF.views.authorization import (
+    PERMISSIONS,
+    permission_required,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +47,7 @@ logger = logging.getLogger(__name__)
 
 
 @login_required
+@permission_required(PERMISSIONS['SCAN'])
 @require_http_methods(['POST'])
 def start_activity(request, api=False):
     """Lunch a specific activity."""
@@ -77,6 +82,7 @@ def start_activity(request, api=False):
 
 
 @login_required
+@permission_required(PERMISSIONS['SCAN'])
 @require_http_methods(['POST'])
 def activity_tester(request, api=False):
     """Exported & non exported activity Tester."""
@@ -139,6 +145,7 @@ def activity_tester(request, api=False):
 
 
 @login_required
+@permission_required(PERMISSIONS['SCAN'])
 @require_http_methods(['POST'])
 def download_data(request, api=False):
     """Download Application Data from Device."""
@@ -175,6 +182,7 @@ def download_data(request, api=False):
 
 
 @login_required
+@permission_required(PERMISSIONS['SCAN'])
 @require_http_methods(['POST'])
 def collect_logs(request, api=False):
     """Collecting Data and Cleanup."""
@@ -220,6 +228,7 @@ def collect_logs(request, api=False):
 
 
 @login_required
+@permission_required(PERMISSIONS['SCAN'])
 @require_http_methods(['POST'])
 def tls_tests(request, api=False):
     """Perform TLS tests."""

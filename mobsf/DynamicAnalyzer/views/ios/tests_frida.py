@@ -25,6 +25,10 @@ from mobsf.MobSF.utils import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
+from mobsf.MobSF.views.authorization import (
+    PERMISSIONS,
+    permission_required,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 
 @login_required
+@permission_required(PERMISSIONS['SCAN'])
 @require_http_methods(['POST'])
 def ios_instrument(request, api=False):
     """Instrument app with frida."""
