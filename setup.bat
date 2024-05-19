@@ -66,11 +66,10 @@ where python >nul 2>&1 && (
   echo [INSTALL] Migrating Database
   set DJANGO_SUPERUSER_USERNAME=mobsf
   set DJANGO_SUPERUSER_PASSWORD=mobsf
-  set DJANGO_SUPERUSER_EMAIL=
   poetry run python manage.py makemigrations
   poetry run python manage.py makemigrations StaticAnalyzer
   poetry run python manage.py migrate
-  poetry run python manage.py createsuperuser --noinput
+  poetry run python manage.py createsuperuser --noinput --email ""
   poetry run python manage.py create_roles
   echo Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html
   echo [INSTALL] Installation Complete

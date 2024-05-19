@@ -53,7 +53,6 @@ from mobsf.StaticAnalyzer.views.ios import view_source as io_view_source
 from . import settings
 
 bundle_id_regex = r'(?P<bundle_id>([a-zA-Z]{1}[\w.-]{1,255}))$'
-
 urlpatterns = [
     re_path(r'^login/$',
             authentication.login_view,
@@ -382,7 +381,6 @@ if settings.API_ONLY == '0':
         re_path(r'^tests/$', tests.start_test),
     ])
 
-handler404 = 'mobsf.MobSF.views.home.not_found'
 utils.print_version()
 init_exec_hooks()
 store_exec_hashes_at_first_run()

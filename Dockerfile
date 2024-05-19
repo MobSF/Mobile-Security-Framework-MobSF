@@ -95,8 +95,7 @@ ENV POSTGRES_USER=postgres \
     POSTGRES_DB=mobsf \
     POSTGRES_HOST=postgres \
     DJANGO_SUPERUSER_USERNAME=mobsf \
-    DJANGO_SUPERUSER_PASSWORD=mobsf \
-    DJANGO_SUPERUSER_EMAIL=
+    DJANGO_SUPERUSER_PASSWORD=mobsf
 
 RUN ./scripts/postgres_support.sh $POSTGRES
 
