@@ -131,7 +131,6 @@ def create_user(request):
             messages.error(
                 request,
                 'Please correct the error below.')
-            return redirect('create_user')
     else:
         form = RegisterForm()
     context = {

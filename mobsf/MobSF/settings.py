@@ -231,6 +231,27 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 DATA_UPLOAD_MAX_MEMORY_SIZE = 268435456
 LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = '/'
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': ('django.contrib.auth.password_validation.'
+                 'UserAttributeSimilarityValidator'),
+    },
+    {
+        'NAME': ('django.contrib.auth.password_validation.'
+                 'MinimumLengthValidator'),
+        'OPTIONS': {
+            'min_length': 6,
+        },
+    },
+    {
+        'NAME': ('django.contrib.auth.password_validation.'
+                 'CommonPasswordValidator'),
+    },
+    {
+        'NAME': ('django.contrib.auth.password_validation.'
+                 'NumericPasswordValidator'),
+    },
+]
 # Better logging
 LOGGING = {
     'version': 1,
