@@ -42,8 +42,6 @@ jobs:
         export WKHTML_URL=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/
         export WKHTML_DEB=wkhtmltox_0.12.6.1-2.jammy_amd64.deb
         wget ${WKHTML_URL}${WKHTML_DEB} && sudo dpkg -i ${WKHTML_DEB} && rm -rf ${WKHTML_DEB}
-        export DJANGO_SUPERUSER_USERNAME=mobsf
-        export DJANGO_SUPERUSER_PASSWORD=mobsf
 
     - name: Install macOS Dependencies
       if: startsWith(matrix.os, 'macOS')
@@ -54,8 +52,6 @@ jobs:
       if: startsWith(matrix.os, 'windows')
       run: |
         choco install wkhtmltopdf
-        set DJANGO_SUPERUSER_USERNAME=mobsf
-        set DJANGO_SUPERUSER_PASSWORD=mobsf
 
     - name: Install Python dependencies
       run: |
@@ -66,7 +62,6 @@ jobs:
         poetry run python manage.py makemigrations
         poetry run python manage.py makemigrations StaticAnalyzer
         poetry run python manage.py migrate
-        poetry run python manage.py createsuperuser --noinput --email ""
         poetry run python manage.py create_roles
 
     - name: Unit Tests on Ubuntu, macOS and Windows
