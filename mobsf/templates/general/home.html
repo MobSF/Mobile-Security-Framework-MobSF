@@ -90,7 +90,6 @@
     </div>
 
     <script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
-    <!-- Bootstrap 4 -->
     <script src="{% static "adminlte/plugins/bootstrap/bootstrap.bundle.min.js" %}"></script>
       <script>
             let warning = "This is a demo MobSF instance. Anything uploaded here will be publicly available. Do you want to continue?";
@@ -196,10 +195,10 @@
                 _("status").innerText = Math.round(percent) + "% Uploaded...";
             }
             function completeHandler(event) {
-                if    (event.currentTarget.status === 403){
+                if(event.currentTarget.status === 403){
                     _("status").innerText = "You do not have permission to upload!";
                     return;
-                } else{
+                } else {
                     var json = JSON.parse(event.target.responseText);
                     responseHandler(json);
                 }
@@ -239,7 +238,7 @@
                     return;
                 }
                 _("progressBar").style.visibility = "visible";
-                var url = '/upload/'
+                var url = '{% url "upload" %}'
                 var xhr = new XMLHttpRequest()
                 xhr.open('POST', url, true)
                 xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')

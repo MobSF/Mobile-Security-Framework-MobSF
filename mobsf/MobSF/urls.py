@@ -171,7 +171,7 @@ if settings.API_ONLY == '0':
     urlpatterns.extend([
         # General
         re_path(r'^$', home.index, name='home'),
-        re_path(r'^upload/$', home.Upload.as_view),
+        re_path(r'^upload/$', home.Upload.as_view, name='upload'),
         re_path(r'^download/', home.download, name='download'),
         re_path(r'^download_scan/', home.download_apk, name='download_scan'),
         re_path(r'^generate_downloads/$',

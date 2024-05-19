@@ -29,7 +29,8 @@ sidebar-collapse
                                 <table class="table table-responsive-md">
                                     <thead>
                                         <tr>
-                                            <th><strong>User</strong></th>
+                                            <th><strong>#</strong></th>
+                                            <th><strong>Username</strong></th>
                                             <th><strong>Email</strong></th>
                                             <th><strong>Role</strong></th>
                                             <th><strong>Manage</strong></th>
@@ -39,12 +40,11 @@ sidebar-collapse
                                         {% for user in users %}
                                                 <tr>
                                                     <td>
-                                                            <div class="profile-photo">
-                                                                <img src="https://www.gravatar.com/avatar/{{ user.email | md5}}" width="30" class="img-fluid rounded-circle" alt="">
-                                                                <p>{{user.username}}</p>
-                                                            </div>
-                                                       
+                                                        <div class="profile-photo">
+                                                            <img src="https://www.gravatar.com/avatar/{{ user.email | md5}}" width="30" class="img-fluid rounded-circle" alt="">
+                                                        </div>
                                                      </td>
+                                                    <td>{{user.username}}</td>
                                                     <td>{{user.email}}</td>
                                                     <td> {% if user.is_staff %}Admin{% else %} {{user.groups.all.0}}  {% endif %}</td>
                                                     <td> {% if not user.is_staff %}
