@@ -54,7 +54,7 @@ USERNAME_REGEX = re.compile(r'^\w[\w\-\@\.]{1,35}$')
 
 class Color(object):
     GREEN = '\033[92m'
-    ORANGE = '\033[33m'
+    GREY = '\033[0;37m'
     RED = '\033[91m'
     BOLD = '\033[1m'
     END = '\033[0m'
@@ -110,7 +110,8 @@ def print_version():
         print('REST API Key: ' + api_key())
         print('Default Credentials: mobsf/mobsf')
     else:
-        logger.info('\033[1m\033[34mMobile Security Framework %s\033[0m', ver)
+        logger.info(
+            '%sMobile Security Framework %s%s', Color.GREY, ver, Color.END)
         print(f'REST API Key: {Color.BOLD}{api_key()}{Color.END}')
         print(f'Default Credentials: {Color.BOLD}mobsf/mobsf{Color.END}')
     os = platform.system()

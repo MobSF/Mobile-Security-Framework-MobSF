@@ -143,4 +143,4 @@ def get_mobsf_home(use_home, base_dir):
 
 
 def get_mobsf_version():
-    return BANNER, VERSION, f'v{VERSION} Beta'
+    return BANNER, VERSION, f'v{VERSION}'
