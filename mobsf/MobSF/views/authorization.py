@@ -1,6 +1,7 @@
 """User management and authorization."""
 from itertools import chain
 
+from django.contrib.auth.models import User
 from django.contrib.auth.models import Group, Permission
 from django.shortcuts import (
     redirect,
@@ -10,12 +11,18 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 from django.template.defaulttags import register
 from django.conf import settings
 
 from mobsf.MobSF.forms import RegisterForm
-from mobsf.MobSF.utils import get_md5
-
+from mobsf.MobSF.utils import (
+    USERNAME_REGEX,
+    get_md5,
+)
+from mobsf.DynamicAnalyzer.views.common.shared import (
+    send_response,
+)
 
 register.filter('md5', get_md5)
 PERM_CAN_SCAN = 'can_scan'
@@ -71,6 +78,10 @@ def create_user(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             role = request.POST.get('role')
+            username = request.POST.get('username')
+            if not USERNAME_REGEX.match(username):
+                messages.error(request, 'Invalid Username')
+                return redirect('create_user')
             user = form.save()
             user.is_staff = False
             if role == 'maintainer':
@@ -85,6 +96,7 @@ def create_user(request):
             messages.error(
                 request,
                 'Please correct the error below.')
+            return redirect('create_user')
     else:
         form = RegisterForm()
     context = {
@@ -93,3 +105,29 @@ def create_user(request):
         'form': form,
     }
     return render(request, 'auth/register.html', context)
+
+
+@login_required
+@staff_member_required
+@require_http_methods(['POST'])
+def delete_user(request):
+    data = {'deleted': 'Failed to delete user'}
+    try:
+        username = request.POST.get('username')
+        if not USERNAME_REGEX.match(username):
+            data = {'deleted': 'Invalid Username'}
+            return send_response(data)
+        u = User.objects.get(username=username)
+        if u.is_staff:
+            data = {'deleted': 'Cannot delete staff users'}
+            return send_response(data)
+        u.groups.clear()
+        u.delete()
+        data = {'deleted': 'yes'}
+        return send_response(data)
+    except User.DoesNotExist:
+        data = {'deleted': 'User does not exist'}
+        return send_response(data)
+    except Exception as e:
+        data = {'deleted': e.message}
+    return send_response(data)

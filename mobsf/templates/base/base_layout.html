@@ -50,7 +50,7 @@
         <li class="nav-item dropdown">
           <a id="dropdownSubMenu1" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle"><i class="fa fa-user-circle" aria-hidden="true"></i></a>
           <ul aria-labelledby="dropdownSubMenu1" class="dropdown-menu border-0 shadow" style="left: 0px; right: inherit;">
-          <li><a href="#" class="dropdown-item"> <small>{{ request.user.username }} <span class="badge badge-primary">{{ request.user.groups.all.0 }}</span></small></a></li>
+          <li><a href="#" class="dropdown-item"> <small>{{ request.user.username }} <span class="badge badge-primary"> {% if user.is_staff %} Admin {% else %}{{ request.user.groups.all.0 }} {% endif %}</span></small></a></li>
           <li><a href="{% url 'change_password' %}" class="dropdown-item"><i class="fa fa-asterisk" aria-hidden="true"></i> Change Password </a></li>
           {% if user.is_staff %}<li><a href="{% url 'users' %}" class="dropdown-item"><i class="fa fa-users" aria-hidden="true"></i> User Management </a></li>{% endif %}
           <li><a href="{% url 'logout' %}" class="dropdown-item"><i class="fa fa-power-off" aria-hidden="true"></i> Logout </a></li>

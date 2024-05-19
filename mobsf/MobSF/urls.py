@@ -70,6 +70,9 @@ urlpatterns = [
     re_path(r'^create_user/$',
             authorization.create_user,
             name='create_user'),
+    re_path(r'^delete_user/$',
+            authorization.delete_user,
+            name='delete_user'),
     # REST API
     # Static Analysis
     re_path(r'^api/v1/upload$', api_sz.api_upload),

@@ -3,6 +3,9 @@
 {% block sidebar_option %}
 sidebar-collapse
 {% endblock %}
+{% block extra_css %}
+<link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
+{% endblock %}
 {% block content %}
 <div class="content-wrapper">
    <div class="content-header">
@@ -44,7 +47,9 @@ sidebar-collapse
                                                      </td>
                                                     <td>{{user.email}}</td>
                                                     <td> {% if user.is_staff %}Admin{% else %} {{user.groups.all.0}}  {% endif %}</td>
-                                                    <td> {% if not user.is_staff %}Delete{% endif %}</td>
+                                                    <td> {% if not user.is_staff %}
+                                                      <a class="btn btn-danger btn-sm" id="{{ user.username }}" onclick="delete_user(this)" href="#"><i class="fa fa-trash"></i> Delete </a>
+                                                      {% endif %}</td>
                                                 </tr>
                                         {% endfor %}
                                     </tbody>
@@ -61,4 +66,59 @@ sidebar-collapse
       </div>
    </div>
 </div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
+<script>
+    function delete_user(item){
+      Swal.fire({
+      title: 'Are you sure?',
+      text: "This will permanently remove the user from MobSF",
+      type: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#2da532',
+    }).then((result) => {
+        if (result.value) {
+            $.ajax({
+                    url: '{% url "delete_user" %}',
+                        type : 'POST',
+                    dataType: 'json',
+                        data : {
+                                csrfmiddlewaretoken: '{{ csrf_token }}',
+                                username: item.id,
+                                },
+                            success : function(json) {
+                                if (json.deleted==='yes'){
+                                    Swal.fire(
+                                        'Deleted!',
+                                        'The user is deleted!',
+                                        'success'
+                                    ).then(function () {
+                                        location.reload();
+                                    })
+                                }
+                                else {
+                                    Swal.fire(
+                                    'Delete Failed',
+                                    'Cannot delete the user',
+                                    'error'
+                                    )
+                                }
+                            },
+                            error : function(xhr,errmsg,err) {
+                                Swal.fire(
+                                    'Delete Failed',
+                                    errmsg,
+                                    'error'
+                                    )
+                            }
+                });
+               
+        }
+        });
+}
+</script>
 {% endblock %}

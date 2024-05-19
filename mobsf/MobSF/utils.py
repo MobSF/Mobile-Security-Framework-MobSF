@@ -49,6 +49,7 @@ URL_REGEX = re.compile(
     ),
     re.UNICODE)
 EMAIL_REGEX = re.compile(r'[\w+.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
+USERNAME_REGEX = re.compile(r'[\w+.-]{1,50}')
 
 
 class Color(object):
