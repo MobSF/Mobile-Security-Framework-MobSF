@@ -1,22 +1,24 @@
 """User Login and Logout."""
+from inspect import signature
+
 from django.shortcuts import (
     redirect,
     render,
 )
 from django.contrib.auth import (
+    login,
     logout,
+    update_session_auth_hash,
+)
+from django.contrib.auth.forms import (
+    AuthenticationForm,
+    PasswordChangeForm,
 )
 from django.conf import settings
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import login
-from django.contrib.auth.decorators import login_required as lg
 from django.contrib import messages
-from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.decorators import login_required as lg
 
 from brake.decorators import ratelimit
-
-from inspect import signature
 
 
 def login_required(func):
@@ -42,6 +44,8 @@ def login_required(func):
            block=True)
 def login_view(request):
     """Login Controller."""
+    if settings.DISABLE_AUTHENTICATION == '1':
+        return redirect('/')
     nextp = request.GET.get('next', '')
     redirect_url = nextp if nextp.startswith('/') else '/'
     if request.user.is_authenticated:
@@ -71,6 +75,8 @@ def logout_view(request):
 
 @login_required
 def change_password(request):
+    if settings.DISABLE_AUTHENTICATION == '1':
+        return redirect('/')
     if request.method == 'POST':
         form = PasswordChangeForm(request.user, request.POST)
         if form.is_valid():

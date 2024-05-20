@@ -164,6 +164,7 @@ DATABASES = {
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 DEBUG = False
 DJANGO_LOG_LEVEL = DEBUG
+TEMPLATE_DEBUG = DEBUG
 ALLOWED_HOSTS = ['127.0.0.1', 'mobsf', '*']
 # Application definition
 INSTALLED_APPS = (
@@ -212,7 +213,7 @@ TEMPLATES = [
             ],
         'OPTIONS':
             {
-                'debug': True,
+                'debug': TEMPLATE_DEBUG,
                 'context_processors': [
                     'django.template.context_processors.debug',
                     'django.template.context_processors.request',

@@ -1,6 +1,4 @@
-from django.urls import (
-    re_path,
-)
+from django.urls import re_path
 
 from mobsf.DynamicAnalyzer.views.common import (
     device,
@@ -53,6 +51,7 @@ from mobsf.StaticAnalyzer.views.ios import view_source as io_view_source
 from . import settings
 
 bundle_id_regex = r'(?P<bundle_id>([a-zA-Z]{1}[\w.-]{1,255}))$'
+checksum_regex = r'(?P<checksum>[0-9a-f]{32})'
 urlpatterns = [
     re_path(r'^login/$',
             authentication.login_view,
@@ -190,30 +189,30 @@ if settings.API_ONLY == '0':
 
         # Static Analysis
         # Android
-        re_path(r'^static_analyzer/(?P<checksum>[0-9a-f]{32})/$',
+        re_path(fr'^static_analyzer/{checksum_regex}/$',
                 android_sa.static_analyzer,
                 name='static_analyzer'),
         # Remove this is version 4/5
         re_path(r'^source_code/$', source_tree.run, name='tree_view'),
         re_path(r'^view_file/$', view_source.run, name='view_source'),
         re_path(r'^find/$', find.run, name='find_files'),
-        re_path(r'^manifest_view/(?P<checksum>[0-9a-f]{32})/$',
+        re_path(fr'^manifest_view/{checksum_regex}/$',
                 manifest_view.run,
                 name='manifest_view'),
         # IOS
-        re_path(r'^static_analyzer_ios/(?P<checksum>[0-9a-f]{32})/$',
+        re_path(fr'^static_analyzer_ios/{checksum_regex}/$',
                 ios_sa.static_analyzer_ios,
                 name='static_analyzer_ios'),
         re_path(r'^view_file_ios/$',
                 io_view_source.run,
                 name='view_file_ios'),
         # Windows
-        re_path(r'^static_analyzer_windows/(?P<checksum>[0-9a-f]{32})/$',
+        re_path(fr'^static_analyzer_windows/{checksum_regex}/$',
                 windows.staticanalyzer_windows,
                 name='static_analyzer_windows'),
         # Shared
-        re_path(r'^pdf/(?P<checksum>[0-9a-f]{32})/$', pdf.pdf, name='pdf'),
-        re_path(r'^appsec_dashboard/(?P<checksum>[0-9a-f]{32})/$',
+        re_path(fr'^pdf/{checksum_regex}/$', pdf.pdf, name='pdf'),
+        re_path(fr'^appsec_dashboard/{checksum_regex}/$',
                 appsec.appsec_dashboard,
                 name='appsec_dashboard'),
         # Suppression
@@ -233,21 +232,21 @@ if settings.API_ONLY == '0':
         re_path(r'^compare/(?P<hash1>[0-9a-f]{32})/(?P<hash2>[0-9a-f]{32})/$',
                 shared_func.compare_apps),
         # Relative Shared & Dynamic Library scan
-        re_path(r'^scan_library/(?P<checksum>[0-9a-f]{32})$',
+        re_path(fr'^scan_library/{checksum_regex}$',
                 shared_func.scan_library,
                 name='scan_library'),
         # Dynamic Analysis
         re_path(r'^android/dynamic_analysis/$',
                 dz.android_dynamic_analysis,
                 name='dynamic_android'),
-        re_path(r'^android_dynamic/(?P<checksum>[0-9a-f]{32})$',
+        re_path(fr'^android_dynamic/{checksum_regex}$',
                 dz.dynamic_analyzer,
                 name='dynamic_analyzer'),
         re_path(r'^httptools$',
                 dz.httptools_start,
                 name='httptools'),
         re_path(r'^logcat/$', dz.logcat),
-        re_path(r'^static_scan/(?P<checksum>[0-9a-f]{32})$',
+        re_path(fr'^static_scan/{checksum_regex}$',
                 dz.trigger_static_analysis,
                 name='static_scan'),
         # Android Operations
@@ -284,7 +283,7 @@ if settings.API_ONLY == '0':
                 name='frida_logs'),
         re_path(r'^get_dependencies/$', tests_frida.get_runtime_dependencies),
         # Report
-        re_path(r'^dynamic_report/(?P<checksum>[0-9a-f]{32})$',
+        re_path(fr'^dynamic_report/{checksum_regex}$',
                 report.view_report,
                 name='dynamic_report'),
         # Shared
@@ -328,7 +327,7 @@ if settings.API_ONLY == '0':
         re_path(r'^ios/list_apps/$',
                 instance.list_apps,
                 name='list_apps'),
-        re_path(r'^ios/setup_environment/(?P<checksum>[0-9a-f]{32})$',
+        re_path(fr'^ios/setup_environment/{checksum_regex}$',
                 instance.setup_environment,
                 name='setup_environment'),
         re_path(r'^ios/dynamic_analyzer/$',
@@ -367,13 +366,13 @@ if settings.API_ONLY == '0':
         re_path(r'^ios/system_logs/$',
                 instance.system_logs,
                 name='ios_system_logs'),
-        re_path(r'^ios/download_data/' + bundle_id_regex,
+        re_path(fr'^ios/download_data/{bundle_id_regex}',
                 instance.download_data,
                 name='ios_download_data'),
         re_path(r'^ios/instrument/$',
                 ios_tests_frida.ios_instrument,
                 name='ios_instrument'),
-        re_path(r'^ios/view_report/' + bundle_id_regex,
+        re_path(fr'^ios/view_report/{bundle_id_regex}',
                 ios_view_report.ios_view_report,
                 name='ios_view_report'),
 

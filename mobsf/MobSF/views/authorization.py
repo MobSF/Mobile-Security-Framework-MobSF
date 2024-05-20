@@ -4,8 +4,11 @@ from inspect import signature
 from functools import wraps
 from enum import Enum
 
-from django.contrib.auth.models import User
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import (
+    Group,
+    Permission,
+    User,
+)
 from django.shortcuts import (
     redirect,
     render,
@@ -13,8 +16,10 @@ from django.shortcuts import (
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.decorators import permission_required as pr
+from django.contrib.auth.decorators import (
+    login_required,
+    permission_required as pr,
+)
 from django.views.decorators.http import require_http_methods
 from django.template.defaulttags import register
 from django.conf import settings
@@ -40,11 +45,12 @@ class Permissions(Enum):
     DELETE = f'StaticAnalyzer.{PERM_CAN_DELETE}'
 
 
-DJANGO_PERMISSIONS = {
-    'SCAN': (PERM_CAN_SCAN, 'Scan Files'),
-    'SUPPRESS': (PERM_CAN_SUPPRESS, 'Suppress Findings'),
-    'DELETE': (PERM_CAN_DELETE, 'Delete Scans'),
-}
+class DjangoPermissions(Enum):
+    SCAN = (PERM_CAN_SCAN, 'Scan Files')
+    SUPPRESS = (PERM_CAN_SUPPRESS, 'Suppress Findings')
+    DELETE = (PERM_CAN_DELETE, 'Delete Scans')
+
+
 MAINTAINER_GROUP = 'Maintainer'
 VIEWER_GROUP = 'Viewer'
 
@@ -98,6 +104,8 @@ def create_authorization_roles():
 @staff_member_required
 def users(request):
     """Show all users."""
+    if settings.DISABLE_AUTHENTICATION == '1':
+        return redirect('/')
     users = get_user_model().objects.all()
     context = {
         'title': 'All Users',
@@ -110,6 +118,8 @@ def users(request):
 @login_required
 @staff_member_required
 def create_user(request):
+    if settings.DISABLE_AUTHENTICATION == '1':
+        return redirect('/')
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
@@ -149,6 +159,8 @@ def create_user(request):
 @staff_member_required
 @require_http_methods(['POST'])
 def delete_user(request):
+    if settings.DISABLE_AUTHENTICATION == '1':
+        return redirect('/')
     data = {'deleted': 'Failed to delete user'}
     try:
         username = request.POST.get('username')
