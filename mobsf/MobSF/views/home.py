@@ -176,10 +176,13 @@ class Upload(object):
 def api_docs(request):
     """Api Docs Route."""
     key = '*******'
-    if (settings.DISABLE_AUTHENTICATION == '1'
-            or request.user.is_staff
-            or request.user.groups.filter(name=MAINTAINER_GROUP).exists()):
-        key = api_key()
+    try:
+        if (settings.DISABLE_AUTHENTICATION == '1'
+                or request.user.is_staff
+                or request.user.groups.filter(name=MAINTAINER_GROUP).exists()):
+            key = api_key()
+    except Exception:
+        logger.exception('[ERROR] Failed to get API key')
     context = {
         'title': 'API Docs',
         'api_key': key,

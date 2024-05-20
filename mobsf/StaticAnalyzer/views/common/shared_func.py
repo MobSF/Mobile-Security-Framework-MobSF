@@ -47,6 +47,10 @@ from mobsf.StaticAnalyzer.views.common.entropy import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
+from mobsf.MobSF.views.authorization import (
+    Permissions,
+    permission_required,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -382,6 +386,7 @@ def get_symbols(symbols):
 
 
 @login_required
+@permission_required(Permissions.SCAN)
 def scan_library(request, checksum):
     """Scan a shared library or framework from path name."""
     try:

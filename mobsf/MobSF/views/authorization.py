@@ -3,6 +3,7 @@ from itertools import chain
 from inspect import signature
 from functools import wraps
 from enum import Enum
+import logging
 
 from django.contrib.auth.models import (
     Group,
@@ -33,6 +34,7 @@ from mobsf.DynamicAnalyzer.views.common.shared import (
     send_response,
 )
 
+logger = logging.getLogger(__name__)
 register.filter('md5', get_md5)
 PERM_CAN_SCAN = 'can_scan'
 PERM_CAN_SUPPRESS = 'can_suppress'
@@ -75,29 +77,36 @@ def permission_required(perm):
 
 def has_permission(request, permission, api):
     """Check if user has permission."""
-    if request.user.is_staff:
-        return True
-    if settings.DISABLE_AUTHENTICATION == '1' or api:
-        return True
-    if not request.user.has_perm(permission.value):
-        return False
-    return True
+    try:
+        if request.user.is_staff:
+            return True
+        if settings.DISABLE_AUTHENTICATION == '1' or api:
+            return True
+        if request.user.has_perm(permission.value):
+            return True
+    except Exception:
+        logger.exception('[ERROR] Failed to check permissions')
+    return False
 
 
 def create_authorization_roles():
     """Create Authorization Roles."""
-    maintainer, _created = Group.objects.get_or_create(name=MAINTAINER_GROUP)
-    Group.objects.get_or_create(name=VIEWER_GROUP)
+    try:
+        maintainer, _created = Group.objects.get_or_create(
+            name=MAINTAINER_GROUP)
+        Group.objects.get_or_create(name=VIEWER_GROUP)
 
-    scan_permissions = Permission.objects.filter(
-        codename=PERM_CAN_SCAN)
-    suppress_permissions = Permission.objects.filter(
-        codename=PERM_CAN_SUPPRESS)
-    delete_permissions = Permission.objects.filter(
-        codename=PERM_CAN_DELETE)
-    all_perms = list(chain(
-        scan_permissions, suppress_permissions, delete_permissions))
-    maintainer.permissions.set(all_perms)
+        scan_permissions = Permission.objects.filter(
+            codename=PERM_CAN_SCAN)
+        suppress_permissions = Permission.objects.filter(
+            codename=PERM_CAN_SUPPRESS)
+        delete_permissions = Permission.objects.filter(
+            codename=PERM_CAN_DELETE)
+        all_perms = list(chain(
+            scan_permissions, suppress_permissions, delete_permissions))
+        maintainer.permissions.set(all_perms)
+    except Exception:
+        logger.exception('[ERROR] Failed to create roles and permissions')
 
 
 @login_required
@@ -159,10 +168,10 @@ def create_user(request):
 @staff_member_required
 @require_http_methods(['POST'])
 def delete_user(request):
-    if settings.DISABLE_AUTHENTICATION == '1':
-        return redirect('/')
     data = {'deleted': 'Failed to delete user'}
     try:
+        if settings.DISABLE_AUTHENTICATION == '1':
+            return redirect('/')
         username = request.POST.get('username')
         if not username:
             data = {'deleted': 'No Username Provided'}

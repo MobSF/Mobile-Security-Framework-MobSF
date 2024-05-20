@@ -248,7 +248,7 @@
                 xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
                 xhr.upload.addEventListener("progress", progressHandler, false);
                 xhr.addEventListener("load", completeHandler, false);
-                xhr.addEventListener("error", errorHandler);
+                xhr.addEventListener("error", errorHandler, false);
                 xhr.addEventListener("abort", abortHandler, false);
                 var formdata = new FormData();
                 formdata.append("file", file);
