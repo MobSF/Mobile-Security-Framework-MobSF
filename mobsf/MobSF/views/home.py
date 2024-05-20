@@ -235,19 +235,25 @@ def not_found(request):
 def recent_scans(request):
     """Show Recent Scans Route."""
     entries = []
-    #
     page_number = request.GET.get('page', 1)
     page_size = request.GET.get('page_size', 10)
+    if not isinstance(page_number, int):
+        page_number = 1
+    if not isinstance(page_size, int):
+        page_size = 10
 
-    paginator = Paginator(RecentScansDB.objects.all().order_by('-TIMESTAMP').values(), page_size)
+    paginator = Paginator(
+        RecentScansDB.objects.all().order_by('-TIMESTAMP').values(), page_size)
     page_obj = paginator.get_page(page_number)
-    md5_list = [i["MD5"] for i in page_obj]
-    #
-    android = StaticAnalyzerAndroid.objects.filter(MD5__in=md5_list).only(
-        "PACKAGE_NAME", "VERSION_NAME", "FILE_NAME", "MD5")
-    ios = StaticAnalyzerIOS.objects.filter(MD5__in=md5_list).only("FILE_NAME", "MD5")
-    updir = Path(settings.UPLD_DIR)
+    md5_list = [i['MD5'] for i in page_obj]
 
+    android = StaticAnalyzerAndroid.objects.filter(
+        MD5__in=md5_list).only(
+            'PACKAGE_NAME', 'VERSION_NAME', 'FILE_NAME', 'MD5')
+    ios = StaticAnalyzerIOS.objects.filter(
+        MD5__in=md5_list).only('FILE_NAME', 'MD5')
+
+    updir = Path(settings.UPLD_DIR)
     icon_mapping = {}
     package_mapping = {}
     for item in android:
@@ -275,7 +281,7 @@ def recent_scans(request):
         'title': 'Recent Scans',
         'entries': entries,
         'version': settings.MOBSF_VER,
-        'page_obj': page_obj
+        'page_obj': page_obj,
     }
     template = 'general/recent.html'
     return render(request, template, context)
