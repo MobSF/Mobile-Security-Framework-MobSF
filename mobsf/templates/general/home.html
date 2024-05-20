@@ -18,13 +18,13 @@
    </head>
    <body class="text-center">
 
-    <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
-      <header class="masthead mb-auto">
-        <div class="inner">
-        <img class="masthead-brand" src="{% static "img/mobsf_logo.png" %}" width="15%" height="15%" alt="">
-          <nav class="nav nav-masthead justify-content-center">
+    <div class="d-flex h-100 p-3 mx-auto flex-column">  
+        <nav class="nav nav-masthead justify-content-center">
             <a class="nav-link active" href="{% url 'recent' %}">SCANS</a>
             <a class="nav-link" href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>
+            <div class="pad">
+                <img src="{% static "img/mobsf_logo.png" %}" alt="MobSF Logo" height="30" width="90" />
+            </div>  
             <a class="nav-link" href="{% url 'api_docs' %}">API</a>
             <a class="nav-link" href="{% url 'about' %}">ABOUT</a>
             {% if user.is_authenticated %}
@@ -43,43 +43,46 @@
                     <input name="md5" type="text" class="form-control form-control-sm" placeholder="Search MD5">
                 </form>
             </a>
-          </nav>
-        </div>
-      </header>
+        </nav>
 
-      <main role="main" class="inner cover">
-        <div class="inner cover">
-            <div style="visibility:hidden; opacity:0" id="drop">
-               <div id="textnode">Drop anywhere!</div>
+        <header class="masthead mb-auto">
+            <div class="inner">
             </div>
-            </br>
-            <form id="upload_form" enctype="multipart/form-data" method="post">
-               {% csrf_token %}
-               <div class="fileUpload btn btn-lg btn-secondary" id="but">
-                  <input type="file" name="file" id="uploadFile" placeholder="Choose File" multiple>
-                  <span class="fas fa-cloud-upload-alt"></span>
-                  Upload &amp; Analyze
-               </div>
-               <br />
-               <small><i>Drag &amp; Drop anywhere!</i></small>
-               <p></p>
-               <h5 class="lead" id="status"></h5>
-               <progress id="progressBar" value="0" max="100" style="width:300px;visibility:hidden;" ></progress>
-            </form>
-         </div>
-      </main>
-      <footer class="mastfoot mt-auto">
-        <input type="download" id="package" class="form-control form-control-sm" placeholder="Download & Scan Package"/>
-        <p></p>
-        <div class="inner">
-          <h6> <a href="{% url 'recent' %}">RECENT SCANS</a>  |  <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>  |  <a href="{% url 'api_docs' %}">API</a>   |  <a href="{% url 'donate' %}">DONATE ♥</a> |  <a target="_blank"
-            href="https://mobsf.github.io/docs/#/">DOCS</a>  | <a href="{% url 'about' %}">ABOUT</a></h6>
-        </br>
-        <p>&copy; {% now "Y" %}  Mobile Security Framework - MobSF {{ version }}</p>
-     
-        </div>
-        <div id="snackbar">Analysis started! Please wait to be redirected or check recent scans after sometime.</div>
-      </footer>
+        </header>
+
+        <main role="main" class="inner cover">
+            <div class="inner cover">
+                <div style="visibility:hidden; opacity:0" id="drop">
+                <div id="textnode">Drop anywhere!</div>
+                </div>
+                </br>
+                <form id="upload_form" enctype="multipart/form-data" method="post">
+                {% csrf_token %}
+                <div class="fileUpload btn btn-lg btn-secondary" id="but">
+                    <input type="file" name="file" id="uploadFile" placeholder="Choose File" multiple>
+                    <span class="fas fa-cloud-upload-alt"></span>
+                    Upload &amp; Analyze
+                </div>
+                <br />
+                <small><i>Drag &amp; Drop anywhere!</i></small>
+                <p></p>
+                <h5 class="lead" id="status"></h5>
+                <progress id="progressBar" value="0" max="100" style="width:300px;visibility:hidden;" ></progress>
+                </form>
+            </div>
+        </main>
+
+        <footer class="mastfoot mt-auto">
+            <input type="download" id="package" class="form-control form-control-sm" placeholder="Download & Scan Package"/>
+            <p></p>
+            <div class="inner">
+                <h6> <a href="{% url 'recent' %}">RECENT SCANS</a>  |  <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>  |  <a href="{% url 'api_docs' %}">API</a>   |  <a href="{% url 'donate' %}">DONATE ♥</a> |  <a target="_blank"
+                    href="https://mobsf.github.io/docs/#/">DOCS</a>  | <a href="{% url 'about' %}">ABOUT</a></h6>
+                </br>
+                <p>&copy; {% now "Y" %}  Mobile Security Framework - MobSF {{ version }}</p>
+            </div>
+            <div id="snackbar">Analysis started! Please wait to be redirected or check recent scans after sometime.</div>
+        </footer>
     </div>
 
     <!--Loading Ring-->
