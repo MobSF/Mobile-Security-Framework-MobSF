@@ -65,7 +65,7 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 from mobsf.MobSF.views.authorization import (
-    PERMISSIONS,
+    Permissions,
     has_permission,
 )
 
@@ -134,7 +134,7 @@ def static_analyzer_ios(request, checksum, api=False):
             if ipa_db.exists() and not rescan:
                 context = get_context_from_db_entry(ipa_db)
             else:
-                if not has_permission(request, PERMISSIONS['SCAN'], api):
+                if not has_permission(request, Permissions.SCAN, api):
                     return print_n_send_error_response(
                         request,
                         'Permission Denied',
@@ -241,7 +241,7 @@ def static_analyzer_ios(request, checksum, api=False):
             if ios_zip_db.exists() and not rescan:
                 context = get_context_from_db_entry(ios_zip_db)
             else:
-                if not has_permission(request, PERMISSIONS['SCAN'], api):
+                if not has_permission(request, Permissions.SCAN, api):
                     return print_n_send_error_response(
                         request,
                         'Permission Denied',

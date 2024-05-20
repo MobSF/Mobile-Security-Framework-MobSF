@@ -31,7 +31,7 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 from mobsf.MobSF.views.authorization import (
-    PERMISSIONS,
+    Permissions,
     permission_required,
 )
 
@@ -66,7 +66,7 @@ def get_package(checksum):
 
 @login_required
 @require_http_methods(['POST'])
-@permission_required(PERMISSIONS['SUPPRESS'])
+@permission_required(Permissions.SUPPRESS)
 def suppress_by_rule_id(request, api=False):
     """Suppress finding by rule id."""
     data = {
@@ -113,7 +113,7 @@ def suppress_by_rule_id(request, api=False):
 
 @login_required
 @require_http_methods(['POST'])
-@permission_required(PERMISSIONS['SUPPRESS'])
+@permission_required(Permissions.SUPPRESS)
 def suppress_by_files(request, api=False):
     """Suppress finding by files."""
     data = {
@@ -212,7 +212,7 @@ def list_suppressions(request, api=False):
 
 @login_required
 @require_http_methods(['POST'])
-@permission_required(PERMISSIONS['DELETE'])
+@permission_required(Permissions.DELETE)
 def delete_suppression(request, api=False):
     """Delete suppression rule."""
     data = {

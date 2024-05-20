@@ -51,7 +51,7 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 from mobsf.MobSF.views.authorization import (
-    PERMISSIONS,
+    Permissions,
     permission_required,
 )
 
@@ -62,7 +62,7 @@ logger = logging.getLogger(__name__)
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def start_instance(request, api=False):
     """Start iOS VM instance."""
@@ -91,7 +91,7 @@ def start_instance(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def stop_instance(request, api=False):
     """Stop iOS VM instance."""
@@ -120,7 +120,7 @@ def stop_instance(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def unpause_instance(request, api=False):
     """Unpause iOS VM instance."""
@@ -149,7 +149,7 @@ def unpause_instance(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def reboot_instance(request, api=False):
     """Reboot iOS VM instance."""
@@ -178,7 +178,7 @@ def reboot_instance(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def destroy_instance(request, api=False):
     """Destroy iOS VM instance."""
@@ -207,7 +207,7 @@ def destroy_instance(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def list_apps(request, api=False):
     """List installed apps."""
@@ -270,7 +270,7 @@ def list_apps(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def get_supported_models(request, api=False):
     """Get Supported iOS VM models."""
@@ -290,7 +290,7 @@ def get_supported_models(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def get_supported_os(request, api=False):
     """Get Supported iOS OS versions."""
@@ -311,7 +311,7 @@ def get_supported_os(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def create_vm_instance(request, api=False):
     """Create and iOS VM in Corellium."""
@@ -405,7 +405,7 @@ def appsync_ipa_install(ssh_string):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def setup_environment(request, checksum, api=False):
     """Setup iOS Dynamic Analyzer Environment."""
@@ -461,7 +461,7 @@ def setup_environment(request, checksum, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def run_app(request, api=False):
     """Run an App."""
@@ -491,7 +491,7 @@ def run_app(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def stop_app(request, api=False):
     """Stop an App."""
@@ -521,7 +521,7 @@ def stop_app(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def remove_app(request, api=False):
     """Remove an app from the device."""
@@ -550,7 +550,7 @@ def remove_app(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def take_screenshot(request, api=False):
     """Take a Screenshot."""
@@ -588,7 +588,7 @@ def take_screenshot(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def get_container_path(request, api=False):
     """Get App Container path."""
@@ -616,7 +616,7 @@ def get_container_path(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def network_capture(request, api=False):
     """Enable/Disable Network Capture."""
@@ -653,7 +653,7 @@ def network_capture(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['GET', 'POST'])
 def live_pcap_download(request, api=False):
     """Download Network Capture."""
@@ -690,7 +690,7 @@ SSH_TARGET = None
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def ssh_execute(request, api=False):
     """Execute commands in VM over SSH."""
@@ -749,7 +749,7 @@ def download_app_data(ci, checksum):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def download_data(request, bundle_id, api=False):
     """Download Application Data from Device."""
@@ -801,7 +801,7 @@ def download_data(request, bundle_id, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def touch(request, api=False):
     """Sending Touch/Swipe/Text Events."""
@@ -839,7 +839,7 @@ def touch(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST', 'GET'])
 def system_logs(request, api=False):
     """Show system logs."""
@@ -879,7 +879,7 @@ def system_logs(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def upload_file(request, api=False):
     """Upload file to device."""
@@ -910,7 +910,7 @@ def upload_file(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def download_file(request, api=False):
     """Download file from device."""

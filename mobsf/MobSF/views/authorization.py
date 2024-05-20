@@ -2,6 +2,7 @@
 from itertools import chain
 from inspect import signature
 from functools import wraps
+from enum import Enum
 
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group, Permission
@@ -31,11 +32,14 @@ register.filter('md5', get_md5)
 PERM_CAN_SCAN = 'can_scan'
 PERM_CAN_SUPPRESS = 'can_suppress'
 PERM_CAN_DELETE = 'can_delete'
-PERMISSIONS = {
-    'SCAN': f'StaticAnalyzer.{PERM_CAN_SCAN}',
-    'SUPPRESS': f'StaticAnalyzer.{PERM_CAN_SUPPRESS}',
-    'DELETE': f'StaticAnalyzer.{PERM_CAN_DELETE}',
-}
+
+
+class Permissions(Enum):
+    SCAN = f'StaticAnalyzer.{PERM_CAN_SCAN}'
+    SUPPRESS = f'StaticAnalyzer.{PERM_CAN_SUPPRESS}'
+    DELETE = f'StaticAnalyzer.{PERM_CAN_DELETE}'
+
+
 DJANGO_PERMISSIONS = {
     'SCAN': (PERM_CAN_SCAN, 'Scan Files'),
     'SUPPRESS': (PERM_CAN_SUPPRESS, 'Suppress Findings'),
@@ -57,7 +61,7 @@ def permission_required(perm):
                 return view(request, *args, **kwargs)
             # Enforce authorization for all web function calls
             return pr(
-                perm,
+                perm.value,
                 raise_exception=True)(view)(request, *args, **kwargs)
         return wrapper
     return decorator
@@ -69,7 +73,7 @@ def has_permission(request, permission, api):
         return True
     if settings.DISABLE_AUTHENTICATION == '1' or api:
         return True
-    if not request.user.has_perm(permission):
+    if not request.user.has_perm(permission.value):
         return False
     return True
 

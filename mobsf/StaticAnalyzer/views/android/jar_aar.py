@@ -54,7 +54,7 @@ from mobsf.StaticAnalyzer.views.android.db_interaction import (
 )
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import MalwareDomainCheck
 from mobsf.MobSF.views.authorization import (
-    PERMISSIONS,
+    Permissions,
     has_permission,
 )
 
@@ -69,7 +69,7 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
     if db_entry.exists() and not rescan:
         context = get_context_from_db_entry(db_entry)
     else:
-        if not has_permission(request, PERMISSIONS['SCAN'], api):
+        if not has_permission(request, Permissions.SCAN, api):
             return print_n_send_error_response(
                 request,
                 'Permission Denied',

@@ -48,7 +48,7 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 from mobsf.MobSF.views.authorization import (
-    PERMISSIONS,
+    Permissions,
     has_permission,
 )
 
@@ -113,7 +113,7 @@ def staticanalyzer_windows(request, checksum, api=False):
                 ' Fetching data from the DB...')
             context = get_context_from_db_entry(db_entry)
         else:
-            if not has_permission(request, PERMISSIONS['SCAN'], api):
+            if not has_permission(request, Permissions.SCAN, api):
                 return print_n_send_error_response(
                     request,
                     'Permission Denied',

@@ -33,7 +33,7 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 from mobsf.MobSF.views.authorization import (
-    PERMISSIONS,
+    Permissions,
     permission_required,
 )
 
@@ -61,7 +61,7 @@ def get_package_name(checksum):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def mobsfy(request, api=False):
     """Configure Instance for Dynamic Analysis."""
@@ -97,7 +97,7 @@ def mobsfy(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def execute_adb(request, api=False):
     """Execute ADB Commands."""
@@ -127,7 +127,7 @@ def execute_adb(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def get_component(request):
     """Get Android Component."""
@@ -149,7 +149,7 @@ def get_component(request):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def run_apk(request):
     """Run Android APK."""
@@ -173,7 +173,7 @@ def run_apk(request):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def take_screenshot(request, api=False):
     """Take Screenshot."""
@@ -204,7 +204,7 @@ def take_screenshot(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def screen_cast(request):
     """ScreenCast."""
@@ -225,7 +225,7 @@ def screen_cast(request):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def touch(request):
     """Sending Touch/Swipe/Text Events."""
@@ -283,7 +283,7 @@ def touch(request):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def mobsf_ca(request, api=False):
     """Install and Remove MobSF Proxy RootCA."""
@@ -308,7 +308,7 @@ def mobsf_ca(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def global_proxy(request, api=False):
     """Set/unset global proxy."""

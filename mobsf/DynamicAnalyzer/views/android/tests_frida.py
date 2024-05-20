@@ -31,7 +31,7 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 from mobsf.MobSF.views.authorization import (
-    PERMISSIONS,
+    Permissions,
     permission_required,
 )
 
@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def get_runtime_dependencies(request, api=False):
     """Get App runtime dependencies."""
@@ -66,7 +66,7 @@ def get_runtime_dependencies(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def instrument(request, api=False):
     """Instrument app with frida."""

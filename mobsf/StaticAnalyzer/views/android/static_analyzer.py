@@ -94,7 +94,7 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 from mobsf.MobSF.views.authorization import (
-    PERMISSIONS,
+    Permissions,
     has_permission,
 )
 
@@ -175,7 +175,7 @@ def static_analyzer(request, checksum, api=False):
             if db_entry.exists() and not rescan:
                 context = get_context_from_db_entry(db_entry)
             else:
-                if not has_permission(request, PERMISSIONS['SCAN'], api):
+                if not has_permission(request, Permissions.SCAN, api):
                     return print_n_send_error_response(
                         request,
                         'Permission Denied',
@@ -375,7 +375,7 @@ def static_analyzer(request, checksum, api=False):
                     app_dic['files'])
                 app_dic['zipped'] = pro_type
                 if valid and (pro_type in ['eclipse', 'studio']):
-                    if not has_permission(request, PERMISSIONS['SCAN'], api):
+                    if not has_permission(request, Permissions.SCAN, api):
                         return print_n_send_error_response(
                             request,
                             'Permission Denied',

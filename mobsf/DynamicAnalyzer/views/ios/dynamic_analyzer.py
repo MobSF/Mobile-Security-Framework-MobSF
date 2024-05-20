@@ -36,7 +36,7 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 from mobsf.MobSF.views.authorization import (
-    PERMISSIONS,
+    Permissions,
     permission_required,
 )
 
@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 def dynamic_analysis(request, api=False):
     """The iOS Dynamic Analysis Entry point."""
     try:
@@ -97,7 +97,7 @@ def dynamic_analysis(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 def dynamic_analyzer(request, api=False):
     """Dynamic Analyzer for in-device iOS apps."""
     try:

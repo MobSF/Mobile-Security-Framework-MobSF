@@ -39,7 +39,7 @@ from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
     MalwareDomainCheck,
 )
 from mobsf.MobSF.views.authorization import (
-    PERMISSIONS,
+    Permissions,
     has_permission,
 )
 
@@ -59,7 +59,7 @@ def dylib_analysis(request, app_dict, rescan, api):
     if ipa_db.exists() and not rescan:
         context = get_context_from_db_entry(ipa_db)
     else:
-        if not has_permission(request, PERMISSIONS['SCAN'], api):
+        if not has_permission(request, Permissions.SCAN, api):
             return print_n_send_error_response(
                 request,
                 'Permission Denied',

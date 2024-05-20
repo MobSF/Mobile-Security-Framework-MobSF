@@ -43,7 +43,7 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 from mobsf.MobSF.views.authorization import (
-    PERMISSIONS,
+    Permissions,
     permission_required,
 )
 
@@ -51,7 +51,7 @@ logger = logging.getLogger(__name__)
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 def android_dynamic_analysis(request, api=False):
     """Android Dynamic Analysis Entry point."""
     try:
@@ -114,7 +114,7 @@ def android_dynamic_analysis(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 def dynamic_analyzer(request, checksum, api=False):
     """Android Dynamic Analyzer Environment."""
     try:
@@ -232,7 +232,7 @@ def dynamic_analyzer(request, checksum, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 def httptools_start(request):
     """Start httprools UI."""
     logger.info('Starting httptools Web UI')
@@ -255,7 +255,7 @@ def httptools_start(request):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 def logcat(request, api=False):
     logger.info('Starting Logcat streaming')
     try:
@@ -300,7 +300,7 @@ def logcat(request, api=False):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 def trigger_static_analysis(request, checksum):
     """On device APK Static Analysis."""
     try:

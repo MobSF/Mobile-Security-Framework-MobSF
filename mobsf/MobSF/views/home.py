@@ -44,7 +44,7 @@ from mobsf.MobSF.views.authentication import (
 )
 from mobsf.MobSF.views.authorization import (
     MAINTAINER_GROUP,
-    PERMISSIONS,
+    Permissions,
     permission_required,
 )
 
@@ -80,7 +80,7 @@ class Upload(object):
 
     @staticmethod
     @login_required
-    @permission_required(PERMISSIONS['SCAN'])
+    @permission_required(Permissions.SCAN)
     def as_view(request):
         upload = Upload(request)
         return upload.upload_html()
@@ -289,7 +289,7 @@ def recent_scans(request):
 
 
 @login_required
-@permission_required(PERMISSIONS['SCAN'])
+@permission_required(Permissions.SCAN)
 def download_apk(request):
     """Download and APK by package name."""
     package = request.POST['package']
@@ -395,7 +395,7 @@ def generate_download(request):
 
 
 @login_required
-@permission_required(PERMISSIONS['DELETE'])
+@permission_required(Permissions.DELETE)
 def delete_scan(request, api=False):
     """Delete Scan from DB and remove the scan related files."""
     try:
