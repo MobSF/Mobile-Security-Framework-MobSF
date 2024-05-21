@@ -1,0 +1,107 @@
+{% extends "base/base_layout.html" %}
+{% load static %}
+{% block sidebar_option %}
+sidebar-collapse
+{% endblock %}
+{% block content %}
+<div class="content-wrapper">
+   <div class="content-header">
+   </div>
+   <div class="container-fluid">
+      <div class="row">
+         <div class="col-lg-12">
+            <div class="card">
+               <div class="card-body">
+                  <div class="h-100 d-flex align-items-center justify-content-center">
+                     <div class="login-box">
+                        <div class="login-logo">
+                           <a href="">Create a User</a>
+                        </div>
+                        <div class="card">
+                           <div class="card-body login-card-body">
+                              <form method="post">
+                                 {% csrf_token %}
+                                 {% if messages %}
+                                <ul class="messages">
+                                    {% for message in messages %}
+                                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+                                 {{ form.non_field_errors }}
+                                 <div class="input-group mb-3">
+                                    <input type="text" name="username" maxlength="150" autofocus="" required class="form-control" placeholder="Username"  aria-describedby="id_username_helptext" id="id_username">
+                                    <div class="input-group-append">
+                                       <div class="input-group-text">
+                                          <span class="fas fa-user"></span>
+                                       </div>
+                                    </div>
+                                 </div>
+                                 {% for err in form.username.errors %}
+                                 <small> {{ err }} </small><br>
+                                 {% endfor %}
+                                 <div class="input-group mb-3">
+                                    <input type="password" name="password1" class="form-control" placeholder="New Password" autocomplete="new-password" required id="id_password1">
+                                    <div class="input-group-append">
+                                       <div class="input-group-text">
+                                          <span class="fas fa-lock"></span>
+                                       </div>
+                                    </div>
+                                 </div>
+                                 {% for err in form.password1.errors %}
+                                 <small> {{ err }} </small><br>
+                                 {% endfor %}
+                                 <div class="input-group mb-3">
+                                    <input type="password" name="password2" class="form-control" placeholder="Confirm Password" autocomplete="new-password" required id="id_password2">
+                                    <div class="input-group-append">
+                                       <div class="input-group-text">
+                                          <span class="fas fa-lock"></span>
+                                       </div>
+                                    </div>
+                                 </div>
+                                 {% for err in form.password2.errors %}
+                                 <small> {{ err }} </small><br>
+                                 {% endfor %}
+                                 <div class="input-group mb-3">
+                                    <input type="email" name="email" maxlength="254" class="form-control" placeholder="Email" required id="id_email">
+                                    <div class="input-group-append">
+                                       <div class="input-group-text">
+                                          <span class="fa fa-envelope"></span>
+                                       </div>
+                                    </div>
+                                 </div>
+                                 {% for err in form.email.errors %}
+                                 <small> {{ err }} </small><br>
+                                 {% endfor %}
+                                 <div class="input-group mb-3">
+                                    <select name="role" class="form-control"  aria-describedby="id_role_helptext" id="id_role" required>
+                                       <option value="" disabled selected>Select Role</option>
+                                       <option value="viewer">Viewer</option>
+                                       <option value="maintainer">Maintainer</option>
+                                     </select>
+                                    <div class="input-group-append">
+                                       <div class="input-group-text">
+                                          <span class="fa fa-user-tie"></span>
+                                       </div>
+                                    </div>
+                                 </div>
+                                 {% for err in form.role.errors %}
+                                 <small> {{ err }} </small><br>
+                                 {% endfor %}
+                                 <div class="row">
+                                    <div class="col-6">
+                                       <button type="submit" class="btn btn-primary btn-block">Create User</button>
+                                    </div>
+                                 </div>
+                              </form>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
+{% endblock %}

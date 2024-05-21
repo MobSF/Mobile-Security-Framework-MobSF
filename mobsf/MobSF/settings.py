@@ -162,8 +162,9 @@ DATABASES = {
 """
 # ===============================================
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
-DEBUG = True
+DEBUG = False
 DJANGO_LOG_LEVEL = DEBUG
+TEMPLATE_DEBUG = DEBUG
 ALLOWED_HOSTS = ['127.0.0.1', 'mobsf', '*']
 # Application definition
 INSTALLED_APPS = (
@@ -191,6 +192,9 @@ MIDDLEWARE_CLASSES = (
 MIDDLEWARE = (
     'mobsf.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+
 )
 ROOT_URLCONF = 'mobsf.MobSF.urls'
 WSGI_APPLICATION = 'mobsf.MobSF.wsgi.application'
@@ -209,7 +213,13 @@ TEMPLATES = [
             ],
         'OPTIONS':
             {
-                'debug': True,
+                'debug': TEMPLATE_DEBUG,
+                'context_processors': [
+                    'django.template.context_processors.debug',
+                    'django.template.context_processors.request',
+                    'django.contrib.auth.context_processors.auth',
+                    'django.contrib.messages.context_processors.messages',
+                ],
             },
     },
 ]
@@ -220,6 +230,29 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 # 256MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 268435456
+LOGIN_URL = 'login'
+LOGOUT_REDIRECT_URL = '/'
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': ('django.contrib.auth.password_validation.'
+                 'UserAttributeSimilarityValidator'),
+    },
+    {
+        'NAME': ('django.contrib.auth.password_validation.'
+                 'MinimumLengthValidator'),
+        'OPTIONS': {
+            'min_length': 6,
+        },
+    },
+    {
+        'NAME': ('django.contrib.auth.password_validation.'
+                 'CommonPasswordValidator'),
+    },
+    {
+        'NAME': ('django.contrib.auth.password_validation.'
+                 'NumericPasswordValidator'),
+    },
+]
 # Better logging
 LOGGING = {
     'version': 1,
@@ -291,6 +324,8 @@ LOGGING = {
     },
 }
 JADX_TIMEOUT = int(os.getenv('MOBSF_JADX_TIMEOUT', 1800))
+DISABLE_AUTHENTICATION = os.getenv('MOBSF_DISABLE_AUTHENTICATION')
+RATELIMIT = os.getenv('MOBSF_RATELIMIT', '7/1m')
 # ===========================
 # ENTERPRISE FEATURE REQUESTS
 # ===========================

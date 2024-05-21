@@ -1,10 +1,20 @@
 from datetime import datetime
 
 from django.db import models
-# Create your models here.
+
+from mobsf.MobSF.views.authorization import (
+    DjangoPermissions,
+)
+
+P = DjangoPermissions
 
 
 class RecentScansDB(models.Model):
+    class Meta:
+        """Meta class for RecentScansDB model."""
+
+        permissions = (P.DELETE.value, P.SCAN.value)
+
     ANALYZER = models.CharField(max_length=50, default='')
     SCAN_TYPE = models.CharField(max_length=10, default='')
     FILE_NAME = models.CharField(max_length=260, default='')
@@ -16,6 +26,11 @@ class RecentScansDB(models.Model):
 
 
 class StaticAnalyzerAndroid(models.Model):
+    class Meta:
+        """Meta class for StaticAnalyzerAndroid model."""
+
+        permissions = (P.DELETE.value, P.SCAN.value)
+
     FILE_NAME = models.CharField(max_length=260, default='')
     APP_NAME = models.CharField(max_length=255, default='')
     APP_TYPE = models.CharField(max_length=20, default='')
@@ -64,6 +79,11 @@ class StaticAnalyzerAndroid(models.Model):
 
 
 class StaticAnalyzerIOS(models.Model):
+    class Meta:
+        """Meta class for StaticAnalyzerIOS model."""
+
+        permissions = (P.DELETE.value, P.SCAN.value)
+
     FILE_NAME = models.CharField(max_length=255, default='')
     APP_NAME = models.CharField(max_length=255, default='')
     APP_TYPE = models.CharField(max_length=20, default='')
@@ -104,6 +124,11 @@ class StaticAnalyzerIOS(models.Model):
 
 
 class StaticAnalyzerWindows(models.Model):
+    class Meta:
+        """Meta class for StaticAnalyzerWindows model."""
+
+        permissions = (P.DELETE.value, P.SCAN.value)
+
     FILE_NAME = models.CharField(max_length=260, default='')
     APP_NAME = models.CharField(max_length=260, default='')
     PUBLISHER_NAME = models.TextField(default='')
@@ -128,6 +153,11 @@ class StaticAnalyzerWindows(models.Model):
 
 
 class SuppressFindings(models.Model):
+    class Meta:
+        """Meta class for SuppressFindings model."""
+
+        permissions = (P.DELETE.value, P.SCAN.value, P.SUPPRESS.value)
+
     PACKAGE_NAME = models.CharField(max_length=260, default='')
     SUPPRESS_RULE_ID = models.TextField(default=[])
     SUPPRESS_FILES = models.TextField(default={})

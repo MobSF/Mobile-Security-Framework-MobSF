@@ -11,6 +11,7 @@ from django.shortcuts import render
 
 from mobsf.MobSF.utils import (
     file_size,
+    print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
 from mobsf.StaticAnalyzer.views.ios.binary_analysis import (
@@ -37,6 +38,10 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
     MalwareDomainCheck,
 )
+from mobsf.MobSF.views.authorization import (
+    Permissions,
+    has_permission,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +59,11 @@ def dylib_analysis(request, app_dict, rescan, api):
     if ipa_db.exists() and not rescan:
         context = get_context_from_db_entry(ipa_db)
     else:
+        if not has_permission(request, Permissions.SCAN, api):
+            return print_n_send_error_response(
+                request,
+                'Permission Denied',
+                False)
         logger.info('iOS DYLIB Analysis Started')
         app_dict['size'] = str(
             file_size(app_dict['app_path'])) + 'MB'  # FILE SIZE

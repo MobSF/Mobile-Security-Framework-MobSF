@@ -27,6 +27,13 @@ from mobsf.MobSF.utils import (
 from mobsf.StaticAnalyzer.models import (
     SuppressFindings,
 )
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
+from mobsf.MobSF.views.authorization import (
+    Permissions,
+    permission_required,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +64,9 @@ def get_package(checksum):
 
 # AJAX
 
+@login_required
 @require_http_methods(['POST'])
+@permission_required(Permissions.SUPPRESS)
 def suppress_by_rule_id(request, api=False):
     """Suppress finding by rule id."""
     data = {
@@ -102,7 +111,9 @@ def suppress_by_rule_id(request, api=False):
 # AJAX
 
 
+@login_required
 @require_http_methods(['POST'])
+@permission_required(Permissions.SUPPRESS)
 def suppress_by_files(request, api=False):
     """Suppress finding by files."""
     data = {
@@ -162,6 +173,7 @@ def suppress_by_files(request, api=False):
 # AJAX
 
 
+@login_required
 @require_http_methods(['POST'])
 def list_suppressions(request, api=False):
     """List Suppression Rules."""
@@ -197,7 +209,10 @@ def list_suppressions(request, api=False):
 
 # AJAX
 
+
+@login_required
 @require_http_methods(['POST'])
+@permission_required(Permissions.DELETE)
 def delete_suppression(request, api=False):
     """Delete suppression rule."""
     data = {
