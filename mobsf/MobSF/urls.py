@@ -26,6 +26,7 @@ from mobsf.MobSF.views import (
     authentication,
     authorization,
     home,
+    saml2,
 )
 from mobsf.MobSF.views.api import api_static_analysis as api_sz
 from mobsf.MobSF.views.api import api_android_dynamic_analysis as api_dz
@@ -71,6 +72,13 @@ urlpatterns = [
     re_path(r'^delete_user/$',
             authorization.delete_user,
             name='delete_user'),
+    # SAML2
+    re_path(r'^sso/$',
+            saml2.saml_login,
+            name='saml_login'),
+    re_path(r'^sso/acs/$',
+            saml2.saml_acs,
+            name='saml_acs'),
     # REST API
     # Static Analysis
     re_path(r'^api/v1/upload$', api_sz.api_upload),

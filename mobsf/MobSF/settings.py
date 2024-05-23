@@ -330,6 +330,14 @@ RATELIMIT = os.getenv('MOBSF_RATELIMIT', '7/1m')
 # ENTERPRISE FEATURE REQUESTS
 # ===========================
 EFR_01 = os.getenv('EFR_01', '0')
+# SAML SSO
+IDP_METADATA_URL = os.getenv('MOBSF_IDP_METADATA_URL')
+IDP_ENTITY_ID = os.getenv('MOBSF_IDP_ENTITY_ID')
+IDP_SSO_URL = os.getenv('MOBSF_IDP_SSO_URL')
+IDP_X509CERT = os.getenv('MOBSF_IDP_X509CERT')
+IDP_IS_ADFS = os.getenv('MOBSF_IDP_IS_ADFS', '0')
+SP_ALLOW_PASSWORD = os.getenv('MOBSF_SP_ALLOW_PASSWORD', '0')
+# ===================
 # USER CONFIGURATION
 # ===================
 if CONFIG_HOME:
