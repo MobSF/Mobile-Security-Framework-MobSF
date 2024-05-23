@@ -34,7 +34,7 @@ ASSERTION_IDS = set()
 def get_url_components(url):
     """Get URL components."""
     purl = urlparse(url)
-    return purl.scheme, purl.hostname, purl.port
+    return purl.scheme, purl.netloc, purl.port
 
 
 def init_saml_auth(req):
@@ -86,7 +86,7 @@ def prepare_django_request(request):
     if not port:
         port = 443 if scheme == 'https' else 80
     https_state = 'on' if scheme == 'https' else 'off'
-    sp_url = f'{scheme}://{host}:{port}'
+    sp_url = f'{scheme}://{host}'
     result = {
         'https': https_state,
         'http_host': host,
