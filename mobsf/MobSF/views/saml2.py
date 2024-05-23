@@ -78,18 +78,18 @@ def init_saml_auth(req):
 def prepare_django_request(request):
     """Prepare Django request for SAML."""
     scheme = 'https' if request.is_secure() else 'http'
-    host = request.get_host()
+    netloc = request.get_host()
     port = request.get_port()
     if settings.SP_HOST:
-        scheme, host, port = get_url_components(
+        scheme, netloc, port = get_url_components(
             settings.SP_HOST.strip('/'))
-    if not port:
-        port = 443 if scheme == 'https' else 80
+        if not port:
+            port = 443 if scheme == 'https' else 80
     https_state = 'on' if scheme == 'https' else 'off'
-    sp_url = f'{scheme}://{host}'
+    sp_url = f'{scheme}://{netloc}'
     result = {
         'https': https_state,
-        'http_host': host,
+        'http_host': netloc,
         'server_port': port,
         'script_name': request.get_full_path_info(),
         'get_data': request.GET.copy(),
