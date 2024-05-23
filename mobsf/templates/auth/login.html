@@ -22,6 +22,7 @@ sidebar-collapse
                               <h1 class="display-2 h-100 d-flex align-items-center justify-content-center">
                                  Mob<strong>SF</strong>
                               </h1>
+                              {% if allow_pwd %}
                               <form method="post" action="{% url 'login' %}?next={{next}}">
                                  {% csrf_token %}
                                  {{ form.non_field_errors }}
@@ -56,11 +57,20 @@ sidebar-collapse
                                        </label>
                                        </div>
                                        </div> -->
-                                    <div class="col-4">
-                                       <button type="submit" class="btn btn-primary btn-block">Sign In</button>
-                                    </div>
+                                 </div>
+                                 <div class="col-12">
+                                    <button type="submit" class="btn btn-primary btn-block">Sign In</button>
                                  </div>
                               </form>
+                              {% endif %}
+                              {% if sso %}
+                              <hr>
+                              <p>
+                              <div class="col-12">
+                                 <a href="{% url 'saml_login' %}?next={{next}}" class="btn btn-primary btn-block">Sign in with SSO</a>
+                              </div>
+                              </p>
+                              {% endif %}
                            </div>
                         </div>
                      </div>

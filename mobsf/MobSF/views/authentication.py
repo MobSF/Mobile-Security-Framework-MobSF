@@ -46,11 +46,18 @@ def login_view(request):
     """Login Controller."""
     if settings.DISABLE_AUTHENTICATION == '1':
         return redirect('/')
+    allow_pwd = bool(settings.SP_ALLOW_PASSWORD == '1')
+    sso = (settings.IDP_METADATA_URL
+           or (settings.IDP_SSO_URL
+               and settings.IDP_ENTITY_ID
+               and settings.IDP_X509CERT))
     nextp = request.GET.get('next', '')
     redirect_url = nextp if nextp.startswith('/') else '/'
     if request.user.is_authenticated:
         return redirect(redirect_url)
     if request.method == 'POST':
+        if sso and not allow_pwd:
+            return redirect('/')
         form = AuthenticationForm(request, request.POST)
         if form.is_valid():
             user = form.get_user()
@@ -63,6 +70,8 @@ def login_view(request):
         'version': settings.VERSION,
         'next': redirect_url,
         'form': form,
+        'sso': sso,
+        'allow_pwd': allow_pwd,
     }
     return render(request, 'auth/login.html', context)
 
