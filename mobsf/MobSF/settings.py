@@ -326,16 +326,24 @@ LOGGING = {
 JADX_TIMEOUT = int(os.getenv('MOBSF_JADX_TIMEOUT', 1800))
 DISABLE_AUTHENTICATION = os.getenv('MOBSF_DISABLE_AUTHENTICATION')
 RATELIMIT = os.getenv('MOBSF_RATELIMIT', '7/1m')
+USE_X_FORWARDED_HOST = bool(
+    os.getenv('MOBSF_USE_X_FORWARDED_HOST', '1') == '1')
+USE_X_FORWARDED_PORT = bool(
+    os.getenv('MOBSF_USE_X_FORWARDED_PORT', '1') == '1')
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # ===========================
 # ENTERPRISE FEATURE REQUESTS
 # ===========================
 EFR_01 = os.getenv('EFR_01', '0')
 # SAML SSO
+# IdP Configuration
 IDP_METADATA_URL = os.getenv('MOBSF_IDP_METADATA_URL')
 IDP_ENTITY_ID = os.getenv('MOBSF_IDP_ENTITY_ID')
 IDP_SSO_URL = os.getenv('MOBSF_IDP_SSO_URL')
 IDP_X509CERT = os.getenv('MOBSF_IDP_X509CERT')
 IDP_IS_ADFS = os.getenv('MOBSF_IDP_IS_ADFS', '0')
+# SP Configuration
+SP_HOST = os.getenv('MOBSF_SP_HOST')
 SP_ALLOW_PASSWORD = os.getenv('MOBSF_SP_ALLOW_PASSWORD', '0')
 # ===================
 # USER CONFIGURATION
