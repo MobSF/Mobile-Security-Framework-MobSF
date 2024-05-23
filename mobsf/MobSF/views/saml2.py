@@ -1,4 +1,5 @@
 """SAML2 SSO logic."""
+from urllib.parse import urlparse
 import logging
 
 from onelogin.saml2.auth import (
@@ -30,63 +31,72 @@ logger = logging.getLogger(__name__)
 ASSERTION_IDS = set()
 
 
+def get_url_components(url):
+    """Get URL components."""
+    purl = urlparse(url)
+    return purl.scheme, purl.hostname, purl.port
+
+
 def init_saml_auth(req):
     """Initialize SAML auth."""
+    host = req['sp_url']
+    acs_route = reverse('saml_acs')
+    saml_settings = {
+        'strict': True,
+        'debug': True,
+        'sp': {
+            'entityId': f'{host}{acs_route}',
+            'assertionConsumerService': {
+                'url': f'{host}{acs_route}',
+                'binding': ('urn:oasis:names:tc:'
+                            'SAML:2.0:bindings:HTTP-POST'),
+            },
+        },
+        'idp': {
+            'entityId': settings.IDP_ENTITY_ID,
+            'singleSignOnService': {
+                'url': settings.IDP_SSO_URL,
+                'binding': ('urn:oasis:names:tc:'
+                            'SAML:2.0:bindings:HTTP-Redirect'),
+            },
+            'x509cert': settings.IDP_X509CERT,
+        },
+    }
     try:
-        host = req['http_host']
-        if req['https'] == 'on':
-            host = f'https://{host}'
-        else:
-            host = f'http://{host}'
-        acs_route = reverse('saml_acs')
-        saml_settings = {
-            'strict': True,
-            'debug': True,
-            'sp': {
-                'entityId': f'{host}{acs_route}',
-                'assertionConsumerService': {
-                    'url': f'{host}{acs_route}',
-                    'binding': ('urn:oasis:names:tc:'
-                                'SAML:2.0:bindings:HTTP-POST'),
-                },
-            },
-            'idp': {
-                'entityId': settings.IDP_ENTITY_ID,
-                'singleSignOnService': {
-                    'url': settings.IDP_SSO_URL,
-                    'binding': ('urn:oasis:names:tc:'
-                                'SAML:2.0:bindings:HTTP-Redirect'),
-                },
-                'x509cert': settings.IDP_X509CERT,
-            },
-        }
-        try:
-            idp_data = None
-            if settings.IDP_METADATA_URL:
-                idp_data = OneLogin_Saml2_IdPMetadataParser.parse_remote(
-                    settings.IDP_METADATA_URL,
-                    timeout=5)
-            if idp_data:
-                saml_settings['idp'] = idp_data['idp']
-        except Exception:
-            logger.exception('[ERROR] parsing IdP metadata URL.')
-        auth = OneLogin_Saml2_Auth(req, saml_settings)
+        idp_data = None
+        if settings.IDP_METADATA_URL:
+            idp_data = OneLogin_Saml2_IdPMetadataParser.parse_remote(
+                settings.IDP_METADATA_URL,
+                timeout=5)
+        if idp_data:
+            saml_settings['idp'] = idp_data['idp']
     except Exception:
-        logger.exception('[ERROR] initializing SAML auth.')
-    return auth
+        logger.exception('[ERROR] parsing IdP metadata URL.')
+    return OneLogin_Saml2_Auth(req, saml_settings)
 
 
 def prepare_django_request(request):
     """Prepare Django request for SAML."""
+    scheme = 'https' if request.is_secure() else 'http'
+    host = request.get_host()
+    port = request.get_port()
+    if settings.SP_HOST:
+        scheme, host, port = get_url_components(
+            settings.SP_HOST.strip('/'))
+    if not port:
+        port = 443 if scheme == 'https' else 80
+    https_state = 'on' if scheme == 'https' else 'off'
+    sp_url = f'{scheme}://{host}:{port}'
     result = {
-        'https': 'on' if request.is_secure() else 'off',
-        'http_host': request.META['HTTP_HOST'],
-        'script_name': request.META['PATH_INFO'],
-        'server_port': request.META['SERVER_PORT'],
+        'https': https_state,
+        'http_host': host,
+        'server_port': port,
+        'script_name': request.get_full_path_info(),
         'get_data': request.GET.copy(),
         'post_data': request.POST.copy(),
         'lowercase_urlencoding': bool(settings.IDP_IS_ADFS == '1'),
         'query_string': request.META['QUERY_STRING'],
+        'sp_url': sp_url,
     }
     return result
 
