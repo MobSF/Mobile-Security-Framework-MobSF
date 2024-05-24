@@ -40,6 +40,8 @@
       success : function(json){ on_success(json) },
       error : function(xhr, ajaxOptions, thrownError) {
         console.log(xhr.responseText);
+        if (thrownError === 'Forbidden')
+          forbidden();
       }
     });
   }
@@ -152,4 +154,12 @@ function list_suppressions(){
       }
     });
   });
+}
+
+function forbidden(){
+  Swal.fire({
+    title: 'Forbidden',
+    text: 'You are not authorized to perform this action',
+    type: 'error',
+  })
 }

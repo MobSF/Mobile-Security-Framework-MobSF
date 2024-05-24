@@ -89,10 +89,13 @@ COPY . .
 # Check if Postgres support needs to be enabled.
 # Disabled by default
 ARG POSTGRES=False
+
 ENV POSTGRES_USER=postgres \
     POSTGRES_PASSWORD=password \
     POSTGRES_DB=mobsf \
-    POSTGRES_HOST=postgres
+    POSTGRES_HOST=postgres \
+    DJANGO_SUPERUSER_USERNAME=mobsf \
+    DJANGO_SUPERUSER_PASSWORD=mobsf
 
 RUN ./scripts/postgres_support.sh $POSTGRES
 

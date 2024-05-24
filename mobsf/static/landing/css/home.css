@@ -10,13 +10,13 @@ a:hover {
 }
 
 /* Custom default button */
-.btn-default,
-.btn-default:hover,
-.btn-default:focus {
+.btn-secondary,
+.btn-secondary:hover,
+.btn-secondary:focus {
   color: #333;
   text-shadow: none; /* Prevent inheritance from `body` */
   background-color: #fff;
-  border: 1px solid #fff;
+  border: .05rem solid #fff;
 }
 
 
@@ -27,80 +27,62 @@ a:hover {
 html,
 body {
   height: 100%;
-  background: linear-gradient(to left, #00efe4, #2d47ff);
+  background-color: #333;
 }
+
 body {
+  display: -ms-flexbox;
+  display: -webkit-box;
+  display: flex;
+  -ms-flex-pack: center;
+  -webkit-box-pack: center;
+  justify-content: center;
   color: #fff;
-  text-align: center;
-  text-shadow: 0 1px 3px rgba(0,0,0,.5);
+  text-shadow: 0 .05rem .1rem rgba(0, 0, 0, .5);
+  box-shadow: inset 0 0 5rem rgba(0, 0, 0, .5);
 }
 
-/* Extra markup and styles for table-esque vertical and horizontal centering */
-.site-wrapper {
-  display: table;
-  width: 100%;
-  height: 100%; /* For at least Firefox */
-  min-height: 100%;
-  -webkit-box-shadow: inset 0 0 100px rgba(0,0,0,.5);
-          box-shadow: inset 0 0 100px rgba(0,0,0,.5);
-}
-.site-wrapper-inner {
-  display: table-cell;
-  vertical-align: top;
-}
 .cover-container {
-  margin-right: auto;
-  margin-left: auto;
-}
-
-/* Padding for spacing */
-.inner {
-  padding: 30px;
-  z-index: 950;
+  max-width: 42em;
 }
 
 
 /*
  * Header
  */
+.masthead {
+  margin-bottom: 2rem;
+}
+
 .masthead-brand {
-  margin-top: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 0;
 }
 
-.masthead-nav > li {
-  display: inline-block;
-}
-.masthead-nav > li + li {
-  margin-left: 20px;
-}
-.masthead-nav > li > a {
-  padding-right: 0;
-  padding-left: 0;
-  font-size: 16px;
-  font-weight: bold;
-  color: #fff; /* IE8 proofing */
-  color: rgba(255,255,255,.95);
-  border-bottom: 2px solid transparent;
-}
-.masthead-nav > li > a:hover,
-.masthead-nav > li > a:focus {
+.nav-masthead .nav-link {
+  padding: .25rem 0;
+  font-weight: 700;
+  color: rgb(255 255 255 / 71%);
   background-color: transparent;
-  border-bottom-color: #a9a9a9;
-  border-bottom-color: rgba(255,255,255,.25);
-}
-.masthead-nav > .active > a,
-.masthead-nav > .active > a:hover,
-.masthead-nav > .active > a:focus {
-  color: #fff;
-  border-bottom-color: #fff;
 }
 
-@media (min-width: 768px) {
+.nav-masthead .nav-link:hover,
+.nav-masthead .nav-link:focus {
+  color:  rgba(255, 255, 255, 0.267);
+}
+
+.nav-masthead .nav-link + .nav-link {
+  margin-left: 1rem;
+}
+
+.nav-masthead .active {
+  color: #fff;
+}
+
+@media (min-width: 48em) {
   .masthead-brand {
     float: left;
   }
-  .masthead-nav {
+  .nav-masthead {
     float: right;
   }
 }
@@ -109,65 +91,23 @@ body {
 /*
  * Cover
  */
-
 .cover {
-  padding: 0 20px;
+  padding: 0 1.5rem;
 }
 .cover .btn-lg {
-  padding: 10px 20px;
-  font-weight: bold;
+  padding: .75rem 1.25rem;
+  font-weight: 700;
 }
 
 
 /*
  * Footer
  */
-
 .mastfoot {
-  color: #999; /* IE8 proofing */
-  color: rgba(255,255,255,.86);
+  color: rgba(255, 255, 255, .5);
 }
 
-
-/*
- * Affix and center
- */
-
-@media (min-width: 768px) {
-  /* Pull out the header and footer */
-  .masthead {
-    position: fixed;
-    top: 0;
-  }
-  .mastfoot {
-    position: fixed;
-    bottom: 0;
-  }
-  /* Start the vertical centering */
-  .site-wrapper-inner {
-    vertical-align: middle;
-  }
-  /* Handle the widths */
-  .masthead,
-  .mastfoot,
-  .cover-container {
-    width: 100%; /* Must be percentage or pixels for horizontal alignment */
-  }
-}
-
-@media (min-width: 992px) {
-  .masthead,
-  .mastfoot,
-  .cover-container {
-    width: 700px;
-  }
-}
- div.file_res {
-	width: 600px;
-    padding-left: 30px;
-	position: relative;
-}
-
+/* Custom CSS Starts here */
 .fileUpload {
 	position: relative;
 	overflow: hidden;
@@ -212,20 +152,6 @@ div#textnode {
     vertical-align: middle;
     transition: font-size 175ms;
 }
-/* TOP NAV */
-
-@media (min-width: 768px) {
-  .navbar-brand.abs
-      {
-          position: absolute;
-          width: auto;
-          left: 50%;
-          transform: translateX(-50%);
-          text-align: center;
-          font-size: 20px;
-      }
-  }
-  
 
 /* PROGRESS BAR */
 
@@ -254,13 +180,59 @@ progress::-webkit-progress-value {
   background:
     -webkit-linear-gradient(45deg, transparent, transparent 33%, rgba(0, 0, 0, 0.1) 33%, rgba(0, 0, 0, 0.1) 66%, transparent 66%),
     -webkit-linear-gradient(top, rgba(255, 255, 255, 0.25), rgba(0, 0, 0, 0.2)),
-    -webkit-linear-gradient(left, #66ccff, #3399ff);
+    -webkit-linear-gradient(left, #ff9b3d, #ff960d);
 
   background-size: 25px 14px, 100% 100%, 100% 100%;
   -webkit-animation: move 5s linear 0 infinite;
 }
 
-@-webkit-keyframes move {
+@keyframes move {
   0% {background-position: 0px 0px, 0 0, 0 0}
   100% {background-position: -100px 0px, 0 0, 0 0}
+}
+
+/* The snackbar - position it at the bottom and in the middle of the screen */
+#snackbar {
+  visibility: hidden; /* Hidden by default. Visible on click */
+  min-width: 250px; /* Set a default minimum width */
+  background-color: #333; /* Black background color */
+  color: #fff; /* White text color */
+  text-align: center; /* Centered text */
+  border-radius: 2px; /* Rounded borders */
+  padding: 16px; /* Padding */
+  z-index: 1; /* Add a z-index if needed */
+  left: 50%; /* Center the snackbar */
+  bottom: 30px; /* 30px from the bottom */
+}
+
+/* Show the snackbar when clicking on a button (class added with JavaScript) */
+#snackbar.show {
+  visibility: visible; /* Show the snackbar */
+  /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
+  However, delay the fade out process for 2.5 seconds */
+  -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+  animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+/* Animations to fade the snackbar in and out */
+
+
+@keyframes fadein {
+  from {bottom: 0; opacity: 0;}
+  to {bottom: 30px; opacity: 1;}
+}
+
+/* 
+@keyframes fadeout {
+  from {bottom: 30px; opacity: 1;}
+  to {bottom: 0; opacity: 0;}
+} */
+
+/* Snackbar ends */
+
+/* Logo padding ^*/
+
+.pad {
+  padding-right: 50px;
+  padding-left: 50px;
 }

@@ -10,13 +10,13 @@ from mobsf.install.windows.setup import windows_config_local
 
 logger = logging.getLogger(__name__)
 
-VERSION = '3.9.8'
+VERSION = '4.0.1'
 BANNER = """
-  __  __       _    ____  _____       _____ ___  
- |  \/  | ___ | |__/ ___||  ___|_   _|___ // _ \ 
- | |\/| |/ _ \| '_ \___ \| |_  \ \ / / |_ \ (_) |
- | |  | | (_) | |_) |__) |  _|  \ V / ___) \__, |
- |_|  |_|\___/|_.__/____/|_|     \_/ |____(_)/_/ 
+  __  __       _    ____  _____       _  _    ___  
+ |  \/  | ___ | |__/ ___||  ___|_   _| || |  / _ \ 
+ | |\/| |/ _ \| '_ \___ \| |_  \ \ / / || |_| | | |
+ | |  | | (_) | |_) |__) |  _|  \ V /|__   _| |_| |
+ |_|  |_|\___/|_.__/____/|_|     \_/    |_|(_)___/ 
 """  # noqa: W291
 # ASCII Font: Standard
 
@@ -92,6 +92,7 @@ def migrate(base_dir):
     try:
         django_operation(['migrate'], base_dir)
         django_operation(['migrate', '--run-syncdb'], base_dir)
+        django_operation(['create_roles'], base_dir)
     except Exception:
         logger.exception('Cannot Migrate')
 
@@ -140,4 +141,4 @@ def get_mobsf_home(use_home, base_dir):
 
 
 def get_mobsf_version():
-    return BANNER, VERSION, f'v{VERSION} Beta'
+    return BANNER, VERSION, f'v{VERSION}'

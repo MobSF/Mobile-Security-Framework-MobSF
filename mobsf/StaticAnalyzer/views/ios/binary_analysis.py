@@ -99,7 +99,7 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
                 bin_name = executable_name
         # Bin Path - Dir/Payload/x.app/x
         bin_path = bin_dir / bin_name
-        if not (bin_path.exists() or bin_path.is_file()):
+        if not (bin_path.exists() and bin_path.is_file()):
             logger.warning(
                 'MobSF Cannot find binary in %s', bin_path.as_posix())
             logger.warning('Skipping Binary analysis')

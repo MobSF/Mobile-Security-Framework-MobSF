@@ -90,15 +90,22 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
 from mobsf.StaticAnalyzer.views.common.appsec import (
     get_android_dashboard,
 )
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
+from mobsf.MobSF.views.authorization import (
+    Permissions,
+    has_permission,
+)
 
 
 logger = logging.getLogger(__name__)
-
 register.filter('key', key)
 register.filter('android_component', android_component)
 register.filter('relative_path', relative_path)
 
 
+@login_required
 def static_analyzer(request, checksum, api=False):
     """Do static analysis on an request and save to db."""
     try:
@@ -168,6 +175,11 @@ def static_analyzer(request, checksum, api=False):
             if db_entry.exists() and not rescan:
                 context = get_context_from_db_entry(db_entry)
             else:
+                if not has_permission(request, Permissions.SCAN, api):
+                    return print_n_send_error_response(
+                        request,
+                        'Permission Denied',
+                        False)
                 # ANALYSIS BEGINS
                 app_dic['size'] = str(
                     file_size(app_dic['app_path'])) + 'MB'  # FILE SIZE
@@ -363,6 +375,11 @@ def static_analyzer(request, checksum, api=False):
                     app_dic['files'])
                 app_dic['zipped'] = pro_type
                 if valid and (pro_type in ['eclipse', 'studio']):
+                    if not has_permission(request, Permissions.SCAN, api):
+                        return print_n_send_error_response(
+                            request,
+                            'Permission Denied',
+                            False)
                     # ANALYSIS BEGINS
                     app_dic['size'] = str(
                         file_size(app_dic['app_path'])) + 'MB'  # FILE SIZE

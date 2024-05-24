@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  MOBSF_DISABLE_AUTHENTICATION: "1"
+
 jobs:
   build:
     strategy:
@@ -59,6 +62,7 @@ jobs:
         poetry run python manage.py makemigrations
         poetry run python manage.py makemigrations StaticAnalyzer
         poetry run python manage.py migrate
+        poetry run python manage.py create_roles
 
     - name: Unit Tests on Ubuntu, macOS and Windows
       run: |
