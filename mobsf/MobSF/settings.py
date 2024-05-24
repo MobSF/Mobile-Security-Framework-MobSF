@@ -162,7 +162,7 @@ DATABASES = {
 """
 # ===============================================
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
-DEBUG = False
+DEBUG = bool(os.getenv('MOBSF_DEBUG', '0') == '1')
 DJANGO_LOG_LEVEL = DEBUG
 TEMPLATE_DEBUG = DEBUG
 ALLOWED_HOSTS = ['127.0.0.1', 'mobsf', '*']

@@ -113,36 +113,57 @@
                     </tbody>
                 </table>
             </div>
-            <div class="pagination">
-                <!-- Paging Link -->
-                <span class="step-links">
-                    {% if page_obj.number > 4 %}
-                        <a href="?page=1">1</a>
-                        <span>...</span>
-                    {% endif %}
-
-                    {% for num in page_obj.paginator.page_range %}
-                        {% if num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                            {% if page_obj.number == num %}
-                                <span class="current">{{ num }}</span>
-                            {% else %}
-                                <a href="?page={{ num }}">{{ num }}</a>
-                            {% endif %}
-                        {% endif %}
-                    {% endfor %}
-
-                    {% if page_obj.paginator.num_pages > page_obj.number|add:'3' %}
-                        <span>...</span>
-                        <a href="?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }}</a>
-                    {% endif %}
-                </span>
-                <!-- Paging Jump -->
-                <form action="" method="get">
-                    <input type="text"  name="page" required placeholder="page" style="width:40px;">
-                    <input type="submit" value="Go">
-                </form>
-            </div>
-
+            <!--pagination-->
+            <nav aria-label="Pagination">
+                <ul class="pagination justify-content-center">
+                  {% if page_obj.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=page_obj.previous_page_number %}">Previous</a>
+                  </li>   
+                  {% else %}
+                  <li class="page-item">
+                  <a class="page-link">Previous</a>
+                  </li>
+                  {% endif %}
+      
+                  {% for i in page_obj.paginator.page_range %}
+                  {% if page_obj.number == i %}
+                  <li class="page-item active">
+                      <a class="page-link" href="#">{{ i }} </a>
+                  </li>
+                  {% else %}
+                  <li class="page-item">
+                      <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=i %}">{{ i }}</a>
+                  </li>
+                  {% endif %}
+                  {% endfor %}
+      
+                  {% if page_obj.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=page_obj.next_page_number %}">Next</a>
+                   </li>
+                  {% else %}
+                  <li class="page-item">
+                    <a class="page-link">Next</a>
+                  </li>
+                  {% endif %}
+                  <li class="page-item">
+                    <div class="dropdown">
+                        <button class="page-link dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          Items per page
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=5 page_number=page_obj.number %}">5</a>
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=10 page_number=page_obj.number %}">10</a>
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=20 page_number=page_obj.number %}">20</a>
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=50 page_number=page_obj.number %}">50</a>
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=100 page_number=page_obj.number %}">100</a>
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=250 page_number=page_obj.number %}">250</a>
+                        </div>
+                      </div>
+                </ul>
+              </nav>
+            <!--end pagination-->
         </div>
         <!-- /.box-body -->
     </div>

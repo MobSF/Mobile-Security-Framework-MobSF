@@ -53,6 +53,8 @@ from . import settings
 
 bundle_id_regex = r'(?P<bundle_id>([a-zA-Z]{1}[\w.-]{1,255}))$'
 checksum_regex = r'(?P<checksum>[0-9a-f]{32})'
+paginate = r'(?P<page_size>[0-9]{1,10})/(?P<page_number>[0-9]{1,10})'
+
 urlpatterns = [
     re_path(r'^login/$',
             authentication.login_view,
@@ -188,6 +190,9 @@ if settings.API_ONLY == '0':
         re_path(r'^donate$', home.donate, name='donate'),
         re_path(r'^api_docs$', home.api_docs, name='api_docs'),
         re_path(r'^recent_scans/$', home.recent_scans, name='recent'),
+        re_path(fr'^recent_scans/{paginate}/$',
+                home.recent_scans,
+                name='scans_paginated'),
         re_path(r'^delete_scan/$', home.delete_scan, name='delete_scan'),
         re_path(r'^search$', home.search),
         re_path(r'^error/$', home.error, name='error'),

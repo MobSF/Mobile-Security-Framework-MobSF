@@ -254,19 +254,13 @@ def dynamic_analysis(request):
 
 
 @login_required
-def recent_scans(request):
+def recent_scans(request, page_size=10, page_number=1):
     """Show Recent Scans Route."""
     entries = []
-    page_number = request.GET.get('page', 1)
-    page_size = request.GET.get('page_size', 10)
-    if not (isinstance(page_number, int) and page_number > 0):
-        page_number = 1
-    if not (isinstance(page_size, int) and page_size > 0):
-        page_size = 10
-
     paginator = Paginator(
         RecentScansDB.objects.all().order_by('-TIMESTAMP').values(), page_size)
     page_obj = paginator.get_page(page_number)
+    page_obj.page_size = page_size
     md5_list = [i['MD5'] for i in page_obj]
 
     android = StaticAnalyzerAndroid.objects.filter(
