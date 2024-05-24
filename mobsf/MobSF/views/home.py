@@ -254,12 +254,21 @@ def dynamic_analysis(request):
 
 
 @login_required
-def recent_scans(request):
+def recent_scans(request, page_size=10, page_number=1):
     """Show Recent Scans Route."""
     entries = []
-    db_obj = RecentScansDB.objects.all().order_by('-TIMESTAMP').values()
-    android = StaticAnalyzerAndroid.objects.all()
-    ios = StaticAnalyzerIOS.objects.all()
+    paginator = Paginator(
+        RecentScansDB.objects.all().order_by('-TIMESTAMP').values(), page_size)
+    page_obj = paginator.get_page(page_number)
+    page_obj.page_size = page_size
+    md5_list = [i['MD5'] for i in page_obj]
+
+    android = StaticAnalyzerAndroid.objects.filter(
+        MD5__in=md5_list).only(
+            'PACKAGE_NAME', 'VERSION_NAME', 'FILE_NAME', 'MD5')
+    ios = StaticAnalyzerIOS.objects.filter(
+        MD5__in=md5_list).only('FILE_NAME', 'MD5')
+
     updir = Path(settings.UPLD_DIR)
     icon_mapping = {}
     package_mapping = {}
@@ -268,12 +277,14 @@ def recent_scans(request):
         icon_mapping[item.MD5] = item.ICON_PATH
     for item in ios:
         icon_mapping[item.MD5] = item.ICON_PATH
-    for entry in db_obj:
+
+    for entry in page_obj:
         if entry['MD5'] in package_mapping.keys():
             entry['PACKAGE'] = package_mapping[entry['MD5']]
         else:
             entry['PACKAGE'] = ''
         entry['ICON_PATH'] = icon_mapping.get(entry['MD5'], '')
+
         if entry['FILE_NAME'].endswith('.ipa'):
             entry['BUNDLE_HASH'] = get_md5(
                 entry['PACKAGE_NAME'].encode('utf-8'))
@@ -286,6 +297,7 @@ def recent_scans(request):
         'title': 'Recent Scans',
         'entries': entries,
         'version': settings.MOBSF_VER,
+        'page_obj': page_obj,
     }
     template = 'general/recent.html'
     return render(request, template, context)
