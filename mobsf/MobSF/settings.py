@@ -103,12 +103,12 @@ ZIP_MIME = [
     'application/x-zip-compressed',
     'binary/octet-stream',
 ]
-# Supported File Extensions
 APPX_MIME = [
     'application/octet-stream',
     'application/vns.ms-appx',
     'application/x-zip-compressed',
 ]
+# Supported File Extensions
 ANDROID_EXTS = (
     'apk', 'xapk', 'apks', 'zip',
     'aab', 'so', 'jar', 'aar',
