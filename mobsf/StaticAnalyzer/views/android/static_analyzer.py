@@ -132,12 +132,9 @@ def static_analyzer(request, checksum, api=False):
                 api)
         typ = robj[0].SCAN_TYPE
         filename = robj[0].FILE_NAME
-        allowed_exts = (
-            '.apk', '.xapk', '.zip', '.apks',
-            '.aab', '.jar', '.aar', '.so')
-        allowed_typ = [i.replace('.', '') for i in allowed_exts]
+        allowed_exts = tuple(f'.{i}' for i in settings.ANDROID_EXTS)
         if (not filename.lower().endswith(allowed_exts)
-                or typ not in allowed_typ):
+                or typ not in settings.ANDROID_EXTS):
             return print_n_send_error_response(
                 request,
                 'Invalid file extension or file type',

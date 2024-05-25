@@ -411,12 +411,12 @@ def scan_library(request, checksum):
             return print_n_send_error_response(request, msg)
         with open(sfile, 'rb') as f:
             libchecksum = handle_uploaded_file(f, ext)
-        if ext in ('.ipa', '.dylib', '.a'):
+        if ext in [f'.{i}' for i in settings.IOS_EXTS]:
             static_analyzer = 'static_analyzer_ios'
         elif ext == '.appx':
             # Not applicable, but still set it
             static_analyzer = 'windows_static_analyzer'
-        elif ext in ('.zip', '.so', '.jar', '.aar', '.apk', '.xapk'):
+        elif ext in [f'.{i}' for i in settings.ANDROID_EXTS]:
             static_analyzer = 'static_analyzer'
         else:
             msg = 'Extension not supported'

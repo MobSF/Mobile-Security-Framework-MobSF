@@ -14,17 +14,7 @@ logger = logging.getLogger(__name__)
 
 RESCAN = False
 # Set RESCAN to True if Static Analyzer Code is modified
-EXTS = (
-    '.xapk',
-    '.apk',
-    '.ipa',
-    '.appx',
-    '.zip',
-    '.a',
-    '.so',
-    '.dylib',
-    '.aar',
-    '.jar')
+EXTS = settings.ANDROID_EXTS + settings.IOS_EXTS + settings.WINDOWS_EXTS
 
 
 def static_analysis_test():

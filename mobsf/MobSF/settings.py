@@ -103,12 +103,18 @@ ZIP_MIME = [
     'application/x-zip-compressed',
     'binary/octet-stream',
 ]
+# Supported File Extensions
 APPX_MIME = [
     'application/octet-stream',
     'application/vns.ms-appx',
     'application/x-zip-compressed',
 ]
-
+ANDROID_EXTS = (
+    'apk', 'xapk', 'apks', 'zip',
+    'aab', 'so', 'jar', 'aar',
+)
+IOS_EXTS = ('ipa', 'dylib', 'a')
+WINDOWS_EXTS = ('appx',)
 # REST API only mode
 # Set MOBSF_API_ONLY to 1 to enable REST API only mode
 # In this mode, web UI related urls are disabled.

@@ -105,10 +105,11 @@ def static_analyzer_ios(request, checksum, api=False):
         if file_type == 'dylib' and not Path(filename).suffix:
             # Force dylib extension on Frameworks
             filename = f'{filename}.dylib'
-        allowed_exts = ('ios', '.ipa', '.zip', '.dylib', '.a')
-        allowed_typ = [i.replace('.', '') for i in allowed_exts]
+        ios_exts = tuple(f'.{i}' for i in settings.IOS_EXTS)
+        allowed_exts = ios_exts + ('.zip', 'ios')
+        allowed_types = settings.IOS_EXTS + ('zip', 'ios')
         if (not filename.lower().endswith(allowed_exts)
-                or file_type not in allowed_typ):
+                or file_type not in allowed_types):
             return print_n_send_error_response(
                 request,
                 'Invalid file extension or file type',

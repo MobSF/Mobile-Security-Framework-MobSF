@@ -2,6 +2,7 @@
 """MobSF REST API V 1."""
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
 from mobsf.StaticAnalyzer.models import (
     RecentScansDB,
@@ -66,8 +67,7 @@ def api_scan(request):
             {'error': 'The file is not uploaded/available'}, 500)
     scan_type = robj[0].SCAN_TYPE
     # APK, Source Code (Android/iOS) ZIP, SO, JAR, AAR
-    if scan_type in {'xapk', 'apk', 'apks', 'aab',
-                     'zip', 'so', 'jar', 'aar'}:
+    if scan_type in settings.ANDROID_EXTS:
         resp = static_analyzer(request, checksum, True)
         if 'type' in resp:
             resp = static_analyzer_ios(request, checksum, True)
@@ -76,14 +76,14 @@ def api_scan(request):
         else:
             response = make_api_response(resp, 200)
     # IPA
-    elif scan_type in {'ipa', 'dylib', 'a'}:
+    elif scan_type in settings.IOS_EXTS:
         resp = static_analyzer_ios(request, checksum, True)
         if 'error' in resp:
             response = make_api_response(resp, 500)
         else:
             response = make_api_response(resp, 200)
     # APPX
-    elif scan_type == 'appx':
+    elif scan_type in settings.WINDOWS_EXTS:
         resp = windows.staticanalyzer_windows(request, checksum, True)
         if 'error' in resp:
             response = make_api_response(resp, 500)
