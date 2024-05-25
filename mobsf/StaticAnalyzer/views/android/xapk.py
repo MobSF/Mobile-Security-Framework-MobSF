@@ -98,8 +98,8 @@ def handle_aab(app_dic):
         if not apks.exists() and aab_path.exists():
             # Convert AAB to APKS
             subprocess.run(args, timeout=300)
-        # Remove AAB
-        aab_path.unlink()
+            # Remove AAB
+            aab_path.unlink()
         # Extract APK from APKS
         for apk_file in unzip(apks.as_posix(), app_dic['app_dir']):
             full_path = app_dic['app_dir'] / apk_file
