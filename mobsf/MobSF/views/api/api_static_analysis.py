@@ -66,7 +66,8 @@ def api_scan(request):
             {'error': 'The file is not uploaded/available'}, 500)
     scan_type = robj[0].SCAN_TYPE
     # APK, Source Code (Android/iOS) ZIP, SO, JAR, AAR
-    if scan_type in {'xapk', 'apk', 'apks', 'zip', 'so', 'jar', 'aar'}:
+    if scan_type in {'xapk', 'apk', 'apks', 'aab',
+                     'zip', 'so', 'jar', 'aar'}:
         resp = static_analyzer(request, checksum, True)
         if 'type' in resp:
             resp = static_analyzer_ios(request, checksum, True)
