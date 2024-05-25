@@ -23,15 +23,13 @@ class ChatGPT:
     def chat(self, messages):
         """Chat with GPT."""
         try:
-            import pdb; pdb.set_trace()
             response = self.gpt_client.chat.completions.create(
                 messages=messages,
                 temperature=0,
                 model=self.gpt_model,
-                max_tokens=100,
                 n=1,
             )
-            return response['choices'][0]['message']['content']
+            return response.choices[0].message.content
         except openai.APIConnectionError:
             logger.error('The server could not be reached')
         except openai.RateLimitError:

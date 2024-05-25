@@ -353,9 +353,8 @@ IDP_IS_ADFS = os.getenv('MOBSF_IDP_IS_ADFS', '0')
 SP_HOST = os.getenv('MOBSF_SP_HOST')
 SP_ALLOW_PASSWORD = os.getenv('MOBSF_SP_ALLOW_PASSWORD', '0')
 # LLM Integration
-OPENAI_API_KEY = os.getenv('MOBSF_OPENAI_API_KEY', '')
-OPENAI_GPT_MODEL = os.getenv(
-    'MOBSF_OPENAI_GPT_MODEL', 'gpt-3.5-turbo')
+OPENAI_API_KEY = os.getenv('MOBSF_OPENAI_API_KEY')
+OPENAI_GPT_MODEL = os.getenv('MOBSF_OPENAI_GPT_MODEL', 'gpt-3.5-turbo')
 # ===================
 # USER CONFIGURATION
 # ===================
