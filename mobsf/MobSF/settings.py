@@ -86,6 +86,7 @@ APK_MIME = [
     'application/x-zip-compressed',
     'binary/octet-stream',
     'application/java-archive',
+    'application/x-authorware-bin',
 ]
 IPA_MIME = [
     'application/iphone',
@@ -420,6 +421,7 @@ else:
     """
 
     # Android 3P Tools
+    BUNDLE_TOOL = os.getenv('MOBSF_BUNDLE_TOOL', '')
     JADX_BINARY = os.getenv('MOBSF_JADX_BINARY', '')
     BACKSMALI_BINARY = os.getenv('MOBSF_BACKSMALI_BINARY', '')
     VD2SVG_BINARY = os.getenv('MOBSF_VD2SVG_BINARY', '')

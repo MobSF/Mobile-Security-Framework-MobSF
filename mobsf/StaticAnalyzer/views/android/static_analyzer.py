@@ -71,6 +71,7 @@ from mobsf.StaticAnalyzer.views.android.strings import (
     get_strings_metadata,
 )
 from mobsf.StaticAnalyzer.views.android.xapk import (
+    handle_aab,
     handle_split_apk,
     handle_xapk,
 )
@@ -133,7 +134,7 @@ def static_analyzer(request, checksum, api=False):
         filename = robj[0].FILE_NAME
         allowed_exts = (
             '.apk', '.xapk', '.zip', '.apks',
-            '.jar', '.aar', '.so')
+            '.aab', '.jar', '.aar', '.so')
         allowed_typ = [i.replace('.', '') for i in allowed_exts]
         if (not filename.lower().endswith(allowed_exts)
                 or typ not in allowed_typ):
@@ -162,6 +163,11 @@ def static_analyzer(request, checksum, api=False):
             # Handle Split APK
             if not handle_split_apk(app_dic):
                 raise Exception('Invalid Split APK File')
+            typ = 'apk'
+        elif typ == 'aab':
+            # Convert AAB to APK
+            if not handle_aab(app_dic):
+                raise Exception('Invalid AAB File')
             typ = 'apk'
         if typ == 'apk':
             app_dic['app_file'] = app_dic['md5'] + '.apk'  # NEW FILENAME
@@ -504,6 +510,7 @@ def static_analyzer(request, checksum, api=False):
             err = ('Only APK, JAR, AAR, SO and Zipped '
                    'Android/iOS Source code supported now!')
             logger.error(err)
+            raise Exception(err)
     except Exception as excep:
         logger.exception('Error Performing Static Analysis')
         msg = str(excep)

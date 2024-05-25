@@ -98,6 +98,15 @@ class Scanning(object):
         logger.info('Performing Static Analysis of Android Split APK')
         return self.data
 
+    def scan_aab(self):
+        """Android App Bundle."""
+        md5 = handle_uploaded_file(self.file, '.aab')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'aab'
+        add_to_recent_scan(self.data)
+        logger.info('Performing Static Analysis of Android App Bundle')
+        return self.data
+
     def scan_jar(self):
         """Java JAR file."""
         md5 = handle_uploaded_file(self.file, '.jar')

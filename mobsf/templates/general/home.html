@@ -215,10 +215,10 @@
           // Is valid file extensions
           function isValidExt(file_name){
                 var val = file_name.toLowerCase();
-                var regex = new RegExp("^(.{1,300}?)\.(ipa|apk|apks|xapk|jar|aar|so|dylib|a|zip|appx)$");
+                var regex = new RegExp("^(.{1,300}?)\.(ipa|apk|apks|xapk|aab|jar|aar|so|dylib|a|zip|appx)$");
                 val = val.replace(/^.*[\\\/]/, '');
                 if (!(regex.test(val))) {
-                    _('status').innerText = "MobSF only supports APK, APKS, XAPK, JAR, AAR, SO, IPA, DYLIB, A, ZIP, and APPX files.";
+                    _('status').innerText = "MobSF only supports APK, APKS, XAPK, AAB, JAR, AAR, SO, IPA, DYLIB, A, ZIP, and APPX files.";
                     return false;
                 }
                 return true;
