@@ -131,7 +131,9 @@ def store_exec_hashes_at_first_run():
         hashes['signature'] = signature
         EXECUTABLE_HASH_MAP = hashes
     except Exception:
-        logger.exception('Cannot calculate executable hashes.')
+        logger.exception('Cannot calculate executable hashes, '
+                         'disabling runtime executable '
+                         'tampering detection')
 
 
 def subprocess_hook(oldfunc, *args, **kwargs):
