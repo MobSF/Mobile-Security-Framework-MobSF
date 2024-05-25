@@ -83,6 +83,7 @@ def get_executable_hashes():
         'objdump',
         'strings',
         'xcrun',
+        'file',
         'BinSkim.exe',
         'BinScope.exe',
         'nuget.exe',
