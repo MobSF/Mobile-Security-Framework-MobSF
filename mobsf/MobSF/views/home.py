@@ -61,9 +61,13 @@ def index(request):
              + settings.IPA_MIME
              + settings.ZIP_MIME
              + settings.APPX_MIME)
+    exts = (settings.ANDROID_EXTS
+            + settings.IOS_EXTS
+            + settings.WINDOWS_EXTS)
     context = {
         'version': settings.MOBSF_VER,
         'mimes': mimes,
+        'exts': '|'.join(exts),
     }
     template = 'general/home.html'
     return render(request, template, context)
@@ -154,6 +158,8 @@ class Upload(object):
             return scanning.scan_xapk()
         elif self.file_type.is_apks():
             return scanning.scan_apks()
+        elif self.file_type.is_aab():
+            return scanning.scan_aab()
         elif self.file_type.is_jar():
             return scanning.scan_jar()
         elif self.file_type.is_aar():

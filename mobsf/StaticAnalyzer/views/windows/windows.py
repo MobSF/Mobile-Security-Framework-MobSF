@@ -91,7 +91,7 @@ def staticanalyzer_windows(request, checksum, api=False):
                 api)
         typ = robj[0].SCAN_TYPE
         filename = robj[0].FILE_NAME
-        if typ != 'appx':
+        if typ not in settings.WINDOWS_EXTS:
             return print_n_send_error_response(
                 request,
                 'File type not supported',

@@ -86,6 +86,7 @@ APK_MIME = [
     'application/x-zip-compressed',
     'binary/octet-stream',
     'application/java-archive',
+    'application/x-authorware-bin',
 ]
 IPA_MIME = [
     'application/iphone',
@@ -107,7 +108,13 @@ APPX_MIME = [
     'application/vns.ms-appx',
     'application/x-zip-compressed',
 ]
-
+# Supported File Extensions
+ANDROID_EXTS = (
+    'apk', 'xapk', 'apks', 'zip',
+    'aab', 'so', 'jar', 'aar',
+)
+IOS_EXTS = ('ipa', 'dylib', 'a')
+WINDOWS_EXTS = ('appx',)
 # REST API only mode
 # Set MOBSF_API_ONLY to 1 to enable REST API only mode
 # In this mode, web UI related urls are disabled.
@@ -420,6 +427,7 @@ else:
     """
 
     # Android 3P Tools
+    BUNDLE_TOOL = os.getenv('MOBSF_BUNDLE_TOOL', '')
     JADX_BINARY = os.getenv('MOBSF_JADX_BINARY', '')
     BACKSMALI_BINARY = os.getenv('MOBSF_BACKSMALI_BINARY', '')
     VD2SVG_BINARY = os.getenv('MOBSF_VD2SVG_BINARY', '')
