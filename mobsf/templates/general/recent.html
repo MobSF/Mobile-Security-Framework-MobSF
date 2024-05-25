@@ -67,7 +67,7 @@
                                     {% endif %}
                                     {% endif %}
                                   {% endif %}
-                                  <p><a class="btn btn-primary btn-sm" href="../{{ e.ANALYZER }}/{{e.MD5}}/"><i class="fas fa-eye"></i> Static Report</a>
+                                  <p><a class="btn btn-primary btn-sm" href="../../../{{ e.ANALYZER }}/{{e.MD5}}/"><i class="fas fa-eye"></i> Static Report</a>
                                   {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:" or '.aab' == e.FILE_NAME|slice:"-4:" %}
                                     <a  class="btn btn-success btn-sm {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url "dynamic_report" checksum=e.MD5 %}"><i class="fa fa-mobile"></i> Dynamic Report</a>
                                   {% elif '.ipa' == e.FILE_NAME|slice:"-4:" %}
@@ -101,7 +101,7 @@
                             <td>{{ e.TIMESTAMP }}</td>
                             <td><p>
                                    <a class="btn btn-outline-primary btn-sm" href="{% url "pdf" checksum=e.MD5%}"><i class="fas fa-file-pdf"></i></a>
-                                   <a class="btn btn-outline-info btn-sm" href="../{{ e.ANALYZER }}/{{e.MD5}}/?rescan=1"><i class="fas fa-sync-alt"></i></a>
+                                   <a class="btn btn-outline-info btn-sm" href="../../../{{ e.ANALYZER }}/{{e.MD5}}/?rescan=1"><i class="fas fa-sync-alt"></i></a>
                                 </p>
                             {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:" or '.aab' == e.FILE_NAME|slice:"-4:"%}
                                 <p><a class="diffButton btn btn-warning btn-sm" id="{{ e.MD5 }}_{{ e.FILE_NAME }}"><i class="fas fa-not-equal"></i> Diff or Compare</a>
