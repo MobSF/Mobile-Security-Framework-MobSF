@@ -198,31 +198,28 @@ def ar_extract(src, dst):
 
 def url_n_email_extract(dat, relative_path):
     """Extract URLs and Emails from Source Code."""
-    urls = []
-    emails = []
+    urls = set()
+    emails = set()
     urllist = []
     url_n_file = []
     email_n_file = []
     # URL Extraction
     urllist = URL_REGEX.findall(dat.lower())
-    uflag = 0
     for url in urllist:
-        if url not in urls:
-            urls.append(url)
-            uflag = 1
-    if uflag == 1:
-        url_n_file.append(
-            {'urls': urls, 'path': escape(relative_path)})
+        urls.add(url)
+    if urls:
+        url_n_file.append({
+            'urls': list(urls),
+            'path': escape(relative_path)})
 
     # Email Extraction
-    eflag = 0
     for email in EMAIL_REGEX.findall(dat.lower()):
-        if (email not in emails) and (not email.startswith('//')):
-            emails.append(email)
-            eflag = 1
-    if eflag == 1:
-        email_n_file.append(
-            {'emails': emails, 'path': escape(relative_path)})
+        if not email.startswith('//'):
+            emails.add(email)
+    if emails:
+        email_n_file.append({
+            'emails': list(emails),
+            'path': escape(relative_path)})
     return urllist, url_n_file, email_n_file
 
 
