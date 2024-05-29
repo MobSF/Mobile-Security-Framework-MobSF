@@ -196,3 +196,22 @@ Java.perform(function() {
         }
     } catch(e){}
 })
+
+/* React Native JailMonkey Detection Bypass */
+
+Java.perform(function() {
+    try{
+        let hook = Java.use("com.gantix.JailMonkey.JailMonkeyModule")['isDevelopmentSettingsMode'];
+        if (hook) {
+            hook.overload("com.facebook.react.bridge.Promise").implementation = function(p) {
+                p.resolve(Java.use("java.lang.Boolean").$new(false));
+            }
+        }
+        let hook2 = Java.use("com.gantix.JailMonkey.JailMonkeyModule")['isDebuggedMode'];
+        if (hook2) {
+            hook2.overload("com.facebook.react.bridge.Promise").implementation = function(p) {
+                p.resolve(Java.use("java.lang.Boolean").$new(false));
+            }
+        }
+    } catch(e){}
+});
