@@ -246,6 +246,9 @@
                     </div>
   
                     <!-- Division -->
+                    <script>
+                        var selectedDivision = "{{ e.DIVISION }}";
+                    </script>
                     <div class="col-md-3">
                       <label for="division">Division</label>
                       <i class="fas fa-info-circle fa-lg"
@@ -630,7 +633,7 @@
         });
     }
 
-    var selectedDivision = "{{ e.DIVISION }}";
+    
     console.log("selectedDivision: " + selectedDivision);
 
     function populateDivisions() {
@@ -640,8 +643,8 @@
       .then(data => {
         var options = '<option value=""></option>';
         for (i = 0; i < data.length; i++) {
-            console.log("dataName: " + data[i].name);
-          options += '<option value="' + data[i].id + '"' + (data[i].name == selectedDivision ? ' selected' : '') + '>' + data[i].name + '</option>';
+            console.log("dataName: " + data[i].name.toLowerCase());
+          options += '<option value="' + data[i].id + '"' + (data[i].name.toLowerCase() == selectedDivision ? ' selected' : '') + '>' + data[i].name + '</option>';
         }
         console.log(options);
         _('division').innerHTML = options;
