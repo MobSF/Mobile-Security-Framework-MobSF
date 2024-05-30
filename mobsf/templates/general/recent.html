@@ -8,27 +8,6 @@
 <link href="{% static 'adminlte/plugins/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'landing/css/recent.css' %}">
 
-<style>
-#app_icon {
-    width: 64px;
-    height: 64px;
-}
-.selected {
-    background-color: lightgreen !important;
-}
-
-.selectable_table tr:hover {
-    background-color: lightgreen !important;
-}
-
-.fa.disabled,
-.fa[disabled],
-.disabled > .fa,
-[disabled] > .fa {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-</style>
 {% endblock %}
 
 {% block content %}
@@ -217,8 +196,7 @@
                           title="The name of the mobile application as it appears (or will appear) in the applicable app store.">
                         </i>
                       </label>
-                      <input type="text" class="form-control" id="appname" placeholder="Application Name"
-                        onfocusout="lookupHandler" value="{{ e.USER_APP_NAME }}" required>
+                      <input type="text" class="form-control" id="appname" placeholder="Application Name" value="{{ e.USER_APP_NAME }}" required>
                       <div id="err_name" class="hidden"><span class="error">Application Name Required!</span>
                       </div>
                     </div>
@@ -230,7 +208,7 @@
                         </i>
                       </label>
                       <input type="text" class="form-control" style="width:90%" id="version" placeholder="Version"
-                        value="{{ e.USER_APP_VERSION }}" onfocusout="lookupHandler" required>
+                        value="{{ e.USER_APP_VERSION }}" required>
                       <div id="err_version" class="hidden"><span class="error">Version Required!</span>
                       </div>
                     </div>
@@ -239,7 +217,7 @@
                     <!-- Release -->
                     <div class="col-md-4">
                       <div style="margin-top:36px;">
-                        <input type="checkbox" id="release">
+                        <input type="checkbox" id="release" {% if e.RELEASE %} checked {% endif %}>
                         <label for="release" style="font-weight:500;">Release Version
                           <i class="fas fa-info-circle fa-lg" title="Select to mark mobile app as a release version.">
                           </i>
@@ -273,7 +251,7 @@
                       <i class="fas fa-info-circle fa-lg"
                         title="The organizational division applicable to the mobile application.">
                       </i>
-                      <select class="custom-select d-block w-100" id="divisionInput{{ e.MD5 }}" data="{{ e.DIVISION }}">
+                      <select class="custom-select d-block w-100" id="division">
                         <option>Unknown</option>
                       </select>
                       <div id="err_division" class="hidden"><span class="error">Division Required!</span>
@@ -287,6 +265,7 @@
                         <i class="fas fa-info-circle fa-lg"
                         title="The country (or countries) where the mobile app has been (or will be) released.">
                         </i>
+                        {{ e.COUNTRY }}
                         <select class="select2bs4" style="width: 100%" id="country" required multiple>
                           <option>Unknown</option>
                         </select>
@@ -301,21 +280,23 @@
   
                     <!-- Data Privacy -->
                     <div class="col-md-6">
-                      <label for="data_privacy_classification">Data Privacy
-                        <i class="fas fa-info-circle fa-lg"
-                          title="The data privacy classification for the mobile application.">
-                        </i>
-                      </label>
-                      <select class="custom-select d-block w-100" id="data_privacy_classification" size="1" required>
-                        <option value="Highly Restricted" {% if e.DATA_PRIVACY_CLASSIFICATION == "Highly Restricted" %} selected {% endif %}>Highly Restricted</option>
-                        <option value="Restricted" {% if e.DATA_PRIVACY_CLASSIFICATION == "Restricted" %} selected {% endif %}>Restricted</option>
-                        <option value="Internal Use Only" {% if e.DATA_PRIVACY_CLASSIFICATION == "Internal Use Only" %} selected {% endif %}>Internal Use Only</option>
-                        <option value="Public" {% if e.DATA_PRIVACY_CLASSIFICATION == "Public" %} selected {% endif %}>Public</option>
-                        <option value="Does Not Apply" {% if e.DATA_PRIVACY_CLASSIFICATION == "Does Not Apply" %} selected {% endif %}>Does Not Apply</option>
-                      </select>
-                      <div id="err_privacy" class="hidden">
-                        <span class="error">Data Privacy Required!</span>
-                      </div>
+                        <div class="form-group">
+                            <label for="data_privacy_classification">Data Privacy
+                                <i class="fas fa-info-circle fa-lg"
+                                title="The data privacy classification for the mobile application.">
+                                </i>
+                            </label>
+                            <select class="custom-select d-block w-100" id="data_privacy_classification" size="1" required>
+                                <option value="Highly Restricted" {% if e.DATA_PRIVACY_CLASSIFICATION == "Highly Restricted" %} selected {% endif %}>Highly Restricted</option>
+                                <option value="Restricted" {% if e.DATA_PRIVACY_CLASSIFICATION == "Restricted" %} selected {% endif %}>Restricted</option>
+                                <option value="Internal Use Only" {% if e.DATA_PRIVACY_CLASSIFICATION == "Internal Use Only" %} selected {% endif %}>Internal Use Only</option>
+                                <option value="Public" {% if e.DATA_PRIVACY_CLASSIFICATION == "Public" %} selected {% endif %}>Public</option>
+                                <option value="Does Not Apply" {% if e.DATA_PRIVACY_CLASSIFICATION == "Does Not Apply" %} selected {% endif %}>Does Not Apply</option>
+                            </select>
+                            <div id="err_privacy" class="hidden">
+                                <span class="error">Data Privacy Required!</span>
+                            </div>
+                        </div>
                     </div>
   
                     <!-- Data Privacy Attributes -->
@@ -325,6 +306,7 @@
                           <i class="fas fa-info-circle fa-lg"
                             title="The data privacy attributes for the mobile application.">
                           </i>
+                          {{ e.DATA_PRIVACY_ATTRIBUTES }}
                         </label>
                         <select class="select2bs4" style="width: 100%" id="data_privacy_attributes" required multiple>
                           <option>Unknown</option>
@@ -371,6 +353,10 @@
 <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
 <script src="{% static "others/js/dayjs.min.js" %}"></script>
 <script>
+    function _(el) {
+        return document.getElementById(el);
+    }
+
     // Diff functions
     var diff_first_md5 = '';
     var diff_first_name = '';
@@ -511,12 +497,11 @@
 
     function admin_edit_test(item){
         $("#edit_scan").modal('show');
-
-        populateDivisions($("#divisionInput" + item));
-
-        
+        populateCountries();
+        populateDataPrivacy();
+        /*populateDivisions($("#divisionInput" + item));
         populateCountries($("#countryInput" + item));
-        $("#country" + item).text($("#countryInput" + item).val());
+        $("#country" + item).text($("#countryInput" + item).val());*/
     }
 
     function admin_edit(item){
@@ -645,67 +630,69 @@
         });
     }
 
-    function populateDivisions(item) {
-        if (!window.cyberspectDivisions) {
-            var url = '{{tenant_static}}divisions.json';
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    window.cyberspectDivisions = data;
-                    populateSelectList(item, window.cyberspectDivisions);
-                });
-        }
-        else { populateSelectList(item, window.cyberspectDivisions); }
-    }
+    var selectedDivision = "{{ e.DIVISION }}";
+    console.log("selectedDivision: " + selectedDivision);
 
-    function populateCountries(item) {
-        if (!window.cyberspectCountries) {
-            var url = '{{tenant_static}}countries.json';
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    window.cyberspectCountries = data;
-                    populateSelectList(item, window.cyberspectCountries);
-                });
+    function populateDivisions() {
+    var divisionsUrl = '{{tenant_static}}divisions.json';
+    fetch(divisionsUrl)
+      .then(response => response.json())
+      .then(data => {
+        var options = '<option value=""></option>';
+        for (i = 0; i < data.length; i++) {
+            console.log("dataName: " + data[i].name);
+          options += '<option value="' + data[i].id + '"' + (data[i].name == selectedDivision ? ' selected' : '') + '>' + data[i].name + '</option>';
         }
-        else { populateSelectList(item, window.cyberspectCountries); }
+        console.log(options);
+        _('division').innerHTML = options;
+      });
+  }
+
+    function populateCountries() {
+    var countriesUrl = '{{tenant_static}}countries.json';
+    fetch(countriesUrl)
+      .then(response => response.json())
+      .then(data => {
+        var options = '<option value="GLOBAL" selected>Global</option>';
+        for (i = 0; i < data.length; i++) {
+          options += '<option value="' + data[i].code + '">' + data[i].name + '</option>';
+        }
+        _('country').innerHTML = options;
+      });
     }
 
     function populateDataPrivacy() {
-        if (!window.cyberspectDataPrivacy) {
-            var url = '{{tenant_static}}data-privacy-attributes.json';
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    window.cyberspectDataPrivacy = data;
-                    populateSelectList(item, window.cyberspectDataPrivacy, true);
-                });
-        }
-        else { populateSelectList(item, window.cyberspectDataPrivacy, true); }
-    }
-
-    function populateSelectList(item, data, prefix=false) {
+    var privacyAttributesUrl = '{{tenant_static}}data-privacy-attributes.json';
+    fetch(privacyAttributesUrl)
+      .then(response => response.json())
+      .then(data => {
         var options = '';
         for (i = 0; i < data.length; i++) {
-            if (prefix) {
-                options += '<option value="' + data[i].id + '">' + data[i].id + ": " + data[i].name + '</option>';
-            }
-            else {
-                options += '<option value="' + data[i].id + '">' + data[i].name + '</option>';
-            }
-        }        
-        item.html(options);
-        item.val(item.attr("data"));
+          options += '<option value="' + data[i].id + '">' + data[i].id + ": " + data[i].name + '</option>';
+        }
+        console.log(data);
+        _('data_privacy_attributes').innerHTML = options;
+      });
     }
   
     $(document).ready(function() {
+        populateDivisions();
+        populateCountries();
+        populateDataPrivacy();
+
+        //Initialize Select2 Elements
+        $('.select2').select2();
+        $('.select2bs4').select2({
+        theme: 'bootstrap4'
+        });
+
         enable_diff_button(); 
 
-        if ($("span.badge.bg-warning").length > 0) {
+        /*if ($("span.badge.bg-warning").length > 0) {
             window.setTimeout(function() {
                 window.location.reload();
             }, 30000);
-        }
+        } */
 
         $("span.scandate").each(function() {
             this.innerText = dayjs(this.innerText).format("MMM D, YYYY h:mm A")
