@@ -44,6 +44,7 @@ urlpatterns = [
     re_path(r'^api/v1/update_scan$', api_sz.api_update_scan),
     re_path(r'^api/v1/scan_metadata$', api_sz.api_scan_metadata),
     re_path(r'^api/v1/delete_scan$', api_sz.api_delete_scan),
+    re_path(r'^api/v1/download$', api_sz.api_download),
     re_path(r'^api/v1/download_pdf$', api_sz.api_pdf_report),
     re_path(r'^api/v1/report_json$', api_sz.api_json_report),
     re_path(r'^api/v1/view_source$', api_sz.api_view_source,

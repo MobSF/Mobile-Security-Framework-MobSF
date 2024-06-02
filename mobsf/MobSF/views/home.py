@@ -605,7 +605,7 @@ def download(request):
     return HttpResponse(status=404)
 
 
-def generate_download(request):
+def generate_download(request, api=False):
     """Generate downloads for uploaded binaries/source."""
     try:
         binary = ('apk', 'ipa', 'jar', 'aar', 'so', 'dylib', 'a')
@@ -640,9 +640,12 @@ def generate_download(request):
             # Binaries
             file_name = f'{md5}.{file_type}'
             src = app_dir / file_name
-            dst = dwd_dir / file_name
-            shutil.copy2(src.as_posix(), dst.as_posix())
-        return redirect(f'/download/{file_name}')
+            dwd_file = dwd_dir / file_name
+            shutil.copy2(src.as_posix(), dwd_file.as_posix())
+        if not api:
+            return redirect(f'/download/{file_name}')
+        else:
+            return {'file_name': dwd_file}
     except Exception:
         msg = 'Generating Downloads'
         logger.exception(msg)

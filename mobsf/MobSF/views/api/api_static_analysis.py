@@ -1,17 +1,20 @@
 # -*- coding: utf_8 -*-
 """MobSF REST API V 1."""
 import logging
+import os
 import traceback as tb
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
+from wsgiref.util import FileWrapper
+
 from mobsf.MobSF.utils import make_api_response, sso_email, utcnow
 from mobsf.MobSF.views.helpers import request_method
 from mobsf.MobSF.views.home import (RecentScans, Upload, cyberspect_rescan,
-                                    delete_scan, get_cyberspect_scan,
-                                    scan_metadata, update_cyberspect_scan,
-                                    update_scan)
+                                    delete_scan, generate_download,
+                                    get_cyberspect_scan, scan_metadata,
+                                    update_cyberspect_scan, update_scan)
 from mobsf.StaticAnalyzer.views.android import view_source
 from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
 from mobsf.StaticAnalyzer.views.ios import view_source as ios_view_source
@@ -151,6 +154,26 @@ def api_delete_scan(request):
         response = make_api_response(resp, 500)
     else:
         response = make_api_response(resp, 200)
+    return response
+
+
+@request_method(['GET'])
+@csrf_exempt
+def api_download(request):
+    """GET - Download an app package file."""
+    if 'hash' not in request.GET or 'file_type' not in request.GET:
+        return make_api_response(
+            {'error': 'Missing Parameters'}, 422)
+    resp = generate_download(request, True)
+    if 'error' in resp:
+        response = make_api_response(resp, 500)
+    else:
+        wrapper = FileWrapper(
+            open(resp['file_name'], 'rb'))
+        response = HttpResponse(
+            wrapper, status=200, content_type='application/octet-stream')
+        response['Content-Length'] = os.path.getsize(resp['file_name'])
+        return response
     return response
 
 
