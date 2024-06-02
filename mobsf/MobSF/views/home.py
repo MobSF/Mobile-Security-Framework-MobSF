@@ -638,14 +638,14 @@ def generate_download(request, api=False):
             file_name = f'{md5}-smali.zip'
         elif file_type in binary:
             # Binaries
-            file_name = f'{md5}.{file_type}'
-            src = app_dir / file_name
-            dwd_file = dwd_dir / file_name
-            shutil.copy2(src.as_posix(), dwd_file.as_posix())
+            src_file_name = f'{md5}.{file_type}'
+            src = app_dir / src_file_name
+            file_name = dwd_dir / src_file_name
+            shutil.copy2(src.as_posix(), file_name.as_posix())
         if not api:
             return redirect(f'/download/{file_name}')
         else:
-            return {'file_name': dwd_file}
+            return {'file_name': file_name}
     except Exception:
         msg = 'Generating Downloads'
         logger.exception(msg)

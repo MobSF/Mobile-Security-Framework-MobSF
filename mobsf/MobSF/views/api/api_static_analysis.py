@@ -166,7 +166,7 @@ def api_download(request):
             {'error': 'Missing Parameters'}, 422)
     resp = generate_download(request, True)
     if 'error' in resp:
-        response = make_api_response(resp, 500)
+        response = make_api_response(resp, 404)
     else:
         wrapper = FileWrapper(
             open(resp['file_name'], 'rb'))
