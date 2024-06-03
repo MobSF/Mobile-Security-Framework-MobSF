@@ -14,6 +14,7 @@ from mobsf.MalwareAnalyzer.views.android import (
     quark,
 )
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import MalwareDomainCheck
+from mobsf.StaticAnalyzer.views.common.prompts import AndroidPrompts
 
 from django.conf import settings
 from django.http import HttpResponseRedirect
@@ -253,6 +254,10 @@ def static_analyzer(request, checksum, api=False):
                     app_dic['app_dir'],
                     app_dic['md5'],
                     'elf')
+                ap = AndroidPrompts()
+                if ap:
+                    out = ap.shared_object_identifier(elf_dict['elf_analysis'])
+                    print(out)
                 cert_dic = cert_info(
                     apk,
                     app_dic,

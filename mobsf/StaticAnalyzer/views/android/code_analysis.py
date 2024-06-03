@@ -78,6 +78,13 @@ def code_analysis(app_dir, typ, manifest_file, android_permissions):
         app_dir = Path(app_dir)
         src = get_android_src_dir(app_dir, typ).as_posix() + '/'
         skp = settings.SKIP_CLASS_PATH
+        from mobsf.StaticAnalyzer.views.common.prompts import (
+            AndroidPrompts,
+        )
+        ap = AndroidPrompts()
+        if ap:
+            out = ap.package_name_identifier(src)
+            print(out)
         logger.info('Code Analysis Started on - %s',
                     filename_from_path(src))
         # Code Analysis
