@@ -882,7 +882,8 @@ class RecentScans(object):
     def release_scans(self):
         page = self.request.GET.get('page', 1)
         page_size = self.request.GET.get('page_size', 10)
-        scans = RecentScansDB.objects.filter(RELEASE=True)
+        scans = RecentScansDB.objects.filter(RELEASE=True) \
+            .exclude(ENVIRONMENT='Decommissioned')
         result = scans.values().order_by('APP_NAME', 'VERSION_NAME')
         try:
             paginator = Paginator(result, page_size)
