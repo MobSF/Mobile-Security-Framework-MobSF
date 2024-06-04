@@ -646,10 +646,10 @@ def generate_download(request, api=False):
             return redirect(f'/download/{file_name}')
         else:
             return {'file_name': file_name}
-    except Exception:
-        msg = 'Generating Downloads'
-        logger.exception(msg)
-        return error_response(request, msg)
+    except Exception as exp:
+        exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+        logger.error(exmsg)
+        return error_response(request, str(exp), api)
 
 
 def delete_scan(request, api=False):

@@ -166,8 +166,12 @@ def api_download(request):
             {'error': 'Missing Parameters'}, 422)
     resp = generate_download(request, True)
     if 'error' in resp:
-        response = make_api_response(resp, 404)
+        if 'No such file or directory' in resp['error']:
+            response = make_api_response(resp, 404)
+        else:
+            response = make_api_response(resp, 500)
     else:
+        print(resp)
         wrapper = FileWrapper(
             open(resp['file_name'], 'rb'))
         response = HttpResponse(
