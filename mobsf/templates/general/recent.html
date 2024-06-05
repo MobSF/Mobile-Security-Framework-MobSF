@@ -12,7 +12,17 @@
 
 {% block content %}
 
+<script>
+  const uploadedApps = [];
+</script>
+
 {% for e in entries %}
+
+<script>
+  
+  uploadedApps.push({ appHash: '{{ e.MD5 }}', appVersion: '{{ e.USER_APP_NAME }}', appDivision: '{{ e.DIVISION }}', appEnvironment: '{{ e.ENVIRONMENT}}', appCountry: '{{ e.COUNTRY|default_if_none:""}}', appDataPrivacyClassification: '{{ e.DATA_PRIVACY_CLASSIFICATION|default_if_none:""}}', appDataPrivacyAttributes: '{{ e.DATA_PRIVACY_ATTRIBUTES|default_if_none:""}}', appEmail: '{{ e.EMAIL }}' });
+
+</script>
 
 <div class="content-wrapper">
   <div class="content-header">
@@ -96,7 +106,7 @@
                                     <div id="dataPrivacyAttributes{{e.MD5}}">{{e.DATA_PRIVACY_ATTRIBUTES|default_if_none:""}}</div>
                                     <div id="email{{e.MD5}}">{{e.EMAIL}}</div>
                                 </div>
-                                <div id="editFields{{e.MD5}}" class="editFields" style="display:none">
+                                <!-- <div id="editFields{{e.MD5}}" class="editFields" style="display:none">
                                     <div><input type="text" id="userAppNameInput{{e.MD5}}" value="{{e.USER_APP_NAME}}" title="User supplied app name"/></div>
                                     <div><input type="text" id="userAppVersionInput{{e.MD5}}" value="{{e.USER_APP_VERSION}}" title="User supplied app version"/></div>
                                     <div><select id="divisionInput{{e.MD5}}" data="{{e.DIVISION}}" title="Division"></select></div>
@@ -120,7 +130,7 @@
                                     <div><input type="text" id="dataPrivacyAttributesInput{{e.MD5}}" value="{{e.DATA_PRIVACY_ATTRIBUTES|default_if_none:''}}" title="Data privacy attributes"/></div>
                                     <div><input type="text" id="emailInput{{e.MD5}}" value="{{e.EMAIL}}" /></div>
                                     <div><input type="checkbox" id="releaseInput{{e.MD5}}" {% if e.RELEASE %}checked{% endif %}/><label for="releaseInput{{e.MD5}}"> Release Version</label></div>
-                                </div>                                
+                                </div>    -->                             
                             </td>                               
                             {% endif %}
                             <td>
@@ -142,7 +152,7 @@
                                     {% endif %}
                                 </p>
                                 <p>
-                                    <a class="btn btn-outline-primary btn-sm" id="adminEdit{{e.MD5}}" onclick="admin_edit_test('{{e.MD5}}')" href="javascript:void(0);"><i class="fas fa-pen" title="Edit Scan"></i></a>
+                                    <a class="btn btn-outline-primary btn-sm" id="adminEdit{{e.MD5}}" onclick="admin_edit_modal()" href="javascript:void(0);"><i class="fas fa-pen" title="Edit Scan"></i></a>
                                     <a class="btn btn-outline-primary btn-sm" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="javascript:void(0);"><i class="fas fa-trash" title="Delete Scan"></i></a>
                                     {% if e.COMPLETE %}                                        
                                         <a class="btn btn-outline-primary btn-sm" href="../pdf/?md5={{ e.MD5 }}"><i class="fas fa-file-pdf" title="PDF Report"></i></a>                                                                                                                  
@@ -503,6 +513,10 @@
                 diff_cleanup();
         }
         });
+    }
+
+    function admin_edit_modal(){
+      console.log(uploadedApps);
     }
 
     function admin_edit_test(item){
