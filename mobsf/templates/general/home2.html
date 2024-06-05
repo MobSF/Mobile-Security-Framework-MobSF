@@ -236,7 +236,6 @@ sidebar-collapse
   }
   function progressHandler(event) {
     var percent = (event.loaded / event.total) * 100;
-    console.log("Uploaded..." + Math.round(percent));
     _("progressBar").value = Math.round(percent);
     _("status").innerText = Math.round(percent) + "% Uploaded...";
   }
@@ -444,8 +443,6 @@ sidebar-collapse
 
     $('#country').change(function() {
       // If GLOBAL and other options are selected in country dropdown, remove GLOBAL
-      console.log($('#country').val());
-      console.log($('#country').val().join(',').replace('GLOBAL,', ''));
       if ($('#country').val().indexOf('GLOBAL') >= 0 && $('#country').val().length > 1) {
         if ($('#country').val().length > 2) {
           $('#country').val('GLOBAL');

@@ -11,7 +11,9 @@
 {% endblock %}
 
 {% block content %}
+
 {% for e in entries %}
+
 <div class="content-wrapper">
   <div class="content-header">
   </div>
@@ -188,7 +190,7 @@
                   {% csrf_token %}
   
                   <div class="row"> <!-- first row -->
-  
+
                     <!-- Application Name -->
                     <div class="col-md-5">
                       <label for="appname">Application Name
@@ -254,6 +256,7 @@
                       <i class="fas fa-info-circle fa-lg"
                         title="The organizational division applicable to the mobile application.">
                       </i>
+                      {{ e.DIVISION }}
                       <select class="custom-select d-block w-100" id="division">
                         <option>Unknown</option>
                       </select>
@@ -262,6 +265,10 @@
                     </div>
   
                     <!-- Country -->
+                    <script>
+                      var selectedCountry = "{{ e.COUNTRY }}";
+                      console.log("Raw Country Data: " + selectedCountry);
+                  </script>
                     <div class="col-md-6">
                       <div class="form-group">
                         <label for="country">Country</label>
@@ -633,9 +640,6 @@
         });
     }
 
-    
-    console.log("selectedDivision: " + selectedDivision);
-
     function populateDivisions() {
     var divisionsUrl = '{{tenant_static}}divisions.json';
     fetch(divisionsUrl)
@@ -643,10 +647,9 @@
       .then(data => {
         var options = '<option value=""></option>';
         for (i = 0; i < data.length; i++) {
-            console.log("dataName: " + data[i].name.toLowerCase());
-          options += '<option value="' + data[i].id + '"' + (data[i].name.toLowerCase() == selectedDivision ? ' selected' : '') + '>' + data[i].name + '</option>';
+          options += '<option value="' + data[i].id + '"' + (data[i].name.toLowerCase() == selectedDivision ? ' selected="selected"' : '') + '>' + data[i].name + '</option>';
+          //console.log("Selected Division: " + (data[i].name).toLowerCase());
         }
-        console.log(options);
         _('division').innerHTML = options;
       });
   }
@@ -656,9 +659,9 @@
     fetch(countriesUrl)
       .then(response => response.json())
       .then(data => {
-        var options = '<option value="GLOBAL" selected>Global</option>';
+        var options = '<option value="GLOBAL"' + (selectedCountry == "GLOBAL" ? " selected" : "") + '>' + 'Global</option>';
         for (i = 0; i < data.length; i++) {
-          options += '<option value="' + data[i].code + '">' + data[i].name + '</option>';
+          options += '<option value="' + data[i].code + '"' + (data[i].name.toLowerCase() == selectedCountry ? ' selected' : '') + '>' + data[i].name + '</option>';
         }
         _('country').innerHTML = options;
       });
@@ -673,7 +676,6 @@
         for (i = 0; i < data.length; i++) {
           options += '<option value="' + data[i].id + '">' + data[i].id + ": " + data[i].name + '</option>';
         }
-        console.log(data);
         _('data_privacy_attributes').innerHTML = options;
       });
     }
@@ -682,12 +684,6 @@
         populateDivisions();
         populateCountries();
         populateDataPrivacy();
-
-        //Initialize Select2 Elements
-        $('.select2').select2();
-        $('.select2bs4').select2({
-        theme: 'bootstrap4'
-        });
 
         enable_diff_button(); 
 
@@ -700,6 +696,19 @@
         $("span.scandate").each(function() {
             this.innerText = dayjs(this.innerText).format("MMM D, YYYY h:mm A")
         });
+    });
+
+    //Initialize Select2 Elements after modal is shown
+    $('#edit_scan').on('shown.bs.modal', function() {
+      
+      $('#country').select2({
+          theme: 'bootstrap4'
+      });
+      
+      $('#data_privacy_attributes').select2({
+          theme: 'bootstrap4'
+      });
+
     });
 
 </script>
