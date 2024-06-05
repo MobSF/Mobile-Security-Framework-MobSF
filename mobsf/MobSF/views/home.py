@@ -608,14 +608,15 @@ def download(request):
 def generate_download(request, api=False):
     """Generate downloads for uploaded binaries/source."""
     try:
-        binary = ('apk', 'ipa', 'jar', 'aar', 'so', 'dylib', 'a')
+        exts = ('apk', 'ipa', 'jar', 'aar', 'so', 'dylib', 'a',
+                'zip', 'apk.src', 'ipa.src')
         source = ('smali', 'java')
         logger.info('Generating Downloads')
         md5 = request.GET['hash']
         file_type = request.GET['file_type']
         match = re.match('^[0-9a-f]{32}$', md5)
         if (not match
-                or file_type not in binary + source):
+                or file_type not in exts + source):
             msg = 'Invalid download type or hash'
             logger.exception(msg)
             return error_response(request, msg)
@@ -636,8 +637,7 @@ def generate_download(request, api=False):
             shutil.make_archive(
                 dwd_file.as_posix(), 'zip', directory.as_posix())
             file_name = f'{md5}-smali.zip'
-        elif file_type in binary:
-            # Binaries
+        else:
             src_file_name = f'{md5}.{file_type}'
             src = app_dir / src_file_name
             file_name = dwd_dir / src_file_name
