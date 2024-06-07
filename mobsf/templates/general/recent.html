@@ -13,14 +13,17 @@
 {% block content %}
 
 <script>
-  const uploadedApps = [];
+  const uploadedApps = {};
 </script>
 
 {% for e in entries %}
 
 <script>
-  
-  uploadedApps.push({ appHash: '{{ e.MD5 }}', appVersion: '{{ e.USER_APP_NAME }}', appDivision: '{{ e.DIVISION }}', appEnvironment: '{{ e.ENVIRONMENT}}', appCountry: '{{ e.COUNTRY|default_if_none:""}}', appDataPrivacyClassification: '{{ e.DATA_PRIVACY_CLASSIFICATION|default_if_none:""}}', appDataPrivacyAttributes: '{{ e.DATA_PRIVACY_ATTRIBUTES|default_if_none:""}}', appEmail: '{{ e.EMAIL }}' });
+  function addUploadedApp(hash, data){
+    uploadedApps[hash] = data;
+  }
+
+  addUploadedApp('app_{{e.MD5}}',{ appHash: '{{ e.MD5 }}', appVersion: '{{ e.USER_APP_NAME }}', appDivision: '{{ e.DIVISION }}', appEnvironment: '{{ e.ENVIRONMENT}}', appCountry: '{{ e.COUNTRY|default_if_none:""}}', appDataPrivacyClassification: '{{ e.DATA_PRIVACY_CLASSIFICATION|default_if_none:""}}', appDataPrivacyAttributes: '{{ e.DATA_PRIVACY_ATTRIBUTES|default_if_none:""}}', appEmail: '{{ e.EMAIL }}' });
 
 </script>
 
@@ -105,32 +108,7 @@
                                     <div id="dataPrivacyClassification{{e.MD5}}">{{e.DATA_PRIVACY_CLASSIFICATION|default_if_none:""}}</div>
                                     <div id="dataPrivacyAttributes{{e.MD5}}">{{e.DATA_PRIVACY_ATTRIBUTES|default_if_none:""}}</div>
                                     <div id="email{{e.MD5}}">{{e.EMAIL}}</div>
-                                </div>
-                                <!-- <div id="editFields{{e.MD5}}" class="editFields" style="display:none">
-                                    <div><input type="text" id="userAppNameInput{{e.MD5}}" value="{{e.USER_APP_NAME}}" title="User supplied app name"/></div>
-                                    <div><input type="text" id="userAppVersionInput{{e.MD5}}" value="{{e.USER_APP_VERSION}}" title="User supplied app version"/></div>
-                                    <div><select id="divisionInput{{e.MD5}}" data="{{e.DIVISION}}" title="Division"></select></div>
-                                    <div>
-                                        <select id="environmentInput{{e.MD5}}" data="{{e.ENVIRONMENT}}" title="Environment">
-                                            <option>Production</option>
-                                            <option>Preproduction</option>
-                                            <option>Decommissioned</option>
-                                        </select>
-                                    </div>                                    
-                                    <div><input type="text" id="countryInput{{e.MD5}}" value="{{e.COUNTRY|default_if_none:''}}" title="Countries"/></div>                                    
-                                    <div>
-                                        <select id="dataPrivacyClassificationInput{{e.MD5}}" data="{{e.DATA_PRIVACY_CLASSIFICATION|default_if_none:''}}" title="Data privacy classification">
-                                            <option>Highly Restricted</option>
-                                            <option>Restricted</option>
-                                            <option>Internal Use Only</option>
-                                            <option>Public</option>
-                                            <option>Does Not Apply</option>
-                                        </select>
-                                    </div>                                    
-                                    <div><input type="text" id="dataPrivacyAttributesInput{{e.MD5}}" value="{{e.DATA_PRIVACY_ATTRIBUTES|default_if_none:''}}" title="Data privacy attributes"/></div>
-                                    <div><input type="text" id="emailInput{{e.MD5}}" value="{{e.EMAIL}}" /></div>
-                                    <div><input type="checkbox" id="releaseInput{{e.MD5}}" {% if e.RELEASE %}checked{% endif %}/><label for="releaseInput{{e.MD5}}"> Release Version</label></div>
-                                </div>    -->                             
+                                </div>                           
                             </td>                               
                             {% endif %}
                             <td>
@@ -152,7 +130,7 @@
                                     {% endif %}
                                 </p>
                                 <p>
-                                    <a class="btn btn-outline-primary btn-sm" id="adminEdit{{e.MD5}}" onclick="admin_edit_modal()" href="javascript:void(0);"><i class="fas fa-pen" title="Edit Scan"></i></a>
+                                    <a class="btn btn-outline-primary btn-sm" id="adminEdit{{e.MD5}}" data-name="{{e.MD5}}" onclick="admin_edit_modal('{{e.MD5}}')" href="javascript:void(0);"><i class="fas fa-pen" title="Edit Scan"></i></a>
                                     <a class="btn btn-outline-primary btn-sm" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="javascript:void(0);"><i class="fas fa-trash" title="Delete Scan"></i></a>
                                     {% if e.COMPLETE %}                                        
                                         <a class="btn btn-outline-primary btn-sm" href="../pdf/?md5={{ e.MD5 }}"><i class="fas fa-file-pdf" title="PDF Report"></i></a>                                                                                                                  
@@ -174,200 +152,200 @@
      </div>
     </div>
 </div>
+{% endfor %}
 
 <!--  Edit Scan Modal -->
 <div class="modal" id="edit_scan" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-xl">
-      <div class="modal-content">
-        
-        <div class="modal-header">
-          <h3 class="modal-title">Edit Recent Scan</h3>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="close_edit_scan_modal()">
-            <span aria-hidden="true">×</span>
-          </button>
-        </div>
-        <div class="modal-body">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Recent Scan</h3>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="close_edit_scan_modal()">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="modal-body">
 
-            <div class="inner cover">
-                
-                <h5 class="box-title">
-                    <b>FILE:</b> {{ e.FILE_NAME }}<br />
-                    <b>HASH:</b> {{ e.MD5 }}<br />
-                    <b>DATE:</b> <span class="scandate">{{ e.TIMESTAMP|date:'c' }}</span><br />
-                </h5>         
+          <div class="inner cover">
+              
+              <h5 class="box-title">
+                  <b>FILE:</b> {{ e.FILE_NAME }}<br />
+                  <b>HASH:</b> {{ e.MD5 }}<br />
+                  <b>DATE:</b> <span class="scandate">{{ e.TIMESTAMP|date:'c' }}</span><br />
+              </h5>         
 
-                <form id="edit_scan_form" novalidate enctype="multipart/form-data" method="post">
-                  {% csrf_token %}
-  
-                  <div class="row"> <!-- first row -->
+              <form id="edit_scan_form" novalidate enctype="multipart/form-data" method="post">
+                {% csrf_token %}
 
-                    <!-- Application Name -->
-                    <div class="col-md-5">
-                      <label for="appname">Application Name
-                        <i class="fas fa-info-circle fa-lg"
-                          title="The name of the mobile application as it appears (or will appear) in the applicable app store.">
-                        </i>
-                      </label>
-                      <input type="text" class="form-control" id="appname" placeholder="Application Name" value="{{ e.USER_APP_NAME }}" required>
-                      <div id="err_name" class="hidden"><span class="error">Application Name Required!</span>
-                      </div>
-                    </div>
-  
-                    <!-- Version -->
-                    <div class="col-md-2">
-                      <label for="version">Version
-                        <i class="fas fa-info-circle fa-lg" title="The version of the mobile application.">
-                        </i>
-                      </label>
-                      <input type="text" class="form-control" style="width:90%" id="version" placeholder="Version"
-                        value="{{ e.USER_APP_VERSION }}" required>
-                      <div id="err_version" class="hidden"><span class="error">Version Required!</span>
-                      </div>
-                    </div>
-  
-                    {% if is_admin %}
-                    <!-- Release -->
-                    <div class="col-md-4">
-                      <div style="margin-top:36px;">
-                        <input type="checkbox" id="release" {% if e.RELEASE %} checked {% endif %}>
-                        <label for="release" style="font-weight:500;">Release Version
-                          <i class="fas fa-info-circle fa-lg" title="Select to mark mobile app as a release version.">
-                          </i>
-                        </label>
-                      </div>
-                    </div>
-                    {% endif %}
-  
-                  </div> <!-- end of first row -->
-  
-                  <hr class="edit_scan-form-hr">
-  
-                  <div class="row"> <!-- second row -->
-  
-                    <!-- Environment -->
-                    <div class="col-md-3">
-                      <label for="environment">Environment
-                        <i class="fas fa-info-circle fa-lg" title="The release status of the mobile application.">
-                        </i>
-                      </label>
-                      <select class="custom-select w-100" id="environment">
-                        <option value="Production" {% if e.ENVIRONMENT == "Production" %} selected {% endif %}>Production</option>
-                        <option value="Preproduction" {% if e.ENVIRONMENT == "Preproduction" %} selected {% endif %}>Preproduction</option>
-                        <option value="Decommissioned" {% if e.ENVIRONMENT == "Decommissioned" %} selected {% endif %}>Decommissioned</option>
-                      </select>
-                    </div>
-  
-                    <!-- Division -->
-                    <script>
-                        var selectedDivision = "{{ e.DIVISION }}";
-                    </script>
-                    <div class="col-md-3">
-                      <label for="division">Division</label>
+                <div class="row"> <!-- first row -->
+
+                  <!-- Application Name -->
+                  <div class="col-md-5">
+                    <label for="appname">Application Name
                       <i class="fas fa-info-circle fa-lg"
-                        title="The organizational division applicable to the mobile application.">
+                        title="The name of the mobile application as it appears (or will appear) in the applicable app store.">
                       </i>
-                      {{ e.DIVISION }}
-                      <select class="custom-select d-block w-100" id="division">
+                    </label>
+                    <input type="text" class="form-control" id="appname" placeholder="Application Name" value="{{ e.USER_APP_NAME }}" required>
+                    <div id="err_name" class="hidden"><span class="error">Application Name Required!</span>
+                    </div>
+                  </div>
+
+                  <!-- Version -->
+                  <div class="col-md-2">
+                    <label for="version">Version
+                      <i class="fas fa-info-circle fa-lg" title="The version of the mobile application.">
+                      </i>
+                    </label>
+                    <input type="text" class="form-control" style="width:90%" id="version" placeholder="Version"
+                      value="{{ e.USER_APP_VERSION }}" required>
+                    <div id="err_version" class="hidden"><span class="error">Version Required!</span>
+                    </div>
+                  </div>
+
+                  {% if is_admin %}
+                  <!-- Release -->
+                  <div class="col-md-4">
+                    <div style="margin-top:36px;">
+                      <input type="checkbox" id="release" {% if e.RELEASE %} checked {% endif %}>
+                      <label for="release" style="font-weight:500;">Release Version
+                        <i class="fas fa-info-circle fa-lg" title="Select to mark mobile app as a release version.">
+                        </i>
+                      </label>
+                    </div>
+                  </div>
+                  {% endif %}
+
+                </div> <!-- end of first row -->
+
+                <hr class="edit_scan-form-hr">
+
+                <div class="row"> <!-- second row -->
+
+                  <!-- Environment -->
+                  <div class="col-md-3">
+                    <label for="environment">Environment
+                      <i class="fas fa-info-circle fa-lg" title="The release status of the mobile application.">
+                      </i>
+                    </label>
+                    <select class="custom-select w-100" id="environment">
+                      <option value="Production" {% if e.ENVIRONMENT == "Production" %} selected {% endif %}>Production</option>
+                      <option value="Preproduction" {% if e.ENVIRONMENT == "Preproduction" %} selected {% endif %}>Preproduction</option>
+                      <option value="Decommissioned" {% if e.ENVIRONMENT == "Decommissioned" %} selected {% endif %}>Decommissioned</option>
+                    </select>
+                  </div>
+
+                  <!-- Division -->
+                  <script>
+                      var selectedDivision = "{{ e.DIVISION }}";
+                  </script>
+                  <div class="col-md-3">
+                    <label for="division">Division</label>
+                    <i class="fas fa-info-circle fa-lg"
+                      title="The organizational division applicable to the mobile application.">
+                    </i>
+                    {{ e.DIVISION }}
+                    <select class="custom-select d-block w-100" id="division">
+                      <option>Unknown</option>
+                    </select>
+                    <div id="err_division" class="hidden"><span class="error">Division Required!</span>
+                    </div>
+                  </div>
+
+                  <!-- Country -->
+                  <script>
+                    var selectedCountry = "{{ e.COUNTRY }}";
+                </script>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="country">Country</label>
+                      <i class="fas fa-info-circle fa-lg"
+                      title="The country (or countries) where the mobile app has been (or will be) released.">
+                      </i>
+                      {{ e.COUNTRY }}
+                      <select class="select2bs4" style="width: 100%" id="country" required multiple>
                         <option>Unknown</option>
                       </select>
-                      <div id="err_division" class="hidden"><span class="error">Division Required!</span>
-                      </div>
                     </div>
-  
-                    <!-- Country -->
-                    <script>
-                      var selectedCountry = "{{ e.COUNTRY }}";
-                      console.log("Raw Country Data: " + selectedCountry);
-                  </script>
-                    <div class="col-md-6">
+                  </div>
+
+                </div> <!-- end of second row -->
+
+                <hr class="edit_scan-form-hr">
+
+                <div class="row"> <!-- third row -->
+
+                  <!-- Data Privacy -->
+                  <div class="col-md-6">
                       <div class="form-group">
-                        <label for="country">Country</label>
-                        <i class="fas fa-info-circle fa-lg"
-                        title="The country (or countries) where the mobile app has been (or will be) released.">
-                        </i>
-                        {{ e.COUNTRY }}
-                        <select class="select2bs4" style="width: 100%" id="country" required multiple>
-                          <option>Unknown</option>
-                        </select>
+                          <label for="data_privacy_classification">Data Privacy
+                              <i class="fas fa-info-circle fa-lg"
+                              title="The data privacy classification for the mobile application.">
+                              </i>
+                          </label>
+                          <select class="custom-select d-block w-100" id="data_privacy_classification" size="1" required>
+                              <option value="Highly Restricted" {% if e.DATA_PRIVACY_CLASSIFICATION == "Highly Restricted" %} selected {% endif %}>Highly Restricted</option>
+                              <option value="Restricted" {% if e.DATA_PRIVACY_CLASSIFICATION == "Restricted" %} selected {% endif %}>Restricted</option>
+                              <option value="Internal Use Only" {% if e.DATA_PRIVACY_CLASSIFICATION == "Internal Use Only" %} selected {% endif %}>Internal Use Only</option>
+                              <option value="Public" {% if e.DATA_PRIVACY_CLASSIFICATION == "Public" %} selected {% endif %}>Public</option>
+                              <option value="Does Not Apply" {% if e.DATA_PRIVACY_CLASSIFICATION == "Does Not Apply" %} selected {% endif %}>Does Not Apply</option>
+                          </select>
+                          <div id="err_privacy" class="hidden">
+                              <span class="error">Data Privacy Required!</span>
+                          </div>
                       </div>
-                    </div>
-  
-                  </div> <!-- end of second row -->
-  
-                  <hr class="edit_scan-form-hr">
-  
-                  <div class="row"> <!-- third row -->
-  
-                    <!-- Data Privacy -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="data_privacy_classification">Data Privacy
-                                <i class="fas fa-info-circle fa-lg"
-                                title="The data privacy classification for the mobile application.">
-                                </i>
-                            </label>
-                            <select class="custom-select d-block w-100" id="data_privacy_classification" size="1" required>
-                                <option value="Highly Restricted" {% if e.DATA_PRIVACY_CLASSIFICATION == "Highly Restricted" %} selected {% endif %}>Highly Restricted</option>
-                                <option value="Restricted" {% if e.DATA_PRIVACY_CLASSIFICATION == "Restricted" %} selected {% endif %}>Restricted</option>
-                                <option value="Internal Use Only" {% if e.DATA_PRIVACY_CLASSIFICATION == "Internal Use Only" %} selected {% endif %}>Internal Use Only</option>
-                                <option value="Public" {% if e.DATA_PRIVACY_CLASSIFICATION == "Public" %} selected {% endif %}>Public</option>
-                                <option value="Does Not Apply" {% if e.DATA_PRIVACY_CLASSIFICATION == "Does Not Apply" %} selected {% endif %}>Does Not Apply</option>
-                            </select>
-                            <div id="err_privacy" class="hidden">
-                                <span class="error">Data Privacy Required!</span>
-                            </div>
-                        </div>
-                    </div>
-  
-                    <!-- Data Privacy Attributes -->
-                    <div class="col-md-6">
-                      <div class="form-group">
-                        <label for="data_privacy_attributes">Data Privacy Attributes
-                          <i class="fas fa-info-circle fa-lg"
-                            title="The data privacy attributes for the mobile application.">
-                          </i>
-                          {{ e.DATA_PRIVACY_ATTRIBUTES }}
-                        </label>
-                        <select class="select2bs4" style="width: 100%" id="data_privacy_attributes" required multiple>
-                          <option>Unknown</option>
-                        </select>
-                      </div>
-                    </div>
-  
-                  </div> <!-- end of third row -->
-  
-                  <hr class="edit_scan-form-hr">
-  
-                  <div class="row"> <!-- fourth row -->
-  
-                    {% if is_admin %}
-                    <div class="col-md-6 mb-3">
-                      <label for="override_email" class="form-label">Email Address
+                  </div>
+
+                  <!-- Data Privacy Attributes -->
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="data_privacy_attributes">Data Privacy Attributes
                         <i class="fas fa-info-circle fa-lg"
-                          title="Email of the user(s) to receive notifications about this scan.">
+                          title="The data privacy attributes for the mobile application.">
                         </i>
+                        {{ e.DATA_PRIVACY_ATTRIBUTES }}
                       </label>
-                      <input style="width:100%" class="form-control" type="text" id="override_email"
-                        placeholder="Email Address" value="{{e.EMAIL}}">
-                      <div id="err_email" class="hidden"><span class="error">Email Invalid!</span></div>
+                      <select class="select2bs4" style="width: 100%" id="data_privacy_attributes" required multiple>
+                        <option>Unknown</option>
+                      </select>
                     </div>
-                    {% endif %}
-  
-                  </div> <!-- end of fourth row -->
-  
-                </form>
-              </div> <!-- end of inner-cover -->
-        </div>
+                  </div>
 
-        <div class="modal-footer">
-          <button type="button" data-dismiss="modal" class="btn btn-secondary disable" onclick="close_edit_scan_modal()">Cancel</button>
-          <button type="button" class="btn btn-secondary disable" onclick="edit_edit_scan_post(event)">Submit</button>
-        </div>
+                </div> <!-- end of third row -->
 
+                <hr class="edit_scan-form-hr">
+
+                <div class="row"> <!-- fourth row -->
+
+                  {% if is_admin %}
+                  <div class="col-md-6 mb-3">
+                    <label for="override_email" class="form-label">Email Address
+                      <i class="fas fa-info-circle fa-lg"
+                        title="Email of the user(s) to receive notifications about this scan.">
+                      </i>
+                    </label>
+                    <input style="width:100%" class="form-control" type="text" id="override_email"
+                      placeholder="Email Address" value="{{e.EMAIL}}">
+                    <div id="err_email" class="hidden"><span class="error">Email Invalid!</span></div>
+                  </div>
+                  {% endif %}
+
+                </div> <!-- end of fourth row -->
+
+              </form>
+            </div> <!-- end of inner-cover -->
       </div>
+
+      <div class="modal-footer">
+        <button type="button" data-dismiss="modal" class="btn btn-secondary disable" onclick="close_edit_scan_modal()">Cancel</button>
+        <button type="button" class="btn btn-secondary disable" onclick="edit_edit_scan_post(event)">Submit</button>
+      </div>
+
     </div>
   </div>
-{% endfor %}
+</div>
+
 {% endblock %}
 {% block extra_scripts %}
 <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
@@ -515,8 +493,10 @@
         });
     }
 
-    function admin_edit_modal(){
-      console.log(uploadedApps);
+    function admin_edit_modal(appHash){
+      console.log(uploadedApps["app_"+appHash].appDivision);
+      console.log(uploadedApps["app_"+appHash].appCountry);
+      console.log(uploadedApps["app_"+appHash].appEmail);
     }
 
     function admin_edit_test(item){
@@ -662,7 +642,6 @@
         var options = '<option value=""></option>';
         for (i = 0; i < data.length; i++) {
           options += '<option value="' + data[i].id + '"' + (data[i].name.toLowerCase() == selectedDivision ? ' selected="selected"' : '') + '>' + data[i].name + '</option>';
-          //console.log("Selected Division: " + (data[i].name).toLowerCase());
         }
         _('division').innerHTML = options;
       });
