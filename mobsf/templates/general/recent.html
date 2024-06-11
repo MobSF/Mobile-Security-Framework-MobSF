@@ -23,7 +23,7 @@
     uploadedApps[hash] = data;
   }
 
-  addUploadedApp('app_{{e.MD5}}',{ appHash: '{{ e.MD5 }}', appTimestamp: '{{ e.TIMESTAMP }}', appVersion: '{{ e.USER_APP_NAME }}', appDivision: '{{ e.DIVISION }}', appEnvironment: '{{ e.ENVIRONMENT}}', appCountry: '{{ e.COUNTRY|default_if_none:""}}', appDataPrivacyClassification: '{{ e.DATA_PRIVACY_CLASSIFICATION|default_if_none:""}}', appDataPrivacyAttributes: '{{ e.DATA_PRIVACY_ATTRIBUTES|default_if_none:""}}', appEmail: '{{ e.EMAIL }}' });
+  addUploadedApp('app_{{e.MD5}}',{ appHash: '{{ e.MD5 }}', appTimestamp: '{{ e.TIMESTAMP }}', appName: '{{ e.USER_APP_NAME }}', appVersion: '{{ e.USER_APP_VERSION }}', appReleaseVersion: '{{ e.RELEASE }}', appDivision: '{{ e.DIVISION }}', appEnvironment: '{{ e.ENVIRONMENT}}', appCountry: '{{ e.COUNTRY|default_if_none:""}}', appDataPrivacyClassification: '{{ e.DATA_PRIVACY_CLASSIFICATION|default_if_none:""}}', appDataPrivacyAttributes: '{{ e.DATA_PRIVACY_ATTRIBUTES|default_if_none:""}}', appEmail: '{{ e.EMAIL }}' });
 
 </script>
 
@@ -170,9 +170,9 @@
           <div class="inner cover">
               
               <h5 class="box-title">
-                  <b>APP NAME:</b> <span id="user-app-name"></span><br />
-                  <b>HASH:</b> <span id="md5"></span><br />
-                  <b>DATE:</b> <span class="scandate"><span id="timestamp"></span></span><br />
+                  <b>APP NAME:</b> <span id="user-app-name-header"></span><br />
+                  <b>HASH:</b> <span id="md5-header"></span><br />
+                  <b>DATE:</b> <span id="timestamp-header"></span><br />
               </h5>         
 
               <form id="edit_scan_form" novalidate enctype="multipart/form-data" method="post">
@@ -187,7 +187,7 @@
                         title="The name of the mobile application as it appears (or will appear) in the applicable app store.">
                       </i>
                     </label>
-                    <input type="text" class="form-control" id="appname" placeholder="Application Name" value="{{ e.USER_APP_NAME }}" required>
+                    <input type="text" class="form-control" id="appname" placeholder="Application Name" required>
                     <div id="err_name" class="hidden"><span class="error">Application Name Required!</span>
                     </div>
                   </div>
@@ -208,7 +208,7 @@
                   <!-- Release -->
                   <div class="col-md-4">
                     <div style="margin-top:36px;">
-                      <input type="checkbox" id="release" {% if e.RELEASE %} checked {% endif %}>
+                      <input type="checkbox" id="release">
                       <label for="release" style="font-weight:500;">Release Version
                         <i class="fas fa-info-circle fa-lg" title="Select to mark mobile app as a release version.">
                         </i>
@@ -230,22 +230,18 @@
                       </i>
                     </label>
                     <select class="custom-select w-100" id="environment">
-                      <option value="Production" {% if e.ENVIRONMENT == "Production" %} selected {% endif %}>Production</option>
-                      <option value="Preproduction" {% if e.ENVIRONMENT == "Preproduction" %} selected {% endif %}>Preproduction</option>
-                      <option value="Decommissioned" {% if e.ENVIRONMENT == "Decommissioned" %} selected {% endif %}>Decommissioned</option>
+                      <option value="Production">Production</option>
+                      <option value="Preproduction">Preproduction</option>
+                      <option value="Decommissioned">Decommissioned</option>
                     </select>
                   </div>
 
                   <!-- Division -->
-                  <script>
-                      var selectedDivision = "{{ e.DIVISION }}";
-                  </script>
                   <div class="col-md-3">
                     <label for="division">Division</label>
                     <i class="fas fa-info-circle fa-lg"
                       title="The organizational division applicable to the mobile application.">
                     </i>
-                    {{ e.DIVISION }}
                     <select class="custom-select d-block w-100" id="division">
                       <option>Unknown</option>
                     </select>
@@ -256,14 +252,13 @@
                   <!-- Country -->
                   <script>
                     var selectedCountry = "{{ e.COUNTRY }}";
-                </script>
+                  </script>
                   <div class="col-md-6">
                     <div class="form-group">
                       <label for="country">Country</label>
                       <i class="fas fa-info-circle fa-lg"
                       title="The country (or countries) where the mobile app has been (or will be) released.">
                       </i>
-                      {{ e.COUNTRY }}
                       <select class="select2bs4" style="width: 100%" id="country" required multiple>
                         <option>Unknown</option>
                       </select>
@@ -494,42 +489,70 @@
     }
 
     function admin_edit_modal(appHash){
-      console.log("admin_edit_modal: " + appHash);
-      /*console.log("Division: " + uploadedApps["app_"+appHash].appDivision);
-      console.log("Country(ies): " + uploadedApps["app_"+appHash].appCountry);
-      console.log("Email(s): " + uploadedApps["app_"+appHash].appEmail);*/
-      populateModalData(appHash);
       $("#edit_scan").modal('show');
+      populateModalData(appHash);
     }
 
     function populateModalData(appHash) {
-      console.log("populateModalData: " + appHash);
       var modal = document.getElementById("edit_scan");
       modal.setAttribute('data-id', appHash);
-      //$("#user-app-name").attr('id', 'user-app-name_' + appHash);
-      $("#user-app-name").text(uploadedApps["app_"+appHash].appVersion);
-      //$("#md5").attr('id', 'md5_' + appHash);
-      $("#md5").text(appHash);
-      //$("#timestamp").attr('id', 'timestamp_' + appHash);
-      $("#timestamp").text(uploadedApps["app_"+appHash].appTimestamp);
+
+      $("#user-app-name-header").text(uploadedApps["app_"+appHash].appName);
+      $("#md5-header").text(appHash);
+      $("#timestamp-header").text(dayjs(uploadedApps["app_"+appHash].appTimestamp).format("MMM D, YYYY h:mm A"));
+
+      $("#appname").val(uploadedApps["app_"+appHash].appName);
+      $("#version").val(uploadedApps["app_"+appHash].appVersion);
+
+      // Release version checkbox
+      console.log(uploadedApps["app_"+appHash].appReleaseVersion);
+      if (uploadedApps["app_"+appHash].appReleaseVersion)
+      {
+        $("#release").prop('checked', true);
+      }
+
+      // Environment static dropdown
+      if (uploadedApps["app_"+appHash]?.appEnvironment !== undefined)
+      {
+        var environment = document.getElementById('environment');
+        var currentEnvironment = uploadedApps["app_"+appHash].appEnvironment;
+
+        for (var i = 0; i < environment.options.length; i++)
+        {
+          if (environment.options[i].value === currentEnvironment)
+          {
+            environment.options[i].selected = true;
+          }
+        }
+      }
+
+      // Division dynamic dropdown
+      populateDivisions(uploadedApps["app_"+appHash].appDivision);
+
+      
+
+      /*$("#user-app-version");
+      $("#release");
+      $("#environment");
+      $("#division");
+      $("#data-privacy-classification");
+
+      $("#country");
+      $("#data-privacy-attributes");
+      $("#email");
+
+      addUploadedApp('app_{{e.MD5}}',{ appHash: '{{ e.MD5 }}', appTimestamp: '{{ e.TIMESTAMP }}', appName: '{{ e.USER_APP_NAME }}', appVersion: '{{ e.USER_APP_VERSION }}', appReleaseVersion: '{{ e.RELEASE }}', appDivision: '{{ e.DIVISION }}', appEnvironment: '{{ e.ENVIRONMENT}}', appCountry: '{{ e.COUNTRY|default_if_none:""}}', appDataPrivacyClassification: '{{ e.DATA_PRIVACY_CLASSIFICATION|default_if_none:""}}', appDataPrivacyAttributes: '{{ e.DATA_PRIVACY_ATTRIBUTES|default_if_none:""}}', appEmail: '{{ e.EMAIL }}' });*/
+
+      populateCountries();
+      populateDataPrivacy();
     }
 
-
-    function admin_edit_test(item){
-        $("#edit_scan").modal('show');
-        populateCountries();
-        populateDataPrivacy();
-        /*populateDivisions($("#divisionInput" + item));
-        populateCountries($("#countryInput" + item));
-        $("#country" + item).text($("#countryInput" + item).val());*/
-    }
-
-    function admin_edit(item){
+    /* function admin_edit(item){
         $("#environmentInput" + item).val($("#environmentInput" + item).attr("data"))
         $("#dataPrivacyClassificationInput" + item).val($("#dataPrivacyClassificationInput" + item).attr("data"))
         populateDivisions($("#divisionInput" + item));
-        //populateCountries($("#countryInput" + item));
-        //populateDataPrivacy($("#dataPrivacyAttributesInput" + item));
+        populateCountries($("#countryInput" + item));
+        populateDataPrivacy($("#dataPrivacyAttributesInput" + item));
         $("#viewFields" + item).css('display','none');
         $("#editFields" + item).css('display','');
         $("#adminEdit" + item).css('display','none');
@@ -541,7 +564,7 @@
         $("#editFields" + item).css('display','none');
         $("#adminEdit" + item).css('display','');
         $("#adminSave" + item).css('display','none');
-    }
+    } */
 
     function update_labels(item){
         $("#userAppName" + item).text($("#userAppNameInput" + item).val());
@@ -650,7 +673,7 @@
         });
     }
 
-    function populateDivisions() {
+    function populateDivisions(selectedDivision) {
     var divisionsUrl = '{{tenant_static}}divisions.json';
     fetch(divisionsUrl)
       .then(response => response.json())
@@ -690,7 +713,7 @@
     }
   
     $(document).ready(function() {
-        populateDivisions();
+        //populateDivisions();
         populateCountries();
         populateDataPrivacy();
 
