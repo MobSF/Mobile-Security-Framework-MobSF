@@ -23,7 +23,7 @@
     uploadedApps[hash] = data;
   }
 
-  addUploadedApp('app_{{e.MD5}}',{ appHash: '{{ e.MD5 }}', appVersion: '{{ e.USER_APP_NAME }}', appDivision: '{{ e.DIVISION }}', appEnvironment: '{{ e.ENVIRONMENT}}', appCountry: '{{ e.COUNTRY|default_if_none:""}}', appDataPrivacyClassification: '{{ e.DATA_PRIVACY_CLASSIFICATION|default_if_none:""}}', appDataPrivacyAttributes: '{{ e.DATA_PRIVACY_ATTRIBUTES|default_if_none:""}}', appEmail: '{{ e.EMAIL }}' });
+  addUploadedApp('app_{{e.MD5}}',{ appHash: '{{ e.MD5 }}', appTimestamp: '{{ e.TIMESTAMP }}', appVersion: '{{ e.USER_APP_NAME }}', appDivision: '{{ e.DIVISION }}', appEnvironment: '{{ e.ENVIRONMENT}}', appCountry: '{{ e.COUNTRY|default_if_none:""}}', appDataPrivacyClassification: '{{ e.DATA_PRIVACY_CLASSIFICATION|default_if_none:""}}', appDataPrivacyAttributes: '{{ e.DATA_PRIVACY_ATTRIBUTES|default_if_none:""}}', appEmail: '{{ e.EMAIL }}' });
 
 </script>
 
@@ -170,9 +170,9 @@
           <div class="inner cover">
               
               <h5 class="box-title">
-                  <b>FILE:</b> {{ e.FILE_NAME }}<br />
-                  <b>HASH:</b> {{ e.MD5 }}<br />
-                  <b>DATE:</b> <span class="scandate">{{ e.TIMESTAMP|date:'c' }}</span><br />
+                  <b>APP NAME:</b> <span id="user-app-name"></span><br />
+                  <b>HASH:</b> <span id="md5"></span><br />
+                  <b>DATE:</b> <span class="scandate"><span id="timestamp"></span></span><br />
               </h5>         
 
               <form id="edit_scan_form" novalidate enctype="multipart/form-data" method="post">
@@ -494,10 +494,26 @@
     }
 
     function admin_edit_modal(appHash){
-      console.log(uploadedApps["app_"+appHash].appDivision);
-      console.log(uploadedApps["app_"+appHash].appCountry);
-      console.log(uploadedApps["app_"+appHash].appEmail);
+      console.log("admin_edit_modal: " + appHash);
+      /*console.log("Division: " + uploadedApps["app_"+appHash].appDivision);
+      console.log("Country(ies): " + uploadedApps["app_"+appHash].appCountry);
+      console.log("Email(s): " + uploadedApps["app_"+appHash].appEmail);*/
+      populateModalData(appHash);
+      $("#edit_scan").modal('show');
     }
+
+    function populateModalData(appHash) {
+      console.log("populateModalData: " + appHash);
+      var modal = document.getElementById("edit_scan");
+      modal.setAttribute('data-id', appHash);
+      //$("#user-app-name").attr('id', 'user-app-name_' + appHash);
+      $("#user-app-name").text(uploadedApps["app_"+appHash].appVersion);
+      //$("#md5").attr('id', 'md5_' + appHash);
+      $("#md5").text(appHash);
+      //$("#timestamp").attr('id', 'timestamp_' + appHash);
+      $("#timestamp").text(uploadedApps["app_"+appHash].appTimestamp);
+    }
+
 
     function admin_edit_test(item){
         $("#edit_scan").modal('show');
