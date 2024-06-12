@@ -1,3 +1,7 @@
+#editScanSubmitButton {
+  padding: 10px 20px;
+}
+
 #app_icon {
   width: 64px;
   height: 64px;
@@ -8,6 +12,10 @@
 
 .selectable_table tr:hover {
   background-color: lightgreen !important;
+}
+
+.hidden {
+  display: none !important;
 }
 
 .fa.disabled,
@@ -21,6 +29,24 @@ cursor: not-allowed;
 .editFields input[type=text], select {
   width: 200px;
   height: 30px;
+}
+
+.inner input[type=checkbox] {
+  transform: scale(2);
+  margin-left: 5px;
+  margin-right: 10px;
+}
+
+/* Override default checkbox color */ 
+input[type=checkbox] {
+  accent-color: #127AF8;
+ }
+
+.error {
+  padding-left: 6px;
+  padding-right: 6px;
+  text-shadow: none;
+  background: #F7211D;
 }
 
 .expired {
