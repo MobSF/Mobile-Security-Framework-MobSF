@@ -286,6 +286,7 @@
                     {% for host in intent.hosts %}
                       <option value="{{ host }}">{{ host }}</option>
                     {% endfor %}
+                    <option value=""></option>
                   </optgroup>
                 {% endfor %}
                 </select>
@@ -299,6 +300,7 @@
                       {% for path_prefix in intent.path_prefixs %}
                         <option value="{{ path_prefix }}">{{ path_prefix }}</option>
                       {% endfor %}
+                      <option value=""></option>
                     </optgroup>
                   {% endfor %}
                   </select>

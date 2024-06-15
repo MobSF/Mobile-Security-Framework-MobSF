@@ -228,6 +228,8 @@ class Frida:
         loaded_class_methods = []
         implementations = []
         try:
+            if not self.extras:
+                return
             raction = self.extras.get('rclass_action')
             rclass = self.extras.get('rclass_name')
             rclass_pattern = self.extras.get('rclass_pattern')
