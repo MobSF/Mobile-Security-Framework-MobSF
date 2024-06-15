@@ -266,6 +266,47 @@
                 <button id="start_activity" type="submit" class="btn btn-primary btn-sm">Start Activity</button>
             </div>
             {% endif %}
+            {% if deeplinks %}
+            <label class="box-title" for="deeplinks">Deeplinks</label>
+            <div class="form-group form-inline">
+              <!--Schemes-->
+              <select class="form-select form-control form-group mb-2" name="schemes" id="schemes">
+              {% for activity, intent in deeplinks.items %}
+                <optgroup label="{{ activity }} - Schemes">
+                  {% for scheme in intent.schemes %}
+                    <option value="{{ scheme }}">{{ scheme }}</option>
+                  {% endfor %}
+                </optgroup>
+              {% endfor %}
+              </select>
+              <!--Hosts-->
+              <select class="form-select form-control form-group mb-2" name="hosts" id="hosts">
+                {% for activity, intent in deeplinks.items %}
+                  <optgroup label="{{ activity }} - Hosts">
+                    {% for host in intent.hosts %}
+                      <option value="{{ host }}">{{ host }}</option>
+                    {% endfor %}
+                  </optgroup>
+                {% endfor %}
+                </select>
+                <!--Path Prefixs/Paths-->
+                <select class="form-select form-control form-group mb-2" name="paths" id="paths">
+                  {% for activity, intent in deeplinks.items %}
+                    <optgroup label="{{ activity }} - Paths/PathPrefixes">
+                      {% for path in intent.paths %}
+                        <option value="{{ path }}">{{ path }}</option>
+                      {% endfor %}
+                      {% for path_prefix in intent.path_prefixs %}
+                        <option value="{{ path_prefix }}">{{ path_prefix }}</option>
+                      {% endfor %}
+                    </optgroup>
+                  {% endfor %}
+                  </select>
+                <!--Query-->
+                <input type="text" class="form-control form-group mb-2" id="query" placeholder="/foo?bar=">
+                <button id="start_deeplink" type="submit" class="btn btn-primary btn-sm form-group mb-2">▶ Deeplink</button>
+            </div>
+            {% endif %}
               <!--tab end-->
 
                   </div>
@@ -808,6 +849,26 @@ $("#start_activity").click(function(){
   return false;
 });
 
+// Start deeplink
+$("#start_deeplink").click(function(){
+  let scheme = $('#schemes option:selected').val();
+  let host = $('#hosts option:selected').val();
+  let path = $('#paths option:selected').val();
+  let query = $('#query').val();
+
+  if (scheme === undefined && host === undefined){
+    print_status("Please select a valid scheme and host.")
+    return false;
+  }
+  if (path === undefined)
+    path = '';
+  let url = scheme + host + path + query;
+  print_status("Triggering Deeplink: " + url);
+  start_deeplink(url)
+  return false;
+});
+
+
 // Start up
 {% if android_version < 5 %}
   $('#frida_options').hide()
@@ -1106,6 +1167,15 @@ function start_activity(activity){
   action('{% url "start_activity" %}', {hash: '{{ hash }}', 'activity': activity}, function(json) {
     if (json.status === "ok")
         print_status("Activity Started");
+    else
+      print_status(json.message);
+  });
+}
+
+function start_deeplink(url){
+  action('{% url "start_deeplink" %}', {hash: '{{ hash }}', 'url': url}, function(json) {
+    if (json.status === "ok")
+      print_status("Deeplink Triggered");
     else
       print_status(json.message);
   });
