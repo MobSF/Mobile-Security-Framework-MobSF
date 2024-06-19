@@ -23,7 +23,7 @@
     uploadedApps[hash] = data;
   }
 
-  addUploadedApp('app_{{e.MD5}}',{ appHash: '{{ e.MD5 }}', appTimestamp: '{{ e.TIMESTAMP }}', appName: '{{ e.USER_APP_NAME }}', appVersion: '{{ e.USER_APP_VERSION }}', appReleaseVersion: '{{ e.RELEASE }}', appDivision: '{{ e.DIVISION }}', appEnvironment: '{{ e.ENVIRONMENT}}', appCountry: '{{ e.COUNTRY|default_if_none:""}}', appDataPrivacyClassification: '{{ e.DATA_PRIVACY_CLASSIFICATION|default_if_none:""}}', appDataPrivacyAttributes: '{{ e.DATA_PRIVACY_ATTRIBUTES|default_if_none:""}}', appEmail: '{{ e.EMAIL }}' });
+  addUploadedApp(`app_{{e.MD5}}`,{ appHash: `{{ e.MD5 }}`, appTimestamp: `{{ e.TIMESTAMP|date:'c' }}`, appName: `{{ e.USER_APP_NAME }}`, appVersion: `{{ e.USER_APP_VERSION }}`, appReleaseVersion: `{{ e.RELEASE }}`, appDivision: `{{ e.DIVISION }}`, appEnvironment: `{{ e.ENVIRONMENT}}`, appCountry: `{{ e.COUNTRY|default_if_none:""}}`, appDataPrivacyClassification: `{{ e.DATA_PRIVACY_CLASSIFICATION|default_if_none:""}}`, appDataPrivacyAttributes: `{{ e.DATA_PRIVACY_ATTRIBUTES|default_if_none:""}}`, appEmail: `{{ e.EMAIL }}` });
 
 </script>
 
@@ -155,13 +155,13 @@
 {% endfor %}
 
 <!--  Edit Scan Modal -->
-<div class="modal" id="edit_scan" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-xl">
+<div class="modal" id="edit_scan" tabindex="-1" role="dialog" data-bs-backdrop="static">
+  <div class="modal-dialog modal-container">
     <div class="modal-content">
       
       <div class="modal-header">
         <h3 class="modal-title">Edit Recent Scan</h3>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="close_edit_scan_modal()">
           <span aria-hidden="true">×</span>
         </button>
       </div>
@@ -296,7 +296,6 @@
                         <i class="fas fa-info-circle fa-lg"
                           title="The data privacy attributes for the mobile application.">
                         </i>
-                        {{ e.DATA_PRIVACY_ATTRIBUTES }}
                       </label>
                       <select class="select2bs4" style="width: 100%" id="data_privacy_attributes" required multiple>
                         <option>Unknown</option>
@@ -318,7 +317,7 @@
                       </i>
                     </label>
                     <input style="width:100%" class="form-control" type="text" id="override_email"
-                      placeholder="Email Address" value="{{e.EMAIL}}">
+                      placeholder="Email Address">
                     <div id="err_email" class="hidden"><span class="error">Email Invalid!</span></div>
                   </div>
                   {% endif %}
@@ -329,8 +328,8 @@
             </div> <!-- end of inner-cover -->
       </div>
 
-      <div class="modal-footer" style="text-align:center;">
-        <button type="button" data-dismiss="modal" class="btn btn-secondary">Cancel</button>
+      <div class="modal-footer submit-footer">
+        <button type="button" data-dismiss="modal" class="btn btn-secondary" onclick="close_edit_scan_modal()">Cancel</button>
         <button type="button" id="editScanSubmitButton" class="btn btn-primary btn-lg" onclick="edit_edit_scan_post(event)">Submit</button>
       </div>
 
@@ -532,8 +531,11 @@
       // Countries select box      
       populateCountries(uploadedApps["app_"+appHash].appCountry);
 
-      
-      populateDataPrivacy();
+      // Data Privacy Attributes select box
+      populateDataPrivacy(uploadedApps["app_"+appHash].appDataPrivacyAttributes);
+
+      // Email Address(es) text field
+      $("#override_email").val(uploadedApps["app_"+appHash].appEmail);
     }
 
     function update_labels(item){
@@ -698,52 +700,47 @@
   }
 
     function populateCountries(selectedCountry) {
-      console.log(selectedCountry);
 
-      var countryValue;
-
-      if (selectedCountry == "GLOBAL")
-      {
-        console.log("it is global");
-        countryValue = "GLOBAL";
-        //countryValue = splitCountries(selectedCountry);
-        //console.log(countryValue);
-      }
+      var countryValue = splitData(selectedCountry);
       
-
-    var countriesUrl = '{{tenant_static}}countries.json';
-    fetch(countriesUrl)
-      .then(response => response.json())
-      .then(data => {
-        var options = '<option value="GLOBAL"' + (countryValue == "GLOBAL" ? " selected" : "") + '>' + 'Global</option>';
-        for (i = 0; i < data.length; i++) {
-          options += '<option value="' + data[i].code + '"' + (data[i].name.toLowerCase() == countryValue ? ' selected' : '') + '>' + data[i].name + '</option>';
-        }
-        _('country').innerHTML = options;
-      });
+      var countriesUrl = '{{tenant_static}}countries.json';
+      fetch(countriesUrl)
+        .then(response => response.json())
+        .then(data => {
+          var options = '<option value="GLOBAL"' + (countryValue == "GLOBAL" ? " selected" : "") + '>' + 'Global</option>';
+          for (i = 0; i < data.length; i++) {
+            options += '<option value="' + data[i].code + '"' + (countryValue.includes(data[i].code) ? ' selected' : '') + '>' + data[i].name + '</option>';
+          }
+          _('country').innerHTML = options;
+        });
     }
 
-    function splitCountries(countries) {
-      return countries.split(',').map(country => country.trim());
+    function populateDataPrivacy(selectedDataPrivacyAttributes) {
+
+      var dataPrivacyAttributeValue = splitData(selectedDataPrivacyAttributes)
+
+      var privacyAttributesUrl = '{{tenant_static}}data-privacy-attributes.json';
+      fetch(privacyAttributesUrl)
+        .then(response => response.json())
+        .then(data => {
+          var options = '';
+          for (i = 0; i < data.length; i++) {
+            options += '<option value="' + data[i].id + '"' + (dataPrivacyAttributeValue.includes(data[i].id) ? ' selected' : '') + '>' + data[i].id + ": " + data[i].name + '</option>';
+          }
+          _('data_privacy_attributes').innerHTML = options;
+        });
     }
 
-    function populateDataPrivacy() {
-    var privacyAttributesUrl = '{{tenant_static}}data-privacy-attributes.json';
-    fetch(privacyAttributesUrl)
-      .then(response => response.json())
-      .then(data => {
-        var options = '';
-        for (i = 0; i < data.length; i++) {
-          options += '<option value="' + data[i].id + '">' + data[i].id + ": " + data[i].name + '</option>';
-        }
-        _('data_privacy_attributes').innerHTML = options;
-      });
+    function splitData(dataString) {
+      return dataString.split(',').map(data => data.trim());
     }
   
+    function close_edit_scan_modal()
+    {
+      $('#country').val([]);
+    }
+
     $(document).ready(function() {
-        //populateDivisions();
-        //populateCountries();
-        populateDataPrivacy();
 
         enable_diff_button(); 
 
