@@ -368,7 +368,7 @@ class Environment:
             return 'emulator'
         elif (b'genymotion' in out.lower()
                 or any(char.isdigit() for char in ver)):
-            logger.info('Found Genymotion x86 Android VM')
+            logger.info('Found Genymotion Android VM')
             return 'genymotion'
         elif b'corellium' in out:
             logger.info('Found Corellium ARM Android VM')
@@ -652,7 +652,7 @@ class Environment:
         elif arch == 'x86_64':
             frida_arch = 'x86_64'
         else:
-            logger.error('Make sure a Genymotion Android x86 VM'
+            logger.error('Make sure a Genymotion Android VM'
                          ' or Android Studio Emulator'
                          ' instance is running')
             return
