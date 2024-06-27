@@ -28,6 +28,7 @@ from mobsf.DynamicAnalyzer.tools.webproxy import (
     stop_httptools,
 )
 from mobsf.MobSF.utils import (
+    cmd_injection_check,
     is_md5,
     python_list,
 )
@@ -50,7 +51,7 @@ logger = logging.getLogger(__name__)
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def start_activity(request, api=False):
-    """Lunch a specific activity."""
+    """Launch a specific activity."""
     try:
         env = Environment()
         activity = request.POST['activity']
@@ -77,6 +78,31 @@ def start_activity(request, api=False):
         data = {'status': 'failed', 'message': str(exp)}
     return send_response(data, api)
 
+# AJAX
+
+
+@login_required
+@permission_required(Permissions.SCAN)
+@require_http_methods(['POST'])
+def start_deeplink(request, api=False):
+    """Launch a specific deeplink."""
+    try:
+        env = Environment()
+        url = request.POST['url']
+        md5_hash = request.POST['hash']
+
+        valid_md5 = is_md5(md5_hash)
+        if cmd_injection_check(url) or not valid_md5:
+            return invalid_params(api)
+        env.adb_command(
+            ['am', 'start', '-a',
+             'android.intent.action.VIEW',
+             '-d', url], True)
+        data = {'status': 'ok'}
+    except Exception as exp:
+        logger.exception('Start Activity')
+        data = {'status': 'failed', 'message': str(exp)}
+    return send_response(data, api)
 
 # AJAX
 
