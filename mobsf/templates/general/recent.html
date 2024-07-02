@@ -16,17 +16,6 @@
   const uploadedApps = {};
 </script>
 
-{% for e in entries %}
-
-<script>
-  function addUploadedApp(hash, data){
-    uploadedApps[hash] = data;
-  }
-
-  addUploadedApp(`app_{{e.MD5}}`,{ appHash: `{{ e.MD5 }}`, appTimestamp: `{{ e.TIMESTAMP|date:'c' }}`, appName: `{{ e.USER_APP_NAME }}`, appVersion: `{{ e.USER_APP_VERSION }}`, appReleaseVersion: `{{ e.RELEASE }}`, appDivision: `{{ e.DIVISION }}`, appEnvironment: `{{ e.ENVIRONMENT}}`, appCountry: `{{ e.COUNTRY|default_if_none:""}}`, appDataPrivacyClassification: `{{ e.DATA_PRIVACY_CLASSIFICATION|default_if_none:""}}`, appDataPrivacyAttributes: `{{ e.DATA_PRIVACY_ATTRIBUTES|default_if_none:""}}`, appEmail: `{{ e.EMAIL }}` });
-
-</script>
-
 <div class="content-wrapper">
   <div class="content-header">
   </div>
@@ -56,6 +45,16 @@
                     </tr>
                     </thead>
                     <tbody>
+                      {% for e in entries %}
+
+                      <script>
+                        function addUploadedApp(hash, data){
+                          uploadedApps[hash] = data;
+                        }
+                      
+                        addUploadedApp(`app_{{e.MD5}}`,{ appHash: `{{ e.MD5 }}`, appTimestamp: `{{ e.TIMESTAMP|date:'c' }}`, appName: `{{ e.USER_APP_NAME }}`, appVersion: `{{ e.USER_APP_VERSION }}`, appReleaseVersion: `{{ e.RELEASE }}`, appDivision: `{{ e.DIVISION }}`, appEnvironment: `{{ e.ENVIRONMENT}}`, appCountry: `{{ e.COUNTRY|default_if_none:""}}`, appDataPrivacyClassification: `{{ e.DATA_PRIVACY_CLASSIFICATION|default_if_none:""}}`, appDataPrivacyAttributes: `{{ e.DATA_PRIVACY_ATTRIBUTES|default_if_none:""}}`, appEmail: `{{ e.EMAIL }}` });
+                      
+                      </script>
                         <tr>
                             <td style="word-wrap: break-word; max-width: 200px;">
                                 <div>{{ e.MD5 }}</div>
@@ -138,6 +137,7 @@
                                 </p>
                             </td>
                         </tr>
+                    {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -151,11 +151,10 @@
        </div>
      </div>
     </div>
-</div>
-{% endfor %}
+</div
 
 <!--  Edit Scan Modal -->
-<div class="modal" id="edit_scan" tabindex="-1" role="dialog" data-bs-backdrop="static">
+<div class="modal" id="edit_scan" tabindex="-1" role="dialog" data-backdrop="static">
   <div class="modal-dialog modal-container">
     <div class="modal-content">
       
@@ -190,6 +189,10 @@
                     <input type="text" class="form-control" id="appname" placeholder="Application Name" required>
                     <div id="err_name" class="hidden"><span class="error">Application Name Required!</span>
                     </div>
+
+                    <!-- Hash -->
+                    <input type="hidden" id="md5-hash" value="" />
+
                   </div>
 
                   <!-- Version -->
@@ -330,7 +333,7 @@
 
       <div class="modal-footer submit-footer">
         <button type="button" data-dismiss="modal" class="btn btn-secondary" onclick="close_edit_scan_modal()">Cancel</button>
-        <button type="button" id="editScanSubmitButton" class="btn btn-primary btn-lg" onclick="edit_edit_scan_post(event)">Submit</button>
+        <button type="button" id="editScanSubmitButton" class="btn btn-primary btn-lg" onclick="admin_save()">Submit</button>
       </div>
 
     </div>
@@ -436,10 +439,10 @@
       text: "This will permanently remove the scan results",
       type: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Yes',
-      cancelButtonText: 'No',
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#2da532',
+      confirmButtonText: 'Yes, please delete.',
+      cancelButtonText: 'No, don\'t delete.',
+      confirmButtonColor: '#2da532',
+      cancelButtonColor: '#d33',
     }).then((result) => {
         if (result.value) {
             var md5_hash = item.id;
@@ -458,7 +461,7 @@
                                         'The scan result is deleted!',
                                         'success'
                                     ).then(function () {
-                                        location.reload();
+                                        location.reload(true);
                                     })
                                 }
                                 else {
@@ -495,6 +498,7 @@
 
       $("#user-app-name-header").text(uploadedApps["app_"+appHash].appName);
       $("#md5-header").text(appHash);
+      $("#md5-hash").val(appHash);
       $("#timestamp-header").text(dayjs(uploadedApps["app_"+appHash].appTimestamp).format("MMM D, YYYY h:mm A"));
 
       $("#appname").val(uploadedApps["app_"+appHash].appName);
@@ -538,30 +542,10 @@
       $("#override_email").val(uploadedApps["app_"+appHash].appEmail);
     }
 
-    function update_labels(item){
-        $("#userAppName" + item).text($("#userAppNameInput" + item).val());
-        $("#userAppVersion" + item).text($("#userAppVersionInput" + item).val());
-        $("#division" + item).text($("#divisionInput" + item).val());
-        $("#divisionInput" + item).attr("data", $("#divisionInput" + item).val());
-        $("#environment" + item).text($("#environmentInput" + item).val());
-        $("#environmentInput" + item).attr("data", $("#environmentInput" + item).val());
-        $("#country" + item).text($("#countryInput" + item).val());
-        $("#dataPrivacyClassification" + item).text($("#dataPrivacyClassificationInput" + item).val());
-        $("#dataPrivacyClassificationInput" + item).attr("data", $("#dataPrivacyClassificationInput" + item).val());
-        $("#dataPrivacyAttributes" + item).text($("#dataPrivacyAttributesInput" + item).val());
-        $("#email" + item).text($("#emailInput" + item).val());
-        if ($("#releaseInput" + item).prop("checked")) {
-            $("#releaseBadge" + item).css('display','');
-        }
-        else {
-            $("#releaseBadge" + item).css('display','none');
-        }
-    }
-
-    function get_clean_emails(identifier){
+    function get_clean_emails(){
         var retVal = "";
-        var inputName = "#emailInput" + identifier;
-        var emails = $(inputName).val();
+        var formName = document.getElementById('edit_scan_form');
+        var emails = $(formName.querySelector('#override_email')).val();
         var updated = emails.replace(/,/gi, ";");
         var emailArray = updated.split(";");
         emailArray.forEach(clean_element);
@@ -582,7 +566,6 @@
     }    
 
     function checkRequired() {
-      //console.log(!_('appname').value);
       if (!_('appname').value) {
         _('err_name').classList.remove('hidden');
         return false;
@@ -590,10 +573,7 @@
       else 
       { 
         _('err_name').classList.add('hidden'); 
-      }
-
-        /* 
-      
+      }      
       if (!_('version').value) {
         _('err_version').classList.remove('hidden');
         return false;
@@ -606,10 +586,10 @@
         _('err_privacy').classList.remove('hidden');
         return false;
       } else { _('err_privacy').classList.add('hidden'); }
-      if (_("uploadFile").files.length === 0) {
+      /* if (_("uploadFile").files.length === 0) {
         _('err_file').classList.remove('hidden');
         return false;
-      } else { _('err_file').classList.add('hidden'); }
+      } else { _('err_file').classList.add('hidden'); } */
 
       if ($("#override_email").length) {
         var mailformat = /^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$/;
@@ -617,25 +597,40 @@
           _('err_email').classList.remove('hidden');
           return false;
         } else { _('err_email').classList.add('hidden'); }
-      } */
+      }
 
     return true;
   }
 
-    function admin_save(item){
+    function admin_save(){
+
+      const formData = document.getElementById('edit_scan_form');
+
+      var item = $(formData.querySelector('#md5-hash')).val();
+      var countryElements = $(formData.querySelectorAll('#country'));
+      var dataPrivacyAttributesElements = $(formData.querySelectorAll('#data_privacy_attributes'));
+
+      var countryString = countryElements.map(function() {
+        return $(this).val();
+      }).get().join(', ');
+
+      var dataPrivacyAttributesString = dataPrivacyAttributesElements.map(function() {
+        return $(this).val();
+      }).get().join(', ');
+
         Swal.fire({
             title: 'Are you sure?',
             text: "This will update the modified fields for this scan",
             type: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Yes',
-            cancelButtonText: 'No',
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#2da532',
+            confirmButtonText: 'Yes, update the modified fields.',
+            cancelButtonText: 'No, take me back to the edit panel.',
+            confirmButtonColor: '#2da532',
+            cancelButtonColor: '#d33',
         }).then((result) => {
             if (result.value) {            
-                var cleanEmails = get_clean_emails(item);
-                var release = ($("#releaseInput" + item).prop("checked") ? "True" : "False");
+                var cleanEmails = get_clean_emails();
+                var release = ($(formData.querySelector('#release')).prop("checked") ? "True" : "False");
                 $.ajax({
                         url: '../update_scan/',
                         type: 'POST',
@@ -643,25 +638,26 @@
                         data: {
                             csrfmiddlewaretoken: '{{csrf_token}}',
                             hash: item,
-                            user_app_name: $("#userAppNameInput" + item).val(),
-                            user_app_version: $("#userAppVersionInput" + item).val(),
-                            division: $("#divisionInput" + item).val(),
-                            environment: $("#environmentInput" + item).val(),
-                            country: $("#countryInput" + item).val(),
-                            data_privacy_classification: $("#dataPrivacyClassificationInput" + item).val(),
-                            data_privacy_attributes: $("#dataPrivacyAttributesInput" + item).val(),
+                            user_app_name: $(formData.querySelector('#appname')).val(),
+                            user_app_version: $(formData.querySelector('#version')).val(),
+                            division: $(formData.querySelector('#division')).val(),
+                            environment: $(formData.querySelector('#environment')).val(),
+                            country: countryString,
+                            data_privacy_classification: $(formData.querySelector('#data_privacy_classification')).val(),
+                            data_privacy_attributes: dataPrivacyAttributesString,
                             email: cleanEmails,
                             release: release
                         },
                         success : function(json) {
                             if (json.result === 'success') {
-                                update_labels(item);
-                                admin_view(item);  
                                 Swal.fire(
                                     'Updated!',
                                     'The scan has been successfully updated.',
                                     'success'
-                                );
+                                ).then(function () {
+                                    $('#edit_scan').modal('hide');
+                                    location.reload(true);
+                                  });
                             }
                             else {
                                 Swal.fire(
@@ -680,10 +676,8 @@
                         }
                     });
                     
-            } else {
-                admin_view(item);
             }
-        });
+        }); 
     }
 
     function populateDivisions(selectedDivision) {
@@ -738,6 +732,9 @@
     function close_edit_scan_modal()
     {
       $('#country').val([]);
+      $('#data_privacy_attributes').val([]);
+      $('#override_email').val([]);
+      $('#edit_scan').modal('hide');
     }
 
     $(document).ready(function() {
@@ -748,7 +745,7 @@
             window.setTimeout(function() {
                 window.location.reload();
             }, 30000);
-        } */
+        }*/
 
         $("span.scandate").each(function() {
             this.innerText = dayjs(this.innerText).format("MMM D, YYYY h:mm A")
