@@ -85,4 +85,6 @@ class RestApiAuthMiddleware(MiddlewareMixin):
             status_code)
 
     def restricted_endpoint(self, request):
+        if request.path == '/health':
+            return False
         return settings.CZ100 and request.META['HTTP_HOST'] == settings.CZ100
