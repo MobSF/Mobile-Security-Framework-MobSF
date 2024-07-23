@@ -747,6 +747,18 @@
             }, 30000);
         }*/
 
+        $('#country').change(function() {
+          // If GLOBAL and other options are selected in country dropdown, remove GLOBAL
+          if ($('#country').val().indexOf('GLOBAL') >= 0 && $('#country').val().length > 1) {
+            if ($('#country').val().length > 2) {
+              $('#country').val('GLOBAL');
+            } else {
+              $('#country').val($('#country').val().join(',').replace('GLOBAL,', '')); 
+            }
+            $("#country").trigger('change');
+          }
+        });
+
         $("span.scandate").each(function() {
             this.innerText = dayjs(this.innerText).format("MMM D, YYYY h:mm A")
         });
