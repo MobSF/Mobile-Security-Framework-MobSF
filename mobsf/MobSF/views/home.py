@@ -303,13 +303,14 @@ def recent_scans(request):
                         | Q(USER_APP_NAME__icontains=sfilter))
     else:
         db_obj = RecentScansDB.objects.all()
-    db_obj = db_obj.order_by('-TIMESTAMP')[:100]
+
     isadmin = is_admin(request)
     if (not isadmin):
         email_filter = sso_email(request)
         if (not email_filter):
             email_filter = '@@'
         db_obj = db_obj.filter(EMAIL__contains=email_filter)
+    db_obj = db_obj.order_by('-TIMESTAMP')[:100]
 
     recentscans = db_obj.values()
     android = StaticAnalyzerAndroid.objects.all()
