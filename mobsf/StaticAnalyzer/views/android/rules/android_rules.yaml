@@ -596,7 +596,7 @@
   type: RegexOr
   pattern:
     - MODE_WORLD_WRITABLE
-    - \.getSharedPreferences\(.{0,50}2\)
+    - \.getSharedPreferences\(.{0,50}?2\)
     - 'openFileOutput\(\s*".{1,48}"\s*,\s*2\s*\)'
   severity: high
   input_case: exact
@@ -611,7 +611,7 @@
   type: RegexOr
   pattern:
     - MODE_WORLD_READABLE
-    - \.getSharedPreferences\(.{0,50}1\)
+    - \.getSharedPreferences\(.{0,50}?1\)
     - 'openFileOutput\(\s*".{1,48}"\s*,\s*1\s*\)'
   severity: high
   input_case: exact
