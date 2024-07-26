@@ -34,6 +34,7 @@ from mobsf.MobSF.utils import (
     get_proxy_ip,
     is_md5,
     print_n_send_error_response,
+    python_dict,
     python_list,
     strict_package_check,
 )
@@ -155,9 +156,11 @@ def dynamic_analyzer(request, checksum, api=False):
                 static_android_db.EXPORTED_ACTIVITIES)
             activities = python_list(
                 static_android_db.ACTIVITIES)
+            deeplinks = python_dict(
+                static_android_db.BROWSABLE_ACTIVITIES)
         except ObjectDoesNotExist:
             logger.warning(
-                'Failed to get Activities. '
+                'Failed to get Activities/Deeplinks. '
                 'Static Analysis not completed for the app.')
         env = Environment(identifier)
         if not env.connect_n_mount():
@@ -218,6 +221,7 @@ def dynamic_analyzer(request, checksum, api=False):
                    'version': settings.MOBSF_VER,
                    'activities': activities,
                    'exported_activities': exported_activities,
+                   'deeplinks': deeplinks,
                    'title': 'Dynamic Analyzer'}
         template = 'dynamic_analysis/android/dynamic_analyzer.html'
         if api:
