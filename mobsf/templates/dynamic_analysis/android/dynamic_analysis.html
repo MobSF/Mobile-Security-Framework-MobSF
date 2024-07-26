@@ -94,7 +94,7 @@ textarea:focus {
                         </h5>
                         <p>
                           {% if android_version %}
-                            Recommended Android version is <strong>9.0</strong><br/>
+                            Android version >= <strong>9.0</strong> recommended<br/>
                             Detected Android Version: <strong>{{android_version}}</strong>, SDK: <strong>{{ android_sdk }}</strong> <br/>
                             {% if android_sdk|floatformat > android_supported|floatformat %}
                               <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
