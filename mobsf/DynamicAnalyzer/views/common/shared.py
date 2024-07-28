@@ -23,7 +23,7 @@ from mobsf.MobSF.utils import (
 logger = logging.getLogger(__name__)
 
 
-def extract_urls_domains_emails(data):
+def extract_urls_domains_emails(checksum, data):
     """Extract URLs, Domains and Emails."""
     # URL Extraction
     urls = re.findall(URL_REGEX, data.lower())
@@ -33,7 +33,9 @@ def extract_urls_domains_emails(data):
         urls = []
     # Domain Extraction and Malware Check
     logger.info('Performing Malware Check on extracted Domains')
-    domains = MalwareDomainCheck().scan(urls)
+    domains = MalwareDomainCheck().scan(
+        checksum,
+        urls)
     # Email Etraction Regex
     emails = set()
     for email in EMAIL_REGEX.findall(data.lower()):

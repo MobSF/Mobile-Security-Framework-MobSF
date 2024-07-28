@@ -12,14 +12,18 @@ from mobsf.StaticAnalyzer.views.common.entropy import (
     get_entropies,
 )
 from mobsf.MobSF.utils import (
+    append_scan_status,
     get_android_src_dir,
 )
 
 logger = logging.getLogger(__name__)
 
 
-def strings_from_so(elf_strings):
+def strings_from_so(checksum, elf_strings):
     """Extract Strings from so file."""
+    msg = 'Extracting String data from SO'
+    logger.info(msg)
+    append_scan_status(checksum, msg)
     sos = []
     try:
         for solib in elf_strings:
@@ -37,12 +41,14 @@ def strings_from_so(elf_strings):
                     'urls_nf': so_urls_nf,
                     'emails_nf': so_emails_nf,
                 }})
-    except Exception:
-        logger.exception('Extracting Data from SO')
+    except Exception as exp:
+        msg = 'Failed to extract String data from SO'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))
     return sos
 
 
-def strings_from_apk(apk):
+def strings_from_apk(checksum, apk):
     """Extract Strings from an APK."""
     dat = []
     secrets = []
@@ -50,7 +56,9 @@ def strings_from_apk(apk):
     urls_nf = []
     emails_nf = []
     try:
-        logger.info('Extracting Data from APK')
+        msg = 'Extracting String data from APK'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         rsrc = apk.get_android_resources()
         if rsrc:
             pkg = rsrc.get_packages_names()[0]
@@ -68,8 +76,10 @@ def strings_from_apk(apk):
             # Extract URLs and Emails from Android String Resources
             urls, urls_nf, emails_nf = url_n_email_extract(
                 ''.join(dat), 'Android String Resource')
-    except Exception:
-        logger.exception('Extracting Data from APK')
+    except Exception as exp:
+        msg = 'Failed to extract String data from APK'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))
     return {
         'strings': list(set(dat)),
         'urls_list': urls,
@@ -79,21 +89,27 @@ def strings_from_apk(apk):
     }
 
 
-def strings_from_code(src_dir, typ, exts):
+def strings_from_code(checksum, src_dir, typ, exts):
     """Extract Strings and Secrets from Java/Kotlin code."""
+    msg = 'Extracting String data from Code'
+    logger.info(msg)
+    append_scan_status(checksum, msg)
     data = {
         'strings': set(),
         'secrets': set(),
     }
     try:
         src_dir = get_android_src_dir(Path(src_dir), typ)
-        data = strings_and_entropies(src_dir, exts)
-    except Exception:
-        logger.exception('Extracting Data from Code')
+        data = strings_and_entropies(checksum, src_dir, exts)
+    except Exception as exp:
+        msg = 'Failed to extract String data from Code'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))
     return data
 
 
-def get_strings_metadata(apk, app_dir, elf_strings, typ, exts, code_dic):
+def get_strings_metadata(
+        checksum, apk, app_dir, elf_strings, typ, exts, code_dic):
     """Get Strings, secrets, entropies, URLs, emails."""
     strings = {
         'strings_apk_res': {},
@@ -106,7 +122,7 @@ def get_strings_metadata(apk, app_dir, elf_strings, typ, exts, code_dic):
     secrets = []
     if apk:
         # APK
-        apk_res = strings_from_apk(apk)
+        apk_res = strings_from_apk(checksum, apk)
         strings['strings_apk_res'] = apk_res['strings']
         urls_list.extend(apk_res['urls_list'])
         urls_n_files.extend(apk_res['urls_nf'])
@@ -114,7 +130,7 @@ def get_strings_metadata(apk, app_dir, elf_strings, typ, exts, code_dic):
         secrets.extend(apk_res['secrets'])
     if elf_strings:
         # ELF (.so) by file
-        sos = strings_from_so(elf_strings)
+        sos = strings_from_so(checksum, elf_strings)
         so_strings = []
         for so in sos:
             for so_file, s in so.items():
@@ -128,7 +144,7 @@ def get_strings_metadata(apk, app_dir, elf_strings, typ, exts, code_dic):
 
     if exts:
         # Source Code
-        code_res = strings_from_code(app_dir, typ, exts)
+        code_res = strings_from_code(checksum, app_dir, typ, exts)
         strings['strings_code'] = list(code_res['strings'])
         secrets.extend(code_res['secrets'])
 

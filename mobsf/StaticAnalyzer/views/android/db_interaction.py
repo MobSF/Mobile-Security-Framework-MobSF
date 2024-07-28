@@ -4,7 +4,11 @@ import logging
 from django.conf import settings
 from django.db.models import QuerySet
 
-from mobsf.MobSF.utils import python_dict, python_list
+from mobsf.MobSF.utils import (
+    append_scan_status,
+    python_dict,
+    python_list,
+)
 from mobsf.MobSF.views.home import update_scan_timestamp
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.StaticAnalyzer.models import RecentScansDB
@@ -22,7 +26,8 @@ logger = logging.getLogger(__name__)
 def get_context_from_db_entry(db_entry: QuerySet) -> dict:
     """Return the context for APK/ZIP from DB."""
     try:
-        logger.info('Analysis is already Done. Fetching data from the DB...')
+        msg = 'Analysis is already Done. Fetching data from the DB...'
+        logger.info(msg)
         package = db_entry[0].PACKAGE_NAME
         code = process_suppression(
             python_dict(db_entry[0].CODE_ANALYSIS),
@@ -84,7 +89,8 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
         }
         return context
     except Exception:
-        logger.exception('Fetching from DB')
+        msg = 'Fetching data from the DB failed.'
+        logger.exception(msg)
 
 
 def get_context_from_analysis(app_dic,
@@ -155,8 +161,10 @@ def get_context_from_analysis(app_dic,
             'secrets': code_an_dic['secrets'],
         }
         return context
-    except Exception:
-        logger.exception('Rendering to Template')
+    except Exception as exp:
+        msg = 'Rendering to Template failed.'
+        logger.exception(msg)
+        append_scan_status(app_dic['md5'], msg, repr(exp))
 
 
 def save_or_update(update_type,
@@ -226,8 +234,10 @@ def save_or_update(update_type,
         else:
             StaticAnalyzerAndroid.objects.filter(
                 MD5=app_dic['md5']).update(**values)
-    except Exception:
-        logger.exception('Updating DB')
+    except Exception as exp:
+        msg = 'Failed to Save/Update Database'
+        logger.exception(msg)
+        append_scan_status(app_dic['md5'], msg, repr(exp))
     try:
         values = {
             'APP_NAME': app_dic['real_name'],
@@ -236,18 +246,24 @@ def save_or_update(update_type,
         }
         RecentScansDB.objects.filter(
             MD5=app_dic['md5']).update(**values)
-    except Exception:
-        logger.exception('Updating RecentScansDB')
+    except Exception as exp:
+        msg = 'Updating RecentScansDB table failed'
+        logger.exception(msg)
+        append_scan_status(app_dic['md5'], msg, repr(exp))
 
 
 def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, quark, trk, rscn):
     # SAVE TO DB
     if rscn:
-        logger.info('Updating Database...')
+        msg = 'Updating Database...'
+        logger.info(msg)
+        append_scan_status(app['md5'], msg)
         action = 'update'
         update_scan_timestamp(app['md5'])
     else:
-        logger.info('Saving to Database')
+        msg = 'Saving to Database'
+        logger.info(msg)
+        append_scan_status(app['md5'], msg)
         action = 'save'
     save_or_update(
         action,

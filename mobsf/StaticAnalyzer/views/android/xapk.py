@@ -10,6 +10,7 @@ from django.conf import settings
 
 from mobsf.StaticAnalyzer.views.common.shared_func import unzip
 from mobsf.MobSF.utils import (
+    append_scan_status,
     find_java_binary,
     is_file_exists,
     is_safe_path,
@@ -24,7 +25,10 @@ def handle_xapk(app_dic):
     checksum = app_dic['md5']
     xapk = app_dic['app_dir'] / f'{checksum}.xapk'
     apk = app_dic['app_dir'] / f'{checksum}.apk'
-    files = unzip(xapk.as_posix(), app_dic['app_dir'])
+    files = unzip(
+        checksum,
+        xapk.as_posix(),
+        app_dic['app_dir'])
     if 'manifest.json' not in files:
         logger.error('Manifest file not found in XAPK')
         return False
@@ -55,7 +59,7 @@ def handle_split_apk(app_dic):
     manifest = app_dic['app_dir'] / 'AndroidManifest.xml'
     if manifest.exists():
         return True
-    for apk in unzip(apks.as_posix(), app_dic['app_dir']):
+    for apk in unzip(checksum, apks.as_posix(), app_dic['app_dir']):
         full_path = app_dic['app_dir'] / apk
         safe_path = is_safe_path(app_dic['app_dir'], full_path)
         if (not apk.startswith('config.')
@@ -78,7 +82,9 @@ def handle_aab(app_dic):
         manifest = app_dic['app_dir'] / 'AndroidManifest.xml'
         if manifest.exists():
             return True
-        logger.info('Converting AAB to APK')
+        msg = 'Converting AAB to APK'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         if (getattr(settings, 'BUNDLE_TOOL', '')
                 and len(settings.BUNDLE_TOOL) > 0
                 and is_file_exists(settings.BUNDLE_TOOL)):
@@ -101,7 +107,7 @@ def handle_aab(app_dic):
             # Remove AAB
             aab_path.unlink()
         # Extract APK from APKS
-        for apk_file in unzip(apks.as_posix(), app_dic['app_dir']):
+        for apk_file in unzip(checksum, apks.as_posix(), app_dic['app_dir']):
             full_path = app_dic['app_dir'] / apk_file
             safe_path = is_safe_path(app_dic['app_dir'], full_path)
             if apk_file == 'universal.apk' and safe_path:
@@ -109,8 +115,12 @@ def handle_aab(app_dic):
                 apks.unlink()
                 return True
         raise Exception('Unable to convert AAB to APK')
-    except subprocess.TimeoutExpired:
-        logger.warning('Converting AAB to APK timed out')
-    except Exception:
-        logger.exception('Converting AAB to APK')
+    except subprocess.TimeoutExpired as exp:
+        msg = 'Converting AAB to APK timed out'
+        logger.warning(msg)
+        append_scan_status(checksum, msg, repr(exp))
+    except Exception as exp:
+        msg = 'Failed to convert AAB to APK'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))
     return None

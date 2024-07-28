@@ -5,14 +5,19 @@ import requests
 
 from django.conf import settings
 
-from mobsf.MobSF.utils import upstream_proxy
+from mobsf.MobSF.utils import (
+    append_scan_status,
+    upstream_proxy,
+)
 
 logger = logging.getLogger(__name__)
 
 
-def app_search(app_id):
+def app_search(checksum, app_id):
     """IOS Get App Details from App Store."""
-    logger.info('Fetching Details from App Store: %s', app_id)
+    msg = f'Fetching Details from App Store: {app_id}'
+    logger.info(msg)
+    append_scan_status(checksum, msg)
     lookup_url = settings.ITUNES_URL
     req_url = '{}?bundleId={}&country={}&entity=software'.format(
         lookup_url, app_id, 'us')
@@ -23,8 +28,9 @@ def app_search(app_id):
     try:
         det = {}
         proxies, verify = upstream_proxy('https')
-        req = requests.get(req_url, headers=headers,
-                           proxies=proxies, verify=verify)
+        req = requests.get(
+            req_url, headers=headers,
+            proxies=proxies, verify=verify)
         resp = req.json()
         if resp['results']:
             det = resp['results'][0]
@@ -49,6 +55,8 @@ def app_search(app_id):
             }
         logger.warning('Unable to get app details.')
         return {'error': True}
-    except Exception:
-        logger.warning('Unable to get app details')
+    except Exception as exp:
+        msg = 'Failed to get app details'
+        logger.warning(msg)
+        append_scan_status(checksum, msg, repr(exp))
         return {'error': True}

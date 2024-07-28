@@ -6,6 +6,9 @@ import logging
 from mobsf.StaticAnalyzer.views.ios.rules import (
     ipa_rules,
 )
+from mobsf.MobSF.utils import (
+    append_scan_status,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +29,7 @@ def _add_bfindings(findings, desc, detailed_desc, rule):
                       'masvs': rule['masvs']}
 
 
-def binary_rule_matcher(findings, symbols, classdump):
+def binary_rule_matcher(checksum, findings, symbols, classdump):
     """Static Analysis Rule Matcher."""
     try:
         data = classdump + '\n'.join(symbols).encode('utf-8')
@@ -53,6 +56,11 @@ def binary_rule_matcher(findings, symbols, classdump):
                                    rule)
 
             else:
-                logger.error('Binary rule Error\n%s', rule)
-    except Exception:
-        logger.exception('Error in Binary Rule Processing')
+                pre = 'Binary Rule Error'
+                msg = f'{pre}\n{rule}'
+                logger.error(msg)
+                append_scan_status(checksum, pre, msg)
+    except Exception as exp:
+        msg = 'Error in Binary Rule Processing'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))

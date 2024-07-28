@@ -13,9 +13,9 @@ from mobsf.MobSF.utils import (
 from mobsf.MobSF.views.helpers import request_method
 from mobsf.MobSF.views.home import RecentScans, Upload, delete_scan
 from mobsf.MobSF.views.api.api_middleware import make_api_response
-from mobsf.StaticAnalyzer.views.android import view_source
+from mobsf.StaticAnalyzer.views.android.views import view_source
 from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
-from mobsf.StaticAnalyzer.views.ios import view_source as ios_view_source
+from mobsf.StaticAnalyzer.views.ios.views import view_source as ios_view_source
 from mobsf.StaticAnalyzer.views.ios.static_analyzer import static_analyzer_ios
 from mobsf.StaticAnalyzer.views.common.shared_func import compare_apps
 from mobsf.StaticAnalyzer.views.common.suppression import (

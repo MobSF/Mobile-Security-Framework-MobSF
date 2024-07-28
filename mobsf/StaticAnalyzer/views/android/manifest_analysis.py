@@ -7,13 +7,16 @@ import requests
 from concurrent.futures import ThreadPoolExecutor
 
 from mobsf.MobSF.utils import (
+    append_scan_status,
     is_number,
     upstream_proxy,
     valid_host,
 )
 from mobsf.StaticAnalyzer.views.android import (
-    android_manifest_desc,
     network_security,
+)
+from mobsf.StaticAnalyzer.views.android.kb import (
+    android_manifest_desc,
 )
 
 
@@ -177,11 +180,13 @@ def get_browsable_activities(node, ns):
         logger.exception('Getting Browsable Activities')
 
 
-def manifest_analysis(mfxml, ns, man_data_dic, src_type, app_dir):
+def manifest_analysis(checksum, mfxml, ns, man_data_dic, src_type, app_dir):
     """Analyse manifest file."""
     # pylint: disable=C0301
     try:
-        logger.info('Manifest Analysis Started')
+        msg = 'Manifest Analysis Started'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         exp_count = dict.fromkeys(['act', 'ser', 'bro', 'cnt'], 0)
         applications = mfxml.getElementsByTagName('application')
         data_tag = mfxml.getElementsByTagName('data')
@@ -801,11 +806,14 @@ def manifest_analysis(mfxml, ns, man_data_dic, src_type, app_dir):
             'browsable_activities': browsable_activities,
             'permissions': permissions,
             'network_security': network_security.analysis(
+                checksum,
                 app_dir,
                 do_netsec,
                 debuggable,
                 src_type),
         }
         return man_an_dic
-    except Exception:
-        logger.exception('Performing Manifest Analysis')
+    except Exception as exp:
+        msg = 'Error Performing Manifest Analysis'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))

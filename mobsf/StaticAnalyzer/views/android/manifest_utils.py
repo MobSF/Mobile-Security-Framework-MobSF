@@ -14,12 +14,13 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 
 from mobsf.MobSF.utils import (
+    append_scan_status,
     find_java_binary,
     is_file_exists,
 )
 
 # pylint: disable=E0401
-from .dvm_permissions import DVM_PERMISSIONS
+from .kb.dvm_permissions import DVM_PERMISSIONS
 
 logger = logging.getLogger(__name__)
 
@@ -119,7 +120,7 @@ def bs4_xml_parser(xml_str):
     return None
 
 
-def get_manifest(app_path, app_dir, tools_dir, typ):
+def get_manifest(checksum, app_path, app_dir, tools_dir, typ):
     """Get the manifest file."""
     try:
         ns = 'android'
@@ -133,7 +134,9 @@ def get_manifest(app_path, app_dir, tools_dir, typ):
             logger.warning('apktool failed to extract '
                            'AndroidManifest.xml')
             return manifest_file, ns, get_fallback()
-        logger.info('Parsing AndroidManifest.xml')
+        msg = 'Parsing AndroidManifest.xml'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         xml_str = mfile.read_text('utf-8', 'ignore')
         ns = get_xml_namespace(xml_str)
         if ns and ns == 'xmlns':
@@ -146,15 +149,19 @@ def get_manifest(app_path, app_dir, tools_dir, typ):
             logger.warning('Parsing AndroidManifest.xml failed')
             return manifest_file, ns, minidom.parseString(
                 bs4_xml_parser(xml_str))
-    except Exception:
-        logger.exception('Parsing Error')
+    except Exception as exp:
+        msg = 'Parsing AndroidManifest.xml failed'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))
     return manifest_file, ns, get_fallback()
 
 
-def manifest_data(mfxml, ns):
+def manifest_data(checksum, mfxml, ns):
     """Extract manifest data."""
     try:
-        logger.info('Extracting Manifest Data')
+        msg = 'Extracting Manifest Data'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         svc = []
         act = []
         brd = []
@@ -290,5 +297,7 @@ def manifest_data(mfxml, ns):
         }
 
         return man_data_dic
-    except Exception:
-        logger.exception('Extracting Manifest Data')
+    except Exception as exp:
+        msg = 'Extracting Manifest Data'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))

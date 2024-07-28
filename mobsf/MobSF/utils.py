@@ -31,6 +31,9 @@ import psutil
 import requests
 
 from django.shortcuts import render
+from django.utils import timezone
+
+from mobsf.StaticAnalyzer.models import RecentScansDB
 
 from . import settings
 
@@ -908,3 +911,22 @@ def valid_host(host):
         return True
     except Exception:
         return False
+
+
+def append_scan_status(checksum, status, exception=None):
+    """Append Scan Status to Database."""
+    try:
+        db_obj = RecentScansDB.objects.get(MD5=checksum)
+        if status == 'init':
+            db_obj.SCAN_LOGS = []
+            db_obj.save()
+            return
+        current_logs = python_dict(db_obj.SCAN_LOGS)
+        current_logs.append({
+            'timestamp': timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'status': status,
+            'exception': exception})
+        db_obj.SCAN_LOGS = current_logs
+        db_obj.save()
+    except Exception:
+        logger.exception('Appending Scan Status to Database')
