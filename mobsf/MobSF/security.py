@@ -86,6 +86,8 @@ def get_executable_hashes():
         'BinSkim.exe',
         'BinScope.exe',
         'nuget.exe',
+        'where.exe',
+        'wkhtmltopdf.exe',
     ]
     for sbin in system_bins:
         bin_path = which(sbin)

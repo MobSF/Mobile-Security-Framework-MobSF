@@ -192,12 +192,15 @@ def ar_extract(checksum, src, dst):
             out.write_bytes(val.read())
     except Exception:
         # Possibly dealing with Fat binary, needs Mac host
-        logger.warning('Failed to extract .a archive')
+        msg = 'Failed to extract .a archive'
+        logger.warning(msg)
+        append_scan_status(checksum, msg)
         # Use os ar utility
         plat = platform.system()
         os_err = 'Possibly a Fat binary. Requires MacOS for Analysis'
         if plat == 'Windows':
             logger.warning(os_err)
+            append_scan_status(checksum, os_err)
             return
         msg = 'Using OS ar utility to handle archive'
         logger.info(msg)
@@ -206,6 +209,7 @@ def ar_extract(checksum, src, dst):
         if len(exp) > 3 and plat == 'Linux':
             # Can't convert FAT binary in Linux
             logger.warning(os_err)
+            append_scan_status(checksum, os_err)
             return
         if b'lipo(1)' in exp:
             msg = 'Fat binary archive identified'
