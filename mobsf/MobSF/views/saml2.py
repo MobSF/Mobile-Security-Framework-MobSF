@@ -26,6 +26,9 @@ from mobsf.MobSF.views.authorization import (
 from mobsf.MobSF.utils import (
     print_n_send_error_response,
 )
+from mobsf.MobSF.security import (
+    sanitize_redirect,
+)
 
 logger = logging.getLogger(__name__)
 ASSERTION_IDS = set()
@@ -117,8 +120,8 @@ def get_redirect_url(req):
         return redirect_url
     relay_state = req['post_data']['RelayState']
     # Allow only relative URLs
-    if (relay_state and relay_state.startswith('/')):
-        redirect_url = relay_state
+    if relay_state:
+        redirect_url = sanitize_redirect(relay_state)
     return redirect_url
 
 
@@ -139,7 +142,7 @@ def saml_login(request):
         req = prepare_django_request(request)
         auth = init_saml_auth(req)
         nextp = request.GET.get('next', '')
-        redirect_url = nextp if nextp.startswith('/') else '/'
+        redirect_url = sanitize_redirect(nextp)
         return redirect(auth.login(return_to=redirect_url))
     except Exception as exp:
         return print_n_send_error_response(

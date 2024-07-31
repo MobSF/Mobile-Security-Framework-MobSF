@@ -18,6 +18,10 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required as lg
 
+from mobsf.MobSF.security import (
+    sanitize_redirect,
+)
+
 from brake.decorators import ratelimit
 
 
@@ -57,7 +61,7 @@ def login_view(request):
     else:
         allow_pwd = False
     nextp = request.GET.get('next', '')
-    redirect_url = nextp if nextp.startswith('/') else '/'
+    redirect_url = sanitize_redirect(nextp)
     if request.user.is_authenticated:
         return redirect(redirect_url)
     if request.method == 'POST':

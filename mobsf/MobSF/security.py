@@ -195,3 +195,13 @@ def wrap_function(oldfunction, newfunction):
     def run(*args, **kwargs):
         return newfunction(oldfunction, *args, **kwargs)
     return run
+
+
+def sanitize_redirect(url):
+    """Sanitize Redirect URL."""
+    root = '/'
+    if url.startswith('//'):
+        return root
+    elif url.startswith('/'):
+        return url
+    return root
