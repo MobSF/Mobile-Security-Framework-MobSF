@@ -354,7 +354,6 @@ def search(request):
 
 
 @login_required
-@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def scan_status(request, api=False):
     """Get Current Status of a scan in progress."""
