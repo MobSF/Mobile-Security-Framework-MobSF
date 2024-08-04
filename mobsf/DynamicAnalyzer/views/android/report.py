@@ -72,7 +72,7 @@ def view_report(request, checksum, api=False):
         deps = dependency_analysis(package, app_dir)
         analysis_result = run_analysis(app_dir, checksum, package)
         domains = analysis_result['domains']
-        trk = Trackers.Trackers(app_dir, tools_dir)
+        trk = Trackers.Trackers(checksum, app_dir, tools_dir)
         trackers = trk.get_trackers_domains_or_deps(domains, deps)
         generate_download(app_dir, checksum, download_dir, package)
         images = get_screenshots(checksum, download_dir)

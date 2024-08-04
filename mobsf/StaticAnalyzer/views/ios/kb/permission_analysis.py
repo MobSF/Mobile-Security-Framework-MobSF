@@ -12,7 +12,7 @@ COCOA_KEYS = {
          'without using an MDM server.'),
         'normal'),
     'NFCReaderUsageDescription': (
-        'Access device’s NFC reader.',
+        'Access device\'s NFC reader.',
         'dangerous'),
     'NSAppleMusicUsageDescription': (
         'Access Apple Media Library.',
@@ -33,7 +33,7 @@ COCOA_KEYS = {
         'Access the ability to authenticate with Face ID.',
         'normal'),
     'NSHealthClinicalHealthRecordsShareUsageDescription': (
-        'Access user’s clinical health records.',
+        'Access user\'s clinical health records.',
         'dangerous'),
     'NSHealthShareUsageDescription': (
         'Read Health Data.',
@@ -57,22 +57,22 @@ COCOA_KEYS = {
         'Access microphone.',
         'dangerous'),
     'NSMotionUsageDescription': (
-        'Access the device’s accelerometer.',
+        'Access the device\'s accelerometer.',
         'dangerous'),
     'NSPhotoLibraryUsageDescription': (
-        'Access the user’s photo library.',
+        'Access the user\'s photo library.',
         'dangerous'),
     'NSRemindersUsageDescription': (
-        'Access the user’s reminders.',
+        'Access the user\'s reminders.',
         'dangerous'),
     'NSSiriUsageDescription': (
         'Allow app to send user data to Siri',
         'dangerous'),
     'NSSpeechRecognitionUsageDescription': (
-        'Allow app to send user data to Apple’s speech recognition servers.',
+        'Allow app to send user data to Apple\'s speech recognition servers.',
         'normal'),
     'NSVideoSubscriberAccountUsageDescription': (
-        'Access the user’s TV provider account.',
+        'Access the user\'s TV provider account.',
         'normal'),
     'NSLocalNetworkUsageDescription': (
         'Allow app to request access to the local network.',

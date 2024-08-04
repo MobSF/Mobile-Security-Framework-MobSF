@@ -1,10 +1,14 @@
 from datetime import datetime
+from enum import Enum
 
 from django.db import models
 
-from mobsf.MobSF.views.authorization import (
-    DjangoPermissions,
-)
+
+class DjangoPermissions(Enum):
+    SCAN = ('can_scan', 'Scan Files')
+    SUPPRESS = ('can_suppress', 'Suppress Findings')
+    DELETE = ('can_delete', 'Delete Scans')
+
 
 P = DjangoPermissions
 
@@ -23,6 +27,7 @@ class RecentScansDB(models.Model):
     VERSION_NAME = models.CharField(max_length=50, default='')
     MD5 = models.CharField(max_length=32, default='', primary_key=True)
     TIMESTAMP = models.DateTimeField(default=datetime.now)
+    SCAN_LOGS = models.TextField(default=[])
 
 
 class StaticAnalyzerAndroid(models.Model):

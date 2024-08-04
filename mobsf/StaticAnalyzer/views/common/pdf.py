@@ -93,8 +93,8 @@ def pdf(request, checksum, api=False, jsonres=False):
                 settings.UPLD_DIR,
                 checksum + '/',
                 checksum + ext)
-            vt = VirusTotal.VirusTotal()
-            context['virus_total'] = vt.get_result(app_bin, checksum)
+            vt = VirusTotal.VirusTotal(checksum)
+            context['virus_total'] = vt.get_result(app_bin)
         # Get Local Base URL
         proto = 'file://'
         host_os = 'nix'

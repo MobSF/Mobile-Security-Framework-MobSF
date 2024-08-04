@@ -121,6 +121,7 @@ def dynamic_analyzer(request, checksum, api=False):
     try:
         identifier = None
         activities = None
+        deeplinks = None
         exported_activities = None
         if api:
             reinstall = request.POST.get('re_install', '1')

@@ -9,6 +9,7 @@ import mobsf.MalwareAnalyzer.views.Trackers as Trackers
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.MalwareAnalyzer.views.android import permissions
 from mobsf.MobSF.utils import (
+    append_scan_status,
     file_size,
     print_n_send_error_response,
 )
@@ -62,10 +63,11 @@ logger = logging.getLogger(__name__)
 
 
 def common_analysis(request, app_dic, rescan, api, analysis_type):
+    checksum = app_dic['md5']
     app_dic['app_file'] = f'{app_dic["md5"]}.{analysis_type}'  # NEW FILENAME
     app_dic['app_path'] = (app_dic['app_dir'] / app_dic['app_file']).as_posix()
     app_dic['app_dir'] = app_dic['app_dir'].as_posix() + '/'
-    db_entry = StaticAnalyzerAndroid.objects.filter(MD5=app_dic['md5'])
+    db_entry = StaticAnalyzerAndroid.objects.filter(MD5=checksum)
     if db_entry.exists() and not rescan:
         context = get_context_from_db_entry(db_entry)
     else:
@@ -74,22 +76,34 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
                 request,
                 'Permission Denied',
                 False)
+        append_scan_status(checksum, 'init')
+        # Analysis Starts here
         app_dic['size'] = f'{str(file_size(app_dic["app_path"]))}MB'
-        app_dic['sha1'], app_dic['sha256'] = hash_gen(app_dic['app_path'])
-        app_dic['files'] = unzip(app_dic['app_path'], app_dic['app_dir'])
+        app_dic['sha1'], app_dic['sha256'] = hash_gen(
+            checksum,
+            app_dic['app_path'])
+        app_dic['files'] = unzip(
+            checksum,
+            app_dic['app_path'],
+            app_dic['app_dir'])
         logger.info('%s Extracted', analysis_type.upper())
         if not app_dic['files']:
             return print_n_send_error_response(
                 request,
                 f'{analysis_type.upper()} file is invalid or corrupt',
                 api)
-        app_dic['certz'] = get_hardcoded_cert_keystore(app_dic['files'])
+        app_dic['certz'] = get_hardcoded_cert_keystore(
+            checksum,
+            app_dic['files'])
         app_dic['playstore'] = {'error': True}
         # Parse APK with Androguard
-        apk = parse_apk(app_dic['app_path'])
+        apk = parse_apk(
+            checksum,
+            app_dic['app_path'])
         if analysis_type == 'aar':
             # AAR has manifest and sometimes certificate
             mani_file, ns, mani_xml = get_manifest(
+                checksum,
                 app_dic['app_path'],
                 app_dic['app_dir'],
                 app_dic['tools_dir'],
@@ -98,8 +112,12 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
             app_dic['manifest_file'] = mani_file
             app_dic['ns'] = ns
             app_dic['parsed_xml'] = mani_xml
-            man_data_dic = manifest_data(app_dic['parsed_xml'], ns)
+            man_data_dic = manifest_data(
+                checksum,
+                app_dic['parsed_xml'],
+                ns)
             man_an_dic = manifest_analysis(
+                checksum,
                 app_dic['parsed_xml'],
                 ns,
                 man_data_dic,
@@ -109,6 +127,7 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
 
             # Malware Permission check
             mal_perms = permissions.check_malware_permission(
+                checksum,
                 man_data_dic['perm'])
             man_an_dic['malware_permissions'] = mal_perms
 
@@ -160,42 +179,46 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
             }
         app_dic['real_name'] = ''
         elf_dict = library_analysis(
+            checksum,
             app_dic['app_dir'],
-            app_dic['md5'],
             'elf')
         tracker = Trackers.Trackers(
+            checksum,
             app_dic['app_dir'],
             app_dic['tools_dir'])
         tracker_res = tracker.get_trackers()
-
         apk_2_java(
+            checksum,
             app_dic['app_path'],
             app_dic['app_dir'],
             app_dic['tools_dir'])
-
         code_an_dic = code_analysis(
+            checksum,
             app_dic['app_dir'],
             'apk',
             app_dic['manifest_file'],
             man_data_dic['perm'])
-        obfuscated_check(app_dic['app_dir'], code_an_dic)
+        obfuscated_check(
+            checksum,
+            app_dic['app_dir'],
+            code_an_dic)
         quark_results = []
         # Get the strings and metadata
         get_strings_metadata(
+            checksum,
             apk,
             app_dic['app_dir'],
             elf_dict['elf_strings'],
             'apk',
             ['.java'],
             code_an_dic)
-
         # Firebase DB Check
         code_an_dic['firebase'] = firebase_analysis(
+            checksum,
             code_an_dic['urls_list'])
         # Domain Extraction and Malware Check
-        logger.info(
-            'Performing Malware Check on extracted Domains')
         code_an_dic['domains'] = MalwareDomainCheck().scan(
+            checksum,
             code_an_dic['urls_list'])
 
         app_dic['zipped'] = analysis_type
@@ -217,10 +240,9 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
     context['dynamic_analysis_done'] = False
     context['virus_total'] = None
     if settings.VT_ENABLED:
-        vt = VirusTotal.VirusTotal()
+        vt = VirusTotal.VirusTotal(checksum)
         context['virus_total'] = vt.get_result(
-            app_dic['app_path'],
-            app_dic['md5'])
+            app_dic['app_path'])
     template = 'static_analysis/android_binary_analysis.html'
     if api:
         return context
@@ -236,9 +258,11 @@ def aar_analysis(request, app_dic, rescan, api):
     return common_analysis(request, app_dic, rescan, api, 'aar')
 
 
-def obfuscated_check(src, code_an_dic):
+def obfuscated_check(checksum, src, code_an_dic):
     """Check if JAR/AAR is obfuscated."""
-    logger.info('Checking for Obfuscation')
+    msg = 'Checking for Obfuscation'
+    logger.info(msg)
+    append_scan_status(checksum, msg)
     metadata = {
         'cvss': 0,
         'cwe': '',
@@ -258,7 +282,7 @@ def obfuscated_check(src, code_an_dic):
                 continue
             out = app_dir / f'{j.name}_out'
             if not out.exists():
-                unzip(j, out)
+                unzip(checksum, j, out)
         # Search all class files
         for i in app_dir.rglob('*.class'):
             if not i.is_file():
@@ -271,8 +295,10 @@ def obfuscated_check(src, code_an_dic):
                     'metadata': metadata,
                 }
                 return
-    except Exception:
-        logger.exception('Obfuscation Check')
+    except Exception as exp:
+        msg = 'Obfuscation Check Failed'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))
     metadata['description'] = (
         'The binary might be obfuscated.'
         ' LocalVariableTable is absent in class file.')

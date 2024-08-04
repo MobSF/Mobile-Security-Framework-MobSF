@@ -29,7 +29,6 @@
         font-display: swap;
         src: local('Oswald'), local('Oswald'), url('{{base_url}}{% static 'fonts/Oswald/Oswald-Regular.ttf' %}') format('truetype');
       }
-     
   </style>
   {% endif %}
   <link rel="stylesheet" href="{{base_url}}{% static "others/css/pdf_report.css" %}">
@@ -1051,7 +1050,38 @@
                   </p>
              
        {% endif %}
-    </article>
+       <h2><i class="fas fa-list"></i> SCAN LOGS</h2>
+    <table id="scan_logs" class="basic">
+      <tr>
+          <th>Timestamp</th>
+          <th>Event</th>
+          <th>Error</th>
+      </tr>
+  <tbody>
+    {% for log in logs %}
+    <tr>
+      <td>
+        {{log.timestamp}}
+      </td>
+      <td>
+        {{log.status}}
+      </td>
+      <td>
+        {% if not log.exception %}
+        <p class="text-success">
+          OK
+        </p>
+        {% else %}
+        <p class="text-danger">
+        {{log.exception}}
+         </p>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  </table>
+</article>
     <article id="columns">
       </br>
       <hr>

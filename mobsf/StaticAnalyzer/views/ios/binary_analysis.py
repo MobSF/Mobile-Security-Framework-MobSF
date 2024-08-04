@@ -21,6 +21,9 @@ from mobsf.StaticAnalyzer.views.common.binary.strings import (
 from mobsf.StaticAnalyzer.views.ios.binary_rule_matcher import (
     binary_rule_matcher,
 )
+from mobsf.MobSF.utils import (
+    append_scan_status,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +72,7 @@ def ipa_macho_analysis(binary):
         return {}
 
 
-def binary_analysis(src, tools_dir, app_dir, executable_name):
+def binary_analysis(checksum, src, tools_dir, app_dir, executable_name):
     """Binary Analysis of IPA."""
     bin_dict = {
         'checksec': {},
@@ -81,7 +84,9 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
     }
     try:
         binary_findings = {}
-        logger.info('Starting Binary Analysis')
+        msg = 'Starting Binary Analysis'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         dirs = Path(src).glob('*')
         dot_app_dir = ''
         bin_name = ''
@@ -100,18 +105,23 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
         # Bin Path - Dir/Payload/x.app/x
         bin_path = bin_dir / bin_name
         if not (bin_path.exists() and bin_path.is_file()):
-            logger.warning(
-                'MobSF Cannot find binary in %s', bin_path.as_posix())
-            logger.warning('Skipping Binary analysis')
+            msg = (
+                f'MobSF Cannot find binary in {bin_path.as_posix()}. '
+                'Skipping Binary Analysis.')
+            logger.warning(msg)
+            append_scan_status(checksum, 'Skipping binary analysis', msg)
         else:
             macho = ipa_macho_analysis(bin_path)
             bin_info = get_bin_info(bin_path)
             bin_type = detect_bin_type(macho['libraries'])
             classdump = get_class_dump(
+                checksum,
                 tools_dir,
                 bin_path,
-                app_dir, bin_type)
+                app_dir,
+                bin_type)
             binary_rule_matcher(
+                checksum,
                 binary_findings,
                 macho['symbols'], classdump)
             bin_dict['checksec'] = macho['checksec']
@@ -122,6 +132,8 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
             logger.info('Running strings against the Binary')
             bin_dict['strings'] = strings_on_binary(
                 bin_path.as_posix())
-    except Exception:
-        logger.exception('IPA Binary Analysis')
+    except Exception as exp:
+        msg = 'Failed to run IPA Binary Analysis'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))
     return bin_dict

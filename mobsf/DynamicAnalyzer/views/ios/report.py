@@ -67,7 +67,7 @@ def ios_view_report(request, bundle_id, api=False):
             return print_n_send_error_response(request, msg, api)
         api_analysis = ios_api_analysis(app_dir)
         dump_analaysis = run_analysis(app_dir, bundle_id, checksum)
-        trk = Trackers.Trackers(app_dir, tools_dir)
+        trk = Trackers.Trackers(checksum, app_dir, tools_dir)
         trackers = trk.get_trackers_domains_or_deps(
             dump_analaysis['domains'], None)
         screenshots = get_screenshots(checksum, download_dir)

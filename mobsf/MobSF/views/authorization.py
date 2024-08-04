@@ -36,6 +36,8 @@ from mobsf.DynamicAnalyzer.views.common.shared import (
 
 logger = logging.getLogger(__name__)
 register.filter('md5', get_md5)
+
+
 PERM_CAN_SCAN = 'can_scan'
 PERM_CAN_SUPPRESS = 'can_suppress'
 PERM_CAN_DELETE = 'can_delete'
@@ -45,12 +47,6 @@ class Permissions(Enum):
     SCAN = f'StaticAnalyzer.{PERM_CAN_SCAN}'
     SUPPRESS = f'StaticAnalyzer.{PERM_CAN_SUPPRESS}'
     DELETE = f'StaticAnalyzer.{PERM_CAN_DELETE}'
-
-
-class DjangoPermissions(Enum):
-    SCAN = (PERM_CAN_SCAN, 'Scan Files')
-    SUPPRESS = (PERM_CAN_SUPPRESS, 'Suppress Findings')
-    DELETE = (PERM_CAN_DELETE, 'Delete Scans')
 
 
 MAINTAINER_GROUP = 'Maintainer'

@@ -12,6 +12,7 @@ from wsgiref.util import FileWrapper
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect
+from django.views.decorators.http import require_http_methods
 from django.utils import timezone
 from django.shortcuts import (
     redirect,
@@ -29,6 +30,7 @@ from mobsf.MobSF.utils import (
     is_safe_path,
     key,
     print_n_send_error_response,
+    python_dict,
 )
 from mobsf.MobSF.views.helpers import FileType
 from mobsf.MobSF.views.scanning import Scanning
@@ -38,6 +40,10 @@ from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
     StaticAnalyzerIOS,
     StaticAnalyzerWindows,
+)
+from mobsf.DynamicAnalyzer.views.common.shared import (
+    invalid_params,
+    send_response,
 )
 from mobsf.MobSF.views.authentication import (
     login_required,
@@ -343,6 +349,27 @@ def search(request):
         else:
             return HttpResponseRedirect('/not_found/')
     return print_n_send_error_response(request, 'Invalid Scan Hash')
+
+# AJAX
+
+
+@login_required
+@require_http_methods(['POST'])
+def scan_status(request, api=False):
+    """Get Current Status of a scan in progress."""
+    try:
+        scan_hash = request.POST['hash']
+        if not is_md5(scan_hash):
+            return invalid_params(api)
+        robj = RecentScansDB.objects.filter(MD5=scan_hash)
+        if not robj.exists():
+            data = {'status': 'failed', 'error': 'scan hash not found'}
+            return send_response(data, api)
+        data = {'status': 'ok', 'logs': python_dict(robj[0].SCAN_LOGS)}
+    except Exception as exp:
+        logger.exception('Fetching Scan Status')
+        data = {'status': 'failed', 'message': str(exp)}
+    return send_response(data, api)
 
 
 @login_required

@@ -128,18 +128,9 @@
                         },
                         success : function(json){
                             if (json.status === 'ok'){
-                                i = 1;
                                 setInterval(function() {
-                                    dot = '';
-                                    for (x = 1; x <= i; x++) {
-                                        dot += '.';
-                                    }
-                                    _("status").innerText = "Analyzing" + dot;
-                                    i += 1;
-                                    if (i == 5) {
-                                        i = 1;
-                                    }
-                                }, 2000);
+                                    get_status(json.hash);
+                                }, 500);
 
                                 url = json.analyzer + '/' + json.hash + '/';
                                 load_result(url);
@@ -170,32 +161,54 @@
             function _(el){
                 return document.getElementById(el);
             }
+
             // Response Handler     
             function responseHandler(json, isbutton) {
                 if (json.status === 'error') {
                     _("status").innerText = json.description;
                 } else {
-                    i = 1;
                     setInterval(function() {
-                        dot = '';
-                        for (x = 1; x <= i; x++) {
-                            dot += '.';
-                        }
-                        _("status").innerText = "Analyzing" + dot;
-                        i += 1;
-                        if (i == 5) {
-                            i = 1;
-                        }
-                    }, 2000);
+                        get_status(json.hash);
+                    }, 500);
                     var url = json.analyzer + '/' + json.hash + '/';
                     load_result(url);
                 }
             }
+
+
+           // Get Scan status
+           function get_status(checksum){
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", '{% url "status" %}', true);
+                xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+                xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xhr.onload = function() {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.status === 'ok') {
+                            const last_log = response.logs[response.logs.length - 1];
+                            _("status").innerText = last_log.status + ' .';
+                            var number = Math.ceil((Math.floor(Math.random() * 5)));
+                            for (i=0;i<number;i++){
+                                _("status").innerText += '.';
+                            }
+                        }
+                    } else {
+                        console.log("Error:", xhr.statusText);
+                    }
+                };
+                xhr.onerror = function() {
+                    console.log("Failed to get scan status");
+                };
+                xhr.send('hash=' + checksum);
+           }
+
             function progressHandler(event) {
                 var percent = (event.loaded / event.total) * 100;
-                console.log("Uploaded..." + Math.round(percent));
+                console.log("Uploaded ..." + Math.round(percent));
                 _("progressBar").value = Math.round(percent);
-                _("status").innerText = Math.round(percent) + "% Uploaded...";
+                _("status").innerText = Math.round(percent) + "% Uploaded ...";
             }
             function completeHandler(event) {
                 if(event.currentTarget.status === 403){

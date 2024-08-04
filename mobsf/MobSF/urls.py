@@ -38,7 +38,7 @@ from mobsf.StaticAnalyzer.views.common import (
     shared_func,
     suppression,
 )
-from mobsf.StaticAnalyzer.views.android import (
+from mobsf.StaticAnalyzer.views.android.views import (
     find,
     manifest_view,
     source_tree,
@@ -47,7 +47,7 @@ from mobsf.StaticAnalyzer.views.android import (
 from mobsf.StaticAnalyzer.views.windows import windows
 from mobsf.StaticAnalyzer.views.android import static_analyzer as android_sa
 from mobsf.StaticAnalyzer.views.ios import static_analyzer as ios_sa
-from mobsf.StaticAnalyzer.views.ios import view_source as io_view_source
+from mobsf.StaticAnalyzer.views.ios.views import view_source as io_view_source
 
 from . import settings
 
@@ -85,6 +85,7 @@ urlpatterns = [
     # Static Analysis
     re_path(r'^api/v1/upload$', api_sz.api_upload),
     re_path(r'^api/v1/scan$', api_sz.api_scan),
+    re_path(r'^api/v1/scan_logs$', api_sz.api_scan_logs),
     re_path(r'^api/v1/delete_scan$', api_sz.api_delete_scan),
     re_path(r'^api/v1/download_pdf$', api_sz.api_pdf_report),
     re_path(r'^api/v1/report_json$', api_sz.api_json_report),
@@ -195,6 +196,7 @@ if settings.API_ONLY == '0':
                 name='scans_paginated'),
         re_path(r'^delete_scan/$', home.delete_scan, name='delete_scan'),
         re_path(r'^search$', home.search),
+        re_path(r'^status/$', home.scan_status, name='status'),
         re_path(r'^error/$', home.error, name='error'),
         re_path(r'^not_found/$', home.not_found),
         re_path(r'^zip_format/$', home.zip_format),

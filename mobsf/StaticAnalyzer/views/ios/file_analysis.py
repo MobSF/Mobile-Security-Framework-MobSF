@@ -8,15 +8,22 @@ from pathlib import Path
 
 from django.utils.html import escape
 
-from mobsf.StaticAnalyzer.views.ios.plist_analysis import convert_bin_xml
+from mobsf.StaticAnalyzer.views.ios.plist_analysis import (
+    convert_bin_xml,
+)
+from mobsf.MobSF.utils import (
+    append_scan_status,
+)
 
 logger = logging.getLogger(__name__)
 
 
-def ios_list_files(src, md5_hash, binary_form, mode):
+def ios_list_files(md5_hash, src, binary_form, mode):
     """List iOS files."""
     try:
-        logger.info('Get Files, BIN Plist -> XML, and Normalize')
+        msg = 'iOS File Analysis and Normalization'
+        logger.info(msg)
+        append_scan_status(md5_hash, msg)
         # Multi function, Get Files, BIN Plist -> XML, normalize + to x
         filez = []
         certz = []
@@ -81,5 +88,7 @@ def ios_list_files(src, md5_hash, binary_form, mode):
         return {'files_short': filez,
                 'files_long': full_paths,
                 'special_files': sfiles}
-    except Exception:
-        logger.exception('iOS List Files')
+    except Exception as exp:
+        msg = 'iOS File Analysis'
+        logger.exception(msg)
+        append_scan_status(md5_hash, msg, repr(exp))

@@ -241,6 +241,21 @@ def api_test():
             logger.error('Scan List API Test with custom http header 2')
             return True
         logger.info('[OK] Scan List API tests completed')
+        # Scan logs tests
+        logger.info('Running Scan Logs API tests')
+        for upl in uploaded:
+            resp = http_client.post(
+                '/api/v1/scan_logs',
+                {'hash': upl['hash']},
+                HTTP_AUTHORIZATION=auth)
+            if resp.status_code == 200:
+                logs = json.loads(resp.content.decode('utf-8'))
+                if 'logs' in logs and len(logs['logs']) > 0:
+                    logger.info('[OK] Scan Logs API test: %s', upl['hash'])
+            else:
+                logger.error('Scan Logs API test: %s', upl['hash'])
+                return True
+        logger.info('[OK] Static Analysis API test completed')
         # PDF Tests
         logger.info('Running PDF Generation API Test')
         if platform.system() in ['Darwin', 'Linux']:
