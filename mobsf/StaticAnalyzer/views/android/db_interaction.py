@@ -6,6 +6,7 @@ from django.db.models import QuerySet
 
 from mobsf.MobSF.utils import (
     append_scan_status,
+    get_scan_logs,
     python_dict,
     python_list,
 )
@@ -86,6 +87,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'trackers': python_dict(db_entry[0].TRACKERS),
             'playstore_details': python_dict(db_entry[0].PLAYSTORE_DETAILS),
             'secrets': python_list(db_entry[0].SECRETS),
+            'logs': get_scan_logs(db_entry[0].MD5),
         }
         return context
     except Exception:
@@ -159,6 +161,7 @@ def get_context_from_analysis(app_dic,
             'trackers': trackers,
             'playstore_details': app_dic['playstore'],
             'secrets': code_an_dic['secrets'],
+            'logs': get_scan_logs(app_dic['md5']),
         }
         return context
     except Exception as exp:

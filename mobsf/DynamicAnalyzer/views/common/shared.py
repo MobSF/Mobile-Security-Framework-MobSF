@@ -32,7 +32,7 @@ def extract_urls_domains_emails(checksum, data):
     else:
         urls = []
     # Domain Extraction and Malware Check
-    logger.info('Performing Malware Check on extracted Domains')
+    logger.info('Performing Malware check on extracted domains')
     domains = MalwareDomainCheck().scan(
         checksum,
         urls)

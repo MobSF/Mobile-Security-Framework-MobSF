@@ -234,7 +234,7 @@ def get_summary(ats):
 
 def get_plist_secrets(checksum, app_dir):
     """Get possible hardcoded secrets from plist files."""
-    msg = 'Searching for Secrets in Plist Files'
+    msg = 'Searching for secrets in plist files'
     logger.info(msg)
     append_scan_status(checksum, msg)
     result_list = set()

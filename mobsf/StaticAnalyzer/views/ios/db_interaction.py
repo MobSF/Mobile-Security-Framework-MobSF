@@ -5,6 +5,7 @@ from django.conf import settings
 
 from mobsf.MobSF.utils import (
     append_scan_status,
+    get_scan_logs,
     python_dict,
     python_list,
 )
@@ -71,7 +72,7 @@ def get_context_from_db_entry(db_entry):
             'appstore_details': python_dict(db_entry[0].APPSTORE_DETAILS),
             'secrets': python_list(db_entry[0].SECRETS),
             'trackers': python_dict(db_entry[0].TRACKERS),
-
+            'logs': get_scan_logs(db_entry[0].MD5),
         }
         return context
     except Exception:
@@ -134,6 +135,7 @@ def get_context_from_analysis(app_dict,
             'appstore_details': app_dict['appstore'],
             'secrets': app_dict['secrets'],
             'trackers': code_dict['trackers'],
+            'logs': get_scan_logs(app_dict['md5_hash']),
         }
         return context
     except Exception as exp:

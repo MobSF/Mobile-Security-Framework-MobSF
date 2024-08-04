@@ -204,7 +204,8 @@
                 </p>
                 <p align="center">
                    <a href="{% url 'static_analyzer_windows' checksum=md5 %}?rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
-                   <a href="#" data-target="#mstrings" role="button" class="btn btn-primary" data-toggle="modal"><i class="fa fa-list"></i> View Strings</a>
+                   <a href="#" data-target="#mstrings" role="button" class="btn btn-primary" data-toggle="modal"><i class="fa fa-table"></i> View Strings</a>
+                   <button type="button" class="btn btn-warning" data-toggle="modal" data-target=".scan-logs-mdl"><i class="fa fa-list" aria-hidden="true"></i> Scan Logs</button>
                </p>
               </div>
             </div><!-- /.card -->
@@ -402,4 +403,37 @@
     $(this).addClass("active");
   });
 </script>
+{% endblock %}
+{% block scan_logs %}
+<table id="scan_logs" class="table table-bordered table-hover table-striped">
+    <tr>
+        <th>Timestamp</th>
+        <th>Event</th>
+        <th>Error</th>
+    </tr>
+<tbody>
+  {% for log in logs %}
+  <tr>
+    <td>
+      {{log.timestamp}}
+    </td>
+    <td>
+      {{log.status}}
+    </td>
+    <td>
+      {% if not log.exception %}
+      <p class="text-success">
+        OK
+      </p>
+      {% else %}
+      <p class="text-danger">
+      {{log.exception}}
+       </p>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
+</table>
+
 {% endblock %}

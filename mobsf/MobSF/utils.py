@@ -930,3 +930,14 @@ def append_scan_status(checksum, status, exception=None):
         db_obj.save()
     except Exception:
         logger.exception('Appending Scan Status to Database')
+
+
+def get_scan_logs(checksum):
+    """Get the scan logs for the given checksum."""
+    try:
+        db_entry = RecentScansDB.objects.filter(MD5=checksum)
+        if db_entry.exists():
+            return python_list(db_entry[0].SCAN_LOGS)
+    except Exception:
+        msg = 'Fetching scan logs from the DB failed.'
+        logger.exception(msg)

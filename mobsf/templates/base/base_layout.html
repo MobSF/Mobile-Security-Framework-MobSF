@@ -58,11 +58,19 @@
 
   <!-- Control Sidebar -->
   <aside class="control-sidebar control-sidebar-dark">
-    <!-- Control sidebar content goes here -->
   </aside>
   <!-- /.control-sidebar -->
 </div>
 <!-- ./wrapper -->
+<div class="modal fade scan-logs-mdl" tabindex="-1" role="dialog" aria-labelledby="scan-logs-mdl-label" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      {% block scan_logs %}
+      {% endblock %}
+    </div>
+  </div>
+</div>
+
 
 <!-- jQuery -->
 <script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
@@ -71,6 +79,16 @@
 <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
 <script>
   $.widget.bridge('uibutton', $.ui.button)
+  // Replace datatables alert with console.warn
+  window.alert = (function() {
+    var nativeAlert = window.alert;
+    return function(message) {
+        window.alert = nativeAlert;
+        message.indexOf("DataTables warning") === 0 ?
+            console.warn(message) :
+            nativeAlert(message);
+    }
+})();
 </script>
 <!-- Bootstrap 4 -->
 <script src="{% static "adminlte/plugins/bootstrap/bootstrap.bundle.min.js" %}"></script>

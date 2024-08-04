@@ -5,6 +5,7 @@ from django.conf import settings
 
 from mobsf.MobSF.utils import (
     append_scan_status,
+    get_scan_logs,
     python_list,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerWindows
@@ -41,6 +42,7 @@ def get_context_from_db_entry(db_entry):
             'strings': python_list(db_entry[0].STRINGS),
             'binary_analysis': python_list(db_entry[0].BINARY_ANALYSIS),
             'binary_warnings': python_list(db_entry[0].BINARY_WARNINGS),
+            'logs': get_scan_logs(db_entry[0].MD5),
         }
         return context
     except Exception:
@@ -76,6 +78,7 @@ def get_context_from_analysis(app_dic,
             'strings': bin_an_dic['strings'],
             'binary_analysis': bin_an_dic['results'],
             'binary_warnings': bin_an_dic['warnings'],
+            'logs': get_scan_logs(app_dic['md5']),
         }
         return context
     except Exception as exp:
