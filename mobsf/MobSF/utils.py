@@ -928,6 +928,10 @@ def append_scan_status(checksum, status, exception=None):
             'exception': exception})
         db_obj.SCAN_LOGS = current_logs
         db_obj.save()
+    except RecentScansDB.DoesNotExist:
+        # Expected to fail for iOS Dynamic Analysis Report Generation
+        # Calls MalwareScan and TrackerScan with different checksum
+        pass
     except Exception:
         logger.exception('Appending Scan Status to Database')
 

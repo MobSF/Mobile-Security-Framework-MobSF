@@ -47,7 +47,7 @@ def run_analysis(app_dir, bundle_id, checksum):
     # Collect Log data
     data = get_logs_data(app_dir, bundle_id)
     urls, domains, emails = extract_urls_domains_emails(
-        checksum,  # TODO: Diff checksum than IPA hash?
+        checksum,
         data)
     # App data files analysis
     pfiles = get_app_files(app_dir, f'{checksum}-app-container')
