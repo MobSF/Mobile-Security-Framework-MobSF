@@ -85,6 +85,7 @@ urlpatterns = [
     # Static Analysis
     re_path(r'^api/v1/upload$', api_sz.api_upload),
     re_path(r'^api/v1/scan$', api_sz.api_scan),
+    re_path(r'^api/v1/scan_logs$', api_sz.api_scan_logs),
     re_path(r'^api/v1/delete_scan$', api_sz.api_delete_scan),
     re_path(r'^api/v1/download_pdf$', api_sz.api_pdf_report),
     re_path(r'^api/v1/report_json$', api_sz.api_json_report),

@@ -77,7 +77,7 @@ class Scanning(object):
         self.data['hash'] = md5
         self.data['scan_type'] = 'apk'
         add_to_recent_scan(self.data)
-        logger.info('Performing Static Analysis of Android APK')
+        logger.info('Android APK uploaded')
         return self.data
 
     def scan_xapk(self):
@@ -86,7 +86,7 @@ class Scanning(object):
         self.data['hash'] = md5
         self.data['scan_type'] = 'xapk'
         add_to_recent_scan(self.data)
-        logger.info('Performing Static Analysis of Android XAPK base APK')
+        logger.info('Android XAPK uploaded')
         return self.data
 
     def scan_apks(self):
@@ -95,7 +95,7 @@ class Scanning(object):
         self.data['hash'] = md5
         self.data['scan_type'] = 'apks'
         add_to_recent_scan(self.data)
-        logger.info('Performing Static Analysis of Android Split APK')
+        logger.info('Android Split APK uploaded')
         return self.data
 
     def scan_aab(self):
@@ -104,7 +104,7 @@ class Scanning(object):
         self.data['hash'] = md5
         self.data['scan_type'] = 'aab'
         add_to_recent_scan(self.data)
-        logger.info('Performing Static Analysis of Android App Bundle')
+        logger.info('Android App Bundle uploaded')
         return self.data
 
     def scan_jar(self):
@@ -113,7 +113,7 @@ class Scanning(object):
         self.data['hash'] = md5
         self.data['scan_type'] = 'jar'
         add_to_recent_scan(self.data)
-        logger.info('Performing Static Analysis of Java JAR')
+        logger.info('Java JAR uploaded')
         return self.data
 
     def scan_aar(self):
@@ -122,7 +122,7 @@ class Scanning(object):
         self.data['hash'] = md5
         self.data['scan_type'] = 'aar'
         add_to_recent_scan(self.data)
-        logger.info('Performing Static Analysis of Android AAR')
+        logger.info('Android AAR uploaded')
         return self.data
 
     def scan_so(self):
@@ -131,7 +131,7 @@ class Scanning(object):
         self.data['hash'] = md5
         self.data['scan_type'] = 'so'
         add_to_recent_scan(self.data)
-        logger.info('Performing Static Analysis of Shared Object')
+        logger.info('Shared Object Library uploaded')
         return self.data
 
     def scan_zip(self):
@@ -140,7 +140,7 @@ class Scanning(object):
         self.data['hash'] = md5
         self.data['scan_type'] = 'zip'
         add_to_recent_scan(self.data)
-        logger.info('Performing Static Analysis of Android/iOS Source Code')
+        logger.info('Android/iOS Source code ZIP uploaded')
         return self.data
 
     def scan_ipa(self):
@@ -150,7 +150,7 @@ class Scanning(object):
         self.data['scan_type'] = 'ipa'
         self.data['analyzer'] = 'static_analyzer_ios'
         add_to_recent_scan(self.data)
-        logger.info('Performing Static Analysis of iOS IPA')
+        logger.info('iOS IPA uploaded')
         return self.data
 
     def scan_dylib(self):
@@ -160,7 +160,7 @@ class Scanning(object):
         self.data['scan_type'] = 'dylib'
         self.data['analyzer'] = 'static_analyzer_ios'
         add_to_recent_scan(self.data)
-        logger.info('Performing Static Analysis of iOS IPA')
+        logger.info('iOS dylib uploaded')
         return self.data
 
     def scan_a(self):
@@ -170,7 +170,7 @@ class Scanning(object):
         self.data['scan_type'] = 'a'
         self.data['analyzer'] = 'static_analyzer_ios'
         add_to_recent_scan(self.data)
-        logger.info('Performing Static Analysis of Static Library')
+        logger.info('Static Library uploaded')
         return self.data
 
     def scan_appx(self):
@@ -180,5 +180,5 @@ class Scanning(object):
         self.data['scan_type'] = 'appx'
         self.data['analyzer'] = 'static_analyzer_windows'
         add_to_recent_scan(self.data)
-        logger.info('Performing Static Analysis of Windows APP')
+        logger.info('Windows APPX uploaded')
         return self.data

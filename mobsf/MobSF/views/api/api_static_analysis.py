@@ -8,6 +8,7 @@ from mobsf.StaticAnalyzer.models import (
     RecentScansDB,
 )
 from mobsf.MobSF.utils import (
+    get_scan_logs,
     is_md5,
 )
 from mobsf.MobSF.views.helpers import request_method
@@ -89,6 +90,23 @@ def api_scan(request):
             response = make_api_response(resp, 500)
         else:
             response = make_api_response(resp, 200)
+    return response
+
+
+@request_method(['POST'])
+@csrf_exempt
+def api_scan_logs(request):
+    """POST - Get Scan logs."""
+    if 'hash' not in request.POST:
+        return make_api_response(
+            {'error': 'Missing Parameters'}, 422)
+    resp = get_scan_logs(request.POST['hash'])
+    if not resp:
+        return make_api_response(
+            {'error': 'No scan logs found'}, 400)
+    response = make_api_response({
+        'logs': resp,
+    }, 200)
     return response
 
 

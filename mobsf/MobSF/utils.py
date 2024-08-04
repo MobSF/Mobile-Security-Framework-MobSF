@@ -941,3 +941,4 @@ def get_scan_logs(checksum):
     except Exception:
         msg = 'Fetching scan logs from the DB failed.'
         logger.exception(msg)
+    return []
