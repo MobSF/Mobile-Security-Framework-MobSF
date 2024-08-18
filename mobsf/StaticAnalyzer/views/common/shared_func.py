@@ -30,6 +30,7 @@ from mobsf.MobSF.utils import (
     URL_REGEX,
     append_scan_status,
     is_md5,
+    is_path_traversal,
     is_safe_path,
     print_n_send_error_response,
     upstream_proxy,
@@ -185,9 +186,12 @@ def ar_extract(checksum, src, dst):
         ar.read_all_headers()
         for a, val in ar.archived_files.items():
             # Handle archive slip attacks
-            filtered = a.decode(
-                'utf-8', 'ignore').replace(
-                '../', '').replace('..\\', '')
+            filtered = a.decode('utf-8', 'ignore')
+            if is_path_traversal(filtered):
+                msg = f'Zip slip detected. skipped extracting {filtered}'
+                logger.warning(msg)
+                append_scan_status(checksum, msg)
+                continue
             out = Path(dst) / filtered
             out.write_bytes(val.read())
     except Exception:
