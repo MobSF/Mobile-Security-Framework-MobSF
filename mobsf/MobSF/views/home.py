@@ -320,14 +320,19 @@ def recent_scans(request, page_size=10, page_number=1):
 @permission_required(Permissions.SCAN)
 def download_apk(request):
     """Download an APK by package name."""
-    if not is_internet_available():
-        return logger.warning(request, 'Internet Not Available. Unable to download APK')
     package = request.POST['package']
     # Package validated in apk_download()
     context = {
         'status': 'failed',
         'description': 'Unable to download APK',
     }
+    if not is_internet_available():
+        context['description'] = 'Internet Not Available. Unable to download APK'
+        logger.warning(context['description'])
+        resp = HttpResponse(
+            json.dumps(context),
+            content_type='application/json; charset=utf-8')
+        return resp
     res = apk_download(package)
     if res:
         context = res
