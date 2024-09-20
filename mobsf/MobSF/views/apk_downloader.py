@@ -16,6 +16,7 @@ from mobsf.MobSF.views.scanning import (
     handle_uploaded_file,
 )
 from mobsf.MobSF.utils import (
+    is_internet_available,
     is_path_traversal,
     is_zip_magic,
     strict_package_check,
@@ -133,6 +134,9 @@ def apk_download(package):
     downloaded_file = None
     data = None
     try:
+        if not is_internet_available():
+            logger.warning('Internet Not Available. Unable to download APK')
+            return None
         if not strict_package_check(package) or is_path_traversal(package):
             return None
         logger.info('Attempting to download: %s', package)
