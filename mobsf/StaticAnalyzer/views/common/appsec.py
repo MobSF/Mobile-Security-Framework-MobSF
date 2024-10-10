@@ -183,10 +183,10 @@ def common_fields(findings, data):
     warn = len(findings.get('warning'))
     sec = len(findings.get('secure'))
     total = high + warn + sec
-    score = 0
+    score = 100
     if total > 0:
         score = int(100 - (
-            ((high * 1) + (warn * .5) - (sec * .2)) / total) * 100)
+            ((high * 3) + (warn * 1) - (sec * 2)) / total) * 100)
     if score > 100:
         score = 100
     findings['security_score'] = score
