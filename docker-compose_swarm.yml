@@ -1,0 +1,45 @@
+version: '3.8'
+services:
+  postgres:
+    image: "postgres:latest"
+    restart: always
+    volumes:
+      - $HOME/MobSF/postgresql_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD_FILE=/run/secrets/mobsfDB_password
+      - POSTGRES_DB=mobsf
+    networks:
+        - mobsf
+    secrets:
+      - mobsfDB_password
+  mobsf:
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD_FILE=/run/secrets/mobsfDB_password
+      - POSTGRES_DB=mobsf
+      - POSTGRES_HOST=postgres
+      - MOBSF_API_KEY_FILE=/run/secrets/mobsf_api_key
+    image: mobsf:${MOBSF_IMAGE_VERSION:-v4.0.7}
+    volumes:
+      - $HOME/MobSF/mobsf_data:/home/mobsf/.MobSF
+    ports:
+     - "8000:8000"
+    networks:
+      - mobsf
+    healthcheck:
+      test: curl -f http://localhost:8000/login/ || exit 1
+    depends_on:
+      - postgres
+    links:
+      - "postgres"
+    secrets:
+      - mobsfDB_password
+      - mobsf_api_key
+networks:
+  mobsf:
+secrets:
+  mobsfDB_password:
+    external: true
+  mobsf_api_key:
+    external: true

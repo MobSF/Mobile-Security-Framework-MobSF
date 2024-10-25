@@ -91,6 +91,12 @@ def upstream_proxy(flaw_type):
 
 def api_key():
     """Print REST API Key."""
+    if os.environ.get('MOBSF_API_KEY_FILE'):
+        logger.info('\nAPI Key read from docker secret')
+        try:
+            return settings.get_docker_secret('MOBSF_API_KEY_FILE')
+        except Exception:
+            logger.exception('Cannot read API Key from docker secret')
     if os.environ.get('MOBSF_API_KEY'):
         logger.info('\nAPI Key read from environment variable')
         return os.environ['MOBSF_API_KEY']
