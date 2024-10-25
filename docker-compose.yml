@@ -3,7 +3,7 @@ services:
     image: "postgres:latest"
     restart: always
     volumes:
-      - $HOME/MobSF/postgresql_data:/var/lib/postgresql
+      - $HOME/MobSF/postgresql_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
@@ -12,9 +12,9 @@ services:
       - "5432:5432"
     networks:
         - mobsf
-      
+
   mobsf:
-    environment: 
+    environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=mobsf
