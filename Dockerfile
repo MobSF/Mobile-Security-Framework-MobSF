@@ -1,7 +1,5 @@
-# Base image
-FROM ubuntu:22.04
+FROM python:3.12-slim-bookworm
 
-# Labels and Credits
 LABEL \
     name="MobSF" \
     author="Ajin Abraham <ajin25@gmail.com>" \
@@ -11,40 +9,41 @@ LABEL \
     description="Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis."
 
 ENV DEBIAN_FRONTEND=noninteractive \
-    MOBSF_USER=mobsf \
-    USER_ID=9901 \
-    MOBSF_PLATFORM=docker \
-    MOBSF_ADB_BINARY=/usr/bin/adb \
-    JDK_FILE=openjdk-20.0.2_linux-x64_bin.tar.gz \
-    JDK_FILE_ARM=openjdk-20.0.2_linux-aarch64_bin.tar.gz \
-    WKH_FILE=wkhtmltox_0.12.6.1-2.jammy_amd64.deb \
-    WKH_FILE_ARM=wkhtmltox_0.12.6.1-2.jammy_arm64.deb \
-    JAVA_HOME=/jdk-20.0.2 \
-    PATH=$JAVA_HOME/bin:$PATH \
     LANG=en_US.UTF-8 \
     LANGUAGE=en_US:en \
     LC_ALL=en_US.UTF-8 \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONFAULTHANDLER=1 \
-    POETRY_VERSION=1.6.1
+    MOBSF_USER=mobsf \
+    USER_ID=9901 \
+    MOBSF_PLATFORM=docker \
+    MOBSF_ADB_BINARY=/usr/bin/adb \
+    JDK_FILE=openjdk-22.0.2_linux-x64_bin.tar.gz \
+    JDK_FILE_ARM=openjdk-22.0.2_linux-aarch64_bin.tar.gz \
+    LIBSSL_FILE=libssl1.1_1.1.1w-0+deb11u1_amd64.deb \
+    LIBSSL_FILE_ARM=libssl1.1_1.1.1w-0+deb11u1_arm64.deb \
+    WKH_FILE=wkhtmltox_0.12.6.1-2.bullseye_amd64.deb \
+    WKH_FILE_ARM=wkhtmltox_0.12.6.1-2.bullseye_arm64.deb \
+    JAVA_HOME=/jdk-22.0.2 \
+    PATH=$JAVA_HOME/bin:/root/.local/bin:$PATH \
+    DJANGO_SUPERUSER_USERNAME=mobsf \
+    DJANGO_SUPERUSER_PASSWORD=mobsf
 
 # See https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
-RUN apt update -y && apt install -y  --no-install-recommends \
+RUN apt update -y && apt install -y --no-install-recommends \
     build-essential \
     locales \
     sqlite3 \
     fontconfig-config \
-    libjpeg-turbo8 \
+    libjpeg62-turbo \
     libxrender1 \
     libfontconfig1 \
     libxext6 \
     fontconfig \
     xfonts-75dpi \
     xfonts-base \
-    python3 \
     python3-dev \
-    python3-pip \
     wget \
     curl \
     git \
@@ -52,27 +51,25 @@ RUN apt update -y && apt install -y  --no-install-recommends \
     unzip \
     android-tools-adb && \
     locale-gen en_US.UTF-8 && \
-    apt upgrade -y
+    apt upgrade -y && \
+    curl -sSL https://install.python-poetry.org | python3 - && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/*
 
 # Install wkhtmltopdf & OpenJDK
 ARG TARGETPLATFORM
-
 COPY scripts/install_java_wkhtmltopdf.sh .
 RUN ./install_java_wkhtmltopdf.sh
 
 # Install Python dependencies
 COPY poetry.lock pyproject.toml ./
-RUN python3 -m pip install --upgrade --no-cache-dir pip poetry==${POETRY_VERSION} && \
-    poetry config virtualenvs.create false && \
-    poetry install --only main --no-root --no-interaction --no-ansi
+RUN poetry config virtualenvs.create false && \
+  poetry install --only main --no-root --no-interaction --no-ansi && \
+  poetry cache clear --all pypi && \
+  rm -rf /root/.cache/pip
 
 # Cleanup
 RUN \
     apt remove -y \
-        libssl-dev \
-        libffi-dev \
-        libxml2-dev \
-        libxslt1-dev \
         python3-dev \
         wget && \
     apt clean && \
@@ -84,23 +81,10 @@ WORKDIR /home/mobsf/Mobile-Security-Framework-MobSF
 # Copy source code
 COPY . .
 
-# Check if Postgres support needs to be enabled.
-# Disabled by default
-ARG POSTGRES=False
-
-ENV POSTGRES_USER=postgres \
-    POSTGRES_PASSWORD=password \
-    POSTGRES_DB=mobsf \
-    POSTGRES_HOST=postgres \
-    DJANGO_SUPERUSER_USERNAME=mobsf \
-    DJANGO_SUPERUSER_PASSWORD=mobsf
-
-RUN ./scripts/postgres_support.sh $POSTGRES
-
 HEALTHCHECK CMD curl --fail http://host.docker.internal:8000/ || exit 1
 
 # Expose MobSF Port and Proxy Port
-EXPOSE 8000 8000 1337 1337
+EXPOSE 8000 1337
 
 # Create mobsf user
 RUN groupadd --gid $USER_ID $MOBSF_USER && \

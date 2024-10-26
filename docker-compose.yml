@@ -20,6 +20,7 @@ services:
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=mobsf
       - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
     build:
       context: .
       dockerfile: Dockerfile

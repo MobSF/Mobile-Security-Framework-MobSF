@@ -8,7 +8,7 @@ if [ "$TARGETPLATFORM" == "linux/arm64" ]
 then
     WKH_FILE=$WKH_FILE_ARM
     JDK_FILE=$JDK_FILE_ARM
-    apt install -y git
+    LIBSSL_FILE=$LIBSSL_FILE_ARM
     pip3 install --no-cache-dir wheel
     pip3 wheel --wheel-dir=yara-python-dex git+https://github.com/MobSF/yara-python-dex.git
     pip3 install --no-cache-dir --no-index --find-links=yara-python-dex yara-python-dex
@@ -16,11 +16,17 @@ then
 fi
 
 echo "Target platform identified as $TARGETPLATFORM"
-
-JDK_URL="https://download.java.net/java/GA/jdk20.0.2/6e380f22cbe7469fa75fb448bd903d8e/9/GPL/${JDK_FILE}"
+JDK_URL="https://download.java.net/java/GA/jdk22.0.2/c9ecb94cd31b495da20a27d4581645e8/9/GPL/${JDK_FILE}"
 WKH_URL="https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/${WKH_FILE}"
+LIBSSL11_URL="http://ftp.us.debian.org/debian/pool/main/o/openssl/${LIBSSL_FILE}"
 
 # Download and install wkhtmltopdf
+# Install dependencies for wkhtmltopdf
+echo "Installing $LIBSSL_FILE ..."
+wget --quiet -O /tmp/${LIBSSL_FILE} "${LIBSSL11_URL}" && \
+    dpkg -i /tmp/${LIBSSL_FILE} && \
+    rm -f /tmp/${LIBSSL_FILE}
+
 echo "Installing $WKH_FILE ..."
 wget --quiet -O /tmp/${WKH_FILE} "${WKH_URL}" && \
     dpkg -i /tmp/${WKH_FILE} && \
