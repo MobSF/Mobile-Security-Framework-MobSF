@@ -44,6 +44,7 @@ RUN apt update -y && apt install -y --no-install-recommends \
     xfonts-75dpi \
     xfonts-base \
     python3-dev \
+    python3-pip \
     wget \
     curl \
     git \
@@ -61,6 +62,7 @@ COPY scripts/install_java_wkhtmltopdf.sh .
 RUN ./install_java_wkhtmltopdf.sh
 
 # Install Python dependencies
+RUN echo ${TARGETPLATFORM}
 COPY poetry.lock pyproject.toml ./
 RUN poetry config virtualenvs.create false && \
   poetry install --only main --no-root --no-interaction --no-ansi && \

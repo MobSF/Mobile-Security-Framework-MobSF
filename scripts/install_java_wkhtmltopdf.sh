@@ -9,9 +9,9 @@ then
     WKH_FILE=$WKH_FILE_ARM
     JDK_FILE=$JDK_FILE_ARM
     LIBSSL_FILE=$LIBSSL_FILE_ARM
-    pip3 install --no-cache-dir wheel
-    pip3 wheel --wheel-dir=yara-python-dex git+https://github.com/MobSF/yara-python-dex.git
-    pip3 install --no-cache-dir --no-index --find-links=yara-python-dex yara-python-dex
+    python3 -m pip install --no-cache-dir wheel
+    python3 -m pip wheel --wheel-dir=yara-python-dex git+https://github.com/MobSF/yara-python-dex.git
+    python3 -m pip install --no-cache-dir --no-index --find-links=yara-python-dex yara-python-dex
     rm -rf yara-python-dex
 fi
 
