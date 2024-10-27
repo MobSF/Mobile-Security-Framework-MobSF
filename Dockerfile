@@ -59,12 +59,13 @@ RUN apt update -y && \
     apt autoremove -y && apt clean -y && rm -rf /var/lib/apt/lists/* /tmp/*
 
 ARG TARGETPLATFORM
-COPY scripts/install_java_wkhtmltopdf.sh pyproject.toml ./
 
 # Install wkhtmltopdf & OpenJDK
+COPY scripts/install_java_wkhtmltopdf.sh .
 RUN ./install_java_wkhtmltopdf.sh
 
 # Install Python dependencies
+COPY pyproject.toml .
 RUN poetry config virtualenvs.create false && \
   poetry lock && \
   poetry install --only main --no-root --no-interaction --no-ansi && \

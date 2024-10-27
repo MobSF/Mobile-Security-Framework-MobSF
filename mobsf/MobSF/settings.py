@@ -192,6 +192,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_ratelimit.middleware.RatelimitMiddleware',
 )
 MIDDLEWARE = (
     'mobsf.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
@@ -329,7 +330,7 @@ LOGGING = {
 }
 JADX_TIMEOUT = int(os.getenv('MOBSF_JADX_TIMEOUT', 1800))
 DISABLE_AUTHENTICATION = os.getenv('MOBSF_DISABLE_AUTHENTICATION')
-RATELIMIT = os.getenv('MOBSF_RATELIMIT', '7/1m')
+RATELIMIT = os.getenv('MOBSF_RATELIMIT', '7/m')
 USE_X_FORWARDED_HOST = bool(
     os.getenv('MOBSF_USE_X_FORWARDED_HOST', '1') == '1')
 USE_X_FORWARDED_PORT = bool(
