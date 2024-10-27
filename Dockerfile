@@ -75,6 +75,7 @@ RUN poetry config virtualenvs.create false && \
 # Cleanup
 RUN \
     apt remove -y \
+        git \
         python3-dev \
         wget && \
     apt clean && \
