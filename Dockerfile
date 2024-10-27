@@ -34,25 +34,23 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # See https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
 RUN apt update -y && \
     apt install -y --no-install-recommends \
+    android-tools-adb \
     build-essential \
-    locales \
-    sqlite3 \
-    fontconfig-config \
-    libjpeg62-turbo \
-    libxrender1 \
-    libfontconfig1 \
-    libxext6 \
-    fontconfig \
-    xfonts-75dpi \
-    xfonts-base \
-    python3-dev \
-    python3-pip \
-    wget \
     curl \
+    fontconfig \
+    fontconfig-config \
     git \
-    jq \
+    libfontconfig1 \
+    libjpeg62-turbo \
+    libxext6 \
+    libxrender1 \
+    locales \
+    python3-dev \
+    sqlite3 \
     unzip \
-    android-tools-adb && \
+    wget \
+    xfonts-75dpi \
+    xfonts-base && \
     echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
     locale-gen en_US.UTF-8 && \
     update-locale LANG=en_US.UTF-8 && \
