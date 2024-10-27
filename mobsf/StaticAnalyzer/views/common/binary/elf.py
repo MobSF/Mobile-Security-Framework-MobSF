@@ -331,7 +331,7 @@ class ELFChecksec:
         except Exception:
             try:
                 return nm_is_debug_symbol_stripped(
-                self.elf_path)
+                    self.elf_path)
             except Exception:
                 return True
 
