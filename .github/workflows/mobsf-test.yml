@@ -27,8 +27,8 @@ jobs:
 
     - name: Setup Pip and Poetry
       run: |
-        python -m pip install pip poetry==1.8.4
         python -m ensurepip --upgrade
+        python -m pip install pip poetry==1.8.4
         python -m pip install --upgrade setuptools tox
 
     - name: Lint on Ubuntu
