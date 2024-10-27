@@ -3,16 +3,11 @@
 # For apktool
 mkdir -p /home/mobsf/.local/share/apktool/framework
 
-# Install yara-python dex on linux/arm64
 if [ "$TARGETPLATFORM" == "linux/arm64" ]
 then
     WKH_FILE=$WKH_FILE_ARM
     JDK_FILE=$JDK_FILE_ARM
     LIBSSL_FILE=$LIBSSL_FILE_ARM
-    python3 -m pip install --no-cache-dir wheel
-    python3 -m pip wheel --wheel-dir=yara-python-dex git+https://github.com/MobSF/yara-python-dex.git
-    python3 -m pip install --no-cache-dir --no-index --find-links=yara-python-dex yara-python-dex
-    rm -rf yara-python-dex
 fi
 
 echo "Target platform identified as $TARGETPLATFORM"

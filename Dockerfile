@@ -32,7 +32,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     DJANGO_SUPERUSER_PASSWORD=mobsf
 
 # See https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
-RUN apt update -y && apt install -y --no-install-recommends \
+RUN apt update -y && \
+    apt install -y --no-install-recommends \
     build-essential \
     locales \
     sqlite3 \
@@ -52,19 +53,23 @@ RUN apt update -y && apt install -y --no-install-recommends \
     jq \
     unzip \
     android-tools-adb && \
+    echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
     locale-gen en_US.UTF-8 && \
+    update-locale LANG=en_US.UTF-8 && \
     apt upgrade -y && \
     curl -sSL https://install.python-poetry.org | python3 - && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/*
 
-# Install wkhtmltopdf & OpenJDK
 ARG TARGETPLATFORM
-COPY scripts/install_java_wkhtmltopdf.sh .
+COPY scripts/install_java_wkhtmltopdf.sh poetry.lock pyproject.toml ./
+
+# Install wkhtmltopdf & OpenJDK
 RUN ./install_java_wkhtmltopdf.sh
 
 # Install Python dependencies
-COPY poetry.lock pyproject.toml ./
 RUN poetry config virtualenvs.create false && \
+  # Let poetry resolve yara-python-dex with appropriate platform architecture
+  poetry add yara-python-dex && \
   poetry install --only main --no-root --no-interaction --no-ansi && \
   poetry cache clear --all pypi && \
   rm -rf /root/.cache/pip
@@ -79,8 +84,8 @@ RUN \
     apt autoremove -y && \
     rm -rf /var/lib/apt/lists/* /tmp/* > /dev/null 2>&1
 
-WORKDIR /home/mobsf/Mobile-Security-Framework-MobSF
 # Copy source code
+WORKDIR /home/mobsf/Mobile-Security-Framework-MobSF
 COPY . .
 
 HEALTHCHECK CMD curl --fail http://host.docker.internal:8000/ || exit 1
@@ -92,6 +97,8 @@ EXPOSE 8000 1337
 RUN groupadd --gid $USER_ID $MOBSF_USER && \
     useradd $MOBSF_USER --uid $USER_ID --gid $MOBSF_USER --shell /bin/false && \
     chown -R $MOBSF_USER:$MOBSF_USER /home/mobsf
+
+# Switch to mobsf user
 USER $MOBSF_USER
 
 # Run MobSF
