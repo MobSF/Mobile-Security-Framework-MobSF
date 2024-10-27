@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04, macos-latest, windows-latest]
-        python-version: ['3.10', '3.11']
+        python-version: ['3.11', '3.12']
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -27,7 +27,7 @@ jobs:
 
     - name: Setup Pip and Poetry
       run: |
-        python -m pip install pip==22.3.1 poetry==1.6.1
+        python -m pip install pip==22.3.1 poetry==1.8.4
 
     - name: Lint on Ubuntu
       if: startsWith(matrix.os, 'ubuntu')
