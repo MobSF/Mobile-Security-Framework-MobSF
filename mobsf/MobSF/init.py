@@ -15,7 +15,7 @@ from mobsf.install.windows.setup import windows_config_local
 logger = logging.getLogger(__name__)
 
 VERSION = '4.1.0'
-BANNER = """
+BANNER = r"""
   __  __       _    ____  _____       _  _    _ 
  |  \/  | ___ | |__/ ___||  ___|_   _| || |  / |
  | |\/| |/ _ \| '_ \___ \| |_  \ \ / / || |_ | |
