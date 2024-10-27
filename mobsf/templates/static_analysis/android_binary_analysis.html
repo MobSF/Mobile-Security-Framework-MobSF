@@ -1406,6 +1406,7 @@
                           <th>SHARED OBJECT</th>
                          {% endif %}
                           <th>NX</th>
+                          <th>PIE</th>
                           <th>STACK CANARY</th>
                           <th>RELRO</th>
                           <th>RPATH</th>
@@ -1430,6 +1431,10 @@
                 <br/>
                 <span class="badge bg-{% if so.nx.severity == 'high' %}danger{% elif so.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.nx.severity}}</span>
                 <br/>{{so.nx.description}}</td>
+              <td><b>{{so.pie.is_pie}}</b>
+                  <br/>
+                  <span class="badge bg-{% if so.pie.severity == 'high' %}danger{% elif so.pie.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.pie.severity}}</span>
+                  <br/>{{so.pie.description}}</td>
               <td><b>{{so.stack_canary.has_canary}}</b>
                   <br/>
                   <span class="badge bg-{% if so.stack_canary.severity == 'high' %}danger{% elif so.stack_canary.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.stack_canary.severity}}</span>

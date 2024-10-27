@@ -5,6 +5,10 @@ import random
 import subprocess
 import sys
 import shutil
+from importlib import (
+    machinery,
+    util,
+)
 
 from mobsf.install.windows.setup import windows_config_local
 
@@ -142,3 +146,11 @@ def get_mobsf_home(use_home, base_dir):
 
 def get_mobsf_version():
     return BANNER, VERSION, f'v{VERSION}'
+
+
+def load_source(modname, filename):
+    loader = machinery.SourceFileLoader(modname, filename)
+    spec = util.spec_from_file_location(modname, filename, loader=loader)
+    module = util.module_from_spec(spec)
+    loader.exec_module(module)
+    return module

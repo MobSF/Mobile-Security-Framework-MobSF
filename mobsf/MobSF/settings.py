@@ -5,7 +5,6 @@ Django settings for MobSF project.
 MobSF and Django settings
 """
 
-import imp
 import logging
 import os
 
@@ -13,6 +12,7 @@ from mobsf.MobSF.init import (
     first_run,
     get_mobsf_home,
     get_mobsf_version,
+    load_source,
 )
 
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ SECRET_FILE = os.path.join(MobSF_HOME, 'secret')
 try:
     if USE_HOME:
         USER_CONFIG = os.path.join(MobSF_HOME, 'config.py')
-        sett = imp.load_source('user_settings', USER_CONFIG)
+        sett = load_source('user_settings', USER_CONFIG)
         locals().update(  # lgtm [py/modification-of-locals]
             {k: v for k, v in list(sett.__dict__.items())
                 if not k.startswith('__')})

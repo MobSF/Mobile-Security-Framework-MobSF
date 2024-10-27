@@ -27,7 +27,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     WKH_FILE=wkhtmltox_0.12.6.1-2.bullseye_amd64.deb \
     WKH_FILE_ARM=wkhtmltox_0.12.6.1-2.bullseye_arm64.deb \
     JAVA_HOME=/jdk-22.0.2 \
-    PATH=$JAVA_HOME/bin:/root/.local/bin:$PATH \
+    PATH=/jdk-22.0.2/bin:/root/.local/bin:$PATH \
     DJANGO_SUPERUSER_USERNAME=mobsf \
     DJANGO_SUPERUSER_PASSWORD=mobsf
 
@@ -58,21 +58,20 @@ RUN apt update -y && \
     update-locale LANG=en_US.UTF-8 && \
     apt upgrade -y && \
     curl -sSL https://install.python-poetry.org | python3 - && \
-    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/*
+    apt autoremove -y && apt clean -y && rm -rf /var/lib/apt/lists/* /tmp/*
 
 ARG TARGETPLATFORM
-COPY scripts/install_java_wkhtmltopdf.sh poetry.lock pyproject.toml ./
+COPY scripts/install_java_wkhtmltopdf.sh pyproject.toml ./
 
 # Install wkhtmltopdf & OpenJDK
 RUN ./install_java_wkhtmltopdf.sh
 
 # Install Python dependencies
 RUN poetry config virtualenvs.create false && \
-  # Let poetry resolve yara-python-dex with appropriate platform architecture
-  poetry add yara-python-dex && \
+  poetry lock && \
   poetry install --only main --no-root --no-interaction --no-ansi && \
-  poetry cache clear --all pypi && \
-  rm -rf /root/.cache/pip
+  poetry cache clear . --all && \
+  rm -rf /root/.cache/
 
 # Cleanup
 RUN \

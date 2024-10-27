@@ -59,6 +59,47 @@ class ELFChecksec:
             'severity': severity,
             'description': desc,
         }
+        severity = 'info'
+        is_pie = self.is_pie()
+        if is_pie == 'dso':
+            is_pie = 'Dynamic Shared Object (DSO)'
+            desc = (
+                'The shared object is build with -fPIC flag which '
+                'enables Position independent code. This makes Return '
+                'Oriented Programming (ROP) attacks much more difficult '
+                'to execute reliably.')
+        elif is_pie == 'pie':
+            is_pie = 'Position Independent Executable (PIE)'
+            desc = (
+                'The shared object is build with -fPIC flag which '
+                'enables Position independent code. This makes Return '
+                'Oriented Programming (ROP) attacks much more difficult '
+                'to execute reliably.')
+        elif is_pie == 'rel':
+            is_pie = 'Relocatable Object File'
+            desc = (
+                'The shared object is build with -fPIC flag which '
+                'enables Position independent code. This makes Return '
+                'Oriented Programming (ROP) attacks much more difficult '
+                'to execute reliably.')
+        elif is_pie == 'no':
+            is_pie = 'No PIE'
+            severity = 'high'
+            desc = (
+                'The shared object is built without Position '
+                'Independent Code flag. In order to prevent '
+                'an attacker from reliably jumping to, for example, a '
+                'particular exploited function in memory, Address '
+                'space layout randomization (ASLR) randomly arranges '
+                'the address space positions of key data areas of a '
+                'process, including the base of the executable and the '
+                'positions of the stack,heap and libraries. Use compiler '
+                'option -fPIC to enable Position Independent Code.')
+        elf_dict['pie'] = {
+            'is_pie': is_pie,
+            'severity': severity,
+            'description': desc,
+        }
         has_canary = self.has_canary()
         if has_canary:
             severity = INFO
@@ -210,6 +251,16 @@ class ELFChecksec:
     def is_nx(self):
         return self.elf.has_nx
 
+    def is_pie(self):
+        if self.elf.header.file_type == lief.ELF.Header.FILE_TYPE.DYN:
+            if self.elf.has(lief.ELF.DynamicEntry.TAG.DEBUG_TAG):
+                return 'pie'
+            else:
+                return 'dso'
+        elif self.elf.header.file_type == lief.ELF.Header.FILE_TYPE.REL:
+            return 'rel'
+        return 'no'
+
     def is_dart(self):
         dart = ('_kDartVmSnapshotInstructions',
                 'Dart_Cleanup')
@@ -219,7 +270,7 @@ class ELFChecksec:
             try:
                 if self.elf.get_symbol(symbol):
                     return True
-            except lief.not_found:
+            except Exception:
                 pass
         return False
 
@@ -231,17 +282,17 @@ class ELFChecksec:
             try:
                 if self.elf.get_symbol(symbol):
                     return True
-            except lief.not_found:
+            except Exception:
                 pass
         return False
 
     def relro(self):
         try:
-            gnu_relro = lief.ELF.SEGMENT_TYPES.GNU_RELRO
-            bind_now_flag = lief.ELF.DYNAMIC_FLAGS.BIND_NOW
-            flags_tag = lief.ELF.DYNAMIC_TAGS.FLAGS
-            flags1_tag = lief.ELF.DYNAMIC_TAGS.FLAGS_1
-            now_flag = lief.ELF.DYNAMIC_FLAGS_1.NOW
+            gnu_relro = lief.ELF.Segment.TYPE.GNU_RELRO
+            bind_now_flag = lief.ELF.DynamicEntryFlags.FLAG.BIND_NOW
+            flags_tag = lief.ELF.DynamicEntry.TAG.FLAGS
+            flags1_tag = lief.ELF.DynamicEntry.TAG.FLAGS_1
+            now_flag = lief.ELF.DynamicEntryFlags.FLAG.NOW
 
             if self.is_dart():
                 return NA
@@ -259,33 +310,30 @@ class ELFChecksec:
                 return FULL_RELRO
             else:
                 return PARTIAL_RELRO
-        except lief.not_found:
+        except Exception:
             pass
         return NO_RELRO
 
     def rpath(self):
-        try:
-            rpath = lief.ELF.DYNAMIC_TAGS.RPATH
-            return self.elf.get(rpath)
-        except lief.not_found:
-            return False
+        rpath = lief.ELF.DynamicEntry.TAG.RPATH
+        return self.elf.get(rpath)
 
     def runpath(self):
-        try:
-            runpath = lief.ELF.DYNAMIC_TAGS.RUNPATH
-            return self.elf.get(runpath)
-        except lief.not_found:
-            return False
+        runpath = lief.ELF.DynamicEntry.TAG.RUNPATH
+        return self.elf.get(runpath)
 
     def is_symbols_stripped(self):
         try:
-            return nm_is_debug_symbol_stripped(
-                self.elf_path)
-        except Exception:
-            for i in self.elf.static_symbols:
+            for i in self.elf.symtab_symbols:
                 if i:
                     return False
             return True
+        except Exception:
+            try:
+                return nm_is_debug_symbol_stripped(
+                self.elf_path)
+            except Exception:
+                return True
 
     def fortify(self):
         fortified_funcs = []
@@ -318,7 +366,7 @@ class ELFChecksec:
     def get_symbols(self):
         symbols = []
         try:
-            for i in self.elf.symbols:
+            for i in self.elf.symtab_symbols:
                 symbols.append(i.name)
         except Exception:
             pass
