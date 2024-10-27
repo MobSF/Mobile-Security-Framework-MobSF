@@ -134,7 +134,7 @@ def get_mobsf_home(use_home, base_dir):
         if use_home:
             src = os.path.join(base_dir, 'signatures/')
             try:
-                shutil.copytree(src, sig_dir)
+                shutil.copytree(src, sig_dir, dirs_exist_ok=True)
             except Exception:
                 pass
         elif not os.path.exists(sig_dir):

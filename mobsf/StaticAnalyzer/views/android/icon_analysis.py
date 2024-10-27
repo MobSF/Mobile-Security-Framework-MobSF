@@ -233,7 +233,7 @@ def get_icon_apk(apk, app_dic):
         # piggyback on apktool decompiled resources
         try:
             apk_tool_res = app_dir / 'apktool_out' / 'res'
-            copytree(apk_tool_res, res_path)
+            copytree(apk_tool_res, res_path, dirs_exist_ok=True)
         except Exception:
             pass
     if res_path.exists():
