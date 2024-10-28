@@ -1,6 +1,5 @@
 """Download tools required by MobSF."""
 import logging
-import os
 import sys
 import shutil
 import tempfile
@@ -47,9 +46,10 @@ def install_jadx(mobsf_home, version='1.5.0'):
 
             # Extract the zip file
             logger.info('Extracting JADX to %s', extract_dir)
-            os.makedirs(extract_dir, exist_ok=True)
+            extract_dir.mkdir(parents=True, exist_ok=True)
             with zipfile.ZipFile(tmp_zip_file.name, 'r') as zip_ref:
-                zip_ref.extractall(extract_dir)
+                for member in zip_ref.namelist():
+                    zip_ref.extract(member, extract_dir)
 
         # Set execute permission
         set_rwxr_xr_x_permission_recursively(extract_dir)
@@ -60,7 +60,7 @@ def install_jadx(mobsf_home, version='1.5.0'):
 
     finally:
         if 'tmp_zip_file' in locals():
-            os.unlink(tmp_zip_file.name)
+            Path(tmp_zip_file.name).unlink()
 
 
 def set_rwxr_xr_x_permission_recursively(directory_path):
@@ -69,16 +69,13 @@ def set_rwxr_xr_x_permission_recursively(directory_path):
         logger.info('Permission setting is skipped on non-Unix systems.')
         return
 
-    logger.info('Setting execute permission for JADX')
-    os.chmod(directory_path, 0o755)
+    logger.info('Setting execute permission for JADX directory')
+    directory_path.chmod(0o755)
 
-    for root, dirs, files in os.walk(directory_path):
-        for dir_name in dirs:
-            dir_path = os.path.join(root, dir_name)
-            os.chmod(dir_path, 0o755)
-        for file_name in files:
-            file_path = os.path.join(root, file_name)
-            os.chmod(file_path, 0o755)
+    # Recursively set permissions for all files and
+    # directories within the root directory
+    for path in directory_path.rglob('*'):
+        path.chmod(0o755)
 
 
 if __name__ == '__main__':
