@@ -151,7 +151,7 @@ if (os.environ.get('POSTGRES_USER')
     # Postgres support
     default = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'mobsf',
+        'NAME': os.getenv('POSTGRES_DB', 'mobsf'),
         'USER': os.environ['POSTGRES_USER'],
         'PASSWORD': os.environ['POSTGRES_PASSWORD'],
         'HOST': os.environ['POSTGRES_HOST'],
