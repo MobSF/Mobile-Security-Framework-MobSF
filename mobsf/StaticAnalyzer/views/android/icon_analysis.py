@@ -345,7 +345,7 @@ def convert_vector_to_svg(app_dir, tools_dir, icon_name, apktool_res):
         if userbin and is_file_exists(userbin):
             vd2svg = userbin
         else:
-            vd2svg = Path(tools_dir) / 'vd2svg-0.3.3.jar'
+            vd2svg = Path(tools_dir) / 'vd2svg-0.4.4.jar'
         # When xml is android vector
         values = app_dir / 'res' / 'values'
         direct = app_dir / icon_name

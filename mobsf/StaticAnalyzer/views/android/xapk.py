@@ -90,7 +90,7 @@ def handle_aab(app_dic):
                 and is_file_exists(settings.BUNDLE_TOOL)):
             bundletool = settings.BUNDLE_TOOL
         else:
-            bundletool = Path(tools_dir) / 'bundletool-all-1.16.0.jar'
+            bundletool = Path(tools_dir) / 'bundletool-all-1.17.2.jar'
             bundletool = bundletool.as_posix()
         args = [
             find_java_binary(),
