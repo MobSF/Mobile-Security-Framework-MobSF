@@ -203,7 +203,7 @@ def generate_download(apk_dir, md5_hash, download_dir, package):
         if is_file_exists(fd_logs):
             shutil.copyfile(fd_logs, dfd_logs)
         try:
-            shutil.copytree(sshot, dsshot)
+            shutil.copytree(sshot, dsshot, dirs_exist_ok=True)
         except Exception:
             pass
         if is_file_exists(web):

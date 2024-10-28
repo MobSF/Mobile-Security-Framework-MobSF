@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   postgres:
     image: "postgres:latest"
@@ -20,11 +19,10 @@ services:
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=mobsf
       - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-       - POSTGRES=True
     volumes:
       - $HOME/MobSF/mobsf_data:/home/mobsf/.MobSF
     ports:

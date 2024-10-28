@@ -63,10 +63,12 @@ def generate_hashes(dirlocs):
 def get_executable_hashes():
     # Internal Binaries shipped with MobSF
     base = Path(settings.BASE_DIR)
+    downloaded_tools = Path(settings.DOWNLOADED_TOOLS_DIR)
     manage_py = base.parent / 'manage.py'
     exec_loc = [
         base / 'DynamicAnalyzer' / 'tools',
         base / 'StaticAnalyzer' / 'tools',
+        downloaded_tools,
         manage_py,
     ]
     # External binaries used directly by MobSF

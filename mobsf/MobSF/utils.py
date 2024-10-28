@@ -22,7 +22,8 @@ import unicodedata
 import threading
 from urllib.parse import urlparse
 from pathlib import Path
-from distutils.version import StrictVersion
+
+from packaging.version import Version
 
 import distro
 
@@ -148,8 +149,8 @@ def check_update():
                                  proxies=proxies, verify=verify)
         remote_version = response.next.path_url.split('v')[1]
         if remote_version:
-            sem_loc = StrictVersion(local_version)
-            sem_rem = StrictVersion(remote_version)
+            sem_loc = Version(local_version)
+            sem_rem = Version(remote_version)
             if sem_loc < sem_rem:
                 logger.warning('A new version of MobSF is available, '
                                'Please update to %s from master branch.',

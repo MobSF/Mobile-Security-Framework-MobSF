@@ -277,7 +277,7 @@ class MachOChecksec:
                     # stripped and unstripped binaries
                     # also ignore radr://5614542
                     continue
-                if (i.type & 0xe0) > 0 or i.type in (0x0e, 0x1e):
+                if (i.type.value & 0xe0) > 0 or i.type.value in (0x0e, 0x1e):
                     # N_STAB set or 14, 30
 
                     # N_STAB	0xe0  /* if any of these bits set,

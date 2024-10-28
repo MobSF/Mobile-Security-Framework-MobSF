@@ -5,7 +5,6 @@ Django settings for MobSF project.
 MobSF and Django settings
 """
 
-import imp
 import logging
 import os
 
@@ -13,6 +12,7 @@ from mobsf.MobSF.init import (
     first_run,
     get_mobsf_home,
     get_mobsf_version,
+    load_source,
 )
 
 logger = logging.getLogger(__name__)
@@ -40,6 +40,8 @@ DB_DIR = os.path.join(MobSF_HOME, 'db.sqlite3')
 SIGNATURE_DIR = os.path.join(MobSF_HOME, 'signatures/')
 # Tools Directory
 TOOLS_DIR = os.path.join(BASE_DIR, 'DynamicAnalyzer/tools/')
+# Downloaded Tools Directory
+DOWNLOADED_TOOLS_DIR = os.path.join(MobSF_HOME, 'tools/')
 # Secret File
 SECRET_FILE = os.path.join(MobSF_HOME, 'secret')
 
@@ -47,7 +49,7 @@ SECRET_FILE = os.path.join(MobSF_HOME, 'secret')
 try:
     if USE_HOME:
         USER_CONFIG = os.path.join(MobSF_HOME, 'config.py')
-        sett = imp.load_source('user_settings', USER_CONFIG)
+        sett = load_source('user_settings', USER_CONFIG)
         locals().update(  # lgtm [py/modification-of-locals]
             {k: v for k, v in list(sett.__dict__.items())
                 if not k.startswith('__')})
@@ -143,30 +145,27 @@ APKPLZ = 'https://apkplz.net/download-app/'
 
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
-# Sqlite3 support
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': DB_DIR,
-    },
-}
-# End Sqlite3 support
-
-# Postgres DB - Install psycopg2
-"""
-DATABASES = {
-    'default': {
+if (os.environ.get('POSTGRES_USER')
+        and os.environ.get('POSTGRES_PASSWORD')
+        and os.environ.get('POSTGRES_HOST')):
+    # Postgres support
+    default = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'mobsf',
         'USER': os.environ['POSTGRES_USER'],
         'PASSWORD': os.environ['POSTGRES_PASSWORD'],
         'HOST': os.environ['POSTGRES_HOST'],
-        'PORT': 5432,
+        'PORT': int(os.getenv('POSTGRES_PORT', 5432)),
     }
+else:
+    # Sqlite3 support
+    default = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': DB_DIR,
+    }
+DATABASES = {
+    'default': default,
 }
-# End Postgres support
-"""
 # ===============================================
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 DEBUG = bool(os.getenv('MOBSF_DEBUG', '0') == '1')
@@ -195,6 +194,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_ratelimit.middleware.RatelimitMiddleware',
 )
 MIDDLEWARE = (
     'mobsf.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
@@ -332,7 +332,7 @@ LOGGING = {
 }
 JADX_TIMEOUT = int(os.getenv('MOBSF_JADX_TIMEOUT', 1800))
 DISABLE_AUTHENTICATION = os.getenv('MOBSF_DISABLE_AUTHENTICATION')
-RATELIMIT = os.getenv('MOBSF_RATELIMIT', '7/1m')
+RATELIMIT = os.getenv('MOBSF_RATELIMIT', '7/m')
 USE_X_FORWARDED_HOST = bool(
     os.getenv('MOBSF_USE_X_FORWARDED_HOST', '1') == '1')
 USE_X_FORWARDED_PORT = bool(

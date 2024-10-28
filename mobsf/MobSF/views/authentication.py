@@ -22,7 +22,7 @@ from mobsf.MobSF.security import (
     sanitize_redirect,
 )
 
-from brake.decorators import ratelimit
+from django_ratelimit.decorators import ratelimit
 
 
 def login_required(func):
@@ -42,9 +42,9 @@ def login_required(func):
     return wrapper
 
 
-@ratelimit(ip=True,
-           method='POST',
+@ratelimit(key='user_or_ip',
            rate=settings.RATELIMIT,
+           method='POST',
            block=True)
 def login_view(request):
     """Login Controller."""

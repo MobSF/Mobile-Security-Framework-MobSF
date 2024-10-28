@@ -233,7 +233,7 @@ def get_icon_apk(apk, app_dic):
         # piggyback on apktool decompiled resources
         try:
             apk_tool_res = app_dir / 'apktool_out' / 'res'
-            copytree(apk_tool_res, res_path)
+            copytree(apk_tool_res, res_path, dirs_exist_ok=True)
         except Exception:
             pass
     if res_path.exists():
@@ -345,7 +345,7 @@ def convert_vector_to_svg(app_dir, tools_dir, icon_name, apktool_res):
         if userbin and is_file_exists(userbin):
             vd2svg = userbin
         else:
-            vd2svg = Path(tools_dir) / 'vd2svg-0.3.3.jar'
+            vd2svg = Path(tools_dir) / 'vd2svg-0.4.4.jar'
         # When xml is android vector
         values = app_dir / 'res' / 'values'
         direct = app_dir / icon_name

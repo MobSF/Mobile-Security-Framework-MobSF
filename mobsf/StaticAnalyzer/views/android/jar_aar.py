@@ -191,7 +191,7 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
             checksum,
             app_dic['app_path'],
             app_dic['app_dir'],
-            app_dic['tools_dir'])
+            settings.DOWNLOADED_TOOLS_DIR)
         code_an_dic = code_analysis(
             checksum,
             app_dic['app_dir'],
