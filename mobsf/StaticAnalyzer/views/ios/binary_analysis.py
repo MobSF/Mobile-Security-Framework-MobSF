@@ -56,20 +56,24 @@ def get_bin_info(bin_file):
 
 
 def ipa_macho_analysis(binary):
+    data = {
+        'checksec': {},
+        'symbols': [],
+        'libraries': [],
+    }
     try:
         logger.info('Running MachO Analysis on: %s', binary.name)
         cs = MachOChecksec(binary)
         chksec = cs.checksec()
         symbols = cs.get_symbols()
         libs = cs.get_libraries()
-        return {
-            'checksec': chksec,
-            'symbols': symbols,
-            'libraries': libs,
-        }
+        data['checksec'] = chksec
+        data['symbols'] = symbols
+        data['libraries'] = libs
+        return data
     except Exception:
         logger.exception('Running MachO Analysis')
-        return {}
+        return data
 
 
 def binary_analysis(checksum, src, tools_dir, app_dir, executable_name):

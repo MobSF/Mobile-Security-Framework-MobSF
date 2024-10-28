@@ -9,6 +9,11 @@ import lief
 from mobsf.StaticAnalyzer.views.common.binary.strings import (
     strings_on_binary,
 )
+from mobsf.MobSF.utils import (
+    run_with_timeout,
+)
+
+from django.conf import settings
 
 
 def objdump_is_debug_symbol_stripped(macho_file):
@@ -28,7 +33,10 @@ class MachOChecksec:
             self.macho_name = rel_path
         else:
             self.macho_name = macho.name
-        self.macho = lief.parse(self.macho_path)
+        self.macho = run_with_timeout(
+            lief.parse,
+            settings.BINARY_ANALYSIS_TIMEOUT,
+            self.macho_path)
 
     def checksec(self):
         macho_dict = {}

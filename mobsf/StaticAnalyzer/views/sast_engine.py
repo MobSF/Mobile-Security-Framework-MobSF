@@ -8,8 +8,8 @@ from django.conf import settings
 
 from mobsf.MobSF.utils import (
     append_scan_status,
-    settings_enabled,
     run_with_timeout,
+    settings_enabled,
 )
 
 logger = logging.getLogger(__name__)
