@@ -35,5 +35,9 @@ wget --quiet "${JDK_URL}" && \
     tar zxf "${JDK_FILE}" && \
     rm -f "${JDK_FILE}"
 
+# Install JADX
+python3 tools_download.py /home/mobsf/.MobSF
+rm tools_download.py
+
 # Delete script
 rm $0

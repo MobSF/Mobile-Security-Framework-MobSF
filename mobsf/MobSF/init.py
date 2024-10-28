@@ -5,11 +5,13 @@ import random
 import subprocess
 import sys
 import shutil
+import threading
 from importlib import (
     machinery,
     util,
 )
 
+from mobsf.MobSF.tools_download import install_jadx
 from mobsf.install.windows.setup import windows_config_local
 
 logger = logging.getLogger(__name__)
@@ -42,6 +44,12 @@ def first_run(secret_file, base_dir, mobsf_home):
         # Run Once
         make_migrations(base_dir)
         migrate(base_dir)
+        # Install JADX
+        thread = threading.Thread(
+            target=install_jadx,
+            name='install_jadx',
+            args=(mobsf_home,))
+        thread.start()
         # Windows Setup
         windows_config_local(mobsf_home)
     return secret_key
@@ -129,6 +137,10 @@ def get_mobsf_home(use_home, base_dir):
         upload_dir = os.path.join(mobsf_home, 'uploads/')
         if not os.path.exists(upload_dir):
             os.makedirs(upload_dir)
+        # Downloaded tools
+        downloaded_tools_dir = os.path.join(mobsf_home, 'tools/')
+        if not os.path.exists(downloaded_tools_dir):
+            os.makedirs(downloaded_tools_dir)
         # Signature Directory
         sig_dir = os.path.join(mobsf_home, 'signatures/')
         if use_home:

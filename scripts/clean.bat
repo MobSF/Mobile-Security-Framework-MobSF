@@ -27,6 +27,7 @@ rmdir "%UserProfile%\MobSF" /q /s >nul 2>&1
 del /f "mobsf\setup_done.txt" >nul 2>&1
 echo Deleting MobSF data directory: %mobsf_home%
 del /f "%mobsf_home%" /q /s >nul 2>&1
+rmdir "%mobsf_home%" /S /Q >nul 2>&1
 echo Done
 ) ELSE ( 
 echo Please run script from mobsf.MobSF directory

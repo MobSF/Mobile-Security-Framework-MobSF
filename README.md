@@ -1,5 +1,5 @@
 # Mobile Security Framework (MobSF)
-Version: v4.0
+Version: v4.1
 
 ![](https://cloud.githubusercontent.com/assets/4301109/20019521/cc61f7fc-a2f2-11e6-95f3-407030d9fdde.png)
 

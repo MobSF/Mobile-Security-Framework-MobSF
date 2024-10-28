@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04, macos-latest, windows-latest]
-        python-version: ['3.11', '3.12']
+        python-version: ['3.12']
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -64,11 +64,17 @@ jobs:
         poetry run python manage.py makemigrations StaticAnalyzer
         poetry run python manage.py migrate
         poetry run python manage.py create_roles
+        poetry run python mobsf/MobSF/tools_download.py ~/.MobSF
+    
+    - name: Windows debug
+      if: startsWith(matrix.os, 'windows')
+      run: |
+        JAVA_HOME="${JAVA_HOME_21_X64}" ~/.MobSF/tools/jadx/jadx-1.5.0/bin/jadx.bat
 
     - name: Unit Tests on Ubuntu, macOS and Windows
       run: |
         git submodule update --init --recursive
-        poetry run python manage.py test mobsf
+        JAVA_HOME="${JAVA_HOME_21_X64}" poetry run python manage.py test mobsf
 
     - name: Python Package Test in Ubuntu and macOS
       if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macOS')

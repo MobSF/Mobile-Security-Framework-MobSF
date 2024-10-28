@@ -70,7 +70,7 @@ def dex_2_smali(checksum, app_dir, tools_dir):
         append_scan_status(checksum, msg, repr(exp))
 
 
-def apk_2_java(checksum, app_path, app_dir, tools_dir):
+def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
     """Run jadx."""
     try:
         msg = 'Decompiling APK to Java with jadx'
@@ -87,9 +87,11 @@ def apk_2_java(checksum, app_path, app_dir, tools_dir):
                 and is_file_exists(settings.JADX_BINARY)):
             jadx = settings.JADX_BINARY
         elif platform.system() == 'Windows':
-            jadx = os.path.join(tools_dir, 'jadx/bin/jadx.bat')
+            jadx = os.path.join(
+                dwd_tools_dir, 'jadx/jadx-1.5.0/bin/jadx.bat')
         else:
-            jadx = os.path.join(tools_dir, 'jadx/bin/jadx')
+            jadx = os.path.join(
+                dwd_tools_dir, 'jadx/jadx-1.5.0/bin/jadx')
         # Set execute permission, if JADX is not executable
         if not os.access(jadx, os.X_OK):
             os.chmod(jadx, stat.S_IEXEC)

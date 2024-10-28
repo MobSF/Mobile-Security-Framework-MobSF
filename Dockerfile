@@ -60,9 +60,9 @@ RUN apt update -y && \
 
 ARG TARGETPLATFORM
 
-# Install wkhtmltopdf & OpenJDK
-COPY scripts/install_java_wkhtmltopdf.sh .
-RUN ./install_java_wkhtmltopdf.sh
+# Install wkhtmltopdf, OpenJDK and jadx
+COPY scripts/dependencies.sh mobsf/MobSF/tools_download.py ./
+RUN ./dependencies.sh
 
 # Install Python dependencies
 COPY pyproject.toml .

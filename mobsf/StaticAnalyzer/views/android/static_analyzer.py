@@ -286,7 +286,7 @@ def static_analyzer(request, checksum, api=False):
                     checksum,
                     app_dic['app_path'],
                     app_dic['app_dir'],
-                    app_dic['tools_dir'])
+                    settings.DOWNLOADED_TOOLS_DIR)
                 dex_2_smali(
                     checksum,
                     app_dic['app_dir'],
