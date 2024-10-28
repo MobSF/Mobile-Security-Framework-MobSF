@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   postgres:
-    image: "postgres:latest"
+    image: "postgres:${POSTGRES_VERSION:-17.0-bookworm}"
     restart: always
     volumes:
       - $HOME/MobSF/postgresql_data:/var/lib/postgresql/data
