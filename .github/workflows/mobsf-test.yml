@@ -25,7 +25,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Setup Pip and Poetry
+    - name: Setup pip, poetry and tox
       run: |
         python -m ensurepip --upgrade
         python -m pip install pip poetry==1.8.4
@@ -53,6 +53,9 @@ jobs:
       if: startsWith(matrix.os, 'windows')
       run: |
         choco install wkhtmltopdf
+        [Environment]::SetEnvironmentVariable("JAVA_HOME", $env:JAVA_HOME_21_X64, [EnvironmentVariableTarget]::User)
+        $newPath = "$env:JAVA_HOME_21_X64\bin;$env:PATH"
+        [Environment]::SetEnvironmentVariable("PATH", $newPath, [EnvironmentVariableTarget]::User)
 
     - name: Install Python dependencies
       run: |
@@ -64,17 +67,12 @@ jobs:
         poetry run python manage.py makemigrations StaticAnalyzer
         poetry run python manage.py migrate
         poetry run python manage.py create_roles
-        poetry run python mobsf/MobSF/tools_download.py ~/.MobSF
-    
-    - name: Windows debug
-      if: startsWith(matrix.os, 'windows')
-      run: |
-        JAVA_HOME="${JAVA_HOME_21_X64}" ~/.MobSF/tools/jadx/jadx-1.5.0/bin/jadx.bat
-
+  
     - name: Unit Tests on Ubuntu, macOS and Windows
       run: |
+        java -version
         git submodule update --init --recursive
-        JAVA_HOME="${JAVA_HOME_21_X64}" poetry run python manage.py test mobsf
+        poetry run python manage.py test mobsf
 
     - name: Python Package Test in Ubuntu and macOS
       if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macOS')
