@@ -155,7 +155,8 @@ APKPLZ = 'https://apkplz.net/download-app/'
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 if (os.environ.get('POSTGRES_USER')
-        and os.environ.get('POSTGRES_PASSWORD')
+        and (os.environ.get('POSTGRES_PASSWORD')
+            or os.environ.get('POSTGRES_PASSWORD_FILE'))
         and os.environ.get('POSTGRES_HOST')):
     # Postgres support
     default = {
