@@ -21,7 +21,7 @@ services:
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - MOBSF_API_KEY_FILE=/run/secrets/mobsf_api_key
-    image: ${MOBSF_IMAGE:-opensecurity/mobile-security-framework-mobsf:latest}
+    image: ${MOBSF_IMAGE:-opensecurity/mobile-security-framework-mobsf:v4.0.7}
     volumes:
       - $HOME/MobSF/mobsf_data:/home/mobsf/.MobSF
     ports:
