@@ -53,9 +53,6 @@ jobs:
       if: startsWith(matrix.os, 'windows')
       run: |
         choco install wkhtmltopdf
-        [Environment]::SetEnvironmentVariable("JAVA_HOME", $env:JAVA_HOME_21_X64, [EnvironmentVariableTarget]::User)
-        $newPath = "$env:JAVA_HOME_21_X64\bin;$env:PATH"
-        [Environment]::SetEnvironmentVariable("PATH", $newPath, [EnvironmentVariableTarget]::User)
 
     - name: Install Python dependencies
       run: |
@@ -67,6 +64,11 @@ jobs:
         poetry run python manage.py makemigrations StaticAnalyzer
         poetry run python manage.py migrate
         poetry run python manage.py create_roles
+  
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '21'
   
     - name: Unit Tests on Ubuntu, macOS and Windows
       run: |
