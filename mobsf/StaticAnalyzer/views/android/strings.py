@@ -133,6 +133,7 @@ def get_strings_metadata(
     if apk:
         # APK
         apk_res = strings_from_apk(checksum, apk)
+        code_dic['firebase_creds'] = apk_res['firebase_creds']
         strings['strings_apk_res'] = apk_res['strings']
         urls_list.extend(apk_res['urls_list'])
         urls_n_files.extend(apk_res['urls_nf'])
@@ -160,7 +161,6 @@ def get_strings_metadata(
 
     code_dic['strings'] = strings
     code_dic['secrets'] = list(secrets)
-    code_dic['firebase_creds'] = apk_res['firebase_creds']
     # Code Analysis has urls, urlsnfiles and emailsnfiles
     code_dic['urls'].extend(urls_n_files)
     code_dic['emails'].extend(emails_n_files)
