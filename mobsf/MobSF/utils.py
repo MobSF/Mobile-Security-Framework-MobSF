@@ -969,6 +969,6 @@ def run_with_timeout(func, limit, *args, **kwargs):
         msg = (f'function <{func.__name__}> '
                f'timed out after {limit} seconds')
         raise TaskTimeoutError(msg)
-    if result and len(result) > 0:
+    if result:
         return result[0]
     return None
