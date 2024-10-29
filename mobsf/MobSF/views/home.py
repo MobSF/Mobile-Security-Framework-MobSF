@@ -22,6 +22,7 @@ from django.template.defaulttags import register
 
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
+    MD5_REGEX,
     api_key,
     get_md5,
     is_dir_exists,
@@ -244,16 +245,6 @@ def zip_format(request):
     return render(request, template, context)
 
 
-def not_found(request, *args):
-    """Not Found Route."""
-    context = {
-        'title': 'Not Found',
-        'version': settings.MOBSF_VER,
-    }
-    template = 'general/not_found.html'
-    return render(request, template, context)
-
-
 @login_required
 def dynamic_analysis(request):
     """Dynamic Analysis Landing."""
@@ -337,18 +328,43 @@ def download_apk(request):
 
 
 @login_required
-def search(request):
-    """Search Scan by MD5 Route."""
-    md5 = request.GET['md5']
-    if re.match('[0-9a-f]{32}', md5):
-        db_obj = RecentScansDB.objects.filter(MD5=md5)
-        if db_obj.exists():
-            e = db_obj[0]
-            url = f'/{e.ANALYZER}/{e.MD5}/'
-            return HttpResponseRedirect(url)
-        else:
-            return HttpResponseRedirect('/not_found/')
-    return print_n_send_error_response(request, 'Invalid Scan Hash')
+def search(request, api=False):
+    """Search scan by checksum or text."""
+    if request.method == 'POST':
+        query = request.POST['query']
+    else:
+        query = request.GET['query']
+
+    if not query:
+        msg = 'No search query provided.'
+        return print_n_send_error_response(request, msg, api)
+
+    checksum = query if re.match(MD5_REGEX, query) else find_checksum(query)
+
+    if checksum and re.match(MD5_REGEX, checksum):
+        db_obj = RecentScansDB.objects.filter(MD5=checksum).first()
+        if db_obj:
+            url = f'/{db_obj.ANALYZER}/{db_obj.MD5}/'
+            if api:
+                return {'checksum': db_obj.MD5}
+            else:
+                return HttpResponseRedirect(url)
+
+    msg = 'You can search by MD5, app name, package name, or file name.'
+    return print_n_send_error_response(request, msg, api, 'Scan not found')
+
+
+def find_checksum(query):
+    """Get the first matching checksum from the database."""
+    search_fields = ['FILE_NAME', 'PACKAGE_NAME', 'APP_NAME']
+
+    for field in search_fields:
+        result = RecentScansDB.objects.filter(
+            **{f'{field}__icontains': query}).first()
+        if result:
+            return result.MD5
+
+    return None
 
 # AJAX
 
@@ -453,7 +469,7 @@ def delete_scan(request, api=False):
             else:
                 md5_hash = request.POST['md5']
             data = {'deleted': 'scan hash not found'}
-            if re.match('[0-9a-f]{32}', md5_hash):
+            if re.match(MD5_REGEX, md5_hash):
                 # Delete DB Entries
                 scan = RecentScansDB.objects.filter(MD5=md5_hash)
                 if scan.exists():
@@ -485,10 +501,7 @@ def delete_scan(request, api=False):
     except Exception as exp:
         msg = str(exp)
         exp_doc = exp.__doc__
-        if api:
-            return print_n_send_error_response(request, msg, True, exp_doc)
-        else:
-            return print_n_send_error_response(request, msg, False, exp_doc)
+        return print_n_send_error_response(request, msg, api, exp_doc)
 
 
 class RecentScans(object):

@@ -13,10 +13,7 @@ import re
 import shutil
 import subprocess
 import zipfile
-from urllib.parse import urlparse
 from pathlib import Path
-
-import requests
 
 import arpy
 
@@ -33,8 +30,6 @@ from mobsf.MobSF.utils import (
     is_path_traversal,
     is_safe_path,
     print_n_send_error_response,
-    upstream_proxy,
-    valid_host,
 )
 from mobsf.MobSF.views.scanning import (
     add_to_recent_scan,
@@ -289,49 +284,6 @@ def get_avg_cvss(findings):
     if not getattr(settings, 'CVSS_SCORE_ENABLED', False):
         avg_cvss = None
     return avg_cvss
-
-
-def open_firebase(checksum, url):
-    # Detect Open Firebase Database
-    try:
-        invalid = 'Invalid Firebase URL'
-        if not valid_host(url):
-            logger.warning(invalid)
-            return url, False
-        purl = urlparse(url)
-        if not purl.netloc.endswith('firebaseio.com'):
-            logger.warning(invalid)
-            return url, False
-        base_url = '{}://{}/.json'.format(purl.scheme, purl.netloc)
-        proxies, verify = upstream_proxy('https')
-        headers = {
-            'User-Agent': ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1)'
-                           ' AppleWebKit/537.36 (KHTML, like Gecko) '
-                           'Chrome/39.0.2171.95 Safari/537.36')}
-        resp = requests.get(base_url, headers=headers,
-                            proxies=proxies, verify=verify,
-                            allow_redirects=False)
-        if resp.status_code == 200:
-            return base_url, True
-    except Exception as exp:
-        msg = 'Open Firebase DB detection failed'
-        logger.warning(msg)
-        append_scan_status(checksum, msg, repr(exp))
-    return url, False
-
-
-def firebase_analysis(checksum, urls):
-    # Detect Firebase URL
-    firebase_db = []
-    logger.info('Detecting Firebase URL(s)')
-    for url in urls:
-        if 'firebaseio.com' not in url:
-            continue
-        returl, is_open = open_firebase(checksum, url)
-        fbdic = {'url': returl, 'open': is_open}
-        if fbdic not in firebase_db:
-            firebase_db.append(fbdic)
-    return firebase_db
 
 
 def find_java_source_folder(base_folder: Path):

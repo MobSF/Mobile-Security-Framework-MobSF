@@ -54,6 +54,8 @@ URL_REGEX = re.compile(
     re.UNICODE)
 EMAIL_REGEX = re.compile(r'[\w+.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
 USERNAME_REGEX = re.compile(r'^\w[\w\-\@\.]{1,35}$')
+GOOGLE_API_KEY_REGEX = re.compile(r'AIza[0-9A-Za-z-_]{35}$')
+GOOGLE_APP_ID_REGEX = re.compile(r'\d{1,2}:\d{1,50}:android:[a-f0-9]{1,50}')
 
 
 class Color(object):
@@ -947,3 +949,28 @@ def get_scan_logs(checksum):
         msg = 'Fetching scan logs from the DB failed.'
         logger.exception(msg)
     return []
+
+
+class TaskTimeoutError(Exception):
+    pass
+
+
+def run_with_timeout(func, limit, *args, **kwargs):
+    def run_func(result, *args, **kwargs):
+        result.append(func(*args, **kwargs))
+
+    result = []
+    thread = threading.Thread(
+        target=run_func,
+        args=(result, *args),
+        kwargs=kwargs)
+    thread.start()
+    thread.join(limit)
+
+    if thread.is_alive():
+        msg = (f'function <{func.__name__}> '
+               f'timed out after {limit} seconds')
+        raise TaskTimeoutError(msg)
+    if result:
+        return result[0]
+    return None

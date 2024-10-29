@@ -4,8 +4,11 @@ import logging
 
 from libsast import Scanner
 
+from django.conf import settings
+
 from mobsf.MobSF.utils import (
     append_scan_status,
+    run_with_timeout,
     settings_enabled,
 )
 
@@ -21,8 +24,8 @@ def scan(checksum, rule, extensions, paths, ignore_paths=None):
             'ignore_paths': ignore_paths,
             'show_progress': False}
         scanner = Scanner(options, paths)
-        res = scanner.scan()
-        if res:
+        res = run_with_timeout(scanner.scan, settings.SAST_TIMEOUT)
+        if res and res.get('pattern_matcher'):
             return format_findings(res['pattern_matcher'], paths[0])
     except Exception as exp:
         msg = 'libsast scan failed'
@@ -48,8 +51,8 @@ def niap_scan(checksum, rule, extensions, paths, apath, ignore_paths=None):
             'ignore_paths': ignore_paths,
             'show_progress': False}
         scanner = Scanner(options, paths)
-        res = scanner.scan()
-        if res:
+        res = run_with_timeout(scanner.scan, settings.SAST_TIMEOUT)
+        if res and res.get('choice_matcher'):
             return res['choice_matcher']
     except Exception as exp:
         msg = 'NIAP Analyzer Failed'

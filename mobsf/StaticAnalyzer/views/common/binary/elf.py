@@ -8,6 +8,11 @@ import lief
 from mobsf.StaticAnalyzer.views.common.binary.strings import (
     strings_on_binary,
 )
+from mobsf.MobSF.utils import (
+    run_with_timeout,
+)
+
+from django.conf import settings
 
 
 NA = 'Not Applicable'
@@ -32,7 +37,10 @@ class ELFChecksec:
     def __init__(self, elf_file, so_rel):
         self.elf_path = elf_file.as_posix()
         self.elf_rel = so_rel
-        self.elf = lief.parse(self.elf_path)
+        self.elf = run_with_timeout(
+            lief.parse,
+            settings.BINARY_ANALYSIS_TIMEOUT,
+            self.elf_path)
 
     def checksec(self):
         elf_dict = {}
