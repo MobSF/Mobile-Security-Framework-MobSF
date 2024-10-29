@@ -334,38 +334,37 @@ def search(request, api=False):
         query = request.POST['query']
     else:
         query = request.GET['query']
-    checksum = None
-    if not re.match(MD5_REGEX, query):
-        file_names = RecentScansDB.objects.filter(
-            FILE_NAME__icontains=query,
-        )
-        if file_names.exists():
-            checksum = file_names[0].MD5
 
-        package_names = RecentScansDB.objects.filter(
-            PACKAGE_NAME__icontains=query,
-        )
-        if package_names.exists():
-            checksum = package_names[0].MD5
+    if not query:
+        msg = 'No search query provided.'
+        return print_n_send_error_response(request, msg, api)
 
-        app_names = RecentScansDB.objects.filter(
-            APP_NAME__icontains=query,
-        )
-        if app_names.exists():
-            checksum = app_names[0].MD5
-    else:
-        checksum = query
+    checksum = query if re.match(MD5_REGEX, query) else find_checksum(query)
 
     if checksum and re.match(MD5_REGEX, checksum):
-        db_obj = RecentScansDB.objects.filter(MD5=checksum)
-        if db_obj.exists():
-            e = db_obj[0]
-            url = f'/{e.ANALYZER}/{e.MD5}/'
+        db_obj = RecentScansDB.objects.filter(MD5=checksum).first()
+        if db_obj:
+            url = f'/{db_obj.ANALYZER}/{db_obj.MD5}/'
             if api:
-                return {'checksum': e.MD5}
-            return HttpResponseRedirect(url)
+                return {'checksum': db_obj.MD5}
+            else:
+                return HttpResponseRedirect(url)
+
     msg = 'You can search by MD5, app name, package name, or file name.'
     return print_n_send_error_response(request, msg, api, 'Scan not found')
+
+
+def find_checksum(query):
+    """Get the first matching checksum from the database."""
+    search_fields = ['FILE_NAME', 'PACKAGE_NAME', 'APP_NAME']
+
+    for field in search_fields:
+        result = RecentScansDB.objects.filter(
+            **{f'{field}__icontains': query}).first()
+        if result:
+            return result.MD5
+
+    return None
 
 # AJAX
 

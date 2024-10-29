@@ -70,10 +70,9 @@ def ipa_macho_analysis(binary):
         data['checksec'] = chksec
         data['symbols'] = symbols
         data['libraries'] = libs
-        return data
     except Exception:
         logger.exception('Running MachO Analysis')
-        return data
+    return data
 
 
 def binary_analysis(checksum, src, tools_dir, app_dir, executable_name):

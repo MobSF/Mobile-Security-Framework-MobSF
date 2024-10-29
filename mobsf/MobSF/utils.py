@@ -949,6 +949,10 @@ def get_scan_logs(checksum):
     return []
 
 
+class TaskTimeoutError(Exception):
+    pass
+
+
 def run_with_timeout(func, limit, *args, **kwargs):
     def run_func(result, *args, **kwargs):
         result.append(func(*args, **kwargs))
@@ -964,5 +968,7 @@ def run_with_timeout(func, limit, *args, **kwargs):
     if thread.is_alive():
         msg = (f'function <{func.__name__}> '
                f'timed out after {limit} seconds')
-        raise Exception(msg)
-    return result[0] if result else None
+        raise TaskTimeoutError(msg)
+    if result and len(result) > 0:
+        return result[0]
+    return None
