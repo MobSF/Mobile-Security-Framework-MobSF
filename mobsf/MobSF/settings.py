@@ -5,7 +5,6 @@ Django settings for MobSF project.
 MobSF and Django settings
 """
 
-import imp
 import logging
 import os
 
@@ -43,20 +42,8 @@ TOOLS_DIR = os.path.join(BASE_DIR, 'DynamicAnalyzer/tools/')
 # Secret File
 SECRET_FILE = os.path.join(MobSF_HOME, 'secret')
 
-# ==========Load MobSF User Settings==========
-try:
-    if USE_HOME:
-        USER_CONFIG = os.path.join(MobSF_HOME, 'config.py')
-        sett = imp.load_source('user_settings', USER_CONFIG)
-        locals().update(  # lgtm [py/modification-of-locals]
-            {k: v for k, v in list(sett.__dict__.items())
-                if not k.startswith('__')})
-        CONFIG_HOME = True
-    else:
-        CONFIG_HOME = False
-except Exception:
-    logger.exception('Reading Config')
-    CONFIG_HOME = False
+# ==========MobSF User Settings==========
+CONFIG_HOME = False
 
 # ===MOBSF SECRET GENERATION AND DB MIGRATION====
 SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MobSF_HOME)
@@ -65,6 +52,9 @@ SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MobSF_HOME)
 ALLOWED_EXTENSIONS = {
     '.txt': 'text/plain',
     '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.svg': 'image/svg+xml',
+    '.webp': 'image/webp',
     '.zip': 'application/zip',
     '.tar': 'application/x-tar',
     '.apk': 'application/octet-stream',
@@ -74,6 +64,7 @@ ALLOWED_EXTENSIONS = {
     '.so': 'application/octet-stream',
     '.dylib': 'application/octet-stream',
     '.a': 'application/octet-stream',
+    '.pcap': 'application/vnd.tcpdump.pcap',
 }
 # =============ALLOWED MIMETYPES=================
 APK_MIME = [
@@ -179,7 +170,6 @@ INSTALLED_APPS = (
 MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -194,6 +184,7 @@ AUTHENTICATION_BACKENDS = (
 MIDDLEWARE = (
     'mobsf.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
     'mobsf.MobSF.views.aws_sso_middleware.alb_idp_auth_middleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
 )
 ROOT_URLCONF = 'mobsf.MobSF.urls'
 WSGI_APPLICATION = 'mobsf.MobSF.wsgi.application'
@@ -300,12 +291,10 @@ JADX_TIMEOUT = int(os.getenv('MOBSF_JADX_TIMEOUT', 1800))
 EFR_01 = os.getenv('EFR_01', '0')
 # USER CONFIGURATION
 # ===================
-if CONFIG_HOME:
-    logger.info('Loading User config from: %s', USER_CONFIG)
-else:
+if not CONFIG_HOME:
     """
     IMPORTANT
-    If 'USE_HOME' is set to True,
+    If 'CONFIG_HOME' is set to True,
     then below user configuration settings are not considered.
     The user configuration will be loaded from
     .MobSF/config.py in user's home directory.
@@ -337,6 +326,8 @@ else:
     CVSS_SCORE_ENABLED = bool(os.getenv('MOBSF_CVSS_SCORE_ENABLED', ''))
     # NIAP Scan
     NIAP_ENABLED = os.getenv('MOBSF_NIAP_ENABLED', '1')
+    # Permission to Code Mapping
+    PERM_MAPPING_ENABLED = os.getenv('MOBSF_PERM_MAPPING_ENABLED', '1')
     # Dex 2 Smali Conversion
     DEX2SMALI_ENABLED = os.getenv('MOBSF_DEX2SMALI_ENABLED', '1')
     # Android Shared Object Binary Analysis
@@ -373,7 +364,6 @@ else:
     JADX_BINARY = os.getenv('MOBSF_JADX_BINARY', '')
     BACKSMALI_BINARY = os.getenv('MOBSF_BACKSMALI_BINARY', '')
     VD2SVG_BINARY = os.getenv('MOBSF_VD2SVG_BINARY', '')
-    BATIK_BINARY = os.getenv('MOBSF_BATIK_BINARY', '')
     APKTOOL_BINARY = os.getenv('MOBSF_APKTOOL_BINARY', '')
     ADB_BINARY = os.getenv('MOBSF_ADB_BINARY', '')
 
@@ -384,15 +374,11 @@ else:
 
     # COMMON
     JAVA_DIRECTORY = os.getenv('MOBSF_JAVA_DIRECTORY', '')
-    VBOXMANAGE_BINARY = os.getenv('MOBSF_VBOXMANAGE_BINARY', '')
-    PYTHON3_PATH = os.getenv('MOBSF_PYTHON3_PATH', '')
 
     """
     Examples:
     JAVA_DIRECTORY = 'C:/Program Files/Java/jdk1.7.0_17/bin/'
     JAVA_DIRECTORY = '/usr/bin/'
-    VBOXMANAGE_BINARY = '/usr/bin/VBoxManage'
-    PYTHON3_PATH = 'C:/Users/Ajin/AppData/Local/Programs/Python/Python35-32/'
     JADX_BINARY = 'C:/Users/Ajin/AppData/Local/Programs/jadx/bin/jadx.bat'
     JADX_BINARY = '/Users/ajin/jadx/bin/jadx'
     """
@@ -439,7 +425,13 @@ else:
     # https://www.virustotal.com/en/user/<username>/apikey/
     # Files will be uploaded to VirusTotal
     # if VT_UPLOAD is set to True.
-    # ==============================================
+    # ===============================================
+    # =======IOS DYNAMIC ANALYSIS SETTINGS===========
+    CORELLIUM_API_DOMAIN = os.getenv('MOBSF_CORELLIUM_API_DOMAIN', '')
+    CORELLIUM_API_KEY = os.getenv('MOBSF_CORELLIUM_API_KEY', '')
+    CORELLIUM_PROJECT_ID = os.getenv('MOBSF_CORELLIUM_PROJECT_ID', '')
+    # CORELLIUM_PROJECT_ID is optional, MobSF will use any available project id
+    # ===============================================
     # ^CONFIG-END^: Do not edit this line
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

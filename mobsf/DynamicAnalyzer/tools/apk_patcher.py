@@ -37,6 +37,7 @@ class GadgetPatcher:
     def decompile_apk(self):
         """Decompile APK."""
         args = [find_java_binary(),
+                '-Djdk.util.zip.disableZip64ExtraFieldValidation=true',
                 '-jar',
                 self.apktool_path,
                 '--frame-path',
@@ -53,6 +54,7 @@ class GadgetPatcher:
     def recompile_apk(self):
         """Recompile APK."""
         args = [find_java_binary(),
+                '-Djdk.util.zip.disableZip64ExtraFieldValidation=true',
                 '-jar',
                 self.apktool_path,
                 '-f', 'b',
@@ -87,7 +89,10 @@ class GadgetPatcher:
             if not url:
                 return None
             logger.info('Downloading frida-gadget %s', fgadget)
-            with requests.get(url, stream=True) as r:
+            with requests.get(url,
+                              stream=True,
+                              proxies=proxies,
+                              verify=verify) as r:
                 with LZMAFile(r.raw) as f:
                     with open(gadget_bin, 'wb') as flip:
                         copyfileobj(f, flip)

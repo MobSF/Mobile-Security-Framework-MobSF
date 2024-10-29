@@ -3,14 +3,10 @@
 import io
 import logging
 
-from mobsf.StaticAnalyzer.tools.strings import (
-    strings_util,
-)
 from mobsf.StaticAnalyzer.views.common.entropy import (
     get_entropies,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
-    get_os_strings,
     url_n_email_extract,
 )
 
@@ -60,20 +56,6 @@ def extract_urls_n_email(src, all_files, strings):
     }
 
 
-def strings_on_binary(bin_path):
-    """Extract strings from binary."""
-    try:
-        strings = get_os_strings(bin_path)
-        if strings:
-            return list(set(strings))
-        if isinstance(strings, list):
-            return []
-        # Only run if OS strings is not present
-        return list(set(strings_util(bin_path)))
-    except Exception:
-        logger.exception('Extracting strings from binary')
-
-
 def get_strings_metadata(app_dict, bin_dict, all_files, dy_list):
     """Merge strings metadata."""
     # app_dict has secrets from plist secret analysis
@@ -93,7 +75,7 @@ def get_strings_metadata(app_dict, bin_dict, all_files, dy_list):
     emails_n_files = str_meta['emailnfile']
 
     if dy_list:
-        # DYLIB (.dylib) by file
+        # DYLIB (.dylib)/Framework by file
         dy_strings = []
         for dy in dy_list:
             for dy_file, s in dy.items():

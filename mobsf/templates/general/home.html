@@ -35,7 +35,7 @@
                         <a class="nav-link" href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'api_docs' %}">REST API</a>
+                        <a class="nav-link" href="{% url 'api_docs' %}">API</a>
                     </li>
                 </ul>
                 <ul class="navbar-nav ml-auto">
@@ -88,7 +88,7 @@
 
 
                   <div class="inner">
-                     <h6> <a href="{% url 'recent' %}">RECENT SCANS</a>  |  <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>  |  <a href="{% url 'api_docs' %}">REST API</a>   |  <a href="{% url 'donate' %}">DONATE ♥</a> |  <a target="_blank"
+                     <h6> <a href="{% url 'recent' %}">RECENT SCANS</a>  |  <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>  |  <a href="{% url 'api_docs' %}">API</a>   |  <a href="{% url 'donate' %}">DONATE ♥</a> |  <a target="_blank"
                          href="https://mobsf.github.io/docs/#/">DOCS</a>  | <a href="{% url 'about' %}">ABOUT</a></h6>
                      </br>
                      <p>&copy; {% now "Y" %}  Mobile Security Framework - MobSF {{ version }}</p>
@@ -134,7 +134,7 @@
                     _("status").innerText = 'Trying to download ...';
                     show_loader();
                     $.ajax({
-                        url : '../download_scan/', 
+                        url : '{% url "download_scan" %}', 
                         type : "POST",
                         dataType: "json", 
                         data : {
@@ -156,7 +156,7 @@
                                     }
                                 }, 2000);
 
-                                url = json.analyzer + '/?name=' + encodeURIComponent(json.file_name) + '&checksum=' + json.hash + '&type=' + json.scan_type
+                                url = json.analyzer + '/' + json.hash + '/';
                                 load_result(url);
                             } else {
                                 hide_loader();
@@ -199,10 +199,7 @@
                             i = 1;
                         }
                     }, 2000);
-                    var url = json.analyzer + '/';
-                    if (json.hash){
-                        url += '?name=' + encodeURIComponent(json.file_name) + '&checksum=' + json.hash + '&type=' + json.scan_type
-                    }
+                    var url = json.analyzer + '/' + json.hash + '/';
                     load_result(url);
                 }
             }

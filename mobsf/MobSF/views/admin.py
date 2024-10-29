@@ -15,8 +15,8 @@ from django.http import HttpResponse
 
 from mobsf.StaticAnalyzer.models import ApiKeys
 from mobsf.MobSF.utils import (
-    error_response,
     is_admin,
+    print_n_send_error_response,
     sso_email,
     tz,
     utcnow,
@@ -74,7 +74,7 @@ def edit_api_key(key_id, description, email, role, expire_date):
 
 def admin_view(request):
     if (not is_admin(request)):
-        return error_response(request, 'Unauthorized')
+        return print_n_send_error_response(request, 'Unauthorized')
     min_exp_date = utcnow() + datetime.timedelta(days=1)
     max_exp_date = utcnow() + datetime.timedelta(days=365)
     default_exp_date = utcnow() + datetime.timedelta(days=90)
@@ -107,7 +107,7 @@ def admin_view(request):
 def create_api_key_post(request):
     try:
         if (not is_admin(request)):
-            return error_response(request, 'Unauthorized')
+            return print_n_send_error_response(request, 'Unauthorized')
 
         max_date = utcnow() + datetime.timedelta(days=365)
         # Validate input parameters
@@ -151,18 +151,19 @@ def create_api_key_post(request):
         logger.error(exmsg)
         msg = str(exp)
         exp_doc = exp.__doc__
-        return error_response(request, msg, False, exp_doc)
+        return print_n_send_error_response(request, msg, False, exp_doc)
 
 
 @require_http_methods(['POST'])
 def revoke_api_key_post(request):
     try:
         if (not is_admin(request)):
-            return error_response(request, 'Unauthorized')
+            return print_n_send_error_response(request, 'Unauthorized')
 
         key_id = request.POST['id']
         if not key_id:
-            return error_response(request, 'Missing parameter: id')
+            return print_n_send_error_response(request,
+                                               'Missing parameter: id')
         item = revoke_api_key(key_id)
         if item:
             logger.info('API key ID %s revoked by: %s', key_id,
@@ -179,14 +180,14 @@ def revoke_api_key_post(request):
         logger.error(exmsg)
         msg = str(exp)
         exp_doc = exp.__doc__
-        return error_response(request, msg, False, exp_doc)
+        return print_n_send_error_response(request, msg, False, exp_doc)
 
 
 @require_http_methods(['POST'])
 def edit_api_key_post(request):
     try:
         if (not is_admin(request)):
-            return error_response(request, 'Unauthorized')
+            return print_n_send_error_response(request, 'Unauthorized')
 
         max_date = utcnow() + datetime.timedelta(days=365)
         # Validate input parameters
@@ -236,4 +237,4 @@ def edit_api_key_post(request):
         logger.error(exmsg)
         msg = str(exp)
         exp_doc = exp.__doc__
-        return error_response(request, msg, False, exp_doc)
+        return print_n_send_error_response(request, msg, False, exp_doc)

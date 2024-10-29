@@ -1,10 +1,24 @@
 # !/usr/bin/python
 # coding=utf-8
+import shutil
+import subprocess
+from pathlib import Path
+
 import lief
 
-from mobsf.StaticAnalyzer.views.ios.strings import (
+from mobsf.StaticAnalyzer.views.common.binary.strings import (
     strings_on_binary,
 )
+
+
+def objdump_is_debug_symbol_stripped(macho_file):
+    """Check if debug symbols are stripped using OS utility."""
+    # https://www.unix.com/man-page/osx/1/objdump/
+    # Works only on MacOS
+    out = subprocess.check_output(
+        [shutil.which('objdump'), '--syms', macho_file],
+        stderr=subprocess.STDOUT)
+    return b' d  ' not in out
 
 
 class MachOChecksec:
@@ -62,7 +76,12 @@ class MachOChecksec:
                 'to execute reliably.')
         else:
             severity = 'high'
-            if self.macho_name.endswith('.dylib'):
+            ext = Path(self.macho_name).suffix
+            # PIE check not applicable for static and dynamic libraries
+            # https://github.com/MobSF/Mobile-Security-Framework-MobSF/
+            # issues/2290#issuecomment-1837272113
+            if (ext == '.dylib'
+                    or (not ext and '.framework' in self.macho_name)):
                 severity = 'info'
             desc = (
                 'The binary is built without Position '
@@ -73,7 +92,7 @@ class MachOChecksec:
                 'the address space positions of key data areas of a '
                 'process, including the base of the executable and the '
                 'positions of the stack,heap and libraries. Use compiler '
-                'option -fPIC to enable Position Independent Code.'
+                'option -fPIC to enable Position Independent Code. '
                 'Not applicable for dylibs and static libraries.')
         macho_dict['pie'] = {
             'has_pie': has_pie,
@@ -91,7 +110,7 @@ class MachOChecksec:
         elif is_stripped:
             severity = 'warning'
             desc = (
-                'This binary has symbols stripped. We cannot identify '
+                'This binary has debug symbols stripped. We cannot identify '
                 'whether stack canary is enabled or not.')
         else:
             severity = 'high'
@@ -123,7 +142,7 @@ class MachOChecksec:
         elif is_stripped:
             severity = 'warning'
             desc = (
-                'This binary has symbols stripped. We cannot identify '
+                'This binary has debug symbols stripped. We cannot identify '
                 'whether ARC is enabled or not.')
         else:
             severity = 'high'
@@ -184,11 +203,11 @@ class MachOChecksec:
         }
         if is_stripped:
             severity = 'info'
-            desc = 'Symbols are stripped'
+            desc = 'Debug Symbols are stripped'
         else:
             severity = 'warning'
             desc = (
-                'Symbols are available. To strip '
+                'Debug Symbols are available. To strip '
                 'debugging symbols, set Strip Debug '
                 'Symbols During Copy to YES, '
                 'Deployment Postprocessing to YES, '
@@ -213,14 +232,17 @@ class MachOChecksec:
     def has_canary(self):
         stk_check = '___stack_chk_fail'
         stk_guard = '___stack_chk_guard'
-        ipt_list = set()
-        for ipt in self.macho.imported_functions:
-            ipt_list.add(str(ipt))
-        return stk_check in ipt_list and stk_guard in ipt_list
+        imp_func_gen = self.macho.imported_functions
+        has_stk_check = any(
+            str(func).strip() == stk_check for func in imp_func_gen)
+        has_stk_guard = any(
+            str(func).strip() == stk_guard for func in imp_func_gen)
+
+        return has_stk_check and has_stk_guard
 
     def has_arc(self):
         for func in self.macho.imported_functions:
-            if str(func).strip() == '_objc_release':
+            if str(func).strip() in ('_objc_release', '_swift_release'):
                 return True
         return False
 
@@ -240,14 +262,38 @@ class MachOChecksec:
             return False
 
     def is_symbols_stripped(self):
-        filter_symbols = ['radr://5614542', '__mh_execute_header']
-        for i in self.macho.symbols:
-            strip_bool = i.type & 0xe0
-            strip_type = i.type in [0x0e, 0x1e, 0x0f]
-            sym = i.name.lower().strip()
-            if (strip_bool > 0 or strip_type) and sym not in filter_symbols:
-                return False
-        return True
+        try:
+            return objdump_is_debug_symbol_stripped(self.macho_path)
+        except Exception:
+            # Based on issues/1917#issuecomment-1238078359
+            # and issues/2233#issue-1846914047
+            stripped_sym = 'radr://5614542'
+            # radr://5614542 symbol is added back for
+            # debug symbols stripped binaries
+            for i in self.macho.symbols:
+                if i.name.lower().strip() in (
+                        '__mh_execute_header', stripped_sym):
+                    # __mh_execute_header is present in both
+                    # stripped and unstripped binaries
+                    # also ignore radr://5614542
+                    continue
+                if (i.type & 0xe0) > 0 or i.type in (0x0e, 0x1e):
+                    # N_STAB set or 14, 30
+
+                    # N_STAB	0xe0  /* if any of these bits set,
+                    # a symbolic debugging entry */ -> 224
+                    # https://opensource.apple.com/source/xnu/xnu-201/
+                    # EXTERNAL_HEADERS/mach-o/nlist.h
+                    # Only symbolic debugging entries have
+                    # some of the N_STAB bits set and if any
+                    # of these bits are set then it is a
+                    # symbolic debugging entry (a stab).
+
+                    # Identified a debugging symbol
+                    return False
+            if stripped_sym in self.get_symbols():
+                return True
+            return False
 
     def get_libraries(self):
         libs = []

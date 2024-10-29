@@ -44,7 +44,7 @@
       </div>
       </br></br></br>
      <div class="app">
-      <img class="center" id="icon" src="{% if icon_found %}{{dwd_dir}}{{ md5 }}-icon.png{% else %}{{base_url}}{% static 'img/no_icon.png' %}{% endif %}" alt="app_icon"/>
+      <img class="center" id="icon" src="{% if icon_path %}{{dwd_dir}}{{icon_path}}{% else %}{{base_url}}{% static 'img/no_icon.png' %}{% endif %}" alt="app_icon"/>
      </div>
       <div class="center">
         <h1><i class="fab fa-android"></i> {% if app_name %}  {{ app_name }}  {% else %} {{ file_name }} {% endif %} {% if version_name %}  ({{version_name}}) {% endif %}</h1>
@@ -185,18 +185,6 @@
       <h5>Max SDK:</h5> {{ max_sdk }}</br>
       <h5>Android Version Name:</h5> {{ version_name }}</br>
       <h5>Android Version Code:</h5> {{ version_code }}</br>
-{% endif %}
-
-{% if app_type in 'jar,aar' %}
-<p>
-{% for _, value in apkid.items %}
-   {% if value %}
-     The binary might be obfuscated. LocalVariableTable is absent in class file.
-   {% else %}
-     The binary might not be obfuscated. LocalVariableTable is present in class file.
-   {% endif %}
-{% endfor %}
-</p>
 {% endif %}
 
 {% if app_type not in 'jar,aar,so' %}
@@ -660,7 +648,7 @@
                        {% for so in binary_analysis %}
                        <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td width="20%">{{so.name}}</td>
+                        <td width="20%">{{so.name | relative_path}}</td>
                         <td style="vertical-align: top;"><b>{{so.nx.is_nx}}</b>
                           <br/>
                           <span class="{% if so.nx.severity == 'high' %}danger{% elif so.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.nx.severity}}</span>
@@ -669,6 +657,10 @@
                             <br/>
                             <span class="{% if so.stack_canary.severity == 'high' %}danger{% elif so.stack_canary.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.stack_canary.severity}}</span>
                             <br/>{{so.stack_canary.description}}</td>
+                        <td style="vertical-align: top;"><b>{{so.relocation_readonly.relro}}</b>
+                              <br/>
+                              <span class="{% if so.relocation_readonly.severity == 'high' %}danger{% elif so.relocation_readonly.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.relocation_readonly.severity}}</span>
+                              <br/>{{so.relocation_readonly.description}}</td>
                         <td style="vertical-align: top;"><b>{{so.rpath.rpath}}</b>
                           <br/>
                           <span class="{% if so.rpath.severity == 'high' %}danger{% elif so.rpath.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.rpath.severity}}</span>
@@ -751,6 +743,45 @@
 										</table>
         {% endif %}
 -->
+
+    {% if malware_permissions %}
+    <h2><i class="fa fa-braille"></i> ABUSED PERMISSIONS</h2>
+
+    <table id="table_ofac" class="table table-bordered table-hover table-striped">
+      <thead>
+      <tr>
+         <th>TYPE</th>
+         <th>MATCHES</th>
+         <th>PERMISSIONS</th>
+      </tr>
+     </thead>
+     <tbody>
+      <tr>
+        <td>Malware Permissions</td>
+        <td>{{ malware_permissions.top_malware_permissions | length}}</b>/{{malware_permissions.total_malware_permissions}}</td>
+        <td>
+          {{ malware_permissions.top_malware_permissions | join:", "}}
+      </td>
+      </tr>
+      <tr>
+        <td>Other Common Permissions</td>
+        <td>{{ malware_permissions.other_abused_permissions | length}}</b>/{{malware_permissions.total_other_permissions}}</td>
+        <td>
+          {{ malware_permissions.other_abused_permissions | join:", "}}
+      </td>
+      </tr>
+    </tbody>
+</table>
+    <hr>
+    <p>
+      <h3>Malware Permissions:</h3> Top permissions that are widely abused by known malware. 
+      <br/>
+      <h3>Other Common Permissions:</h3> Permissions that are commonly abused by known malware. 
+    </p>
+      {% endif %}
+            
+ <!-- ===========================end malware permissions  ================================== -->
+
       {% if domains  %}
       <h2><i class="fa fa-exclamation"></i> OFAC SANCTIONED COUNTRIES</h2>
       <p>This app may communicate with the following OFAC sanctioned list of countries.</p>
@@ -955,22 +986,6 @@
                       </tbody>
                       </table>
         {% endif %}
-
-        <!--Only for so-->
-        {% if app_type in 'so' %}
-        <h2><i class="fa fa-th"></i> SYMBOLS</h2>
-            <table class="basic">
-                    <tbody>
-                    {% for val in file_analysis %}
-                      <tr>
-                        <td style="word-break:break-all;">
-                        {{ val }}
-                          </td>
-                      </tr>
-                    {% endfor %} 
-                      </tbody>
-                      </table>
-       {% endif %}
 
         <!--Only for so-->
         {% if app_type in 'so' %}

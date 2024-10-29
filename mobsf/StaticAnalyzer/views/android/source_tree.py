@@ -2,7 +2,6 @@
 """List all java files."""
 
 import logging
-import re
 from pathlib import Path
 
 from django.conf import settings
@@ -13,8 +12,9 @@ from django.shortcuts import (
 
 from mobsf.MobSF.utils import (
     api_key,
-    error_response,
     is_admin,
+    is_md5,
+    print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     find_java_source_folder,
@@ -46,9 +46,8 @@ def run(request):
     """Source Tree - Java/Smali view."""
     try:
         logger.info('Listing Source files')
-        match = re.match('^[0-9a-f]{32}$', request.GET['md5'])
-        if not match:
-            return error_response(request, 'Scan hash not found')
+        if not is_md5(request.GET['md5']):
+            return print_n_send_error_response(request, 'Scan hash not found')
         md5 = request.GET['md5']
         typ = request.GET['type']
         base = Path(settings.UPLD_DIR) / md5
@@ -58,7 +57,7 @@ def run(request):
             try:
                 src = find_java_source_folder(base)[0]
             except StopIteration:
-                return error_response(
+                return print_n_send_error_response(
                     request,
                     'Invalid Directory Structure')
 
@@ -76,6 +75,6 @@ def run(request):
         return render(request, template, context)
     except Exception:
         logger.exception('Getting Source Files')
-        return error_response(
+        return print_n_send_error_response(
             request,
             'Error Getting Source Files')

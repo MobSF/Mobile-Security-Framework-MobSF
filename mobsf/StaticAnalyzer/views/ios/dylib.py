@@ -95,8 +95,12 @@ def dylib_analysis(request, app_dict, rescan, api):
             'bin_type': 'Dylib',
         }
         # Analyze dylib
-        dy = library_analysis(app_dict['bin_dir'], 'macho')
+        dy = library_analysis(
+            app_dict['bin_dir'],
+            app_dict['md5_hash'],
+            'macho')
         bin_dict['dylib_analysis'] = dy['macho_analysis']
+        bin_dict['framework_analysis'] = {}
         # Store Symbols in File Analysis
         all_files['special_files'] = get_symbols(
             dy['macho_symbols'])
@@ -105,8 +109,6 @@ def dylib_analysis(request, app_dict, rescan, api):
             bin_dict['bin_code_analysis'],
             all_files['special_files'],
             b'')
-        # Get Icon
-        app_dict['icon_found'] = False
         # Extract String metadata
         code_dict = get_strings_metadata(
             app_dict,

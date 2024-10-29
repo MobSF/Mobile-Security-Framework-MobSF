@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mobsf"
-version = "3.7.6"
+version = "3.9.7"
 description = "Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis."
 keywords = ["mobsf", "mobile security framework", "mobile security", "security tool", "static analysis", "dynamic analysis", "malware analysis"]
 authors = ["Ajin Abraham <ajin@opensecurity.in>"]
@@ -23,7 +23,7 @@ classifiers = [
 mobsf = "mobsf.__main__:main"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 django = ">=3.1.5"
 lxml = ">=4.6.2"
 rsa = ">=4.7"
@@ -38,29 +38,28 @@ gunicorn = {version = ">=20.0.4", markers = "sys_platform != 'win32'"}
 psutil = ">=5.8.0"
 shelljob = ">=0.6.2"
 asn1crypto = ">=1.4.0"
-oscrypto = ">=1.2.1"
 distro = ">=1.5.0"
 ip2location = "8.10.0"
-lief = ">=0.12.3"
-http-tools = ">=3.0.0"
-libsast = ">=1.5.1"
+lief = "0.12.3"
+http-tools = ">=4.0.0"
 pdfkit = ">=0.6.1"
 google-play-scraper = ">=0.1.2"
-androguard = "3.4.0a1"
 apkid = "2.1.5"
-quark-engine = "23.7.1"
-frida = "15.2.2"
+frida = ">=16.1.4"
 tldextract = "3.4.4"
 openstep-parser = "1.5.4"
 svgutils = "0.3.4"
 arpy = "2.3.0"
 apksigtool = "0.1.0"
 tzdata = "^2023.3"
+libsast = "^2.0.0"
+paramiko = "^3.3.1"
+six = ">=1.16.0"
 # Cyberspect specific dependencies
-boto3 = ">=1.28.48"
+boto3 = ">=1.34.148"
 PyJWT = ">=2.8.0"
 siphash = ">=0.0.1"
-django4-background-tasks = ">=1.2.8"
+django4-background-tasks = ">=1.2.10"
 
 [build-system]
 requires = ["poetry-core"]

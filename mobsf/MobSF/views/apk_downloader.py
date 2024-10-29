@@ -50,7 +50,11 @@ def fetch_html(url):
 def download_file(url, outfile):
     try:
         logger.info('Downloading APK...')
-        with requests.get(url, stream=True) as r:
+        proxies, verify = upstream_proxy('https')
+        with requests.get(url,
+                          stream=True,
+                          proxies=proxies,
+                          verify=verify) as r:
             r.raise_for_status()
             with open(outfile, 'wb') as f:
                 for chunk in r.iter_content(chunk_size=8192):

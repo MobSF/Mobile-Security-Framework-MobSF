@@ -3,18 +3,28 @@
 import logging
 import os
 import traceback as tb
+from wsgiref.util import FileWrapper
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from wsgiref.util import FileWrapper
-
-from mobsf.MobSF.utils import make_api_response, sso_email, utcnow
+from mobsf.MobSF.utils import (
+    make_api_response,
+    sso_email,
+    utcnow,
+)
 from mobsf.MobSF.views.helpers import request_method
-from mobsf.MobSF.views.home import (RecentScans, Upload, cyberspect_rescan,
-                                    delete_scan, generate_download,
-                                    get_cyberspect_scan, scan_metadata,
-                                    update_cyberspect_scan, update_scan)
+from mobsf.MobSF.views.home import (
+    RecentScans,
+    Upload,
+    cyberspect_rescan,
+    delete_scan,
+    generate_download,
+    get_cyberspect_scan,
+    scan_metadata,
+    update_cyberspect_scan,
+    update_scan,
+)
 from mobsf.StaticAnalyzer.views.android import view_source
 from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
 from mobsf.StaticAnalyzer.views.ios import view_source as ios_view_source
@@ -85,7 +95,7 @@ def api_scan_metadata(request):
 @csrf_exempt
 def api_scan(request):
     """POST - Scan API."""
-    params = {'cyberspect_scan_id', 'file_name', 'hash', 'scan_type'}
+    params = {'cyberspect_scan_id', 'hash'}
     if set(request.POST).intersection(params) != params:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
@@ -105,8 +115,6 @@ def api_async_scan(request):
         scan_data = {
             'cyberspect_scan_id': csdata['ID'],
             'hash': csdata['MOBSF_MD5'],
-            'scan_type': csdata['SCAN_TYPE'],
-            'file_name': csdata['FILE_NAME'],
             'rescan': request.POST.get('rescan', '0'),
         }
     else:
@@ -188,7 +196,10 @@ def api_pdf_report(request):
     if 'hash' not in request.POST:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
-    resp = pdf(request, api=True)
+    resp = pdf(
+        request,
+        request.POST['hash'],
+        api=True)
     if 'error' in resp:
         if resp.get('error') == 'Invalid scan hash':
             response = make_api_response(resp, 400)
@@ -213,7 +224,11 @@ def api_json_report(request):
     if 'hash' not in request.POST:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
-    resp = pdf(request, api=True, jsonres=True)
+    resp = pdf(
+        request,
+        request.POST['hash'],
+        api=True,
+        jsonres=True)
     if 'error' in resp:
         if resp.get('error') == 'Invalid scan hash':
             response = make_api_response(resp, 400)
@@ -437,28 +452,36 @@ def scan(request_data):
         }
         update_cyberspect_scan(data)
 
-        # APK, Android ZIP and iOS ZIP
         response = None
-        scan_type = request_data['scan_type']
+        metadata = scan_metadata(request_data['hash'])
+        scan_type = metadata['SCAN_TYPE']
         # APK, Source Code (Android/iOS) ZIP, SO, JAR, AAR
         if scan_type in {'xapk', 'apk', 'apks', 'zip', 'so', 'jar', 'aar'}:
-            resp = static_analyzer(request_data, True)
+            resp = static_analyzer(request_data,
+                                   request_data['hash'],
+                                   True)
             if 'type' in resp:
-                resp = static_analyzer_ios(request_data, True)
+                resp = static_analyzer_ios(request_data,
+                                           request_data['hash'],
+                                           True)
             if 'error' in resp:
                 response = make_api_response(resp, 500)
             else:
                 response = make_api_response(resp, 200)
         # IPA
         elif scan_type in {'ipa', 'dylib', 'a'}:
-            resp = static_analyzer_ios(request_data, True)
+            resp = static_analyzer_ios(request_data,
+                                       request_data['hash'],
+                                       True)
             if 'error' in resp:
                 response = make_api_response(resp, 500)
             else:
                 response = make_api_response(resp, 200)
         # APPX
         elif scan_type == 'appx':
-            resp = windows.staticanalyzer_windows(request_data, True)
+            resp = windows.staticanalyzer_windows(request_data,
+                                                  request_data['hash'],
+                                                  True)
             if 'error' in resp:
                 response = make_api_response(resp, 500)
             else:

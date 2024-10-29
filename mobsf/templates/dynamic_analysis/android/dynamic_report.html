@@ -5,7 +5,7 @@
      {% endblock %}
     {% block extra_css %}
     <!-- DataTables -->
-    <link rel="stylesheet" href="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.css" %}">
+    <link href="{% static "datatables/css/datatables.combined.min.css" %}" rel="stylesheet">
      <style type="text/css" media="print">
         @page { size: landscape; }
         @media print {
@@ -260,28 +260,28 @@
                    <div align="center">
                       <p>
                       {% if apimon %}
-                      <a target="_blank" class="btn btn-primary" role="button" href="../live_api/?hash={{ hash }}&amp;package={{ package }}"><i class="fa fa-mobile"></i> API Monitor View</a>
+                      <a target="_blank" class="btn btn-primary" role="button" href="{% url 'live_api' %}?hash={{ hash }}&amp;package={{ package }}"><i class="fa fa-mobile"></i> API Monitor View</a>
                       {% endif %}
                       {% if frida_logs %}
-                          <a target="_blank" class="btn btn-primary" role="button" href="../frida_logs/?hash={{ hash }}&amp;package={{ package }}"><i class="fas fa-spider"></i> Frida Logs View</a>
+                          <a target="_blank" class="btn btn-primary" role="button" href="{% url 'frida_logs' %}?hash={{ hash }}&amp;package={{ package }}"><i class="fas fa-spider"></i> Frida Logs View</a>
                       {% endif %}
-                          <a class="btn btn-success" target="_blank" role="button" href="../httptools?project={{package}}"><i class="fab fa-hire-a-helper"></i> Start HTTPTools</a>
+                          <a class="btn btn-success" target="_blank" role="button" href="{% url 'httptools' %}?project={{package}}"><i class="fab fa-hire-a-helper"></i> Start HTTPTools</a>
                       </p>
                       <p><h6><strong>Raw Logs</strong></h6></p>
                       <p>
                       {% if droidmon %}
-                         <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-x_logcat.txt"><i class="fa fa-mobile"></i> Droidmon API Monitor Logs</a>
+                         <a target="_blank" class="btn btn-primary btn-sm" role="button" href="{% url 'download' %}{{ hash }}-x_logcat.txt"><i class="fa fa-mobile"></i> Droidmon API Monitor Logs</a>
                       {% endif %}
                       {% if apimon %}
-                         <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-api_monitor.txt"><i class="fas fa-water"></i> API Monitor Logs</a>
+                         <a target="_blank" class="btn btn-primary btn-sm" role="button" href="{% url 'download' %}{{ hash }}-api_monitor.txt"><i class="fas fa-water"></i> API Monitor Logs</a>
                       {% endif %}
                       {% if frida_logs %}
-                         <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-frida_out.txt"><i class="fas fa-water"></i> Frida Logs</a>
+                         <a target="_blank" class="btn btn-primary btn-sm" role="button" href="{% url 'download' %}{{ hash }}-frida_out.txt"><i class="fas fa-water"></i> Frida Logs</a>
                       {% endif %}
-                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-web_traffic.txt"><i class="fas fa-water"></i> HTTP(S) Traffic</a>
-                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-logcat.txt"><i class="fas fa-water"></i> Logcat Logs</a>
-                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-dump.txt"><i class="fas fa-water"></i> Dumpsys Logs</a> 
-                      <a class="btn btn-primary btn-sm" role="button" href="../download/{{ hash }}-app_data.tar"><i class="fas fa-download"></i> Application Data</a>
+                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="{% url 'download' %}{{ hash }}-web_traffic.txt"><i class="fas fa-water"></i> HTTP(S) Traffic</a>
+                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="{% url 'download' %}{{ hash }}-logcat.txt"><i class="fas fa-water"></i> Logcat Logs</a>
+                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="{% url 'download' %}{{ hash }}-dump.txt"><i class="fas fa-water"></i> Dumpsys Logs</a> 
+                      <a class="btn btn-primary btn-sm" role="button" href="{% url 'download' %}{{ hash }}-app_data.tar"><i class="fas fa-download"></i> Application Data</a>
                       </p>
                    </div>
                 </div>
@@ -463,7 +463,7 @@
                      <tbody>
                     {% for img, desc in exported_activity_tester.items %}
                         <tr>
-                          <td><img alt="{{desc}}" src="../download/{{ hash }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
+                          <td><img alt="{{desc}}" src="{% url 'download' %}{{ hash }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
                         <td>{{ desc }}</td>
                         </tr>
                     {% endfor %}
@@ -500,7 +500,7 @@
                     <tbody>
                        {% for img, desc in activity_tester.items %}
                           <tr>
-                            <td><img alt="{{desc}}" src="../download/{{ hash }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
+                            <td><img alt="{{desc}}" src="{% url 'download' %}{{ hash }}-screenshots-apk/{{ img }}" class="img-thumbnail" height="300" width="175"></td>
                           <td>{{ desc }}</td>
                           </tr>
                       {% endfor %}
@@ -527,7 +527,7 @@
              </p>
                <div class="list-group">
                       {% for i in screenshots %}
-                        <img alt="Screenshot" src="../download/{{ hash }}-screenshots-apk/{{ i}}" class="img-thumbnail" height="600" width="350">
+                        <img alt="Screenshot" src="{% url 'download' %}{{ hash }}-screenshots-apk/{{ i}}" class="img-thumbnail" height="600" width="350">
                       {% endfor %}
               </div>
               
@@ -862,7 +862,7 @@
                       </thead>
                       <tbody>
                      {% for file in sqlite %}
-                     <tr><td><a href="../dynamic_view_file/?file={{file|key:"file"}}&amp;hash={{hash}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td></tr>
+                     <tr><td><a href="{% url 'dynamic_view_file' %}?file={{file|key:"file"}}&amp;hash={{hash}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td></tr>
                     {% endfor %}
                      </tbody>
                     </table>
@@ -894,7 +894,7 @@
                       </thead>
                       <tbody>
                      {% for file in xml %}
-                     <tr><td><a href="../dynamic_view_file/?file={{file|key:"file"}}&amp;hash={{hash}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td></tr>
+                     <tr><td><a href="{% url 'dynamic_view_file' %}?file={{file|key:"file"}}&amp;hash={{hash}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td></tr>
                     {% endfor %}
                      </tbody>
                     </table>
@@ -926,7 +926,7 @@
                       </thead>
                       <tbody>
                      {% for file in others %}
-                     <tr><td><a href="../dynamic_view_file/?file={{file|key:"file"}}&amp;hash={{hash}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td></tr>
+                     <tr><td><a href="{% url 'dynamic_view_file' %}?file={{file|key:"file"}}&amp;hash={{hash}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td></tr>
                     {% endfor %}
                     </tbody>
                     </table>
@@ -945,25 +945,15 @@
 <!--end new UI-->
 {% block extra_scripts %}
 <!-- DataTables -->
-<script src="{% static "adminlte/plugins/datatables/jquery.dataTables.min.js" %} "></script>
-<script src="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.js" %}"></script>
+<script src="{% static "datatables/js/pdfmake.min.js" %}"></script>
+<script src="{% static "datatables/js/vfs_fonts.js" %}"></script>
+<script src="{% static "datatables/js/datatables.combined.min.js" %}"></script>
+<script src="{% static "others/js/datatables_init.js" %}"></script>
 <script src="{% static "amcharts/core.js" %}"></script>
 <script src="{% static "amcharts/maps.js" %}"></script>
 <script src="{% static "amcharts/worldIndiaLow.js" %}"></script>
 <script src="{% static "amcharts/animated.js" %}"></script>
 <script>
-  $(function () {
-    // Datatable
-    $('table').DataTable({
-      "paging": true,
-      "lengthChange": false,
-      "searching": true,
-      "ordering": true,
-      "info": true,
-      "autoWidth": true,
-      "responsive": true,
-    });
-  });
   // Navbar Active
     $(".nav-link").on("click", function() {
     $(".nav-link").removeClass("active");

@@ -24,7 +24,8 @@ def add_to_recent_scan(data):
     try:
         db_obj = RecentScansDB.objects.filter(MD5=data['hash'])
         if not db_obj.exists():
-            privacy_classification = data['data_privacy_classification']
+            classification = data.get('data_privacy_classification', '')
+            attributes = data.get('data_privacy_attributes', '')
             new_db_obj = RecentScansDB(
                 ANALYZER=data['analyzer'],
                 SCAN_TYPE=data['scan_type'],
@@ -34,16 +35,16 @@ def add_to_recent_scan(data):
                 VERSION_NAME='',
                 MD5=data['hash'],
                 TIMESTAMP=utcnow(),
-                USER_APP_NAME=data['user_app_name'],
-                USER_APP_VERSION=data['user_app_version'],
-                DIVISION=data['division'],
-                ENVIRONMENT=data['environment'],
-                COUNTRY=data['country'],
-                EMAIL=data['email'],
-                USER_GROUPS=data['user_groups'],
-                RELEASE=data['release'],
-                DATA_PRIVACY_CLASSIFICATION=privacy_classification,
-                DATA_PRIVACY_ATTRIBUTES=data['data_privacy_attributes'])
+                USER_APP_NAME=data.get('user_app_name', ''),
+                USER_APP_VERSION=data.get('user_app_version', ''),
+                DIVISION=data.get('division', ''),
+                ENVIRONMENT=data.get('environment', ''),
+                COUNTRY=data.get('country', ''),
+                EMAIL=data.get('email', ''),
+                USER_GROUPS=data.get('user_groups', ''),
+                RELEASE=data.get('release', False),
+                DATA_PRIVACY_CLASSIFICATION=classification,
+                DATA_PRIVACY_ATTRIBUTES=attributes)
 
             new_db_obj.save()
         else:
@@ -55,15 +56,16 @@ def add_to_recent_scan(data):
                                     + data['user_groups'])
             scan.FILE_NAME = data['file_name']
             scan.TIMESTAMP = utcnow()
-            scan.USER_APP_NAME = data['user_app_name']
-            scan.USER_APP_VERSION = data['user_app_version']
-            scan.DIVISION = data['division']
-            scan.ENVIRONMENT = data['environment']
-            scan.COUNTRY = data['country']
-            scan.RELEASE = data['release']
+            scan.USER_APP_NAME = data.get('user_app_name', '')
+            scan.USER_APP_VERSION = data.get('user_app_version', '')
+            scan.DIVISION = data.get('division', '')
+            scan.ENVIRONMENT = data.get('environment', '')
+            scan.COUNTRY = data.get('country', '')
+            scan.RELEASE = data.get('release', '')
             scan.DATA_PRIVACY_CLASSIFICATION = \
-                data['data_privacy_classification']
-            scan.DATA_PRIVACY_ATTRIBUTES = data['data_privacy_attributes']
+                data.get('data_privacy_classification', '')
+            scan.DATA_PRIVACY_ATTRIBUTES = \
+                data.get('data_privacy_attributes', '')
             scan.save()
     except Exception as ex:
         logger.exception('Adding Scan URL to Database')

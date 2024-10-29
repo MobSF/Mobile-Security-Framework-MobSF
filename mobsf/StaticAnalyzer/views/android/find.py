@@ -2,7 +2,6 @@
 """Find in java or smali files."""
 
 import logging
-import re
 import json
 from pathlib import Path
 
@@ -10,7 +9,10 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.utils.html import escape
 
-from mobsf.MobSF.utils import error_response
+from mobsf.MobSF.utils import (
+    is_md5,
+    print_n_send_error_response,
+)
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     find_java_source_folder,
 )
@@ -21,17 +23,17 @@ logger = logging.getLogger(__name__)
 def run(request):
     """Find filename/content in source files (ajax response)."""
     try:
-        match = re.match('^[0-9a-f]{32}$', request.POST['md5'])
-        if not match:
-            raise ValueError('Invalid MD5 hash')
+        if not is_md5(request.POST['md5']):
+            raise ValueError('Invalid Hash')
         md5 = request.POST['md5']
         query = request.POST['q']
         code = request.POST['code']
         search_type = request.POST['search_type']
         if search_type not in ['content', 'filename']:
-            return error_response(request,
-                                  'Unknown search type',
-                                  True)
+            return print_n_send_error_response(
+                request,
+                'Unknown search type',
+                True)
         matches = set()
         base = Path(settings.UPLD_DIR) / md5
         if code == 'smali':
@@ -41,7 +43,7 @@ def run(request):
                 src = find_java_source_folder(base)[0]
             except StopIteration:
                 msg = 'Invalid Directory Structure'
-                return error_response(request, msg, True)
+                return print_n_send_error_response(request, msg, True)
 
         exts = ['.java', '.kt', '.smali']
         files = [p for p in src.rglob('*') if p.suffix in exts]
@@ -69,7 +71,7 @@ def run(request):
         return JsonResponse(json.dumps(context), safe=False)
     except Exception:
         logger.exception('Searching Failed')
-        return error_response(
+        return print_n_send_error_response(
             request,
             'Searching Failed',
             True)

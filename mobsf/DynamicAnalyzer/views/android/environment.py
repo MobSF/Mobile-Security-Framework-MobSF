@@ -2,12 +2,12 @@
 """Dynamic Analyzer Helpers."""
 import logging
 import os
-import re
 import shutil
 import subprocess
 import tempfile
 import threading
 import time
+from base64 import b64encode
 from hashlib import md5
 
 from django.conf import settings
@@ -83,7 +83,7 @@ class Environment:
         if not self.identifier:
             return False
         self.adb_command(['kill-server'])
-        self.adb_command(['start-server'])
+        self.adb_command(['start-server'], False, True)
         logger.info('ADB Restarted')
         self.wait(2)
         logger.info('Connecting to Android %s', self.identifier)
@@ -191,9 +191,8 @@ class Environment:
         """HTTPS Proxy."""
         self.install_mobsf_ca('install')
         proxy_port = settings.PROXY_PORT
-        logger.info('Starting HTTPs Proxy on %s', proxy_port)
-        httptools_url = get_http_tools_url(request)
-        stop_httptools(httptools_url)
+        logger.info('Starting HTTPS Proxy on %s', proxy_port)
+        stop_httptools(get_http_tools_url(request))
         start_proxy(proxy_port, project)
 
     def install_mobsf_ca(self, action):
@@ -306,47 +305,25 @@ class Environment:
                 'opensecurity.clipdump/.ClipDumper']
         self.adb_command(args, True)
 
-    def get_screen_res(self):
-        """Get Screen Resolution of Android Instance."""
-        logger.info('Getting screen resolution')
-        try:
-            resp = self.adb_command(['dumpsys', 'window'], True)
-            scn_rgx = re.compile(r'mUnrestrictedScreen=\(0,0\) .*')
-            scn_rgx2 = re.compile(r'mUnrestricted=\[0,0\]\[.*\]')
-            match = scn_rgx.search(resp.decode('utf-8'))
-            if match:
-                screen_res = match.group().split(' ')[1]
-                width, height = screen_res.split('x', 1)
-                return width, height
-            match = scn_rgx2.search(resp.decode('utf-8'))
-            if match:
-                res = match.group().split('][')[1].replace(']', '')
-                width, height = res.split(',', 1)
-                return width, height
-            else:
-                logger.error('Error getting screen resolution')
-        except Exception:
-            logger.exception('Getting screen resolution')
-        return '1440', '2560'
-
     def screen_shot(self, outfile):
         """Take Screenshot."""
         self.adb_command(['screencap',
                           '-p',
-                          '/data/local/screen.png'], True)
+                          '/data/local/screen.png'], True, True)
         self.adb_command(['pull',
                           '/data/local/screen.png',
-                          outfile])
+                          outfile], False, True)
 
     def screen_stream(self):
         """Screen Stream."""
         self.adb_command(['screencap',
                           '-p',
                           '/data/local/stream.png'],
-                         True)
-        self.adb_command(['pull',
-                          '/data/local/stream.png',
-                          '{}screen.png'.format(settings.SCREEN_DIR)])
+                         True, True)
+        out = self.adb_command(['cat', '/data/local/stream.png'], True, True)
+        if out:
+            return b64encode(out).decode('utf-8')
+        return ''
 
     def android_component(self, bin_hash, comp):
         """Get APK Components."""
@@ -372,18 +349,20 @@ class Environment:
     def get_environment(self):
         """Identify the environment."""
         out = self.adb_command(['getprop',
-                                'ro.boot.serialno'], True)
+                                'ro.boot.serialno'], True, False)
         out += self.adb_command(['getprop',
-                                 'ro.serialno'], True)
+                                 'ro.serialno'], True, False)
         out += self.adb_command(['getprop',
-                                 'ro.build.user'], True)
+                                 'ro.build.user'], True, False)
         out += self.adb_command(['getprop',
-                                 'ro.manufacturer.geny-def'], True)
+                                 'ro.manufacturer.geny-def'],
+                                True, False)
         out += self.adb_command(['getprop',
-                                 'ro.product.manufacturer.geny-def'], True)
+                                 'ro.product.manufacturer.geny-def'],
+                                True, False)
         ver = self.adb_command(['getprop',
                                 'ro.genymotion.version'],
-                               True).decode('utf-8', 'ignore')
+                               True, False).decode('utf-8', 'ignore')
         if b'EMULATOR' in out:
             logger.info('Found Android Studio Emulator')
             return 'emulator'
@@ -404,7 +383,8 @@ class Environment:
     def get_android_version(self):
         """Get Android version."""
         out = self.adb_command(['getprop',
-                                'ro.build.version.release'], True)
+                                'ro.build.version.release'],
+                               True, False)
         and_version = out.decode('utf-8').rstrip()
         if and_version.count('.') > 1:
             and_version = and_version.rsplit('.', 1)[0]
@@ -582,13 +562,6 @@ class Environment:
         create_ca()
         # Install MITM RootCA
         self.install_mobsf_ca('install')
-        # Install MobSF Agents
-        mobsf_agents = 'onDevice/mobsf_agents/'
-        clip_dump = os.path.join(self.tools_dir,
-                                 mobsf_agents,
-                                 'ClipDump.apk')
-        logger.info('Installing MobSF Clipboard Dumper')
-        self.adb_command(['install', '-r', clip_dump])
         if agent == 'frida':
             agent_file = '.mobsf-f'
             agent_str = self.frida_str
@@ -605,6 +578,12 @@ class Environment:
         """Setup Xposed."""
         xposed_dir = 'onDevice/xposed/'
         xposed_modules = xposed_dir + 'modules/'
+        # Install MobSF Agents for Xposed
+        clip_dump_apk = os.path.join(self.tools_dir,
+                                     xposed_dir,
+                                     'ClipDump.apk')
+        logger.info('Installing MobSF Clipboard Dumper')
+        self.adb_command(['install', '-r', clip_dump_apk])
         if android_version < 5:
             logger.info('Installing Xposed for Kitkat and below')
             xposed_apk = os.path.join(self.tools_dir,

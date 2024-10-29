@@ -10,7 +10,7 @@
   pattern: getSystemService
   input_case: exact
   severity: info
-- id: api_get_system_service
+- id: api_get_running_app_processes
   message: Get Running App Processes
   type: Regex
   pattern: getRunningAppProcesses\(
@@ -24,6 +24,10 @@
     - java\.security\.ClassLoader
     - java\.net\.URLClassLoader
     - java\.security\.SecureClassLoader
+    - \.loadClass\(
+    - PathClassLoader\(
+    - DexClassLoader\(
+    - InMemoryDexClassLoader\(
   input_case: exact
   severity: info
 - id: api_java_reflection
@@ -42,6 +46,10 @@
     - javax\.crypto
     - kalium\.crypto
     - bouncycastle\.crypto
+    - EncryptedFile\.FileEncryptionScheme
+    - MessageDigest\.getInstance\(
+    - Signature\.getInstance\(
+    - Cipher\.getInstance\(
   input_case: exact
   severity: info
 - id: api_start_activity
@@ -74,18 +82,24 @@
   type: RegexOr
   pattern:
     - OpenFileOutput
+    - OpenFileInput
+    - openFileInput
+    - openFileOutput
     - getSharedPreferences
     - SharedPreferences\.Editor
     - getCacheDir
     - getExternalStorageState
     - openOrCreateDatabase
+    - new File\(
+    - import java\.io\.
+    - import java\.nio\.file
+    - import java\.util\.Scanner
   input_case: exact
   severity: info
 - id: api_ipc
   message: Inter Process Communication
   type: RegexOr
   pattern:
-    - IRemoteService
     - IRemoteService\.Stub
     - IBinder
     - Intent
@@ -135,7 +149,7 @@
   message: Execute OS Command
   type: RegexAnd
   pattern:
-    - getRuntime\(\)\.exec\(
+    - \.exec\(
     - getRuntime\(
   input_case: exact
   severity: info
@@ -443,5 +457,17 @@
   message: Certificate Handling
   type: Regex
   pattern: \.SSLSocketFactory
+  input_case: exact
+  severity: info
+- id: api_javascript_interface_methods
+  message: JavaScript Interface Methods
+  type: Regex
+  pattern: \@JavascriptInterface|\@android\.webkit\.JavascriptInterface
+  input_case: exact
+  severity: info
+- id: api_passkeys
+  message: Passkeys
+  type: Regex
+  pattern: CredentialManager\.create\(|GetPublicKeyCredentialOption\(|\.getAuthenticationResponseJson\(|CreatePublicKeyCredentialRequest\(
   input_case: exact
   severity: info

@@ -46,7 +46,7 @@
       
      <div class="app">
       {% if app_type not in 'Dylib,A' %}
-      <img class="center" id="icon" src="{% if not appstore_details.error %}{{appstore_details.icon}}{% elif icon_found %}{{dwd_dir}}{{ md5 }}-icon.png{% else %}{{base_url}}{% static 'img/no_icon.png' %}{% endif %}" alt="app_icon"/>
+      <img class="center" id="icon" src="{% if not appstore_details.error %}{{appstore_details.icon}}{% elif icon_path %}{{dwd_dir}}{{ icon_path }}{% else %}{{base_url}}{% static 'img/no_icon.png' %}{% endif %}" alt="app_icon"/>
       {% else %}
       <img class="center" id="icon" src="{{base_url}}{% static 'img/no_icon.png' %}" alt="app_icon"/>
       {% endif %}
@@ -516,14 +516,14 @@
                 </tbody>
                     </table>
         {% endif %}
-
-    {% if dylib_analysis and app_type not in 'A' %}
-        <h2><i class="fa fa-flag"></i> DYNAMIC LIBRARY BINARY ANALYSIS</h2>
+  {% if app_type not in 'A' %}
+    {% if dylib_analysis or framework_analysis %}
+        <h2><i class="fa fa-flag"></i> DYNAMIC LIBRARY & FRAMEWORK BINARY ANALYSIS</h2>
         <table class="basic">
                 <thead>
                     <tr>
                         <th>NO</th>
-                        <th>DYLIB</th>
+                        <th>DYLIB/FRAMEWORK</th>
                         <th>NX</th>
                         <th>STACK CANARY</th>
                         <th>ARC</th>
@@ -537,7 +537,7 @@
           {% for dy in dylib_analysis %}
           <tr>
             <td>{{ forloop.counter }}</td>
-            <td>{{dy.name}}</td>
+            <td>{{dy.name | relative_path}}</td>
             <td><b>{{dy.nx.has_nx}}</b>
               <br/>
               <span class="{% if dy.nx.severity == 'high' %}danger{% elif dy.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.nx.severity}}</span><br/>
@@ -568,10 +568,44 @@
               <br/>{{dy.symbol.description}}</td>
           </tr>
           {% endfor %}
+          {% for frm in framework_analysis %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{frm.name}}</td>
+        <td><b>{{frm.nx.has_nx}}</b>
+          <br/>
+          <span class="{% if frm.nx.severity == 'high' %}danger{% elif frm.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{frm.nx.severity}}</span><br/>
+          <br/>{{frm.nx.description}}</td>
+        <td><b>{{frm.stack_canary.has_canary}}</b>
+            <br/>
+            <span class="{% if frm.stack_canary.severity == 'high' %}danger{% elif frm.stack_canary.severity == 'warning' %}warning{% else %}info{% endif %}">{{frm.stack_canary.severity}}</span><br/>
+            <br/>{{frm.stack_canary.description}}</td>
+        <td><b>{{frm.arc.has_arc}}</b>
+          <br/>
+          <span class="{% if frm.arc.severity == 'high' %}danger{% elif frm.arc.severity == 'warning' %}warning{% else %}info{% endif %}">{{frm.arc.severity}}</span><br/>
+          <br/>{{frm.arc.description}}</td>
+        <td><b>{{frm.rpath.has_rpath}}</b>
+          <br/>
+          <span class="{% if frm.rpath.severity == 'high' %}danger{% elif frm.rpath.severity == 'warning' %}warning{% else %}info{% endif %}">{{frm.rpath.severity}}</span><br/>
+          <br/>{{frm.rpath.description}}</td>
+        <td><b>{{frm.code_signature.has_code_signature}}</b>
+            <br/>
+            <span class="{% if frm.code_signature.severity == 'high' %}danger{% elif frm.code_signature.severity == 'warning' %}warning{% else %}info{% endif %}">{{frm.code_signature.severity}}</span><br/>
+            <br/>{{frm.code_signature.description}}</td>
+        <td><b>{{frm.encrypted.is_encrypted}}</b>
+            <br/>
+            <span class="{% if frm.encrypted.severity == 'high' %}danger{% elif frm.encrypted.severity == 'warning' %}warning{% else %}info{% endif %}">{{frm.encrypted.severity}}</span><br/>
+            <br/>{{frm.encrypted.description}}</td>
+        <td><b>{{frm.symbol.is_stripped}}</b>
+          <br/>
+          <span class="{% if frm.symbol.severity == 'high' %}danger{% elif frm.symbol.severity == 'warning' %}warning{% else %}info{% endif %}">{{frm.symbol.severity}}</span><br/>
+          <br/>{{frm.symbol.description}}</td>
+      </tr>
+      {% endfor %}
                   </tbody>
                   </table>
     {% endif %}
-
+  {% endif %}
 <!--static library-->
 {% if app_type in 'A' %}
   <h2><i class="fa fa-flag"></i> STATIC LIBRARY BINARY ANALYSIS</h2>

@@ -21,12 +21,22 @@ import requests
 import arpy
 
 from django.utils.html import escape
+from django.http import HttpResponseRedirect
 
 from mobsf.MobSF import settings
 from mobsf.MobSF.utils import (
-    error_response,
+    EMAIL_REGEX,
+    STRINGS_REGEX,
+    URL_REGEX,
     is_md5,
+    is_safe_path,
+    print_n_send_error_response,
     upstream_proxy,
+    valid_host,
+)
+from mobsf.MobSF.views.scanning import (
+    add_to_recent_scan,
+    handle_uploaded_file,
 )
 from mobsf.StaticAnalyzer.views.comparer import (
     generic_compare,
@@ -37,17 +47,6 @@ from mobsf.StaticAnalyzer.views.common.entropy import (
 
 
 logger = logging.getLogger(__name__)
-# Regex to capture strings between quotes or <string> tag
-STRINGS_REGEX = re.compile(r'(?<=\")(.+?)(?=\")|(?<=\<string>)(.+?)(?=\<)')
-# MobSF Custom regex to catch maximum URI like strings
-URL_REGEX = re.compile(
-    (
-        r'((?:https?://|s?ftps?://|'
-        r'file://|javascript:|data:|www\d{0,3}[.])'
-        r'[\w().=/;,#:@?&~*+!$%\'{}-]+)'
-    ),
-    re.UNICODE)
-EMAIL_REGEX = re.compile(r'[\w.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
 
 
 def hash_gen(app_path) -> tuple:
@@ -224,11 +223,11 @@ def url_n_email_extract(dat, relative_path):
 def compare_apps(request, hash1: str, hash2: str, api=False):
     if hash1 == hash2:
         error_msg = 'Results with same hash cannot be compared'
-        return error_response(request, error_msg, api)
+        return print_n_send_error_response(request, error_msg, api)
     # Second Validation for REST API
     if not (is_md5(hash1) and is_md5(hash2)):
         error_msg = 'Invalid hashes'
-        return error_response(request, error_msg, api)
+        return print_n_send_error_response(request, error_msg, api)
     logger.info(
         'Starting App compare for %s and %s', hash1, hash2)
     return generic_compare(request, hash1, hash2, api)
@@ -256,6 +255,9 @@ def get_avg_cvss(findings):
 def open_firebase(url):
     # Detect Open Firebase Database
     try:
+        if not valid_host(url):
+            logger.warning('Invalid Firebase URL')
+            return url, False
         purl = urlparse(url)
         base_url = '{}://{}/.json'.format(purl.scheme, purl.netloc)
         proxies, verify = upstream_proxy('https')
@@ -361,20 +363,58 @@ def strings_and_entropies(src, exts):
     return data
 
 
-def get_os_strings(filename):
-    try:
-        strings_bin = shutil.which('strings')
-        if not strings_bin:
-            return None
-        strings = subprocess.check_output([strings_bin, filename])
-        return strings.decode('utf-8', 'ignore').splitlines()
-    except Exception:
-        return None
-
-
 def get_symbols(symbols):
     all_symbols = []
     for i in symbols:
         for _, val in i.items():
             all_symbols.extend(val)
     return list(set(all_symbols))
+
+
+def scan_library(request, checksum):
+    """Scan a shared library or framework from path name."""
+    try:
+        libchecksum = None
+        if not is_md5(checksum):
+            return print_n_send_error_response(
+                request,
+                'Invalid MD5')
+        relative_path = request.GET['library']
+        lib_dir = Path(settings.UPLD_DIR) / checksum
+
+        sfile = lib_dir / relative_path
+        if not is_safe_path(lib_dir.as_posix(), sfile.as_posix()):
+            msg = 'Path Traversal Detected!'
+            return print_n_send_error_response(request, msg)
+        ext = sfile.suffix
+        if not ext and 'Frameworks' in relative_path:
+            # Force Dylib on Frameworks
+            ext = '.dylib'
+        if not sfile.exists():
+            msg = 'Library File not found'
+            return print_n_send_error_response(request, msg)
+        with open(sfile, 'rb') as f:
+            libchecksum = handle_uploaded_file(f, ext, None)
+        if ext in ('.ipa', '.dylib', '.a'):
+            static_analyzer = 'static_analyzer_ios'
+        elif ext == '.appx':
+            # Not applicable, but still set it
+            static_analyzer = 'windows_static_analyzer'
+        elif ext in ('.zip', '.so', '.jar', '.aar', '.apk', '.xapk'):
+            static_analyzer = 'static_analyzer'
+        else:
+            msg = 'Extension not supported'
+            return print_n_send_error_response(request, msg)
+        data = {
+            'analyzer': static_analyzer,
+            'status': 'success',
+            'hash': libchecksum,
+            'scan_type': ext.replace('.', ''),
+            'file_name': sfile.name,
+        }
+        add_to_recent_scan(data)
+        return HttpResponseRedirect(f'/{static_analyzer}/{libchecksum}/')
+    except Exception:
+        msg = 'Failed to perform Static Analysis of library'
+        logger.exception(msg)
+        return print_n_send_error_response(request, msg)

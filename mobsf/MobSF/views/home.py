@@ -28,13 +28,14 @@ from django.views.decorators.http import require_http_methods
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
     api_key,
-    error_response,
+    get_md5,
     get_siphash,
     is_admin,
     is_dir_exists,
     is_file_exists,
     is_safe_path,
     key,
+    print_n_send_error_response,
     sso_email,
     tz,
     utcnow,
@@ -143,7 +144,7 @@ class Upload(object):
             msg = str(exp)
             exp_doc = exp.__doc__
             self.track_failure(msg)
-            return error_response(request, msg, True, exp_doc)
+            return print_n_send_error_response(request, msg, True, exp_doc)
 
     def upload_api(self):
         """API File Upload."""
@@ -214,12 +215,13 @@ class Upload(object):
 def api_docs(request):
     """Api Docs Route."""
     if (not is_admin(request)):
-        return error_response(request, 'Unauthorized')
+        return print_n_send_error_response(request, 'Unauthorized')
 
     context = {
-        'title': 'REST API Docs',
+        'title': 'API Docs',
         'api_key': api_key(),
         'version': settings.MOBSF_VER,
+        'is_admin': True,
     }
     template = 'general/apidocs.html'
     return render(request, template, context)
@@ -280,6 +282,16 @@ def zip_format(request):
     return render(request, template, context)
 
 
+def dynamic_analysis(request):
+    """Dynamic Analysis Landing."""
+    context = {
+        'title': 'Dynamic Analysis',
+        'version': settings.MOBSF_VER,
+    }
+    template = 'general/dynamic.html'
+    return render(request, template, context)
+
+
 def not_found(request):
     """Not Found Route."""
     context = {
@@ -314,16 +326,28 @@ def recent_scans(request):
 
     recentscans = db_obj.values()
     android = StaticAnalyzerAndroid.objects.all()
+    ios = StaticAnalyzerIOS.objects.all()
+    updir = Path(settings.UPLD_DIR)
+    icon_mapping = {}
     package_mapping = {}
     for item in android:
         package_mapping[item.MD5] = item.PACKAGE_NAME
+        icon_mapping[item.MD5] = item.ICON_PATH
+    for item in ios:
+        icon_mapping[item.MD5] = item.ICON_PATH
     for entry in recentscans:
         if entry['MD5'] in package_mapping.keys():
             entry['PACKAGE'] = package_mapping[entry['MD5']]
         else:
             entry['PACKAGE'] = ''
-        logcat = Path(settings.UPLD_DIR) / entry['MD5'] / 'logcat.txt'
-        entry['DYNAMIC_REPORT_EXISTS'] = logcat.exists()
+        entry['ICON_PATH'] = icon_mapping.get(entry['MD5'], '')
+        if entry['FILE_NAME'].endswith('.ipa'):
+            entry['BUNDLE_HASH'] = get_md5(
+                entry['PACKAGE_NAME'].encode('utf-8'))
+            report_file = updir / entry['BUNDLE_HASH'] / 'mobsf_dump_file.txt'
+        else:
+            report_file = updir / entry['MD5'] / 'logcat.txt'
+        entry['DYNAMIC_REPORT_EXISTS'] = report_file.exists()
         entry['CAN_RELEASE'] = (utcnow()
                                 < entry['TIMESTAMP']
                                 + datetime.timedelta(days=30))
@@ -366,9 +390,6 @@ def get_cyberspect_scan(csid):
     db_obj = CyberspectScans.objects.filter(ID=csid).first()
     if db_obj:
         cs_obj = model_to_dict(db_obj)
-        rs_obj = scan_metadata(cs_obj['MOBSF_MD5'])
-        cs_obj['SCAN_TYPE'] = rs_obj['SCAN_TYPE'] if rs_obj else None
-        cs_obj['FILE_NAME'] = rs_obj['FILE_NAME'] if rs_obj else None
         return cs_obj
     return None
 
@@ -433,9 +454,9 @@ def update_scan(request, api=False):
         msg = str(exp)
         exp_doc = exp.__doc__
         if api:
-            return error_response(request, msg, True, exp_doc)
+            return print_n_send_error_response(request, msg, True, exp_doc)
         else:
-            return error_response(request, msg, False, exp_doc)
+            return print_n_send_error_response(request, msg, False, exp_doc)
 
 
 def update_cyberspect_scan(data):
@@ -531,14 +552,14 @@ def search(request):
         db_obj = RecentScansDB.objects.filter(MD5=md5)
         if db_obj.exists():
             e = db_obj[0]
-            url = (f'/{e.ANALYZER }/?file_name={e.FILE_NAME}&'
-                   f'hash={e.MD5}&scan_type={e.SCAN_TYPE}')
+            url = f'/{e.ANALYZER }/{e.MD5}/'
             return HttpResponseRedirect(url)
         else:
             return HttpResponseRedirect('/not_found/')
-    return error_response(request,
-                          'The Scan ID provided is invalid. Please provide a'
-                          + ' valid 32 character alphanumeric value.')
+    return print_n_send_error_response(
+        request,
+        'The Scan ID provided is invalid. Please provide a'
+        + ' valid 32 character alphanumeric value.')
 
 
 @require_http_methods(['GET'])
@@ -591,7 +612,7 @@ def download(request):
         # Security Checks
         if '../' in filename or not is_safe_path(root, dwd_file):
             msg = 'Path Traversal Attack Detected'
-            return error_response(request, msg)
+            return print_n_send_error_response(request, msg)
         ext = os.path.splitext(filename)[1]
         if ext in allowed_exts:
             if os.path.isfile(dwd_file):
@@ -620,7 +641,7 @@ def generate_download(request, api=False):
                 or file_type not in exts + source):
             msg = 'Invalid download type or hash'
             logger.exception(msg)
-            return error_response(request, msg)
+            return print_n_send_error_response(request, msg)
         app_dir = Path(settings.UPLD_DIR) / md5
         dwd_dir = Path(settings.DWD_DIR)
         file_name = ''
@@ -650,7 +671,7 @@ def generate_download(request, api=False):
     except Exception as exp:
         exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
         logger.error(exmsg)
-        return error_response(request, str(exp), api)
+        return print_n_send_error_response(request, str(exp), api)
 
 
 def delete_scan(request, api=False):
@@ -695,9 +716,9 @@ def delete_scan(request, api=False):
         msg = str(exp)
         exp_doc = exp.__doc__
         if api:
-            return error_response(request, msg, True, exp_doc)
+            return print_n_send_error_response(request, msg, True, exp_doc)
         else:
-            return error_response(request, msg, False, exp_doc)
+            return print_n_send_error_response(request, msg, False, exp_doc)
 
 
 def cyberspect_rescan(apphash, scheduled, sso_user):

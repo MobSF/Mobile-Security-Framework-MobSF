@@ -2,22 +2,20 @@
 import io
 import logging
 import os
-import re
 import shutil
-import tarfile
 from json import load
 from pathlib import Path
 
 from mobsf.MobSF.utils import (
-    clean_filename,
     is_file_exists,
-    is_pipe_or_link,
     python_list,
 )
-from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
-from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
-    MalwareDomainCheck,
+from mobsf.DynamicAnalyzer.views.common.shared import (
+    extract_urls_domains_emails,
+    get_app_files,
 )
+from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
+
 
 logger = logging.getLogger(__name__)
 
@@ -30,40 +28,28 @@ def run_analysis(apk_dir, md5_hash, package):
     clipboard = []
     # Collect Log data
     data = get_log_data(apk_dir, package)
-    clip_tag = 'I/CLIPDUMP-INFO-LOG'
-    clip_tag2 = 'I CLIPDUMP-INFO-LOG'
-    # Collect Clipboard
-    for log_line in data['logcat']:
-        if clip_tag in log_line:
-            clipboard.append(log_line.replace(clip_tag, 'Process ID '))
-        if clip_tag2 in log_line:
-            log_line = log_line.split(clip_tag2)[1]
-            clipboard.append(log_line)
-    # URLs My Custom regex
-    url_pattern = re.compile(
-        r'((?:https?://|s?ftps?://|file://|'
-        r'javascript:|data:|www\d{0,3}'
-        r'[.])[\w().=/;,#:@?&~*+!$%\'{}-]+)', re.UNICODE)
-    urls = re.findall(url_pattern, data['traffic'].lower())
-    if urls:
-        urls = list(set(urls))
+    clip = Path(apk_dir) / 'mobsf_app_clipboard.txt'
+    if clip.exists():
+        clipboard = clip.read_text('utf-8', 'ignore').split('\n')
     else:
-        urls = []
-    # Domain Extraction and Malware Check
-    logger.info('Performing Malware Check on extracted Domains')
-    domains = MalwareDomainCheck().scan(urls)
-
-    # Email Etraction Regex
-    emails = []
-    regex = re.compile(r'[\w.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
-    for email in regex.findall(data['traffic'].lower()):
-        if (email not in emails) and (not email.startswith('//')):
-            emails.append(email)
+        # For Xposed
+        clip_tag = 'I/CLIPDUMP-INFO-LOG'
+        clip_tag2 = 'I CLIPDUMP-INFO-LOG'
+        # Collect Clipboard
+        for log_line in data['logcat']:
+            if clip_tag in log_line:
+                clipboard.append(
+                    log_line.replace(clip_tag, 'Process ID '))
+            if clip_tag2 in log_line:
+                log_line = log_line.split(clip_tag2)[1]
+                clipboard.append(log_line)
+    urls, domains, emails = extract_urls_domains_emails(
+        data['traffic'].lower())
     # Tar dump and fetch files
-    all_files = get_app_files(apk_dir, md5_hash, package)
+    all_files = get_app_files(apk_dir, package)
     analysis_result['urls'] = urls
     analysis_result['domains'] = domains
-    analysis_result['emails'] = emails
+    analysis_result['emails'] = list(emails)
     analysis_result['clipboard'] = clipboard
     analysis_result['xml'] = all_files['xml']
     analysis_result['sqlite'] = all_files['sqlite']
@@ -172,81 +158,6 @@ def get_log_data(apk_dir, package):
                + apimon_data + frida_logs)
     return {'logcat': logcat_data,
             'traffic': traffic}
-
-
-def safe_paths(tar_meta):
-    """Safe filenames in windows."""
-    for fh in tar_meta:
-        fh.name = clean_filename(fh.name)
-        yield fh
-
-
-def get_app_files(apk_dir, md5_hash, package):
-    """Get files from device."""
-    logger.info('Getting app files')
-    all_files = {'xml': [], 'sqlite': [], 'others': []}
-    # Extract Device Data
-    tar_loc = os.path.join(apk_dir, package + '.tar')
-    untar_dir = os.path.join(apk_dir, 'DYNAMIC_DeviceData/')
-    if not is_file_exists(tar_loc):
-        return all_files
-    if os.path.exists(untar_dir):
-        # fix for permission errors
-        shutil.rmtree(untar_dir)
-    try:
-        with tarfile.open(tar_loc, errorlevel=1) as tar:
-
-            def is_within_directory(directory, target):
-                abs_directory = os.path.abspath(directory)
-                abs_target = os.path.abspath(target)
-                prefix = os.path.commonprefix([abs_directory, abs_target])
-                return prefix == abs_directory
-
-            def safe_extract(tar, path='.',
-                             members=None,
-                             *,
-                             numeric_owner=False):
-                for member in tar.getmembers():
-                    member_path = os.path.join(path, member.name)
-                    if not is_within_directory(path, member_path):
-                        raise Exception('Attempted Path Traversal in Tar File')
-                tar.extractall(path, members, numeric_owner=numeric_owner)
-
-            safe_extract(tar, untar_dir, members=safe_paths(tar))
-    except FileExistsError:
-        pass
-    except Exception:
-        logger.exception('Tar extraction failed')
-    # Do Static Analysis on Data from Device
-    try:
-        if not os.path.exists(untar_dir):
-            os.makedirs(untar_dir)
-        for dir_name, _, files in os.walk(untar_dir):
-            for jfile in files:
-                file_path = os.path.join(untar_dir, dir_name, jfile)
-                fileparam = file_path.replace(untar_dir, '')
-                if is_pipe_or_link(file_path):
-                    continue
-                if jfile == 'lib':
-                    pass
-                else:
-                    if jfile.endswith('.xml'):
-                        all_files['xml'].append(
-                            {'type': 'xml', 'file': fileparam})
-                    else:
-                        with open(file_path,  # lgtm [py/path-injection]
-                                  'r',
-                                  encoding='ISO-8859-1') as flip:
-                            file_cnt_sig = flip.read(6)
-                        if file_cnt_sig == 'SQLite':
-                            all_files['sqlite'].append(
-                                {'type': 'db', 'file': fileparam})
-                        elif not jfile.endswith('.DS_Store'):
-                            all_files['others'].append(
-                                {'type': 'others', 'file': fileparam})
-    except Exception:
-        logger.exception('Getting app files')
-    return all_files
 
 
 def generate_download(apk_dir, md5_hash, download_dir, package):

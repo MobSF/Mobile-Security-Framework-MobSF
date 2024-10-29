@@ -112,9 +112,13 @@ def a_analysis(request, app_dict, rescan, api):
                 'subarch': '',
             },
             'bin_type': 'A',
+            'framework_analysis': {},
         }
         # Analyze static library
-        slib = library_analysis(app_dict['bin_dir'], 'ar')
+        slib = library_analysis(
+            app_dict['bin_dir'],
+            app_dict['md5_hash'],
+            'ar')
         bin_dict['bin_info']['arch'] = slib['ar_a']
         bin_dict['dylib_analysis'] = slib['ar_analysis']
         # Store Symbols in File Analysis
@@ -125,8 +129,6 @@ def a_analysis(request, app_dict, rescan, api):
             bin_dict['bin_code_analysis'],
             all_files['special_files'],
             b'')
-        # Get Icon
-        app_dict['icon_found'] = False
         # Extract String metadata
         code_dict = get_strings_metadata(
             app_dict,

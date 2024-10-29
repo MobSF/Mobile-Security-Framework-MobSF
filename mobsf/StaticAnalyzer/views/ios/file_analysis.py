@@ -2,9 +2,9 @@
 """iOS File Analysis."""
 
 import os
-import re
 import shutil
 import logging
+from pathlib import Path
 
 from django.utils.html import escape
 
@@ -39,15 +39,15 @@ def ios_list_files(src, md5_hash, binary_form, mode):
                     fileparam = file_path.replace(src, '')
                     filez.append(fileparam)
                     full_paths.append(file_path)
-                    ext = jfile.split('.')[-1]
-                    if re.search(r'cer|pem|cert|crt|pub|key|pfx|p12|der', ext):
+                    ext = Path(jfile).suffix
+                    if ext in ('.cer', '.pem', '.cert', '.crt',
+                               '.pub', '.key', '.pfx', '.p12', '.der'):
                         certz.append({
                             'file_path': escape(file_path.replace(src, '')),
                             'type': None,
                             'hash': None,
                         })
-
-                    if re.search(r'^db$|^sqlitedb$|^sqlite$', ext):
+                    if ext in ('.db', '.sqlitedb', '.sqlite', '.sqlite3'):
                         database.append({
                             'file_path': escape(fileparam),
                             'type': mode,

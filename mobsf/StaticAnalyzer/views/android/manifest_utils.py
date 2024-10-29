@@ -64,10 +64,11 @@ def get_manifest_apk(app_path, app_dir, tools_dir):
                 and is_file_exists(settings.APKTOOL_BINARY)):
             apktool_path = settings.APKTOOL_BINARY
         else:
-            apktool_path = os.path.join(tools_dir, 'apktool_2.8.1.jar')
+            apktool_path = os.path.join(tools_dir, 'apktool_2.9.3.jar')
         output_dir = os.path.join(app_dir, 'apktool_out')
         args = [find_java_binary(),
                 '-jar',
+                '-Djdk.util.zip.disableZip64ExtraFieldValidation=true',
                 apktool_path,
                 '--match-original',
                 '--frame-path',
@@ -82,9 +83,9 @@ def get_manifest_apk(app_path, app_dir, tools_dir):
             return manifest
         logger.info('Converting AXML to XML')
         subprocess.check_output(args)  # User input is MD5 and validated
-        return manifest
     except Exception:
         logger.exception('Getting Manifest file')
+    return manifest
 
 
 def get_xml_namespace(xml_str):
@@ -135,6 +136,8 @@ def get_manifest(app_path, app_dir, tools_dir, typ):
         logger.info('Parsing AndroidManifest.xml')
         xml_str = mfile.read_text('utf-8', 'ignore')
         ns = get_xml_namespace(xml_str)
+        if ns and ns == 'xmlns':
+            ns = 'android'
         if ns and ns != 'android':
             logger.warning('Non standard XML namespace: %s', ns)
         try:

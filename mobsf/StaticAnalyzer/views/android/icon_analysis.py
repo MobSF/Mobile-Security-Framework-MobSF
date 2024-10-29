@@ -11,20 +11,19 @@ import subprocess
 
 from lxml import etree
 
-from androguard.core.bytecodes import (
-    axml,
-)
-
 from django.conf import settings
 
 from mobsf.MobSF.utils import (
     find_java_binary,
     is_file_exists,
+    is_path_traversal,
+)
+from mobsf.StaticAnalyzer.tools.androguard4 import (
+    axml,
 )
 
 
 logger = logging.getLogger(__name__)
-logging.getLogger('androguard').setLevel(logging.ERROR)
 
 
 # relative to res folder
@@ -74,6 +73,25 @@ def guess_icon_path(res_dir):
         return guess
 
     return ''
+
+
+def get_icon_from_src(app_dic, icon_from_mfst):
+    res_path = ''
+    eclipse = Path(app_dic['app_dir']) / 'res'
+    studio = Path(app_dic['app_dir']) / 'app' / 'src' / 'main' / 'res'
+    if eclipse.exists():
+        res_path = eclipse.as_posix()
+    elif studio.exists():
+        res_path = studio.as_posix()
+    if not res_path:
+        return
+
+    icon_file = find_icon_path_zip(res_path, icon_from_mfst)
+    if icon_file and Path(icon_file).exists():
+        dwd = Path(settings.DWD_DIR)
+        out = dwd / (app_dic['md5'] + '-icon' + Path(icon_file).suffix)
+        copy2(icon_file, out)
+        app_dic['icon_path'] = out.name
 
 
 def find_icon_path_zip(res_dir, icon_paths_from_manifest):
@@ -137,12 +155,15 @@ def get_icon_src(a, app_dic, res_dir):
         icon_name = None
         if a:
             icon_name = a.get_app_icon(max_dpi=icon_resolution)
+            if is_path_traversal(icon_name):
+                icon_name = None
         if not icon_name:
             # androguard cannot find icon file.
+            icon_name = ''
             logger.warning('androguard cannot find icon resource')
             icon_name = guess_icon_path(res_dir)
             icon_src = icon_name
-        if icon_name and icon_name.endswith('.xml'):
+        if icon_name.endswith('.xml'):
             apktool_res = False
             # Can be vector XML/XML pointing to vector files
             # Convert AXML to XML for vector
@@ -173,6 +194,15 @@ def get_icon_src(a, app_dic, res_dir):
         else:
             # We found png icon, the easy path
             icon_src = (app_dir / icon_name).as_posix()
+        if icon_src.endswith('.xml'):
+            logger.warning('Cannot find icon file from xml')
+            icon_src = ''
+        elif not icon_src.endswith(('.png', '.svg', '.webp')):
+            logger.warning('Cannot find a valid icon file')
+            icon_src = ''
+        if not icon_name:
+            logger.warning('Cannot find icon file')
+            icon_src = ''
         return icon_src
     except Exception:
         logger.exception('Fetching icon function')
@@ -181,9 +211,7 @@ def get_icon_src(a, app_dic, res_dir):
 def get_icon_apk(apk, app_dic):
     """Get/Guess icon from APK binary."""
     app_dir = Path(app_dic['app_dir'])
-    app_dic['icon_path'] = ''
-    app_dic['icon_found'] = False
-    app_dic['icon_hidden'] = True
+    icon_file = ''
 
     res_path = app_dir / 'res'
     if not res_path.exists():
@@ -196,25 +224,36 @@ def get_icon_apk(apk, app_dic):
             copytree(apk_tool_res, res_path)
         except Exception:
             pass
-    # Set app_dic with icon details
     if res_path.exists():
         # Icon lookup in res directory
-        app_dic['icon_path'] = get_icon_src(
+        icon_file = get_icon_src(
             apk,
             app_dic,
             res_path.as_posix())
-        app_dic['icon_found'] = bool(app_dic['icon_path'])
-        app_dic['icon_hidden'] = not app_dic['icon_found']
 
-    if app_dic['icon_path']:
-        src = Path(app_dic['icon_path'])
-        # Convert SVG icon to PNG
-        if src.as_posix().endswith('.svg'):
-            src = convert_svg_to_png(src, app_dic['tools_dir'])
-        # Copy PNG to Downloads
-        out = Path(settings.DWD_DIR) / (app_dic['md5'] + '-icon.png')
+    if icon_file:
+        src = Path(icon_file)
+        # Copy PNG/SVG to Downloads
+        icon = app_dic['md5'] + '-icon' + src.suffix.lower()
+        out = Path(settings.DWD_DIR) / icon
         if src and src.exists() and src.is_file():
             copy2(src.as_posix(), out.as_posix())
+        app_dic['icon_path'] = out.name
+
+
+def transform_svg(fpath, bpath, output):
+    """Transform SVG from foreground and background."""
+    try:
+        import svgutils.transform as sg
+        background = sg.fromfile(bpath)
+        logo = sg.fromfile(fpath)
+        root = logo.getroot()
+        root.moveto(1, 1)
+        background.append([root])
+        background.save(output)
+        return output.as_posix()
+    except Exception:
+        return None
 
 
 def get_icon_svg_from_xml(app_dir, icon_xml_file):
@@ -242,17 +281,30 @@ def get_icon_svg_from_xml(app_dir, icon_xml_file):
             if fpath and bpath:
                 break
         # To not break existing users
-        import svgutils.transform as sg
-        background = sg.fromfile(bpath)
-        logo = sg.fromfile(fpath)
-        root = logo.getroot()
-        root.moveto(1, 1)
-        background.append([root])
         output = icon_xml.parent / f'{icon_xml.stem}.svg'
-        background.save(output)
-        return output.as_posix()
+        return transform_svg(fpath, bpath, output)
     except Exception:
-        return None
+        try:
+            fsvg, bsvg = None, None
+            search_loc = app_dir / 'apktool_out' / 'res' / 'drawable'
+            if not search_loc.exists():
+                return None
+            rand_icon = ''
+            for f in search_loc.rglob('*.svg'):
+                rand_icon = f.as_posix()
+                if 'ic_launcher_foreground.svg' in f.name:
+                    fsvg = f
+                if 'ic_launcher_background.svg' in f.name:
+                    bsvg = f
+                if fsvg and bsvg:
+                    break
+            if fsvg and bsvg:
+                output = search_loc / 'ic_launcher.svg'
+                return transform_svg(fsvg, bsvg, output)
+            else:
+                return rand_icon
+        except Exception:
+            logger.exception('Guessing icon svg')
 
 
 def convert_axml_to_xml(app_dir, icon_file):
@@ -265,9 +317,9 @@ def convert_axml_to_xml(app_dir, icon_file):
             icon_bin_xml.read_bytes()).get_xml_obj()
         xml_txt = etree.tostring(
             aobj, pretty_print=True, encoding='utf-8')
+        out_xml.write_bytes(xml_txt)
         if b'<adaptive-icon' in xml_txt:
             return False
-        out_xml.write_bytes(xml_txt)
         return True
     except Exception:
         logger.exception('Failed to convert axml to xml')
@@ -315,33 +367,3 @@ def convert_vector_to_svg(app_dir, tools_dir, icon_name, apktool_res):
             timeout=30)
     except Exception:
         logger.exception('Android vector to svg conversion failed')
-
-
-def convert_svg_to_png(svg_file, tools_dir):
-    """Convert SVG to PNG."""
-    try:
-        fnull = open(os.devnull, 'w')
-        userbin = getattr(settings, 'BATIK_BINARY', '')
-        if userbin and is_file_exists(userbin):
-            batik = userbin
-        else:
-            batik = Path(tools_dir) / 'batik' / 'batik-rasterizer-1.15.jar'
-        out = svg_file.parent / (svg_file.stem + '.png')
-        args = [
-            find_java_binary(),
-            '-jar',
-            batik.as_posix(),
-            svg_file.as_posix(),
-            '-d',
-            out.as_posix(),
-        ]
-        logger.info('Converting icon svg to png')
-        subprocess.run(
-            args,
-            stdout=fnull,
-            stderr=subprocess.STDOUT,
-            timeout=30)
-        return out
-    except Exception:
-        logger.exception('Icon conversion from svg to png failed')
-    return None

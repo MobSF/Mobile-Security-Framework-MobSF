@@ -1,19 +1,32 @@
 # -*- coding: utf_8 -*-
 """Module holding the functions for code analysis."""
 
-import binascii
 import hashlib
 import logging
 import os
 import re
+import subprocess
+from pathlib import Path
 
-from androguard.util import get_certificate_name_string
+import asn1crypto
 
-from asn1crypto import x509
-
-from oscrypto import asymmetric
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import (
+    dsa,
+    ec,
+    rsa,
+)
 
 from django.utils.html import escape
+
+from mobsf.MobSF.utils import (
+    find_java_binary,
+    gen_sha256_hash,
+)
+from mobsf.StaticAnalyzer.tools.androguard4.apk import (
+    get_certificate_name_string,
+)
 
 logger = logging.getLogger(__name__)
 ANDROID_8_1_LEVEL = 27
@@ -38,10 +51,11 @@ def get_hardcoded_cert_keystore(files):
         for file_name in files:
             if '.' not in file_name:
                 continue
-            ext = file_name.split('.')[-1]
-            if re.search('cer|pem|cert|crt|pub|key|pfx|p12|der', ext):
+            ext = Path(file_name).suffix
+            if ext in ('.cer', '.pem', '.cert', '.crt',
+                       '.pub', '.key', '.pfx', '.p12', '.der'):
                 certz.append(escape(file_name))
-            if re.search('jks|bks', ext):
+            if ext in ('.jks', '.bks'):
                 key_store.append(escape(file_name))
         if certz:
             desc = 'Certificate/Key files hardcoded inside the app.'
@@ -57,7 +71,7 @@ def get_hardcoded_cert_keystore(files):
 def get_cert_details(data):
     """Get certificate details."""
     certlist = []
-    x509_cert = x509.Certificate.load(data)
+    x509_cert = asn1crypto.x509.Certificate.load(data)
     subject = get_certificate_name_string(x509_cert.subject, short=True)
     certlist.append(f'X.509 Subject: {subject}')
     certlist.append(f'Signature Algorithm: {x509_cert.signature_algo}')
@@ -77,20 +91,72 @@ def get_cert_details(data):
 def get_pub_key_details(data):
     """Get public key details."""
     certlist = []
-    x509_public_key = asymmetric.load_public_key(data)
-    certlist.append(f'PublicKey Algorithm: {x509_public_key.algorithm}')
-    certlist.append(f'Bit Size: {x509_public_key.bit_size}')
-    fp = binascii.hexlify(x509_public_key.fingerprint).decode('utf-8')
-    certlist.append(f'Fingerprint: {fp}')
+
+    x509_public_key = serialization.load_der_public_key(
+        data,
+        backend=default_backend())
+    alg = 'unknown'
+    fingerprint = ''
+    if isinstance(x509_public_key, rsa.RSAPublicKey):
+        alg = 'rsa'
+        modulus = x509_public_key.public_numbers().n
+        public_exponent = x509_public_key.public_numbers().e
+        to_hash = f'{modulus}:{public_exponent}'
+    elif isinstance(x509_public_key, dsa.DSAPublicKey):
+        alg = 'dsa'
+        dsa_parameters = x509_public_key.parameters()
+        p = dsa_parameters.parameter_numbers().p
+        q = dsa_parameters.parameter_numbers().q
+        g = dsa_parameters.parameter_numbers().g
+        y = x509_public_key.public_numbers().y
+        to_hash = f'{p}:{q}:{g}:{y}'
+    elif isinstance(x509_public_key, ec.EllipticCurvePublicKey):
+        alg = 'ec'
+        to_hash = f'{x509_public_key.public_numbers().curve.name}:'
+        to_hash = to_hash.encode('utf-8')
+        # Untested, possibly wrong key size and fingerprint
+        to_hash += data[25:]
+    fingerprint = gen_sha256_hash(to_hash)
+    certlist.append(f'PublicKey Algorithm: {alg}')
+    certlist.append(f'Bit Size: {x509_public_key.key_size}')
+    certlist.append(f'Fingerprint: {fingerprint}')
     return certlist
 
 
-def apksigtool_cert(apk_path):
+def get_signature_versions(app_path, tools_dir, signed):
+    """Get signature versions using apksigner."""
+    v1, v2, v3, v4 = False, False, False, False
+    try:
+        if not signed:
+            return v1, v2, v3, v4
+        logger.info('Getting Signature Versions')
+        apksigner = Path(tools_dir) / 'apksigner.jar'
+        args = [find_java_binary(), '-Xmx1024M',
+                '-Djava.library.path=', '-jar',
+                apksigner.as_posix(),
+                'verify', '--verbose', app_path]
+        out = subprocess.check_output(
+            args, stderr=subprocess.STDOUT)
+        out = out.decode('utf-8', 'ignore')
+        if re.findall(r'v1 scheme \(JAR signing\): true', out):
+            v1 = True
+        if re.findall(r'\(APK Signature Scheme v2\): true', out):
+            v2 = True
+        if re.findall(r'\(APK Signature Scheme v3\): true', out):
+            v3 = True
+        if re.findall(r'\(APK Signature Scheme v4\): true', out):
+            v4 = True
+    except Exception:
+        logger.exception('Failed to get signature versions')
+    return v1, v2, v3, v4
+
+
+def apksigtool_cert(apk_path, tools_dir):
     """Get Human readable certificate with apksigtool."""
     certlist = []
     certs = []
     pub_keys = []
-    signed, v1, v2, v3, v4 = False, False, False, False, 'Unknown'
+    signed = False
     certs_no = 0
     min_sdk = None
     try:
@@ -104,12 +170,6 @@ def apksigtool_cert(apk_path):
             b = pair.value
             if isinstance(b, APKSignatureSchemeBlock):
                 signed = True
-                if b.version == 1:
-                    v1 = True
-                if b.version == 2:
-                    v2 = True
-                if b.version == 3:
-                    v3 = True
                 for signer in b.signers:
                     if b.is_v3():
                         min_sdk = signer.min_sdk
@@ -128,6 +188,7 @@ def apksigtool_cert(apk_path):
             certlist.append('Binary is signed')
         else:
             certlist.append('Binary is not signed')
+        v1, v2, v3, v4 = get_signature_versions(apk_path, tools_dir, signed)
         certlist.append(f'v1 signature: {v1}')
         certlist.append(f'v2 signature: {v2}')
         certlist.append(f'v3 signature: {v3}')
@@ -149,19 +210,17 @@ def apksigtool_cert(apk_path):
     }
 
 
-def get_cert_data(a):
+def get_cert_data(a, app_path, tools_dir):
     """Get Human readable certificate."""
     certlist = []
-    signed, v1, v2, v3, v4 = False, False, False, False, 'Unknown'
+    signed = False
     if a.is_signed():
         signed = True
         certlist.append('Binary is signed')
     else:
         certlist.append('Binary is not signed')
         certlist.append('Missing certificate')
-    v1 = a.is_signed_v1()
-    v2 = a.is_signed_v2()
-    v3 = a.is_signed_v3()
+    v1, v2, v3, v4 = get_signature_versions(app_path, tools_dir, signed)
     certlist.append(f'v1 signature: {v1}')
     certlist.append(f'v2 signature: {v2}')
     certlist.append(f'v3 signature: {v3}')
@@ -192,7 +251,7 @@ def get_cert_data(a):
     }
 
 
-def cert_info(a, app_path, app_dir, man_dict):
+def cert_info(a, app_dic, man_dict):
     """Return certificate information."""
     try:
         logger.info('Reading Code Signing Certificate')
@@ -202,13 +261,15 @@ def cert_info(a, app_path, app_dir, man_dict):
         summary = {HIGH: 0, WARNING: 0, INFO: 0}
 
         if a:
-            cert_data = get_cert_data(a)
+            cert_data = get_cert_data(
+                a, app_dic['app_path'], app_dic['tools_dir'])
         else:
             logger.warning('androguard certificate parsing failed,'
                            ' switching to apksigtool')
-            cert_data = apksigtool_cert(app_path)
+            cert_data = apksigtool_cert(
+                app_dic['app_path'], app_dic['tools_dir'])
 
-        cert_path = os.path.join(app_dir, 'META-INF/')
+        cert_path = os.path.join(app_dic['app_dir'], 'META-INF/')
         if os.path.exists(cert_path):
             files = [f for f in os.listdir(
                 cert_path) if os.path.isfile(os.path.join(cert_path, f))]

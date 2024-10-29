@@ -79,7 +79,7 @@
                             </td>
                             <td align="center" style="word-wrap: break-word; max-width: 200px;">
                                 <strong>{{e.USER_APP_NAME}} - {{e.USER_APP_VERSION}}</strong></br>
-                                <img id="app_icon" src="/download/{{ e.MD5 }}-icon.png" onerror="this.src='{% static 'img/no_icon.png' %}'">
+                                <img id="app_icon" src="{% if e.ICON_PATH %}/download/{{ e.ICON_PATH }}{% else %}{% static 'img/no_icon.png' %}{% endif %}">
                                 {% if e.COMPLETE %}
                                   <br/>{{ e.APP_NAME }} {% if e.VERSION_NAME %} - {{ e.VERSION_NAME }} {% endif %}
                                   <br/>{{ e.PACKAGE_NAME }}                                 
@@ -95,7 +95,12 @@
                                 {% elif '.jar' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-java fa-3x"></i>
                                 {% elif '.aar' == e.FILE_NAME|slice:"-4:"%}<i class="fas fa-table fa-3x"></i>
                                 {% elif '.so' == e.FILE_NAME|slice:"-3:"%}<i class="fa fa-th-large fa-3x"></i>
+                                {% elif '.jar' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-java fa-3x"></i>
+                                {% elif '.aar' == e.FILE_NAME|slice:"-4:"%}<i class="fas fa-table fa-3x"></i>
+                                {% elif '.so' == e.FILE_NAME|slice:"-3:"%}<i class="fa fa-th-large fa-3x"></i>
                                 {% elif '.ipa' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-apple fa-3x"></i>
+                                {% elif '.dylib' == e.FILE_NAME|slice:"-6:"%}<i class="fa fa-th-large fa-3x"></i>
+                                {% elif '.a' == e.FILE_NAME|slice:"-2:"%}<i class="fa fa-th-large fa-3x"></i>
                                 {% elif '.dylib' == e.FILE_NAME|slice:"-6:"%}<i class="fa fa-th-large fa-3x"></i>
                                 {% elif '.a' == e.FILE_NAME|slice:"-2:"%}<i class="fa fa-th-large fa-3x"></i>
                                 {% elif '.zip' == e.FILE_NAME|slice:"-4:"%}<i class="fas fa-file-archive fa-3x"></i>
@@ -144,7 +149,7 @@
                             <td>
                                 <p>                                    
                                     {% if e.COMPLETE %}
-                                    <a class="btn btn-primary btn-sm" style="margin-bottom: 3px; width: 125px;" href="../{{ e.ANALYZER }}/?file_name={{e.FILE_NAME}}&amp;hash={{e.MD5}}&amp;scan_type={{e.SCAN_TYPE}}"><i class="fas fa-eye" title="View static analysis scan details"></i> Scan Details</a><br/>
+                                    <a class="btn btn-primary btn-sm" style="margin-bottom: 3px; width: 125px;" href="../{{ e.ANALYZER }}/{{e.MD5}}/"><i class="fas fa-eye" title="View static analysis scan details"></i> Scan Details</a><br/>
                                         {% if e.FILE_NAME|slice:"-6:" != '.dylib' %}
                                             {% if e.FILE_NAME|slice:"-3:" != '.so' %}
                                                 {% if e.FILE_NAME|slice:"-2:" != '.a' %}
@@ -166,7 +171,7 @@
                                     {% endif %}
                                     <a class="btn btn-outline-primary btn-sm" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="javascript:void(0);"><i class="fas fa-trash" title="Delete Scan"></i></a>
                                     {% if e.COMPLETE %}                                        
-                                        <a class="btn btn-outline-primary btn-sm" href="../pdf/?md5={{ e.MD5 }}"><i class="fas fa-file-pdf" title="PDF Report"></i></a>                                                                                                                  
+                                        <a class="btn btn-outline-primary btn-sm" href="../pdf/?checksum={{ e.MD5 }}"><i class="fas fa-file-pdf" title="PDF Report"></i></a>                                                                                                                  
                                     {% endif %}                                    
                                 </p>
                             </td>
@@ -289,7 +294,7 @@
         if (result.value) {
             var md5_hash = item.id;
             $.ajax({
-                    url: '../delete_scan/',
+                    url: '{% url "delete_scan" %}',
                         type : 'POST',
                     dataType: 'json',
                         data : {

@@ -1,4 +1,25 @@
 MANIFEST_DESC = {
+    'well_known_assetlinks': {
+        'title': ('App Link assetlinks.json file not found'
+                  '<br>[android:name=%s]<br>[android:host=%s]'),
+        'level': 'high',
+        'description': ('App Link asset verification URL (%s) not found or '
+                        'configured incorrectly. (Status Code: %s). '
+                        'App Links allow users to redirect from a web '
+                        'URL/email to the mobile app. If this file is '
+                        'missing or incorrectly configured for the '
+                        'App Link host/domain, a malicious app can '
+                        'hijack such URLs. This may lead to phishing '
+                        'attacks, leak sensitive data in the URI, such '
+                        'as PII, OAuth tokens, magic link/password '
+                        'reset tokens and more. You must verify the '
+                        'App Link domain by hosting the assetlinks.json '
+                        'file and enabling verification via '
+                        '[android:autoVerify="true"] in the Activity '
+                        'intent-filter.'),
+        'name': ('App Link assetlinks.json file not found '
+                 '[android:name=%s], [android:host=%s]'),
+    },
     'clear_text_traffic': {
         'title': ('Clear text traffic is Enabled For App'
                   '<br>[android:usesCleartextTraffic=true]'),
@@ -42,15 +63,28 @@ MANIFEST_DESC = {
                  '[android:networkSecurityConfig=%s]'),
     },
     'vulnerable_os_version': {
-        'title': ('App can be installed on a vulnerable Android version'
-                  '<br>[minSdk=%s]'),
-        'level': 'warning',
+        'title': ('App can be installed on a vulnerable '
+                  'upatched Android version<br>Android %s, [minSdk=%s]'),
+        'level': 'high',
         'description': ('This application can be installed on an older version'
                         ' of android that has multiple unfixed '
-                        'vulnerabilities. Support an Android version > 8, '
-                        'API 26 to receive reasonable security updates.'),
+                        'vulnerabilities. These devices won\'t receive '
+                        'reasonable security updates from Google. '
+                        'Support an Android version => 10, API 29 '
+                        'to receive reasonable security updates.'),
+        'name': ('App can be installed on a vulnerable '
+                 'upatched Android version %s, [minSdk=%s]'),
+    },
+    'vulnerable_os_version2': {
+        'title': ('App can be installed on a vulnerable Android version'
+                  '<br>Android %s, minSdk=%s]'),
+        'level': 'warning',
+        'description': ('This application can be installed on an older version'
+                        ' of android that has multiple vulnerabilities. '
+                        'Support an Android version => 10, API 29 '
+                        'to receive reasonable security updates.'),
         'name': ('App can be installed on a vulnerable Android version'
-                 '[minSdk=%s]'),
+                 ' %s, [minSdk=%s]'),
     },
     'app_is_debuggable': {
         'title': 'Debug Enabled For App<br>[android:debuggable=true]',
@@ -104,7 +138,7 @@ MANIFEST_DESC = {
     },
     'non_standard_launchmode': {
         'title': 'Launch Mode of activity (%s) is not standard.',
-        'level': 'high',
+        'level': 'warning',
         'description': ('An Activity should not be having the launch mode'
                         ' attribute set to "singleTask/singleInstance" as '
                         'it becomes root Activity and it is possible for'
@@ -114,9 +148,47 @@ MANIFEST_DESC = {
                         ' information is included in an Intent.'),
         'name': 'Launch Mode of activity (%s) is not standard.',
     },
+    'task_hijacking': {
+        'title': ('Activity (%s) is vulnerable to Android '
+                  'Task Hijacking/StrandHogg.'),
+        'level': 'high',
+        'description': ('An Activity should not be having the launch mode '
+                        'attribute set to "singleTask". It is then '
+                        'possible for other applications to place a '
+                        'malicious activity on top of the activity stack '
+                        'resulting in Task Hijacking/StrandHogg 1.0 '
+                        'vulnerability. This makes the application an easy '
+                        'target for phishing attacks. The vulnerability can '
+                        'be remediated by setting the launch mode attribute '
+                        'to "singleInstance" or by setting an empty '
+                        'taskAffinity (taskAffinity="") attribute. You can '
+                        'also update the target SDK version (%s) of the '
+                        'app to 28 or higher to fix this issue at '
+                        'platform level.'),
+        'name': ('Activity (%s) is vulnerable to Android '
+                 'Task Hijacking/StrandHogg.'),
+    },
+    'task_hijacking2': {
+        'title': 'Activity (%s) is vulnerable to StrandHogg 2.0',
+        'level': 'high',
+        'description': ('Activity is found to be vulnerable to '
+                        'StrandHogg 2.0 task hijacking vulnerability. '
+                        'When vulnerable, it is possible for other '
+                        'applications to place a malicious activity '
+                        'on top of the activity stack of the vulnerable '
+                        'application. This makes the application an easy '
+                        'target for phishing attacks. The vulnerability can '
+                        'be remediated by setting the launch mode attribute '
+                        'to "singleInstance" and by setting an empty '
+                        'taskAffinity (taskAffinity=""). You can also update '
+                        'the target SDK version (%s) of the app '
+                        'to 29 or higher to fix this issue at '
+                        'platform level.'),
+        'name': 'Activity (%s) is vulnerable to StrandHogg 2.0',
+    },
     'improper_provider_permission': {
         'title': 'Improper Content Provider Permissions<br>[%s]',
-        'level': 'high',
+        'level': 'warning',
         'description': ('A content provider permission was set to allows'
                         ' access from any other app on the device. '
                         'Content providers may contain sensitive '
@@ -343,7 +415,7 @@ MANIFEST_DESC = {
     'explicitly_exported': {
         'title': ('<strong>%s</strong> (%s) is not Protected.'
                   ' <br>[android:exported=true]'),
-        'level': 'high',
+        'level': 'warning',
         'description': ('A%s %s is found to be shared with other apps on the'
                         ' device therefore leaving it accessible to any other'
                         ' application on the device.'),

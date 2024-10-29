@@ -3,6 +3,8 @@ from pathlib import Path
 
 import lief
 
+from django.conf import settings
+
 from mobsf.MobSF.utils import (
     settings_enabled,
 )
@@ -17,8 +19,9 @@ from mobsf.StaticAnalyzer.views.common.binary.macho import (
 logger = logging.getLogger(__name__)
 
 
-def library_analysis(src, arch):
+def library_analysis(src, checksum, arch):
     """Perform library binary analysis."""
+    base_dir = Path(settings.UPLD_DIR) / checksum
     res = {
         f'{arch}_analysis': [],
         f'{arch}_strings': [],
@@ -42,10 +45,9 @@ def library_analysis(src, arch):
         # Supports Static Library, Shared objects, Dynamic Library,
         # from APK, SO, AAR, JAR, IPA, DYLIB, and A
         for libfile in Path(src).rglob(ext):
-            rel_path = (
-                f'{libfile.parents[1].name}/'
-                f'{libfile.parents[0].name}/'
-                f'{libfile.name}')
+            if '__MACOSX' in libfile.as_posix():
+                continue
+            rel_path = libfile.relative_to(base_dir).as_posix()
             logger.info('Analyzing %s', rel_path)
             if arch == 'ar':
                 # Handle static library
@@ -70,6 +72,45 @@ def library_analysis(src, arch):
             if symbols:
                 res[f'{arch}_symbols'].append({
                     rel_path: symbols})
+        if ext == '*.dylib':
+            # Do Framework Analysis for iOS
+            res['framework_analysis'] = []
+            res['framework_strings'] = []
+            res['framework_symbols'] = []
+            frameworks_analysis(src, base_dir, res)
+            if res['framework_strings']:
+                res[f'{arch}_strings'].extend(
+                    res['framework_strings'])
     except Exception:
         logger.exception('Performing Library Binary Analysis')
     return res
+
+
+def frameworks_analysis(src, base_dir, res):
+    """Binary Analysis on Frameworks."""
+    try:
+        logger.info('Framework Binary Analysis Started')
+        # Supports iOS Frameworks
+        for ffile in Path(src).rglob('*'):
+            parent = ffile.parents[0].name
+            if not parent.endswith('.framework'):
+                continue
+            rel_path = ffile.relative_to(base_dir).as_posix()
+            if ffile.suffix != '' or ffile.name not in parent:
+                continue
+            # Frameworks/XXX.framework/XXX
+            logger.info('Analyzing %s', rel_path)
+            chk = MachOChecksec(ffile, rel_path)
+            chksec = chk.checksec()
+            strings = chk.strings()
+            symbols = chk.get_symbols()
+            if chksec:
+                res['framework_analysis'].append(chksec)
+            if strings:
+                res['framework_strings'].append({
+                    rel_path: strings})
+            if symbols:
+                res['framework_symbols'].append({
+                    rel_path: symbols})
+    except Exception:
+        logger.exception('Performing Framework Binary Analysis')

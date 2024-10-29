@@ -31,7 +31,7 @@ $(document).ready( function () {
             type : "GET",
             dataType: "json", 
             success : function(json){ 
-                $('#logs').text(json.data);
+                $('#logs').text(json.message);
             },
             error : function(xhr, ajaxOptions, thrownError) {
               console.log(xhr.responseText);

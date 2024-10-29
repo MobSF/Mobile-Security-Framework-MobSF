@@ -1,0 +1,825 @@
+
+{% extends "base/base_layout.html" %}
+{% load static %}
+{% block sidebar_option %}
+    sidebar-collapse
+{% endblock %}
+{% block extra_css %}
+ <!-- DataTables -->
+<link rel="stylesheet" href="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.css" %}">
+<link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
+<link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
+<style>
+#app_icon{
+  width: 64px;
+  height: 64px;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="content-wrapper">
+  <div class="content-header">
+  </div>
+   <div class="container-fluid">
+
+
+   <div class="row">
+          <div class="col-md-12">
+            <div class="card bg-gradient-primary">
+              <!-- /.card-header -->
+              <div class="card-body">
+                  <div class="row">
+                     <div class="col-md-12">
+                        <h4>MobSF iOS Dynamic Analyzer</h4>
+                        <div class="card-body">
+                          <div class="table-responsive">
+                           {% if not dynamic_analyzer %}<h5 style="color:#FFA500">Cannot authenticate with Corellium. Please ensure that <strong>MOBSF_CORELLIUM_API_KEY</strong> is configured.</h5>{% endif %}
+                           <h6> Corellium Project ID: <strong>{{ project_id }}</strong>  </h6>
+                           <a class="btn btn-info" onclick="javascript:location.reload()"><i class="fa fa-retweet"></i> Refresh</a>
+                           <a class="btn btn-success" role="button" data-toggle="modal" data-target="#create_instance"><i class="fab fa-apple"></i> Create VM</a>
+                           <table class="dattbl table table-bordered table-hover table-striped">
+                             <thead>
+                             <tr>
+                                 <th>VM</th>
+                                 <th>VERSION</th>
+                                 <th>STATE</th>
+                                 <th>PROGRESS</th>
+                                 <th>ACTIONS</th>
+                             </tr>
+                             </thead>
+                             <tbody>
+                             {% if instances %}
+                             {% for i in instances %}
+                                 <tr>
+                                     <td>
+                                      {{i.name}}</br>({{ i.id}})
+                                     </td>
+                                     <td>
+                                      {{i.flavor }}, {{ i.os }}
+                                     </td>
+                                     <td>
+                                       {{i.state}}
+                                    </td>
+                                     <td>
+                                      {% if 'progress' in i.restoreStatus %}
+                                      <div class="progress">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{i.restoreStatus.progress}}%" aria-valuenow="{{i.restoreStatus.progress}}" aria-valuemin="0" aria-valuemax="100">{{i.restoreStatus.progress| floatformat:"0"}}%</div>
+                                      </div>
+                                      {% endif %}
+                                      {% if 'stage' in i.restoreStatus %}
+                                      <small><pre> {{ i.restoreStatus.stage}}</pre></small>
+                                      {% endif %}
+                                     </td>
+                                     <td>
+                                      <p>
+                                        <a class="btn btn-success {% if i.state in 'on,paused,rebooting,deleting,creating' %} disabled {% endif %}" id="{{ i.id }}" onclick="start_vm(this)"><i class="fa fa-play"></i> Start</a>
+                                        <a class="btn btn-warning {% if i.state in 'off,deleting,booting,creating' %} disabled {% endif %}" id="{{ i.id }}" onclick="stop_vm(this)"><i class="fa fa-stop"></i> Stop</a>
+                                        <a class="btn btn-info {% if i.state != 'paused' %} disabled {% endif %}" id="{{ i.id }}" onclick="unpause_vm(this)"><i class="fa fa-pause"></i> Unpause</a>
+                                        <a class="btn btn-secondary {% if i.state not in 'on,paused,rebooting' %} disabled {% endif %}" id="{{ i.id }}" onclick="reboot_vm(this)"><i class="fa fa-sync"></i> Reboot</a>
+                                        <a class="btn btn-danger {% if i.state in 'creating,deleting' %} disabled {% endif %}" id="{{ i.id }}" onclick="destroy_vm(this)"><i class="fa fa-skull"></i> Destroy</a>
+                                      </p>
+                                     </td>
+                                 </tr>
+                             {% endfor %}
+                             {% endif %}
+                             </tbody>
+                         </table>
+                         <p>
+                         <h6><strong> Choose an instance for Dynamic Analysis: </strong></h6>
+                         <select class="form-control" id="ios_dynamic"></select>
+                        </p>
+                        </div>
+                        </div>
+                      
+                      </div>   
+                     </div>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        
+          <div class="col-md-12">
+            <div class="card card-default">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fa fa-rocket"></i> MobSF Dynamic Analysis</h3>
+              </div>
+              <div class="card-body">
+                 <div class="table-responsive">
+                <h4> Apps in Device</h4>
+                <table id="in_device" class="table table-bordered table-hover table-striped">
+                  <tbody>
+                  </tbody>
+              </table>
+            </br>
+
+            <h4> Apps Available</h4>
+            <table class="dattbl table table-bordered table-hover table-striped">
+                <thead>
+                <tr>
+                    <th>APP</th>
+                    <th>FILE NAME</th>
+                    <th>BUNDLE ID</th>
+                    <th>ACTION</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if apps %}
+                {% for e in apps %}
+                    <tr>
+                        <td align="center">
+                          <img id="app_icon" src="/download/{{ e.MD5 }}-icon.png"/>
+                          <br/><strong>{{ e.APP_NAME }} - {{ e.APP_VERSION }}</strong>
+                        </td>
+                        <td>
+                            {{ e.FILE_NAME }}
+                        </td>
+                        <td>
+                            {{ e.BUNDLE_ID }}
+                       </td>
+                        <td align="center"> 
+                          {% if e.ENCRYPTED %}
+                            <span class="badge badge-danger">ENCRYPTED IPA</span></br>
+                            <small>You need decrypted IPA for dynamic analysis.</small>
+                          {% else %}
+                          <p>
+                              <a class="btn btn-success disable" onclick="upload_and_install('{% url 'setup_environment' checksum=e.MD5 %}')"><i class="fab fa-apple"></i> Upload &amp; Install</a>
+                          </p>
+                          <p>
+                            <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url 'ios_view_report' bundle_id=e.BUNDLE_ID %}"><i class="fa fa-mobile"></i> View Report </a>
+                         </p>
+                         {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% endif %}
+                </tbody>
+            </table>
+
+            </div>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        </div>
+
+        </div>
+       </div>
+     </div>
+    </div>
+</div>
+
+<!--Modal-->
+
+
+<div class="modal" id="create_instance" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Create a Corellium iOS VM</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form role="form">
+                 <div class="form-group">
+                  <label>Name</label>
+                  <input type="text" value="MobSF iOS" class="form-control" id="vm_name">
+                </div>
+                <div class="form-group">
+                    <label>Device</label>
+                     <select class="form-control" id="ios_models"></select>
+                </div>
+                <div class="form-group">
+                  <label>iOS Version</label>
+                   <select class="form-control" id="ios_versions"></select>
+                </div>
+
+              </form>
+          </div>
+           <div class="modal-footer">
+            <button id="create_vm" type="button" class="btn btn-primary disable"><i class="fa fa-plus"></i> Create VM</button>
+          </div>
+        </div>
+        <!-- /.modal-content -->
+      </div>
+      <!-- /.modal-dialog -->
+    </div>
+
+<!--Loader-->
+<div class="hidden loading">
+<div class='uil-ring-css' style='transform:scale(0.79);'>
+  <div></div>
+</div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<!-- DataTables -->
+<script src="{% static "adminlte/plugins/datatables/jquery.dataTables.min.js" %} "></script>
+<script src="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.js" %}"></script>
+<script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
+<script>
+
+// Escape HTML
+function escapeHtml(unsafe){
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+// Load Modal Data
+// Load Supported Models
+$('#create_instance').on('shown.bs.modal', function () {
+    $.ajax({
+            url: '{% url 'get_supported_models' %}',
+            type : 'POST',
+            dataType: 'json',
+                data : {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        },
+                    success : function(json) {
+                        if (json.status==='ok'){
+                          let first;
+                          for(var i=0; i < json.message.length; i++) {
+                              if (i === 0)
+                                first = json.message[i].model
+                              let iphone = json.message[i].description
+                              if (json.message[i].type === 'ios' && iphone.includes("iPhone")){
+                                $('#ios_models').append($('<option>',{
+                                  value: json.message[i].model,
+                                  text: iphone,
+                                  'data-flavor': json.message[i].flavor,
+                                }));
+                              }
+                          }
+                          load_ios_versions(first);
+                        }
+                        else {
+                          console.log(json.message)
+                        }
+                    },
+                    error : function(xhr,errmsg,err) {
+                       console.log(errmsg)
+                    }
+        });
+});
+// Load Supported Versions
+function load_ios_versions(model){
+  $('#ios_versions').find('option').remove().end();
+  $.ajax({
+            url: '{% url 'get_supported_os' %}',
+            type : 'POST',
+            dataType: 'json',
+                data : {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        model: model,
+                        },
+                    success : function(json) {
+                        if (json.status==='ok'){
+                          for(var i=0; i < json.message.length; i++) {
+                              $('#ios_versions').append($('<option>',{
+                                value: json.message[i].version,
+                                text: json.message[i].version,
+                              }));
+                          }
+                        }
+                        else {
+                          console.log(json.message)
+                        }
+                    },
+                    error : function(xhr,errmsg,err) {
+                       console.log(errmsg)
+                    }
+        });
+}
+$('#ios_models').on('change', function() {
+  load_ios_versions(this.value);
+});
+
+function dynamic_loader(){
+    var loadingOverlay = document.querySelector('.loading');
+    loadingOverlay.classList.remove('hidden');
+}
+function stop_loader(){
+  var loadingOverlay = document.querySelector('.loading');
+  loadingOverlay.classList.add('hidden');
+}
+
+// Datatables
+  $(function () {
+    // Datatable
+    $('.dattbl').DataTable({
+      "paging": true,
+      "lengthChange": false,
+      "searching": true,
+      "ordering": false,
+      "info": true,
+      "autoWidth": true,
+      "responsive": true,
+      "language": {
+          "zeroRecords": " "             
+      },
+    });
+  });
+
+// Populate Available Dynamic Analyzer instances.
+{% for i in instances %}
+  {% if i.state in 'on,paused' %} 
+    $('#ios_dynamic').append($('<option>',{
+                                  value: '{{ i.id}}',
+                                  text: '{{i.name}} ({{ i.os }}) - {{ i.id}}',
+                                }));
+  {% endif %}
+{% endfor %}
+// List apps onload
+if ($('#ios_dynamic').val()){
+  list_apps();                     
+}
+// List apps on device change
+$('#ios_dynamic').on('change', function() {
+  list_apps();
+});
+
+// List installed apps
+function list_apps(){
+  $('#in_device tbody tr').remove();
+  $('#in_device thead').remove();
+  dynamic_loader();
+  $.ajax({
+        url: '{% url 'list_apps' %}',
+        type : 'POST',
+        dataType: 'json',
+            data : {
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    instance_id: $('#ios_dynamic').val(),
+                    },
+                success : function(json) {
+                    if(!json)
+                      stop_loader();
+                    if(!json.status){
+                      stop_loader();
+                      Swal.fire(
+                                'Listing apps failed',
+                                'VM is not ready',
+                                'error'
+                                )
+                    }
+                    if (json.status==='ok'){
+                      $('#in_device').append('<thead><tr> <th>APP</th> <th>BUNDLE ID</th> <th>APP TYPE</th> <th>ACTION</th> </tr></thead><tbody></tbody>');
+                      for(var i=0; i < json.message.length; i++) {
+                              let name = json.message[i].name;
+                              let bundle = json.message[i].bundleID;
+                              let type = json.message[i].applicationType;
+                              let checksum = json.message[i].checksum;
+                              let reportExists = json.message[i].reportExists;
+                              let iconb64;
+                              if (json.message[i].icon)
+                                iconb64 = json.message[i].icon;
+                              else
+                                iconb64 = '';
+                              var buttonState = 'disabled';
+                              if (reportExists)
+                                buttonState = '';
+                              var order;
+                              if (type === 'User')
+                                order = 'first';
+                              else
+                                order = 'last';
+
+                              var url = `{% url 'dynamic_analyzer_ios'%}?bundleid=${escapeHtml(bundle)}&instance_id=${$('#ios_dynamic').val()}`;
+                              $('#in_device > tbody:' + order + '-child').append(
+                                `<tr><td align="center">
+                                  <img id="app_icon" src="data:image/png;base64,${escapeHtml(iconb64)}"/><br/>
+                                  <strong>${escapeHtml(name)}</strong></td>
+                                  <td>${escapeHtml(bundle)}</td>
+                                  <td>${escapeHtml(type)}</td>
+                                  <td><p>
+                                      <a class="btn btn-success disable" onclick="dynamic_loader()" href="${url}"><i class="fab fa-apple"></i> Start Dynamic Analysis</a> 
+                                      <a class="btn btn-info ${buttonState}" href="../../ios/view_report/${escapeHtml(bundle)}"><i class="fa fa-mobile"></i> View Report </a>
+                                      <a class="btn btn-warning" id="${$('#ios_dynamic').val()}" onclick="remove_app(this, '${bundle}')"><i class="fas fa-trash-alt"></i>  Uninstall</a>
+                                      </p>
+                                  </td></tr>`);
+                        }
+                        stop_loader();
+                    }
+                    else {
+                      stop_loader();
+                      Swal.fire(
+                                'Listing apps failed',
+                                'Is VM ready?: ' + json.message,
+                                'error'
+                                )
+                    }
+                },
+                error : function(xhr,errmsg,err) {
+                  stop_loader();
+                  console.log(errmsg)
+                }
+    });
+}
+
+// Remove app from device
+function remove_app(item, bundle_id){
+  Swal.fire({
+      title: 'Are you sure?',
+      text: "This will remove the app from the device",
+      type: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#2da532',
+    }).then((result) => {
+        if (result.value) {
+
+          $.ajax({
+                  url: '{% url 'remove_app' %}',
+                  type : 'POST',
+                  dataType: 'json',
+                      data : {
+                              csrfmiddlewaretoken: '{{ csrf_token }}',
+                              instance_id: item.id,
+                              bundle_id: bundle_id,
+                          },
+                          success : function(json) {
+                              if (json.status==='ok'){
+                                  Swal.fire(
+                                      'Uninstalled!',
+                                      'Application is uninstalled',
+                                      'success'
+                                  ).then(function () {
+                                      location.reload();
+                                  })
+                              }
+                              else {
+                                  Swal.fire(
+                                  'Uninstall Failed',
+                                  'Failed to uninstall the app: ' + json.message,
+                                  'error'
+                                  )
+                              }
+                          },
+                          error : function(xhr,errmsg,err) {
+                              Swal.fire(
+                                  'Uninstall Errored',
+                                  errmsg,
+                                  'error'
+                                  )
+                          }
+            });
+          }
+      });
+}
+
+// Start VM
+function start_vm(item){
+      Swal.fire({
+      title: 'Are you sure?',
+      text: "This will start an iOS VM in Corellium and will incur charges",
+      type: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#2da532',
+    }).then((result) => {
+        if (result.value) {
+            $.ajax({
+                    url: '{% url 'start_instance' %}',
+                    type : 'POST',
+                    dataType: 'json',
+                        data : {
+                                csrfmiddlewaretoken: '{{ csrf_token }}',
+                                instance_id: item.id,
+                                },
+                            success : function(json) {
+                                if (json.status==='ok'){
+                                    Swal.fire(
+                                        'Started!',
+                                        'VM instance is being started',
+                                        'success'
+                                    ).then(function () {
+                                        location.reload();
+                                    })
+                                }
+                                else {
+                                    Swal.fire(
+                                    'Start Failed',
+                                    'Cannot start the VM: ' + json.message,
+                                    'error'
+                                    )
+                                }
+                            },
+                            error : function(xhr,errmsg,err) {
+                                Swal.fire(
+                                   'Start Errored',
+                                    errmsg,
+                                    'error'
+                                    )
+                            }
+                });
+               
+        }
+        });
+}
+
+
+// Stop VM
+function stop_vm(item){
+      Swal.fire({
+      title: 'Are you sure?',
+      text: "This will stop an iOS VM in Corellium",
+      type: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#2da532',
+    }).then((result) => {
+        if (result.value) {
+            $.ajax({
+                    url: '{% url 'stop_instance' %}',
+                    type : 'POST',
+                    dataType: 'json',
+                        data : {
+                                csrfmiddlewaretoken: '{{ csrf_token }}',
+                                instance_id: item.id,
+                                },
+                            success : function(json) {
+                                if (json.status==='ok'){
+                                    Swal.fire(
+                                        'Stopped!',
+                                        'VM instance is being stopped',
+                                        'success'
+                                    ).then(function () {
+                                        location.reload();
+                                    })
+                                }
+                                else {
+                                    Swal.fire(
+                                    'Stop Failed',
+                                    'Cannot stop the VM: ' + json.message,
+                                    'error'
+                                    )
+                                }
+                            },
+                            error : function(xhr,errmsg,err) {
+                                Swal.fire(
+                                   'Stop Errored',
+                                    errmsg,
+                                    'error'
+                                    )
+                            }
+                });
+               
+        }
+        });
+}
+
+
+
+// Unpause VM
+function unpause_vm(item){
+  $.ajax({
+          url: '{% url 'unpause_instance' %}',
+          type : 'POST',
+          dataType: 'json',
+              data : {
+                      csrfmiddlewaretoken: '{{ csrf_token }}',
+                      instance_id: item.id,
+                      },
+                  success : function(json) {
+                      if (json.status==='ok'){
+                          Swal.fire(
+                              'Unpaused',
+                              'VM instance unpaused',
+                              'success'
+                          ).then(function () {
+                              location.reload();
+                          })
+                      }
+                      else {
+                          Swal.fire(
+                          'Unpause Failed',
+                          'Cannot unpause the VM: ' + json.message,
+                          'error'
+                          )
+                      }
+                  },
+                  error : function(xhr,errmsg,err) {
+                      Swal.fire(
+                          'Unpause Errored',
+                          errmsg,
+                          'error'
+                          )
+                  }
+    });
+}
+
+// Reboot VM
+function reboot_vm(item){
+      Swal.fire({
+      title: 'Are you sure?',
+      text: "This will reboot the iOS VM in Corellium",
+      type: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#2da532',
+    }).then((result) => {
+        if (result.value) {
+            $.ajax({
+                    url: '{% url 'reboot_instance' %}',
+                    type : 'POST',
+                    dataType: 'json',
+                        data : {
+                                csrfmiddlewaretoken: '{{ csrf_token }}',
+                                instance_id: item.id,
+                                },
+                            success : function(json) {
+                                if (json.status==='ok'){
+                                    Swal.fire(
+                                        'Rebooting!',
+                                        'VM instance is rebooting',
+                                        'success'
+                                    ).then(function () {
+                                        location.reload();
+                                    })
+                                }
+                                else {
+                                    Swal.fire(
+                                    'Reboot Failed',
+                                    'Cannot reboot the VM: ' + json.message,
+                                    'error'
+                                    )
+                                }
+                            },
+                            error : function(xhr,errmsg,err) {
+                                Swal.fire(
+                                   'Reboot Errored',
+                                    errmsg,
+                                    'error'
+                                    )
+                            }
+                });
+               
+        }
+        });
+}
+
+// Destroy VM
+function destroy_vm(item){
+      Swal.fire({
+      title: 'Are you sure?',
+      text: "This will remove the iOS VM in Corellium",
+      type: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#2da532',
+    }).then((result) => {
+        if (result.value) {
+            $.ajax({
+                    url: '{% url 'destroy_instance' %}',
+                    type : 'POST',
+                    dataType: 'json',
+                        data : {
+                                csrfmiddlewaretoken: '{{ csrf_token }}',
+                                instance_id: item.id,
+                                },
+                            success : function(json) {
+                                if (json.status==='ok'){
+                                    Swal.fire(
+                                        'Destroying!',
+                                        'VM instance is being destroyed',
+                                        'success'
+                                    ).then(function () {
+                                        location.reload();
+                                    })
+                                }
+                                else {
+                                    Swal.fire(
+                                    'Destroy Failed',
+                                    'Cannot destroy the VM: ' + json.message,
+                                    'error'
+                                    )
+                                }
+                            },
+                            error : function(xhr,errmsg,err) {
+                                Swal.fire(
+                                   'Destroy Errored',
+                                    errmsg,
+                                    'error'
+                                    )
+                            }
+                });
+               
+        }
+        });
+}
+
+// Create iOS VM
+$("#create_vm").click(function() {
+  Swal.fire({
+      title: 'Are you sure?',
+      text: "This will create a new iOS VM in Corellium and will incur charges",
+      type: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#2da532',
+    }).then((result) => {
+        if (result.value) {
+            $.ajax({
+                    url: '{% url 'create_vm_instance' %}',
+                    type : 'POST',
+                    dataType: 'json',
+                        data : {
+                                csrfmiddlewaretoken: '{{ csrf_token }}',
+                                project_id: '{{ project_id }}',
+                                name: $('#vm_name').val(),
+                                flavor: $('#ios_models').find(':selected').data('flavor'),
+                                version: $('#ios_versions').find(':selected').val(),
+                                },
+                            success : function(json) {
+                                if (json.status==='ok'){
+                                    Swal.fire(
+                                        'Creating iOS VM!',
+                                        'Creating a Corellium iOS VM instance',
+                                        'success'
+                                    ).then(function () {
+                                        location.reload();
+                                    })
+                                }
+                                else {
+                                    Swal.fire(
+                                    'Creating iOS VM Failed',
+                                    'Cannot create iOS VM: ' + json.message,
+                                    'error'
+                                    )
+                                }
+                            },
+                            error : function(xhr,errmsg,err) {
+                                Swal.fire(
+                                   'Corellium iOS VM Creation Errored',
+                                    errmsg,
+                                    'error'
+                                    )
+                            }
+                });
+               
+        }
+        });
+});
+
+// Upload and Install IPA to device
+function upload_and_install(url){
+  dynamic_loader();
+  $.ajax({
+          url: url,
+          type : 'POST',
+          dataType: 'json',
+              data : {
+                      csrfmiddlewaretoken: '{{ csrf_token }}',
+                      instance_id: $('#ios_dynamic').val(),
+                      },
+                  success : function(json) {
+                      if (json.status !== 'ok'){
+                          stop_loader();
+                          Swal.fire(
+                          'IPA Install Failed',
+                          'Failed to Install IPA: ' + json.message,
+                          'error'
+                          )
+                      } else {
+                        stop_loader();
+                        Swal.fire(
+                          'IPA Installed',
+                          'The IPA is successfully installed',
+                          'success'
+                          );
+                        location.reload();
+                      }
+                  },
+                  error : function(xhr,errmsg,err) {
+                      stop_loader();
+                      Swal.fire(
+                          'IPA Install Errored',
+                          errmsg,
+                          'error'
+                          )
+                  }
+      });
+}
+</script>
+{% endblock %}

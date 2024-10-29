@@ -13,8 +13,8 @@ from django.conf import settings
 from django.utils.html import escape
 
 from mobsf.MobSF.utils import (
-    error_response,
     is_admin,
+    print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.StaticAnalyzer.views.android.db_interaction import (
@@ -122,8 +122,8 @@ def generic_compare(request,
         'common_browsable_activities': {},
         'apkid': {},
     }
-    static_fields = ['md5', 'file_name', 'size', 'icon_found',
-                     'icon_hidden', 'activities', 'services', 'providers',
+    static_fields = ['md5', 'file_name', 'size', 'icon_path',
+                     'activities', 'services', 'providers',
                      'receivers', 'exported_count', 'apkid']
 
     # For now - support only android
@@ -131,7 +131,7 @@ def generic_compare(request,
     db_entry2 = StaticAnalyzerAndroid.objects.filter(MD5=second_hash)
 
     if not (db_entry.exists() and db_entry2.exists()):
-        return error_response(
+        return print_n_send_error_response(
             request,
             'Currently you can only diff/compare android apps. '
             'One of the app has not completed static analysis or'

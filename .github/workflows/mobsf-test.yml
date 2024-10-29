@@ -11,10 +11,6 @@ jobs:
       matrix:
         os: [ubuntu-22.04]
         python-version: ['3.11']
-        # exclude:
-          # excludes py38, py39 on Windows
-          # - os: windows-latest
-          #   python-version: 3.8
 
     runs-on: ${{ matrix.os }}
     steps:

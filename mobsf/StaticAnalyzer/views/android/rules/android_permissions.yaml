@@ -1,0 +1,5483 @@
+# This file is generated with the help of https://github.com/reddr/axplorer/tree/master/permissions to cover permissions till Android API 25
+# Some of the permissions, classes, and methods are generated using ChatGPT, so the results might not be accurate.
+# Ajin Abraham - github.com/ajinabraham | GPLv3 License
+---
+- id: android.permission.SET_WALLPAPER
+  message: android.permission.SET_WALLPAPER
+  type: RegexAndOr
+  pattern:
+  - android\.accounts\.AccountAuthenticatorActivity|android\.app\.Activity|android\.app\.ActivityGroup|android\.app\.AliasActivity|android\.app\.Application|android\.app\.ExpandableListActivity|android\.app\.ListActivity|android\.app\.NativeActivity|android\.app\.TabActivity|android\.app\.WallpaperManager|android\.app\.backup|android\.content\.ContextWrapper|android\.content\.MutableContextWrapper|android\.inputmethodservice\.InputMethodService|android\.net\.VpnService|android\.service\.dreams|android\.service\.quicksettings|android\.service\.voice|android\.test\.IsolatedContext|android\.test\.RenamingDelegatingContext|android\.test\.mock|android\.view\.ContextThemeWrapper|com\.android\.server
+  - - setWallpaper\(
+    - setBitmap\(
+    - setStream\(
+    - setResource\(
+    - clear\(
+    - clearWallpaper\(
+  input_case: exact
+  severity: info
+- id: android.permission.BROADCAST_STICKY
+  message: android.permission.BROADCAST_STICKY
+  type: RegexAndOr
+  pattern:
+  - android\.accounts\.AccountAuthenticatorActivity|android\.app\.Activity|android\.app\.ActivityGroup|android\.app\.ActivityManager|android\.app\.AliasActivity|android\.app\.Application|android\.app\.ExpandableListActivity|android\.app\.ListActivity|android\.app\.NativeActivity|android\.app\.Service|android\.app\.TabActivity|android\.app\.backup|android\.bluetooth\.BluetoothAdapter|android\.content\.ContextWrapper|android\.content\.MutableContextWrapper|android\.inputmethodservice\.InputMethodService|android\.media\.MediaScannerConnection|android\.media\.browse|android\.net\.VpnService|android\.security\.KeyChain|android\.service\.dreams|android\.service\.quicksettings|android\.service\.voice|android\.speech\.SpeechRecognizer|android\.speech\.tts|android\.test\.IsolatedContext|android\.test\.RenamingDelegatingContext|android\.test\.mock|android\.view\.ContextThemeWrapper|com\.android\.server|android\.accounts\.AccountManager|android\.widget\.ZoomButtonsController|android\.content\.BroadcastReceiver
+  - - finishActivity\(
+    - removeContentProvider\(
+    - activityStopped\(
+    - unregisterReceiver\(
+    - stopLockTask\(
+    - moveTaskToFront\(
+    - activityDestroyed\(
+    - closeProfileProxy\(
+    - swapDockedAndFullscreenStack\(
+    - convertFromTranslucent\(
+    - unbindBackupAgent\(
+    - isInHomeStack\(
+    - moveTaskToDockedStack\(
+    - navigateUpToFromChild\(
+    - startActivityAndWait\(
+    - finishHeavyWeightApp\(
+    - handleApplicationCrash\(
+    - handleApplicationWtf\(
+    - stopSystemLockTaskMode\(
+    - startService\(
+    - bindBackupAgent\(
+    - setDebugApp\(
+    - dispatchKeyShortcutEvent\(
+    - stopUser\(
+    - moveActivityTaskToBack\(
+    - convertToTranslucent\(
+    - openContentUri\(
+    - isSpeaking\(
+    - startVoiceActivity\(
+    - startLockTaskModeOnCurrent\(
+    - stopSelfResult\(
+    - sendStickyOrderedBroadcastAsUser\(
+    - getLanguage\(
+    - startActivityAsUser\(
+    - setRequestedOrientation\(
+    - setProcessLimit\(
+    - removeTask\(
+    - switchUser\(
+    - finishReceiver\(
+    - clearApplicationUserData\(
+    - unbindFinished\(
+    - unbroadcastIntent\(
+    - setVisible\(
+    - getFeatures\(
+    - stopService\(
+    - disconnect\(
+    - unbindService\(
+    - removeStack\(
+    - stopAppSwitches\(
+    - startLockTaskMode\(
+    - getProfileProxy\(
+    - publishContentProviders\(
+    - setServiceForeground\(
+    - finishSubActivity\(
+    - unstableProviderDied\(
+    - startRunning\(
+    - resizeTask\(
+    - startInstrumentation\(
+    - isLanguageAvailable\(
+    - getTaskBounds\(
+    - activityIdle\(
+    - removeContentProviderExternal\(
+    - startSystemLockTaskMode\(
+    - removeOnAccountsUpdatedListener\(
+    - moveTaskToBack\(
+    - moveTasksToFullscreenStack\(
+    - activitySlept\(
+    - releaseActivityInstance\(
+    - onWakeUp\(
+    - moveTaskToStack\(
+    - setLockScreenShown\(
+    - closeSystemDialogs\(
+    - getVoice\(
+    - dismissKeyguardOnNextActivity\(
+    - setFrontActivityScreenCompatMode\(
+    - bindService\(
+    - playEarcon\(
+    - reportAssistContextExtras\(
+    - speak\(
+    - removeStickyBroadcast\(
+    - updateConfiguration\(
+    - onNavigateUp\(
+    - dispatchKeyEvent\(
+    - getProviderMimeType\(
+    - getContentProvider\(
+    - getVoices\(
+    - goingToSleep\(
+    - stopLockTaskMode\(
+    - getPrivateKey\(
+    - finishVoiceTask\(
+    - onRevoke\(
+    - removeStickyBroadcastAsUser\(
+    - onMenuItemSelected\(
+    - onNavigateUpFromChild\(
+    - getAvailableLanguages\(
+    - wakeUp\(
+    - startUserInBackground\(
+    - positionTaskInStack\(
+    - stopSelf\(
+    - dispatchTouchEvent\(
+    - sendIdleJobTrigger\(
+    - setProcessForeground\(
+    - send\(
+    - startActivityAsCaller\(
+    - inputDispatchingTimedOut\(
+    - getDefaultLanguage\(
+    - attachApplication\(
+    - setPackageScreenCompatMode\(
+    - publishService\(
+    - finishInstrumentation\(
+    - playSilence\(
+    - sendStickyBroadcast\(
+    - synthesizeToFile\(
+    - getTaskThumbnail\(
+    - startActivityFromRecents\(
+    - sendStickyOrderedBroadcast\(
+    - killUid\(
+    - setVoice\(
+    - destroy\(
+    - getDefaultVoice\(
+    - startActivity\(
+    - getCertificateChain\(
+    - bootAnimationComplete\(
+    - setLanguage\(
+    - sendStickyBroadcastAsUser\(
+    - dispatchGenericMotionEvent\(
+    - setFocusedTask\(
+    - wakingUp\(
+    - playSilentUtterance\(
+    - finish\(
+    - forceStopPackage\(
+    - releaseSomeActivities\(
+    - stopServiceToken\(
+    - stopLockTaskModeOnCurrent\(
+    - killAllBackgroundProcesses\(
+    - startActivities\(
+    - startActivityWithConfig\(
+    - shutdown\(
+    - startNextMatchingActivity\(
+    - updatePersistentConfiguration\(
+    - dispatchTrackballEvent\(
+    - killBackgroundProcesses\(
+    - resizeDockedStack\(
+    - stop\(
+    - navigateUpTo\(
+  input_case: exact
+  severity: info
+- id: android.permission.GET_TASKS
+  message: android.permission.GET_TASKS
+  type: RegexAndOr
+  pattern:
+  - android\.app\.ActivityManager|com\.android\.server
+  - - getRunningTasks\(
+    - getRunningAppProcesses\(
+    - getTasks\(
+    - getRecentTasks\(
+    - getRunningExternalApplications\(
+  input_case: exact
+  severity: info
+- id: android.permission.KILL_BACKGROUND_PROCESSES
+  message: android.permission.KILL_BACKGROUND_PROCESSES
+  type: RegexAndOr
+  pattern:
+  - android\.app\.ActivityManager|com\.android\.server
+  - - killAllBackgroundProcesses\(
+    - killBackgroundProcesses\(
+    - restartPackage\(
+  input_case: exact
+  severity: info
+- id: android.permission.REORDER_TASKS
+  message: android.permission.REORDER_TASKS
+  type: RegexAndOr
+  pattern:
+  - android\.app\.ActivityManager|com\.android\.server
+  - - moveTaskToBack\(
+    - moveTaskToFront\(
+    - moveTaskBackwards\(
+  input_case: exact
+  severity: info
+- id: android.permission.RECEIVE_BOOT_COMPLETED
+  message: android.permission.RECEIVE_BOOT_COMPLETED
+  type: RegexAndOr
+  pattern:
+  - android\.app\.JobSchedulerImpl|android\.app\.backup|com\.android\.server|android\.content\.BroadcastReceiver
+  - - schedule\(
+    - dataChanged\(
+    - registerReceiver\(
+    - onReceive\(
+  input_case: exact
+  severity: info
+- id: android.permission.DISABLE_KEYGUARD
+  message: android.permission.DISABLE_KEYGUARD
+  type: RegexAndOr
+  pattern:
+  - android\.app\.KeyguardManager|android\.app\.KeyguardManager|com\.android\.server
+  - - disableKeyguard\(
+    - exitKeyguardSecurely\(
+    - keyguardGoingAway\(
+    - dismissKeyguard\(
+    - reenableKeyguard\(
+  input_case: exact
+  severity: info
+- id: android.permission.SET_WALLPAPER_HINTS
+  message: android.permission.SET_WALLPAPER_HINTS
+  type: RegexAndOr
+  pattern:
+  - android\.app\.WallpaperManager|com\.android\.server
+  - - setDimensionHints\(
+    - setDesiredMinimumWidth\(
+    - suggestDesiredDimensions\(
+    - setDisplayPadding\(
+    - setDesiredMinimumHeight\(
+  input_case: exact
+  severity: info
+- id: android.permission.ACCESS_WIFI_STATE
+  message: android.permission.ACCESS_WIFI_STATE
+  type: RegexAndOr
+  pattern:
+  - android\.app\.admin|android\.net\.ConnectivityManager|android\.net\.sip|android\.net\.wifi|com\.android\.server|android\.net\.wifi\.WifiManager
+  - - getWifiApConfiguration\(
+    - registerNetworkCallback\(
+    - isP2pSupported\(
+    - getMessenger\(
+    - pendingListenForNetwork\(
+    - isPreferredNetworkOffloadSupported\(
+    - isScanAlwaysAvailable\(
+    - startScan\(
+    - cancelWps\(
+    - getPrivilegedConfiguredNetworks\(
+    - listenForNetwork\(
+    - isDeviceToApRttSupported\(
+    - getConfigFile\(
+    - isMulticastEnabled\(
+    - isEnhancedPowerReportingSupported\(
+    - reportActivityInfo\(
+    - getConnectionInfo\(
+    - enableNetwork\(
+    - startAudio\(
+    - getWifiStateMachineMessenger\(
+    - getFrequencyBand\(
+    - getWifiMacAddress\(
+    - disableEphemeralNetwork\(
+    - isWifiEnabled\(
+    - getCurrentNetwork\(
+    - requestActivityInfo\(
+    - getWifiEnabledState\(
+    - initialize\(
+    - getAllowScansWithTraffic\(
+    - getMatchingWifiConfig\(
+    - registerDefaultNetworkCallback\(
+    - getConfiguredNetworks\(
+    - reassociate\(
+    - startWps\(
+    - getScanResults\(
+    - setWifiEnabled\(
+    - getWifiState\(
+    - getWifiApEnabledState\(
+    - setAllowScansWithTraffic\(
+    - is5GHzBandSupported\(
+    - getSupportedFeatures\(
+    - getEnableAutoJoinWhenAssociated\(
+    - enableAggressiveHandover\(
+    - startUsingNetworkFeature\(
+    - getChannelList\(
+    - getBatchedScanResults\(
+    - getVerboseLoggingLevel\(
+    - getDhcpInfo\(
+    - saveConfiguration\(
+    - isTdlsSupported\(
+    - pingSupplicant\(
+    - getConnectionStatistics\(
+    - requestNetwork\(
+    - getWifiServiceMessenger\(
+    - getAggressiveHandover\(
+    - getP2pStateMachineMessenger\(
+    - reconnect\(
+    - updateNetwork\(
+    - enableVerboseLogging\(
+  input_case: exact
+  severity: info
+- id: android.permission.BLUETOOTH
+  message: android.permission.BLUETOOTH
+  type: RegexAndOr
+  pattern:
+  - android\.bluetooth\.BluetoothA2dp|android\.bluetooth\.BluetoothAdapter|android\.bluetooth\.BluetoothDevice|android\.bluetooth\.BluetoothGatt|android\.bluetooth\.BluetoothGattServer|android\.bluetooth\.BluetoothHeadset|android\.bluetooth\.BluetoothHealth|android\.bluetooth\.BluetoothManager|android\.bluetooth\.BluetoothSocket|android\.bluetooth\.le|android\.media\.AudioManager|android\.media\.MediaRouter|com\.android\.bluetooth|com\.android\.server|android\.net\.ConnectivityManager|android\.server\.BluetoothA2dpService|android\.server\.BluetoothService
+  - - phoneStateChanged\(
+    - getAdapterConnectionState\(
+    - removeService\(
+    - disconnectInputDevice\(
+    - getPanDeviceConnectionState\(
+    - getBluetoothClass\(
+    - isEnabled\(
+    - getName\(
+    - startScan\(
+    - registerAppConfiguration\(
+    - getConnectionState\(
+    - unregAll\(
+    - writeDescriptor\(
+    - adjustStreamVolume\(
+    - enterPrivateMode\(
+    - connectChannelToSource\(
+    - stopVoiceRecognition\(
+    - setRemoteAlias\(
+    - stopScan\(
+    - registerServer\(
+    - fetchRemoteUuids\(
+    - getBluetoothLeAdvertiser\(
+    - getType\(
+    - getClient\(
+    - abortReliableWrite\(
+    - readDescriptor\(
+    - getConnectedPanDevices\(
+    - setPasskey\(
+    - removeBond\(
+    - disconnectAll\(
+    - setPriority\(
+    - connectSocket\(
+    - startLeScan\(
+    - disconnect\(
+    - openGattServer\(
+    - getAddress\(
+    - createSocketChannel\(
+    - registerClient\(
+    - sendPassThroughCmd\(
+    - listenUsingInsecureRfcommWithServiceRecord\(
+    - getTrustState\(
+    - unregisterAppConfiguration\(
+    - unregisterAdapter\(
+    - isConnected\(
+    - registerStateChangeCallback\(
+    - startDiscovery\(
+    - getCurrentCalls\(
+    - clearServices\(
+    - unregisterServer\(
+    - sendVendorSpecificResultCode\(
+    - setPairingConfirmation\(
+    - getCurrentAgEvents\(
+    - listenUsingRfcommWithServiceRecord\(
+    - clientDisconnect\(
+    - isA2dpPlaying\(
+    - readCharacteristic\(
+    - beginReliableWrite\(
+    - disconnectChannel\(
+    - getUuids\(
+    - getConnectedHealthDevices\(
+    - numHwTrackFiltersAvailable\(
+    - connect\(
+    - getBondState\(
+    - sendDTMF\(
+    - notifyCharacteristicChanged\(
+    - connectGatt\(
+    - getPriority\(
+    - flushPendingScanResults\(
+    - enable\(
+    - connectionParameterUpdate\(
+    - clccResponse\(
+    - adjustVolume\(
+    - setMode\(
+    - getPlaybackState\(
+    - readRemoteRssi\(
+    - getLastVoiceTagNumber\(
+    - connectSinkInternal\(
+    - endReliableWrite\(
+    - sendConnectionStateChange\(
+    - getConnectedDevices\(
+    - getRemoteName\(
+    - setName\(
+    - getBondedDevices\(
+    - setTrust\(
+    - getScanMode\(
+    - refreshDevice\(
+    - listBonds\(
+    - addService\(
+    - stopUsingNetworkFeature\(
+    - dialMemory\(
+    - startVoiceRecognition\(
+    - connectAudio\(
+    - bindResponse\(
+    - beginServiceDeclaration\(
+    - registerForNotification\(
+    - getBluetoothLeScanner\(
+    - requestConnectionPriority\(
+    - isDiscovering\(
+    - getInputDevicePriority\(
+    - enableWBS\(
+    - clientConnect\(
+    - getDevicesMatchingConnectionStates\(
+    - connectHeadset\(
+    - getRemoteUuids\(
+    - getHealthDeviceConnectionState\(
+    - serverDisconnect\(
+    - requestSetVolume\(
+    - rejectCall\(
+    - startAdvertising\(
+    - addIncludedService\(
+    - isOffloadedFilteringSupported\(
+    - removeServiceRecord\(
+    - getCurrentAgFeatures\(
+    - changeApplicationBluetoothState\(
+    - disconnectPanDevice\(
+    - close\(
+    - sendNotification\(
+    - requestMtu\(
+    - serverConnect\(
+    - stopLeScan\(
+    - createBondOutOfBand\(
+    - acceptCall\(
+    - getRemoteClass\(
+    - getState\(
+    - getDiscoverableTimeout\(
+    - getPlayerSettings\(
+    - setPlayerApplicationSetting\(
+    - stopAdvertising\(
+    - cancelConnection\(
+    - requestUpdateVolume\(
+    - configHciSnoopLog\(
+    - setPin\(
+    - adjustSuggestedStreamVolume\(
+    - setBluetoothTethering\(
+    - getPhonebookAccessPermission\(
+    - getMainChannelFd\(
+    - configureMTU\(
+    - getBluetoothState\(
+    - disconnectAudio\(
+    - getProfileProxy\(
+    - isOffloadedScanBatchingSupported\(
+    - stopBluetoothSco\(
+    - dial\(
+    - getRemoteType\(
+    - addCharacteristic\(
+    - executeReliableWrite\(
+    - createInsecureRfcommSocketToServiceRecord\(
+    - isAudioOn\(
+    - getProfileConnectionState\(
+    - startUsingNetworkFeature\(
+    - unregisterStateChangeCallback\(
+    - getHealthDevicesMatchingConnectionStates\(
+    - getRemoteServiceChannel\(
+    - readOutOfBandData\(
+    - connectInputDevice\(
+    - getMessageAccessPermission\(
+    - getAudioConfig\(
+    - startBluetoothSco\(
+    - isTetheringOn\(
+    - isAudioConnected\(
+    - closeProfileProxy\(
+    - isMultiAdvertisementSupported\(
+    - isMultipleAdvertisementSupported\(
+    - addRfcommServiceRecord\(
+    - getRemoteAlias\(
+    - sdpSearch\(
+    - addDescriptor\(
+    - cancelDiscovery\(
+    - unregisterClient\(
+    - connectPanDevice\(
+    - setStreamVolume\(
+    - disableWBS\(
+    - createBond\(
+    - connectChannelToSink\(
+    - terminateCall\(
+    - explicitCallTransfer\(
+    - createRfcommSocketToServiceRecord\(
+    - disconnectSinkInternal\(
+    - redial\(
+    - disable\(
+    - setNetworkPreference\(
+    - sendResponse\(
+    - discoverServices\(
+    - getPanDevicesMatchingConnectionStates\(
+    - disconnectHeadset\(
+    - holdCall\(
+    - getInputDevicesMatchingConnectionStates\(
+    - getInputDeviceConnectionState\(
+    - roamChanged\(
+    - getSimAccessPermission\(
+    - getMetadata\(
+    - setStreamMute\(
+    - fetchUuidsWithSdp\(
+    - registerSinkAppConfiguration\(
+    - setDiscoverableTimeout\(
+    - setScanMode\(
+    - getConnectedInputDevices\(
+    - setCharacteristicNotification\(
+    - sendGroupNavigationCmd\(
+    - writeCharacteristic\(
+    - endServiceDeclaration\(
+    - finalize\(
+  input_case: exact
+  severity: info
+- id: android.permission.BLUETOOTH_ADMIN
+  message: android.permission.BLUETOOTH_ADMIN
+  type: RegexAndOr
+  pattern:
+  - android\.bluetooth\.BluetoothAdapter|android\.bluetooth\.BluetoothDevice|android\.bluetooth\.BluetoothHeadset|android\.bluetooth\.le|com\.android\.bluetooth|com\.android\.server|android\.media\.AudioManager|android\.bluetooth\.BluetoothA2dp|android\.bluetooth\.BluetoothHealth|android\.net\.ConnectivityManager|android\.server\.BluetoothA2dpService|android\.server\.BluetoothService
+  - - phoneStateChanged\(
+    - disconnectInputDevice\(
+    - startScan\(
+    - enterPrivateMode\(
+    - setInputDevicePriority\(
+    - connectChannelToSource\(
+    - stopVoiceRecognition\(
+    - stopScan\(
+    - startMultiAdvertising\(
+    - setPasskey\(
+    - removeBond\(
+    - setPriority\(
+    - setDeviceOutOfBandData\(
+    - disconnect\(
+    - getProtocolMode\(
+    - factoryReset\(
+    - unregisterAppConfiguration\(
+    - startDiscovery\(
+    - sendVendorSpecificResultCode\(
+    - setPairingConfirmation\(
+    - isA2dpPlaying\(
+    - disconnectChannel\(
+    - connect\(
+    - sendDTMF\(
+    - setReport\(
+    - cancelBondProcess\(
+    - getPriority\(
+    - enable\(
+    - clccResponse\(
+    - setMode\(
+    - getLastVoiceTagNumber\(
+    - connectSinkInternal\(
+    - enableNoAutoConnect\(
+    - setName\(
+    - setTrust\(
+    - startScanWithUuids\(
+    - stopUsingNetworkFeature\(
+    - dialMemory\(
+    - startVoiceRecognition\(
+    - virtualUnplug\(
+    - connectAudio\(
+    - bindResponse\(
+    - cancelPairingUserInput\(
+    - enableWBS\(
+    - allowIncomingProfileConnect\(
+    - stopMultiAdvertising\(
+    - connectHeadset\(
+    - setProtocolMode\(
+    - suspendSink\(
+    - setRemoteOutOfBandData\(
+    - getReport\(
+    - disconnectPanDevice\(
+    - stopLeScan\(
+    - createBondOutOfBand\(
+    - acceptCall\(
+    - stopAdvertising\(
+    - setPin\(
+    - setBluetoothTethering\(
+    - disconnectAudio\(
+    - stopBluetoothSco\(
+    - dial\(
+    - startUsingNetworkFeature\(
+    - connectInputDevice\(
+    - resumeSink\(
+    - cancelDiscovery\(
+    - sendData\(
+    - connectPanDevice\(
+    - disableWBS\(
+    - createBond\(
+    - terminateCall\(
+    - explicitCallTransfer\(
+    - disconnectSinkInternal\(
+    - redial\(
+    - disable\(
+    - setNetworkPreference\(
+    - disconnectHeadset\(
+    - holdCall\(
+    - roamChanged\(
+    - setDiscoverableTimeout\(
+    - setScanMode\(
+    - allowIncomingConnect\(
+    - rejectCall\(
+  input_case: exact
+  severity: info
+- id: android.permission.TRANSMIT_IR
+  message: android.permission.TRANSMIT_IR
+  type: RegexAndOr
+  pattern:
+  - android\.hardware\.ConsumerIrManager|com\.android\.server
+  - - getCarrierFrequencies\(
+    - transmit\(
+  input_case: exact
+  severity: info
+- id: android.permission.USE_FINGERPRINT
+  message: android.permission.USE_FINGERPRINT
+  type: RegexAndOr
+  pattern:
+  - android\.hardware\.fingerprint|com\.android\.server
+  - - authenticate\(
+    - isHardwareDetected\(
+    - cancelAuthentication\(
+    - getEnrolledFingerprints\(
+    - hasEnrolledFingerprints\(
+  input_case: exact
+  severity: info
+- id: android.permission.ACCESS_COARSE_LOCATION
+  message: android.permission.ACCESS_COARSE_LOCATION
+  type: RegexAndOr
+  pattern:
+  - android\.location\.LocationManager|android\.telephony\.TelephonyManager|com\.android\.bluetooth|com\.android\.server
+  - - requestGeofence\(
+    - addGnssMeasurementsListener\(
+    - requestLocationUpdates\(
+    - addGpsNavigationMessageListener\(
+    - startScan\(
+    - listen\(
+    - addGpsStatusListener\(
+    - getNeighboringCellInfo\(
+    - getProviderProperties\(
+    - getCellLocation\(
+    - removeProximityAlert\(
+    - requestLocationUpdatesPI\(
+    - requestSingleUpdate\(
+    - addProximityAlert\(
+    - getProviderInfo\(
+    - listenForSubscriber\(
+    - reportLocation\(
+    - registerGnssStatusCallback\(
+    - addGpsMeasurementsListener\(
+    - isProviderEnabled\(
+    - removeUpdates\(
+    - addNmeaListener\(
+    - getProviders\(
+    - getLastLocation\(
+    - addGnssNavigationMessageListener\(
+    - getProvider\(
+    - removeGeofence\(
+    - getLastKnownLocation\(
+    - getBestProvider\(
+    - sendExtraCommand\(
+  input_case: exact
+  severity: info
+- id: android.permission.ACCESS_FINE_LOCATION
+  message: android.permission.ACCESS_FINE_LOCATION
+  type: RegexAndOr
+  pattern:
+  - android\.location\.LocationManager|android\.telephony\.TelephonyManager|com\.android\.bluetooth|com\.android\.phone|com\.android\.server
+  - - getAllCellInfo\(
+    - requestGeofence\(
+    - addGnssMeasurementsListener\(
+    - requestLocationUpdates\(
+    - addGpsNavigationMessageListener\(
+    - startScan\(
+    - addGpsStatusListener\(
+    - getNeighboringCellInfo\(
+    - getProviderProperties\(
+    - getCellLocation\(
+    - removeProximityAlert\(
+    - requestLocationUpdatesPI\(
+    - requestSingleUpdate\(
+    - addProximityAlert\(
+    - getProviderInfo\(
+    - reportLocation\(
+    - registerGnssStatusCallback\(
+    - addGpsMeasurementsListener\(
+    - isProviderEnabled\(
+    - removeUpdates\(
+    - addNmeaListener\(
+    - getProviders\(
+    - getLastLocation\(
+    - addGnssNavigationMessageListener\(
+    - getProvider\(
+    - removeGeofence\(
+    - getLastKnownLocation\(
+    - getBestProvider\(
+    - sendExtraCommand\(
+    - Manifest\.permission\.ACCESS_FINE_LOCATION
+    - Context\.LOCATION_SERVICE
+  input_case: exact
+  severity: info
+- id: android.permission.ACCESS_LOCATION_EXTRA_COMMANDS
+  message: android.permission.ACCESS_LOCATION_EXTRA_COMMANDS
+  type: RegexAndOr
+  pattern:
+  - android\.location\.LocationManager|com\.android\.server
+  - - sendExtraCommand\(
+  input_case: exact
+  severity: info
+- id: android.permission.WAKE_LOCK
+  message: android.permission.WAKE_LOCK
+  type: RegexAndOr
+  pattern:
+  - android\.media\.AsyncPlayer|android\.media\.MediaPlayer|android\.media\.Ringtone|android\.media\.RingtoneManager|android\.net\.sip|android\.net\.wifi|android\.os\.PowerManager|android\.widget\.VideoView|com\.android\.server
+  - - stopPreviousRingtone\(
+    - acquire\(
+    - endCall\(
+    - setAudioAttributes\(
+    - stop\(
+    - releaseWakeLock\(
+    - release\(
+    - acquireWakeLock\(
+    - close\(
+    - acquireWifiLock\(
+    - setStreamType\(
+    - releaseWifiLock\(
+    - updateWakeLockWorkSource\(
+    - reset\(
+    - setVideoPath\(
+    - setWakeMode\(
+    - pause\(
+    - startAudio\(
+    - resume\(
+    - acquireWakeLockWithUid\(
+    - setWorkSource\(
+    - updateWakeLockUids\(
+    - onKeyDown\(
+    - getAudioSessionId\(
+    - newWakeLock\(
+    - getRingtone\(
+    - setVideoURI\(
+    - play\(
+    - start\(
+    - stopPlayback\(
+    - suspend\(
+  input_case: exact
+  severity: info
+- id: android.permission.MODIFY_AUDIO_SETTINGS
+  message: android.permission.MODIFY_AUDIO_SETTINGS
+  type: RegexAndOr
+  pattern:
+  - android\.media\.AudioManager|android\.net\.sip|com\.android\.server|android\.media\.AudioService
+  - - setBluetoothScoOn\(
+    - setSpeakerphoneOn\(
+    - startBluetoothScoVirtualCall\(
+    - setMicrophoneMute\(
+    - startBluetoothSco\(
+    - stopBluetoothSco\(
+    - setMode\(
+    - setSpeakerMode\(
+  input_case: exact
+  severity: info
+- id: android.permission.ACCESS_NETWORK_STATE
+  message: android.permission.ACCESS_NETWORK_STATE
+  type: RegexAndOr
+  pattern:
+  - android\.net\.ConnectivityManager|android\.telephony\.PhoneNumberUtils|android\.telephony\.SmsManager|android\.telephony\.TelephonyManager|android\.telephony\.gsm|com\.android\.phone|com\.android\.server|android\.net\.wifi|android\.net\.Network|android\.net\.sip
+  - - registerNetworkCallback\(
+    - openConnection\(
+    - getAllVpnInfo\(
+    - getTetheringErroredIfaces\(
+    - tether\(
+    - getConfiguration\(
+    - startTethering\(
+    - getMobileDataEnabled\(
+    - registerDefaultNetworkCallback\(
+    - disconnect\(
+    - setWifiEnabled\(
+    - addListener\(
+    - factoryReset\(
+    - isNetworkSupported\(
+    - setAcceptUnvalidated\(
+    - requestNetwork\(
+    - getActiveLinkQualityInfo\(
+    - acquire\(
+    - removeListener\(
+    - endCall\(
+    - release\(
+    - getNetworkInfoForNetwork\(
+    - reportNetworkConnectivity\(
+    - getSubscriberId\(
+    - getRestrictBackgroundStatus\(
+    - getLinkProperties\(
+    - getGroupIdLevel1\(
+    - getLinkPropertiesForType\(
+    - getAllNetworks\(
+    - getTetherableIfaces\(
+    - getDataLayerSnapshotForUid\(
+    - getActiveNetworkInfoForUid\(
+    - reassociate\(
+    - getTetheredIfaces\(
+    - getLastTetherError\(
+    - setUsbTethering\(
+    - getByteCount\(
+    - setAvoidUnvalidated\(
+    - getActiveLinkProperties\(
+    - getCliffThreshold\(
+    - startLegacyVpn\(
+    - getRestrictBackgroundByCaller\(
+    - getDeviceId\(
+    - isTetheringSupported\(
+    - getVoiceMailAlphaTag\(
+    - getNetworkCapabilities\(
+    - getProvisioningOrActiveNetworkInfo\(
+    - close\(
+    - getAllNetworkState\(
+    - requestBandwidthUpdate\(
+    - getActiveNetworkInfo\(
+    - getNetworkInfo\(
+    - enableNetwork\(
+    - startAudio\(
+    - getTetheredIfacePairs\(
+    - setProcessDefaultNetwork\(
+    - getLinkQualityInfo\(
+    - pendingRequestForNetwork\(
+    - isAvailable\(
+    - getNetworkQuotaInfo\(
+    - getTetherableWifiRegexs\(
+    - getTetherableBluetoothRegexs\(
+    - startUsingNetworkFeature\(
+    - getDataEnabled\(
+    - reconnect\(
+    - getSimSerialNumber\(
+    - sendDataMessage\(
+    - pendingListenForNetwork\(
+    - injectSmsPdu\(
+    - getIccAuthentication\(
+    - getNetworkForType\(
+    - listenForNetwork\(
+    - untether\(
+    - getVoiceMailNumber\(
+    - getDefaultNetworkCapabilitiesForUser\(
+    - getAllNetworkInfo\(
+    - getLine1Number\(
+    - getActiveNetworkQuotaInfo\(
+    - getTetherableUsbRegexs\(
+    - reportInetCondition\(
+    - updateLockdownVpn\(
+    - getThrottle\(
+    - reportBadNetwork\(
+    - getNetworkInfoForUid\(
+    - getPeriodStartTime\(
+    - isVoiceMailNumber\(
+    - getActiveNetwork\(
+    - getSimState\(
+    - getPhoneCount\(
+    - getResetTime\(
+    - getNetworkPreference\(
+    - getHelpUri\(
+    - getCliffLevel\(
+    - isActiveNetworkMetered\(
+    - getAllLinkQualityInfo\(
+    - divideMessage\(
+  input_case: exact
+  severity: info
+- id: android.permission.CHANGE_NETWORK_STATE
+  message: android.permission.CHANGE_NETWORK_STATE
+  type: RegexAndOr
+  pattern:
+  - android\.net\.ConnectivityManager|com\.android\.server|com\.android\.bluetooth
+  - - registerNetworkCallback\(
+    - setMobileDataEnabled\(
+    - setRadios\(
+    - listenForNetwork\(
+    - untether\(
+    - setConfiguration\(
+    - requestRouteToHost\(
+    - setNetworkPreference\(
+    - tether\(
+    - setBluetoothTethering\(
+    - registerDefaultNetworkCallback\(
+    - setProcessDefaultNetwork\(
+    - pendingRequestForNetwork\(
+    - bindProcessToNetwork\(
+    - requestRouteToHostAddress\(
+    - stopUsingNetworkFeature\(
+    - setRadio\(
+    - startUsingNetworkFeature\(
+    - setGlobalProxy\(
+    - setUsbTethering\(
+    - requestNetwork\(
+    - setWifiApEnabled\(
+  input_case: exact
+  severity: info
+- id: android.permission.INTERNET
+  message: android.permission.INTERNET
+  type: RegexAndOr
+  pattern:
+  - android\.net\.ConnectivityManager|com\.android\.server|com\.android\.providers|java\.net|org\.apache\.http|javax\.net\.ssl|okhttp3\.OkHttpClient
+  - - getMessenger\(
+    - setConnectTimeout\(
+    - openConnection\(
+    - setUseCaches\(
+    - setDoOutput\(
+    - connect\(
+    - disconnect\(
+    - setRequestProperty\(
+    - setInstanceFollowRedirects\(
+    - reportNetworkConnectivity\(
+    - getInputStream\(
+    - getOutputStream\(
+    - setRequestMethod\(
+    - reportInetCondition\(
+    - setReadTimeout\(
+    - reportBadNetwork\(
+    - setFixedLengthStreamingMode\(
+    - setDoInput\(
+    - setIfModifiedSince\(
+    - setChunkedStreamingMode\(
+    - setAllowUserInteraction\(
+    - setDefaultUseCaches\(
+    - openStream\(
+    - AndroidHttpClient\(
+    - newParams\(
+    - setSSLSocketFactory\(
+    - getContentLength\(
+    - getContentEncoding\(
+    - openSecureConnection\(
+    - getResponseCode\(
+    - setInstanceFollowRedirects\(
+    - okHttpClient\(
+    - addHeader\(
+    - Request\.Builder\(
+    - OkHttpClient\.Builder\(
+  input_case: exact
+  severity: info
+- id: android.permission.USE_SIP
+  message: android.permission.USE_SIP
+  type: RegexAndOr
+  pattern:
+  - android\.net\.sip|com\.android\.server|android\.net\.sip\.SipManager
+  - - makeAudioCall\(
+    - createSession\(
+    - takeVideoCall\(
+    - register\(
+    - createSipSession\(
+    - open\(
+    - close\(
+    - isRegistered\(
+    - getListOfProfiles\(
+    - unregister\(
+    - open3\(
+    - makeVideoCall\(
+    - setRegistrationListener\(
+    - getSessionFor\(
+    - isOpened\(
+    - takeAudioCall\(
+    - getPendingSession\(
+  input_case: exact
+  severity: info
+- id: android.permission.CHANGE_WIFI_MULTICAST_STATE
+  message: android.permission.CHANGE_WIFI_MULTICAST_STATE
+  type: RegexAndOr
+  pattern:
+  - android\.net\.wifi|com\.android\.server
+  - - acquireMulticastLock\(
+    - releaseMulticastLock\(
+    - initializeMulticastFiltering\(
+    - acquire\(
+    - release\(
+  input_case: exact
+  severity: info
+- id: android.permission.CHANGE_WIFI_STATE
+  message: android.permission.CHANGE_WIFI_STATE
+  type: RegexAndOr
+  pattern:
+  - android\.net\.wifi|com\.android\.server
+  - - removeNetwork\(
+    - startWifi\(
+    - getMessenger\(
+    - setCountryCode\(
+    - setFrequencyBand\(
+    - addToBlacklist\(
+    - startScan\(
+    - clearBlacklist\(
+    - cancelWps\(
+    - requestBatchedScan\(
+    - stopWifi\(
+    - setWifiApConfiguration\(
+    - pollBatchedScan\(
+    - enableNetwork\(
+    - getWifiStateMachineMessenger\(
+    - disableEphemeralNetwork\(
+    - initialize\(
+    - reassociate\(
+    - setWifiEnabled\(
+    - disconnect\(
+    - startWps\(
+    - setEnableAutoJoinWhenAssociated\(
+    - factoryReset\(
+    - disableNetwork\(
+    - saveConfiguration\(
+    - stopBatchedScan\(
+    - addOrUpdateNetwork\(
+    - getWifiServiceMessenger\(
+    - addNetwork\(
+    - getP2pStateMachineMessenger\(
+    - reconnect\(
+    - updateNetwork\(
+    - setWifiApEnabled\(
+  input_case: exact
+  severity: info
+- id: android.permission.VIBRATE
+  message: android.permission.VIBRATE
+  type: RegexAndOr
+  pattern:
+  - android\.os\.SystemVibrator|com\.android\.server|android\.os\.Vibrator
+  - - cancelVibrate\(
+    - vibratePattern\(
+    - cancel\(
+    - vibrate\(
+  input_case: exact
+  severity: info
+- id: android.permission.RECEIVE_MMS
+  message: android.permission.RECEIVE_MMS
+  type: RegexAndOr
+  pattern:
+  - android\.telephony\.SmsManager|com\.android\.server|android\.content\.BroadcastReceiver
+  - - downloadMessage\(
+    - downloadMultimediaMessage\(
+    - onReceive\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_EXTERNAL_STORAGE
+  message: android.permission.READ_EXTERNAL_STORAGE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.internal|com\.android\.server|com\.android\.providers|android\.content\.Context|java\.io\.FileInputStream
+  - - openFile\(
+    - InputStreamReader\(
+    - FileInputStream\(
+  input_case: exact
+  severity: info
+- id: android.permission.SEND_SMS
+  message: android.permission.SEND_SMS
+  type: RegexAndOr
+  pattern:
+  - android\.telephony\.SmsManager|android\.telephony\.gsm|com\.android\.internal|com\.android\.server
+  - - sendDataMessage\(
+    - sendMessage\(
+    - copyMessageToIccEf\(
+    - updateMessageOnIccEfForSubscriber\(
+    - sendData\(
+    - sendTextForSubscriber\(
+    - updateMessageOnIccEf\(
+    - sendMultimediaMessage\(
+    - sendStoredMessage\(
+    - sendMultipartText\(
+    - sendMultipartTextMessage\(
+    - sendStoredMultipartText\(
+    - sendMultipartTextForSubscriber\(
+    - sendTextMessage\(
+    - sendDataForSubscriberWithSelfPermissions\(
+    - sendTextForSubscriberWithSelfPermissions\(
+    - sendStoredText\(
+    - sendDataForSubscriber\(
+    - sendText\(
+    - vnd\.android-dir/mms-sms
+    - copyMessageToIccEfForSubscriber\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_PHONE_STATE
+  message: android.permission.READ_PHONE_STATE
+  type: RegexAndOr
+  pattern:
+  - android\.telephony\.TelephonyManager|com\.android\.server|com\.android\.internal|android\.telecom\.TelecomManager|android\.telephony\.PhoneNumberUtils|android\.telephony\.SmsManager|android\.telephony\.SubscriptionManager|android\.telephony\.gsm|com\.android\.phone
+  - - isTtySupported\(
+    - getAllSubInfoCount\(
+    - getMsisdn\(
+    - getDeviceId\(
+    - getSimSerialNumber\(
+    - setColor\(
+    - getPcscfAddress\(
+    - getLine1NumberForDisplay\(
+    - getVoiceMailAlphaTag\(
+    - divideMessage\(
+    - listen\(
+    - addSubInfoRecord\(
+    - getActiveSubInfoList\(
+    - getLine1AlphaTag\(
+    - setDataRoaming\(
+    - getActiveSubscriptionInfoForSimSlotIndex\(
+    - getDeviceSvn\(
+    - getCalculatedPreferredNetworkType\(
+    - clearDefaultsForInactiveSubIds\(
+    - getVoiceMailNumber\(
+    - getLine1AlphaTagForDisplay\(
+    - addOnSubscriptionsChangedListener\(
+    - getCallState\(
+    - getSubscriberId\(
+    - getLine1Number\(
+    - isRinging\(
+    - getIccSerialNumber\(
+    - getGroupIdLevel1\(
+    - getAllSubInfoList\(
+    - getActiveSubscriptionInfoList\(
+    - setDisplayNameUsingSrc\(
+    - isInCall\(
+    - getNetworkPolicies\(
+    - listenForSubscriber\(
+    - getMeid\(
+    - getSubInfoUsingSlotId\(
+    - getSubInfoForSubscriber\(
+    - getActiveSubscriptionInfoCount\(
+    - getDeviceIdForPhone\(
+    - getSubInfoUsingIccId\(
+    - isVoiceMailNumber\(
+    - setDisplayNumberFormat\(
+    - getDeviceSoftwareVersion\(
+    - getActiveSubscriptionInfo\(
+    - getImei\(
+    - clearSubInfo\(
+    - setDisplayNumber\(
+    - getCurrentTtyMode\(
+    - getActiveSubInfoCount\(
+    - isSimPinEnabled\(
+    - getSimplifiedNetworkSettingsEnabledForSubscriber\(
+    - showInCallScreen\(
+    - setDisplayName\(
+  input_case: exact
+  severity: info
+- id: android.permission.LOCATION_HARDWARE
+  message: android.permission.LOCATION_HARDWARE
+  type: RegexAndOr
+  pattern:
+  - android\.hardware\.location|com\.android\.server
+  - - loadNanoApp\(
+    - unloadNanoApp\(
+    - isActivitySupported\(
+    - enableActivityEvent\(
+    - registerSink\(
+    - getNanoAppInstanceInfo\(
+    - findNanoAppOnHub\(
+    - getP2pStateMachineMessenger\(
+    - startScan\(
+    - getSupportedActivities\(
+    - disableActivityEvent\(
+    - getContextHubHandles\(
+    - registerCallback\(
+    - getContextHubInfo\(
+    - unregisterSink\(
+    - flush\(
+  input_case: exact
+  severity: info
+- id: android.permission.BLUETOOTH_PRIVILEGED
+  message: android.permission.BLUETOOTH_PRIVILEGED
+  type: RegexAndOr
+  pattern:
+  - com\.android\.bluetooth
+  - - createBond\(
+    - createBondOutOfBand\(
+    - isActivityAndEnergyReportingSupported\(
+    - removeBond\(
+    - reportActivityInfo\(
+    - requestActivityInfo\(
+    - setMessageAccessPermission\(
+    - setPairingConfirmation\(
+    - setPhonebookAccessPermission\(
+    - setSimAccessPermission\(
+    - readCharacteristic\(
+    - readDescriptor\(
+    - registerForNotification\(
+    - startScan\(
+    - writeCharacteristic\(
+    - writeDescriptor\(
+    - getActivityEnergyInfoFromController\(
+    - getAdvManufacturerData\(
+    - getAdvServiceData\(
+    - getAdvServiceUuids\(
+    - isAdvertising\(
+    - removeAdvManufacturerCodeAndData\(
+    - setAdvManufacturerCodeAndData\(
+    - setAdvServiceData\(
+    - startAdvertising\(
+    - stopAdvertising\(
+  input_case: exact
+  severity: info
+- id: android.permission.PEERS_MAC_ADDRESS
+  message: android.permission.PEERS_MAC_ADDRESS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.bluetooth|com\.android\.server
+  - - startScan\(
+    - getScanResults\(
+  input_case: exact
+  severity: info
+- id: android.permission.UPDATE_DEVICE_STATS
+  message: android.permission.UPDATE_DEVICE_STATS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.bluetooth|com\.android\.server|android\.os\.BatteryStatsImpl
+  - - finishSubActivity\(
+    - killUid\(
+    - startScan\(
+    - noteWifiBatchedScanStoppedFromSource\(
+    - noteStartGps\(
+    - unbindBackupAgent\(
+    - noteLongPartialWakelockStart\(
+    - notePauseComponent\(
+    - noteBluetoothOff\(
+    - setLockScreenShown\(
+    - noteNetworkStatsEnabled\(
+    - noteStartCamera\(
+    - startActivityFromRecents\(
+    - moveTaskToFront\(
+    - startUserInBackground\(
+    - noteBleScanStopped\(
+    - noteModemControllerActivity\(
+    - noteStopWakelockFromSource\(
+    - noteStopVideo\(
+    - scheduleAsPackage\(
+    - bindBackupAgent\(
+    - noteBluetoothOn\(
+    - noteWifiScanStartedFromSource\(
+    - noteResetFlashlight\(
+    - noteSyncFinish\(
+    - noteScanWifiLockAcquired\(
+    - noteUserActivity\(
+    - noteBluetoothState\(
+    - noteWifiBatchedScanStartedFromSource\(
+    - startActivityAndWait\(
+    - startActivityAsCaller\(
+    - noteChangeWakelockFromSource\(
+    - shutdown\(
+    - noteWifiMulticastEnabled\(
+    - startVoiceActivity\(
+    - removeTask\(
+    - noteWifiRunning\(
+    - noteInputEvent\(
+    - updateWifiLockWorkSource\(
+    - startActivities\(
+    - noteScreenOff\(
+    - noteWifiStopped\(
+    - navigateUpTo\(
+    - update\(
+    - noteStartWakelock\(
+    - setFrontActivityScreenCompatMode\(
+    - acquireWakeLock\(
+    - finishHeavyWeightApp\(
+    - noteWifiScanStopped\(
+    - startActivity\(
+    - noteBleScanStarted\(
+    - requestBatchedScan\(
+    - noteWakeupAlarm\(
+    - notePhoneState\(
+    - startLockTaskMode\(
+    - setServiceForeground\(
+    - noteWifiScanStarted\(
+    - notePhoneDataConnectionState\(
+    - releaseActivityInstance\(
+    - noteResetAudio\(
+    - setPackageScreenCompatMode\(
+    - moveTaskToBack\(
+    - setDebugApp\(
+    - startNextMatchingActivity\(
+    - noteScanWifiLockReleased\(
+    - noteVibratorOn\(
+    - noteFullWifiLockReleased\(
+    - noteStartWakelockFromSource\(
+    - unregisterReceiver\(
+    - setFocusedStack\(
+    - noteWifiMulticastDisabled\(
+    - updateAllPhoneStateLocked\(
+    - noteResetCamera\(
+    - stopLockTaskModeOnCurrent\(
+    - noteFlashlightOn\(
+    - noteEvent\(
+    - noteNetworkInterfaceType\(
+    - noteWifiControllerActivity\(
+    - updateConfiguration\(
+    - noteFlashlightOff\(
+    - requestLocationUpdates\(
+    - noteMobileRadioPowerState\(
+    - stopAppSwitches\(
+    - handleApplicationCrash\(
+    - activityIdle\(
+    - noteWifiRunningChanged\(
+    - noteBluetoothControllerActivity\(
+    - noteScanWifiLockReleasedFromSource\(
+    - acquireWifiLock\(
+    - noteStopGps\(
+    - noteStopAudio\(
+    - removeContentProvider\(
+    - noteWakeUp\(
+    - moveTaskToStack\(
+    - noteScanWifiLockAcquiredFromSource\(
+    - noteJobFinish\(
+    - noteScreenState\(
+    - startActivityAsUser\(
+    - updatePersistentConfiguration\(
+    - notePhoneOn\(
+    - moveActivityTaskToBack\(
+    - noteJobStart\(
+    - unbindFinished\(
+    - finishActivityAffinity\(
+    - noteWifiOff\(
+    - noteResumeComponent\(
+    - startActivityWithConfig\(
+    - noteFullWifiLockAcquired\(
+    - noteWifiMulticastDisabledFromSource\(
+    - requestVisibleBehind\(
+    - noteDeviceIdleMode\(
+    - notePhoneOff\(
+    - noteStopSensor\(
+    - noteFullWifiLockReleasedFromSource\(
+    - noteScreenOn\(
+    - noteVibratorOff\(
+    - noteFullWifiLockAcquiredFromSource\(
+    - setBatteryState\(
+    - noteStopCamera\(
+    - noteInteractive\(
+    - activitySlept\(
+    - noteWifiState\(
+    - noteResetBleScan\(
+    - handleApplicationWtf\(
+    - updateWakeLockWorkSource\(
+    - publishContentProviders\(
+    - activityPaused\(
+    - noteStartAudio\(
+    - set\(
+    - noteWifiSupplicantStateChanged\(
+    - convertFromTranslucent\(
+    - noteWifiOn\(
+    - backgroundResourcesReleased\(
+    - publishService\(
+    - noteStartSensor\(
+    - forceStopPackage\(
+    - noteResetVideo\(
+    - keyguardWaitingForActivityDrawn\(
+    - noteLongPartialWakelockFinish\(
+    - noteWifiRssiChanged\(
+    - updateWakeLockUids\(
+    - noteLaunchTime\(
+    - noteConnectivityChanged\(
+    - noteWifiMulticastEnabledFromSource\(
+    - setProcessLimit\(
+    - unhandledBack\(
+    - setProcessForeground\(
+    - noteScreenBrightness\(
+    - noteSyncStart\(
+    - noteWifiRadioPowerState\(
+    - noteWifiScanStoppedFromSource\(
+    - startLockTaskModeOnCurrent\(
+    - noteStopWakelock\(
+    - noteStartVideo\(
+    - notePhoneSignalStrength\(
+  input_case: exact
+  severity: info
+- id: android.permission.MODIFY_PHONE_STATE
+  message: android.permission.MODIFY_PHONE_STATE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.bluetooth|com\.android\.internal|com\.android\.phone|com\.android\.server|android\.media\.AudioService
+  - - notifyPreciseDataConnectionFailed\(
+    - unregisterMediaButtonEventReceiverForCalls\(
+    - setDisplayName\(
+    - playDtmfTone\(
+    - toggleHold\(
+    - enableVideoCalling\(
+    - notifyDataConnectionRealTimeInfo\(
+    - notifyDataConnection\(
+    - supplyPukReportResult\(
+    - notifyDataActivity\(
+    - notifyCellLocation\(
+    - setMode\(
+    - notifyMessageWaitingChanged\(
+    - iccCloseLogicalChannel\(
+    - setDataEnabled\(
+    - handlePinMmi\(
+    - addSubInfoRecord\(
+    - setImsRegistrationState\(
+    - toggleRadioOnOffForSubscriber\(
+    - setNetworkSelectionModeAutomatic\(
+    - cancelMissedCallsNotification\(
+    - answerRingingCall\(
+    - getCdmaMdn\(
+    - notifyCellLocationForSubscriber\(
+    - factoryReset\(
+    - nvWriteCdmaPrl\(
+    - notifyCarrierNetworkChange\(
+    - setRadioPower\(
+    - iccOpenLogicalChannel\(
+    - enableDataConnectivity\(
+    - supplyPinReportResultForSubscriber\(
+    - notifyCallState\(
+    - notifyCallForwardingChangedForSubscriber\(
+    - carrierActionSetMeteredApnsEnabled\(
+    - supplyPukForSubscriber\(
+    - supplyPukReportResultForSubscriber\(
+    - nvResetConfig\(
+    - setAllowedCarriers\(
+    - iccTransmitApduLogicalChannel\(
+    - setLine1NumberForDisplayForSubscriber\(
+    - notifyMessageWaitingChangedForPhoneId\(
+    - swap\(
+    - notifyOemHookRawEventForSubscriber\(
+    - setOperatorBrandOverride\(
+    - setDisplayNumber\(
+    - supplyPinForSubscriber\(
+    - setSimProvisioningStatus\(
+    - shutdownMobileRadios\(
+    - setNetworkSelectionModeManual\(
+    - setVisualVoicemailEnabled\(
+    - setFlags\(
+    - iccExchangeSimIO\(
+    - iccTransmitApduBasicChannel\(
+    - sendEnvelopeWithStatus\(
+    - getTetherApnRequired\(
+    - getPreferredNetworkType\(
+    - roamChanged\(
+    - nvReadItem\(
+    - acceptRingingCall\(
+    - setDefaultSmsSubId\(
+    - clccResponse\(
+    - notifySignalStrengthForSubscriber\(
+    - endCall\(
+    - handlePinMmiForSubscriber\(
+    - notifyCallStateForPhoneId\(
+    - setPreferredNetworkType\(
+    - unregisterPhoneAccount\(
+    - updateConfigForPhoneId\(
+    - disableApnType\(
+    - notifyOtaspChanged\(
+    - setDefaultDataSubId\(
+    - setIconTint\(
+    - phoneStateChanged\(
+    - notifyDataConnectionFailed\(
+    - notifyDataActivityForSubscriber\(
+    - notifyCellInfo\(
+    - notifyCallStateForSubscriber\(
+    - silenceRinger\(
+    - notifyDisconnectCause\(
+    - getTelephonyHistograms\(
+    - disableDataConnectivity\(
+    - enableSimplifiedNetworkSettingsForSubscriber\(
+    - merge\(
+    - registerMediaButtonEventReceiverForCalls\(
+    - supplyPuk\(
+    - setSubscriptionProperty\(
+    - notifyConfigChangedForSubId\(
+    - requestAudioFocus\(
+    - nvWriteItem\(
+    - carrierActionSetRadioEnabled\(
+    - setSimCallManager\(
+    - getCdmaMin\(
+    - setRadio\(
+    - setPolicyDataEnabled\(
+    - toggleRadioOnOff\(
+    - notifyPreciseCallState\(
+    - notifyDataConnectionForSubscriber\(
+    - enableApnType\(
+    - notifySignalStrength\(
+    - setRadioForSubscriber\(
+    - requestModemActivityInfo\(
+    - getCellNetworkScanResults\(
+    - notifyServiceState\(
+    - setDataRoaming\(
+    - setDefaultVoiceSubId\(
+    - notifySignalStrengthForPhoneId\(
+    - notifyCellInfoForSubscriber\(
+    - clearAccounts\(
+    - setUserSelectedOutgoingPhoneAccount\(
+    - notifyDataConnectionFailedForSubscriber\(
+    - notifyCallForwardingChanged\(
+    - notifyServiceStateForPhoneId\(
+    - supplyPinReportResult\(
+    - clearSubInfo\(
+    - answerRingingCallForSubscriber\(
+    - registerPhoneAccount\(
+    - setDisplayNameUsingSrc\(
+    - mute\(
+    - clearDefaultsForInactiveSubIds\(
+    - stopDtmfTone\(
+    - invokeOemRilRequestRaw\(
+    - notifyVoLteServiceStateChanged\(
+    - supplyPin\(
+  input_case: exact
+  severity: info
+- id: android.permission.TETHER_PRIVILEGED
+  message: android.permission.TETHER_PRIVILEGED
+  type: RegexAndOr
+  pattern:
+  - com\.android\.bluetooth|com\.android\.server
+  - - startTethering\(
+    - factoryReset\(
+    - stopTethering\(
+    - tether\(
+    - untether\(
+    - setUsbTethering\(
+    - setWifiApEnabled\(
+    - setBluetoothTethering\(
+  input_case: exact
+  severity: info
+- id: android.car.permission.CAR_RADIO
+  message: android.car.permission.CAR_RADIO
+  type: RegexAndOr
+  pattern:
+  - com\.android\.car
+  - - setPreset\(
+    - getCarService\(
+  input_case: exact
+  severity: info
+- id: android.car.permission.CAR_CAMERA
+  message: android.car.permission.CAR_CAMERA
+  type: RegexAndOr
+  pattern:
+  - com\.android\.car
+  - - getCarService\(
+  input_case: exact
+  severity: info
+- id: android.car.permission.CAR_HVAC
+  message: android.car.permission.CAR_HVAC
+  type: RegexAndOr
+  pattern:
+  - com\.android\.car
+  - - getCarService\(
+  input_case: exact
+  severity: info
+- id: android.car.permission.CAR_MOCK_VEHICLE_HAL
+  message: android.car.permission.CAR_MOCK_VEHICLE_HAL
+  type: RegexAndOr
+  pattern:
+  - com\.android\.car
+  - - getCarService\(
+  input_case: exact
+  severity: info
+- id: android.car.permission.CAR_NAVIGATION_MANAGER
+  message: android.car.permission.CAR_NAVIGATION_MANAGER
+  type: RegexAndOr
+  pattern:
+  - com\.android\.car
+  - - getCarService\(
+  input_case: exact
+  severity: info
+- id: android.car.permission.CAR_PROJECTION
+  message: android.car.permission.CAR_PROJECTION
+  type: RegexAndOr
+  pattern:
+  - com\.android\.car
+  - - getCarService\(
+  input_case: exact
+  severity: info
+- id: android.car.permission.CONTROL_APP_BLOCKING
+  message: android.car.permission.CONTROL_APP_BLOCKING
+  type: RegexAndOr
+  pattern:
+  - com\.android\.car
+  - - setAppBlockingPolicy\(
+  input_case: exact
+  severity: info
+- id: android.permission.CALL_PRIVILEGED
+  message: android.permission.CALL_PRIVILEGED
+  type: RegexAndOr
+  pattern:
+  - com\.android\.internal|android\.telecom\.TelecomManager
+  - - getCompleteVoiceMailNumberForSubscriber\(
+    - placeCall\(
+    - acceptRingingCall\(
+    - endCall\(
+    - getCompleteVoiceMailNumber\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_PRIVILEGED_PHONE_STATE
+  message: android.permission.READ_PRIVILEGED_PHONE_STATE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.internal|com\.android\.phone|com\.android\.server
+  - - getVoiceMailNumberForSubscriber\(
+    - getCdmaEriIconIndex\(
+    - getAllSubInfoList\(
+    - addListener\(
+    - setRestrictBackground\(
+    - getCdmaPrlVersion\(
+    - getIccSerialNumber\(
+    - getImeiForSubscriber\(
+    - getNaiForSubscriber\(
+    - getCdmaEriIconModeForSubscriber\(
+    - getDeviceSoftwareVersionForSlot\(
+    - getActiveSubscriptionInfoList\(
+    - getAllSubInfoCount\(
+    - getAidForAppType\(
+    - getVoiceMailAlphaTagForSubscriber\(
+    - factoryReset\(
+    - setDeviceIdleMode\(
+    - getLine1Number\(
+    - getDataNetworkTypeForSubscriber\(
+    - isRingingForSubscriber\(
+    - getActiveSubscriptionInfoForIccId\(
+    - getPcscfAddress\(
+    - listenForSubscriber\(
+    - getDataNetworkType\(
+    - isRinging\(
+    - getConfigForSubId\(
+    - isRadioOn\(
+    - isWorldPhone\(
+    - getCdmaEriTextForSubscriber\(
+    - getLteOnCdmaMode\(
+    - getLteOnCdmaModeForSubscriber\(
+    - getDeviceIdForPhone\(
+    - getDeviceSvn\(
+    - isIdle\(
+    - getVoiceNetworkTypeForSubscriber\(
+    - getIsimIst\(
+    - getIsimChallengeResponse\(
+    - getMergedSubscriberIds\(
+    - getSubscriberId\(
+    - getDeviceId\(
+    - getActiveSubscriptionInfo\(
+    - getServiceStateForSubscriber\(
+    - removeListener\(
+    - getNetworkTypeForSubscriber\(
+    - isIdleForSubscriber\(
+    - getSystemVisualVoicemailSmsFilterSettings\(
+    - isVisualVoicemailEnabled\(
+    - getIsimImpu\(
+    - isVideoCallingEnabled\(
+    - getCalculatedPreferredNetworkType\(
+    - getIccSimChallengeResponse\(
+    - getVoiceMailNumber\(
+    - getVoiceMailAlphaTag\(
+    - addOnSubscriptionsChangedListener\(
+    - getCdmaEriIconIndexForSubscriber\(
+    - isRadioOnForSubscriber\(
+    - getIsimDomain\(
+    - getImeiForSlot\(
+    - listen\(
+    - getMsisdnForSubscriber\(
+    - getCdmaEriText\(
+    - getIsimPcscf\(
+    - canChangeDtmfToneLength\(
+    - getActiveSubInfoCount\(
+    - getLine1NumberForSubscriber\(
+    - getCdmaEriIconMode\(
+    - getGroupIdLevel1\(
+    - getMsisdn\(
+    - isSimPinEnabled\(
+    - getLine1AlphaTag\(
+    - getActiveSubscriptionInfoForSimSlotIndex\(
+    - getNetworkPolicies\(
+    - getAllowedCarriers\(
+    - getSubscriberIdForSubscriber\(
+    - getRadioAccessFamily\(
+    - getGroupIdLevel1ForSubscriber\(
+    - getEsn\(
+    - getDeviceSvnUsingSubId\(
+    - getLine1AlphaTagForDisplay\(
+    - isOffhookForSubscriber\(
+    - isOffhook\(
+    - getSubscriptionProperty\(
+    - getLine1AlphaTagForSubscriber\(
+    - getIsimImpi\(
+    - getLine1NumberForDisplay\(
+    - getIccSerialNumberForSubscriber\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_CONTACTS
+  message: android.permission.READ_CONTACTS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.internal|com\.android\.server|android\.provider\.ContactsContract
+  - - query\(
+    - getAdnRecordsInEfForSubscriber\(
+    - getSeparateProfileChallengeEnabled\(
+    - openContactPhotoInputStream\(
+    - getAdnRecordsInEf\(
+    - systemReady\(
+    - getString\(
+    - lookupContact\(
+  input_case: exact
+  severity: info
+- id: android.permission.WRITE_CONTACTS
+  message: android.permission.WRITE_CONTACTS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.internal|android\.provider\.ContactsContract
+  - - update\(
+    - updateAdnRecordsInEfBySearch\(
+    - updateAdnRecordsInEfByIndex\(
+    - insert\(
+    - updateAdnRecordsInEfByIndexForSubscriber\(
+    - updateAdnRecordsInEfBySearchForSubscriber\(
+  input_case: exact
+  severity: info
+- id: android.permission.RECEIVE_SMS
+  message: android.permission.RECEIVE_SMS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.internal|android\.content\.BroadcastReceiver
+  - - disableCellBroadcastRange\(
+    - enableCellBroadcastRange\(
+    - Telephony\.SMS_RECEIVED
+    - disableCellBroadcastRangeForSubscriber\(
+    - getMessagesFromIntent\(
+    - getAllMessagesFromIccEf\(
+    - "\\.createFromPdu\\("
+    - updateMessageOnIccEf\(
+    - disableCellBroadcast\(
+    - enableCellBroadcastForSubscriber\(
+    - disableCellBroadcastForSubscriber\(
+    - onReceive\(
+    - copyMessageToIccEf\(
+    - getAllMessagesFromIccEfForSubscriber\(
+    - enableCellBroadcast\(
+    - enableCellBroadcastRangeForSubscriber\(
+    - updateMessageOnIccEfForSubscriber\(
+    - copyMessageToIccEfForSubscriber\(
+  input_case: exact
+  severity: info
+- id: android.permission.SEND_SMS_NO_CONFIRMATION
+  message: android.permission.SEND_SMS_NO_CONFIRMATION
+  type: RegexAndOr
+  pattern:
+  - com\.android\.internal
+  - - sendDataForSubscriber\(
+    - sendDataForSubscriberWithSelfPermissions\(
+    - sendMultipartTextForSubscriber\(
+    - sendStoredMultipartText\(
+    - sendStoredText\(
+    - sendTextForSubscriber\(
+    - sendTextForSubscriberWithSelfPermissions\(
+    - sendData\(
+    - sendMultipartText\(
+    - sendText\(
+  input_case: exact
+  severity: info
+- id: android.permission.CALL_PHONE
+  message: android.permission.CALL_PHONE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.phone|android\.telecom\.TelecomManager|android\.content\.Intent
+  - - placeCall\(
+    - endCallForSubscriber\(
+    - acceptRingingCall\(
+    - endCall\(
+    - call\(
+    - ACTION_CALL
+  input_case: exact
+  severity: info
+- id: android.permission.CONTROL_LOCATION_UPDATES
+  message: android.permission.CONTROL_LOCATION_UPDATES
+  type: RegexAndOr
+  pattern:
+  - com\.android\.phone
+  - - disableLocationUpdates\(
+    - disableLocationUpdatesForSubscriber\(
+    - enableLocationUpdates\(
+    - enableLocationUpdatesForSubscriber\(
+  input_case: exact
+  severity: info
+- id: android.permission.CONNECTIVITY_INTERNAL
+  message: android.permission.CONNECTIVITY_INTERNAL
+  type: RegexAndOr
+  pattern:
+  - com\.android\.phone|com\.android\.server|com\.android\.bluetooth|android\.net\.wifi
+  - - getInterfaceTxThrottle\(
+    - setInterfaceDown\(
+    - setConfiguration\(
+    - clearHostExemption\(
+    - logEvent\(
+    - stopAccessPoint\(
+    - createPhysicalNetwork\(
+    - setConnectivityListener\(
+    - setDnsInterfaceForPid\(
+    - setRestrictBackground\(
+    - getNetworkStatsUidDetail\(
+    - clearDnsInterfaceForPid\(
+    - checkMobileProvisioning\(
+    - getIpForwardingEnabled\(
+    - getWpsNfcConfigurationToken\(
+    - setDefaultNetId\(
+    - setMarkedForwarding\(
+    - createVirtualNetwork\(
+    - setInterfaceUp\(
+    - setUidCleartextNetworkPolicy\(
+    - addRoute\(
+    - enableIpv6\(
+    - isTetheringStarted\(
+    - disableNat\(
+    - setDnsForwarders\(
+    - setMtu\(
+    - getMarkForProtect\(
+    - removeIdleTimer\(
+    - getCountryCode\(
+    - addInterfaceToNetwork\(
+    - enableWifiConnectivityManager\(
+    - wifiFirmwareReload\(
+    - setUidRangeRoute\(
+    - registerNetworkAgent\(
+    - setDataDependency\(
+    - factoryReset\(
+    - addUidPolicy\(
+    - setDefaultInterfaceForDns\(
+    - getP2pStateMachineMessenger\(
+    - removeVpnUidRanges\(
+    - setInterfaceIpv6NdOffload\(
+    - setMiracastMode\(
+    - removeUidPolicy\(
+    - logEvents\(
+    - setBluetoothTethering\(
+    - setUidPolicy\(
+    - clearDefaultNetId\(
+    - setNetworkPolicies\(
+    - schedule\(
+    - attachPppd\(
+    - setDnsServersForInterface\(
+    - flushDefaultDnsCache\(
+    - clearInterfaceAddresses\(
+    - setWifiApEnabled\(
+    - setGlobalAlert\(
+    - requestNetworkTransitionWakelock\(
+    - setAirplaneMode\(
+    - advisePersistThreshold\(
+    - getMarkForUid\(
+    - addVpnUidRanges\(
+    - setPermission\(
+    - requestRouteToHost\(
+    - getActiveNetworkInfoForUid\(
+    - disableIpv6\(
+    - listenForNetwork\(
+    - flushInterfaceDnsCache\(
+    - pendingRequestForNetwork\(
+    - requestRouteToHostAddress\(
+    - clearDnsInterfaceForUidRange\(
+    - setGlobalProxy\(
+    - unregisterNetworkFactory\(
+    - registerListener\(
+    - removeInterfaceFromNetwork\(
+    - stopClatd\(
+    - getAlwaysOnVpnPackage\(
+    - getAllVpnInfo\(
+    - setAcceptUnvalidated\(
+    - getActiveNetworkForUid\(
+    - clearMarkedForwarding\(
+    - stopTethering\(
+    - listInterfaces\(
+    - updateLockdownVpn\(
+    - setMarkedForwardingRoute\(
+    - setHostExemption\(
+    - allowProtect\(
+    - registerObserver\(
+    - setUidMeteredNetworkWhitelist\(
+    - setUidMeteredNetworkBlacklist\(
+    - interfaceAdded\(
+    - removeInterfaceFromLocalNetwork\(
+    - setNetworkPermission\(
+    - setDnsInterfaceForUidRange\(
+    - tetherInterface\(
+    - stopWifi\(
+    - removeInterfaceAlert\(
+    - scheduleAsPackage\(
+    - setProvisioningNotificationVisible\(
+    - enableNat\(
+    - untether\(
+    - setUsbTethering\(
+    - setUidNetworkRules\(
+    - clearUidRangeRoute\(
+    - unregisterListener\(
+    - startLegacyVpn\(
+    - getTetheredDhcpRanges\(
+    - setIpForwardingEnabled\(
+    - getAllNetworkState\(
+    - getDnsForwarders\(
+    - addIdleTimer\(
+    - clearPermission\(
+    - pendingListenForNetwork\(
+    - addInterfaceToLocalNetwork\(
+    - listTtys\(
+    - untetherInterface\(
+    - registerNetworkFactory\(
+    - stopInterfaceForwarding\(
+    - getMobileRedirectedProvisioningUrl\(
+    - startInterfaceForwarding\(
+    - getRoutes\(
+    - stopReverseTethering\(
+    - findConnectionTypeForIface\(
+    - setInterfaceIpv6PrivacyExtensions\(
+    - startTethering\(
+    - startWifi\(
+    - prepareVpn\(
+    - detachPppd\(
+    - removeSecondaryRoute\(
+    - addSecondaryRoute\(
+    - setInterfaceThrottle\(
+    - startClatd\(
+    - listTetheredInterfaces\(
+    - getInterfaceConfig\(
+    - removeRoutesFromLocalNetwork\(
+    - getNetworkStatsDetail\(
+    - denyProtect\(
+    - requestNetwork\(
+    - getNetworkStatsSummaryXt\(
+    - tether\(
+    - clearMarkedForwardingRoute\(
+    - clearDnsInterfaceMaps\(
+    - isBandwidthControlEnabled\(
+    - setInterfaceQuota\(
+    - interfaceStatusChanged\(
+    - setInterfaceConfig\(
+    - captivePortalCheckCompleted\(
+    - removeRoute\(
+    - setInterfaceAlert\(
+    - setAvoidUnvalidated\(
+    - getNetworkStatsSummaryDev\(
+    - setEnabled\(
+    - isClatdStarted\(
+    - captivePortalCheckComplete\(
+    - setCountryCode\(
+    - supplyMessenger\(
+    - interfaceLinkStateChanged\(
+    - getMobileProvisioningUrl\(
+    - startAccessPoint\(
+    - removeNetwork\(
+    - unregisterObserver\(
+    - setDnsServersForNetwork\(
+    - removeInterfaceQuota\(
+    - startUsingNetworkFeature\(
+    - startReverseTethering\(
+    - setAlwaysOnVpnPackage\(
+    - setAccessPoint\(
+    - getNetworkStatsTethering\(
+    - setDnsConfigurationForNetwork\(
+    - getInterfaceRxThrottle\(
+    - flushNetworkDnsCache\(
+    - addLegacyRouteForNetId\(
+  input_case: exact
+  severity: info
+- id: android.permission.INTERACT_ACROSS_USERS_FULL
+  message: android.permission.INTERACT_ACROSS_USERS_FULL
+  type: RegexAndOr
+  pattern:
+  - com\.android\.phone|com\.android\.server|com\.android\.internal|android\.content\.ContentService|com\.android\.providers
+  - - getReceiverInfo\(
+    - unregisterReceiver\(
+    - setUserRestriction\(
+    - isProvisioningAllowed\(
+    - isEphemeralApplication\(
+    - handleApplicationCrash\(
+    - handleApplicationWtf\(
+    - getOrganizationNameForUser\(
+    - getLockTaskPackages\(
+    - setRestrictionsProvider\(
+    - moveActivityTaskToBack\(
+    - sendText\(
+    - installPackageAsUser\(
+    - setAccountManagementDisabled\(
+    - startLockTaskModeOnCurrent\(
+    - setPermittedInputMethods\(
+    - enableSystemAppWithIntent\(
+    - getStorageEncryptionStatus\(
+    - canForwardTo\(
+    - factoryReset\(
+    - onSendMultipartSmsComplete\(
+    - sendMultipartText\(
+    - isAffiliatedUser\(
+    - sendTextForSubscriber\(
+    - stopAppSwitches\(
+    - setApplicationHiddenSettingAsUser\(
+    - getComponentEnabledSetting\(
+    - setPermissionGrantState\(
+    - getMaximumTimeToLock\(
+    - getAccounts\(
+    - setSecurityLoggingEnabled\(
+    - startPrinterStateTracking\(
+    - createUser\(
+    - getPasswordMinimumUpperCase\(
+    - getCrossProfileWidgetProviders\(
+    - getShortSupportMessage\(
+    - setPasswordQuality\(
+    - notifySuggestionPicked\(
+    - addSharedAccountsFromParentUser\(
+    - removeAccountAsUser\(
+    - getAccountsAsUser\(
+    - setPasswordMinimumLength\(
+    - getAlwaysOnVpnPackage\(
+    - deletePackageAsUser\(
+    - setComponentEnabledSetting\(
+    - getPasswordExpirationTimeout\(
+    - setCertInstallerPackage\(
+    - reportFailedFingerprintAttempt\(
+    - installCaCert\(
+    - sync\(
+    - confirmCredentialsAsUser\(
+    - setHomeActivity\(
+    - enableSystemApp\(
+    - requestBugreport\(
+    - updateExternalMediaStatus\(
+    - setPackageStoppedState\(
+    - getApplicationInfo\(
+    - installPackage\(
+    - getCurrentFailedPasswordAttempts\(
+    - setTrustAgentConfiguration\(
+    - putCache\(
+    - showSoftInput\(
+    - setDeviceOwnerLockScreenInfo\(
+    - sendMultipartTextForSubscriber\(
+    - getVpnConfig\(
+    - stopPrinterStateTracking\(
+    - getRestrictionsProvider\(
+    - getPermissionGrantState\(
+    - getMasterSyncAutomaticallyAsUser\(
+    - setPasswordMinimumLetters\(
+    - getPasswordMinimumLetters\(
+    - getPermissionPolicy\(
+    - setUserEnabled\(
+    - prepareVpn\(
+    - removeUser\(
+    - retrievePreRebootSecurityLogs\(
+    - createAndInitializeUser\(
+    - setStatusBarDisabled\(
+    - getStorageEncryption\(
+    - getAllSessions\(
+    - getActiveAdmins\(
+    - getCache\(
+    - isActivePasswordSufficient\(
+    - packageHasActiveAdmins\(
+    - setUserIcon\(
+    - print\(
+    - isPackageSuspended\(
+    - setRecommendedGlobalProxy\(
+    - clearDeviceOwner\(
+    - getPackageGids\(
+    - setOrganizationName\(
+    - addCrossProfileIntentFilter\(
+    - getDoNotAskCredentialsOnBoot\(
+    - clearLastInputMethodWindowForTransition\(
+    - getLastInputMethodSubtype\(
+    - getBluetoothContactSharingDisabledForUser\(
+    - sendData\(
+    - setAffiliationIds\(
+    - registerSuggestionSpansForNotification\(
+    - switchToLastInputMethod\(
+    - isInputMethodPermittedByAdmin\(
+    - setUninstallBlocked\(
+    - hideSoftInput\(
+    - getMaximumFailedPasswordsForWipe\(
+    - registerUserSwitchObserver\(
+    - addPersistentPreferredActivity\(
+    - setStorageEncryption\(
+    - getShortSupportMessageForUser\(
+    - getBluetoothContactSharingDisabled\(
+    - isAdminActive\(
+    - getSyncAdapterTypesAsUser\(
+    - getMySessions\(
+    - uninstall\(
+    - unbindBackupAgent\(
+    - verifyPendingInstall\(
+    - setKeyguardDisabled\(
+    - getCurrentSyncsAsUser\(
+    - uninstallCaCerts\(
+    - queryIntentActivities\(
+    - setMasterMute\(
+    - setSecureSetting\(
+    - getInputMethodList\(
+    - installKeyPair\(
+    - getSyncStatusAsUser\(
+    - getTrustAgentConfiguration\(
+    - getNeighboringCellInfo\(
+    - setScreenCaptureDisabled\(
+    - getProfileWithMinimumFailedPasswordsForWipe\(
+    - reportSuccessfulPasswordAttempt\(
+    - resolveIntent\(
+    - setPermissionPolicy\(
+    - unbindFinished\(
+    - isSystemOnlyUser\(
+    - sendStoredText\(
+    - startLockTaskMode\(
+    - isApplicationHidden\(
+    - getAccountsByTypeForPackage\(
+    - clearProfileOwner\(
+    - getKeepUninstalledPackages\(
+    - getPasswordMinimumNonLetter\(
+    - getCrossProfileContactsSearchDisabled\(
+    - setPasswordMinimumSymbols\(
+    - setOrganizationColor\(
+    - getActivityInfo\(
+    - removeAccount\(
+    - isCaCertApproved\(
+    - setLastChosenActivity\(
+    - isLockTaskPermitted\(
+    - injectSmsPduForSubscriber\(
+    - setCurrentInputMethodSubtype\(
+    - getHomeActivities\(
+    - getCertInstallerPackage\(
+    - setGlobalSetting\(
+    - call\(
+    - getPermittedInputMethods\(
+    - reboot\(
+    - showMySoftInput\(
+    - isSyncPendingAsUser\(
+    - getApplicationEnabledSetting\(
+    - startUserInBackground\(
+    - getPrintJobInfos\(
+    - addCrossProfileWidgetProvider\(
+    - getEnabledInputMethodList\(
+    - getLastChosenActivity\(
+    - getPermittedAccessibilityServices\(
+    - extendVerificationTimeout\(
+    - isCallerApplicationRestrictionsManagingPackage\(
+    - getApplicationRestrictions\(
+    - updatePermissionFlagsForAllApps\(
+    - updateStatusIcon\(
+    - getApplicationBlockedSettingAsUser\(
+    - getPermissionFlags\(
+    - insert\(
+    - setCrossProfileContactsSearchDisabled\(
+    - getPasswordHistoryLength\(
+    - isDeviceProvisioningConfigApplied\(
+    - getIsSyncableAsUser\(
+    - setMasterVolumeMuted\(
+    - setInputMethodAndSubtype\(
+    - cancelSync\(
+    - isSyncPending\(
+    - isPermissionRevokedByPolicy\(
+    - delete\(
+    - removeClient\(
+    - getPermittedAccessibilityServicesForUser\(
+    - setShortSupportMessage\(
+    - startInput\(
+    - queryIntentReceivers\(
+    - setDeviceInitializer\(
+    - getLongSupportMessage\(
+    - cancelSyncAsUser\(
+    - hasGrantedPolicy\(
+    - removeContentProvider\(
+    - windowGainedFocus\(
+    - setSyncAutomaticallyAsUser\(
+    - getPasswordMinimumLowerCase\(
+    - getSyncStatus\(
+    - isBackupServiceEnabled\(
+    - reportFailedPasswordAttempt\(
+    - getProviderInfo\(
+    - deletePackage\(
+    - setProfileOwner\(
+    - getPackageSizeInfo\(
+    - getServiceInfo\(
+    - getCurrentInputMethodSubtype\(
+    - sendDataForSubscriberWithSelfPermissions\(
+    - setPasswordMinimumUpperCase\(
+    - isPackageSuspendedForUser\(
+    - setPackagesSuspended\(
+    - revokeRuntimePermission\(
+    - addPrintJobStateChangeListener\(
+    - retrieveSecurityLogs\(
+    - getScanResults\(
+    - resetPassword\(
+    - restartPrintJob\(
+    - setAutoTimeRequired\(
+    - getInstalledPrintServices\(
+    - getCameraDisabled\(
+    - clearApplicationUserData\(
+    - setOrganizationColorForUser\(
+    - setInputMethodEnabled\(
+    - setMasterSyncAutomaticallyAsUser\(
+    - grantRuntimePermission\(
+    - setServiceForeground\(
+    - finishSubActivity\(
+    - setMasterSyncAutomatically\(
+    - stopPrinterDiscovery\(
+    - setKeepUninstalledPackages\(
+    - activityIdle\(
+    - setForceEphemeralUsers\(
+    - isProfileActivePasswordSufficientForParent\(
+    - setVpnPackageAuthorization\(
+    - setRequiredStrongAuthTimeout\(
+    - getLegacyVpnInfo\(
+    - rejectCall\(
+    - getLongSupportMessageForUser\(
+    - removeCrossProfileWidgetProvider\(
+    - setPasswordMinimumNumeric\(
+    - setApplicationRestrictions\(
+    - setBackupServiceEnabled\(
+    - getAuthenticatorTypes\(
+    - setLockTaskPackages\(
+    - enforceCanManageCaCerts\(
+    - setDeviceProvisioningConfigApplied\(
+    - getTaskDescriptionIcon\(
+    - showInputMethodAndSubtypeEnablerFromClient\(
+    - clearDeviceInitializer\(
+    - isManagedProfile\(
+    - setMicrophoneMute\(
+    - setDefaultBrowserPackageName\(
+    - flushPackageRestrictionsAsUser\(
+    - getCellLocation\(
+    - setLongSupportMessage\(
+    - setSystemUpdatePolicy\(
+    - getPasswordMinimumLength\(
+    - getCrossProfileCallerIdDisabled\(
+    - getOrganizationColor\(
+    - movePackage\(
+    - setPasswordMinimumNonLetter\(
+    - createInputContentUriToken\(
+    - getPrintJobInfo\(
+    - getOrganizationName\(
+    - uninstallPackageWithActiveAdmins\(
+    - setPackagesSuspendedAsUser\(
+    - killUid\(
+    - setApplicationRestrictionsManagingPackage\(
+    - reportSuccessfulFingerprintAttempt\(
+    - approveCaCert\(
+    - setKeyguardDisabledFeatures\(
+    - getIsSyncable\(
+    - isRemovingAdmin\(
+    - getSyncAdapterPackagesForAuthorityAsUser\(
+    - getTrustAgentFeaturesEnabled\(
+    - startInputOrWindowGainedFocus\(
+    - setInputMethod\(
+    - getAccountTypesWithManagementDisabledAsUser\(
+    - unlockUser\(
+    - getPasswordQuality\(
+    - reportKeyguardDismissed\(
+    - getPackageUid\(
+    - getCurrentSyncs\(
+    - getMaximumTimeToLockForUserAndProfiles\(
+    - deleteApplicationCacheFilesAsUser\(
+    - startNextMatchingActivity\(
+    - getEnabledInputMethodSubtypeList\(
+    - addClient\(
+    - setUserProvisioningState\(
+    - getAutoTimeRequired\(
+    - navigateUpTo\(
+    - setBluetoothContactSharingDisabled\(
+    - cancelPrintJob\(
+    - getSyncAutomatically\(
+    - update\(
+    - setAdditionalInputMethodSubtypes\(
+    - showInputMethodPickerFromClient\(
+    - sendTextForSubscriberWithSelfPermissions\(
+    - shouldShowRequestPermissionRationale\(
+    - registerContentObserver\(
+    - stopUser\(
+    - clearCrossProfileIntentFilters\(
+    - bulkInsert\(
+    - registerCallback\(
+    - getApplicationRestrictionsManagingPackage\(
+    - clearPackagePersistentPreferredActivities\(
+    - setPermittedAccessibilityServices\(
+    - getUserProvisioningState\(
+    - getSyncAdapterTypes\(
+    - getForceEphemeralUsers\(
+    - reportKeyguardSecured\(
+    - setProcessLimit\(
+    - setSyncAutomatically\(
+    - setApplicationEnabledSetting\(
+    - setCameraDisabled\(
+    - getKeyguardDisabledFeatures\(
+    - switchUser\(
+    - getWifiMacAddress\(
+    - forceRemoveActiveAdmin\(
+    - getGlobalProxyAdmin\(
+    - createAndManageUser\(
+    - resetRuntimePermissions\(
+    - getUserRestrictions\(
+    - queryIntentServices\(
+    - publishContentProviders\(
+    - choosePrivateKeyAlias\(
+    - validatePrinters\(
+    - setApplicationBlockedSettingAsUser\(
+    - systemReady\(
+    - startPrinterDiscovery\(
+    - isAccessibilityServicePermittedByAdmin\(
+    - getScreenCaptureDisabled\(
+    - setProfileEnabled\(
+    - uninstallCaCert\(
+    - setActivePasswordState\(
+    - copyAccountToUser\(
+    - isSecurityLoggingEnabled\(
+    - setGlobalProxy\(
+    - setTaskDescription\(
+    - installExistingPackageAsUser\(
+    - getAccountTypesWithManagementDisabled\(
+    - getSyncAutomaticallyAsUser\(
+    - setPasswordExpirationTimeout\(
+    - switchToNextInputMethod\(
+    - sendDataForSubscriber\(
+    - shouldOfferSwitchingToNextInputMethod\(
+    - getMasterSyncAutomatically\(
+    - setPasswordHistoryLength\(
+    - getRemoveWarning\(
+    - setActiveAdmin\(
+    - removePrintJobStateChangeListener\(
+    - setMaximumFailedPasswordsForWipe\(
+    - sendStoredMultipartText\(
+    - destroyPrinterDiscoverySession\(
+    - resolveService\(
+    - addAccountAsUser\(
+    - setMaximumTimeToLock\(
+    - setPasswordMinimumLowerCase\(
+    - publishService\(
+    - removeKeyPair\(
+    - getPasswordExpiration\(
+    - getPasswordMinimumNumeric\(
+    - getPasswordMinimumSymbols\(
+    - syncAsUser\(
+    - createSession\(
+    - finishSessionAsUser\(
+    - getAccountsForPackage\(
+    - createPrinterDiscoverySession\(
+    - removeActiveAdmin\(
+    - wipeData\(
+    - getInstalledPackages\(
+    - lockNow\(
+    - setCrossProfileCallerIdDisabled\(
+    - getApplicationHiddenSettingAsUser\(
+    - isPackageAvailable\(
+    - setApplicationHidden\(
+    - hideMySoftInput\(
+    - getCrossProfileCallerIdDisabledForUser\(
+    - deleteApplicationCacheFiles\(
+    - setProfileName\(
+    - replacePreferredActivity\(
+    - isMasterVolumeMuted\(
+    - notifyLockTaskModeChanged\(
+    - getRequiredStrongAuthTimeout\(
+    - getEnabledPrintServices\(
+    - setDeviceOwner\(
+    - getOrganizationColorForUser\(
+    - setTrustAgentFeaturesEnabled\(
+    - queryIntentActivityOptions\(
+    - queryIntentContentProviders\(
+    - hasUserSetupCompleted\(
+    - isUninstallBlocked\(
+    - getPermittedInputMethodsForCurrentUser\(
+    - getAllCellInfo\(
+    - setAlwaysOnVpnPackage\(
+    - updatePermissionFlags\(
+    - addPreferredActivity\(
+    - getPackageInfo\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_NETWORK_USAGE_HISTORY
+  message: android.permission.READ_NETWORK_USAGE_HISTORY
+  type: RegexAndOr
+  pattern:
+  - com\.android\.phone|com\.android\.server
+  - - setNetworkPolicies\(
+    - setRestrictBackground\(
+    - getVtDataUsage\(
+    - openSession\(
+    - getNetworkTotalBytes\(
+    - forceUpdateIfaces\(
+    - forceUpdate\(
+    - registerUsageCallback\(
+  input_case: exact
+  severity: info
+- id: android.permission.INTERACT_ACROSS_USERS
+  message: android.permission.INTERACT_ACROSS_USERS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.providers|com\.android\.server
+  - - setSoftKeyboardShowMode\(
+    - getEnabledAccessibilityServiceList\(
+    - findAccessibilityNodeInfosByText\(
+    - disableSelf\(
+    - getMagnificationCenterY\(
+    - getCrossProfileContactsSearchDisabledForUser\(
+    - setMagnificationScaleAndCenter\(
+    - setUserRestriction\(
+    - performGlobalAction\(
+    - findAccessibilityNodeInfosByViewId\(
+    - findFocus\(
+    - getMagnificationRegion\(
+    - getInstalledAccessibilityServiceList\(
+    - sendAccessibilityEvent\(
+    - cancelPrintJob\(
+    - getCrossProfileCallerIdDisabledForUser\(
+    - removePrintJobStateChangeListener\(
+    - computeClickPointInScreen\(
+    - getAccountsByTypeForPackage\(
+    - startPrinterStateTracking\(
+    - getPrintJobInfos\(
+    - destroyPrinterDiscoverySession\(
+    - findAccessibilityNodeInfoByViewId\(
+    - disableAccessibilityService\(
+    - validatePrinters\(
+    - interrupt\(
+    - stopPrinterDiscovery\(
+    - isUserRunning\(
+    - startPrinterDiscovery\(
+    - getEnabledPrintServices\(
+    - getWindows\(
+    - addAccessibilityInteractionConnection\(
+    - removeAccessibilityInteractionConnection\(
+    - print\(
+    - findAccessibilityNodeInfoByAccessibilityId\(
+    - getWindow\(
+    - stopPrinterStateTracking\(
+    - resetMagnification\(
+    - getType\(
+    - performAccessibilityAction\(
+    - getRunningUserIds\(
+    - addPrintJobStateChangeListener\(
+    - getPrintJobInfo\(
+    - addClient\(
+    - getCurrentUser\(
+    - createPrinterDiscoverySession\(
+    - restartPrintJob\(
+    - getMagnificationScale\(
+    - focusSearch\(
+    - getInstalledPrintServices\(
+    - enableAccessibilityService\(
+    - getMagnificationCenterX\(
+  input_case: exact
+  severity: info
+- id: android.permission.UPDATE_APP_OPS_STATS
+  message: android.permission.UPDATE_APP_OPS_STATS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server|com\.android\.internal
+  - - sendTextForSubscriber\(
+    - createProjection\(
+    - sendStoredText\(
+    - requestLocationUpdates\(
+    - convertFromTranslucent\(
+    - finishOperation\(
+    - vibrate\(
+    - vibratePattern\(
+    - sendStoredMultipartText\(
+    - sendTextForSubscriberWithSelfPermissions\(
+    - copyMessageToIccEfForSubscriber\(
+    - setMode\(
+    - getAllMessagesFromIccEfForSubscriber\(
+    - sendText\(
+    - sendDataForSubscriberWithSelfPermissions\(
+    - sendMultipartTextForSubscriber\(
+    - updateMessageOnIccEfForSubscriber\(
+    - setUidMode\(
+    - startOperation\(
+    - resetAllModes\(
+    - noteOperation\(
+    - requestVisibleBehind\(
+    - setAudioRestriction\(
+    - onSendMultipartSmsComplete\(
+    - sendMultipartText\(
+    - checkOperation\(
+    - checkAudioOperation\(
+    - finishActivityAffinity\(
+    - sendDataForSubscriber\(
+  input_case: exact
+  severity: info
+- id: android.permission.GET_APP_OPS_STATS
+  message: android.permission.GET_APP_OPS_STATS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getOpsForPackage\(
+    - getPackagesForOps\(
+    - shutdown\(
+  input_case: exact
+  severity: info
+- id: android.permission.MANAGE_APP_OPS_RESTRICTIONS
+  message: android.permission.MANAGE_APP_OPS_RESTRICTIONS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - setUserRestriction\(
+  input_case: exact
+  severity: info
+- id: android.permission.LOCAL_MAC_ADDRESS
+  message: android.permission.LOCAL_MAC_ADDRESS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getAddress\(
+  input_case: exact
+  severity: info
+- id: android.permission.CONTROL_VPN
+  message: android.permission.CONTROL_VPN
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - factoryReset\(
+    - getAlwaysOnVpnPackage\(
+    - getLegacyVpnInfo\(
+    - getVpnConfig\(
+    - prepareVpn\(
+    - setAlwaysOnVpnPackage\(
+    - setVpnPackageAuthorization\(
+    - startLegacyVpn\(
+  input_case: exact
+  severity: info
+- id: android.permission.CONNECTIVITY_USE_RESTRICTED_NETWORKS
+  message: android.permission.CONNECTIVITY_USE_RESTRICTED_NETWORKS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - pendingRequestForNetwork\(
+    - requestNetwork\(
+  input_case: exact
+  severity: info
+- id: android.permission.PACKET_KEEPALIVE_OFFLOAD
+  message: android.permission.PACKET_KEEPALIVE_OFFLOAD
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - startNattKeepalive\(
+  input_case: exact
+  severity: info
+- id: android.permission.CHANGE_DEVICE_IDLE_TEMP_WHITELIST
+  message: android.permission.CHANGE_DEVICE_IDLE_TEMP_WHITELIST
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - addPowerSaveTempWhitelistApp\(
+    - addPowerSaveTempWhitelistAppForMms\(
+    - addPowerSaveTempWhitelistAppForSms\(
+  input_case: exact
+  severity: info
+- id: android.permission.DEVICE_POWER
+  message: android.permission.DEVICE_POWER
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - addPowerSaveWhitelistApp\(
+    - exitIdle\(
+    - removePowerSaveWhitelistApp\(
+    - setLockScreenShown\(
+    - boostScreenBrightness\(
+    - goToSleep\(
+    - nap\(
+    - powerHint\(
+    - setAttentionLight\(
+    - setPowerSaveMode\(
+    - setTemporaryScreenAutoBrightnessAdjustmentSettingOverride\(
+    - setTemporaryScreenBrightnessSettingOverride\(
+    - userActivity\(
+    - wakeUp\(
+    - lockNow\(
+    - goingToSleep\(
+    - wakingUp\(
+    - showAssistant\(
+    - clearUserActivityTimeout\(
+    - goToSleepWithReason\(
+    - preventScreenOn\(
+    - releaseWakeLock\(
+    - setAutoBrightnessAdjustment\(
+    - setBacklightBrightness\(
+    - setPokeLock\(
+    - userActivityWithForce\(
+  input_case: exact
+  severity: info
+- id: android.permission.WRITE_SECURE_SETTINGS
+  message: android.permission.WRITE_SECURE_SETTINGS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server|com\.android\.nfc|android\.server\.BluetoothService|android\.provider\.Settings\.Secure
+  - - setCurrentSpellChecker\(
+    - enableFallbackLogic\(
+    - put\(
+    - invokeBeamInternal\(
+    - resumePolling\(
+    - addNfcUnlockHandler\(
+    - switchToLastInputMethod\(
+    - call\(
+    - update\(
+    - setForcedDisplayDensity\(
+    - setOverscan\(
+    - clearForcedDisplayDensityForUser\(
+    - setInputMethod\(
+    - enable\(
+    - delete\(
+    - disable\(
+    - changeProviderAndSetting\(
+    - switchToNextInputMethod\(
+    - putFloat\(
+    - putInt\(
+    - setMaximumScreenOffTimeount\(
+    - setP2pModes\(
+    - setInputMethodEnabled\(
+    - setDefaultForNextTap\(
+    - insert\(
+    - setForcedDisplayScalingMode\(
+    - setInputMethodAndSubtype\(
+    - dispatch\(
+    - setInstallLocation\(
+    - setDefaultServiceForCategory\(
+    - setForcedDisplayDensityForUser\(
+    - getServices\(
+    - clearForcedDisplaySize\(
+    - bulkInsert\(
+    - setScanMode\(
+    - disableNdefPush\(
+    - clearForcedDisplayDensity\(
+    - setForcedDisplaySize\(
+    - setCurrentSpellCheckerSubtype\(
+    - putLong\(
+    - enableNdefPush\(
+    - setSpellCheckerEnabled\(
+    - pausePolling\(
+  input_case: exact
+  severity: info
+- id: android.permission.INSTALL_LOCATION_PROVIDER
+  message: android.permission.INSTALL_LOCATION_PROVIDER
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - reportLocation\(
+  input_case: exact
+  severity: info
+- id: android.permission.ACCESS_KEYGUARD_SECURE_STORAGE
+  message: android.permission.ACCESS_KEYGUARD_SECURE_STORAGE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - checkPassword\(
+    - checkPattern\(
+    - checkVoldPassword\(
+    - getBoolean\(
+    - getLong\(
+    - getSeparateProfileChallengeEnabled\(
+    - getString\(
+    - getStrongAuthForUser\(
+    - registerStrongAuthTracker\(
+    - requireStrongAuth\(
+    - resetKeyStore\(
+    - setBoolean\(
+    - setLockPassword\(
+    - setLockPattern\(
+    - setLong\(
+    - setSeparateProfileChallengeEnabled\(
+    - setString\(
+    - systemReady\(
+    - unregisterStrongAuthTracker\(
+    - userPresent\(
+    - verifyPassword\(
+    - verifyPattern\(
+    - verifyTiedProfileChallenge\(
+    - getPassword\(
+    - removeUser\(
+  input_case: exact
+  severity: info
+- id: android.permission.STORAGE_INTERNAL
+  message: android.permission.STORAGE_INTERNAL
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - addUserKeyAuth\(
+    - clearPassword\(
+    - createUserKey\(
+    - destroyUserKey\(
+    - destroyUserStorage\(
+    - fixateNewestUserKeyAuth\(
+    - getField\(
+    - getPassword\(
+    - getPasswordType\(
+    - isConvertibleToFBE\(
+    - lockUserKey\(
+    - prepareUserStorage\(
+    - setField\(
+    - unlockUserKey\(
+  input_case: exact
+  severity: info
+- id: android.permission.MOUNT_FORMAT_FILESYSTEMS
+  message: android.permission.MOUNT_FORMAT_FILESYSTEMS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - benchmark\(
+    - format\(
+    - formatVolume\(
+    - partitionMixed\(
+    - partitionPrivate\(
+    - partitionPublic\(
+  input_case: exact
+  severity: info
+- id: android.permission.CRYPT_KEEPER
+  message: android.permission.CRYPT_KEEPER
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - changeEncryptionPassword\(
+    - decryptStorage\(
+    - encryptStorage\(
+    - getEncryptionState\(
+    - verifyEncryptionPassword\(
+  input_case: exact
+  severity: info
+- id: android.permission.ASEC_CREATE
+  message: android.permission.ASEC_CREATE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - createSecureContainer\(
+    - finalizeSecureContainer\(
+    - fixPermissionsSecureContainer\(
+    - resizeSecureContainer\(
+  input_case: exact
+  severity: info
+- id: android.permission.ASEC_DESTROY
+  message: android.permission.ASEC_DESTROY
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - destroySecureContainer\(
+  input_case: exact
+  severity: info
+- id: android.permission.MOUNT_UNMOUNT_FILESYSTEMS
+  message: android.permission.MOUNT_UNMOUNT_FILESYSTEMS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - forgetAllVolumes\(
+    - forgetVolume\(
+    - getPrimaryStorageUuid\(
+    - getStorageUsers\(
+    - mount\(
+    - mountVolume\(
+    - runMaintenance\(
+    - setDebugFlags\(
+    - setPrimaryStorageUuid\(
+    - setVolumeNickname\(
+    - setVolumeUserFlags\(
+    - unmount\(
+    - unmountVolume\(
+    - getMoveStatus\(
+    - registerMoveCallback\(
+    - unregisterMoveCallback\(
+    - setUsbMassStorageEnabled\(
+  input_case: exact
+  severity: info
+- id: android.permission.ASEC_ACCESS
+  message: android.permission.ASEC_ACCESS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getSecureContainerFilesystemPath\(
+    - getSecureContainerList\(
+    - getSecureContainerPath\(
+    - isSecureContainerMounted\(
+  input_case: exact
+  severity: info
+- id: android.permission.ASEC_MOUNT_UNMOUNT
+  message: android.permission.ASEC_MOUNT_UNMOUNT
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - mountSecureContainer\(
+    - unmountSecureContainer\(
+  input_case: exact
+  severity: info
+- id: android.permission.ASEC_RENAME
+  message: android.permission.ASEC_RENAME
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - renameSecureContainer\(
+  input_case: exact
+  severity: info
+- id: android.permission.SHUTDOWN
+  message: android.permission.SHUTDOWN
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - shutdown\(
+  input_case: exact
+  severity: info
+- id: android.permission.BROADCAST_NETWORK_PRIVILEGED
+  message: android.permission.BROADCAST_NETWORK_PRIVILEGED
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - clearScores\(
+    - registerNetworkScoreCache\(
+    - disableScoring\(
+  input_case: exact
+  severity: info
+- id: android.permission.SCORE_NETWORKS
+  message: android.permission.SCORE_NETWORKS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - clearScores\(
+    - disableScoring\(
+    - setActiveScorer\(
+    - updateScores\(
+    - getScanResults\(
+  input_case: exact
+  severity: info
+- id: android.permission.RECOVERY
+  message: android.permission.RECOVERY
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - clearBcb\(
+    - rebootRecoveryWithCommand\(
+    - setupBcb\(
+    - uncrypt\(
+    - reboot\(
+  input_case: exact
+  severity: info
+- id: android.permission.SERIAL_PORT
+  message: android.permission.SERIAL_PORT
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getSerialPorts\(
+    - openSerialPort\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_PRECISE_PHONE_STATE
+  message: android.permission.READ_PRECISE_PHONE_STATE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - listen\(
+    - listenForSubscriber\(
+  input_case: exact
+  severity: info
+- id: android.permission.UPDATE_LOCK
+  message: android.permission.UPDATE_LOCK
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - acquireUpdateLock\(
+    - releaseUpdateLock\(
+  input_case: exact
+  severity: info
+- id: getWindowToken
+  message: getWindowToken
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getWindowToken\(
+  input_case: exact
+  severity: info
+- id: android.permission.REMOVE_TASKS
+  message: android.permission.REMOVE_TASKS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - appNotRespondingViaProvider\(
+    - removeTask\(
+    - removeSubTask\(
+  input_case: exact
+  severity: info
+- id: android.permission.CONFIRM_FULL_BACKUP
+  message: android.permission.CONFIRM_FULL_BACKUP
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - bindBackupAgent\(
+  input_case: exact
+  severity: info
+- id: android.permission.START_ANY_ACTIVITY
+  message: android.permission.START_ANY_ACTIVITY
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - bindBackupAgent\(
+    - bindService\(
+    - navigateUpTo\(
+    - stopService\(
+    - stopServiceToken\(
+    - unbindService\(
+    - send\(
+    - activityDestroyed\(
+    - activityIdle\(
+    - activityPaused\(
+    - activitySlept\(
+    - backgroundResourcesReleased\(
+    - closeSystemDialogs\(
+    - convertFromTranslucent\(
+    - convertToTranslucent\(
+    - finishActivity\(
+    - finishVoiceTask\(
+    - keyguardWaitingForActivityDrawn\(
+    - moveActivityTaskToBack\(
+    - moveTaskToBack\(
+    - moveTaskToFront\(
+    - moveTaskToStack\(
+    - releaseActivityInstance\(
+    - releaseSomeActivities\(
+    - reportAssistContextExtras\(
+    - setFocusedStack\(
+    - setLockScreenShown\(
+    - setProcessLimit\(
+    - setRequestedOrientation\(
+    - shutdown\(
+    - startLockTaskMode\(
+    - startLockTaskModeOnCurrent\(
+    - startUserInBackground\(
+    - stopAppSwitches\(
+    - stopLockTaskMode\(
+    - unregisterReceiver\(
+    - dismissKeyguardOnNextActivity\(
+    - activityStopped\(
+    - finishHeavyWeightApp\(
+    - finishReceiver\(
+    - forceStopPackage\(
+    - goingToSleep\(
+    - handleApplicationCrash\(
+    - handleApplicationWtf\(
+    - inputDispatchingTimedOut\(
+    - killAllBackgroundProcesses\(
+    - killUid\(
+    - removeContentProviderExternal\(
+    - setFrontActivityScreenCompatMode\(
+    - setPackageScreenCompatMode\(
+    - setProcessForeground\(
+    - startRunning\(
+    - wakingUp\(
+    - switchUser\(
+  input_case: exact
+  severity: info
+- id: android.permission.START_TASKS_FROM_RECENTS
+  message: android.permission.START_TASKS_FROM_RECENTS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - bindBackupAgent\(
+    - bindService\(
+    - navigateUpTo\(
+    - startActivityFromRecents\(
+    - stopService\(
+    - stopServiceToken\(
+    - unbindService\(
+    - send\(
+  input_case: exact
+  severity: info
+- id: android.permission.SET_DEBUG_APP
+  message: android.permission.SET_DEBUG_APP
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - bindService\(
+    - navigateUpTo\(
+    - setDebugApp\(
+    - setDumpHeapDebugLimit\(
+    - startActivities\(
+    - startActivity\(
+    - startActivityAndWait\(
+    - startActivityAsCaller\(
+    - startActivityAsUser\(
+    - startActivityWithConfig\(
+    - stopService\(
+    - stopServiceToken\(
+    - unbindService\(
+    - startActivityIntentSender\(
+    - startActivitiesInPackage\(
+    - startActivityInPackage\(
+  input_case: exact
+  severity: info
+- id: android.permission.CLEAR_APP_GRANTED_URI_PERMISSIONS
+  message: android.permission.CLEAR_APP_GRANTED_URI_PERMISSIONS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - clearGrantedUriPermissions\(
+  input_case: exact
+  severity: info
+- id: android.permission.BACKUP
+  message: android.permission.BACKUP
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - clearPendingBackup\(
+    - getAvailableRestoreSets\(
+    - restoreAll\(
+    - restorePackage\(
+    - restoreSome\(
+    - acknowledgeFullBackupOrRestore\(
+    - backupNow\(
+    - beginRestoreSession\(
+    - clearBackupData\(
+    - dataChanged\(
+    - fullBackup\(
+    - fullRestore\(
+    - fullTransportBackup\(
+    - getAvailableRestoreToken\(
+    - getConfigurationIntent\(
+    - getCurrentTransport\(
+    - getDataManagementIntent\(
+    - getDataManagementLabel\(
+    - getDestinationString\(
+    - hasBackupPassword\(
+    - isAppEligibleForBackup\(
+    - isBackupEnabled\(
+    - listAllTransports\(
+    - requestBackup\(
+    - restoreAtInstall\(
+    - selectBackupTransport\(
+    - setAutoRestore\(
+    - setBackupEnabled\(
+    - setBackupPassword\(
+    - setBackupProvisioned\(
+    - bindBackupAgent\(
+  input_case: exact
+  severity: info
+- id: android.permission.FORCE_STOP_PACKAGES
+  message: android.permission.FORCE_STOP_PACKAGES
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - crashApplication\(
+    - finishHeavyWeightApp\(
+    - forceStopPackage\(
+  input_case: exact
+  severity: info
+- id: android.permission.MANAGE_ACTIVITY_STACKS
+  message: android.permission.MANAGE_ACTIVITY_STACKS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - createStackOnDisplay\(
+    - createVirtualActivityContainer\(
+    - deleteActivityContainer\(
+    - getAllStackInfos\(
+    - getStackInfo\(
+    - getTaskBounds\(
+    - isInHomeStack\(
+    - moveTaskToDockedStack\(
+    - moveTaskToStack\(
+    - moveTasksToFullscreenStack\(
+    - moveTopActivityToPinnedStack\(
+    - positionTaskInStack\(
+    - registerTaskStackListener\(
+    - removeStack\(
+    - resizeDockedStack\(
+    - resizePinnedStack\(
+    - resizeStack\(
+    - resizeTask\(
+    - setFocusedStack\(
+    - setFocusedTask\(
+    - startConfirmDeviceCredentialIntent\(
+    - startSystemLockTaskMode\(
+    - stopLockTaskMode\(
+    - stopSystemLockTaskMode\(
+    - suppressResizeConfigChanges\(
+    - swapDockedAndFullscreenStack\(
+    - startLockTaskModeOnCurrent\(
+    - stopLockTaskModeOnCurrent\(
+    - bindService\(
+    - createActivityContainer\(
+    - getHomeActivityToken\(
+    - activityDestroyed\(
+    - createStack\(
+    - dismissKeyguardOnNextActivity\(
+    - getStackBoxInfo\(
+    - getStackBoxes\(
+    - moveActivityTaskToBack\(
+    - navigateUpTo\(
+    - resizeStackBox\(
+  input_case: exact
+  severity: info
+- id: android.permission.SET_ACTIVITY_WATCHER
+  message: android.permission.SET_ACTIVITY_WATCHER
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - dumpHeap\(
+    - hang\(
+    - performIdleMaintenance\(
+    - profileControl\(
+    - registerProcessObserver\(
+    - registerUidObserver\(
+    - restart\(
+    - sendIdleJobTrigger\(
+    - setActivityController\(
+    - startBinderTracking\(
+    - stopBinderTrackingAndDump\(
+  input_case: exact
+  severity: info
+- id: android.permission.GET_TOP_ACTIVITY_INFO
+  message: android.permission.GET_TOP_ACTIVITY_INFO
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getAssistContextExtras\(
+    - launchAssistIntent\(
+    - requestAssistContextExtras\(
+    - getTopActivityExtras\(
+  input_case: exact
+  severity: info
+- id: android.permission.ACCESS_CONTENT_PROVIDERS_EXTERNALLY
+  message: android.permission.ACCESS_CONTENT_PROVIDERS_EXTERNALLY
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getContentProviderExternal\(
+    - removeContentProviderExternal\(
+  input_case: exact
+  severity: info
+- id: android.permission.GET_APP_GRANTED_URI_PERMISSIONS
+  message: android.permission.GET_APP_GRANTED_URI_PERMISSIONS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getGrantedUriPermissions\(
+  input_case: exact
+  severity: info
+- id: android.permission.GET_INTENT_SENDER_INTENT
+  message: android.permission.GET_INTENT_SENDER_INTENT
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getIntentForIntentSender\(
+  input_case: exact
+  severity: info
+- id: android.permission.PACKAGE_USAGE_STATS
+  message: android.permission.PACKAGE_USAGE_STATS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getPackageProcessState\(
+    - getCurrentStats\(
+    - getStatsOverTime\(
+    - registerUsageCallback\(
+    - queryConfigurationStats\(
+    - queryEvents\(
+    - queryUsageStats\(
+    - getAllPkgUsageStats\(
+    - getPkgUsageStats\(
+  input_case: exact
+  severity: info
+- id: android.permission.GET_DETAILED_TASKS
+  message: android.permission.GET_DETAILED_TASKS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getRecentTasks\(
+  input_case: exact
+  severity: info
+- id: android.permission.REAL_GET_TASKS
+  message: android.permission.REAL_GET_TASKS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getRecentTasks\(
+    - getRunningAppProcesses\(
+    - getRunningExternalApplications\(
+    - getTasks\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_FRAME_BUFFER
+  message: android.permission.READ_FRAME_BUFFER
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getTaskThumbnail\(
+    - requestAssistScreenshot\(
+    - screenshotApplications\(
+    - screenshotWallpaper\(
+    - getTaskThumbnails\(
+    - getTaskTopThumbnail\(
+  input_case: exact
+  severity: info
+- id: android.permission.FILTER_EVENTS
+  message: android.permission.FILTER_EVENTS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - inputDispatchingTimedOut\(
+    - setInputFilter\(
+  input_case: exact
+  severity: info
+- id: android.permission.KILL_UID
+  message: android.permission.KILL_UID
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - killPackageDependents\(
+    - killUid\(
+  input_case: exact
+  severity: info
+- id: android.permission.DUMP
+  message: android.permission.DUMP
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - requestBugReport\(
+    - getEvents\(
+    - register\(
+    - unregister\(
+    - isViewServerRunning\(
+    - startViewServer\(
+    - stopViewServer\(
+  input_case: exact
+  severity: info
+- id: android.permission.STOP_APP_SWITCHES
+  message: android.permission.STOP_APP_SWITCHES
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - resumeAppSwitches\(
+    - stopAppSwitches\(
+  input_case: exact
+  severity: info
+- id: android.permission.SET_ALWAYS_FINISH
+  message: android.permission.SET_ALWAYS_FINISH
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - setAlwaysFinish\(
+  input_case: exact
+  severity: info
+- id: android.permission.SET_SCREEN_COMPATIBILITY
+  message: android.permission.SET_SCREEN_COMPATIBILITY
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - setFrontActivityScreenCompatMode\(
+    - setPackageAskScreenCompat\(
+    - setPackageScreenCompatMode\(
+  input_case: exact
+  severity: info
+- id: android.permission.INTERNAL_SYSTEM_WINDOW
+  message: android.permission.INTERNAL_SYSTEM_WINDOW
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - setHasTopUi\(
+    - setLockWallpaperCallback\(
+  input_case: exact
+  severity: info
+- id: android.permission.SET_PROCESS_LIMIT
+  message: android.permission.SET_PROCESS_LIMIT
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - setLenientBackgroundCheck\(
+    - setProcessForeground\(
+    - setProcessLimit\(
+  input_case: exact
+  severity: info
+- id: android.permission.SIGNAL_PERSISTENT_PROCESSES
+  message: android.permission.SIGNAL_PERSISTENT_PROCESSES
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server|android\.app\.ActivityManager
+  - - signalPersistentProcesses\(
+    - killBackgroundProcesses\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_VOICE_INTERACTION
+  message: android.permission.BIND_VOICE_INTERACTION
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server|android\.service\.voice\.VoiceInteractionService
+  - - onCreate\(
+    - onBind\(
+    - startVoiceActivity\(
+    - onUnbind\(
+  input_case: exact
+  severity: info
+- id: android.permission.FORCE_BACK
+  message: android.permission.FORCE_BACK
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - unhandledBack\(
+  input_case: exact
+  severity: info
+- id: android.permission.CHANGE_CONFIGURATION
+  message: android.permission.CHANGE_CONFIGURATION
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - updateConfiguration\(
+    - updatePersistentConfiguration\(
+  input_case: exact
+  severity: info
+- id: android.permission.BATTERY_STATS
+  message: android.permission.BATTERY_STATS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getAwakeTimeBattery\(
+    - getAwakeTimePlugged\(
+    - getStatistics\(
+    - getStatisticsStream\(
+    - takeUidSnapshot\(
+    - takeUidSnapshots\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_APPWIDGET
+  message: android.permission.BIND_APPWIDGET
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - bindAppWidgetId\(
+    - bindRemoteViewsService\(
+    - createAppWidgetConfigIntentSender\(
+    - deleteAppWidgetId\(
+    - getAppWidgetInfo\(
+    - getAppWidgetOptions\(
+    - getAppWidgetViews\(
+    - notifyAppWidgetViewDataChanged\(
+    - partiallyUpdateAppWidgetIds\(
+    - unbindRemoteViewsService\(
+    - updateAppWidgetIds\(
+    - updateAppWidgetOptions\(
+    - bindAppWidgetIdIfAllowed\(
+    - updateAppWidgetProvider\(
+  input_case: exact
+  severity: info
+- id: android.permission.MODIFY_APPWIDGET_BIND_PERMISSIONS
+  message: android.permission.MODIFY_APPWIDGET_BIND_PERMISSIONS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - hasBindAppWidgetPermission\(
+    - setBindAppWidgetPermission\(
+  input_case: exact
+  severity: info
+- id: android.permission.STATUS_BAR_SERVICE
+  message: android.permission.STATUS_BAR_SERVICE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server|android\.media\.AudioService
+  - - onNotificationClick\(
+    - onNotificationError\(
+    - disableSafeMediaVolume\(
+    - setRemoteStreamVolume\(
+    - clearNotificationEffects\(
+    - onNotificationActionClick\(
+    - onNotificationVisibilityChanged\(
+    - setVolumePolicy\(
+    - notifyVolumeControllerVisible\(
+    - onClearAllNotifications\(
+    - setVolumeController\(
+    - registerStatusBar\(
+    - onPanelRevealed\(
+    - onPanelHidden\(
+    - setRingerModeInternal\(
+    - setSystemUiVisibility\(
+    - onNotificationClear\(
+    - onNotificationExpansionChanged\(
+  input_case: exact
+  severity: info
+- id: android.permission.CAPTURE_AUDIO_OUTPUT
+  message: android.permission.CAPTURE_AUDIO_OUTPUT
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server|android\.media\.AudioService
+  - - forceRemoteSubmixFullVolume\(
+  input_case: exact
+  severity: info
+- id: android.permission.MODIFY_AUDIO_ROUTING
+  message: android.permission.MODIFY_AUDIO_ROUTING
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server|android\.media\.AudioService
+  - - registerAudioPolicy\(
+    - setFocusPropertiesForPolicy\(
+  input_case: exact
+  severity: info
+- id: android.permission.REMOTE_AUDIO_PLAYBACK
+  message: android.permission.REMOTE_AUDIO_PLAYBACK
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server|android\.media\.AudioService
+  - - setRingtonePlayer\(
+  input_case: exact
+  severity: info
+- id: android.permission.WRITE_SYNC_SETTINGS
+  message: android.permission.WRITE_SYNC_SETTINGS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server|android\.content\.ContentService|android\.content\.ContentResolver
+  - - setMasterSyncAutomatically\(
+    - addPeriodicSync\(
+    - removePeriodicSync\(
+    - setSyncAutomatically\(
+    - setIsSyncable\(
+    - setSyncAutomaticallyAsUser\(
+    - setMasterSyncAutomaticallyAsUser\(
+  input_case: exact
+  severity: info
+- id: android.permission.CACHE_CONTENT
+  message: android.permission.CACHE_CONTENT
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getCache\(
+    - putCache\(
+  input_case: exact
+  severity: info
+- id: android.permission.GET_ACCOUNTS
+  message: android.permission.GET_ACCOUNTS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server|android\.accounts\.AccountManager
+  - - getAccountsByTypeForPackage\(
+    - addOnAccountsUpdatedListener\(
+    - getAccountsByFeatures\(
+    - hasFeatures\(
+    - getAccountsByTypeAndFeatures\(
+    - getAccountsForPackage\(
+    - getAccountsByType\(
+    - getAccountsAsUser\(
+    - getAccounts\(
+    - getCurrentSyncsAsUser\(
+    - getCurrentSyncs\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_SYNC_STATS
+  message: android.permission.READ_SYNC_STATS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server|android\.content\.ContentService
+  - - getCurrentSyncs\(
+    - getSyncStatus\(
+    - isSyncActive\(
+    - getCurrentSyncsAsUser\(
+    - isSyncPending\(
+    - getSyncStatusAsUser\(
+    - isSyncPendingAsUser\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_SYNC_SETTINGS
+  message: android.permission.READ_SYNC_SETTINGS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server|android\.content\.ContentService
+  - - getSyncAutomaticallyAsUser\(
+    - getMasterSyncAutomatically\(
+    - getIsSyncableAsUser\(
+    - getPeriodicSyncs\(
+    - getSyncAutomatically\(
+    - getIsSyncable\(
+    - getMasterSyncAutomaticallyAsUser\(
+  input_case: exact
+  severity: info
+- id: android.permission.MANAGE_USERS
+  message: android.permission.MANAGE_USERS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - approveCaCert\(
+    - createAndManageUser\(
+    - getDeviceOwnerComponent\(
+    - getDeviceOwnerName\(
+    - getDeviceOwnerUserId\(
+    - getProfileOwnerName\(
+    - isCaCertApproved\(
+    - isDeviceProvisioningConfigApplied\(
+    - setDeviceProvisioningConfigApplied\(
+    - setOrganizationColorForUser\(
+    - uninstallPackageWithActiveAdmins\(
+    - getApplicationHiddenSettingAsUser\(
+    - setApplicationHiddenSettingAsUser\(
+    - setPackagesSuspendedAsUser\(
+    - createAndInitializeUser\(
+    - setProfileOwner\(
+    - getApplicationBlockedSettingAsUser\(
+    - setApplicationBlockedSettingAsUser\(
+  input_case: exact
+  severity: info
+- id: android.permission.MANAGE_DEVICE_ADMINS
+  message: android.permission.MANAGE_DEVICE_ADMINS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - createAndManageUser\(
+    - isUninstallInQueue\(
+    - removeActiveAdmin\(
+    - setActiveAdmin\(
+    - uninstallPackageWithActiveAdmins\(
+    - createAndInitializeUser\(
+    - setDeviceInitializer\(
+    - setUserEnabled\(
+  input_case: exact
+  severity: info
+- id: android.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS
+  message: android.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - createAndManageUser\(
+    - setDeviceOwner\(
+    - setProfileOwner\(
+    - setUserProvisioningState\(
+    - createAndInitializeUser\(
+  input_case: exact
+  severity: info
+- id: android.permission.MANAGE_CA_CERTIFICATES
+  message: android.permission.MANAGE_CA_CERTIFICATES
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - enforceCanManageCaCerts\(
+    - installCaCert\(
+    - uninstallCaCerts\(
+    - uninstallCaCert\(
+  input_case: exact
+  severity: info
+- id: android.permission.QUERY_DO_NOT_ASK_CREDENTIALS_ON_BOOT
+  message: android.permission.QUERY_DO_NOT_ASK_CREDENTIALS_ON_BOOT
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getDoNotAskCredentialsOnBoot\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_DEVICE_ADMIN
+  message: android.permission.BIND_DEVICE_ADMIN
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server|android\.app\.admin\.DeviceAdminReceiver
+  - - getRemoveWarning\(
+    - reportFailedPasswordAttempt\(
+    - reportFailedFingerprintAttempt\(
+    - onEnabled\(
+    - onDisabled\(
+    - onPasswordFailed\(
+    - onPasswordExpiring\(
+    - onPasswordSucceeded\(
+    - setActiveAdmin\(
+    - setActivePasswordState\(
+    - removeActiveAdmin\(
+    - onPasswordChanged\(
+    - onProfileProvisioningComplete\(
+    - reportSuccessfulFingerprintAttempt\(
+    - onReceive\(
+    - reportSuccessfulPasswordAttempt\(
+    - reportKeyguardDismissed\(
+    - reportKeyguardSecured\(
+  input_case: exact
+  severity: info
+- id: android.permission.NOTIFY_PENDING_SYSTEM_UPDATE
+  message: android.permission.NOTIFY_PENDING_SYSTEM_UPDATE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - notifyPendingSystemUpdate\(
+  input_case: exact
+  severity: info
+- id: android.permission.CONFIGURE_WIFI_DISPLAY
+  message: android.permission.CONFIGURE_WIFI_DISPLAY
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - connectWifiDisplay\(
+    - forgetWifiDisplay\(
+    - pauseWifiDisplay\(
+    - renameWifiDisplay\(
+    - resumeWifiDisplay\(
+    - startWifiDisplayScan\(
+    - stopWifiDisplayScan\(
+    - registerClientAsUser\(
+  input_case: exact
+  severity: info
+- id: android.permission.CAPTURE_SECURE_VIDEO_OUTPUT
+  message: android.permission.CAPTURE_SECURE_VIDEO_OUTPUT
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - createVirtualDisplay\(
+  input_case: exact
+  severity: info
+- id: android.permission.CAPTURE_VIDEO_OUTPUT
+  message: android.permission.CAPTURE_VIDEO_OUTPUT
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - createVirtualDisplay\(
+  input_case: exact
+  severity: info
+- id: android.permission.CONFIGURE_DISPLAY_COLOR_MODE
+  message: android.permission.CONFIGURE_DISPLAY_COLOR_MODE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - requestColorMode\(
+  input_case: exact
+  severity: info
+- id: android.permission.WRITE_DREAM_STATE
+  message: android.permission.WRITE_DREAM_STATE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - awaken\(
+    - dream\(
+    - setDreamComponents\(
+    - testDream\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_DREAM_STATE
+  message: android.permission.READ_DREAM_STATE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getDefaultDreamComponent\(
+    - getDreamComponents\(
+    - isDreaming\(
+  input_case: exact
+  severity: info
+- id: android.permission.MANAGE_FINGERPRINT
+  message: android.permission.MANAGE_FINGERPRINT
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - authenticate\(
+    - cancelEnrollment\(
+    - enroll\(
+    - postEnroll\(
+    - preEnroll\(
+    - remove\(
+    - rename\(
+    - setActiveUser\(
+  input_case: exact
+  severity: info
+- id: android.permission.RESET_FINGERPRINT_LOCKOUT
+  message: android.permission.RESET_FINGERPRINT_LOCKOUT
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - resetTimeout\(
+  input_case: exact
+  severity: info
+- id: android.permission.HDMI_CEC
+  message: android.permission.HDMI_CEC
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - addDeviceEventListener\(
+    - addHdmiMhlVendorCommandListener\(
+    - addHotplugEventListener\(
+    - addSystemAudioModeChangeListener\(
+    - addVendorCommandListener\(
+    - canChangeSystemAudioMode\(
+    - clearTimerRecording\(
+    - deviceSelect\(
+    - getActiveSource\(
+    - getDeviceList\(
+    - getInputDevices\(
+    - getPortInfo\(
+    - getSupportedTypes\(
+    - getSystemAudioMode\(
+    - oneTouchPlay\(
+    - portSelect\(
+    - queryDisplayStatus\(
+    - removeHotplugEventListener\(
+    - removeSystemAudioModeChangeListener\(
+    - sendKeyEvent\(
+    - sendMhlVendorCommand\(
+    - sendStandby\(
+    - sendVendorCommand\(
+    - setArcMode\(
+    - setHdmiRecordListener\(
+    - setInputChangeListener\(
+    - setProhibitMode\(
+    - setSystemAudioMode\(
+    - setSystemAudioMute\(
+    - setSystemAudioVolume\(
+    - startOneTouchRecord\(
+    - startTimerRecording\(
+    - stopOneTouchRecord\(
+  input_case: exact
+  severity: info
+- id: android.permission.SET_KEYBOARD_LAYOUT
+  message: android.permission.SET_KEYBOARD_LAYOUT
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - addKeyboardLayoutForInputDevice\(
+    - removeKeyboardLayoutForInputDevice\(
+    - setCurrentKeyboardLayoutForInputDevice\(
+    - setKeyboardLayoutForInputDevice\(
+  input_case: exact
+  severity: info
+- id: android.permission.TABLET_MODE
+  message: android.permission.TABLET_MODE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - isInTabletMode\(
+    - registerTabletModeChangedListener\(
+  input_case: exact
+  severity: info
+- id: android.permission.SET_INPUT_CALIBRATION
+  message: android.permission.SET_INPUT_CALIBRATION
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - setTouchCalibrationForInputDevice\(
+  input_case: exact
+  severity: info
+- id: android.permission.SET_POINTER_SPEED
+  message: android.permission.SET_POINTER_SPEED
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - tryPointerSpeed\(
+  input_case: exact
+  severity: info
+- id: android.permission.MANAGE_MEDIA_PROJECTION
+  message: android.permission.MANAGE_MEDIA_PROJECTION
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - addCallback\(
+    - createProjection\(
+    - getActiveProjectionInfo\(
+    - removeCallback\(
+    - stopActiveProjection\(
+  input_case: exact
+  severity: info
+- id: android.permission.MANAGE_NETWORK_POLICY
+  message: android.permission.MANAGE_NETWORK_POLICY
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - addRestrictBackgroundWhitelistedUid\(
+    - addUidPolicy\(
+    - factoryReset\(
+    - getNetworkPolicies\(
+    - getRestrictBackground\(
+    - getRestrictBackgroundWhitelistedUids\(
+    - getUidPolicy\(
+    - getUidsWithPolicy\(
+    - isUidForeground\(
+    - onTetheringChanged\(
+    - removeRestrictBackgroundWhitelistedUid\(
+    - removeUidPolicy\(
+    - setDeviceIdleMode\(
+    - setNetworkPolicies\(
+    - setRestrictBackground\(
+    - setUidPolicy\(
+    - snoozeLimit\(
+    - setPolicyDataEnable\(
+    - getPowerSaveAppIdWhitelist\(
+    - getAppPolicy\(
+    - getAppsWithPolicy\(
+    - setAppPolicy\(
+  input_case: exact
+  severity: info
+- id: android.permission.MODIFY_NETWORK_ACCOUNTING
+  message: android.permission.MODIFY_NETWORK_ACCOUNTING
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - advisePersistThreshold\(
+    - incrementOperationCount\(
+    - setUidForeground\(
+    - setRestrictBackground\(
+    - setUidPolicy\(
+  input_case: exact
+  severity: info
+- id: android.permission.INSTALL_PACKAGES
+  message: android.permission.INSTALL_PACKAGES
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - setPermissionsResult\(
+    - installExistingPackageAsUser\(
+    - installPackageAsUser\(
+    - installPackage\(
+    - installPackageWithVerification\(
+    - installPackageWithVerificationAndEncryption\(
+    - installExistingPackage\(
+  input_case: exact
+  severity: info
+- id: android.permission.DELETE_PACKAGES
+  message: android.permission.DELETE_PACKAGES
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - uninstall\(
+    - deletePackage\(
+    - deletePackageAsUser\(
+    - setBlockUninstallForUser\(
+  input_case: exact
+  severity: info
+- id: android.permission.OBSERVE_GRANT_REVOKE_PERMISSIONS
+  message: android.permission.OBSERVE_GRANT_REVOKE_PERMISSIONS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - addOnPermissionsChangeListener\(
+  input_case: exact
+  severity: info
+- id: android.permission.SET_PREFERRED_APPLICATIONS
+  message: android.permission.SET_PREFERRED_APPLICATIONS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server|com\.android\.phone
+  - - updateIntentVerificationStatus\(
+    - verifyPendingInstall\(
+    - setHomeActivity\(
+    - replacePreferredActivity\(
+    - updateExternalMediaStatus\(
+    - deletePackage\(
+    - setDefaultBrowserPackageName\(
+    - systemReady\(
+    - getPackageSizeInfo\(
+    - installPackage\(
+    - resetApplicationPreferences\(
+    - extendVerificationTimeout\(
+    - installPackageAsUser\(
+    - clearPackagePreferredActivities\(
+    - movePackage\(
+    - setLastChosenActivity\(
+    - deletePackageAsUser\(
+    - rejectCall\(
+    - resetPreferredActivities\(
+    - addPreferredActivity\(
+  input_case: exact
+  severity: info
+- id: android.permission.CLEAR_APP_USER_DATA
+  message: android.permission.CLEAR_APP_USER_DATA
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - clearApplicationUserData\(
+  input_case: exact
+  severity: info
+- id: android.permission.DELETE_CACHE_FILES
+  message: android.permission.DELETE_CACHE_FILES
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - deleteApplicationCacheFiles\(
+    - deleteApplicationCacheFilesAsUser\(
+  input_case: exact
+  severity: info
+- id: android.permission.GRANT_RUNTIME_PERMISSIONS
+  message: android.permission.GRANT_RUNTIME_PERMISSIONS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - deletePackage\(
+    - deletePackageAsUser\(
+    - extendVerificationTimeout\(
+    - getPackageSizeInfo\(
+    - getPermissionFlags\(
+    - grantRuntimePermission\(
+    - installPackageAsUser\(
+    - movePackage\(
+    - setDefaultBrowserPackageName\(
+    - setPermissionEnforced\(
+    - updateExternalMediaStatus\(
+    - updatePermissionFlags\(
+    - updatePermissionFlagsForAllApps\(
+    - verifyPendingInstall\(
+    - systemReady\(
+    - setPermissionGrantState\(
+    - installPackage\(
+  input_case: exact
+  severity: info
+- id: android.permission.REVOKE_RUNTIME_PERMISSIONS
+  message: android.permission.REVOKE_RUNTIME_PERMISSIONS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - deletePackage\(
+    - deletePackageAsUser\(
+    - extendVerificationTimeout\(
+    - getPackageSizeInfo\(
+    - getPermissionFlags\(
+    - installPackageAsUser\(
+    - movePackage\(
+    - resetRuntimePermissions\(
+    - revokeRuntimePermission\(
+    - setDefaultBrowserPackageName\(
+    - updateExternalMediaStatus\(
+    - updatePermissionFlags\(
+    - updatePermissionFlagsForAllApps\(
+    - verifyPendingInstall\(
+    - systemReady\(
+    - setPermissionGrantState\(
+    - installPackage\(
+  input_case: exact
+  severity: info
+- id: android.permission.PACKAGE_VERIFICATION_AGENT
+  message: android.permission.PACKAGE_VERIFICATION_AGENT
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - extendVerificationTimeout\(
+    - getVerifierDeviceIdentity\(
+    - verifyPendingInstall\(
+  input_case: exact
+  severity: info
+- id: android.permission.CLEAR_APP_CACHE
+  message: android.permission.CLEAR_APP_CACHE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server|android\.content\.pm\.PackageManager
+  - - deleteApplicationCacheFiles\(
+    - freeStorageAndNotify\(
+    - freeStorage\(
+  input_case: exact
+  severity: info
+- id: android.permission.GET_PACKAGE_SIZE
+  message: android.permission.GET_PACKAGE_SIZE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getPackageSizeInfo\(
+  input_case: exact
+  severity: info
+- id: android.permission.INSTALL_GRANT_RUNTIME_PERMISSIONS
+  message: android.permission.INSTALL_GRANT_RUNTIME_PERMISSIONS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - installPackageAsUser\(
+    - installPackage\(
+  input_case: exact
+  severity: info
+- id: android.permission.MOVE_PACKAGE
+  message: android.permission.MOVE_PACKAGE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - movePackage\(
+    - movePrimaryStorage\(
+  input_case: exact
+  severity: info
+- id: android.permission.CHANGE_COMPONENT_ENABLED_STATE
+  message: android.permission.CHANGE_COMPONENT_ENABLED_STATE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - setApplicationEnabledSetting\(
+    - setComponentEnabledSetting\(
+    - setPackageStoppedState\(
+    - systemReady\(
+  input_case: exact
+  severity: info
+- id: android.permission.INTENT_FILTER_VERIFICATION_AGENT
+  message: android.permission.INTENT_FILTER_VERIFICATION_AGENT
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - verifyIntentFilter\(
+  input_case: exact
+  severity: info
+- id: android.permission.RESET_SHORTCUT_MANAGER_THROTTLING
+  message: android.permission.RESET_SHORTCUT_MANAGER_THROTTLING
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - onApplicationActive\(
+  input_case: exact
+  severity: info
+- id: android.permission.REBOOT
+  message: android.permission.REBOOT
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - crash\(
+    - reboot\(
+    - rebootSafeMode\(
+    - shutdown\(
+  input_case: exact
+  severity: info
+- id: com.android.printspooler.permission.ACCESS_ALL_PRINT_JOBS
+  message: com.android.printspooler.permission.ACCESS_ALL_PRINT_JOBS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - addPrintJobStateChangeListener\(
+    - cancelPrintJob\(
+    - getPrintJobInfo\(
+    - getPrintJobInfos\(
+    - print\(
+    - restartPrintJob\(
+  input_case: exact
+  severity: info
+- id: android.permission.MANAGE_SOUND_TRIGGER
+  message: android.permission.MANAGE_SOUND_TRIGGER
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - deleteSoundModel\(
+    - getSoundModel\(
+    - startRecognition\(
+    - stopRecognition\(
+    - updateSoundModel\(
+  input_case: exact
+  severity: info
+- id: android.permission.STATUS_BAR
+  message: android.permission.STATUS_BAR
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server|android\.app\.StatusBarManager
+  - - setCurrentInputMethodSubtype\(
+    - setRecentsVisibility\(
+    - showInputMethodAndSubtypeEnablerFromClient\(
+    - switchToLastInputMethod\(
+    - disableForUser\(
+    - updateStatusIcon\(
+    - setTvPipVisibility\(
+    - addTile\(
+    - setImeWindowStatus\(
+    - disable2\(
+    - setInputMethod\(
+    - disable2ForUser\(
+    - disable\(
+    - topAppWindowChanged\(
+    - switchToNextInputMethod\(
+    - reportInetCondition\(
+    - setIcon\(
+    - setInputMethodAndSubtype\(
+    - clickTile\(
+    - disableAll\(
+    - startInput\(
+    - remTile\(
+    - hideSoftInput\(
+    - windowGainedFocus\(
+    - disableForPackage\(
+    - removeIcon\(
+    - setIconVisibility\(
+    - statusBarVisibilityChanged\(
+  input_case: exact
+  severity: info
+- id: android.permission.EXPAND_STATUS_BAR
+  message: android.permission.EXPAND_STATUS_BAR
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - collapsePanels\(
+    - expandNotificationsPanel\(
+    - expandSettingsPanel\(
+    - handleSystemNavigationKey\(
+    - collapse\(
+    - expand\(
+  input_case: exact
+  severity: info
+- id: android.permission.TV_INPUT_HARDWARE
+  message: android.permission.TV_INPUT_HARDWARE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - acquireTvInputHardware\(
+    - getHardwareList\(
+    - releaseTvInputHardware\(
+    - addHardwareInput\(
+    - addHdmiInput\(
+    - removeHardwareInput\(
+    - addHardwareTvInput\(
+    - addHdmiTvInput\(
+    - removeTvInput\(
+  input_case: exact
+  severity: info
+- id: android.permission.MODIFY_PARENTAL_CONTROLS
+  message: android.permission.MODIFY_PARENTAL_CONTROLS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - addBlockedRating\(
+    - removeBlockedRating\(
+    - setParentalControlsEnabled\(
+    - unblockContent\(
+  input_case: exact
+  severity: info
+- id: android.permission.CAPTURE_TV_INPUT
+  message: android.permission.CAPTURE_TV_INPUT
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - captureFrame\(
+    - getAvailableTvStreamConfigList\(
+  input_case: exact
+  severity: info
+- id: android.permission.DVB_DEVICE
+  message: android.permission.DVB_DEVICE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getDvbDeviceList\(
+    - openDvbDevice\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_CARRIER_SERVICES
+  message: android.permission.BIND_CARRIER_SERVICES
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server|android\.service\.carrier\.CarrierService
+  - - onCarrierPrivilegedAppsChanged\(
+    - onBind\(
+  input_case: exact
+  severity: info
+- id: android.permission.CHANGE_APP_IDLE_STATE
+  message: android.permission.CHANGE_APP_IDLE_STATE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - setAppInactive\(
+  input_case: exact
+  severity: info
+- id: android.permission.MANAGE_USB
+  message: android.permission.MANAGE_USB
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - allowUsbDebugging\(
+    - clearDefaults\(
+    - clearUsbDebuggingKeys\(
+    - denyUsbDebugging\(
+    - getPortStatus\(
+    - getPorts\(
+    - grantAccessoryPermission\(
+    - grantDevicePermission\(
+    - hasDefaults\(
+    - isFunctionEnabled\(
+    - setAccessoryPackage\(
+    - setCurrentFunction\(
+    - setDevicePackage\(
+    - setPortRoles\(
+    - setUsbDataUnlocked\(
+    - setMassStorageBackingFile\(
+  input_case: exact
+  severity: info
+- id: android.permission.ACCESS_VOICE_INTERACTION_SERVICE
+  message: android.permission.ACCESS_VOICE_INTERACTION_SERVICE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - activeServiceSupportsAssist\(
+    - activeServiceSupportsLaunchFromKeyguard\(
+    - getActiveServiceComponentName\(
+    - hideCurrentSession\(
+    - isSessionRunning\(
+    - launchVoiceAssistFromKeyguard\(
+    - onLockscreenShown\(
+    - registerVoiceInteractionSessionListener\(
+    - showSessionForActiveService\(
+  input_case: exact
+  severity: info
+- id: android.permission.MANAGE_VOICE_KEYPHRASES
+  message: android.permission.MANAGE_VOICE_KEYPHRASES
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - deleteKeyphraseSoundModel\(
+    - getKeyphraseSoundModel\(
+    - updateKeyphraseSoundModel\(
+  input_case: exact
+  severity: info
+- id: android.permission.SET_WALLPAPER_COMPONENT
+  message: android.permission.SET_WALLPAPER_COMPONENT
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - setWallpaperComponent\(
+    - setWallpaperComponentChecked\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_WIFI_CREDENTIAL
+  message: android.permission.READ_WIFI_CREDENTIAL
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getConnectionStatistics\(
+    - getPrivilegedConfiguredNetworks\(
+  input_case: exact
+  severity: info
+- id: android.permission.MANAGE_APP_TOKENS
+  message: android.permission.MANAGE_APP_TOKENS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - addAppToken\(
+    - addWindowToken\(
+    - executeAppTransition\(
+    - notifyAppResumed\(
+    - notifyAppStopped\(
+    - pauseKeyDispatching\(
+    - prepareAppTransition\(
+    - removeAppToken\(
+    - removeWindowToken\(
+    - resumeKeyDispatching\(
+    - setAppOrientation\(
+    - setAppStartingWindow\(
+    - setAppTask\(
+    - setAppVisibility\(
+    - setEventDispatching\(
+    - setFocusedApp\(
+    - setNewConfiguration\(
+    - startAppFreezingScreen\(
+    - stopAppFreezingScreen\(
+    - updateOrientationFromAppTokens\(
+    - setAppWillBeHidden\(
+    - activityIdle\(
+    - activityPaused\(
+    - activitySlept\(
+    - backgroundResourcesReleased\(
+    - convertFromTranslucent\(
+    - finishActivityAffinity\(
+    - finishHeavyWeightApp\(
+    - handleApplicationCrash\(
+    - handleApplicationWtf\(
+    - keyguardWaitingForActivityDrawn\(
+    - moveActivityTaskToBack\(
+    - navigateUpTo\(
+    - releaseActivityInstance\(
+    - requestVisibleBehind\(
+    - setFocusedStack\(
+    - setFrontActivityScreenCompatMode\(
+    - setPackageScreenCompatMode\(
+    - shutdown\(
+    - startLockTaskMode\(
+    - startLockTaskModeOnCurrent\(
+    - startNextMatchingActivity\(
+    - stopAppSwitches\(
+    - setAppGroupId\(
+    - moveAppToken\(
+    - moveAppTokensToBottom\(
+    - moveAppTokensToTop\(
+  input_case: exact
+  severity: info
+- id: android.permission.FRAME_STATS
+  message: android.permission.FRAME_STATS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - clearWindowContentFrameStats\(
+    - getWindowContentFrameStats\(
+  input_case: exact
+  severity: info
+- id: android.permission.SET_ORIENTATION
+  message: android.permission.SET_ORIENTATION
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - freezeRotation\(
+    - thawRotation\(
+  input_case: exact
+  severity: info
+- id: android.permission.REGISTER_WINDOW_MANAGER_LISTENERS
+  message: android.permission.REGISTER_WINDOW_MANAGER_LISTENERS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - registerDockedStackListener\(
+    - registerShortcutKey\(
+  input_case: exact
+  severity: info
+- id: android.permission.SET_ANIMATION_SCALE
+  message: android.permission.SET_ANIMATION_SCALE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - setAnimationScale\(
+    - setAnimationScales\(
+  input_case: exact
+  severity: info
+- id: android.permission.FREEZE_SCREEN
+  message: android.permission.FREEZE_SCREEN
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - startFreezingScreen\(
+    - stopFreezingScreen\(
+  input_case: exact
+  severity: info
+- id: android.permission.GET_PROCESS_STATE_AND_OOM_SCORE
+  message: android.permission.GET_PROCESS_STATE_AND_OOM_SCORE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getProcessStatesAndOomScoresFromPids\(
+    - getProcessStatesFromPids\(
+  input_case: exact
+  severity: info
+- id: android.permission.CONFIGURE_DISPLAY_COLOR_TRANSFORM
+  message: android.permission.CONFIGURE_DISPLAY_COLOR_TRANSFORM
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - requestColorTransform\(
+  input_case: exact
+  severity: info
+- id: android.permission.NFC
+  message: android.permission.NFC
+  type: RegexAndOr
+  pattern:
+  - android\.nfc\.NfcAdapter|android\.nfc\.cardemulation|android\.nfc\.tech|com\.android\.nfc
+  - - getAidGroupForService\(
+    - transfer\(
+    - enableForegroundDispatch\(
+    - transceive\(
+    - restore\(
+    - unsetPreferredService\(
+    - increment\(
+    - setCardEmulationRoute\(
+    - getNdefMessage\(
+    - getTimeout\(
+    - getTechList\(
+    - formatReadOnly\(
+    - disableForegroundNdefPush\(
+    - reconnect\(
+    - readPages\(
+    - writePage\(
+    - ndefWrite\(
+    - getAidsForService\(
+    - connect\(
+    - rediscover\(
+    - decrement\(
+    - open\(
+    - close\(
+    - setNdefPushMessage\(
+    - readBlock\(
+    - ndefMakeReadOnly\(
+    - enableForegroundNdefPush\(
+    - ndefRead\(
+    - setForegroundDispatch\(
+    - getNfcAdapterExtrasInterface\(
+    - authenticateSectorWithKeyB\(
+    - format\(
+    - setAppCallback\(
+    - makeReadOnly\(
+    - enableReaderMode\(
+    - writeNdefMessage\(
+    - setNdefPushCallback\(
+    - setPreferredService\(
+    - getDriverName\(
+    - registerAidGroupForService\(
+    - authenticate\(
+    - getCardEmulationRoute\(
+    - invokeBeam\(
+    - authenticateSectorWithKeyA\(
+    - setTimeout\(
+    - formatNdef\(
+    - registerAidsForService\(
+    - writeBlock\(
+    - setBeamPushUrisCallback\(
+    - isDefaultServiceForAid\(
+    - setBeamPushUris\(
+    - resetTimeouts\(
+    - setOnNdefPushCompleteCallback\(
+    - isNdef\(
+    - removeAidGroupForService\(
+    - setNdefPushMessageCallback\(
+    - verifyNfcPermission\(
+    - disableForegroundDispatch\(
+    - removeAidsForService\(
+    - isDefaultServiceForCategory\(
+  input_case: exact
+  severity: info
+- id: android.permission.ACCOUNT_MANAGER
+  message: android.permission.ACCOUNT_MANAGER
+  type: RegexAndOr
+  pattern:
+  - android\.accounts\.AbstractAccountAuthenticator
+  - - addAccount\(
+    - addAccountFromCredentials\(
+    - confirmCredentials\(
+    - editProperties\(
+    - getAccountCredentialsForCloning\(
+    - getAccountRemovalAllowed\(
+    - getAuthToken\(
+    - getAuthTokenLabel\(
+    - hasFeatures\(
+    - updateCredentials\(
+  input_case: exact
+  severity: info
+- id: android.permission.SEND_RESPOND_VIA_MESSAGE
+  message: android.permission.SEND_RESPOND_VIA_MESSAGE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.internal|android\.telecom\.TelecomManager
+  - - isInCall\(
+    - sendDataForSubscriberWithSelfPermissions\(
+    - onSendMultipartSmsComplete\(
+    - sendTextForSubscriber\(
+    - sendTextForSubscriberWithSelfPermissions\(
+    - allowRespondViaMessageForCalls\(
+    - sendDataForSubscriber\(
+    - sendStoredText\(
+    - sendStoredMultipartText\(
+    - sendMultipartTextForSubscriber\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_LOGS
+  message: android.permission.READ_LOGS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getNextEntry\(
+  input_case: exact
+  severity: info
+- id: android.permission.MEDIA_CONTENT_CONTROL
+  message: android.permission.MEDIA_CONTENT_CONTROL
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server|android\.media\.AudioService
+  - - registerRemoteControlDisplay\(
+    - registerRemoteController\(
+  input_case: exact
+  severity: info
+- id: android.permission.TABLET_MODE_LISTENER
+  message: android.permission.TABLET_MODE_LISTENER
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - registerTabletModeChangedListener\(
+  input_case: exact
+  severity: info
+- id: android.permission.AUTHENTICATE_ACCOUNTS
+  message: android.permission.AUTHENTICATE_ACCOUNTS
+  type: RegexAndOr
+  pattern:
+  - android\.accounts\.AccountManager|com\.android\.server
+  - - setPassword\(
+    - addAccount\(
+    - addAccountExplicitly\(
+    - setUserData\(
+    - getUserData\(
+    - removeAccountExplicitly\(
+    - setAuthToken\(
+    - peekAuthToken\(
+    - renameAccount\(
+    - getPassword\(
+  input_case: exact
+  severity: info
+- id: android.permission.MANAGE_ACCOUNTS
+  message: android.permission.MANAGE_ACCOUNTS
+  type: RegexAndOr
+  pattern:
+  - android\.accounts\.AccountManager|com\.android\.server
+  - - updateCredentials\(
+    - removeAccount\(
+    - addAccount\(
+    - clearPassword\(
+    - editProperties\(
+    - addAccountAsUser\(
+    - confirmCredentials\(
+    - addAcount\(
+    - removeAccountAsUser\(
+    - confirmCredentialsAsUser\(
+    - invalidateAuthToken\(
+  input_case: exact
+  severity: info
+- id: android.permission.USE_CREDENTIALS
+  message: android.permission.USE_CREDENTIALS
+  type: RegexAndOr
+  pattern:
+  - android\.accounts\.AccountManager|com\.android\.server
+  - - getAuthToken\(
+    - invalidateAuthToken\(
+  input_case: exact
+  severity: info
+- id: android.permission.ACCESS_MOCK_LOCATION
+  message: android.permission.ACCESS_MOCK_LOCATION
+  type: RegexAndOr
+  pattern:
+  - android\.location\.LocationManager|com\.android\.server
+  - - clearTestProviderLocation\(
+    - setTestProviderEnabled\(
+    - setTestProviderStatus\(
+    - clearTestProviderStatus\(
+    - addTestProvider\(
+    - clearTestProviderEnabled\(
+    - removeTestProvider\(
+    - setTestProviderLocation\(
+  input_case: exact
+  severity: info
+- id: android.permission.RECEIVE_BLUETOOTH_MAP
+  message: android.permission.RECEIVE_BLUETOOTH_MAP
+  type: RegexAndOr
+  pattern:
+  - com\.android\.bluetooth
+  - - fetchRemoteMasInstances\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_SOCIAL_STREAM
+  message: android.permission.READ_SOCIAL_STREAM
+  type: RegexAndOr
+  pattern:
+  - com\.android\.providers
+  - - getType\(
+    - bulkInsert\(
+    - call\(
+    - delete\(
+    - insert\(
+    - update\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_PROFILE
+  message: android.permission.READ_PROFILE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server|com\.android\.providers
+  - - openAssetFile\(
+    - getString\(
+    - getBoolean\(
+    - getLong\(
+  input_case: exact
+  severity: info
+- id: android.permission.WRITE_SMS
+  message: android.permission.WRITE_SMS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - addMultimediaMessageDraft\(
+    - addTextMessageDraft\(
+    - archiveStoredConversation\(
+    - deleteStoredConversation\(
+    - deleteStoredMessage\(
+    - importMultimediaMessage\(
+    - importTextMessage\(
+    - setAutoPersisting\(
+    - updateStoredMessageStatus\(
+  input_case: exact
+  severity: info
+- id: android.permission.ACCESS_ALL_EXTERNAL_STORAGE
+  message: android.permission.ACCESS_ALL_EXTERNAL_STORAGE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getVolumeList\(
+  input_case: exact
+  severity: info
+- id: android.permission.BROADCAST_SCORE_NETWORKS
+  message: android.permission.BROADCAST_SCORE_NETWORKS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - clearScores\(
+    - disableScoring\(
+    - registerNetworkScoreCache\(
+    - setActiveScorer\(
+  input_case: exact
+  severity: info
+- id: android.permission.GRANT_REVOKE_PERMISSIONS
+  message: android.permission.GRANT_REVOKE_PERMISSIONS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - grantPermission\(
+    - revokePermission\(
+    - setPermissionEnforced\(
+  input_case: exact
+  severity: info
+- id: android.permission.WRITE_SETTINGS
+  message: android.permission.WRITE_SETTINGS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server|android\.provider\.Settings\.System
+  - - put\(
+    - setStayOnSetting\(
+    - putLong\(
+    - putFloat\(
+    - putInt\(
+  input_case: exact
+  severity: info
+- id: com.android.server.telecom.permission.REGISTER_PROVIDER_OR_SUBSCRIPTION
+  message: com.android.server.telecom.permission.REGISTER_PROVIDER_OR_SUBSCRIPTION
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - registerPhoneAccount\(
+  input_case: exact
+  severity: info
+- id: android.permission.SET_TIME_ZONE
+  message: android.permission.SET_TIME_ZONE
+  type: RegexAndOr
+  pattern:
+  - android\.app\.AlarmManager|com\.android\.server
+  - - setTimeZone\(
+  input_case: exact
+  severity: info
+- id: android.permission.SET_TIME
+  message: android.permission.SET_TIME
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - setTime\(
+  input_case: exact
+  severity: info
+- id: android.permission.MARK_NETWORK_SOCKET
+  message: android.permission.MARK_NETWORK_SOCKET
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - markSocketAsUser\(
+  input_case: exact
+  severity: info
+- id: android.permission.ACCESS_NOTIFICATIONS
+  message: android.permission.ACCESS_NOTIFICATIONS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getActiveNotifications\(
+    - getHistoricalNotifications\(
+  input_case: exact
+  severity: info
+- id: android.permission.MAGNIFY_DISPLAY
+  message: android.permission.MAGNIFY_DISPLAY
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getCompatibleMagnificationSpecForWindow\(
+    - setMagnificationCallbacks\(
+    - setMagnificationSpec\(
+    - magnifyDisplay\(
+  input_case: exact
+  severity: info
+- id: android.permission.RETRIEVE_WINDOW_INFO
+  message: android.permission.RETRIEVE_WINDOW_INFO
+  type: RegexAndOr
+  pattern:
+  - com\.android\.server
+  - - getFocusedWindowToken\(
+    - getWindowFrame\(
+    - addDisplayContentChangeListener\(
+    - getVisibleWindowsForDisplay\(
+    - getWindowCompatibilityScale\(
+    - getWindowInfo\(
+    - removeDisplayContentChangeListener\(
+  input_case: exact
+  severity: info
+- id: ti.permission.FMRX_ADMIN
+  message: ti.permission.FMRX_ADMIN
+  type: RegexAndOr
+  pattern:
+  - com\.ti\.server
+  - - resumeFm\(
+    - rxChangeAudioTarget\(
+    - rxChangeDigitalTargetConfiguration\(
+    - rxCompleteScan_nb\(
+    - rxDisable\(
+    - rxDisableAudioRouting\(
+    - rxDisableRds\(
+    - rxDisableRds_nb\(
+    - rxEnable\(
+    - rxEnableAudioRouting\(
+    - rxEnableRds\(
+    - rxEnableRds_nb\(
+    - rxGetBand\(
+    - rxGetBand_nb\(
+    - rxGetChannelSpacing\(
+    - rxGetChannelSpacing_nb\(
+    - rxGetCompleteScanProgress\(
+    - rxGetCompleteScanProgress_nb\(
+    - rxGetDeEmphasisFilter\(
+    - rxGetDeEmphasisFilter_nb\(
+    - rxGetFwVersion\(
+    - rxGetMonoStereoMode\(
+    - rxGetMonoStereoMode_nb\(
+    - rxGetMuteMode\(
+    - rxGetMuteMode_nb\(
+    - rxGetRdsAfSwitchMode\(
+    - rxGetRdsAfSwitchMode_nb\(
+    - rxGetRdsGroupMask\(
+    - rxGetRdsGroupMask_nb\(
+    - rxGetRdsSystem\(
+    - rxGetRdsSystem_nb\(
+    - rxGetRfDependentMuteMode\(
+    - rxGetRfDependentMuteMode_nb\(
+    - rxGetRssi\(
+    - rxGetRssiThreshold\(
+    - rxGetRssiThreshold_nb\(
+    - rxGetRssi_nb\(
+    - rxGetTunedFrequency\(
+    - rxGetTunedFrequency_nb\(
+    - rxGetVolume\(
+    - rxGetVolume_nb\(
+    - rxIsValidChannel\(
+    - rxSeek_nb\(
+    - rxSetBand\(
+    - rxSetBand_nb\(
+    - rxSetChannelSpacing\(
+    - rxSetChannelSpacing_nb\(
+    - rxSetDeEmphasisFilter\(
+    - rxSetDeEmphasisFilter_nb\(
+    - rxSetMonoStereoMode\(
+    - rxSetMonoStereoMode_nb\(
+    - rxSetMuteMode\(
+    - rxSetMuteMode_nb\(
+    - rxSetRdsAfSwitchMode\(
+    - rxSetRdsAfSwitchMode_nb\(
+    - rxSetRdsGroupMask\(
+    - rxSetRdsGroupMask_nb\(
+    - rxSetRdsSystem\(
+    - rxSetRdsSystem_nb\(
+    - rxSetRfDependentMuteMode\(
+    - rxSetRfDependentMuteMode_nb\(
+    - rxSetRssiThreshold\(
+    - rxSetRssiThreshold_nb\(
+    - rxSetVolume\(
+    - rxStopCompleteScan\(
+    - rxStopCompleteScan_nb\(
+    - rxStopSeek\(
+    - rxStopSeek_nb\(
+    - rxTune_nb\(
+    - txChangeAudioSource\(
+    - txChangeDigitalSourceConfiguration\(
+    - txDisable\(
+    - txDisableRds\(
+    - txEnable\(
+    - txEnableRds\(
+    - txSetMonoStereoMode\(
+    - txSetMuteMode\(
+    - txSetPowerLevel\(
+    - txSetPreEmphasisFilter\(
+    - txSetRdsAfCode\(
+    - txSetRdsECC\(
+    - txSetRdsMusicSpeechFlag\(
+    - txSetRdsPiCode\(
+    - txSetRdsPsDisplayMode\(
+    - txSetRdsPsScrollSpeed\(
+    - txSetRdsPtyCode\(
+    - txSetRdsTextPsMsg\(
+    - txSetRdsTextRepertoire\(
+    - txSetRdsTextRtMsg\(
+    - txSetRdsTrafficCodes\(
+    - txSetRdsTransmissionMode\(
+    - txSetRdsTransmittedGroupsMask\(
+    - txStartTransmission\(
+    - txStopTransmission\(
+    - txTune\(
+    - txWriteRdsRawData\(
+  input_case: exact
+  severity: info
+- id: ti.permission.FMRX
+  message: ti.permission.FMRX
+  type: RegexAndOr
+  pattern:
+  - com\.ti\.server
+  - - rxEnable\(
+    - rxGetFMState\(
+    - rxIsEnabled\(
+    - rxIsFMPaused\(
+    - txEnable\(
+    - txGetFMState\(
+  input_case: exact
+  severity: info
+- id: com.android.email.permission.ACCESS_PROVIDER
+  message: com.android.email.permission.ACCESS_PROVIDER
+  type: RegexAndOr
+  pattern:
+  - com\.android\.email
+  - - openFile\(
+  input_case: exact
+  severity: info
+- id: android.permission.WRITE_PROFILE
+  message: android.permission.WRITE_PROFILE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.providers
+  - - bulkInsert\(
+    - delete\(
+    - insert\(
+    - update\(
+    - openAssetFile\(
+  input_case: exact
+  severity: info
+- id: com.android.voicemail.permission.ADD_VOICEMAIL
+  message: com.android.voicemail.permission.ADD_VOICEMAIL
+  type: RegexAndOr
+  pattern:
+  - com\.android\.providers
+  - - delete\(
+    - insert\(
+    - update\(
+    - openFile\(
+  input_case: exact
+  severity: info
+- id: android.permission.WRITE_SOCIAL_STREAM
+  message: android.permission.WRITE_SOCIAL_STREAM
+  type: RegexAndOr
+  pattern:
+  - com\.android\.providers
+  - - delete\(
+    - insert\(
+    - update\(
+  input_case: exact
+  severity: info
+- id: android.permission.ACCESS_ALL_DOWNLOADS
+  message: android.permission.ACCESS_ALL_DOWNLOADS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.providers
+  - - delete\(
+    - openFile\(
+    - update\(
+  input_case: exact
+  severity: info
+- id: android.permission.ACCESS_CACHE_FILESYSTEM
+  message: android.permission.ACCESS_CACHE_FILESYSTEM
+  type: RegexAndOr
+  pattern:
+  - com\.android\.providers
+  - - insert\(
+    - openFile\(
+  input_case: exact
+  severity: info
+- id: android.permission.ACCESS_DOWNLOAD_MANAGER
+  message: android.permission.ACCESS_DOWNLOAD_MANAGER
+  type: RegexAndOr
+  pattern:
+  - com\.android\.providers
+  - - insert\(
+  input_case: exact
+  severity: info
+- id: android.permission.ACCESS_DOWNLOAD_MANAGER_ADVANCED
+  message: android.permission.ACCESS_DOWNLOAD_MANAGER_ADVANCED
+  type: RegexAndOr
+  pattern:
+  - com\.android\.providers
+  - - insert\(
+  input_case: exact
+  severity: info
+- id: android.permission.DOWNLOAD_CACHE_NON_PURGEABLE
+  message: android.permission.DOWNLOAD_CACHE_NON_PURGEABLE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.providers
+  - - insert\(
+  input_case: exact
+  severity: info
+- id: android.permission.DOWNLOAD_WITHOUT_NOTIFICATION
+  message: android.permission.DOWNLOAD_WITHOUT_NOTIFICATION
+  type: RegexAndOr
+  pattern:
+  - com\.android\.providers
+  - - insert\(
+  input_case: exact
+  severity: info
+- id: android.permission.WRITE_EXTERNAL_STORAGE
+  message: android.permission.WRITE_EXTERNAL_STORAGE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.providers|java\.io\.FileOutputStream
+  - - FileOutputStream\(
+    - insert\(
+    - openFile\(
+    - write\(
+  input_case: exact
+  severity: info
+- id: android.permission.ACCESS_DRM
+  message: android.permission.ACCESS_DRM
+  type: RegexAndOr
+  pattern:
+  - com\.android\.providers
+  - - delete\(
+    - update\(
+    - openAssetFile\(
+    - openFile\(
+  input_case: exact
+  severity: info
+- id: android.permission.INSTALL_DRM
+  message: android.permission.INSTALL_DRM
+  type: RegexAndOr
+  pattern:
+  - com\.android\.providers
+  - - insert\(
+  input_case: exact
+  severity: info
+- id: android.permission.WRITE_APN_SETTINGS
+  message: android.permission.WRITE_APN_SETTINGS
+  type: RegexAndOr
+  pattern:
+  - com\.android\.providers|android\.provider\.Telephony\.ApnSetting\.Builder
+  - - update\(
+    - setApnName\(
+    - setProxyAddress\(
+    - setProxyPort\(
+    - insert\(
+    - setMmsc\(
+    - setMmsProxyPort\(
+    - delete\(
+    - setMmsProxyAddress\(
+  input_case: exact
+  severity: info
+- id: android.permission.CAMERA
+  message: android.permission.CAMERA
+  type: RegexAndOr
+  pattern:
+  - android\.hardware\.Camera|com\.google\.android\.cameraview
+  - - createCaptureSession\(
+    - open\(
+    - TakePicture\(
+    - takePicture\(
+    - isCameraOpened\(
+    - REQUEST_IMAGE_CAPTURE
+    - ACTION_IMAGE_CAPTURE
+    - getCameras\(
+    - getCameraFacing\(
+    - getMaxZoom\(
+    - onCaptureQueueEmpty\(
+    - CAMERA_FACING
+    - LENS_FACING_FRONT
+    - USE_FRONT_CAMERA
+  input_case: exact
+  severity: info
+- id: android.permission.RECORD_AUDIO
+  message: android.permission.RECORD_AUDIO
+  type: RegexAndOr
+  pattern:
+  - android\.media\.AudioRecord|android\.media\.MediaRecorder
+  - - read\(
+    - startRecording\(
+    - setAudioSource\(
+    - setAudioEncoder\(
+    - setOutputFormat\(
+    - setOutputFile\(
+    - start\(
+    - prepare\(
+  input_case: exact
+  severity: info
+- id: android.permission.ACCESS_NOTIFICATION_POLICY
+  message: android.permission.ACCESS_NOTIFICATION_POLICY
+  type: RegexAndOr
+  pattern:
+  - android\.app\.NotificationManager
+  - - setInterruptionFilter\(
+    - isNotificationPolicyAccessGranted\(
+  input_case: exact
+  severity: info
+- id: android.permission.BODY_SENSORS
+  message: android.permission.BODY_SENSORS
+  type: RegexAndOr
+  pattern:
+  - android\.hardware\.SensorManager
+  - - getDefaultSensor\(
+    - registerListener\(
+    - unregisterListener\(
+  input_case: exact
+  severity: info
+- id: android.permission.SYSTEM_ALERT_WINDOW
+  message: android.permission.SYSTEM_ALERT_WINDOW
+  type: RegexAndOr
+  pattern:
+  - android\.view\.WindowManager
+  - - addView\(
+    - removeView\(
+    - updateViewLayout\(
+    - getSystemService\(
+  input_case: exact
+  severity: info
+- id: android.permission.MANAGE_OWN_CALLS
+  message: android.permission.MANAGE_OWN_CALLS
+  type: RegexAndOr
+  pattern:
+  - android\.telecom\.TelecomManager
+  - - endCall\(
+    - acceptRingingCall\(
+    - silenceRinger\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_SMS
+  message: android.permission.READ_SMS
+  type: RegexAndOr
+  pattern:
+  - android\.content\.ContentResolver
+  - - query\(
+  input_case: exact
+  severity: info
+- id: android.permission.RECEIVE_WAP_PUSH
+  message: android.permission.RECEIVE_WAP_PUSH
+  type: RegexAndOr
+  pattern:
+  - android\.content\.BroadcastReceiver
+  - - onReceive\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_CALL_LOG
+  message: android.permission.READ_CALL_LOG
+  type: RegexAndOr
+  pattern:
+  - android\.content\.ContentResolver
+  - - query\(
+  input_case: exact
+  severity: info
+- id: android.permission.WRITE_CALL_LOG
+  message: android.permission.WRITE_CALL_LOG
+  type: RegexAndOr
+  pattern:
+  - android\.content\.ContentResolver
+  - - update\(
+    - delete\(
+    - insert\(
+  input_case: exact
+  severity: info
+- id: android.permission.ADD_VOICEMAIL
+  message: android.permission.ADD_VOICEMAIL
+  type: RegexAndOr
+  pattern:
+  - android\.provider\.VoicemailContract\.Voicemails
+  - - update\(
+    - insert\(
+  input_case: exact
+  severity: info
+- id: android.permission.PROCESS_OUTGOING_CALLS
+  message: android.permission.PROCESS_OUTGOING_CALLS
+  type: RegexAndOr
+  pattern:
+  - android\.content\.BroadcastReceiver
+  - - onReceive\(
+    - addNewIncomingCall\(
+    - TelephonyManager\.CALL_STATE_OFFHOOK
+    - TelephonyManager\.EXTRA_INCOMING_NUMBER
+  input_case: exact
+  severity: info
+- id: android.permission.ANSWER_PHONE_CALLS
+  message: android.permission.ANSWER_PHONE_CALLS
+  type: RegexAndOr
+  pattern:
+  - android\.telecom\.TelecomManager
+  - - silenceRinger\(
+    - acceptRingingCall\(
+    - endCall\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_PHONE_NUMBERS
+  message: android.permission.READ_PHONE_NUMBERS
+  type: RegexAndOr
+  pattern:
+  - android\.telephony\.TelephonyManager
+  - - getVoiceMailAlphaTag\(
+    - getVoiceMailNumber\(
+    - getLine1Number\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_ACCESSIBILITY_SERVICE
+  message: android.permission.BIND_ACCESSIBILITY_SERVICE
+  type: RegexAndOr
+  pattern:
+  - android\.accessibilityservice\.AccessibilityService
+  - - onInterrupt\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_AUTOFILL_SERVICE
+  message: android.permission.BIND_AUTOFILL_SERVICE
+  type: RegexAndOr
+  pattern:
+  - android\.service\.autofill\.AutofillService
+  - - onFillRequest\(
+    - onSaveRequest\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_CALL_REDIRECTION_SERVICE
+  message: android.permission.BIND_CALL_REDIRECTION_SERVICE
+  type: RegexAndOr
+  pattern:
+  - android\.telecom\.CallRedirectionService
+  - - onSilenceCall\(
+    - onPlaceCall\(
+    - onRejectCall\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_CHOOSER_TARGET_SERVICE
+  message: android.permission.BIND_CHOOSER_TARGET_SERVICE
+  type: RegexAndOr
+  pattern:
+  - android\.service\.chooser\.ChooserTargetService
+  - - onGetChooserTargets\(
+    - onChoose\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_CONDITION_PROVIDER_SERVICE
+  message: android.permission.BIND_CONDITION_PROVIDER_SERVICE
+  type: RegexAndOr
+  pattern:
+  - android\.service\.notification\.ConditionProviderService
+  - - onRequestConditions\(
+    - onSubscribe\(
+    - onUnsubscribe\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_DREAM_SERVICE
+  message: android.permission.BIND_DREAM_SERVICE
+  type: RegexAndOr
+  pattern:
+  - android\.service\.dreams\.DreamService
+  - - onDreamingStopped\(
+    - onDreamingStarted\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_INCALL_SERVICE
+  message: android.permission.BIND_INCALL_SERVICE
+  type: RegexAndOr
+  pattern:
+  - android\.telecom\.InCallService
+  - - onCallRemoved\(
+    - onCanAddCallChanged\(
+    - onCallAdded\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_INPUT_METHOD
+  message: android.permission.BIND_INPUT_METHOD
+  type: RegexAndOr
+  pattern:
+  - android\.inputmethodservice\.InputMethodService
+  - - onStartInput\(
+    - onBindInput\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_MIDI_DEVICE_SERVICE
+  message: android.permission.BIND_MIDI_DEVICE_SERVICE
+  type: RegexAndOr
+  pattern:
+  - android\.media\.midi\.MidiDeviceService
+  - - onGetInputPortReceivers\(
+    - onGetOutputPortReceivers\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_NFC_SERVICE
+  message: android.permission.BIND_NFC_SERVICE
+  type: RegexAndOr
+  pattern:
+  - android\.nfc\.cardemulation\.HostApduService
+  - - onDeactivated\(
+    - processCommandApdu\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_NOTIFICATION_LISTENER_SERVICE
+  message: android.permission.BIND_NOTIFICATION_LISTENER_SERVICE
+  type: RegexAndOr
+  pattern:
+  - android\.service\.notification
+  - - getSnoozedNotifications\(
+    - cancelAllNotifications\(
+    - getActiveNotifications\(
+    - onNotificationRemoved\(
+    - onListenerDisconnected\(
+    - onNotificationPosted\(
+    - cancelNotification\(
+    - onListenerConnected\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_PRINT_SERVICE
+  message: android.permission.BIND_PRINT_SERVICE
+  type: RegexAndOr
+  pattern:
+  - android\.printservice\.PrintService
+  - - onPrintJobQueued\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_QUICK_SETTINGS_TILE
+  message: android.permission.BIND_QUICK_SETTINGS_TILE
+  type: RegexAndOr
+  pattern:
+  - android\.service\.quicksettings\.TileService
+  - - onStartListening\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_REMOTEVIEWS
+  message: android.permission.BIND_REMOTEVIEWS
+  type: RegexAndOr
+  pattern:
+  - android\.widget\.RemoteViewsService
+  - - onGetViewFactory\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_SCREENING_SERVICE
+  message: android.permission.BIND_SCREENING_SERVICE
+  type: RegexAndOr
+  pattern:
+  - android\.telecom\.CallScreeningService
+  - - onScreenCall\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_TELECOM_CONNECTION_SERVICE
+  message: android.permission.BIND_TELECOM_CONNECTION_SERVICE
+  type: RegexAndOr
+  pattern:
+  - android\.telecom\.ConnectionService
+  - - onHandoverComplete\(
+    - onCreateOutgoingConnectionFailed\(
+    - onCreateOutgoingConnection\(
+    - onCreateIncomingConnection\(
+    - onConference\(
+    - onAddParticipant\(
+    - onCreateIncomingConnectionFailed\(
+    - onHandoverFailed\(
+    - onRemoteRttRequest\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_TEXT_SERVICE
+  message: android.permission.BIND_TEXT_SERVICE
+  type: RegexAndOr
+  pattern:
+  - android\.service\.textservice\.SpellCheckerService
+  - - onBind\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_TV_INPUT
+  message: android.permission.BIND_TV_INPUT
+  type: RegexAndOr
+  pattern:
+  - android\.media\.tv\.TvInputService
+  - - onSessionCreated\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_VISUAL_VOICEMAIL_SERVICE
+  message: android.permission.BIND_VISUAL_VOICEMAIL_SERVICE
+  type: RegexAndOr
+  pattern:
+  - android\.telephony\.VisualVoicemailService
+  - - onCellServiceConnected\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_VPN_SERVICE
+  message: android.permission.BIND_VPN_SERVICE
+  type: RegexAndOr
+  pattern:
+  - android\.net\.VpnService
+  - - addDisallowedApplication\(
+    - addAllowedApplication\(
+    - addRoute\(
+    - addAddress\(
+    - addDnsServer\(
+    - addSearchDomain\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_VR_LISTENER_SERVICE
+  message: android.permission.BIND_VR_LISTENER_SERVICE
+  type: RegexAndOr
+  pattern:
+  - android\.service\.vr\.VrListenerService
+  - - onBind\(
+    - onUnbind\(
+    - onCurrentVrActivityChanged\(
+  input_case: exact
+  severity: info
+- id: android.permission.BIND_WALLPAPER
+  message: android.permission.BIND_WALLPAPER
+  type: RegexAndOr
+  pattern:
+  - android\.service\.wallpaper\.WallpaperService
+  - - onCreateEngine\(
+  input_case: exact
+  severity: info
+- id: android.permission.MANAGE_DOCUMENTS
+  message: android.permission.MANAGE_DOCUMENTS
+  type: RegexAndOr
+  pattern:
+  - android\.provider\.DocumentsProvider
+  - - queryChildDocuments\(
+    - queryRoots\(
+    - queryDocument\(
+  input_case: exact
+  severity: info
+- id: android.permission.USE_BIOMETRIC
+  message: android.permission.USE_BIOMETRIC
+  type: RegexAndOr
+  pattern:
+  - android\.hardware\.biometrics\.BiometricPrompt|androidx\.biometric
+  - - authenticate\(
+    - CryptoObject\(
+    - getIdentityCredential\(
+    - onAuthenticationSucceeded\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_VOICEMAIL
+  message: android.permission.READ_VOICEMAIL
+  type: RegexAndOr
+  pattern:
+  - android\.provider\.VoicemailContract\.Voicemails
+  - - query\(
+  input_case: exact
+  severity: info
+- id: android.permission.SET_ALARM
+  message: android.permission.SET_ALARM
+  type: RegexAndOr
+  pattern:
+  - android\.app\.AlarmManager
+  - - setExact\(
+    - setRepeating\(
+    - setInexactRepeating\(
+    - set\(
+  input_case: exact
+  severity: info
+- id: android.permission.INSTALL_SHORTCUT
+  message: android.permission.INSTALL_SHORTCUT
+  type: RegexAndOr
+  pattern:
+  - android\.content\.pm\.ShortcutManager|android\.content\.Intent
+  - - Intent\.EXTRA_SHORTCUT_INTENT
+    - getShortCutIconResource\(
+    - EXTRA_SHORTCUT_ICON_RESOURCE
+  input_case: exact
+  severity: info
+- id: android.permission.UNINSTALL_SHORTCUT
+  message: android.permission.UNINSTALL_SHORTCUT
+  type: RegexAndOr
+  pattern:
+  - android\.content\.pm\.ShortcutManager
+  - - removeDynamicShortcuts\(
+    - disableShortcuts\(
+    - removeAllDynamicShortcuts\(
+  input_case: exact
+  severity: info
+- id: android.permission.WRITE_CALENDAR
+  message: android.permission.WRITE_CALENDAR
+  type: RegexAndOr
+  pattern:
+  - android\.content\.ContentResolver
+  - - insert\(
+    - vnd\.android\.cursor\.item/event
+  input_case: exact
+  severity: info
+- id: android.permission.WRITE_GSERVICES
+  message: android.permission.WRITE_GSERVICES
+  type: RegexAndOr
+  pattern:
+  - com\.google\.android\.gsf\.GoogleServicesFramework
+  - - setSetting\(
+    - setSettingAsBooleanForPackage\(
+    - setSettingForPackage\(
+  input_case: exact
+  severity: info
+- id: android.permission.WRITE_VOICEMAIL
+  message: android.permission.WRITE_VOICEMAIL
+  type: RegexAndOr
+  pattern:
+  - android\.provider\.VoicemailContract\.Voicemails
+  - - update\(
+    - insert\(
+  input_case: exact
+  severity: info
+- id: android.permission.ACCESS_BACKGROUND_LOCATION
+  message: android.permission.ACCESS_BACKGROUND_LOCATION
+  type: RegexAndOr
+  pattern:
+  - android\.location\.Location
+  - - requestLocationUpdates\(
+    - addGeofences\(
+    - Manifest\.permission\.ACCESS_BACKGROUND_LOCATION
+  input_case: exact
+  severity: info
+- id: android.permission.ACCESS_MEDIA_LOCATION
+  message: android.permission.ACCESS_MEDIA_LOCATION
+  type: RegexAndOr
+  pattern:
+  - android\.provider\.MediaStore
+  - - Images\.Media\.EXTERNAL_CONTENT_URI
+    - MediaStore\.setRequireOriginal\(
+  input_case: exact
+  severity: info
+- id: android.permission.ACTIVITY_RECOGNITION
+  message: android.permission.ACTIVITY_RECOGNITION
+  type: RegexAndOr
+  pattern:
+  - com\.google\.android\.gms\.location\.ActivityRecognitionClient
+  - - removeActivityUpdates\(
+    - requestActivityUpdates\(
+  input_case: exact
+  severity: info
+- id: android.permission.FOREGROUND_SERVICE
+  message: android.permission.FOREGROUND_SERVICE
+  type: RegexAndOr
+  pattern:
+  - android\.content\.Context
+  - - startForegroundService\(
+  input_case: exact
+  severity: info
+- id: android.permission.POST_NOTIFICATIONS
+  message: android.permission.POST_NOTIFICATIONS
+  type: RegexAndOr
+  pattern:
+  - android\.app\.NotificationManager
+  - - notify\(
+    - notifyAsPackage\(
+    - \.NOTIFICATION_SERVICE
+    - NotificationChannel\(
+    - createNotificationChannel\(
+    - NotificationManager\.IMPORTANCE_HIGH
+    - android\.Manifest\.permission\.POST_NOTIFICATIONS
+  input_case: exact
+  severity: info
+- id: android.permission.BLUETOOTH_CONNECT
+  message: android.permission.BLUETOOTH_CONNECT
+  type: RegexAndOr
+  pattern:
+  - android\.bluetooth\.BluetoothDevice
+  - - setPairingConfirmation\(
+    - connect\(
+    - createBond\(
+  input_case: exact
+  severity: info
+- id: android.permission.BLUETOOTH_SCAN
+  message: android.permission.BLUETOOTH_SCAN
+  type: RegexAndOr
+  pattern:
+  - android\.bluetooth\.BluetoothAdapter
+  - - getBluetoothLeScanner\(
+    - getRemoteDevice\(
+    - startDiscovery\(
+  input_case: exact
+  severity: info
+- id: android.permission.USE_FULL_SCREEN_INTENT
+  message: android.permission.USE_FULL_SCREEN_INTENT
+  type: RegexAndOr
+  pattern:
+  - android\.app\.Notification\.Builder
+  - - setFullScreenIntent\(
+  input_case: exact
+  severity: info
+- id: android.permission.REQUEST_INSTALL_PACKAGES
+  message: android.permission.REQUEST_INSTALL_PACKAGES
+  type: RegexAndOr
+  pattern:
+  - android\.content\.pm\.PackageManager
+  - - installPackage\(
+    - deletePackage\(
+  input_case: exact
+  severity: info
+- id: android.permission.ACCEPT_HANDOVER
+  message: android.permission.ACCEPT_HANDOVER
+  type: RegexAndOr
+  pattern:
+  - android\.telecom\.ConnectionService
+  - - onHandoverComplete\(
+    - onHandoverFailed\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_CALENDAR
+  message: android.permission.READ_CALENDAR
+  type: RegexAndOr
+  pattern:
+  - android\.content\.ContentResolver
+  - - query\(
+    - readEventsAsync\(
+    - getCalendarsById\(
+    - setEventsQueryToken\(
+  input_case: exact
+  severity: info
+- id: android.permission.QUERY_ALL_PACKAGES
+  message: android.permission.QUERY_ALL_PACKAGES
+  type: RegexAndOr
+  pattern:
+  - android\.content\.pm\.PackageManager
+  - - queryIntentActivities\(
+  input_case: exact
+  severity: info
+- id: android.permission.FLASHLIGHT
+  message: android.permission.FLASHLIGHT
+  type: RegexAndOr
+  pattern:
+  - android\.hardware\.camera
+  - - TorchCallback\(
+    - setTorchMode\(
+    - unregisterTorchCallback\(
+    - registerTorchCallback\(
+  input_case: exact
+  severity: info
+- id: com.google.android.c2dm.permission.RECEIVE
+  message: com.google.android.c2dm.permission.RECEIVE
+  type: RegexAndOr
+  pattern:
+  - android\.content\.Intent
+  - - com\.google\.android\.c2dm\.intent\.REGISTRATION"
+  input_case: exact
+  severity: info
+- id: com.google.android.c2dm.permission.SEND
+  message: com.google.android.c2dm.permission.SEND
+  type: RegexAndOr
+  pattern:
+  - android\.content\.Intent
+  - - com\.google\.android\.c2dm\.intent\.REGISTER
+  input_case: exact
+  severity: info
+- id: android.permission.MANAGE_EXTERNAL_STORAGE
+  message: android.permission.MANAGE_EXTERNAL_STORAGE
+  type: RegexAndOr
+  pattern:
+  - android\.os\.Environment
+  - - isExternalStorageManager\(
+    - getManageSpaceActivityIntent\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_MEDIA_IMAGES
+  message: android.permission.READ_MEDIA_IMAGES
+  type: RegexAndOr
+  pattern:
+  - android\.os\.Environment
+  - - Manifest\.permission\.READ_MEDIA_IMAGES
+    - FileInputStream\(
+    - getExternalStorageDirectory\(
+  input_case: exact
+  severity: info
+- id: android.permission.READ_MEDIA_VIDEO
+  message: android.permission.READ_MEDIA_VIDEO
+  type: RegexAndOr
+  pattern:
+  - android\.os\.Environment
+  - - Manifest\.permission\.READ_MEDIA_VIDEO
+    - FileInputStream\(
+    - getExternalStorageDirectory\(
+  input_case: exact
+  severity: info

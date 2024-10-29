@@ -76,11 +76,11 @@ def so_analysis(request, app_dic, rescan, api):
             },
             'browsable_activities': {},
             'permissions': {},
-            'icon_hidden': True,
             'network_security': {
                 'network_findings': [],
                 'network_summary': {},
             },
+            'malware_permissions': {},
         }
         cert_dic = {
             'certificate_info': '',
@@ -88,13 +88,17 @@ def so_analysis(request, app_dic, rescan, api):
             'certificate_summary': {},
         }
         app_dic['real_name'] = ''
-        elf_dict = library_analysis(app_dic['app_dir'], 'elf')
+        elf_dict = library_analysis(
+            app_dic['app_dir'],
+            app_dic['md5'],
+            'elf')
         # File Analysis is used to store symbols from so
         app_dic['certz'] = get_symbols(
             elf_dict['elf_symbols'])
         apkid_results = {}
         code_an_dic = {
             'api': {},
+            'perm_mappings': {},
             'findings': {},
             'niap': {},
             'urls_list': [],
@@ -129,8 +133,6 @@ def so_analysis(request, app_dic, rescan, api):
             code_an_dic['domains'], [])
 
         app_dic['zipped'] = 'so'
-        app_dic['icon_hidden'] = True
-        app_dic['icon_found'] = False
         context = save_get_ctx(
             app_dic,
             man_data_dic,
@@ -152,7 +154,5 @@ def so_analysis(request, app_dic, rescan, api):
         context['virus_total'] = vt.get_result(
             app_dic['app_path'],
             app_dic['md5'])
-    context['template'] = \
-        'static_analysis/android_binary_analysis.html'
-    logger.info('Scan complete')
+    context['template'] = 'static_analysis/android_binary_analysis.html'
     return context
