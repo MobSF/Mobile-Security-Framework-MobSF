@@ -12,6 +12,8 @@ from mobsf.StaticAnalyzer.views.common.entropy import (
     get_entropies,
 )
 from mobsf.MobSF.utils import (
+    GOOGLE_API_KEY_REGEX,
+    GOOGLE_APP_ID_REGEX,
     append_scan_status,
     get_android_src_dir,
 )
@@ -55,6 +57,7 @@ def strings_from_apk(checksum, apk):
     urls = []
     urls_nf = []
     emails_nf = []
+    firebase_creds = {}
     try:
         msg = 'Extracting String data from APK'
         logger.info(msg)
@@ -68,6 +71,12 @@ def strings_from_apk(checksum, apk):
                 if not res_string:
                     continue
                 for duo in res_string:
+                    if (duo[0] == 'google_api_key'
+                            and GOOGLE_API_KEY_REGEX.match(duo[1])):
+                        firebase_creds['google_api_key'] = duo[1]
+                    if (duo[0] == 'google_app_id'
+                            and GOOGLE_APP_ID_REGEX.match(duo[1])):
+                        firebase_creds['google_app_id'] = duo[1]
                     cap_str = '"' + duo[0] + '" : "' + duo[1] + '"'
                     # Extract possible secret holding keys
                     if is_secret_key(duo[0] + '"') and ' ' not in duo[1]:
@@ -86,6 +95,7 @@ def strings_from_apk(checksum, apk):
         'urls_nf': urls_nf,
         'emails_nf': emails_nf,
         'secrets': secrets,
+        'firebase_creds': firebase_creds,
     }
 
 
@@ -150,6 +160,7 @@ def get_strings_metadata(
 
     code_dic['strings'] = strings
     code_dic['secrets'] = list(secrets)
+    code_dic['firebase_creds'] = apk_res['firebase_creds']
     # Code Analysis has urls, urlsnfiles and emailsnfiles
     code_dic['urls'].extend(urls_n_files)
     code_dic['emails'].extend(emails_n_files)

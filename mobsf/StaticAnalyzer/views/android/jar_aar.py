@@ -14,10 +14,12 @@ from mobsf.MobSF.utils import (
     print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
-    firebase_analysis,
     get_avg_cvss,
     hash_gen,
     unzip,
+)
+from mobsf.StaticAnalyzer.views.common.firebase import (
+    firebase_analysis,
 )
 from mobsf.StaticAnalyzer.views.common.appsec import (
     get_android_dashboard,
@@ -215,7 +217,7 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
         # Firebase DB Check
         code_an_dic['firebase'] = firebase_analysis(
             checksum,
-            code_an_dic['urls_list'])
+            code_an_dic)
         # Domain Extraction and Malware Check
         code_an_dic['domains'] = MalwareDomainCheck().scan(
             checksum,

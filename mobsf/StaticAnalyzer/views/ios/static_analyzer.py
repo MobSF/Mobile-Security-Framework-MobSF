@@ -50,11 +50,13 @@ from mobsf.StaticAnalyzer.views.common.a import (
     a_analysis,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
-    firebase_analysis,
     get_avg_cvss,
     hash_gen,
     strings_and_entropies,
     unzip,
+)
+from mobsf.StaticAnalyzer.views.common.firebase import (
+    firebase_analysis,
 )
 from mobsf.StaticAnalyzer.views.common.appsec import (
     get_ios_dashboard,
@@ -225,7 +227,7 @@ def static_analyzer_ios(request, checksum, api=False):
                 code_dict['code_anal'] = {}
                 code_dict['firebase'] = firebase_analysis(
                     checksum,
-                    code_dict['urls_list'])
+                    code_dict)
                 code_dict['trackers'] = trackers
                 context = save_get_ctx(
                     app_dict,
@@ -303,7 +305,7 @@ def static_analyzer_ios(request, checksum, api=False):
                 # Firebase DB Check
                 code_analysis_dic['firebase'] = firebase_analysis(
                     checksum,
-                    list(set(code_analysis_dic['urls_list'])))
+                    code_analysis_dic)
                 # Extract Trackers from Domains
                 trk = Trackers.Trackers(
                     checksum,
