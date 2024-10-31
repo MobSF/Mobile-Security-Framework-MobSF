@@ -18,18 +18,7 @@ sidebar-collapse
             </p>
             <p><a href="{{tenant_static}}Cyberspect%20Quick%20Start.pdf" target="_blank">Cyberspect Quick Start Guide</a></p>
           </div>
-        </div>        
-        <div class="card">
-          <div class="card-body">
-            <h1>Admin Guide</h1>
-
-            <p class="lead">
-              An administrative guide on how to use the Cyberspect solution can be found at the link below.
-            </p>
-            <p><a href="{{tenant_static}}Cyberspect%20Admin%20Guide.pdf" target="_blank">Cyberspect Admin Guide</a></p>
-          </div>
         </div>
-        {% if is_admin %}
         <div class="card">
           <div class="card-body">
             <h1>API Documentation</h1>
@@ -41,8 +30,7 @@ sidebar-collapse
             <p><a href="{{tenant_static}}api/Cyberspect%20Upload.postman_collection.json" target="_blank" download>Postman Collection File (upload only)</a></p>
             <p><a href="{{tenant_static}}api/Cyberspect%20API.postman_environment.json" target="_blank" download>Postman Environment File</a></p>
           </div>
-        </div>
-        {% endif %}
+        </div>        
         <div class="card">
           <div class="card-body">
             <h1>Technical Support</h1>
@@ -53,6 +41,18 @@ sidebar-collapse
             <p><a href="mailto:cyberspectsupport@syslogicinc.com">cyberspectsupport@syslogicinc.com</a></p>
           </div>
         </div>
+        {% if is_admin %}        
+        <div class="card">
+          <div class="card-body">
+            <h1>Admin Guide</h1>
+
+            <p class="lead">
+              An administrative guide on how to use the Cyberspect solution can be found at the link below.
+            </p>
+            <p><a href="{{tenant_static}}Cyberspect%20Admin%20Guide.pdf" target="_blank">Cyberspect Admin Guide</a></p>
+          </div>
+        </div>
+        {% endif %}
       </div>
     </div>
   </div>
