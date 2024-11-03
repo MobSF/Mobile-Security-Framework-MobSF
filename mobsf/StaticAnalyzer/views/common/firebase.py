@@ -35,14 +35,14 @@ FIREBASE_FINDINGS = {
         'description': (
             'The Firebase Remote Config at %s is enabled.'
             ' Ensure that the configurations are not sensitive.'
-            ' This is indicated by the response:\n\n%s'),
+            '\nThis is indicated by the response:\n\n%s'),
     },
     'firebase_remote_config_disabled': {
         'title': 'Firebase Remote Config disabled',
         'severity': SECURE,
         'description': (
-            'Firebase Remote Config is disabled for %s.',
-            ' This is indicated by the response:\n\n%s'),
+            'Firebase Remote Config is disabled for %s.'
+            '\nThis is indicated by the response:\n\n%s'),
     },
     'firebase_remote_config_failed': {
         'title': 'Firebase Remote Config check failed',
