@@ -1032,18 +1032,18 @@ pyasn1 = ">=0.4.6"
 
 [[package]]
 name = "libsast"
-version = "2.0.3"
+version = "3.0.1"
 description = "A generic SAST library built on top of semgrep and regex"
 optional = false
-python-versions = ">=3.8,<4.0"
+python-versions = "<4.0,>=3.8"
 files = [
-    {file = "libsast-2.0.3-py3-none-any.whl", hash = "sha256:2c70f9d94ff95c3302f0a038f05f381eb6a55c2acaeda717c5c1551006a74a2f"},
-    {file = "libsast-2.0.3.tar.gz", hash = "sha256:8bf0ef3ad31864fcdcf073840c5875e9a2fcdb9f895617141f30c953e361577d"},
+    {file = "libsast-3.0.1-py3-none-any.whl", hash = "sha256:158560fc2506a5f1fe3b2ab987201074c4d1a7d0875788ccb9cb834589c805f6"},
+    {file = "libsast-3.0.1.tar.gz", hash = "sha256:e97b95e46dd804467722a90dd7abff5f270050de23c6084a93c3fb7816e15546"},
 ]
 
 [package.dependencies]
 pyyaml = ">=6.0"
-requests = ">=2.27.1"
+requests = "*"
 semgrep = {version = "0.117.0", markers = "sys_platform != \"win32\""}
 
 [[package]]
@@ -2954,4 +2954,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "74559be720801d4d7d836adc55dcc44e431579985697660dab0881ee2f4c2036"
+content-hash = "53437db3b604201a50dd41dda0b0e41b90228f77512945c1276a8b3a847c55e7"
