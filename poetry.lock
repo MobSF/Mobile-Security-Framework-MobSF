@@ -1032,18 +1032,18 @@ pyasn1 = ">=0.4.6"
 
 [[package]]
 name = "libsast"
-version = "2.0.3"
+version = "3.0.2"
 description = "A generic SAST library built on top of semgrep and regex"
 optional = false
-python-versions = ">=3.8,<4.0"
+python-versions = "<4.0,>=3.8"
 files = [
-    {file = "libsast-2.0.3-py3-none-any.whl", hash = "sha256:2c70f9d94ff95c3302f0a038f05f381eb6a55c2acaeda717c5c1551006a74a2f"},
-    {file = "libsast-2.0.3.tar.gz", hash = "sha256:8bf0ef3ad31864fcdcf073840c5875e9a2fcdb9f895617141f30c953e361577d"},
+    {file = "libsast-3.0.2-py3-none-any.whl", hash = "sha256:063a2ea80da9fc247077461aa2a608187aa1f68331455f421ab6328b13c6efa9"},
+    {file = "libsast-3.0.2.tar.gz", hash = "sha256:f585328b1a927d1d47c776ae36db83860acc521f5f2a6fd7153aeae367c20d38"},
 ]
 
 [package.dependencies]
 pyyaml = ">=6.0"
-requests = ">=2.27.1"
+requests = "*"
 semgrep = {version = "0.117.0", markers = "sys_platform != \"win32\""}
 
 [[package]]
@@ -2630,13 +2630,13 @@ files = [
 
 [[package]]
 name = "werkzeug"
-version = "3.1.1"
+version = "3.1.2"
 description = "The comprehensive WSGI web application library."
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "werkzeug-3.1.1-py3-none-any.whl", hash = "sha256:a71124d1ef06008baafa3d266c02f56e1836a5984afd6dd6c9230669d60d9fb5"},
-    {file = "werkzeug-3.1.1.tar.gz", hash = "sha256:8cd39dfbdfc1e051965f156163e2974e52c210f130810e9ad36858f0fd3edad4"},
+    {file = "werkzeug-3.1.2-py3-none-any.whl", hash = "sha256:4f7d1a5de312c810a8a2c6f0b47e9f6a7cffb7c8322def35e4d4d9841ff85597"},
+    {file = "werkzeug-3.1.2.tar.gz", hash = "sha256:f471a4cd167233077e9d2a8190c3471c5bc520c636a9e3c1e9300c33bced03bc"},
 ]
 
 [package.dependencies]
@@ -2954,4 +2954,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "74559be720801d4d7d836adc55dcc44e431579985697660dab0881ee2f4c2036"
+content-hash = "d3a4b0b9830661273a8f67707718128a63952ab59d9e8f65bd897a80805c7609"
