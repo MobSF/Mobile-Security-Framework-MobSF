@@ -57,6 +57,7 @@ from mobsf.MobSF.views.authorization import (
 
 LINUX_PLATFORM = ['Darwin', 'Linux']
 HTTP_BAD_REQUEST = 400
+HTTP_STATUS_404 = 404
 logger = logging.getLogger(__name__)
 register.filter('key', key)
 
@@ -404,29 +405,28 @@ def file_download(dwd_file, filename, content_type):
 @require_http_methods(['GET'])
 def download_binary(request, checksum, api=False):
     """Download binary from uploads directory."""
-    status_code = 404
     try:
         allowed_exts = settings.ALLOWED_EXTENSIONS
         if not is_md5(checksum):
             return HttpResponse(
                 'Invalid MD5 Hash',
-                status=status_code)
+                status=HTTP_STATUS_404)
         robj = RecentScansDB.objects.filter(MD5=checksum).first()
         if not robj:
             return HttpResponse(
                 'Scan hash not found',
-                status=status_code)
+                status=HTTP_STATUS_404)
         file_ext = f'.{robj.SCAN_TYPE}'
         if file_ext not in allowed_exts.keys():
             return HttpResponse(
                 'Invalid Scan Type',
-                status=status_code)
+                status=HTTP_STATUS_404)
         filename = f'{checksum}{file_ext}'
         dwd_file = Path(settings.UPLD_DIR) / checksum / filename
         if not dwd_file.exists():
             return HttpResponse(
                 'File not found',
-                status=status_code)
+                status=HTTP_STATUS_404)
         return file_download(
             dwd_file,
             filename,
@@ -434,31 +434,36 @@ def download_binary(request, checksum, api=False):
     except Exception as exp:
         return HttpResponse(
             'Failed to download file: ' + str(exp),
-            status=status_code)
+            status=HTTP_STATUS_404)
 
 
 @login_required
+@require_http_methods(['GET'])
 def download(request):
-    """Download from mobsf.MobSF Route."""
-    if request.method == 'GET':
-        root = settings.DWD_DIR
-        allowed_exts = settings.ALLOWED_EXTENSIONS
-        filename = request.path.replace('/download/', '', 1)
-        dwd_file = os.path.join(root, filename)
-        # Security Checks
-        if '../' in filename or not is_safe_path(root, dwd_file):
-            msg = 'Path Traversal Attack Detected'
-            return print_n_send_error_response(request, msg)
-        ext = os.path.splitext(filename)[1]
-        if ext in allowed_exts:
-            if os.path.isfile(dwd_file):
-                return file_download(
-                    dwd_file,
-                    None,
-                    allowed_exts[ext])
-        if filename.endswith(('screen/screen.png', '-icon.png')):
-            return HttpResponse('')
-    return HttpResponse(status=404)
+    """Download from mobsf downloads directory."""
+    root = settings.DWD_DIR
+    filename = request.path.replace('/download/', '', 1)
+    dwd_file = Path(root) / filename
+
+    # Security Checks
+    if '../' in filename or not is_safe_path(root, dwd_file):
+        msg = 'Path Traversal Attack Detected'
+        return print_n_send_error_response(request, msg)
+
+    # File and Extension Check
+    ext = dwd_file.suffix
+    allowed_exts = settings.ALLOWED_EXTENSIONS
+    if ext in allowed_exts and dwd_file.is_file():
+        return file_download(
+            dwd_file,
+            None,
+            allowed_exts[ext])
+
+    # Special Case for Certain Image Files
+    if filename.endswith(('screen/screen.png', '-icon.png')):
+        return HttpResponse('')
+
+    return HttpResponse(status=HTTP_STATUS_404)
 
 
 @login_required
