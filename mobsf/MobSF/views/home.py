@@ -58,6 +58,7 @@ from mobsf.MobSF.views.authorization import (
 LINUX_PLATFORM = ['Darwin', 'Linux']
 HTTP_BAD_REQUEST = 400
 HTTP_STATUS_404 = 404
+HTTP_SERVER_ERROR = 500
 logger = logging.getLogger(__name__)
 register.filter('key', key)
 
@@ -431,10 +432,11 @@ def download_binary(request, checksum, api=False):
             dwd_file,
             filename,
             allowed_exts[file_ext])
-    except Exception as exp:
+    except Exception:
+        logger.exception('Download Binary Failed')
         return HttpResponse(
-            'Failed to download file: ' + str(exp),
-            status=HTTP_STATUS_404)
+            'Failed to download file due to an error',
+            status=HTTP_SERVER_ERROR)
 
 
 @login_required

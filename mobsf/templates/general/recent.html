@@ -102,7 +102,7 @@
                             <td><p>
                                    <a class="btn btn-outline-primary btn-sm" href="{% url "pdf" checksum=e.MD5%}"><i class="fas fa-file-pdf"></i></a>
                                    <a class="btn btn-outline-info btn-sm" href="../../../{{ e.ANALYZER }}/{{e.MD5}}/?rescan=1"><i class="fas fa-sync-alt"></i></a>
-                                   <a class="btn btn-outline-info btn-sm" href="{% url "download_binary" checksum=e.MD5%}"><i class="fas fa-download"></i></a>
+                                   <a class="btn btn-outline-secondary btn-sm" href="{% url "download_binary" checksum=e.MD5%}"><i class="fas fa-download"></i></a>
                                 </p>
                             {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:" or '.aab' == e.FILE_NAME|slice:"-4:"%}
                                 <p><a class="diffButton btn btn-warning btn-sm" id="{{ e.MD5 }}_{{ e.FILE_NAME }}"><i class="fas fa-not-equal"></i> Diff or Compare</a>
