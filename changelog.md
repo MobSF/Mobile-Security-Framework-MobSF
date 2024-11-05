@@ -1,3 +1,41 @@
+### v4.1.3 Changelog
+
+- Features or Enhancements
+   - Improvement in SAST performance with libsast upgrade.
+   - Address a bug that cause SAST scans to timeout.
+   - Added Firebase Remote Config Check
+   - Add support for searching scans by package name, app name and file name
+   - Exposed a REST API for search
+   - Add timeouts for each scan steps
+   - Added Autopep8 for code linting
+   - Added postgres support by default and updated docs to enable postgres support
+   - Upgraded docker file and dependencies
+   - Support Python 3.12
+
+### v4.0.7 Changelog
+
+- Features or Enhancements
+   - Support Authentication & Authorization in MobSF
+   - Added support for SSO + Okta SSO Documentation
+   - Promoted from Beta to Stable since v4.0.0
+   - Added Pagination support for recent scans
+   - Added support for scanning AAB with MobSF
+   - Convert AAB to APK for scanning
+   - Dockerfile QA
+   - Prevent docker container exits on volume mount
+   - Android Frida root bypass and debugger bypass scripts improvements
+   - Added a new Android SAST Rule `android_webview_allow_file_from_url`
+   - Deeplink Trigger Support for Android Dynamic Analyzer
+   - Added support for real time scan status and scan logs in scan report, REST API exposed
+   - Add support for numeric iOS Bundle ID
+   - General Code QA
+   - Dependency Bump
+   
+ - Security
+   -  Fixed an SSRF in firebase db check in MobSF <=3.9.7
+   -  Fixes a zip slip vulnerability in MobSF <= 4.0.6 affecting AR archive extraction
+
+
 ### v3.9.7 Beta Changelog
 
 - Features or Enhancements
