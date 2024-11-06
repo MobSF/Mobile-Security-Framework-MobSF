@@ -57,6 +57,8 @@ from mobsf.MobSF.views.authorization import (
 
 LINUX_PLATFORM = ['Darwin', 'Linux']
 HTTP_BAD_REQUEST = 400
+HTTP_STATUS_404 = 404
+HTTP_SERVER_ERROR = 500
 logger = logging.getLogger(__name__)
 register.filter('key', key)
 
@@ -388,30 +390,82 @@ def scan_status(request, api=False):
     return send_response(data, api)
 
 
+def file_download(dwd_file, filename, content_type):
+    """HTTP file download response."""
+    with open(dwd_file, 'rb') as file:
+        wrapper = FileWrapper(file)
+        response = HttpResponse(wrapper, content_type=content_type)
+        response['Content-Length'] = dwd_file.stat().st_size
+        if filename:
+            val = f'attachment; filename="{filename}"'
+            response['Content-Disposition'] = val
+        return response
+
+
 @login_required
-def download(request):
-    """Download from mobsf.MobSF Route."""
-    if request.method == 'GET':
-        root = settings.DWD_DIR
+@require_http_methods(['GET'])
+def download_binary(request, checksum, api=False):
+    """Download binary from uploads directory."""
+    try:
         allowed_exts = settings.ALLOWED_EXTENSIONS
-        filename = request.path.replace('/download/', '', 1)
-        dwd_file = os.path.join(root, filename)
-        # Security Checks
-        if '../' in filename or not is_safe_path(root, dwd_file):
-            msg = 'Path Traversal Attack Detected'
-            return print_n_send_error_response(request, msg)
-        ext = os.path.splitext(filename)[1]
-        if ext in allowed_exts:
-            if os.path.isfile(dwd_file):
-                wrapper = FileWrapper(
-                    open(dwd_file, 'rb'))  # lgtm [py/path-injection]
-                response = HttpResponse(
-                    wrapper, content_type=allowed_exts[ext])
-                response['Content-Length'] = os.path.getsize(dwd_file)
-                return response
-        if filename.endswith(('screen/screen.png', '-icon.png')):
-            return HttpResponse('')
-    return HttpResponse(status=404)
+        if not is_md5(checksum):
+            return HttpResponse(
+                'Invalid MD5 Hash',
+                status=HTTP_STATUS_404)
+        robj = RecentScansDB.objects.filter(MD5=checksum).first()
+        if not robj:
+            return HttpResponse(
+                'Scan hash not found',
+                status=HTTP_STATUS_404)
+        file_ext = f'.{robj.SCAN_TYPE}'
+        if file_ext not in allowed_exts.keys():
+            return HttpResponse(
+                'Invalid Scan Type',
+                status=HTTP_STATUS_404)
+        filename = f'{checksum}{file_ext}'
+        dwd_file = Path(settings.UPLD_DIR) / checksum / filename
+        if not dwd_file.exists():
+            return HttpResponse(
+                'File not found',
+                status=HTTP_STATUS_404)
+        return file_download(
+            dwd_file,
+            filename,
+            allowed_exts[file_ext])
+    except Exception:
+        logger.exception('Download Binary Failed')
+        return HttpResponse(
+            'Failed to download file due to an error',
+            status=HTTP_SERVER_ERROR)
+
+
+@login_required
+@require_http_methods(['GET'])
+def download(request):
+    """Download from mobsf downloads directory."""
+    root = settings.DWD_DIR
+    filename = request.path.replace('/download/', '', 1)
+    dwd_file = Path(root) / filename
+
+    # Security Checks
+    if '../' in filename or not is_safe_path(root, dwd_file):
+        msg = 'Path Traversal Attack Detected'
+        return print_n_send_error_response(request, msg)
+
+    # File and Extension Check
+    ext = dwd_file.suffix
+    allowed_exts = settings.ALLOWED_EXTENSIONS
+    if ext in allowed_exts and dwd_file.is_file():
+        return file_download(
+            dwd_file,
+            None,
+            allowed_exts[ext])
+
+    # Special Case for Certain Image Files
+    if filename.endswith(('screen/screen.png', '-icon.png')):
+        return HttpResponse('')
+
+    return HttpResponse(status=HTTP_STATUS_404)
 
 
 @login_required
