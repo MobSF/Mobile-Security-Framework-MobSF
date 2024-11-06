@@ -33,14 +33,14 @@ def first_run(secret_file, base_dir, mobsf_home):
     base_dir = Path(base_dir)
     mobsf_home = Path(mobsf_home)
     secret_file = Path(secret_file)
-    secret_key = None
     if os.getenv('MOBSF_SECRET_KEY'):
         secret_key = os.environ['MOBSF_SECRET_KEY']
     elif secret_file.exists() and secret_file.is_file():
         secret_key = secret_file.read_text().strip()
     else:
         try:
-            secret_file.write_text(get_random())
+            secret_key = get_random()
+            secret_file.write_text(secret_key)
         except IOError:
             raise Exception('Secret file generation failed' % secret_file)
         # Run Once
