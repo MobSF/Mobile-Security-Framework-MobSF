@@ -29,56 +29,51 @@ FIREBASE_FINDINGS = {
         'severity': INFO,
         'description': 'The app talks to Firebase database at %s',
     },
+    'firebase_db_check_failed': {
+        'title': 'Firebase DB check failed',
+        'severity': INFO,
+        'description': (
+            'Failed to check Firebase DB URL. Error: %s'),
+    },
     'firebase_remote_config_enabled': {
         'title': 'Firebase Remote Config enabled',
         'severity': WARNING,
         'description': (
             'The Firebase Remote Config at %s is enabled.'
             ' Ensure that the configurations are not sensitive.'
-            '\nThis is indicated by the response:\n\n%s'),
+            ' This is indicated by the response: %s'),
     },
     'firebase_remote_config_disabled': {
         'title': 'Firebase Remote Config disabled',
         'severity': SECURE,
         'description': (
             'Firebase Remote Config is disabled for %s.'
-            '\nThis is indicated by the response:\n\n%s'),
+            ' This is indicated by the response: %s'),
     },
     'firebase_remote_config_failed': {
         'title': 'Firebase Remote Config check failed',
+        'severity': INFO,
         'description': (
             'Failed to check for Firebase Remote Config.'
-            ' Please verify this manually. Error:\n\n%s'),
-        'severity': INFO,
+            ' Please verify this manually. Error: %s'),
     },
 }
 
 
 def firebase_analysis(checksum, code_an_dic):
     """Firebase Analysis."""
-    urls = list(set(code_an_dic['urls_list']))
     findings = []
-    finds = None
     logger.info('Starting Firebase Analysis')
     # Check for Firebase Database
-    logger.info('Looking for Firebase URL(s)')
-    for url in urls:
-        if 'firebaseio.com' not in url:
-            continue
-        returl, is_open = open_firebase(checksum, url)
-        if is_open:
-            item = FIREBASE_FINDINGS['firebase_db_open']
-            item['description'] = item['description'] % returl
-            findings.append(item)
-        else:
-            item = FIREBASE_FINDINGS['firebase_db_exists']
-            item['description'] = item['description'] % returl
-            findings.append(item)
+    db_finds = firebase_db_check(
+        checksum, code_an_dic)
+    if db_finds:
+        findings.extend(db_finds)
     # Check for Firebase Remote Config
-    firebase_creds = code_an_dic.get('firebase_creds')
-    finds = firebase_remote_config(checksum, firebase_creds)
-    if finds:
-        findings.extend(finds)
+    config_finds = firebase_remote_config(
+        checksum, code_an_dic)
+    if config_finds:
+        findings.extend(config_finds)
     return findings
 
 
@@ -93,15 +88,16 @@ def open_firebase(checksum, url):
         if not purl.netloc.endswith('firebaseio.com'):
             logger.warning(invalid)
             return url, False
-        base_url = '{}://{}/.json'.format(purl.scheme, purl.netloc)
+        base_url = f'{purl.scheme}://{purl.netloc}/.json'
         proxies, verify = upstream_proxy('https')
         headers = {
             'User-Agent': ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1)'
                            ' AppleWebKit/537.36 (KHTML, like Gecko) '
                            'Chrome/39.0.2171.95 Safari/537.36')}
-        resp = requests.get(base_url, headers=headers,
-                            proxies=proxies, verify=verify,
-                            allow_redirects=False)
+        resp = requests.get(
+            base_url, headers=headers,
+            proxies=proxies, verify=verify,
+            allow_redirects=False)
         if resp.status_code == 200:
             return base_url, True
     except Exception as exp:
@@ -111,11 +107,48 @@ def open_firebase(checksum, url):
     return url, False
 
 
-def firebase_remote_config(checksum, creds):
+def firebase_db_check(checksum, code_an_dic):
+    logger.info('Looking for Firebase URL(s)')
+    findings = []
+    try:
+        urls = list(set(code_an_dic['urls_list']))
+        for url in urls:
+            if 'firebaseio.com' not in url:
+                continue
+            returl, is_open = open_firebase(checksum, url)
+            if is_open:
+                rule = FIREBASE_FINDINGS['firebase_db_open']
+                findings.append({
+                    'title': rule['title'],
+                    'severity': rule['severity'],
+                    'description': rule['description'] % returl,
+                })
+            else:
+                rule = FIREBASE_FINDINGS['firebase_db_exists']
+                findings.append({
+                    'title': rule['title'],
+                    'severity': rule['severity'],
+                    'description': rule['description'] % returl,
+                })
+    except Exception as exp:
+        msg = 'Failed to check for Firebase DB URL'
+        logger.warning(msg)
+        append_scan_status(checksum, msg, repr(exp))
+        rule = FIREBASE_FINDINGS['firebase_db_check_failed']
+        findings.append({
+            'title': rule['title'],
+            'severity': rule['severity'],
+            'description': rule['description'] % repr(exp),
+        })
+    return findings
+
+
+def firebase_remote_config(checksum, code_an_dic):
     """Check for Firebase Remote Config."""
     url = None
     findings = []
     try:
+        creds = code_an_dic.get('firebase_creds')
         if not creds:
             return None
         google_api_key = creds.get('google_api_key')
@@ -152,23 +185,36 @@ def firebase_remote_config(checksum, creds):
         if response.status_code == 200:
             resp = response.json()
             if resp.get('state') == 'NO_TEMPLATE':
-                item = FIREBASE_FINDINGS['firebase_remote_config_disabled']
-                item['description'] = item['description'] % (url, resp)
-                findings.append(item)
+                rule = FIREBASE_FINDINGS['firebase_remote_config_disabled']
+                findings.append({
+                    'title': rule['title'],
+                    'severity': rule['severity'],
+                    'description': rule['description'] % (url, resp),
+                })
             else:
-                item = FIREBASE_FINDINGS['firebase_remote_config_enabled']
-                item['description'] = item['description'] % (url, resp)
-                findings.append(item)
+                rule = FIREBASE_FINDINGS['firebase_remote_config_enabled']
+                findings.append({
+                    'title': rule['title'],
+                    'severity': rule['severity'],
+                    'description': rule['description'] % (url, resp),
+                })
         else:
-            item = FIREBASE_FINDINGS['firebase_remote_config_disabled']
+            rule = FIREBASE_FINDINGS['firebase_remote_config_disabled']
             response_msg = f'The response code is {response.status_code}'
-            item['description'] = item['description'] % (url, response_msg)
-            findings.append(item)
+            findings.append({
+                'title': rule['title'],
+                'severity': rule['severity'],
+                'description': rule['description'] % (url, response_msg),
+            })
     except Exception as exp:
         msg = 'Failed to check for Firebase Remote Config'
         logger.warning(msg)
         append_scan_status(checksum, msg, repr(exp))
-        item = FIREBASE_FINDINGS['firebase_remote_config_failed']
-        item['description'] = item['description'] % repr(exp)
-        findings.append(item)
+
+        rule = FIREBASE_FINDINGS['firebase_remote_config_failed']
+        findings.append({
+            'title': rule['title'],
+            'severity': rule['severity'],
+            'description': rule['description'] % repr(exp),
+        })
     return findings
