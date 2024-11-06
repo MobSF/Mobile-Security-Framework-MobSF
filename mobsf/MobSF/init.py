@@ -6,6 +6,7 @@ import subprocess
 import sys
 import shutil
 import threading
+from pathlib import Path
 from importlib import (
     machinery,
     util,
@@ -16,7 +17,7 @@ from mobsf.install.windows.setup import windows_config_local
 
 logger = logging.getLogger(__name__)
 
-VERSION = '4.1.4'
+VERSION = '4.1.5'
 BANNER = r"""
   __  __       _    ____  _____       _  _    _ 
  |  \/  | ___ | |__/ ___||  ___|_   _| || |  / |
@@ -29,16 +30,17 @@ BANNER = r"""
 
 def first_run(secret_file, base_dir, mobsf_home):
     # Based on https://gist.github.com/ndarville/3452907#file-secret-key-gen-py
-    if 'MOBSF_SECRET_KEY' in os.environ:
+    base_dir = Path(base_dir)
+    mobsf_home = Path(mobsf_home)
+    secret_file = Path(secret_file)
+    secret_key = None
+    if os.getenv('MOBSF_SECRET_KEY'):
         secret_key = os.environ['MOBSF_SECRET_KEY']
-    elif os.path.isfile(secret_file):
-        secret_key = open(secret_file).read().strip()
+    elif secret_file.exists() and secret_file.is_file():
+        secret_key = secret_file.read_text().strip()
     else:
         try:
-            secret_key = get_random()
-            secret = open(secret_file, 'w')
-            secret.write(secret_key)
-            secret.close()
+            secret_file.write_text(get_random())
         except IOError:
             raise Exception('Secret file generation failed' % secret_file)
         # Run Once
@@ -48,20 +50,19 @@ def first_run(secret_file, base_dir, mobsf_home):
         thread = threading.Thread(
             target=install_jadx,
             name='install_jadx',
-            args=(mobsf_home,))
+            args=(mobsf_home.as_posix(),))
         thread.start()
         # Windows Setup
-        windows_config_local(mobsf_home)
+        windows_config_local(mobsf_home.as_posix())
     return secret_key
 
 
 def create_user_conf(mobsf_home, base_dir):
     try:
-        config_path = os.path.join(mobsf_home, 'config.py')
-        if not os.path.isfile(config_path):
-            sample_conf = os.path.join(base_dir, 'MobSF/settings.py')
-            with open(sample_conf, 'r') as f:
-                dat = f.readlines()
+        config_path = mobsf_home / 'config.py'
+        if not config_path.exists():
+            sample_conf = base_dir / 'MobSF' / 'settings.py'
+            dat = sample_conf.read_text().splitlines()
             config = []
             add = False
             for line in dat:
@@ -72,20 +73,20 @@ def create_user_conf(mobsf_home, base_dir):
                 if add:
                     config.append(line.lstrip())
             config.pop(0)
-            conf_str = ''.join(config)
-            with open(config_path, 'w') as f:
-                f.write(conf_str)
+            conf_str = '\n'.join(config)
+            config_path.write_text(conf_str)
     except Exception:
         logger.exception('Cannot create config file')
 
 
 def django_operation(cmds, base_dir):
     """Generic Function for Djano operations."""
-    manage = os.path.join(base_dir, '../manage.py')
-    if not os.path.exists(manage):
+    manage = base_dir.parent / 'manage.py'
+    if manage.exists() and manage.is_file():
         # Bail out for package
         return
-    args = [sys.executable, manage]
+    print(manage)
+    args = [sys.executable, manage.as_posix()]
     args.extend(cmds)
     subprocess.call(args)
 
@@ -116,42 +117,43 @@ def get_random():
 
 def get_mobsf_home(use_home, base_dir):
     try:
+        base_dir = Path(base_dir)
         mobsf_home = ''
         if use_home:
-            mobsf_home = os.path.join(os.path.expanduser('~'), '.MobSF')
+            mobsf_home = Path.home() / '.MobSF'
+            custom_home = os.getenv('MOBSF_HOME_DIR')
+            if custom_home:
+                p = Path(custom_home)
+                if p.exists() and p.is_absolute() and p.is_dir():
+                    mobsf_home = p
             # MobSF Home Directory
-            if not os.path.exists(mobsf_home):
-                os.makedirs(mobsf_home)
+            if not mobsf_home.exists():
+                mobsf_home.mkdir(parents=True, exist_ok=True)
             create_user_conf(mobsf_home, base_dir)
         else:
             mobsf_home = base_dir
         # Download Directory
-        dwd_dir = os.path.join(mobsf_home, 'downloads/')
-        if not os.path.exists(dwd_dir):
-            os.makedirs(dwd_dir)
+        dwd_dir = mobsf_home / 'downloads'
+        dwd_dir.mkdir(parents=True, exist_ok=True)
         # Screenshot Directory
-        screen_dir = os.path.join(dwd_dir, 'screen/')
-        if not os.path.exists(screen_dir):
-            os.makedirs(screen_dir)
+        screen_dir = mobsf_home / 'screen'
+        screen_dir.mkdir(parents=True, exist_ok=True)
         # Upload Directory
-        upload_dir = os.path.join(mobsf_home, 'uploads/')
-        if not os.path.exists(upload_dir):
-            os.makedirs(upload_dir)
+        upload_dir = mobsf_home / 'uploads'
+        upload_dir.mkdir(parents=True, exist_ok=True)
         # Downloaded tools
-        downloaded_tools_dir = os.path.join(mobsf_home, 'tools/')
-        if not os.path.exists(downloaded_tools_dir):
-            os.makedirs(downloaded_tools_dir)
-        # Signature Directory
-        sig_dir = os.path.join(mobsf_home, 'signatures/')
+        downloaded_tools_dir = mobsf_home / 'tools'
+        downloaded_tools_dir.mkdir(parents=True, exist_ok=True)
+        # Signatures Directory
+        sig_dir = mobsf_home / 'signatures'
+        sig_dir.mkdir(parents=True, exist_ok=True)
         if use_home:
-            src = os.path.join(base_dir, 'signatures/')
+            src = Path(base_dir) / 'signatures'
             try:
                 shutil.copytree(src, sig_dir, dirs_exist_ok=True)
             except Exception:
                 pass
-        elif not os.path.exists(sig_dir):
-            os.makedirs(sig_dir)
-        return mobsf_home
+        return mobsf_home.as_posix()
     except Exception:
         logger.exception('Creating MobSF Home Directory')
 

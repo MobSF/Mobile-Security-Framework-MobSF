@@ -2,7 +2,9 @@
 """IPA Binary Analysis Rules."""
 from libsast.standards import get_standards
 
-
+HIGH = 'high'
+WARNING = 'warning'
+INFO = 'info'
 STDS = get_standards()
 IPA_RULES = [
     {
@@ -20,7 +22,7 @@ IPA_RULES = [
             rb'\b_wcslen\n\b|\b_wcsncat\n\b|\b_wcsncpy\n\b|\b_wcstok\n\b|'
             rb'\b_wmemcpy\n\b|\b_fopen\n\b|\b_chmod\n\b|\b_chown\n\b|'
             rb'\b_stat\n\b|\b_mktemp\n\b'),
-        'severity': 'high',
+        'severity': WARNING,
         'input_case': 'exact',
         'cvss': 6,
         'cwe': STDS['cwe']['cwe-676'],
@@ -39,7 +41,7 @@ IPA_RULES = [
             rb'\bkCCAlgorithmRC4\b|'
             rb'\bkCCOptionECBMode\b|'
             rb'\bkCCOptionCBCMode\b'),
-        'severity': 'high',
+        'severity': WARNING,
         'input_case': 'exact',
         'cvss': 3,
         'cwe': STDS['cwe']['cwe-327'],
@@ -88,7 +90,7 @@ IPA_RULES = [
             rb'SecTrustSetVerifyDate\b|\bSecCertificateRef\b|\b'
             rb'SecIdentityRef\b|\bSecKeyRef\b|\bSecPolicyRef\b|\b'
             rb'SecTrustRef\b'),
-        'severity': 'info',
+        'severity': INFO,
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
@@ -113,7 +115,7 @@ IPA_RULES = [
             rb'CC_SHA1_Update\b|\b'
             rb'CC_SHA1_Final\b|\bCC_SHA1\b|\bSHA1_Init\b|\b'
             rb'SHA1_Update\b|\bSHA1_Final\b'),
-        'severity': 'high',
+        'severity': WARNING,
         'input_case': 'exact',
         'cvss': 3,
         'cwe': STDS['cwe']['cwe-327'],
@@ -140,7 +142,7 @@ IPA_RULES = [
             rb'CC_SHA512_Update\b|\bCC_SHA512_Final\b|\b'
             rb'CC_SHA512\b|\bSHA512_Init\b|\b'
             rb'SHA512_Update\b|\bSHA512_Final\b'),
-        'severity': 'info',
+        'severity': INFO,
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
@@ -154,7 +156,7 @@ IPA_RULES = [
             'insecure Random function(s) {}'),
         'type': 'Regex',
         'pattern': rb'\b_srand\n\b|\b_random\n\b',
-        'severity': 'high',
+        'severity': WARNING,
         'input_case': 'exact',
         'cvss': 3,
         'cwe': STDS['cwe']['cwe-330'],
@@ -167,7 +169,7 @@ IPA_RULES = [
             'The binary may use {} function for logging.'),
         'type': 'Regex',
         'pattern': rb'\b_NSLog\n\b',
-        'severity': 'info',
+        'severity': INFO,
         'input_case': 'exact',
         'cvss': 7.5,
         'cwe': STDS['cwe']['cwe-532'],
@@ -180,7 +182,7 @@ IPA_RULES = [
             'The binary may use {} function instead of calloc'),
         'type': 'Regex',
         'pattern': rb'_malloc\n',
-        'severity': 'high',
+        'severity': WARNING,
         'input_case': 'exact',
         'cvss': 2,
         'cwe': STDS['cwe']['cwe-789'],
@@ -197,7 +199,7 @@ IPA_RULES = [
             ' from AppStore.'),
         'type': 'Regex',
         'pattern': rb'\b_ptrace\b',
-        'severity': 'warning',
+        'severity': WARNING,
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
@@ -209,7 +211,7 @@ IPA_RULES = [
         'detailed_desc': 'The binary may use UIWebView Component.',
         'type': 'Regex',
         'pattern': b'UIWebView',
-        'severity': 'info',
+        'severity': INFO,
         'input_case': 'exact',
         'cvss': 0,
         'cwe': '',
