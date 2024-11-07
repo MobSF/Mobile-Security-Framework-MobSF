@@ -10,8 +10,8 @@ from django.shortcuts import (
     render,
 )
 
+from mobsf.MobSF.init import api_key
 from mobsf.MobSF.utils import (
-    api_key,
     is_md5,
     print_n_send_error_response,
 )
@@ -71,7 +71,7 @@ def run(request):
             'hash': md5,
             'source_type': typ,
             'version': settings.MOBSF_VER,
-            'api_key': api_key(),
+            'api_key': api_key(settings.MobSF_HOME),
         }
         template = 'static_analysis/source_tree.html'
         return render(request, template, context)

@@ -12,20 +12,11 @@ from mobsf.MobSF.init import (
     first_run,
     get_mobsf_home,
     get_mobsf_version,
+    get_secret_from_file_or_env,
     load_source,
 )
 
 logger = logging.getLogger(__name__)
-# Util functions to get docker secrets
-def get_docker_secret(secret_key):
-    secret_path = os.environ.get(secret_key)
-    with open(secret_path) as f:
-        return f.read().strip()
-
-def get_secret_from_file_or_env(env_secret_key):
-    docker_secret_key = f"{env_secret_key}_FILE"
-    return get_docker_secret(docker_secret_key) if os.environ.get(docker_secret_key) else os.environ[env_secret_key]
-
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #       MOBSF CONFIGURATION
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -160,7 +151,7 @@ APKPLZ = 'https://apkplz.net/download-app/'
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 if (os.environ.get('POSTGRES_USER')
         and (os.environ.get('POSTGRES_PASSWORD')
-            or os.environ.get('POSTGRES_PASSWORD_FILE'))
+             or os.environ.get('POSTGRES_PASSWORD_FILE'))
         and os.environ.get('POSTGRES_HOST')):
     # Postgres support
     default = {

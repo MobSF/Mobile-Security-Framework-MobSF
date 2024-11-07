@@ -35,6 +35,7 @@ from django.shortcuts import render
 from django.utils import timezone
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
+from mobsf.MobSF. init import api_key
 
 from . import settings
 
@@ -91,40 +92,20 @@ def upstream_proxy(flaw_type):
     return proxies, verify
 
 
-def api_key():
-    """Print REST API Key."""
-    if os.environ.get('MOBSF_API_KEY_FILE'):
-        logger.info('\nAPI Key read from docker secret')
-        try:
-            return settings.get_docker_secret('MOBSF_API_KEY_FILE')
-        except Exception:
-            logger.exception('Cannot read API Key from docker secret')
-    if os.environ.get('MOBSF_API_KEY'):
-        logger.info('\nAPI Key read from environment variable')
-        return os.environ['MOBSF_API_KEY']
-
-    secret_file = os.path.join(settings.MobSF_HOME, 'secret')
-    if is_file_exists(secret_file):
-        try:
-            _api_key = open(secret_file).read().strip()
-            return gen_sha256_hash(_api_key)
-        except Exception:
-            logger.exception('Cannot Read API Key')
-
-
 def print_version():
     """Print MobSF Version."""
     logger.info(settings.BANNER)
     ver = settings.MOBSF_VER
     logger.info('Author: Ajin Abraham | opensecurity.in')
+    mobsf_api_key = api_key(settings.MobSF_HOME)
     if platform.system() == 'Windows':
         logger.info('Mobile Security Framework %s', ver)
-        print('REST API Key: ' + api_key())
+        print(f'REST API Key: {mobsf_api_key}')
         print('Default Credentials: mobsf/mobsf')
     else:
         logger.info(
             '%sMobile Security Framework %s%s', Color.GREY, ver, Color.END)
-        print(f'REST API Key: {Color.BOLD}{api_key()}{Color.END}')
+        print(f'REST API Key: {Color.BOLD}{mobsf_api_key}{Color.END}')
         print(f'Default Credentials: {Color.BOLD}mobsf/mobsf{Color.END}')
     os = platform.system()
     pltfm = platform.platform()

@@ -6,6 +6,7 @@ import subprocess
 import sys
 import shutil
 import threading
+from hashlib import sha256
 from pathlib import Path
 from importlib import (
     machinery,
@@ -168,3 +169,46 @@ def load_source(modname, filename):
     module = util.module_from_spec(spec)
     loader.exec_module(module)
     return module
+
+
+def get_docker_secret_by_file(secret_key):
+    try:
+        secret_path = os.environ.get(secret_key)
+        path = Path(secret_path)
+        if path.exists() and path.is_file():
+            return path.read_text().strip()
+    except Exception:
+        logger.exception('Cannot read secret from %s', secret_path)
+    raise Exception('Cannot read secret from file')
+
+
+def get_secret_from_file_or_env(env_secret_key):
+    docker_secret_key = f'{env_secret_key}_FILE'
+    if os.environ.get(docker_secret_key):
+        return get_docker_secret_by_file(docker_secret_key)
+    else:
+        return os.environ[env_secret_key]
+
+
+def api_key(home_dir):
+    """Print REST API Key."""
+    # Form Docker Secrets
+    if os.environ.get('MOBSF_API_KEY_FILE'):
+        logger.info('\nAPI Key read from docker secrets')
+        try:
+            return get_docker_secret_by_file('MOBSF_API_KEY_FILE')
+        except Exception:
+            logger.exception('Cannot read API Key from docker secrets')
+    # From Environment Variable
+    if os.environ.get('MOBSF_API_KEY'):
+        logger.info('\nAPI Key read from environment variable')
+        return os.environ['MOBSF_API_KEY']
+    home_dir = Path(home_dir)
+    secret_file = home_dir / 'secret'
+    if secret_file.exists() and secret_file.is_file():
+        try:
+            _api_key = secret_file.read_bytes().strip()
+            return sha256(_api_key).hexdigest()
+        except Exception:
+            logger.exception('Cannot Read API Key')
+    return None
