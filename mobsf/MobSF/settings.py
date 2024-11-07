@@ -82,6 +82,9 @@ ALLOWED_EXTENSIONS = {
     '.zip': 'application/zip',
     '.tar': 'application/x-tar',
     '.apk': 'application/octet-stream',
+    '.apks': 'application/octet-stream',
+    '.xapk': 'application/octet-stream',
+    '.aab': 'application/octet-stream',
     '.ipa': 'application/octet-stream',
     '.jar': 'application/java-archive',
     '.aar': 'application/octet-stream',
@@ -89,6 +92,7 @@ ALLOWED_EXTENSIONS = {
     '.dylib': 'application/octet-stream',
     '.a': 'application/octet-stream',
     '.pcap': 'application/vnd.tcpdump.pcap',
+    '.appx': 'application/vns.ms-appx',
 }
 # =============ALLOWED MIMETYPES=================
 APK_MIME = [
@@ -340,7 +344,9 @@ LOGGING = {
         },
     },
 }
-JADX_TIMEOUT = int(os.getenv('MOBSF_JADX_TIMEOUT', 1800))
+JADX_TIMEOUT = int(os.getenv('MOBSF_JADX_TIMEOUT', 1000))
+SAST_TIMEOUT = int(os.getenv('MOBSF_SAST_TIMEOUT', 1000))
+BINARY_ANALYSIS_TIMEOUT = int(os.getenv('MOBSF_BINARY_ANALYSIS_TIMEOUT', 600))
 DISABLE_AUTHENTICATION = os.getenv('MOBSF_DISABLE_AUTHENTICATION')
 RATELIMIT = os.getenv('MOBSF_RATELIMIT', '7/m')
 USE_X_FORWARDED_HOST = bool(

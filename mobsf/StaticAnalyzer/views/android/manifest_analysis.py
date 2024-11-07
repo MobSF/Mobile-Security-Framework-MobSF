@@ -79,6 +79,7 @@ def assetlinks_check(act_name, well_knowns):
 
     return findings
 
+
 def _check_url(host, w_url):
     try:
         iden = 'sha256_cert_fingerprints'
@@ -87,10 +88,10 @@ def _check_url(host, w_url):
         status_code = 0
 
         r = requests.get(w_url,
-            allow_redirects=False,
-            proxies=proxies,
-            verify=verify,
-            timeout=5)
+                         allow_redirects=False,
+                         proxies=proxies,
+                         verify=verify,
+                         timeout=5)
 
         status_code = r.status_code
         if status_code == 302:
@@ -106,7 +107,7 @@ def _check_url(host, w_url):
 
     except Exception:
         logger.error(f'Well Known Assetlinks Check for URL: {w_url}')
-        return {'url': w_url, 
+        return {'url': w_url,
                 'host': host,
                 'status_code': None,
                 'status': False}
@@ -153,9 +154,9 @@ def get_browsable_activities(node, ns):
                         path_patterns.append(path_pattern)
                     # Collect possible well-known paths
                     if (scheme
-                          and scheme in ('http', 'https')
-                          and host
-                          and host != '*'):
+                        and scheme in ('http', 'https')
+                        and host
+                            and host != '*'):
                         host = host.replace('*.', '').replace('#', '')
                         if not valid_host(host):
                             continue

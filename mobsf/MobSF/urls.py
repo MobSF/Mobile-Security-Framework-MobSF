@@ -85,6 +85,7 @@ urlpatterns = [
     # Static Analysis
     re_path(r'^api/v1/upload$', api_sz.api_upload),
     re_path(r'^api/v1/scan$', api_sz.api_scan),
+    re_path(r'^api/v1/search$', api_sz.api_search),
     re_path(r'^api/v1/scan_logs$', api_sz.api_scan_logs),
     re_path(r'^api/v1/delete_scan$', api_sz.api_delete_scan),
     re_path(r'^api/v1/download_pdf$', api_sz.api_pdf_report),
@@ -183,6 +184,9 @@ if settings.API_ONLY == '0':
         re_path(r'^$', home.index, name='home'),
         re_path(r'^upload/$', home.Upload.as_view, name='upload'),
         re_path(r'^download/', home.download, name='download'),
+        re_path(fr'^download_binary/{checksum_regex}/$',
+                home.download_binary,
+                name='download_binary'),
         re_path(r'^download_scan/', home.download_apk, name='download_scan'),
         re_path(r'^generate_downloads/$',
                 home.generate_download,
@@ -198,7 +202,6 @@ if settings.API_ONLY == '0':
         re_path(r'^search$', home.search),
         re_path(r'^status/$', home.scan_status, name='status'),
         re_path(r'^error/$', home.error, name='error'),
-        re_path(r'^not_found/$', home.not_found),
         re_path(r'^zip_format/$', home.zip_format),
         re_path(r'^dynamic_analysis/$', home.dynamic_analysis, name='dynamic'),
 

@@ -20,7 +20,8 @@ if _public_res is None:
                     _public_res[_type] = {}
                 _public_res[_type][_name] = _id
     else:
-        raise Exception("need to copy the sdk/platforms/android-?/data/res/values/public.xml here")
+        raise Exception(
+            "need to copy the sdk/platforms/android-?/data/res/values/public.xml here")
 
 SYSTEM_RESOURCES = {
     "attributes": {

@@ -12,7 +12,12 @@ from mobsf.MobSF.utils import (
     is_md5,
 )
 from mobsf.MobSF.views.helpers import request_method
-from mobsf.MobSF.views.home import RecentScans, Upload, delete_scan
+from mobsf.MobSF.views.home import (
+    RecentScans,
+    Upload,
+    delete_scan,
+    search,
+)
 from mobsf.MobSF.views.api.api_middleware import make_api_response
 from mobsf.StaticAnalyzer.views.android.views import view_source
 from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
@@ -178,6 +183,21 @@ def api_json_report(request):
         response = make_api_response(
             {'error': 'JSON Generation Error'}, 500)
     return response
+
+
+@request_method(['POST'])
+@csrf_exempt
+def api_search(request):
+    """Search by checksum or text."""
+    if 'query' not in request.POST:
+        return make_api_response(
+            {'error': 'Missing Parameters'}, 422)
+    resp = search(request, api=True)
+    if 'checksum' in resp:
+        request.POST = {'hash': resp['checksum']}
+        return api_json_report(request)
+    elif 'error' in resp:
+        return make_api_response(resp, 404)
 
 
 @request_method(['POST'])

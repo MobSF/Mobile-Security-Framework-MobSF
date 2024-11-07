@@ -27,6 +27,9 @@ def library_analysis(checksum, src, arch):
         f'{arch}_analysis': [],
         f'{arch}_strings': [],
         f'{arch}_symbols': [],
+        'framework_analysis': [],
+        'framework_strings': [],
+        'framework_symbols': [],
     }
     try:
         if arch == 'macho':
@@ -79,9 +82,6 @@ def library_analysis(checksum, src, arch):
                     rel_path: symbols})
         if ext == '*.dylib':
             # Do Framework Analysis for iOS
-            res['framework_analysis'] = []
-            res['framework_strings'] = []
-            res['framework_symbols'] = []
             frameworks_analysis(checksum, src, base_dir, res)
             if res['framework_strings']:
                 res[f'{arch}_strings'].extend(
