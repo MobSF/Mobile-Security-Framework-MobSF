@@ -175,7 +175,8 @@ def static_analysis_test():
 def api_test():
     """View for Handling REST API Test."""
     logger.info('\nRunning REST API Unit test')
-    auth = api_key(settings.MobSF_HOME)
+    auth = 'test_key'
+    os.environ['MOBSF_API_KEY'] = auth
     try:
         uploaded = []
         logger.info('Running Test on Upload API')
