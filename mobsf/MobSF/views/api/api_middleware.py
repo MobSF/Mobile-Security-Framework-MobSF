@@ -1,9 +1,12 @@
 # -*- coding: utf_8 -*-
 """REST API Middleware."""
+from hmac import compare_digest
+
 from django.http import JsonResponse
 from django.utils.deprecation import MiddlewareMixin
+from django.conf import settings
 
-from mobsf.MobSF.utils import api_key
+from mobsf.MobSF.init import api_key
 
 OK = 200
 
@@ -22,10 +25,11 @@ def make_api_response(data, status=OK):
 
 def api_auth(meta):
     """Check if API Key Matches."""
+    mobsf_api_key = api_key(settings.MOBSF_HOME)
     if 'HTTP_X_MOBSF_API_KEY' in meta:
-        return bool(api_key() == meta['HTTP_X_MOBSF_API_KEY'])
+        return compare_digest(mobsf_api_key, meta['HTTP_X_MOBSF_API_KEY'])
     elif 'HTTP_AUTHORIZATION' in meta:
-        return bool(api_key() == meta['HTTP_AUTHORIZATION'])
+        return compare_digest(mobsf_api_key, meta['HTTP_AUTHORIZATION'])
     return False
 
 

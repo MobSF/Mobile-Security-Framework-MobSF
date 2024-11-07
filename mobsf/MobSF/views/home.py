@@ -23,7 +23,6 @@ from django.template.defaulttags import register
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
     MD5_REGEX,
-    api_key,
     get_md5,
     is_dir_exists,
     is_file_exists,
@@ -33,6 +32,7 @@ from mobsf.MobSF.utils import (
     print_n_send_error_response,
     python_dict,
 )
+from mobsf.MobSF.init import api_key
 from mobsf.MobSF.views.helpers import FileType
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
@@ -195,7 +195,7 @@ def api_docs(request):
         if (settings.DISABLE_AUTHENTICATION == '1'
                 or request.user.is_staff
                 or request.user.groups.filter(name=MAINTAINER_GROUP).exists()):
-            key = api_key()
+            key = api_key(settings.MOBSF_HOME)
     except Exception:
         logger.exception('[ERROR] Failed to get API key')
     context = {

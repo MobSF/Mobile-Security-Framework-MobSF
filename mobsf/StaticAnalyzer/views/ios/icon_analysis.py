@@ -37,18 +37,37 @@ def get_icon_from_ipa(app_dict, binary):
             return
         icon_file = icons.pop()
         outfile = Path(settings.DWD_DIR) / f'{md5}-icon.png'
-        if platform.system() == 'Darwin':
+        tools_dir = Path(settings.BASE_DIR) / 'StaticAnalyzer' / 'tools' / 'ios'
+        cgbipng_bin = None
+        arch = platform.machine()
+        system = platform.system()
+        # Uncrush PNG. CgBI -> PNG
+        # https://iphonedevwiki.net/index.php/CgBI_file_format
+        if system == 'Darwin':
             args = ['xcrun', '-sdk', 'iphoneos', 'pngcrush', '-q',
                     '-revert-iphone-optimizations',
                     icon_file, outfile.as_posix()]
-            # Uncrush PNG. CgBI -> PNG, Mac only
-            # https://iphonedevwiki.net/index.php/CgBI_file_format
             try:
                 out = subprocess.run(args, capture_output=True)
                 if b'libpng error:' in out.stdout:
                     # PNG looks normal
                     raise ValueError('PNG is not CgBI')
             except Exception:
+                shutil.copy2(icon_file, outfile.as_posix())
+        elif system == 'Windows' and arch in ('AMD64', 'x86'):
+            cgbipng_bin = 'CgbiPngFix.exe'
+        elif system == 'Linux' and arch == 'x86_64':
+            cgbipng_bin = 'CgbiPngFix_amd64'
+        elif system == 'Linux' and arch == 'aarch64':
+            cgbipng_bin = 'CgbiPngFix_arm64'
+        if cgbipng_bin:
+            cbin = tools_dir / 'CgbiPngFix' / cgbipng_bin
+            args = [cbin.as_posix(), '-i',
+                    icon_file, '-o', outfile.as_posix()]
+            try:
+                out = subprocess.run(args, capture_output=True)
+            except Exception:
+                # Fails or PNG is not crushed
                 shutil.copy2(icon_file, outfile.as_posix())
         else:
             shutil.copy2(icon_file, outfile.as_posix())
