@@ -25,7 +25,7 @@ def make_api_response(data, status=OK):
 
 def api_auth(meta):
     """Check if API Key Matches."""
-    mobsf_api_key = api_key(settings.MobSF_HOME)
+    mobsf_api_key = api_key(settings.MOBSF_HOME)
     if 'HTTP_X_MOBSF_API_KEY' in meta:
         return compare_digest(mobsf_api_key, meta['HTTP_X_MOBSF_API_KEY'])
     elif 'HTTP_AUTHORIZATION' in meta:

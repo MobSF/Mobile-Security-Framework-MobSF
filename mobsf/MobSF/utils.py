@@ -97,7 +97,7 @@ def print_version():
     logger.info(settings.BANNER)
     ver = settings.MOBSF_VER
     logger.info('Author: Ajin Abraham | opensecurity.in')
-    mobsf_api_key = api_key(settings.MobSF_HOME)
+    mobsf_api_key = api_key(settings.MOBSF_HOME)
     if platform.system() == 'Windows':
         logger.info('Mobile Security Framework %s', ver)
         print(f'REST API Key: {mobsf_api_key}')
