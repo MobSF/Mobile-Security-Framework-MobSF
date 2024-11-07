@@ -4,6 +4,8 @@ import logging
 import os
 import platform
 
+from mobsf.MobSF.init import api_key
+
 from django.conf import settings
 from django.http import HttpResponse
 from django.test import Client, TestCase
@@ -173,8 +175,7 @@ def static_analysis_test():
 def api_test():
     """View for Handling REST API Test."""
     logger.info('\nRunning REST API Unit test')
-    auth = 'test_key'
-    os.environ['MOBSF_API_KEY'] = auth
+    auth = api_key(settings.MOBSF_HOME)
     try:
         uploaded = []
         logger.info('Running Test on Upload API')
