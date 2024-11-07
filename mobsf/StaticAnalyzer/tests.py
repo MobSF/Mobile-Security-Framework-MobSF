@@ -8,8 +8,6 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.test import Client, TestCase
 
-from mobsf.MobSF.init import api_key
-
 logger = logging.getLogger(__name__)
 
 RESCAN = False
