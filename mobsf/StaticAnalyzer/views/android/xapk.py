@@ -62,7 +62,10 @@ def handle_split_apk(app_dic):
     for apk in unzip(checksum, apks.as_posix(), app_dic['app_dir']):
         full_path = app_dic['app_dir'] / apk
         safe_path = is_safe_path(app_dic['app_dir'], full_path)
-        if (not apk.startswith('config.')
+        if apk.endswith('base.apk') and safe_path:
+            move(full_path, apks)
+            return True
+        if ('config.' not in apk.lower()
                 and apk.endswith('.apk')
                 and safe_path):
             move(full_path, apks)

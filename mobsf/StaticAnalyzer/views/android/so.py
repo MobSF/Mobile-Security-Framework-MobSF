@@ -123,7 +123,7 @@ def so_analysis(request, app_dic, rescan, api):
             'urls': [],
             'emails': [],
         }
-        quark_results = []
+        behaviour_an = []
         # Get the strings and metadata from shared object
         get_strings_metadata(
             checksum,
@@ -157,7 +157,7 @@ def so_analysis(request, app_dic, rescan, api):
             cert_dic,
             elf_dict['elf_analysis'],
             apkid_results,
-            quark_results,
+            behaviour_an,
             trackers,
             rescan,
         )

@@ -192,9 +192,9 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a href="#quark" class="nav-link">
-                  <i class="fab fa-quora nav-icon"></i>
-                  <p>Quark Analysis</p>
+                <a href="#behaviour" class="nav-link">
+                  <i class="fas fa-sitemap nav-icon"></i>
+                  <p>Behaviour Analysis</p>
                 </a>
               </li>
               {% endif %}
@@ -1702,7 +1702,7 @@
     </div>
 </section>
  <!-- ===========================end apkid analysis ================================== -->
-  <a id="quark" class="anchor"></a>
+  <a id="behaviour" class="anchor"></a>
   <section class="content">
     <div class="container-fluid">
       <div class="row">
@@ -1710,34 +1710,56 @@
           <div class="card">
             <div class="card-body">
               <p>
-               <strong><i class="fab fa-quora"></i> QUARK ANALYSIS</strong>
+               <strong><i class="fas fa-sitemap"></i> BEHAVIOUR ANALYSIS</strong>
                </p>
                <div class="table-responsive">
-                <table id="table_file" class="table table-bordered table-hover table-striped">
-                    <thead>
-                        <tr>
-                            <th>POTENTIAL MALICIOUS BEHAVIOUR</th>
-                            <th>EVIDENCE</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                      {% if quark %}
-                        {% for item in quark %}
-                          <tr>
-                            <td>{{ item.crime }}</td>
 
-                            <td>
-                              {% for api in item.register %}
-                                <a href="{% url "view_source" %}?file={{ api.file }}&amp;md5={{ md5 }}&amp;type=smali&amp;lines={{ api.line_numbers.first_api }},{{ api.line_numbers.second_api }}">{{api.file}} -> {{api.method}}</a>
-                                <br/>
-                              {% endfor %}
-                            </td>
-                          </tr>
-                        {% endfor%}
-                      {% endif %}
-              </tbody>
-                              
-              </table>
+                <table id="table_code" class="table table-bordered table-hover table-striped">
+                  <thead>
+                  <tr>
+                    <th>RULE ID</th>
+                    <th>BEHAVIOUR</th>
+                    <th>LABEL</th>
+                    <th>FILES</th>
+                </tr>
+                  </thead>
+                    <tbody>
+             {% for rule, details in behaviour.items %}
+                <tr>
+                <td>{{ rule }}</td>
+                <td>
+                  {{ details.metadata.description }}
+                </td>
+                <td> {% for lbl in details.metadata.label %} 
+                  <span class="badge bg-warning">{{ lbl }}</span>
+                {% endfor %}
+                </td>
+                <td>
+                  {% if details.files|length < 4 %}
+                    {% for file_path, lines in details.files.items %}
+                      <small>
+                        <a href="{% url "view_source" %}?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines }}"> {{ file_path }}</a>
+                      </small>
+                    </br>
+                    {% endfor %}
+                  {% else %}
+                    <a class="btn btn-primary btn-xs" data-toggle="collapse" href="#collapsebehaviour{{forloop.counter}}" role="button" aria-expanded="false" aria-controls="collapsebehaviour{{forloop.counter}}">
+                      Show Files
+                    </a>
+                    <div class="collapse" id="collapsebehaviour{{forloop.counter}}">
+                      {% for file_path, lines in details.files.items %}
+                        <small>
+                          <a href="{% url "view_source" %}?file={{ file_path }}&amp;md5={{ md5 }}&amp;type={{app_type}}&amp;lines={{ lines }}"> {{ file_path }}</a>
+                        </small>
+                      </br>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </td>
+              </tr>    
+            {% endfor %}
+            </tbody>
+          </table>
               </div>
             </div>
           </div><!-- /.card -->
@@ -1746,7 +1768,7 @@
           </div>
       </div>
   </section>
-<!-- ===========================end quark analysis ================================== -->
+<!-- ===========================end behaviour analysis ================================== -->
 {% endif %}
 {% if virus_total %}
 <a id="virus_total" class="anchor"></a>
