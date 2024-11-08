@@ -10,8 +10,8 @@ import mobsf.MalwareAnalyzer.views.Trackers as Trackers
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.MalwareAnalyzer.views.android import (
     apkid,
+    behaviour_analysis,
     permissions,
-    quark,
 )
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import MalwareDomainCheck
 
@@ -102,7 +102,7 @@ from mobsf.MobSF.views.authorization import (
     has_permission,
 )
 
-
+APK_TYPE = 'apk'
 logger = logging.getLogger(__name__)
 register.filter('key', key)
 register.filter('android_component', android_component)
@@ -159,18 +159,18 @@ def static_analyzer(request, checksum, api=False):
             # Base APK will have the MD5 of XAPK
             if not handle_xapk(app_dic):
                 raise Exception('Invalid XAPK File')
-            typ = 'apk'
+            typ = APK_TYPE
         elif typ == 'apks':
             # Handle Split APK
             if not handle_split_apk(app_dic):
                 raise Exception('Invalid Split APK File')
-            typ = 'apk'
+            typ = APK_TYPE
         elif typ == 'aab':
             # Convert AAB to APK
             if not handle_aab(app_dic):
                 raise Exception('Invalid AAB File')
-            typ = 'apk'
-        if typ == 'apk':
+            typ = APK_TYPE
+        if typ == APK_TYPE:
             app_dic['app_file'] = f'{checksum}.apk'
             app_dic['app_path'] = (
                 app_dic['app_dir'] / app_dic['app_file']).as_posix()
@@ -218,7 +218,7 @@ def static_analyzer(request, checksum, api=False):
                     app_dic['app_path'],
                     app_dic['app_dir'],
                     app_dic['tools_dir'],
-                    'apk',
+                    APK_TYPE,
                 )
                 app_dic['manifest_file'] = mani_file
                 app_dic['parsed_xml'] = mani_xml
@@ -296,20 +296,20 @@ def static_analyzer(request, checksum, api=False):
                 code_an_dic = code_analysis(
                     checksum,
                     app_dic['app_dir'],
-                    'apk',
+                    APK_TYPE,
                     app_dic['manifest_file'],
                     man_data_dic['perm'])
-                quark_results = quark.quark_analysis(
+                behaviour_an = behaviour_analysis.analyze(
                     checksum,
                     app_dic['app_dir'],
-                    app_dic['app_path'])
+                    APK_TYPE)
                 # Get the strings and metadata
                 get_strings_metadata(
                     checksum,
                     apk,
                     app_dic['app_dir'],
                     elf_dict['elf_strings'],
-                    'apk',
+                    APK_TYPE,
                     ['.java'],
                     code_an_dic)
                 # Firebase DB Check
@@ -321,7 +321,7 @@ def static_analyzer(request, checksum, api=False):
                     checksum,
                     code_an_dic['urls_list'])
 
-                app_dic['zipped'] = 'apk'
+                app_dic['zipped'] = APK_TYPE
                 context = save_get_ctx(
                     app_dic,
                     man_data_dic,
@@ -330,7 +330,7 @@ def static_analyzer(request, checksum, api=False):
                     cert_dic,
                     elf_dict['elf_analysis'],
                     apkid_results,
-                    quark_results,
+                    behaviour_an,
                     tracker_res,
                     rescan,
                 )
@@ -482,6 +482,10 @@ def static_analyzer(request, checksum, api=False):
                         pro_type,
                         app_dic['manifest_file'],
                         man_data_dic['perm'])
+                    behaviour_an = behaviour_analysis.analyze(
+                        checksum,
+                        app_dic['app_dir'],
+                        pro_type)
                     # Get the strings and metadata
                     get_strings_metadata(
                         checksum,
@@ -514,7 +518,7 @@ def static_analyzer(request, checksum, api=False):
                         cert_dic,
                         [],
                         {},
-                        [],
+                        behaviour_an,
                         trackers,
                         rescan,
                     )

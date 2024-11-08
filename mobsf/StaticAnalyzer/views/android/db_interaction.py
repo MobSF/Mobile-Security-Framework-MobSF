@@ -83,7 +83,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'files': python_list(db_entry[0].FILES),
             'exported_count': python_dict(db_entry[0].EXPORTED_COUNT),
             'apkid': python_dict(db_entry[0].APKID),
-            'quark': python_list(db_entry[0].QUARK),
+            'behaviour': python_dict(db_entry[0].QUARK),
             'trackers': python_dict(db_entry[0].TRACKERS),
             'playstore_details': python_dict(db_entry[0].PLAYSTORE_DETAILS),
             'secrets': python_list(db_entry[0].SECRETS),
@@ -102,7 +102,7 @@ def get_context_from_analysis(app_dic,
                               cert_dic,
                               bin_anal,
                               apk_id,
-                              quark_report,
+                              behaviour_an,
                               trackers) -> dict:
     """Get the context for APK/ZIP from analysis results."""
     try:
@@ -157,7 +157,7 @@ def get_context_from_analysis(app_dic,
             'files': app_dic['files'],
             'exported_count': man_an_dic['exported_cnt'],
             'apkid': apk_id,
-            'quark': quark_report,
+            'behaviour': behaviour_an,
             'trackers': trackers,
             'playstore_details': app_dic['playstore'],
             'secrets': code_an_dic['secrets'],
@@ -178,7 +178,7 @@ def save_or_update(update_type,
                    cert_dic,
                    bin_anal,
                    apk_id,
-                   quark_report,
+                   behaviour_an,
                    trackers) -> None:
     """Save/Update an APK/ZIP DB entry."""
     try:
@@ -223,7 +223,7 @@ def save_or_update(update_type,
             'FILES': app_dic['files'],
             'EXPORTED_COUNT': man_an_dic['exported_cnt'],
             'APKID': apk_id,
-            'QUARK': quark_report,
+            'QUARK': behaviour_an,
             'TRACKERS': trackers,
             'PLAYSTORE_DETAILS': app_dic['playstore'],
             'NETWORK_SECURITY': man_an_dic['network_security'],
@@ -255,7 +255,7 @@ def save_or_update(update_type,
         append_scan_status(app_dic['md5'], msg, repr(exp))
 
 
-def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, quark, trk, rscn):
+def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, behaviour, trk, rscn):
     # SAVE TO DB
     if rscn:
         msg = 'Updating Database...'
@@ -277,7 +277,7 @@ def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, quark, trk, rscn):
         cert,
         elf,
         apkid,
-        quark,
+        behaviour,
         trk,
     )
     return get_context_from_analysis(
@@ -288,6 +288,6 @@ def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, quark, trk, rscn):
         cert,
         elf,
         apkid,
-        quark,
+        behaviour,
         trk,
     )

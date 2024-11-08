@@ -147,7 +147,7 @@ def code_analysis(checksum, app_dir, typ, manifest_file, android_permissions):
                 url_list.extend(urls)
                 url_n_file.extend(urls_nf)
                 email_n_file.extend(emails_nf)
-        msg = 'Finished Code Analysis, Email and URL Extraction'
+        msg = 'Email and URL Extraction Completed'
         logger.info(msg)
         append_scan_status(checksum, msg)
         code_an_dic = {

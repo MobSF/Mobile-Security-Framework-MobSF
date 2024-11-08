@@ -7,7 +7,10 @@ from django.shortcuts import render
 
 import mobsf.MalwareAnalyzer.views.Trackers as Trackers
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
-from mobsf.MalwareAnalyzer.views.android import permissions
+from mobsf.MalwareAnalyzer.views.android import (
+    behaviour_analysis,
+    permissions,
+)
 from mobsf.MobSF.utils import (
     append_scan_status,
     file_size,
@@ -61,6 +64,7 @@ from mobsf.MobSF.views.authorization import (
     has_permission,
 )
 
+APK_TYPE = 'apk'
 logger = logging.getLogger(__name__)
 
 
@@ -197,21 +201,24 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
         code_an_dic = code_analysis(
             checksum,
             app_dic['app_dir'],
-            'apk',
+            APK_TYPE,
             app_dic['manifest_file'],
             man_data_dic['perm'])
         obfuscated_check(
             checksum,
             app_dic['app_dir'],
             code_an_dic)
-        quark_results = []
+        behaviour_an = behaviour_analysis.analyze(
+            checksum,
+            app_dic['app_dir'],
+            APK_TYPE)
         # Get the strings and metadata
         get_strings_metadata(
             checksum,
             apk,
             app_dic['app_dir'],
             elf_dict['elf_strings'],
-            'apk',
+            APK_TYPE,
             ['.java'],
             code_an_dic)
         # Firebase DB Check
@@ -232,7 +239,7 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
             cert_dic,
             elf_dict['elf_analysis'],
             {},
-            quark_results,
+            behaviour_an,
             tracker_res,
             rescan,
         )
