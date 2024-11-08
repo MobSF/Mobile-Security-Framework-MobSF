@@ -36,7 +36,7 @@ def download_frida_server(url, version, fname):
         download_dir = Path(settings.DWD_DIR)
         logger.info('Downloading binary %s', fname)
         dwd_loc = download_dir / fname
-        with requests.get(url, stream=True) as r:
+        with requests.get(url, timeout=5, stream=True) as r:
             with LZMAFile(r.raw) as f:
                 with open(dwd_loc, 'wb') as flip:
                     copyfileobj(f, flip)
@@ -62,7 +62,7 @@ def update_frida_server(arch, version):
         logger.exception('[ERROR] Setting upstream proxy')
     try:
         response = requests.get(f'{settings.FRIDA_SERVER}{version}',
-                                timeout=3,
+                                timeout=5,
                                 proxies=proxies,
                                 verify=verify)
         for item in response.json()['assets']:

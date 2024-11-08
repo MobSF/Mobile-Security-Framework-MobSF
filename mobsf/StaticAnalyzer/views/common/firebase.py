@@ -95,8 +95,11 @@ def open_firebase(checksum, url):
                            ' AppleWebKit/537.36 (KHTML, like Gecko) '
                            'Chrome/39.0.2171.95 Safari/537.36')}
         resp = requests.get(
-            base_url, headers=headers,
-            proxies=proxies, verify=verify,
+            base_url,
+            timeout=5,
+            headers=headers,
+            proxies=proxies,
+            verify=verify,
             allow_redirects=False)
         if resp.status_code == 200:
             return base_url, True
@@ -176,7 +179,7 @@ def firebase_remote_config(checksum, code_an_dic):
         proxies, verify = upstream_proxy('https')
         response = requests.post(
             url,
-            timeout=4,
+            timeout=5,
             json=body,
             proxies=proxies,
             verify=verify,

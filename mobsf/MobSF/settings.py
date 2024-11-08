@@ -414,7 +414,6 @@ else:
 
     DOMAIN_MALWARE_SCAN = os.getenv('MOBSF_DOMAIN_MALWARE_SCAN', '1')
     APKID_ENABLED = os.getenv('MOBSF_APKID_ENABLED', '1')
-    QUARK_ENABLED = bool(os.getenv('MOBSF_QUARK_ENABLED', ''))
     # ==================================================
     # ======WINDOWS STATIC ANALYSIS SETTINGS ===========
     # Private key

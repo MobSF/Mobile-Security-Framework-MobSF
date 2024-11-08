@@ -79,7 +79,7 @@ class GadgetPatcher:
             return None
         try:
             response = requests.get(f'{settings.FRIDA_SERVER}{version}',
-                                    timeout=3,
+                                    timeout=5,
                                     proxies=proxies,
                                     verify=verify)
             for item in response.json()['assets']:
@@ -90,6 +90,7 @@ class GadgetPatcher:
                 return None
             logger.info('Downloading frida-gadget %s', fgadget)
             with requests.get(url,
+                              timeout=5,
                               stream=True,
                               proxies=proxies,
                               verify=verify) as r:

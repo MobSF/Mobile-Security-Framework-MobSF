@@ -19,6 +19,7 @@ services:
     restart: always
     ports:
      - "8000:8000"
+     - "1337:1337"
     volumes:
       - $HOME/MobSF/mobsf_data:/home/mobsf/.MobSF
     environment:
@@ -34,6 +35,8 @@ services:
       - postgres
     networks:
       - mobsf_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     secrets:
       - mobsfDB_password
       - mobsf_api_key
