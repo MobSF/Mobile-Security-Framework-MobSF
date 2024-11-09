@@ -17,6 +17,7 @@ services:
     restart: always
     ports:
       - "80:4000"
+      - "1337:4001"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
@@ -41,6 +42,8 @@ services:
       - postgres
     networks:
       - mobsf_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 networks:
   mobsf_network:

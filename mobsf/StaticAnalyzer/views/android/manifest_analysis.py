@@ -88,10 +88,10 @@ def _check_url(host, w_url):
         status_code = 0
 
         r = requests.get(w_url,
+                         timeout=5,
                          allow_redirects=False,
                          proxies=proxies,
-                         verify=verify,
-                         timeout=5)
+                         verify=verify)
 
         status_code = r.status_code
         if status_code == 302:

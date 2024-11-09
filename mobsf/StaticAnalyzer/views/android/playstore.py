@@ -55,6 +55,7 @@ def app_search(checksum, app_id):
     try:
         proxies, verify = upstream_proxy('https')
         req = requests.get(req_url,
+                           timeout=5,
                            auth=(settings.APPMONSTA_API, 'X'),
                            headers=headers,
                            proxies=proxies,

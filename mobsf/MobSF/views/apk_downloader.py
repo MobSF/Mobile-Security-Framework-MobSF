@@ -37,6 +37,7 @@ def fetch_html(url):
     try:
         proxies, verify = upstream_proxy('https')
         res = requests.get(url,
+                           timeout=5,
                            headers=headers,
                            proxies=proxies,
                            verify=verify,
@@ -53,6 +54,7 @@ def download_file(url, outfile):
         logger.info('Downloading APK...')
         proxies, verify = upstream_proxy('https')
         with requests.get(url,
+                          timeout=5,
                           stream=True,
                           proxies=proxies,
                           verify=verify) as r:

@@ -27,8 +27,11 @@ def stop_httptools(url):
         http_proxy = url.replace('https://', 'http://')
         headers = {'httptools': 'kill'}
         url = 'http://127.0.0.1'
-        requests.get(url, headers=headers, proxies={
-                     'http': http_proxy})
+        requests.get(
+            url,
+            timeout=5,
+            headers=headers,
+            proxies={'http': http_proxy})
         logger.info('Killing httptools Proxy')
     except Exception:
         pass
