@@ -1,4 +1,3 @@
-"""Download tools required by MobSF."""
 import logging
 import sys
 import shutil
@@ -7,12 +6,54 @@ import zipfile
 import platform
 from pathlib import Path
 from urllib.request import (
+    ProxyHandler,
     Request,
-    urlopen,
+    build_opener,
+    getproxies,
 )
 
-
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+
+def download_file(url, file_path):
+    req = Request(url)
+    system_proxies = getproxies()
+    proxy_handler = ProxyHandler(system_proxies)
+    opener = build_opener(proxy_handler)
+
+    with opener.open(req) as response:
+        if response.status == 200:
+            file_size = int(response.headers.get('Content-Length', 0))
+            downloaded = 0
+            block_size = 8192  # 8KB
+
+            with open(file_path, 'wb') as f:
+                while True:
+                    buffer = response.read(block_size)
+                    if not buffer:
+                        break
+                    downloaded += len(buffer)
+                    f.write(buffer)
+
+                    # Print progress
+                    if file_size > 0:
+                        done = int(50 * downloaded / file_size)
+                        fmt = (f'\r[{"#" * done}{"-" * (50-done)}] '
+                               f'{downloaded * 100 / file_size:.2f}%')
+                        sys.stdout.write(fmt)
+                        sys.stdout.flush()
+
+            if downloaded != file_size:
+                err = (f'Downloaded file size ({downloaded}) '
+                       f'does not match expected size ({file_size})')
+                raise Exception(err)
+
+            return downloaded
+        else:
+            raise Exception(f'Failed to download file. Status code: {response.status}')
 
 
 def install_jadx(mobsf_home, version='1.5.0'):
@@ -34,15 +75,9 @@ def install_jadx(mobsf_home, version='1.5.0'):
                 delete=False,
                 mode='wb',
                 suffix='.zip') as tmp_zip_file:
-            # Download JADX zip file
-            with urlopen(Request(url)) as response:
-                if response.status == 200:
-                    tmp_zip_file.write(response.read())
-                    logger.info('JADX download complete')
-                else:
-                    logger.error('Failed to download JADX zip. '
-                                 'Status code: %s', response.status)
-                    return
+
+            downloaded_size = download_file(url, tmp_zip_file.name)
+            logger.info('JADX download complete. File size: %d bytes', downloaded_size)
 
             # Extract the zip file
             logger.info('Extracting JADX to %s', extract_dir)
@@ -57,7 +92,6 @@ def install_jadx(mobsf_home, version='1.5.0'):
         logger.info('JADX installed successfully')
     except Exception:
         logger.exception('Error during JADX installation')
-
     finally:
         if 'tmp_zip_file' in locals():
             Path(tmp_zip_file.name).unlink()
