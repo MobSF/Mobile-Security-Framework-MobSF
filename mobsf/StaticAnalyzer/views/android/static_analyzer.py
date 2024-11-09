@@ -28,6 +28,7 @@ from mobsf.MobSF.utils import (
     is_file_exists,
     is_md5,
     key,
+    pathify,
     print_n_send_error_response,
     relative_path,
 )
@@ -107,6 +108,7 @@ logger = logging.getLogger(__name__)
 register.filter('key', key)
 register.filter('android_component', android_component)
 register.filter('relative_path', relative_path)
+register.filter('pathify', pathify)
 
 
 @login_required

@@ -400,140 +400,83 @@
   </div>
 
   <!-- Boxes -->
-   <div class="container-fluid">
-      <div class="row">
-        <div class="col-lg-12">
-        
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title"></h5>
-                <div class="row">
-                        <!-- Boxes columns -->
-                      <div class="col-12 col-sm-6 col-md-3">
-                        <!-- small box -->
-                        <div class="small-box bg-info">
-                          <div class="inner">
-                            <h3>{{ activities | length }}</h3>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12">
 
-                            <p>ACTIVITIES</p>
-                          </div>
-                          <div class="icon">
-                            <i class="fa fa-language"></i>
-                          </div>
-                          <a href="#activities" class="small-box-footer">View <i class="fas fa-arrow-circle-down"></i></a>
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title"></h5>
+              <div class="row">
+                      <!-- Boxes columns -->
+                    <div class="col-12 col-sm-6 col-md-3">
+                      <!-- small box -->
+                      <div class="small-box bg-info">
+                        <div class="inner">
+                          <h3> {{ exported_count.exported_activities }} / {{ activities | length }}</h3>
+
+                          <p>EXPORTED ACTIVITIES</p>
                         </div>
+                        <div class="icon">
+                          <i class="fa fa-language"></i>
+                        </div>
+                        <a href="#activities" class="small-box-footer">View All <i class="fas fa-arrow-circle-down"></i></a>
                       </div>
-                      <!-- ./col -->
-                      <div class="col-12 col-sm-6 col-md-3">
-                        <!-- small box -->
-                        <div class="small-box bg-success">
-                          <div class="inner">
-                            <h3>{{ services | length }}</h3>
+                    </div>
+                    <!-- ./col -->
+                    <div class="col-12 col-sm-6 col-md-3">
+                      <!-- small box -->
+                      <div class="small-box bg-success">
+                        <div class="inner">
+                          <h3>{{ exported_count.exported_services }} / {{ services | length }}</h3>
 
-                            <p>SERVICES</p>
-                          </div>
-                          <div class="icon">
-                            <i class="fa fa-cogs"></i>
-                          </div>
-                          <a href="#services" class="small-box-footer">View <i class="fas fa-arrow-circle-down"></i></a>
+                          <p>EXPORTED SERVICES</p>
                         </div>
+                        <div class="icon">
+                          <i class="fa fa-cogs"></i>
+                        </div>
+                        <a href="#services" class="small-box-footer">View All <i class="fas fa-arrow-circle-down"></i></a>
                       </div>
-                      <!-- ./col -->
-                      <div class="col-12 col-sm-6 col-md-3">
-                        <!-- small box -->
-                        <div class="small-box bg-warning">
-                          <div class="inner">
-                            <h3>{{ receivers | length }}</h3>
+                    </div>
+                    <!-- ./col -->
+                    <div class="col-12 col-sm-6 col-md-3">
+                      <!-- small box -->
+                      <div class="small-box bg-warning">
+                        <div class="inner">
+                          <h3>{{ exported_count.exported_receivers }} / {{ receivers | length }}</h3>
 
-                            <p>RECEIVERS</p>
-                          </div>
-                          <div class="icon">
-                            <i class="fa fa-assistive-listening-systems"></i>
-                          </div>
-                          <a href="#receivers" class="small-box-footer">View <i class="fas fa-arrow-circle-down"></i></a>
+                          <p>EXPORTED RECEIVERS</p>
                         </div>
+                        <div class="icon">
+                          <i class="fa fa-assistive-listening-systems"></i>
+                        </div>
+                        <a href="#receivers" class="small-box-footer">View All <i class="fas fa-arrow-circle-down"></i></a>
                       </div>
-                      <!-- ./col -->
-                      <div class="col-12 col-sm-6 col-md-3">
-                        <!-- small box -->
-                        <div class="small-box bg-danger">
-                          <div class="inner">
-                            <h3>{{ providers | length }}</h3>
+                    </div>
+                    <!-- ./col -->
+                    <div class="col-12 col-sm-6 col-md-3">
+                      <!-- small box -->
+                      <div class="small-box bg-danger">
+                        <div class="inner">
+                          <h3>{{exported_count.exported_providers}} / {{ providers | length }}</h3>
 
-                            <p>PROVIDERS</p>
-                          </div>
-                          <div class="icon">
-                            <i class="fa fa-database"></i>
-                          </div>
-                          <a href="#providers" class="small-box-footer">View <i class="fas fa-arrow-circle-down"></i></a>
+                          <p>EXPORTED PROVIDERS</p>
                         </div>
-                      <!-- /.row -->
-                    </div><!-- /.container-fluid -->
-                        <div class="col-12 col-sm-6 col-md-3">
-                        <div class="info-box">
-                          <span class="info-box-icon bg-info elevation-1"><i class="fas fa-language"></i></span>
-
-                          <div class="info-box-content">
-                            <span class="info-box-text">Exported <br/>Activities</span>
-                            <span class="info-box-number">
-                              {{  exported_count.exported_activities }}
-                            </span>
-                          </div>
-                          <!-- /.info-box-content -->
+                        <div class="icon">
+                          <i class="fa fa-database"></i>
                         </div>
-                        <!-- /.info-box -->
+                        <a href="#providers" class="small-box-footer">View All <i class="fas fa-arrow-circle-down"></i></a>
                       </div>
-                      <!-- /.col -->
-                      <div class="col-12 col-sm-6 col-md-3">
-                        <div class="info-box mb-3">
-                          <span class="info-box-icon bg-success elevation-1"><i class="fas fa-cogs"></i></span>
-
-                          <div class="info-box-content">
-                            <span class="info-box-text">Exported <br/>Services</span>
-                            <span class="info-box-number">{{  exported_count.exported_services }}</span>
-                          </div>
-                          <!-- /.info-box-content -->
-                        </div>
-                        <!-- /.info-box -->
-                      </div>
-                      <!-- /.col -->
-
-                      <!-- fix for small devices only -->
-                      <div class="clearfix hidden-md-up"></div>
-
-                      <div class="col-12 col-sm-6 col-md-3">
-                        <div class="info-box mb-3">
-                          <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-assistive-listening-systems"></i></span>
-
-                          <div class="info-box-content">
-                            <span class="info-box-text">Exported <br/>Receivers</span>
-                            <span class="info-box-number">{{ exported_count.exported_receivers}}</span>
-                          </div>
-                          <!-- /.info-box-content -->
-                        </div>
-                        <!-- /.info-box -->
-                      </div>
-                      <!-- /.col -->
-                      <div class="col-12 col-sm-6 col-md-3">
-                        <div class="info-box mb-3">
-                          <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-database"></i></span>
-
-                          <div class="info-box-content">
-                            <span class="info-box-text">Exported <br/>Providers</span>
-                            <span class="info-box-number">{{ exported_count.exported_providers }}</span>
-                          </div>
-                          <!-- /.info-box-content -->
-                        </div>
-                        <!-- /.info-box -->
-                      </div>
-                </div>
-            </div>
+                    <!-- /.row -->
+                  </div><!-- /.container-fluid -->
+              </div>
           </div>
-
         </div>
+
       </div>
-    </div>  
-  </section>
+    </div>
+  </div>
+</section>
   <!-- =========================end information==================================== -->
 
 
