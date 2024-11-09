@@ -41,7 +41,7 @@ def download_file(url, file_path):
                     # Print progress
                     if file_size > 0:
                         done = int(50 * downloaded / file_size)
-                        fmt = (f'\r[{"#" * done}{"-" * (50-done)}] '
+                        fmt = (f'\r[{"#" * done}{"-" * (50 - done)}] '
                                f'{downloaded * 100 / file_size:.2f}%')
                         sys.stdout.write(fmt)
                         sys.stdout.flush()
