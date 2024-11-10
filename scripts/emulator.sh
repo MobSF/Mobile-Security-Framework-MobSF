@@ -41,9 +41,9 @@ fi
 
 # If no AVD_NAME is provided, list available AVDs and exit
 if [ -z "$AVD_NAME" ]; then
-  echo "$(tput bold)Available AVDs:$(tput sgr0)"
+  echo -e "$(tput bold)Available AVDs:$(tput sgr0)\n"
   "$EMULATOR_PATH" -list-avds
-  echo "$(tput bold)Use any Android AVD 5.0 - 9.0, up to API 28 without Google Play (production image).$(tput sgr0)"
+  echo -e "$(tput bold)\nUse any Android AVD 5.0 - 9.0, up to API 28 without Google Play (production image).$(tput sgr0)"
   echo "$(tput bold)Usage: $0 AVD_NAME [START_PORT] [open_gapps.zip path]$(tput sgr0)"
   echo "$(tput bold)Example: $0 Pixel_6_Pro_API_28 5554 /path/to/open_gapps.zip$(tput sgr0)"
   exit 1
@@ -68,12 +68,16 @@ done
 "$EMULATOR_PATH" -avd "$AVD_NAME" -writable-system -no-snapshot -wipe-data -port "$START_PORT" >/dev/null 2>&1 &
 echo "$(tput setaf 2)Emulator started with AVD $AVD_NAME on port $START_PORT$(tput sgr0)"
 
-# Check if socat is available
-if command -v socat >/dev/null; then
-  SOCAT_AVAILABLE=true
+# Check if socat is available only on Linux
+if [ "$(uname)" = "Linux" ]; then
+  if command -v socat >/dev/null; then
+    SOCAT_AVAILABLE=true
+  else
+    SOCAT_AVAILABLE=false
+    echo "$(tput setaf 3)Warning: socat is not installed. Skipping port forwarding with socat. This might be required for Linux.$(tput sgr0)"
+  fi
 else
   SOCAT_AVAILABLE=false
-  echo "$(tput setaf 3)Warning: socat is not installed. Skipping port forwarding with socat. This might be required for Linux.$(tput sgr0)"
 fi
 
 # Increment ports and start socat listeners if socat is available
@@ -84,8 +88,6 @@ if [ "$SOCAT_AVAILABLE" = true ]; then
   socat TCP-LISTEN:$LISTEN_PORT,fork,reuseaddr TCP:localhost:$TARGET_PORT &
   
   echo "Emulator and socat listener started on port $LISTEN_PORT forwarding to $TARGET_PORT."
-else
-  echo "Emulator started, but socat listener was not created due to missing socat."
 fi
 
 # Install Play Store if open_gapps.zip is provided
