@@ -66,7 +66,7 @@ done
 
 # Start the emulator with user-defined AVD and port
 "$EMULATOR_PATH" -avd "$AVD_NAME" -writable-system -no-snapshot -wipe-data -port "$START_PORT" >/dev/null 2>&1 &
-echo "$(tput setaf 2)Emulator started with AVD $AVD_NAME on port $START_PORT$(tput sgr0)"
+echo "$(tput setaf 2)Emulator AVD $AVD_NAME started on port $START_PORT$(tput sgr0)"
 
 # Check if socat is available only on Linux
 if [ "$(uname)" = "Linux" ]; then
