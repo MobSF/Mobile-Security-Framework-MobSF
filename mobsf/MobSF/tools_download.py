@@ -14,7 +14,8 @@ from urllib.request import (
 
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s')
+    format='[%(levelname)s] %(asctime)-15s - %(message)s',
+    datefmt='%d/%b/%Y %H:%M:%S')
 logger = logging.getLogger(__name__)
 
 
@@ -41,7 +42,7 @@ def download_file(url, file_path):
                     # Print progress
                     if file_size > 0:
                         done = int(50 * downloaded / file_size)
-                        fmt = (f'\r[{"#" * done}{"-" * (50-done)}] '
+                        fmt = (f'\r[{"#" * done}{"-" * (50 - done)}] '
                                f'{downloaded * 100 / file_size:.2f}%')
                         sys.stdout.write(fmt)
                         sys.stdout.flush()

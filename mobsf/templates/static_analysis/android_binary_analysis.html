@@ -529,14 +529,14 @@
                         <!-- small box -->
                         <div class="small-box bg-info">
                           <div class="inner">
-                            <h3>{{ activities | length }}</h3>
+                            <h3> {{ exported_count.exported_activities }} / {{ activities | length }}</h3>
 
-                            <p>ACTIVITIES</p>
+                            <p>EXPORTED ACTIVITIES</p>
                           </div>
                           <div class="icon">
                             <i class="fa fa-language"></i>
                           </div>
-                          <a href="#activities" class="small-box-footer">View <i class="fas fa-arrow-circle-down"></i></a>
+                          <a href="#activities" class="small-box-footer">View All <i class="fas fa-arrow-circle-down"></i></a>
                         </div>
                       </div>
                       <!-- ./col -->
@@ -544,14 +544,14 @@
                         <!-- small box -->
                         <div class="small-box bg-success">
                           <div class="inner">
-                            <h3>{{ services | length }}</h3>
+                            <h3>{{ exported_count.exported_services }} / {{ services | length }}</h3>
 
-                            <p>SERVICES</p>
+                            <p>EXPORTED SERVICES</p>
                           </div>
                           <div class="icon">
                             <i class="fa fa-cogs"></i>
                           </div>
-                          <a href="#services" class="small-box-footer">View <i class="fas fa-arrow-circle-down"></i></a>
+                          <a href="#services" class="small-box-footer">View All <i class="fas fa-arrow-circle-down"></i></a>
                         </div>
                       </div>
                       <!-- ./col -->
@@ -559,14 +559,14 @@
                         <!-- small box -->
                         <div class="small-box bg-warning">
                           <div class="inner">
-                            <h3>{{ receivers | length }}</h3>
+                            <h3>{{ exported_count.exported_receivers }} / {{ receivers | length }}</h3>
 
-                            <p>RECEIVERS</p>
+                            <p>EXPORTED RECEIVERS</p>
                           </div>
                           <div class="icon">
                             <i class="fa fa-assistive-listening-systems"></i>
                           </div>
-                          <a href="#receivers" class="small-box-footer">View <i class="fas fa-arrow-circle-down"></i></a>
+                          <a href="#receivers" class="small-box-footer">View All <i class="fas fa-arrow-circle-down"></i></a>
                         </div>
                       </div>
                       <!-- ./col -->
@@ -574,74 +574,17 @@
                         <!-- small box -->
                         <div class="small-box bg-danger">
                           <div class="inner">
-                            <h3>{{ providers | length }}</h3>
+                            <h3>{{exported_count.exported_providers}} / {{ providers | length }}</h3>
 
-                            <p>PROVIDERS</p>
+                            <p>EXPORTED PROVIDERS</p>
                           </div>
                           <div class="icon">
                             <i class="fa fa-database"></i>
                           </div>
-                          <a href="#providers" class="small-box-footer">View <i class="fas fa-arrow-circle-down"></i></a>
+                          <a href="#providers" class="small-box-footer">View All <i class="fas fa-arrow-circle-down"></i></a>
                         </div>
                       <!-- /.row -->
                     </div><!-- /.container-fluid -->
-                        <div class="col-12 col-sm-6 col-md-3">
-                        <div class="info-box">
-                          <span class="info-box-icon bg-info elevation-1"><i class="fas fa-language"></i></span>
-
-                          <div class="info-box-content">
-                            <span class="info-box-text">Exported <br/>Activities</span>
-                            <span class="info-box-number">
-                              {{ exported_count.exported_activities }}
-                            </span>
-                          </div>
-                          <!-- /.info-box-content -->
-                        </div>
-                        <!-- /.info-box -->
-                      </div>
-                      <!-- /.col -->
-                      <div class="col-12 col-sm-6 col-md-3">
-                        <div class="info-box mb-3">
-                          <span class="info-box-icon bg-success elevation-1"><i class="fas fa-cogs"></i></span>
-
-                          <div class="info-box-content">
-                            <span class="info-box-text">Exported <br/>Services</span>
-                            <span class="info-box-number">{{ exported_count.exported_services }}</span>
-                          </div>
-                          <!-- /.info-box-content -->
-                        </div>
-                        <!-- /.info-box -->
-                      </div>
-                      <!-- /.col -->
-
-                      <!-- fix for small devices only -->
-                      <div class="clearfix hidden-md-up"></div>
-
-                      <div class="col-12 col-sm-6 col-md-3">
-                        <div class="info-box mb-3">
-                          <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-assistive-listening-systems"></i></span>
-
-                          <div class="info-box-content">
-                            <span class="info-box-text">Exported <br/>Receivers</span>
-                            <span class="info-box-number">{{ exported_count.exported_receivers }}</span>
-                          </div>
-                          <!-- /.info-box-content -->
-                        </div>
-                        <!-- /.info-box -->
-                      </div>
-                      <!-- /.col -->
-                      <div class="col-12 col-sm-6 col-md-3">
-                        <div class="info-box mb-3">
-                          <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-database"></i></span>
-
-                          <div class="info-box-content">
-                            <span class="info-box-text">Exported <br/>Providers</span>
-                            <span class="info-box-number">{{exported_count.exported_providers}}</span>
-                          </div>
-                          <!-- /.info-box-content -->
-                        </div>
-                        <!-- /.info-box -->
-                      </div>
                 </div>
             </div>
           </div>
@@ -2234,7 +2177,7 @@
              </p>
                <div class="list-group">
                   <p>
-                    {% include 'base/list.html' with list=activities type="activities" limit=50 %}            
+                    {% include 'base/list_href.html' with list=activities type="activities" limit=50 %}            
                   </p>
               </div>
             </div>
@@ -2257,7 +2200,7 @@
              </p>
                <div class="list-group">
                   <p>
-                    {% include 'base/list.html' with list=services type="services" limit=50 %}
+                    {% include 'base/list_href.html' with list=services type="services" limit=50 %}
                   </p>
               </div>
             </div>
@@ -2280,7 +2223,7 @@
              </p>
                <div class="list-group">
                   <p>
-                    {% include 'base/list.html' with list=receivers type="receivers" limit=50 %}
+                    {% include 'base/list_href.html' with list=receivers type="receivers" limit=50 %}
                   </p>
               </div>
             </div>
@@ -2304,7 +2247,7 @@
              </p>
                <div class="list-group">
                   <p>
-                    {% include 'base/list.html' with list=providers type="providers" limit=50 %}
+                    {% include 'base/list_href.html' with list=providers type="providers" limit=50 %}
                   </p>
               </div>
             </div>

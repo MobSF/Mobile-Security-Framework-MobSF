@@ -752,6 +752,11 @@ def replace(value, arg):
     return value.replace(what, to)
 
 
+def pathify(value):
+    """Convert to path."""
+    return value.replace('.', '/')
+
+
 def relative_path(value):
     """Show relative path to two parents."""
     sep = None
