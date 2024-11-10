@@ -74,7 +74,7 @@ if [ "$(uname)" = "Linux" ]; then
     SOCAT_AVAILABLE=true
   else
     SOCAT_AVAILABLE=false
-    echo "$(tput setaf 3)Warning: socat is not installed. Skipping port forwarding with socat. This might be required for Linux.$(tput sgr0)"
+    echo "$(tput setaf 3)Warning: socat is not installed. Skipping port forwarding with socat. This might be required for docker in Linux.$(tput sgr0)"
   fi
 else
   SOCAT_AVAILABLE=false
@@ -84,10 +84,16 @@ fi
 if [ "$SOCAT_AVAILABLE" = true ]; then
   LISTEN_PORT=$((START_PORT + 2))
   TARGET_PORT=$((START_PORT + 1))
+  # Remove all previous forwards
+  for pid in $(lsof -t -i TCP:$LISTEN_PORT -sTCP:LISTEN -c socat); do
+    echo "Killing socat process on port $LISTEN_PORT with PID $pid"
+    kill -9 "$pid"
+  done
   # Start a single socat listener
   socat TCP-LISTEN:$LISTEN_PORT,fork,reuseaddr TCP:localhost:$TARGET_PORT &
   
-  echo "Emulator and socat listener started on port $LISTEN_PORT forwarding to $TARGET_PORT."
+  echo "socat listener started on port $LISTEN_PORT forwarding to $TARGET_PORT in the host."
+  echo "$(tput bold)Docker users please set the environment variable MOBSF_ANALYZER_IDENTIFIER=host.docker.internal:$LISTEN_PORT for adb connectivity.$(tput sgr0)"
 fi
 
 # Install Play Store if open_gapps.zip is provided
@@ -115,7 +121,7 @@ if [ -n "$GAPPS_ZIP" ]; then
   rm $PLAY_EXTRACT_DIR/Core/setup*
   lzip -d $PLAY_EXTRACT_DIR/Core/*.lz || { echo "$(tput setaf 1)Error: Decompression failed$(tput sgr0)"; exit 1; }
   for f in $(ls $PLAY_EXTRACT_DIR/Core/*.tar); do
-      tar -x --strip-components 2 -f $f -C $PLAY_EXTRACT_DIR || { echo "$(tput setaf 1)Error: Extraction failed$(tput sgr0)"; exit 1; }
+    tar -x --strip-components 2 -f $f -C $PLAY_EXTRACT_DIR || { echo "$(tput setaf 1)Error: Extraction failed$(tput sgr0)"; exit 1; }
   done
 
   echo "Waiting for emulator to complete booting..."
