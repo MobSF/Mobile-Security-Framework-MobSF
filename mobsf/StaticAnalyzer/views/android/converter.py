@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import threading
 import stat
+from pathlib import Path
 
 from django.conf import settings
 
@@ -107,10 +108,30 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
             app_path,
         ]
         fnull = open(os.devnull, 'w')
-        subprocess.run(args,
-                       stdout=fnull,
-                       stderr=subprocess.STDOUT,
-                       timeout=settings.JADX_TIMEOUT)
+        result = subprocess.run(args,
+                                stdout=fnull,
+                                stderr=subprocess.STDOUT,
+                                timeout=settings.JADX_TIMEOUT)
+        if result.returncode == 0:
+            return
+        msg = 'Decompiling with jadx on APK failed, looking for DEX file'
+        logger.warning(msg)
+        append_scan_status(checksum, msg)
+        dex = Path(app_path).parent / 'classes.dex'
+        if not dex.exists():
+            msg = 'classes.dex not found'
+            logger.warning(msg)
+            append_scan_status(checksum, msg)
+            return
+        args[-1] = dex.as_posix()
+        result2 = subprocess.run(args,
+                                 stdout=fnull,
+                                 stderr=subprocess.STDOUT,
+                                 timeout=settings.JADX_TIMEOUT)
+        if result2.returncode != 0:
+            msg = 'Decompiling with jadx on DEX failed'
+            logger.error(msg)
+            append_scan_status(checksum, msg)
     except subprocess.TimeoutExpired as exp:
         msg = 'Decompiling with jadx timed out'
         logger.warning(msg)
