@@ -115,7 +115,7 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
             timeout=settings.JADX_TIMEOUT)
         if result.returncode == 0:
             return
-        msg = 'Decompiling with jadx on APK failed, looking for DEX file'
+        msg = 'Decompiling with jadx failed, attempting on DEX file'
         logger.warning(msg)
         append_scan_status(checksum, msg)
         dex = Path(app_path).parent / 'classes.dex'

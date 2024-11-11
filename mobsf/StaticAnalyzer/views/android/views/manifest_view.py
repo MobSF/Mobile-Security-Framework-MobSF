@@ -39,7 +39,8 @@ def run(request, checksum):
                 app_dir,
                 app_path,
                 tools_dir,
-                typ)
+                typ,
+                None)
             mfile = Path(manifest_file)
             if mfile.exists():
                 manifest = mfile.read_text('utf-8', 'ignore')
