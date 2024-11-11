@@ -104,6 +104,9 @@ def code_analysis(checksum, app_dir, typ, manifest_file, android_permissions):
             {'.java', '.kt'},
             [src],
             skp)
+        msg = 'Android API Analysis Completed'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         # Permission Mapping
         rule_file = get_perm_rules(checksum, perm_rules, android_permissions)
         if rule_file:

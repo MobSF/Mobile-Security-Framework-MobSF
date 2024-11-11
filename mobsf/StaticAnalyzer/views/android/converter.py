@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import threading
 import stat
+from pathlib import Path
 
 from django.conf import settings
 
@@ -71,51 +72,84 @@ def dex_2_smali(checksum, app_dir, tools_dir):
 
 
 def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
-    """Run jadx."""
+    """Run JADX to decompile APK or all DEX files to Java source code."""
     try:
         jadx_version = '1.5.0'
-        jadx_path = f'jadx/jadx-{jadx_version}/bin/'
-        msg = 'Decompiling APK to Java with jadx'
+        jadx_base_path = Path(dwd_tools_dir) / 'jadx' / f'jadx-{jadx_version}' / 'bin'
+        output_dir = Path(app_dir) / 'java_source'
+
+        msg = 'Decompiling APK to Java with JADX'
         logger.info(msg)
         append_scan_status(checksum, msg)
-        args = []
-        output = os.path.join(app_dir, 'java_source/')
 
-        if os.path.exists(output):
-            # ignore WinError3 in Windows
-            shutil.rmtree(output, ignore_errors=True)
+        # Clean output directory if it exists
+        if output_dir.exists():
+            shutil.rmtree(output_dir, ignore_errors=True)
 
+        # Determine JADX executable path
         if (len(settings.JADX_BINARY) > 0
                 and is_file_exists(settings.JADX_BINARY)):
-            jadx = settings.JADX_BINARY
+            jadx = Path(settings.JADX_BINARY)
         elif platform.system() == 'Windows':
-            jadx = os.path.join(
-                dwd_tools_dir, f'{jadx_path}jadx.bat')
+            jadx = jadx_base_path / 'jadx.bat'
         else:
-            jadx = os.path.join(
-                dwd_tools_dir, f'{jadx_path}jadx')
-        # Set execute permission, if JADX is not executable
-        if not os.access(jadx, os.X_OK):
-            os.chmod(jadx, stat.S_IEXEC)
+            jadx = jadx_base_path / 'jadx'
+
+        # Ensure JADX has execute permissions
+        if not os.access(str(jadx), os.X_OK):
+            os.chmod(str(jadx), stat.S_IEXEC)
+
+        # Prepare the base arguments for JADX
+        def run_jadx(arguments):
+            """Run JADX command with the specified arguments."""
+            with open(os.devnull, 'w') as fnull:
+                return subprocess.run(
+                    arguments,
+                    stdout=fnull,
+                    stderr=subprocess.STDOUT,
+                    timeout=settings.JADX_TIMEOUT)
+
+        # First attempt to decompile APK
         args = [
-            jadx,
-            '-ds',
-            output,
-            '-q',
-            '-r',
-            '--show-bad-code',
-            app_path,
-        ]
-        fnull = open(os.devnull, 'w')
-        subprocess.run(args,
-                       stdout=fnull,
-                       stderr=subprocess.STDOUT,
-                       timeout=settings.JADX_TIMEOUT)
+            str(jadx), '-ds', str(output_dir),
+            '-q', '-r', '--show-bad-code', app_path]
+        result = run_jadx(args)
+        if result.returncode == 0:
+            return  # Success
+
+        # If APK decompilation fails, attempt to decompile all DEX files recursively
+        msg = 'Decompiling with JADX failed, attempting on all DEX files'
+        logger.warning(msg)
+        append_scan_status(checksum, msg)
+
+        dex_files = Path(app_path).parent.rglob('*.dex')
+        decompile_failed = False
+
+        for dex_file in dex_files:
+            msg = f'Decompiling {dex_file.name} with JADX'
+            logger.info(msg)
+            append_scan_status(checksum, msg)
+
+            # Update argument to point to the current DEX file
+            args[-1] = str(dex_file)
+            result_dex = run_jadx(args)
+
+            if result_dex.returncode != 0:
+                decompile_failed = True
+                msg = f'Decompiling with JADX failed for {dex_file.name}'
+                logger.error(msg)
+                append_scan_status(checksum, msg)
+
+        if decompile_failed:
+            msg = 'Some DEX files failed to decompile'
+            logger.error(msg)
+            append_scan_status(checksum, msg)
+
     except subprocess.TimeoutExpired as exp:
-        msg = 'Decompiling with jadx timed out'
+        msg = 'Decompiling with JADX timed out'
         logger.warning(msg)
         append_scan_status(checksum, msg, repr(exp))
     except Exception as exp:
-        msg = 'Decompiling with jadx failed'
+        msg = 'Decompiling with JADX failed'
         logger.exception(msg)
         append_scan_status(checksum, msg, repr(exp))

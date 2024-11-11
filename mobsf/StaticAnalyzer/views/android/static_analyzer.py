@@ -214,16 +214,6 @@ def static_analyzer(request, checksum, api=False):
                 app_dic['certz'] = get_hardcoded_cert_keystore(
                     checksum,
                     app_dic['files'])
-                # Manifest XML
-                mani_file, ns, mani_xml = get_manifest(
-                    checksum,
-                    app_dic['app_path'],
-                    app_dic['app_dir'],
-                    app_dic['tools_dir'],
-                    APK_TYPE,
-                )
-                app_dic['manifest_file'] = mani_file
-                app_dic['parsed_xml'] = mani_xml
                 # Parse APK with Androguard
                 apk = parse_apk(
                     checksum,
@@ -234,6 +224,17 @@ def static_analyzer(request, checksum, api=False):
                     app_dic['app_dir'],
                     True,
                 )
+                # Manifest XML
+                mani_file, ns, mani_xml = get_manifest(
+                    checksum,
+                    app_dic['app_path'],
+                    app_dic['app_dir'],
+                    app_dic['tools_dir'],
+                    APK_TYPE,
+                    apk,
+                )
+                app_dic['manifest_file'] = mani_file
+                app_dic['parsed_xml'] = mani_xml
                 # Manifest data extraction
                 man_data_dic = manifest_data(
                     checksum,
@@ -424,6 +425,12 @@ def static_analyzer(request, checksum, api=False):
                     app_dic['certz'] = get_hardcoded_cert_keystore(
                         checksum,
                         app_dic['files'])
+                    # get app_name
+                    app_dic['real_name'] = get_app_name(
+                        app_dic['app_path'],
+                        app_dic['app_dir'],
+                        False,
+                    )
                     # Manifest XML
                     mani_file, ns, mani_xml = get_manifest(
                         checksum,
@@ -431,15 +438,10 @@ def static_analyzer(request, checksum, api=False):
                         app_dic['app_dir'],
                         app_dic['tools_dir'],
                         pro_type,
+                        None,
                     )
                     app_dic['manifest_file'] = mani_file
                     app_dic['parsed_xml'] = mani_xml
-                    # get app_name
-                    app_dic['real_name'] = get_app_name(
-                        app_dic['app_path'],
-                        app_dic['app_dir'],
-                        False,
-                    )
                     # Get manifest data
                     man_data_dic = manifest_data(
                         checksum,

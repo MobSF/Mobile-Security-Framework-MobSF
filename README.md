@@ -1,5 +1,4 @@
 # Mobile Security Framework (MobSF)
-Version: v4.1
 
 ![](https://cloud.githubusercontent.com/assets/4301109/20019521/cc61f7fc-a2f2-11e6-95f3-407030d9fdde.png)
 
@@ -7,12 +6,10 @@ Mobile Security Framework (MobSF) is a security research platform for mobile app
 
 Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82e3a63c-4813-11e6-9430-6015d98aeaab.png) in India
 
-[![python](https://img.shields.io/badge/python-3.10+-blue.svg?logo=python&labelColor=yellow)](https://www.python.org/downloads/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/opensecurity/mobile-security-framework-mobsf?style=social)](https://hub.docker.com/r/opensecurity/mobile-security-framework-mobsf/) [![python](https://img.shields.io/badge/python-3.10+-blue.svg?logo=python&labelColor=yellow)](https://www.python.org/downloads/)
 [![PyPI version](https://badge.fury.io/py/mobsf.svg)](https://badge.fury.io/py/mobsf)
 [![platform](https://img.shields.io/badge/platform-osx%2Flinux%2Fwindows-green.svg)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/)
 [![License](https://img.shields.io/:license-GPL--3.0--only-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
-[![Docker Pulls](https://img.shields.io/docker/pulls/opensecurity/mobile-security-framework-mobsf?style=social)](https://hub.docker.com/r/opensecurity/mobile-security-framework-mobsf/)
-
 [![MobSF tests](https://github.com/MobSF/Mobile-Security-Framework-MobSF/workflows/MobSF%20tests/badge.svg?branch=master)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/actions)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=MobSF_Mobile-Security-Framework-MobSF&metric=alert_status)](https://sonarcloud.io/dashboard?id=MobSF_Mobile-Security-Framework-MobSF)
 ![GitHub closed issues](https://img.shields.io/github/issues-closed/MobSF/Mobile-Security-Framework-MobSF)
@@ -32,13 +29,14 @@ MobSF is also bundled with [Android Tamer](https://tamerplatform.com), [BlackArc
 
 [![Donate to MobSF](https://user-images.githubusercontent.com/4301109/117404264-7aab5480-aebe-11eb-9cbd-da82d7346bb3.png)](https://opensecurity.in/donate)
 
-If you liked MobSF and find it useful, please consider donating.
 
-*It's easy to build open source, maintaining one is a different story. Long live open source!*
+> Has MobSF made a difference for you? Show your support and help us innovate with a donation. It's easy to build open source, maintaining one is a different story. 
+
+*Long live open source!*
 
 ## Documentation
 
-Quick setup
+Quick setup with docker
 
 ```
 docker pull opensecurity/mobile-security-framework-mobsf:latest
@@ -46,9 +44,6 @@ docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:la
 ```
 
 [![See MobSF Documentation](https://user-images.githubusercontent.com/4301109/70686099-3855f780-1c79-11ea-8141-899e39459da2.png)](https://mobsf.github.io/docs)
-[![See MobSF Documentation in Chinese](https://user-images.githubusercontent.com/4301109/117404947-b09d0880-aebf-11eb-9db8-3d7360f47914.png)](https://mobsf.github.io/docs/#/zh-cn/)
-[![See MobSF Documentation in Japanese](https://user-images.githubusercontent.com/4301109/148662149-7ee671b4-66a2-4232-9522-276b8e88d924.png)](https://mobsf.github.io/docs/#/ja-jp/)
-[![See MobSF Documentation in Español](https://user-images.githubusercontent.com/4301109/173221657-ac1f7221-6ae9-44d8-bf6b-8732d84bf120.png)](https://mobsf.github.io/docs/#/es/)
 
 * Try MobSF Static Analyzer Online: [mobsf.live](https://mobsf.live)
 * MobSF in CI/CD: [mobsfscan](https://github.com/MobSF/mobsfscan)
@@ -101,7 +96,7 @@ docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:la
 
 * [Dominik Schlecht](https://github.com/sn0b4ll) ![germany](https://user-images.githubusercontent.com/4301109/37564176-743238ba-2ab6-11e8-9666-5d98f0a1d127.png)
 
-## Honorable Contributors
+## Honorable Contributors & Shoutouts
 
 * Amrutha VC - For the new MobSF logo
 * Dominik Schlecht - For the awesome work on adding Windows Phone App Static Analysis to MobSF
@@ -111,9 +106,6 @@ docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:la
 * Abhinav Saxena - (@xandfury) - For Travis CI and Logging integration
 * ![netguru](https://user-images.githubusercontent.com/4301109/76340877-a3dc4f00-62d2-11ea-8631-b4cc8d9e42ed.png) [Netguru](https://www.netguru.com/) (@karolpiateknet, @mtbrzeski) - For iOS Swift support, Rule contributions and SAST refactoring.
 * Maxime Fawe - (@Arenash13) - For Matching Strategy implementation of SAST pattern matching algorithms.
-
-## Shoutouts
-
 * Abhinav Sejpal (@Abhinav_Sejpal) - For poking me with bugs, feature requests, and UI & UX suggestions
 * Anant Srivastava (@anantshri) - For Activity Tester Idea
 * Anto Joseph (@antojoseph) - For the help with SuperSU

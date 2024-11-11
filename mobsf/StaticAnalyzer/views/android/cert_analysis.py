@@ -152,8 +152,8 @@ def get_signature_versions(checksum, app_path, tools_dir, signed):
         if re.findall(r'\(APK Signature Scheme v4\): true', out):
             v4 = True
     except Exception as exp:
-        msg = 'Failed to get signature versions'
-        logger.exception(msg)
+        msg = 'Failed to get signature versions with apksigner'
+        logger.error(msg)
         append_scan_status(checksum, msg, repr(exp))
     return v1, v2, v3, v4
 
@@ -166,18 +166,30 @@ def apksigtool_cert(checksum, apk_path, tools_dir):
     signed = False
     certs_no = 0
     min_sdk = None
+    av1, av2, av3, av4 = None, None, None, None
     try:
         from apksigtool import (
             APKSignatureSchemeBlock,
             extract_v2_sig,
             parse_apk_signing_block,
         )
+        from apksigcopier import (
+            extract_meta,
+        )
+        meta = extract_meta(apk_path)
+        sig_files = [x.filename for x, _ in meta]
+        if sig_files:
+            av1 = True
+        else:
+            av1 = False
         _, sig_block = extract_v2_sig(apk_path)
         for pair in parse_apk_signing_block(sig_block).pairs:
             b = pair.value
             if isinstance(b, APKSignatureSchemeBlock):
                 signed = True
                 for signer in b.signers:
+                    av2 = b.is_v2()
+                    av3 = b.is_v3()
                     if b.is_v3():
                         min_sdk = signer.min_sdk
                     certs_no = len(signer.signed_data.certificates)
@@ -200,6 +212,10 @@ def apksigtool_cert(checksum, apk_path, tools_dir):
             apk_path,
             tools_dir,
             signed)
+        if signed and not (v1 or v2 or v3 or v4):
+            # apksigner.jar failed to get signature versions
+            logger.info('Fetching signature versions with apksigtool')
+            v1, v2, v3, v4 = av1, av2, av3, av4
         certlist.append(f'v1 signature: {v1}')
         certlist.append(f'v2 signature: {v2}')
         certlist.append(f'v3 signature: {v3}')
@@ -238,6 +254,10 @@ def get_cert_data(checksum, a, app_path, tools_dir):
         app_path,
         tools_dir,
         signed)
+    if signed and not (v1 or v2 or v3 or v4):
+        # apksigner.jar failed to get signature versions
+        logger.info('Fetching signature versions with androguard')
+        v1, v2, v3, v4 = a.is_signed_v1(), a.is_signed_v2(), a.is_signed_v3(), None
     certlist.append(f'v1 signature: {v1}')
     certlist.append(f'v2 signature: {v2}')
     certlist.append(f'v3 signature: {v3}')
