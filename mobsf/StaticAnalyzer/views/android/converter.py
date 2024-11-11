@@ -111,12 +111,8 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
 
         # First attempt to decompile APK
         args = [
-            str(jadx),
-            '-ds',
-            str(output_dir),
-            '-q',
-            '-r',
-            '--show-bad-code', app_path]
+            str(jadx), '-ds', str(output_dir),
+            '-q', '-r', '--show-bad-code', app_path]
         result = run_jadx(args)
         if result.returncode == 0:
             return  # Success
