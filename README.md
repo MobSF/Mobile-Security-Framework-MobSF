@@ -1,5 +1,4 @@
 # Mobile Security Framework (MobSF)
-Version: v4.1
 
 ![](https://cloud.githubusercontent.com/assets/4301109/20019521/cc61f7fc-a2f2-11e6-95f3-407030d9fdde.png)
 
@@ -46,9 +45,6 @@ docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:la
 ```
 
 [![See MobSF Documentation](https://user-images.githubusercontent.com/4301109/70686099-3855f780-1c79-11ea-8141-899e39459da2.png)](https://mobsf.github.io/docs)
-[![See MobSF Documentation in Chinese](https://user-images.githubusercontent.com/4301109/117404947-b09d0880-aebf-11eb-9db8-3d7360f47914.png)](https://mobsf.github.io/docs/#/zh-cn/)
-[![See MobSF Documentation in Japanese](https://user-images.githubusercontent.com/4301109/148662149-7ee671b4-66a2-4232-9522-276b8e88d924.png)](https://mobsf.github.io/docs/#/ja-jp/)
-[![See MobSF Documentation in Español](https://user-images.githubusercontent.com/4301109/173221657-ac1f7221-6ae9-44d8-bf6b-8732d84bf120.png)](https://mobsf.github.io/docs/#/es/)
 
 * Try MobSF Static Analyzer Online: [mobsf.live](https://mobsf.live)
 * MobSF in CI/CD: [mobsfscan](https://github.com/MobSF/mobsfscan)
