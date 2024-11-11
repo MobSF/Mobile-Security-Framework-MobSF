@@ -108,10 +108,11 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
             app_path,
         ]
         fnull = open(os.devnull, 'w')
-        result = subprocess.run(args,
-                                stdout=fnull,
-                                stderr=subprocess.STDOUT,
-                                timeout=settings.JADX_TIMEOUT)
+        result = subprocess.run(
+            args,
+            stdout=fnull,
+            stderr=subprocess.STDOUT,
+            timeout=settings.JADX_TIMEOUT)
         if result.returncode == 0:
             return
         msg = 'Decompiling with jadx on APK failed, looking for DEX file'
@@ -124,10 +125,11 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
             append_scan_status(checksum, msg)
             return
         args[-1] = dex.as_posix()
-        result2 = subprocess.run(args,
-                                 stdout=fnull,
-                                 stderr=subprocess.STDOUT,
-                                 timeout=settings.JADX_TIMEOUT)
+        result2 = subprocess.run(
+            args,
+            stdout=fnull,
+            stderr=subprocess.STDOUT,
+            timeout=settings.JADX_TIMEOUT)
         if result2.returncode != 0:
             msg = 'Decompiling with jadx on DEX failed'
             logger.error(msg)

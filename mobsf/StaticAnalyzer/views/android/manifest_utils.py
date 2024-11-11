@@ -31,7 +31,7 @@ ANDROID_8_0_LEVEL = 26
 ANDROID_MANIFEST_FILE = 'AndroidManifest.xml'
 
 
-def get_manifest_file(app_dir, app_path, tools_dir, typ):
+def get_manifest_file(app_dir, app_path, tools_dir, typ, apk):
     """Read the manifest file."""
     try:
         manifest = ''
@@ -40,7 +40,7 @@ def get_manifest_file(app_dir, app_path, tools_dir, typ):
             manifest = os.path.join(app_dir, ANDROID_MANIFEST_FILE)
         elif typ == 'apk':
             logger.info('Getting AndroidManifest.xml from APK')
-            manifest = get_manifest_apk(app_path, app_dir, tools_dir)
+            manifest = get_manifest_apk(app_path, app_dir, tools_dir, apk)
         else:
             logger.info('Getting AndroidManifest.xml from Source Code')
             if typ == 'eclipse':
@@ -54,7 +54,21 @@ def get_manifest_file(app_dir, app_path, tools_dir, typ):
         logger.exception('Getting AndroidManifest.xml file')
 
 
-def get_manifest_apk(app_path, app_dir, tools_dir):
+def get_android_manifest_androguard(apk, app_dir):
+    """Get AndroidManifest.xml using Androguard."""
+    try:
+        logger.info('Extracting AndroidManifest.xml with Androguard')
+        manifest = apk.get_android_manifest_axml()
+        if not manifest:
+            return
+        manifest_file = Path(app_dir) / 'apktool_out' / ANDROID_MANIFEST_FILE
+        manifest_file.write_bytes(manifest.get_xml())
+    except Exception:
+        logger.exception('Error Extracting AndroidManifest.xml with Androguard')
+    return None
+
+
+def get_manifest_apk(app_path, app_dir, tools_dir, apk):
     """Get readable AndroidManifest.xml.
 
     Should be called before get_icon_apk() function
@@ -83,7 +97,11 @@ def get_manifest_apk(app_path, app_dir, tools_dir):
             # APKTool already created readable XML
             return manifest
         logger.info('Converting AXML to XML')
-        subprocess.check_output(args)  # User input is MD5 and validated
+        subprocess.check_output(args)
+    except subprocess.CalledProcessError:
+        # APK tool failed
+        logger.warning('apktool failed to extract AndroidManifest.xml')
+        get_android_manifest_androguard(apk, app_dir)
     except Exception:
         logger.exception('Getting Manifest file')
     return manifest
@@ -120,7 +138,7 @@ def bs4_xml_parser(xml_str):
     return None
 
 
-def get_manifest(checksum, app_path, app_dir, tools_dir, typ):
+def get_manifest(checksum, app_path, app_dir, tools_dir, typ, apk):
     """Get the manifest file."""
     try:
         ns = 'android'
@@ -128,7 +146,8 @@ def get_manifest(checksum, app_path, app_dir, tools_dir, typ):
             app_dir,
             app_path,
             tools_dir,
-            typ)
+            typ,
+            apk)
         mfile = Path(manifest_file)
         if not mfile.exists():
             logger.warning('apktool failed to extract '

@@ -114,6 +114,7 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
                 app_dic['app_dir'],
                 app_dic['tools_dir'],
                 'aar',
+                apk,
             )
             app_dic['manifest_file'] = mani_file
             app_dic['ns'] = ns
