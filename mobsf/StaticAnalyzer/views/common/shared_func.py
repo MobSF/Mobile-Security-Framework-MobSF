@@ -93,15 +93,15 @@ def unzip(checksum, app_path, ext_path):
                 zipptr.extract(filename, ext_path)
         return files
     except Exception as exp:
-        msg = 'Unzipping Error'
-        logger.exception(msg)
+        msg = f'Unzipping Error - {str(exp)}'
+        logger.error(msg)
         append_scan_status(checksum, msg, repr(exp))
         if platform.system() == 'Windows':
             msg = 'Unzipping Error. Not yet implemented in Windows'
             logger.warning(msg)
             append_scan_status(checksum, msg)
         else:
-            msg = 'Unzipping Error. Trying with OS unzip utility'
+            msg = 'Attempting to unzip with OS unzip utility'
             logger.info(msg)
             append_scan_status(checksum, msg)
             try:
