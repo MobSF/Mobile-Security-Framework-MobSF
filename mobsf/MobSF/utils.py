@@ -969,18 +969,15 @@ def run_with_timeout(func, limit, *args, **kwargs):
 
 
 def set_permissions(path):
-    # Convert the path to a Path object
     base_path = Path(path)
     perm_755 = stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH
     perm_644 = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
     # Set permissions for directories and files
-    for item in base_path.rglob('*'):  # Recursively go through all items
+    for item in base_path.rglob('*'):
         try:
             if item.is_dir():
-                # Set permissions for directories to 755
                 item.chmod(perm_755)
             elif item.is_file():
-                # Set permissions for files to 644
                 item.chmod(perm_644)
         except Exception:
             pass
