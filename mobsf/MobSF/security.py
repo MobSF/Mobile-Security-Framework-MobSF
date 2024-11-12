@@ -2,6 +2,7 @@
 import subprocess
 import functools
 import logging
+import re
 import sys
 from shutil import which
 from pathlib import Path
@@ -209,3 +210,11 @@ def sanitize_redirect(url):
     elif url.startswith('/'):
         return url
     return root
+
+
+def sanitize_filename(filename):
+    """Sanitize Filename."""
+    # Remove any characters
+    # that are not alphanumeric, hyphens, underscores, or dots
+    safe_filename = re.sub(r'[^a-zA-Z0-9._-]', '_', filename)
+    return safe_filename
