@@ -58,6 +58,9 @@ def get_android_manifest_androguard(apk, app_dir):
     """Get AndroidManifest.xml using Androguard."""
     try:
         logger.info('Extracting AndroidManifest.xml with Androguard')
+        if not apk:
+            logger.warning('Androgaurd APK parsing failed')
+            return
         manifest = apk.get_android_manifest_axml()
         if not manifest:
             return

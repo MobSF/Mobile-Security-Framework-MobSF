@@ -30,6 +30,7 @@ from mobsf.MobSF.utils import (
     is_path_traversal,
     is_safe_path,
     print_n_send_error_response,
+    set_permissions,
 )
 from mobsf.MobSF.views.scanning import (
     add_to_recent_scan,
@@ -108,6 +109,9 @@ def unzip(checksum, app_path, ext_path):
                 unzip_b = shutil.which('unzip')
                 subprocess.call(
                     [unzip_b, '-o', '-q', app_path, '-d', ext_path])
+                # Set permissions, packed files
+                # may not have proper permissions
+                set_permissions(ext_path)
                 dat = subprocess.check_output([unzip_b, '-qq', '-l', app_path])
                 dat = dat.decode('utf-8').split('\n')
                 files_det = ['Length   Date   Time   Name']

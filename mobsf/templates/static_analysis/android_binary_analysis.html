@@ -184,6 +184,12 @@
               </p>
             </a>
             <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="#malware_lookup" class="nav-link">
+                  <i class="fa fa-ban nav-icon"></i>
+                  <p>Malware Lookup</p>
+                </a>
+              </li>
               {% if app_type not in 'so' %}
               <li class="nav-item">
                 <a href="#apkid" class="nav-link">
@@ -206,12 +212,14 @@
                 </a>
               </li>
               {% endif %}
+              {% if app_type not in 'so' %}
               <li class="nav-item">
                 <a href="#malware_permissions" class="nav-link">
                   <i class="fa fa-braille nav-icon"></i>
                   <p>Abused Permissions</p>
                 </a>
               </li>
+              {% endif %}
               <li class="nav-item">
                 <a href="#serverlocations" class="nav-link">
                   <i class="fas fa-globe-asia nav-icon"></i>
@@ -1511,6 +1519,7 @@
     </div>
 </section>
  <!-- ===========================end file analysis ================================== -->
+ {% endif %}
  <a id="firebase" class="anchor"></a>
  <section class="content">
    <div class="container-fluid">
@@ -1559,7 +1568,56 @@
      </div>
  </section>
   <!-- ===========================end firebase db analysis ================================== -->
- 
+ <!---Malware Analysis Section-->
+ <a id="malware_lookup" class="anchor"></a>
+ <section class="content">
+   <div class="container-fluid">
+     <div class="row">
+         <div class="col-lg-12">
+         <div class="card">
+           <div class="card-body">
+             <p>
+              <strong><i class="fa fa-ban"></i> MALWARE LOOKUP</strong>
+              </p>
+                <div class="table-responsive">
+               <div class="row">
+                <div class="col-sm-3 col-6">
+                <div class="description-block border-right">
+                <span class="text-danger"><a href="https://www.virustotal.com/gui/file/{{ sha256 }}" target="_blank" rel="noopener"><i class="fa fa-eye"></i> VirusTotal Report</a></span>
+                </div>
+                </div>
+                
+                <div class="col-sm-3 col-6">
+                <div class="description-block border-right">
+                <span class="text-warning"></i><a href="https://tria.ge/s?q={{ sha256 }}" target="_blank" rel="noopener"><i class="fa fa-eye"></i> Triage Report</a>
+                </span>
+                </div>
+                </div>
+                
+                <div class="col-sm-3 col-6">
+                <div class="description-block border-right">
+                <span class="text-info"><a href="https://metadefender.com/results/hash/{{ sha256 }}" target="_blank" rel="noopener"><i class="fa fa-eye"></i> MetaDefender Report</a>
+                </span>
+                </div>
+                </div>
+                
+                <div class="col-sm-3 col-6">
+                  <div class="description-block border-right">
+                  <span class="text-success"><a href="https://www.hybrid-analysis.com/search?query={{ sha256 }}" target="_blank" rel="noopener"><i class="fa fa-eye"></i> Hybrid Analysis Report</a>
+                  </span>
+                  </div>
+                </div>
+              </div>
+           </div>
+         </div><!-- /.card -->
+         </div>
+         <!-- end row -->
+         </div>
+     </div>
+ </section>
+ <!-- ===========================end malware lookup ================================== -->
+ {% if app_type not in 'so' %}
+ <!---APKiD Analysis Section-->
  <a id="apkid" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
@@ -1762,7 +1820,6 @@
         </div>
     </div>
 </section>
-{% endif %}
 <!-- ===========================end virus total ================================== -->
 <a id="malware_permissions" class="anchor"></a>
 <section class="content">
@@ -1822,6 +1879,7 @@
     </div>
 </section>
  <!-- ===========================end malware permissions  ================================== -->
+ {% endif %}
 <style>
   #chartdiv {
   width: 100%;
