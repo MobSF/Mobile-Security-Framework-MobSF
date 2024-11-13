@@ -80,18 +80,65 @@ from mobsf.MobSF.views.authorization import (
 )
 
 logger = logging.getLogger(__name__)
-APK_TYPE = 'apk'
+
+
+def initialize_app_dic(checksum, app_dic, file_ext):
+    app_dic['app_file'] = f'{checksum}.{file_ext}'
+    app_dic['app_path'] = (app_dic['app_dir'] / app_dic['app_file']).as_posix()
+    app_dic['app_dir'] = app_dic['app_dir'].as_posix() + '/'
+    app_dic['size'] = str(file_size(app_dic['app_path'])) + 'MB'
+    app_dic['sha1'], app_dic['sha256'] = hash_gen(checksum, app_dic['app_path'])
+    return app_dic
+
+
+def get_manifest_data(checksum, app_dic, andro_apk=None):
+    """Get Manifest Data."""
+    # Manifest XML
+    mani_file, ns, mani_xml = get_manifest(
+        checksum,
+        app_dic['app_path'],
+        app_dic['app_dir'],
+        app_dic['tools_dir'],
+        app_dic['zipped'],
+        andro_apk,
+    )
+    app_dic['manifest_file'] = mani_file
+    app_dic['parsed_xml'] = mani_xml
+    # Manifest data extraction
+    man_data = manifest_data(
+        checksum,
+        app_dic['parsed_xml'],
+        ns)
+    # Manifest Analysis
+    man_analysis = manifest_analysis(
+        checksum,
+        app_dic['parsed_xml'],
+        ns,
+        man_data,
+        app_dic['zipped'],
+        app_dic['app_dir'])
+    return man_data, man_analysis
+
+
+def print_scan_subject(checksum, app_dic, man_data):
+    """Log scan subject."""
+    app_name = app_dic['real_name']
+    pkg_name = man_data['packagename']
+    if app_name or pkg_name:
+        if app_name and pkg_name:
+            subject = f'{app_name} ({pkg_name})'
+        elif app_name:
+            subject = app_name
+        elif pkg_name:
+            subject = pkg_name
+        msg = f'Performing Static Analysis on: {subject}'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
 
 
 def apk_analysis(request, app_dic, rescan, api):
     """APK Analysis."""
     checksum = app_dic['md5']
-    app_dic['app_file'] = f'{checksum}.apk'
-    app_dic['app_path'] = (
-        app_dic['app_dir'] / app_dic['app_file']).as_posix()
-    app_dic['app_dir'] = app_dic['app_dir'].as_posix() + '/'
-    # Check if in DB
-    # pylint: disable=E1101
     db_entry = StaticAnalyzerAndroid.objects.filter(MD5=checksum)
     if db_entry.exists() and not rescan:
         context = get_context_from_db_entry(db_entry)
@@ -103,11 +150,7 @@ def apk_analysis(request, app_dic, rescan, api):
                 False)
         # ANALYSIS BEGINS
         append_scan_status(checksum, 'init')
-        app_dic['size'] = str(
-            file_size(app_dic['app_path'])) + 'MB'  # FILE SIZE
-        app_dic['sha1'], app_dic['sha256'] = hash_gen(
-            checksum,
-            app_dic['app_path'])
+        initialize_app_dic(checksum, app_dic, 'apk')
         msg = 'Extracting APK'
         logger.info(msg)
         append_scan_status(checksum, msg)
@@ -119,87 +162,58 @@ def apk_analysis(request, app_dic, rescan, api):
         if not app_dic['files']:
             # Can't Analyze APK, bail out.
             msg = 'APK file is invalid or corrupt'
+            logger.error(msg)
             append_scan_status(checksum, msg)
             return print_n_send_error_response(
                 request,
                 msg,
                 api)
+        app_dic['zipped'] = 'apk'
         app_dic['certz'] = get_hardcoded_cert_keystore(
             checksum,
             app_dic['files'])
         # Parse APK with Androguard
-        apk = parse_apk(
+        andro_apk = parse_apk(
             checksum,
             app_dic['app_path'])
-        # get app_name
-        app_dic['real_name'] = get_app_name(
-            apk,
-            app_dic['app_dir'],
-            True,
-        )
-        # Manifest XML
-        mani_file, ns, mani_xml = get_manifest(
+        # Manifest Data
+        man_data, man_analysis = get_manifest_data(
             checksum,
-            app_dic['app_path'],
-            app_dic['app_dir'],
-            app_dic['tools_dir'],
-            APK_TYPE,
-            apk,
-        )
-        app_dic['manifest_file'] = mani_file
-        app_dic['parsed_xml'] = mani_xml
-        # Manifest data extraction
-        man_data_dic = manifest_data(
-            checksum,
-            app_dic['parsed_xml'],
-            ns)
+            app_dic,
+            andro_apk)
         # Get App name
-        app_name = app_dic['real_name']
-        pkg_name = man_data_dic['packagename']
-        if app_name or pkg_name:
-            if app_name and pkg_name:
-                subject = f'{app_name} ({pkg_name})'
-            elif app_name:
-                subject = app_name
-            elif pkg_name:
-                subject = pkg_name
-            msg = f'Performing Static Analysis on: {subject}'
-            logger.info(msg)
-            append_scan_status(checksum, msg)
+        app_dic['real_name'] = get_app_name(
+            andro_apk,
+            app_dic['app_dir'],
+            True)
+        # Print scan subject
+        print_scan_subject(checksum, app_dic, man_data)
         app_dic['playstore'] = get_app_details(
             checksum,
-            man_data_dic['packagename'])
-        man_an_dic = manifest_analysis(
-            checksum,
-            app_dic['parsed_xml'],
-            ns,
-            man_data_dic,
-            '',
-            app_dic['app_dir'])
+            man_data['packagename'])
         # Malware Permission check
         mal_perms = permissions.check_malware_permission(
             checksum,
-            man_data_dic['perm'])
-        man_an_dic['malware_permissions'] = mal_perms
+            man_data['perm'])
+        man_analysis['malware_permissions'] = mal_perms
         # Get icon
         # apktool should run before this
-        get_icon_apk(apk, app_dic)
+        get_icon_apk(andro_apk, app_dic)
         elf_dict = library_analysis(
             checksum,
             app_dic['app_dir'],
             'elf')
         cert_dic = cert_info(
-            apk,
+            andro_apk,
             app_dic,
-            man_data_dic)
+            man_data)
         apkid_results = apkid.apkid_analysis(
             checksum,
             app_dic['app_path'])
-        tracker = Trackers.Trackers(
+        trackers = Trackers.Trackers(
             checksum,
             app_dic['app_dir'],
-            app_dic['tools_dir'])
-        tracker_res = tracker.get_trackers()
+            app_dic['tools_dir']).get_trackers()
         apk_2_java(
             checksum,
             app_dic['app_path'],
@@ -212,20 +226,20 @@ def apk_analysis(request, app_dic, rescan, api):
         code_an_dic = code_analysis(
             checksum,
             app_dic['app_dir'],
-            APK_TYPE,
+            app_dic['zipped'],
             app_dic['manifest_file'],
-            man_data_dic['perm'])
+            man_data['perm'])
         behaviour_an = behaviour_analysis.analyze(
             checksum,
             app_dic['app_dir'],
-            APK_TYPE)
+            app_dic['zipped'])
         # Get the strings and metadata
         get_strings_metadata(
             checksum,
-            apk,
+            andro_apk,
             app_dic['app_dir'],
             elf_dict['elf_strings'],
-            APK_TYPE,
+            app_dic['zipped'],
             ['.java'],
             code_an_dic)
         # Firebase DB Check
@@ -236,46 +250,35 @@ def apk_analysis(request, app_dic, rescan, api):
         code_an_dic['domains'] = MalwareDomainCheck().scan(
             checksum,
             code_an_dic['urls_list'])
-
-        app_dic['zipped'] = APK_TYPE
         context = save_get_ctx(
             app_dic,
-            man_data_dic,
-            man_an_dic,
+            man_data,
+            man_analysis,
             code_an_dic,
             cert_dic,
             elf_dict['elf_analysis'],
             apkid_results,
             behaviour_an,
-            tracker_res,
+            trackers,
             rescan,
         )
     context['appsec'] = get_android_dashboard(context, True)
-    context['average_cvss'] = get_avg_cvss(
-        context['code_analysis'])
+    context['average_cvss'] = get_avg_cvss(context['code_analysis'])
     context['dynamic_analysis_done'] = is_file_exists(
         os.path.join(app_dic['app_dir'], 'logcat.txt'))
-
     context['virus_total'] = None
     if settings.VT_ENABLED:
         vt = VirusTotal.VirusTotal(checksum)
         context['virus_total'] = vt.get_result(
             app_dic['app_path'])
     template = 'static_analysis/android_binary_analysis.html'
-    if api:
-        return context
-    else:
-        return render(request, template, context)
+    return context if api else render(request, template, context)
 
 
 def src_analysis(request, app_dic, rescan, api):
     """Source Code Analysis."""
     checksum = app_dic['md5']
     ret = f'/static_analyzer_ios/{checksum}/'
-    app_dic['app_file'] = f'{checksum}.zip'
-    app_dic['app_path'] = (
-        app_dic['app_dir'] / app_dic['app_file']).as_posix()
-    app_dic['app_dir'] = app_dic['app_dir'].as_posix() + '/'
     db_entry = StaticAnalyzerAndroid.objects.filter(
         MD5=checksum)
     ios_db_entry = StaticAnalyzerIOS.objects.filter(
@@ -283,12 +286,11 @@ def src_analysis(request, app_dic, rescan, api):
     if db_entry.exists() and not rescan:
         context = get_context_from_db_entry(db_entry)
     elif ios_db_entry.exists() and not rescan:
-        if api:
-            return {'type': 'ios'}
-        else:
-            return HttpResponseRedirect(ret)
+        return {'type': 'ios'} if api else HttpResponseRedirect(ret)
     else:
+        # Initialize for both Android and iOS Source Analysis
         append_scan_status(checksum, 'init')
+        initialize_app_dic(checksum, app_dic, 'zip')
         msg = 'Extracting ZIP'
         logger.info(msg)
         append_scan_status(checksum, msg)
@@ -303,15 +305,14 @@ def src_analysis(request, app_dic, rescan, api):
         msg = f'Source code type - {pro_type}'
         logger.info(msg)
         append_scan_status(checksum, msg)
+        # Handle iOS Source Code
         if valid and pro_type == 'ios':
             msg = 'Redirecting to iOS Source Code Analyzer'
             logger.info(msg)
             append_scan_status(checksum, msg)
-            if api:
-                return {'type': 'ios'}
-            else:
-                ret += f'?rescan={str(int(rescan))}'
-                return HttpResponseRedirect(ret)
+            ret = f'{ret}?rescan={str(int(rescan))}'
+            return {'type': 'ios'} if api else HttpResponseRedirect(ret)
+
         if not has_permission(request, Permissions.SCAN, api):
             return print_n_send_error_response(
                 request,
@@ -328,86 +329,49 @@ def src_analysis(request, app_dic, rescan, api):
             app_dic['secrets'] = []
             # Above fields are only available for APK and not ZIP
             app_dic['zipped'] = pro_type
-            app_dic['size'] = str(
-                file_size(app_dic['app_path'])) + 'MB'  # FILE SIZE
-            app_dic['sha1'], app_dic['sha256'] = hash_gen(
-                checksum,
-                app_dic['app_path'])
             app_dic['certz'] = get_hardcoded_cert_keystore(
                 checksum,
                 app_dic['files'])
-            # get app_name
-            app_dic['real_name'] = get_app_name(
-                app_dic['app_path'],
-                app_dic['app_dir'],
-                False,
-            )
-            # Manifest XML
-            mani_file, ns, mani_xml = get_manifest(
+            # Manifest Data
+            man_data, man_analysis = get_manifest_data(
                 checksum,
-                '',
-                app_dic['app_dir'],
-                app_dic['tools_dir'],
-                pro_type,
-                None,
-            )
-            app_dic['manifest_file'] = mani_file
-            app_dic['parsed_xml'] = mani_xml
-            # Get manifest data
-            man_data_dic = manifest_data(
-                checksum,
-                app_dic['parsed_xml'],
-                ns)
+                app_dic)
             # Get app name
-            app_name = app_dic['real_name']
-            pkg_name = man_data_dic['packagename']
-            if app_name or pkg_name:
-                if app_name and pkg_name:
-                    subject = f'{app_name} ({pkg_name})'
-                elif app_name:
-                    subject = app_name
-                elif pkg_name:
-                    subject = pkg_name
-                msg = f'Performing Static Analysis on: {subject}'
-                logger.info(msg)
-
+            app_dic['real_name'] = get_app_name(
+                None,
+                app_dic['app_dir'],
+                False)
+            # Print scan subject
+            print_scan_subject(checksum, app_dic, man_data)
             app_dic['playstore'] = get_app_details(
                 checksum,
-                man_data_dic['packagename'])
-            man_an_dic = manifest_analysis(
-                checksum,
-                app_dic['parsed_xml'],
-                ns,
-                man_data_dic,
-                pro_type,
-                app_dic['app_dir'],
-            )
+                man_data['packagename'])
             # Malware Permission check
             mal_perms = permissions.check_malware_permission(
                 checksum,
-                man_data_dic['perm'])
-            man_an_dic['malware_permissions'] = mal_perms
+                man_data['perm'])
+            man_analysis['malware_permissions'] = mal_perms
             # Get icon
             get_icon_from_src(
                 app_dic,
-                man_data_dic['icons'])
+                man_data['icons'])
             code_an_dic = code_analysis(
                 checksum,
                 app_dic['app_dir'],
-                pro_type,
+                app_dic['zipped'],
                 app_dic['manifest_file'],
-                man_data_dic['perm'])
+                man_data['perm'])
             behaviour_an = behaviour_analysis.analyze(
                 checksum,
                 app_dic['app_dir'],
-                pro_type)
+                app_dic['zipped'])
             # Get the strings and metadata
             get_strings_metadata(
                 checksum,
                 None,
                 app_dic['app_dir'],
                 None,
-                pro_type,
+                app_dic['zipped'],
                 ['.java', '.kt'],
                 code_an_dic)
             # Firebase DB Check
@@ -419,16 +383,15 @@ def src_analysis(request, app_dic, rescan, api):
                 checksum,
                 code_an_dic['urls_list'])
             # Extract Trackers from Domains
-            trk = Trackers.Trackers(
+            trackers = Trackers.Trackers(
                 checksum,
                 None,
-                app_dic['tools_dir'])
-            trackers = trk.get_trackers_domains_or_deps(
-                code_an_dic['domains'], [])
+                app_dic['tools_dir']).get_trackers_domains_or_deps(
+                    code_an_dic['domains'], [])
             context = save_get_ctx(
                 app_dic,
-                man_data_dic,
-                man_an_dic,
+                man_data,
+                man_analysis,
                 code_an_dic,
                 cert_dic,
                 [],
@@ -453,13 +416,9 @@ def src_analysis(request, app_dic, rescan, api):
                 template = 'general/zip.html'
                 return render(request, template, ctx)
     context['appsec'] = get_android_dashboard(context, True)
-    context['average_cvss'] = get_avg_cvss(
-        context['code_analysis'])
+    context['average_cvss'] = get_avg_cvss(context['code_analysis'])
     template = 'static_analysis/android_source_analysis.html'
-    if api:
-        return context
-    else:
-        return render(request, template, context)
+    return context if api else render(request, template, context)
 
 
 def is_android_source(app_dir):
