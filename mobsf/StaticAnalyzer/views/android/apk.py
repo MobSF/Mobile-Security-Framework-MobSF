@@ -1,8 +1,8 @@
 
 """Android APK and Source Analysis."""
 import logging
-import os
 import shutil
+from pathlib import Path
 
 import mobsf.MalwareAnalyzer.views.Trackers as Trackers
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
@@ -20,8 +20,6 @@ from django.shortcuts import render
 from mobsf.MobSF.utils import (
     append_scan_status,
     file_size,
-    is_dir_exists,
-    is_file_exists,
     print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.models import (
@@ -264,8 +262,8 @@ def apk_analysis(request, app_dic, rescan, api):
         )
     context['appsec'] = get_android_dashboard(context, True)
     context['average_cvss'] = get_avg_cvss(context['code_analysis'])
-    context['dynamic_analysis_done'] = is_file_exists(
-        os.path.join(app_dic['app_dir'], 'logcat.txt'))
+    logcat_file = Path(app_dic['app_dir']) / 'logcat.txt'
+    context['dynamic_analysis_done'] = logcat_file.exists()
     context['virus_total'] = None
     if settings.VT_ENABLED:
         vt = VirusTotal.VirusTotal(checksum)
@@ -421,61 +419,63 @@ def src_analysis(request, app_dic, rescan, api):
     return context if api else render(request, template, context)
 
 
-def is_android_source(app_dir):
+def is_android_source(app_path):
     """Detect Android Source and IDE Type."""
     # Eclipse
-    man = os.path.isfile(os.path.join(app_dir, 'AndroidManifest.xml'))
-    src = os.path.exists(os.path.join(app_dir, 'src/'))
-    if man and src:
+    man = app_path / 'AndroidManifest.xml'
+    src = app_path / 'src'
+    if man.is_file() and src.exists():
         return 'eclipse', True
+
     # Studio
-    man = os.path.isfile(
-        os.path.join(app_dir, 'app/src/main/AndroidManifest.xml'),
-    )
-    java = os.path.exists(os.path.join(app_dir, 'app/src/main/java/'))
-    kotlin = os.path.exists(os.path.join(app_dir, 'app/src/main/kotlin/'))
-    if man and (java or kotlin):
+    man = app_path / 'app' / 'src' / 'main' / 'AndroidManifest.xml'
+    java = app_path / 'app' / 'src' / 'main' / 'java'
+    kotlin = app_path / 'app' / 'src' / 'main' / 'kotlin'
+    if man.is_file() and (java.exists() or kotlin.exists()):
         return 'studio', True
+
     return None, False
 
 
-def move_to_parent(inside, app_dir):
+def move_to_parent(inside_path, app_path):
     """Move contents of inside to app dir."""
-    for x in os.listdir(inside):
-        full_path = os.path.join(inside, x)
-        shutil.move(full_path, app_dir)
-    shutil.rmtree(inside)
+    for item in inside_path.iterdir():
+        shutil.move(str(item), str(app_path))
+    shutil.rmtree(inside_path)
 
 
 def valid_source_code(checksum, app_dir):
-    """Test if this is an valid source code zip."""
+    """Test if this is a valid source code zip."""
     try:
         msg = 'Detecting source code type'
         logger.info(msg)
         append_scan_status(checksum, msg)
-        ide, is_and = is_android_source(app_dir)
+
+        app_path = Path(app_dir)
+        ide, is_and = is_android_source(app_path)
+
         if ide:
             return ide, is_and
+
         # Relaxed Android Source check, one level down
-        for x in os.listdir(app_dir):
-            obj = os.path.join(app_dir, x)
-            if not is_dir_exists(obj):
-                continue
-            ide, is_and = is_android_source(obj)
-            if ide:
-                move_to_parent(obj, app_dir)
-                return ide, is_and
+        for subdir in app_path.iterdir():
+            if subdir.is_dir() and subdir.exists():
+                ide, is_and = is_android_source(subdir)
+                if ide:
+                    move_to_parent(subdir, app_path)
+                    return ide, is_and
+
         # iOS Source
-        xcode = [f for f in os.listdir(app_dir) if f.endswith('.xcodeproj')]
+        xcode = [f for f in app_path.iterdir() if f.suffix == '.xcodeproj']
         if xcode:
             return 'ios', True
+
         # Relaxed iOS Source Check
-        for x in os.listdir(app_dir):
-            obj = os.path.join(app_dir, x)
-            if not is_dir_exists(obj):
-                continue
-            if [f for f in os.listdir(obj) if f.endswith('.xcodeproj')]:
-                return 'ios', True
+        for subdir in app_path.iterdir():
+            if subdir.is_dir() and subdir.exists():
+                if any(f.suffix == '.xcodeproj' for f in subdir.iterdir()):
+                    return 'ios', True
+
         return '', False
     except Exception as exp:
         msg = 'Error identifying source code type from zip'
